@@ -27,7 +27,7 @@ public static class BrokerageConnectionEndpoints
             var status = await service.StartConnectionAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(status, jsonOptions);
         })
-        .WithName("StartRobinhoodBrokerageConnection")
+        .WithName("StartRobinhoodBrokerageConnection").RequirePermission(UserPermission.ManageCredentials)
         .Produces<BrokerageConnectionStatusDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
@@ -43,7 +43,7 @@ public static class BrokerageConnectionEndpoints
             var status = await service.GetStatusAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(status, jsonOptions);
         })
-        .WithName("GetRobinhoodBrokerageConnectionStatus")
+        .WithName("GetRobinhoodBrokerageConnectionStatus").RequirePermission(UserPermission.ViewTrades)
         .Produces<BrokerageConnectionStatusDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
@@ -59,7 +59,7 @@ public static class BrokerageConnectionEndpoints
             var status = await service.CompleteCallbackAsync(code, state, error, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(status, jsonOptions);
         })
-        .WithName("CompleteRobinhoodBrokerageConnection")
+        .WithName("CompleteRobinhoodBrokerageConnection").RequirePermission(UserPermission.ManageCredentials)
         .Produces<BrokerageConnectionStatusDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
@@ -75,7 +75,7 @@ public static class BrokerageConnectionEndpoints
             var status = await service.RevokeAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(status, jsonOptions);
         })
-        .WithName("RevokeRobinhoodBrokerageConnection")
+        .WithName("RevokeRobinhoodBrokerageConnection").RequirePermission(UserPermission.ManageCredentials)
         .Produces<BrokerageConnectionStatusDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
@@ -91,7 +91,7 @@ public static class BrokerageConnectionEndpoints
             var status = await service.GetStatusAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(status, jsonOptions);
         })
-        .WithName("GetAlpacaBrokerageConnectionStatus")
+        .WithName("GetAlpacaBrokerageConnectionStatus").RequirePermission(UserPermission.ViewTrades)
         .Produces<BrokerageConnectionStatusDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
@@ -107,7 +107,7 @@ public static class BrokerageConnectionEndpoints
             var status = await service.ConnectAsync(request, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(status, jsonOptions);
         })
-        .WithName("ConnectAlpacaBrokerageConnection")
+        .WithName("ConnectAlpacaBrokerageConnection").RequirePermission(UserPermission.ManageCredentials)
         .Produces<BrokerageConnectionStatusDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
@@ -123,7 +123,7 @@ public static class BrokerageConnectionEndpoints
             var status = await service.RevokeAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(status, jsonOptions);
         })
-        .WithName("RevokeAlpacaBrokerageConnection")
+        .WithName("RevokeAlpacaBrokerageConnection").RequirePermission(UserPermission.ManageCredentials)
         .Produces<BrokerageConnectionStatusDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
     }

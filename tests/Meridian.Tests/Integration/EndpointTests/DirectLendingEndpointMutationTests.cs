@@ -11,7 +11,7 @@ namespace Meridian.Tests.Integration.EndpointTests;
 
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class DirectLendingEndpointMutationTests
+public sealed class DirectLendingEndpointMutationTests : IClassFixture<EndpointTestFixture>
 {
     private readonly EndpointTestFixture _fixture;
 

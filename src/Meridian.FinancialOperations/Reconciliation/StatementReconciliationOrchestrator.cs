@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
@@ -220,7 +220,8 @@ public sealed class StatementReconciliationOrchestrator(
     private static async Task<string> ComputeSourceFileHashAsync(string sourcePath, CancellationToken ct)
     {
         await using var stream = File.OpenRead(sourcePath);
-        var hashBytes = await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false);
-        return Convert.ToHexString(hashBytes);
+        // Same SourceFileHash family as the statement-import producers — canonical encoding keeps
+        // the value consistent across every producer of this field (#2691).
+        return await Sha256Digest.ComputeAsync(stream, ct).ConfigureAwait(false);
     }
 }

@@ -28,6 +28,10 @@ public static class DemoTenantBlueprint
     /// <summary>The provenance label onboarding renders for the seeded workspace.</summary>
     public const string SeededProvenanceLabel = "Seeded";
 
+    /// <summary>Fixed tenant/company authority for the isolated seeded demo workspace.</summary>
+    public const string TenantId = "meridian-seeded-demo";
+    public const string CompanyId = "meridian-seeded-demo";
+
     public const string PortfolioName = "Northstar Sample Portfolio";
     public const decimal Cash = 125_000m;
 
@@ -53,6 +57,94 @@ public static class DemoTenantBlueprint
 
     private static readonly string[] MarketHistorySymbols = ["SPY", "MSFT", "TLT"];
     private const int MarketHistorySessions = 90;
+
+    /// <summary>Symbols the demo seeds durable market history for.</summary>
+    public static IReadOnlyList<string> MarketHistorySymbolList => MarketHistorySymbols;
+
+    /// <summary>Trading sessions of durable market history the demo seeds per symbol.</summary>
+    public static int MarketHistorySessionCount => MarketHistorySessions;
+
+    /// <summary>Fixed identity of the seeded demo fund account.</summary>
+    public static readonly Guid FundAccountId = Guid.Parse("5eeded00-de30-4a7d-9b1c-000000000001");
+    public const string FundAccountCode = "SAMPLE-001";
+    public const string FundAccountDisplayName = "Northstar Sample Fund Account";
+    public const string BaseCurrency = "USD";
+
+    /// <summary>Fund profile the seeded accounting records (journal drafts) belong to.</summary>
+    public const string FundProfileId = "meridian-seeded-demo";
+
+    /// <summary>Fixed identity of the seeded governed report pack.</summary>
+    public static readonly Guid ReportPackId = Guid.Parse("5eeded00-de30-4a7d-9b1c-000000000002");
+    public const string ReportPackDisplayName = "Sample portfolio review";
+
+    /// <summary>Fixed identities of the seeded manual journal drafts (ledger-desk records).</summary>
+    public static readonly Guid AccruedFeeDraftId = Guid.Parse("5eeded00-de30-4a7d-9b1c-000000000003");
+    public static readonly Guid DividendDraftId = Guid.Parse("5eeded00-de30-4a7d-9b1c-000000000004");
+
+    /// <summary>One deterministic seeded trade print for durable market history.</summary>
+    public sealed record SampleTradePrint(DateTimeOffset Timestamp, decimal Price, long Size);
+
+    /// <summary>
+    /// Builds the deterministic market-history trade prints for one symbol: one print per
+    /// trading session (weekdays only), walking back <see cref="MarketHistorySessionCount"/>
+    /// sessions from <paramref name="lastSessionUtc"/>. Prices derive from a fixed
+    /// per-symbol anchor and a stable per-date hash, so re-seeding the same day is
+    /// idempotent and two installs seeded on the same day agree exactly.
+    /// </summary>
+    public static IReadOnlyList<SampleTradePrint> BuildMarketHistory(string symbol, DateOnly lastSessionUtc)
+    {
+        var anchor = HoldingDefinitions.FirstOrDefault(holding =>
+            string.Equals(holding.Symbol, symbol, StringComparison.OrdinalIgnoreCase))?.LastPrice ?? 100m;
+
+        var sessions = new List<DateOnly>(MarketHistorySessions);
+        var cursor = lastSessionUtc;
+        while (sessions.Count < MarketHistorySessions)
+        {
+            if (cursor.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday))
+            {
+                sessions.Add(cursor);
+            }
+
+            cursor = cursor.AddDays(-1);
+        }
+
+        sessions.Reverse();
+
+        var prints = new List<SampleTradePrint>(sessions.Count);
+        foreach (var session in sessions)
+        {
+            // Stable per-(symbol, date) pseudo-random drift in [-1.5%, +1.5%] around the
+            // anchor, plus a slow deterministic trend into the anchor on the last session.
+            var seed = StableHash($"{symbol}:{session:yyyy-MM-dd}");
+            var drift = ((seed % 3001) - 1500) / 100_000m;
+            var progress = (decimal)(sessions.IndexOf(session) + 1) / sessions.Count;
+            var basePrice = anchor * (0.94m + (0.06m * progress));
+            var price = decimal.Round(basePrice * (1m + drift), 2);
+            var size = 100 + (seed % 900);
+            prints.Add(new SampleTradePrint(
+                new DateTimeOffset(session.Year, session.Month, session.Day, 20, 0, 0, TimeSpan.Zero),
+                price,
+                size));
+        }
+
+        return prints;
+    }
+
+    private static long StableHash(string value)
+    {
+        // FNV-1a, folded positive: stable across runs and platforms (string.GetHashCode is not).
+        unchecked
+        {
+            var hash = 2166136261u;
+            foreach (var ch in value)
+            {
+                hash ^= ch;
+                hash *= 16777619u;
+            }
+
+            return hash & 0x7FFFFFFF;
+        }
+    }
 
     /// <summary>
     /// Sample reconciliation breaks. These are seeded into the reconciliation break queue and shown

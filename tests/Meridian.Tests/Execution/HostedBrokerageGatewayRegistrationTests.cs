@@ -28,6 +28,8 @@ public sealed class HostedBrokerageGatewayRegistrationTests
         var robinhood = provider.GetRequiredKeyedService<IBrokerageGateway>("robinhood");
 
         alpaca.Should().BeOfType<AlpacaBrokerageGateway>();
+        var alpacaTradeUpdates = provider.GetRequiredService<AlpacaTradeUpdatesClient>();
+        ((AlpacaBrokerageGateway)alpaca).TradeUpdatesClient.Should().BeSameAs(alpacaTradeUpdates);
         ib.Should().BeOfType<IBBrokerageGateway>();
         ibkr.Should().BeSameAs(ib);
         robinhood.Should().BeOfType<RobinhoodBrokerageGateway>();
@@ -58,23 +60,26 @@ public sealed class HostedBrokerageGatewayRegistrationTests
             surface.SupportsPartialFills &&
             surface.ValidationIssues.Count == 0);
         surfaces.Should().Contain(surface =>
-            surface.GatewayId == "ib" &&
+            surface.GatewayId == "ibkr" &&
             surface.IsRegistered &&
-            surface.DeclaredGatewayId == "ib" &&
+            surface.DeclaredGatewayId == "ibkr" &&
             surface.GatewayType == typeof(IBBrokerageGateway).FullName &&
             surface.GatewayIdMatchesRuntimeKey &&
             surface.SupportsAccountCatalog &&
             surface.SupportsPortfolioSync &&
             surface.SupportsActivitySync &&
+            surface.Notes.Any(note => note.Contains("canonical runtime key", StringComparison.OrdinalIgnoreCase)) &&
             surface.ValidationIssues.Count == 0);
         surfaces.Should().Contain(surface =>
-            surface.GatewayId == "ibkr" &&
+            surface.GatewayId == "ib" &&
             surface.IsRegistered &&
-            surface.DeclaredGatewayId == "ib" &&
+            surface.DeclaredGatewayId == "ibkr" &&
             surface.GatewayType == typeof(IBBrokerageGateway).FullName &&
             surface.GatewayIdMatchesRuntimeKey &&
             surface.SupportsAccountCatalog &&
             surface.SupportsPortfolioSync &&
+            surface.SupportsActivitySync &&
+            surface.Notes.Any(note => note.Contains("compatibility alias", StringComparison.OrdinalIgnoreCase)) &&
             surface.ValidationIssues.Count == 0);
         surfaces.Should().Contain(surface =>
             surface.GatewayId == "robinhood" &&
@@ -94,6 +99,33 @@ public sealed class HostedBrokerageGatewayRegistrationTests
             !surface.GatewayIdMatchesRuntimeKey &&
             surface.ValidationIssues.Contains("stocksharp-runtime-type-missing") &&
             surface.Notes.Any(note => note.Contains("runtime type is not present", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [Fact]
+    public async Task AddHostedBrokerageGateways_WhenCalledTwice_DoesNotDuplicateGatewaySurfaces()
+    {
+        var services = CreateServices();
+
+        services.AddHostedBrokerageGateways();
+        services.AddHostedBrokerageGateways();
+
+        await using var provider = services.BuildServiceProvider();
+
+        provider.GetRequiredKeyedService<IBrokerageGateway>("ib")
+            .Should()
+            .BeSameAs(provider.GetRequiredKeyedService<IBrokerageGateway>("ibkr"));
+        provider.GetServices<IBrokerageAccountCatalog>()
+            .Count(catalog => catalog.ProviderId == "ibkr")
+            .Should()
+            .Be(1);
+        provider.GetServices<IBrokeragePortfolioSync>()
+            .Count(sync => sync.ProviderId == "ibkr")
+            .Should()
+            .Be(1);
+        provider.GetServices<IBrokerageActivitySync>()
+            .Count(sync => sync.ProviderId == "ibkr")
+            .Should()
+            .Be(1);
     }
 
     [Fact]

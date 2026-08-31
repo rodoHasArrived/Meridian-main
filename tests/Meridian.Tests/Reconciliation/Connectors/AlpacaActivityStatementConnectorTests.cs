@@ -44,8 +44,10 @@ public sealed class AlpacaActivityStatementConnectorTests : IDisposable
         var byKind = result.Records.GroupBy(record => record.Kind).ToDictionary(group => group.Key, group => group.Count());
         byKind.Should().BeEquivalentTo(new Dictionary<StatementRecordKind, int>
         {
-            [StatementRecordKind.Transaction] = 2,
-            [StatementRecordKind.CashBalance] = 2,
+            // Fills plus the CSD wire deposit: cash activities are ledger movements and reconcile in
+            // the transaction lane; only the portfolio snapshot's balance is a genuine cash balance.
+            [StatementRecordKind.Transaction] = 3,
+            [StatementRecordKind.CashBalance] = 1,
             [StatementRecordKind.Fee] = 1,
             [StatementRecordKind.Dividend] = 1,
             [StatementRecordKind.Position] = 2
@@ -66,13 +68,33 @@ public sealed class AlpacaActivityStatementConnectorTests : IDisposable
         dividend.CashAmount.Should().Be(24.00m);
         dividend.TradeDate.Should().Be(new DateOnly(2026, 6, 10));
 
-        var balance = result.Records.Single(record =>
-            record.Kind == StatementRecordKind.CashBalance && record.ExternalTransactionId is null);
+        var deposit = result.Records.Single(record => record.ExternalTransactionId == "cash-3001");
+        deposit.Kind.Should().Be(StatementRecordKind.Transaction, "a wire deposit is a movement with its transaction id intact");
+        deposit.CashAmount.Should().Be(50000.00m);
+
+        var balance = result.Records.Single(record => record.Kind == StatementRecordKind.CashBalance);
+        balance.ExternalTransactionId.Should().BeNull();
         balance.CashAmount.Should().Be(31247.93m);
 
         var positions = result.Records.Where(record => record.Kind == StatementRecordKind.Position).ToArray();
         positions.Select(position => position.Symbol).Should().BeEquivalentTo("AAPL", "TLT");
         positions.Single(position => position.Symbol == "AAPL").CashAmount.Should().Be(19010.00m);
+    }
+
+    [Fact]
+    public async Task Parse_SnapshotAccountDiffersFromAuthorizedDocumentAccount_FailsClosed()
+    {
+        var connector = CreateConnector();
+        var document = new StatementSourceDocument(
+            "alpaca-combined-snapshot.json",
+            StatementConnectorTestData.ReadFixture("alpaca-combined-snapshot.json"),
+            ExternalAccountId: "OTHER-ACCOUNT");
+
+        var result = await connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty();
+        result.Issues.Should().ContainSingle(issue => issue.Code == "ACCOUNT_SCOPE_MISMATCH");
     }
 
     [Fact]
@@ -122,6 +144,70 @@ public sealed class AlpacaActivityStatementConnectorTests : IDisposable
         result.Records.Should().ContainSingle().Which.Kind.Should().Be(StatementRecordKind.Transaction);
     }
 
+    [Fact]
+    public async Task Fetch_ActivitySnapshotAccountDiffersFromRequestedAccount_FailsBeforeRetention()
+    {
+        var connector = CreateConnector(new MismatchedActivitySync());
+
+        var act = () => connector.FetchAsync(new StatementFetchRequest(
+            "alpaca-activity",
+            "PA3ALPACA01",
+            Datasets: StatementFetchDatasets.Activity));
+
+        await act.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*activity snapshot account*requested external account*");
+    }
+
+    [Fact]
+    public async Task Fetch_BoundedPeriod_ForwardsExactHalfOpenWindow()
+    {
+        var activitySync = new RecordingBoundedActivitySync();
+        var connector = CreateConnector(activitySync);
+        var since = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        var untilExclusive = new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero);
+
+        await connector.FetchAsync(new StatementFetchRequest(
+            "alpaca-activity",
+            "PA3ALPACA01",
+            Since: since,
+            Datasets: StatementFetchDatasets.Activity,
+            UntilExclusive: untilExclusive));
+
+        activitySync.LastSince.Should().Be(since);
+        activitySync.LastUntilExclusive.Should().Be(untilExclusive);
+    }
+
+    [Fact]
+    public async Task Fetch_BoundedPeriod_WhenProviderCannotEnforceUpperBound_FailsClosed()
+    {
+        var connector = CreateConnector(new FakeActivitySync());
+
+        var act = () => connector.FetchAsync(new StatementFetchRequest(
+            "alpaca-activity",
+            "PA3ALPACA01",
+            Since: new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero),
+            Datasets: StatementFetchDatasets.Activity,
+            UntilExclusive: new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero)));
+
+        await act.Should().ThrowAsync<NotSupportedException>()
+            .WithMessage("*exact upper time bound*");
+    }
+
+    [Fact]
+    public async Task Fetch_BoundedPeriod_WithCurrentPortfolioDataset_FailsClosed()
+    {
+        var connector = CreateConnector(new RecordingBoundedActivitySync(), new FakePortfolioSync());
+
+        var act = () => connector.FetchAsync(new StatementFetchRequest(
+            "alpaca-activity",
+            "PA3ALPACA01",
+            Since: new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero),
+            UntilExclusive: new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero)));
+
+        await act.Should().ThrowAsync<NotSupportedException>()
+            .WithMessage("*historical portfolio snapshot*");
+    }
+
     private sealed class FakeActivitySync : IBrokerageActivitySync
     {
         public string ProviderId => "alpaca";
@@ -147,6 +233,51 @@ public sealed class AlpacaActivityStatementConnectorTests : IDisposable
                         new DateTimeOffset(2026, 6, 2, 14, 30, 0, TimeSpan.Zero),
                         Commission: 0.55m)
                 ],
+                CashTransactions: []));
+    }
+
+    private sealed class RecordingBoundedActivitySync : IBrokerageActivitySync
+    {
+        private readonly FakeActivitySync _inner = new();
+
+        public string ProviderId => _inner.ProviderId;
+
+        public DateTimeOffset? LastSince { get; private set; }
+
+        public DateTimeOffset? LastUntilExclusive { get; private set; }
+
+        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since = null,
+            CancellationToken ct = default)
+            => _inner.GetActivitySnapshotAsync(externalAccountId, since, ct);
+
+        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since,
+            DateTimeOffset? untilExclusive,
+            CancellationToken ct = default)
+        {
+            LastSince = since;
+            LastUntilExclusive = untilExclusive;
+            return _inner.GetActivitySnapshotAsync(externalAccountId, since, ct);
+        }
+    }
+
+    private sealed class MismatchedActivitySync : IBrokerageActivitySync
+    {
+        public string ProviderId => "alpaca";
+
+        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since = null,
+            CancellationToken ct = default)
+            => Task.FromResult(new BrokerageActivitySnapshotDto(
+                ProviderId,
+                "CREDENTIAL-ACCOUNT",
+                new DateTimeOffset(2026, 6, 30, 21, 0, 0, TimeSpan.Zero),
+                Orders: [],
+                Fills: [],
                 CashTransactions: []));
     }
 

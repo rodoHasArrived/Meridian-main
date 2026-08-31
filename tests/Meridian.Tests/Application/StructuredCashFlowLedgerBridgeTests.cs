@@ -56,6 +56,19 @@ public sealed class StructuredCashFlowLedgerBridgeTests
     }
 
     [Fact]
+    public void BuildCouponAccrualPostings_UnknownSourceFreshness_ShouldBlock()
+    {
+        var bridge = new StructuredCashFlowLedgerBridge();
+
+        var result = bridge.BuildCouponAccrualPostings(
+            BuildProjection(staleness: StructuredCashFlowStaleness.Unknown), "ABC");
+
+        result.IsPostable.Should().BeFalse();
+        result.BlockedReason.Should().Contain("freshness is unknown");
+        result.Postings.Should().BeEmpty();
+    }
+
+    [Fact]
     public void BuildCouponAccrualPostings_NonBaseScenario_ShouldBlock()
     {
         var bridge = new StructuredCashFlowLedgerBridge();

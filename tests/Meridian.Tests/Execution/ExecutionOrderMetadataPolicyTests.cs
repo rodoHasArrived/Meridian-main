@@ -112,25 +112,25 @@ public sealed class ExecutionOrderMetadataPolicyTests
     }
 
     [Fact]
-    public void RemoveBrokerAccountAndOverrideKeys_NullRequest_Throws()
+    public void RemoveServerOwnedRoutingKeys_NullRequest_Throws()
     {
-        var act = () => ExecutionOrderMetadataPolicy.RemoveBrokerAccountAndOverrideKeys(null!);
+        var act = () => ExecutionOrderMetadataPolicy.RemoveServerOwnedRoutingKeys(null!);
 
         act.Should().Throw<ArgumentNullException>();
     }
 
     [Fact]
-    public void RemoveBrokerAccountAndOverrideKeys_NoMetadata_ReturnsSameRequest()
+    public void RemoveServerOwnedRoutingKeys_NoMetadata_ReturnsSameRequest()
     {
         var request = CreateOrderRequest(metadata: null);
 
-        var sanitized = ExecutionOrderMetadataPolicy.RemoveBrokerAccountAndOverrideKeys(request);
+        var sanitized = ExecutionOrderMetadataPolicy.RemoveServerOwnedRoutingKeys(request);
 
         sanitized.Should().BeSameAs(request);
     }
 
     [Fact]
-    public void RemoveBrokerAccountAndOverrideKeys_StripsAccountAndOverrideKeys()
+    public void RemoveServerOwnedRoutingKeys_StripsRoutingAndOverrideKeys()
     {
         var request = CreateOrderRequest(new Dictionary<string, string>
         {
@@ -140,7 +140,7 @@ public sealed class ExecutionOrderMetadataPolicyTests
             ["strategy_run_id"] = "run-2026-07-06-01"
         });
 
-        var sanitized = ExecutionOrderMetadataPolicy.RemoveBrokerAccountAndOverrideKeys(request);
+        var sanitized = ExecutionOrderMetadataPolicy.RemoveServerOwnedRoutingKeys(request);
 
         sanitized.Should().NotBeSameAs(request);
         sanitized.Metadata.Should().ContainKey("strategy_run_id");
@@ -151,7 +151,7 @@ public sealed class ExecutionOrderMetadataPolicyTests
     }
 
     [Fact]
-    public void RemoveBrokerAccountAndOverrideKeys_PreservesAssetClassKeys()
+    public void RemoveServerOwnedRoutingKeys_PreservesAssetClassKeys()
     {
         // Asset-class keys are rejected at the client boundary but tolerated on the
         // server-internal sanitization path; this pins that deliberate difference.
@@ -160,7 +160,7 @@ public sealed class ExecutionOrderMetadataPolicyTests
             ["asset_class"] = "us_option"
         });
 
-        var sanitized = ExecutionOrderMetadataPolicy.RemoveBrokerAccountAndOverrideKeys(request);
+        var sanitized = ExecutionOrderMetadataPolicy.RemoveServerOwnedRoutingKeys(request);
 
         sanitized.Should().BeSameAs(request);
         sanitized.Metadata.Should().ContainKey("asset_class");

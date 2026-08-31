@@ -1,3 +1,5 @@
+using static Meridian.Contracts.Text.TextPrimitives;
+
 namespace Meridian.Execution.Services;
 
 internal static class ReconciliationSetComparer
@@ -16,7 +18,7 @@ internal static class ReconciliationSetComparer
 
         comparer ??= StringComparer.OrdinalIgnoreCase;
         var localByKey = localItems
-            .Select(item => new KeyValuePair<string?, TLocal>(NormalizeKey(localKeySelector(item)), item))
+            .Select(item => new KeyValuePair<string?, TLocal>(NormalizeOptional(localKeySelector(item)), item))
             .Where(static pair => pair.Key is not null)
             .ToDictionary(pair => pair.Key!, pair => pair.Value, comparer);
 
@@ -26,7 +28,7 @@ internal static class ReconciliationSetComparer
 
         foreach (var externalItem in externalItems)
         {
-            var externalKey = NormalizeKey(externalKeySelector(externalItem));
+            var externalKey = NormalizeOptional(externalKeySelector(externalItem));
             if (externalKey is not null && localByKey.TryGetValue(externalKey, out var localItem))
             {
                 matchedLocalKeys.Add(externalKey);
@@ -50,9 +52,6 @@ internal static class ReconciliationSetComparer
             MissingLocal: missingLocal,
             MissingExternal: missingExternal);
     }
-
-    private static string? NormalizeKey(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
 internal sealed record ReconciliationSetComparison<TLocal, TExternal>(

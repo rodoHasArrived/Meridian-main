@@ -33,6 +33,9 @@ import {
   validateGovernedReportingRun
 } from "@/lib/reporting-governance-api";
 import { secureReportingArtifactDownloadPath } from "@/lib/reporting-governance-routes";
+import {
+  enforceClientPackageArtifactSelection, resolveClientPackageArtifactGate, type ClientPackageArtifactGate
+} from "@/screens/report-run-governance-client-package";
 import type {
   GovernedReportingRun,
   ReportingGovernanceRestatement,
@@ -203,7 +206,12 @@ export function ReportRunGovernanceScreen() {
 
   const run = loadState.run;
   const releaseArtifacts = run?.release?.artifacts ?? [];
-  const effectiveArtifactIds = selectedArtifactIds ?? releaseArtifacts.map((artifact) => artifact.artifactId);
+  const clientPackageArtifactGate = resolveClientPackageArtifactGate(run);
+  const effectiveArtifactIds = enforceClientPackageArtifactSelection(
+    selectedArtifactIds ?? releaseArtifacts.map((artifact) => artifact.artifactId),
+    releaseArtifacts.map((artifact) => artifact.artifactId),
+    clientPackageArtifactGate
+  );
   const parameterEntries = useMemo(() => projectParameterEntries(run), [run]);
   const readyTransports = loadState.transports.data.transports.filter((transport) => transport.isReady);
   const effectiveTransportId = transportId || readyTransports[0]?.transportId || "";
@@ -323,6 +331,7 @@ export function ReportRunGovernanceScreen() {
       || !body.trim()
       || (selectedTransport.requiresDestination && !destination.trim())
       || effectiveArtifactIds.length === 0
+      || !clientPackageArtifactGate.isComplete
     ) {
       return;
     }
@@ -353,6 +362,7 @@ export function ReportRunGovernanceScreen() {
       || !isReleased
       || !loadState.transports.data.canIssueAccessGrant
       || effectiveArtifactIds.length === 0
+      || !clientPackageArtifactGate.isComplete
     ) return;
     mutationControllerRef.current?.abort();
     const controller = new AbortController();
@@ -501,7 +511,11 @@ export function ReportRunGovernanceScreen() {
       <ArtifactPanel
         run={run}
         selectedArtifactIds={effectiveArtifactIds}
+        clientPackageArtifactGate={clientPackageArtifactGate}
         onToggleArtifact={(artifactId) => setSelectedArtifactIds((current) => {
+          if (clientPackageArtifactGate.requiredArtifactIds.includes(artifactId)) {
+            return current;
+          }
           const selected = current ?? releaseArtifacts.map((artifact) => artifact.artifactId);
           return selected.includes(artifactId)
             ? selected.filter((candidate) => candidate !== artifactId)
@@ -528,6 +542,7 @@ export function ReportRunGovernanceScreen() {
         deliveries={loadState.deliveries}
         grants={loadState.grants}
         selectedArtifactIds={effectiveArtifactIds}
+        clientPackageArtifactGate={clientPackageArtifactGate}
         transportId={effectiveTransportId}
         onTransportIdChange={setTransportId}
         distributionId={distributionId}
@@ -906,10 +921,12 @@ function ReadinessPanel({ run }: { run: GovernedReportingRun }) {
 function ArtifactPanel({
   run,
   selectedArtifactIds,
+  clientPackageArtifactGate,
   onToggleArtifact
 }: {
   run: GovernedReportingRun;
   selectedArtifactIds: string[];
+  clientPackageArtifactGate: ClientPackageArtifactGate;
   onToggleArtifact: (artifactId: string) => void;
 }) {
   const release = run.release;
@@ -936,6 +953,18 @@ function ArtifactPanel({
               <Fact label="Manifest hash" value={release.manifestHash} mono />
               <Fact label="Released" value={formatTimestamp(release.releasedAtUtc)} />
             </dl>
+            {clientPackageArtifactGate.isClientPackage ? (
+              <StatusBanner
+                role={clientPackageArtifactGate.isComplete ? "status" : "alert"}
+                tone={clientPackageArtifactGate.isComplete ? "info" : "danger"}
+                title={clientPackageArtifactGate.isComplete
+                  ? "Client package primaries locked"
+                  : "Client package release is incomplete"}
+                detail={clientPackageArtifactGate.isComplete
+                  ? "The released PDF and XLSX primary documents are selected together and cannot be distributed separately."
+                  : clientPackageArtifactGate.disabledReason}
+              />
+            ) : null}
             {release.artifacts.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[48rem] text-left text-sm">
@@ -959,6 +988,7 @@ function ArtifactPanel({
                               id={inputId}
                               type="checkbox"
                               checked={selectedArtifactIds.includes(artifact.artifactId)}
+                              disabled={clientPackageArtifactGate.requiredArtifactIds.includes(artifact.artifactId)}
                               onChange={() => onToggleArtifact(artifact.artifactId)}
                               aria-label={`Include ${artifact.artifactId} in distribution`}
                             />
@@ -1237,6 +1267,7 @@ function DistributionPanel({
   deliveries,
   grants,
   selectedArtifactIds,
+  clientPackageArtifactGate,
   transportId,
   onTransportIdChange,
   distributionId,
@@ -1269,6 +1300,7 @@ function DistributionPanel({
   deliveries: ResourceState<SecureReportingDelivery[]>;
   grants: ResourceState<SecureReportingAccessGrant[]>;
   selectedArtifactIds: string[];
+  clientPackageArtifactGate: ClientPackageArtifactGate;
   transportId: string;
   onTransportIdChange: (value: string) => void;
   distributionId: string;
@@ -1306,25 +1338,29 @@ function DistributionPanel({
         ? transports.data.actionDisabledReasonCode ?? "The server did not authorize delivery queueing for this caller."
         : !selectedTransport?.isReady
           ? selectedTransport?.disabledReasonCode ?? "Select a ready server-configured transport."
-          : selectedArtifactIds.length === 0
-            ? "Select at least one immutable artifact."
-            : !distributionId.trim()
-              ? "Enter a durable distribution identity."
-              : !subject.trim() || !body.trim()
-                ? "Enter the notification subject and body."
-                : selectedTransport.requiresDestination && !destination.trim()
-                  ? "This transport requires a destination."
-                  : "The server will revalidate release, scope, audience, artifacts, and transport configuration.";
+          : !clientPackageArtifactGate.isComplete
+            ? clientPackageArtifactGate.disabledReason ?? "The released client package is incomplete."
+            : selectedArtifactIds.length === 0
+              ? "Select at least one immutable artifact."
+              : !distributionId.trim()
+                ? "Enter a durable distribution identity."
+                : !subject.trim() || !body.trim()
+                  ? "Enter the notification subject and body."
+                  : selectedTransport.requiresDestination && !destination.trim()
+                    ? "This transport requires a destination."
+                    : "The server will revalidate release, scope, audience, artifacts, and transport configuration.";
   const canQueue = released
     && transports.phase === "ready"
     && transports.data.canQueueDelivery
     && selectedTransport?.isReady === true
+    && clientPackageArtifactGate.isComplete
     && selectedArtifactIds.length > 0
     && Boolean(distributionId.trim() && subject.trim() && body.trim())
     && (!selectedTransport.requiresDestination || Boolean(destination.trim()));
   const canIssueGrant = released
     && transports.phase === "ready"
     && transports.data.canIssueAccessGrant
+    && clientPackageArtifactGate.isComplete
     && selectedArtifactIds.length > 0;
   const issueGrantReason = !released
     ? "Only a Released run can issue recipient access."
@@ -1332,7 +1368,9 @@ function DistributionPanel({
       ? transports.detail ?? "The server distribution capability catalog is unavailable."
       : !transports.data.canIssueAccessGrant
         ? transports.data.actionDisabledReasonCode ?? "The server did not authorize access-grant issuance for this caller."
-        : "Select at least one immutable artifact.";
+        : !clientPackageArtifactGate.isComplete
+          ? clientPackageArtifactGate.disabledReason ?? "The released client package is incomplete."
+          : "Select at least one immutable artifact.";
 
   return (
     <Card className="panel-surface">

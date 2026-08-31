@@ -4,24 +4,24 @@
   "repositoryName": "Meridian-main",
   "status": "pass",
   "summary": {
-    "inventoryCount": 321,
+    "inventoryCount": 324,
     "findingCount": 0,
     "bySurface": {
       "agent-skills-compatible-hosts": 18,
       "claude": 46,
       "codex": 145,
-      "docs-ai": 41,
+      "docs-ai": 42,
       "github-actions": 2,
       "github-copilot": 44,
       "local-ai-maintenance-tools": 8,
-      "mcp": 12,
+      "mcp": 14,
       "reusable-prompts": 3,
       "root-assistant-compatibility": 2
     },
     "byKind": {
       "agent": 27,
       "agent-profile": 59,
-      "ai-doc": 41,
+      "ai-doc": 42,
       "ai-workflow": 1,
       "codex-tool": 9,
       "config": 3,
@@ -32,7 +32,7 @@
       "maintenance-script": 8,
       "mcp-prompt": 3,
       "mcp-resource": 3,
-      "mcp-tool": 6,
+      "mcp-tool": 8,
       "memory-index": 1,
       "openai-metadata": 36,
       "path-instruction": 5,
@@ -2477,6 +2477,14 @@
     {
       "surface": "docs-ai",
       "kind": "ai-doc",
+      "name": "ai-systems-inventory.md",
+      "path": "docs/ai/ai-systems-inventory.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
       "name": "assistant-workflow-contract.md",
       "path": "docs/ai/assistant-workflow-contract.md",
       "expected_docs": [],
@@ -3453,6 +3461,22 @@
       "kind": "mcp-tool",
       "name": "RepoEditTools.cs",
       "path": "src/Meridian.Mcp/Tools/RepoEditTools.cs",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "mcp",
+      "kind": "mcp-tool",
+      "name": "ToolProcessExecution.cs",
+      "path": "src/Meridian.Mcp/Tools/ToolProcessExecution.cs",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "mcp",
+      "kind": "mcp-tool",
+      "name": "ToolProcessRunner.cs",
+      "path": "src/Meridian.Mcp/Tools/ToolProcessRunner.cs",
       "expected_docs": [],
       "alternate_markers": []
     },

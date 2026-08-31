@@ -101,6 +101,128 @@ public sealed class PendingOperationsQueuePersistenceTests : IDisposable
     }
 
     [Fact]
+    public async Task ProcessAllAsync_QuarantinesLegacyReconciliationMutationWithoutReplay()
+    {
+        // Reconciliation mutations must execute only while the initiating API session is active.
+        // Even an accidentally re-registered handler must not issue the retired mutation under
+        // the next signed-in user's credentials.
+        var quarantinedAt = new DateTimeOffset(2026, 7, 24, 16, 30, 0, TimeSpan.Zero);
+        var service = new PendingOperationsQueueService(() => quarantinedAt);
+        var handlerCalled = false;
+        service.RegisterHandler("reconciliation.resolve-break", _ =>
+        {
+            handlerCalled = true;
+            return Task.CompletedTask;
+        });
+        service.Enqueue(new PendingOperation
+        {
+            Id = "legacy-resolve-10",
+            OperationType = "reconciliation.resolve-break",
+            Payload = new ReviewPayload("break-10", "resolve"),
+            CreatedAt = new DateTime(2026, 7, 23, 8, 0, 0, DateTimeKind.Utc)
+        });
+
+        await service.ProcessAllAsync();
+
+        handlerCalled.Should().BeFalse();
+        service.PendingCount.Should().Be(0);
+        service.QuarantinedCount.Should().Be(1);
+        service.GetQuarantinedOperations().Should().ContainSingle(record =>
+            record.OperationId == "legacy-resolve-10" &&
+            record.OperationType == "reconciliation.resolve-break" &&
+            record.QuarantinedAtUtc == quarantinedAt &&
+            record.ReasonCode == "retired-auth-context-sensitive-replay");
+    }
+
+    [Fact]
+    public async Task InitializeAsync_MigratesOnlyRetiredReconciliationTypesToPayloadFreeQuarantine()
+    {
+        var migratedAt = new DateTimeOffset(2026, 7, 24, 17, 0, 0, TimeSpan.Zero);
+        var createdAt = new DateTime(2026, 7, 22, 12, 0, 0, DateTimeKind.Utc);
+        await WriteLegacySnapshotAsync(
+            new PersistedPendingOperation
+            {
+                Id = "legacy-review-1",
+                OperationType = "reconciliation.review-break",
+                Payload = JsonSerializer.SerializeToElement(
+                    new ReviewPayload("retired-break-id", "retired-secret-note"),
+                    Meridian.Ui.Services.DesktopJsonOptions.Api),
+                CreatedAt = createdAt,
+                RetryCount = 2,
+                MaxRetries = 5
+            },
+            new PersistedPendingOperation
+            {
+                Id = "future-operation-1",
+                OperationType = "future.reconciliation-operation",
+                Payload = JsonSerializer.SerializeToElement(
+                    new ReviewPayload("future-break-id", "future-secret-note"),
+                    Meridian.Ui.Services.DesktopJsonOptions.Api),
+                CreatedAt = createdAt.AddMinutes(1),
+                RetryCount = 1,
+                MaxRetries = 7
+            });
+
+        var service = new PendingOperationsQueueService(() => migratedAt);
+        await service.InitializeAsync();
+
+        service.PendingCount.Should().Be(1, "unrelated unknown types remain durable for forward compatibility");
+        service.Peek()!.OperationType.Should().Be("future.reconciliation-operation");
+        var quarantined = service.GetQuarantinedOperations().Should().ContainSingle().Subject;
+        quarantined.OperationId.Should().Be("legacy-review-1");
+        quarantined.OperationType.Should().Be("reconciliation.review-break");
+        quarantined.CreatedAt.Should().Be(createdAt);
+        quarantined.RetryCount.Should().Be(2);
+        quarantined.MaxRetries.Should().Be(5);
+        quarantined.QuarantinedAtUtc.Should().Be(migratedAt);
+        quarantined.SourceEnvelopeVersion.Should().Be(1);
+
+        var migratedJson = await File.ReadAllTextAsync(_snapshotPath);
+        migratedJson.Should().NotContain("retired-break-id");
+        migratedJson.Should().NotContain("retired-secret-note");
+        migratedJson.Should().Contain("future-break-id");
+        migratedJson.Should().Contain("future-secret-note");
+        using var document = JsonDocument.Parse(migratedJson);
+        document.RootElement.GetProperty("version").GetInt32()
+            .Should().Be(PendingOperationsQueueService.CurrentEnvelopeVersion);
+        document.RootElement.GetProperty("quarantinedOperations")[0]
+            .TryGetProperty("payload", out _).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task InitializeAsync_RetiredOperationMigration_IsOneTimeAndIdempotent()
+    {
+        var createdAt = new DateTime(2026, 7, 22, 13, 0, 0, DateTimeKind.Utc);
+        var firstMigrationTime = new DateTimeOffset(2026, 7, 24, 18, 0, 0, TimeSpan.Zero);
+        await WriteLegacySnapshotAsync(new PersistedPendingOperation
+        {
+            Id = "legacy-resolve-idempotent",
+            OperationType = "reconciliation.resolve-break",
+            Payload = JsonSerializer.SerializeToElement(
+                new ReviewPayload("break-idempotent", "sensitive-resolution"),
+                Meridian.Ui.Services.DesktopJsonOptions.Api),
+            CreatedAt = createdAt
+        });
+
+        var first = new PendingOperationsQueueService(() => firstMigrationTime);
+        await first.InitializeAsync();
+        var migratedSnapshot = await File.ReadAllTextAsync(_snapshotPath);
+
+        var second = new PendingOperationsQueueService(
+            () => firstMigrationTime.AddDays(1));
+        await second.InitializeAsync();
+        var restoredSnapshot = await File.ReadAllTextAsync(_snapshotPath);
+
+        second.PendingCount.Should().Be(0);
+        var record = second.GetQuarantinedOperations().Should().ContainSingle().Subject;
+        record.OperationId.Should().Be("legacy-resolve-idempotent");
+        record.QuarantinedAtUtc.Should().Be(firstMigrationTime);
+        restoredSnapshot.Should().Be(
+            migratedSnapshot,
+            "a migrated version-2 snapshot must not be rewritten or produce another quarantine record");
+    }
+
+    [Fact]
     public async Task ProcessAllAsync_ReplaysRestoredJsonPayloadThroughHandler()
     {
         var writer = new PendingOperationsQueueService();
@@ -196,5 +318,19 @@ public sealed class PendingOperationsQueuePersistenceTests : IDisposable
         var reader = new PendingOperationsQueueService();
         await reader.InitializeAsync();
         reader.PendingCount.Should().Be(1);
+    }
+
+    private async Task WriteLegacySnapshotAsync(params PersistedPendingOperation[] operations)
+    {
+        var envelope = new PendingOperationsEnvelope
+        {
+            Version = 1,
+            SavedAt = new DateTimeOffset(2026, 7, 23, 0, 0, 0, TimeSpan.Zero),
+            Operations = operations.ToList()
+        };
+        var json = JsonSerializer.Serialize(
+            envelope,
+            Meridian.Ui.Services.DesktopJsonOptions.PrettyPrint);
+        await File.WriteAllTextAsync(_snapshotPath, json);
     }
 }

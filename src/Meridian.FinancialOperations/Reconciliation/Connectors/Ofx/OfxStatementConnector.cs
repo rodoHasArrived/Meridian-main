@@ -1,5 +1,5 @@
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors.Ofx;
 
@@ -9,8 +9,12 @@ namespace Meridian.FinancialOperations.Reconciliation.Connectors.Ofx;
 /// Entries are flattened to tag pseudo-columns and mapped through the same declarative
 /// profiles as CSV, so operators can remap or reclassify OFX activity without a release.
 /// </summary>
-public sealed class OfxStatementConnector(StatementMappingProfileCatalog catalog) : IStatementConnector
+public sealed class OfxStatementConnector(
+    StatementMappingProfileCatalog catalog,
+    StatementIngressLimits? ingressLimits = null) : IStatementConnector
 {
+    private readonly StatementIngressLimits _limits = ingressLimits ?? StatementIngressLimits.Default;
+
     public const string ConnectorId = "ofx";
 
     public StatementConnectorDescriptor Descriptor { get; } = new(
@@ -39,6 +43,17 @@ public sealed class OfxStatementConnector(StatementMappingProfileCatalog catalog
         var profileId = string.IsNullOrWhiteSpace(document.MappingProfileId)
             ? Descriptor.DefaultProfileId!
             : document.MappingProfileId.Trim();
+        // Refuse before decoding, as camt.053, BAI2 and IB Flex already do. StatementImportService
+        // checks this cap too, but ParseAsync is public connector API reached directly by in-process
+        // callers and by these tests, and the decode below materializes the whole payload as a UTF-16
+        // string: a document whose single leaf is enormous stays under the node, entry and depth bounds
+        // while allocating twice its byte size. The bound has to be checked where the allocation is.
+        if (document.Content.Length > _limits.MaxDocumentBytes)
+        {
+            issues.Add(_limits.DocumentTooLarge(document.Content.Length));
+            return EmptyResult(profileId, issues);
+        }
+
         var profile = await catalog.FindAsync(profileId, ct).ConfigureAwait(false);
         if (profile is null)
         {
@@ -61,7 +76,32 @@ public sealed class OfxStatementConnector(StatementMappingProfileCatalog catalog
             return EmptyResult(profileId, issues);
         }
 
-        var ofx = OfxDocumentParser.Parse(content);
+        // Bounded here rather than after the parse returns: the node tree and the flattened entry
+        // dictionaries are both built by Parse, so a check on the result would run after the allocation
+        // it exists to prevent. An entry-heavy OFX file fits well inside the 20 MiB document cap.
+        //
+        // The aggregate budget is MaxDocumentEntries, not MaxRecords. Parse flattens one dictionary per
+        // aggregate and StatementRecordMapper then rejects some of them, so aggregates and retained
+        // records are different counts - passing MaxRecords here refused a document whose canonical rows
+        // sat inside the operator's allowance because its rejected aggregates did not. The record cap is
+        // charged where a record is appended, below.
+        var ofx = OfxDocumentParser.Parse(
+            content,
+            _limits.MaxDocumentEntries,
+            _limits.MaxNestingDepth,
+            _limits.MaxParseNodes,
+            out var bound);
+        if (bound != OfxParseBound.None)
+        {
+            issues.Add(bound switch
+            {
+                OfxParseBound.NestingTooDeep => _limits.NestingTooDeep(),
+                OfxParseBound.TooManyNodes => _limits.TooManyNodes(),
+                _ => _limits.TooManyEntries(),
+            });
+            return EmptyResult(profileId, issues);
+        }
+
         if (ofx.Entries.Count == 0)
         {
             issues.Add(StatementParseIssue.Warning(
@@ -77,7 +117,7 @@ public sealed class OfxStatementConnector(StatementMappingProfileCatalog catalog
             .ToArray();
         var columnMappings = StatementColumnConfidenceScorer.MapColumns(detectedColumns, profile);
         var fingerprint = new StatementFormatFingerprint(
-            Convert.ToHexString(SHA256.HashData(document.Content.Span)).ToLowerInvariant(),
+            Sha256Digest.Compute(document.Content.Span),
             detectedColumns.Select(static tag => tag.ToLowerInvariant()).ToArray(),
             "ofx");
 
@@ -110,7 +150,25 @@ public sealed class OfxStatementConnector(StatementMappingProfileCatalog catalog
                 mappedValues, profile, activityCodeMap, index + 1, issues, reportedUnknownCodes);
             if (record is not null)
             {
+                // Charged on the append, on what the entry actually produced. MapRecord returns null for
+                // an entry it rejects, so an aggregate count could only ever over-charge.
+                if (records.Count >= _limits.MaxRecords)
+                {
+                    issues.Add(_limits.TooManyRecords());
+                    return EmptyResult(profileId, issues);
+                }
+
                 records.Add(record);
+            }
+
+            // Entry count is bounded by MaxDocumentEntries inside OfxDocumentParser.Parse, so this loop
+            // runs a bounded number of times - but each pass can retain up to two diagnostics for a row
+            // that produces no record, so the issue list is bounded at a multiple of that allowance
+            // rather than by it. Diagnostics are retained evidence and get their own ceiling.
+            if (issues.Count > _limits.MaxDiagnostics)
+            {
+                issues.Add(_limits.TooManyDiagnostics());
+                break;
             }
         }
 

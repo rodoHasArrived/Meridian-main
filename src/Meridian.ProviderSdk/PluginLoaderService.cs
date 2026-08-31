@@ -21,6 +21,12 @@ public sealed class PluginLoadResult
 
     /// <summary>Names of types (fully qualified) registered as data sources from this plugin.</summary>
     public IReadOnlyList<string> RegisteredTypes { get; init; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Transactional registry outcome when the assembly loaded far enough to be discovered.
+    /// Null for assembly-load failures.
+    /// </summary>
+    public DataSourceAssemblyRegistrationResult? Registration { get; init; }
 }
 
 /// <summary>
@@ -127,18 +133,10 @@ public sealed class PluginLoaderService : IPluginLoaderService
             };
         }
 
-        // Collect [DataSource]-decorated types; handle broken assemblies gracefully.
-        var dataSourceTypes = GetDataSourceTypes(assembly, assemblyPath);
-
-        if (dataSourceTypes.Count == 0)
-        {
-            return new PluginLoadResult { AssemblyPath = assemblyPath, Success = true };
-        }
-
-        // Register the assembly once — DataSourceRegistry skips duplicates by ID.
+        DataSourceAssemblyRegistrationResult registration;
         try
         {
-            _registry.DiscoverFromAssemblies(assembly);
+            registration = _registry.DiscoverFromAssemblyWithResult(assembly);
         }
         catch (Exception ex)
         {
@@ -151,44 +149,44 @@ public sealed class PluginLoaderService : IPluginLoaderService
             };
         }
 
-        var names = dataSourceTypes.Select(t => t.FullName ?? t.Name).ToList().AsReadOnly();
-        _logger.LogDebug("Registered types from {AssemblyPath}: {Types}", assemblyPath, names);
+        if (registration.HasConflicts)
+        {
+            var conflictingIdentities = registration.Outcomes
+                .Where(static outcome =>
+                    outcome.Disposition == DataSourceRegistrationDisposition.Conflict)
+                .Select(static outcome =>
+                    $"{outcome.Candidate.Id}[{string.Join("|", outcome.Candidate.CapabilityKeys)}]:{outcome.Candidate.ImplementationType.FullName}")
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+            return new PluginLoadResult
+            {
+                AssemblyPath = assemblyPath,
+                Success = false,
+                ErrorMessage =
+                    $"Registry conflict; the plugin was not registered: {string.Join(", ", conflictingIdentities)}",
+                Registration = registration
+            };
+        }
+
+        var names = registration.Outcomes
+            .Where(static outcome =>
+                outcome.Disposition == DataSourceRegistrationDisposition.Added)
+            .Select(static outcome =>
+                outcome.Candidate.ImplementationType.FullName
+                ?? outcome.Candidate.ImplementationType.Name)
+            .ToArray();
+        _logger.LogDebug(
+            "Plugin registry outcomes for {AssemblyPath}: {AddedCount} added, {DuplicateCount} exact duplicate(s)",
+            assemblyPath,
+            registration.AddedCount,
+            registration.DuplicateCount);
 
         return new PluginLoadResult
         {
             AssemblyPath = assemblyPath,
             Success = true,
-            RegisteredTypes = names
+            RegisteredTypes = names,
+            Registration = registration
         };
-    }
-
-    private List<Type> GetDataSourceTypes(Assembly assembly, string assemblyPath)
-    {
-        IEnumerable<Type> types;
-        try
-        {
-            types = assembly.GetExportedTypes();
-        }
-        catch (ReflectionTypeLoadException ex)
-        {
-            _logger.LogWarning(
-                "ReflectionTypeLoadException scanning {AssemblyPath} — {Count} loader exception(s). Proceeding with partial type list.",
-                assemblyPath,
-                ex.LoaderExceptions?.Length ?? 0);
-
-            foreach (var loaderEx in ex.LoaderExceptions ?? [])
-            {
-                _logger.LogDebug("  Loader exception: {Message}", loaderEx?.Message);
-            }
-
-            types = ex.Types.Where(t => t is not null)!;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Could not enumerate exported types in {AssemblyPath}", assemblyPath);
-            return [];
-        }
-
-        return types.Where(t => t.IsDataSource()).ToList();
     }
 }

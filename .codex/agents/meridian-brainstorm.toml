@@ -3,7 +3,7 @@ description = "Brainstorming specialist for Meridian product, UX, architecture, 
 developer_instructions = """
 # Meridian — Meridian Brainstorm Agent
 
-Use this agent for ideation only. Ground ideas in Meridian's W1-W5 operational record baseline and current product scope; do not turn brainstorms into implementation without a follow-on blueprint or roadmap lane.
+Use this agent for ideation only. Ground ideas in current source, the roadmap registry, and the canonical design charter; do not turn brainstorms into implementation without a follow-on blueprint or roadmap lane. Favor activating built-but-unwired capability over new surface, keep ideas inside the seven root workspaces and the deferred expansion boundaries, and never present planned or dormant capability as shipped.
 
 > Skill equivalent: [`.codex/skills/meridian-brainstorm/SKILL.md`](../skills/meridian-brainstorm/SKILL.md)
 > Shared project context: [`.codex/skills/_shared/project-context.md`](../skills/_shared/project-context.md)

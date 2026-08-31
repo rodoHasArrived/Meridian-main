@@ -2,14 +2,17 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Identity.Auth;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Identity;
+using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Robinhood;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -18,6 +21,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
 using Xunit;
 
 namespace Meridian.Tests.Ui;
@@ -31,6 +35,8 @@ public sealed class ExecutionGovernanceEndpointsTests
     public async Task ControlsEndpoints_UpdateCircuitBreakerAndExposeAuditTrail()
     {
         var tempRoot = CreateTempRoot();
+        var oms = Substitute.For<IOrderManager>();
+        oms.GetOpenOrders().Returns(Array.Empty<OrderState>());
 
         await using var app = await CreateAppAsync(services =>
         {
@@ -38,6 +44,7 @@ public sealed class ExecutionGovernanceEndpointsTests
             services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")));
             services.AddSingleton<ExecutionAuditTrailService>();
             services.AddSingleton<ExecutionOperatorControlService>();
+            services.AddSingleton(oms);
         });
 
         var client = app.GetTestClient();
@@ -48,6 +55,8 @@ public sealed class ExecutionGovernanceEndpointsTests
             JsonContent(new { isOpen = true, reason = "manual halt" }));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await oms.Received(1).CancelAllAsync(Arg.Any<CancellationToken>());
 
         var controlsResponse = await client.GetAsync("/api/execution/controls");
         controlsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -64,6 +73,10 @@ public sealed class ExecutionGovernanceEndpointsTests
         auditEntries!.Should().Contain(entry =>
             entry.Action == "CircuitBreakerOpened" &&
             entry.Actor == "ops-user");
+        auditEntries.Should().Contain(entry =>
+            entry.Action == "CircuitBreakerCancelAll" &&
+            entry.Outcome == "Completed",
+            because: "opening the breaker is the kill switch and must sweep the open book with an audited outcome");
     }
 
     [Fact]
@@ -294,6 +307,7 @@ public sealed class ExecutionGovernanceEndpointsTests
             services.AddSingleton<ExecutionOperatorControlService>();
             services.AddSingleton<IPortfolioState, EmptyPortfolioState>();
             services.AddSingleton<ILiveOrderReadinessGate>(_ => new ApprovedLiveOrderReadinessGate(ApprovedLiveRunId));
+            RegisterFundAccountScope(services, LiveFundAccountId);
             services.AddSingleton(sp => new AlpacaBrokerageGateway(
                 sp.GetRequiredService<IHttpClientFactory>(),
                 new Meridian.Core.Config.AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret"),
@@ -370,6 +384,7 @@ public sealed class ExecutionGovernanceEndpointsTests
             services.AddSingleton<ExecutionOperatorControlService>();
             services.AddSingleton<IPortfolioState, EmptyPortfolioState>();
             services.AddSingleton<ILiveOrderReadinessGate>(_ => new ApprovedLiveOrderReadinessGate(ApprovedLiveRunId));
+            RegisterFundAccountScope(services, LiveFundAccountId);
             services.AddSingleton(sp => new RobinhoodBrokerageGateway(
                 sp.GetRequiredService<IHttpClientFactory>(),
                 NullLogger<RobinhoodBrokerageGateway>.Instance,
@@ -534,7 +549,7 @@ public sealed class ExecutionGovernanceEndpointsTests
 
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
-        UserPermission permissions = UserPermission.ExecuteTrades | UserPermission.ManageOrders)
+        UserPermission permissions = UserPermission.ViewTrades | UserPermission.ExecuteTrades | UserPermission.ManageOrders)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -576,6 +591,13 @@ public sealed class ExecutionGovernanceEndpointsTests
         {
             RequireValidationArtifactsForOrderPlacement = false
         };
+    }
+
+    private static void RegisterFundAccountScope(IServiceCollection services, Guid fundAccountId)
+    {
+        services.AddSingleton<IAccountQueryService>(new StubAccountQueryService(fundAccountId));
+        services.AddSingleton<IScopedAuthorizationService>(
+            new StubScopedAuthorizationService(fundAccountId));
     }
 
     private static JsonSerializerOptions JsonOptions() => new()
@@ -703,5 +725,138 @@ public sealed class ExecutionGovernanceEndpointsTests
 
             return Task.FromResult(decision);
         }
+    }
+
+    private sealed class StubScopedAuthorizationService(Guid allowedAccountId) : IScopedAuthorizationService
+    {
+        public Task<ScopedAuthorizationDecisionDto> AuthorizeAsync(
+            string actor,
+            UserPermission requiredPermission,
+            AccessScopeKindDto scopeKind,
+            Guid? scopeId,
+            UserPermission globalPermissions,
+            CancellationToken ct = default)
+        {
+            var allowed = scopeKind == AccessScopeKindDto.Account
+                && scopeId == allowedAccountId
+                && globalPermissions.HasFlag(requiredPermission);
+
+            return Task.FromResult(new ScopedAuthorizationDecisionDto(
+                allowed,
+                actor,
+                requiredPermission,
+                scopeKind,
+                scopeId,
+                allowed ? "Matched test account scope." : "No matching test account scope."));
+        }
+    }
+
+    private sealed class StubAccountQueryService(Guid accountId) : IAccountQueryService
+    {
+        private readonly AccountSummaryDto _account = new(
+            accountId,
+            AccountTypeDto.Brokerage,
+            EntityId: null,
+            FundId: null,
+            SleeveId: null,
+            VehicleId: null,
+            AccountCode: "TEST-BROKERAGE",
+            DisplayName: "Test Brokerage Account",
+            BaseCurrency: "USD",
+            Institution: "Test Broker",
+            IsActive: true,
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            EffectiveTo: null,
+            PortfolioId: null,
+            LedgerReference: null,
+            StrategyId: null,
+            RunId: null);
+
+        public Task<AccountSummaryDto?> GetAccountAsync(
+            Guid requestedAccountId,
+            CancellationToken ct = default)
+            => Task.FromResult(requestedAccountId == _account.AccountId ? _account : null);
+
+        public Task<IReadOnlyList<AccountSummaryDto>> ListAccountsAsync(
+            AccountTypeDto? accountType,
+            bool? isActive,
+            string? currency,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<AccountSummaryDto>>([_account]);
+
+        public Task<FundAccountsDto> GetFundAccountsAsync(Guid fundId, CancellationToken ct = default)
+            => Task.FromResult(new FundAccountsDto(fundId, [], [], [_account], []));
+
+        public Task<IReadOnlyList<AccountSettlementInstructionView>> ListSettlementInstructionsAsync(
+            Guid? accountId = null,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<AccountSettlementInstructionView>>([]);
+
+        public Task<IReadOnlyList<AccountBalanceSnapshotDto>> GetBalanceTimelineAsync(
+            Guid accountId,
+            DateOnly? fromDate = null,
+            DateOnly? toDate = null,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<AccountBalanceSnapshotDto>>([]);
+
+        public Task<AccountBalanceSnapshotDto?> GetLatestBalanceSnapshotAsync(
+            Guid accountId,
+            CancellationToken ct = default)
+            => Task.FromResult<AccountBalanceSnapshotDto?>(null);
+
+        public Task<IReadOnlyList<AccountOpenBreakView>> ListOpenBreaksAsync(
+            Guid? accountId = null,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<AccountOpenBreakView>>([]);
+
+        public Task<IReadOnlyList<CustodianPositionLineDto>> GetCustodianPositionsAsync(
+            Guid accountId,
+            DateOnly asOfDate,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<CustodianPositionLineDto>>([]);
+
+        public Task<IReadOnlyList<BankStatementLineDto>> GetBankStatementLinesAsync(
+            Guid accountId,
+            DateOnly? fromDate = null,
+            DateOnly? toDate = null,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<BankStatementLineDto>>([]);
+
+        public Task<IReadOnlyList<AccountReconciliationRunDto>> GetReconciliationRunsAsync(
+            Guid accountId,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<AccountReconciliationRunDto>>([]);
+
+        public Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsAsync(
+            Guid reconciliationRunId,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<AccountReconciliationResultDto>>([]);
+
+        public Task<IReadOnlyList<AccountSyncHistoryEntryDto>> GetSyncHistoryAsync(
+            Guid accountId,
+            string? capability = null,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<AccountSyncHistoryEntryDto>>([]);
+
+        public Task<AccountSyncHistoryEntryDto?> GetLatestSyncHistoryAsync(
+            Guid accountId,
+            string? capability = null,
+            CancellationToken ct = default)
+            => Task.FromResult<AccountSyncHistoryEntryDto?>(null);
+
+        public Task<AccountReadinessSnapshotDto?> GetReadinessAsync(
+            Guid accountId,
+            CancellationToken ct = default)
+            => Task.FromResult<AccountReadinessSnapshotDto?>(null);
+
+        public Task<IReadOnlyList<MarginSnapshotDto>> GetMarginSnapshotsAsync(
+            Guid accountId,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<MarginSnapshotDto>>([]);
+
+        public Task<MarginSnapshotDto?> GetLatestMarginSnapshotAsync(
+            Guid accountId,
+            CancellationToken ct = default)
+            => Task.FromResult<MarginSnapshotDto?>(null);
     }
 }

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.DirectLending;
 using Meridian.Identity.Auth;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.DirectLending;
 using Meridian.Ui.Shared.Serialization;
 using Meridian.Ui.Shared.Services;
@@ -1099,7 +1100,7 @@ public static class DirectLendingEndpoints
         })
         .RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending);
 
-        app.MapGet("/api/loans/portfolio", async (HttpContext context) =>
+        app.MapGet(UiApiRoutes.DirectLendingPortfolioSummary, async (HttpContext context) =>
         {
             var service = ResolveService(context);
             return service is null

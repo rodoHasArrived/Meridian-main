@@ -56,7 +56,7 @@ const data: AccountingWorkspaceResponse = {
 };
 
 async function renderScreen() {
-  const result = renderWithRouter(<ReportLibraryScreen data={data} />, { initialEntries: ["/reporting/library"] });
+  const result = renderWithRouter(<ReportLibraryScreen data={data.reporting} />, { initialEntries: ["/reporting/library"] });
   await waitForAsyncEffects();
   return result;
 }

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -84,7 +85,7 @@ public static class IBEndpoints
                 }
             }, jsonOptions);
         })
-        .WithName("GetIBStatus")
+        .WithName("GetIBStatus").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .Produces(200);
 
         // IB error code reference - returns all known error codes with descriptions
@@ -106,7 +107,7 @@ public static class IBEndpoints
                 documentation = "https://interactivebrokers.github.io/tws-api/message_codes.html"
             }, jsonOptions);
         })
-        .WithName("GetIBErrorCodes")
+        .WithName("GetIBErrorCodes").DeclareOpenRead("Static Interactive Brokers error-code reference published by the vendor; carries no deployment state.")
         .Produces(200);
 
         // IB API limits reference - returns rate limits and constraints
@@ -143,7 +144,7 @@ public static class IBEndpoints
                 }
             }, jsonOptions);
         })
-        .WithName("GetIBLimits")
+        .WithName("GetIBLimits").DeclareOpenRead("Static Interactive Brokers API limit constants published by the vendor; carries no deployment state.")
         .Produces(200);
     }
 

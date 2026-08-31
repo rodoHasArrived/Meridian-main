@@ -1,4 +1,4 @@
-import type { SessionInfo, WorkspaceSummary } from "@/types";
+import type { ProductMaturity, SessionInfo, WorkspaceSummary } from "@/types";
 
 export type WorkspaceHeaderBadgeVariant =
   | "default"
@@ -82,10 +82,10 @@ export function buildWorkspaceHeaderViewModel({
     description: workspace.description,
     badges: [
       {
-        id: "workspace-status",
-        label: workspace.status,
-        variant: statusVariant(workspace.status),
-        ariaLabel: `${workspace.label} workspace status ${workspace.status}`
+        id: "workspace-maturity",
+        label: workspace.maturity,
+        variant: maturityVariant(workspace.maturity),
+        ariaLabel: `${workspace.label} product maturity ${workspace.maturity}`
       }
     ],
     metaItems: [],
@@ -123,18 +123,13 @@ export function buildWorkspaceHeaderViewModel({
   };
 }
 
-function statusVariant(status: string): WorkspaceHeaderBadgeVariant {
-  switch (status.toLowerCase()) {
-    case "live":
-      return "success";
-    case "paper":
-      return "paper";
-    case "review":
+function maturityVariant(maturity: ProductMaturity): WorkspaceHeaderBadgeVariant {
+  switch (maturity) {
+    case "Preview":
       return "warning";
-    case "setup":
-    case "preview":
+    case "Setup":
       return "outline";
-    default:
+    case "Available":
       return "default";
   }
 }

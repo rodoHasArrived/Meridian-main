@@ -1,5 +1,6 @@
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.Ledger;
 
@@ -83,11 +84,19 @@ internal static class LedgerJournalConstruction
         IReadOnlyDictionary<string, string>? dimensions)
         => dimensions is null || dimensions.Count == 0
             ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            : dimensions
-                .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
-                .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(static pair => pair.Key.Trim(), static pair => pair.Value.Trim(), StringComparer.OrdinalIgnoreCase);
+            : NormalizeExternalGlDimensionsCore(dimensions);
 
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    private static IReadOnlyDictionary<string, string> NormalizeExternalGlDimensionsCore(
+        IReadOnlyDictionary<string, string> dimensions)
+    {
+        var normalized = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var pair in dimensions
+                     .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
+                     .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            normalized[pair.Key.Trim()] = pair.Value.Trim();
+        }
+
+        return normalized;
+    }
 }

@@ -1,6 +1,14 @@
 # Security Master Passport Workbench — Governed Write Blueprint
 
-> **Status:** Proposed (blueprint) · **Created:** 2026-06-26 · **Owner lane:** Data Confidence and Validation / Accounting and Ledger
+**Status:** Largely implemented — Phases 1–4 shipped, **including the browser passport editor**
+(`security-passport-editor.tsx` + view model, launcher, coverage drill-through, and tests — do not
+rebuild it). Open: the remaining Economics/Venues/History read tabs, restatement follow-ons, full
+lifecycle integration tests, and the ADR record (see the `[~]` items in the Implementation Checklist)
+**Owner:** Data Confidence and Validation / Accounting and Ledger
+**Reviewed:** 2026-08-01
+**Registered in:** [`docs/engineering/blueprints/README.md`](../engineering/blueprints/README.md).
+
+> **Created:** 2026-06-26 · **Owner lane:** Data Confidence and Validation / Accounting and Ledger
 > **Roadmap anchors:** W5-MASSET-001 (multi-asset reference-data workbench — read-model slice complete per `docs/product/implementation-todo-list.md`; this blueprint is the deferred write-surface follow-on), W4-RPT-001 (governed report-pack restatement lifecycle)
 > **Depth:** full blueprint · **Source:** brainstorm 2026-06-26 (write-first reframe)
 

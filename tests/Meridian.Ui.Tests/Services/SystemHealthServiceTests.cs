@@ -6,6 +6,7 @@ namespace Meridian.Ui.Tests.Services;
 /// <summary>
 /// Tests for <see cref="SystemHealthService"/> functionality.
 /// </summary>
+[Collection("ApiClientService singleton serial")]
 public sealed class SystemHealthServiceTests
 {
     [Fact]
@@ -175,6 +176,19 @@ public sealed class SystemHealthServiceTests
 
         // Assert
         await act.Should().ThrowAsync<Exception>();
+    }
+
+    [Fact]
+    public async Task GenerateDiagnosticBundleAsync_CancelledTokenAndNullLegacyClient_ThrowsOperationCanceledException()
+    {
+        // A compatibility client can return null without honoring cancellation.
+        var service = new SystemHealthService(new NullSystemHealthApiClient());
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        Func<Task> act = () => service.GenerateDiagnosticBundleAsync(cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
     }
 
     [Fact]
@@ -352,13 +366,11 @@ public sealed class SystemHealthServiceTests
     {
         public Task<T?> GetAsync<T>(string endpoint, CancellationToken ct = default) where T : class
         {
-            ct.ThrowIfCancellationRequested();
             return Task.FromResult<T?>(null);
         }
 
         public Task<T?> PostAsync<T>(string endpoint, object? body = null, CancellationToken ct = default) where T : class
         {
-            ct.ThrowIfCancellationRequested();
             return Task.FromResult<T?>(null);
         }
     }

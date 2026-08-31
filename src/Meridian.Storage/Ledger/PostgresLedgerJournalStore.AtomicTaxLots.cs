@@ -4,6 +4,7 @@ using Meridian.Contracts.AssetOperations;
 using Meridian.Ledger;
 using Npgsql;
 using NpgsqlTypes;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Storage.Ledger;
 
@@ -790,7 +791,11 @@ public sealed partial class PostgresLedgerJournalStore
                    effective_date,
                    rationale,
                    created_at,
-                   updated_at
+                   updated_at,
+                   wash_sale_enabled,
+                   wash_sale_window_days,
+                   wash_sale_scope,
+                   wash_sale_effective_date
             from {Qualified("tax_lot_policies")}
             where ledger_book_id = @ledger_book_id
               and account_name = @account_name
@@ -1221,7 +1226,7 @@ public sealed partial class PostgresLedgerJournalStore
         if (assetAccounts.Length != 1)
         {
             throw new LedgerValidationException(
-                "Atomic disposal selections must resolve to one exact asset account.");
+                "Atomic tax-lot mutations must resolve to one exact asset account.");
         }
 
         var expectedCostBasis = mutations.Sum(static mutation => mutation.CostBasis);

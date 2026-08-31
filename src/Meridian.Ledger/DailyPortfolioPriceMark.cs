@@ -1,3 +1,5 @@
+using Meridian.Contracts.Operations;
+
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -33,7 +35,8 @@ public sealed record DailyPortfolioPriceMark
         decimal? PriorCarryingValue = null,
         string? CarryingValueSource = null,
         DateTimeOffset? CarryingValueCapturedAtUtc = null,
-        string? CarryingValueEvidenceReference = null)
+        string? CarryingValueEvidenceReference = null,
+        DataProvenance Provenance = DataProvenance.Real)
     {
         if (string.IsNullOrWhiteSpace(Symbol))
             throw new ArgumentException("Symbol must not be null or whitespace.", nameof(Symbol));
@@ -75,6 +78,7 @@ public sealed record DailyPortfolioPriceMark
         this.CarryingValueEvidenceReference = string.IsNullOrWhiteSpace(CarryingValueEvidenceReference)
             ? null
             : CarryingValueEvidenceReference.Trim();
+        this.Provenance = Provenance;
     }
 
     public string Symbol { get; }
@@ -118,4 +122,12 @@ public sealed record DailyPortfolioPriceMark
     public DateTimeOffset? CarryingValueCapturedAtUtc { get; }
 
     public string? CarryingValueEvidenceReference { get; }
+
+    /// <summary>
+    /// Origin of the mark price. Anything other than <see cref="DataProvenance.Real"/> means the
+    /// figure was fabricated rather than observed, and must be carried outward — onto the valuation
+    /// line, the journal draft, and every report that cites it — so it is never mistaken for a real
+    /// market price.
+    /// </summary>
+    public DataProvenance Provenance { get; }
 }

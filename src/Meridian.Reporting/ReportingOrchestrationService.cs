@@ -1,15 +1,19 @@
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Collections.Immutable;
-using System.Security.Cryptography;
-using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Reporting;
 
 public interface IReportingOrchestrationService
 {
     Task<ReportingOutputManifest> ExecuteAsync(ReportingJobContract contract, CancellationToken cancellationToken);
+
+    [Obsolete(
+        "Due-schedule discovery and execution is owned by the host reporting-schedule adapter. Call ExecuteAsync only with its certified ReportingJobContract.",
+        error: false)]
     Task<IReadOnlyList<ReportingOutputManifest>> ExecuteDueSchedulesAsync(IEnumerable<ReportingScheduleContract> schedules, DateTimeOffset nowUtc, CancellationToken cancellationToken);
     ReportingOutputManifest? GetManifest(string runId);
     ReportingOutputManifest? GetManifest(string tenantId, string runId) =>
@@ -18,6 +22,23 @@ public interface IReportingOrchestrationService
             ? manifest
             : null;
     IReadOnlyList<ReportingRunAuditEntry> GetAudit(string runId);
+    IReadOnlyList<ReportingRunAuditEntry> GetAudit(string tenantId, string runId)
+    {
+        var scoped = GetManifest(tenantId, runId);
+        var unscoped = GetManifest(runId);
+        return scoped is not null
+               && unscoped is not null
+               && string.Equals(
+                   unscoped.OperationalScope?.TenantId,
+                   scoped.OperationalScope?.TenantId,
+                   StringComparison.Ordinal)
+               && string.Equals(
+                   unscoped.OperationalScope?.CompanyId,
+                   scoped.OperationalScope?.CompanyId,
+                   StringComparison.Ordinal)
+            ? GetAudit(runId)
+            : [];
+    }
     Task<bool> TransitionApprovalAsync(string runId, ReportingRunStatus target, string actor, string role, string notes, CancellationToken cancellationToken);
 }
 
@@ -62,6 +83,8 @@ public interface IReportingSectionRenderer
 
 public sealed class ReportingOrchestrationService : IReportingOrchestrationService
 {
+    private static readonly TimeSpan RunCreateLeaseDuration = TimeSpan.FromMinutes(15);
+    private static readonly TimeSpan RunCreateLeaseRenewalInterval = TimeSpan.FromMinutes(5);
     private static readonly FrozenDictionary<ReportingRunStatus, string[]> AllowedRoles = new Dictionary<ReportingRunStatus, string[]>
     {
         [ReportingRunStatus.InReview] = ["Reviewer", "OperationsLead"],
@@ -74,10 +97,11 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
     private readonly Func<DateTimeOffset> utcNow;
     private readonly IReportingRunStore? runStore;
     private readonly IReportingRunNotifier runNotifier;
-    private readonly ConcurrentDictionary<string, ReportingOutputManifest> manifests = new();
-    private readonly ConcurrentDictionary<string, object> auditLocks = new();
-    private readonly ConcurrentDictionary<string, List<ReportingRunAuditEntry>> audits = new();
+    private readonly ReportingOrchestrationRetentionOptions retentionOptions;
+    private readonly ConcurrentDictionary<string, RetainedRunState> retainedRuns = new();
+    private readonly KeyedRunLockManager runLifecycleLocks = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, byte> reservedRunIds = new(StringComparer.OrdinalIgnoreCase);
+    private long retentionSequence;
 
     public ReportingOrchestrationService(IReportingTemplateCatalog catalog)
         : this(catalog, new DeterministicReportingSectionRenderer(), () => DateTimeOffset.UtcNow)
@@ -102,12 +126,70 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         Func<DateTimeOffset> utcNow,
         IReportingRunStore? runStore,
         IReportingRunNotifier? runNotifier)
+        : this(catalog, renderer, utcNow, runStore, runNotifier, partnersCapitalSource: null)
+    {
+    }
+
+    public ReportingOrchestrationService(
+        IReportingTemplateCatalog catalog,
+        IReportingSectionRenderer renderer,
+        Func<DateTimeOffset> utcNow,
+        IReportingRunStore? runStore,
+        IReportingRunNotifier? runNotifier,
+        IReportingPartnersCapitalSource? partnersCapitalSource)
+        : this(
+            catalog,
+            renderer,
+            utcNow,
+            runStore,
+            runNotifier,
+            partnersCapitalSource,
+            new ReportingOrchestrationRetentionOptions())
+    {
+    }
+
+    public ReportingOrchestrationService(
+        IReportingTemplateCatalog catalog,
+        IReportingSectionRenderer renderer,
+        Func<DateTimeOffset> utcNow,
+        IReportingRunStore? runStore,
+        IReportingRunNotifier? runNotifier,
+        IReportingPartnersCapitalSource? partnersCapitalSource,
+        ReportingOrchestrationRetentionOptions retentionOptions)
     {
         this.catalog = catalog;
         this.renderer = renderer;
         this.utcNow = utcNow;
         this.runStore = runStore;
         this.runNotifier = runNotifier ?? NullReportingRunNotifier.Instance;
+        this.retentionOptions = retentionOptions
+            ?? throw new ArgumentNullException(nameof(retentionOptions));
+        if (retentionOptions.MaxRetainedTerminalRuns < 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(retentionOptions),
+                "The retained terminal run limit cannot be negative.");
+        }
+        // Retained for source and binary compatibility. Primary capital-account documents now use
+        // the exact checkpoint-bound LedgerFinancialReportPack captured during certification.
+        _ = partnersCapitalSource;
+    }
+
+    /// <summary>
+    /// Returns retention diagnostics without exposing mutable cache state.
+    /// </summary>
+    public ReportingOrchestrationRetentionSnapshot GetRetentionSnapshot()
+    {
+        var eligible = retainedRuns.Count(entry => IsEvictionEligible(
+            entry.Key,
+            entry.Value,
+            protectedKey: null));
+        return new ReportingOrchestrationRetentionSnapshot(
+            retainedRuns.Count,
+            eligible,
+            runLifecycleLocks.Count,
+            retentionOptions.MaxRetainedTerminalRuns,
+            runStore is not null);
     }
 
     public async Task<ReportingOutputManifest> ExecuteAsync(ReportingJobContract contract, CancellationToken cancellationToken)
@@ -122,10 +204,37 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
 
         var version = AllocateRunVersion(contract);
         var runId = version.RunId;
+        // A retry is recorded before any attempt has produced a manifest, and an audit entry cannot
+        // be appended to a run that is not retained yet. Retry notes are held here and flushed the
+        // moment the run first exists, ahead of that attempt's own entry, so the trail still reads
+        // in attempt order.
+        var pendingRetryAudits = new List<string>();
         Exception? lastError = null;
+        ActiveRunCreateClaim? createClaim = null;
+        CancellationTokenSource? createClaimHeartbeatStop = null;
+        Task? createClaimHeartbeat = null;
 
         try
         {
+            createClaim = await TryClaimCreateAsync(
+                    contract.OperationalScope?.TenantId,
+                    runId,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            if (createClaim?.ExistingManifest is { } existingManifest)
+            {
+                EnsureSameRunRequest(contract, version, existingManifest);
+                return existingManifest;
+            }
+            if (createClaim is not null)
+            {
+                createClaimHeartbeatStop = new CancellationTokenSource();
+                createClaimHeartbeat = MaintainRunCreateClaimLeaseAsync(
+                    runId,
+                    createClaim,
+                    createClaimHeartbeatStop.Token);
+            }
+
             await GuardReleasedRestatementAsync(contract, version, cancellationToken).ConfigureAwait(false);
 
             for (var attempt = 1; attempt <= contract.MaxRetries + 1; attempt++)
@@ -190,20 +299,45 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                         AuthoritativeSource: contract.AuthoritativeSource,
                         CertifiedDatasetRows: certifiedDatasetRows);
 
-                    manifests[ScopedKey(manifest.OperationalScope?.TenantId, runId)] = manifest;
+                    PublishManifest(manifest);
+                    FlushPendingRetryAudits(
+                        pendingRetryAudits,
+                        manifest.OperationalScope?.TenantId,
+                        runId,
+                        contract.RequestedBy);
                     AppendAudit(
                         manifest.OperationalScope?.TenantId,
                         runId,
                         "RunGenerated",
                         contract.RequestedBy,
                         $"trigger={contract.Trigger}; attempt={attempt}; runSeries={version.RunSeriesId}; runAttempt={version.RunAttemptOrdinal}; priorRun={version.PriorManifest?.RunId ?? "none"}; retryReason={manifest.RetryReason ?? "none"}; templateVersion={manifest.ResolvedTemplate?.Version.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "legacy-latest"}; readiness={manifest.Readiness?.Status.ToString() ?? "legacy"}; readinessEvidence={manifest.Readiness?.EvidenceHash ?? "none"}; sourceCheckpoint={manifest.AuthoritativeSource?.CheckpointId ?? "legacy"}; lineageSections={sections.Length}; reportWriterGrids={gridArtifacts.Length}; reportWriterDatasetSource={manifest.ReportWriterDatasetSourceId ?? "none"}; reportWriterDatasetRows={manifest.ReportWriterDatasetRowCount?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "n/a"}; renderedReportWriterRows={renderedReportWriterGrids.Sum(static grid => grid.Rows.Count)}; changedLines={reportWriterGridDiffs.Sum(static diff => diff.ChangedRowCount)}; addedLines={reportWriterGridDiffs.Sum(static diff => diff.AddedRowCount)}; removedLines={reportWriterGridDiffs.Sum(static diff => diff.RemovedRowCount)}");
-                    await PersistAsync(manifest, cancellationToken).ConfigureAwait(false);
+                    await ThrowIfRunCreateLeaseLostAsync(createClaimHeartbeat).ConfigureAwait(false);
+                    await PersistAsync(manifest, cancellationToken, createClaim).ConfigureAwait(false);
+                    createClaim = null;
                     return manifest;
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (Exception ex) when (ex is ReportingRunConcurrencyException
+                                               or ReportingRunCreateClaimException)
+                {
+                    var retained = LoadStoredRun(
+                        contract.OperationalScope?.TenantId,
+                        runId);
+                    if (retained is not null)
+                    {
+                        EnsureSameRunRequest(contract, version, retained.Manifest);
+                        return retained.Manifest;
+                    }
+
+                    throw;
                 }
                 catch (Exception ex) when (attempt <= contract.MaxRetries)
                 {
                     lastError = ex;
-                    AppendAudit(contract.OperationalScope?.TenantId, runId, "RunRetry", contract.RequestedBy, $"attempt={attempt}; runSeries={version.RunSeriesId}; runAttempt={version.RunAttemptOrdinal}; retryReason={NormalizeOptional(contract.RetryReason) ?? "none"}; error={ex.Message}");
+                    pendingRetryAudits.Add($"attempt={attempt}; runSeries={version.RunSeriesId}; runAttempt={version.RunAttemptOrdinal}; retryReason={NormalizeOptional(contract.RetryReason) ?? "none"}; error={ex.Message}");
                 }
                 catch (Exception ex)
                 {
@@ -240,95 +374,166 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                         CertifiedSnapshot: contract.CertifiedSnapshot,
                         AuthoritativeSource: contract.AuthoritativeSource,
                         CertifiedDatasetRows: FreezeCertifiedRows(contract));
-                    manifests[ScopedKey(failed.OperationalScope?.TenantId, runId)] = failed;
+                    PublishManifest(failed);
+                    FlushPendingRetryAudits(
+                        pendingRetryAudits,
+                        failed.OperationalScope?.TenantId,
+                        runId,
+                        contract.RequestedBy);
                     AppendAudit(failed.OperationalScope?.TenantId, runId, "RunFailed", contract.RequestedBy, $"attempt={attempt}; runSeries={version.RunSeriesId}; runAttempt={version.RunAttemptOrdinal}; retryReason={failed.RetryReason ?? "none"}; error={ex.Message}");
-                    await PersistAsync(failed, cancellationToken).ConfigureAwait(false);
+                    await ThrowIfRunCreateLeaseLostAsync(createClaimHeartbeat).ConfigureAwait(false);
+                    await PersistAsync(failed, cancellationToken, createClaim).ConfigureAwait(false);
+                    createClaim = null;
                     throw new InvalidOperationException($"Reporting run failed after {attempt} attempts.", lastError);
                 }
             }
         }
         finally
         {
+            if (createClaimHeartbeatStop is not null)
+            {
+                createClaimHeartbeatStop.Cancel();
+                if (createClaimHeartbeat is not null)
+                {
+                    try
+                    {
+                        await createClaimHeartbeat.ConfigureAwait(false);
+                    }
+                    catch
+                    {
+                        // Persist is lease-fenced; cleanup must preserve the primary outcome.
+                    }
+                }
+                createClaimHeartbeatStop.Dispose();
+            }
+
+            if (createClaim is { ExistingManifest: null } unfinishedClaim
+                && runStore is not null)
+            {
+                try
+                {
+                    await runStore.ReleaseCreateClaimAsync(
+                            unfinishedClaim.TenantId,
+                            runId,
+                            unfinishedClaim.LeaseOwner,
+                            unfinishedClaim.LeaseVersion,
+                            CancellationToken.None)
+                        .ConfigureAwait(false);
+                }
+                catch
+                {
+                    // Lease expiry is the recovery path when best-effort release is unavailable.
+                }
+            }
             reservedRunIds.TryRemove(ScopedKey(contract.OperationalScope?.TenantId, runId), out _);
+            TrimRetainedRuns();
         }
 
         throw new InvalidOperationException($"Reporting run failed after {contract.MaxRetries + 1} attempts.", lastError);
     }
 
-    public async Task<IReadOnlyList<ReportingOutputManifest>> ExecuteDueSchedulesAsync(IEnumerable<ReportingScheduleContract> schedules, DateTimeOffset nowUtc, CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(schedules);
-        var generated = new List<ReportingOutputManifest>();
-        foreach (var schedule in schedules.OrderBy(static value => value.DueAtUtc).ThenBy(static value => value.ScheduleId, StringComparer.Ordinal))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (schedule.DueAtUtc > nowUtc)
-            {
-                continue;
-            }
-
-            var contract = new ReportingJobContract(
-                JobId: schedule.ScheduleId,
-                TemplateId: schedule.TemplateId,
-                AsOfDate: schedule.NextAsOfDate,
-                Trigger: ReportingRunTrigger.Scheduled,
-                MaxRetries: schedule.MaxRetries,
-                RequestedBy: schedule.RequestedBy,
-                RequestedAtUtc: nowUtc,
-                CronExpression: schedule.CronExpression,
-                ScheduleId: schedule.ScheduleId,
-                RetryReason: $"scheduled due run for {schedule.CronExpression}");
-            generated.Add(await ExecuteAsync(contract, cancellationToken).ConfigureAwait(false));
-        }
-
-        return generated;
-    }
+    [Obsolete(
+        "Due-schedule discovery and execution is owned by the host reporting-schedule adapter. Call ExecuteAsync only with its certified ReportingJobContract.",
+        error: false)]
+    public Task<IReadOnlyList<ReportingOutputManifest>> ExecuteDueSchedulesAsync(
+        IEnumerable<ReportingScheduleContract> schedules,
+        DateTimeOffset nowUtc,
+        CancellationToken cancellationToken) =>
+        Task.FromException<IReadOnlyList<ReportingOutputManifest>>(
+            new NotSupportedException(
+                "Direct due-schedule batch execution is disabled. The host reporting-schedule adapter must acquire the durable schedule lease, certify the run request, and call ExecuteAsync."));
 
     public ReportingOutputManifest? GetManifest(string runId)
     {
-        var matches = manifests.Values
-            .Where(manifest => string.Equals(manifest.RunId, runId, StringComparison.OrdinalIgnoreCase))
+        var matches = retainedRuns
+            .Where(entry => string.Equals(entry.Value.Manifest.RunId, runId, StringComparison.OrdinalIgnoreCase))
             .Take(2)
             .ToArray();
-        return matches.Length == 1 ? matches[0] : matches.Length > 1 ? null : runStore?.GetManifest(runId);
+        return matches.Length == 1
+            ? Touch(matches[0].Key, matches[0].Value).Manifest
+            : matches.Length > 1
+                ? null
+                : LoadStoredRun(tenantId: null, runId)?.Manifest;
     }
 
     public ReportingOutputManifest? GetManifest(string tenantId, string runId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
-        if (manifests.TryGetValue(ScopedKey(tenantId, runId), out var manifest)
-            && string.Equals(manifest.OperationalScope?.TenantId, tenantId, StringComparison.Ordinal))
+        var key = ScopedKey(tenantId, runId);
+        if (retainedRuns.TryGetValue(key, out var state)
+            && string.Equals(state.Manifest.OperationalScope?.TenantId, tenantId, StringComparison.Ordinal))
         {
-            return manifest;
+            return Touch(key, state).Manifest;
         }
 
-        return runStore?.GetManifest(tenantId, runId);
+        return LoadStoredRun(tenantId, runId)?.Manifest;
     }
 
     public IReadOnlyList<ReportingRunAuditEntry> GetAudit(string runId)
     {
-        var keys = audits.Keys
-            .Where(key => key.EndsWith($":{runId}", StringComparison.OrdinalIgnoreCase))
+        var matches = retainedRuns
+            .Where(entry => string.Equals(
+                entry.Value.Manifest.RunId,
+                runId,
+                StringComparison.OrdinalIgnoreCase))
             .Take(2)
             .ToArray();
-        if (keys.Length == 0)
+        if (matches.Length == 0)
         {
             return runStore?.GetAudit(runId) ?? [];
         }
-        if (keys.Length > 1 || !audits.TryGetValue(keys[0], out var entries))
+        if (matches.Length > 1)
         {
             return [];
         }
 
-        var auditLock = auditLocks.GetOrAdd(keys[0], static _ => new object());
-        lock (auditLock)
+        return Touch(matches[0].Key, matches[0].Value).AuditTrail;
+    }
+
+    public IReadOnlyList<ReportingRunAuditEntry> GetAudit(
+        string tenantId,
+        string runId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        var key = ScopedKey(tenantId.Trim(), runId.Trim());
+        if (!retainedRuns.TryGetValue(key, out var state))
         {
-            return entries.ToArray();
+            return LoadStoredRun(tenantId.Trim(), runId.Trim())?.AuditTrail ?? [];
         }
+
+        return Touch(key, state).AuditTrail;
     }
 
     public async Task<bool> TransitionApprovalAsync(string runId, ReportingRunStatus target, string actor, string role, string notes, CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        bool transitioned;
+        using (await runLifecycleLocks
+                   .AcquireAsync(LifecycleKey(runId), cancellationToken)
+                   .ConfigureAwait(false))
+        {
+            transitioned = await TransitionApprovalCoreAsync(
+                    runId,
+                    target,
+                    actor,
+                    role,
+                    notes,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+        TrimRetainedRuns();
+        return transitioned;
+    }
+
+    private async Task<bool> TransitionApprovalCoreAsync(
+        string runId,
+        ReportingRunStatus target,
+        string actor,
+        string role,
+        string notes,
+        CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var current = GetManifest(runId);
@@ -352,7 +557,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         }
 
         var updated = current with { Status = target };
-        manifests[ScopedKey(updated.OperationalScope?.TenantId, runId)] = updated;
+        PublishManifest(updated);
         AppendAudit(updated.OperationalScope?.TenantId, runId, "ApprovalTransition", actor, $"{current.Status}->{target}; role={role}; notes={notes}");
         await PersistAsync(updated, cancellationToken).ConfigureAwait(false);
         return true;
@@ -377,13 +582,13 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
 
         if (!contract.AllowRestatement)
         {
-            AppendAudit(
-                released.OperationalScope?.TenantId,
-                released.RunId,
-                "RestatementBlocked",
-                contract.RequestedBy,
-                $"blockedRun={version.RunId}; runSeries={version.RunSeriesId}; reason=released manifest requires an explicit restatement action");
-            await PersistAsync(released, cancellationToken).ConfigureAwait(false);
+            await AppendAuditAndPersistAsync(
+                    released,
+                    "RestatementBlocked",
+                    contract.RequestedBy,
+                    $"blockedRun={version.RunId}; runSeries={version.RunSeriesId}; reason=released manifest requires an explicit restatement action",
+                    cancellationToken)
+                .ConfigureAwait(false);
             throw new InvalidOperationException(
                 $"Run series '{version.RunSeriesId}' has a Released manifest '{released.RunId}'. Regenerating it requires an explicit restatement (set AllowRestatement and supply a RetryReason).");
         }
@@ -391,24 +596,24 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         var retryReason = NormalizeOptional(contract.RetryReason);
         if (retryReason is null)
         {
-            AppendAudit(
-                released.OperationalScope?.TenantId,
-                released.RunId,
-                "RestatementBlocked",
-                contract.RequestedBy,
-                $"blockedRun={version.RunId}; runSeries={version.RunSeriesId}; reason=restatement requires a RetryReason");
-            await PersistAsync(released, cancellationToken).ConfigureAwait(false);
+            await AppendAuditAndPersistAsync(
+                    released,
+                    "RestatementBlocked",
+                    contract.RequestedBy,
+                    $"blockedRun={version.RunId}; runSeries={version.RunSeriesId}; reason=restatement requires a RetryReason",
+                    cancellationToken)
+                .ConfigureAwait(false);
             throw new InvalidOperationException(
                 $"Restating Released manifest '{released.RunId}' requires a RetryReason describing the restatement.");
         }
 
-        AppendAudit(
-            released.OperationalScope?.TenantId,
-            released.RunId,
-            "RestatementAuthorized",
-            contract.RequestedBy,
-            $"restatementRun={version.RunId}; runSeries={version.RunSeriesId}; retryReason={retryReason}");
-        await PersistAsync(released, cancellationToken).ConfigureAwait(false);
+        await AppendAuditAndPersistAsync(
+                released,
+                "RestatementAuthorized",
+                contract.RequestedBy,
+                $"restatementRun={version.RunId}; runSeries={version.RunSeriesId}; retryReason={retryReason}",
+                cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private static void ValidateCertifiedContract(ReportingJobContract contract)
@@ -458,12 +663,12 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
             || !string.Equals(snapshot.PeriodId, source.AccountingPeriodId, StringComparison.Ordinal)
             || !string.Equals(snapshot.SourceCheckpointId, source.CheckpointId, StringComparison.Ordinal)
             || !string.Equals(snapshot.SourceCheckpointHash, source.CheckpointHash, StringComparison.OrdinalIgnoreCase)
-            || !IsSha256(source.CheckpointHash)
-            || !IsSha256(snapshot.SnapshotHash)
-            || !IsSha256(snapshot.ReconciliationCheckpointHash)
-            || !IsSha256(parametersHash)
+            || !Sha256Digest.IsWellFormed(source.CheckpointHash)
+            || !Sha256Digest.IsWellFormed(snapshot.SnapshotHash)
+            || !Sha256Digest.IsWellFormed(snapshot.ReconciliationCheckpointHash)
+            || !Sha256Digest.IsWellFormed(parametersHash)
             || string.IsNullOrWhiteSpace(parametersJson)
-            || !string.Equals(ComputeSha256(parametersJson), parametersHash, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(Sha256Digest.ComputeUtf8(parametersJson), parametersHash, StringComparison.OrdinalIgnoreCase)
             || source.AsOfDate != contract.AsOfDate
             || parameters.AsOfDate != contract.AsOfDate
             || !string.Equals(source.AccountingBasis, expectedBasis, StringComparison.Ordinal)
@@ -509,6 +714,78 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
             .ToImmutableArray();
     }
 
+    private static void EnsureSameRunRequest(
+        ReportingJobContract contract,
+        ReportingRunVersionPlan version,
+        ReportingOutputManifest retained)
+    {
+        if (string.IsNullOrWhiteSpace(contract.OperationalScope?.TenantId))
+        {
+            throw new ReportingRunCreateClaimException(
+                string.Empty,
+                version.RunId,
+                "An unscoped retained reporting run cannot be proven to represent the same request.");
+        }
+
+        var expected = new ReportingOutputManifest(
+            version.RunId,
+            contract.TemplateId,
+            contract.AsOfDate,
+            ReportingRunStatus.Draft,
+            [],
+            [],
+            0,
+            contract.Trigger,
+            contract.ScheduleId,
+            ReportWriterGrids: [],
+            RenderedReportWriterGrids: [],
+            ReportWriterDatasetSourceId:
+                NormalizeOptional(contract.ReportWriterDatasetSourceId),
+            ReportWriterDatasetSourceLabel:
+                NormalizeOptional(contract.ReportWriterDatasetSourceLabel),
+            ReportWriterDatasetRowCount: null,
+            BrandingThemeId: NormalizeOptional(contract.BrandingThemeId),
+            BrandingTheme: contract.BrandingTheme,
+            AccessPolicy: contract.AccessPolicy,
+            RunSeriesId: version.RunSeriesId,
+            RunAttemptOrdinal: version.RunAttemptOrdinal,
+            PriorRunId: version.PriorManifest?.RunId,
+            RetryReason: NormalizeOptional(contract.RetryReason),
+            ReportWriterGridDiffs: [],
+            ResolvedTemplate: contract.ResolvedTemplate,
+            ResolvedParameters: contract.ResolvedParameters,
+            Readiness: contract.Readiness,
+            OperationalScope: contract.OperationalScope,
+            ImmutableAccessScope: contract.ImmutableAccessScope,
+            CertifiedSnapshot: contract.CertifiedSnapshot,
+            AuthoritativeSource: contract.AuthoritativeSource,
+            CertifiedDatasetRows: FreezeCertifiedRows(contract));
+        var normalizedRetained = retained with
+        {
+            Status = ReportingRunStatus.Draft,
+            Sections = [],
+            Artifacts = [],
+            AttemptCount = 0,
+            FailureReason = null,
+            ReportWriterGrids = [],
+            RenderedReportWriterGrids = [],
+            ReportWriterDatasetRowCount = null,
+            ReportWriterGridDiffs = [],
+            CertifiedPartnersCapital = null
+        };
+        var expectedFingerprint = ReportingRunStoreRevision.Compute(expected, []);
+        var retainedFingerprint = ReportingRunStoreRevision.Compute(normalizedRetained, []);
+        if (!ReportingRunStoreRevision.Matches(
+                expectedFingerprint,
+                retainedFingerprint))
+        {
+            throw new ReportingRunCreateClaimException(
+                contract.OperationalScope?.TenantId ?? string.Empty,
+                version.RunId,
+                "The retained reporting run identity belongs to a different certified request.");
+        }
+    }
+
     private static bool IsRequiredForFinality(
         ReportingRunReadinessCheckDto check,
         ReportingFinalityDto finality) =>
@@ -523,28 +800,162 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
             _ => false
         };
 
+    private void PublishManifest(ReportingOutputManifest manifest)
+    {
+        var key = ScopedKey(manifest.OperationalScope?.TenantId, manifest.RunId);
+        retainedRuns.AddOrUpdate(
+            key,
+            _ => new RetainedRunState(
+                manifest,
+                [],
+                Revision: null,
+                IsDurablyPersisted: false,
+                IsReloadVerified: false,
+                LastAccessSequence: NextRetentionSequence()),
+            (_, current) => current with
+            {
+                Manifest = manifest,
+                IsDurablyPersisted = false,
+                IsReloadVerified = false,
+                LastAccessSequence = NextRetentionSequence()
+            });
+    }
+
+    private void FlushPendingRetryAudits(
+        List<string> pendingRetryAudits,
+        string? tenantId,
+        string runId,
+        string actor)
+    {
+        if (pendingRetryAudits.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var notes in pendingRetryAudits)
+        {
+            AppendAudit(tenantId, runId, "RunRetry", actor, notes);
+        }
+
+        pendingRetryAudits.Clear();
+    }
+
     private void AppendAudit(string? tenantId, string runId, string action, string actor, string notes)
     {
         var key = ScopedKey(tenantId, runId);
-        var queue = audits.GetOrAdd(key, _ => tenantId is null
-            ? runStore?.GetAudit(runId).ToList() ?? []
-            : runStore?.GetAudit(tenantId, runId).ToList() ?? []);
-        var auditLock = auditLocks.GetOrAdd(key, static _ => new object());
-        lock (auditLock)
+        var entry = new ReportingRunAuditEntry(runId, utcNow(), action, actor, notes);
+        while (true)
         {
-            queue.Add(new ReportingRunAuditEntry(runId, utcNow(), action, actor, notes));
+            if (!retainedRuns.TryGetValue(key, out var current))
+            {
+                if (LoadStoredRun(tenantId, runId) is null
+                    || !retainedRuns.TryGetValue(key, out current))
+                {
+                    throw new InvalidOperationException(
+                        $"Reporting run '{tenantId}/{runId}' must be retained before audit is appended.");
+                }
+            }
+
+            var updated = current with
+            {
+                AuditTrail = current.AuditTrail.Add(entry),
+                IsDurablyPersisted = false,
+                IsReloadVerified = false,
+                LastAccessSequence = NextRetentionSequence()
+            };
+            if (retainedRuns.TryUpdate(key, updated, current))
+            {
+                return;
+            }
         }
     }
 
-    private async Task PersistAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken)
+    private async Task PersistAsync(
+        ReportingOutputManifest manifest,
+        CancellationToken cancellationToken,
+        ActiveRunCreateClaim? createClaim = null)
     {
         if (runStore is not null)
         {
             var key = ScopedKey(manifest.OperationalScope?.TenantId, manifest.RunId);
-            var audit = audits.TryGetValue(key, out var entries)
-                ? entries.ToArray()
-                : [];
-            await runStore.SaveAsync(manifest, audit, cancellationToken).ConfigureAwait(false);
+            if (!retainedRuns.TryGetValue(key, out var candidate))
+            {
+                throw new InvalidOperationException(
+                    $"Reporting run '{manifest.RunId}' must be retained before it can be persisted.");
+            }
+
+            var persisted = false;
+            try
+            {
+                var candidateRevision = ReportingRunStoreRevision.Compute(
+                    candidate.Manifest,
+                    candidate.AuditTrail);
+                if (createClaim is { ExistingManifest: null } claimedCreate
+                    && candidate.Revision is null)
+                {
+                    await runStore
+                        .SaveClaimedCreateAsync(
+                            candidate.Manifest,
+                            candidate.AuditTrail,
+                            claimedCreate.LeaseOwner,
+                            claimedCreate.LeaseVersion,
+                            cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    await runStore
+                        .SaveAsync(
+                            candidate.Manifest,
+                            candidate.AuditTrail,
+                            candidate.Revision,
+                            cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                var retainedRevision = manifest.OperationalScope?.TenantId is { } tenantId
+                    ? runStore.GetRevision(tenantId, manifest.RunId)
+                    : runStore.GetRevision(manifest.RunId);
+                if (retainedRevision is null)
+                {
+                    // Compatibility stores can acknowledge writes without implementing retained
+                    // revision reads. Their default CAS still uses this canonical candidate hash.
+                    persisted = TryMarkPersisted(
+                        key,
+                        candidate,
+                        candidateRevision,
+                        isReloadVerified: false);
+                }
+                else if (ReportingRunStoreRevision.Matches(
+                             retainedRevision,
+                             candidateRevision))
+                {
+                    persisted = TryMarkPersisted(
+                        key,
+                        candidate,
+                        retainedRevision,
+                        isReloadVerified: true);
+                }
+                else
+                {
+                    RestoreStoredRun(
+                        manifest.OperationalScope?.TenantId,
+                        manifest.RunId,
+                        key);
+                }
+            }
+            catch
+            {
+                RestoreStoredRun(
+                    manifest.OperationalScope?.TenantId,
+                    manifest.RunId,
+                    key);
+                throw;
+            }
+
+            if (persisted)
+            {
+                TrimRetainedRuns(protectedKey: key);
+            }
         }
 
         // Best-effort wake AFTER the durable write, so a UI stream sees the change without a poll.
@@ -552,11 +963,134 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         // with the null-object default).
         try
         {
-            runNotifier.NotifyRunChanged(manifest.RunId);
+            if (manifest.OperationalScope is { } scope)
+            {
+                runNotifier.NotifyRunChanged(
+                    scope.TenantId,
+                    scope.CompanyId,
+                    manifest.RunId);
+            }
+            else
+            {
+                runNotifier.NotifyRunChanged(manifest.RunId);
+            }
         }
         catch
         {
             // Swallow — run execution must never fail on a UI-streaming concern.
+        }
+    }
+
+    private async Task AppendAuditAndPersistAsync(
+        ReportingOutputManifest manifest,
+        string action,
+        string actor,
+        string notes,
+        CancellationToken cancellationToken)
+    {
+        using (await runLifecycleLocks
+                   .AcquireAsync(LifecycleKey(manifest.RunId), cancellationToken)
+                   .ConfigureAwait(false))
+        {
+            AppendAudit(
+                manifest.OperationalScope?.TenantId,
+                manifest.RunId,
+                action,
+                actor,
+                notes);
+            await PersistAsync(manifest, cancellationToken).ConfigureAwait(false);
+        }
+        TrimRetainedRuns();
+    }
+
+    private async Task<ActiveRunCreateClaim?> TryClaimCreateAsync(
+        string? tenantId,
+        string runId,
+        CancellationToken cancellationToken)
+    {
+        if (runStore is null || string.IsNullOrWhiteSpace(tenantId))
+        {
+            return null;
+        }
+
+        var normalizedTenantId = tenantId.Trim();
+        var leaseOwner =
+            $"reporting-orchestration:{Environment.ProcessId}:{Guid.NewGuid():N}";
+        var result = await runStore
+            .TryClaimCreateAsync(
+                normalizedTenantId,
+                runId,
+                leaseOwner,
+                utcNow().ToUniversalTime(),
+                RunCreateLeaseDuration,
+                cancellationToken)
+            .ConfigureAwait(false);
+        return result.Status switch
+        {
+            ReportingRunCreateClaimStatus.Acquired when result.LeaseVersion > 0 =>
+                new ActiveRunCreateClaim(
+                    normalizedTenantId,
+                    leaseOwner,
+                    result.LeaseVersion,
+                    ExistingManifest: null),
+            ReportingRunCreateClaimStatus.AlreadyExists =>
+                new ActiveRunCreateClaim(
+                    normalizedTenantId,
+                    leaseOwner,
+                    LeaseVersion: 0,
+                    ExistingManifest: LoadStoredRun(normalizedTenantId, runId)?.Manifest
+                        ?? throw new ReportingRunCreateClaimException(
+                            normalizedTenantId,
+                            runId,
+                            "The run store reported a completed create but the retained run could not be loaded.")),
+            ReportingRunCreateClaimStatus.LeasedByAnotherOwner =>
+                throw new ReportingRunCreateClaimException(
+                    normalizedTenantId,
+                    runId,
+                    "The reporting run is already being created by another durable owner."),
+            ReportingRunCreateClaimStatus.Unsupported => null,
+            _ => throw new ReportingRunCreateClaimException(
+                normalizedTenantId,
+                runId,
+                "The reporting run store returned an invalid create-claim result.")
+        };
+    }
+
+    private async Task MaintainRunCreateClaimLeaseAsync(
+        string runId,
+        ActiveRunCreateClaim claim,
+        CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            await Task.Delay(
+                    RunCreateLeaseRenewalInterval,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            var renewed = await runStore!
+                .RenewCreateClaimAsync(
+                    claim.TenantId,
+                    runId,
+                    claim.LeaseOwner,
+                    claim.LeaseVersion,
+                    RunCreateLeaseDuration,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            if (!renewed)
+            {
+                throw new ReportingRunCreateClaimException(
+                    claim.TenantId,
+                    runId,
+                    "The reporting run create lease expired or was superseded.");
+            }
+        }
+    }
+
+    private static async Task ThrowIfRunCreateLeaseLostAsync(Task? heartbeat)
+    {
+        if (heartbeat?.IsCompleted == true)
+        {
+            await heartbeat.ConfigureAwait(false);
         }
     }
 
@@ -629,9 +1163,17 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         var found = new Dictionary<string, ReportingOutputManifest>(StringComparer.OrdinalIgnoreCase);
 
         // In-process manifests for this series (may not be persisted yet).
-        foreach (var manifest in manifests.Values.Where(
-            manifest => string.Equals(ResolveRunSeriesId(manifest), runSeriesId, StringComparison.OrdinalIgnoreCase)
-                && string.Equals(manifest.OperationalScope?.TenantId, tenantId, StringComparison.Ordinal)))
+        foreach (var manifest in retainedRuns.Values
+                     .Select(static state => state.Manifest)
+                     .Where(manifest =>
+                         string.Equals(
+                             ResolveRunSeriesId(manifest),
+                             runSeriesId,
+                             StringComparison.OrdinalIgnoreCase)
+                         && string.Equals(
+                             manifest.OperationalScope?.TenantId,
+                             tenantId,
+                             StringComparison.Ordinal)))
         {
             found[manifest.RunId] = manifest;
         }
@@ -643,9 +1185,12 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
             for (var ordinal = 1; ; ordinal++)
             {
                 var runId = BuildRunId(runSeriesId, ordinal);
-                var stored = tenantId is null
-                    ? runStore.GetManifest(runId)
-                    : runStore.GetManifest(tenantId, runId);
+                if (found.ContainsKey(runId))
+                {
+                    continue;
+                }
+
+                var stored = LoadStoredRun(tenantId, runId)?.Manifest;
                 if (stored is not null)
                 {
                     found.TryAdd(runId, stored);
@@ -662,8 +1207,331 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         return found.Values.ToArray();
     }
 
+    private StoredRunSnapshot? LoadStoredRun(string? tenantId, string runId)
+    {
+        if (runStore is null)
+        {
+            return null;
+        }
+
+        for (var attempt = 0; attempt < 3; attempt++)
+        {
+            var revisionBefore = tenantId is null
+                ? runStore.GetRevision(runId)
+                : runStore.GetRevision(tenantId, runId);
+            if (revisionBefore is null)
+            {
+                return null;
+            }
+
+            var manifest = tenantId is null
+                ? runStore.GetManifest(runId)
+                : runStore.GetManifest(tenantId, runId);
+            if (manifest is null)
+            {
+                return null;
+            }
+
+            var audit = tenantId is null
+                ? runStore.GetAudit(runId)
+                : runStore.GetAudit(tenantId, runId);
+            var revisionAfter = tenantId is null
+                ? runStore.GetRevision(runId)
+                : runStore.GetRevision(tenantId, runId);
+            var computedRevision = ReportingRunStoreRevision.Compute(manifest, audit);
+            if (revisionAfter is not null
+                && ReportingRunStoreRevision.Matches(revisionBefore, revisionAfter)
+                && ReportingRunStoreRevision.Matches(revisionAfter, computedRevision))
+            {
+                var retainedTenantId = manifest.OperationalScope?.TenantId;
+                var key = ScopedKey(retainedTenantId, manifest.RunId);
+                retainedRuns[key] = new RetainedRunState(
+                    manifest,
+                    audit.ToImmutableArray(),
+                    revisionAfter,
+                    IsDurablyPersisted: true,
+                    IsReloadVerified: true,
+                    LastAccessSequence: NextRetentionSequence());
+                TrimRetainedRuns();
+                return new StoredRunSnapshot(manifest, audit, revisionAfter);
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"Reporting run '{tenantId}/{runId}' changed repeatedly while it was being loaded. Reload and retry.");
+    }
+
+    private void RestoreStoredRun(string? tenantId, string runId, string key)
+    {
+        try
+        {
+            retainedRuns.TryRemove(key, out _);
+            _ = LoadStoredRun(tenantId, runId);
+        }
+        catch
+        {
+            // Preserve the original concurrency exception. A later read retries the durable reload.
+            retainedRuns.TryRemove(key, out _);
+        }
+    }
+
     private static string ScopedKey(string? tenantId, string runId) =>
         $"{tenantId?.Length ?? 0}:{tenantId ?? string.Empty}:{runId}";
+
+    private static string LifecycleKey(string runId) => $"run-id:{runId.Trim()}";
+
+    private long NextRetentionSequence() => Interlocked.Increment(ref retentionSequence);
+
+    private RetainedRunState Touch(string key, RetainedRunState current)
+    {
+        var touched = current with { LastAccessSequence = NextRetentionSequence() };
+        return retainedRuns.TryUpdate(key, touched, current)
+            ? touched
+            : retainedRuns.TryGetValue(key, out var latest)
+                ? latest
+                : current;
+    }
+
+    private bool TryMarkPersisted(
+        string key,
+        RetainedRunState candidate,
+        string revision,
+        bool isReloadVerified)
+    {
+        while (retainedRuns.TryGetValue(key, out var current))
+        {
+            if (!ReferenceEquals(current.Manifest, candidate.Manifest)
+                || !current.AuditTrail.Equals(candidate.AuditTrail)
+                || !string.Equals(current.Revision, candidate.Revision, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            var persisted = current with
+            {
+                Revision = revision,
+                IsDurablyPersisted = true,
+                IsReloadVerified = isReloadVerified,
+                LastAccessSequence = NextRetentionSequence()
+            };
+            if (retainedRuns.TryUpdate(key, persisted, current))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Trims only terminal snapshots whose durable reload is revision-verified. When no run store
+    /// is configured, or a compatibility store cannot verify a retained revision, memory is the
+    /// authority and that run state is intentionally never evicted. The keyed lifecycle-lock
+    /// manager remains bounded independently in all modes.
+    /// </summary>
+    private void TrimRetainedRuns(string? protectedKey = null)
+    {
+        if (runStore is null)
+        {
+            return;
+        }
+
+        var eligible = retainedRuns
+            .Where(entry => IsEvictionEligible(entry.Key, entry.Value, protectedKey: null))
+            .OrderBy(static entry => entry.Value.LastAccessSequence)
+            .ToArray();
+        var excess = eligible.Length - retentionOptions.MaxRetainedTerminalRuns;
+        if (excess <= 0)
+        {
+            return;
+        }
+
+        foreach (var entry in eligible)
+        {
+            if (excess == 0)
+            {
+                break;
+            }
+            if (string.Equals(entry.Key, protectedKey, StringComparison.Ordinal)
+                || !IsEvictionEligible(entry.Key, entry.Value, protectedKey))
+            {
+                continue;
+            }
+
+            var removed = runLifecycleLocks.TryExecuteIfUnreferenced(
+                LifecycleKey(entry.Value.Manifest.RunId),
+                () => IsEvictionEligible(entry.Key, entry.Value, protectedKey)
+                    && ((ICollection<KeyValuePair<string, RetainedRunState>>)retainedRuns)
+                        .Remove(entry));
+            if (removed)
+            {
+                excess--;
+            }
+        }
+    }
+
+    private bool IsEvictionEligible(
+        string key,
+        RetainedRunState state,
+        string? protectedKey)
+    {
+        if (runStore is null
+            || !state.IsDurablyPersisted
+            || !state.IsReloadVerified
+            || !IsTerminal(state.Manifest.Status)
+            || string.Equals(key, protectedKey, StringComparison.Ordinal)
+            || reservedRunIds.ContainsKey(key))
+        {
+            return false;
+        }
+
+        return !runLifecycleLocks.HasReferences(LifecycleKey(state.Manifest.RunId));
+    }
+
+    private static bool IsTerminal(ReportingRunStatus status) =>
+        status is ReportingRunStatus.Released or ReportingRunStatus.Failed;
+
+    private sealed record RetainedRunState(
+        ReportingOutputManifest Manifest,
+        ImmutableArray<ReportingRunAuditEntry> AuditTrail,
+        string? Revision,
+        bool IsDurablyPersisted,
+        bool IsReloadVerified,
+        long LastAccessSequence);
+
+    private sealed record StoredRunSnapshot(
+        ReportingOutputManifest Manifest,
+        IReadOnlyList<ReportingRunAuditEntry> AuditTrail,
+        string Revision);
+
+    private sealed record ActiveRunCreateClaim(
+        string TenantId,
+        string LeaseOwner,
+        long LeaseVersion,
+        ReportingOutputManifest? ExistingManifest);
+
+    private sealed class KeyedRunLockManager
+    {
+        private readonly object sync = new();
+        private readonly Dictionary<string, LockEntry> entries;
+
+        public KeyedRunLockManager(IEqualityComparer<string> comparer)
+        {
+            entries = new Dictionary<string, LockEntry>(comparer);
+        }
+
+        public int Count
+        {
+            get
+            {
+                lock (sync)
+                {
+                    return entries.Count;
+                }
+            }
+        }
+
+        public bool HasReferences(string key)
+        {
+            lock (sync)
+            {
+                return entries.TryGetValue(key, out var entry) && entry.ReferenceCount > 0;
+            }
+        }
+
+        public bool TryExecuteIfUnreferenced(string key, Func<bool> action)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+            lock (sync)
+            {
+                if (entries.TryGetValue(key, out var entry) && entry.ReferenceCount > 0)
+                {
+                    return false;
+                }
+
+                return action();
+            }
+        }
+
+        public async ValueTask<IDisposable> AcquireAsync(
+            string key,
+            CancellationToken cancellationToken)
+        {
+            LockEntry entry;
+            lock (sync)
+            {
+                if (!entries.TryGetValue(key, out var retainedEntry))
+                {
+                    entry = new LockEntry();
+                    entries.Add(key, entry);
+                }
+                else
+                {
+                    entry = retainedEntry;
+                }
+                entry.ReferenceCount++;
+            }
+
+            try
+            {
+                await entry.Semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                return new LockLease(this, key, entry);
+            }
+            catch
+            {
+                ReleaseReference(key, entry);
+                throw;
+            }
+        }
+
+        private void Release(string key, LockEntry entry)
+        {
+            entry.Semaphore.Release();
+            ReleaseReference(key, entry);
+        }
+
+        private void ReleaseReference(string key, LockEntry entry)
+        {
+            lock (sync)
+            {
+                entry.ReferenceCount--;
+                if (entry.ReferenceCount != 0)
+                {
+                    return;
+                }
+
+                if (entries.TryGetValue(key, out var retained)
+                    && ReferenceEquals(retained, entry))
+                {
+                    entries.Remove(key);
+                    entry.Semaphore.Dispose();
+                }
+            }
+        }
+
+        private sealed class LockEntry
+        {
+            public SemaphoreSlim Semaphore { get; } = new(1, 1);
+
+            public int ReferenceCount { get; set; }
+        }
+
+        private sealed class LockLease(
+            KeyedRunLockManager owner,
+            string key,
+            LockEntry entry) : IDisposable
+        {
+            private int disposed;
+
+            public void Dispose()
+            {
+                if (Interlocked.Exchange(ref disposed, 1) == 0)
+                {
+                    owner.Release(key, entry);
+                }
+            }
+        }
+    }
 
     private static ImmutableArray<ReportWriterGridDiffDto> BuildReportWriterGridDiffs(
         ReportingOutputManifest? priorManifest,
@@ -717,18 +1585,6 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
     private static int ResolveRunAttemptOrdinal(ReportingOutputManifest manifest)
         => manifest.RunAttemptOrdinal is > 0 ? manifest.RunAttemptOrdinal.Value : 1;
 
-    private static string? NormalizeOptional(string? value)
-    {
-        var normalized = value?.Trim();
-        return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
-    }
-
-    private static bool IsSha256(string? value) =>
-        value is { Length: 64 } && value.All(Uri.IsHexDigit);
-
-    private static string ComputeSha256(string value) =>
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
-
     private sealed record ReportingRunVersionPlan(
         string RunSeriesId,
         int RunAttemptOrdinal,
@@ -755,7 +1611,7 @@ public sealed class DeterministicReportingSectionRenderer : IReportingSectionRen
     private static string ComputeHash(params string[] values)
     {
         var joined = string.Join('|', values);
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(joined));
+        var bytes = Sha256Digest.ComputeBytesUtf8(joined);
         return Convert.ToHexString(bytes);
     }
 }

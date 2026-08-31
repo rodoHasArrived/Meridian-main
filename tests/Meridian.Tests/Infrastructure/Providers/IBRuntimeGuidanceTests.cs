@@ -15,7 +15,7 @@ public sealed class IBRuntimeGuidanceTests
         var act = () => ContractFactory.Create(new SymbolConfig("AAPL"));
 
         act.Should().Throw<NotSupportedException>()
-            .WithMessage("*interactive-brokers-setup.md*")
+            .WithMessage("*provider-onboarding-interactive-brokers.md*")
             .WithMessage("*build-ibapi-smoke.ps1*")
             .WithMessage("*build-ibapi-vendor.ps1*")
             .WithMessage("*EnableIbApiVendor=true*")
@@ -69,7 +69,7 @@ public sealed class IBRuntimeGuidanceTests
         var act = () => manager.ConnectAsync();
 
         await act.Should().ThrowAsync<NotSupportedException>()
-            .WithMessage("*interactive-brokers-setup.md*")
+            .WithMessage("*provider-onboarding-interactive-brokers.md*")
             .WithMessage("*build-ibapi-smoke.ps1*")
             .WithMessage("*build-ibapi-vendor.ps1*")
             .WithMessage("*EnableIbApiVendor=true*")
@@ -82,8 +82,8 @@ public sealed class IBRuntimeGuidanceTests
     {
         var client = new IBSimulationClient(new TestMarketEventPublisher(), enableAutoTicks: false);
 
-        client.ProviderDescription.Should().Contain("interactive-brokers-setup.md");
-        client.ProviderNotes.Should().Contain(note => note.Contains("interactive-brokers-setup.md"));
+        client.ProviderDescription.Should().Contain("provider-onboarding-interactive-brokers.md");
+        client.ProviderNotes.Should().Contain(note => note.Contains("provider-onboarding-interactive-brokers.md"));
         client.ProviderDescription.Should().Contain("IBSimulationClient");
         client.ProviderWarnings.Should().Contain(warning => warning.Contains("simulated data"));
     }
@@ -93,9 +93,9 @@ public sealed class IBRuntimeGuidanceTests
     {
         var provider = new IBHistoricalDataProvider();
 
-        provider.Description.Should().Contain("interactive-brokers-setup.md");
+        provider.Description.Should().Contain("provider-onboarding-interactive-brokers.md");
         provider.ProviderNotes.Should().Contain(note => note.Contains("build-ibapi-smoke.ps1"));
-        provider.ProviderWarnings.Should().Contain(warning => warning.Contains("interactive-brokers-setup.md"));
+        provider.ProviderWarnings.Should().Contain(warning => warning.Contains("provider-onboarding-interactive-brokers.md"));
     }
 
     [Fact]

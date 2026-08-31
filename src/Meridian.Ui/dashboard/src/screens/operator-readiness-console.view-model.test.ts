@@ -15,6 +15,7 @@ import type {
   TradingOperatorReadiness,
   TradingWorkspaceResponse
 } from "@/types";
+import { requirePresent } from "@/test/fixtures";
 
 const readiness: TradingOperatorReadiness = {
   asOf: "2026-04-29T12:00:00Z",
@@ -283,7 +284,7 @@ const readyReadiness: TradingOperatorReadiness = {
   readyForLiveOperation: true,
   liveOperationBlockers: [],
   promotion: {
-    ...readiness.promotion,
+    ...requirePresent(readiness.promotion, "readiness.promotion"),
     state: "Ready",
     reason: "Required operator evidence is complete.",
     requiresReview: false,
@@ -337,6 +338,7 @@ describe("operator readiness console view model", () => {
       trading,
       data,
       accounting,
+      reporting: accounting.reporting,
       operatorInbox: inbox,
       inboxLoading: false,
       inboxError: null
@@ -1155,7 +1157,7 @@ describe("operator readiness console view model", () => {
     expect(state.reportPackFacts[0]).toEqual(expect.objectContaining({
       label: "Report-pack readiness",
       detail: "Reporting payload has not loaded.",
-      meta: "Wait for Accounting/Reporting bootstrap recovery.",
+      meta: "Wait for the Reporting capability and durability checks to recover.",
       level: "review"
     }));
     expect(state.panels.find((panel) => panel.id === "reporting-report-packs")).toEqual(expect.objectContaining({
@@ -1274,6 +1276,7 @@ describe("operator readiness console view model", () => {
       trading: readyTrading,
       data,
       accounting: cleanGovernance,
+      reporting: cleanGovernance.reporting,
       operatorInbox: null,
       inboxLoading: true,
       inboxError: null
@@ -1301,6 +1304,7 @@ describe("operator readiness console view model", () => {
       trading: readyTrading,
       data,
       accounting: cleanGovernance,
+      reporting: cleanGovernance.reporting,
       operatorInbox: cleanInbox,
       inboxLoading: false,
       inboxError: null
@@ -1332,6 +1336,7 @@ describe("operator readiness console view model", () => {
       trading: readyTrading,
       data,
       accounting: noReportPackGovernance,
+      reporting: noReportPackGovernance.reporting,
       operatorInbox: cleanInbox,
       inboxLoading: false,
       inboxError: null
@@ -1400,7 +1405,7 @@ describe("operator readiness console view model", () => {
     const fundTwoReadiness: TradingOperatorReadiness = {
       ...readyReadiness,
       brokerageSync: {
-        ...readyReadiness.brokerageSync,
+        ...requirePresent(readyReadiness.brokerageSync, "readiness.brokerageSync"),
         fundAccountId: "fund-2"
       }
     };
@@ -1425,7 +1430,7 @@ describe("operator readiness console view model", () => {
         trading: tradingPayload,
         data,
         accounting: cleanGovernance,
-        reporting: accounting
+        reporting: accounting.reporting
       }, services),
       { initialProps: { tradingPayload: readyTrading } }
     );
@@ -1444,7 +1449,7 @@ describe("operator readiness console view model", () => {
     expect(result.current.inboxSummary).toBe("Operator inbox not loaded; using workstation payload fallbacks where available.");
     expect(result.current.workItems.map((item) => item.id)).not.toContain("reconciliation-break-run-1-cash");
 
-    resolveFundTwoInbox?.(cleanInbox);
+    requirePresent<(value: OperatorInbox) => void>(resolveFundTwoInbox, "fund-two inbox resolver")(cleanInbox);
     await waitFor(() => expect(result.current.inboxSummary).toBe("No operator work items need attention."));
   });
 
@@ -1466,7 +1471,7 @@ describe("operator readiness console view model", () => {
       trading: tradingWithoutScopedReadiness,
       data,
       accounting: cleanGovernance,
-      reporting: accounting,
+      reporting: accounting.reporting,
       fundAccountId
     }, services));
 
@@ -1482,7 +1487,7 @@ describe("operator readiness console view model", () => {
     const fundTwoReadiness: TradingOperatorReadiness = {
       ...readyReadiness,
       brokerageSync: {
-        ...readyReadiness.brokerageSync,
+        ...requirePresent(readyReadiness.brokerageSync, "readiness.brokerageSync"),
         fundAccountId: "fund-2"
       }
     };
@@ -1503,7 +1508,7 @@ describe("operator readiness console view model", () => {
         trading: tradingPayload,
         data,
         accounting: cleanGovernance,
-        reporting: accounting
+        reporting: accounting.reporting
       }, services),
       { initialProps: { tradingPayload: readyTrading } }
     );
@@ -1528,7 +1533,7 @@ describe("operator readiness console view model", () => {
     ));
     expect(fundOneSignal?.aborted).toBe(true);
 
-    resolveFundTwoInbox?.(cleanInbox);
+    requirePresent<(value: OperatorInbox) => void>(resolveFundTwoInbox, "fund-two inbox resolver")(cleanInbox);
     await waitFor(() => expect(result.current.inboxSummary).toBe("No operator work items need attention."));
   });
 
@@ -1543,7 +1548,7 @@ describe("operator readiness console view model", () => {
       trading: readyTrading,
       data,
       accounting: cleanGovernance,
-      reporting: accounting
+      reporting: accounting.reporting
     }, services));
 
     await waitFor(() => expect(result.current.inboxErrorText).toBe("Operator inbox 503"));

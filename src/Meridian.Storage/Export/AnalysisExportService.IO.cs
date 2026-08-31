@@ -1,8 +1,8 @@
-using System.IO.Compression;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Storage.Archival;
+using Meridian.Storage.Replay;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.Export;
 
@@ -436,39 +436,32 @@ load_trades <- function(symbol = NULL) {
         string path,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct)
     {
-        Stream stream = File.OpenRead(path);
-        if (path.EndsWith(".gz", StringComparison.OrdinalIgnoreCase))
+        await using var source = File.OpenRead(path);
+        using var reader = new StreamReader(CompressedJsonlStream.Decompress(source, path));
+        while (!reader.EndOfStream)
         {
-            stream = new GZipStream(stream, CompressionMode.Decompress);
-        }
+            ct.ThrowIfCancellationRequested();
+            var line = await reader.ReadLineAsync(ct);
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
 
-        await using (stream)
-        using (var reader = new StreamReader(stream))
-        {
-            while (!reader.EndOfStream && !ct.IsCancellationRequested)
+            using var doc = JsonDocument.Parse(line);
+            var dict = new Dictionary<string, object?>();
+
+            foreach (var prop in doc.RootElement.EnumerateObject())
             {
-                var line = await reader.ReadLineAsync();
-                if (string.IsNullOrWhiteSpace(line))
-                    continue;
-
-                var doc = JsonDocument.Parse(line);
-                var dict = new Dictionary<string, object?>();
-
-                foreach (var prop in doc.RootElement.EnumerateObject())
+                dict[prop.Name] = prop.Value.ValueKind switch
                 {
-                    dict[prop.Name] = prop.Value.ValueKind switch
-                    {
-                        JsonValueKind.String => prop.Value.GetString(),
-                        JsonValueKind.Number => prop.Value.GetDouble(),
-                        JsonValueKind.True => true,
-                        JsonValueKind.False => false,
-                        JsonValueKind.Null => null,
-                        _ => prop.Value.GetRawText()
-                    };
-                }
-
-                yield return dict;
+                    JsonValueKind.String => prop.Value.GetString(),
+                    JsonValueKind.Number => prop.Value.GetDouble(),
+                    JsonValueKind.True => true,
+                    JsonValueKind.False => false,
+                    JsonValueKind.Null => null,
+                    _ => prop.Value.GetRawText()
+                };
             }
+
+            yield return dict;
         }
     }
 
@@ -485,18 +478,12 @@ load_trades <- function(symbol = NULL) {
     private async Task<string> ComputeChecksumAsync(string path, CancellationToken ct)
     {
         await using var stream = File.OpenRead(path);
-        var hash = await SHA256.HashDataAsync(stream, ct);
+        var hash = await Sha256Digest.ComputeBytesAsync(stream, ct);
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 
     private static string EscapeCsvValue(string value)
-    {
-        if (value.Contains(',') || value.Contains('"') || value.Contains('\n'))
-        {
-            return $"\"{value.Replace("\"", "\"\"")}\"";
-        }
-        return value;
-    }
+        => SpreadsheetFormulaGuard.EscapeCsvCell(value);
 
     private static string SqlEscape(object? value)
     {

@@ -2,15 +2,24 @@
 
 # `ledger` schema
 
-- Relations: 21
-- Functions/procedures: 1
-- Triggers: 2
+- Relations: 27
+- Functions/procedures: 11
+- Triggers: 15
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
 
 ```mermaid
 erDiagram
+    ledger_accounting_action_audit_chain_head {
+        smallint chain_id PK
+        integer schema_version
+        bigint next_sequence
+        text last_hash
+        bigint genesis_sequence
+        bigint pre_chain_event_count
+        timestamp_with_time_zone genesis_recorded_at_utc
+    }
     ledger_accounting_action_audit_events {
         uuid audit_event_id PK
         timestamp_with_time_zone recorded_at_utc
@@ -26,6 +35,10 @@ erDiagram
         text company_id
         jsonb report_group_principal_ids
         text tenant_id
+        bigint chain_sequence
+        text payload_hash
+        text previous_hash
+        text entry_hash
     }
     ledger_accounting_configuration_chart_nodes {
         text fund_profile_id PK,FK
@@ -167,6 +180,34 @@ erDiagram
     ledger_journal_entries_global_sequence_seq {
         text catalogued_object
     }
+    ledger_journal_entry_integrity_seals {
+        uuid journal_entry_id PK,FK
+        integer leg_count
+        timestamp_with_time_zone sealed_at
+    }
+    ledger_journal_entry_open_postings {
+        uuid journal_entry_id PK,FK
+        xid8 opening_xid
+    }
+    ledger_journal_leg_currency_affirmations {
+        uuid affirmation_id PK
+        uuid ledger_book_id FK
+        text affirmed_currency
+        text actor
+        text rationale
+        timestamp_with_time_zone affirmed_at
+        integer legs_repaired
+    }
+    ledger_journal_leg_currency_backfill_status {
+        uuid entry_id
+        uuid journal_entry_id
+        uuid period_id
+        uuid ledger_book_id
+        text base_currency
+        text period_status
+        timestamp_with_time_zone occurred_at
+        text disposition
+    }
     ledger_journal_legs {
         uuid entry_id PK
         uuid journal_entry_id FK
@@ -305,6 +346,10 @@ erDiagram
         text rationale
         timestamp_with_time_zone created_at
         timestamp_with_time_zone updated_at
+        boolean wash_sale_enabled
+        integer wash_sale_window_days
+        text wash_sale_scope
+        date wash_sale_effective_date
     }
     ledger_tax_lots {
         uuid tax_lot_record_id PK
@@ -329,6 +374,26 @@ erDiagram
         uuid originating_mutation_batch_id FK
         uuid last_mutation_batch_id FK
     }
+    ledger_wash_sale_deferrals {
+        uuid deferral_id PK
+        uuid ledger_book_id FK
+        uuid disposal_mutation_batch_id FK
+        uuid security_id
+        date sale_date
+        text disposal_account_name
+        text disposal_account_type
+        text disposal_symbol
+        text disposal_financial_account_id
+        uuid replacement_tax_lot_record_id FK
+        text replacement_lot_id
+        numeric_38_12_ disallowed_amount
+        numeric_38_12_ matched_quantity
+        date holding_period_carry_date
+        text policy_id
+        integer window_days
+        text scope
+        timestamp_with_time_zone recorded_at
+    }
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_chart_nodes : "accounting_configuration_chart_nodes_workspace_fkey"
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_journal_templates : "accounting_configuration_journal_templates_workspace_fkey"
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_posting_rules : "accounting_configuration_posting_rules_workspace_fkey"
@@ -340,21 +405,28 @@ erDiagram
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_mutation_batch_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lots : "tax_lots_last_mutation_batch_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lots : "tax_lots_originating_mutation_batch_id_fkey"
+    ledger_atomic_tax_lot_posting_batches ||--o{ ledger_wash_sale_deferrals : "wash_sale_deferrals_disposal_mutation_batch_id_fkey"
     ledger_journal_entries ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_journal_entry_id_fkey"
-    ledger_journal_entries ||--o{ ledger_journal_legs : "journal_legs_journal_entry_id_fkey"
+    ledger_journal_entries ||--o{ ledger_journal_entry_integrity_seals : "journal_entry_integrity_seals_journal_entry_id_fkey"
+    ledger_journal_entries ||--o{ ledger_journal_entry_open_postings : "journal_entry_open_postings_journal_entry_id_fkey"
+    ledger_journal_entries ||--o{ ledger_journal_legs : "fk_journal_legs_journal_entry"
     ledger_journal_entries ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_tax_lots : "tax_lots_source_journal_entry_id_fkey"
     ledger_ledger_books ||--o{ ledger_accounting_periods : "accounting_periods_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_journal_leg_currency_affirmations : "journal_leg_currency_affirmations_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_tax_lot_policies : "tax_lot_policies_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_tax_lots : "tax_lots_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_wash_sale_deferrals : "wash_sale_deferrals_ledger_book_id_fkey"
     ledger_operations_continuity_workflows ||--o{ ledger_operations_continuity_audit : "operations_continuity_audit_workflow_id_fkey"
     ledger_tax_lots ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_tax_lot_record_id_fkey"
+    ledger_tax_lots ||--o{ ledger_wash_sale_deferrals : "wash_sale_deferrals_replacement_tax_lot_record_id_fkey"
 ```
 
 | Relation | Kind | Columns | Primary key | Foreign keys | Indexes | Comment |
 | --- | --- | ---: | --- | ---: | ---: | --- |
-| `accounting_action_audit_events` | table | 14 | `audit_event_id` | 0 | 5 | - |
+| `accounting_action_audit_chain_head` | table | 7 | `chain_id` | 0 | 1 | Single-row head of the accounting-action audit hash chain: the next sequence, the last entry hash, and the declared genesis boundary separating chained events from the pre-chain history that was appended before V_ledger_032 and which nothing ever protected. Locked FOR UPDATE and advanced inside the append transaction so concurrent writers cannot fork the chain. |
+| `accounting_action_audit_events` | table | 18 | `audit_event_id` | 0 | 6 | - |
 | `accounting_configuration_chart_nodes` | table | 12 | `tenant_id`, `company_id`, `fund_profile_id`, `configuration_scope_id`, `node_id` | 1 | 2 | - |
 | `accounting_configuration_journal_templates` | table | 10 | `tenant_id`, `company_id`, `fund_profile_id`, `configuration_scope_id`, `template_id` | 1 | 1 | - |
 | `accounting_configuration_posting_rules` | table | 12 | `tenant_id`, `company_id`, `fund_profile_id`, `configuration_scope_id`, `rule_id` | 1 | 3 | - |
@@ -366,12 +438,17 @@ erDiagram
 | `fund_profile_tenancy` | table | 4 | `fund_profile_id` | 0 | 2 | - |
 | `journal_entries` | table | 19 | `global_sequence` | 0 | 16 | - |
 | `journal_entries_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
-| `journal_legs` | table | 30 | `entry_id` | 1 | 8 | - |
+| `journal_entry_integrity_seals` | table | 3 | `journal_entry_id` | 1 | 1 | - |
+| `journal_entry_open_postings` | table | 2 | `journal_entry_id` | 1 | 1 | - |
+| `journal_leg_currency_affirmations` | table | 7 | `affirmation_id` | 1 | 2 | Operator assertions that a ledger book with no retained currency evidence transacted only in its base currency, and the currency-blind journal legs each assertion completed. Append-only: this is the authority for a repair the data alone could not determine. |
+| `journal_leg_currency_backfill_status` | view | 8 | - | 0 | 0 | - |
+| `journal_legs` | table | 30 | `entry_id` | 1 | 9 | - |
 | `ledger_books` | table | 13 | `ledger_book_id` | 0 | 6 | - |
 | `ledger_journal_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
 | `operations_continuity_audit` | table | 19 | `audit_id` | 1 | 5 | - |
 | `operations_continuity_workflows` | table | 13 | `workflow_id` | 0 | 6 | - |
 | `period_close_events` | table | 8 | `event_id` | 1 | 2 | - |
 | `tax_lot_mutations` | table | 25 | `mutation_record_id` | 4 | 5 | - |
-| `tax_lot_policies` | table | 12 | `policy_record_id` | 1 | 3 | - |
-| `tax_lots` | table | 21 | `tax_lot_record_id` | 4 | 7 | - |
+| `tax_lot_policies` | table | 16 | `policy_record_id` | 1 | 3 | - |
+| `tax_lots` | table | 21 | `tax_lot_record_id` | 4 | 8 | - |
+| `wash_sale_deferrals` | table | 18 | `deferral_id` | 3 | 4 | - |

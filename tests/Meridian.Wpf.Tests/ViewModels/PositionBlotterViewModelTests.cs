@@ -1,3 +1,4 @@
+using Meridian.Contracts.Api;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -161,6 +162,50 @@ public sealed class PositionBlotterViewModelTests
         xaml.Should().Contain("SelectedPositionPreviewList");
         xaml.Should().Contain("<WrapPanel />");
         xaml.Should().Contain("SelectedActionEligibilityText");
+    }
+
+    [Fact]
+    public void MapToEntry_ExecutionResponseCarriesNoObservationTime_LeavesMarketTimeUnknown()
+    {
+        // ExecutionPositionDetailResponse has no observation, as-of, quote, or last-trade
+        // timestamp, and neither does anything upstream of it. Stamping the local clock here
+        // would present row-construction time as a market observation time, so the mapping must
+        // leave MarketTime unset rather than invent one.
+        var response = new ExecutionPositionDetailResponse(
+            PositionKey: "AAPL-T-1",
+            Symbol: "AAPL",
+            UnderlyingSymbol: "AAPL",
+            ProductDescription: "AAPL equity long",
+            TradeId: "T-1",
+            Quantity: 100m,
+            AverageCostBasis: 100m,
+            MarketPrice: 101m,
+            MarketValue: 10_100m,
+            UnrealisedPnl: 12.34m,
+            RealisedPnl: 0m,
+            AssetClass: "equity",
+            Side: "Buy");
+
+        var entry = PositionBlotterViewModel.MapToEntry(response);
+
+        entry.MarketTime.Should().BeNull("the response carries no observation timestamp to map");
+        entry.PositionKey.Should().Be("AAPL-T-1");
+        entry.Quantity.Should().Be(100m);
+    }
+
+    [Fact]
+    public void StatusBar_NoEntryCarriesAnObservationTime_RendersUnknownRatherThanAClockReading()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var withoutObservation = CreateEntry("AAPL", "AAPL equity long", "T-1", 100m, 12.34m);
+            withoutObservation.MarketTime = null;
+
+            using var vm = CreateLoadedViewModel(withoutObservation);
+
+            vm.MinMktTimeText.Should().Be("—");
+            vm.MaxMktTimeText.Should().Be("—");
+        });
     }
 
     private static PositionBlotterViewModel CreateLoadedViewModel(params BlotterEntry[] entries)

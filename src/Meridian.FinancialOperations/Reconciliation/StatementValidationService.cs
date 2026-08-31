@@ -1,4 +1,5 @@
 using System.Globalization;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
@@ -365,7 +366,7 @@ public sealed class StatementValidationService(IStatementValidationReferenceData
     private static async Task<string> ComputeFileFingerprintAsync(string sourcePath, CancellationToken ct)
     {
         await using var stream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize: 64 * 1024, useAsync: true);
-        var hash = await System.Security.Cryptography.SHA256.HashDataAsync(stream, ct).ConfigureAwait(false);
+        var hash = await Sha256Digest.ComputeBytesAsync(stream, ct).ConfigureAwait(false);
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 

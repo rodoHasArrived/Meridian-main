@@ -33,6 +33,8 @@ public sealed class DataOperationsAssuranceServiceTests : IDisposable
             "retry",
             new IngestionOperationActionRequestDto("retry-1", "Operator reviewed provider recovery."),
             "operator@example.com",
+            "tenant-test",
+            "company-test",
             CancellationToken.None);
 
         result.Should().NotBeNull();
@@ -41,6 +43,13 @@ public sealed class DataOperationsAssuranceServiceTests : IDisposable
         result.EvidenceVaultId.Should().NotBeNullOrWhiteSpace();
         result.EvidenceRoute.Should().Contain("subjectKind=run");
         jobs.GetJob(job.JobId)!.RetryEnvelope.AttemptCount.Should().Be(1);
+        var identity = await evidence.TryGetVaultIdentityAsync(
+            result.EvidenceVaultId!,
+            "tenant-test",
+            "company-test");
+        identity.Should().NotBeNull();
+        identity!.TenantId.Should().Be("tenant-test");
+        identity.Scope.Should().Be("company-test");
     }
 
     [Fact]
@@ -61,6 +70,8 @@ public sealed class DataOperationsAssuranceServiceTests : IDisposable
         var result = await service.ExecuteAsync(
             new StorageMaintenanceCommandRequestDto(preview.PreviewId, "cleanup-1", "Reviewed temporary-file cleanup.", preview.ConfirmationText),
             "operator@example.com",
+            "tenant-test",
+            "company-test",
             CancellationToken.None);
 
         preview.Candidates.Should().ContainSingle(candidate => candidate.RelativePath == "stale.partial");
@@ -68,6 +79,14 @@ public sealed class DataOperationsAssuranceServiceTests : IDisposable
         File.Exists(retained).Should().BeTrue();
         result.Status.Should().Be("Completed");
         result.EvidenceVaultId.Should().NotBeNullOrWhiteSpace();
+        service.GetExecuteAction(preview.PreviewId, "cleanup-1").Should().Be(StorageMaintenanceActionDto.Cleanup);
+        var identity = await evidence.TryGetVaultIdentityAsync(
+            result.EvidenceVaultId!,
+            "tenant-test",
+            "company-test");
+        identity.Should().NotBeNull();
+        identity!.TenantId.Should().Be("tenant-test");
+        identity.Scope.Should().Be("company-test");
     }
 
     public void Dispose()

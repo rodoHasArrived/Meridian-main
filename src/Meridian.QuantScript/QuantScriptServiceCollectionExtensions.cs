@@ -3,6 +3,7 @@ using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Documents;
 using Meridian.QuantScript.Plotting;
 using Meridian.Storage.Store;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -21,7 +22,35 @@ public static class QuantScriptServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddOptions<QuantScriptOptions>();
+        return AddMeridianQuantScriptCore(services, services.AddOptions<QuantScriptOptions>());
+    }
+
+    /// <summary>
+    /// Registers QuantScript and binds its documented <c>QuantScript</c> configuration section.
+    /// Invalid isolation or quota settings fail options resolution instead of silently falling back
+    /// to defaults.
+    /// </summary>
+    public static IServiceCollection AddMeridianQuantScript(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        var options = services
+            .AddOptions<QuantScriptOptions>()
+            .Bind(configuration.GetSection(QuantScriptOptions.SectionName));
+
+        return AddMeridianQuantScriptCore(services, options);
+    }
+
+    private static IServiceCollection AddMeridianQuantScriptCore(
+        IServiceCollection services,
+        OptionsBuilder<QuantScriptOptions> options)
+    {
+        options.Validate(
+            static value => QuantScriptOptions.GetIsolationValidationFailure(value) is null,
+            "QuantScript isolation, admission, and host-RPC limits are invalid.");
 
         services.AddSingleton(sp =>
         {

@@ -1,6 +1,7 @@
 using System.Globalization;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
@@ -147,16 +148,9 @@ public sealed class StatementReconciliationService
     /// </summary>
     private static void ValidateFlexDocument(string sourcePath)
     {
-        var settings = new System.Xml.XmlReaderSettings
-        {
-            DtdProcessing = System.Xml.DtdProcessing.Prohibit,
-            XmlResolver = null,
-            CloseInput = true
-        };
-
         try
         {
-            using var reader = System.Xml.XmlReader.Create(File.OpenRead(sourcePath), settings);
+            using var reader = System.Xml.XmlReader.Create(File.OpenRead(sourcePath), CreateFlexReaderSettings());
             reader.MoveToContent();
             if (!string.Equals(reader.LocalName, "FlexQueryResponse", StringComparison.Ordinal))
             {
@@ -170,6 +164,21 @@ public sealed class StatementReconciliationService
         }
     }
 
+    private static System.Xml.Linq.XDocument LoadFlexDocument(string content)
+    {
+        using var textReader = new StringReader(content);
+        using var reader = System.Xml.XmlReader.Create(textReader, CreateFlexReaderSettings());
+        return System.Xml.Linq.XDocument.Load(reader);
+    }
+
+    private static System.Xml.XmlReaderSettings CreateFlexReaderSettings() => new()
+    {
+        DtdProcessing = System.Xml.DtdProcessing.Prohibit,
+        XmlResolver = null,
+        CloseInput = true,
+        MaxCharactersFromEntities = 0
+    };
+
     /// <summary>
     /// Reads an IB Flex report into normalized statement rows (one per Trade, OpenPosition,
     /// and CashTransaction element) so case intake matches Flex statements with the same
@@ -182,7 +191,7 @@ public sealed class StatementReconciliationService
         string sourcePath,
         string content)
     {
-        var document = System.Xml.Linq.XDocument.Parse(content);
+        var document = LoadFlexDocument(content);
         var rows = new List<NormalizedStatementRow>();
         var rowNumber = 0;
 
@@ -297,7 +306,9 @@ public sealed class StatementReconciliationService
         var content = await File.ReadAllTextAsync(sourcePath, ct).ConfigureAwait(false);
         var importId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{sourcePath}|{content}");
 
-        var document = System.Xml.Linq.XDocument.Parse(content);
+        // Import can be invoked without validation (for example, when resuming from a checkpoint),
+        // so parse with the same DTD-prohibiting settings as ValidateFlexDocument.
+        var document = LoadFlexDocument(content);
         var sourceRows = new List<StatementSourceRowReference>();
         var rowNumber = 0;
         foreach (var element in document.Descendants()
@@ -366,19 +377,18 @@ public sealed class StatementReconciliationService
             return new ExternalStatementCaseIntakeResult(importId, normalizedSourceKind, sourcePath, 0, 0, []);
         }
 
-        var rows = ReadCanonicalStatementRows(normalizedSourceKind, sourcePath, mappingProfileId);
-        var (matches, cases) = MatchRows(rows);
-        // Compute the import id from the resolved profile and file content, identical to the import
-        // path (and to ReadCanonicalStatementRows for non-empty files), so import and reconcile/intake
-        // refer to the same run even for a valid but empty (header-only) statement.
-        var profile = _mappingProfiles.ResolveForSourceKind(normalizedSourceKind, mappingProfileId);
         var canonicalContent = File.ReadAllText(sourcePath);
-        var canonicalImportId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{profile.ProfileId}|{sourcePath}|{canonicalContent}");
-        return new ExternalStatementCaseIntakeResult(
-            canonicalImportId,
+        var canonicalStatement = ReadCanonicalStatementRows(
             normalizedSourceKind,
             sourcePath,
-            rows.Count,
+            mappingProfileId,
+            canonicalContent);
+        var (matches, cases) = MatchRows(canonicalStatement.Rows);
+        return new ExternalStatementCaseIntakeResult(
+            canonicalStatement.ImportId,
+            normalizedSourceKind,
+            sourcePath,
+            canonicalStatement.Rows.Count,
             matches.Count,
             cases);
     }
@@ -492,11 +502,10 @@ public sealed class StatementReconciliationService
             var sourceActivityType = mapped.GetRequired(StatementCanonicalField.ActivityType, currentRowNumber);
             var activityType = profile.MapActivityType(sourceActivityType);
             var rowKind = ToStatementRowKind(activityType);
-            // Position rows must carry a security identifier so the matching engine can compare
-            // them against internal positions by security; a blank one is a mapping error, not a
-            // matchable position. Account-level cash/fee/dividend and other activity rows may omit
-            // it, matching the prior positional importer.
-            var symbol = rowKind == StatementRowKind.Position
+            // Security-bearing positions and transactions must carry an identifier so downstream
+            // matching and resolution retain a security reference. Only account-level cash, fee,
+            // and dividend rows may omit it, matching the prior positional importer.
+            var symbol = rowKind is StatementRowKind.Position or StatementRowKind.Transaction
                 ? mapped.GetRequired(StatementCanonicalField.SecurityIdentifier, currentRowNumber)
                 : mapped.GetOptional(StatementCanonicalField.SecurityIdentifier) ?? string.Empty;
             var quantity = mapped.GetRequiredDecimal(StatementCanonicalField.Quantity, currentRowNumber);
@@ -550,17 +559,22 @@ public sealed class StatementReconciliationService
         }
     }
 
-    private IReadOnlyList<NormalizedStatementRow> ReadCanonicalStatementRows(string normalizedSourceKind, string sourcePath, string? mappingProfileId = null)
+    private CanonicalStatementReadResult ReadCanonicalStatementRows(
+        string normalizedSourceKind,
+        string sourcePath,
+        string? mappingProfileId,
+        string content)
     {
-        var profile = ValidateStatementHeader(normalizedSourceKind, sourcePath, mappingProfileId);
+        using var reader = new StringReader(content);
+        var headerLine = reader.ReadLine();
+        var profile = ValidateStatementHeaderLine(normalizedSourceKind, mappingProfileId, headerLine);
 
-        var content = File.ReadAllText(sourcePath);
         var importId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{profile.ProfileId}|{sourcePath}|{content}");
         var rows = new List<NormalizedStatementRow>();
-        var header = File.ReadLines(sourcePath).First().Split(',', StringSplitOptions.TrimEntries);
-        var lines = File.ReadLines(sourcePath).Skip(1);
+        var header = headerLine!.Split(',', StringSplitOptions.TrimEntries);
         var rowNumber = 1;
-        foreach (var line in lines)
+        string? line;
+        while ((line = reader.ReadLine()) is not null)
         {
             rowNumber++;
             if (string.IsNullOrWhiteSpace(line))
@@ -579,9 +593,10 @@ public sealed class StatementReconciliationService
             var account = mapped.GetRequired(StatementCanonicalField.Account, rowNumber);
             var activityType = profile.MapActivityType(mapped.GetRequired(StatementCanonicalField.ActivityType, rowNumber));
             var rowKind = ToStatementRowKind(activityType);
-            // Position rows must carry a security identifier (see import path); account-level
-            // cash/fee/dividend and other activity rows may omit it. Kept consistent across both paths.
-            var symbol = rowKind == StatementRowKind.Position
+            // Security-bearing positions and transactions must carry an identifier (see import
+            // path); only account-level cash, fee, and dividend rows may omit it. Kept consistent
+            // across both paths.
+            var symbol = rowKind is StatementRowKind.Position or StatementRowKind.Transaction
                 ? mapped.GetRequired(StatementCanonicalField.SecurityIdentifier, rowNumber)
                 : mapped.GetOptional(StatementCanonicalField.SecurityIdentifier) ?? string.Empty;
             var quantity = mapped.GetRequiredDecimal(StatementCanonicalField.Quantity, rowNumber);
@@ -632,14 +647,19 @@ public sealed class StatementReconciliationService
                 rawSnapshot));
         }
 
-        return rows;
+        return new CanonicalStatementReadResult(importId, rows);
     }
 
 
     private StatementMappingProfile ValidateStatementHeader(string normalizedSourceKind, string sourcePath, string? mappingProfileId = null)
     {
-        var profile = _mappingProfiles.ResolveForSourceKind(normalizedSourceKind, mappingProfileId);
         var header = File.ReadLines(sourcePath).FirstOrDefault();
+        return ValidateStatementHeaderLine(normalizedSourceKind, mappingProfileId, header);
+    }
+
+    private StatementMappingProfile ValidateStatementHeaderLine(string normalizedSourceKind, string? mappingProfileId, string? header)
+    {
+        var profile = _mappingProfiles.ResolveForSourceKind(normalizedSourceKind, mappingProfileId);
         if (string.IsNullOrWhiteSpace(header))
         {
             throw new InvalidDataException("Statement source file is empty.");
@@ -665,6 +685,8 @@ public sealed class StatementReconciliationService
 
         return profile;
     }
+
+    private sealed record CanonicalStatementReadResult(string ImportId, IReadOnlyList<NormalizedStatementRow> Rows);
 
     private static void EnsureUniqueStatementHeaderColumns(string[] header, string profileId)
     {
@@ -1065,7 +1087,6 @@ public static class DeterministicFingerprint
 {
     public static string Compute(string value)
     {
-        var bytes = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(value));
-        return Convert.ToHexString(bytes).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(value);
     }
 }

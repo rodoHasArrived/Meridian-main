@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Streaming;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -111,7 +112,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Empty;
         })
-        .WithName("GetWorkstationStream")
+        .WithName("GetWorkstationStream").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200)
         .Produces(400)
         .Produces(429)

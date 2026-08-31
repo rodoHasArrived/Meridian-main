@@ -19,13 +19,21 @@ public partial class PortfolioWorkspaceShellPage : PortfolioWorkspaceShellPageBa
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
+        ViewModel.RefreshRequested += OnRefreshRequested;
+        ViewModel.Start();
+        await ViewModel.RefreshShellContextAsync().ConfigureAwait(true);
         await RestoreShellDockLayoutAsync(PortfolioDockManager).ConfigureAwait(true);
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
+        ViewModel.RefreshRequested -= OnRefreshRequested;
+        ViewModel.Stop();
         SaveShellDockLayout(PortfolioDockManager);
     }
+
+    private async void OnRefreshRequested(object? sender, EventArgs e)
+        => await ViewModel.RefreshShellContextAsync().ConfigureAwait(true);
 
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
         => OpenDroppedPane(PortfolioDockManager, e);

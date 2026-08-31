@@ -28,6 +28,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Meridian.QuantScript\Meridian.QuantScript.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.QuantScript.Worker\Meridian.QuantScript.Worker.csproj"
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
+
+  <Import Project="..\..\src\Meridian.QuantScript.Worker\QuantScriptWorker.Sidecar.targets" />
 
 </Project>

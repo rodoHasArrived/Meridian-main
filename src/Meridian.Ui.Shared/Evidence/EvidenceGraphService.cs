@@ -196,6 +196,7 @@ public sealed class EvidenceGraphService
             EvidenceSubjectResolver.AccountingRecordKind => "accounting-records-evidence-review",
             EvidenceSubjectResolver.PrivateCapitalFundEventKind => "private-capital-fund-event-review",
             EvidenceSubjectResolver.PaymentIntentKind => "payment-intent-cash-evidence-review",
+            EvidenceSubjectResolver.JournalEntryKind => "accounting-records-evidence-review",
             _ => string.Empty
         };
 

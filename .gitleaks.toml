@@ -12,6 +12,24 @@ useDefault = true
 # they can hide real credentials in unrelated source files.
 # ---------------------------------------------------------------------------
 [[allowlists]]
+id          = "generated-database-catalog-fingerprints"
+description = "Deterministic generated database catalog contains schema fingerprints and key metadata, never credentials"
+paths       = [
+    '''^database/manifest/catalog\.json$''',
+]
+
+[[allowlists]]
+id          = "provider-projection-test-correlation-placeholder"
+description = "Provider projection history contains one deterministic test correlation label, not a credential"
+condition   = "AND"
+paths       = [
+    '''^tests/Meridian\.Tests/Ui/ProviderDataProjectionEndpointsTests\.cs$''',
+]
+stopwords   = [
+    "correlation-42",
+]
+
+[[allowlists]]
 id          = "docs-api-reference-placeholder"
 description = "Public documentation placeholder API key"
 condition   = "AND"

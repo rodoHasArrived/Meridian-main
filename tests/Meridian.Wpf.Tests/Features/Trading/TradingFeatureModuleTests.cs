@@ -52,6 +52,8 @@ public sealed class TradingFeatureModuleTests
         DesktopFeatureModuleTestAssertions.AssertRegistered<TradingWorkspaceShellStateProvider>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<TradingWorkspaceShellViewModel>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<TradingWorkspaceShellPage>(services, ServiceLifetime.Transient);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IExecutionSafetyControlClient>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<TradingSafetyCommandService>(services, ServiceLifetime.Singleton);
     }
 
     [Theory]

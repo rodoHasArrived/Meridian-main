@@ -6,6 +6,7 @@ using Meridian.Infrastructure.Adapters.Robinhood;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Meridian.ProviderSdk;
 
 namespace Meridian;
 
@@ -16,13 +17,21 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
 {
     internal static IServiceCollection AddHostedBrokerageGateways(this IServiceCollection services)
     {
+        services.TryAddSingleton<AlpacaTradeUpdatesClient>(sp =>
+        {
+            var options = sp.GetService<Meridian.Core.Config.AlpacaOptions>()
+                ?? new Meridian.Core.Config.AlpacaOptions();
+            var logger = sp.GetRequiredService<ILogger<AlpacaTradeUpdatesClient>>();
+            return new AlpacaTradeUpdatesClient(options, logger);
+        });
         services.TryAddSingleton<AlpacaBrokerageGateway>(sp =>
         {
             var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
             var options = sp.GetService<Meridian.Core.Config.AlpacaOptions>()
                 ?? new Meridian.Core.Config.AlpacaOptions();
             var logger = sp.GetRequiredService<ILogger<AlpacaBrokerageGateway>>();
-            return new AlpacaBrokerageGateway(httpClientFactory, options, logger);
+            var tradeUpdates = sp.GetRequiredService<AlpacaTradeUpdatesClient>();
+            return new AlpacaBrokerageGateway(httpClientFactory, options, logger, tradeUpdates);
         });
         services.AddBrokerageGateway("alpaca", sp => sp.GetRequiredService<AlpacaBrokerageGateway>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageAccountCatalog, AlpacaBrokerageSyncAdapter>());
@@ -36,11 +45,24 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
             var logger = sp.GetRequiredService<ILogger<IBBrokerageGateway>>();
             return new IBBrokerageGateway(options, logger);
         });
+#if IBAPI
+        // Only an official-vendor build wires a transport; non-vendor builds remain fail-closed.
+        services.TryAddSingleton<EnhancedIBConnectionManager>(sp =>
+        {
+            var options = sp.GetService<Meridian.Core.Config.IBOptions>() ?? new Meridian.Core.Config.IBOptions();
+            return new EnhancedIBConnectionManager(new IBCallbackRouter(), options.Host, options.Port, options.ClientId);
+        });
+        services.TryAddSingleton<IBDataServices>(sp => new IBDataServices(
+            sp.GetRequiredService<EnhancedIBConnectionManager>(),
+            new IBDurableResultProjector(sp.GetRequiredService<IBDurableResultStore>())));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IProviderDataReadService>(sp => sp.GetRequiredService<IBDataServices>()));
+#endif
         services.AddBrokerageGateway("ib", sp => sp.GetRequiredService<IBBrokerageGateway>());
         services.AddBrokerageGateway("ibkr", sp => sp.GetRequiredService<IBBrokerageGateway>());
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageAccountCatalog>(sp => sp.GetRequiredService<IBBrokerageGateway>()));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokeragePortfolioSync>(sp => sp.GetRequiredService<IBBrokerageGateway>()));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageActivitySync>(sp => sp.GetRequiredService<IBBrokerageGateway>()));
+        services.TryAddSingleton<IBBrokerageSyncAdapter>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageAccountCatalog, IBBrokerageSyncAdapter>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokeragePortfolioSync, IBBrokerageSyncAdapter>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageActivitySync, IBBrokerageSyncAdapter>());
 
         RegisterOptionalStockSharpGateway(services);
 
@@ -84,6 +106,42 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
     }
 
     private sealed class AlpacaBrokerageSyncAdapter(AlpacaBrokerageGateway gateway) :
+        IBrokerageAccountCatalog,
+        IBrokeragePortfolioSync,
+        IBrokerageActivitySync
+    {
+        private readonly IBrokerageAccountCatalog _accountCatalog = gateway;
+        private readonly IBrokeragePortfolioSync _portfolioSync = gateway;
+        private readonly IBrokerageActivitySync _activitySync = gateway;
+
+        public string ProviderId => _accountCatalog.ProviderId;
+
+        public string ProviderDisplayName => _accountCatalog.ProviderDisplayName;
+
+        Task<IReadOnlyList<BrokerageExternalAccountDto>> IBrokerageAccountCatalog.GetAccountsAsync(
+            CancellationToken ct)
+            => _accountCatalog.GetAccountsAsync(ct);
+
+        Task<BrokeragePortfolioSnapshotDto> IBrokeragePortfolioSync.GetPortfolioSnapshotAsync(
+            string externalAccountId,
+            CancellationToken ct)
+            => _portfolioSync.GetPortfolioSnapshotAsync(externalAccountId, ct);
+
+        Task<BrokerageActivitySnapshotDto> IBrokerageActivitySync.GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since,
+            CancellationToken ct)
+            => _activitySync.GetActivitySnapshotAsync(externalAccountId, since, ct);
+
+        Task<BrokerageActivitySnapshotDto> IBrokerageActivitySync.GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since,
+            DateTimeOffset? untilExclusive,
+            CancellationToken ct)
+            => _activitySync.GetActivitySnapshotAsync(externalAccountId, since, untilExclusive, ct);
+    }
+
+    private sealed class IBBrokerageSyncAdapter(IBBrokerageGateway gateway) :
         IBrokerageAccountCatalog,
         IBrokeragePortfolioSync,
         IBrokerageActivitySync

@@ -90,6 +90,43 @@ public sealed class WriteAheadLog : IAsyncDisposable
     public long SkippedRecordCount => Interlocked.Read(ref _skippedRecordCount);
 
     /// <summary>
+    /// Gets the configured corruption response mode so replay consumers can apply the same
+    /// policy to records whose checksum validates but whose payload cannot be deserialized.
+    /// </summary>
+    public WalCorruptionMode CorruptionMode => _options.CorruptionMode;
+
+    /// <summary>
+    /// Records a checksum-valid record whose payload a replay consumer could not deserialize,
+    /// applying the same corruption counters and Alert-mode signal as record-level corruption
+    /// so semantic payload failures are never dropped without a monitoring signal.
+    /// Callers enforcing <see cref="WalCorruptionMode.Halt"/> should report with
+    /// <paramref name="recordSkip"/> set to <see langword="false"/> before throwing, so the
+    /// corruption is counted without claiming the record was skipped.
+    /// </summary>
+    public void ReportUnreadablePayload(bool recordSkip = true)
+    {
+        Interlocked.Increment(ref _corruptedRecordCount);
+        if (recordSkip)
+            Interlocked.Increment(ref _skippedRecordCount);
+
+        // Keep metric-based alerting in step with the Alert-mode event: semantic payload
+        // corruption counts toward the same Prometheus series as record-level corruption.
+        // Monotonicity with InitializeAsync's IncTo is preserved — the instance counter
+        // incremented above feeds any later IncTo, which only ever raises the metric.
+        WalRecoveryCorruptedTotal.Inc();
+
+        if (_options.CorruptionMode == WalCorruptionMode.Alert)
+        {
+            try
+            { CorruptionDetected?.Invoke(1); }
+            catch (Exception ex)
+            {
+                _log.Error(ex, "Exception in CorruptionDetected event handler; ignoring to continue recovery");
+            }
+        }
+    }
+
+    /// <summary>
     /// Raised when a corrupted WAL record is detected during recovery, provided
     /// <see cref="WalOptions.CorruptionMode"/> is <see cref="WalCorruptionMode.Alert"/>.
     /// The argument is the number of corrupted records found in the current recovery pass.
@@ -130,7 +167,13 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
         var totalCorrupted = CorruptedRecordCount;
 
-        // Emit Prometheus recovery metrics (2.3)
+        // Emit Prometheus recovery metrics (2.3). This series is the scan tally — every
+        // checksum-valid record found — and every WAL consumer gets it, including the ones
+        // that replay records themselves without going through EventPipeline. It deliberately
+        // does not claim durable replay: a record counted here can still fail payload
+        // deserialization and be dropped as corruption during replay. Consumers that replay
+        // report what actually reached storage through mdc_wal_replayed_events_total, which is
+        // a separate series precisely because this one cannot answer that question.
         WalRecoveryEventsTotal.IncTo(totalRecoveredEvents);
         WalRecoveryCorruptedTotal.IncTo(totalCorrupted);
         WalRecoveryDurationSeconds.Set(recoveryStopwatch.Elapsed.TotalSeconds);
@@ -363,8 +406,11 @@ public sealed class WriteAheadLog : IAsyncDisposable
         // First pass: find the last committed sequence across all WAL files
         long lastCommittedSequence = 0;
 
+        // Ordinal, matching TruncateAsync and RecoveryEnumerationIsSequenceOrdered: a
+        // culture-sensitive comparison could order segment names differently than the
+        // ordering those paths prove, and enumeration order is what they reason about.
         var walFiles = Directory.GetFiles(_walDirectory, "*.wal")
-            .OrderBy(f => f)
+            .OrderBy(f => f, StringComparer.Ordinal)
             .ToList();
 
         // Warn if total uncommitted WAL size is large
@@ -459,9 +505,8 @@ public sealed class WriteAheadLog : IAsyncDisposable
                 {
                     // Name-derived bound: every record in this segment has a sequence at or
                     // below the successor segment's embedded base, so committed-ness is a
-                    // metadata comparison. A corrupt record cannot raise a sequence above the
-                    // bound, so no header/content inspection is required before removal (and
-                    // ArchiveAfterTruncate preserves the raw bytes regardless).
+                    // metadata comparison. Record scanning is not required, but deletion still
+                    // requires a valid header so corrupt segments remain available for recovery.
                     fullyCommitted = upperBound <= throughSequence;
                 }
                 else
@@ -474,17 +519,17 @@ public sealed class WriteAheadLog : IAsyncDisposable
                     }
 
                     fullyCommitted = maxSequence <= throughSequence;
+                }
 
-                    // A corrupt header makes the enumeration above yield zero records, which is
-                    // indistinguishable from "fully committed". Never delete such a file — it may
-                    // still hold the only copy of unreplayed records.
-                    if (fullyCommitted && !await HasValidHeaderAsync(walFile, ct))
-                    {
-                        _log.Error(
-                            "Refusing to truncate WAL file {File}: header is invalid; file preserved for inspection",
-                            walFile);
-                        continue;
-                    }
+                // A corrupt header can make the scan fallback enumerate zero records, and segment
+                // metadata cannot prove that a corrupt file is safe to remove. Never delete such
+                // a file — it may still hold the only copy of unreplayed records.
+                if (fullyCommitted && !await HasValidHeaderAsync(walFile, ct))
+                {
+                    _log.Error(
+                        "Refusing to truncate WAL file {File}: header is invalid; file preserved for inspection",
+                        walFile);
+                    continue;
                 }
 
                 if (fullyCommitted)
@@ -546,6 +591,42 @@ public sealed class WriteAheadLog : IAsyncDisposable
         {
             _truncateLock.Release();
         }
+    }
+
+    /// <summary>
+    /// Reports whether segment names prove that <see cref="GetUncommittedRecordsAsync"/> yields
+    /// records in non-decreasing sequence order.
+    /// </summary>
+    /// <remarks>
+    /// Enumeration walks segments in ordinal name order, and names embed the monotonic sequence
+    /// counter's value at creation. Every record in a segment was appended before the next
+    /// segment was created, so when the embedded bases are non-decreasing in name order, no
+    /// later-enumerated record can carry a lower sequence than an earlier one. A clock rollback
+    /// across a rotation (or a foreign <c>*.wal</c> file) breaks that correspondence and is
+    /// reported here as unordered.
+    /// <para>
+    /// Consumers that durably acknowledge a cumulative horizon <em>mid-enumeration</em> must
+    /// check this first: committing through a high sequence while lower-sequence records are
+    /// still unreplayed would let the next pass filter those records as already committed and
+    /// lose them. A single commit issued after the enumeration completes is always safe.
+    /// </para>
+    /// </remarks>
+    public bool RecoveryEnumerationIsSequenceOrdered()
+    {
+        var walFiles = Directory.GetFiles(_walDirectory, "*.wal")
+            .OrderBy(f => f, StringComparer.Ordinal)
+            .ToList();
+
+        var previousBase = -1L;
+        foreach (var walFile in walFiles)
+        {
+            if (!TryParseSegmentBaseSequence(walFile, out var baseSequence) || baseSequence < previousBase)
+                return false;
+
+            previousBase = baseSequence;
+        }
+
+        return true;
     }
 
     /// <summary>

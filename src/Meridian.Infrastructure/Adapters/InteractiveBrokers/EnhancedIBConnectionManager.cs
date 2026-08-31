@@ -18,7 +18,7 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 /// - Unlimited retry attempts by default (configurable via maxRetries parameter)
 /// - See EnhancedIBConnectionManager.IBApi.cs and Infrastructure/Performance/ConnectionWarmUp.cs for implementation
 /// </summary>
-public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient, IIBDataServiceTransport, IIBDataLineageSource, IIBDataCallbackSource
+public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient, IIBDataServiceTransport, IIBDataLineageSource, IIBDataCallbackSource, IIBProviderConnectionIdentity
 {
 #if !IBAPI
     private readonly IBCallbackRouter _router;
@@ -59,6 +59,14 @@ public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient, II
     public event EventHandler<int>? AccountSummaryCompleted;
     public event EventHandler<IBApiError>? ErrorOccurred;
     public event EventHandler<IBMarketDataTypeUpdate>? MarketDataTypeReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderContractDetails Details)>? ContractDetailsReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderOptionChainDefinition Definition)>? OptionChainDefinitionReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderNewsHeadline Headline)>? HistoricalNewsReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderNewsArticlePayload Article)>? NewsArticleReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderFundamentalReport Report)>? FundamentalReportReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderTickByTickObservation Observation)>? TickByTickReceived;
+    public event EventHandler<(int RequestId, IReadOnlyList<Meridian.ProviderSdk.ProviderDepthExchangeDescription> Exchanges)>? DepthExchangesReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderDividendEarnings Payload)>? DividendEarningsReceived;
     public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderOptionContract Contract)>? OptionContractReceived;
     public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderScannerResult Result)>? ScannerResultReceived;
     public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderRealTimeBar Bar)>? RealTimeBarReceived;
@@ -101,7 +109,9 @@ public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient, II
     public Task CancelOrderAsync(int orderId, CancellationToken ct = default)
         => Task.FromException(ThrowPlatformNotSupported());
 
-    public int RequestAccountSummary() => throw ThrowPlatformNotSupported();
+    public int ReserveAccountSummaryRequestId() => throw ThrowPlatformNotSupported();
+
+    public void RequestAccountSummary(int requestId) => throw ThrowPlatformNotSupported();
 
     public void CancelAccountSummary(int requestId) => throw ThrowPlatformNotSupported();
 
@@ -130,4 +140,6 @@ public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient, II
     {
     }
 #endif
+
+    public string ProviderConnectionId => $"ib://{Host}:{Port}/client/{ClientId}";
 }

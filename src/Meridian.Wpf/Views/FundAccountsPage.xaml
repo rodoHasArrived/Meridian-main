@@ -26,6 +26,22 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1320">
+            <!-- ═══ DATA PROVENANCE ═══ -->
+            <!-- The fund-account universe on this screen is served by the desktop-local
+                 InMemoryFundAccountService and persisted as JSON under %LOCALAPPDATA%. It is
+                 not the server's fund universe and is not shared with the browser
+                 workstation. The badge is unconditional and non-dismissable until this lane
+                 reads the governed server API. -->
+            <Border Style="{StaticResource DataProvenanceBadgeBorderStyle}"
+                    Margin="0,0,0,16"
+                    AutomationProperties.Name="Data provenance">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource DataProvenanceBadgeLabelStyle}"
+                               Text="DESKTOP-LOCAL DATA — NOT THE SERVER LEDGER OF RECORD" />
+                    <TextBlock Style="{StaticResource DataProvenanceBadgeDetailStyle}"
+                               Text="Fund accounts on this screen are stored only on this workstation (%LOCALAPPDATA% JSON). They are not read from, and are not visible to, the server or the browser workstation. Do not treat this fund universe as the governed system of record." />
+                </StackPanel>
+            </Border>
             <Border Style="{StaticResource WorkspaceContextStripStyle}"
                     Margin="0,0,0,16"
                     AutomationProperties.AutomationId="FundAccountsActionStrip"

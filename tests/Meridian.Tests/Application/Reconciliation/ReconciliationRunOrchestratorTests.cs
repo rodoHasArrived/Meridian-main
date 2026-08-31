@@ -89,8 +89,11 @@ public sealed class ReconciliationRunOrchestratorTests
         await act.Should().ThrowAsync<OperationCanceledException>();
     }
 
+    // Single-attempt capture policy: these tests pin the orchestrator contract (fan-out, caching,
+    // failure propagation), so scheduler-level retries must not multiply adapter attempt counts.
+    // Retry/backoff/timeout policy is covered by DefaultReconciliationIngestionSchedulerTests.
     private static ReconciliationRunOrchestrator CreateOrchestrator(params IReconciliationSourceAdapter[] adapters) =>
-        new(new DefaultReconciliationIngestionScheduler(), adapters, new ReconciliationMatchingEngine());
+        new(new DefaultReconciliationIngestionScheduler(ReconciliationIngestionOptions.NoRetry), adapters, new ReconciliationMatchingEngine());
 
     private static MatchingTolerances CreateTolerances() => new(0m, 0m, 0m, 0m, TimeSpan.FromMinutes(5));
 

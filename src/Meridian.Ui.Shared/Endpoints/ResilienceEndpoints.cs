@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Application.Monitoring;
 using Meridian.Contracts.Api;
@@ -40,7 +41,7 @@ public static class ResilienceEndpoints
             var dashboard = cbService.GetDashboard();
             return Results.Json(dashboard, jsonOptions);
         })
-        .WithName("GetCircuitBreakerDashboard")
+        .WithName("GetCircuitBreakerDashboard").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Returns the current state of all circuit breakers in the system.")
         .Produces(200);
 
@@ -78,7 +79,7 @@ public static class ResilienceEndpoints
             var estimate = estimator.Estimate(costRequest);
             return Results.Json(estimate, jsonOptions);
         })
-        .WithName("EstimateBackfillCost")
+        .WithName("EstimateBackfillCost").RequirePermission(UserPermission.TriggerBackfill)
         .WithDescription("Estimates API calls, wall-clock time, and quota impact for a backfill request.")
         .Produces(200)
         .Produces(503)
@@ -101,7 +102,7 @@ public static class ResilienceEndpoints
             var report = await reporter.GenerateReportAsync(ct);
             return Results.Json(report, jsonOptions);
         })
-        .WithName("GetRetentionComplianceReport")
+        .WithName("GetRetentionComplianceReport").RequirePermission(UserPermission.ManageStorage)
         .WithDescription("Generates a retention compliance report by scanning stored data against configured policies.")
         .Produces(200)
         .Produces(503);

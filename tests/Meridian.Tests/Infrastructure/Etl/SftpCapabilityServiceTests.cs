@@ -1,6 +1,8 @@
 using FluentAssertions;
 using Meridian.Contracts.Etl;
+using Meridian.Infrastructure.Etl;
 using Meridian.Infrastructure.Etl.Sftp;
+using Meridian.Storage.Etl;
 
 namespace Meridian.Tests.Infrastructure.Etl;
 
@@ -21,5 +23,423 @@ public sealed class SftpCapabilityServiceTests
         status.Issues.Should().Contain(issue => issue.Contains("sftp://", StringComparison.OrdinalIgnoreCase));
         status.Issues.Should().Contain(issue => issue.Contains("username", StringComparison.OrdinalIgnoreCase));
         status.Issues.Should().Contain(issue => issue.Contains("hostKeySha256Fingerprint", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void Evaluate_Destination_AppliesTheSameReadinessRulesAsASource()
+    {
+        var service = new SftpCapabilityService();
+
+        var status = service.Evaluate(new EtlDestinationDefinition
+        {
+            Kind = EtlDestinationKind.Sftp,
+            Location = "relative/path"
+        });
+
+        // A publishing destination that cannot be reached is the same failure as a source that
+        // cannot be read; before this overload existed only the read side was ever evaluated.
+        status.Ready.Should().BeFalse();
+        status.Issues.Should().Contain(issue => issue.Contains("sftp://", StringComparison.OrdinalIgnoreCase));
+        status.Issues.Should().Contain(issue => issue.Contains("username", StringComparison.OrdinalIgnoreCase));
+        status.Issues.Should().Contain(issue => issue.Contains("secretRef", StringComparison.OrdinalIgnoreCase));
+        status.Issues.Should().Contain(issue => issue.Contains("hostKeySha256Fingerprint", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Theory]
+    [InlineData("not-a-sha256-fingerprint")]
+    [InlineData("SHA256:!!!not-base64!!!")]
+    [InlineData("0011223344")]
+    public void Evaluate_Destination_WithAMalformedFingerprint_IsNotReady(string fingerprint)
+    {
+        var service = new SftpCapabilityService();
+
+        var status = service.Evaluate(CompleteDestination(hostKeyFingerprint: fingerprint));
+
+        // A non-blank but unparsable fingerprint previously reported Ready, so an export job was
+        // accepted and then rejected by SftpConnectionOptions.Create before connecting.
+        status.HasHostKeyFingerprint.Should().BeFalse();
+        status.Ready.Should().BeFalse();
+        status.Issues.Should().Contain(issue =>
+            issue.Contains("not a valid SHA-256 host key fingerprint", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Theory]
+    [InlineData("00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF")]
+    [InlineData("SHA256:ABEiM0RVZneImaq7zN3u/wARIjNEVWZ3iJmqu8zd7v8")]
+    public void Evaluate_Destination_WithAWellFormedFingerprint_AcceptsIt(string fingerprint)
+    {
+        var service = new SftpCapabilityService();
+
+        var status = service.Evaluate(CompleteDestination(hostKeyFingerprint: fingerprint));
+
+        status.HasHostKeyFingerprint.Should().BeTrue();
+        status.Issues.Should().NotContain(issue =>
+            issue.Contains("hostKeySha256Fingerprint", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Theory]
+    [InlineData("sftp://partner.example.com/")]
+    [InlineData("sftp://meridian-ops@partner.example.com/inbound")]
+    [InlineData("sftp://partner.example.com/inbound?mode=binary")]
+    [InlineData("sftp://partner.example.com/inbound#drop")]
+    [InlineData("sftp:///inbound")]
+    public void Evaluate_Destination_WithAUriTheTransferPathRejects_IsNotReady(string location)
+    {
+        var service = new SftpCapabilityService();
+
+        var status = service.Evaluate(CompleteDestination(location: location));
+
+        // Readiness previously checked only the sftp:// scheme, so each of these was approved
+        // and then rejected by SftpRemoteLocation.ParseRequired before a connection was opened.
+        status.HasSftpUri.Should().BeFalse();
+        status.Ready.Should().BeFalse();
+        status.Issues.Should().Contain(issue => issue.Contains("SFTP destination location", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Evaluate_Destination_WithAnUnsetEnvSecretRef_IsNotReady()
+    {
+        var service = new SftpCapabilityService();
+
+        var status = service.Evaluate(CompleteDestination(secretRef: "env:MERIDIAN_TEST_SFTP_DEFINITELY_UNSET"));
+
+        // EnvironmentSftpCredentialResolver throws for an unset variable, so accepting this as
+        // ready meant taking an export job that could never open a connection.
+        status.HasSecretRef.Should().BeFalse();
+        status.Ready.Should().BeFalse();
+        status.Issues.Should().Contain(issue =>
+            issue.Contains("MERIDIAN_TEST_SFTP_DEFINITELY_UNSET", StringComparison.Ordinal)
+            && issue.Contains("unset or empty", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task ResolveAsync_TrimsTheEnvironmentVariableNameLikeReadinessDoes()
+    {
+        const string variable = "MERIDIAN_TEST_SFTP_SPACED";
+        Environment.SetEnvironmentVariable(variable, "spaced-secret");
+        try
+        {
+            var resolver = new EnvironmentSftpCredentialResolver();
+            var service = new SftpCapabilityService();
+
+            // `env: VAR` reads naturally in YAML and readiness accepts it, but passing the
+            // leading space to GetEnvironmentVariable looked up a different name and failed
+            // after the destination had already been reported ready.
+            var destination = CompleteDestination(secretRef: $"env: {variable}");
+
+            service.Evaluate(destination).HasSecretRef.Should().BeTrue();
+
+            var material = await resolver.ResolveAsync(destination, CancellationToken.None);
+
+            material.Password.Should().Be("spaced-secret");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(variable, null);
+        }
+    }
+
+    [Fact]
+    public async Task ResolveAsync_Destination_PreservesWhitespaceInALiteralCredential()
+    {
+        var resolver = new EnvironmentSftpCredentialResolver();
+
+        // SftpFilePublisher passed destination.Username and destination.SecretRef to the client
+        // verbatim before destinations moved onto this resolver, so trimming them here would
+        // silently substitute a different credential and break an export that authenticates
+        // today.
+        var destination = new EtlDestinationDefinition
+        {
+            Kind = EtlDestinationKind.Sftp,
+            Location = "sftp://partner.example.com/inbound",
+            Username = " meridian ops ",
+            SecretRef = "  pass word  ",
+            HostKeySha256Fingerprint =
+                "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+        };
+
+        var material = await resolver.ResolveAsync(destination, CancellationToken.None);
+
+        material.Password.Should().Be("  pass word  ");
+        material.Username.Should().Be(" meridian ops ");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_Source_KeepsItsEstablishedTrimming()
+    {
+        var resolver = new EnvironmentSftpCredentialResolver();
+
+        // The mirror of the destination case. The source resolver has always trimmed a literal
+        // username and secret, so a source that authenticates today as 'meridian-ops'/'pass'
+        // must keep doing so. Applying the destination's verbatim behaviour to both roles would
+        // break the read side exactly as trimming both breaks the write side — the two roles
+        // normalised differently before they shared this code, so neither single behaviour is
+        // compatible with both. Unifying them is a migration, not a cleanup.
+        var source = new EtlSourceDefinition
+        {
+            Kind = EtlSourceKind.Sftp,
+            Location = "sftp://partner.example.com/outbound",
+            Username = " meridian-ops ",
+            SecretRef = "  pass  "
+        };
+
+        var material = await resolver.ResolveAsync(source, CancellationToken.None);
+
+        material.Password.Should().Be("pass");
+        material.Username.Should().Be("meridian-ops");
+    }
+
+    [Fact]
+    public void Evaluate_Destination_WithAnEmptyEnvReference_IsNotReady()
+    {
+        var service = new SftpCapabilityService();
+
+        var status = service.Evaluate(CompleteDestination(secretRef: "env:"));
+
+        status.HasSecretRef.Should().BeFalse();
+        status.Issues.Should().Contain(issue =>
+            issue.Contains("names no environment variable", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void Evaluate_Destination_WithAResolvableEnvSecretRef_AcceptsIt()
+    {
+        const string variable = "MERIDIAN_TEST_SFTP_PREFLIGHT";
+        Environment.SetEnvironmentVariable(variable, "resolved-secret");
+        try
+        {
+            var service = new SftpCapabilityService();
+
+            var status = service.Evaluate(CompleteDestination(secretRef: $"env:{variable}"));
+
+            status.HasSecretRef.Should().BeTrue();
+            status.Issues.Should().NotContain(issue =>
+                issue.Contains("secretRef", StringComparison.OrdinalIgnoreCase));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(variable, null);
+        }
+    }
+
+    [Fact]
+    public void Evaluate_Destination_WhenRealSftpIsDisabled_IsNotReadyEvenWhenFullyConfigured()
+    {
+        var service = new SftpCapabilityService();
+
+        var status = service.Evaluate(CompleteDestination());
+
+        status.RealSftpEnabled.Should().Be(service.RealSftpEnabled);
+        if (!service.RealSftpEnabled)
+        {
+            status.Ready.Should().BeFalse();
+            status.Issues.Should().Contain(issue => issue.Contains("disabled in this build", StringComparison.OrdinalIgnoreCase));
+        }
+        else
+        {
+            status.Ready.Should().BeTrue();
+        }
+    }
+
+    [Fact]
+    public async Task ListFilesAsync_WhenCapabilityIsNotReady_FailsClosedWithTheReadinessIssues()
+    {
+        var factory = new ThrowingSftpClientFactory();
+        var reader = new SftpFileSourceReader(
+            new EtlStagingStore(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"))),
+            factory,
+            new EnvironmentSftpCredentialResolver(),
+            new StubCapabilityService(ready: false, issues: ["Real SFTP support is disabled in this build."]));
+
+        var act = async () => await reader.ListFilesAsync(CompleteSource(), CancellationToken.None);
+
+        // Only the publisher was gated, so a default EnableSftp=false build accepted an SFTP
+        // source and surfaced the disabled stub's NotSupportedException as a transport failure.
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*not available for this source*disabled in this build*");
+        factory.CreateCalls.Should().Be(0);
+    }
+
+    [Theory]
+    [InlineData("sftp://partner.example.com/", "malformed location")]
+    [InlineData("not-a-uri", "unparsable location")]
+    public async Task ListFilesAsync_ReportsCapabilityBeforeTheConfigurationError(string location, string _)
+    {
+        var factory = new ThrowingSftpClientFactory();
+        var reader = new SftpFileSourceReader(
+            new EtlStagingStore(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"))),
+            factory,
+            new EnvironmentSftpCredentialResolver(),
+            new StubCapabilityService(ready: false, issues: ["Real SFTP support is disabled in this build."]));
+
+        var source = CompleteSource(location: location);
+
+        var act = async () => await reader.ListFilesAsync(source, CancellationToken.None);
+
+        // Evaluating capability inside CreateClient put it after ParseRequired and credential
+        // resolution, both of which throw on their own. A source that is *both* misconfigured and
+        // running on a build without SFTP therefore reported only the URI error and never said
+        // real SFTP was absent — the operator fixes the URI, retries, and hits the same wall for a
+        // reason nobody told them. Evaluate aggregates every issue, so it has to run first.
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*not available for this source*disabled in this build*");
+        factory.CreateCalls.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ListFilesAsync_ReportsCapabilityBeforeAnUnresolvableSecret()
+    {
+        var factory = new ThrowingSftpClientFactory();
+        var reader = new SftpFileSourceReader(
+            new EtlStagingStore(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"))),
+            factory,
+            new EnvironmentSftpCredentialResolver(),
+            new StubCapabilityService(ready: false, issues: ["Real SFTP support is disabled in this build."]));
+
+        var source = CompleteSource(secretRef: "env:MERIDIAN_TEST_SFTP_DEFINITELY_UNSET");
+
+        var act = async () => await reader.ListFilesAsync(source, CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*not available for this source*disabled in this build*");
+        factory.CreateCalls.Should().Be(0);
+    }
+
+    private static EtlSourceDefinition CompleteSource(
+        string? location = "sftp://partner.example.com/outbound",
+        string? secretRef = "literal-secret") => new()
+        {
+            Kind = EtlSourceKind.Sftp,
+            Location = location,
+            Username = "meridian-ops",
+            SecretRef = secretRef,
+            HostKeySha256Fingerprint = "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+        };
+
+    [Fact]
+    public async Task PublishAsync_WhenCapabilityIsNotReady_FailsClosedWithTheReadinessIssues()
+    {
+        var factory = new ThrowingSftpClientFactory();
+        var publisher = new SftpFilePublisher(
+            factory,
+            new EnvironmentSftpCredentialResolver(),
+            new StubCapabilityService(ready: false, issues: ["Real SFTP support is disabled in this build."]));
+
+        var act = async () => await publisher.PublishAsync(CompleteDestination(), "/tmp/export", CancellationToken.None);
+
+        // The operator must learn the capability is absent, not receive a transport error from
+        // the disabled-build stub after the export job has already been accepted.
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*not available for this destination*disabled in this build*");
+        factory.CreateCalls.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task PublishAsync_ResolvesTheDestinationSecretThroughTheSharedCredentialModel()
+    {
+        const string variable = "MERIDIAN_TEST_SFTP_PASSWORD";
+        Environment.SetEnvironmentVariable(variable, "resolved-secret");
+        try
+        {
+            var factory = new ThrowingSftpClientFactory();
+            var publisher = new SftpFilePublisher(
+                factory,
+                new EnvironmentSftpCredentialResolver(),
+                new StubCapabilityService(ready: true, issues: []));
+
+            var destination = CompleteDestination(secretRef: $"env:{variable}");
+
+            // The client factory throws, so publishing cannot complete; the assertion is on the
+            // credential material the publisher handed it. Passing SecretRef straight through
+            // sent the literal text "env:MERIDIAN_TEST_SFTP_PASSWORD" as the password.
+            var act = async () => await publisher.PublishAsync(destination, "/tmp/export", CancellationToken.None);
+            await act.Should().ThrowAsync<InvalidOperationException>();
+
+            factory.LastOptions.Should().NotBeNull();
+            factory.LastOptions!.Password.Should().Be("resolved-secret");
+            factory.LastOptions.Username.Should().Be("meridian-ops");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(variable, null);
+        }
+    }
+
+    [Fact]
+    public async Task ResolveAsync_SourceAndDestination_ResolveIdenticalSecretMaterial()
+    {
+        const string variable = "MERIDIAN_TEST_SFTP_SHARED";
+        Environment.SetEnvironmentVariable(variable, "shared-secret");
+        try
+        {
+            var resolver = new EnvironmentSftpCredentialResolver();
+
+            var fromSource = await resolver.ResolveAsync(new EtlSourceDefinition
+            {
+                Kind = EtlSourceKind.Sftp,
+                Location = "sftp://partner.example.com/outbound",
+                Username = "meridian-ops",
+                SecretRef = $"env:{variable}"
+            });
+
+            var fromDestination = await resolver.ResolveAsync(CompleteDestination(secretRef: $"env:{variable}"));
+
+            fromDestination.Should().Be(fromSource);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(variable, null);
+        }
+    }
+
+    [Fact]
+    public async Task ResolveAsync_Destination_WithoutASecretRef_FailsWithTheDestinationRole()
+    {
+        var resolver = new EnvironmentSftpCredentialResolver();
+
+        var act = async () => await resolver.ResolveAsync(CompleteDestination(secretRef: null));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*destination secretRef is required*");
+    }
+
+    private static EtlDestinationDefinition CompleteDestination(
+        string? secretRef = "literal-secret",
+        // Deliberately low-entropy so secret scanners do not read a 64-char hex default sitting
+        // next to the word "Key" as a leaked credential. Still a well-formed SHA-256 fingerprint.
+        string? hostKeyFingerprint = "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+        string? location = "sftp://partner.example.com/inbound") => new()
+        {
+            Kind = EtlDestinationKind.Sftp,
+            Location = location,
+            Username = "meridian-ops",
+            SecretRef = secretRef,
+            HostKeySha256Fingerprint = hostKeyFingerprint
+        };
+
+    private sealed class ThrowingSftpClientFactory : ISftpClientFactory
+    {
+        public int CreateCalls { get; private set; }
+
+        public SftpConnectionOptions? LastOptions { get; private set; }
+
+        public ISftpClient Create(SftpConnectionOptions options)
+        {
+            CreateCalls++;
+            LastOptions = options;
+            throw new InvalidOperationException("connection not attempted in tests");
+        }
+    }
+
+    private sealed class StubCapabilityService(bool ready, IReadOnlyList<string> issues) : ISftpCapabilityService
+    {
+        public bool RealSftpEnabled => ready;
+
+        public SftpCapabilityStatus Evaluate(EtlSourceDefinition source) => Status();
+
+        public SftpCapabilityStatus Evaluate(EtlDestinationDefinition destination) => Status();
+
+        private SftpCapabilityStatus Status() => new(
+            ready, true, true, true, true, true, ready, issues);
     }
 }

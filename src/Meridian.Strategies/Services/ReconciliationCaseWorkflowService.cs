@@ -1,8 +1,8 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Workstation;
 using Meridian.FSharp.Ledger;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Strategies.Services;
 
@@ -59,7 +59,7 @@ public sealed class ReconciliationCaseWorkflowService : IReconciliationCaseWorkf
     private static string ComputeHash(string breakId, ReconciliationCaseLifecycleState from, ReconciliationCaseLifecycleState to, ReconciliationCaseTransitionCommand command, DateTimeOffset now, string? previousHash)
     {
         var payload = JsonSerializer.Serialize(new { breakId, from, to, command.Actor, command.Reason, command.EvidenceReferences, now, previousHash });
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(payload));
+        var bytes = Sha256Digest.ComputeBytesUtf8(payload);
         return Convert.ToHexString(bytes);
     }
 }

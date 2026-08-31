@@ -293,21 +293,63 @@ public sealed class ConfigTemplateGenerator
         {
             DataRoot = "/data",
             Compress = true,
-            DataSource = "${MDC_DATASOURCE:-IB}",
+            // A parseable literal, not a "${MDC_DATASOURCE:-...}" placeholder. Nothing expands shell
+            // placeholders before deserialization — RunGenerateConfig writes this JSON verbatim and
+            // DataSourceKindConverter fails closed on an unknown string — so a placeholder here made
+            // the whole generated file unloadable regardless of what followed ":-". Credential
+            // placeholders elsewhere in this template survive only because callers detect them with
+            // StartsWith("${") and treat them as unset; the enum has no such escape hatch.
+            // Synthetic matches config/appsettings.sample.json so a generated container starts
+            // offline without keys, and MDC_DATASOURCE still overrides it through the normal
+            // environment path.
+            DataSource = "Synthetic",
+            // DataSource: Synthetic without this section is a template that loads but fails its
+            // own documented validation. DryRunService.ValidateProvidersAsync asserts
+            // `config.Synthetic?.Enabled == true` and reports "Synthetic dataset disabled" for a
+            // null section, so `--generate-config --template docker` followed by the `--dry-run`
+            // the docs prescribe would fail out of the box. SyntheticMarketDataClient treats a
+            // null config as enabled, so this only ever tripped the validator — which is exactly
+            // the kind of gap an operator reads as "the tool is broken".
+            Synthetic = new { Enabled = true },
             Alpaca = new
             {
+                // The credential placeholders stay in "${...}" form because ConfigValidationHelper
+                // recognises that prefix and warns the key still needs configuring.
+                //
+                // The bare names are deliberate and must not be "normalised" to MDC_ALPACA_*.
+                // Both spellings are mapped, but the bare ones win twice over: EnvToConfigMapping
+                // applies the legacy aliases after the MDC_ entries, and the backfill path resolves
+                // through ProviderCredentialResolver, which reads the bare ALPACA_KEY_ID from the
+                // environment ahead of any configured value. Advertising MDC_ALPACA_KEY_ID would
+                // therefore point operators at a variable a stale bare value silently overrides.
+                // Feed is the exception below: it has no bare alias at all.
                 KeyId = "${ALPACA_KEY_ID}",
                 SecretKey = "${ALPACA_SECRET_KEY}",
-                Feed = "${ALPACA_FEED:-iex}"
+                // Feed is not a credential and has no placeholder exemption: AlpacaOptionsValidator
+                // requires exactly "iex" or "sip", so "${ALPACA_FEED:-iex}" failed validation the
+                // moment an operator switched DataSource to Alpaca and the validator began running.
+                Feed = "iex"
             },
             Storage = new
             {
                 NamingConvention = "BySymbol",
                 DatePartition = "Daily"
             },
+            // Parseable for the same reason DataSource is: SymbolConfigValidator matches
+            // ^[A-Z0-9\-\.\/]+$ and RuleForEach runs on every generated template, so the
+            // "${MDC_SYMBOLS:-SPY}" placeholder failed validation unconditionally — the $, {, },
+            // and : are all outside the character class. MDC_SYMBOLS now overrides this through
+            // ConfigEnvironmentOverride rather than through shell expansion that never ran.
             Symbols = new[]
             {
-                new { Symbol = "${MDC_SYMBOLS:-SPY}", SubscribeTrades = true, SubscribeDepth = true }
+                // Depth is off because this template advertises providers that cannot serve it.
+                // Alpaca and Polygon report depth: false and return -1 from SubscribeMarketDepth,
+                // and SubscriptionOrchestrator calls _depthCollector.RegisterSubscription(symbol)
+                // *before* that call, then only stores the id when it is > 0 — the -1 return
+                // releases neither the registration nor the ownership lease the way the catch
+                // branch does. Requesting depth here would therefore leave an active-looking
+                // subscription that can never emit. An IB operator can turn it back on.
+                new { Symbol = "SPY", SubscribeTrades = true, SubscribeDepth = false }
             }
         };
 
@@ -319,11 +361,22 @@ public sealed class ConfigTemplateGenerator
             Category = ConfigTemplateCategory.Deployment,
             EnvironmentVariables = new Dictionary<string, string>
             {
-                ["MDC_DATASOURCE"] = "Data source provider (IB, Alpaca, Polygon, NYSE)",
+                // Every name here must be one ConfigEnvironmentOverride actually maps *and* one
+                // that wins where two spellings exist, or the template advertises a setting the
+                // operator cannot reliably change. See the Alpaca block above for why the two
+                // credentials use the bare names while the feed uses the MDC_ prefix.
+                // Polygon is deliberately absent. The override parses it and a streaming factory
+                // exists, but that factory builds PolygonMarketDataClient without passing
+                // PolygonOptions, so the client always holds an empty ApiKey; and the documented
+                // POLYGON_API_KEY maps under Backfill:Providers:Polygon, which
+                // ApplyBackfillOverride returns unchanged for nested provider paths. There is no
+                // credential that reaches the streaming client, so advertising it here would sell
+                // a container path that cannot connect.
+                ["MDC_DATASOURCE"] = "Real-time data source provider (IB, Alpaca, NYSE, Synthetic; default Synthetic)",
                 ["MDC_SYMBOLS"] = "Comma-separated list of symbols",
-                ["ALPACA_KEY_ID"] = "Alpaca API Key ID",
-                ["ALPACA_SECRET_KEY"] = "Alpaca Secret Key",
-                ["ALPACA_FEED"] = "Alpaca data feed (iex or sip)"
+                ["ALPACA_KEY_ID"] = "Alpaca API Key ID (takes precedence over MDC_ALPACA_KEY_ID)",
+                ["ALPACA_SECRET_KEY"] = "Alpaca Secret Key (takes precedence over MDC_ALPACA_SECRET_KEY)",
+                ["MDC_ALPACA_FEED"] = "Alpaca data feed (iex or sip); no bare ALPACA_FEED alias exists"
             }
         };
     }

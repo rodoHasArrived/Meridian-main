@@ -97,6 +97,27 @@ public sealed class Bai2StatementConnectorTests
     }
 
     [Fact]
+    public async Task Parse_Bai2_WithNoGroup_IsRejected()
+    {
+        // An account section without a 02 group has neither the statement as-of date nor the group
+        // currency that establish a statement boundary. It must not become a single-account run merely
+        // because its 03/49/99 structure is otherwise present.
+        const string bai2 = """
+            01,CITIBANK,MERIDIAN,260531,0800,1,,,2/
+            03,0975312468,USD,015,1000000,,/
+            49,1000000,2/
+            99,1000000,0,3/
+            """;
+        var document = new StatementSourceDocument("no-group.bai", Encoding.UTF8.GetBytes(bai2));
+
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("a BAI2 statement run requires exactly one group");
+        result.Issues.Should().Contain(issue => issue.Code == "BAI2_INVALID_GROUP_COUNT");
+    }
+
+    [Fact]
     public async Task Parse_Bai2_WithBlankAccountIdentifier_IsRejected()
     {
         // Two 03 account sections whose required account-number field is blank. Both would otherwise share
@@ -145,6 +166,28 @@ public sealed class Bai2StatementConnectorTests
         result.HasErrors.Should().BeTrue();
         result.Records.Should().BeEmpty("a BAI2 transaction outside an account section must not commit");
         result.Issues.Should().Contain(issue => issue.Code == "BAI2_TRANSACTION_WITHOUT_ACCOUNT");
+    }
+
+    [Fact]
+    public async Task Parse_Bai2_WithoutAccountSection_IsRejected()
+    {
+        // An empty custody statement with a valid group and trailers still must identify the account it
+        // covers. Otherwise import would succeed without account evidence and operators could mistake it
+        // for an empty statement for the selected Meridian account.
+        const string bai2 = """
+            01,CITIBANK,MERIDIAN,260531,0800,1,,,2/
+            02,MERIDIAN,CITIBANK,1,260531,,USD,2/
+            98,0,1,2/
+            99,0,1,4/
+            """;
+        var document = new StatementSourceDocument("missing-account-section.bai", Encoding.UTF8.GetBytes(bai2));
+
+        _connector.CanHandle(document).Should().BeTrue();
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("a BAI2 statement must identify an account even when it has no activity");
+        result.Issues.Should().Contain(issue => issue.Code == "BAI2_MISSING_ACCOUNT_SECTION");
     }
 
     [Fact]

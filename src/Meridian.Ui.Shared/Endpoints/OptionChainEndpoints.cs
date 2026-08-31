@@ -35,7 +35,7 @@ public static class OptionChainEndpoints
             var imported = await importService.ImportSnapshotAsync(snapshot, ct).ConfigureAwait(false);
             return Results.Json(imported, jsonOptions);
         })
-        .WithName("ImportOptionChainSnapshot")
+        .WithName("ImportOptionChainSnapshot").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<OptionChainSnapshot>("application/json")
         .Produces<OptionChainSnapshotDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
@@ -56,7 +56,7 @@ public static class OptionChainEndpoints
             var snapshot = await service.GetChainSnapshotAsync(underlyingSymbol, expiryDate, ct).ConfigureAwait(false);
             return snapshot is null ? Results.NotFound() : Results.Json(snapshot, jsonOptions);
         })
-        .WithName("GetOptionChainSnapshot")
+        .WithName("GetOptionChainSnapshot").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<OptionChainSnapshotDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
     }

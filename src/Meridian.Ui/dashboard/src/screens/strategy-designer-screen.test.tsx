@@ -49,4 +49,26 @@ describe("StrategyDesignerScreen", () => {
       })
     ).toHaveTextContent("Reference");
   });
+
+  it("explains both disabled primary actions to keyboard and screen-reader operators", () => {
+    render(<StrategyDesignerScreen />);
+
+    // A disabled native button cannot take focus and `disabledReason` only reaches the DOM as
+    // `title`, so the reason must also exist as text associated via aria-describedby.
+    const save = screen.getByRole("button", { name: "Save strategy design draft" });
+    expect(save).toBeDisabled();
+    const saveDescribedBy = save.getAttribute("aria-describedby");
+    expect(saveDescribedBy).toBeTruthy();
+    expect(document.getElementById(saveDescribedBy as string)?.textContent).toContain(
+      "canvas-to-design-document mapping"
+    );
+
+    const run = screen.getByRole("button", { name: /Run backtest proof blocked/ });
+    expect(run).toBeDisabled();
+    const runDescribedBy = run.getAttribute("aria-describedby");
+    expect(runDescribedBy).toBeTruthy();
+    expect(document.getElementById(runDescribedBy as string)?.textContent).toContain(
+      "governed evidence references"
+    );
+  });
 });

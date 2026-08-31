@@ -197,7 +197,7 @@ public sealed class PipelineFeatureRegistrationTests : IDisposable
             Aggressor: AggressorSide.Buy,
             SequenceNumber: sequence);
 
-        return MarketEvent.Trade(now, symbol, trade, sequence);
+        return MarketEvent.Trade(now, symbol, trade, "TEST", sequence);
     }
 
     private string CreateTempDirectory()

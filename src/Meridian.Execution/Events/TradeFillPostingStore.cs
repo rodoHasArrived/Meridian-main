@@ -93,6 +93,9 @@ public sealed record TradeFillPostingStoreOptions(string RootDirectory, string P
             .ToArray());
         if (string.IsNullOrWhiteSpace(readable))
             readable = "scope";
+        // Deliberately NOT routed through Sha256Digest (which lowercases): the truncated hash is
+        // part of a persisted scope identity, so changing its casing would detach existing
+        // retained state from its scope (#2691).
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(normalized)))[..16];
         return $"{readable}-{hash}";
     }

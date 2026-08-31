@@ -22,12 +22,12 @@ describe("workspace header view model", () => {
 
     expect(model.title).toBe("Trading Workstation");
     expect(model.eyebrow).toBe("Workspace");
-    expect(model.badges.map((badge) => badge.id)).toEqual(["workspace-status"]);
+    expect(model.badges.map((badge) => badge.id)).toEqual(["workspace-maturity"]);
     expect(model.badges).toContainEqual({
-      id: "workspace-status",
-      label: "Review",
-      variant: "warning",
-      ariaLabel: "Trading workspace status Review"
+      id: "workspace-maturity",
+      label: "Available",
+      variant: "default",
+      ariaLabel: "Trading product maturity Available"
     });
     expect(model.metaItems).toEqual([]);
     expect(model.sessionLabel).toBe("Ops Desk");
@@ -51,13 +51,13 @@ describe("workspace header view model", () => {
       canRefresh: false
     });
 
-    expect(model.badges.map((badge) => badge.id)).toEqual(["workspace-status"]);
+    expect(model.badges.map((badge) => badge.id)).toEqual(["workspace-maturity"]);
     expect(model.metaItems).toEqual([]);
     expect(model.badges).toContainEqual({
-      id: "workspace-status",
+      id: "workspace-maturity",
       label: "Setup",
       variant: "outline",
-      ariaLabel: "Settings workspace status Setup"
+      ariaLabel: "Settings product maturity Setup"
     });
     expect(model.sessionLabel).toBe("Loading session");
     expect(model.sessionRoleLabel).toBeNull();
@@ -65,22 +65,30 @@ describe("workspace header view model", () => {
     expect(model.refreshAction).toBeNull();
   });
 
-  it("maps live and paper workspace statuses to semantic badge tones", () => {
+  it("maps the product maturity taxonomy to semantic badge tones", () => {
+    expect(
+      buildWorkspaceHeaderViewModel({
+        workspace: workspaceForKey("portfolio"),
+        session,
+        canRefresh: true
+      }).badges.find((badge) => badge.id === "workspace-maturity")?.variant
+    ).toBe("warning");
+
+    expect(
+      buildWorkspaceHeaderViewModel({
+        workspace: workspaceForKey("settings"),
+        session,
+        canRefresh: true
+      }).badges.find((badge) => badge.id === "workspace-maturity")?.variant
+    ).toBe("outline");
+
     expect(
       buildWorkspaceHeaderViewModel({
         workspace: workspaceForKey("data"),
         session,
         canRefresh: true
-      }).badges.find((badge) => badge.id === "workspace-status")?.variant
-    ).toBe("success");
-
-    expect(
-      buildWorkspaceHeaderViewModel({
-        workspace: workspaceForKey("strategy"),
-        session,
-        canRefresh: true
-      }).badges.find((badge) => badge.id === "workspace-status")?.variant
-    ).toBe("paper");
+      }).badges.find((badge) => badge.id === "workspace-maturity")?.variant
+    ).toBe("default");
   });
 
   it("keeps refresh enabled without a disabled reason when data is idle", () => {

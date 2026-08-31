@@ -1,9 +1,9 @@
 using System.IO.Compression;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Core.Serialization;
 using Meridian.Storage.Archival;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.Packaging;
 
@@ -280,7 +280,7 @@ public sealed partial class PortableDataPackager
     private async Task<string> ComputeFileChecksumAsync(string path, CancellationToken ct)
     {
         await using var stream = File.OpenRead(path);
-        var hash = await SHA256.HashDataAsync(stream, ct);
+        var hash = await Sha256Digest.ComputeBytesAsync(stream, ct);
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 

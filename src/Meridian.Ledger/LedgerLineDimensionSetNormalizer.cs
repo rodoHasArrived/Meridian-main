@@ -1,3 +1,5 @@
+using Meridian.Contracts.Text;
+
 namespace Meridian.Ledger;
 
 internal static class LedgerLineDimensionSetNormalizer
@@ -9,24 +11,24 @@ internal static class LedgerLineDimensionSetNormalizer
 
         var externalGlDimensions = NormalizeExternalGlDimensions(dimensions.ExternalGlDimensions);
         var canonical = new LedgerLineDimensionSet(
-            FundId: Normalize(dimensions.FundId),
-            EntityId: Normalize(dimensions.EntityId),
-            SleeveId: Normalize(dimensions.SleeveId),
-            StrategyId: Normalize(dimensions.StrategyId),
-            InvestorId: Normalize(dimensions.InvestorId),
-            CapitalAccountId: Normalize(dimensions.CapitalAccountId),
+            FundId: TextPrimitives.NormalizeOptional(dimensions.FundId),
+            EntityId: TextPrimitives.NormalizeOptional(dimensions.EntityId),
+            SleeveId: TextPrimitives.NormalizeOptional(dimensions.SleeveId),
+            StrategyId: TextPrimitives.NormalizeOptional(dimensions.StrategyId),
+            InvestorId: TextPrimitives.NormalizeOptional(dimensions.InvestorId),
+            CapitalAccountId: TextPrimitives.NormalizeOptional(dimensions.CapitalAccountId),
             InstrumentId: dimensions.InstrumentId,
-            TaxLotId: Normalize(dimensions.TaxLotId),
-            CostCenterId: Normalize(dimensions.CostCenterId),
-            CounterpartyId: Normalize(dimensions.CounterpartyId),
+            TaxLotId: TextPrimitives.NormalizeOptional(dimensions.TaxLotId),
+            CostCenterId: TextPrimitives.NormalizeOptional(dimensions.CostCenterId),
+            CounterpartyId: TextPrimitives.NormalizeOptional(dimensions.CounterpartyId),
             ExternalGlDimensions: externalGlDimensions,
-            OrganizationId: Normalize(dimensions.OrganizationId),
-            PortfolioId: Normalize(dimensions.PortfolioId),
-            BookId: Normalize(dimensions.BookId),
-            AccountId: Normalize(dimensions.AccountId),
-            CustomerId: Normalize(dimensions.CustomerId),
-            VendorId: Normalize(dimensions.VendorId),
-            ProjectId: Normalize(dimensions.ProjectId))
+            OrganizationId: TextPrimitives.NormalizeOptional(dimensions.OrganizationId),
+            PortfolioId: TextPrimitives.NormalizeOptional(dimensions.PortfolioId),
+            BookId: TextPrimitives.NormalizeOptional(dimensions.BookId),
+            AccountId: TextPrimitives.NormalizeOptional(dimensions.AccountId),
+            CustomerId: TextPrimitives.NormalizeOptional(dimensions.CustomerId),
+            VendorId: TextPrimitives.NormalizeOptional(dimensions.VendorId),
+            ProjectId: TextPrimitives.NormalizeOptional(dimensions.ProjectId))
         {
             PositionId = dimensions.PositionId
         };
@@ -62,8 +64,8 @@ internal static class LedgerLineDimensionSetNormalizer
         => dimensions
             .Select(static pair => new
             {
-                Key = Normalize(pair.Key),
-                Value = Normalize(pair.Value)
+                Key = TextPrimitives.NormalizeOptional(pair.Key),
+                Value = TextPrimitives.NormalizeOptional(pair.Value)
             })
             .Where(static pair => pair.Key is not null && pair.Value is not null)
             .GroupBy(static pair => pair.Key!, StringComparer.OrdinalIgnoreCase)
@@ -91,7 +93,4 @@ internal static class LedgerLineDimensionSetNormalizer
 
     private static bool Matches(Guid? actual, Guid? expected)
         => expected is null || actual == expected;
-
-    private static string? Normalize(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

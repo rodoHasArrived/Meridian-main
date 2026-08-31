@@ -5,6 +5,7 @@ import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuit
 import type { AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
 
 const workflowViewModel: AppShellWorkflowContinuityViewModel = {
+  mode: "matched",
   title: "Market Data To Paper",
   summary: "Continue quote validation before paper trading.",
   primaryOperatorFlowLabel: "Primary operator workflow",

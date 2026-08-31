@@ -18,6 +18,12 @@ public sealed class SyntheticHistoricalDataProvider : IHistoricalDataProvider, I
         _config = config ?? new SyntheticMarketDataConfig(Enabled: true);
     }
 
+    /// <summary>
+    /// Every bar this provider returns is a deterministic seeded walk, not an observed market
+    /// price. Declared so valuation and reporting can mark derived figures as non-real.
+    /// </summary>
+    public bool IsSimulated => true;
+
     public string Name => "synthetic";
     public string DisplayName => "Synthetic Historical Provider";
     public string Description => "Deterministic historical bars, quotes, trades, auctions, and corporate actions for offline development.";

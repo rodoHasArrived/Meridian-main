@@ -1,0 +1,6 @@
+# Python dependencies for the documentation automation scripts.
+#
+# validate-agent-definitions.py parses agent frontmatter with PyYAML rather than a
+# hand-rolled subset parser. The pin matches tools/source_docs/requirements-render.txt
+# so the repository resolves one PyYAML version.
+PyYAML==6.0.2

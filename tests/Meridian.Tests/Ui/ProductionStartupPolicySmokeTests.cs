@@ -5,6 +5,10 @@ using Microsoft.Extensions.Hosting;
 
 namespace Meridian.Tests.Ui;
 
+// Mutates process-global environment variables (ASPNETCORE_ENVIRONMENT, MDC_AUTH_MODE) that
+// ProductionServiceRegistrationPolicy.IsProductionEnvironment() reads during any concurrent
+// service composition, so this class must not run in parallel with other collections (#2680).
+[Collection("Sequential")]
 public sealed class ProductionStartupPolicySmokeTests
 {
     [Fact]

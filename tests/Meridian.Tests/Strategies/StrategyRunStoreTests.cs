@@ -2,9 +2,11 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Operations;
+using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Storage;
 using Xunit;
@@ -80,6 +82,83 @@ public sealed class StrategyRunStoreTests
     }
 
     [Fact]
+    public async Task QueryVisibleRunsAsync_AppliesExactScopeBeforeLimit_AndPreservesLegacyCompatibility()
+    {
+        var store = new StrategyRunStore();
+        var startedAt = new DateTimeOffset(2026, 8, 3, 10, 0, 0, TimeSpan.Zero);
+
+        for (var index = 0; index < 64; index++)
+        {
+            await store.RecordRunAsync(CreateRun(
+                $"foreign-{index:D2}",
+                $"covered-call-overwrite:foreign-{index:D2}",
+                RunType.Backtest,
+                startedAt.AddMinutes(100 + index),
+                parameterSet: ScopeParameters("tenant-b", "company-b")));
+        }
+
+        await store.RecordRunAsync(CreateRun(
+            "partial-scope",
+            "covered-call-overwrite:partial",
+            RunType.Backtest,
+            startedAt.AddMinutes(90),
+            parameterSet: new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["workstationTenantId"] = "tenant-a"
+            }));
+        await store.RecordRunAsync(CreateRun(
+            "blank-scope",
+            "strategy-with-blank-scope",
+            RunType.Backtest,
+            startedAt.AddMinutes(80),
+            parameterSet: ScopeParameters("tenant-a", " ")));
+        await store.RecordRunAsync(CreateRun(
+            "legacy-global-covered-call",
+            "covered-call-overwrite",
+            RunType.Backtest,
+            startedAt.AddMinutes(70)));
+        await store.RecordRunAsync(CreateRun(
+            "local-global-covered-call",
+            "covered-call-overwrite",
+            RunType.Backtest,
+            startedAt.AddMinutes(3),
+            parameterSet: ScopeParameters(" tenant-a ", " company-a ")));
+        var localScopedCoveredCall = CreateRun(
+            "local-scoped-covered-call",
+            "covered-call-overwrite:local",
+            RunType.Backtest,
+            startedAt.AddMinutes(2),
+            parameterSet: ScopeParameters("tenant-a", "company-a"));
+        await store.RecordRunAsync(localScopedCoveredCall);
+        await store.RecordRunAsync(localScopedCoveredCall with
+        {
+            EndedAt = startedAt.AddMinutes(4)
+        });
+        await store.RecordRunAsync(CreateRun(
+            "legacy-unscoped",
+            "legacy-strategy",
+            RunType.Backtest,
+            startedAt.AddMinutes(1)));
+
+        var scoped = await store.QueryVisibleRunsAsync(
+            new StrategyRunRepositoryQuery(Limit: 3),
+            new StrategyRunRepositoryScope("tenant-a", "company-a"));
+        var foreignScope = await store.QueryVisibleRunsAsync(
+            new StrategyRunRepositoryQuery(Limit: 3),
+            new StrategyRunRepositoryScope("tenant-a", "company-other"));
+        var unscoped = await store.QueryVisibleRunsAsync(
+            new StrategyRunRepositoryQuery(Limit: 10),
+            scope: null);
+
+        scoped.Select(static run => run.RunId).Should().Equal(
+            "local-scoped-covered-call",
+            "local-global-covered-call",
+            "legacy-unscoped");
+        foreignScope.Select(static run => run.RunId).Should().Equal("legacy-unscoped");
+        unscoped.Select(static run => run.RunId).Should().Equal("legacy-unscoped");
+    }
+
+    [Fact]
     public async Task RecordRunAsync_ReplacesExistingRunAcrossIndexes()
     {
         var store = new StrategyRunStore();
@@ -124,14 +203,20 @@ public sealed class StrategyRunStoreTests
         {
             var history = new FileOperationalCaseHistoryStore(dataRoot);
             var store = new StrategyRunStore(history);
-            var started = StrategyRunEntry.Start(
+            var started = StrategyRunEntry.StartWithEvidence(
                 "strategy-1",
                 "Strategy One",
                 RunType.Backtest,
                 "run-durable",
                 datasetReference: "dataset:prices",
                 engine: "MeridianNative",
-                parameterSet: new Dictionary<string, string> { ["lookback"] = "20" });
+                parameterSet: new Dictionary<string, string> { ["lookback"] = "20" },
+                operatorAcceptanceCriteria: ["Operator approved the retained backtest evidence."],
+                retainedEvidenceReferences: ["evidence://strategy-runs/run-durable"],
+                accountingRecordReferences: ["ledger://books/11111111-1111-1111-1111-111111111111/accounts/run-durable"],
+                approvalReferences: ["approval://strategy-runs/run-durable"],
+                paperValidationReferences: ["workflow://fund/22222222-2222-2222-2222-222222222222"],
+                governedReportReferences: ["reporting-run://run-durable/manifest"]);
 
             await store.RecordRunAsync(started);
             await store.RecordRunAsync(started.Complete(metrics: null));
@@ -147,6 +232,13 @@ public sealed class StrategyRunStoreTests
             replayed!.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
             replayed.EndedAt.Should().NotBeNull();
             replayed.InputHashSha256.Should().Be(started.InputHashSha256);
+            replayed.OperatorAcceptanceCriteria.Should()
+                .ContainSingle("Operator approved the retained backtest evidence.");
+            replayed.RetainedEvidenceReferences.Should().ContainSingle("evidence://strategy-runs/run-durable");
+            replayed.AccountingRecordReferences.Should().ContainSingle("ledger://books/11111111-1111-1111-1111-111111111111/accounts/run-durable");
+            replayed.ApprovalReferences.Should().ContainSingle("approval://strategy-runs/run-durable");
+            replayed.PaperValidationReferences.Should().ContainSingle("workflow://fund/22222222-2222-2222-2222-222222222222");
+            replayed.GovernedReportReferences.Should().ContainSingle("reporting-run://run-durable/manifest");
             events.Select(static item => item.EventType).Should().Equal("Started", "Completed");
             events.Should().OnlyContain(static item =>
                 item.Data.ContainsKey("strategyRunSnapshotJson") &&
@@ -279,6 +371,266 @@ public sealed class StrategyRunStoreTests
     }
 
     [Fact]
+    public void Start_WithoutEvidence_PreservesV2InputHash()
+    {
+        var started = StrategyRunEntry.Start(
+            "strategy-compatibility",
+            "Compatibility Strategy",
+            RunType.Backtest,
+            "run-v2-start",
+            datasetReference: "provider-bars/equities/daily",
+            feedReference: "provider-feed:daily",
+            engine: "MeridianNative",
+            parameterSet: new Dictionary<string, string> { ["lookback"] = "20" });
+
+        started.InputHashSha256.Should().Be(ComputeV2Hash(started));
+        started.InputHashSha256.Should().NotBe(ComputeV3Hash(started));
+    }
+
+    [Fact]
+    public async Task Store_WithOnlyBlankEvidence_RetainsV2InputHash()
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var history = new FileOperationalCaseHistoryStore(dataRoot);
+            var store = new StrategyRunStore(history);
+            var started = StrategyRunEntry.StartWithEvidence(
+                "strategy-blank-evidence",
+                "Blank Evidence Strategy",
+                RunType.Backtest,
+                "run-blank-evidence",
+                engine: "MeridianNative",
+                operatorAcceptanceCriteria: [" ", "\t"],
+                retainedEvidenceReferences: [string.Empty],
+                accountingRecordReferences: ["  "],
+                approvalReferences: ["\r\n"],
+                paperValidationReferences: ["\t"],
+                governedReportReferences: [" "]);
+            var expectedV2Hash = ComputeV2Hash(started);
+
+            await store.RecordRunAsync(started);
+            var retained = await store.GetRunByIdAsync(started.RunId);
+            var retainedHistory = await history.ReadAsync(new OperationalCaseHistoryQuery
+            {
+                CaseId = $"strategy-run:{started.RunId}",
+                CaseType = StrategyRunStore.CaseType
+            });
+
+            started.InputHashSha256.Should().Be(expectedV2Hash);
+            retained.Should().NotBeNull();
+            retained!.InputHashSha256.Should().Be(expectedV2Hash);
+            retained.InputHashSha256.Should().NotBe(ComputeV3Hash(retained));
+            retainedHistory.Should().ContainSingle();
+            retainedHistory[0].Approvals.Should().BeEmpty();
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task StartWithEvidence_AndStore_RetainV3InputHash()
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var started = CreateEvidenceBoundRun("run-v3-evidence");
+            var expectedV3Hash = ComputeV3Hash(started);
+
+            await store.RecordRunAsync(started);
+            var retained = await store.GetRunByIdAsync(started.RunId);
+
+            started.InputHashSha256.Should().Be(expectedV3Hash);
+            started.InputHashSha256.Should().NotBe(ComputeV2Hash(started));
+            retained.Should().NotBeNull();
+            retained!.InputHashSha256.Should().Be(expectedV3Hash);
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task DurableStore_ReplaysInterimEmptyV3_ThenCanonicalizesNextAppendToV2()
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var history = new FileOperationalCaseHistoryStore(dataRoot);
+            var startRequested = StrategyRunEntry.Start(
+                    "strategy-interim-v3",
+                    "Interim V3 Strategy",
+                    RunType.Paper,
+                    "run-interim-empty-v3",
+                    engine: "BrokerPaper")
+                .RequestStart(actorId: "compatibility-operator");
+            var interimEmptyV3Hash = ComputeV3Hash(startRequested);
+            var interim = startRequested with { InputHashSha256 = interimEmptyV3Hash };
+            await AppendRawSnapshotAsync(
+                history,
+                interim,
+                StrategyRunLifecycleEventType.StartRequested);
+
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var replayed = await store.GetRunByIdAsync(interim.RunId);
+
+            replayed.Should().NotBeNull();
+            replayed!.InputHashSha256.Should().Be(interimEmptyV3Hash);
+            interimEmptyV3Hash.Should().NotBe(ComputeV2Hash(interim));
+
+            await store.RecordRunAsync(interim.Started(actorId: "compatibility-operator"));
+            var canonical = await store.GetRunByIdAsync(interim.RunId);
+            var retainedEvents = await history.ReadAsync(new OperationalCaseHistoryQuery
+            {
+                CaseId = $"strategy-run:{interim.RunId}",
+                CaseType = StrategyRunStore.CaseType
+            });
+
+            canonical.Should().NotBeNull();
+            canonical!.InputHashSha256.Should().Be(ComputeV2Hash(canonical));
+            retainedEvents.Should().HaveCount(2);
+            retainedEvents[0].InputHashSha256.Should().Be(interimEmptyV3Hash);
+            retainedEvents[1].InputHashSha256.Should().Be(ComputeV2Hash(canonical));
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ComputeInputHash_BindsEvidenceLoopWithStableCollectionOrdering()
+    {
+        var baseline = StrategyRunEntry.ComputeEvidenceBoundInputHash(
+            "strategy-1",
+            "Strategy One",
+            RunType.Backtest,
+            "dataset",
+            "feed",
+            "MeridianNative",
+            parameterSet: null,
+            operatorAcceptanceCriteria: ["Criterion B", "Criterion A"],
+            retainedEvidenceReferences: ["evidence://strategy-runs/run-1", "evidence://strategy-runs/run-2"],
+            accountingRecordReferences: ["ledger://books/book-1/accounts/run-1"],
+            approvalReferences: ["approval://strategy-runs/run-1"],
+            paperValidationReferences: ["workflow://fund/fund-1"],
+            governedReportReferences: ["reporting-run://run-1/manifest"]);
+        var reordered = StrategyRunEntry.ComputeEvidenceBoundInputHash(
+            "strategy-1",
+            "Strategy One",
+            RunType.Backtest,
+            "dataset",
+            "feed",
+            "MeridianNative",
+            parameterSet: null,
+            operatorAcceptanceCriteria: ["Criterion A", "Criterion B"],
+            retainedEvidenceReferences: ["evidence://strategy-runs/run-2", "evidence://strategy-runs/run-1"],
+            accountingRecordReferences: ["ledger://books/book-1/accounts/run-1"],
+            approvalReferences: ["approval://strategy-runs/run-1"],
+            paperValidationReferences: ["workflow://fund/fund-1"],
+            governedReportReferences: ["reporting-run://run-1/manifest"]);
+        var changedCriterion = StrategyRunEntry.ComputeEvidenceBoundInputHash(
+            "strategy-1",
+            "Strategy One",
+            RunType.Backtest,
+            "dataset",
+            "feed",
+            "MeridianNative",
+            parameterSet: null,
+            operatorAcceptanceCriteria: ["Criterion A", "Criterion C"],
+            retainedEvidenceReferences: ["evidence://strategy-runs/run-1", "evidence://strategy-runs/run-2"],
+            accountingRecordReferences: ["ledger://books/book-1/accounts/run-1"],
+            approvalReferences: ["approval://strategy-runs/run-1"],
+            paperValidationReferences: ["workflow://fund/fund-1"],
+            governedReportReferences: ["reporting-run://run-1/manifest"]);
+
+        reordered.Should().Be(baseline);
+        changedCriterion.Should().NotBe(baseline);
+    }
+
+    [Theory]
+    [InlineData("criteria")]
+    [InlineData("retained-evidence")]
+    [InlineData("accounting")]
+    [InlineData("approval")]
+    [InlineData("paper-validation")]
+    [InlineData("governed-report")]
+    public async Task DurableStore_RejectsEvidenceLoopMutationBetweenStartedAndCompleted(string changedField)
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var started = CreateEvidenceBoundRun("run-evidence-mutation");
+            await store.RecordRunAsync(started);
+
+            var completed = started.Complete(metrics: null);
+            var changed = changedField switch
+            {
+                "criteria" => completed with { OperatorAcceptanceCriteria = ["Changed criterion."] },
+                "retained-evidence" => completed with { RetainedEvidenceReferences = ["evidence://strategy-runs/changed"] },
+                "accounting" => completed with { AccountingRecordReferences = ["ledger://books/book-1/accounts/changed"] },
+                "approval" => completed with { ApprovalReferences = ["approval://strategy-runs/changed"] },
+                "paper-validation" => completed with { PaperValidationReferences = ["workflow://fund/changed"] },
+                "governed-report" => completed with { GovernedReportReferences = ["reporting-run://changed/manifest"] },
+                _ => throw new ArgumentOutOfRangeException(nameof(changedField), changedField, null)
+            };
+            changed = changed with { InputHashSha256 = null };
+
+            var action = () => store.RecordRunAsync(changed);
+
+            await action.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("*immutable run identity changed*");
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task DurableStore_AcceptsAndReplaysUnchangedEvidenceLoopCompletion()
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var history = new FileOperationalCaseHistoryStore(dataRoot);
+            var store = new StrategyRunStore(history);
+            var started = CreateEvidenceBoundRun("run-evidence-stable");
+            var completed = started.Complete(metrics: null);
+
+            await store.RecordRunAsync(started);
+            await store.RecordRunAsync(completed);
+            await store.RecordRunAsync(completed);
+
+            var restarted = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var replayed = await restarted.GetRunByIdAsync(started.RunId);
+            var retained = await history.ReadAsync(new OperationalCaseHistoryQuery
+            {
+                CaseId = $"strategy-run:{started.RunId}"
+            });
+
+            replayed.Should().NotBeNull();
+            replayed!.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+            replayed.OperatorAcceptanceCriteria.Should().Equal(started.OperatorAcceptanceCriteria);
+            replayed.RetainedEvidenceReferences.Should().Equal(started.RetainedEvidenceReferences);
+            replayed.AccountingRecordReferences.Should().Equal(started.AccountingRecordReferences);
+            replayed.ApprovalReferences.Should().Equal(started.ApprovalReferences);
+            replayed.PaperValidationReferences.Should().Equal(started.PaperValidationReferences);
+            replayed.GovernedReportReferences.Should().Equal(started.GovernedReportReferences);
+            retained.Should().HaveCount(2);
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task DurableStore_RejectsOperationalScopeMutationAfterFirstLifecycleEvent()
     {
         var dataRoot = CreateDataRoot();
@@ -302,6 +654,105 @@ public sealed class StrategyRunStoreTests
                 PortfolioId = "different-portfolio",
                 InputHashSha256 = null
             };
+            var action = () => store.RecordRunAsync(changed);
+
+            await action.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("*immutable run identity changed*");
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData("strategy-id")]
+    [InlineData("strategy-name")]
+    [InlineData("run-type")]
+    [InlineData("dataset")]
+    [InlineData("feed")]
+    [InlineData("engine")]
+    [InlineData("parameters")]
+    [InlineData("parent-run")]
+    [InlineData("portfolio")]
+    [InlineData("ledger")]
+    [InlineData("audit")]
+    [InlineData("fund-profile")]
+    public async Task RecordRunAsync_CompatibleHashCanonicalization_RejectsImmutableInputMutation(
+        string changedField)
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var history = new FileOperationalCaseHistoryStore(dataRoot);
+            var requested = CreateEvidenceBoundRun($"run-compatible-hash-{changedField}")
+                .RequestStart(actorId: "compatibility-operator");
+            var retainedV2 = requested with { InputHashSha256 = ComputeV2Hash(requested) };
+            await AppendRawSnapshotAsync(
+                history,
+                retainedV2,
+                StrategyRunLifecycleEventType.StartRequested);
+
+            var started = retainedV2.Started(actorId: "compatibility-operator");
+            var changed = MutateCanonicalInput(started, changedField) with { InputHashSha256 = null };
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+
+            var action = () => store.RecordRunAsync(changed);
+
+            await action.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("*immutable run identity changed*");
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData("v2", "dataset")]
+    [InlineData("v2", "feed")]
+    [InlineData("v2", "engine")]
+    [InlineData("v2", "parameters")]
+    [InlineData("v3", "dataset")]
+    [InlineData("v3", "feed")]
+    [InlineData("v3", "engine")]
+    [InlineData("v3", "parameters")]
+    public async Task RecordRunAsync_SameVersionCanonicalRehash_RejectsImmutableInputMutation(
+        string hashVersion,
+        string changedField)
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var runId = $"run-{hashVersion}-rehash-{changedField}";
+            var requested = hashVersion switch
+            {
+                "v2" => StrategyRunEntry.Start(
+                        "strategy-compatibility",
+                        "Compatibility Strategy",
+                        RunType.Backtest,
+                        runId,
+                        datasetReference: "provider-bars/equities/daily",
+                        feedReference: "provider-feed:daily",
+                        engine: "MeridianNative",
+                        parameterSet: new Dictionary<string, string>(StringComparer.Ordinal)
+                        {
+                            ["lookback"] = "20"
+                        })
+                    .RequestStart(actorId: "compatibility-operator"),
+                "v3" => CreateEvidenceBoundRun(runId)
+                    .RequestStart(actorId: "compatibility-operator"),
+                _ => throw new ArgumentOutOfRangeException(nameof(hashVersion), hashVersion, null)
+            };
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            await store.RecordRunAsync(requested);
+            var changed = MutateCanonicalInput(
+                requested.Started(actorId: "compatibility-operator"),
+                changedField) with
+            {
+                InputHashSha256 = null
+            };
+
             var action = () => store.RecordRunAsync(changed);
 
             await action.Should().ThrowAsync<InvalidOperationException>()
@@ -443,6 +894,65 @@ public sealed class StrategyRunStoreTests
 
             await action.Should().ThrowAsync<InvalidDataException>()
                 .WithMessage("*terminal receipt is not bound*lifecycle event 'StartFailed'*");
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task RecordLifecycleEventAsync_DeferredActivation_IsRetainedAndCanStillActivate()
+    {
+        // #2726: a promoted run the live engine declines must reach a visible state on the run.
+        // Written against the real store rather than a test double on purpose — LiveTradingEngine's
+        // own suite uses an in-memory repository that does not consult IsAllowedTransition, so it
+        // would pass even while this store rejected the write with InvalidOperationException and
+        // left the run with no visible state at all.
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var history = new FileOperationalCaseHistoryStore(dataRoot);
+            var store = new StrategyRunStore(history);
+            var startedAt = new DateTimeOffset(2026, 8, 26, 12, 0, 0, TimeSpan.Zero);
+            var started = StrategyRunEntry.Start("designer-strategy", "Designer Strategy", RunType.Paper, "run-deferred") with
+            {
+                StartedAt = startedAt,
+                LifecycleEventAtUtc = startedAt
+            };
+            await store.RecordRunAsync(started);
+
+            var deferredAt = startedAt.AddSeconds(1);
+            var deferred = started.ActivationDeferred("No live strategy implementation is registered for 'designer-strategy'.") with
+            {
+                LifecycleEventAtUtc = deferredAt
+            };
+            await store.RecordLifecycleEventAsync(deferred, StrategyRunLifecycleEventType.ActivationDeferred);
+
+            var retained = await store.GetRunByIdAsync(started.RunId);
+            retained.Should().NotBeNull();
+            retained!.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.ActivationDeferred);
+            retained.Reason.Should().Contain("No live strategy implementation is registered");
+            retained.EndedAt.Should().BeNull("a deferred run is retained open, not ended");
+
+            // The engine's startup resume sweep retries every open run, so a run still waiting on the
+            // same missing source re-defers on each restart.
+            var redeferredAt = deferredAt.AddMinutes(5);
+            var redeferred = deferred.ActivationDeferred("Still no live strategy implementation is registered.") with
+            {
+                LifecycleEventAtUtc = redeferredAt
+            };
+            var redefer = () => store.RecordLifecycleEventAsync(redeferred, StrategyRunLifecycleEventType.ActivationDeferred);
+            await redefer.Should().NotThrowAsync("a re-attempt that defers again must not be rejected");
+
+            // And the point of retaining it: once a source resolves the strategy, it activates.
+            var activatedAt = redeferredAt.AddMinutes(5);
+            var activated = redeferred.Started() with { LifecycleEventAtUtc = activatedAt };
+            var activate = () => store.RecordLifecycleEventAsync(activated, StrategyRunLifecycleEventType.Started);
+            await activate.Should().NotThrowAsync("a deferred run must be able to activate later");
+
+            (await store.GetRunByIdAsync(started.RunId))!
+                .LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Started);
         }
         finally
         {
@@ -613,8 +1123,7 @@ public sealed class StrategyRunStoreTests
             await store.RecordRunAsync(completed);
             var changed = completed with
             {
-                Reason = "Changed after terminal retention.",
-                RetainedEvidenceReferences = ["evidence:changed-after-completion"]
+                Reason = "Changed after terminal retention."
             };
 
             var action = () => store.RecordRunAsync(changed);
@@ -646,8 +1155,7 @@ public sealed class StrategyRunStoreTests
             await writer.RecordRunAsync(completed);
             var changed = completed with
             {
-                Reason = "Forged changed terminal snapshot.",
-                RetainedEvidenceReferences = ["evidence:forged-terminal-change"]
+                Reason = "Forged changed terminal snapshot."
             };
             await AppendRawSnapshotAsync(
                 history,
@@ -693,6 +1201,69 @@ public sealed class StrategyRunStoreTests
         }
     }
 
+    [Fact]
+    public async Task RecordRunAsync_AllowsTerminalOutputMetadataWithoutChangingInputHash()
+    {
+        var store = new StrategyRunStore();
+        var started = StrategyRunEntry.Start(
+            "strategy-output",
+            "Output Strategy",
+            RunType.Backtest,
+            "run-output");
+        await store.RecordRunAsync(started);
+
+        var completed = (started with
+        {
+            OutputMetadata = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["coveredCallResult"] = "{\"runId\":\"run-output\"}",
+                ["sharpe"] = "1.25"
+            }
+        }).Complete(metrics: null);
+
+        await store.RecordRunAsync(completed);
+
+        var retained = await store.GetRunByIdAsync(started.RunId);
+        retained.Should().NotBeNull();
+        retained!.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+        retained.InputHashSha256.Should().Be(started.InputHashSha256);
+        retained.OutputMetadata.Should().ContainKey("coveredCallResult");
+    }
+
+    [Fact]
+    public async Task RecordRunAsync_RejectsOutputMetadataBeforeCompletionAndAfterTerminalRetention()
+    {
+        var store = new StrategyRunStore();
+        var started = StrategyRunEntry.Start(
+            "strategy-output",
+            "Output Strategy",
+            RunType.Backtest,
+            "run-output-guard");
+        var premature = started with
+        {
+            OutputMetadata = new Dictionary<string, string> { ["result"] = "premature" }
+        };
+
+        var prematureAction = () => store.RecordRunAsync(premature);
+        await prematureAction.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*output metadata*completed lifecycle event*");
+
+        await store.RecordRunAsync(started);
+        var completed = (started with
+        {
+            OutputMetadata = new Dictionary<string, string> { ["result"] = "original" }
+        }).Complete(metrics: null);
+        await store.RecordRunAsync(completed);
+
+        var changed = completed with
+        {
+            OutputMetadata = new Dictionary<string, string> { ["result"] = "overwritten" }
+        };
+        var changedAction = () => store.RecordRunAsync(changed);
+        await changedAction.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*output metadata changed after the terminal lifecycle event*");
+    }
+
     private static async Task AppendRawSnapshotAsync(
         FileOperationalCaseHistoryStore history,
         StrategyRunEntry entry,
@@ -734,7 +1305,7 @@ public sealed class StrategyRunStoreTests
             Data = data,
             Transition = new OperationalCaseStateTransition
             {
-                PreviousState = previousEvent.ToString(),
+                PreviousState = predecessor is null ? null : previousEvent.ToString(),
                 CurrentState = entry.LastLifecycleEvent.ToString(),
                 TransitionedAtUtc = eventAt
             }
@@ -747,7 +1318,8 @@ public sealed class StrategyRunStoreTests
         RunType runType,
         DateTimeOffset startedAt,
         DateTimeOffset? endedAt = null,
-        StrategyRunStatus? terminalStatus = null)
+        StrategyRunStatus? terminalStatus = null,
+        IReadOnlyDictionary<string, string>? parameterSet = null)
     {
         return new StrategyRunEntry(
             RunId: runId,
@@ -761,7 +1333,192 @@ public sealed class StrategyRunStoreTests
             LedgerReference: $"{strategyId}-{runId}-ledger",
             AuditReference: $"{runId}-audit",
             Engine: runType.ToString(),
-            TerminalStatus: terminalStatus);
+            TerminalStatus: terminalStatus,
+            ParameterSet: parameterSet);
+    }
+
+    private static IReadOnlyDictionary<string, string> ScopeParameters(
+        string tenantId,
+        string companyId) =>
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["workstationTenantId"] = tenantId,
+            ["workstationCompanyId"] = companyId
+        };
+
+    private static string ComputeV2Hash(StrategyRunEntry entry) =>
+        StrategyRunEntry.ComputeInputHash(
+            entry.StrategyId,
+            entry.StrategyName,
+            entry.RunType,
+            entry.DatasetReference,
+            entry.FeedReference,
+            entry.Engine,
+            entry.ParameterSet,
+            entry.ParentRunId,
+            entry.PortfolioId,
+            entry.LedgerReference,
+            entry.AuditReference,
+            entry.FundProfileId);
+
+    private static string ComputeV3Hash(StrategyRunEntry entry) =>
+        StrategyRunEntry.ComputeEvidenceBoundInputHash(
+            entry.StrategyId,
+            entry.StrategyName,
+            entry.RunType,
+            entry.DatasetReference,
+            entry.FeedReference,
+            entry.Engine,
+            entry.ParameterSet,
+            entry.ParentRunId,
+            entry.PortfolioId,
+            entry.LedgerReference,
+            entry.AuditReference,
+            entry.FundProfileId,
+            entry.OperatorAcceptanceCriteria,
+            entry.RetainedEvidenceReferences,
+            entry.AccountingRecordReferences,
+            entry.ApprovalReferences,
+            entry.PaperValidationReferences,
+            entry.GovernedReportReferences);
+
+    private static StrategyRunEntry CreateEvidenceBoundRun(string runId) =>
+        StrategyRunEntry.StartWithEvidence(
+            "strategy-evidence",
+            "Evidence Strategy",
+            RunType.Backtest,
+            runId,
+            datasetReference: "provider-bars/equities/daily",
+            feedReference: "provider-feed:daily",
+            engine: "MeridianNative",
+            operatorAcceptanceCriteria: ["Operator reviewed the retained backtest evidence."],
+            retainedEvidenceReferences: [$"evidence://strategy-runs/{runId}"],
+            accountingRecordReferences: ["ledger://books/book-1/accounts/strategy-evidence"],
+            approvalReferences: [$"approval://strategy-runs/{runId}"],
+            paperValidationReferences: ["workflow://fund/fund-1"],
+            governedReportReferences: [$"reporting-run://{runId}/manifest"]);
+
+    private static StrategyRunEntry MutateCanonicalInput(
+        StrategyRunEntry entry,
+        string changedField) =>
+        changedField switch
+        {
+            "strategy-id" => entry with { StrategyId = "changed-strategy" },
+            "strategy-name" => entry with { StrategyName = "Changed Strategy" },
+            "run-type" => entry with { RunType = RunType.Paper },
+            "dataset" => entry with { DatasetReference = "provider-bars/changed" },
+            "feed" => entry with { FeedReference = "provider-feed:changed" },
+            "engine" => entry with { Engine = "ChangedEngine" },
+            "parameters" => entry with
+            {
+                ParameterSet = new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["lookback"] = "99"
+                }
+            },
+            "parent-run" => entry with { ParentRunId = "changed-parent" },
+            "portfolio" => entry with { PortfolioId = "changed-portfolio" },
+            "ledger" => entry with { LedgerReference = "changed-ledger" },
+            "audit" => entry with { AuditReference = "changed-audit" },
+            "fund-profile" => entry with { FundProfileId = "changed-fund" },
+            _ => throw new ArgumentOutOfRangeException(nameof(changedField), changedField, null)
+        };
+
+    [Fact]
+    public async Task DurableStore_RetainsRealismBoundInputHash()
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var realism = new ExecutionRealismDescriptor(
+                DefaultExecutionModel: ExecutionModel.BarMidpoint,
+                FillTiming: FillTiming.NextBar,
+                FillConservatism: FillConservatism.Conservative,
+                DelistingPolicy: DelistingPolicy.LiquidateAtLastPrice,
+                DelistingHaircutPercent: 0m,
+                DelistingGraceDays: 5,
+                CommissionKind: BacktestCommissionKind.PerShare,
+                CommissionRate: 0.005m,
+                CommissionMinimum: 1.00m,
+                CommissionMaximum: decimal.MaxValue,
+                SlippageBasisPoints: 5m,
+                MaxParticipationRate: 0m,
+                MarketImpactCoefficient: 0.1m,
+                OrderBookQueueAheadFraction: 0m,
+                AdjustForCorporateActions: true,
+                RiskFreeRate: 0.04);
+
+            var entry = StrategyRunEntry.Start(
+                "strategy-realism",
+                "Realism Strategy",
+                RunType.Backtest,
+                "run-realism",
+                datasetReference: "dataset:prices",
+                feedReference: null,
+                engine: "MeridianNative",
+                parameterSet: null) with
+            {
+                ExecutionRealism = realism
+            };
+
+            var hash = StrategyRunEntry.ComputeRealismBoundInputHash(entry);
+            entry = entry with { InputHashSha256 = hash };
+
+            // The durable store must accept a v4 realism-bound hash and retain it verbatim. Before
+            // this fix it threw, because the hash matched none of the v3/v2/evidence/legacy
+            // recomputations - and the research recorder swallowed that exception, so lineage
+            // vanished silently in production while in-memory-store tests stayed green.
+            await store.RecordRunAsync(entry);
+
+            var replayed = await new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot))
+                .GetRunByIdAsync("run-realism");
+
+            replayed.Should().NotBeNull();
+            replayed!.InputHashSha256.Should().Be(hash.ToLowerInvariant());
+            replayed.ExecutionRealism.Should().Be(realism);
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task DurableStore_AcceptsRealismBoundHashWhenNoRealismCaptured()
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+
+            // The Quant Lab endpoint records without a realism descriptor. The recorder still
+            // stamps a v4 digest, so the store must be able to recompute v4 for a null-realism
+            // entry - otherwise every such recording is rejected and swallowed as a silent null.
+            var entry = StrategyRunEntry.Start(
+                "strategy-no-realism",
+                "No Realism",
+                RunType.Backtest,
+                "run-no-realism",
+                datasetReference: null,
+                feedReference: null,
+                engine: "MeridianNative",
+                parameterSet: null);
+
+            entry = entry with { InputHashSha256 = StrategyRunEntry.ComputeRealismBoundInputHash(entry) };
+
+            await store.RecordRunAsync(entry);
+
+            var replayed = await new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot))
+                .GetRunByIdAsync("run-no-realism");
+
+            replayed.Should().NotBeNull();
+            replayed!.InputHashSha256.Should().Be(entry.InputHashSha256.ToLowerInvariant());
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
     }
 
     private static string CreateDataRoot()

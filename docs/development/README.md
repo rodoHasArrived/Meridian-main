@@ -107,6 +107,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 | [Runtime Observability And Diagnostics](runtime-observability.md) | apply runtime logging, redaction, correlation, provider-health, and diagnostic-bundle standards |
 | [OTLP Trace Visualization](otlp-trace-visualization.md) | inspect Meridian traces and metrics in a local telemetry UI |
 | [Git Hooks](git-hooks.md) | install the repo-managed local quality gate before committing |
+| [God-File Burn-Down Plan](god-file-burn-down-plan.md) | understand the file-size ratchet baseline, its burn-down targets, and decomposition sequencing |
 
 ### Documentation Tooling And Automation
 

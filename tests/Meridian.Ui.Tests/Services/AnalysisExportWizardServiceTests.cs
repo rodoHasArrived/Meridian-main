@@ -33,6 +33,18 @@ public sealed class AnalysisExportWizardServiceTests : IDisposable
     }
 
     [Fact]
+    public void GetExportProfiles_ShouldAdvertiseOnlyFormatsTheLocalWizardActuallyWrites()
+    {
+        var profiles = new AnalysisExportWizardService().GetExportProfiles();
+
+        profiles.Select(profile => profile.Id).Should().Equal("r-dataframe", "runmat");
+        profiles.Should().OnlyContain(profile =>
+            profile.OutputFormat == "CSV"
+            && profile.FileExtension == ".csv"
+            && profile.Compression == "none");
+    }
+
+    [Fact]
     public async Task ExportToCsvAsync_ShouldWriteUnionHeaderAndAlignSparseRows()
     {
         var sourcePath = WriteJsonl(
@@ -109,14 +121,20 @@ public sealed class AnalysisExportWizardServiceTests : IDisposable
         first.Should().NotBe(second);
     }
 
-    [Fact]
-    public async Task ExecuteExportAsync_ParquetFallbackNote_ShouldReferenceActualGeneratedCsv()
+    [Theory]
+    [InlineData("Parquet")]
+    [InlineData("Excel")]
+    [InlineData("HDF5")]
+    [InlineData("Lean")]
+    [InlineData("ClickHouse")]
+    [InlineData("Unknown")]
+    public async Task ExecuteExportAsync_UnsupportedFormat_ShouldFailWithoutCreatingFallbackFiles(string format)
     {
         var (service, outputPath) = await CreateExportServiceAsync();
 
         var result = await service.ExecuteExportAsync(new ExportConfiguration
         {
-            Profile = new ExportProfile { OutputFormat = "Parquet" },
+            Profile = new ExportProfile { OutputFormat = format },
             Symbols = new[] { "BRK/B" },
             DataTypes = new[] { "trades" },
             FromDate = new DateOnly(2026, 1, 1),
@@ -124,15 +142,11 @@ public sealed class AnalysisExportWizardServiceTests : IDisposable
             OutputPath = outputPath
         });
 
-        var csvPath = Path.Combine(outputPath, "BRK_B_82f67012.csv");
-        var notePath = Path.Combine(outputPath, "BRK_B_82f67012_parquet_note.txt");
-
-        result.Success.Should().BeTrue();
-        File.Exists(csvPath).Should().BeTrue();
-        File.Exists(notePath).Should().BeTrue();
-        var note = await File.ReadAllTextAsync(notePath);
-        note.Should().Contain("pd.read_csv('BRK_B_82f67012.csv')");
-        note.Should().NotContain("pd.read_csv('BRK_B.csv')");
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain(format);
+        result.ErrorMessage.Should().Contain("no fallback file was created");
+        result.GeneratedFiles.Should().BeEmpty();
+        Directory.EnumerateFiles(outputPath, "*", SearchOption.AllDirectories).Should().BeEmpty();
     }
 
     [Fact]

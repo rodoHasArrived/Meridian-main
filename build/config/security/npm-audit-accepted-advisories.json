@@ -1,0 +1,7 @@
+{
+  "schema": "meridian.npm-audit-accepted-advisories",
+  "version": "1.0.0",
+  "registry": "docs/security/known-vulnerabilities.md",
+  "policy": "Every entry must mirror an accepted-risk record in the registry above, and expires at review_by. Enforced by build/scripts/ci/validate-npm-audit.py in the Production Certification dependency-evidence job.",
+  "accepted": []
+}

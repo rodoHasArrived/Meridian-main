@@ -9,6 +9,12 @@ namespace Meridian.Contracts.Workstation;
 public interface IReportingRunNotifier
 {
     void NotifyRunChanged(string runId);
+
+    void NotifyRunChanged(
+        string tenantId,
+        string? companyId,
+        string runId) =>
+        NotifyRunChanged(runId);
 }
 
 /// <summary>No-op notifier used when no UI stream broadcaster is registered (headless hosts, tests).</summary>

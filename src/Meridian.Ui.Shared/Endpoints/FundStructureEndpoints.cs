@@ -44,7 +44,7 @@ public static partial class FundStructureEndpoints
             var result = workflow.Preview(draft);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("ValidateFundStructureSetupDraft")
+        .WithName("ValidateFundStructureSetupDraft").RequireAnyPermission(UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .Produces<FundStructureSetupPreviewDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest);
 
@@ -85,7 +85,7 @@ public static partial class FundStructureEndpoints
             var result = await workflow.CreateAsync(draft!, actor, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
-        .WithName("CreateFundStructureSetupDraft")
+        .WithName("CreateFundStructureSetupDraft").RequireAnyPermission(UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .Produces<FundStructureSetupResultDto>(StatusCodes.Status201Created)
         .Produces<FundStructureSetupValidationSummaryDto>(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -106,7 +106,7 @@ public static partial class FundStructureEndpoints
             var result = await service.CreateOrganizationAsync(request, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
-        .WithName("CreateOrganization")
+        .WithName("CreateOrganization").RequirePermission(UserPermission.ManageFundStructure)
         .Produces<OrganizationSummaryDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest);
 
@@ -125,7 +125,7 @@ public static partial class FundStructureEndpoints
             var result = await service.CreateBusinessAsync(request, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
-        .WithName("CreateBusiness")
+        .WithName("CreateBusiness").RequirePermission(UserPermission.ManageFundStructure)
         .Produces<BusinessSummaryDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest);
 
@@ -144,7 +144,7 @@ public static partial class FundStructureEndpoints
             var result = await service.CreateClientAsync(request, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
-        .WithName("CreateClient")
+        .WithName("CreateClient").RequirePermission(UserPermission.ManageFundStructure)
         .Produces<ClientSummaryDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest);
 
@@ -163,7 +163,7 @@ public static partial class FundStructureEndpoints
             var result = await service.CreateFundAsync(request, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
-        .WithName("CreateStructureFund")
+        .WithName("CreateStructureFund").RequirePermission(UserPermission.ManageFundStructure)
         .Produces<FundSummaryDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest);
 
@@ -182,7 +182,7 @@ public static partial class FundStructureEndpoints
             var result = await service.CreateSleeveAsync(request, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
-        .WithName("CreateSleeve")
+        .WithName("CreateSleeve").RequirePermission(UserPermission.ManageFundStructure)
         .Produces<SleeveSummaryDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest);
 
@@ -201,7 +201,7 @@ public static partial class FundStructureEndpoints
             var result = await service.CreateVehicleAsync(request, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
-        .WithName("CreateVehicle")
+        .WithName("CreateVehicle").RequirePermission(UserPermission.ManageFundStructure)
         .Produces<VehicleSummaryDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest);
 
@@ -220,7 +220,7 @@ public static partial class FundStructureEndpoints
             var result = await service.CreateLegalEntityAsync(request, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
-        .WithName("CreateLegalEntity")
+        .WithName("CreateLegalEntity").RequirePermission(UserPermission.ManageFundStructure)
         .Produces<LegalEntitySummaryDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest);
 
@@ -257,7 +257,7 @@ public static partial class FundStructureEndpoints
             }
         })
         .WithName("UpdateLegalEntityProfile")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageFundStructure))
+        .RequirePermission(UserPermission.ManageFundStructure)
         .Produces<LegalEntitySummaryDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -278,7 +278,7 @@ public static partial class FundStructureEndpoints
             var result = await service.CreateInvestmentPortfolioAsync(request, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
-        .WithName("CreateInvestmentPortfolio")
+        .WithName("CreateInvestmentPortfolio").RequirePermission(UserPermission.ManageFundStructure)
         .Produces<InvestmentPortfolioSummaryDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest);
 
@@ -297,7 +297,7 @@ public static partial class FundStructureEndpoints
             var result = await service.LinkNodesAsync(request, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
-        .WithName("LinkFundStructureNodes")
+        .WithName("LinkFundStructureNodes").RequirePermission(UserPermission.ManageFundStructure)
         .Produces<OwnershipLinkDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest);
 
@@ -325,7 +325,7 @@ public static partial class FundStructureEndpoints
             }
         })
         .WithName("UpdateOwnershipLink")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageFundStructure))
+        .RequirePermission(UserPermission.ManageFundStructure)
         .Produces<OwnershipLinkDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -355,7 +355,7 @@ public static partial class FundStructureEndpoints
             }
         })
         .WithName("ExpireOwnershipLink")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageFundStructure))
+        .RequirePermission(UserPermission.ManageFundStructure)
         .Produces<OwnershipLinkDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -385,7 +385,7 @@ public static partial class FundStructureEndpoints
             }
         })
         .WithName("ReplaceOwnershipLink")
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageFundStructure))
+        .RequirePermission(UserPermission.ManageFundStructure)
         .Produces<OwnershipLinkDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -402,7 +402,7 @@ public static partial class FundStructureEndpoints
             var result = await service.ValidateOwnershipGraphAsync(request, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("ValidateOwnershipGraph")
+        .WithName("ValidateOwnershipGraph").RequirePermission(UserPermission.ManageFundStructure)
         .Produces<OwnershipGraphValidationResultDto>(StatusCodes.Status200OK);
 
         group.MapPost("/assignments", async (JsonElement body, HttpContext context) =>
@@ -426,7 +426,7 @@ public static partial class FundStructureEndpoints
             var result = await service.AssignNodeAsync(request, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
-        .WithName("AssignFundStructureNode")
+        .WithName("AssignFundStructureNode").RequirePermission(UserPermission.ManageFundStructure)
         .Produces<FundStructureAssignmentDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest);
 
@@ -528,7 +528,7 @@ public static partial class FundStructureEndpoints
                 jsonOptions,
                 statusCode: StatusCodes.Status201Created);
         })
-        .WithName("AssignLedgerMapping")
+        .WithName("AssignLedgerMapping").RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .Produces<LedgerMappingAssignmentResultDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound);
@@ -557,7 +557,7 @@ public static partial class FundStructureEndpoints
             var result = await service.GetOrganizationStructureAsync(query, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetOrganizationStructureGraph")
+        .WithName("GetOrganizationStructureGraph").RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .Produces<OrganizationStructureGraphDto>(StatusCodes.Status200OK);
 
         group.MapGet("/legacy-graph", async (HttpContext context) =>
@@ -583,7 +583,7 @@ public static partial class FundStructureEndpoints
             var result = await service.GetFundStructureGraphAsync(query, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetLegacyFundStructureGraph")
+        .WithName("GetLegacyFundStructureGraph").RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .Produces<FundStructureGraphDto>(StatusCodes.Status200OK);
 
         group.MapGet("/businesses/{businessId:guid}/advisory-view", async (Guid businessId, HttpContext context) =>
@@ -615,7 +615,7 @@ public static partial class FundStructureEndpoints
             var result = await service.GetAdvisoryViewAsync(query, context.RequestAborted).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
         })
-        .WithName("GetAdvisoryStructureView")
+        .WithName("GetAdvisoryStructureView").RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .Produces<AdvisoryStructureViewDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -652,7 +652,7 @@ public static partial class FundStructureEndpoints
             var result = await service.GetFundOperatingViewAsync(query, context.RequestAborted).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
         })
-        .WithName("GetFundOperatingStructureView")
+        .WithName("GetFundOperatingStructureView").RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .Produces<FundOperatingViewDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -684,7 +684,7 @@ public static partial class FundStructureEndpoints
             var result = await service.GetAccountingViewAsync(query, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetAccountingStructureView")
+        .WithName("GetAccountingStructureView").RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .Produces<AccountingStructureViewDto>(StatusCodes.Status200OK);
 
         group.MapGet("/ledger-mapping-view", async (HttpContext context) =>
@@ -717,7 +717,7 @@ public static partial class FundStructureEndpoints
             var result = LedgerMappingWorkbenchService.Build(accountingView, asOf);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetLedgerMappingWorkbench")
+        .WithName("GetLedgerMappingWorkbench").RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .Produces<LedgerMappingWorkbenchDto>(StatusCodes.Status200OK);
 
         group.MapGet("/cash-flow-view", async (HttpContext context) =>
@@ -780,180 +780,16 @@ public static partial class FundStructureEndpoints
             var result = await service.GetCashFlowViewAsync(query, context.RequestAborted).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
         })
-        .WithName("GetGovernanceCashFlowView")
+        .WithName("GetGovernanceCashFlowView").RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .Produces<GovernanceCashFlowViewDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound);
 
-        group.MapGet("/workspace-view", async (HttpContext context) =>
-        {
-            var service = ResolveWorkspaceService(context);
-            if (service is null)
-            {
-                return WorkspaceServiceUnavailable();
-            }
-
-            var q = context.Request.Query;
-            var fundProfileId = q["fundProfileId"].FirstOrDefault();
-            if (string.IsNullOrWhiteSpace(fundProfileId))
-            {
-                return Results.Problem(
-                    "fundProfileId is required.",
-                    statusCode: StatusCodes.Status400BadRequest);
-            }
-
-            var query = new FundOperationsWorkspaceQuery(
-                FundProfileId: fundProfileId,
-                AsOf: ParseDateTimeOffset(q["asOf"]),
-                Currency: q["currency"].FirstOrDefault(),
-                ScopeKind: ParseFundLedgerScope(q["scopeKind"]) ?? FundLedgerScope.Consolidated,
-                ScopeId: q["scopeId"].FirstOrDefault(),
-                SelectedLedgerIds: ParseSelectedLedgerIds(q["selectedLedgerIds"], q["selectedLedgerId"]));
-
-            var result = await service.GetWorkspaceAsync(
-                query,
-                BuildReportAccessQueryContext(context),
-                context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(result, jsonOptions);
-        })
-        .WithName("GetFundOperationsWorkspaceView")
-        .Produces<FundOperationsWorkspaceDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest);
-
-        legacyReportingGroup.MapPost("/report-pack-preview", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs/readiness",
-                "Legacy report-pack preview did not use the canonical server-owned run parameters and blocking readiness decision."))
-        .WithName("PreviewFundReportPack")
-        .ProducesProblem(StatusCodes.Status410Gone);
-
-        legacyReportingGroup.MapPost("/report-packs", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs",
-                "Legacy report-pack generation bypassed certified snapshots, canonical readiness, and governed lifecycle creation."))
-        .WithName("GenerateFundReportPack")
-        .ProducesProblem(StatusCodes.Status410Gone);
-
-        legacyReportingGroup.MapGet("/report-packs", async (HttpContext context) =>
-        {
-            if (!HasReportingReadPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = ResolveWorkspaceService(context);
-            if (service is null)
-            {
-                return WorkspaceServiceUnavailable();
-            }
-
-            var q = context.Request.Query;
-            var fundProfileId = q["fundProfileId"].FirstOrDefault();
-            if (string.IsNullOrWhiteSpace(fundProfileId))
-            {
-                return Results.Problem(
-                    "fundProfileId is required.",
-                    statusCode: StatusCodes.Status400BadRequest);
-            }
-
-            if (await RequireReportingFundProfileTenantAccessAsync(context, fundProfileId).ConfigureAwait(false) is { } scopeFailure)
-            {
-                return scopeFailure;
-            }
-
-            var limit = ParseInt(q["limit"], 20);
-            var result = await service
-                .GetReportPackHistoryAsync(fundProfileId, limit, context.RequestAborted)
-                .ConfigureAwait(false);
-            return Results.Json(result, jsonOptions);
-        })
-        .WithName("GetFundReportPackHistory")
-        .Produces<IReadOnlyList<FundReportPackHistoryItemDto>>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest);
-
-        reportingGroup.MapGet("/structured-exports/{exportId}", async (
-            string exportId,
-            string fundProfileId,
-            DateTimeOffset? asOf,
-            string? currency,
-            string? format,
-            HttpContext context) =>
-        {
-            if (!HasReportingReadPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = ResolveWorkspaceService(context);
-            if (service is null)
-            {
-                return WorkspaceServiceUnavailable();
-            }
-
-            if (string.IsNullOrWhiteSpace(fundProfileId))
-            {
-                return Results.Problem(
-                    "fundProfileId is required.",
-                    statusCode: StatusCodes.Status400BadRequest);
-            }
-
-            try
-            {
-                var accessContext = BuildReportAccessQueryContext(context);
-                var result = await service.GetStructuredReportingExportAsync(
-                    new StructuredReportingExportRequestDto(fundProfileId, exportId, asOf, currency),
-                    accessContext,
-                    context.RequestAborted).ConfigureAwait(false);
-                ApplyStructuredExportAuditHeaders(context, result);
-                if (IsStructuredCsvRequest(format))
-                {
-                    var fileName = $"{result.Export.ExportId}-{result.Export.AsOf.UtcDateTime:yyyyMMddHHmmss}.csv";
-                    return Results.File(
-                        BuildStructuredExportCsv(result),
-                        "text/csv",
-                        fileName);
-                }
-
-                if (IsStructuredXlsxRequest(format))
-                {
-                    var fileName = $"{result.Export.ExportId}-{result.Export.AsOf.UtcDateTime:yyyyMMddHHmmss}.xlsx";
-                    return Results.File(
-                        BuildStructuredExportXlsx(result),
-                        StructuredXlsxContentType,
-                        fileName);
-                }
-
-                if (IsStructuredJsonRequest(format))
-                {
-                    var fileName = $"{result.Export.ExportId}-{result.Export.AsOf.UtcDateTime:yyyyMMddHHmmss}.json";
-                    return Results.File(
-                        BuildStructuredExportJson(result, jsonOptions),
-                        "application/json",
-                        fileName);
-                }
-
-                return Results.Json(result, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return Results.Problem(ex.Message, statusCode: StatusCodes.Status404NotFound);
-            }
-        })
-        .WithName("GetStructuredReportingExport")
-        .Produces<StructuredReportingExportPayloadDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status200OK, contentType: "application/json")
-        .Produces(StatusCodes.Status200OK, contentType: "text/csv")
-        .Produces(StatusCodes.Status200OK, contentType: StructuredXlsxContentType)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status404NotFound);
-
+        MapFundOperationsWorkspaceAndLegacyReportingEndpoints(
+            group,
+            reportingGroup,
+            legacyReportingGroup,
+            jsonOptions);
 
         reportingGroup.MapGet("/templates", (HttpContext context) =>
         {
@@ -979,7 +815,7 @@ public static partial class FundStructureEndpoints
                 .ToArray();
             return Results.Json(records, jsonOptions);
         })
-        .WithName("ListReportTemplates")
+        .WithName("ListReportTemplates").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<ReportTemplateGovernanceRecordDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden);
 
@@ -993,6 +829,11 @@ public static partial class FundStructureEndpoints
             if (!EndpointAuthorization.TryResolveActor(context, out var actor))
             {
                 return Results.Unauthorized();
+            }
+
+            if (context.RequestServices.GetService<IReportTemplateGovernanceStore>() is null)
+            {
+                return ReportingMutationStoreUnavailable("Custom report-template governance");
             }
 
             var registry = context.RequestServices.GetService<ReportTemplateRegistryService>();
@@ -1025,10 +866,11 @@ public static partial class FundStructureEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status403Forbidden);
             }
         })
-        .WithName("RegisterReportTemplate")
+        .WithName("RegisterReportTemplate").RequireAnyPermission(UserPermission.ManageReporting, UserPermission.AdminMaintenance)
         .Produces<ReportTemplateGovernanceRecordDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status401Unauthorized)
-        .Produces(StatusCodes.Status403Forbidden);
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status503ServiceUnavailable);
 
         reportingGroup.MapPost("/templates/drafts", (ReportTemplateDraftRequestDto request, HttpContext context) =>
         {
@@ -1040,6 +882,11 @@ public static partial class FundStructureEndpoints
             if (!EndpointAuthorization.TryResolveActor(context, out var actor))
             {
                 return Results.Unauthorized();
+            }
+
+            if (context.RequestServices.GetService<IReportTemplateGovernanceStore>() is null)
+            {
+                return ReportingMutationStoreUnavailable("Custom report-template governance");
             }
 
             var registry = context.RequestServices.GetService<ReportTemplateRegistryService>();
@@ -1070,11 +917,12 @@ public static partial class FundStructureEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
         })
-        .WithName("CreateReportTemplateDraft")
+        .WithName("CreateReportTemplateDraft").RequireAnyPermission(UserPermission.ManageReporting, UserPermission.AdminMaintenance)
         .Produces<ReportTemplateGovernanceRecordDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
-        .Produces(StatusCodes.Status403Forbidden);
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status503ServiceUnavailable);
 
         reportingGroup.MapPost("/templates/{templateName}/versions/{version:int}/submit", (string templateName, int version, ReportTemplateDecisionRequestDto? request, HttpContext context) =>
         {
@@ -1086,6 +934,11 @@ public static partial class FundStructureEndpoints
             if (!EndpointAuthorization.TryResolveActor(context, out var actor))
             {
                 return Results.Unauthorized();
+            }
+
+            if (context.RequestServices.GetService<IReportTemplateGovernanceStore>() is null)
+            {
+                return ReportingMutationStoreUnavailable("Custom report-template governance");
             }
 
             var registry = context.RequestServices.GetService<ReportTemplateRegistryService>();
@@ -1113,11 +966,12 @@ public static partial class FundStructureEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
         })
-        .WithName("SubmitReportTemplateDraft")
+        .WithName("SubmitReportTemplateDraft").RequireAnyPermission(UserPermission.ManageReporting, UserPermission.AdminMaintenance)
         .Produces<ReportTemplateGovernanceRecordDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
-        .Produces(StatusCodes.Status403Forbidden);
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status503ServiceUnavailable);
 
         reportingGroup.MapPost("/templates/{templateName}/versions/{version:int}/approve", (string templateName, int version, ReportTemplateDecisionRequestDto request, HttpContext context) =>
         {
@@ -1129,6 +983,11 @@ public static partial class FundStructureEndpoints
             if (!EndpointAuthorization.TryResolveActor(context, out var actor))
             {
                 return Results.Unauthorized();
+            }
+
+            if (context.RequestServices.GetService<IReportTemplateGovernanceStore>() is null)
+            {
+                return ReportingMutationStoreUnavailable("Custom report-template governance");
             }
 
             var registry = context.RequestServices.GetService<ReportTemplateRegistryService>();
@@ -1156,11 +1015,12 @@ public static partial class FundStructureEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
         })
-        .WithName("ApproveReportTemplateDraft")
+        .WithName("ApproveReportTemplateDraft").RequireAnyPermission(UserPermission.ApproveReporting, UserPermission.AdminMaintenance)
         .Produces<ReportTemplateGovernanceRecordDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
-        .Produces(StatusCodes.Status403Forbidden);
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status503ServiceUnavailable);
 
         reportingGroup.MapPost("/templates/{templateName}/versions/{version:int}/reject", (string templateName, int version, ReportTemplateDecisionRequestDto request, HttpContext context) =>
         {
@@ -1172,6 +1032,11 @@ public static partial class FundStructureEndpoints
             if (!EndpointAuthorization.TryResolveActor(context, out var actor))
             {
                 return Results.Unauthorized();
+            }
+
+            if (context.RequestServices.GetService<IReportTemplateGovernanceStore>() is null)
+            {
+                return ReportingMutationStoreUnavailable("Custom report-template governance");
             }
 
             var registry = context.RequestServices.GetService<ReportTemplateRegistryService>();
@@ -1199,11 +1064,12 @@ public static partial class FundStructureEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
         })
-        .WithName("RejectReportTemplateDraft")
+        .WithName("RejectReportTemplateDraft").RequireAnyPermission(UserPermission.ApproveReporting, UserPermission.AdminMaintenance)
         .Produces<ReportTemplateGovernanceRecordDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
-        .Produces(StatusCodes.Status403Forbidden);
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status503ServiceUnavailable);
 
         reportingGroup.MapPost("/templates/render", (RenderReportTemplateRequestDto request, HttpContext context) =>
         {
@@ -1238,117 +1104,57 @@ public static partial class FundStructureEndpoints
             {
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
-        });
+        }).DeclareNonMutating("Renders a report template and returns the result; ReportingWorkflowService.Render resolves the template, evaluates the grids through ReportWriterGridEngine in memory, and returns a DTO without persisting anything. The body carries the template id, parameters, grid definitions and dataset rows, which is why it is a POST.").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance);
 
-        reportingGroup.MapPost("/packs/create", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs",
-                "Legacy report-pack creation bypassed the canonical run contract and certified snapshot."));
+        MapLegacyReportingPackTombstones(app, reportingGroup);
 
-        reportingGroup.MapPost("/packs", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs",
-                "Legacy report-pack creation bypassed the canonical run contract and certified snapshot."))
-        .WithName("CreateReportingPackWorkflow")
-        .ProducesProblem(StatusCodes.Status410Gone);
+        reportingGroup.MapGet("/runs", async (int? limit, HttpContext context) =>
+        {
+            if (!HasReportingReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
 
-        reportingGroup.MapPost("/packs/{reportId:guid}/validate", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs/{runId}/validate",
-                "The legacy pack lifecycle was mutable and is not authoritative."));
-        reportingGroup.MapPost("/packs/{reportId:guid}/submit", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs/{runId}/submit",
-                "The legacy pack lifecycle was mutable and is not authoritative."));
-        reportingGroup.MapPost("/packs/{reportId:guid}/approve", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs/{runId}/approve",
-                "The legacy pack lifecycle did not enforce the canonical maker-checker state machine."));
-        reportingGroup.MapPost("/packs/{reportId:guid}/reject", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs",
-                "Legacy rejection mutated the old pack record; remediation must create or advance a governed run."))
-        .WithName("RejectReportingPackWorkflow")
-        .ProducesProblem(StatusCodes.Status410Gone);
-        reportingGroup.MapPost("/packs/{reportId:guid}/publish", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs/{runId}/release",
-                "Legacy publication accepted caller-supplied signers, hashes, manifest ids, and retention paths instead of verified retained artifacts."));
+            if (RequireReadyReportingDeployment(
+                    context,
+                    "Canonical reporting history is unavailable until the authoritative reporting deployment is ready.")
+                is { } deploymentFailure)
+            {
+                return deploymentFailure;
+            }
 
-        reportingGroup.MapPost("/packs/{reportId:guid}/restatements", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs/{runId}/restatement-requests",
-                "In-place legacy restatement could rewrite a released pack; governed restatement creates a new revision after independent approval."))
-        .WithName("RestateReportingPackWorkflow")
-        .ProducesProblem(StatusCodes.Status410Gone);
+            var service = context.RequestServices.GetService<ReportPackRunReadService>();
+            if (service is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
 
-        reportingGroup.MapPost("/packs/{reportId:guid}/archive", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs/{runId}",
-                "Client-driven archive mutation is not part of the immutable governed reporting lifecycle."));
-
-        reportingGroup.MapGet("/packs/{reportId:guid}/deliveries", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/distribution/packages/{runId}/deliveries",
-                "Legacy delivery history embedded deterministic query-token routes and synthetic delivery state."))
-        .WithName("GetReportingPackDeliveryHistory")
-        .ProducesProblem(StatusCodes.Status410Gone);
-
-        reportingGroup.MapGet("/packs/{reportId:guid}/deliveries/{attemptId:guid}/package", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/portal/reporting/access-grants/{grantId}/exchange",
-                "Query-string package tokens are retired; exchange an opaque, scoped grant in a POST body."))
-        .WithName("GetReportingPackDeliveryPackage")
-        .ProducesProblem(StatusCodes.Status410Gone);
-
-        reportingGroup.MapGet("/packs/{reportId:guid}/deliveries/{attemptId:guid}/artifacts/{artifactName}", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/distribution/packages/{runId}/artifacts/{artifactId}",
-                "Query-string artifact tokens are retired; authenticated downloads now use the immutable artifact vault."))
-        .WithName("GetReportingPackDeliveryArtifact")
-        .ProducesProblem(StatusCodes.Status410Gone);
-
-        app.MapGet(UiApiRoutes.ReportingPackDeliveryPortalPackage, (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/portal/reporting/access-grants/{grantId}/exchange",
-                "Query-string portal tokens are retired; the opaque grant must be exchanged through a no-store POST body."))
-        .WithName("GetReportingPortalDeliveryPackage")
-        .ProducesProblem(StatusCodes.Status410Gone);
-
-        reportingGroup.MapPost("/packs/{reportId:guid}/deliveries", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/distribution/deliveries",
-                "Legacy delivery could bypass canonical Released verification and durable transport receipts."))
-        .WithName("CreateReportingPackDeliveryAttempt")
-        .ProducesProblem(StatusCodes.Status410Gone);
-
-        reportingGroup.MapPost("/packs/{reportId:guid}/deliveries/failures", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/distribution/deliveries/{jobId}",
-                "Client-recorded synthetic failures are retired; provider receipts are server-owned and reflected on the durable delivery job."))
-        .WithName("CreateReportingPackDeliveryFailure")
-        .ProducesProblem(StatusCodes.Status410Gone);
-
-        reportingGroup.MapPost("/packs/{reportId:guid}/restate", (HttpContext context) =>
-            LegacyReportingRouteGone(
-                context,
-                "/api/fund-structure/reporting/runs/{runId}/restatement-requests",
-                "In-place legacy restatement is retired; approval creates a new immutable governed revision."));
+            try
+            {
+                var history = await service
+                    .BuildCanonicalHistoryAsync(
+                        BuildReportAccessQueryContext(context),
+                        Math.Clamp(limit ?? 25, 1, 200),
+                        context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(history, jsonOptions);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status403Forbidden);
+            }
+            catch (Exception ex) when (ex is InvalidDataException or InvalidOperationException)
+            {
+                return Results.Problem(
+                    "The canonical reporting history store is temporarily unavailable.",
+                    statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+        })
+        .WithName("ListCanonicalReportingRuns").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
+        .Produces<WorkstationReportingHistoryPayload>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status503ServiceUnavailable);
 
         reportingGroup.MapPost("/runs/readiness", async (ReportingRunRequestDto request, HttpContext context) =>
         {
@@ -1360,6 +1166,14 @@ public static partial class FundStructureEndpoints
             if (!EndpointAuthorization.TryResolveActor(context, out _))
             {
                 return Results.Unauthorized();
+            }
+
+            if (RequireReadyReportingDeployment(
+                    context,
+                    "Reporting run readiness is unavailable until the authoritative reporting deployment is ready.")
+                is { } deploymentFailure)
+            {
+                return deploymentFailure;
             }
 
             var readinessService = context.RequestServices.GetService<ReportingRunReadinessService>();
@@ -1384,12 +1198,13 @@ public static partial class FundStructureEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
         })
-        .WithName("AssessReportingRunReadiness")
+        .WithName("AssessReportingRunReadiness").RequireAnyPermission(UserPermission.ManageReporting, UserPermission.AdminMaintenance)
         .Accepts<ReportingRunRequestDto>("application/json")
         .Produces<ReportingRunReadinessDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
-        .Produces(StatusCodes.Status403Forbidden);
+        .Produces(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status503ServiceUnavailable);
 
         reportingGroup.MapPost("/runs", async (ReportingRunRequestDto request, HttpContext context) =>
         {
@@ -1406,6 +1221,14 @@ public static partial class FundStructureEndpoints
             if (!TryResolveReportingGovernanceCaller(context, out var governanceCaller, out var callerError))
             {
                 return callerError!;
+            }
+
+            if (RequireReadyReportingDeployment(
+                    context,
+                    "Ad-hoc reporting runs are unavailable until the authoritative reporting deployment is ready.")
+                is { } deploymentFailure)
+            {
+                return deploymentFailure;
             }
 
             var svc = context.RequestServices.GetService<ReportingRunCommandService>();
@@ -1431,6 +1254,10 @@ public static partial class FundStructureEndpoints
             {
                 return Results.Json(ex.Readiness, jsonOptions, statusCode: StatusCodes.Status409Conflict);
             }
+            catch (ReportingRunDeploymentNotReadyException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
             catch (UnauthorizedAccessException ex)
             {
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status403Forbidden);
@@ -1449,11 +1276,11 @@ public static partial class FundStructureEndpoints
             }
             catch (ReportingGovernanceConcurrencyException ex)
             {
-                return Results.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
+                return ApiProblemDetails.VersionConflict(context, ex.Message);
             }
             catch (ReportingGovernanceException ex)
             {
-                return Results.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
+                return ApiProblemDetails.Conflict(context, ex.Message);
             }
             catch (ReportingArtifactCatalogIntegrityException ex)
             {
@@ -1468,7 +1295,7 @@ public static partial class FundStructureEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
         })
-        .WithName("RunReportingNow")
+        .WithName("RunReportingNow").RequireAnyPermission(UserPermission.ManageReporting, UserPermission.AdminMaintenance)
         .Accepts<ReportingRunRequestDto>("application/json")
         .Produces<ReportingRunResultDto>(StatusCodes.Status201Created)
         .Produces<ReportingRunReadinessDto>(StatusCodes.Status409Conflict)
@@ -1495,18 +1322,35 @@ public static partial class FundStructureEndpoints
 
             try
             {
-                var manifest = orchestration.GetManifest(runId.Trim())
+                var accessContext = BuildReportAccessQueryContext(context);
+                if (accessContext.RequireBoundScope != true
+                    || string.IsNullOrWhiteSpace(accessContext.TenantId)
+                    || string.IsNullOrWhiteSpace(accessContext.CompanyId))
+                {
+                    throw new UnauthorizedAccessException(
+                        "Reporting run audit access requires a bound tenant and company scope.");
+                }
+
+                var manifest = orchestration.GetManifest(
+                        accessContext.TenantId,
+                        runId.Trim())
+                    ?? orchestration.GetManifest(runId.Trim())
                     ?? throw new KeyNotFoundException($"Reporting run '{runId}' was not found.");
                 var evaluation = ReportAccessPolicyEvaluator.Evaluate(
                     manifest,
-                    BuildReportAccessQueryContext(context));
+                    accessContext);
                 if (!evaluation.IsAccessible)
                 {
                     throw new UnauthorizedAccessException(evaluation.Reason);
                 }
 
                 return Results.Json(
-                    ProjectReportingRunAuditTrail(manifest, orchestration.GetAudit(manifest.RunId)),
+                    ProjectReportingRunAuditTrail(
+                        manifest,
+                        orchestration.GetAudit(
+                            manifest.OperationalScope?.TenantId
+                                ?? accessContext.TenantId,
+                            manifest.RunId)),
                     jsonOptions);
             }
             catch (UnauthorizedAccessException ex)
@@ -1522,7 +1366,7 @@ public static partial class FundStructureEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
         })
-        .WithName("GetReportingRunAuditTrail")
+        .WithName("GetReportingRunAuditTrail").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .Produces<ReportingRunAuditTrailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1569,7 +1413,7 @@ public static partial class FundStructureEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
         })
-        .WithName("GetReportingRunReportWriterGrid")
+        .WithName("GetReportingRunReportWriterGrid").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .Produces<ReportWriterGridRenderDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status200OK, contentType: "application/json")
         .Produces(StatusCodes.Status200OK, contentType: "text/csv")
@@ -1589,7 +1433,7 @@ public static partial class FundStructureEndpoints
             var svc = context.RequestServices.GetService<ReportingStarterKitService>();
             return svc is null ? WorkspaceServiceUnavailable() : Results.Json(svc.ListKits(), jsonOptions);
         })
-        .WithName("ListReportingStarterKits")
+        .WithName("ListReportingStarterKits").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<ReportingStarterKitDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden);
 
@@ -1603,6 +1447,11 @@ public static partial class FundStructureEndpoints
             if (!EndpointAuthorization.TryResolveActor(context, out var actor))
             {
                 return Results.Unauthorized();
+            }
+
+            if (context.RequestServices.GetService<IReportingStarterKitStore>() is null)
+            {
+                return ReportingMutationStoreUnavailable("Reporting starter-kit provisioning");
             }
 
             var svc = context.RequestServices.GetService<ReportingStarterKitService>();
@@ -1631,12 +1480,13 @@ public static partial class FundStructureEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
         })
-        .WithName("ProvisionReportingStarterKit")
+        .WithName("ProvisionReportingStarterKit").RequireAnyPermission(UserPermission.ManageReporting, UserPermission.AdminMaintenance)
         .Produces<ReportingStarterKitProvisionResultDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status503ServiceUnavailable);
 
         reportingGroup.MapGet("/schedules", (HttpContext context) =>
         {
@@ -1650,7 +1500,7 @@ public static partial class FundStructureEndpoints
                 ? WorkspaceServiceUnavailable()
                 : Results.Json(svc.ListSchedules(BuildReportAccessQueryContext(context)), jsonOptions);
         })
-        .WithName("ListReportingSchedules")
+        .WithName("ListReportingSchedules").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<ReportingScheduleRecordDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden);
 
@@ -1659,6 +1509,11 @@ public static partial class FundStructureEndpoints
             if (!HasReportingWorkflowPermission(context))
             {
                 return EndpointHelpers.Forbidden();
+            }
+
+            if (RequireReadyReportingDeployment(context) is { } deploymentFailure)
+            {
+                return deploymentFailure;
             }
 
             if (!EndpointAuthorization.TryResolveActor(context, out var actor))
@@ -1692,27 +1547,37 @@ public static partial class FundStructureEndpoints
                                            or InvalidDataException
                                            or InvalidOperationException)
             {
-                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+                return ReportingScheduleFailure(context, ex);
             }
         })
-        .WithName("UpsertReportingSchedule")
+        .WithName("UpsertReportingSchedule").RequireAnyPermission(UserPermission.ManageReporting, UserPermission.AdminMaintenance)
         .Accepts<ReportingScheduleUpsertRequestDto>("application/json")
         .Produces<ReportingScheduleRecordDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
-        .Produces(StatusCodes.Status403Forbidden);
-
+        .Produces(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status503ServiceUnavailable);
         reportingGroup.MapPost("/schedules/{scheduleId}/pause", (string scheduleId, HttpContext context) => SetScheduleState(context, scheduleId, ReportingScheduleStateDto.Paused))
-            .WithName("PauseReportingSchedule")
-            .Produces<ReportingScheduleRecordDto>(StatusCodes.Status200OK);
+            .WithName("PauseReportingSchedule").RequireAnyPermission(UserPermission.ManageReporting, UserPermission.AdminMaintenance)
+            .Produces<ReportingScheduleRecordDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable);
         reportingGroup.MapPost("/schedules/{scheduleId}/resume", (string scheduleId, HttpContext context) => SetScheduleState(context, scheduleId, ReportingScheduleStateDto.Active))
-            .WithName("ResumeReportingSchedule")
-            .Produces<ReportingScheduleRecordDto>(StatusCodes.Status200OK);
+            .WithName("ResumeReportingSchedule").RequireAnyPermission(UserPermission.ManageReporting, UserPermission.AdminMaintenance)
+            .Produces<ReportingScheduleRecordDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable);
         reportingGroup.MapPost("/schedules/{scheduleId}/run", async (string scheduleId, HttpContext context) =>
         {
             if (!HasReportingWorkflowPermission(context))
             {
                 return EndpointHelpers.Forbidden();
+            }
+
+            if (RequireReadyReportingDeployment(context) is { } deploymentFailure)
+            {
+                return deploymentFailure;
             }
 
             if (!EndpointAuthorization.TryResolveActor(context, out var actor))
@@ -1738,21 +1603,23 @@ public static partial class FundStructureEndpoints
             }
             catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or KeyNotFoundException)
             {
-                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+                return ReportingScheduleFailure(context, ex);
             }
         })
-        .WithName("RunReportingScheduleNow")
+        .WithName("RunReportingScheduleNow").RequireAnyPermission(UserPermission.ManageReporting, UserPermission.AdminMaintenance)
         .Produces<ReportingScheduleRunResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
-        .Produces(StatusCodes.Status403Forbidden);
-
+        .Produces(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status503ServiceUnavailable);
         reportingGroup.MapPost("/schedules/run-due", (HttpContext context) =>
             LegacyReportingRouteGone(
                 context,
                 "the internal reporting scheduler worker",
                 "Public due-schedule execution is retired; due work is leased and executed only by the server-owned background worker."))
         .WithName("RunDueReportingSchedules")
+        .DeclarePermissionlessMutation(LegacyReportingTombstoneReason)
         .ProducesProblem(StatusCodes.Status410Gone);
 
         reportingGroup.MapGet("/packs/history", (string period, string fundAccountId, HttpContext context) =>
@@ -1760,6 +1627,14 @@ public static partial class FundStructureEndpoints
             if (!HasReportingReadPermission(context))
             {
                 return EndpointHelpers.Forbidden();
+            }
+
+            if (context.RequestServices.GetService<IGovernanceReportPackRepository>() is null)
+            {
+                return LegacyReportingRouteGone(
+                    context,
+                    "/api/fund-structure/reporting/runs",
+                    "Legacy file-backed report-pack history is not available in this deployment.");
             }
 
             var svc = context.RequestServices.GetService<ReportPackWorkflowService>();
@@ -1774,12 +1649,22 @@ public static partial class FundStructureEndpoints
                 .Where(record => IsTenantSafeLegacyReportingPackRead(record, accessContext))
                 .ToArray();
             return Results.Json(history, jsonOptions);
-        });
+        }).RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
+        .Produces<IReadOnlyList<ReportPackWorkflowRecordDto>>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status410Gone);
         legacyReportingGroup.MapGet("/report-packs/{reportId:guid}", async (Guid reportId, HttpContext context) =>
         {
             if (!HasReportingReadPermission(context))
             {
                 return EndpointHelpers.Forbidden();
+            }
+
+            if (context.RequestServices.GetService<IGovernanceReportPackRepository>() is null)
+            {
+                return LegacyReportingRouteGone(
+                    context,
+                    "/api/fund-structure/reporting/runs",
+                    "Legacy file-backed report-pack detail is not available in this deployment.");
             }
 
             var service = ResolveWorkspaceService(context);
@@ -1801,16 +1686,17 @@ public static partial class FundStructureEndpoints
 
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetFundReportPack")
+        .WithName("GetFundReportPack").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .Produces<FundReportPackSnapshotDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status410Gone);
 
         legacyReportingGroup.MapGet("/report-packs/{reportId:guid}/evidence-bundle", (HttpContext context) =>
             LegacyReportingRouteGone(
                 context,
                 "/api/fund-structure/reporting/distribution/packages/{runId}/artifacts/{artifactId}",
                 "Legacy evidence export regenerated a mutable bundle instead of returning verified bytes from the immutable artifact vault."))
-        .WithName("ExportFundReportPackEvidenceBundle")
+        .WithName("ExportFundReportPackEvidenceBundle").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .ProducesProblem(StatusCodes.Status410Gone);
 
         legacyReportingGroup.MapGet("/report-packs/{reportId:guid}/ledger-provenance", async (Guid reportId, string scopeKey, HttpContext context) =>
@@ -1818,6 +1704,14 @@ public static partial class FundStructureEndpoints
             if (!HasReportingReadPermission(context))
             {
                 return EndpointHelpers.Forbidden();
+            }
+
+            if (context.RequestServices.GetService<IGovernanceReportPackRepository>() is null)
+            {
+                return LegacyReportingRouteGone(
+                    context,
+                    "/api/fund-structure/reporting/runs",
+                    "Legacy file-backed report-pack provenance is not available in this deployment.");
             }
 
             var service = context.RequestServices.GetService<LedgerAmountProvenanceService>();
@@ -1838,12 +1732,21 @@ public static partial class FundStructureEndpoints
                 return scopeFailure;
             }
 
-            var result = await service.GetAsync(reportId, scopeKey, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var accessScope = new ReconciliationBreakQueueScope(
+                tenantContext.TenantId!,
+                tenantContext.CompanyId!);
+            var result = await service
+                .GetAsync(reportId, scopeKey, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
         })
-        .WithName("GetFundReportPackLedgerProvenance")
+        .WithName("GetFundReportPackLedgerProvenance").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .Produces<LedgerAmountProvenanceDetailDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status410Gone)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapPost("/accounting/transaction-lab/preview", (InvestmentAccountingTransactionLabRequestDto request, HttpContext context) =>
         {
@@ -1867,39 +1770,10 @@ public static partial class FundStructureEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
         })
-        .WithName("PreviewInvestmentAccountingTransactionLab")
+        .WithName("PreviewInvestmentAccountingTransactionLab").RequireAnyPermission(UserPermission.ManageReporting, UserPermission.AdminMaintenance)
         .Produces<InvestmentAccountingTransactionLabPreviewDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden);
-    }
-
-    private static IResult SetScheduleState(HttpContext context, string scheduleId, ReportingScheduleStateDto state)
-    {
-        if (!HasReportingWorkflowPermission(context))
-        {
-            return EndpointHelpers.Forbidden();
-        }
-
-        var svc = context.RequestServices.GetService<ReportingScheduleService>();
-        if (svc is null)
-        {
-            return WorkspaceServiceUnavailable();
-        }
-
-        try
-        {
-            return Results.Json(
-                svc.SetState(scheduleId, state, BuildReportAccessQueryContext(context)),
-                statusCode: StatusCodes.Status200OK);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Results.Problem(ex.Message, statusCode: StatusCodes.Status403Forbidden);
-        }
-        catch (Exception ex) when (ex is ArgumentException or InvalidDataException or KeyNotFoundException)
-        {
-            return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
-        }
     }
 
     private static FundStructureSetupWorkflowService? ResolveSetupWorkflow(HttpContext context)
@@ -2145,18 +2019,11 @@ public static partial class FundStructureEndpoints
     private static IResult WorkspaceServiceUnavailable() =>
         Results.Problem("Fund operations workspace service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
-    private static IResult LegacyReportingRouteGone(
-        HttpContext context,
-        string canonicalRoute,
-        string reason)
-    {
-        context.Response.Headers.CacheControl = "no-store";
-        context.Response.Headers.Pragma = "no-cache";
-        return Results.Problem(
-            detail: $"{reason} Use {canonicalRoute}.",
-            statusCode: StatusCodes.Status410Gone,
-            title: "Legacy reporting route retired");
-    }
+    private static IResult ReportingMutationStoreUnavailable(string capability) =>
+        Results.Problem(
+            detail: $"{capability} requires a registered persistence store and is unavailable in this deployment.",
+            statusCode: StatusCodes.Status503ServiceUnavailable,
+            title: "Durable reporting mutation unavailable");
 
     private static Guid? ParseGuid(string? value) =>
         Guid.TryParse(value, out var parsed) ? parsed : null;

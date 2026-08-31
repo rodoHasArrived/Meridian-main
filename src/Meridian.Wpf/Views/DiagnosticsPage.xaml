@@ -40,7 +40,7 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="Application Version"
                                    Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
-                        <TextBlock Grid.Column="1" Text="1.6.1"
+                        <TextBlock x:Name="AppVersionText" Grid.Column="1" Text="--"
                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontWeight="SemiBold" />
                     </Grid>
 

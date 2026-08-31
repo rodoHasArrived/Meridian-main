@@ -523,7 +523,7 @@ public sealed class DataValidatorTests : TempDirectoryTestBase
                 AggressorSide.Buy,
                 i);
 
-            events.Add(MarketEvent.Trade(baseTime.AddSeconds(i), symbol, trade, i, "TEST"));
+            events.Add(MarketEvent.Trade(baseTime.AddSeconds(i), symbol, trade, "TEST", i));
         }
 
         return events;

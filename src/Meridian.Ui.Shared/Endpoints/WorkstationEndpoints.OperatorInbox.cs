@@ -2,6 +2,7 @@ using System.Globalization;
 using Meridian.Application.Monitoring;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
@@ -23,18 +24,40 @@ public static partial class WorkstationEndpoints
     private static async Task<OperatorInboxDto> BuildOperatorInboxAsync(Guid? fundAccountId, HttpContext context)
     {
         var asOf = DateTimeOffset.UtcNow;
-        var readiness = await GetTradingOperatorReadinessAsync(fundAccountId, context).ConfigureAwait(false);
-        var workItems = readiness.WorkItems
-            .Select(AttachOperatorNavigation)
-            .ToList();
 
-        await AddRunReviewPacketWorkItemsAsync(context, fundAccountId, workItems, asOf).ConfigureAwait(false);
-        await AddReconciliationBreakWorkItemsAsync(context, workItems, asOf).ConfigureAwait(false);
+        // The inbox aggregates four families whose own routes carry different permissions, so each
+        // contribution is gated by the permission its source route requires -- including the
+        // trading-readiness base, which is a contribution like any other rather than a floor. The
+        // route admits the union of the four, so leaving this one ungated would hand trading
+        // readiness to a caller admitted only for run review, and gating the route on ViewTrades
+        // instead would shut every strategy-permitted role out of the run-review items it may read.
+        // Without per-contribution gating the single route-level permission would decide the whole
+        // payload, and reconciliation break items carry the strategy name, break reason, status and
+        // assignee, not merely a count.
+        var readiness = EndpointAuthorization.HasPermission(context, UserPermission.ViewTrades)
+            ? await GetTradingOperatorReadinessAsync(fundAccountId, context).ConfigureAwait(false)
+            : null;
+        var workItems = readiness is null
+            ? new List<OperatorWorkItemDto>()
+            : readiness.WorkItems.Select(AttachOperatorNavigation).ToList();
+
+        if (HasRunReviewInboxPermission(context))
+        {
+            await AddRunReviewPacketWorkItemsAsync(context, fundAccountId, workItems, asOf).ConfigureAwait(false);
+        }
+
+        if (CanViewReconciliationBreakQueue(context))
+        {
+            await AddReconciliationBreakWorkItemsAsync(context, workItems, asOf).ConfigureAwait(false);
+        }
+
         var operatorInbox = context.RequestServices.GetService<IOperatorInboxService>();
-        if (operatorInbox is not null)
+        if (operatorInbox is not null && HasContributedInboxPermission(context))
         {
             var contributedItems = await operatorInbox.GetItemsAsync(context.RequestAborted).ConfigureAwait(false);
-            workItems.AddRange(contributedItems.Select(AttachOperatorNavigation));
+            workItems.AddRange(contributedItems
+                .Where(item => CanReceiveContributedInboxItem(context, item))
+                .Select(AttachOperatorNavigation));
         }
 
         PreferCanonicalReconciliationBreakWorkItems(workItems);
@@ -64,8 +87,77 @@ public static partial class WorkstationEndpoints
             CriticalCount: criticalCount,
             WarningCount: warningCount,
             ReviewCount: reviewCount,
-            Summary: BuildOperatorInboxSummary(items, criticalCount, warningCount, readiness.PortfolioLedgerWorkflowStatus));
+            Summary: BuildOperatorInboxSummary(items, criticalCount, warningCount, readiness?.PortfolioLedgerWorkflowStatus));
     }
+
+    /// <summary>
+    /// Run-review packets restate strategy-run detail, so they are contributed only to callers the
+    /// run drill-in routes admit.
+    /// </summary>
+    private static bool HasRunReviewInboxPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.ViewStrategies,
+            UserPermission.ManageStrategies);
+
+    /// <summary>
+    /// Whether the caller may receive <em>any</em> contributed item. This admits the collection; it is
+    /// not authority over everything in it — see <see cref="CanReceiveContributedInboxItem"/>.
+    /// </summary>
+    private static bool HasContributedInboxPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.ViewDirectLending,
+            UserPermission.ManageDirectLending,
+            UserPermission.AdminMaintenance);
+
+    /// <summary>
+    /// One <see cref="IOperatorInboxService"/> collection carries items from more than one contributor:
+    /// the direct-lending accrual worker and the ledger book service both write into it. Admission to
+    /// the collection is therefore not authority over every item in it, and appending it wholesale gave
+    /// a ViewDirectLending-only caller the ledger-book names, accounting policies, periods, sign-off
+    /// roles and tolerances that ride on a period-close item — data the ledger period routes serve only
+    /// to ManageDirectLending or AdminMaintenance.
+    /// <para>
+    /// Kind alone cannot make that separation, because both contributors write
+    /// <see cref="OperatorWorkItemKindDto.LedgerPeriodClose"/>. <c>DailyAccrualWorker</c> writes it to
+    /// say a loan could not accrue because the period is shut — a direct-lending event, carrying a loan
+    /// id and a date and nothing of the book — while <c>PostgresLedgerBookService</c> writes it to
+    /// request a sign-off, carrying the book name, accounting basis, policy id and version, required
+    /// sign-off role and tolerance profile. Filtering by kind therefore withheld from the
+    /// direct-lending desk the one item in the collection that is entirely its own.
+    /// </para>
+    /// <para>
+    /// What separates them is the payload, so that is what is tested: an item scoped to a ledger book,
+    /// or carrying any of the period-close governance fields, is the ledger-book item. A future
+    /// contributor that adds those fields is caught by the second half even if it never adopts the
+    /// scope convention, and one that carries neither is, by construction, not disclosing anything the
+    /// narrower ledger-period routes exist to hold back.
+    /// </para>
+    /// </summary>
+    private static bool CanReceiveContributedInboxItem(HttpContext context, OperatorWorkItemDto item)
+        => item.Kind != OperatorWorkItemKindDto.LedgerPeriodClose ||
+           !CarriesLedgerBookPeriodCloseDetail(item) ||
+           EndpointAuthorization.HasAnyPermission(
+               context,
+               UserPermission.ManageDirectLending,
+               UserPermission.AdminMaintenance);
+
+    /// <summary>
+    /// Whether a period-close item carries the ledger book's own close detail, as opposed to merely
+    /// reporting that a closed period blocked something else.
+    /// </summary>
+    private static bool CarriesLedgerBookPeriodCloseDetail(OperatorWorkItemDto item)
+        => item.Scope?.Contains(LedgerBookScopePrefix, StringComparison.OrdinalIgnoreCase) == true ||
+           !string.IsNullOrWhiteSpace(item.RequiredSignoffRole) ||
+           !string.IsNullOrWhiteSpace(item.ToleranceProfileId) ||
+           !string.IsNullOrWhiteSpace(item.SignoffStatus);
+
+    /// <summary>
+    /// The scope prefix <c>PostgresLedgerBookService.BuildPeriodCloseWorkItem</c> stamps on the items it
+    /// contributes.
+    /// </summary>
+    private const string LedgerBookScopePrefix = "ledger-book:";
 
     private static void PreferCanonicalReconciliationBreakWorkItems(List<OperatorWorkItemDto> workItems)
     {
@@ -198,8 +290,14 @@ public static partial class WorkstationEndpoints
     {
         try
         {
+            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
+            {
+                return;
+            }
+
             var reconciliationBreaks = await GetBreakQueueItemsAsync(
                 context.RequestServices,
+                queueScope,
                 status: null,
                 fundAccountId: null,
                 ledgerBookId: null,

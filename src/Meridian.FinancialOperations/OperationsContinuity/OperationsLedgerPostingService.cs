@@ -7,6 +7,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.OperationsContinuity;
 
@@ -493,7 +494,6 @@ internal sealed class OperationsLedgerPostingService
             LedgerBookId: workflow.LedgerBookId);
     }
 
-
     public async Task<IReadOnlyDictionary<Guid, SecurityStatusDto>> ResolveAuthoritativeSecurityStatusesAsync(
         IReadOnlyList<OperationsLedgerJournalLineDto>? lines,
         CancellationToken ct)
@@ -562,7 +562,6 @@ internal sealed class OperationsLedgerPostingService
         return !string.IsNullOrWhiteSpace(symbol) &&
             mapping.Contains(symbol.Trim(), StringComparison.OrdinalIgnoreCase);
     }
-
 
     private static bool TryGetAuthoritativeActiveSecurityStatus(
         Guid? securityId,
@@ -695,9 +694,6 @@ internal sealed class OperationsLedgerPostingService
 
     private static string NormalizePolicy(string value) =>
         string.IsNullOrWhiteSpace(value) ? "legacy-v1" : value.Trim();
-
-    private static string? NormalizeOptional(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
 internal readonly struct LedgerCommitOutcome

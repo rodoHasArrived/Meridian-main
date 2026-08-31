@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
 using Meridian.Strategies.Services;
@@ -67,6 +68,8 @@ public sealed class ReportingReconciliationEvidenceSource : IReportingReconcilia
         _breakQueue = breakQueue;
     }
 
+    internal IReconciliationBreakQueueRepository? BreakQueueAuthority => _breakQueue;
+
     public async ValueTask<ReportingReconciliationEvidenceReceipt> ResolveAsync(
         ReportingRunParametersDto parameters,
         ReportingAuthoritativeSourceCheckpoint source,
@@ -76,6 +79,10 @@ public sealed class ReportingReconciliationEvidenceSource : IReportingReconcilia
         ArgumentNullException.ThrowIfNull(parameters);
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(accessContext);
+        var sourceQueueScope = RequireExactQueueScope(
+            source.TenantId,
+            source.CompanyId,
+            "authoritative reporting source");
         ReportingReconciliationEvidenceReceipt? receipt;
         try
         {
@@ -106,7 +113,13 @@ public sealed class ReportingReconciliationEvidenceSource : IReportingReconcilia
                 "No retained reconciliation/close checkpoint exists for the exact reporting tenant/fund/book/period/basis/as-of source.");
         }
 
+        var receiptQueueScope = RequireExactQueueScope(
+            receipt.TenantId,
+            receipt.CompanyId,
+            "retained reconciliation receipt");
         if (!ExactlyMatches(receipt, source)
+            || !string.Equals(receiptQueueScope.TenantId, sourceQueueScope.TenantId, StringComparison.Ordinal)
+            || !string.Equals(receiptQueueScope.CompanyId, sourceQueueScope.CompanyId, StringComparison.Ordinal)
             || !string.Equals(receipt.SourceCheckpointId, source.CheckpointId, StringComparison.Ordinal)
             || !string.Equals(receipt.SourceCheckpointHash, source.CheckpointHash, StringComparison.OrdinalIgnoreCase))
         {
@@ -137,7 +150,11 @@ public sealed class ReportingReconciliationEvidenceSource : IReportingReconcilia
                 BuildOpenBreakEvidenceReferences(openBreaks, receipt.EvidenceIds));
         }
 
-        await EnsureCurrentCanonicalQueueMatchesReceiptAsync(receipt, source, cancellationToken)
+        await EnsureCurrentCanonicalQueueMatchesReceiptAsync(
+                receipt,
+                source,
+                receiptQueueScope,
+                cancellationToken)
             .ConfigureAwait(false);
 
         if (receipt.ReconciledAtUtc == default
@@ -163,6 +180,7 @@ public sealed class ReportingReconciliationEvidenceSource : IReportingReconcilia
     private async Task EnsureCurrentCanonicalQueueMatchesReceiptAsync(
         ReportingReconciliationEvidenceReceipt receipt,
         ReportingAuthoritativeSourceCheckpoint source,
+        ReconciliationBreakQueueScope queueScope,
         CancellationToken cancellationToken)
     {
         if (_breakQueue is null)
@@ -180,7 +198,9 @@ public sealed class ReportingReconciliationEvidenceSource : IReportingReconcilia
         IReadOnlyList<ReconciliationBreakQueueItem> items;
         try
         {
-            items = await _breakQueue.GetAllAsync(ct: cancellationToken).ConfigureAwait(false);
+            items = await _breakQueue
+                .GetAllAsync(queueScope, ct: cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
@@ -193,7 +213,7 @@ public sealed class ReportingReconciliationEvidenceSource : IReportingReconcilia
         {
             var currentOpenCount = items.Count(item =>
                 item.LedgerBookId == ledgerBookId
-                && string.Equals(item.FundAccountId, source.FundId, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(item.FundProfileId, source.FundId, StringComparison.OrdinalIgnoreCase)
                 && string.Equals(item.AccountingPeriodId, source.AccountingPeriodId, StringComparison.OrdinalIgnoreCase)
                 && item.AsOfDate == source.AsOfDate
                 && item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview);
@@ -245,6 +265,21 @@ public sealed class ReportingReconciliationEvidenceSource : IReportingReconcilia
         }
     }
 
+    private static ReconciliationBreakQueueScope RequireExactQueueScope(
+        string? tenantId,
+        string? companyId,
+        string sourceLabel)
+    {
+        if (string.IsNullOrWhiteSpace(tenantId)
+            || string.IsNullOrWhiteSpace(companyId))
+        {
+            throw new ReportingReconciliationEvidenceInvalidException(
+                $"The {sourceLabel} does not contain the exact tenant and company scope required to verify the canonical reconciliation queue.");
+        }
+
+        return new ReconciliationBreakQueueScope(tenantId, companyId);
+    }
+
     private static IReadOnlyList<string> BuildOpenBreakEvidenceReferences(
         IReadOnlyList<ReportingReconciliationBreakEvidence> openBreaks,
         IReadOnlyList<string> receiptEvidence)
@@ -283,10 +318,7 @@ public sealed class ReportingReconciliationEvidenceSource : IReportingReconcilia
         && string.Equals(receipt.AccountingBasis, source.AccountingBasis, StringComparison.Ordinal)
         && receipt.AsOfDate == source.AsOfDate;
 
-    private static bool IsSha256(string? value) =>
-        value is { Length: 64 } && value.All(Uri.IsHexDigit);
-
     private static bool IsLowercaseSha256(string? value) =>
-        IsSha256(value)
+        Sha256Digest.IsWellFormed(value)
         && string.Equals(value, value!.ToLowerInvariant(), StringComparison.Ordinal);
 }

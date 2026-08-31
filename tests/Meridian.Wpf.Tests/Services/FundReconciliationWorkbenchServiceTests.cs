@@ -23,7 +23,7 @@ namespace Meridian.Wpf.Tests.Services;
 public sealed class FundReconciliationWorkbenchServiceTests
 {
     [Fact]
-    public async Task GetSnapshotAsync_SortsBreakQueueAndIncludesStrategyAndAccountRuns()
+    public async Task GetSnapshotAsync_SortsBreakQueue_AndBuildsRunRowsFromServerApiOnly()
     {
         var context = await CreateContextAsync();
 
@@ -35,8 +35,16 @@ public sealed class FundReconciliationWorkbenchServiceTests
             "run-fund-ops:open-small",
             "run-fund-ops:reviewed-gap");
         snapshot.RunRows.Should().Contain(row => row.SourceType == FundReconciliationSourceType.StrategyRun);
-        snapshot.RunRows.Should().Contain(row => row.SourceType == FundReconciliationSourceType.AccountRun);
+        // The desktop-local fund-account JSON universe recorded in CreateContextAsync must
+        // not surface beside the server break queue: one screen, one source of truth.
+        snapshot.RunRows.Should().NotContain(row => row.SourceType == FundReconciliationSourceType.AccountRun);
         snapshot.RunRows.First().HasOpenExceptions.Should().BeTrue();
+        snapshot.ReadAvailability.Should().Be(FundReconciliationReadAvailability.Available);
+        snapshot.KnownRunCount.Should().Be(1);
+        snapshot.MissingRunCount.Should().Be(0);
+        snapshot.UnavailableRunCount.Should().Be(0);
+        snapshot.BreakQueueReadAvailable.Should().BeTrue();
+        snapshot.CalibrationReadAvailable.Should().BeTrue();
         snapshot.InReviewBreakCount.Should().Be(1);
         snapshot.CalibrationSummary.Should().NotBeNull();
         snapshot.CalibrationSummary!.Status.Should().Be(ReconciliationCalibrationStatusDto.ReviewRequired);
@@ -53,7 +61,7 @@ public sealed class FundReconciliationWorkbenchServiceTests
     }
 
     [Fact]
-    public async Task GetSnapshotAsync_WhenWorkstationApiUnavailable_KeepsLocalRunsAndFallbackCalibration()
+    public async Task GetSnapshotAsync_WhenRunDetailApiUnavailable_ReportsUnavailableWithoutLocalFallback()
     {
         var context = await CreateContextAsync(new UnavailableWorkstationReconciliationApiClient());
 
@@ -61,11 +69,69 @@ public sealed class FundReconciliationWorkbenchServiceTests
 
         snapshot.BreakQueueItems.Should().BeEmpty();
         snapshot.CalibrationProfiles.Should().BeEmpty();
-        snapshot.CalibrationSummary.Should().NotBeNull();
-        snapshot.CalibrationSummary!.Status.Should().Be(ReconciliationCalibrationStatusDto.Ready);
-        snapshot.RunRows.Should().Contain(row => row.SourceType == FundReconciliationSourceType.StrategyRun);
-        snapshot.RunRows.Should().Contain(row => row.SourceType == FundReconciliationSourceType.AccountRun);
+        snapshot.CalibrationSummary.Should().BeNull(
+            "an empty fallback after an API failure is not evidence that calibration is Ready");
+        // An API outage remains explicitly unavailable; it must never be papered over with the
+        // desktop-local fund-account universe, an in-process recomputation, or a verified-zero queue.
+        snapshot.RunRows.Should().BeEmpty();
+        snapshot.Summary.RunCount.Should().Be(0);
+        snapshot.Summary.OpenBreakCount.Should().Be(0);
+        snapshot.ReadAvailability.Should().Be(FundReconciliationReadAvailability.Unavailable);
+        snapshot.KnownRunCount.Should().Be(1);
+        snapshot.MissingRunCount.Should().Be(0);
+        snapshot.UnavailableRunCount.Should().Be(1);
+        snapshot.BreakQueueReadAvailable.Should().BeFalse();
+        snapshot.CalibrationReadAvailable.Should().BeFalse();
         snapshot.InReviewBreakCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetSnapshotAsync_WhenRunDetailIsMissing_PreservesVerifiedMissingState()
+    {
+        var context = await CreateContextAsync(new FakeWorkstationReconciliationApiClient());
+
+        var snapshot = await context.Service.GetSnapshotAsync("alpha-fund");
+
+        snapshot.RunRows.Should().BeEmpty();
+        snapshot.Summary.RunCount.Should().Be(0);
+        snapshot.ReadAvailability.Should().Be(FundReconciliationReadAvailability.Available);
+        snapshot.KnownRunCount.Should().Be(1);
+        snapshot.MissingRunCount.Should().Be(1);
+        snapshot.UnavailableRunCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetSnapshotAsync_WhenOneRunDetailThrows_ReportsDegradedState()
+    {
+        var apiClient = new FakeWorkstationReconciliationApiClient(
+            runDetails: [BuildStrategyDetail("run-fund-ops")]);
+        apiClient.UnavailableRunIds.Add("run-partial-outage");
+        var context = await CreateContextAsync(apiClient, includeSecondRun: true);
+
+        var snapshot = await context.Service.GetSnapshotAsync("alpha-fund");
+
+        snapshot.RunRows.Should().ContainSingle(row => row.RunId == "run-fund-ops");
+        snapshot.Summary.RunCount.Should().Be(1);
+        snapshot.ReadAvailability.Should().Be(FundReconciliationReadAvailability.Degraded);
+        snapshot.KnownRunCount.Should().Be(2);
+        snapshot.MissingRunCount.Should().Be(0);
+        snapshot.UnavailableRunCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetSnapshotAsync_WhenCallerCancels_DoesNotConvertCancellationToUnavailableState()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var apiClient = new FakeWorkstationReconciliationApiClient(
+            runDetails: [BuildStrategyDetail("run-fund-ops")])
+        {
+            LatestRunDetailReadStarted = cancellation.Cancel
+        };
+        var context = await CreateContextAsync(apiClient);
+
+        Func<Task> act = () => context.Service.GetSnapshotAsync("alpha-fund", cancellation.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
     }
 
     [Fact]
@@ -86,25 +152,26 @@ public sealed class FundReconciliationWorkbenchServiceTests
     }
 
     [Fact]
-    public async Task GetRunDetailAsync_ForAccountRun_ReturnsReadOnlyNormalizedRows()
+    public async Task GetRunDetailAsync_ForStrategyRun_ReturnsServerBackedReadOnlyDetail()
     {
         var context = await CreateContextAsync();
         var snapshot = await context.Service.GetSnapshotAsync("alpha-fund");
-        var accountRun = snapshot.RunRows.Single(row => row.SourceType == FundReconciliationSourceType.AccountRun);
+        var strategyRun = snapshot.RunRows.Single(row => row.SourceType == FundReconciliationSourceType.StrategyRun);
 
-        var detail = await context.Service.GetRunDetailAsync(accountRun, "USD");
+        var detail = await context.Service.GetRunDetailAsync(strategyRun, "USD");
 
         detail.Should().NotBeNull();
-        detail!.SourceType.Should().Be(FundReconciliationSourceType.AccountRun);
+        detail!.SourceType.Should().Be(FundReconciliationSourceType.StrategyRun);
         detail.SupportsBreakActions.Should().BeFalse();
-        detail.AccountId.Should().Be(accountRun.AccountId);
+        detail.RunId.Should().Be("run-fund-ops");
         detail.AllCheckRows.Should().NotBeEmpty();
-        detail.ExceptionRows.Should().BeEmpty();
+        detail.ExceptionRows.Should().NotBeEmpty();
         detail.AuditRows.Should().HaveCountGreaterThanOrEqualTo(2);
     }
 
     private static async Task<WorkbenchContext> CreateContextAsync(
-        IWorkstationReconciliationApiClient? apiClientOverride = null)
+        IWorkstationReconciliationApiClient? apiClientOverride = null,
+        bool includeSecondRun = false)
     {
         var storagePath = Path.Combine(
             Path.GetTempPath(),
@@ -137,6 +204,10 @@ public sealed class FundReconciliationWorkbenchServiceTests
 
         var store = new StrategyRunStore();
         await store.RecordRunAsync(BuildFundScopedRun("run-fund-ops"));
+        if (includeSecondRun)
+        {
+            await store.RecordRunAsync(BuildFundScopedRun("run-partial-outage"));
+        }
 
         var portfolioReadService = new PortfolioReadService(lookup);
         var ledgerReadService = new LedgerReadService(lookup);
@@ -200,18 +271,6 @@ public sealed class FundReconciliationWorkbenchServiceTests
             AccountId: accountId,
             AsOfDate: new DateOnly(2026, 3, 21),
             RequestedBy: "test"));
-
-        var fundAccountReadService = new FundAccountReadService(fundAccountService);
-        var reconciliationRepository = new InMemoryReconciliationRunRepository();
-        var strategyReconciliationService = new ReconciliationRunService(
-            runReadService: runReadService,
-            projectionService: new ReconciliationProjectionService(),
-            repository: reconciliationRepository);
-        var reconciliationReadService = new ReconciliationReadService(
-            fundAccountService,
-            fundAccountReadService,
-            workspaceService,
-            strategyReconciliationService);
 
         var apiClient = apiClientOverride ?? new FakeWorkstationReconciliationApiClient(
         [
@@ -279,6 +338,12 @@ public sealed class FundReconciliationWorkbenchServiceTests
         [
             BuildStrategyDetail("run-fund-ops")
         ]);
+
+        // The summary read service consumes the same workstation API client as the break
+        // queue so both halves of the workbench share one source of truth.
+        var reconciliationReadService = new ReconciliationReadService(
+            workspaceService,
+            apiClient);
 
         var service = new FundReconciliationWorkbenchService(
             reconciliationReadService,
@@ -527,8 +592,8 @@ public sealed class FundReconciliationWorkbenchServiceTests
         public Task<ReconciliationCalibrationSummaryDto?> GetCalibrationSummaryAsync(CancellationToken ct = default)
             => Task.FromException<ReconciliationCalibrationSummaryDto?>(new InvalidOperationException("Workstation API is offline."));
 
-        public Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueAsync(CancellationToken ct = default)
-            => Task.FromException<IReadOnlyList<ReconciliationBreakQueueItem>>(new InvalidOperationException("Workstation API is offline."));
+        public Task<IReadOnlyList<ReconciliationBreakQueueItem>?> GetBreakQueueAsync(CancellationToken ct = default)
+            => Task.FromException<IReadOnlyList<ReconciliationBreakQueueItem>?>(new InvalidOperationException("Workstation API is offline."));
 
         public Task<IReadOnlyList<StatementRunSummaryDto>> GetStatementRunsAsync(CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<StatementRunSummaryDto>>([]);
@@ -549,10 +614,10 @@ public sealed class FundReconciliationWorkbenchServiceTests
             => Task.FromResult<IReadOnlyList<ReconciliationQueueAccountStatusDto>>([]);
 
         public Task<ReconciliationRunDetail?> GetLatestRunDetailAsync(string runId, CancellationToken ct = default)
-            => Task.FromResult<ReconciliationRunDetail?>(null);
+            => Task.FromException<ReconciliationRunDetail?>(new InvalidOperationException("Workstation API is offline."));
 
         public Task<ReconciliationRunDetail?> GetRunDetailAsync(string reconciliationRunId, CancellationToken ct = default)
-            => Task.FromResult<ReconciliationRunDetail?>(null);
+            => Task.FromException<ReconciliationRunDetail?>(new InvalidOperationException("Workstation API is offline."));
 
         public Task<WorkstationReconciliationActionResult> ReviewBreakAsync(
             string breakId,

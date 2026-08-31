@@ -1,8 +1,8 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Banking;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 
 namespace Meridian.Contracts.Workstation;
@@ -102,7 +102,14 @@ public sealed record ReconciliationRunSummary(
     int ExpectedAccountingEventCount = 0,
     int ExpectedJournalPreviewCount = 0,
     int SecurityMasterAccountingIssueCount = 0,
-    bool HasSecurityMasterAccountingIssues = false);
+    bool HasSecurityMasterAccountingIssues = false)
+{
+    /// <summary>
+    /// Optional banking entity scope used when this reconciliation run included bank inputs.
+    /// Kept outside the positional constructor so persisted legacy payloads remain readable.
+    /// </summary>
+    public Guid? BankEntityId { get; init; }
+}
 
 /// <summary>
 /// Successful comparison row emitted by the reconciliation engine.
@@ -116,7 +123,17 @@ public sealed record ReconciliationMatchDto(
     decimal? ActualAmount,
     decimal Variance,
     DateTimeOffset? ExpectedAsOf,
-    DateTimeOffset? ActualAsOf);
+    DateTimeOffset? ActualAsOf)
+{
+    /// <summary>Canonical identity of the logical check resolved by this match.</summary>
+    public string? LogicalBreakIdentity { get; init; }
+
+    public Guid? BankEntityId { get; init; }
+
+    public string? SourceScope { get; init; }
+
+    public OperationsContinuityCorrelationKeysDto? CorrelationKeys { get; init; }
+}
 
 /// <summary>
 /// Break row emitted by the reconciliation engine.
@@ -135,7 +152,62 @@ public sealed record ReconciliationBreakDto(
     DateTimeOffset? ExpectedAsOf,
     DateTimeOffset? ActualAsOf,
     OperationsContinuityCorrelationKeysDto? CorrelationKeys = null,
-    IReadOnlyList<ReconciliationBreakMeasureDto>? Measures = null);
+    IReadOnlyList<ReconciliationBreakMeasureDto>? Measures = null)
+{
+    /// <summary>
+    /// When this logical break was first observed. Reconciliation retries retain this value even
+    /// when the current variance, category, or reason changes. Legacy records may omit it.
+    /// </summary>
+    public DateTimeOffset? FirstObservedAt { get; init; }
+
+    /// <summary>
+    /// Canonical identity used to carry first-observation continuity across retries. The identity
+    /// excludes variance, category, reason, and status so those attributes may evolve without
+    /// creating a new logical break.
+    /// </summary>
+    public string? LogicalBreakIdentity { get; init; }
+
+    public Guid? BankEntityId { get; init; }
+
+    public string? SourceScope { get; init; }
+}
+
+/// <summary>
+/// Builds a stable, case-normalized identity for one logical reconciliation check and its source
+/// scope. The hash keeps caller-provided identifiers from becoming ambiguous delimiter-separated
+/// keys while retaining a versioned contract prefix.
+/// </summary>
+public static class ReconciliationLogicalBreakIdentity
+{
+    public static string Create(
+        string checkId,
+        Guid? bankEntityId = null,
+        string? sourceScope = null,
+        OperationsContinuityCorrelationKeysDto? correlationKeys = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(checkId);
+
+        var canonical = new StringBuilder();
+        Append(canonical, "version", "1");
+        Append(canonical, "check", Normalize(checkId));
+        Append(canonical, "bankEntity", bankEntityId?.ToString("N") ?? string.Empty);
+        Append(canonical, "sourceScope", Normalize(sourceScope));
+        Append(canonical, "run", Normalize(correlationKeys?.RunId));
+        Append(canonical, "fundAccount", correlationKeys?.FundAccountId?.ToString("N") ?? string.Empty);
+        Append(canonical, "portfolioSnapshot", Normalize(correlationKeys?.PortfolioSnapshotId));
+        Append(canonical, "ledgerBatch", Normalize(correlationKeys?.LedgerBatchId));
+        Append(canonical, "ledgerPostingGroup", Normalize(correlationKeys?.LedgerPostingGroupId));
+        Append(canonical, "reconciliationCase", Normalize(correlationKeys?.ReconciliationCaseId));
+
+        return $"reconciliation-break:v1:{Sha256Digest.ComputeUtf8(canonical.ToString())}";
+    }
+
+    internal static string Normalize(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim().ToLowerInvariant();
+
+    private static void Append(StringBuilder builder, string name, string value) =>
+        builder.Append(name).Append(':').Append(value.Length).Append(':').Append(value).Append('\n');
+}
 
 /// <summary>
 /// Security Master coverage issue attached to a reconciliation run.
@@ -485,7 +557,54 @@ public sealed record ReconciliationBreakQueueItem(
     DateTimeOffset? DisposedAt = null,
     IReadOnlyList<string>? BlockedOutputs = null,
     string? AccountingPeriodId = null,
-    DateOnly? AsOfDate = null);
+    DateOnly? AsOfDate = null,
+    string? DataProvenanceToken = null)
+{
+    /// <summary>
+    /// Immutable tenant identity retained by the queue persistence boundary. Legacy records may
+    /// be unscoped; tenant-bound production reads must not surface those records.
+    /// </summary>
+    public string? TenantId { get; init; }
+
+    /// <summary>
+    /// Immutable company identity retained alongside <see cref="TenantId"/>. Tenant and company
+    /// must either both be present or both be absent on a legacy record.
+    /// </summary>
+    public string? CompanyId { get; init; }
+
+    /// <summary>
+    /// Reporting/close fund-profile identity. Kept separate from the source fund-account identity
+    /// and init-only to preserve the established positional constructor and deconstruction ABI.
+    /// </summary>
+    public string? FundProfileId { get; init; }
+}
+
+/// <summary>
+/// Server-resolved access scope for reconciliation queue reads and mutations. This value is never
+/// accepted from a workstation request body; endpoint adapters build it from the authenticated
+/// session.
+/// </summary>
+public sealed record ReconciliationBreakQueueScope
+{
+    public ReconciliationBreakQueueScope(string tenantId, string companyId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(companyId);
+        TenantId = tenantId.Trim();
+        CompanyId = companyId.Trim();
+    }
+
+    public string TenantId { get; }
+
+    public string CompanyId { get; }
+
+    public bool Owns(ReconciliationBreakQueueItem? item)
+        => item is not null
+           && !string.IsNullOrWhiteSpace(item.TenantId)
+           && !string.IsNullOrWhiteSpace(item.CompanyId)
+           && string.Equals(item.TenantId.Trim(), TenantId, StringComparison.OrdinalIgnoreCase)
+           && string.Equals(item.CompanyId.Trim(), CompanyId, StringComparison.OrdinalIgnoreCase);
+}
 
 public sealed record ReconciliationBreakExplanationDto(
     string Summary,
@@ -584,7 +703,25 @@ public sealed record ReconciliationCaseworkCommand(
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
     string? ApprovalActor = null,
     string? ApprovalReference = null,
-    string? SupersedingBreakId = null);
+    string? SupersedingBreakId = null)
+{
+    /// <summary>
+    /// Server-resolved close scope bound by the statement/Operations evidence handoff. Init-only
+    /// preserves the established command constructor and deconstruction ABI.
+    /// </summary>
+    public ReconciliationCaseworkCloseScopeDto? CloseScope { get; init; }
+}
+
+/// <summary>
+/// Exact accounting-close scope retained when statement casework has been handed to the matching
+/// Operations Continuity workflow. This scope is queue-owned evidence; callers cannot use it to
+/// post, approve, or close a ledger period.
+/// </summary>
+public sealed record ReconciliationCaseworkCloseScopeDto(
+    string FundProfileId,
+    Guid LedgerBookId,
+    Guid AccountingPeriodId,
+    DateOnly AsOfDate);
 
 public sealed record ReconciliationBulkCaseworkRequest(
     IReadOnlyList<string> BreakIds,
@@ -752,9 +889,7 @@ public sealed record ReconciliationBulkCaseworkResult(
         int requestedCount,
         int succeededCount,
         int failedCount)
-        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-            $"{bulkActionId}|{idempotencyKey}|{dryRun}|{requestedCount}|{succeededCount}|{failedCount}")))
-            .ToLowerInvariant();
+        => Sha256Digest.ComputeUtf8($"{bulkActionId}|{idempotencyKey}|{dryRun}|{requestedCount}|{succeededCount}|{failedCount}");
 }
 
 /// <summary>

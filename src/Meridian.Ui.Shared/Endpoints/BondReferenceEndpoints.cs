@@ -29,7 +29,7 @@ public static class BondReferenceEndpoints
             var reference = await service.GetReferenceAsync(securityId, ct).ConfigureAwait(false);
             return reference is null ? Results.NotFound() : Results.Json(reference, jsonOptions);
         })
-        .WithName("GetBondReference")
+        .WithName("GetBondReference").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<BondReferenceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
@@ -42,7 +42,7 @@ public static class BondReferenceEndpoints
             var lifecycle = await service.GetLifecycleAsync(securityId, ct).ConfigureAwait(false);
             return lifecycle is null ? Results.NotFound() : Results.Json(lifecycle, jsonOptions);
         })
-        .WithName("GetBondLifecycle")
+        .WithName("GetBondLifecycle").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<BondLifecycleDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
@@ -55,7 +55,7 @@ public static class BondReferenceEndpoints
             var accrual = await service.GetAccrualConventionAsync(securityId, ct).ConfigureAwait(false);
             return accrual is null ? Results.NotFound() : Results.Json(accrual, jsonOptions);
         })
-        .WithName("GetBondAccrualConvention")
+        .WithName("GetBondAccrualConvention").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<BondAccrualConventionDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
@@ -79,7 +79,7 @@ public static class BondReferenceEndpoints
             var ladder = await service.GetIssuerLadderAsync(normalizedIssuerName, ct).ConfigureAwait(false);
             return Results.Json(ladder, jsonOptions);
         })
-        .WithName("GetBondIssuerLadder")
+        .WithName("GetBondIssuerLadder").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<BondReferenceDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden);
@@ -103,7 +103,7 @@ public static class BondReferenceEndpoints
             var ladder = await service.GetMaturityLadderAsync(from, to, ct).ConfigureAwait(false);
             return Results.Json(ladder, jsonOptions);
         })
-        .WithName("GetBondMaturityLadder")
+        .WithName("GetBondMaturityLadder").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<BondReferenceDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden);

@@ -27,6 +27,53 @@ public sealed class ReportingRunReadinessEndpointTests
     };
 
     [Fact]
+    public async Task PostRun_DeploymentNotReadyReturnsServiceUnavailableBeforeExecution()
+    {
+        var orchestration = Substitute.For<IReportingOrchestrationService>();
+        var command = new ReportingRunCommandService(
+            orchestration,
+            new DefaultReportingTemplateCatalog());
+        var deployment = new FixedReportingDeploymentReadinessService(
+            ReportingDeploymentCapability(isReady: false, "Reporting immutable-control triggers are incomplete."));
+
+        await using var app = await CreateAppAsync(command, deployment);
+
+        var response = await app.GetTestClient().PostAsJsonAsync(
+            "/api/fund-structure/reporting/runs",
+            new ReportingRunRequestDto(
+                "investor-monthly-statement",
+                Parameters: Parameters()),
+            JsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        (await response.Content.ReadAsStringAsync())
+            .Should().Contain("authoritative reporting deployment is ready");
+        await orchestration.DidNotReceiveWithAnyArgs().ExecuteAsync(default!, default);
+    }
+
+    [Fact]
+    public async Task RunAsync_DeploymentNotReadyFailsClosedBeforeExecution()
+    {
+        var orchestration = Substitute.For<IReportingOrchestrationService>();
+        var service = new ReportingRunCommandService(
+            orchestration,
+            new DefaultReportingTemplateCatalog(),
+            deploymentReadinessService: new FixedReportingDeploymentReadinessService(
+                ReportingDeploymentCapability(isReady: false, "Reporting run storage is not canonical.")));
+
+        var act = () => service.RunAsync(
+            new ReportingRunRequestDto(
+                "investor-monthly-statement",
+                Parameters: Parameters()),
+            "server-operator",
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<ReportingRunDeploymentNotReadyException>()
+            .WithMessage("*authoritative reporting deployment is ready*");
+        await orchestration.DidNotReceiveWithAnyArgs().ExecuteAsync(default!, default);
+    }
+
+    [Fact]
     public async Task PostRun_MissingExactReconciliationReturnsStructuredConflictInsteadOfUnavailable()
     {
         var catalog = new DefaultReportingTemplateCatalog();
@@ -116,7 +163,40 @@ public sealed class ReportingRunReadinessEndpointTests
             && check.Summary.Contains("No retained reconciliation/close checkpoint", StringComparison.Ordinal));
     }
 
-    private static async Task<WebApplication> CreateAppAsync(ReportingRunCommandService command)
+    [Fact]
+    public async Task PreviewReadiness_DeploymentNotReadyReturnsServiceUnavailableBeforeAssessment()
+    {
+        var dependencyEvaluator = Substitute.For<IReportingRunReadinessDependencyEvaluator>();
+        dependencyEvaluator.EvaluateAsync(
+                Arg.Any<ReportingRunRequestDto>(),
+                Arg.Any<ReportingTemplateMetadata>(),
+                Arg.Any<ReportingRunParametersDto>(),
+                Arg.Any<ReportAccessQueryContext?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<ReportingRunReadinessCheckDto>());
+        var deployment = new FixedReportingDeploymentReadinessService(
+            ReportingDeploymentCapability(
+                isReady: false,
+                "Reporting migrations have not established the canonical run authority."));
+
+        await using var app = await CreatePreviewAppAsync(deployment, dependencyEvaluator);
+        var response = await app.GetTestClient().PostAsJsonAsync(
+            "/api/fund-structure/reporting/runs/readiness",
+            new ReportingRunRequestDto(
+                "investor-monthly-statement",
+                Parameters: Parameters()),
+            JsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        (await response.Content.ReadAsStringAsync())
+            .Should().Contain("authoritative reporting deployment is ready");
+        await dependencyEvaluator.DidNotReceiveWithAnyArgs()
+            .EvaluateAsync(default!, default!, default!, default, default);
+    }
+
+    private static async Task<WebApplication> CreateAppAsync(
+        ReportingRunCommandService command,
+        IReportingDeploymentReadinessService? deploymentReadiness = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -124,6 +204,10 @@ public sealed class ReportingRunReadinessEndpointTests
         });
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton(command);
+        builder.Services.AddSingleton(
+            deploymentReadiness
+            ?? new FixedReportingDeploymentReadinessService(
+                ReportingDeploymentCapability(isReady: true)));
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
@@ -140,7 +224,9 @@ public sealed class ReportingRunReadinessEndpointTests
         return app;
     }
 
-    private static async Task<WebApplication> CreatePreviewAppAsync()
+    private static async Task<WebApplication> CreatePreviewAppAsync(
+        IReportingDeploymentReadinessService? deploymentReadiness = null,
+        IReportingRunReadinessDependencyEvaluator? dependencyEvaluator = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -151,7 +237,20 @@ public sealed class ReportingRunReadinessEndpointTests
         builder.Services.AddSingleton<IReportingAuthoritativeSource, EndpointAuthoritativeSource>();
         builder.Services.AddSingleton<IReportingReconciliationEvidenceStore, EmptyReconciliationStore>();
         builder.Services.AddSingleton<IReportingReconciliationEvidenceSource, ReportingReconciliationEvidenceSource>();
-        builder.Services.AddSingleton<IReportingRunReadinessDependencyEvaluator, ReportingRunReadinessDependencyEvaluator>();
+        builder.Services.AddSingleton(
+            deploymentReadiness
+            ?? new FixedReportingDeploymentReadinessService(
+                ReportingDeploymentCapability(isReady: true)));
+        if (dependencyEvaluator is null)
+        {
+            builder.Services.AddSingleton<
+                IReportingRunReadinessDependencyEvaluator,
+                ReportingRunReadinessDependencyEvaluator>();
+        }
+        else
+        {
+            builder.Services.AddSingleton(dependencyEvaluator);
+        }
         builder.Services.AddSingleton(sp => new ReportingRunReadinessService(
             sp.GetRequiredService<IReportingTemplateCatalog>(),
             dependencyEvaluator: sp.GetRequiredService<IReportingRunReadinessDependencyEvaluator>()));
@@ -183,6 +282,30 @@ public sealed class ReportingRunReadinessEndpointTests
         ReportingFinalityDto.Final,
         IncludeSupportingSchedules: true,
         IncludeEvidenceAppendix: true);
+
+    private static ReportingDeploymentCapabilityDto ReportingDeploymentCapability(
+        bool isReady,
+        params string[] blockingReasons) =>
+        new(
+            IsReady: isReady,
+            DurableGovernance: isReady,
+            DurableArtifacts: isReady,
+            DurableReconciliationEvidence: isReady,
+            DurableRuns: isReady,
+            DurableScheduling: isReady,
+            DurableDelivery: isReady,
+            RecipientDestinationsConfigured: isReady,
+            ClientDocumentsConfigured: isReady,
+            MigrationsManaged: isReady,
+            Components: [],
+            BlockingReasons: blockingReasons);
+
+    private sealed class FixedReportingDeploymentReadinessService(
+        ReportingDeploymentCapabilityDto capability)
+        : IReportingDeploymentReadinessService
+    {
+        public ReportingDeploymentCapabilityDto Evaluate() => capability;
+    }
 
     private sealed class EndpointAuthoritativeSource : IReportingAuthoritativeSource
     {

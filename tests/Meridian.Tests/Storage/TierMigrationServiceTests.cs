@@ -120,6 +120,40 @@ public sealed class TierMigrationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Scenario_StorageRootRollover_WithTrailingSeparatorMigratesContainedFiles()
+    {
+        var storageRootWithTrailingSeparator = _root + Path.DirectorySeparatorChar;
+        var service = new TierMigrationService(new StorageOptions
+        {
+            RootPath = storageRootWithTrailingSeparator,
+            Tiering = new TieringOptions
+            {
+                Enabled = true,
+                Tiers =
+                [
+                    new TierConfig { Name = "Hot", Path = _hot, MaxAgeDays = 7, Format = "jsonl", Compression = CompressionCodec.None },
+                    new TierConfig { Name = "Warm", Path = _warm, MaxAgeDays = 90, Format = "jsonl", Compression = CompressionCodec.Gzip }
+                ]
+            }
+        });
+        var sourceFile = Path.Combine(_hot, "alpaca", "AAPL", "Trade", "session.jsonl");
+        Directory.CreateDirectory(Path.GetDirectoryName(sourceFile)!);
+        await File.WriteAllTextAsync(sourceFile, "{\"symbol\":\"AAPL\",\"price\":213.45}");
+
+        var result = await service.MigrateAsync(
+            storageRootWithTrailingSeparator,
+            StorageTier.Warm,
+            new MigrationOptions(DeleteSource: false, VerifyChecksum: true, ParallelFiles: 1));
+
+        result.Success.Should().BeTrue("a configured storage root with a trailing separator must accept its enumerated child files");
+        result.FilesProcessed.Should().Be(1);
+        result.FilesFailed.Should().Be(0);
+        var targetFile = Path.Combine(_warm, "hot", "alpaca", "AAPL", "Trade", "session.jsonl.gz");
+        File.Exists(targetFile).Should().BeTrue();
+        (await ReadGzipTextAsync(targetFile)).Should().Be("{\"symbol\":\"AAPL\",\"price\":213.45}");
+    }
+
+    [Fact]
     public async Task Scenario_ParquetTierRequest_FailsClosedInsteadOfRelabelingJsonlBytes()
     {
         // The old behaviour renamed the target to .parquet without converting the payload, then

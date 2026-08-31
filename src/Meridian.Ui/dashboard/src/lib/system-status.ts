@@ -30,7 +30,6 @@ export function readDegradedMode(value: unknown): DegradedModeStatus | null {
 }
 
 export function fallbackSystemOverview(): SystemOverviewResponse {
-  const timestampUtc = new Date().toISOString();
   return {
     systemStatus: "Degraded",
     providersOnline: 0,
@@ -40,17 +39,9 @@ export function fallbackSystemOverview(): SystemOverviewResponse {
     activeBackfills: 0,
     symbolsMonitored: 0,
     storageHealth: "Warning",
-    lastHeartbeatUtc: timestampUtc,
+    lastHeartbeatUtc: null,
     metrics: [],
-    recentEvents: [
-      {
-        id: "status-unavailable",
-        type: "warning",
-        message: "The host returned an unrecognized status payload.",
-        source: "Meridian host",
-        timestamp: timestampUtc
-      }
-    ]
+    recentEvents: []
   };
 }
 

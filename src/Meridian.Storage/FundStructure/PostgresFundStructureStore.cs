@@ -35,7 +35,17 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
     public async Task UpsertOrganizationAsync(OrganizationSummaryDto dto, CancellationToken ct = default)
     {
         await using var conn = await OpenAsync(ct).ConfigureAwait(false);
+        await UpsertOrganizationAsync(conn, transaction: null, dto, ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertOrganizationAsync(
+        NpgsqlConnection conn,
+        NpgsqlTransaction? transaction,
+        OrganizationSummaryDto dto,
+        CancellationToken ct)
+    {
         await using var cmd = conn.CreateCommand();
+        cmd.Transaction = transaction;
         cmd.CommandText = $@"INSERT INTO {Q("organization")}
                 (organization_id, code, name, base_currency, is_active, effective_from, effective_to, business_ids, description, updated_at)
             VALUES (@id, @code, @name, @currency, @active, @eff_from, @eff_to, @biz_ids::jsonb, @desc, now())
@@ -94,7 +104,17 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
     public async Task UpsertBusinessAsync(BusinessSummaryDto dto, CancellationToken ct = default)
     {
         await using var conn = await OpenAsync(ct).ConfigureAwait(false);
+        await UpsertBusinessAsync(conn, transaction: null, dto, ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertBusinessAsync(
+        NpgsqlConnection conn,
+        NpgsqlTransaction? transaction,
+        BusinessSummaryDto dto,
+        CancellationToken ct)
+    {
         await using var cmd = conn.CreateCommand();
+        cmd.Transaction = transaction;
         cmd.CommandText = $@"INSERT INTO {Q("business")}
                 (business_id, organization_id, business_kind, code, name, base_currency, is_active,
                  effective_from, effective_to, client_ids, fund_ids, investment_portfolio_ids, description, updated_at)
@@ -164,7 +184,17 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
     public async Task UpsertClientAsync(ClientSummaryDto dto, CancellationToken ct = default)
     {
         await using var conn = await OpenAsync(ct).ConfigureAwait(false);
+        await UpsertClientAsync(conn, transaction: null, dto, ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertClientAsync(
+        NpgsqlConnection conn,
+        NpgsqlTransaction? transaction,
+        ClientSummaryDto dto,
+        CancellationToken ct)
+    {
         await using var cmd = conn.CreateCommand();
+        cmd.Transaction = transaction;
         cmd.CommandText = $@"INSERT INTO {Q("client")}
                 (client_id, business_id, code, name, base_currency, is_active,
                  effective_from, effective_to, investment_portfolio_ids, description, client_segment_kind, updated_at)
@@ -230,7 +260,17 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
     public async Task UpsertFundAsync(FundSummaryDto dto, CancellationToken ct = default)
     {
         await using var conn = await OpenAsync(ct).ConfigureAwait(false);
+        await UpsertFundAsync(conn, transaction: null, dto, ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertFundAsync(
+        NpgsqlConnection conn,
+        NpgsqlTransaction? transaction,
+        FundSummaryDto dto,
+        CancellationToken ct)
+    {
         await using var cmd = conn.CreateCommand();
+        cmd.Transaction = transaction;
         cmd.CommandText = $@"INSERT INTO {Q("fund")}
                 (fund_id, business_id, code, name, base_currency, is_active,
                  effective_from, effective_to, sleeve_ids, vehicle_ids, entity_ids,
@@ -305,7 +345,17 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
     public async Task UpsertSleeveAsync(SleeveSummaryDto dto, CancellationToken ct = default)
     {
         await using var conn = await OpenAsync(ct).ConfigureAwait(false);
+        await UpsertSleeveAsync(conn, transaction: null, dto, ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertSleeveAsync(
+        NpgsqlConnection conn,
+        NpgsqlTransaction? transaction,
+        SleeveSummaryDto dto,
+        CancellationToken ct)
+    {
         await using var cmd = conn.CreateCommand();
+        cmd.Transaction = transaction;
         cmd.CommandText = $@"INSERT INTO {Q("sleeve")}
                 (sleeve_id, fund_id, code, name, mandate, is_active,
                  effective_from, effective_to, strategy_ids, investment_portfolio_ids, account_ids, updated_at)
@@ -371,7 +421,17 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
     public async Task UpsertVehicleAsync(VehicleSummaryDto dto, CancellationToken ct = default)
     {
         await using var conn = await OpenAsync(ct).ConfigureAwait(false);
+        await UpsertVehicleAsync(conn, transaction: null, dto, ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertVehicleAsync(
+        NpgsqlConnection conn,
+        NpgsqlTransaction? transaction,
+        VehicleSummaryDto dto,
+        CancellationToken ct)
+    {
         await using var cmd = conn.CreateCommand();
+        cmd.Transaction = transaction;
         cmd.CommandText = $@"INSERT INTO {Q("vehicle")}
                 (vehicle_id, fund_id, legal_entity_id, code, name, base_currency, is_active,
                  effective_from, effective_to, investment_portfolio_ids, account_ids, description, updated_at)
@@ -438,7 +498,17 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
     public async Task UpsertLegalEntityAsync(LegalEntitySummaryDto dto, CancellationToken ct = default)
     {
         await using var conn = await OpenAsync(ct).ConfigureAwait(false);
+        await UpsertLegalEntityAsync(conn, transaction: null, dto, ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertLegalEntityAsync(
+        NpgsqlConnection conn,
+        NpgsqlTransaction? transaction,
+        LegalEntitySummaryDto dto,
+        CancellationToken ct)
+    {
         await using var cmd = conn.CreateCommand();
+        cmd.Transaction = transaction;
         cmd.CommandText = $@"INSERT INTO {Q("legal_entity")}
                 (entity_id, entity_type, code, name, jurisdiction, base_currency, is_active,
                  effective_from, effective_to, description, legal_form, lifecycle_status,
@@ -517,7 +587,17 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
     public async Task UpsertInvestmentPortfolioAsync(InvestmentPortfolioSummaryDto dto, CancellationToken ct = default)
     {
         await using var conn = await OpenAsync(ct).ConfigureAwait(false);
+        await UpsertInvestmentPortfolioAsync(conn, transaction: null, dto, ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertInvestmentPortfolioAsync(
+        NpgsqlConnection conn,
+        NpgsqlTransaction? transaction,
+        InvestmentPortfolioSummaryDto dto,
+        CancellationToken ct)
+    {
         await using var cmd = conn.CreateCommand();
+        cmd.Transaction = transaction;
         cmd.CommandText = $@"INSERT INTO {Q("investment_portfolio")}
                 (investment_portfolio_id, business_id, code, name, base_currency, is_active,
                  effective_from, effective_to, client_id, fund_id, sleeve_id, vehicle_id, entity_id,
@@ -595,7 +675,17 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
     public async Task UpsertOwnershipLinkAsync(OwnershipLinkDto dto, CancellationToken ct = default)
     {
         await using var conn = await OpenAsync(ct).ConfigureAwait(false);
+        await UpsertOwnershipLinkAsync(conn, transaction: null, dto, ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertOwnershipLinkAsync(
+        NpgsqlConnection conn,
+        NpgsqlTransaction? transaction,
+        OwnershipLinkDto dto,
+        CancellationToken ct)
+    {
         await using var cmd = conn.CreateCommand();
+        cmd.Transaction = transaction;
         cmd.CommandText = $@"INSERT INTO {Q("ownership_link")}
                 (ownership_link_id, parent_node_id, child_node_id, relationship_type,
                  ownership_percent, is_primary, effective_from, effective_to, notes, updated_at)
@@ -643,7 +733,17 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
     public async Task UpsertAssignmentAsync(FundStructureAssignmentDto dto, CancellationToken ct = default)
     {
         await using var conn = await OpenAsync(ct).ConfigureAwait(false);
+        await UpsertAssignmentAsync(conn, transaction: null, dto, ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertAssignmentAsync(
+        NpgsqlConnection conn,
+        NpgsqlTransaction? transaction,
+        FundStructureAssignmentDto dto,
+        CancellationToken ct)
+    {
         await using var cmd = conn.CreateCommand();
+        cmd.Transaction = transaction;
         cmd.CommandText = $@"INSERT INTO {Q("fund_structure_assignment")}
                 (assignment_id, node_id, assignment_type, assignment_reference,
                  effective_from, effective_to, is_primary, updated_at)
@@ -682,13 +782,283 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         return result;
     }
 
+    // ── Linked account node identities ────────────────────────────────────────
+
+    public async Task UpsertLinkedAccountIdAsync(Guid accountId, CancellationToken ct = default)
+    {
+        ValidateLinkedAccountId(accountId);
+        await using var connection = await OpenAsync(ct).ConfigureAwait(false);
+        await UpsertLinkedAccountIdAsync(connection, transaction: null, accountId, ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertLinkedAccountIdAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction? transaction,
+        Guid accountId,
+        CancellationToken ct)
+    {
+        ValidateLinkedAccountId(accountId);
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = $"""
+            INSERT INTO {Q("fund_structure_linked_account")} (account_id, updated_at)
+            VALUES (@account_id, now())
+            ON CONFLICT (account_id) DO UPDATE SET updated_at = excluded.updated_at
+            """;
+        command.Parameters.AddWithValue("account_id", accountId);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    public async Task<IReadOnlyList<Guid>> GetAllLinkedAccountIdsAsync(CancellationToken ct = default)
+    {
+        await using var connection = await OpenAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"""
+            SELECT account_id
+            FROM {Q("fund_structure_linked_account")}
+            ORDER BY account_id
+            """;
+
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        var result = new List<Guid>();
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            result.Add(reader.GetGuid(0));
+
+        return result;
+    }
+
+    private static void ValidateLinkedAccountId(Guid accountId)
+    {
+        if (accountId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Linked fund-structure account identifier cannot be empty.",
+                nameof(accountId));
+        }
+    }
+
+    // ── Transactional legacy import ───────────────────────────────────────────
+
+    public async Task<FundStructureLegacyImportResult> ImportLegacySnapshotIfEmptyAsync(
+        FundStructureLegacyImportRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var sourceHash = NormalizeSourceHash(request.SourceHash);
+        ct.ThrowIfCancellationRequested();
+
+        await using var connection = await OpenAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection
+            .BeginTransactionAsync(System.Data.IsolationLevel.Serializable, ct)
+            .ConfigureAwait(false);
+
+        await AcquireLegacyImportLockAsync(connection, transaction, ct).ConfigureAwait(false);
+        if (await HasLegacyImportReceiptAsync(connection, transaction, sourceHash, ct).ConfigureAwait(false))
+        {
+            await transaction.CommitAsync(ct).ConfigureAwait(false);
+            return FundStructureLegacyImportResult.AlreadyImported;
+        }
+
+        if (!await IsEmptyAsync(connection, transaction, ct).ConfigureAwait(false))
+        {
+            await transaction.CommitAsync(ct).ConfigureAwait(false);
+            return FundStructureLegacyImportResult.StoreNotEmpty;
+        }
+
+        foreach (var organization in request.Organizations)
+            await UpsertOrganizationAsync(connection, transaction, organization, ct).ConfigureAwait(false);
+        foreach (var business in request.Businesses)
+            await UpsertBusinessAsync(connection, transaction, business, ct).ConfigureAwait(false);
+        foreach (var client in request.Clients)
+            await UpsertClientAsync(connection, transaction, client, ct).ConfigureAwait(false);
+        foreach (var fund in request.Funds)
+            await UpsertFundAsync(connection, transaction, fund, ct).ConfigureAwait(false);
+        foreach (var sleeve in request.Sleeves)
+            await UpsertSleeveAsync(connection, transaction, sleeve, ct).ConfigureAwait(false);
+        foreach (var vehicle in request.Vehicles)
+            await UpsertVehicleAsync(connection, transaction, vehicle, ct).ConfigureAwait(false);
+        foreach (var entity in request.Entities)
+            await UpsertLegalEntityAsync(connection, transaction, entity, ct).ConfigureAwait(false);
+        foreach (var portfolio in request.InvestmentPortfolios)
+            await UpsertInvestmentPortfolioAsync(connection, transaction, portfolio, ct).ConfigureAwait(false);
+        foreach (var link in request.OwnershipLinks)
+            await UpsertOwnershipLinkAsync(connection, transaction, link, ct).ConfigureAwait(false);
+        foreach (var assignment in request.Assignments)
+            await UpsertAssignmentAsync(connection, transaction, assignment, ct).ConfigureAwait(false);
+        foreach (var linkedAccountId in request.LinkedAccountIds)
+            await UpsertLinkedAccountIdAsync(connection, transaction, linkedAccountId, ct).ConfigureAwait(false);
+
+        var entityCount = request.Organizations.Count
+            + request.Businesses.Count
+            + request.Clients.Count
+            + request.Funds.Count
+            + request.Sleeves.Count
+            + request.Vehicles.Count
+            + request.Entities.Count
+            + request.InvestmentPortfolios.Count
+            + request.OwnershipLinks.Count
+            + request.Assignments.Count
+            + request.LinkedAccountIds.Count;
+
+        await using (var receiptCommand = connection.CreateCommand())
+        {
+            receiptCommand.Transaction = transaction;
+            receiptCommand.CommandText = $"""
+                INSERT INTO {Q("fund_structure_legacy_import_receipt")}
+                    (source_hash, entity_count)
+                VALUES (@source_hash, @entity_count)
+                """;
+            receiptCommand.Parameters.AddWithValue("source_hash", sourceHash);
+            receiptCommand.Parameters.AddWithValue("entity_count", entityCount);
+            await receiptCommand.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
+
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return FundStructureLegacyImportResult.Imported;
+    }
+
+    private async Task AcquireLegacyImportLockAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = "SELECT pg_advisory_xact_lock(hashtext(@lock_scope))";
+        command.Parameters.AddWithValue(
+            "lock_scope",
+            $"meridian:{_options.Schema}:fund-structure-legacy-import");
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task<bool> HasLegacyImportReceiptAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        string sourceHash,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = $"""
+            SELECT EXISTS (
+                SELECT 1
+                FROM {Q("fund_structure_legacy_import_receipt")}
+                WHERE source_hash = @source_hash)
+            """;
+        command.Parameters.AddWithValue("source_hash", sourceHash);
+        return await command.ExecuteScalarAsync(ct).ConfigureAwait(false) is true;
+    }
+
+    private static string NormalizeSourceHash(string sourceHash)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceHash);
+        var normalized = sourceHash.Trim().ToLowerInvariant();
+        if (normalized.Length != 64 || normalized.Any(static character => !Uri.IsHexDigit(character)))
+        {
+            throw new ArgumentException(
+                "Legacy import source hash must be a 64-character SHA-256 hexadecimal value.",
+                nameof(sourceHash));
+        }
+
+        return normalized;
+    }
+
     // ── Emptiness check ───────────────────────────────────────────────────────
+
+    // ── Tenant partition (W9-GOV-008 criterion 2) ─────────────────────────────
+
+    /// <summary>The node tables that carry a tenant stamp, with the column holding each node's id.</summary>
+    /// <remarks>
+    /// Ownership links and assignments are edges, not nodes: their visibility follows the endpoints
+    /// they connect, so scoping them independently could show an edge whose nodes are both hidden.
+    /// Linked accounts are included because a disconnected account node is reachable by id.
+    /// </remarks>
+    private static readonly (string Table, string IdColumn)[] TenantStampedNodeTables =
+    [
+        ("organization", "organization_id"),
+        ("business", "business_id"),
+        ("client", "client_id"),
+        ("fund", "fund_id"),
+        ("sleeve", "sleeve_id"),
+        ("vehicle", "vehicle_id"),
+        ("legal_entity", "entity_id"),
+        ("investment_portfolio", "investment_portfolio_id"),
+        ("fund_structure_linked_account", "account_id"),
+    ];
+
+    public async Task<FundStructureTenantMap> GetNodeTenantsAsync(CancellationToken ct = default)
+    {
+        await using var conn = await OpenAsync(ct).ConfigureAwait(false);
+        await using var cmd = conn.CreateCommand();
+
+        // One round trip for the whole map: the caller is about to load the entire snapshot anyway,
+        // and nine sequential queries would widen the window in which a concurrent stamp lands
+        // between two of them and produces a graph scoped inconsistently.
+        cmd.CommandText = string.Join(
+            "\nUNION ALL\n",
+            TenantStampedNodeTables.Select(node =>
+                $"SELECT {node.IdColumn} AS node_id, tenant_id FROM {Q(node.Table)} WHERE tenant_id IS NOT NULL"));
+
+        var tenants = new Dictionary<Guid, string>();
+        await using var reader = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            var tenantId = reader.GetString(1).Trim();
+            if (tenantId.Length > 0)
+            {
+                tenants[reader.GetGuid(0)] = tenantId;
+            }
+        }
+
+        return new FundStructureTenantMap(IsPartitioned: true, tenants);
+    }
+
+    public async Task StampNodeTenantAsync(Guid nodeId, string tenantId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+
+        await using var conn = await OpenAsync(ct).ConfigureAwait(false);
+        await using var cmd = conn.CreateCommand();
+
+        // First-owner-wins, matching fund_profile_tenancy: a node already attributed keeps its
+        // owner, so a later writer in another tenant cannot silently take ownership of it.
+        cmd.CommandText = string.Join(
+            ";\n",
+            TenantStampedNodeTables.Select(node =>
+                $"UPDATE {Q(node.Table)} SET tenant_id = @tenant_id"
+                + $" WHERE {node.IdColumn} = @node_id AND tenant_id IS NULL"));
+        cmd.Parameters.AddWithValue("node_id", nodeId);
+        cmd.Parameters.AddWithValue("tenant_id", tenantId.Trim());
+        await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
 
     public async Task<bool> IsEmptyAsync(CancellationToken ct = default)
     {
         await using var conn = await OpenAsync(ct).ConfigureAwait(false);
+        return await IsEmptyAsync(conn, transaction: null, ct).ConfigureAwait(false);
+    }
+
+    private async Task<bool> IsEmptyAsync(
+        NpgsqlConnection conn,
+        NpgsqlTransaction? transaction,
+        CancellationToken ct)
+    {
         await using var cmd = conn.CreateCommand();
-        cmd.CommandText = $"SELECT COUNT(*) = 0 FROM {Q("organization")}";
+        cmd.Transaction = transaction;
+        cmd.CommandText = $"""
+            SELECT
+                NOT EXISTS (SELECT 1 FROM {Q("organization")})
+                AND NOT EXISTS (SELECT 1 FROM {Q("business")})
+                AND NOT EXISTS (SELECT 1 FROM {Q("client")})
+                AND NOT EXISTS (SELECT 1 FROM {Q("fund")})
+                AND NOT EXISTS (SELECT 1 FROM {Q("sleeve")})
+                AND NOT EXISTS (SELECT 1 FROM {Q("vehicle")})
+                AND NOT EXISTS (SELECT 1 FROM {Q("legal_entity")})
+                AND NOT EXISTS (SELECT 1 FROM {Q("investment_portfolio")})
+                AND NOT EXISTS (SELECT 1 FROM {Q("ownership_link")})
+                AND NOT EXISTS (SELECT 1 FROM {Q("fund_structure_assignment")})
+                AND NOT EXISTS (SELECT 1 FROM {Q("fund_structure_linked_account")})
+            """;
         var result = await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false);
         return result is true;
     }

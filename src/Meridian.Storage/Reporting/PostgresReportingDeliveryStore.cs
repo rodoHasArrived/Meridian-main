@@ -10,9 +10,12 @@ namespace Meridian.Storage.Reporting;
 /// PostgreSQL outbox for reporting delivery. Jobs are claimed with row locks and skip-locked
 /// leasing; state, retry metadata, and append-only receipts are committed atomically.
 /// </summary>
-public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore
+public sealed class PostgresReportingDeliveryStore :
+    IReportingDeliveryStore,
+    IReportingDeliveryGrantDownloadCommitter
 {
     private readonly ReportingArtifactStoreOptions _options;
+    private readonly PostgresReportingAccessGrantStore _accessGrantStore;
     private readonly string _jobTable;
     private readonly string _receiptTable;
     private readonly string _grantTable;
@@ -22,6 +25,7 @@ public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore
         _options = options ?? throw new ArgumentNullException(nameof(options));
         ArgumentException.ThrowIfNullOrWhiteSpace(_options.ConnectionString);
         ReportingDistributionStoreGuard.ValidateIdentifier(_options.Schema, nameof(options.Schema));
+        _accessGrantStore = new PostgresReportingAccessGrantStore(_options);
         _jobTable = $"\"{_options.Schema}\".\"reporting_delivery_jobs\"";
         _receiptTable = $"\"{_options.Schema}\".\"reporting_delivery_receipts\"";
         _grantTable = $"\"{_options.Schema}\".\"reporting_access_grants\"";
@@ -70,6 +74,44 @@ public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore
             packageId,
             nameof(packageId),
             256);
+        return await ListByScopeAsync(
+                normalizedTenantId,
+                "package_id",
+                "package_id",
+                normalizedPackageId,
+                ct)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<IReadOnlyList<ReportingDeliveryJobRecord>> ListByRunAsync(
+        string tenantId,
+        string runId,
+        CancellationToken ct = default)
+    {
+        var normalizedTenantId = ReportingDistributionStoreGuard.NormalizeRequired(
+            tenantId,
+            nameof(tenantId),
+            256);
+        var normalizedRunId = ReportingDistributionStoreGuard.NormalizeRequired(
+            runId,
+            nameof(runId),
+            256);
+        return await ListByScopeAsync(
+                normalizedTenantId,
+                "release_authorization ->> 'runId'",
+                "run_id",
+                normalizedRunId,
+                ct)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<IReadOnlyList<ReportingDeliveryJobRecord>> ListByScopeAsync(
+        string tenantId,
+        string scopeExpression,
+        string scopeParameterName,
+        string scopeValue,
+        CancellationToken ct)
+    {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection
             .BeginTransactionAsync(IsolationLevel.RepeatableRead, ct)
@@ -81,11 +123,11 @@ public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore
             select {JobSelectList()}
             from {_jobTable}
             where tenant_id = @tenant_id
-              and package_id = @package_id
+              and {scopeExpression} = @{scopeParameterName}
             order by created_at_utc desc, job_id;
             """;
-        command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, normalizedTenantId);
-        command.Parameters.AddWithValue("package_id", NpgsqlDbType.Text, normalizedPackageId);
+        command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, tenantId);
+        command.Parameters.AddWithValue(scopeParameterName, NpgsqlDbType.Text, scopeValue);
         var baseJobs = new List<ReportingDeliveryJobRecord>();
         await using (var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false))
         {
@@ -372,44 +414,99 @@ public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore
             return false;
         }
 
-        ValidateTransition(current, updatedJob);
-        var appendedReceipts = ValidateReceiptAppend(current, updatedJob);
-
-        foreach (var receipt in appendedReceipts)
-        {
-            await InsertReceiptAsync(connection, transaction, updatedJob, receipt, ct).ConfigureAwait(false);
-        }
-
-        await using var update = connection.CreateCommand();
-        update.Transaction = transaction;
-        update.CommandText =
-            $"""
-            update {_jobTable}
-            set state = @state,
-                attempt_count = @attempt_count,
-                updated_at_utc = @updated_at_utc,
-                next_attempt_at_utc = @next_attempt_at_utc,
-                lease_owner = @lease_owner,
-                lease_expires_at_utc = @lease_expires_at_utc,
-                last_error_code = @last_error_code,
-                last_error = @last_error,
-                provider_message_id = @provider_message_id,
-                access_grant_id = @access_grant_id,
-                version = @next_version
-            where job_id = @job_id
-              and version = @expected_version;
-            """;
-        AddMutableJobParameters(update, updatedJob, expectedVersion);
-        if (await update.ExecuteNonQueryAsync(ct).ConfigureAwait(false) != 1)
-        {
-            throw new ReportingDistributionStateCorruptionException(
-                "delivery job",
-                normalizedJobId,
-                "its locked version disappeared before the atomic outbox update");
-        }
+        await ApplyLockedUpdateAsync(connection, transaction, current, updatedJob, ct)
+            .ConfigureAwait(false);
 
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return true;
+    }
+
+    public async Task<ReportingDeliveryGrantDownloadCommitStatus> TryCommitAsync(
+        ReportingDeliveryGrantDownloadCommit commit,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(commit);
+        var artifactId = ReportingDistributionStoreGuard.NormalizeRequired(
+            commit.ArtifactId,
+            nameof(commit.ArtifactId),
+            512);
+        if (commit.ExpectedGrantVersion < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(commit.ExpectedGrantVersion));
+        }
+        if (commit.ExpectedDeliveryVersion < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(commit.ExpectedDeliveryVersion));
+        }
+
+        ArgumentNullException.ThrowIfNull(commit.ConsumedGrant);
+        ArgumentNullException.ThrowIfNull(commit.DeliveryWithDownloadReceipt);
+        ValidateJob(
+            commit.DeliveryWithDownloadReceipt,
+            checked(commit.ExpectedDeliveryVersion + 1),
+            requireExactVersion: true);
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted, ct)
+            .ConfigureAwait(false);
+
+        // Lock grants before jobs consistently. Revocation and ordinary aggregate updates lock only
+        // one table, while every composite exchange follows this order.
+        var currentGrant = await _accessGrantStore
+            .ReadForUpdateAsync(connection, transaction, commit.ConsumedGrant.GrantId, ct)
+            .ConfigureAwait(false);
+        if (currentGrant is null || currentGrant.Version != commit.ExpectedGrantVersion)
+        {
+            await transaction.RollbackAsync(ct).ConfigureAwait(false);
+            return ReportingDeliveryGrantDownloadCommitStatus.ConcurrencyConflict;
+        }
+
+        var currentDelivery = await ReadForUpdateAsync(
+                connection,
+                transaction,
+                commit.DeliveryWithDownloadReceipt.JobId,
+                ct)
+            .ConfigureAwait(false);
+        if (currentDelivery is null || currentDelivery.Version != commit.ExpectedDeliveryVersion)
+        {
+            await transaction.RollbackAsync(ct).ConfigureAwait(false);
+            return ReportingDeliveryGrantDownloadCommitStatus.ConcurrencyConflict;
+        }
+
+        ValidateTransition(currentDelivery, commit.DeliveryWithDownloadReceipt);
+        var appendedReceipts = ValidateReceiptAppend(
+            currentDelivery,
+            commit.DeliveryWithDownloadReceipt);
+        ValidateGrantDownloadCommit(
+            artifactId,
+            currentGrant,
+            commit.ConsumedGrant,
+            currentDelivery,
+            commit.DeliveryWithDownloadReceipt,
+            appendedReceipts);
+
+        // Append the receipt first and advance the grant last. Both statements remain inside the
+        // same transaction, so any receipt, job, grant, or commit failure rolls every write back.
+        await ApplyLockedUpdateAsync(
+                connection,
+                transaction,
+                currentDelivery,
+                commit.DeliveryWithDownloadReceipt,
+                ct,
+                allowDownloaded: true)
+            .ConfigureAwait(false);
+        await _accessGrantStore
+            .ApplyLockedUpdateAsync(
+                connection,
+                transaction,
+                currentGrant,
+                commit.ConsumedGrant,
+                ct)
+            .ConfigureAwait(false);
+
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return ReportingDeliveryGrantDownloadCommitStatus.Committed;
     }
 
     private async Task<ReportingDeliveryJobRecord?> ReadJobAsync(
@@ -488,6 +585,67 @@ public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore
         return complete;
     }
 
+    private async Task ApplyLockedUpdateAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        ReportingDeliveryJobRecord current,
+        ReportingDeliveryJobRecord updated,
+        CancellationToken ct,
+        bool allowDownloaded = false)
+    {
+        ValidateJob(updated, checked(current.Version + 1), requireExactVersion: true);
+        if (!string.Equals(current.JobId, updated.JobId, StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                "Updated reporting delivery job id does not match the locked job.",
+                nameof(updated));
+        }
+
+        ValidateTransition(current, updated);
+        var appendedReceipts = ValidateReceiptAppend(current, updated);
+        if (!allowDownloaded
+            && appendedReceipts.Any(static receipt =>
+                receipt.Kind == ReportingDeliveryReceiptKind.Downloaded))
+        {
+            throw new InvalidOperationException(
+                "Downloaded receipts require the atomic access-grant consumption boundary.");
+        }
+
+        foreach (var receipt in appendedReceipts)
+        {
+            await InsertReceiptAsync(connection, transaction, updated, receipt, ct)
+                .ConfigureAwait(false);
+        }
+
+        await using var update = connection.CreateCommand();
+        update.Transaction = transaction;
+        update.CommandText =
+            $"""
+            update {_jobTable}
+            set state = @state,
+                attempt_count = @attempt_count,
+                updated_at_utc = @updated_at_utc,
+                next_attempt_at_utc = @next_attempt_at_utc,
+                lease_owner = @lease_owner,
+                lease_expires_at_utc = @lease_expires_at_utc,
+                last_error_code = @last_error_code,
+                last_error = @last_error,
+                provider_message_id = @provider_message_id,
+                access_grant_id = @access_grant_id,
+                version = @next_version
+            where job_id = @job_id
+              and version = @expected_version;
+            """;
+        AddMutableJobParameters(update, updated, current.Version);
+        if (await update.ExecuteNonQueryAsync(ct).ConfigureAwait(false) != 1)
+        {
+            throw new ReportingDistributionStateCorruptionException(
+                "delivery job",
+                current.JobId,
+                "its locked version disappeared before the atomic outbox update");
+        }
+    }
+
     private async Task<IReadOnlyList<ReportingDeliveryReceipt>> ReadReceiptsAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
@@ -558,6 +716,105 @@ public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore
         }
 
         return receipts;
+    }
+
+    private static void ValidateGrantDownloadCommit(
+        string artifactId,
+        ReportingAccessGrantRecord currentGrant,
+        ReportingAccessGrantRecord consumedGrant,
+        ReportingDeliveryJobRecord currentDelivery,
+        ReportingDeliveryJobRecord updatedDelivery,
+        IReadOnlyList<ReportingDeliveryReceipt> appendedReceipts)
+    {
+        if (!string.Equals(currentGrant.GrantId, consumedGrant.GrantId, StringComparison.Ordinal)
+            || consumedGrant.UseCount != checked(currentGrant.UseCount + 1)
+            || consumedGrant.Version != checked(currentGrant.Version + 1)
+            || consumedGrant.LastUsedAtUtc is null)
+        {
+            throw new InvalidOperationException(
+                "A delivery-linked download must advance its exact access grant by one use.");
+        }
+        ValidateDownloadedArtifactConsumption(artifactId, currentGrant, consumedGrant);
+
+        if (!string.Equals(currentDelivery.AccessGrantId, currentGrant.GrantId, StringComparison.Ordinal)
+            || !string.Equals(updatedDelivery.AccessGrantId, currentGrant.GrantId, StringComparison.Ordinal)
+            || !string.Equals(currentDelivery.TenantId, currentGrant.TenantId, StringComparison.Ordinal)
+            || !string.Equals(currentDelivery.PackageId, currentGrant.PackageId, StringComparison.Ordinal)
+            || !string.Equals(
+                currentDelivery.ReleaseAuthorization.RunId,
+                currentGrant.RunId,
+                StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                "Delivery-linked access grant scope does not match its immutable delivery job.");
+        }
+
+        if (!currentGrant.ArtifactIds.Contains(artifactId, StringComparer.Ordinal)
+            || !currentDelivery.ReleaseAuthorization.Artifacts.Any(artifact =>
+                string.Equals(artifact.ArtifactId, artifactId, StringComparison.Ordinal)))
+        {
+            throw new InvalidOperationException(
+                "Delivery-linked access grant does not authorize the downloaded Released artifact.");
+        }
+
+        if (appendedReceipts.Count != 1
+            || appendedReceipts[0].Kind != ReportingDeliveryReceiptKind.Downloaded)
+        {
+            throw new InvalidOperationException(
+                "A delivery-linked access-grant use requires exactly one appended Downloaded receipt.");
+        }
+
+        var receipt = appendedReceipts[0];
+        var expectedLastUsedAtUtc =
+            currentGrant.LastUsedAtUtc is { } retainedLastUsedAtUtc
+            && retainedLastUsedAtUtc > receipt.OccurredAtUtc
+                ? retainedLastUsedAtUtc
+                : receipt.OccurredAtUtc;
+        if (string.IsNullOrWhiteSpace(receipt.EvidenceReference)
+            || expectedLastUsedAtUtc != consumedGrant.LastUsedAtUtc
+            || !string.Equals(
+                receipt.ReceiptId,
+                ReportingDeliveryDownloadReceiptIdentity.Create(
+                    currentDelivery.JobId,
+                    artifactId,
+                    receipt.EvidenceReference),
+                StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                "Delivery-linked grant consumption must preserve the latest use time and bind its deterministic Downloaded receipt to the exact audited access event.");
+        }
+    }
+
+    private static void ValidateDownloadedArtifactConsumption(
+        string artifactId,
+        ReportingAccessGrantRecord currentGrant,
+        ReportingAccessGrantRecord consumedGrant)
+    {
+        IReadOnlyList<string> expectedConsumedArtifacts;
+        if (currentGrant.ConsumedArtifactIds is null)
+        {
+            expectedConsumedArtifacts = [artifactId];
+        }
+        else if (currentGrant.ConsumedArtifactIds.Contains(artifactId, StringComparer.Ordinal))
+        {
+            expectedConsumedArtifacts = currentGrant.ConsumedArtifactIds;
+        }
+        else
+        {
+            expectedConsumedArtifacts = currentGrant.ConsumedArtifactIds
+                .Append(artifactId)
+                .OrderBy(static consumedArtifactId => consumedArtifactId, StringComparer.Ordinal)
+                .ToArray();
+        }
+
+        if (consumedGrant.ConsumedArtifactIds is null
+            || !consumedGrant.ConsumedArtifactIds.SequenceEqual(
+                expectedConsumedArtifacts,
+                StringComparer.Ordinal))
+        {
+            throw new InvalidOperationException(
+                "A delivery-linked grant use must append the exact downloaded artifact id.");
+        }
     }
 
     private async Task InsertReceiptAsync(

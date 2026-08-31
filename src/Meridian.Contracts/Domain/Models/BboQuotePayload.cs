@@ -5,6 +5,13 @@ namespace Meridian.Contracts.Domain.Models;
 /// <summary>
 /// Best-Bid/Offer snapshot payload.
 /// </summary>
+/// <remarks>
+/// <paramref name="IsProviderSequence"/> records whether <paramref name="SequenceNumber"/>
+/// came from the provider's own feed (gap detection is meaningful) or was assigned by a
+/// local per-symbol counter because the provider does not sequence its quote stream.
+/// Payloads persisted before this field existed carried locally assigned counters, so the
+/// default of <see langword="false"/> is honest for old data.
+/// </remarks>
 public sealed record BboQuotePayload(
     DateTimeOffset Timestamp,
     string Symbol,
@@ -16,7 +23,8 @@ public sealed record BboQuotePayload(
     decimal? Spread,
     long SequenceNumber,
     string? StreamId = null,
-    string? Venue = null
+    string? Venue = null,
+    bool IsProviderSequence = false
 ) : MarketEventPayload
 {
     /// <summary>
@@ -60,8 +68,12 @@ public sealed record BboQuotePayload(
     /// </summary>
     /// <param name="update">The market quote update</param>
     /// <param name="seq">The sequence number to use (overrides update.SequenceNumber)</param>
+    /// <param name="isProviderSequence">
+    /// True when <paramref name="seq"/> is the provider's own sequence number; false when it
+    /// was assigned by a local counter.
+    /// </param>
     /// <returns>A new BboQuotePayload</returns>
-    public static BboQuotePayload FromUpdate(MarketQuoteUpdate update, long seq)
+    public static BboQuotePayload FromUpdate(MarketQuoteUpdate update, long seq, bool isProviderSequence = false)
     {
         if (update is null)
             throw new ArgumentNullException(nameof(update));
@@ -88,7 +100,8 @@ public sealed record BboQuotePayload(
             Spread: spread,
             SequenceNumber: seq,
             StreamId: update.StreamId,
-            Venue: update.Venue
+            Venue: update.Venue,
+            IsProviderSequence: isProviderSequence
         );
     }
 }

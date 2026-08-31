@@ -253,7 +253,7 @@ public sealed class MeridianNativeBacktestStudioEngineTests : IDisposable
         var evt = MarketEvent.HistoricalBar(
             new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
             symbol,
-            bar);
+            bar, source: "TEST");
 
         File.WriteAllText(path, System.Text.Json.JsonSerializer.Serialize(evt) + Environment.NewLine);
     }

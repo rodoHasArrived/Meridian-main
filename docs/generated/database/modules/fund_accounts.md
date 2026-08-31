@@ -2,7 +2,7 @@
 
 # `fund_accounts` schema
 
-- Relations: 11
+- Relations: 12
 - Functions/procedures: 0
 - Triggers: 0
 - Row-level security policies: 0
@@ -181,6 +181,11 @@ erDiagram
         timestamp_with_time_zone ingested_at
         text loaded_by
     }
+    fund_accounts_fund_account_legacy_import_receipt {
+        text source_hash PK
+        timestamp_with_time_zone imported_at
+        integer account_count
+    }
     fund_accounts_fund_account_schema_migrations {
         text filename PK
         text checksum
@@ -211,4 +216,5 @@ erDiagram
 | `bank_statement_line` | table | 11 | `statement_line_id` | 2 | 2 | - |
 | `custodian_position_line` | table | 13 | `position_line_id` | 2 | 2 | - |
 | `custodian_statement_batch` | table | 9 | `batch_id` | 1 | 1 | - |
+| `fund_account_legacy_import_receipt` | table | 3 | `source_hash` | 0 | 1 | - |
 | `fund_account_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |

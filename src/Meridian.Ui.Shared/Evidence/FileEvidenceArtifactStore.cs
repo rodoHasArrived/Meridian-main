@@ -1,12 +1,13 @@
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Evidence;
 
@@ -16,24 +17,55 @@ public interface IEvidenceArtifactStore
         EvidencePacketDto packet,
         EvidencePacketExportRequest request,
         CancellationToken ct = default);
-
     Task<EvidenceVaultIntakeResponseDto> WriteIntakeArtifactAsync(
         EvidenceVaultIntakeRequestDto request,
         CancellationToken ct = default);
+
+    /// <summary>Legacy unscoped manifest lookup retained as a fail-closed compatibility shim.</summary>
+    [Obsolete("Use TryOpenManifestAsync(..., tenantId, scope, ct); Evidence Vault reads require authenticated scope.")]
+    Task<EvidenceManifestFile?> TryOpenManifestAsync(
+        string subjectKind,
+        string subjectId,
+        string fileName,
+        CancellationToken ct = default) =>
+        throw UnscopedAccessNotSupported();
 
     Task<EvidenceManifestFile?> TryOpenManifestAsync(
         string subjectKind,
         string subjectId,
         string fileName,
-        CancellationToken ct = default);
+        string tenantId,
+        string scope,
+        CancellationToken ct = default) =>
+        throw ScopedImplementationRequired();
+
+    /// <summary>Legacy unscoped vault lookup retained as a fail-closed compatibility shim.</summary>
+    [Obsolete("Use TryOpenManifestByVaultIdAsync(vaultId, tenantId, scope, ct); Evidence Vault reads require authenticated scope.")]
+    Task<EvidenceManifestFile?> TryOpenManifestByVaultIdAsync(
+        string vaultId,
+        CancellationToken ct = default) =>
+        throw UnscopedAccessNotSupported();
 
     Task<EvidenceManifestFile?> TryOpenManifestByVaultIdAsync(
         string vaultId,
-        CancellationToken ct = default);
+        string tenantId,
+        string scope,
+        CancellationToken ct = default) =>
+        throw ScopedImplementationRequired();
+
+    /// <summary>Legacy unscoped identity lookup retained as a fail-closed compatibility shim.</summary>
+    [Obsolete("Use TryGetVaultIdentityAsync(vaultId, tenantId, scope, ct); Evidence Vault reads require authenticated scope.")]
+    Task<EvidenceVaultIdentityDto?> TryGetVaultIdentityAsync(
+        string vaultId,
+        CancellationToken ct = default) =>
+        throw UnscopedAccessNotSupported();
 
     Task<EvidenceVaultIdentityDto?> TryGetVaultIdentityAsync(
         string vaultId,
-        CancellationToken ct = default);
+        string tenantId,
+        string scope,
+        CancellationToken ct = default) =>
+        throw ScopedImplementationRequired();
 
     Task<IReadOnlyList<EvidenceVaultIdentityDto>> FindByLinkageAsync(
         EvidenceVaultLookupRequestDto request,
@@ -47,19 +79,36 @@ public interface IEvidenceArtifactStore
         EvidenceVaultDocumentQueryDto query,
         CancellationToken ct = default);
 
+    /// <summary>Legacy unscoped review mutation retained as a fail-closed compatibility shim.</summary>
+    [Obsolete("Use ReviewDocumentAsync(..., tenantId, scope, request, ct); Evidence Vault reviews require authenticated scope.")]
     Task<EvidenceVaultDocumentReviewResponseDto?> ReviewDocumentAsync(
         string vaultId,
         string documentId,
         EvidenceVaultDocumentReviewRequestDto request,
-        CancellationToken ct = default);
-}
+        CancellationToken ct = default) =>
+        throw UnscopedAccessNotSupported();
 
+    Task<EvidenceVaultDocumentReviewResponseDto?> ReviewDocumentAsync(
+        string vaultId,
+        string documentId,
+        string tenantId,
+        string scope,
+        EvidenceVaultDocumentReviewRequestDto request,
+        CancellationToken ct = default) =>
+        throw ScopedImplementationRequired();
+
+    private static NotSupportedException UnscopedAccessNotSupported() =>
+        new("Evidence Vault access requires an authenticated tenant and company scope. " +
+            "Migrate to the scoped overload.");
+
+    private static NotSupportedException ScopedImplementationRequired() =>
+        new("This evidence store implementation must implement the tenant/company-scoped contract.");
+}
 public sealed record EvidenceManifestFile(
     Stream Content,
     string ContentType,
     string FileName,
     DateTimeOffset LastModified);
-
 public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
 {
     private const string ManifestRelativeRoot = "workstation/evidence/";
@@ -92,10 +141,10 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         EvidenceSubjectResolver.PaymentIntentKind,
         EvidenceSubjectResolver.ReportPackDeliveryKind
     };
-
     private readonly string _rootDirectory;
     private readonly ILogger<FileEvidenceArtifactStore> _logger;
-
+    private readonly long _documentVerificationByteLimit;
+    private readonly int _documentLocatorInspectionLimit;
     // Serializes read-modify-write cycles on a vault's manifest/index pair. AtomicFileWriter
     // only makes each single write atomic; without this, concurrent document reviews on the
     // same vault could read the same snapshot and silently clobber each other's updates.
@@ -107,14 +156,35 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         WriteIndented = true,
         Converters = { new JsonStringEnumConverter() }
     };
-
     public FileEvidenceArtifactStore(string dataRoot, ILogger<FileEvidenceArtifactStore> logger)
+        : this(dataRoot, logger, MaxDocumentVerificationBytesPerRequest)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _rootDirectory = Path.Combine(dataRoot, "workstation", "evidence");
     }
 
+    internal FileEvidenceArtifactStore(
+        string dataRoot,
+        ILogger<FileEvidenceArtifactStore> logger,
+        long documentVerificationByteLimit,
+        int documentLocatorInspectionLimit = MaxDocumentLocatorInspections)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
+        if (documentVerificationByteLimit <= 0
+            || documentVerificationByteLimit > MaxDocumentVerificationBytesPerRequest)
+        {
+            throw new ArgumentOutOfRangeException(nameof(documentVerificationByteLimit));
+        }
+
+        if (documentLocatorInspectionLimit <= 0
+            || documentLocatorInspectionLimit > MaxDocumentLocatorInspections)
+        {
+            throw new ArgumentOutOfRangeException(nameof(documentLocatorInspectionLimit));
+        }
+
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _rootDirectory = Path.Combine(dataRoot, "workstation", "evidence");
+        _documentVerificationByteLimit = documentVerificationByteLimit;
+        _documentLocatorInspectionLimit = documentLocatorInspectionLimit;
+    }
     public async Task<EvidencePacketExportResponse> WriteManifestAsync(
         EvidencePacketDto packet,
         EvidencePacketExportRequest request,
@@ -122,15 +192,11 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
     {
         ArgumentNullException.ThrowIfNull(packet);
         request ??= new EvidencePacketExportRequest(null, null);
+        var (tenantId, scope) = RequireWriteScope(request.TenantId, request.Scope);
 
         var generatedAt = DateTimeOffset.UtcNow;
         var subjectKind = SanitizePathSegment(packet.Subject.SubjectKind);
         var subjectId = SanitizePathSegment(packet.Subject.SubjectId);
-        var fileName = $"{generatedAt:yyyyMMddTHHmmssfffZ}-manifest.json";
-        var directory = Path.Combine(_rootDirectory, subjectKind, subjectId);
-        var manifestPath = Path.Combine(directory, fileName);
-        var relativePath = Path.Combine("workstation", "evidence", subjectKind, subjectId, fileName);
-        var manifestRoute = $"/workstation/evidence/{RouteSegment(subjectKind)}/{RouteSegment(subjectId)}/{RouteSegment(fileName)}";
         var supportRequests = BuildSupportRequests(packet);
         var requestLists = BuildRequestLists(packet.Subject, supportRequests);
         var manifest = new RetainedEvidenceManifestDto(
@@ -149,11 +215,22 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
             SupportRequests: supportRequests,
             VaultIdentity: null,
             Lifecycle: request.Lifecycle,
-            Linkage: ResolveManifestLinkage(packet, request));
+            Linkage: ResolveManifestLinkage(packet, request))
+        {
+            TenantId = tenantId,
+            Scope = scope
+        };
         ValidateRetainedArtifactReferences(packet);
         var retainedExportJson = JsonSerializer.Serialize(manifest, _jsonOptions);
-        var contentHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(retainedExportJson))).ToLowerInvariant();
+        var contentHash = Sha256Digest.ComputeUtf8(retainedExportJson);
         var vaultId = $"ev-{contentHash[..24]}";
+        // The scoped hash suffix prevents different tenants exporting the same subject in the
+        // same millisecond from sharing and overwriting one manifest path.
+        var fileName = $"{generatedAt:yyyyMMddTHHmmssfffZ}-{contentHash[..12]}-manifest.json";
+        var directory = Path.Combine(_rootDirectory, subjectKind, subjectId);
+        var manifestPath = Path.Combine(directory, fileName);
+        var relativePath = Path.Combine("workstation", "evidence", subjectKind, subjectId, fileName);
+        var manifestRoute = $"/workstation/evidence/{RouteSegment(subjectKind)}/{RouteSegment(subjectId)}/{RouteSegment(fileName)}";
         var retainedArtifacts = await RetainLocalArtifactsAsync(packet, vaultId, generatedAt, ct).ConfigureAwait(false);
         var vaultIdentity = new EvidenceVaultIdentityDto(
             VaultId: vaultId,
@@ -166,6 +243,8 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
             SchemaVersion: 1,
             StorageKind: retainedArtifacts.Count == 0 ? FileManifestStorageKind : FileBundleStorageKind)
         {
+            TenantId = tenantId,
+            Scope = scope,
             Artifacts = retainedArtifacts,
             RequestLists = requestLists,
             SupportRequests = supportRequests,
@@ -180,6 +259,8 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
                 supportRequests,
                 requestLists)
         };
+        manifest = manifest with { VaultIdentity = vaultIdentity };
+        vaultIdentity = RefreshVaultIdentityContentHash(vaultIdentity, manifest);
         manifest = manifest with { VaultIdentity = vaultIdentity };
 
         await AtomicFileWriter
@@ -212,10 +293,11 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        var subjectKind = RequireTrimmed(request.SubjectKind, nameof(request.SubjectKind));
-        var subjectId = RequireTrimmed(request.SubjectId, nameof(request.SubjectId));
-        var intakeChannel = RequireTrimmed(request.IntakeChannel, nameof(request.IntakeChannel));
-        var fileName = RequireTrimmed(request.FileName, nameof(request.FileName));
+        var (tenantId, scope) = RequireWriteScope(request.TenantId, request.Scope);
+        var subjectKind = RequireText(request.SubjectKind, nameof(request.SubjectKind));
+        var subjectId = RequireText(request.SubjectId, nameof(request.SubjectId));
+        var intakeChannel = RequireText(request.IntakeChannel, nameof(request.IntakeChannel));
+        var fileName = RequireText(request.FileName, nameof(request.FileName));
         var channelKind = ResolveIntakeChannelKind(request, intakeChannel);
 
         if (!SupportedCanonicalSubjectKinds.Contains(subjectKind))
@@ -229,7 +311,14 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         var content = intakeContent.Content;
         var contentHash = intakeContent.ContentHashSha256;
         var capturedAt = DateTimeOffset.UtcNow;
-        var vaultId = BuildIntakeVaultId(subjectKind, subjectId, fileName, contentHash, capturedAt);
+        var vaultId = BuildIntakeVaultId(
+            subjectKind,
+            subjectId,
+            fileName,
+            contentHash,
+            capturedAt,
+            tenantId,
+            scope);
         var manifestFileName = $"{capturedAt:yyyyMMddTHHmmssfffZ}-intake-manifest.json";
         var manifestPath = Path.Combine(_rootDirectory, "_vault", vaultId, manifestFileName);
         var manifestRoute = $"/workstation/evidence/_vault/{RouteSegment(vaultId)}/{RouteSegment(manifestFileName)}";
@@ -350,9 +439,13 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
             SupportRequests: supportRequests,
             VaultIdentity: null,
             Lifecycle: request.Lifecycle,
-            Linkage: ResolveIntakeLinkage(subjectKind, subjectId, request.Linkage));
+            Linkage: ResolveIntakeLinkage(subjectKind, subjectId, request.Linkage))
+        {
+            TenantId = tenantId,
+            Scope = scope
+        };
         var manifestJson = JsonSerializer.Serialize(manifest, _jsonOptions);
-        var manifestHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(manifestJson))).ToLowerInvariant();
+        var manifestHash = Sha256Digest.ComputeUtf8(manifestJson);
         var vaultIdentity = new EvidenceVaultIdentityDto(
             VaultId: vaultId,
             SubjectKind: subjectKind,
@@ -365,6 +458,8 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
             SchemaVersion: 1,
             StorageKind: FileBundleStorageKind)
         {
+            TenantId = tenantId,
+            Scope = scope,
             Artifacts = [artifact],
             RequestLists = requestLists,
             SupportRequests = supportRequests,
@@ -379,6 +474,8 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
                 supportRequests,
                 requestLists)
         };
+        manifest = manifest with { VaultIdentity = vaultIdentity };
+        vaultIdentity = RefreshVaultIdentityContentHash(vaultIdentity, manifest);
         manifest = manifest with { VaultIdentity = vaultIdentity };
 
         await AtomicFileWriter
@@ -408,293 +505,6 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         {
             Document = document
         };
-    }
-
-    public Task<EvidenceManifestFile?> TryOpenManifestAsync(
-        string subjectKind,
-        string subjectId,
-        string fileName,
-        CancellationToken ct = default)
-    {
-        ct.ThrowIfCancellationRequested();
-
-        var filePath = ResolveSubjectManifestPath(subjectKind, subjectId, fileName);
-        return Task.FromResult(OpenManifestFile(filePath));
-    }
-
-    public async Task<EvidenceManifestFile?> TryOpenManifestByVaultIdAsync(
-        string vaultId,
-        CancellationToken ct = default)
-    {
-        ct.ThrowIfCancellationRequested();
-        var identity = await TryGetVaultIdentityAsync(vaultId, ct).ConfigureAwait(false);
-        var manifestPath = identity is null
-            ? null
-            : ResolveVaultManifestPath(identity, identity.VaultId);
-        if (manifestPath is null)
-        {
-            return null;
-        }
-
-        return OpenManifestFile(manifestPath);
-    }
-
-    public async Task<EvidenceVaultIdentityDto?> TryGetVaultIdentityAsync(
-        string vaultId,
-        CancellationToken ct = default)
-    {
-        ct.ThrowIfCancellationRequested();
-        var safeVaultId = ValidateVaultId(vaultId);
-        if (safeVaultId is null)
-        {
-            return null;
-        }
-
-        var indexPath = Path.Combine(_rootDirectory, "_vault", $"{safeVaultId}.json");
-        return await TryReadVaultIdentityAsync(indexPath, ct).ConfigureAwait(false);
-    }
-
-    public static string ResolveDataRoot(IServiceProvider services)
-    {
-        var applicationConfig = services.GetService<Meridian.Application.UI.ConfigStore>();
-        if (applicationConfig is not null)
-        {
-            return applicationConfig.GetDataRoot();
-        }
-
-        var sharedConfig = services.GetService<Meridian.Ui.Shared.Services.ConfigStore>();
-        if (sharedConfig is not null)
-        {
-            return sharedConfig.GetDataRoot();
-        }
-
-        return Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Meridian");
-    }
-
-    public async Task<IReadOnlyList<EvidenceVaultIdentityDto>> FindByLinkageAsync(
-        EvidenceVaultLookupRequestDto request,
-        CancellationToken ct = default)
-    {
-        var vaultDir = Path.Combine(_rootDirectory, "_vault");
-        if (!Directory.Exists(vaultDir))
-        {
-            return [];
-        }
-
-        var matches = new List<EvidenceVaultIdentityDto>();
-        foreach (var indexPath in Directory.EnumerateFiles(vaultDir, "*.json"))
-        {
-            ct.ThrowIfCancellationRequested();
-            var identity = await TryReadVaultIdentityAsync(indexPath, ct).ConfigureAwait(false);
-            if (identity is null)
-            {
-                continue;
-            }
-
-            var manifestPath = ResolveVaultManifestPath(identity, identity.VaultId);
-            if (manifestPath is null || !File.Exists(manifestPath))
-            {
-                continue;
-            }
-
-            var linkage = await TryReadLinkageAsync(manifestPath, ct).ConfigureAwait(false);
-            if (MatchesLookup(request, linkage, identity))
-            {
-                matches.Add(identity);
-            }
-        }
-
-        return matches.OrderByDescending(x => x.RetainedAt).ToArray();
-    }
-
-    public async Task<IReadOnlyList<EvidenceVaultRequestListEntryDto>> ListRequestListsAsync(
-        EvidenceVaultRequestListQueryDto query,
-        CancellationToken ct = default)
-    {
-        query ??= new EvidenceVaultRequestListQueryDto();
-        var vaultDir = Path.Combine(_rootDirectory, "_vault");
-        if (!Directory.Exists(vaultDir))
-        {
-            return [];
-        }
-
-        var matches = new List<EvidenceVaultRequestListEntryDto>();
-        foreach (var indexPath in Directory.EnumerateFiles(vaultDir, "*.json"))
-        {
-            ct.ThrowIfCancellationRequested();
-            var identity = await TryReadVaultIdentityAsync(indexPath, ct).ConfigureAwait(false);
-            if (identity is null)
-            {
-                continue;
-            }
-
-            if (!MatchesRequestListIdentity(query, identity))
-            {
-                continue;
-            }
-
-            foreach (var requestList in identity.RequestLists)
-            {
-                if (!MatchesRequestList(query, requestList))
-                {
-                    continue;
-                }
-
-                var supportRequests = identity.SupportRequests
-                    .Where(request => requestList.RequestIds.Contains(request.RequestId, StringComparer.OrdinalIgnoreCase))
-                    .OrderByDescending(static request => request.Severity)
-                    .ThenBy(static request => request.RequestKind, StringComparer.OrdinalIgnoreCase)
-                    .ThenBy(static request => request.RequestId, StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
-                matches.Add(new EvidenceVaultRequestListEntryDto(
-                    RequestListId: requestList.RequestListId,
-                    RequestListKind: requestList.RequestListKind,
-                    TargetKind: requestList.TargetKind,
-                    TargetId: requestList.TargetId,
-                    HighestSeverity: requestList.HighestSeverity,
-                    Status: requestList.Status,
-                    RequestCount: requestList.RequestCount,
-                    OpenRequestCount: supportRequests.Count(static request => string.Equals(request.Status, "Open", StringComparison.OrdinalIgnoreCase)),
-                    RequestIds: requestList.RequestIds,
-                    EvidenceKinds: requestList.EvidenceKinds,
-                    BlockedOutputs: requestList.BlockedOutputs,
-                    Summary: requestList.Summary,
-                    VaultId: identity.VaultId,
-                    SubjectKind: identity.SubjectKind,
-                    SubjectId: identity.SubjectId,
-                    ManifestRoute: identity.ManifestRoute,
-                    RetainedAt: identity.RetainedAt,
-                    SupportRequests: supportRequests)
-                {
-                    RequestListKindCode = ResolveRequestListKindCode(requestList.RequestListKind, requestList.TargetKind)
-                });
-            }
-        }
-
-        var maxResults = Math.Clamp(query.MaxResults ?? 250, 1, 500);
-        return matches
-            .OrderBy(static entry => RequestListStatusRank(entry.Status))
-            .ThenByDescending(static entry => entry.HighestSeverity)
-            .ThenByDescending(static entry => entry.RetainedAt)
-            .ThenBy(static entry => entry.TargetKind, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(static entry => entry.TargetId, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(static entry => entry.RequestListKind, StringComparer.OrdinalIgnoreCase)
-            .Take(maxResults)
-            .ToArray();
-    }
-
-    public async Task<IReadOnlyList<EvidenceVaultDocumentEntryDto>> ListDocumentsAsync(
-        EvidenceVaultDocumentQueryDto query,
-        CancellationToken ct = default)
-    {
-        query ??= new EvidenceVaultDocumentQueryDto();
-        var vaultDir = Path.Combine(_rootDirectory, "_vault");
-        if (!Directory.Exists(vaultDir))
-        {
-            return [];
-        }
-
-        var matches = new List<EvidenceVaultDocumentEntryDto>();
-        foreach (var indexPath in Directory.EnumerateFiles(vaultDir, "*.json"))
-        {
-            ct.ThrowIfCancellationRequested();
-            var identity = await TryReadVaultIdentityAsync(indexPath, ct).ConfigureAwait(false);
-            if (identity is null || !MatchesDocumentIdentity(query, identity))
-            {
-                continue;
-            }
-
-            foreach (var document in ResolveIdentityDocuments(identity))
-            {
-                if (!MatchesDocument(query, document))
-                {
-                    continue;
-                }
-
-                matches.Add(new EvidenceVaultDocumentEntryDto(
-                    Document: document,
-                    VaultId: identity.VaultId,
-                    SubjectKind: identity.SubjectKind,
-                    SubjectId: identity.SubjectId,
-                    ManifestRoute: identity.ManifestRoute,
-                    RetainedAt: identity.RetainedAt,
-                    StorageKind: identity.StorageKind,
-                    OpenRequestCount: identity.SupportRequests.Count(static request =>
-                        string.Equals(request.Status, "Open", StringComparison.OrdinalIgnoreCase)),
-                    SupportRequests: identity.SupportRequests));
-            }
-        }
-
-        var maxResults = Math.Clamp(query.MaxResults ?? 250, 1, 500);
-        return matches
-            .OrderBy(static entry => DocumentReviewRank(entry.Document.ReviewerState.Status))
-            .ThenBy(static entry => DocumentExtractionRank(entry.Document.ExtractionStatus))
-            .ThenByDescending(static entry => entry.Document.ReceivedAt)
-            .ThenBy(static entry => entry.Document.FileName, StringComparer.OrdinalIgnoreCase)
-            .Take(maxResults)
-            .ToArray();
-    }
-
-    public async Task<EvidenceVaultDocumentReviewResponseDto?> ReviewDocumentAsync(
-        string vaultId,
-        string documentId,
-        EvidenceVaultDocumentReviewRequestDto request,
-        CancellationToken ct = default)
-    {
-        ArgumentNullException.ThrowIfNull(request);
-        ct.ThrowIfCancellationRequested();
-
-        var safeVaultId = ValidateVaultId(vaultId);
-        if (safeVaultId is null)
-        {
-            throw new ArgumentException("Evidence vault id is invalid.", nameof(vaultId));
-        }
-
-        var normalizedDocumentId = RequireTrimmed(documentId, nameof(documentId));
-        var reviewer = RequireTrimmed(request.Reviewer, nameof(request.Reviewer));
-
-        var vaultLock = _vaultWriteLocks.GetOrAdd(safeVaultId, static _ => new SemaphoreSlim(1, 1));
-        await vaultLock.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            return await ReviewDocumentUnderLockAsync(safeVaultId, normalizedDocumentId, reviewer, request, ct)
-                .ConfigureAwait(false);
-        }
-        finally
-        {
-            vaultLock.Release();
-        }
-    }
-
-    private static IReadOnlyList<EvidenceDocumentConfirmedFieldDto> NormalizeConfirmedFields(
-        IReadOnlyList<EvidenceDocumentConfirmedFieldDto>? confirmedFields,
-        string reviewer,
-        DateTimeOffset reviewedAt)
-    {
-        if (confirmedFields is null || confirmedFields.Count == 0)
-        {
-            return [];
-        }
-
-        return confirmedFields
-            .Where(static field =>
-                !string.IsNullOrWhiteSpace(field.FieldName) &&
-                !string.IsNullOrWhiteSpace(field.ConfirmedValue))
-            .Select(field => field with
-            {
-                FieldName = field.FieldName.Trim(),
-                ConfirmedValue = field.ConfirmedValue.Trim(),
-                ConfirmedBy = FirstNonEmpty(field.ConfirmedBy, reviewer)!,
-                ConfirmedAt = field.ConfirmedAt == default ? reviewedAt : field.ConfirmedAt,
-                SourceFieldName = NormalizeOptional(field.SourceFieldName),
-                Notes = NormalizeOptional(field.Notes)
-            })
-            .GroupBy(static field => field.FieldName, StringComparer.OrdinalIgnoreCase)
-            .Select(static group => group.First())
-            .OrderBy(static field => field.FieldName, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
     }
 
     private static bool MatchesLookup(EvidenceVaultLookupRequestDto request, EvidenceSubjectLinkageDto? linkage, EvidenceVaultIdentityDto identity)
@@ -801,7 +611,7 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
     private string ComputeManifestContentHash(RetainedEvidenceManifestDto manifest)
     {
         var json = JsonSerializer.Serialize(manifest, _jsonOptions);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(json);
     }
 
     private static EvidenceVaultIdentityDto NormalizeVaultIdentityForContentHash(EvidenceVaultIdentityDto identity)
@@ -867,6 +677,11 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         EvidenceVaultDocumentQueryDto query,
         EvidenceVaultIdentityDto identity)
     {
+        if (!MatchesIdentityScope(identity, query.TenantId, query.Scope))
+        {
+            return false;
+        }
+
         if (!string.IsNullOrWhiteSpace(query.SubjectKind) &&
             !string.Equals(query.SubjectKind, identity.SubjectKind, StringComparison.OrdinalIgnoreCase))
         {
@@ -953,6 +768,11 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         EvidenceVaultRequestListQueryDto query,
         EvidenceVaultIdentityDto identity)
     {
+        if (!MatchesIdentityScope(identity, query.TenantId, query.Scope))
+        {
+            return false;
+        }
+
         if (!string.IsNullOrWhiteSpace(query.SubjectKind) &&
             !string.Equals(query.SubjectKind, identity.SubjectKind, StringComparison.OrdinalIgnoreCase))
         {
@@ -1635,19 +1455,6 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
             _ => 2
         };
 
-    private static string RequireTrimmed(string value, string parameterName)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new ArgumentException("Evidence vault intake requires non-empty subject, channel, file, and content fields.", parameterName);
-        }
-
-        return value.Trim();
-    }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
     private static string? FirstNonEmpty(params string?[] values)
         => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
 
@@ -1683,7 +1490,7 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
             throw new ArgumentException("Evidence vault intake content exceeds the 100 MB vault artifact limit.", nameof(request));
         }
 
-        var contentHash = Convert.ToHexString(SHA256.HashData(content.Content)).ToLowerInvariant();
+        var contentHash = Sha256Digest.Compute(content.Content);
         if (!string.IsNullOrWhiteSpace(expectedHash) &&
             !string.Equals(NormalizeHash(expectedHash), contentHash, StringComparison.OrdinalIgnoreCase))
         {
@@ -1787,10 +1594,12 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         string subjectId,
         string fileName,
         string contentHash,
-        DateTimeOffset capturedAt)
+        DateTimeOffset capturedAt,
+        string? tenantId,
+        string? scope)
     {
-        var seed = $"{subjectKind}|{subjectId}|{fileName}|{contentHash}|{capturedAt:O}";
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(seed))).ToLowerInvariant();
+        var seed = $"{tenantId}|{scope}|{subjectKind}|{subjectId}|{fileName}|{contentHash}|{capturedAt:O}";
+        var hash = Sha256Digest.ComputeUtf8(seed);
         return $"ev-{hash[..24]}";
     }
 
@@ -1975,7 +1784,10 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         string actor,
         DateTimeOffset capturedAt)
     {
-        var confirmedFields = NormalizeConfirmedFields(reviewerState.ConfirmedFields, actor, reviewerState.ReviewedAt ?? capturedAt);
+        var confirmedFields = NormalizeTrustedInitialConfirmedFields(
+            reviewerState.ConfirmedFields,
+            actor,
+            reviewerState.ReviewedAt ?? capturedAt);
         if (reviewerState.Status == EvidenceDocumentReviewStatusDto.Accepted && confirmedFields.Count == 0)
         {
             throw new ArgumentException(
@@ -2331,7 +2143,19 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
 
         var relativeToEvidenceRoot = manifestPath[ManifestRelativeRoot.Length..];
         var segments = relativeToEvidenceRoot.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        if (segments.Length < 3 ||
+        var hasVaultLayout = segments.Length == 3
+                             && string.Equals(segments[0], "_vault", StringComparison.OrdinalIgnoreCase)
+                             && string.Equals(segments[1], expectedVaultId, StringComparison.OrdinalIgnoreCase);
+        var hasSubjectLayout = segments.Length == 3
+                               && string.Equals(
+                                   segments[0],
+                                   SanitizePathSegment(identity.SubjectKind),
+                                   StringComparison.OrdinalIgnoreCase)
+                               && string.Equals(
+                                   segments[1],
+                                   SanitizePathSegment(identity.SubjectId),
+                                   StringComparison.OrdinalIgnoreCase);
+        if ((!hasVaultLayout && !hasSubjectLayout) ||
             segments.Any(static segment => segment is "." or "..") ||
             segments.Length != relativeToEvidenceRoot.Split('/').Length ||
             ValidateManifestFileName(segments[^1]) is null)
@@ -2420,7 +2244,7 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
             }
 
             var bytes = await File.ReadAllBytesAsync(sourcePath, ct).ConfigureAwait(false);
-            var hash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+            var hash = Sha256Digest.Compute(bytes);
             if (!string.IsNullOrWhiteSpace(artifact.Hash) &&
                 !string.Equals(NormalizeHash(artifact.Hash), hash, StringComparison.OrdinalIgnoreCase))
             {
@@ -2517,7 +2341,7 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         }
 
         var stem = SanitizePathSegment(string.IsNullOrWhiteSpace(artifact.Kind) ? artifact.ArtifactId : artifact.Kind);
-        var artifactHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(artifact.ArtifactId))).ToLowerInvariant()[..12];
+        var artifactHash = Sha256Digest.ComputeUtf8(artifact.ArtifactId)[..12];
         return $"{stem}-{artifactHash}{extension}";
     }
 
@@ -2529,22 +2353,9 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
     }
 
     private static string? ValidateVaultId(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return null;
-        }
-
-        var normalized = value.Trim().ToLowerInvariant();
-        if (!normalized.StartsWith("ev-", StringComparison.Ordinal) || normalized.Length != 27)
-        {
-            return null;
-        }
-
-        return normalized[3..].All(static ch => ch is (>= '0' and <= '9') or (>= 'a' and <= 'f'))
+        => EvidenceVaultReference.TryNormalizeVaultId(value, out var normalized)
             ? normalized
             : null;
-    }
 
     private static string RouteSegment(string value)
         => Uri.EscapeDataString(value);
@@ -2560,28 +2371,4 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
     private static readonly StringComparison PathComparison = OperatingSystem.IsWindows()
         ? StringComparison.OrdinalIgnoreCase
         : StringComparison.Ordinal;
-
-    private sealed record RetainedEvidenceManifestDto(
-        int SchemaVersion,
-        DateTimeOffset ExportedAt,
-        string? RequestedBy,
-        string? Reason,
-        bool ManifestOnly,
-        EvidenceSubjectDto Subject,
-        EvidenceCompletenessDto Completeness,
-        IReadOnlyList<EvidenceNodeDto> Nodes,
-        IReadOnlyList<EvidenceEdgeDto> Edges,
-        IReadOnlyList<WorkflowActionDto> Actions,
-        IReadOnlyList<string> Warnings,
-        IReadOnlyList<EvidenceRequestListDto> RequestLists,
-        IReadOnlyList<EvidenceSupportRequestDto> SupportRequests,
-        EvidenceVaultIdentityDto? VaultIdentity,
-        EvidenceLifecycleMetadataDto? Lifecycle,
-        EvidenceSubjectLinkageDto? Linkage);
-
-    private sealed record EvidenceRequestListTarget(
-        string RequestListKind,
-        EvidenceRequestListKindDto RequestListKindCode,
-        string TargetKind,
-        string TargetId);
 }

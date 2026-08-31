@@ -68,6 +68,23 @@ public sealed class YearEndCloseTests
     }
 
     [Fact]
+    public void Project_TemporaryAccountNamedRetainedEarnings_RollsIncomeForward()
+    {
+        var sameNamedRevenue = new LedgerAccount("Retained Earnings", LedgerAccountType.Revenue);
+        var trialBalance = new List<PeriodCloseAccountBalance>
+        {
+            new(LedgerAccounts.RetainedEarnings, 5_000m),
+            new(sameNamedRevenue, 1_000m),
+        };
+
+        var projection = YearEndCloseProjector.Project(new YearEndCloseInput(
+            "FY2026", YearEnd, trialBalance, "controller"));
+
+        projection.OpeningRetainedEarnings.Should().ContainSingle().Which.OpeningBalance.Should().Be(6_000m,
+            "only the equity retained-earnings roll line carries current-year net income forward");
+    }
+
+    [Fact]
     public void Project_MissingConstituentPeriods_IsNotReady()
     {
         var input = new YearEndCloseInput(

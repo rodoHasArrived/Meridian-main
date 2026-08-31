@@ -83,6 +83,9 @@ public static class SecurityAssetTermsSchema
                 Opt("shareClass", SecurityAssetTermFieldType.String),
                 Opt("votingRightsCat", SecurityAssetTermFieldType.String),
                 Opt("classification", SecurityAssetTermFieldType.String),
+                // Raw label carried alongside classification="Other"; the discriminant stays a
+                // closed vocabulary while free-text classifications round-trip losslessly.
+                Opt("otherClassification", SecurityAssetTermFieldType.String),
                 Opt("preferredTerms", SecurityAssetTermFieldType.Object),
                 Opt("convertibleTerms", SecurityAssetTermFieldType.Object)
             ],
@@ -125,6 +128,14 @@ public static class SecurityAssetTermsSchema
                 Opt("spreadBps", SecurityAssetTermFieldType.Decimal),
                 Opt("capRate", SecurityAssetTermFieldType.Decimal),
                 Opt("floorRate", SecurityAssetTermFieldType.Decimal),
+                // Step-coupon schedule ({effectiveDate, rate}); empty for non-step coupons. The
+                // inflation fields carry linker indexation (couponType = "InflationLinked"); null
+                // otherwise. These are what make StepRate/FixedToFloat/InflationLinked subclasses
+                // computable rather than labels.
+                Opt("stepSchedule", SecurityAssetTermFieldType.Array),
+                Opt("inflationIndex", SecurityAssetTermFieldType.String),
+                Opt("inflationBaseIndexValue", SecurityAssetTermFieldType.Decimal),
+                Opt("inflationIndexRatio", SecurityAssetTermFieldType.Decimal),
                 Opt("dayCount", SecurityAssetTermFieldType.String, "dayCountConvention"),
                 Req("isCallable", SecurityAssetTermFieldType.Boolean),
                 Opt("callDate", SecurityAssetTermFieldType.Date),
@@ -135,7 +146,10 @@ public static class SecurityAssetTermsSchema
                 Opt("paymentFrequency", SecurityAssetTermFieldType.String),
                 Opt("legalFinalMaturity", SecurityAssetTermFieldType.Date),
                 Opt("preRefundDate", SecurityAssetTermFieldType.Date),
-                Opt("mandatoryPutDate", SecurityAssetTermFieldType.Date)
+                Opt("mandatoryPutDate", SecurityAssetTermFieldType.Date),
+                // Contractual principal instalments ({paymentDate, amount}) for sinking-fund and
+                // other scheduled-principal subclasses; empty for bullet bonds.
+                Opt("principalSchedule", SecurityAssetTermFieldType.Array)
             ],
             ["FxSpot"] =
             [
@@ -213,7 +227,12 @@ public static class SecurityAssetTermsSchema
                 Req("customProfileId", SecurityAssetTermFieldType.String),
                 Req("profileVersion", SecurityAssetTermFieldType.Integer),
                 Req("profileFields", SecurityAssetTermFieldType.Object),
-                Opt("profileApproval", SecurityAssetTermFieldType.Object)
+                Opt("profileApproval", SecurityAssetTermFieldType.Object),
+                // The workstation create path also stamps a display category/sub-type and evidence
+                // links onto the document; they are part of the real persisted contract.
+                Opt("category", SecurityAssetTermFieldType.String),
+                Opt("subType", SecurityAssetTermFieldType.String),
+                Opt("evidenceLinks", SecurityAssetTermFieldType.Array)
             ],
             ["Swap"] =
             [
@@ -241,7 +260,14 @@ public static class SecurityAssetTermsSchema
                 Req("originalFace", SecurityAssetTermFieldType.Decimal),
                 Opt("currentFactor", SecurityAssetTermFieldType.Decimal),
                 Req("couponOrIndex", SecurityAssetTermFieldType.String),
-                Opt("factorSchedule", SecurityAssetTermFieldType.String)
+                Opt("factorSchedule", SecurityAssetTermFieldType.String),
+                // Typed, dated factor points ({asOfDate, factor}) consumed by the structured
+                // cash-flow resolver's FactorAsOf lookup; factorSchedule stays the free-text
+                // legacy reference.
+                Opt("factorScheduleEntries", SecurityAssetTermFieldType.Array),
+                // Legal final maturity of the tranche: the anchor date for calculated cash-flow
+                // projection — without it the factor schedule has no production effect.
+                Opt("maturity", SecurityAssetTermFieldType.Date)
             ],
             ["PrivateFundInterest"] =
             [
