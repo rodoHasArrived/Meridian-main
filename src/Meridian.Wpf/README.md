@@ -65,7 +65,10 @@ actually declared.
 **Refusals are decided before the shell exists, and only refusals.**
 `App.RunStartupRefusalPreflightAsync` runs every registered
 `Meridian.Application.Composition.IStartupRefusalGuard` in `OnStartup` *before* `MainWindow` is
-resolved or shown, and a refusal returns without constructing it. Keep that order.
+resolved or shown, and a refusal returns without constructing it. Keep that order. A guard that
+*fails* rather than refuses counts as a refusal here: `StartupRefusalPreflight` converts it, because
+"I cannot tell whether this composition is safe" is not "it is safe", and the ordinary
+hosted-service tolerance behind the window would otherwise let the rejected posture serve.
 `MainWindow.OnWindowLoaded` navigates to the fund-profile page, starts the shell view model, and
 loads workspaces as soon as the window is shown, so showing first would leave the operator an
 interactive shell backed by exactly the posture the guard rejects for as long as the guard and the

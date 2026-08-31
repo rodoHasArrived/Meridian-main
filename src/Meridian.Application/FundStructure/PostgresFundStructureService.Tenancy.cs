@@ -239,14 +239,29 @@ public sealed partial class PostgresFundStructureService
                 + "sleeve, vehicle or portfolio it belongs to is not visible to this caller.");
         }
 
+        // The global reservation, with its answer acted on rather than discarded. Control only
+        // reaches here when the account was absent from the caller's scoped LinkedAccountIds, so an
+        // id already present in the unscoped set is held by a node or linked account this caller
+        // cannot see. Adding and ignoring the result -- which is what this did -- meant a
+        // caller-chosen CreateAccountRequest.AccountId matching another tenant's node id was linked
+        // and assigned against anyway, and RemoveHiddenBy keys assignment visibility on NodeId
+        // alone, so the owning tenant then inherited a stranger's assignment on their own node
+        // (Codex review finding on PR #2871). ClaimNewNode refuses the identical collision on
+        // creates, and the comment above already claimed this reservation was what caught it.
+        if (!snap.AllNodeIds.Add(accountId))
+        {
+            throw new FundStructureTenantScopeException(
+                $"Account {accountId} is not within the calling tenant's scope: its id is already "
+                + "held by a fund-structure node or linked account this caller cannot see.");
+        }
+
         snap.LinkedAccountIds.Add(accountId);
 
         // Only a first materialization claims, and only under the posture that established
         // ownership above. Under the deployment boundary an unattributed account is deliberately
         // visible to everyone, and taking it would hand a shared account to whichever tenant linked
         // it first -- the incidental-write claim StampCreatedNodesAsync refuses to make.
-        if (snap.AllNodeIds.Add(accountId)
-            && _tenantScope.Mode == TenantScopeEnforcementMode.FailClosed)
+        if (_tenantScope.Mode == TenantScopeEnforcementMode.FailClosed)
         {
             snap.CreatedNodeIds.Add(accountId);
         }
@@ -263,12 +278,22 @@ public sealed partial class PostgresFundStructureService
     /// belongs to another tenant's fund through on the strength of an unrelated reference the
     /// caller happens to share.</para>
     ///
-    /// <para><b>The portfolio counts as a parent.</b> It is the one reference that is not a
-    /// <see cref="Guid"/> on the DTO, and leaving it out made this refuse accounts whose only
-    /// structural reference is a portfolio the caller can see -- a shape
+    /// <para><b>The portfolio counts as a parent, but only when it names one.</b> It is the one
+    /// reference that is not a <see cref="Guid"/> on the DTO, and leaving it out made this refuse
+    /// accounts whose only structural reference is a portfolio the caller can see -- a shape
     /// <c>CreateAccountRequest</c> supports and <c>FilterAccountsByScope</c> already resolves
     /// alongside the other four. A blank or non-GUID <c>PortfolioId</c> is a free-text reference
     /// rather than a node, so it neither counts as populated nor has to resolve.</para>
+    ///
+    /// <para>Parsing as a GUID is not enough on its own, though. The same field doubles as an
+    /// external brokerage identifier -- <c>BrokeragePortfolioSyncService.ResolveLinkAsync</c> falls
+    /// back to it for <c>ExternalAccountId</c> -- and a provider that issues UUID-shaped ids would
+    /// otherwise have every one of its accounts treated as hanging off an investment portfolio no
+    /// fund structure contains, hiding them from every read view and refusing every link (Codex
+    /// review finding on PR #2871). <see cref="MutableSnapshot.AllNodeIds"/> settles it: it is the
+    /// unscoped node set, so a portfolio another tenant holds is still recognised as a node and
+    /// still refused, while an id belonging to no node at all is read as the external reference it
+    /// is.</para>
     ///
     /// <para>An account with no parent at all is not within anyone's scope either: there is nothing
     /// to derive ownership from, and inventing it is the judgement this service quarantines rather
@@ -295,9 +320,7 @@ public sealed partial class PostgresFundStructureService
             & ParentInScope(account.EntityId, snap.Entities)
             & ParentInScope(account.SleeveId, snap.Sleeves)
             & ParentInScope(account.VehicleId, snap.Vehicles)
-            & ParentInScope(
-                TryParseGuid(account.PortfolioId, out var portfolioId) ? portfolioId : null,
-                snap.InvestmentPortfolios);
+            & ParentInScope(StructuralPortfolioId(account.PortfolioId, snap), snap.InvestmentPortfolios);
 
         // A parent the snapshot does not hold is refused in either posture, because
         // FundStructureTenantScope.IsVisible already hides a node attributed to another tenant under
@@ -307,4 +330,17 @@ public sealed partial class PostgresFundStructureService
         // posture exists to serve, and refusing it would break the default deployment.
         return allInScope && (!requireOwnershipEvidence || populated > 0);
     }
+
+    /// <summary>
+    /// The investment-portfolio node <paramref name="portfolioId"/> names, or <c>null</c> when it
+    /// names no fund-structure node at all.
+    /// </summary>
+    /// <remarks>
+    /// Checked against the <b>unscoped</b> node set on purpose. Scoping it would answer "not a
+    /// node" for a portfolio another tenant holds, which is exactly the case that has to keep
+    /// refusing; the question here is only whether the value identifies a node at all, and the
+    /// visibility of the node it identifies is <see cref="IsAccountParentVisible"/>'s to decide.
+    /// </remarks>
+    private static Guid? StructuralPortfolioId(string? portfolioId, MutableSnapshot snap)
+        => TryParseGuid(portfolioId, out var id) && snap.AllNodeIds.Contains(id) ? id : null;
 }

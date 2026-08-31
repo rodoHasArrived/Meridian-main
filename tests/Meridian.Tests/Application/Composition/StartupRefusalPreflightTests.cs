@@ -122,6 +122,74 @@ public sealed class StartupRefusalPreflightTests
             "it still validates the final graph during host startup");
     }
 
+    [Fact]
+    public async Task AGuardThatCannotAnswer_IsARefusalRatherThanAnOrdinaryFailure()
+    {
+        // Sixteenth Codex review round. A guard that throws for some other reason -- the tenancy
+        // guard failing to read the account store, say -- has not said the composition is safe; it
+        // has said it cannot tell. Surfacing that as an ordinary exception meant every caller
+        // applied its ordinary tolerance: the WPF shell reported a recoverable startup error and
+        // showed the window, and the hosted-service retry behind it tolerates non-refusals too, so
+        // a persistent read failure left the unpartitioned fund structure serving indefinitely.
+        var services = new ServiceCollection();
+        services.AddSingleton<IStartupRefusalGuard>(new UnanswerableGuard());
+        await using var provider = services.BuildServiceProvider();
+
+        var preflight = async () => await StartupRefusalPreflight.RunAsync(provider);
+
+        var thrown = await preflight.Should().ThrowAsync<StartupRefusedException>();
+        HostStartupEscalation.IsRefusal(thrown.Which).Should().BeTrue(
+            "the shell decides whether to show a window by this predicate");
+        thrown.Which.InnerException.Should().BeOfType<IOException>(
+            "the operator needs the underlying fault to fix it");
+    }
+
+    [Fact]
+    public async Task AGuardThatCannotAnswer_StopsTheGuardsAfterIt()
+    {
+        // An unresolved refusal question is not something to keep going past. The composition is
+        // already not going to be served, and running further guards would only decide questions
+        // that no longer have a host to apply to.
+        var later = new RecordingRefusalGuard();
+
+        var services = new ServiceCollection();
+        services.AddSingleton<IStartupRefusalGuard>(new UnanswerableGuard());
+        services.AddSingleton<IStartupRefusalGuard>(later);
+        await using var provider = services.BuildServiceProvider();
+
+        var preflight = async () => await StartupRefusalPreflight.RunAsync(provider);
+
+        await preflight.Should().ThrowAsync<StartupRefusedException>();
+        later.Started.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ACancelledPreflight_IsNotReportedAsARefusal()
+    {
+        // Cancellation means the startup this was part of is being torn down, which is not the
+        // same claim as "this composition must not serve". Reporting it as a refusal would put a
+        // governance dialog in front of an operator who just closed the app.
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
+
+        var services = new ServiceCollection();
+        services.AddSingleton<IStartupRefusalGuard>(new RecordingRefusalGuard());
+        await using var provider = services.BuildServiceProvider();
+
+        var preflight = async () => await StartupRefusalPreflight.RunAsync(provider, cancellation.Token);
+
+        var thrown = await preflight.Should().ThrowAsync<OperationCanceledException>();
+        HostStartupEscalation.IsRefusal(thrown.Which).Should().BeFalse();
+    }
+
+    private sealed class UnanswerableGuard : IStartupRefusalGuard
+    {
+        public Task StartAsync(CancellationToken cancellationToken)
+            => throw new IOException("The account store could not be read.");
+
+        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    }
+
     private sealed class RecordingRefusalGuard : IStartupRefusalGuard
     {
         public int Started { get; private set; }

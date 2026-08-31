@@ -57,9 +57,11 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
   every refusal before it shows a shell. Deliberately not the same as starting the host:
   `IHost.StartAsync` returns only once every hosted service has started, and one that reads a slow or
   unreachable data root would gate the window indefinitely -- an operator who never gets a shell is
-  not better off than one who briefly gets the wrong one. It catches nothing, because the caller owns
-  what a refusal means for its lifetime and swallowing one in a shared helper is how a guard comes to
-  have no effect at all. Lives here, like `HostStartupEscalation`, so the behaviour the WPF shell
+  not better off than one who briefly gets the wrong one. It lets a refusal through untouched,
+  because the caller owns what a refusal means for its lifetime and swallowing one in a shared helper
+  is how a guard comes to have no effect at all -- and it reports a guard that fails for any *other*
+  reason as a refusal too, since a guard that cannot tell whether the composition is safe has not
+  said that it is. Lives here, like `HostStartupEscalation`, so the behaviour the WPF shell
   depends on is covered by tests that run off Windows. Only guards that answer cheaply belong in it:
   ADR-019's `ProductionRegistrationGuardService` is a refusal guard but stays unmarked, because in a
   production posture it resolves every factory-registered singleton.

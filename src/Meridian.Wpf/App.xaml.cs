@@ -602,9 +602,11 @@ public partial class App : System.Windows.Application
         }
         catch (Exception ex)
         {
-            // A guard that failed for some other reason is not a refusal, and the shell still
-            // starts -- StartHostServicesAsync runs the same guard again behind the window and
-            // applies the usual tolerance there.
+            // Reached only for a fault outside the guards themselves -- resolving IStartupRefusalGuard
+            // from the container, say. A guard that throws is already converted to a refusal by
+            // StartupRefusalPreflight and handled above: "I cannot tell" is not "this is safe", and
+            // leaving it here meant the shell showed with the unpartitioned fund structure serving
+            // (Codex review finding on PR #2871).
             await HandleStartupFailureAsync(ex);
         }
     }

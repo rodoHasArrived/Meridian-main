@@ -947,11 +947,70 @@ public sealed partial class AccountingConfigurationService
         string? suggestedAction)
         => new(code, severity, message, targetId, suggestedAction);
 
+    /// <summary>
+    /// Digest of the workspace <b>as a store can hand it back</b>, used for the before- and
+    /// after-state hashes an accounting audit event records.
+    /// </summary>
+    /// <remarks>
+    /// <para>Taken over <see cref="Durable"/> rather than the DTO as it stands in memory. Every
+    /// comparison this digest exists for — recovery asking whether the retained workspace is the one
+    /// a mutation wrote — hashes one side before a save and the other side after a reload, so any
+    /// field a store does not round-trip makes the two sides differ forever. Under PostgreSQL that
+    /// was not hypothetical: <c>AfterHash</c> was taken over a workspace carrying a derived
+    /// <c>RulesStudio</c> that <c>PostgresAccountingConfigurationStore</c> never persists and
+    /// <c>GetAsync</c> rebuilds as null, so it could never match a reload. Both the replay path and
+    /// the already-audited check then raised — and because every mutation runs recovery first, one
+    /// interrupted mutation blocked the scope permanently (Codex review finding on PR #2871). The
+    /// file posture round-trips the whole DTO as JSON, which is why no test on it could see this.</para>
+    ///
+    /// <para>This narrows what the digest covers, and deliberately so: a hash over fields no store
+    /// retains is not a claim anyone can check later, which is the opposite of what an audit
+    /// before/after pair is for.</para>
+    /// </remarks>
     private static string Hash(AccountingConfigurationWorkspaceDto workspace)
     {
-        var json = JsonSerializer.Serialize(workspace);
+        var json = JsonSerializer.Serialize(Durable(workspace));
         return Sha256Digest.ComputeUtf8(json);
     }
+
+    /// <summary>
+    /// Projects a workspace onto the shape every <see cref="IAccountingConfigurationStore"/> posture
+    /// retains and returns, so the same state digests alike whichever store is composed.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Derived views are dropped.</b> <c>RulesStudio</c> and <c>LedgerBookSetupCandidate</c>
+    /// are computed by <c>GetWorkspaceAsync</c> from the state below them; they are a rendering of
+    /// the workspace, not part of it. <c>LedgerBooks</c> and <c>AuditTrail</c> are likewise composed
+    /// from other services on read, and both PostgreSQL and the file store return them empty.</para>
+    ///
+    /// <para><b>Collections are ordered.</b> The PostgreSQL store reads each one back under its own
+    /// <c>order by</c>, so a digest over the in-memory sequence would depend on the order a caller
+    /// happened to build it in. Ordering here makes the digest a function of the content alone.</para>
+    ///
+    /// <para><b>The timestamp is reduced to storable precision.</b> <c>timestamptz</c> holds
+    /// microseconds and Npgsql truncates to them when it encodes the parameter, so a workspace
+    /// hashed at the full 100ns tick and then reloaded digests to two different values — the second
+    /// half of the same permanent block, and load-bearing independently of the dropped fields above.
+    /// See <see cref="AccountingAuditChain.ToRetainedPrecision"/>.</para>
+    /// </remarks>
+    private static AccountingConfigurationWorkspaceDto Durable(AccountingConfigurationWorkspaceDto workspace)
+        => workspace with
+        {
+            UpdatedAtUtc = AccountingAuditChain.ToRetainedPrecision(workspace.UpdatedAtUtc),
+            LedgerBooks = [],
+            AuditTrail = [],
+            RulesStudio = null,
+            LedgerBookSetupCandidate = null,
+            ChartOfAccounts =
+            [
+                .. workspace.ChartOfAccounts
+                    .OrderBy(static n => n.Path, StringComparer.Ordinal)
+                    .ThenBy(static n => n.NodeId, StringComparer.Ordinal)
+            ],
+            JournalTemplates = [.. workspace.JournalTemplates.OrderBy(static t => t.TemplateId, StringComparer.Ordinal)],
+            PostingRules = [.. workspace.PostingRules.OrderBy(static r => r.RuleId, StringComparer.Ordinal)],
+            RuleTestCases = [.. workspace.RuleTestCases.OrderBy(static c => c.TestCaseId, StringComparer.Ordinal)],
+        };
 
     private sealed record PostingRuleApprovalProtectedDefinition(
         string RuleVersion,

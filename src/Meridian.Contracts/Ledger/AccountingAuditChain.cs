@@ -484,23 +484,31 @@ public static class AccountingAuditChain
     private const long TicksPerMicrosecond = 10;
 
     /// <summary>
-    /// The canonical rendering of an audit timestamp: UTC, truncated to microseconds.
+    /// Reduces an instant to the precision a durable store can actually hold: UTC, truncated to
+    /// microseconds.
     /// </summary>
     /// <remarks>
-    /// UTC so the same instant recorded behind a different offset digests alike. Truncated because
-    /// <c>timestamptz</c> stores microseconds while <see cref="DateTimeOffset"/> carries 100ns ticks,
-    /// so a digest over the full tick would verify in memory and then fail the moment the same event
-    /// came back from PostgreSQL — reported as tampering, caused by rounding. Truncating to the
-    /// coarser of the two resolutions is what makes one digest scheme usable in both postures.
+    /// <para>UTC so the same instant recorded behind a different offset digests alike. Microseconds
+    /// because <c>timestamptz</c> holds microseconds while <see cref="DateTimeOffset"/> carries
+    /// 100ns ticks, so anything finer is a value no PostgreSQL deployment can store.</para>
+    ///
+    /// <para><b>Anything digested on one side of a database round-trip must be reduced here
+    /// first.</b> Npgsql truncates to microseconds when it encodes a parameter, so a digest taken
+    /// over the raw tick names an instant the row does not hold, and the comparison it exists for
+    /// fails forever: <c>AccountingConfigurationService</c> hashes the workspace it is about to
+    /// save and later compares that digest against a reloaded one, so an <c>UpdatedAtUtc</c> hashed
+    /// at full precision made every interrupted mutation unreconcilable — and because each mutation
+    /// resolves outstanding markers first, that blocked the scope permanently (Codex review finding
+    /// on PR #2871). Reducing both sides is what makes the two digests comparable.</para>
     /// </remarks>
-    private static string NormalizeTimestamp(DateTimeOffset value)
+    public static DateTimeOffset ToRetainedPrecision(DateTimeOffset value)
     {
         var utc = value.ToUniversalTime();
-        var truncated = new DateTimeOffset(
-            utc.Ticks - (utc.Ticks % TicksPerMicrosecond),
-            TimeSpan.Zero);
-        return truncated.ToString("O", CultureInfo.InvariantCulture);
+        return new DateTimeOffset(utc.Ticks - (utc.Ticks % TicksPerMicrosecond), TimeSpan.Zero);
     }
+
+    private static string NormalizeTimestamp(DateTimeOffset value)
+        => ToRetainedPrecision(value).ToString("O", CultureInfo.InvariantCulture);
 
     // Length-prefixed so no combination of field values can be re-partitioned into a different
     // event that digests the same, and so null is distinct from empty.

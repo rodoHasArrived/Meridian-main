@@ -802,6 +802,12 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         AddUuidOrNull(command, "ledger_book_id", workspace.LedgerBookId);
         command.Parameters.AddWithValue("status", workspace.Status.ToString());
         command.Parameters.AddWithValue("configuration_version", workspace.ConfigurationVersion);
+        // Npgsql truncates this to the microsecond timestamptz holds, so the row cannot carry the
+        // 100ns tick it was handed. That is the reason AccountingConfigurationService digests
+        // UpdatedAtUtc through AccountingAuditChain.ToRetainedPrecision: it compares a digest taken
+        // before this write against one taken after a reload, and hashing the untruncated tick made
+        // the two disagree on every interrupted mutation (Codex review finding on PR #2871). The
+        // reduction belongs on the digest rather than here, where it would be a no-op.
         command.Parameters.AddWithValue("updated_at_utc", workspace.UpdatedAtUtc.UtcDateTime);
         AddJson(command, "validation_issues", workspace.ValidationIssues);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
@@ -957,6 +963,12 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         AccountingActionAuditEventDto auditEvent)
         => auditEvent with
         {
+            // RecordedAtUtc is deliberately not touched here. It looks like it should be -- a
+            // timestamptz holds microseconds while DateTimeOffset carries 100ns ticks, and
+            // AccountingAuditChain digests the truncated form -- but Npgsql truncates identically
+            // when it encodes the parameter, so the row already holds the instant that was hashed.
+            // AnEventRecordedFinerThanAMicrosecond_DoesNotMakeTheNextAppendReportTampering pins
+            // that, because it is a property of the driver rather than of this class.
             Actor = NormalizeOptional(auditEvent.Actor) ?? auditEvent.Actor,
             Action = NormalizeOptional(auditEvent.Action) ?? auditEvent.Action,
             FundProfileId = NormalizeOptional(auditEvent.FundProfileId),

@@ -487,6 +487,39 @@ public sealed class FundStructureTenantScopeTests
     }
 
     [Fact]
+    public async Task AUuidShapedExternalPortfolioReference_IsNotMistakenForAPortfolioNode()
+    {
+        // Sixteenth Codex review round. Round 13 made a GUID-parsable PortfolioId count as a
+        // structural parent, but the same field doubles as an external brokerage identifier --
+        // BrokeragePortfolioSyncService.ResolveLinkAsync falls back to it for ExternalAccountId.
+        // A provider that issues UUID-shaped ids therefore had every one of its accounts treated as
+        // hanging off an investment portfolio no fund structure contains: hidden from every read
+        // view, and refused for linking or assignment.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var accountService = new InMemoryFundAccountService();
+
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+        var alphaService = CreateService(
+            store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed, accountService);
+
+        // A brokerage's own account id that happens to be a UUID. It is not, and never was, a node.
+        var externalReference = Guid.NewGuid().ToString("D", CultureInfo.InvariantCulture);
+        var account = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(), AccountTypeDto.Custody, "ACC-EXTERNAL-PF", "Custodian Account",
+            "USD", EffectiveFrom, "tenant-scope-test",
+            FundId: alpha.FundId, PortfolioId: externalReference));
+
+        var assignment = await alphaService.AssignNodeAsync(new AssignFundStructureNodeRequest(
+            Guid.NewGuid(), account.AccountId, LedgerGroupingRules.LedgerGroupAssignmentType,
+            "ALPHA.OPS:EXTERNAL", EffectiveFrom, "tenant-scope-test"));
+
+        Assert.Equal(account.AccountId, assignment.NodeId);
+
+        var view = await alphaService.GetOrganizationStructureAsync(new OrganizationStructureQuery());
+        Assert.Contains(view.Accounts, a => a.AccountId == account.AccountId);
+    }
+
+    [Fact]
     public async Task FailClosed_RefusesAnAccountWhoseOnlyParentIsAForeignPortfolio()
     {
         // The other half of the same fix: counting the portfolio as a parent has to gate on it too,
@@ -550,6 +583,55 @@ public sealed class FundStructureTenantScopeTests
 
         Assert.DoesNotContain(view.Accounts, a => a.AccountId == straddling.AccountId);
         Assert.Contains(view.Accounts, a => a.AccountId == alphaOwn.AccountId);
+    }
+
+    [Fact]
+    public async Task AnAccountIdAlreadyHeldByAForeignNode_IsRefusedRatherThanQuietlyLinked()
+    {
+        // Fifteenth Codex review round. MaterializeLinkedAccount performed the unscoped AllNodeIds
+        // reservation and then discarded its answer, so an id already standing as another tenant's
+        // node was linked and assigned against anyway. CreateAccountRequest.AccountId is
+        // caller-chosen, so this is arranged rather than stumbled into: beta creates an account
+        // under its own visible entity, using alpha's entity id as the account id. The parents check
+        // passes -- they really are beta's -- and the collision is the only thing standing between
+        // the assignment and alpha's node.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var accountService = new InMemoryFundAccountService();
+
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+        var alphaService = CreateService(
+            store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed, accountService);
+        var alphaEntity = await alphaService.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            Guid.NewGuid(), LegalEntityTypeDto.LimitedPartner, "LP-ALPHA-COLLIDE", "Alpha Limited Partner",
+            "US", "USD", EffectiveFrom, "tenant-scope-test"));
+
+        var beta = await SeedOrganizationAsync(store, TenantBeta, "BETA");
+        var betaService = CreateService(
+            store, TenantBeta, TenantScopeEnforcementOptions.FailClosed, accountService);
+        var betaEntity = await betaService.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            Guid.NewGuid(), LegalEntityTypeDto.LimitedPartner, "LP-BETA-COLLIDE", "Beta Limited Partner",
+            "US", "USD", EffectiveFrom, "tenant-scope-test"));
+
+        // The account id IS alpha's entity id. Its parents are beta's own, so nothing about the
+        // account itself is foreign -- only the identity it claims.
+        await accountService.CreateAccountAsync(new CreateAccountRequest(
+            alphaEntity.EntityId, AccountTypeDto.Custody, "ACC-COLLIDE", "Colliding Account",
+            "USD", EffectiveFrom, "tenant-scope-test",
+            FundId: beta.FundId, EntityId: betaEntity.EntityId));
+
+        var claimAlphasNodeId = () => betaService.AssignNodeAsync(new AssignFundStructureNodeRequest(
+            Guid.NewGuid(), alphaEntity.EntityId, LedgerGroupingRules.LedgerGroupAssignmentType,
+            "BETA.OPS:COLLIDE", EffectiveFrom, "tenant-scope-test"));
+
+        await Assert.ThrowsAsync<FundStructureTenantScopeException>(claimAlphasNodeId);
+
+        // RemoveHiddenBy keys assignment visibility on NodeId alone, so a persisted assignment here
+        // is one alpha inherits on their own entity.
+        Assert.Empty(await store.GetAllAssignmentsAsync());
+        var alphaView = await alphaService.GetOrganizationStructureAsync(new OrganizationStructureQuery());
+        Assert.DoesNotContain(
+            alphaView.Assignments, a => a.AssignmentReference == "BETA.OPS:COLLIDE");
+        Assert.Equal(TenantAlpha, store.TenantOf(alphaEntity.EntityId));
     }
 
     [Fact]

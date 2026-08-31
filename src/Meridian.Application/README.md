@@ -486,7 +486,9 @@ and UI presentation concerns in their owning layers.
   resolves every factory-registered singleton to prove the graph is constructible, and eager
   validation of that size belongs behind a visible shell, so it stays an ordinary hosted service
   running first in the chain. `Meridian.Ui.Shared.Services.StartupRefusalPreflight` runs the marked
-  ones.
+  ones, and reports a guard that *fails* as a refusal as well: a guard that cannot determine whether
+  the composition is safe has not said that it is, and the ordinary hosted-service tolerance would
+  otherwise let the rejected posture serve.
   Headless collector, backfill, ETL, and utility profiles build and start a Generic Host so the
   final production-registration guard, database initialization, coordination, and other registered
   hosted services enter the normal start/stop lifecycle. The guard starts first, database
