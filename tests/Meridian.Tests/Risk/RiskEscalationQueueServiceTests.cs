@@ -722,7 +722,7 @@ public sealed class RiskEscalationQueueServiceTests
     }
 
     [Fact]
-    public void Restart_KeepsSelfConsistentChainedEntriesWhoseOriginWasTrimmed()
+    public void Restart_KeepsProvenanceMarkedChainedEntriesWhoseOriginWasTrimmed()
     {
         var options = CreateOptions();
         var chained = CreateOrder() with
@@ -734,15 +734,41 @@ public sealed class RiskEscalationQueueServiceTests
                 ["actor"] = "risk-officer-bob"
             }
         };
-        WriteSnapshot(options, LegacyEntry("chained-1", chained, actor: "trader-alice"));
+        WriteSnapshot(
+            options,
+            LegacyEntry("chained-1", chained, actor: "trader-alice") with { SubmitterProvenance = "parked" });
 
         var restarted = CreateQueue(options);
 
-        // The trusted path always writes Actor and riskSubmitter from the same resolved
-        // value; a self-consistent entry survives origin trimming instead of being denied.
+        // The provenance marker is a server-written record field a client could never
+        // plant, so the binding survives origin trimming across restarts.
         var reloaded = restarted.TryGet("chained-1")!;
         reloaded.Status.Should().Be(RiskEscalationStatus.PendingApproval);
         reloaded.Actor.Should().Be("trader-alice");
+    }
+
+    [Fact]
+    public void Restart_DeniesOriginlessLegacyEntriesEvenWhenTheirSubmitterClaimMatchesTheActor()
+    {
+        var options = CreateOptions();
+        // A pre-migration client could plant riskSubmitter naming the operator expected to
+        // approve stage one; the old release path would then record that same approver as
+        // the chained entry's actor. Two mutually untrusted legacy values agreeing is not
+        // corroboration — without server-written provenance or a verifiable chain, deny.
+        var chained = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = "trimmed-origin",
+                [RiskEscalationQueueService.SubmitterMetadataKey] = "risk-officer-bob",
+                ["actor"] = "risk-officer-bob"
+            }
+        };
+        WriteSnapshot(options, LegacyEntry("chained-1", chained, actor: "risk-officer-bob"));
+
+        var restarted = CreateQueue(options);
+
+        restarted.TryGet("chained-1")!.Status.Should().Be(RiskEscalationStatus.Denied);
     }
 
     [Fact]

@@ -41,7 +41,14 @@ public sealed record RiskEscalationEntry(
     // release and lose when the decision was actually made.
     string? ReleasedBy = null,
     DateTimeOffset? ReleasedAt = null,
-    bool ReleaseInFlight = false);
+    bool ReleaseInFlight = false,
+    // Server-written marker for how the entry's Actor binding was established ("parked"
+    // by the current Park path, "recovered" by startup normalization). Clients never
+    // controlled this record field — unlike request metadata, which was unreserved
+    // before the retained-submitter migration — so a null value reliably identifies a
+    // pre-migration entry whose identity binding cannot be trusted without a verified
+    // chain origin.
+    string? SubmitterProvenance = null);
 
 /// <summary>Persisted snapshot of the governed-approval queue.</summary>
 public sealed record RiskEscalationSnapshot(IReadOnlyList<RiskEscalationEntry> Entries);
@@ -175,7 +182,8 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
             RunId: runId,
             CorrelationId: correlationId,
             ParkedAt: DateTimeOffset.UtcNow,
-            Status: RiskEscalationStatus.PendingApproval);
+            Status: RiskEscalationStatus.PendingApproval,
+            SubmitterProvenance: "parked");
 
         lock (_resolveLock)
         {
@@ -707,9 +715,9 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
         // A direct resubmission at a later stage carries only that stage's token, so the
         // first link may be an intermediate chained entry rather than the root. Walk
         // upstream — every hop fingerprint-verified against this order — until a chain
-        // root (its actor is the submitter by construction) or an entry carrying the
-        // corroborated-stamp invariant the trusted path always writes. An unverifiable
-        // hop fails the whole recovery: a mis-bound legacy actor must never be adopted.
+        // root (its actor is the submitter by construction) or an entry whose binding
+        // carries server-written provenance. An unverifiable hop walks further or fails
+        // the whole recovery: a mis-bound legacy actor must never be adopted.
         var nextId = linkedApprovals[0];
         for (var depth = 0; depth < MaxChainRecoveryDepth; depth++)
         {
@@ -726,11 +734,7 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
                 return true;
             }
 
-            if (linked.Request.Metadata is not null &&
-                linked.Request.Metadata.TryGetValue(SubmitterMetadataKey, out var linkedSubmitter) &&
-                !string.IsNullOrWhiteSpace(linkedSubmitter) &&
-                !string.IsNullOrWhiteSpace(linked.Actor) &&
-                string.Equals(linkedSubmitter.Trim(), linked.Actor.Trim(), StringComparison.OrdinalIgnoreCase))
+            if (linked.SubmitterProvenance is not null)
             {
                 submitter = linked.Actor;
                 return true;
@@ -1007,12 +1011,18 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
                 continue;
             }
 
-            // The link is trusted only when the referenced origin matches this order's
-            // non-release fingerprint: clients could attach arbitrary token values, so an
-            // unverified reference to someone else's escalation must never rebind identity.
-            // Verification runs before any riskSubmitter short-circuit because the key was
-            // not reserved before this migration — a legacy client could have supplied it,
-            // so its bare presence cannot prove the entry was written by the trusted path.
+            if (entry.SubmitterProvenance is not null)
+            {
+                // The binding was established by the current code (parked or previously
+                // recovered) and the marker is a server-written record field a client
+                // could never have planted — trustworthy even after origin trimming.
+                continue;
+            }
+
+            // The link is trusted only when a fingerprint-verified walk reaches the chain
+            // root or a provenance-carrying entry: clients could attach arbitrary token
+            // values (and plant riskSubmitter, which was unreserved) before the migration,
+            // so nothing inside the request itself can prove the binding.
             if (TryRecoverChainSubmitter(entry.Request, out var chainSubmitter))
             {
                 if (string.IsNullOrWhiteSpace(chainSubmitter))
@@ -1023,13 +1033,14 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
                     continue;
                 }
 
-                // Stamp the recovered identity into the trusted submitter channel so the
-                // repair survives later origin trimming and restarts instead of decaying
-                // into an unverifiable entry that the next load would deny.
+                // Rebind and mark provenance so the repair survives later origin
+                // trimming and restarts instead of decaying into an unverifiable entry
+                // that the next load would deny.
                 _entries[escalationId] = entry with
                 {
                     Actor = chainSubmitter,
-                    Request = StampRetainedSubmitter(entry.Request, chainSubmitter)
+                    Request = StampRetainedSubmitter(entry.Request, chainSubmitter),
+                    SubmitterProvenance = "recovered"
                 };
                 repaired++;
                 _logger.LogWarning(
@@ -1040,31 +1051,15 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
                 continue;
             }
 
-            // Unverifiable chain (origin trimmed or mismatched): accept the entry only when
-            // it is self-consistent with the invariant the trusted path always writes —
-            // Actor equal to the stamped riskSubmitter, both set from the same resolved
-            // value at park time. A legacy forgery would need the pre-migration client to
-            // have predicted the eventual approver's name to satisfy this; that residual is
-            // accepted because the metadata policy now rejects client-supplied riskSubmitter,
-            // so the shape cannot be forged going forward.
-            if (entry.Request.Metadata is not null &&
-                entry.Request.Metadata.TryGetValue(SubmitterMetadataKey, out var stampedSubmitter) &&
-                !string.IsNullOrWhiteSpace(stampedSubmitter) &&
-                !string.IsNullOrWhiteSpace(entry.Actor) &&
-                string.Equals(stampedSubmitter.Trim(), entry.Actor.Trim(), StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
             var deniedEntry = entry with
             {
                 Status = RiskEscalationStatus.Denied,
                 ResolvedBy = "system",
                 ResolutionReason =
-                    "Denied at startup: this chained escalation's linked original park cannot be verified (missing "
-                    + "or fingerprint-mismatched) and its metadata carries no self-consistent retained submitter, so "
-                    + "the identity the segregation-of-duties checks must bind to cannot be trusted. "
-                    + "Re-submit the order to obtain a fresh governed approval.",
+                    "Denied at startup: this chained escalation predates the retained-submitter migration, carries "
+                    + "no server-written submitter provenance, and its chain cannot be verified back to an origin "
+                    + "(missing or fingerprint-mismatched), so the identity the segregation-of-duties checks must "
+                    + "bind to cannot be trusted. Re-submit the order to obtain a fresh governed approval.",
                 ResolvedAt = DateTimeOffset.UtcNow
             };
             _entries[escalationId] = deniedEntry;
