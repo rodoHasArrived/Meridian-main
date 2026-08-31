@@ -531,6 +531,7 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
             EvidenceHash = NormalizeOptional(request.EvidenceHash),
             Description = NormalizeOptional(request.Description),
             CorrelationId = NormalizeOptional(request.CorrelationId),
+            ScopeAssertion = request.ScopeAssertion is null ? null : NormalizeScope(request.ScopeAssertion),
         };
         var result = await _store.AddEvidenceAsync(
             trustedRequest,
@@ -563,6 +564,7 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
             Field = request.Field.Trim(),
             Description = request.Description.Trim(),
             CorrelationId = NormalizeOptional(request.CorrelationId),
+            ScopeAssertion = request.ScopeAssertion is null ? null : NormalizeScope(request.ScopeAssertion),
         };
         var result = await _store.RecordConflictAsync(
             trustedRequest,
@@ -606,6 +608,7 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
             EvidenceHash = request.EvidenceHash.Trim(),
             Actor = request.Actor.Trim(),
             CorrelationId = NormalizeOptional(request.CorrelationId),
+            ScopeAssertion = request.ScopeAssertion is null ? null : NormalizeScope(request.ScopeAssertion),
         };
         var result = await _store.ResolveConflictAsync(
             trustedRequest,
@@ -644,6 +647,7 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
             SourceMethodology = NormalizeOptional(request.SourceMethodology),
             Blockers = request.Blockers?.Where(static blocker => !string.IsNullOrWhiteSpace(blocker)).Select(static blocker => blocker.Trim()).ToArray(),
             CorrelationId = NormalizeOptional(request.CorrelationId),
+            ScopeAssertion = request.ScopeAssertion is null ? null : NormalizeScope(request.ScopeAssertion),
         };
         var result = await _store.UpsertOptionAsync(
             trustedRequest,
@@ -665,13 +669,9 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
             throw new CorporateActionValidationException($"Unknown corporate-action case state '{request.ToState}'.");
         }
 
-        if (string.Equals(request.ToState, CorporateActionCaseStates.ReadyForApproval, StringComparison.Ordinal))
-        {
-            throw new CorporateActionOperationException(
-                CorporateActionProblemCodes.ProjectionStale,
-                "ReadyForApproval requires a durable accounting projection and policy decision bound to the exact case, evidence, scope, and period versions; that authority is not yet persisted.");
-        }
-
+        // ReadyForApproval is decided by the durable store's transactional guard against the
+        // persisted exact-version accounting projection binding; a read-side pre-check here could
+        // only race the write authority.
         if (!CorporateActionCaseTransitionAuthorization.IsAuthorized(
                 request.ToState,
                 request.Authority,
@@ -698,6 +698,7 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
             BlockedReason = NormalizeOptional(request.BlockedReason),
             AssignedTo = NormalizeOptional(request.AssignedTo),
             CorrelationId = NormalizeOptional(request.CorrelationId),
+            ScopeAssertion = request.ScopeAssertion is null ? null : NormalizeScope(request.ScopeAssertion),
         };
         var result = await _store.TransitionCaseAsync(
             trustedRequest,
@@ -820,14 +821,37 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
             blockers.Add($"{CorporateActionProblemCodes.TermsIncomplete}: retained evidence and zero open conflicts must be verified at transition time for {string.Join(", ", unprovenTermsTargets.OrderBy(static target => target, StringComparer.Ordinal))}.");
         }
 
-        if (policyTargets.Contains(CorporateActionCaseStates.ReadyForApproval, StringComparer.Ordinal))
+        // ReadyForApproval is advertised only when the durable exact-version accounting projection
+        // binding is attached, current, and balanced; the store's transactional guard remains the
+        // write authority for the same predicate.
+        var accounting = processingCase.AccountingStatus;
+        var hasCurrentBalancedBinding = accounting?.ProjectionId is not null
+            && accounting.ProjectionBoundCaseVersion == processingCase.Version
+            && accounting.ProjectionBalanced;
+        if (policyTargets.Contains(CorporateActionCaseStates.ReadyForApproval, StringComparer.Ordinal)
+            && !hasCurrentBalancedBinding)
         {
             blockers.Add($"{CorporateActionProblemCodes.ProjectionStale}: no durable exact-version accounting projection is attached.");
         }
 
+        // Once the case is an approval candidate, content is frozen and the binding was proven
+        // current at entry, so approval availability follows the retained binding. Posting
+        // additionally requires the active maker-checker approval.
+        var canApproveAccounting = processingCase.State is CorporateActionCaseStates.ReadyForApproval
+            && accounting?.ProjectionId is not null
+            && accounting.PostedJournalEntryId is null;
+        var canPostAccounting = processingCase.State is CorporateActionCaseStates.Approved
+            && accounting?.ProjectionId is not null
+            && accounting.ApprovalId is not null
+            && accounting.PostedJournalEntryId is null;
+        if (processingCase.State is CorporateActionCaseStates.Approved && !canPostAccounting)
+        {
+            blockers.Add($"{CorporateActionProblemCodes.MakerCheckerRequired}: durable posting requires an active maker-checker approval bound to the current accounting projection.");
+        }
+
         var targets = policyTargets
             .Where(target => !unprovenTermsTargets.Contains(target)
-                && target is not CorporateActionCaseStates.ReadyForApproval)
+                && (target is not CorporateActionCaseStates.ReadyForApproval || hasCurrentBalancedBinding))
             .ToArray();
         return processingCase with
         {
@@ -836,10 +860,11 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
                 CanRecordConflict: canRecordConflict,
                 CanManageOptions: !immutable && processingCase.State is not CorporateActionCaseStates.Closed,
                 CanTransition: targets.Length > 0,
-                CanApproveAccounting: false,
+                CanApproveAccounting: canApproveAccounting,
                 targets,
                 blockers,
-                CanResolveConflict: !immutable),
+                CanResolveConflict: !immutable,
+                CanPostAccounting: canPostAccounting),
         };
     }
 
@@ -1196,7 +1221,7 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
         };
     }
 
-    private static string RequestFingerprint<T>(string operation, T request)
+    internal static string RequestFingerprint<T>(string operation, T request)
     {
         // Correlation/trace identifiers are observability data, not command identity. Endpoints
         // stamp a fresh trace identifier on every HTTP retry, so including it would turn a valid
@@ -1212,6 +1237,21 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
             ResolveCorporateActionConflictRequestDto value => value with { CorrelationId = null },
             UpsertCorporateActionProcessingOptionRequestDto value => value with { CorrelationId = null },
             TransitionCorporateActionCaseRequestDto value => value with
+            {
+                CorrelationId = null,
+                Authority = null,
+            },
+            AttachCorporateActionAccountingProjectionRequestDto value => value with
+            {
+                CorrelationId = null,
+                Authority = null,
+            },
+            ApproveCorporateActionCaseAccountingRequestDto value => value with
+            {
+                CorrelationId = null,
+                Authority = null,
+            },
+            PostCorporateActionCaseAccountingRequestDto value => value with
             {
                 CorrelationId = null,
                 Authority = null,
