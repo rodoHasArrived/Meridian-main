@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Domain.Reconciliation;
 using Meridian.Storage.Archival;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Infrastructure.Reconciliation;
 
@@ -10,11 +11,48 @@ public interface IReconciliationCaseStore
     Task SaveAsync(ReconciliationCase reconciliationCase, CancellationToken ct = default);
     Task<ReconciliationCase?> GetAsync(string caseId, CancellationToken ct = default);
     Task<IReadOnlyList<ReconciliationCase>> ListAsync(CancellationToken ct = default);
+
+    Task MaterializeRunProjectionAsync(
+        ReconciliationCase initialCase,
+        StatementRunProjectionAudit audit,
+        IReadOnlyList<ReconciliationCase> authorizedImages,
+        CancellationToken ct = default)
+        => throw new NotSupportedException(
+            "This reconciliation case store does not support verified statement-run projection.");
+
+    Task<StatementRunProjectionAudit?> GetRunProjectionAuditAsync(
+        string runId,
+        string caseId,
+        CancellationToken ct = default)
+        => Task.FromResult<StatementRunProjectionAudit?>(null);
+
+    Task MaterializeCaseworkAsync(
+        IStatementCaseworkCommitStore commitStore,
+        string commandId,
+        string inputHashSha256,
+        CancellationToken ct = default)
+        => throw new NotSupportedException(
+            "This reconciliation case store does not support source-commit case projection.");
+
+    Task MaterializeCaseworkAuditAsync(
+        IStatementCaseworkCommitStore commitStore,
+        string commandId,
+        string inputHashSha256,
+        CancellationToken ct = default)
+        => throw new NotSupportedException(
+            "This reconciliation case store does not support source-commit case-audit projection.");
+
+    Task<ReconciliationCaseAuditEvent?> GetCaseworkAuditAsync(
+        string caseId,
+        string commandId,
+        CancellationToken ct = default)
+        => Task.FromResult<ReconciliationCaseAuditEvent?>(null);
 }
 
 public sealed class JsonReconciliationCaseStore : IReconciliationCaseStore
 {
     private readonly string _folder;
+    private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -55,10 +93,7 @@ public sealed class JsonReconciliationCaseStore : IReconciliationCaseStore
             return null;
         }
 
-        await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, useAsync: true);
-        return await JsonSerializer
-            .DeserializeAsync<ReconciliationCase>(stream, _jsonOptions, ct)
-            .ConfigureAwait(false);
+        return await ReadCaseCoreAsync(path, ct).ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyList<ReconciliationCase>> ListAsync(CancellationToken ct = default)
@@ -85,6 +120,201 @@ public sealed class JsonReconciliationCaseStore : IReconciliationCaseStore
         return cases;
     }
 
+    public async Task MaterializeCaseworkAsync(
+        IStatementCaseworkCommitStore commitStore,
+        string commandId,
+        string inputHashSha256,
+        CancellationToken ct = default)
+    {
+        var envelope = await RequirePreparedCommitAsync(
+                commitStore,
+                commandId,
+                inputHashSha256,
+                ct)
+            .ConfigureAwait(false);
+        var next = envelope.NextCase
+            ?? throw new InvalidOperationException(
+                $"Statement casework commit '{commandId}' does not contain a case projection.");
+        var audit = envelope.CaseAudit
+            ?? throw new InvalidOperationException(
+                $"Statement casework commit '{commandId}' does not contain a case audit.");
+        if (!next.AuditEvents.Any(item => string.Equals(item.EventId, audit.EventId, StringComparison.Ordinal)))
+        {
+            throw new ArgumentException(
+                "The source-commit case image must contain its retained casework audit event.",
+                nameof(next));
+        }
+
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var casePath = CasePath(next.CaseId);
+            var current = await ReadCaseCoreAsync(casePath, ct).ConfigureAwait(false);
+            var retainedEvent = current?.AuditEvents.FirstOrDefault(
+                item => string.Equals(item.EventId, audit.EventId, StringComparison.Ordinal));
+            if (retainedEvent is not null && !SameArtifact(retainedEvent, audit))
+            {
+                throw new InvalidOperationException(
+                    $"Reconciliation case '{next.CaseId}' retains conflicting evidence for source command '{commandId}'.");
+            }
+
+            var alreadyApplied = current is not null && SameArtifact(current, next);
+            if (!alreadyApplied && current is not null &&
+                (envelope.OriginalCase is null || !SameArtifact(current, envelope.OriginalCase)))
+            {
+                throw new InvalidOperationException(
+                    $"Reconciliation case '{next.CaseId}' no longer matches either retained source-commit image.");
+            }
+
+            if (!alreadyApplied)
+            {
+                await AtomicFileWriter
+                    .WriteAsync(
+                        casePath,
+                        JsonSerializer.Serialize(
+                            next,
+                            StatementDurabilityJsonContext.Default.ReconciliationCase),
+                        ct)
+                    .ConfigureAwait(false);
+            }
+
+            await MaterializeCaseworkAuditCoreAsync(next.CaseId, commandId, audit, ct)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task MaterializeCaseworkAuditAsync(
+        IStatementCaseworkCommitStore commitStore,
+        string commandId,
+        string inputHashSha256,
+        CancellationToken ct = default)
+    {
+        var envelope = await RequirePreparedCommitAsync(
+                commitStore,
+                commandId,
+                inputHashSha256,
+                ct)
+            .ConfigureAwait(false);
+        var next = envelope.NextCase
+            ?? throw new InvalidOperationException(
+                $"Statement casework commit '{commandId}' does not contain a case projection.");
+        var audit = envelope.CaseAudit
+            ?? throw new InvalidOperationException(
+                $"Statement casework commit '{commandId}' does not contain a case audit.");
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await MaterializeCaseworkAuditCoreAsync(next.CaseId, commandId, audit, ct)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task MaterializeRunProjectionAsync(
+        ReconciliationCase initialCase,
+        StatementRunProjectionAudit audit,
+        IReadOnlyList<ReconciliationCase> authorizedImages,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(initialCase);
+        ValidateRunProjectionAudit(initialCase, audit);
+        ValidateAuthorizedCaseImages(initialCase, authorizedImages);
+        var authoritativeCase = authorizedImages[^1];
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var casePath = CasePath(initialCase.CaseId);
+            var retained = await ReadCaseCoreAsync(casePath, ct).ConfigureAwait(false);
+            var auditPath = RunProjectionAuditPath(initialCase.ImportId, initialCase.CaseId);
+            var retainedAudit = await ReadRunProjectionAuditCoreAsync(auditPath, ct).ConfigureAwait(false);
+            if (retained is not null && !authorizedImages.Any(image => SameArtifact(retained, image)))
+            {
+                throw new InvalidOperationException(
+                    $"Reconciliation case '{initialCase.CaseId}' is outside its immutable match/source-commit authority chain.");
+            }
+
+            if (retainedAudit is not null && !SameArtifact(retainedAudit, audit))
+            {
+                throw new InvalidOperationException(
+                    $"Reconciliation case '{initialCase.CaseId}' retains a conflicting run-projection audit.");
+            }
+
+            if (retained is null || !SameArtifact(retained, authoritativeCase))
+            {
+                await AtomicFileWriter
+                    .WriteAsync(
+                        casePath,
+                        JsonSerializer.Serialize(
+                            authoritativeCase,
+                            StatementDurabilityJsonContext.Default.ReconciliationCase),
+                        ct)
+                    .ConfigureAwait(false);
+            }
+
+            if (retainedAudit is null)
+            {
+                await AtomicFileWriter
+                    .WriteAsync(
+                        auditPath,
+                        JsonSerializer.Serialize(
+                            audit,
+                            StatementDurabilityJsonContext.Default.StatementRunProjectionAudit),
+                        ct)
+                    .ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<StatementRunProjectionAudit?> GetRunProjectionAuditAsync(
+        string runId,
+        string caseId,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(caseId);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            return await ReadRunProjectionAuditCoreAsync(
+                    RunProjectionAuditPath(runId, caseId),
+                    ct)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<ReconciliationCaseAuditEvent?> GetCaseworkAuditAsync(
+        string caseId,
+        string commandId,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(caseId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(commandId);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            return await ReadAuditCoreAsync(CaseworkAuditPath(caseId, commandId), ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     private string CasePath(string caseId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(caseId);
@@ -100,6 +330,193 @@ public sealed class JsonReconciliationCaseStore : IReconciliationCaseStore
 
         return path;
     }
+
+    private string CaseworkAuditPath(string caseId, string commandId)
+        => Path.Combine(
+            _folder,
+            "_casework",
+            "audit",
+            ReconciliationRecordFileName.For(caseId),
+            $"{Sha256Digest.ComputeUtf8(commandId.Trim())}.json");
+
+    private string RunProjectionAuditPath(string runId, string caseId)
+        => Path.Combine(
+            _folder,
+            "_run-projections",
+            ReconciliationRecordFileName.For(runId),
+            $"{ReconciliationRecordFileName.For(caseId)}.json");
+
+    private async Task<ReconciliationCase?> ReadCaseCoreAsync(string path, CancellationToken ct)
+    {
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        await using var stream = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            64 * 1024,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+        return await JsonSerializer.DeserializeAsync(
+                stream,
+                StatementDurabilityJsonContext.Default.ReconciliationCase,
+                ct)
+            .ConfigureAwait(false)
+            ?? throw new InvalidDataException($"Reconciliation case artifact '{path}' retained a null payload.");
+    }
+
+    private async Task<ReconciliationCaseAuditEvent?> ReadAuditCoreAsync(string path, CancellationToken ct)
+    {
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        await using var stream = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            64 * 1024,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+        return await JsonSerializer.DeserializeAsync(
+                stream,
+                StatementDurabilityJsonContext.Default.ReconciliationCaseAuditEvent,
+                ct)
+            .ConfigureAwait(false)
+            ?? throw new InvalidDataException($"Reconciliation case audit '{path}' retained a null payload.");
+    }
+
+    private async Task MaterializeCaseworkAuditCoreAsync(
+        string caseId,
+        string commandId,
+        ReconciliationCaseAuditEvent audit,
+        CancellationToken ct)
+    {
+        var auditPath = CaseworkAuditPath(caseId, commandId);
+        var retainedAudit = await ReadAuditCoreAsync(auditPath, ct).ConfigureAwait(false);
+        if (retainedAudit is not null)
+        {
+            if (!SameArtifact(retainedAudit, audit))
+            {
+                throw new InvalidOperationException(
+                    $"Statement case audit for command '{commandId}' conflicts with the retained source commit.");
+            }
+
+            return;
+        }
+
+        await AtomicFileWriter
+            .WriteAsync(
+                auditPath,
+                JsonSerializer.Serialize(
+                    audit,
+                    StatementDurabilityJsonContext.Default.ReconciliationCaseAuditEvent),
+                ct)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<StatementRunProjectionAudit?> ReadRunProjectionAuditCoreAsync(
+        string path,
+        CancellationToken ct)
+    {
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        await using var stream = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            64 * 1024,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+        return await JsonSerializer.DeserializeAsync(
+                stream,
+                StatementDurabilityJsonContext.Default.StatementRunProjectionAudit,
+                ct)
+            .ConfigureAwait(false)
+            ?? throw new InvalidDataException($"Reconciliation case projection audit '{path}' retained a null payload.");
+    }
+
+    private static async Task<StatementCaseworkCommitEnvelope> RequirePreparedCommitAsync(
+        IStatementCaseworkCommitStore commitStore,
+        string commandId,
+        string inputHashSha256,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(commitStore);
+        ArgumentException.ThrowIfNullOrWhiteSpace(commandId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(inputHashSha256);
+        var envelope = await commitStore.GetAsync(commandId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException(
+                $"Statement casework command '{commandId}' cannot project before its immutable commit is prepared.");
+        if (!StatementDurabilityHashing.FixedTimeEquals(envelope.InputHashSha256, inputHashSha256))
+        {
+            throw new InvalidOperationException(
+                $"Statement casework command '{commandId}' is bound to different prepared input.");
+        }
+
+        return envelope;
+    }
+
+    private static void ValidateRunProjectionAudit(
+        ReconciliationCase reconciliationCase,
+        StatementRunProjectionAudit audit)
+    {
+        ArgumentNullException.ThrowIfNull(audit);
+        if (audit.SchemaVersion != StatementRunProjectionAudit.CurrentSchemaVersion ||
+            !string.Equals(audit.RunId, reconciliationCase.ImportId, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(audit.ImportId, reconciliationCase.ImportId, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(audit.ProjectionKind, StatementRunProjectionAudit.CaseKind, StringComparison.Ordinal) ||
+            !string.Equals(audit.ProjectionId, reconciliationCase.CaseId, StringComparison.OrdinalIgnoreCase) ||
+            !StatementDurabilityHashing.FixedTimeEquals(
+                audit.ArtifactSha256,
+                StatementDurabilityHashing.Hash(reconciliationCase)))
+        {
+            throw new InvalidDataException(
+                $"Reconciliation case '{reconciliationCase.CaseId}' run-projection audit does not bind the supplied immutable artifact.");
+        }
+    }
+
+    private static void ValidateAuthorizedCaseImages(
+        ReconciliationCase initialCase,
+        IReadOnlyList<ReconciliationCase> authorizedImages)
+    {
+        ArgumentNullException.ThrowIfNull(authorizedImages);
+        if (authorizedImages.Count == 0 || !SameArtifact(authorizedImages[0], initialCase) ||
+            authorizedImages.Any(image =>
+                image is null ||
+                !string.Equals(image.CaseId, initialCase.CaseId, StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(image.ImportId, initialCase.ImportId, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidDataException(
+                $"Reconciliation case '{initialCase.CaseId}' received an invalid immutable authority chain.");
+        }
+    }
+
+    private static bool SameArtifact(ReconciliationCase left, ReconciliationCase right)
+        => StatementDurabilityHashing.FixedTimeEquals(
+            StatementDurabilityHashing.Hash(left),
+            StatementDurabilityHashing.Hash(right));
+
+    private static bool SameArtifact(ReconciliationCaseAuditEvent left, ReconciliationCaseAuditEvent right)
+        => StatementDurabilityHashing.FixedTimeEquals(
+            StatementDurabilityHashing.Hash(left),
+            StatementDurabilityHashing.Hash(right));
+
+    private static bool SameArtifact(StatementRunProjectionAudit left, StatementRunProjectionAudit right)
+        => StatementDurabilityHashing.FixedTimeEquals(
+            StatementDurabilityHashing.Hash(
+                left,
+                StatementDurabilityJsonContext.Default.StatementRunProjectionAudit),
+            StatementDurabilityHashing.Hash(
+                right,
+                StatementDurabilityJsonContext.Default.StatementRunProjectionAudit));
 
     private async Task AppendAuditAsync(ReconciliationCase reconciliationCase, CancellationToken ct)
     {

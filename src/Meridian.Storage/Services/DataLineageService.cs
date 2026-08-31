@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Infrastructure.Contracts;
@@ -17,23 +16,41 @@ public sealed class DataLineageService : IDataLineageService
 {
     private readonly string _lineageStorePath;
     private readonly ILogger<DataLineageService> _logger;
-    private readonly ConcurrentDictionary<string, LineageGraph> _graphs = new(StringComparer.OrdinalIgnoreCase);
     private readonly SemaphoreSlim _saveLock = new(1, 1);
+    private readonly Action<string, string> _writeFile;
+    private readonly Func<string, string, CancellationToken, Task> _writeFileAsync;
+    private LineageState _state = LineageState.CreateEmpty();
 
     public DataLineageService(string lineageStorePath, ILogger<DataLineageService> logger)
+        : this(
+            lineageStorePath,
+            logger,
+            static (path, content) => AtomicFileWriter.Write(path, content),
+            static (path, content, ct) => AtomicFileWriter.WriteAsync(path, content, ct))
+    {
+    }
+
+    internal DataLineageService(
+        string lineageStorePath,
+        ILogger<DataLineageService> logger,
+        Action<string, string> writeFile,
+        Func<string, string, CancellationToken, Task> writeFileAsync)
     {
         _lineageStorePath = lineageStorePath ?? throw new ArgumentNullException(nameof(lineageStorePath));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        Load();
+        _writeFile = writeFile ?? throw new ArgumentNullException(nameof(writeFile));
+        _writeFileAsync = writeFileAsync ?? throw new ArgumentNullException(nameof(writeFileAsync));
+        Volatile.Write(ref _state, Load());
     }
 
     /// <inheritdoc />
     public void RecordIngestion(string filePath, IngestionRecord record)
     {
-        PersistChange(() =>
+        var ownedRecord = CloneIngestion(record);
+        PersistChange(candidate =>
         {
-            var graph = _graphs.GetOrAdd(filePath, _ => new LineageGraph { FilePath = filePath });
-            graph.Ingestions.Add(record);
+            var graph = GetOrAddGraph(candidate, filePath);
+            graph.Ingestions.Add(ownedRecord);
             graph.LastUpdatedUtc = DateTime.UtcNow;
             return true;
         });
@@ -42,16 +59,17 @@ public sealed class DataLineageService : IDataLineageService
     /// <inheritdoc />
     public void RecordTransformation(string sourceFilePath, string targetFilePath, TransformationRecord record)
     {
-        PersistChange(() =>
+        var ownedRecord = CloneTransformation(record);
+        PersistChange(candidate =>
         {
             // Link source to target
-            var sourceGraph = _graphs.GetOrAdd(sourceFilePath, _ => new LineageGraph { FilePath = sourceFilePath });
+            var sourceGraph = GetOrAddGraph(candidate, sourceFilePath);
             sourceGraph.Downstream.Add(targetFilePath);
             sourceGraph.LastUpdatedUtc = DateTime.UtcNow;
 
-            var targetGraph = _graphs.GetOrAdd(targetFilePath, _ => new LineageGraph { FilePath = targetFilePath });
+            var targetGraph = GetOrAddGraph(candidate, targetFilePath);
             targetGraph.Upstream.Add(sourceFilePath);
-            targetGraph.Transformations.Add(record);
+            targetGraph.Transformations.Add(ownedRecord);
             targetGraph.LastUpdatedUtc = DateTime.UtcNow;
             return true;
         });
@@ -60,14 +78,15 @@ public sealed class DataLineageService : IDataLineageService
     /// <inheritdoc />
     public void RecordMigration(string sourceFilePath, string targetFilePath, MigrationRecord record)
     {
-        PersistChange(() =>
+        var ownedRecord = CloneMigration(record);
+        PersistChange(candidate =>
         {
-            var sourceGraph = _graphs.GetOrAdd(sourceFilePath, _ => new LineageGraph { FilePath = sourceFilePath });
-            sourceGraph.Migrations.Add(record);
+            var sourceGraph = GetOrAddGraph(candidate, sourceFilePath);
+            sourceGraph.Migrations.Add(ownedRecord);
             sourceGraph.Downstream.Add(targetFilePath);
             sourceGraph.LastUpdatedUtc = DateTime.UtcNow;
 
-            var targetGraph = _graphs.GetOrAdd(targetFilePath, _ => new LineageGraph { FilePath = targetFilePath });
+            var targetGraph = GetOrAddGraph(candidate, targetFilePath);
             targetGraph.Upstream.Add(sourceFilePath);
             targetGraph.LastUpdatedUtc = DateTime.UtcNow;
             return true;
@@ -77,9 +96,9 @@ public sealed class DataLineageService : IDataLineageService
     /// <inheritdoc />
     public void RecordDeletion(string filePath, string reason)
     {
-        PersistChange(() =>
+        PersistChange(candidate =>
         {
-            if (!_graphs.TryGetValue(filePath, out var graph))
+            if (!candidate.Graphs.TryGetValue(filePath, out var graph))
             {
                 return false;
             }
@@ -94,36 +113,40 @@ public sealed class DataLineageService : IDataLineageService
     /// <inheritdoc />
     public LineageGraph? GetLineageGraph(string filePath)
     {
-        return _graphs.TryGetValue(filePath, out var graph) ? graph : null;
+        var state = Volatile.Read(ref _state);
+        return state.Graphs.TryGetValue(filePath, out var graph) ? CloneGraph(graph) : null;
     }
 
     /// <inheritdoc />
     public IReadOnlyList<string> GetUpstream(string filePath)
     {
-        if (!_graphs.TryGetValue(filePath, out var graph))
+        var state = Volatile.Read(ref _state);
+        if (!state.Graphs.ContainsKey(filePath))
             return Array.Empty<string>();
 
         var result = new HashSet<string>();
-        CollectUpstream(filePath, result, maxDepth: 10);
+        CollectUpstream(state, filePath, result, maxDepth: 10);
         return result.ToList();
     }
 
     /// <inheritdoc />
     public IReadOnlyList<string> GetDownstream(string filePath)
     {
-        if (!_graphs.TryGetValue(filePath, out var graph))
+        var state = Volatile.Read(ref _state);
+        if (!state.Graphs.ContainsKey(filePath))
             return Array.Empty<string>();
 
         var result = new HashSet<string>();
-        CollectDownstream(filePath, result, maxDepth: 10);
+        CollectDownstream(state, filePath, result, maxDepth: 10);
         return result.ToList();
     }
 
     /// <inheritdoc />
     public LineageReport GenerateReport()
     {
-        var activeFiles = _graphs.Values.Where(g => g.DeletedAtUtc == null).ToList();
-        var deletedFiles = _graphs.Values.Where(g => g.DeletedAtUtc != null).ToList();
+        var state = Volatile.Read(ref _state);
+        var activeFiles = state.Graphs.Values.Where(g => g.DeletedAtUtc == null).ToList();
+        var deletedFiles = state.Graphs.Values.Where(g => g.DeletedAtUtc != null).ToList();
 
         var sourceDistribution = activeFiles
             .SelectMany(g => g.Ingestions)
@@ -137,7 +160,7 @@ public sealed class DataLineageService : IDataLineageService
 
         return new LineageReport(
             GeneratedAtUtc: DateTime.UtcNow,
-            TotalTrackedFiles: _graphs.Count,
+            TotalTrackedFiles: state.Graphs.Count,
             ActiveFiles: activeFiles.Count,
             DeletedFiles: deletedFiles.Count,
             TotalIngestions: activeFiles.Sum(g => g.Ingestions.Count),
@@ -153,7 +176,9 @@ public sealed class DataLineageService : IDataLineageService
         await _saveLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await SaveToDiskAsync(ct).ConfigureAwait(false);
+            var candidate = CloneState(Volatile.Read(ref _state));
+            await SaveToDiskAsync(candidate, ct).ConfigureAwait(false);
+            Volatile.Write(ref _state, candidate);
         }
         finally
         {
@@ -161,40 +186,50 @@ public sealed class DataLineageService : IDataLineageService
         }
     }
 
-    private void CollectUpstream(string filePath, HashSet<string> visited, int maxDepth)
+    private static void CollectUpstream(
+        LineageState state,
+        string filePath,
+        HashSet<string> visited,
+        int maxDepth)
     {
         if (maxDepth <= 0 || !visited.Add(filePath))
             return;
 
-        if (_graphs.TryGetValue(filePath, out var graph))
+        if (state.Graphs.TryGetValue(filePath, out var graph))
         {
             foreach (var upstream in graph.Upstream)
             {
-                CollectUpstream(upstream, visited, maxDepth - 1);
+                CollectUpstream(state, upstream, visited, maxDepth - 1);
             }
         }
     }
 
-    private void CollectDownstream(string filePath, HashSet<string> visited, int maxDepth)
+    private static void CollectDownstream(
+        LineageState state,
+        string filePath,
+        HashSet<string> visited,
+        int maxDepth)
     {
         if (maxDepth <= 0 || !visited.Add(filePath))
             return;
 
-        if (_graphs.TryGetValue(filePath, out var graph))
+        if (state.Graphs.TryGetValue(filePath, out var graph))
         {
             foreach (var downstream in graph.Downstream)
             {
-                CollectDownstream(downstream, visited, maxDepth - 1);
+                CollectDownstream(state, downstream, visited, maxDepth - 1);
             }
         }
     }
 
-    private void Load()
+    private LineageState Load()
     {
+        var state = LineageState.CreateEmpty();
+
         try
         {
             if (!File.Exists(_lineageStorePath))
-                return;
+                return state;
 
             var json = File.ReadAllText(_lineageStorePath);
             var data = JsonSerializer.Deserialize(json, DataLineageServiceJsonContext.Default.LineageStore);
@@ -203,7 +238,7 @@ public sealed class DataLineageService : IDataLineageService
             {
                 foreach (var kvp in data.Graphs)
                 {
-                    _graphs[kvp.Key] = kvp.Value;
+                    state.Graphs[kvp.Key] = CloneGraph(kvp.Value);
                 }
             }
         }
@@ -211,9 +246,11 @@ public sealed class DataLineageService : IDataLineageService
         {
             _logger.LogWarning(ex, "Failed to load lineage data from {Path}", _lineageStorePath);
         }
+
+        return state;
     }
 
-    private void PersistChange(Func<bool> mutate)
+    private void PersistChange(Func<LineageState, bool> mutate)
     {
         // Bounded wait so persistence never blocks a thread-pool thread indefinitely.
         if (!_saveLock.Wait(TimeSpan.FromSeconds(10)))
@@ -224,12 +261,14 @@ public sealed class DataLineageService : IDataLineageService
 
         try
         {
-            if (!mutate())
+            var candidate = CloneState(Volatile.Read(ref _state));
+            if (!mutate(candidate))
             {
                 return;
             }
 
-            SaveToDisk();
+            SaveToDisk(candidate);
+            Volatile.Write(ref _state, candidate);
         }
         finally
         {
@@ -237,34 +276,106 @@ public sealed class DataLineageService : IDataLineageService
         }
     }
 
-    private LineageStore CreateStoreSnapshot()
+    private static LineageStore CreateStoreSnapshot(LineageState state)
     {
         return new LineageStore
         {
             Version = "1.0.0",
             UpdatedAtUtc = DateTime.UtcNow,
-            Graphs = _graphs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
+            Graphs = state.Graphs
         };
     }
 
-    private void SaveToDisk()
+    private void SaveToDisk(LineageState state)
     {
         var dir = Path.GetDirectoryName(_lineageStorePath);
         if (!string.IsNullOrEmpty(dir))
             Directory.CreateDirectory(dir);
 
-        var json = JsonSerializer.Serialize(CreateStoreSnapshot(), DataLineageServiceJsonContext.Default.LineageStore);
-        AtomicFileWriter.Write(_lineageStorePath, json);
+        var json = JsonSerializer.Serialize(CreateStoreSnapshot(state), DataLineageServiceJsonContext.Default.LineageStore);
+        _writeFile(_lineageStorePath, json);
     }
 
-    private async Task SaveToDiskAsync(CancellationToken ct)
+    private async Task SaveToDiskAsync(LineageState state, CancellationToken ct)
     {
         var dir = Path.GetDirectoryName(_lineageStorePath);
         if (!string.IsNullOrEmpty(dir))
             Directory.CreateDirectory(dir);
 
-        var json = JsonSerializer.Serialize(CreateStoreSnapshot(), DataLineageServiceJsonContext.Default.LineageStore);
-        await AtomicFileWriter.WriteAsync(_lineageStorePath, json, ct).ConfigureAwait(false);
+        var json = JsonSerializer.Serialize(CreateStoreSnapshot(state), DataLineageServiceJsonContext.Default.LineageStore);
+        await _writeFileAsync(_lineageStorePath, json, ct).ConfigureAwait(false);
+    }
+
+    private static LineageGraph GetOrAddGraph(LineageState state, string filePath)
+    {
+        if (!state.Graphs.TryGetValue(filePath, out var graph))
+        {
+            graph = new LineageGraph { FilePath = filePath };
+            state.Graphs[filePath] = graph;
+        }
+
+        return graph;
+    }
+
+    private static LineageState CloneState(LineageState state)
+    {
+        var clone = LineageState.CreateEmpty();
+        foreach (var graph in state.Graphs)
+        {
+            clone.Graphs[graph.Key] = CloneGraph(graph.Value);
+        }
+
+        return clone;
+    }
+
+    private static LineageGraph CloneGraph(LineageGraph graph)
+    {
+        return new LineageGraph
+        {
+            FilePath = graph.FilePath,
+            CreatedAtUtc = graph.CreatedAtUtc,
+            LastUpdatedUtc = graph.LastUpdatedUtc,
+            DeletedAtUtc = graph.DeletedAtUtc,
+            DeletionReason = graph.DeletionReason,
+            Upstream = graph.Upstream?.ToList() ?? [],
+            Downstream = graph.Downstream?.ToList() ?? [],
+            Ingestions = graph.Ingestions?.Select(CloneIngestion).ToList() ?? [],
+            Transformations = graph.Transformations?.Select(CloneTransformation).ToList() ?? [],
+            Migrations = graph.Migrations?.Select(CloneMigration).ToList() ?? []
+        };
+    }
+
+    private static IngestionRecord CloneIngestion(IngestionRecord record)
+        => record with { Parameters = CloneDictionary(record.Parameters) };
+
+    private static TransformationRecord CloneTransformation(TransformationRecord record)
+        => record with { Parameters = CloneDictionary(record.Parameters) };
+
+    private static MigrationRecord CloneMigration(MigrationRecord record) => record with { };
+
+    private static IReadOnlyDictionary<string, string>? CloneDictionary(
+        IReadOnlyDictionary<string, string>? values)
+    {
+        if (values == null)
+        {
+            return null;
+        }
+
+        var comparer = values is Dictionary<string, string> dictionary
+            ? dictionary.Comparer
+            : StringComparer.Ordinal;
+        return new Dictionary<string, string>(values, comparer);
+    }
+
+    private sealed class LineageState
+    {
+        private LineageState()
+        {
+        }
+
+        public Dictionary<string, LineageGraph> Graphs { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+        public static LineageState CreateEmpty() => new();
     }
 
     internal sealed class LineageStore

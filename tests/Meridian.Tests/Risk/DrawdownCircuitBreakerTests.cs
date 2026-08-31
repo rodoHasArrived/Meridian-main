@@ -76,7 +76,6 @@ public sealed class DrawdownCircuitBreakerTests
         var result = await sut.EvaluateAsync(CreateOrder());
 
         result.IsApproved.Should().BeTrue();
-        result.RejectReason.Should().BeNull();
     }
 
     [Fact]

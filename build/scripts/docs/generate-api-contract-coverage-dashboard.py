@@ -25,7 +25,7 @@ from dashboard_rendering import (
 )
 
 
-EXCLUDE_DIRS = {".git", ".vs", "bin", "obj", "node_modules", "__pycache__", "TestResults"}
+EXCLUDE_DIRS = {".git", ".vs", "bin", "obj", "node_modules", "__pycache__", ".pytest_cache", "TestResults"}
 HTTP_METHODS = {"GET", "POST", "PUT", "DELETE", "PATCH"}
 
 ROUTE_CONST_RE = re.compile(r'public\s+const\s+string\s+(\w+)\s*=\s*"([^"]+)"')
@@ -44,7 +44,7 @@ DATA_SOURCES = [
     "src/**/*.cs endpoint mappings",
     "src/Meridian.Contracts/Api/UiApiRoutes.cs",
     "src/Meridian.Contracts/Workstation/*.cs",
-    "docs/**/*.md (excluding generated report roots)",
+    "docs/reference/**/*.md (contract reference documentation only)",
 ]
 
 # Generated reports live under these roots and echo route paths and contract names verbatim —
@@ -53,6 +53,25 @@ DATA_SOURCES = [
 # run wrote it into a report. That inflates coverage toward 100% and leaves the artifact unable to
 # converge, since each run's output changes the next run's input.
 GENERATED_DOC_ROOTS = ("docs/status", "docs/generated")
+
+# The corpus is an allowlist of roots that exist to describe contracts, not a denylist of prose.
+#
+# Subtracting prose was tried first and does not converge: four review rounds on #2703 each found a
+# document where root-, file-, or heading-level filtering guessed wrong, because these roots
+# interleave description and argument inside single documents. `w9-close-out-delivery-plan` states
+# StatementRunCreateDto's complete field set -- in order to argue the DTO is missing accounting
+# scope. No cheap syntactic proxy separates "describes a contract" from "argues about one".
+#
+# So the metric answers a question that can be answered instead: is this endpoint or contract
+# described in reference documentation? Naming a symbol in a review, brainstorm, roadmap, or
+# delivery plan no longer moves the score, and there is no per-file adjudication to maintain.
+#
+# The cost is a smaller number -- 251 endpoints and 117 contracts become 199 and 34. That drop is
+# the point: the old figures were an unknown mixture of documented and merely-named symbols, which
+# is what #2703 filed. This is the issue's suggestion 1; its suggestion 3, deriving coverage from
+# request/response schemas in a served OpenAPI document, remains the better answer once #2695
+# provides one, and would replace this rule rather than extend it.
+CONTRACT_DOC_ROOTS = ("docs/reference",)
 
 
 def _should_skip(path: Path) -> bool:
@@ -168,12 +187,21 @@ def _scan_workstation_contracts(root: Path) -> list[dict[str, object]]:
     return contracts
 
 
-def _is_generated_doc(root: Path, path: Path) -> bool:
+def _is_under(root: Path, path: Path, doc_roots: tuple[str, ...]) -> bool:
     relative = _rel(root, path)
     return any(
-        relative == generated_root or relative.startswith(generated_root + "/")
-        for generated_root in GENERATED_DOC_ROOTS
+        relative == doc_root or relative.startswith(doc_root + "/")
+        for doc_root in doc_roots
     )
+
+
+def _is_generated_doc(root: Path, path: Path) -> bool:
+    return _is_under(root, path, GENERATED_DOC_ROOTS)
+
+
+def _is_contract_doc(root: Path, path: Path) -> bool:
+    """True for a document under a root that exists to describe contracts."""
+    return _is_under(root, path, CONTRACT_DOC_ROOTS)
 
 
 def _load_docs_text(root: Path) -> str:
@@ -183,11 +211,58 @@ def _load_docs_text(root: Path) -> str:
 
     chunks: list[str] = []
     for path in _iter_files(docs_dir, ".md"):
-        if _is_generated_doc(root, path):
+        if not _is_contract_doc(root, path) or _is_generated_doc(root, path):
             continue
         chunks.append(_read_text(path))
     normalized = "\n".join(chunks)
     return ROUTE_CONSTRAINT_RE.sub(r"{\1}", normalized).casefold()
+
+
+_IDENTIFIER_TOKEN_RE = re.compile(r"[0-9a-z_]+")
+_PATH_TOKEN_RE = re.compile(r"/[0-9a-z_{}:./-]*")
+
+
+def _index_docs(docs_text: str) -> tuple[frozenset[str], frozenset[str]]:
+    """Tokenize the corpus **once** into the names and paths it mentions.
+
+    A name counts as documented only when a doc names *it*. The check used to be a plain substring
+    test, which credited a name for appearing inside a longer one. Observed on this repository's
+    own docs: `ApprovalDecision` counted because a blueprint named a `RecordApprovalDecisionAsync`
+    method; `SettlementInstruction` and `WorkflowLibraryDto` counted because a **file path** —
+    `SettlementInstructionCommands.fs`, `WorkflowLibraryDtos.cs` — appeared in a doc; and
+    `StartWorkflow` and `RecommendedActionDto` counted because a *different* contract,
+    `OperationsStartWorkflowRequestDto` and `SecurityMasterRecommendedActionDto`, was documented
+    and separately gets its own credit. This is the same failure `GENERATED_DOC_ROOTS` already
+    guards against — coverage rising without a document being written — and it is worse than a
+    wrong number, because the metric moves in the reassuring direction and nothing in the output
+    shows why.
+
+    Splitting on non-identifier characters *is* that boundary rule, expressed as membership rather
+    than as a scan: `recordapprovaldecisionasync` is a single token, so `approvaldecision` is
+    absent, while `Workstation/ApprovalDecision` and `ApprovalDecision.` both yield it. Paths are
+    tokenized separately because `/` and `{}` are part of a route; `/api/backfill/run` is absent
+    from a corpus that only mentions `/api/backfill/run/{id}`, a different endpoint scanned on its
+    own.
+
+    Deciding it by membership rather than per item is also what keeps this affordable. An earlier
+    revision ran one `re.search` per item over the whole concatenated corpus — 906 contracts plus
+    617 routes against roughly ten megabytes — and turned a 6.8s generator into a 106s one, which
+    is a regression in routine docs automation however correct the answer is. Indexing is one pass
+    and the lookups are O(1).
+    """
+    identifiers = set(_IDENTIFIER_TOKEN_RE.findall(docs_text))
+    paths: set[str] = set()
+    for token in _PATH_TOKEN_RE.findall(docs_text):
+        paths.add(token)
+        # Only characters that end a *sentence* are trimmed. `/` and `-` are part of a path, and
+        # stripping them re-creates the bug this module exists to fix: the corpus mentions
+        # `/api/security-master/*` — the route family — and trimming the `/` would credit the
+        # specific `/api/security-master` endpoint for it, exactly as `/api/backfill/run/{id}`
+        # must not credit `/api/backfill/run`.
+        trimmed = token.rstrip(".:")
+        if trimmed:
+            paths.add(trimmed)
+    return frozenset(identifiers), frozenset(paths)
 
 
 def build_dashboard(root: Path) -> dict:
@@ -196,12 +271,14 @@ def build_dashboard(root: Path) -> dict:
     endpoints = _scan_endpoints(root)
     contracts = _scan_workstation_contracts(root)
 
+    documented_names, documented_paths = _index_docs(docs_text)
+
     for endpoint in endpoints:
         route = _normalize_route(str(endpoint["path"]))
-        endpoint["documented"] = route in docs_text
+        endpoint["documented"] = route in documented_paths
 
     for contract in contracts:
-        contract["documented"] = str(contract["name"]).casefold() in docs_text
+        contract["documented"] = str(contract["name"]).casefold() in documented_names
 
     endpoint_total = len(endpoints)
     endpoint_documented = sum(1 for endpoint in endpoints if endpoint["documented"])

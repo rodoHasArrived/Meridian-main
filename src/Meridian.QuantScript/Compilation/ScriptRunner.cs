@@ -1,24 +1,23 @@
 using System.Diagnostics;
-using Meridian.Backtesting.Sdk;
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Plotting;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
+using Meridian.QuantScript.Runtime;
 
 namespace Meridian.QuantScript.Compilation;
 
 /// <summary>
-/// Compiles and executes .csx scripts in a sandboxed Roslyn environment.
-/// Each run creates fresh <see cref="QuantScriptGlobals"/> with its own cancellation scope.
+/// Executes every QuantScript request in a dedicated, killable worker process. The host retains
+/// only typed data-service RPC and result orchestration; Roslyn and user code never execute in the
+/// UI/server process.
 /// </summary>
 public sealed class ScriptRunner : IScriptRunner
 {
-    private readonly IQuantScriptCompiler _compiler;
     private readonly IQuantDataContext _dataContext;
-    private readonly Backtesting.Engine.BacktestEngine? _backtestEngine;
     private readonly QuantScriptOptions _options;
     private readonly ILogger<ScriptRunner> _logger;
+    private readonly IQuantScriptWorkerClient _workerClient;
+    private readonly SemaphoreSlim _workerSlots;
+    private int _queuedWorkerRequests;
 
     public ScriptRunner(
         IQuantScriptCompiler compiler,
@@ -27,271 +26,298 @@ public sealed class ScriptRunner : IScriptRunner
         IOptions<QuantScriptOptions> options,
         ILogger<ScriptRunner> logger,
         Backtesting.Engine.BacktestEngine? backtestEngine = null)
+        : this(
+            compiler,
+            dataContext,
+            plotQueue,
+            options,
+            logger,
+            backtestEngine,
+            new QuantScriptWorkerClient(logger))
     {
-        _compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
+    }
+
+    internal ScriptRunner(
+        IQuantScriptCompiler compiler,
+        IQuantDataContext dataContext,
+        PlotQueue plotQueue,
+        IOptions<QuantScriptOptions> options,
+        ILogger<ScriptRunner> logger,
+        Backtesting.Engine.BacktestEngine? backtestEngine,
+        IQuantScriptWorkerClient workerClient)
+    {
+        _ = compiler ?? throw new ArgumentNullException(nameof(compiler));
         _dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
-        _ = plotQueue ?? throw new ArgumentNullException(nameof(plotQueue)); // retained for DI compatibility; per-run queues are now local
-        _backtestEngine = backtestEngine; // null is valid — backtest is optional
+        _ = plotQueue ?? throw new ArgumentNullException(nameof(plotQueue));
+        _ = backtestEngine; // Worker-local backtests intentionally cannot retain a host engine object.
         _options = options?.Value ?? new QuantScriptOptions();
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _workerClient = workerClient ?? throw new ArgumentNullException(nameof(workerClient));
+        _workerSlots = new SemaphoreSlim(_options.MaxConcurrentWorkers, _options.MaxConcurrentWorkers);
     }
 
     /// <inheritdoc/>
-    public async Task<ScriptRunResult> RunAsync(
+    public Task<ScriptRunResult> RunAsync(
         string source,
         IReadOnlyDictionary<string, object?> parameters,
         CancellationToken ct = default)
-        => await ExecuteAsync(source, parameters, checkpoint: null, ct).ConfigureAwait(false);
+        => ExecuteAsync(source, parameters, checkpoint: null, ct);
 
     /// <inheritdoc/>
-    public async Task<ScriptRunResult> ContinueWithAsync(
+    public Task<ScriptRunResult> ContinueWithAsync(
         string source,
         ScriptExecutionCheckpoint checkpoint,
         IReadOnlyDictionary<string, object?> parameters,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(checkpoint);
-        return await ExecuteAsync(source, parameters, checkpoint, ct).ConfigureAwait(false);
+        return ExecuteAsync(source, parameters, checkpoint, ct);
     }
 
     private async Task<ScriptRunResult> ExecuteAsync(
         string source,
-        IReadOnlyDictionary<string, object?> parameters,
+        IReadOnlyDictionary<string, object?>? parameters,
         ScriptExecutionCheckpoint? checkpoint,
         CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
-        parameters ??= new Dictionary<string, object?>();
         ct.ThrowIfCancellationRequested();
-
         var wallClock = Stopwatch.StartNew();
-        var memBefore = GC.GetTotalMemory(false);
-        TimeSpan compileTime;
 
-        if (checkpoint is null)
+        if (checkpoint is { IsReplayable: false })
         {
-            ScriptCompilationResult compilationResult;
-            try
-            {
-                compilationResult = await _compiler.CompileAsync(source, ct).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
-            {
-                return CreateCancelledResult(wallClock, checkpoint);
-            }
-
-            compileTime = compilationResult.CompilationTime;
-            if (ct.IsCancellationRequested)
-            {
-                return CreateCancelledResult(wallClock, checkpoint);
-            }
-
-            if (!compilationResult.Success)
-            {
-                return new ScriptRunResult(
-                    Success: false,
-                    Elapsed: wallClock.Elapsed,
-                    CompileTime: compilationResult.CompilationTime,
-                    PeakMemoryBytes: 0,
-                    CompilationErrors: compilationResult.Diagnostics,
-                    RuntimeDiagnostics: Array.Empty<ScriptDiagnostic>(),
-                    RuntimeError: null,
-                    ConsoleOutput: string.Empty,
-                    Metrics: Array.Empty<KeyValuePair<string, string>>(),
-                    Plots: Array.Empty<PlotRequest>(),
-                    Trades: Array.Empty<ScriptTradeResult>(),
-                    CapturedBacktests: Array.Empty<BacktestResult>(),
-                    RuntimeParameters: Array.Empty<ParameterDescriptor>(),
-                    Checkpoint: checkpoint);
-            }
-        }
-        else
-        {
-            compileTime = TimeSpan.Zero;
-
-            if (!_options.EnableUnsafeScripts && RoslynScriptCompiler.TryCreateSafeModeDiagnostic(source) is { } diagnostic)
-            {
-                return new ScriptRunResult(
-                    Success: false,
-                    Elapsed: wallClock.Elapsed,
-                    CompileTime: compileTime,
-                    PeakMemoryBytes: 0,
-                    CompilationErrors: [diagnostic],
-                    RuntimeDiagnostics: Array.Empty<ScriptDiagnostic>(),
-                    RuntimeError: null,
-                    ConsoleOutput: string.Empty,
-                    Metrics: Array.Empty<KeyValuePair<string, string>>(),
-                    Plots: Array.Empty<PlotRequest>(),
-                    Trades: Array.Empty<ScriptTradeResult>(),
-                    CapturedBacktests: Array.Empty<BacktestResult>(),
-                    RuntimeParameters: Array.Empty<ParameterDescriptor>(),
-                    Checkpoint: checkpoint);
-            }
-
-            // Safe-mode source checks above mirror fresh compilation; remaining
-            // continuations rely on Roslyn diagnostics from ContinueWithAsync.
+            return CreateIsolationFailure(
+                wallClock,
+                checkpoint,
+                "The supplied checkpoint predates isolated execution and cannot be replayed safely.");
         }
 
-        using var runCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        runCts.CancelAfter(TimeSpan.FromSeconds(_options.RunTimeoutSeconds));
-        var runCt = runCts.Token;
-        var ctProvider = () => runCt;
-        var dataProxy = new DataProxy(_dataContext, ctProvider);
-        var backtestProxy = new BacktestProxy(_backtestEngine, _options);
-        var globals = checkpoint?.Globals ?? new QuantScriptGlobals(dataProxy, backtestProxy, ctProvider, parameters);
-        globals.UpdateExecutionContext(parameters, ctProvider);
-
-        Script<object>? script = null;
-        if (checkpoint is null)
+        WorkerScriptCell currentCell;
+        string dataRoot;
+        try
         {
-            if (_compiler is RoslynScriptCompiler rsc)
-                script = rsc.GetCachedScript(source) ?? rsc.BuildScript(source);
+            currentCell = CreateCell(source, parameters);
+            dataRoot = Path.GetFullPath(_options.DefaultDataRoot);
+        }
+        catch (Exception ex) when (ex is WorkerProtocolException or ArgumentException or NotSupportedException or IOException)
+        {
+            return CreateIsolationFailure(wallClock, checkpoint, ex.Message);
+        }
+
+        var replayCells = checkpoint?.ReplayCells ?? Array.Empty<WorkerScriptCell>();
+        var request = new WorkerExecutionRequest(
+            replayCells,
+            currentCell,
+            new WorkerRunOptions(
+                _options.CompilationTimeoutSeconds,
+                _options.EnableUnsafeScripts,
+                _options.MaxCachedCompilations,
+                _options.MaxPlotsPerRun,
+                dataRoot,
+                _options.MaxRunElapsedMilliseconds,
+                _options.MaxOutputItemsPerRun,
+                _options.MaxWorkerProtocolBytes));
+
+        WorkerExecutionOutcome outcome;
+        var workerSlotAcquired = false;
+        try
+        {
+            workerSlotAcquired = await TryAcquireWorkerSlotAsync(ct).ConfigureAwait(false);
+            if (!workerSlotAcquired)
+            {
+                outcome = new WorkerExecutionOutcome(
+                    WorkerCompletionKind.AdmissionRejected,
+                    null,
+                    0,
+                    "QuantScript worker admission queue was full or its bounded wait expired.");
+            }
             else
             {
-                var tmp = new RoslynScriptCompiler(
-                    Microsoft.Extensions.Options.Options.Create(_options),
-                    Microsoft.Extensions.Logging.Abstractions.NullLogger<RoslynScriptCompiler>.Instance);
-                script = tmp.BuildScript(source);
+                outcome = await _workerClient.ExecuteAsync(
+                    request,
+                    _dataContext,
+                    _options,
+                    ct).ConfigureAwait(false);
             }
         }
-
-        string? runtimeError = null;
-        IReadOnlyList<ScriptDiagnostic> continuationDiagnostics = Array.Empty<ScriptDiagnostic>();
-        var runtimeDiagnostics = new List<ScriptDiagnostic>();
-        ScriptExecutionCheckpoint? nextCheckpoint = checkpoint;
-        var runPlotQueue = new PlotQueue();
-
-        await Task.Run(async () =>
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
-            ScriptContext.PlotQueue = runPlotQueue;
-            try
-            {
-                _logger.LogInformation(
-                    "Executing QuantScript (timeout {Timeout}s, mode {Mode})",
-                    _options.RunTimeoutSeconds,
-                    checkpoint is null ? "fresh" : "continue");
-
-                ScriptState<object> scriptState;
-                if (checkpoint is null)
-                {
-                    scriptState = await script!.RunAsync(globals, runCt).ConfigureAwait(false);
-                }
-                else
-                {
-                    scriptState = await checkpoint.ScriptState
-                        .ContinueWithAsync(source, cancellationToken: runCt)
-                        .ConfigureAwait(false);
-                }
-
-                nextCheckpoint = new ScriptExecutionCheckpoint(scriptState, globals);
-            }
-            catch (OperationCanceledException)
-            {
-                runtimeError = ct.IsCancellationRequested
-                    ? "Script cancelled by user."
-                    : "Script timed out.";
-                _logger.LogWarning("Script run terminated: {Reason}", runtimeError);
-            }
-            catch (CompilationErrorException ex)
-            {
-                continuationDiagnostics = ex.Diagnostics
-                    .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-                    .Select(MapDiagnostic)
-                    .ToList();
-                _logger.LogWarning("QuantScript continuation failed with {Count} compilation error(s)", continuationDiagnostics.Count);
-            }
-            catch (Exception ex)
-            {
-                runtimeError = ex.Message;
-                _logger.LogWarning(ex, "Script runtime exception");
-            }
-            finally
-            {
-                runPlotQueue.Complete();
-                ScriptContext.PlotQueue = null;
-            }
-        }, CancellationToken.None).ConfigureAwait(false);
+            outcome = new WorkerExecutionOutcome(WorkerCompletionKind.Cancelled, null, 0);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "QuantScript worker orchestration failed closed");
+            outcome = new WorkerExecutionOutcome(
+                WorkerCompletionKind.ProtocolFailure,
+                null,
+                0,
+                ex.Message);
+        }
+        finally
+        {
+            if (workerSlotAcquired)
+                _workerSlots.Release();
+        }
 
         wallClock.Stop();
-        var peakMemory = Math.Max(0, GC.GetTotalMemory(false) - memBefore);
-        var plots = runPlotQueue.DrainRemaining();
-        var metrics = globals.DrainMetrics();
-        var capturedBacktests = globals.Backtest.DrainCapturedResults();
-        IReadOnlyList<ScriptTradeResult> trades = capturedBacktests.Count == 0
-            ? Array.Empty<ScriptTradeResult>()
-            : globals.Backtest.CapturedFills
-                .OrderBy(static fill => fill.FilledAt)
-                .Select(static fill => new ScriptTradeResult(
-                    fill.FilledAt,
-                    fill.Symbol,
-                    fill.FilledQuantity >= 0 ? "Buy" : "Sell",
-                    Math.Abs(fill.FilledQuantity),
-                    fill.FillPrice,
-                    fill.Commission))
-                .ToList();
-
-        var outputItemsCount = metrics.Count + plots.Count + capturedBacktests.Count + trades.Count;
-        if (_options.MaxMemoryDeltaBytes > 0 && peakMemory > _options.MaxMemoryDeltaBytes)
+        if (outcome.Kind == WorkerCompletionKind.Completed && outcome.Result is not null)
         {
-            runtimeDiagnostics.Add(new ScriptDiagnostic(
-                "RuntimeLimit",
-                $"Memory delta limit exceeded: {peakMemory} bytes > {_options.MaxMemoryDeltaBytes} bytes.",
-                0,
-                0));
-            runtimeError ??= "Script exceeded configured memory delta limit.";
+            var nextCheckpoint = outcome.Result.Success
+                ? new ScriptExecutionCheckpoint(replayCells.Concat([currentCell]).ToArray())
+                : checkpoint;
+            return outcome.Result.ToScriptRunResult(outcome.PeakMemoryBytes, nextCheckpoint);
         }
 
-        if (_options.MaxRunElapsedMilliseconds > 0 && wallClock.ElapsedMilliseconds > _options.MaxRunElapsedMilliseconds)
+        if (!string.IsNullOrWhiteSpace(outcome.Detail))
         {
-            runtimeDiagnostics.Add(new ScriptDiagnostic(
-                "RuntimeLimit",
-                $"Elapsed limit exceeded: {wallClock.ElapsedMilliseconds} ms > {_options.MaxRunElapsedMilliseconds} ms.",
-                0,
-                0));
-            runtimeError ??= "Script exceeded configured elapsed-time limit.";
+            _logger.LogWarning(
+                "QuantScript isolated worker ended with {Completion}: {Detail}",
+                outcome.Kind,
+                outcome.Detail);
         }
 
-        if (_options.MaxOutputItemsPerRun > 0 && outputItemsCount > _options.MaxOutputItemsPerRun)
-        {
-            runtimeDiagnostics.Add(new ScriptDiagnostic(
-                "RuntimeLimit",
-                $"Output item limit exceeded: {outputItemsCount} items > {_options.MaxOutputItemsPerRun} items.",
-                0,
-                0));
-            runtimeError ??= "Script exceeded configured output-item limit.";
-        }
-
-        var resultSuccess = runtimeError is null && continuationDiagnostics.Count == 0 && runtimeDiagnostics.Count == 0;
-        return new ScriptRunResult(
-            Success: resultSuccess,
-            Elapsed: wallClock.Elapsed,
-            CompileTime: compileTime,
-            PeakMemoryBytes: peakMemory,
-            CompilationErrors: continuationDiagnostics,
-            RuntimeDiagnostics: runtimeDiagnostics,
-            RuntimeError: runtimeError,
-            ConsoleOutput: globals.DrainConsoleOutput(),
-            Metrics: metrics,
-            Plots: plots,
-            Trades: trades,
-            CapturedBacktests: capturedBacktests,
-            RuntimeParameters: globals.SnapshotRuntimeParameters(),
-            Checkpoint: resultSuccess ? nextCheckpoint : checkpoint);
+        return CreateTerminalResult(wallClock.Elapsed, checkpoint, outcome);
     }
 
-    private static ScriptDiagnostic MapDiagnostic(Diagnostic diagnostic)
+    private static WorkerScriptCell CreateCell(
+        string source,
+        IReadOnlyDictionary<string, object?>? parameters)
     {
-        var lineSpan = diagnostic.Location.GetLineSpan();
-        return new ScriptDiagnostic(
-            "Error",
-            diagnostic.GetMessage(),
-            lineSpan.StartLinePosition.Line + 1,
-            lineSpan.StartLinePosition.Character + 1);
+        var values = new Dictionary<string, WorkerParameterValue>(StringComparer.OrdinalIgnoreCase);
+        if (parameters is not null)
+        {
+            foreach (var (name, value) in parameters)
+            {
+                if (string.IsNullOrWhiteSpace(name))
+                    throw new WorkerProtocolException("Script parameter names cannot be empty.");
+                values[name] = WorkerParameterValue.FromObject(value, name);
+            }
+        }
+
+        return new WorkerScriptCell(source, values);
     }
 
-    private static ScriptRunResult CreateCancelledResult(
+    private ScriptRunResult CreateTerminalResult(
+        TimeSpan elapsed,
+        ScriptExecutionCheckpoint? checkpoint,
+        WorkerExecutionOutcome outcome)
+    {
+        var diagnostics = new List<ScriptDiagnostic>();
+        string runtimeError;
+        switch (outcome.Kind)
+        {
+            case WorkerCompletionKind.Cancelled:
+                runtimeError = "Script cancelled by user.";
+                break;
+            case WorkerCompletionKind.TimedOut:
+                runtimeError = "Script timed out.";
+                break;
+            case WorkerCompletionKind.MemoryLimitExceeded:
+                diagnostics.Add(new ScriptDiagnostic(
+                    "RuntimeLimit",
+                    $"Worker-tree memory limit exceeded: observed {outcome.PeakMemoryBytes} bytes; " +
+                    $"absolute limit {_options.MaxWorkerMemoryBytes} bytes; delta limit {_options.MaxMemoryDeltaBytes} bytes.",
+                    0,
+                    0));
+                runtimeError = "Script exceeded configured worker-tree memory limit.";
+                break;
+            case WorkerCompletionKind.CpuLimitExceeded:
+                diagnostics.Add(new ScriptDiagnostic(
+                    "RuntimeLimit",
+                    $"Worker-tree CPU-time limit exceeded: {_options.MaxWorkerCpuTimeSeconds} seconds.",
+                    0,
+                    0));
+                runtimeError = "Script exceeded configured worker-tree CPU limit.";
+                break;
+            case WorkerCompletionKind.ProcessLimitExceeded:
+                diagnostics.Add(new ScriptDiagnostic(
+                    "RuntimeLimit",
+                    $"Worker-tree process-count limit exceeded: {_options.MaxWorkerProcessCount} processes.",
+                    0,
+                    0));
+                runtimeError = "Script exceeded configured worker-tree process limit.";
+                break;
+            case WorkerCompletionKind.HostRpcLimitExceeded:
+                diagnostics.Add(new ScriptDiagnostic(
+                    "RuntimeLimit",
+                    outcome.Detail ?? "The script exceeded a configured host-data RPC quota.",
+                    0,
+                    0));
+                runtimeError = "Script exceeded configured host-data RPC limits.";
+                break;
+            case WorkerCompletionKind.AdmissionRejected:
+                diagnostics.Add(new ScriptDiagnostic(
+                    "RuntimeLimit",
+                    outcome.Detail ?? "The bounded QuantScript worker admission queue rejected the request.",
+                    0,
+                    0));
+                runtimeError = "Script worker capacity is currently exhausted.";
+                break;
+            case WorkerCompletionKind.StandardOutputLimitExceeded:
+                diagnostics.Add(new ScriptDiagnostic(
+                    "RuntimeLimit",
+                    $"Worker stdout limit exceeded: more than {_options.MaxWorkerStandardOutputBytes} bytes.",
+                    0,
+                    0));
+                runtimeError = "Script worker exceeded configured standard-output limit.";
+                break;
+            case WorkerCompletionKind.StandardErrorLimitExceeded:
+                diagnostics.Add(new ScriptDiagnostic(
+                    "RuntimeLimit",
+                    $"Worker stderr limit exceeded: more than {_options.MaxWorkerStandardErrorBytes} bytes.",
+                    0,
+                    0));
+                runtimeError = "Script worker exceeded configured standard-error limit.";
+                break;
+            case WorkerCompletionKind.WorkerUnavailable:
+                diagnostics.Add(new ScriptDiagnostic(
+                    "RuntimeIsolation",
+                    "The isolated QuantScript worker or its containment boundary was unavailable.",
+                    0,
+                    0));
+                runtimeError = "Script worker containment is unavailable.";
+                break;
+            case WorkerCompletionKind.ProtocolFailure:
+                diagnostics.Add(new ScriptDiagnostic(
+                    "RuntimeIsolation",
+                    string.IsNullOrWhiteSpace(outcome.Detail)
+                        ? "The isolated QuantScript worker returned an invalid or oversized protocol response."
+                        : outcome.Detail,
+                    0,
+                    0));
+                runtimeError = "Script worker returned an invalid response.";
+                break;
+            default:
+                diagnostics.Add(new ScriptDiagnostic(
+                    "RuntimeIsolation",
+                    "The isolated QuantScript worker exited before returning a complete result.",
+                    0,
+                    0));
+                runtimeError = "Script worker exited before returning a result.";
+                break;
+        }
+
+        return new ScriptRunResult(
+            Success: false,
+            Elapsed: elapsed,
+            CompileTime: TimeSpan.Zero,
+            PeakMemoryBytes: outcome.PeakMemoryBytes,
+            CompilationErrors: Array.Empty<ScriptDiagnostic>(),
+            RuntimeDiagnostics: diagnostics,
+            RuntimeError: runtimeError,
+            ConsoleOutput: string.Empty,
+            Metrics: Array.Empty<KeyValuePair<string, string>>(),
+            Plots: Array.Empty<PlotRequest>(),
+            Trades: Array.Empty<ScriptTradeResult>(),
+            CapturedBacktests: Array.Empty<Meridian.Backtesting.Sdk.BacktestResult>(),
+            RuntimeParameters: Array.Empty<ParameterDescriptor>(),
+            Checkpoint: checkpoint);
+    }
+
+    private static ScriptRunResult CreateIsolationFailure(
         Stopwatch wallClock,
-        ScriptExecutionCheckpoint? checkpoint)
+        ScriptExecutionCheckpoint? checkpoint,
+        string detail)
     {
         wallClock.Stop();
         return new ScriptRunResult(
@@ -300,14 +326,45 @@ public sealed class ScriptRunner : IScriptRunner
             CompileTime: TimeSpan.Zero,
             PeakMemoryBytes: 0,
             CompilationErrors: Array.Empty<ScriptDiagnostic>(),
-            RuntimeDiagnostics: Array.Empty<ScriptDiagnostic>(),
-            RuntimeError: "Script cancelled by user.",
+            RuntimeDiagnostics:
+            [
+                new ScriptDiagnostic("RuntimeIsolation", detail, 0, 0)
+            ],
+            RuntimeError: "Script parameters or checkpoint could not be isolated safely.",
             ConsoleOutput: string.Empty,
             Metrics: Array.Empty<KeyValuePair<string, string>>(),
             Plots: Array.Empty<PlotRequest>(),
             Trades: Array.Empty<ScriptTradeResult>(),
-            CapturedBacktests: Array.Empty<BacktestResult>(),
+            CapturedBacktests: Array.Empty<Meridian.Backtesting.Sdk.BacktestResult>(),
             RuntimeParameters: Array.Empty<ParameterDescriptor>(),
             Checkpoint: checkpoint);
+    }
+
+    private async Task<bool> TryAcquireWorkerSlotAsync(CancellationToken ct)
+    {
+        if (_workerSlots.Wait(0))
+            return true;
+
+        if (_options.MaxQueuedWorkerRequests == 0)
+            return false;
+
+        var queued = Interlocked.Increment(ref _queuedWorkerRequests);
+        if (queued > _options.MaxQueuedWorkerRequests)
+        {
+            Interlocked.Decrement(ref _queuedWorkerRequests);
+            return false;
+        }
+
+        try
+        {
+            return await _workerSlots.WaitAsync(
+                    _options.WorkerQueueWaitTimeoutMilliseconds,
+                    ct)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            Interlocked.Decrement(ref _queuedWorkerRequests);
+        }
     }
 }

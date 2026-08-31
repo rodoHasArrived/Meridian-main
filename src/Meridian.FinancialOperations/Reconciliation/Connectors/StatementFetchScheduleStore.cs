@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Domain.Reconciliation;
 using Meridian.Storage.Store;
 using Microsoft.Extensions.Logging;
 
@@ -18,13 +19,19 @@ public sealed record StatementFetchSchedule(
     bool Enabled,
     DateTimeOffset? LastRunAtUtc = null,
     string? LastRunStatus = null,
-    string SourceKind = "broker")
+    string SourceKind = "broker",
+    DateTimeOffset? LastAttemptAtUtc = null,
+    string? TenantId = null,
+    string? CompanyId = null,
+    DateOnly? PeriodStart = null,
+    DateOnly? PeriodEnd = null,
+    StatementAccountingScope? AccountingScope = null)
 {
     public DateTimeOffset? NextDueAtUtc =>
-        !Enabled ? null : LastRunAtUtc?.AddHours(Math.Max(1, CadenceHours));
+        !Enabled ? null : (LastAttemptAtUtc ?? LastRunAtUtc)?.AddHours(Math.Max(1, CadenceHours));
 
     public bool IsDue(DateTimeOffset nowUtc) =>
-        Enabled && (LastRunAtUtc is null || NextDueAtUtc is { } due && due <= nowUtc);
+        Enabled && (NextDueAtUtc is null || NextDueAtUtc is { } due && due <= nowUtc);
 }
 
 public sealed record StatementFetchScheduleSnapshot(
@@ -41,7 +48,11 @@ public interface IStatementFetchScheduleStore
     Task<StatementFetchSchedule> UpsertAsync(StatementFetchSchedule schedule, CancellationToken ct = default);
     Task<bool> DeleteAsync(string scheduleId, CancellationToken ct = default);
     Task RecordRunAsync(string scheduleId, DateTimeOffset ranAtUtc, string status, CancellationToken ct = default);
-    Task RecordFailureAsync(string scheduleId, string status, CancellationToken ct = default);
+    Task RecordFailureAsync(
+        string scheduleId,
+        DateTimeOffset attemptedAtUtc,
+        string status,
+        CancellationToken ct = default);
 }
 
 /// <summary>
@@ -75,30 +86,33 @@ public sealed class FileStatementFetchScheduleStore
             ScheduleId = string.IsNullOrWhiteSpace(schedule.ScheduleId)
                 ? Guid.NewGuid().ToString("N")
                 : schedule.ScheduleId.Trim(),
-            SourceKind = schedule.SourceKind.Trim().ToLowerInvariant()
+            SourceKind = schedule.SourceKind.Trim().ToLowerInvariant(),
+            TenantId = schedule.TenantId?.Trim(),
+            CompanyId = schedule.CompanyId?.Trim(),
+            LastRunAtUtc = null,
+            LastRunStatus = null,
+            LastAttemptAtUtc = null
         };
 
         return await UpdateSnapshotAsync(snapshot =>
         {
-            // Preserve run history across operator edits so cadence changes do not retrigger
-            // an immediate fetch.
             var existing = snapshot.Schedules.FirstOrDefault(candidate =>
                 string.Equals(candidate.ScheduleId, normalized.ScheduleId, StringComparison.OrdinalIgnoreCase));
-            if (existing is not null)
-            {
-                normalized = normalized with
+            var retainedSchedule = existing is not null && HasSameRunAuthority(existing, normalized)
+                ? normalized with
                 {
                     LastRunAtUtc = existing.LastRunAtUtc,
-                    LastRunStatus = existing.LastRunStatus
-                };
-            }
+                    LastRunStatus = existing.LastRunStatus,
+                    LastAttemptAtUtc = existing.LastAttemptAtUtc
+                }
+                : normalized;
 
             var retained = snapshot.Schedules
-                .Where(candidate => !string.Equals(candidate.ScheduleId, normalized.ScheduleId, StringComparison.OrdinalIgnoreCase))
-                .Append(normalized)
+                .Where(candidate => !string.Equals(candidate.ScheduleId, retainedSchedule.ScheduleId, StringComparison.OrdinalIgnoreCase))
+                .Append(retainedSchedule)
                 .OrderBy(static candidate => candidate.ScheduleId, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
-            return (new StatementFetchScheduleSnapshot(SnapshotVersion, retained), normalized);
+            return (new StatementFetchScheduleSnapshot(SnapshotVersion, retained), retainedSchedule);
         }, ct).ConfigureAwait(false);
     }
 
@@ -128,7 +142,12 @@ public sealed class FileStatementFetchScheduleStore
                 return snapshot;
             }
 
-            var updated = existing with { LastRunAtUtc = ranAtUtc, LastRunStatus = status };
+            var updated = existing with
+            {
+                LastRunAtUtc = ranAtUtc,
+                LastAttemptAtUtc = ranAtUtc,
+                LastRunStatus = status
+            };
             var retained = snapshot.Schedules
                 .Select(candidate => string.Equals(candidate.ScheduleId, updated.ScheduleId, StringComparison.OrdinalIgnoreCase)
                     ? updated
@@ -138,7 +157,11 @@ public sealed class FileStatementFetchScheduleStore
         }, ct).ConfigureAwait(false);
     }
 
-    public async Task RecordFailureAsync(string scheduleId, string status, CancellationToken ct = default)
+    public async Task RecordFailureAsync(
+        string scheduleId,
+        DateTimeOffset attemptedAtUtc,
+        string status,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scheduleId);
         await UpdateSnapshotAsync(snapshot =>
@@ -150,7 +173,11 @@ public sealed class FileStatementFetchScheduleStore
                 return snapshot;
             }
 
-            var updated = existing with { LastRunStatus = status };
+            var updated = existing with
+            {
+                LastAttemptAtUtc = attemptedAtUtc,
+                LastRunStatus = status
+            };
             var retained = snapshot.Schedules
                 .Select(candidate => string.Equals(candidate.ScheduleId, updated.ScheduleId, StringComparison.OrdinalIgnoreCase)
                     ? updated
@@ -199,7 +226,39 @@ public sealed class FileStatementFetchScheduleStore
         {
             throw new InvalidDataException("Fetch schedule source kind must be broker or custodian.");
         }
+
+        if (string.IsNullOrWhiteSpace(schedule.TenantId)
+            || string.IsNullOrWhiteSpace(schedule.CompanyId)
+            || !schedule.PeriodStart.HasValue
+            || !schedule.PeriodEnd.HasValue
+            || schedule.PeriodEnd.Value < schedule.PeriodStart.Value
+            || schedule.PeriodEnd.Value == DateOnly.MaxValue
+            || schedule.AccountingScope is null
+            || schedule.AccountingScope.AsOfDate != schedule.PeriodEnd.Value)
+        {
+            throw new InvalidDataException(
+                "Fetch schedules require tenant, company, an exact statement period, and resolved fund/book/period accounting scope.");
+        }
     }
+
+    private static bool HasSameRunAuthority(
+        StatementFetchSchedule existing,
+        StatementFetchSchedule updated)
+        => SameText(existing.ConnectorId, updated.ConnectorId)
+           && SameText(existing.ExternalAccountId, updated.ExternalAccountId)
+           && SameText(existing.FundAccountId, updated.FundAccountId)
+           && SameText(existing.SourceInstitution, updated.SourceInstitution)
+           && SameText(existing.MappingProfileId, updated.MappingProfileId)
+           && SameText(existing.ToleranceProfileId, updated.ToleranceProfileId)
+           && SameText(existing.SourceKind, updated.SourceKind)
+           && SameText(existing.TenantId, updated.TenantId)
+           && SameText(existing.CompanyId, updated.CompanyId)
+           && existing.PeriodStart == updated.PeriodStart
+           && existing.PeriodEnd == updated.PeriodEnd
+           && Equals(existing.AccountingScope, updated.AccountingScope);
+
+    private static bool SameText(string? left, string? right)
+        => string.Equals(left?.Trim(), right?.Trim(), StringComparison.OrdinalIgnoreCase);
 
     private static string GetSnapshotPath(string dataRoot)
     {

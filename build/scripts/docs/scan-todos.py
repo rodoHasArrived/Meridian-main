@@ -21,6 +21,7 @@ TEXT_EXTENSIONS = {
 }
 SKIP_DIRS = {
     ".git",
+    ".ai",
     "node_modules",
     "bin",
     "obj",

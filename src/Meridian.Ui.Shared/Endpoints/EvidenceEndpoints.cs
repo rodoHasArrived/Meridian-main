@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Evidence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -21,8 +22,15 @@ public static class EvidenceEndpoints
             HttpContext context) =>
         {
             var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
+            var trustedScope = ResolveRequiredDocumentScope(context);
             var manifest = await store
-                .TryOpenManifestAsync(subjectKind, subjectId, fileName, context.RequestAborted)
+                .TryOpenManifestAsync(
+                    subjectKind,
+                    subjectId,
+                    fileName,
+                    trustedScope.TenantId,
+                    trustedScope.CompanyId,
+                    context.RequestAborted)
                 .ConfigureAwait(false);
             return manifest is null
                 ? Results.NotFound(Error(
@@ -40,15 +48,23 @@ public static class EvidenceEndpoints
         })
         .WithName("GetWorkstationEvidenceManifest")
         .Produces(200, contentType: "application/json")
-        .Produces<EvidenceEndpointErrorDto>(404);
+        .Produces<EvidenceEndpointErrorDto>(404)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequirePermission(UserPermission.ViewReporting)
+        .RequireWorkstationTenantCompanyScope();
 
         app.MapGet("/workstation/evidence/vault/{vaultId}", async (
             string vaultId,
             HttpContext context) =>
         {
             var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
+            var trustedScope = ResolveRequiredDocumentScope(context);
             var manifest = await store
-                .TryOpenManifestByVaultIdAsync(vaultId, context.RequestAborted)
+                .TryOpenManifestByVaultIdAsync(
+                    vaultId,
+                    trustedScope.TenantId,
+                    trustedScope.CompanyId,
+                    context.RequestAborted)
                 .ConfigureAwait(false);
             return manifest is null
                 ? Results.NotFound(Error(
@@ -64,7 +80,10 @@ public static class EvidenceEndpoints
         })
         .WithName("GetWorkstationEvidenceVaultManifest")
         .Produces(200, contentType: "application/json")
-        .Produces<EvidenceEndpointErrorDto>(404);
+        .Produces<EvidenceEndpointErrorDto>(404)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequirePermission(UserPermission.ViewReporting)
+        .RequireWorkstationTenantCompanyScope();
 
         var group = app.MapGroup("/api/workstation/evidence");
 
@@ -75,7 +94,10 @@ public static class EvidenceEndpoints
             return Results.Json(subjects, jsonOptions);
         })
         .WithName("GetWorkstationEvidenceSubjects")
-        .Produces<IReadOnlyList<EvidenceSubjectDto>>(200);
+        .Produces<IReadOnlyList<EvidenceSubjectDto>>(200)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequirePermission(UserPermission.ViewReporting)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceSubjectPacket), async (
             string subjectKind,
@@ -88,7 +110,10 @@ public static class EvidenceEndpoints
         .WithName("GetWorkstationEvidencePacket")
         .Produces<EvidencePacketDto>(200)
         .Produces<EvidenceEndpointErrorDto>(400)
-        .Produces<EvidenceEndpointErrorDto>(404);
+        .Produces<EvidenceEndpointErrorDto>(404)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequirePermission(UserPermission.ViewReporting)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceSubjectGraph), async (
             string subjectKind,
@@ -101,6 +126,15 @@ public static class EvidenceEndpoints
                 return Results.BadRequest(Error(
                     "unsupported-evidence-subject-kind",
                     $"Evidence subject kind '{subjectKind}' is not supported.",
+                    subjectKind,
+                    subjectId));
+            }
+
+            if (!await CanAccessEvidenceVaultSubjectAsync(subjectKind, subjectId, context).ConfigureAwait(false))
+            {
+                return Results.NotFound(Error(
+                    "evidence-subject-not-found",
+                    $"Evidence subject '{subjectKind}/{subjectId}' was not found.",
                     subjectKind,
                     subjectId));
             }
@@ -118,7 +152,10 @@ public static class EvidenceEndpoints
         .WithName("GetWorkstationEvidenceGraph")
         .Produces<EvidenceGraphDto>(200)
         .Produces<EvidenceEndpointErrorDto>(400)
-        .Produces<EvidenceEndpointErrorDto>(404);
+        .Produces<EvidenceEndpointErrorDto>(404)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequirePermission(UserPermission.ViewReporting)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapPost(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceSubjectValidate), async (
             string subjectKind,
@@ -133,7 +170,10 @@ public static class EvidenceEndpoints
         .WithName("ValidateWorkstationEvidencePacket")
         .Produces<EvidenceCompletenessDto>(200)
         .Produces<EvidenceEndpointErrorDto>(400)
-        .Produces<EvidenceEndpointErrorDto>(404);
+        .Produces<EvidenceEndpointErrorDto>(404)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequirePermission(UserPermission.ManageReporting)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapPost(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceSubjectExportManifest), async (
             string subjectKind,
@@ -152,9 +192,24 @@ public static class EvidenceEndpoints
                 return requestResult.Error;
             }
 
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return ApiProblemDetails.Forbidden(
+                    context,
+                    "An authenticated evidence-export actor is required.");
+            }
+
+            var trustedScope = ResolveRequiredDocumentScope(context);
+            var trustedRequest = requestResult.Request with
+            {
+                RequestedBy = actor,
+                TenantId = trustedScope.TenantId,
+                Scope = trustedScope.CompanyId
+            };
+
             var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
             var response = await store
-                .WriteManifestAsync(packetResult.Packet, requestResult.Request, context.RequestAborted)
+                .WriteManifestAsync(packetResult.Packet, trustedRequest, context.RequestAborted)
                 .ConfigureAwait(false);
             return Results.Json(response, jsonOptions);
         })
@@ -162,7 +217,10 @@ public static class EvidenceEndpoints
         .Produces<EvidencePacketExportResponse>(200)
         .Produces<EvidenceEndpointErrorDto>(400)
         .Produces<EvidenceEndpointErrorDto>(404)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequirePermission(UserPermission.ManageReporting)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceTemplates), (HttpContext context) =>
         {
@@ -170,7 +228,10 @@ public static class EvidenceEndpoints
             return Results.Json(registry.GetTemplates(), jsonOptions);
         })
         .WithName("GetWorkstationEvidenceTemplates")
-        .Produces<IReadOnlyList<EvidenceTemplateDto>>(200);
+        .Produces<IReadOnlyList<EvidenceTemplateDto>>(200)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequirePermission(UserPermission.ViewReporting)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapPost(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceVaultIntake), async (EvidenceVaultIntakeRequestDto? request, HttpContext context) =>
         {
@@ -181,8 +242,38 @@ public static class EvidenceEndpoints
                     "Evidence vault intake request body must be a valid JSON object."));
             }
 
+            if (request.IntakeSource?.SourceKind is
+                EvidenceDocumentIntakeSourceKindDto.LocalFile or
+                EvidenceDocumentIntakeSourceKindDto.ImportedFileReference)
+            {
+                return Results.BadRequest(Error(
+                    "invalid-evidence-vault-intake-source",
+                    "Workstation evidence intake cannot read a server-local file path. Upload the content or use a configured external-source adapter.",
+                    request.SubjectKind,
+                    request.SubjectId));
+            }
+
             try
             {
+                if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+                {
+                    return ApiProblemDetails.Forbidden(
+                        context,
+                        "An authenticated evidence-intake actor is required.");
+                }
+
+                var trustedScope = ResolveRequiredDocumentScope(context);
+                request = request with
+                {
+                    Actor = actor,
+                    ReceivedBy = actor,
+                    TenantId = trustedScope.TenantId,
+                    Scope = trustedScope.CompanyId,
+                    ExtractionStatus = null,
+                    ExtractorId = null,
+                    ReviewerState = null
+                };
+
                 var extractor = context.RequestServices.GetService<IEvidenceDocumentExtractor>();
                 if (extractor is not null)
                 {
@@ -198,8 +289,9 @@ public static class EvidenceEndpoints
                     request = request with
                     {
                         ExtractedFields = extraction.Fields,
-                        ExtractionStatus = request.ExtractionStatus ?? extraction.Status,
-                        ExtractorId = request.ExtractorId ?? extraction.ExtractorId
+                        ExtractionStatus = NormalizeExternalIntakeExtractionStatus(extraction.Status),
+                        ExtractorId = extraction.ExtractorId,
+                        ReviewerState = null
                     };
                 }
 
@@ -229,7 +321,10 @@ public static class EvidenceEndpoints
         .WithName("IntakeWorkstationEvidenceVaultArtifact")
         .Produces<EvidenceVaultIntakeResponseDto>(StatusCodes.Status201Created)
         .Produces<EvidenceEndpointErrorDto>(StatusCodes.Status400BadRequest)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequirePermission(UserPermission.ManageReporting)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapPost(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceVaultSearch), async (EvidenceVaultLookupRequestDto request, HttpContext context) =>
         {
@@ -241,12 +336,22 @@ public static class EvidenceEndpoints
             }
 
             var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
-            var result = await store.FindByLinkageAsync(request, context.RequestAborted).ConfigureAwait(false);
+            var trustedScope = ResolveRequiredDocumentScope(context);
+            var scopedRequest = request with
+            {
+                TenantId = trustedScope.TenantId,
+                Scope = trustedScope.CompanyId
+            };
+            var result = await store.FindByLinkageAsync(scopedRequest, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("SearchWorkstationEvidenceVault")
+        .DeclareNonMutating("Evidence-vault lookup by linkage criteria; the body carries the query because it has several optional fields, and the handler only reads through IEvidenceArtifactStore.FindByLinkageAsync.")
         .Produces<IReadOnlyList<EvidenceVaultIdentityDto>>(200)
-        .Produces<EvidenceEndpointErrorDto>(400);
+        .Produces<EvidenceEndpointErrorDto>(400)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequirePermission(UserPermission.ViewReporting)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceVaultRequestLists), async (
             string? requestListKind,
@@ -273,6 +378,7 @@ public static class EvidenceEndpoints
             }
 
             var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
+            var trustedScope = ResolveRequiredDocumentScope(context);
             var result = await store.ListRequestListsAsync(
                 new EvidenceVaultRequestListQueryDto(
                     RequestListKind: requestListKind,
@@ -282,13 +388,20 @@ public static class EvidenceEndpoints
                     Status: status,
                     SubjectKind: subjectKind,
                     SubjectId: subjectId,
-                    MaxResults: maxResults),
+                    MaxResults: maxResults)
+                {
+                    TenantId = trustedScope.TenantId,
+                    Scope = trustedScope.CompanyId
+                },
                 context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("ListWorkstationEvidenceVaultRequestLists")
         .Produces<IReadOnlyList<EvidenceVaultRequestListEntryDto>>(200)
-        .Produces<EvidenceEndpointErrorDto>(400);
+        .Produces<EvidenceEndpointErrorDto>(400)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequirePermission(UserPermission.ViewReporting)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceVaultDocuments), async (
             string? classification,
@@ -324,6 +437,7 @@ public static class EvidenceEndpoints
             }
 
             var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
+            var trustedScope = ResolveRequiredDocumentScope(context);
             var result = await store.ListDocumentsAsync(
                 new EvidenceVaultDocumentQueryDto(
                     Classification: classificationResult.Value,
@@ -334,15 +448,18 @@ public static class EvidenceEndpoints
                     ObjectId: objectId,
                     SubjectKind: subjectKind,
                     SubjectId: subjectId,
-                    TenantId: tenantId,
-                    Scope: scope,
+                    TenantId: trustedScope.TenantId,
+                    Scope: trustedScope.CompanyId,
                     MaxResults: maxResults),
                 context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("ListWorkstationEvidenceVaultDocuments")
         .Produces<IReadOnlyList<EvidenceVaultDocumentEntryDto>>(200)
-        .Produces<EvidenceEndpointErrorDto>(400);
+        .Produces<EvidenceEndpointErrorDto>(400)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequirePermission(UserPermission.ViewReporting)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapPost(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceVaultDocumentReview), async (
             string vaultId,
@@ -361,9 +478,23 @@ public static class EvidenceEndpoints
 
             try
             {
+                if (!EndpointAuthorization.TryResolveActor(context, out var reviewer))
+                {
+                    return ApiProblemDetails.Forbidden(
+                        context,
+                        "An authenticated evidence-review actor is required.");
+                }
+
                 var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
+                var trustedScope = ResolveRequiredDocumentScope(context);
                 var result = await store
-                    .ReviewDocumentAsync(vaultId, documentId, request, context.RequestAborted)
+                    .ReviewDocumentAsync(
+                        vaultId,
+                        documentId,
+                        trustedScope.TenantId,
+                        trustedScope.CompanyId,
+                        request with { Reviewer = reviewer },
+                        context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
                     ? Results.NotFound(Error(
@@ -386,7 +517,10 @@ public static class EvidenceEndpoints
         .Produces<EvidenceVaultDocumentReviewResponseDto>(200)
         .Produces<EvidenceEndpointErrorDto>(400)
         .Produces<EvidenceEndpointErrorDto>(404)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequirePermission(UserPermission.ApproveReporting)
+        .RequireWorkstationTenantCompanyScope();
 
         return app;
     }
@@ -421,6 +555,18 @@ public static class EvidenceEndpoints
     private static string? FirstNonEmpty(params string?[] values)
         => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
 
+    private static EvidenceExtractionStatusDto NormalizeExternalIntakeExtractionStatus(
+        EvidenceExtractionStatusDto status)
+        => status is EvidenceExtractionStatusDto.Accepted or EvidenceExtractionStatusDto.Rejected
+            ? EvidenceExtractionStatusDto.NeedsReview
+            : status;
+
+    private static (string TenantId, string CompanyId) ResolveRequiredDocumentScope(HttpContext context)
+    {
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        return (tenantContext.TenantId!, tenantContext.CompanyId!);
+    }
+
     private static async Task<IResult> ResolvePacketAsync(
         string subjectKind,
         string subjectId,
@@ -448,6 +594,15 @@ public static class EvidenceEndpoints
                 subjectId)));
         }
 
+        if (!await CanAccessEvidenceVaultSubjectAsync(subjectKind, subjectId, context).ConfigureAwait(false))
+        {
+            return (null, Results.NotFound(Error(
+                "evidence-subject-not-found",
+                $"Evidence subject '{subjectKind}/{subjectId}' was not found.",
+                subjectKind,
+                subjectId)));
+        }
+
         var ledgerBookId = ResolveLedgerBookId(context);
         var packet = await service.GetPacketAsync(subjectKind, subjectId, context.RequestAborted, ledgerBookId).ConfigureAwait(false);
         return packet is null
@@ -457,6 +612,31 @@ public static class EvidenceEndpoints
                 subjectKind,
                 subjectId)))
             : (packet, Results.Empty);
+    }
+
+    private static async Task<bool> CanAccessEvidenceVaultSubjectAsync(
+        string subjectKind,
+        string subjectId,
+        HttpContext context)
+    {
+        if (!string.Equals(
+                subjectKind,
+                EvidenceSubjectResolver.EvidenceVaultKind,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var trustedScope = ResolveRequiredDocumentScope(context);
+        var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
+        var identity = await store
+            .TryGetVaultIdentityAsync(
+                subjectId,
+                trustedScope.TenantId,
+                trustedScope.CompanyId,
+                context.RequestAborted)
+            .ConfigureAwait(false);
+        return identity is not null;
     }
 
     private static Guid? ResolveLedgerBookId(HttpContext context)

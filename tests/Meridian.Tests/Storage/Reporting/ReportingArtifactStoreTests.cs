@@ -11,7 +11,9 @@ using Xunit;
 namespace Meridian.Tests.Storage.Reporting;
 
 [Trait("Category", "Integration")]
-public sealed class ReportingArtifactStoreTests : IClassFixture<ReportingArtifactDatabaseFixture>
+public sealed class ReportingArtifactStoreTests :
+    IClassFixture<ReportingArtifactDatabaseFixture>,
+    IAsyncLifetime
 {
     private readonly ReportingArtifactDatabaseFixture _database;
 
@@ -19,6 +21,10 @@ public sealed class ReportingArtifactStoreTests : IClassFixture<ReportingArtifac
     {
         _database = database;
     }
+
+    public Task InitializeAsync() => Task.CompletedTask;
+
+    public Task DisposeAsync() => _database.ResetAsync();
 
     [ReportingDatabaseFact]
     public async Task StoreAsync_PersistsContentAddressedBytesIdempotently()
@@ -132,7 +138,7 @@ public sealed class ReportingArtifactDatabaseFixture : IAsyncLifetime
         Options = new ReportingArtifactStoreOptions
         {
             ConnectionString = _server.ConnectionString,
-            Schema = PostgresTestSchema.NewSchemaName("reporting_artifact")
+            Schema = _server.CreateSchemaName("reporting_artifact")
         };
 
         try
@@ -154,12 +160,24 @@ public sealed class ReportingArtifactDatabaseFixture : IAsyncLifetime
             return;
         }
 
-        if (_server.UsesExternalConnection)
+        await _server.DisposeAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Drops and recreates this class fixture's private schema after each test method so a
+    /// destructive or interrupted scenario cannot leak rows or disabled triggers to the next one.
+    /// </summary>
+    public async Task ResetAsync()
+    {
+        if (_server is null)
         {
-            await new ReportingMigrationRunner(Options).ResetSchemaAsync().ConfigureAwait(false);
+            throw new InvalidOperationException("The reporting database fixture is not initialized.");
         }
 
-        await _server.DisposeAsync().ConfigureAwait(false);
+        var migrationRunner = new ReportingMigrationRunner(Options);
+        await migrationRunner.ResetSchemaAsync().ConfigureAwait(false);
+        await migrationRunner.EnsureMigratedAsync().ConfigureAwait(false);
+        Store = new PostgresReportingArtifactStore(Options);
     }
 
     public async Task<long> CountRowsAsync(ReportingArtifactIdentity identity)

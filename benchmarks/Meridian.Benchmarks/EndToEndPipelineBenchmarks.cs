@@ -49,7 +49,7 @@ public class EndToEndPipelineBenchmarks
                     SequenceNumber: i,
                     StreamId: "BENCH",
                     Venue: "TEST"
-                ));
+                ), source: "BENCH");
         }
     }
 
@@ -276,7 +276,7 @@ public class HistoricalDedupKeySimulationBenchmarks
                 SequenceNumber: 12345,
                 StreamId: "ALPACA",
                 Venue: "NYSE"
-            ));
+            ), source: "BENCH");
 
         _quoteEvent = MarketEvent.BboQuote(
             DateTimeOffset.UtcNow,
@@ -291,7 +291,7 @@ public class HistoricalDedupKeySimulationBenchmarks
                 sequenceNumber: 12345,
                 streamId: "ALPACA",
                 venue: "NYSE"
-            ));
+            ), source: "BENCH");
 
         _precomputedKey = ComputeDedupKey(_tradeEvent);
 
@@ -371,7 +371,7 @@ public class MarketEventCreationBenchmarks
                 SequenceNumber: 12345,
                 StreamId: "ALPACA",
                 Venue: "NYSE"
-            ));
+            ), source: "BENCH");
     }
 
     /// <summary>
@@ -392,7 +392,7 @@ public class MarketEventCreationBenchmarks
                 SequenceNumber: 12345,
                 StreamId: "ALPACA",
                 Venue: "NYSE"
-            ));
+            ), source: "BENCH");
     }
 
     /// <summary>

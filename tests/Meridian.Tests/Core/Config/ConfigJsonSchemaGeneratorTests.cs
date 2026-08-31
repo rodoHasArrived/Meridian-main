@@ -85,6 +85,16 @@ public sealed class ConfigJsonSchemaGeneratorTests
     }
 
     [Fact]
+    public void GenerateSchema_ExcludesJsonIgnoredCompatibilityAliases()
+    {
+        var alpacaDefinition = _generator.GenerateSchema()["$defs"]!["AlpacaOptions"]!.AsObject();
+        var properties = alpacaDefinition["properties"]!.AsObject();
+
+        properties.ContainsKey("Feed").Should().BeTrue();
+        properties.ContainsKey("EquitiesFeed").Should().BeFalse();
+    }
+
+    [Fact]
     public void GenerateSchema_IncludesSecurityMasterWorkbenchOptions()
     {
         var workbenchSchema = GetRootProperty("SecurityMasterWorkbench");

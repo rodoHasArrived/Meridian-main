@@ -2,6 +2,8 @@ import type { AppShellLinkedContextItem } from "@/app-shell.linked-context";
 import type { AppShellOperatingScopeState } from "@/app-shell.operating-scope";
 import type { PrimaryOperatorWorkflowStepId } from "@/app-shell.workflow-continuity";
 
+export type AppShellWorkflowContinuityMode = "matched" | "choose-task" | "hidden";
+
 export interface AppShellWorkflowContinuityStep {
   id: string;
   label: string;
@@ -42,6 +44,7 @@ export interface AppShellDecisionBrief {
 }
 
 export interface AppShellWorkflowContinuityViewModel {
+  mode: AppShellWorkflowContinuityMode;
   title: string;
   summary: string;
   primaryOperatorFlowLabel: string;

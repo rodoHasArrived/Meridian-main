@@ -1,3 +1,4 @@
+using Meridian.Contracts.Text;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
 using Meridian.Strategies.Models;
@@ -33,7 +34,7 @@ public sealed class TradingOperatorLiveOrderReadinessGate : ILiveOrderReadinessG
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var requestedRunId = Normalize(request.RunId);
+        var requestedRunId = TextPrimitives.NormalizeOptional(request.RunId);
 
         if (!request.FundAccountId.HasValue)
         {
@@ -43,7 +44,7 @@ public sealed class TradingOperatorLiveOrderReadinessGate : ILiveOrderReadinessG
 
         var readiness = await _readinessProvider.GetAsync(request.FundAccountId.Value, ct).ConfigureAwait(false);
         var promotion = readiness.Promotion;
-        var targetRunId = Normalize(promotion?.TargetRunId);
+        var targetRunId = TextPrimitives.NormalizeOptional(promotion?.TargetRunId);
 
         if (targetRunId is null || !string.Equals(targetRunId, requestedRunId, StringComparison.Ordinal))
         {
@@ -152,9 +153,6 @@ public sealed class TradingOperatorLiveOrderReadinessGate : ILiveOrderReadinessG
             ? summary
             : $"{summary}, and {blockers.Count - maxBlockers} more";
     }
-
-    private static string? Normalize(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string NormalizeChecklistItem(string? checklistItem) =>
         PromotionApprovalChecklist.Normalize([checklistItem ?? string.Empty]).FirstOrDefault() ?? string.Empty;

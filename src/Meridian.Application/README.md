@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-19
+last_reviewed: 2026-08-04
 ---
 
 # src/Meridian.Application
@@ -24,6 +24,19 @@ and UI presentation concerns in their owning layers.
 
 ## Key folders and files
 
+- `Tenancy/` - the authoritative multi-tenant scope fan-out authority. `AuthoritativeScopeFanOutService`
+  composes the registered `IScopeAssignmentProvider` authorities that answer "which accounting scopes
+  does this security-level fact reach?"; `FundAccountHoldingScopeAssignmentProvider` is the first such
+  authority, joining custodied holdings to the fund-profile tenancy registry. Composition is by
+  unanimity rather than union: the result is authoritative only when every registered provider saw
+  the whole of its own slice, and zero providers is an unanswerable question rather than an empty
+  affected set. The provider enumerates accounts through `QueryAccountsAcrossTenantsAsync`, which
+  deliberately bypasses the caller-tenant read predicate — a caller-scoped list would make a fact
+  that also reaches other tenants look confined to one. A holding it can see but cannot attribute
+  (an account with no fund, a fund with no bound tenant, or an account with no custodian statement
+  for the effective date) makes the slice non-authoritative rather than silently shrinking the
+  affected set. Nothing read across tenants is returned to a caller; consumers learn only whether
+  the affected set is confined to their own scope.
 - `Commands/` - CLI command handlers and operator workflow adapters. Runbook command flags adapt
   the Workflow-owned runbook store and executor instead of owning runbook state in Application;
   fund workflow command-state transitions also live in `Meridian.Workflow.Workflows`. The schema
@@ -33,7 +46,9 @@ and UI presentation concerns in their owning layers.
   `Meridian.DataIntegration.Credentials`; Application no longer owns generic provider credential
   store contracts. Provider plugin assembly loading and `DataSourceRegistry` discovery now live in
   ProviderSdk; Application and WPF consume the loader instead of keeping reflection-based provider
-  discovery in Application services.
+  discovery in Application services. Default provider setup handlers are registered through one
+  idempotent composition helper so layered workstation composition retains every catalog entry and
+  alias exactly once, including entries that share a generic handler implementation type.
 - ETL commands, composition, and orchestration services consume
   `Meridian.DataIntegration.Etl` contracts, normalization services, and job service/orchestrator.
   Application composes Data Integration-owned ETL behavior through `IEtlIngestionJobCoordinator`
@@ -75,6 +90,11 @@ and UI presentation concerns in their owning layers.
   ambiguous denomination. Position and holding records that carry quantity, price, and market
   value are also checked before staging; if `quantity * price.amount` differs from
   `marketValue.amount` by more than one cent, the record stays in quarantine for operator review.
+  Field coercion itself — decimal and date parsing, transform-parameter lookup, and the
+  `negativeValues` sign flip — is owned by `ProviderIntegrationFieldTransforms`. The CSV dry-run,
+  REST dry-run, and quarantine-replay paths all route through it rather than carrying their own
+  copies, so a dry run and the replay it predicts coerce a value identically, and the
+  operator-visible `transform.*` issue codes have one definition.
   When a workstation endpoint supplies tenant context,
   setup, dry-run, readiness, activation, and monitoring services resolve a tenant-scoped
   provider-integration store before reading or writing manifests, connections, and retained
@@ -124,6 +144,13 @@ and UI presentation concerns in their owning layers.
   `EventCanonicalizer`, and the Data Integration-owned `CanonicalizingPublisher` decorator.
   Application still owns the concrete event pipeline, dead-letter/quarantine implementation, and
   composition wiring that supplies the Domain-owned quarantine sink port.
+- `EventPipeline` durability follows a fixed, resumable batch order — validate → reserve
+  (memory-only dedup claim) → WAL append → WAL flush → sink append → sink flush → dedup
+  commit/flush → WAL commit. Producer-channel acceptance (`TryPublish`/`PublishAsync`) is
+  admission-only, not a durable acknowledgement. Dedup identities persist as versioned ledger
+  entries: version 2 confirms sink durability and suppresses WAL replay, while legacy version-1
+  entries only suppress live ingress and are replayed (then upgraded) during recovery, keeping
+  crash semantics at-least-once — a replayed duplicate is possible, silent loss is not.
 - Event pipeline queueing consumes `Meridian.Platform.Tracing.EventTraceContext` for trace
   propagation, platform-owned OpenTelemetry helpers for market-data activity/counter telemetry,
   the Platform `DefaultEventMetrics` implementation, and the Platform `TracedEventMetrics`
@@ -209,13 +236,20 @@ and UI presentation concerns in their owning layers.
   rules, break classification, repository implementations, and durable case materialization are
   owned by the Financial Operations design module rather than the application layer. The
   Security Master-enriched portfolio-vs-ledger reconciliation engine also lives in Financial
-  Operations and consumes the contracts-owned Security Master query interface.
+  Operations and consumes the contracts-owned Security Master query interface. Retained internal
+  transaction population reads posted journals by accounting effective date and projects only the
+  requested account's cash legs, so late postings remain visible without cross-account transfer
+  amounts being netted into one another; provider-side account identifiers are excluded from
+  degraded-path logs.
 - `Backfill/` - historical backfill request orchestration and execution coordination. Shared run
   results and per-symbol validation signals live in `Meridian.Contracts.Backfill`, while durable
   last-run status, checkpoints, and bar-count sidecars live in `Meridian.Storage.Backfill`.
   Automatic gap-analyzer remediation batches same-provider, same-window symbol gaps into one
   deterministic request and retained execution-history entry; data-quality and quality-alert
-  remediation paths remain single-symbol signals. Auto-remediation execution history also retains
+  remediation paths remain single-symbol signals. A remediation is retained as completed only after
+  its backfill succeeds; cancellation and failure keep their terminal state and recovery evidence,
+  and repeated request identities reuse the retained outcome instead of executing the same repair
+  twice. Auto-remediation execution history also retains
   SLA tier, due-time, owner-assignment, downstream-workflow, and reason-code metadata, and exposes
   `EvaluateRemediationSla` snapshots for overdue, due-soon, failed, open, and completed remediation
   items so critical paper, reconciliation, accounting, and reporting gaps can be distinguished from
@@ -257,7 +291,11 @@ and UI presentation concerns in their owning layers.
   and does not seed a market-data `DataSourceConfig` or provider-routing binding. QuickBooks Online
   is cataloged by the Data Integration credential catalog as a credential-backed accounting-system
   provider; token exchange and GL evidence reads stay in the Data Integration provider seam and
-  shared UI projection seam.
+  shared UI projection seam. Credential-test status and backfill schedule replacements use
+  `AtomicFileWriter`, preserving cancellation and preventing torn JSON from becoming the next
+  restart authority. Backfill schedule mutations publish cloned in-memory state only after the
+  durable write succeeds; deletion commits through an ignored, directory-synced tombstone, and
+  canceled lock acquisition cannot release a semaphore the caller never acquired.
 - `SecurityMaster/` - Security Master orchestration, aggregate rebuild helpers, instrument
   passport composition, and the ledger bridge that posts dividends, splits, distributions, and
   factor/principal paydowns into the Security Master ledger view for downstream reconciliation and
@@ -270,12 +308,19 @@ and UI presentation concerns in their owning layers.
   `Meridian.ReferenceData.SecurityMaster`; this folder consumes those reference-data contracts for
   validation, governance, readiness, projection rebuilds, and endpoint composition. Profile-backed
   validation rules still enforce approved profile-version pinning, typed no-code field values,
-  profile approval metadata, and identifier coverage. Security Master create/amend orchestration preserves pinned
+  profile approval metadata, and identifier coverage. The C# to F# identifier seam preserves
+  optional provider/source metadata without changing standard-identifier identity; a
+  `ProviderSymbol` kind remains the authoritative namespace and contradictory metadata fails
+  validation. Security Master create/amend orchestration preserves pinned
   profile-backed `CustomAsset` and `OtherSecurity` payloads in projection and event evidence while
   reusing the existing generic-security domain backing model. The query service keeps ordinary text
   search delegated to the storage index and uses the projected Security Master universe only when
-  custom profile id, version, field-key, or field-value filters are supplied. Profile definitions
-  are governed by `SecurityAssetProfileGovernanceService`, which merges seeded starter definitions
+  custom profile id, version, field-key, or field-value filters are supplied. Identifier fallback
+  applies the same provider authority as the durable store: provider-bound
+  identifiers and aliases require the exact normalized provider, while providerless legacy primary
+  fields remain eligible only when no matching authoritative identifier row exists. Profile
+  definitions are governed by `SecurityAssetProfileGovernanceService`, which merges seeded starter
+  definitions
   with storage-root persisted drafts, approvals, rollback-created versions, and audit lineage.
   Security Master validation messages use operator-review wording for override audit remediation so
   application-layer guidance does not expose legacy Governance workspace language. Corporate-action
@@ -297,7 +342,9 @@ and UI presentation concerns in their owning layers.
   `SecurityMasterCashFlowService` now generates deterministic calculated bullet and sinker
   schedules from retained Security Master economic terms when provider-backed schedules are not
   selected, so downstream Asset Operations views can present expected coupon/principal dates with
-  source-governed scenario posture instead of an empty calculated schedule.
+  source-governed scenario posture instead of an empty calculated schedule. Retained contractual
+  `principalSchedule` rows are authoritative for their exact dates and amounts; bullet and equal-
+  sinker principal remain the fallback only when no contractual schedule is present.
   `SecurityMasterOperationalReadinessService` layers operational readiness on top of the shared
   asset-class catalog, validator registry, and governed profile catalog for equities, options,
   futures, FX, fixed income, direct loans, structured credit, private fund interests, private
@@ -345,6 +392,9 @@ and UI presentation concerns in their owning layers.
   governance cash-flow projection path as the local JSON/in-memory service, using stored
   structure rows plus fund-account snapshots, bank-statement rows, assignment metadata, and
   optional Security Master economic rules for realized/projected cash-flow evidence.
+  In-memory and PostgreSQL ownership-graph diagnostics share one iterative validator for
+  self-links, dangling nodes, and exact cycle participants, avoiding recursion limits and
+  implementation drift between persistence lanes.
   Ownership-link policy validation is owned by `Meridian.Entities.FundStructure` and prevents
   invalid setup graphs by blocking self-parenting, active cycles, incompatible relationship types,
   overlapping primary links, invalid percentage ownership, sibling percentage over-allocation, and
@@ -416,6 +466,17 @@ and UI presentation concerns in their owning layers.
   data-quality monitoring live in `Meridian.Ui.Shared.Endpoints`. `BackfillCoordinator` lives
   in `Backfill/` alongside the rest of the backfill pipeline.
 - `Composition/` - application feature registration and service wiring.
+  Headless collector, backfill, ETL, and utility profiles build and start a Generic Host so the
+  final production-registration guard, database initialization, coordination, and other registered
+  hosted services enter the normal start/stop lifecycle. The guard starts first, database
+  initialization for Ledger, Security Master, Direct Lending, Asset Operations, Fund Accounts,
+  Fund Structure, Banking, and Money Market follows before background workers start, and host
+  disposal stops hosted services before flushing the event pipeline. Desktop child composition
+  keeps the same final guard and child-local storage/symbol initialization, while delegating
+  process-wide coordinator and accounting-worker ownership to its parent WebApplication to avoid
+  duplicates. One-shot ETL hosts likewise retain guard and local initialization without activating
+  unrelated polling, reconciliation, or daily-accrual workers.
+  Backfill mode uses one backfill-profile host for both its pipeline and providers.
   `StorageFeatureRegistration` keeps production-safe governance composition explicit: production
   startup requires `MERIDIAN_DATABASE_URL` (or the per-domain
   `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING`)
@@ -435,6 +496,27 @@ and UI presentation concerns in their owning layers.
 
 Use this module when changing command behavior, workflow orchestration, feature registration, or
 application service contracts consumed by host and UI surfaces.
+
+Host startup and mode runners preserve one owner for every started resource. Database
+initialization is asynchronous and cancellation-aware; failed UI starts still stop and dispose the
+created server, and an internally owned lifecycle coordinator is released for failures anywhere
+after ownership begins, including service registration before `WebApplication.Build`; collector
+failover setup disposes every partially created provider and initializes coordinator state from the
+provider actually selected for startup; and backfill mode disposes either the composite provider or
+each directly owned provider after the run. Normal Generic Host disposal attempts stop, pipeline
+flush, and host disposal even when an earlier stage fails, then surfaces the original failure, a
+truthful timeout, or an aggregate of multiple cleanup failures. Failed-start cleanup remains
+best-effort so it cannot replace the original startup exception.
+`DualPathEventPipeline` closes admission before shutdown, exposes an explicit bounded stop outcome,
+serializes concurrent writers at each SPSC producer boundary, waits for admitted publishers, and
+reports publication faults or unflushed events rather than silently treating a partial slow-path
+batch as drained. When a bounded stop cannot quiesce, callers can explicitly await terminal cleanup
+before disposing the caller-owned slow path.
+
+Canonical symbol seed migrations use the additive atomic-migration capability exposed by Storage.
+The application migration coordinator submits the complete batch and durable marker together and
+fails closed when a registry does not provide that capability; it no longer publishes per-symbol
+progress that could survive a later conflict or cancellation.
 
 Application consumes coordination through the shared contract ports and module-owned
 implementations. Lease, leadership, scheduled-work ownership, subscription ownership, lease-record,
@@ -482,6 +564,8 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `W3-CONT-001` | Research to paper continuity |
 | `W5-ACCT-001` | Accounting records and operational evidence |
+| `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
+| `W10-MARK-001` | Fail-closed stale-mark policy and mark-age surfacing |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

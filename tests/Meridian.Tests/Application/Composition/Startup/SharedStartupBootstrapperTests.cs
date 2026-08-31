@@ -3,6 +3,8 @@ using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.Commands;
 using Meridian.Application.Composition.Startup;
+using Meridian.Application.Composition.Startup.ModeRunners;
+using Meridian.Application.Composition.Startup.StartupModels;
 using Meridian.Application.Config;
 using Meridian.Core.Config;
 using Meridian.Application.Services;
@@ -196,6 +198,45 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
     }
 
     [Fact]
+    public async Task WorkstationRunner_NonCooperativeStop_IsBoundedAndStillDisposesServer()
+    {
+        var cfg = new AppConfig { DataRoot = CreateTempDirectory() };
+        var configPath = CreateConfigFile(cfg);
+        await using var configService = new ConfigurationService(_log);
+        using var lifecycle = ApplicationLifecycleCoordinator.Create(_log);
+        var server = new NonCooperativeDashboardServer();
+        var runner = new WorkstationModeRunner(
+            _log,
+            (_, _, _) => server,
+            TimeSpan.FromMilliseconds(75));
+        var context = new StartupContext
+        {
+            CliArgs = CliArguments.Parse(["--mode", "workstation"]),
+            ConfigPath = configPath,
+            Config = cfg,
+            Deployment = DeploymentContext.ForWorkstation(configPath, port: 4321),
+            ConfigurationService = configService,
+            DashboardServerFactory = (_, _, _) => server,
+            Lifecycle = lifecycle,
+            Log = _log,
+            CancellationToken = lifecycle.StopWorkToken
+        };
+
+        var runTask = runner.RunAsync(context);
+        await server.Started.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        lifecycle.SignalTermination();
+
+        (await runTask.WaitAsync(TimeSpan.FromSeconds(2))).Should().Be(0);
+        stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(1));
+        server.StopCallCount.Should().Be(1);
+        server.DisposeCallCount.Should().Be(1);
+
+        server.ReleaseStop();
+        await server.StopCompleted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+    }
+
+    [Fact]
     public async Task RunAsync_EmitsCorrelatedStartupPhaseDiagnostics()
     {
         var cfg = new AppConfig { DataRoot = CreateTempDirectory() };
@@ -355,6 +396,40 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
             DisposeCallCount++;
             return ValueTask.CompletedTask;
         }
+    }
+
+    private sealed class NonCooperativeDashboardServer : IHostDashboardServer
+    {
+        private readonly TaskCompletionSource _releaseStop =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource Started { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource StopCompleted { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public int StopCallCount { get; private set; }
+        public int DisposeCallCount { get; private set; }
+
+        public Task StartAsync(CancellationToken ct = default)
+        {
+            Started.TrySetResult();
+            return Task.CompletedTask;
+        }
+
+        public async Task StopAsync(CancellationToken ct = default)
+        {
+            StopCallCount++;
+            await _releaseStop.Task.ConfigureAwait(false);
+            StopCompleted.TrySetResult();
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            DisposeCallCount++;
+            return ValueTask.CompletedTask;
+        }
+
+        public void ReleaseStop() => _releaseStop.TrySetResult();
     }
 
     private sealed class CollectingSink : ILogEventSink

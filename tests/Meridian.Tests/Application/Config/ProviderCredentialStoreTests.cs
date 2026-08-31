@@ -8,6 +8,9 @@ using Xunit;
 
 namespace Meridian.Tests.Application.Config;
 
+// Mutates process-global provider-credential environment variables that concurrent provider
+// composition reads ambiently, so this class must not run in parallel with other collections (#2682).
+[Collection("Sequential")]
 public sealed class ProviderCredentialStoreTests : IDisposable
 {
     private readonly string _root;
@@ -226,6 +229,38 @@ public sealed class ProviderCredentialStoreTests : IDisposable
 
         validation.Success.Should().BeTrue();
         validation.Credentials.Should().Contain("ApiKey", "setup-twelve-key");
+    }
+
+    [Fact]
+    public void DefaultProviderSetupHandlers_IncludesIbFlexCredentialHandler()
+    {
+        var handler = DefaultProviderSetupHandlers.Create().Single(h => h.CanHandle("ib-flex-web-service"));
+
+        handler.Descriptor.ProviderId.Should().Be("ib-flex");
+        handler.Descriptor.DefaultRoutingMode.Should().Be(ProviderConnectionMode.ReadOnly);
+        handler.Descriptor.AcceptedCredentialFields.Should().SatisfyRespectively(
+            field =>
+            {
+                field.Name.Should().Be("Token");
+                field.Placeholder.Should().Be("IB_FLEX_TOKEN");
+            },
+            field =>
+            {
+                field.Name.Should().Be("QueryId");
+                field.Placeholder.Should().Be("IB_FLEX_QUERY_ID");
+            });
+
+        var validation = handler.Validate(new ProviderSetupContext(
+            ProviderIdOrAlias: "ibflex",
+            DisplayName: "IB Flex",
+            Capabilities: ["brokerage statements"],
+            Environment: null,
+            ApiKey: "flex-token",
+            ApiSecret: "123456"));
+
+        validation.Success.Should().BeTrue();
+        validation.Credentials.Should().Contain("Token", "flex-token");
+        validation.Credentials.Should().Contain("QueryId", "123456");
     }
 
     [Theory]
@@ -491,6 +526,75 @@ public sealed class ProviderCredentialStoreTests : IDisposable
         auditText.Should().Contain("\"action\":\"delete\"");
         auditText.Should().Contain("\"actor\":\"test-operator\"");
         auditText.Should().NotContain("finnhub-secret");
+    }
+
+    // The vault key sits in the same directory as the vault it decrypts, so on Unix the key file's
+    // mode is the whole of the protection: a reader who can open one can open the other. These
+    // cover that the mode is right at creation and repaired if a deployment already widened it.
+
+    [Fact]
+    public async Task SaveAsync_CreatesTheVaultKeyOwnerOnly()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var store = new FileProviderCredentialStore(_root);
+
+        await store.SaveAsync(new ProviderCredentialSaveRequest(
+            "finnhub",
+            new Dictionary<string, string?> { ["ApiKey"] = "finnhub-secret" }));
+
+        var keyPath = Path.Combine(_root, ".mdc", "provider-credentials.key");
+        File.Exists(keyPath).Should().BeTrue();
+        File.GetUnixFileMode(keyPath)
+            .Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite,
+                "the key is the only thing standing between the vault file and its plaintext");
+    }
+
+    [Fact]
+    public async Task SaveAsync_CreatesTheVaultDirectoryOwnerOnly()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var store = new FileProviderCredentialStore(_root);
+
+        await store.SaveAsync(new ProviderCredentialSaveRequest(
+            "finnhub",
+            new Dictionary<string, string?> { ["ApiKey"] = "finnhub-secret" }));
+
+        File.GetUnixFileMode(Path.Combine(_root, ".mdc"))
+            .Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+    }
+
+    [Fact]
+    public async Task ReadForProviderAsync_TightensAKeyLeftReadableByAnEarlierRelease()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(new ProviderCredentialSaveRequest(
+            "finnhub",
+            new Dictionary<string, string?> { ["ApiKey"] = "finnhub-secret" }));
+
+        // Reproduce what a pre-fix install left on disk: the umask default, world-readable.
+        var keyPath = Path.Combine(_root, ".mdc", "provider-credentials.key");
+        File.SetUnixFileMode(
+            keyPath,
+            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+
+        var read = await new FileProviderCredentialStore(_root).ReadForProviderAsync("finnhub");
+
+        File.GetUnixFileMode(keyPath).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        read.Should().NotBeNull();
+        read!.Get("ApiKey").Should().Be("finnhub-secret", "tightening permissions must not break decryption");
     }
 
     private sealed class EnvironmentScope : IDisposable

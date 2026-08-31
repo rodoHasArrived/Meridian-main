@@ -7,3 +7,4 @@ global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Meridian.QuantScript.Tests")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Meridian.QuantScript.Worker")]

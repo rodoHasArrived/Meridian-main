@@ -22,6 +22,7 @@ namespace Meridian.Tests.Integration;
 ///   YAHOO_TICKER_SYMBOLS=SPY,AAPL dotnet test --filter "FullyQualifiedName~ConfigurableTickerDataCollectionTests"
 /// </summary>
 [Trait("Category", "Integration")]
+[Trait("Category", "LiveProvider")]
 [Trait("Category", "TickerArtifact")]
 public sealed class ConfigurableTickerDataCollectionTests : IDisposable
 {

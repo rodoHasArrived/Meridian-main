@@ -961,7 +961,8 @@ export function useDataViewModel(
   pathname: string,
   services: BackfillTriggerServices = defaultBackfillServices,
   providerSetupLifecycle: ProviderSetupLifecycleServices = defaultProviderSetupLifecycle,
-  providerEvidence: DataOperationsProviderEvidence = {}
+  providerEvidence: DataOperationsProviderEvidence = {},
+  operatorIdentity: string | null = null
 ) {
   const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
   const [selectedProviderTab, setSelectedProviderTab] = useState<DataOperationsProviderTabId>("overview");
@@ -1649,7 +1650,7 @@ export function useDataViewModel(
 
     try {
       const result = await workstationApi.createPlaidLinkToken({
-        userId: "operator",
+        ...(operatorIdentity ? { userId: operatorIdentity } : {}),
         clientName: "Meridian",
         language: "en",
         countryCodes: ["US"],
@@ -1675,7 +1676,7 @@ export function useDataViewModel(
         institutionId: linkResult.metadata.institution?.institution_id ?? selectedInstitution.institutionId,
         institutionName: linkResult.metadata.institution?.name ?? selectedInstitution.name,
         accounts: buildPlaidAccountLinkRequests(linkResult.metadata),
-        requestedBy: "operator"
+        ...(operatorIdentity ? { requestedBy: operatorIdentity } : {})
       });
       if (plaidLinkTokenRevisionRef.current !== revision) {
         return;
@@ -1696,7 +1697,7 @@ export function useDataViewModel(
       ));
       setPlaidLinkTokenPhase("error");
     }
-  }, [plaidInstitutionResults, selectedPlaidInstitutionId]);
+  }, [operatorIdentity, plaidInstitutionResults, selectedPlaidInstitutionId]);
 
   function buildPlaidAccountLinkRequests(metadata: PlaidLinkSuccessMetadata) {
     return (metadata.accounts ?? []).map((account) => ({

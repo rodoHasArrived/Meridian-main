@@ -3,6 +3,10 @@ import {
   quantContextToParameters,
   quantDataIntervalMinutes,
 } from "./quant-api-mappers";
+import type { ApprovePromotionRequest, RejectPromotionRequest } from "./api/promotion.contracts";
+
+export { PAPER_PROMOTION_APPROVAL_CHECKLIST } from "./api/promotion.contracts";
+export type { ApprovePromotionRequest, RejectPromotionRequest } from "./api/promotion.contracts";
 
 import type {
   BackfillPreviewResult,
@@ -35,13 +39,6 @@ import type {
   CellExecuteRequest,
   CellExecuteResult,
   BrokerageHouseholdPortfolio,
-  ChiefOfStaffDecisionRequest,
-  ChiefOfStaffEvidenceExport,
-  ChiefOfStaffRuntimeHealth,
-  ChiefOfStaffSession,
-  ChiefOfStaffSessionQuery,
-  ChiefOfStaffSessionSummary,
-  ChiefOfStaffTraceExportRequest,
   ClosePeriodPlan,
   ClosePeriodLockResult,
   CorporateAction,
@@ -129,6 +126,9 @@ import type {
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
   ManualCsvProviderIntegrationDryRunRequest,
+  MarginControlCenter,
+  MarginCertificationRequest,
+  MarginCertificationResult,
   ProviderIntegrationActivationReadiness,
   ProviderIntegrationActivationRequest,
   ProviderIntegrationActivationResult,
@@ -174,6 +174,7 @@ import type {
   StatementFetchScheduleUpsertRequest,
   StatementImportCommitResult,
   StatementImportPreview,
+  StatementImportPreviewRequest,
   StatementImportSourceKind,
   StatementMappingProfile,
   StatementRunException,
@@ -222,6 +223,7 @@ import type {
   StrategyDesignTemplate,
   StrategyDesignValidationResult,
   StrategyRunContinuityDto,
+  StrategyRunReviewPacket,
   TradingActionResult,
   TradingOperatorReadiness,
   TradingParameters,
@@ -454,6 +456,7 @@ import {
   securityMasterAmendEndpoint,
   securityMasterConflictsEndpoint,
   securityMasterConflictResolveEndpoint,
+  securityMasterCorporateActionSourceProposalAcceptEndpoint,
   securityMasterCorporateActionsEndpoint,
   securityMasterEntryEndpoint,
   securityMasterOperatorOverridesEndpoint,
@@ -473,6 +476,7 @@ import {
   workstationExtensibilityTenantTemplateReadinessEndpoint,
   workstationAssetOperationsEndpoint,
   workstationFinancialRecordExplorerEndpoint,
+  type ExplorerFilterSelection,
   workstationFinancialRecordExplorerRecordEndpoint,
   workstationFinancialRecordExplorerSavedViewsEndpoint,
   workstationFinancialOperationsCommandCenterEndpoint,
@@ -503,11 +507,6 @@ import {
   workstationOperationsContinuitySecurityMasterOverrideApproveEndpoint,
   workstationOperationsContinuitySecurityMasterResolveEndpoint,
   workstationOperationsContinuityTimelineEndpoint,
-  workstationChiefOfStaffDecisionEndpoint,
-  workstationChiefOfStaffHealthEndpoint,
-  workstationChiefOfStaffSessionEndpoint,
-  workstationChiefOfStaffSessionsEndpoint,
-  workstationChiefOfStaffTraceExportEndpoint,
   workstationRunAttributionEndpoint,
   workstationRunCompareEndpoint,
   workstationRunContinuityEndpoint,
@@ -736,7 +735,7 @@ function buildReferenceDataApiErrorDetails(error: { path: string; status: number
   return details;
 }
 
-async function getJson<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+export async function getJson<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   const response = await fetch(path, {
     signal: options.signal,
     headers: {
@@ -788,7 +787,7 @@ export function markDevelopmentFixtureUsage() {
   developmentFixtureUsage = true;
 }
 
-async function postJson<T>(path: string, body?: unknown, options: ApiRequestOptions = {}): Promise<T> {
+export async function postJson<T>(path: string, body?: unknown, options: ApiRequestOptions = {}): Promise<T> {
   const response = await fetch(path, {
     method: "POST",
     signal: options.signal,
@@ -1676,34 +1675,6 @@ export function upsertOperationsCloseCalendarItem(
   );
 }
 
-export function getChiefOfStaffSessions(query: ChiefOfStaffSessionQuery = {}, options: ApiRequestOptions = {}) {
-  return getJson<ChiefOfStaffSessionSummary[]>(workstationChiefOfStaffSessionsEndpoint(query), options);
-}
-
-export function getChiefOfStaffSession(sessionId: string, options: ApiRequestOptions = {}) {
-  return getJson<ChiefOfStaffSession>(workstationChiefOfStaffSessionEndpoint(sessionId), options);
-}
-
-export function getChiefOfStaffHealth(options: ApiRequestOptions = {}) {
-  return getJson<ChiefOfStaffRuntimeHealth>(workstationChiefOfStaffHealthEndpoint(), options);
-}
-
-export function submitChiefOfStaffDecision(
-  sessionId: string,
-  request: ChiefOfStaffDecisionRequest,
-  options: ApiRequestOptions = {}
-) {
-  return postJson<ChiefOfStaffSession>(workstationChiefOfStaffDecisionEndpoint(sessionId), request, options);
-}
-
-export function exportChiefOfStaffTrace(
-  sessionId: string,
-  request: ChiefOfStaffTraceExportRequest,
-  options: ApiRequestOptions = {}
-) {
-  return postJson<ChiefOfStaffEvidenceExport>(workstationChiefOfStaffTraceExportEndpoint(sessionId), request, options);
-}
-
 export function getEvidenceSubjects(options: ApiRequestOptions = {}) {
   return getJson<EvidenceSubject[]>(WORKSTATION_API_ENDPOINTS.evidenceSubjects, options);
 }
@@ -1923,19 +1894,16 @@ export function previewDataUploadWorkbook(
   );
 }
 
-export function getDataOperationsWorkspace(options: ApiRequestOptions = {}) {
-  return getDataWorkspace(options);
-}
-
 export function getAccountingWorkspace(options: ApiRequestOptions = {}) {
   return getJson<AccountingWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.accounting, options);
 }
 
 export function getFinancialRecordExplorer(
   explorerId: FinancialRecordExplorerId,
-  options: ApiRequestOptions = {}
+  options: ApiRequestOptions = {},
+  filters: readonly ExplorerFilterSelection[] = []
 ) {
-  return getJson<FinancialRecordExplorerDto>(workstationFinancialRecordExplorerEndpoint(explorerId), options);
+  return getJson<FinancialRecordExplorerDto>(workstationFinancialRecordExplorerEndpoint(explorerId, filters), options);
 }
 
 export function getFinancialRecordExplorerRecord(
@@ -2720,26 +2688,8 @@ export function evaluatePromotion(runId: string) {
   return getJson<PromotionEvaluationResult>(promotionEvaluateEndpoint(runId));
 }
 
-export interface ApprovePromotionRequest {
-  runId: string;
-  approvedBy: string;
-  approvalReason: string;
-  approvalChecklist?: string[];
-  evidenceReferences?: string[];
-  reviewNotes?: string;
-  manualOverrideId?: string;
-}
-
 export function approvePromotion(request: ApprovePromotionRequest) {
   return postJson<PromotionDecisionResult>(PROMOTION_API_ENDPOINTS.approve, request);
-}
-
-export interface RejectPromotionRequest {
-  runId: string;
-  reason: string;
-  rejectedBy?: string;
-  reviewNotes?: string;
-  manualOverrideId?: string;
 }
 
 export function rejectPromotion(request: RejectPromotionRequest) {
@@ -2951,7 +2901,7 @@ export function getRunReviewPacketPath(runId: string, fundAccountId?: string) {
 }
 
 export function getRunReviewPacket(runId: string, fundAccountId?: string) {
-  return getJson<unknown>(getRunReviewPacketPath(runId, fundAccountId));
+  return getJson<StrategyRunReviewPacket>(getRunReviewPacketPath(runId, fundAccountId));
 }
 
 export function getRunReconciliation(runId: string) {
@@ -3091,6 +3041,14 @@ export function getStatementConnectors(options: ApiRequestOptions = {}) {
   return getJson<StatementConnectorDescriptor[]>(STATEMENT_CONNECTOR_API_ENDPOINTS.connectors, options);
 }
 
+export function getMarginControlCenter(options: ApiRequestOptions = {}) {
+  return getJson<MarginControlCenter>(STATEMENT_CONNECTOR_API_ENDPOINTS.marginControl, options);
+}
+
+export function certifyMarginSnapshot(request: MarginCertificationRequest, options: ApiRequestOptions = {}) {
+  return postJson<MarginCertificationResult>(STATEMENT_CONNECTOR_API_ENDPOINTS.marginCertifications, request, options);
+}
+
 export function listStatementMappingProfiles(options: ApiRequestOptions = {}) {
   return getJson<StatementMappingProfile[]>(STATEMENT_CONNECTOR_API_ENDPOINTS.mappingProfiles, options);
 }
@@ -3103,20 +3061,17 @@ export function deleteStatementMappingProfile(profileId: string, options: ApiReq
   return deleteJson<void>(reconciliationStatementMappingProfileEndpoint(profileId), options);
 }
 
-export function previewStatementImport(
-  request: {
-    file: File;
-    connectorId?: string | null;
-    mappingProfileId?: string | null;
-    externalAccountId?: string | null;
-  },
-  options: ApiRequestOptions = {}
-) {
+export function previewStatementImport(request: StatementImportPreviewRequest, options: ApiRequestOptions = {}) {
   const formData = new FormData();
   formData.append("file", request.file);
   appendOptionalStatementFormField(formData, "connectorId", request.connectorId);
   appendOptionalStatementFormField(formData, "mappingProfileId", request.mappingProfileId);
-  appendOptionalStatementFormField(formData, "externalAccountId", request.externalAccountId);
+  formData.append("externalAccountId", request.externalAccountId);
+  formData.append("sourceKind", request.sourceKind);
+  formData.append("sourceInstitution", request.sourceInstitution);
+  formData.append("fundAccountId", request.fundAccountId);
+  formData.append("periodStart", request.periodStart);
+  formData.append("periodEnd", request.periodEnd);
   return postFormData<StatementImportPreview>(STATEMENT_CONNECTOR_API_ENDPOINTS.importPreview, formData, options);
 }
 
@@ -3548,7 +3503,7 @@ function normalizeSystemOverviewResponse(payload: unknown): SystemOverviewRespon
   }
 
   if ("systemStatus" in payload) {
-    const heartbeat = readString(payload.lastHeartbeatUtc) ?? readString(payload.timestampUtc) ?? new Date().toISOString();
+    const heartbeat = readString(payload.lastHeartbeatUtc) ?? readString(payload.timestampUtc);
     return {
       systemStatus: readSystemStatus(payload.systemStatus),
       providersOnline: readNumber(payload.providersOnline) ?? 0,
@@ -3572,7 +3527,7 @@ function normalizeLegacyStatusResponse(payload: Record<string, unknown>): System
   const metrics = isRecord(payload.metrics) ? payload.metrics : {};
   const pipeline = isRecord(payload.pipeline) ? payload.pipeline : {};
   const isConnected = readBoolean(payload.isConnected) ?? false;
-  const timestampUtc = readString(payload.timestampUtc) ?? readString(metrics.lastUpdatedUtc) ?? new Date().toISOString();
+  const timestampUtc = readString(payload.timestampUtc) ?? readString(metrics.lastUpdatedUtc);
   const published = readNumber(metrics.published) ?? readNumber(pipeline.publishedCount) ?? 0;
   const dropped = readNumber(metrics.dropped) ?? readNumber(pipeline.droppedCount) ?? 0;
   const eventsPerSecond = readNumber(metrics.eventsPerSecond);
@@ -3627,15 +3582,17 @@ function normalizeLegacyStatusResponse(payload: Record<string, unknown>): System
         tone: "default"
       }
     ],
-    recentEvents: [
-      {
-        id: "host-status",
-        type: systemStatus === "Offline" ? "error" : systemStatus === "Degraded" ? "warning" : "info",
-        message: buildLegacyStatusMessage(systemStatus, readString(payload.uptime), sourceProvider),
-        source: "Meridian host",
-        timestamp: timestampUtc
-      }
-    ],
+    recentEvents: timestampUtc
+      ? [
+          {
+            id: "host-status",
+            type: systemStatus === "Offline" ? "error" : systemStatus === "Degraded" ? "warning" : "info",
+            message: buildLegacyStatusMessage(systemStatus, readString(payload.uptime), sourceProvider),
+            source: "Meridian host",
+            timestamp: timestampUtc
+          }
+        ]
+      : [],
     degradedMode: readDegradedMode(payload.degradedMode)
   };
 }
@@ -3774,8 +3731,9 @@ export function getSecurityMasterQualityReport() {
   return getJson<import("@/types").SecurityMasterQualityReport>(SECURITY_MASTER_API_ENDPOINTS.qualityReportLatest);
 }
 
-export function applyCorporateActionInboxProposal(request: import("@/types").CorporateActionInboxApplyRequest) {
-  return postJson<unknown>(SECURITY_MASTER_API_ENDPOINTS.corporateActionInboxApply, request);
+export function acceptCorporateActionInboxProposal(request: import("@/types").CorporateActionInboxAcceptRequest) {
+  const endpoint = securityMasterCorporateActionSourceProposalAcceptEndpoint(request.proposalId);
+  return postJson<import("@/types").CorporateActionInboxAcceptResult>(endpoint, request);
 }
 
 export function getQualityAnomalies() {

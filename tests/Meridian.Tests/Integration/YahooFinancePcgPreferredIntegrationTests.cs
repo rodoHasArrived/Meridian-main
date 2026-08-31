@@ -19,12 +19,13 @@ namespace Meridian.Tests.Integration;
 ///   PCG-PE  4.50% First Preferred Stock
 ///
 /// These tests hit the live Yahoo Finance API and are marked with
-/// Trait("Category", "Integration") so they can be filtered during CI.
+/// Trait("Category", "LiveProvider") so deterministic certification excludes them.
 /// Run with: dotnet test --filter "Category=Integration"
 /// When the Yahoo Finance API is unreachable (e.g. in offline CI sandboxes)
 /// each test is dynamically skipped rather than failing.
 /// </summary>
 [Trait("Category", "Integration")]
+[Trait("Category", "LiveProvider")]
 public sealed class YahooFinancePcgPreferredIntegrationTests : IDisposable
 {
     private readonly ITestOutputHelper _output;

@@ -1,4 +1,6 @@
 using Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite;
+using Meridian.Contracts.Workstation;
+using Meridian.Strategies.Models;
 using Meridian.Ui.Shared.Contracts;
 
 namespace Meridian.Ui.Shared.Services.CoveredCall;
@@ -8,6 +10,62 @@ namespace Meridian.Ui.Shared.Services.CoveredCall;
 /// </summary>
 internal static class CoveredCallRunProjection
 {
+    /// <summary>
+    /// Creates the canonical started run for the real engine-backed Covered Call workstation path.
+    /// The bounded W6 evidence loop is validated before the request enters the run queue and is
+    /// copied onto the immutable strategy-run lineage before engine execution.
+    /// </summary>
+    public static StrategyRunEntry CreateEvidenceBackedRunEntry(
+        CoveredCallBacktestRequest request,
+        CoveredCallRunScope scope,
+        string runId,
+        IReadOnlyDictionary<string, string> parameterSet)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(scope);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentNullException.ThrowIfNull(parameterSet);
+
+        var evidenceLoop = RequireEvidenceLoop(request);
+        return StrategyRunEntry.StartWithEvidence(
+            strategyId: CoveredCallBacktestService.GetScopedStrategyId(scope),
+            strategyName: $"CoveredCallOverwrite({request.UnderlyingSymbol.Trim().ToUpperInvariant()})",
+            runType: RunType.Backtest,
+            runId: runId,
+            engine: "MeridianNative",
+            parameterSet: parameterSet,
+            operatorAcceptanceCriteria: evidenceLoop.OperatorAcceptanceCriteria,
+            retainedEvidenceReferences: evidenceLoop.RetainedEvidenceReferences,
+            accountingRecordReferences: evidenceLoop.AccountingRecordReferences,
+            approvalReferences: evidenceLoop.ApprovalReferences,
+            paperValidationReferences: evidenceLoop.PaperValidationReferences,
+            governedReportReferences: evidenceLoop.GovernedReportReferences) with
+        {
+            ActorId = scope.Actor.Trim()
+        };
+    }
+
+    /// <summary>Validates the W6 evidence loop shared by the browser request and persisted run.</summary>
+    public static StrategyRunEvidenceLoop RequireEvidenceLoop(CoveredCallBacktestRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (!StrategyRunEvidenceLoop.TryCreateRequired(
+                CoveredCallBacktestService.StrategyId,
+                request.OperatorAcceptanceCriteria,
+                request.RetainedEvidenceReferences,
+                request.AccountingRecordReferences,
+                request.ApprovalReferences,
+                request.PaperValidationReferences,
+                request.GovernedReportReferences,
+                out var evidenceLoop,
+                out var validationError))
+        {
+            throw new ArgumentException(validationError, nameof(request));
+        }
+
+        return evidenceLoop;
+    }
+
     /// <summary>Maps an operator request to strategy <see cref="OptionsOverwriteParams"/>.</summary>
     public static OptionsOverwriteParams ToParams(CoveredCallBacktestRequest request)
     {

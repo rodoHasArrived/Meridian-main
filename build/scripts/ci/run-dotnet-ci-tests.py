@@ -28,10 +28,14 @@ CORE_TEST_PROJECT_PATH = "tests/Meridian.Tests/Meridian.Tests.csproj"
 WINDOWS_ONLY_TEST_PROJECTS = [
     "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj",
     "tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj",
+    # Targets net10.0-windows, like the supervisor tests above, so it cannot run on the ubuntu
+    # lane. Added with the installer work but never wired to a lane, which failed this gate.
+    "tests/Meridian.Setup.Tests/Meridian.Setup.Tests.csproj",
 ]
 
 # Projects that are shared support libraries, not runnable test projects.
 SUPPORT_TEST_PROJECTS = {
+    "tests/Meridian.ProcessTestHelper/Meridian.ProcessTestHelper.csproj",
     "tests/Meridian.TestSupport/Meridian.TestSupport.csproj",
 }
 
@@ -107,20 +111,10 @@ DEFAULT_TEST_PROJECTS = [
             "FullyQualifiedName~Meridian.Tests.ExponentialBackoffTests|FullyQualifiedName~Meridian.Tests.CircuitBreakerTests"
         ),
     ),
-    # QUARANTINE (tracked): ReportingSecureDistributionAuthorizationTests and
-    # ReportingGovernanceCanonicalValidationTests (37 tests, 7 currently failing) carry
-    # assertions whose expected exception messages/sequencing drifted from the hardened
-    # product behaviour while the namespace ran in no CI lane. Both classes are excluded
-    # here (not silently skipped — this comment is the record) until the governance
-    # semantics are re-adjudicated; the remaining 68 Reporting tests gate every PR.
     (
         "core-reporting",
         "tests/Meridian.Tests/Meridian.Tests.csproj",
-        (
-            "FullyQualifiedName~Meridian.Tests.Reporting"
-            "&FullyQualifiedName!~Meridian.Tests.Reporting.ReportingSecureDistributionAuthorizationTests"
-            "&FullyQualifiedName!~Meridian.Tests.Reporting.ReportingGovernanceCanonicalValidationTests"
-        ),
+        "FullyQualifiedName~Meridian.Tests.Reporting",
     ),
     ("fsharp", "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj", None),
     ("ui", "tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj", None),

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 
@@ -40,6 +40,64 @@ describe("OperationalTrustSummary", () => {
     const region = screen.getByRole("region", { name: "Data confidence" });
     expect(screen.getAllByText("Unknown")).toHaveLength(4);
     expect(region.querySelector("dl")).toHaveClass("grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))]");
+  });
+
+  it("keeps remediation actions inside the fact that owns the warning", () => {
+    render(
+      <OperationalTrustSummary
+        source={{
+          label: "Connectivity",
+          value: "Provider degraded",
+          tone: "blocked",
+          action: <a href="/data/providers">Open provider posture</a>
+        }}
+        scope={{
+          value: "No operating scope selected",
+          tone: "review",
+          action: <button type="button">Set operating scope</button>
+        }}
+        freshness={{
+          value: "Stale update",
+          tone: "review",
+          action: <button type="button">Refresh evidence</button>
+        }}
+        completeness={{ value: "3 ranked items", tone: "ready" }}
+      />
+    );
+
+    const connectivityCard = screen.getByText("Connectivity").parentElement as HTMLElement;
+    const scopeCard = screen.getByText("Scope").parentElement as HTMLElement;
+    const freshnessCard = screen.getByText("Freshness").parentElement as HTMLElement;
+
+    expect(within(connectivityCard).getByRole("link", { name: "Open provider posture" }))
+      .toHaveAttribute("href", "/data/providers");
+    expect(within(scopeCard).getByRole("button", { name: "Set operating scope" })).toBeInTheDocument();
+    expect(within(freshnessCard).getByRole("button", { name: "Refresh evidence" })).toBeInTheDocument();
+  });
+
+  it("gives a long status value its own line rather than breaking a word mid-character", () => {
+    // Five tiles is the blocked case: the extra tile narrows each one to about 12rem, and the
+    // status pill does not shrink. Without a flex basis the value is squeezed into ~100px and
+    // "unavailable" splits mid-word, which is what the daily control tower rendered.
+    render(
+      <OperationalTrustSummary
+        source={{ label: "Connectivity", value: "1 warning", tone: "review" }}
+        scope={{ value: "No operating scope selected", tone: "review" }}
+        freshness={{ value: "Timestamp unavailable", tone: "review" }}
+        completeness={{ value: "6 ranked items", tone: "ready" }}
+        blocker={{ value: "Cash variance over tolerance.", tone: "blocked" }}
+      />
+    );
+
+    const value = screen.getByText("Timestamp unavailable");
+    // Wraps to its own full-width line when the space beside the pill is too tight for it.
+    expect(value).toHaveClass("basis-28");
+    expect(value).toHaveClass("grow");
+    expect(value.parentElement).toHaveClass("flex-wrap");
+
+    // The pill must stay unshrunk -- it is the text status that carries meaning without colour.
+    const pill = screen.getByText("Blocked");
+    expect(pill).toHaveClass("shrink-0");
   });
 
   it("wraps long trust facts instead of truncating financially material labels", () => {

@@ -175,6 +175,108 @@ public sealed class HistoricalDataQueryServiceBarsTests : IDisposable
             .ThrowAsync<ArgumentOutOfRangeException>();
     }
 
+    [Fact]
+    public async Task GetBarsAsync_SingleSourceAdjustedSeries_CarriesSourceAndRegime()
+    {
+        var symbol = "AAPL";
+        var ts = new DateTimeOffset(2024, 06, 03, 14, 30, 0, TimeSpan.Zero);
+        WriteJsonl(symbol, "2024-06-03", new[]
+        {
+            BuildTradeJson(symbol, ts, 100m, 10, source: "stooq", isAdjusted: true),
+            BuildTradeJson(symbol, ts.AddMinutes(1), 101m, 5, source: "stooq", isAdjusted: true),
+            BuildTradeJson(symbol, ts.AddMinutes(6), 102m, 4, source: "stooq", isAdjusted: true),
+        });
+
+        var result = await _service.GetBarsAsync(new HistoricalBarsQuery(symbol, IntervalMinutes: 5));
+
+        result.Bars.Should().HaveCount(2);
+        result.Bars.Should().OnlyContain(bar => bar.Source == "stooq" && bar.IsAdjusted == true);
+        result.Sources.Should().Equal("stooq");
+    }
+
+    [Fact]
+    public async Task GetBarsAsync_MixedSourceBucket_ReportsMixedSentinelAndNullRegime()
+    {
+        var symbol = "MSFT";
+        var ts = new DateTimeOffset(2024, 06, 03, 15, 0, 0, TimeSpan.Zero);
+        WriteJsonl(symbol, "2024-06-03", new[]
+        {
+            // First bucket mixes two vendors and two regimes.
+            BuildTradeJson(symbol, ts, 50m, 1, source: "ALPACA", isAdjusted: false),
+            BuildTradeJson(symbol, ts.AddMinutes(1), 51m, 1, source: "IB", isAdjusted: true),
+            // Second bucket stays single-vendor, single-regime.
+            BuildTradeJson(symbol, ts.AddMinutes(5), 52m, 1, source: "ALPACA", isAdjusted: false),
+        });
+
+        var result = await _service.GetBarsAsync(new HistoricalBarsQuery(symbol, IntervalMinutes: 5));
+
+        result.Bars.Should().HaveCount(2);
+        result.Bars[0].Source.Should().Be(HistoricalBarPoint.MixedSources);
+        result.Bars[0].IsAdjusted.Should().BeNull("a bucket mixing regimes cannot honestly claim one");
+        result.Bars[1].Source.Should().Be("ALPACA");
+        result.Bars[1].IsAdjusted.Should().BeFalse();
+        result.Sources.Should().Equal("ALPACA", "IB");
+    }
+
+    [Fact]
+    public async Task GetBarsAsync_UnlabeledTrades_PropagateNullProvenance()
+    {
+        var symbol = "TSLA";
+        var ts = new DateTimeOffset(2024, 06, 03, 14, 0, 0, TimeSpan.Zero);
+        WriteJsonl(symbol, "2024-06-03", new[]
+        {
+            // No source stamp at all, and the at-rest UNKNOWN sentinel; neither declares a regime.
+            BuildTradeJson(symbol, ts, 200m, 5),
+            BuildTradeJson(symbol, ts.AddMinutes(1), 201m, 2, source: "UNKNOWN"),
+        });
+
+        var result = await _service.GetBarsAsync(new HistoricalBarsQuery(symbol, IntervalMinutes: 5));
+
+        result.Bars.Should().HaveCount(1);
+        result.Bars[0].Source.Should().BeNull("no contributing event carried provenance");
+        result.Bars[0].IsAdjusted.Should().BeNull("no contributing event declared a regime");
+        result.Sources.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetBarsAsync_LabeledAndUnlabeledEventsInOneBucket_ReportMixed()
+    {
+        var symbol = "NVDA";
+        var ts = new DateTimeOffset(2024, 06, 03, 13, 0, 0, TimeSpan.Zero);
+        WriteJsonl(symbol, "2024-06-03", new[]
+        {
+            BuildTradeJson(symbol, ts, 900m, 1, source: "ALPACA"),
+            BuildTradeJson(symbol, ts.AddMinutes(1), 901m, 1),
+        });
+
+        var result = await _service.GetBarsAsync(new HistoricalBarsQuery(symbol, IntervalMinutes: 5));
+
+        result.Bars.Should().HaveCount(1);
+        result.Bars[0].Source.Should().Be(
+            HistoricalBarPoint.MixedSources,
+            "a bucket folding labeled and unlabeled events cannot honestly claim the single label");
+        result.Sources.Should().Equal("ALPACA");
+    }
+
+    [Fact]
+    public async Task GetBarsAsync_ConflictingRegimesWithinSingleSource_CollapseRegimeToNull()
+    {
+        var symbol = "QQQ";
+        var ts = new DateTimeOffset(2024, 06, 03, 12, 0, 0, TimeSpan.Zero);
+        WriteJsonl(symbol, "2024-06-03", new[]
+        {
+            BuildTradeJson(symbol, ts, 350m, 1, source: "stooq", isAdjusted: true),
+            BuildTradeJson(symbol, ts.AddMinutes(1), 351m, 1, source: "stooq", isAdjusted: false),
+        });
+
+        var result = await _service.GetBarsAsync(new HistoricalBarsQuery(symbol, IntervalMinutes: 5));
+
+        result.Bars.Should().HaveCount(1);
+        result.Bars[0].Source.Should().Be("stooq", "the vendor is uniform even though the regime is not");
+        result.Bars[0].IsAdjusted.Should().BeNull();
+        result.Sources.Should().Equal("stooq");
+    }
+
     private void WriteJsonl(string symbol, string isoDate, IEnumerable<string> lines)
     {
         var dir = Path.Combine(_root, symbol);
@@ -195,13 +297,21 @@ public sealed class HistoricalDataQueryServiceBarsTests : IDisposable
         gz.Write(bytes, 0, bytes.Length);
     }
 
-    private static string BuildTradeJson(string symbol, DateTimeOffset ts, decimal price, long size)
+    private static string BuildTradeJson(
+        string symbol,
+        DateTimeOffset ts,
+        decimal price,
+        long size,
+        string? source = null,
+        bool? isAdjusted = null)
     {
         var iso = ts.ToString("o");
-        return $"{{\"timestamp\":\"{iso}\",\"symbol\":\"{symbol}\",\"type\":3," +
+        var sourceProperty = source is null ? string.Empty : $"\"source\":\"{source}\",";
+        var adjustedProperty = isAdjusted is null ? string.Empty : $",\"isAdjusted\":{(isAdjusted.Value ? "true" : "false")}";
+        return $"{{\"timestamp\":\"{iso}\",\"symbol\":\"{symbol}\",\"type\":3,{sourceProperty}" +
                $"\"payload\":{{\"kind\":\"trade\",\"timestamp\":\"{iso}\",\"symbol\":\"{symbol}\"," +
                $"\"price\":{price.ToString(System.Globalization.CultureInfo.InvariantCulture)}," +
-               $"\"size\":{size},\"aggressor\":0,\"sequenceNumber\":0}}}}";
+               $"\"size\":{size},\"aggressor\":0,\"sequenceNumber\":0{adjustedProperty}}}}}";
     }
 
     private static string BuildHeartbeatJson(DateTimeOffset ts)

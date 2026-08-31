@@ -104,6 +104,49 @@ public sealed class SecurityMasterRebuildOrchestrator
             _options.ProjectionReplayBatchSize);
     }
 
+    /// <summary>
+    /// Rebuilds ONLY the securities whose stored projection carries <paramref name="assetClass"/>,
+    /// bounding the rebuild cost to that class's population instead of a full shared replay. The
+    /// shared replay checkpoint is deliberately untouched — the scoped rebuild is a repair/refresh
+    /// of one class's projections (event-stream fold, store upsert, cache upsert), not a
+    /// stream-cursor advance, so it can never mark unrelated classes' events as replayed.
+    /// Returns the number of projections rebuilt.
+    /// </summary>
+    public async Task<int> RebuildAssetClassAsync(string assetClass, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(assetClass);
+
+        var seeds = await _store.LoadAllAsync(ct).ConfigureAwait(false);
+        var rebuiltRecords = new List<SecurityProjectionRecord>();
+        foreach (var seed in seeds)
+        {
+            if (!string.Equals(seed.AssetClass, assetClass, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var rebuilt = await _rebuilder.RebuildAsync(seed.SecurityId, seed, ct).ConfigureAwait(false);
+            if (rebuilt is not null)
+            {
+                rebuiltRecords.Add(rebuilt);
+            }
+        }
+
+        foreach (var rebuilt in rebuiltRecords)
+        {
+            await _store.UpsertProjectionAsync(rebuilt, ct).ConfigureAwait(false);
+            _cache.Upsert(rebuilt);
+        }
+
+        await TryRecordConflictsAsync(rebuiltRecords, ct).ConfigureAwait(false);
+
+        _logger.LogInformation(
+            "Security master scoped rebuild refreshed {Count} projection(s) for asset class {AssetClass}",
+            rebuiltRecords.Count,
+            assetClass);
+        return rebuiltRecords.Count;
+    }
+
     private async Task TryRecordConflictsAsync(IReadOnlyList<SecurityProjectionRecord> rebuiltRecords, CancellationToken ct)
     {
         if (_conflictService is null || rebuiltRecords.Count == 0)

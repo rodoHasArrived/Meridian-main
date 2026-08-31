@@ -1,11 +1,12 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.PrivateCapital;
 
@@ -639,8 +640,7 @@ public sealed class LedgerCapitalAccountReconciliationResolver
             }
         }
 
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical.ToString());
     }
 
     private static void Append(StringBuilder builder, string? value)
@@ -657,9 +657,6 @@ public sealed class LedgerCapitalAccountReconciliationResolver
             NormalizeOptional(left),
             NormalizeOptional(right),
             StringComparison.OrdinalIgnoreCase);
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private sealed record GovernedReviewProvenance(
         string Kind,

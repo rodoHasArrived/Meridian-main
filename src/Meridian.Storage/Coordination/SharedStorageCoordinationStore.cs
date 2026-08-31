@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Contracts.Coordination;
 using Meridian.Core.Config;
+using Meridian.Core.IO;
 using Meridian.Storage.Archival;
 
 namespace Meridian.Storage.Coordination;
@@ -17,10 +18,13 @@ public sealed class SharedStorageCoordinationStore : ICoordinationStore
     };
 
     private readonly TimeSpan _lockWaitTimeout = TimeSpan.FromSeconds(5);
+    private readonly RootedPathGuard _pathGuard;
 
     public SharedStorageCoordinationStore(CoordinationConfig config, string dataRoot)
     {
-        RootPath = config.GetResolvedRootPath(dataRoot);
+        ArgumentNullException.ThrowIfNull(config);
+        _pathGuard = new RootedPathGuard(config.GetResolvedRootPath(dataRoot));
+        RootPath = _pathGuard.RootPath;
         Directory.CreateDirectory(RootPath);
     }
 
@@ -35,6 +39,7 @@ public sealed class SharedStorageCoordinationStore : ICoordinationStore
     {
         var leasePath = GetLeasePath(resourceId);
         Directory.CreateDirectory(Path.GetDirectoryName(leasePath)!);
+        _pathGuard.EnsurePath(leasePath);
 
         await using var resourceLock = await AcquireResourceLockAsync(leasePath, ct).ConfigureAwait(false);
 
@@ -117,6 +122,7 @@ public sealed class SharedStorageCoordinationStore : ICoordinationStore
         var existing = await ReadLeaseFileAsync(leasePath, ct).ConfigureAwait(false);
         if (existing is null)
         {
+            _pathGuard.EnsurePath(leasePath);
             File.Delete(leasePath);
             return true;
         }
@@ -124,6 +130,7 @@ public sealed class SharedStorageCoordinationStore : ICoordinationStore
         if (!string.Equals(existing.InstanceId, instanceId, StringComparison.OrdinalIgnoreCase))
             return false;
 
+        _pathGuard.EnsurePath(leasePath);
         File.Delete(leasePath);
         return true;
     }
@@ -143,7 +150,7 @@ public sealed class SharedStorageCoordinationStore : ICoordinationStore
             return Array.Empty<LeaseRecord>();
 
         var leases = new List<LeaseRecord>();
-        foreach (var file in Directory.GetFiles(RootPath, "*.lease.json", SearchOption.AllDirectories))
+        foreach (var file in EnumerateLeaseFiles())
         {
             ct.ThrowIfCancellationRequested();
             var lease = await ReadLeaseFileAsync(file, ct).ConfigureAwait(false);
@@ -160,11 +167,12 @@ public sealed class SharedStorageCoordinationStore : ICoordinationStore
             return Task.FromResult<IReadOnlyList<string>>(Array.Empty<string>());
 
         var corrupted = new List<string>();
-        foreach (var file in Directory.GetFiles(RootPath, "*.lease.json", SearchOption.AllDirectories))
+        foreach (var file in EnumerateLeaseFiles())
         {
             ct.ThrowIfCancellationRequested();
             try
             {
+                _pathGuard.EnsurePath(file);
                 var json = File.ReadAllText(file);
                 _ = JsonSerializer.Deserialize<LeaseRecord>(json, JsonOptions);
             }
@@ -179,19 +187,52 @@ public sealed class SharedStorageCoordinationStore : ICoordinationStore
 
     private string GetLeasePath(string resourceId)
     {
-        var segments = resourceId
-            .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        ArgumentException.ThrowIfNullOrWhiteSpace(resourceId);
+        if (Path.IsPathRooted(resourceId))
+            throw new ArgumentException("Resource ID cannot be a rooted path.", nameof(resourceId));
+
+        var rawSegments = resourceId.Split('/', StringSplitOptions.None);
+        foreach (var segment in rawSegments)
+            ValidateResourceSegment(segment);
+
+        var segments = rawSegments
             .Select(Uri.EscapeDataString)
             .ToArray();
 
-        if (segments.Length == 0)
-            throw new ArgumentException("Resource ID must contain at least one segment.", nameof(resourceId));
+        segments[^1] = $"{segments[^1]}.lease.json";
+        return _pathGuard.ResolvePath(segments);
+    }
 
-        var directory = RootPath;
-        if (segments.Length > 1)
-            directory = Path.Combine(RootPath, Path.Combine(segments[..^1]));
+    private static void ValidateResourceSegment(string segment)
+    {
+        if (string.IsNullOrWhiteSpace(segment))
+            throw new ArgumentException("Resource ID path segments cannot be empty or whitespace.", "resourceId");
+        if (!string.Equals(segment, segment.Trim(), StringComparison.Ordinal))
+            throw new ArgumentException("Resource ID path segments cannot have surrounding whitespace.", "resourceId");
+        if (string.Equals(segment, ".", StringComparison.Ordinal) ||
+            string.Equals(segment, "..", StringComparison.Ordinal))
+        {
+            throw new ArgumentException("Resource ID cannot contain dot path segments.", "resourceId");
+        }
+        if (segment.Contains('\\') || segment.Any(char.IsControl))
+            throw new ArgumentException("Resource ID path segments cannot contain mixed separators or control characters.", "resourceId");
+    }
 
-        return Path.Combine(directory, $"{segments[^1]}.lease.json");
+    private IEnumerable<string> EnumerateLeaseFiles()
+    {
+        var options = new EnumerationOptions
+        {
+            RecurseSubdirectories = true,
+            IgnoreInaccessible = false,
+            ReturnSpecialDirectories = false,
+            AttributesToSkip = FileAttributes.ReparsePoint
+        };
+
+        foreach (var file in Directory.EnumerateFiles(RootPath, "*.lease.json", options))
+        {
+            _pathGuard.EnsurePath(file);
+            yield return file;
+        }
     }
 
     private async Task<FileStream> AcquireResourceLockAsync(string leasePath, CancellationToken ct)
@@ -202,10 +243,12 @@ public sealed class SharedStorageCoordinationStore : ICoordinationStore
         while (true)
         {
             ct.ThrowIfCancellationRequested();
+            _pathGuard.EnsurePath(lockPath);
 
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(lockPath)!);
+                _pathGuard.EnsurePath(lockPath);
                 return new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
             }
             catch (IOException) when (DateTime.UtcNow - started < _lockWaitTimeout)
@@ -215,14 +258,16 @@ public sealed class SharedStorageCoordinationStore : ICoordinationStore
         }
     }
 
-    private static async Task<LeaseRecord?> ReadLeaseFileAsync(string leasePath, CancellationToken ct)
+    private async Task<LeaseRecord?> ReadLeaseFileAsync(string leasePath, CancellationToken ct)
     {
+        _pathGuard.EnsurePath(leasePath);
         if (!File.Exists(leasePath))
             return null;
 
         string json;
         try
         {
+            _pathGuard.EnsurePath(leasePath);
             json = await File.ReadAllTextAsync(leasePath, ct).ConfigureAwait(false);
         }
         catch (FileNotFoundException)
@@ -250,8 +295,9 @@ public sealed class SharedStorageCoordinationStore : ICoordinationStore
         }
     }
 
-    private static async Task WriteLeaseFileAsync(string leasePath, LeaseRecord lease, CancellationToken ct)
+    private async Task WriteLeaseFileAsync(string leasePath, LeaseRecord lease, CancellationToken ct)
     {
+        _pathGuard.EnsurePath(leasePath);
         var json = JsonSerializer.Serialize(lease, JsonOptions);
         await AtomicFileWriter.WriteAsync(leasePath, json, ct).ConfigureAwait(false);
     }

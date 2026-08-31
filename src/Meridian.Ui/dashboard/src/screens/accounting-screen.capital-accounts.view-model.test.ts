@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
   useCapitalAccountWorkbenchViewModel,
@@ -101,6 +101,12 @@ const fundEventLedgerRecord: PrivateCapitalFundEventLedgerRecord = {
   }
 };
 
+async function settleWorkbenchRequest(request: Promise<unknown>): Promise<void> {
+  await act(async () => {
+    await request.catch(() => undefined);
+  });
+}
+
 function createCapitalAccountWorkbench(
   fundEventRecords: CapitalAccountWorkbench["investorAccounts"][number]["fundEventRecords"]
 ): CapitalAccountWorkbench {
@@ -166,13 +172,15 @@ function createCapitalAccountWorkbench(
 
 describe("accounting capital account view model", () => {
   it("keeps the workbench unavailable when the first load fails", async () => {
+    const request = Promise.reject(new Error("capital accounts offline"));
     const services: CapitalAccountWorkbenchServices = {
-      getWorkbench: vi.fn().mockRejectedValue(new Error("capital accounts offline"))
+      getWorkbench: vi.fn().mockReturnValue(request)
     };
 
     const { result } = renderHook(() => useCapitalAccountWorkbenchViewModel(true, "", services));
 
-    await waitFor(() => expect(result.current.errorText).toBeTruthy());
+    await settleWorkbenchRequest(request);
+    expect(result.current.errorText).toBeTruthy();
     expect(result.current.available).toBe(false);
     expect(result.current.investorAccounts).toEqual([]);
   });
@@ -328,8 +336,9 @@ describe("accounting capital account view model", () => {
       liveCapabilities: ["Investor-level capital account evidence", "Statement publication and restatement lineage"],
       plannedCapabilities: ["Full cap-table administration", "Broad LP portal self-service"]
     };
+    const request = Promise.resolve(workbench);
     const services: CapitalAccountWorkbenchServices = {
-      getWorkbench: vi.fn().mockResolvedValue(workbench)
+      getWorkbench: vi.fn().mockReturnValue(request)
     };
 
     const { result } = renderHook(() => useCapitalAccountWorkbenchViewModel(
@@ -338,7 +347,8 @@ describe("accounting capital account view model", () => {
       services
     ));
 
-    await waitFor(() => expect(result.current.statusLabel).toBe("Restated lineage"));
+    await settleWorkbenchRequest(request);
+    expect(result.current.statusLabel).toBe("Restated lineage");
     expect(services.getWorkbench).toHaveBeenCalledWith(expect.objectContaining({
       capitalAccountId: "capital-account:fund-alpha:lp-1",
       investorId: "investor:lp-1",
@@ -397,8 +407,9 @@ describe("accounting capital account view model", () => {
 
   it("renders investor accounts when fund-event records are absent from the projection", async () => {
     const workbench = createCapitalAccountWorkbench(null as unknown as CapitalAccountWorkbench["investorAccounts"][number]["fundEventRecords"]);
+    const request = Promise.resolve(workbench);
     const services: CapitalAccountWorkbenchServices = {
-      getWorkbench: vi.fn().mockResolvedValue(workbench)
+      getWorkbench: vi.fn().mockReturnValue(request)
     };
 
     const { result } = renderHook(() => useCapitalAccountWorkbenchViewModel(
@@ -407,7 +418,8 @@ describe("accounting capital account view model", () => {
       services
     ));
 
-    await waitFor(() => expect(result.current.statusLabel).toBe("Review required"));
+    await settleWorkbenchRequest(request);
+    expect(result.current.statusLabel).toBe("Review required");
     expect(result.current.statusTone).toBe("warning");
     expect(result.current.statusReason).toContain("cash-support evidence review");
     expect(result.current.investorAccounts).toHaveLength(1);
@@ -434,13 +446,15 @@ describe("accounting capital account view model", () => {
       statementLineage: [],
       auditDrillThroughs: []
     };
+    const request = Promise.resolve(workbench);
     const services: CapitalAccountWorkbenchServices = {
-      getWorkbench: vi.fn().mockResolvedValue(workbench)
+      getWorkbench: vi.fn().mockReturnValue(request)
     };
 
     const { result } = renderHook(() => useCapitalAccountWorkbenchViewModel(true, "", services));
 
-    await waitFor(() => expect(result.current.available).toBe(true));
+    await settleWorkbenchRequest(request);
+    expect(result.current.available).toBe(true);
     expect(result.current.statusLabel).toBe("No activity loaded");
     expect(result.current.statusTone).toBe("warning");
     expect(result.current.statusReason).toContain("no investor accounts, allocation evidence, statement lineage, or audit routes");
@@ -471,13 +485,15 @@ describe("accounting capital account view model", () => {
         relatedIds: []
       }]
     };
+    const request = Promise.resolve(workbench);
     const services: CapitalAccountWorkbenchServices = {
-      getWorkbench: vi.fn().mockResolvedValue(workbench)
+      getWorkbench: vi.fn().mockReturnValue(request)
     };
 
     const { result } = renderHook(() => useCapitalAccountWorkbenchViewModel(true, "", services));
 
-    await waitFor(() => expect(result.current.available).toBe(true));
+    await settleWorkbenchRequest(request);
+    expect(result.current.available).toBe(true);
     expect(result.current.statusLabel).toBe("Review required");
     expect(result.current.statusTone).toBe("warning");
     expect(result.current.statusReason).toContain("no investor capital accounts matched this scope");

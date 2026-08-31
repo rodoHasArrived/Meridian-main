@@ -2,6 +2,7 @@ using Meridian.Reporting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Text.Json;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -27,6 +28,9 @@ public static class ReportingSecureDistributionServiceCollectionExtensions
             ServiceDescriptor.Singleton<IReportingDeliveryTransport, SecurePortalReportingDeliveryTransport>());
         services.TryAddSingleton<ReportingDeliveryDispatcher>();
         services.TryAddSingleton<ReportingSecureDistributionApplicationService>();
+        services.TryAddSingleton<IReportingTransportInfrastructureReadiness>(sp =>
+            sp.GetRequiredService<ReportingSecureDistributionApplicationService>());
+        services.TryAddSingleton<ReportingDeliveryWorkerReadinessState>();
         services.AddHostedService<ReportingSecureDistributionHostedService>();
         return services;
     }
@@ -194,11 +198,5 @@ public static class ReportingSecureDistributionServiceCollectionExtensions
         }
 
         return TimeSpan.FromSeconds(seconds);
-    }
-
-    private static string? NormalizeOptional(string? value)
-    {
-        var normalized = value?.Trim();
-        return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
     }
 }

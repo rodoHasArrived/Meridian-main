@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-07-12T02:50:18Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-08-24T06:17:53Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -41,7 +41,7 @@ Provider contracts, adapter implementations, storage catalog, WAL, and archival 
 WPF desktop shell, shared UI services, and browser-facing UI surfaces.
 
 - Projects: `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian.Wpf`, `Meridian.Ui.Dashboard`
-- Entrypoints: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/main.tsx`
+- Entrypoints: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/app.tsx`
 - Key contracts: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/main.tsx`
 - Common tasks: wpf issue, viewmodel routing, workspace flow, ui polish
 - Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`, `docs/development/wpf-web-ui-alignment-plan.md`
@@ -107,6 +107,7 @@ MCP hosts, tools, prompts, and resources that expose Meridian capabilities to LL
 | From | To | Why it matters |
 |---|---|---|
 | `Meridian` | `Meridian.Application` | Meridian references Meridian.Application directly via project reference. |
+| `Meridian` | `Meridian.Backtesting` | Meridian references Meridian.Backtesting directly via project reference. |
 | `Meridian` | `Meridian.Contracts` | Meridian references Meridian.Contracts directly via project reference. |
 | `Meridian` | `Meridian.Core` | Meridian references Meridian.Core directly via project reference. |
 | `Meridian` | `Meridian.Domain` | Meridian references Meridian.Domain directly via project reference. |
@@ -125,7 +126,6 @@ MCP hosts, tools, prompts, and resources that expose Meridian capabilities to LL
 | `Meridian.Application` | `Meridian.Infrastructure` | Meridian.Application references Meridian.Infrastructure directly via project reference. |
 | `Meridian.Application` | `Meridian.Ledger` | Meridian.Application references Meridian.Ledger directly via project reference. |
 | `Meridian.Application` | `Meridian.ProviderSdk` | Meridian.Application references Meridian.ProviderSdk directly via project reference. |
-| `Meridian.Application` | `Meridian.Storage` | Meridian.Application references Meridian.Storage directly via project reference. |
 
 ## What Changed Recently
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | Desktop and UI Workflows | `80cd751e` (2026-07-12T00:56:51+00:00) | 18 |
-| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs` | Unmapped | `086a1277` (2026-07-12T00:15:29+00:00) | 5 |
-| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowText.cs` | Unmapped | `086a1277` (2026-07-12T00:15:29+00:00) | 1 |
-| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsLedgerPostingService.cs` | Unmapped | `086a1277` (2026-07-12T00:15:29+00:00) | 1 |
-| `src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs` | Providers and Storage | `29839b47` (2026-07-11T17:19:54-07:00) | 8 |
-| `src/Meridian.DataIntegration/Etl/EtlServices.cs` | Unmapped | `29839b47` (2026-07-11T17:19:54-07:00) | 6 |
-| `src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs` | Host and Composition | `3d60c866` (2026-07-08T19:44:56+00:00) | 2 |
-| `src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs` | Host and Composition | `3d60c866` (2026-07-08T19:44:56+00:00) | 2 |
-| `src/Meridian.Ledger/README.md` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 9 |
-| `src/Meridian.Ledger/LedgerTaxLot.cs` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 5 |
-| `src/Meridian.Ledger/LedgerTaxLotReliefInput.cs` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 5 |
-| `src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 5 |
-| `src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 5 |
-| `src/Meridian.Ledger/LedgerTaxLotBasisAdjuster.cs` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 1 |
-| `src/Meridian.Ledger/LedgerTaxLotBasisAdjustment.cs` | Domain, Ledger, and F# | `6d874a95` (2026-07-08T19:33:38+00:00) | 1 |
+| `src/Meridian.Execution/OrderManagementSystem.cs` | Execution, Risk, and Strategies | `0854e607d` (2026-08-24T04:06:54Z) | 10 |
+| `src/Meridian.Execution.Sdk/Models.cs` | Execution, Risk, and Strategies | `0854e607d` (2026-08-24T04:06:54Z) | 2 |
+| `src/Meridian.Execution/Services/PaperTradingPortfolio.cs` | Execution, Risk, and Strategies | `0854e607d` (2026-08-24T04:06:54Z) | 2 |
+| `src/Meridian.Execution/PaperTradingGateway.cs` | Execution, Risk, and Strategies | `0854e607d` (2026-08-24T04:06:54Z) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 13 |
+| `src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 13 |
+| `src/Meridian.Ui.Shared/Endpoints/ApiKeyMiddleware.cs` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 10 |
+| `src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs` | Providers and Storage | `d60d4100d` (2026-08-24T00:54:53Z) | 6 |
+| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 6 |
+| `src/Meridian.Contracts/Operations/DataProvenance.cs` | Host and Composition | `d60d4100d` (2026-08-24T00:54:53Z) | 2 |
+| `src/Meridian/UiServer.cs` | Host and Composition | `d60d4100d` (2026-08-24T00:54:53Z) | 2 |
+| `src/Meridian.Execution/Events/TradeExecutedEvent.cs` | Execution, Risk, and Strategies | `d60d4100d` (2026-08-24T00:54:53Z) | 1 |
+| `src/Meridian.Execution/OrderManagementSystem.FillIdentity.cs` | Execution, Risk, and Strategies | `d60d4100d` (2026-08-24T00:54:53Z) | 1 |
+| `src/Meridian.Wpf/ViewModels/DataBrowserViewModel.cs` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 1 |
+| `src/Meridian.Wpf/Views/DataBrowserPage.xaml` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 1 |
 

@@ -991,7 +991,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                 ApplyPortfolio(portfolioPositions);
                 await ApplyReconciliationWorkbenchAsync(activeFund, reconciliationSnapshot, ct);
                 await LoadStatementReconciliationAsync(ct);
-                BuildWorkspaceSummary(activeFund, ledger, accounts, cashSummary, reconciliationSnapshot.Summary);
+                BuildWorkspaceSummary(activeFund, ledger, accounts, cashSummary, reconciliationSnapshot);
                 BuildAuditTrail(ledger, reconciliationSnapshot.Summary);
                 await RefreshReportPackPreviewAsync(ct);
                 UpdateReconciliationWorkbenchPresentation();
@@ -1015,7 +1015,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             ApplyPortfolio(portfolioPositions);
             await ApplyReconciliationWorkbenchAsync(activeFund, reconciliationSnapshot, ct);
             await LoadStatementReconciliationAsync(ct);
-            BuildWorkspaceSummary(activeFund, ledger, accounts, cashSummary, reconciliationSnapshot.Summary);
+            BuildWorkspaceSummary(activeFund, ledger, accounts, cashSummary, reconciliationSnapshot);
             BuildAuditTrail(ledger, reconciliationSnapshot.Summary);
             await RefreshReportPackPreviewAsync(ct);
             UpdateReconciliationWorkbenchPresentation();
@@ -1595,8 +1595,9 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         FundLedgerSummary? ledger,
         IReadOnlyList<FundAccountSummary> accounts,
         CashFinancingSummary cashSummary,
-        ReconciliationSummary reconciliation)
+        FundReconciliationWorkbenchSnapshot reconciliationSnapshot)
     {
+        var reconciliation = reconciliationSnapshot.Summary;
         var securityResolvedCount = PortfolioPositions.Count(position => position.HasSecurityCoverage);
         var securityMissingCount = PortfolioPositions.Count - securityResolvedCount;
         var summary = new FundWorkspaceSummary(
@@ -1628,9 +1629,10 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         BrokerageAccountsText = summary.BrokerageAccountCount.ToString("N0");
         CustodyAccountsText = summary.CustodyAccountCount.ToString("N0");
         RaisePropertyChanged(nameof(AccountQueueStatusText));
-        OverviewStatusText = summary.TotalAccounts == 0 && summary.JournalEntryCount == 0
-            ? "The Accounting shell is ready. Link accounts, import positions, or record a run to populate fund operations."
-            : BuildOverviewStatus(summary);
+        OverviewStatusText = BuildOverviewStatus(
+            summary,
+            reconciliationSnapshot,
+            summary.TotalAccounts == 0 && summary.JournalEntryCount == 0);
     }
 
     internal static InspectorPanelModel BuildSelectedAccountInspector(FundAccountSummary? account)
@@ -1838,23 +1840,6 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     private static string DisplayDimension(string? value)
         => FormatLedgerValue(value);
-
-    private static string BuildOverviewStatus(FundWorkspaceSummary summary)
-    {
-        var status = $"{summary.FundDisplayName} is loaded with {summary.TotalAccounts} account(s), {summary.JournalEntryCount} journal entries, and {summary.ReconciliationRuns} reconciliation run(s).";
-
-        if (summary.SecurityMissingCount > 0)
-        {
-            status += $" {summary.SecurityMissingCount} unresolved security mapping(s) still need Security Master coverage.";
-        }
-
-        if (summary.SecurityCoverageIssues > 0)
-        {
-            status += $" {summary.SecurityCoverageIssues} reconciliation security coverage issue(s) remain open.";
-        }
-
-        return status;
-    }
 
     private void BuildAuditTrail(FundLedgerSummary? ledger, ReconciliationSummary reconciliation)
     {

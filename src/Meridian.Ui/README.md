@@ -6,7 +6,7 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-15
+last_reviewed: 2026-07-27
 ---
 
 # src/Meridian.Ui

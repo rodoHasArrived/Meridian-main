@@ -115,6 +115,63 @@ public sealed class SecurityMasterQueryServiceEquityTermsTests
     }
 
     [Fact]
+    public async Task EquityTermQueries_CustomClassification_ShouldReturnRawOtherLabel()
+    {
+        var securityId = Guid.NewGuid();
+        var underlyingSecurityId = Guid.NewGuid();
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(CreateEquityProjection(
+                securityId,
+                JsonSerializer.SerializeToElement(new
+                {
+                    schemaVersion = 1,
+                    classification = "Other",
+                    otherClassification = "CustomHybrid",
+                    preferredTerms = new { dividendRate = 5.5m },
+                    convertibleTerms = new
+                    {
+                        underlyingSecurityId,
+                        conversionRatio = 1.5m
+                    }
+                })));
+        var service = CreateQueryService(store);
+
+        var preferred = await service.GetPreferredEquityTermsAsync(securityId);
+        var convertible = await service.GetConvertibleEquityTermsAsync(securityId);
+
+        preferred.Should().NotBeNull();
+        preferred!.Classification.Should().Be("CustomHybrid");
+        convertible.Should().NotBeNull();
+        convertible!.Classification.Should().Be("CustomHybrid");
+    }
+
+    [Fact]
+    public async Task GetConvertibleEquityTermsAsync_MalformedNumericClassification_ShouldRemainUnset()
+    {
+        var securityId = Guid.NewGuid();
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(CreateEquityProjection(
+                securityId,
+                JsonSerializer.SerializeToElement(new
+                {
+                    schemaVersion = 1,
+                    classification = 123,
+                    convertibleTerms = new
+                    {
+                        underlyingSecurityId = Guid.NewGuid(),
+                        conversionRatio = 1m
+                    }
+                })));
+
+        var result = await CreateQueryService(store).GetConvertibleEquityTermsAsync(securityId);
+
+        result.Should().NotBeNull();
+        result!.Classification.Should().BeNull();
+    }
+
+    [Fact]
     public async Task GetPreferredEquityTermsAsync_ReturnsNull_WhenProjectionIsNotPreferred()
     {
         var securityId = Guid.NewGuid();
@@ -213,6 +270,74 @@ public sealed class SecurityMasterQueryServiceEquityTermsTests
         result!.SecurityId.Should().Be(securityId);
         result.Identifiers.Should().ContainSingle();
         result.Identifiers[0].NormalizedValue.Should().Be("US0378331005");
+    }
+
+    [Fact]
+    public async Task GetByIdentifierAsync_UniverseFallback_RejectsOmittedProviderForProviderScopedIdentifier()
+    {
+        var projection = CreateIsinProjection(Guid.NewGuid(), provider: "xnas", includeIdentifier: true);
+        var store = CreateUniverseFallbackStore(projection);
+        var service = CreateQueryService(store);
+
+        var result = await service.GetByIdentifierAsync(
+            SecurityIdentifierKind.Isin,
+            "US0378331005",
+            provider: null);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetByIdentifierAsync_UniverseFallback_RejectsWrongProviderAndPrimaryFieldFallback()
+    {
+        var projection = CreateIsinProjection(Guid.NewGuid(), provider: "xnas", includeIdentifier: true);
+        var store = CreateUniverseFallbackStore(projection);
+        var service = CreateQueryService(store);
+
+        var result = await service.GetByIdentifierAsync(
+            SecurityIdentifierKind.Isin,
+            "US0378331005",
+            provider: "refinitiv");
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetByIdentifierAsync_UniverseFallback_ResolvesExactNormalizedProvider()
+    {
+        var securityId = Guid.NewGuid();
+        var projection = CreateIsinProjection(securityId, provider: "xnas", includeIdentifier: true);
+        var store = CreateUniverseFallbackStore(projection);
+        var service = CreateQueryService(store);
+
+        var result = await service.GetByIdentifierAsync(
+            SecurityIdentifierKind.Isin,
+            "us-0378331005",
+            provider: " XnAs ");
+
+        result.Should().NotBeNull();
+        result!.SecurityId.Should().Be(securityId);
+        result.Identifiers.Should().ContainSingle(identifier =>
+            identifier.NormalizedValue == "US0378331005"
+            && identifier.NormalizedProvider == "XNAS");
+    }
+
+    [Fact]
+    public async Task GetByIdentifierAsync_UniverseFallback_PreservesProviderlessLegacyPrimaryMatch()
+    {
+        var securityId = Guid.NewGuid();
+        var projection = CreateIsinProjection(securityId, provider: null, includeIdentifier: false);
+        var store = CreateUniverseFallbackStore(projection);
+        var service = CreateQueryService(store);
+
+        var result = await service.GetByIdentifierAsync(
+            SecurityIdentifierKind.Isin,
+            "US0378331005",
+            provider: null);
+
+        result.Should().NotBeNull();
+        result!.SecurityId.Should().Be(securityId);
+        result.Identifiers.Should().BeEmpty();
     }
 
     [Fact]
@@ -381,6 +506,49 @@ public sealed class SecurityMasterQueryServiceEquityTermsTests
         var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
         return new SecurityMasterQueryService(eventStore, store, rebuilder);
     }
+
+    private static ISecurityMasterStore CreateUniverseFallbackStore(SecurityProjectionRecord projection)
+    {
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetByIdentifierAsync(
+                Arg.Any<SecurityIdentifierKind>(),
+                Arg.Any<string>(),
+                Arg.Any<string?>(),
+                Arg.Any<DateTimeOffset>(),
+                true,
+                Arg.Any<CancellationToken>())
+            .Returns((SecurityProjectionRecord?)null);
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns([projection]);
+        return store;
+    }
+
+    private static SecurityProjectionRecord CreateIsinProjection(
+        Guid securityId,
+        string? provider,
+        bool includeIdentifier)
+        => CreateEquityProjection(
+            securityId,
+            JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = 1,
+                shareClass = "Common",
+                classification = "Common"
+            })) with
+        {
+            PrimaryIdentifierKind = SecurityIdentifierKind.Isin.ToString(),
+            PrimaryIdentifierValue = "us-0378331005",
+            Identifiers = includeIdentifier
+                ? [
+                    new SecurityIdentifierDto(
+                        SecurityIdentifierKind.Isin,
+                        "us-0378331005",
+                        true,
+                        DateTimeOffset.UtcNow.AddDays(-10),
+                        Provider: provider)
+                ]
+                : []
+        };
 
     private static SecurityProjectionRecord CreateEquityProjection(Guid securityId, JsonElement assetSpecificTerms)
         => new(

@@ -19,7 +19,7 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// <summary>
 /// Endpoints for Security Master command/query workflows.
 /// </summary>
-public static class SecurityMasterEndpoints
+public static partial class SecurityMasterEndpoints
 {
     public static void MapSecurityMasterEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
@@ -29,6 +29,9 @@ public static class SecurityMasterEndpoints
         // as [FromBody], causing an InvalidOperationException on the first request to any endpoint.
         if (app.Services.GetService<ISecurityMasterQueryService>() is null)
             return;
+
+        var corporateActionGroup = app.MapGroup(string.Empty).WithTags("CorporateActions");
+        MapCorporateActionOperationsEndpoints(corporateActionGroup, jsonOptions);
 
         var group = app.MapGroup(string.Empty).WithTags("SecurityMaster");
         group.AddEndpointFilter(RequireViewSecurityMasterPermission);
@@ -52,7 +55,7 @@ public static class SecurityMasterEndpoints
                 ? Results.NotFound()
                 : Results.Json(detail, jsonOptions);
         })
-        .WithName("GetSecurityMasterById")
+        .WithName("GetSecurityMasterById").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -68,22 +71,27 @@ public static class SecurityMasterEndpoints
             var report = await validationService.ValidateSecurityAsync(securityId, ct).ConfigureAwait(false);
             return Results.Json(report, jsonOptions);
         })
-        .WithName("ValidateSecurityMasterRecord")
+        .WithName("ValidateSecurityMasterRecord").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<SecurityValidationReportDto>(StatusCodes.Status200OK);
 
         /// <summary>
         /// Lists approved custom asset profile definitions available to profile-backed Security Master create/amend workflows.
+        /// An optional <c>asOf</c> date scopes selectability to a write EFFECTIVE AT that date, so
+        /// backdated amendments can discover the historical version governing their effective date.
         /// </summary>
         group.MapGet(UiApiRoutes.SecurityMasterAssetProfiles, (
+            [FromQuery] DateOnly? asOf,
             [FromServices] ISecurityAssetProfileCatalog profileCatalog) =>
         {
-            var profiles = profileCatalog.GetProfiles()
+            var profiles = (asOf is DateOnly effectiveAt
+                    ? profileCatalog.GetProfiles(effectiveAt)
+                    : profileCatalog.GetProfiles())
                 .OrderBy(static profile => profile.Name, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static profile => profile.Version)
                 .ToArray();
             return Results.Json(profiles, jsonOptions);
         })
-        .WithName("ListSecurityMasterAssetProfiles")
+        .WithName("ListSecurityMasterAssetProfiles").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<SecurityAssetProfileDefinitionDto>>(StatusCodes.Status200OK);
 
         /// <summary>
@@ -95,7 +103,7 @@ public static class SecurityMasterEndpoints
             var candidates = governanceService.GetPromotionCandidates();
             return Results.Json(candidates, jsonOptions);
         })
-        .WithName("ListSecurityMasterAssetProfilePromotionCandidates")
+        .WithName("ListSecurityMasterAssetProfilePromotionCandidates").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<SecurityAssetProfilePromotionCandidateDto>>(StatusCodes.Status200OK);
 
         /// <summary>
@@ -110,7 +118,7 @@ public static class SecurityMasterEndpoints
                 ? Results.NotFound()
                 : Results.Json(lineage, jsonOptions);
         })
-        .WithName("GetSecurityMasterAssetProfileLineage")
+        .WithName("GetSecurityMasterAssetProfileLineage").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<SecurityAssetProfileLineageDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -149,7 +157,7 @@ public static class SecurityMasterEndpoints
                 });
             }
         })
-        .WithName("DraftSecurityMasterAssetProfile")
+        .WithName("DraftSecurityMasterAssetProfile").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<SecurityAssetProfileGovernanceResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -190,7 +198,7 @@ public static class SecurityMasterEndpoints
                 });
             }
         })
-        .WithName("ApproveSecurityMasterAssetProfile")
+        .WithName("ApproveSecurityMasterAssetProfile").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<SecurityAssetProfileGovernanceResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -231,7 +239,7 @@ public static class SecurityMasterEndpoints
                 });
             }
         })
-        .WithName("RollbackSecurityMasterAssetProfile")
+        .WithName("RollbackSecurityMasterAssetProfile").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<SecurityAssetProfileGovernanceResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -270,7 +278,7 @@ public static class SecurityMasterEndpoints
 
             return Results.Json(detail, jsonOptions);
         })
-        .WithName("ResolveSecurityMaster")
+        .WithName("ResolveSecurityMaster").DeclareNonMutating("Resolves one Security Master record by identifier; the body carries the identifier kind, value, provider and as-of, and the handler only calls ISecurityMasterQueryService.GetByIdentifierAsync.").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -302,7 +310,7 @@ public static class SecurityMasterEndpoints
             var results = await queryService.SearchAsync(request, ct).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
-        .WithName("SearchSecurityMaster")
+        .WithName("SearchSecurityMaster").DeclareNonMutating("Security Master search; the body carries the query because it has several optional filters, and the handler only calls ISecurityMasterQueryService.SearchAsync.").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<SecuritySummaryDto>>(StatusCodes.Status200OK);
 
         /// <summary>
@@ -328,7 +336,7 @@ public static class SecurityMasterEndpoints
                 ? Results.NotFound()
                 : Results.Json(history, jsonOptions);
         })
-        .WithName("GetSecurityMasterHistory")
+        .WithName("GetSecurityMasterHistory").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<SecurityMasterEventEnvelope>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -350,10 +358,12 @@ public static class SecurityMasterEndpoints
             if (authorizationResult is not null)
                 return authorizationResult;
 
-            var detail = await service.CreateAsync(request, ct).ConfigureAwait(false);
+            var detail = await service
+                .CreateAsync(request with { UpdatedBy = ResolveActor(context) }, ct)
+                .ConfigureAwait(false);
             return Results.Json(detail, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
-        .WithName("CreateSecurityMaster")
+        .WithName("CreateSecurityMaster").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityDetailDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status429TooManyRequests)
@@ -372,16 +382,22 @@ public static class SecurityMasterEndpoints
             AmendSecurityTermsRequest request,
             HttpContext context,
             [FromServices] ISecurityMasterService service,
+            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
             CancellationToken ct) =>
         {
             var authorizationResult = RequireSecurityMasterMutationPermission(context);
             if (authorizationResult is not null)
                 return authorizationResult;
 
-            var detail = await service.AmendTermsAsync(request, ct).ConfigureAwait(false);
+            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+                return governedRefusal;
+
+            var detail = await service
+                .AmendTermsAsync(request with { UpdatedBy = ResolveActor(context) }, ct)
+                .ConfigureAwait(false);
             return Results.Json(detail, jsonOptions);
         })
-        .WithName("AmendSecurityMaster")
+        .WithName("AmendSecurityMaster").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status429TooManyRequests)
@@ -406,10 +422,12 @@ public static class SecurityMasterEndpoints
             if (authorizationResult is not null)
                 return authorizationResult;
 
-            await service.DeactivateAsync(request, ct).ConfigureAwait(false);
+            await service
+                .DeactivateAsync(request with { UpdatedBy = ResolveActor(context) }, ct)
+                .ConfigureAwait(false);
             return Results.NoContent();
         })
-        .WithName("DeactivateSecurityMaster")
+        .WithName("DeactivateSecurityMaster").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status429TooManyRequests)
@@ -434,10 +452,12 @@ public static class SecurityMasterEndpoints
             if (authorizationResult is not null)
                 return authorizationResult;
 
-            var alias = await service.UpsertAliasAsync(request, ct).ConfigureAwait(false);
+            var alias = await service
+                .UpsertAliasAsync(request with { CreatedBy = ResolveActor(context) }, ct)
+                .ConfigureAwait(false);
             return Results.Json(alias, jsonOptions);
         })
-        .WithName("UpsertSecurityMasterAlias")
+        .WithName("UpsertSecurityMasterAlias").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityAliasDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status429TooManyRequests)
@@ -464,7 +484,7 @@ public static class SecurityMasterEndpoints
                 ? Results.NotFound()
                 : Results.Json(parameters, jsonOptions);
         })
-        .WithName("GetSecurityMasterTradingParameters")
+        .WithName("GetSecurityMasterTradingParameters").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<TradingParametersDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -485,7 +505,7 @@ public static class SecurityMasterEndpoints
                 ? Results.NotFound()
                 : Results.Json(terms, jsonOptions);
         })
-        .WithName("GetSecurityMasterPreferredEquityTerms")
+        .WithName("GetSecurityMasterPreferredEquityTerms").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<PreferredEquityTermsDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -502,8 +522,12 @@ public static class SecurityMasterEndpoints
             HttpContext context,
             [FromServices] ISecurityMasterQueryService queryService,
             [FromServices] ISecurityMasterService service,
+            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
             CancellationToken ct) =>
         {
+            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+                return governedRefusal;
+
             var currentTerms = await queryService.GetPreferredEquityTermsAsync(securityId, ct).ConfigureAwait(false);
             if (currentTerms is null)
             {
@@ -511,12 +535,12 @@ public static class SecurityMasterEndpoints
             }
 
             var detail = await service
-                .AmendPreferredEquityTermsAsync(securityId, request, ct)
+                .AmendPreferredEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
                 .ConfigureAwait(false);
 
             return Results.Json(detail, jsonOptions);
         })
-        .WithName("AmendSecurityMasterPreferredEquityTerms")
+        .WithName("AmendSecurityMasterPreferredEquityTerms").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<AmendPreferredEquityTermsRequest>("application/json")
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
@@ -542,7 +566,7 @@ public static class SecurityMasterEndpoints
                 ? Results.NotFound()
                 : Results.Json(terms, jsonOptions);
         })
-        .WithName("GetSecurityMasterConvertibleEquityTerms")
+        .WithName("GetSecurityMasterConvertibleEquityTerms").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<ConvertibleEquityTermsDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -559,8 +583,12 @@ public static class SecurityMasterEndpoints
             HttpContext context,
             [FromServices] ISecurityMasterQueryService queryService,
             [FromServices] ISecurityMasterService service,
+            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
             CancellationToken ct) =>
         {
+            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+                return governedRefusal;
+
             var currentTerms = await queryService.GetConvertibleEquityTermsAsync(securityId, ct).ConfigureAwait(false);
             if (currentTerms is null)
             {
@@ -568,12 +596,12 @@ public static class SecurityMasterEndpoints
             }
 
             var detail = await service
-                .AmendConvertibleEquityTermsAsync(securityId, request, ct)
+                .AmendConvertibleEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
                 .ConfigureAwait(false);
 
             return Results.Json(detail, jsonOptions);
         })
-        .WithName("AmendSecurityMasterConvertibleEquityTerms")
+        .WithName("AmendSecurityMasterConvertibleEquityTerms").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<AmendConvertibleEquityTermsRequest>("application/json")
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
@@ -600,7 +628,7 @@ public static class SecurityMasterEndpoints
                 .ConfigureAwait(false);
             return Results.Json(actions, jsonOptions);
         })
-        .WithName("GetSecurityMasterCorporateActions")
+        .WithName("GetSecurityMasterCorporateActions").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<CorporateActionDto>>(StatusCodes.Status200OK);
 
         /// <summary>
@@ -637,99 +665,17 @@ public static class SecurityMasterEndpoints
             {
                 return Results.BadRequest(ex.Message);
             }
+            catch (CorporateActionOperationException ex)
+            {
+                return CorporateActionProblem(context, ex);
+            }
         })
-        .WithName("AppendSecurityMasterCorporateAction")
+        .WithName("AppendSecurityMasterCorporateAction").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<CorporateActionDto>("application/json")
         .Produces<SecurityMasterCorporateActionAppendResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status429TooManyRequests)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
-        .AddEndpointFilter(RequireModifySecurityMasterPermission);
-
-        /// <summary>
-        /// Runs provider-backed corporate-action ingest across mastered ticker symbols.
-        /// </summary>
-        group.MapPost(UiApiRoutes.SecurityMasterCorporateActionsIngest, async (
-            AppSecurityMaster.CorporateActions.CorporateActionIngestRequest? request,
-            HttpContext context,
-            [FromServices] AppSecurityMaster.CorporateActions.CorporateActionIngestOrchestrator orchestrator,
-            CancellationToken ct) =>
-        {
-            var actor = ResolveActor(context);
-            var effectiveRequest = (request ?? new AppSecurityMaster.CorporateActions.CorporateActionIngestRequest()) with
-            {
-                Actor = actor,
-                CorrelationId = context.TraceIdentifier
-            };
-
-            var result = await orchestrator.IngestAsync(effectiveRequest, ct).ConfigureAwait(false);
-            context.RequestServices.GetService<AppSecurityMaster.CorporateActions.CorporateActionInboxState>()?.Record(result);
-            return Results.Json(result, jsonOptions);
-        })
-        .WithName("IngestSecurityMasterCorporateActions")
-        .Accepts<AppSecurityMaster.CorporateActions.CorporateActionIngestRequest>("application/json")
-        .Produces<AppSecurityMaster.CorporateActions.CorporateActionIngestResult>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status429TooManyRequests)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
-        .AddEndpointFilter(RequireModifySecurityMasterPermission);
-
-        /// <summary>
-        /// Returns staged corporate-action proposals from the most recent ingest sweep for
-        /// the workbench inbox badge and review list.
-        /// </summary>
-        group.MapGet(UiApiRoutes.SecurityMasterCorporateActionsInbox, (
-            [FromServices] AppSecurityMaster.CorporateActions.CorporateActionInboxState inboxState) =>
-            Results.Json(inboxState.GetInbox(), jsonOptions))
-        .WithName("GetSecurityMasterCorporateActionInbox")
-        .Produces<AppSecurityMaster.CorporateActions.CorporateActionInboxDto>(StatusCodes.Status200OK);
-
-        /// <summary>
-        /// Applies one staged inbox proposal: consumes it from the snapshot and appends the
-        /// corporate action through the governed command service under the operator's identity.
-        /// </summary>
-        group.MapPost(UiApiRoutes.SecurityMasterCorporateActionsInboxApply, async (
-            AppSecurityMaster.CorporateActions.CorporateActionInboxApplyRequest? request,
-            HttpContext context,
-            [FromServices] AppSecurityMaster.CorporateActions.CorporateActionInboxState inboxState,
-            [FromServices] ISecurityMasterCorporateActionCommandService commandService,
-            CancellationToken ct) =>
-        {
-            if (request is null)
-                return Results.BadRequest("An apply request is required.");
-
-            var actor = ResolveActor(context);
-            if (!inboxState.TryTakeStaged(request.SecurityId, request.ActionType, request.ExDate, out var proposal))
-                return Results.NotFound("No staged proposal matches the requested security, action type, and ex-date.");
-
-            try
-            {
-                var result = await commandService.AppendAsync(
-                    new SecurityMasterCorporateActionAppendRequestDto(
-                        SecurityId: proposal.SecurityId,
-                        CorporateAction: AppSecurityMaster.CorporateActions.CorporateActionProposalMapper.ToCorporateAction(proposal),
-                        SourceSystem: proposal.WinningSource,
-                        Actor: actor,
-                        SourceRecordId: $"{proposal.Ticker}:{proposal.ActionType}:{proposal.ExDate:yyyyMMdd}:{proposal.WinningSource}",
-                        Reason: proposal.DissentingSources.Count == 0
-                            ? "Operator applied staged corporate-action proposal from the inbox."
-                            : $"Operator applied staged proposal over dissent from {string.Join(", ", proposal.DissentingSources)}.",
-                        CorrelationId: context.TraceIdentifier),
-                    ct).ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(ex.Message);
-            }
-        })
-        .WithName("ApplySecurityMasterCorporateActionInboxProposal")
-        .Accepts<AppSecurityMaster.CorporateActions.CorporateActionInboxApplyRequest>("application/json")
-        .Produces<SecurityMasterCorporateActionAppendResultDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound)
-        .Produces(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
@@ -749,26 +695,19 @@ public static class SecurityMasterEndpoints
             var draft = await draftService.BuildDraftAsync(symbol, ct).ConfigureAwait(false);
             return Results.Json(draft, jsonOptions);
         })
-        .WithName("GetSecurityMasterCoverageDraft")
+        .WithName("GetSecurityMasterCoverageDraft").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<AppSecurityMaster.SecurityMasterDraftProposalDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest);
 
         // GET /api/security-master/conflicts
         group.MapGet(UiApiRoutes.SecurityMasterConflicts, async (
-            HttpContext context,
             [FromServices] AppSecurityMaster.ISecurityMasterConflictService conflictService,
             CancellationToken ct) =>
         {
             var conflicts = await conflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
-            if (context.RequestServices.GetService<SecurityMasterExceptionCaseworkService>() is { } casework)
-            {
-                var actor = context.Items[LoginSessionMiddleware.CurrentUserKey] as string;
-                await casework.SeedOpenConflictCasesAsync(conflicts, actor, ct).ConfigureAwait(false);
-            }
-
             return Results.Json(conflicts, jsonOptions);
         })
-        .WithName("GetSecurityMasterConflicts")
+        .WithName("GetSecurityMasterConflicts").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<SecurityMasterConflict>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden);
@@ -779,6 +718,7 @@ public static class SecurityMasterEndpoints
             ResolveConflictRequest request,
             HttpContext context,
             [FromServices] AppSecurityMaster.ISecurityMasterConflictService conflictService,
+            [FromServices] AppSecurityMaster.ISecurityMasterWorkbenchCommandService? workbenchService,
             CancellationToken ct) =>
         {
             if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
@@ -795,21 +735,84 @@ public static class SecurityMasterEndpoints
                 return Results.BadRequest(ErrorResponse.Validation(
                     "ConflictId in body must match the route parameter."));
 
+            var existing = await conflictService.GetConflictAsync(conflictId, ct).ConfigureAwait(false);
+            if (existing is null)
+            {
+                return Results.NotFound();
+            }
+
             var resolvedBy = context.Items[LoginSessionMiddleware.CurrentUserKey] as string ?? "unknown";
+
+            // Field-level conflicts (economic/common term mismatches) are GOVERNED: the authority
+            // policy, rationale requirement, candidate guard, and transactional persisted-value
+            // revalidation must run before any close — including dismissals. The shared conflict
+            // queue's browser and WPF actions still post here (they carry no record version), so
+            // instead of rejecting them the legacy route DELEGATES to the governed workbench
+            // service at the record's current version — closing a field conflict through this
+            // route runs exactly the same policy path as the workbench route.
+            var isFieldConflict =
+                string.Equals(existing.ConflictKind, SecurityMasterConflictKinds.EconomicTermMismatch, StringComparison.Ordinal)
+                || string.Equals(existing.ConflictKind, SecurityMasterConflictKinds.CommonTermMismatch, StringComparison.Ordinal);
+            if (isFieldConflict)
+            {
+                if (workbenchService is null)
+                {
+                    return Results.Problem(
+                        title: "Governed field conflict",
+                        detail:
+                            $"Conflict '{conflictId:D}' is a {existing.ConflictKind} field conflict and the governed " +
+                            "workbench command service is not wired in this host; use the workbench resolve-conflict " +
+                            $"route (POST {UiApiRoutes.SecurityMasterWorkbenchResolveConflict}).",
+                        statusCode: StatusCodes.Status400BadRequest);
+                }
+
+                var (chosenWinnerSource, reason) = TranslateLegacyConflictAction(request, existing, resolvedBy);
+
+                try
+                {
+                    await workbenchService.ResolveSourceConflictAtCurrentVersionAsync(
+                        new ResolveSourceConflictRequest(
+                            existing.SecurityId,
+                            conflictId,
+                            ExpectedVersion: 0,
+                            ChosenWinnerSource: chosenWinnerSource,
+                            Actor: resolvedBy,
+                            Reason: reason),
+                        ct).ConfigureAwait(false);
+                }
+                catch (ArgumentException ex)
+                {
+                    // Policy deviation without acknowledgment, blank rationale, or a non-candidate
+                    // winner — the governed preconditions the queue actions must satisfy.
+                    return Results.Problem(
+                        title: "Governed field conflict", detail: ex.Message,
+                        statusCode: StatusCodes.Status400BadRequest);
+                }
+                catch (AppSecurityMaster.SecurityMasterConcurrencyException)
+                {
+                    return Results.Conflict(ErrorResponse.Validation(
+                        "The conflict was resolved concurrently by another operator."));
+                }
+                catch (InvalidOperationException ex)
+                {
+                    // The transactional persisted-value guard superseded or refreshed the row.
+                    return Results.Problem(
+                        title: "Conflict assessment changed", detail: ex.Message,
+                        statusCode: StatusCodes.Status409Conflict);
+                }
+
+                var closed = await conflictService.GetConflictAsync(conflictId, ct).ConfigureAwait(false);
+                return closed is null ? Results.NotFound() : Results.Json(closed, jsonOptions);
+            }
+
             var serverRequest = request with { ResolvedBy = resolvedBy };
 
             var updated = await conflictService.ResolveAsync(serverRequest, ct).ConfigureAwait(false);
-            if (updated is not null &&
-                context.RequestServices.GetService<SecurityMasterExceptionCaseworkService>() is { } casework)
-            {
-                await casework.ApplyResolvedConflictAsync(updated, serverRequest, ct).ConfigureAwait(false);
-            }
-
             return updated is null
                 ? Results.NotFound()
                 : Results.Json(updated, jsonOptions);
         })
-        .WithName("ResolveSecurityMasterConflict")
+        .WithName("ResolveSecurityMasterConflict").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityMasterConflict>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden)
@@ -840,11 +843,12 @@ public static class SecurityMasterEndpoints
             var result = await importService.ImportAsync(
                 request.FileContent,
                 request.FileExtension,
+                actor: ResolveActor(context),
                 progress: null,
                 ct: ct).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("ImportSecurityMaster")
+        .WithName("ImportSecurityMaster").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<AppSecurityMaster.SecurityMasterImportResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status429TooManyRequests)
@@ -862,7 +866,7 @@ public static class SecurityMasterEndpoints
             var response = ToIngestStatusResponse(snapshot, openConflicts.Count);
             return Results.Json(response, jsonOptions);
         })
-        .WithName("SecurityMasterIngestStatus")
+        .WithName("SecurityMasterIngestStatus").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<SecurityMasterIngestStatusResponse>(StatusCodes.Status200OK);
 
         /// <summary>
@@ -886,8 +890,25 @@ public static class SecurityMasterEndpoints
                 DateTimeOffset.MinValue);
             return Results.Json(overrides, jsonOptions);
         })
-        .WithName("GetSecurityMasterOperatorOverrides")
+        .WithName("GetSecurityMasterOperatorOverrides").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<OperatorOverridesDto>(StatusCodes.Status200OK);
+
+        /// <summary>
+        /// Returns the durable field-level provenance rows for a security: which source asserted
+        /// each field's value, under which origin (canonical conflict resolution vs. operator
+        /// overlay), referenced back to the conflict or revision that asserted it. This is the read
+        /// surface for the lineage that conflict resolutions and workbench edits persist.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterFieldProvenance, async (
+            Guid securityId,
+            [FromServices] ISecurityFieldProvenanceStore store,
+            CancellationToken ct) =>
+        {
+            var lineage = await store.GetAsync(securityId, ct).ConfigureAwait(false);
+            return Results.Json(lineage, jsonOptions);
+        })
+        .WithName("GetSecurityMasterFieldProvenance").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .Produces<IReadOnlyList<SecurityFieldProvenanceRecord>>(StatusCodes.Status200OK);
 
         /// <summary>
         /// Applies a partial update to operator overrides for a security. Values listed in
@@ -902,21 +923,58 @@ public static class SecurityMasterEndpoints
             OperatorOverridesPatchRequest request,
             HttpContext context,
             [FromServices] IOperatorOverridesStore store,
+            [FromServices] AppSecurityMaster.ISecurityMasterWorkbenchCommandService? workbenchService,
             CancellationToken ct) =>
         {
-            var actor = ResolveActor(context);
-            var updated = await store.PatchAsync(securityId, request, actor, ct).ConfigureAwait(false);
-            if (context.RequestServices.GetService<SecurityMasterExceptionCaseworkService>() is { } casework)
+            // The assetSpecificTerms.* namespace is reserved for the governed workbench edit route,
+            // which schema-validates the key and type-coerces the value. Accepting those keys here
+            // would let a raw patch bypass that validation entirely — and a raw REMOVAL would strip
+            // the overlay without the draft revision and provenance clean-up the workbench clear
+            // performs, leaving stale OperatorFieldEdit lineage behind.
+            var reservedKey = request.SetValues?.Keys.FirstOrDefault(
+                    static key => SecurityAssetTermsFieldEditValidator.TargetsAssetSpecificTerms(key))
+                ?? request.RemoveKeys?.FirstOrDefault(
+                    static key => SecurityAssetTermsFieldEditValidator.TargetsAssetSpecificTerms(key));
+            if (reservedKey is not null)
             {
-                await casework.SeedOperatorOverrideCaseAsync(updated, actor, ct).ConfigureAwait(false);
+                return Results.Problem(
+                    title: "Reserved override namespace",
+                    detail:
+                        $"Override key '{reservedKey}' targets the assetSpecificTerms namespace, which is " +
+                        "reserved for the schema-validated workbench field-edit route " +
+                        "(PUT security-master field edits). Use that route so sets are validated against " +
+                        "the asset class's declared term schema and clears retire the draft-revision and " +
+                        "provenance lineage with the overlay.",
+                    statusCode: StatusCodes.Status400BadRequest);
             }
 
-            return Results.Json(updated, jsonOptions);
+            var actor = ResolveActor(context);
+            // The workbench decision seam scans overlay keys for revision evidence under a
+            // per-security gate before recording the security-level Approved; a bare store patch
+            // can land between that scan and the decision and be silently co-approved. When the
+            // host wires the workbench service, the patch goes through its gate-held seam so the
+            // write serializes with that scan — and is refused while staged revisions are pending,
+            // since a free-form patch would change the overlay their reviewers decide over.
+            try
+            {
+                var updated = workbenchService is null
+                    ? await store.PatchAsync(securityId, request, actor, ct).ConfigureAwait(false)
+                    : await workbenchService.PatchOperatorOverridesAsync(securityId, request, actor, ct).ConfigureAwait(false);
+                return Results.Json(updated, jsonOptions);
+            }
+            catch (InvalidOperationException exception) when (exception.Message.Contains("governed revision workflow", StringComparison.Ordinal))
+            {
+                // Staged revisions are mid-review — a conflicting-state condition, not a client
+                // formatting error.
+                return Results.Conflict(new { error = exception.Message });
+            }
         })
-        .WithName("PatchSecurityMasterOperatorOverrides")
+        .WithName("PatchSecurityMasterOperatorOverrides").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<OperatorOverridesPatchRequest>("application/json")
         .Produces<OperatorOverridesDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
@@ -937,6 +995,7 @@ public static class SecurityMasterEndpoints
             OperatorOverrideDecisionRequest request,
             HttpContext context,
             [FromServices] IOperatorOverridesStore store,
+            [FromServices] AppSecurityMaster.ISecurityMasterWorkbenchCommandService? workbenchService,
             CancellationToken ct) =>
         {
             // The reviewer identity is server-derived from the authenticated principal, never taken
@@ -944,14 +1003,26 @@ public static class SecurityMasterEndpoints
             var decision = new OperatorOverrideDecision(request.Decision, ResolveActor(context), request.Comment);
             try
             {
-                var updated = await store
-                    .RecordApprovalDecisionAsync(securityId, decision, ct)
-                    .ConfigureAwait(false);
+                // A direct decision bypasses the revision lifecycle's controls (bound workflow,
+                // independent reviewer, staged-value deferral). When the host wires the workbench
+                // service, the decision goes through its governed seam, which refuses while staged
+                // revisions or revision-backed overlay values exist — otherwise the editor could
+                // approve a Draft revision's staged value directly.
+                var updated = workbenchService is null
+                    ? await store.RecordApprovalDecisionAsync(securityId, decision, ct).ConfigureAwait(false)
+                    : await workbenchService.RecordOperatorOverrideDecisionAsync(securityId, decision, ct).ConfigureAwait(false);
                 return Results.Json(updated, jsonOptions);
             }
             catch (ArgumentException exception)
             {
                 return Results.BadRequest(new { error = exception.Message });
+            }
+            catch (InvalidOperationException exception) when (exception.Message.Contains("governed revision workflow", StringComparison.Ordinal))
+            {
+                // The decision belongs to the revision lifecycle (staged revisions pending, or
+                // revision-backed values present) — a conflicting-state condition, not a client
+                // formatting error.
+                return Results.Conflict(new { error = exception.Message });
             }
             catch (InvalidOperationException exception) when (exception.Message.Contains("No operator overrides exist", StringComparison.Ordinal))
             {
@@ -966,7 +1037,7 @@ public static class SecurityMasterEndpoints
             // Any other InvalidOperationException (e.g. Security Master not configured) is an operational
             // failure and is intentionally left to surface as a 500 rather than be masked as a 404.
         })
-        .WithName("RecordSecurityMasterOperatorOverrideDecision")
+        .WithName("RecordSecurityMasterOperatorOverrideDecision").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<OperatorOverrideDecisionRequest>("application/json")
         .Produces<OperatorOverridesDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
@@ -984,16 +1055,25 @@ public static class SecurityMasterEndpoints
             HttpContext context,
             [FromServices] ISecurityMasterQueryService queryService,
             [FromServices] ISecurityMasterService service,
+            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
             CancellationToken ct) =>
         {
+            // Legacy alias for the canonical preferred-equity-terms PATCH route: it reaches the same
+            // AmendPreferredEquityTermsAsync amendment, so it carries the same maker-checker gate.
+            // Refuse before the existence probe, matching the canonical route.
+            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+                return governedRefusal;
+
             var existing = await queryService.GetPreferredEquityTermsAsync(securityId, ct).ConfigureAwait(false);
             if (existing is null)
                 return Results.NotFound();
 
-            var detail = await service.AmendPreferredEquityTermsAsync(securityId, request, ct).ConfigureAwait(false);
+            var detail = await service
+                .AmendPreferredEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
+                .ConfigureAwait(false);
             return Results.Json(detail, jsonOptions);
         })
-        .WithName("PatchSecurityPreferredTerms")
+        .WithName("PatchSecurityPreferredTerms").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
@@ -1067,6 +1147,53 @@ public static class SecurityMasterEndpoints
            || !string.IsNullOrWhiteSpace(request.ProfileFieldKey)
            || !string.IsNullOrWhiteSpace(request.ProfileFieldValue);
 
+    /// <summary>
+    /// Translates a LEGACY conflict-queue action into the governed resolve contract. The queue
+    /// clients (browser + WPF) send Resolution AcceptA/AcceptB/Dismiss with no
+    /// ChosenWinnerSource and an optional reason, while the governed path demands a concrete
+    /// candidate and a nonblank rationale — without translation every field-conflict action from
+    /// those queues dies on the candidate or rationale guard with a 400. AcceptA/AcceptB name the
+    /// conflict's recorded providers; a Dismiss acknowledges provider A's value as the equivalent
+    /// candidate (the DismissAsEquivalent flow needs a candidate, and the authority policy still
+    /// challenges a dismissal it scores as a real disagreement). An absent reason records the
+    /// operator's queue action itself — honest, attributable audit text for a queue surface that
+    /// collects no free-form rationale.
+    /// </summary>
+    internal static (string ChosenWinnerSource, string Reason) TranslateLegacyConflictAction(
+        ResolveConflictRequest request, SecurityMasterConflict existing, string resolvedBy)
+    {
+        var chosenWinnerSource = !string.IsNullOrWhiteSpace(request.ChosenWinnerSource)
+            ? request.ChosenWinnerSource.Trim()
+            : request.Resolution switch
+            {
+                not null when request.Resolution.Equals("AcceptA", StringComparison.OrdinalIgnoreCase)
+                    => existing.ProviderA,
+                not null when request.Resolution.Equals("AcceptB", StringComparison.OrdinalIgnoreCase)
+                    => existing.ProviderB,
+                not null when request.Resolution.Equals("Dismiss", StringComparison.OrdinalIgnoreCase)
+                    => existing.ProviderA,
+                _ => string.Empty,
+            };
+        var reason = !string.IsNullOrWhiteSpace(request.Reason)
+            ? request.Reason
+            : $"'{request.Resolution}' action from the shared conflict queue by {resolvedBy}.";
+        return (chosenWinnerSource, reason);
+    }
+
+    /// <summary>
+    /// The single source of actor identity for Security Master writes. Every mutation route stamps
+    /// its request's <c>UpdatedBy</c>/<c>CreatedBy</c> from this rather than trusting the body, so a
+    /// caller cannot attribute its own write to somebody else. Unattended callers are not refused:
+    /// <see cref="ApiKeyMiddleware"/> stamps a workload identity as the current user, so an ingest
+    /// authenticating with a key is recorded as that workload rather than as a human operator.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately narrow. <c>SourceSystem</c> stays caller-supplied because it identifies the
+    /// upstream SOURCE for conflict detection and precedence, not the actor — deriving it from the
+    /// principal would collapse distinct vendors into one and corrupt the precedence ladder. Likewise
+    /// <c>Reason</c>, <c>SourceRecordId</c> and the valid-time fields stay caller-authored: they
+    /// describe the change and its upstream record, which only the caller knows.
+    /// </remarks>
     private static string ResolveActor(HttpContext context)
     {
         if (EndpointAuthorization.TryResolveActor(context, out var username))
@@ -1086,6 +1213,31 @@ public static class SecurityMasterEndpoints
             ? Results.Forbid()
             : null;
     }
+
+    /// <summary>
+    /// ADR-guarded maker-checker enforcement for DIRECT term amendments: when
+    /// <see cref="AppSecurityMaster.SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments"/>
+    /// is enabled, the generic amend route, the bespoke preferred/convertible equity PATCH routes,
+    /// and the legacy <c>/equities/{securityId}/preferred-terms</c> alias are refused with guidance
+    /// to stage the correction through the governed workbench (Draft → Submitted → Approved →
+    /// Published), whose canonical-merge publish handler applies the approved value to the golden
+    /// record. Null when direct amendments remain permitted.
+    /// </summary>
+    /// <remarks>
+    /// Every route that reaches an <c>Amend*TermsAsync</c> mutation must call this; the legacy alias
+    /// was previously an ungated path to the same amendment, so a deployment that enabled the flag
+    /// specifically to force maker-checker still had a direct write surface.
+    /// </remarks>
+    private static IResult? RequireGovernedTermAmendmentRoute(
+        Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions)
+        => workbenchOptions.CurrentValue.RequireGovernedTermAmendments
+            ? Results.Problem(
+                statusCode: StatusCodes.Status403Forbidden,
+                title: "Direct term amendments are disabled by governance policy.",
+                detail: "This deployment requires term corrections to pass maker-checker: stage the edit through the "
+                    + "Security Master workbench field-edit route and publish it through the governed "
+                    + "Draft → Submitted → Approved → Published lifecycle instead of amending terms directly.")
+            : null;
 
     private static SecurityMasterIngestStatusResponse ToIngestStatusResponse(
         AppSecurityMaster.SecurityMasterIngestStatusSnapshot snapshot,
@@ -1385,15 +1537,12 @@ public static class SecurityMasterEndpoints
         group.MapPost(UiApiRoutes.SecurityMasterQualityReportRun, async (
             HttpContext context,
             [FromServices] ISecurityMasterDataQualityService qualityService,
-            [FromServices] SecurityMasterExceptionCaseworkService caseworkService,
             CancellationToken ct) =>
         {
             if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
                 return EndpointHelpers.Forbidden();
 
             var report = await qualityService.RunQualityChecksAsync(ct).ConfigureAwait(false);
-            var actor = EndpointAuthorization.TryResolveActor(context, out var username) ? username : null;
-            await caseworkService.SyncQualityViolationCasesAsync(report, actor, ct).ConfigureAwait(false);
             return Results.Json(report, jsonOptions);
         })
         .WithName("RunSecurityMasterQualityReport")
@@ -1417,13 +1566,39 @@ public static class SecurityMasterEndpoints
     private static void MapExceptionAgingEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
         group.MapGet(UiApiRoutes.SecurityMasterExceptionsAging, async (
+            HttpContext context,
             [FromServices] SecurityMasterExceptionCaseworkService caseworkService,
             CancellationToken ct) =>
         {
-            var aging = await caseworkService.GetAgingExceptionsAsync(ct).ConfigureAwait(false);
+            if (!TryResolveCaseworkScope(context, out var caseworkScope))
+            {
+                return ApiProblemDetails.Forbidden(
+                    context,
+                    "A tenant- and company-scoped workstation request context is required.");
+            }
+
+            var aging = await caseworkService.GetAgingExceptionsAsync(caseworkScope, ct).ConfigureAwait(false);
             return Results.Json(aging, jsonOptions);
         })
-        .WithName("GetSecurityMasterAgingExceptions")
-        .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(StatusCodes.Status200OK);
+        .WithName("GetSecurityMasterAgingExceptions").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireWorkstationTenantCompanyScope();
+    }
+
+    private static bool TryResolveCaseworkScope(
+        HttpContext context,
+        out ReconciliationBreakQueueScope scope)
+    {
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        if (string.IsNullOrWhiteSpace(tenantContext.TenantId)
+            || string.IsNullOrWhiteSpace(tenantContext.CompanyId))
+        {
+            scope = null!;
+            return false;
+        }
+
+        scope = new ReconciliationBreakQueueScope(tenantContext.TenantId, tenantContext.CompanyId);
+        return true;
     }
 }

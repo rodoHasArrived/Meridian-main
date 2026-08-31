@@ -502,6 +502,11 @@ public sealed partial class FundLedgerViewModel
         ReconciliationSection.AllRunItems = snapshot.RunRows;
 
         ApplyReconciliation(snapshot.Summary);
+        var readPresentation = BuildReconciliationReadPresentation(snapshot);
+        ReconciliationSection.RunsSourceEmptyStateText = readPresentation.EmptyStateText;
+        ReconciliationSection.BreakQueueSourceEmptyStateText = readPresentation.BreakQueueEmptyStateText;
+        ReconciliationSection.ReadAvailabilityState = readPresentation.State;
+        ReconciliationSection.HasReadAvailabilityNotice = readPresentation.ShowState;
 
         ReconciliationLegalEntityText = string.IsNullOrWhiteSpace(activeFund.LegalEntityName)
             ? "Not configured"
@@ -512,12 +517,12 @@ public sealed partial class FundLedgerViewModel
         ReconciliationScopeText = HumanizeLedgerScope(activeFund.DefaultLedgerScope);
         ReconciliationWorkspaceAsOfText = ResolveWorkspaceAsOfText(snapshot.Summary);
         ReconciliationLastRefreshText = snapshot.RefreshedAt.LocalDateTime.ToString("g");
-        InReviewBreaksText = snapshot.InReviewBreakCount.ToString("N0");
-        ReconciliationSecurityCoverageIssuesText = snapshot.Summary.SecurityCoverageIssueCount.ToString("N0");
+        OpenBreaksText = readPresentation.OpenBreaksText;
+        ReconciliationRunsText = readPresentation.ReconciliationRunsText;
+        InReviewBreaksText = readPresentation.InReviewBreaksText;
+        ReconciliationSecurityCoverageIssuesText = readPresentation.SecurityIssuesText;
         ApplyReconciliationCalibration(snapshot);
-        ReconciliationStatusText = snapshot.RunRows.Count == 0
-            ? "No reconciliation runs are recorded for this fund yet."
-            : $"{snapshot.BreakQueueItems.Count} break queue item(s) and {snapshot.RunRows.Count} run(s) are ready for review.";
+        ReconciliationStatusText = readPresentation.StatusText;
 
         var previousActiveKey = GetActiveReconciliationSelectionKey();
         ApplyReconciliationFiltersAndSelection(previousActiveKey, forceReload: true, cancellationToken: ct);
@@ -670,7 +675,19 @@ public sealed partial class FundLedgerViewModel
             }
 
             await RefreshReconciliationWorkbenchCoreAsync(activeFund, ct);
-            ReconciliationActionFeedbackText = successMessage;
+            if (result.CompletedWithWarnings)
+            {
+                var warningMessage = result.OperatorMessage
+                    ?? (result.Outcome is null
+                        ? null
+                        : WorkstationReconciliationApiClient.BuildOutcomeOperatorMessage(result.Outcome))
+                    ?? "Reconciliation action completed with warnings.";
+                ReconciliationActionFeedbackText = $"{successMessage} {warningMessage}";
+            }
+            else
+            {
+                ReconciliationActionFeedbackText = successMessage;
+            }
         }
         finally
         {
@@ -917,7 +934,13 @@ public sealed partial class FundLedgerViewModel
         ReconciliationCalibrationPendingSignoffText = "0";
         ReconciliationCalibrationMissingMetadataText = "0";
         ReconciliationBreakQueueEmptyStateText = "No strategy-run breaks are queued for this fund.";
+        ReconciliationSection.BreakQueueSourceEmptyStateText = "No strategy-run breaks are queued for this fund.";
         ReconciliationRunsEmptyStateText = "No reconciliation runs are available for this fund.";
+        ReconciliationSection.RunsSourceEmptyStateText = "No reconciliation runs are available for this fund.";
+        ReconciliationSection.HasReadAvailabilityNotice = false;
+        ReconciliationSection.ReadAvailabilityState = WorkstationStateModel.Empty(
+            "Reconciliation availability not loaded",
+            "Select a fund profile and refresh to verify reconciliation availability.");
         ClearReconciliationDetail();
 
         RaisePropertyChanged(nameof(SelectedReconciliationQueueIndex));
@@ -983,9 +1006,9 @@ public sealed partial class FundLedgerViewModel
         {
             ReconciliationCalibrationStatusText = "Unavailable";
             ReconciliationCalibrationSummaryText = "The workstation service did not return reconciliation calibration posture.";
-            ReconciliationCalibrationProfilesText = "0";
-            ReconciliationCalibrationPendingSignoffText = "0";
-            ReconciliationCalibrationMissingMetadataText = "0";
+            ReconciliationCalibrationProfilesText = "-";
+            ReconciliationCalibrationPendingSignoffText = "-";
+            ReconciliationCalibrationMissingMetadataText = "-";
             return;
         }
 
@@ -1222,13 +1245,13 @@ public sealed partial class FundLedgerViewModel
             : ReconciliationSection.SelectedScopeFilter == FundReconciliationScopeFilter.Account
                 ? "Break Queue is strategy-scoped only. Reset filters or switch scope back to Strategy or All to review queue items."
                 : ReconciliationSection.AllBreakQueueItems.Count == 0
-                    ? "No strategy-run breaks are queued for this fund."
+                    ? ReconciliationSection.BreakQueueSourceEmptyStateText
                     : "No break queue items match the current filter. Reset filters to return to the open queue.";
 
         ReconciliationRunsEmptyStateText = filteredRunCount > 0
             ? string.Empty
             : ReconciliationSection.AllRunItems.Count == 0
-                ? "No reconciliation runs are available for this fund."
+                ? ReconciliationSection.RunsSourceEmptyStateText
                 : "No runs match the current scope or search filter. Reset filters to return to the full run list.";
     }
 

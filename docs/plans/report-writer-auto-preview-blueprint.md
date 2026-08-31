@@ -1,8 +1,21 @@
 # Blueprint — Report Writer Debounced Live Auto-Preview
 
+**Status:** Design — not implemented (`reporting-screen.report-writer-auto-preview.ts` does not
+exist in source)
+**Owner:** Browser workstation lane
+**Reviewed:** 2026-08-01
+
 **Idea source:** 2026-07-13 report-builder UX brainstorm (idea #2, highest-leverage pick).
 **Surface:** Browser workstation report builder, `src/Meridian.Ui/dashboard/`.
 **Depth mode:** full.
+**Registered in:** [`docs/engineering/blueprints/README.md`](../engineering/blueprints/README.md).
+
+> **Why this file lives in `docs/plans/`.** New durable planning docs belong in canonical lanes
+> ([`docs/plans/README.md`](README.md)). This blueprint stays here because the 2026-07-13 brainstorm
+> ledger (`.claude/skills/meridian-brainstorm/brainstorm-history.jsonl`) records this path as its
+> `document_updated` target. It is an active, unimplemented design — not archived source material.
+> Relocate it to `docs/product/` alongside the other browser-workstation blueprints when the
+> brainstorm ledger entry is repointed.
 
 Today every mutation in the report-writer designer — token drop, filter edit, chart toggle,
 formula keystroke — calls `clearWriterPreview`, which blanks the rendered preview until the

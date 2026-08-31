@@ -21,15 +21,13 @@ public sealed class BacktestStudioRunOrchestratorTests
             [engine],
             NullLogger<BacktestStudioRunOrchestrator>.Instance);
 
-        var request = new BacktestStudioRunRequest(
-            StrategyId: "strategy-1",
-            StrategyName: "Mean Reversion",
-            Engine: StrategyRunEngine.MeridianNative,
-            NativeRequest: BuildRequest(),
-            DatasetReference: "dataset:us-equities",
-            Parameters: new Dictionary<string, string> { ["lookback"] = "20" },
-            SweepId: "sweep-001",
-            SweepObjective: "FinalEquity");
+        var request = BuildValidStudioRequest("strategy-1", "Mean Reversion") with
+        {
+            DatasetReference = "dataset:us-equities",
+            Parameters = new Dictionary<string, string> { ["lookback"] = "20" },
+            SweepId = "sweep-001",
+            SweepObjective = "FinalEquity"
+        };
 
         var handle = await orchestrator.StartAsync(request);
 
@@ -63,15 +61,13 @@ public sealed class BacktestStudioRunOrchestratorTests
             [engine],
             NullLogger<BacktestStudioRunOrchestrator>.Instance);
 
-        var request = new BacktestStudioRunRequest(
-            StrategyId: "strategy-sweep-hash",
-            StrategyName: "Momentum",
-            Engine: StrategyRunEngine.MeridianNative,
-            NativeRequest: BuildRequest(),
-            Parameters: new Dictionary<string, string> { ["lookback"] = "10" },
-            SweepId: "sweep-abc",
-            SweepDefinitionHash: "FORGED-HASH",
-            SweepObjective: "FinalEquity");
+        var request = BuildValidStudioRequest("strategy-sweep-hash", "Momentum") with
+        {
+            Parameters = new Dictionary<string, string> { ["lookback"] = "10" },
+            SweepId = "sweep-abc",
+            SweepDefinitionHash = "FORGED-HASH",
+            SweepObjective = "FinalEquity"
+        };
 
         await orchestrator.StartAsync(request);
 
@@ -90,37 +86,35 @@ public sealed class BacktestStudioRunOrchestratorTests
             [engine],
             NullLogger<BacktestStudioRunOrchestrator>.Instance);
 
-        var request = new BacktestStudioRunRequest(
-            StrategyId: "strategy-evidence-loop",
-            StrategyName: "Evidence Loop",
-            Engine: StrategyRunEngine.MeridianNative,
-            NativeRequest: BuildRequest(),
-            OperatorAcceptanceCriteria:
+        var request = BuildValidStudioRequest("strategy-evidence-loop", "Evidence Loop") with
+        {
+            OperatorAcceptanceCriteria =
             [
                 "Backtest result links to retained strategy thesis.",
                 "Operator reviewed paper-validation promotion boundary."
             ],
-            RetainedEvidenceReferences:
+            RetainedEvidenceReferences =
             [
                 "evidence://research/backtests/strategy-evidence-loop/run-001",
                 " evidence://research/backtests/strategy-evidence-loop/run-001 "
             ],
-            AccountingRecordReferences:
+            AccountingRecordReferences =
             [
-                "accounting-record://operations/close-package/2026-03"
+                "ledger://books/11111111-1111-1111-1111-111111111111/accounts/strategy-evidence-loop"
             ],
-            ApprovalReferences:
+            ApprovalReferences =
             [
                 "approval://strategy/backtest-evidence-loop"
             ],
-            PaperValidationReferences:
+            PaperValidationReferences =
             [
-                "paper-validation://strategy-evidence-loop/run-001"
+                "operations://fund-workflows/22222222-2222-2222-2222-222222222222/events/paper-validation-run-001"
             ],
-            GovernedReportReferences:
+            GovernedReportReferences =
             [
-                "report-pack://governed/strategy-evidence-loop"
-            ]);
+                "reporting-run://strategy-evidence-loop-run-001/manifest"
+            ]
+        };
 
         var handle = await orchestrator.StartAsync(request);
 
@@ -128,20 +122,115 @@ public sealed class BacktestStudioRunOrchestratorTests
         started.Should().NotBeNull();
         started!.OperatorAcceptanceCriteria.Should().BeEquivalentTo(request.OperatorAcceptanceCriteria);
         started.RetainedEvidenceReferences.Should().ContainSingle("evidence://research/backtests/strategy-evidence-loop/run-001");
-        started.AccountingRecordReferences.Should().ContainSingle("accounting-record://operations/close-package/2026-03");
+        started.AccountingRecordReferences.Should().ContainSingle("ledger://books/11111111-1111-1111-1111-111111111111/accounts/strategy-evidence-loop");
         started.ApprovalReferences.Should().ContainSingle("approval://strategy/backtest-evidence-loop");
-        started.PaperValidationReferences.Should().ContainSingle("paper-validation://strategy-evidence-loop/run-001");
-        started.GovernedReportReferences.Should().ContainSingle("report-pack://governed/strategy-evidence-loop");
+        started.PaperValidationReferences.Should().ContainSingle("operations://fund-workflows/22222222-2222-2222-2222-222222222222/events/paper-validation-run-001");
+        started.GovernedReportReferences.Should().ContainSingle("reporting-run://strategy-evidence-loop-run-001/manifest");
 
         engine.Complete(handle.EngineRunHandle, BuildResult(request.NativeRequest));
 
         var completed = await WaitForRunAsync(store, "strategy-evidence-loop", run => run.EndedAt.HasValue);
         completed.OperatorAcceptanceCriteria.Should().BeEquivalentTo(request.OperatorAcceptanceCriteria);
         completed.RetainedEvidenceReferences.Should().ContainSingle("evidence://research/backtests/strategy-evidence-loop/run-001");
-        completed.AccountingRecordReferences.Should().ContainSingle("accounting-record://operations/close-package/2026-03");
+        completed.AccountingRecordReferences.Should().ContainSingle("ledger://books/11111111-1111-1111-1111-111111111111/accounts/strategy-evidence-loop");
         completed.ApprovalReferences.Should().ContainSingle("approval://strategy/backtest-evidence-loop");
-        completed.PaperValidationReferences.Should().ContainSingle("paper-validation://strategy-evidence-loop/run-001");
-        completed.GovernedReportReferences.Should().ContainSingle("report-pack://governed/strategy-evidence-loop");
+        completed.PaperValidationReferences.Should().ContainSingle("operations://fund-workflows/22222222-2222-2222-2222-222222222222/events/paper-validation-run-001");
+        completed.GovernedReportReferences.Should().ContainSingle("reporting-run://strategy-evidence-loop-run-001/manifest");
+    }
+
+    [Theory]
+    [InlineData("identity", "nonblank strategy identity")]
+    [InlineData("criterion", "nonblank operator acceptance criterion")]
+    [InlineData("reference", "retained evidence, accounting, approval, paper-validation, or governed-report reference")]
+    public async Task StartAsync_InvalidEvidenceRequest_RejectsBeforeEngineOrPersistence(
+        string invalidField,
+        string expectedMessage)
+    {
+        var store = new StrategyRunStore();
+        var engine = new StubBacktestStudioEngine();
+        await using var orchestrator = new BacktestStudioRunOrchestrator(
+            store,
+            [engine],
+            NullLogger<BacktestStudioRunOrchestrator>.Instance);
+        var request = invalidField switch
+        {
+            "identity" => BuildValidStudioRequest("strategy-invalid", "Invalid") with { StrategyId = " " },
+            "criterion" => BuildValidStudioRequest("strategy-invalid", "Invalid") with
+            {
+                OperatorAcceptanceCriteria = [" ", "\t"]
+            },
+            "reference" => BuildValidStudioRequest("strategy-invalid", "Invalid") with
+            {
+                RetainedEvidenceReferences = [" ", "\t"],
+                AccountingRecordReferences = [],
+                ApprovalReferences = [],
+                PaperValidationReferences = [],
+                GovernedReportReferences = []
+            },
+            _ => throw new ArgumentOutOfRangeException(nameof(invalidField), invalidField, null)
+        };
+
+        var action = () => orchestrator.StartAsync(request);
+
+        await action.Should().ThrowAsync<ArgumentException>()
+            .WithMessage($"*{expectedMessage}*");
+        engine.StartCallCount.Should().Be(0);
+        (await store.QueryRunsAsync(new StrategyRunRepositoryQuery(Limit: 10))).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("malformed", "retained evidence")]
+    [InlineData("retained-mismatch", "retained evidence")]
+    [InlineData("accounting-mismatch", "accounting record")]
+    [InlineData("approval-mismatch", "approval")]
+    [InlineData("paper-validation-mismatch", "paper-validation")]
+    [InlineData("governed-report-mismatch", "governed-report")]
+    public async Task StartAsync_MalformedOrMismatchedReference_RejectsBeforeEngineOrPersistence(
+        string invalidField,
+        string expectedCategory)
+    {
+        var store = new StrategyRunStore();
+        var engine = new StubBacktestStudioEngine();
+        await using var orchestrator = new BacktestStudioRunOrchestrator(
+            store,
+            [engine],
+            NullLogger<BacktestStudioRunOrchestrator>.Instance);
+        var validRequest = BuildValidStudioRequest("strategy-invalid-reference", "Invalid Reference");
+        var request = invalidField switch
+        {
+            "malformed" => validRequest with
+            {
+                RetainedEvidenceReferences = ["not-a-stable-reference"]
+            },
+            "retained-mismatch" => validRequest with
+            {
+                RetainedEvidenceReferences = ["approval://strategy-runs/strategy-invalid-reference"]
+            },
+            "accounting-mismatch" => validRequest with
+            {
+                AccountingRecordReferences = ["evidence://strategy-runs/strategy-invalid-reference"]
+            },
+            "approval-mismatch" => validRequest with
+            {
+                ApprovalReferences = ["ledger://books/strategy-runs/strategy-invalid-reference"]
+            },
+            "paper-validation-mismatch" => validRequest with
+            {
+                PaperValidationReferences = ["reporting-run://strategy-invalid-reference/manifest"]
+            },
+            "governed-report-mismatch" => validRequest with
+            {
+                GovernedReportReferences = ["workflow://fund/strategy-invalid-reference"]
+            },
+            _ => throw new ArgumentOutOfRangeException(nameof(invalidField), invalidField, null)
+        };
+
+        var action = () => orchestrator.StartAsync(request);
+
+        await action.Should().ThrowAsync<ArgumentException>()
+            .WithMessage($"*Every {expectedCategory} reference must be a stable absolute URI*");
+        engine.StartCallCount.Should().Be(0);
+        (await store.QueryRunsAsync(new StrategyRunRepositoryQuery(Limit: 10))).Should().BeEmpty();
     }
 
     [Fact]
@@ -154,11 +243,7 @@ public sealed class BacktestStudioRunOrchestratorTests
             [engine],
             NullLogger<BacktestStudioRunOrchestrator>.Instance);
 
-        var request = new BacktestStudioRunRequest(
-            StrategyId: "strategy-2",
-            StrategyName: "Breakout",
-            Engine: StrategyRunEngine.MeridianNative,
-            NativeRequest: BuildRequest());
+        var request = BuildValidStudioRequest("strategy-2", "Breakout");
 
         var handle = await orchestrator.StartAsync(request);
         engine.Fail(handle.EngineRunHandle, new InvalidOperationException("boom"));
@@ -183,11 +268,7 @@ public sealed class BacktestStudioRunOrchestratorTests
             NullLogger<BacktestStudioRunOrchestrator>.Instance);
 
         using var cts = new CancellationTokenSource();
-        var request = new BacktestStudioRunRequest(
-            StrategyId: "strategy-3",
-            StrategyName: "Momentum",
-            Engine: StrategyRunEngine.MeridianNative,
-            NativeRequest: BuildRequest());
+        var request = BuildValidStudioRequest("strategy-3", "Momentum");
 
         var handle = await orchestrator.StartAsync(request, cts.Token);
         await engine.WaitForMonitorAsync(handle.EngineRunHandle);
@@ -214,11 +295,7 @@ public sealed class BacktestStudioRunOrchestratorTests
             [engine],
             NullLogger<BacktestStudioRunOrchestrator>.Instance);
 
-        var request = new BacktestStudioRunRequest(
-            StrategyId: "strategy-cancel",
-            StrategyName: "Momentum",
-            Engine: StrategyRunEngine.MeridianNative,
-            NativeRequest: BuildRequest());
+        var request = BuildValidStudioRequest("strategy-cancel", "Momentum");
 
         var handle = await orchestrator.StartAsync(request, CancellationToken.None);
         await engine.WaitForMonitorAsync(handle.EngineRunHandle);
@@ -244,11 +321,7 @@ public sealed class BacktestStudioRunOrchestratorTests
             [engine],
             NullLogger<BacktestStudioRunOrchestrator>.Instance);
 
-        var request = new BacktestStudioRunRequest(
-            StrategyId: "strategy-4",
-            StrategyName: "Carry",
-            Engine: StrategyRunEngine.MeridianNative,
-            NativeRequest: BuildRequest());
+        var request = BuildValidStudioRequest("strategy-4", "Carry");
 
         var handle = await orchestrator.StartAsync(request);
         await engine.WaitForMonitorAsync(handle.EngineRunHandle);
@@ -280,6 +353,15 @@ public sealed class BacktestStudioRunOrchestratorTests
             From: new DateOnly(2024, 1, 2),
             To: new DateOnly(2024, 1, 3),
             DataRoot: "data");
+
+    private static BacktestStudioRunRequest BuildValidStudioRequest(string strategyId, string strategyName) =>
+        new(
+            StrategyId: strategyId,
+            StrategyName: strategyName,
+            Engine: StrategyRunEngine.MeridianNative,
+            NativeRequest: BuildRequest(),
+            OperatorAcceptanceCriteria: ["Operator reviewed the retained backtest evidence."],
+            RetainedEvidenceReferences: [$"evidence://strategy-runs/{strategyId}"]);
 
     private static BacktestResult BuildResult(BacktestRequest request) =>
         new(
@@ -324,8 +406,11 @@ public sealed class BacktestStudioRunOrchestratorTests
 
         public StrategyRunEngine Engine => StrategyRunEngine.MeridianNative;
 
+        public int StartCallCount { get; private set; }
+
         public Task<BacktestStudioRunHandle> StartAsync(BacktestStudioRunRequest request, CancellationToken ct)
         {
+            StartCallCount++;
             var runId = Guid.NewGuid().ToString("N");
             var engineRunHandle = Guid.NewGuid().ToString("N");
 

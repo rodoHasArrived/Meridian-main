@@ -106,6 +106,21 @@ public sealed class PeriodAwareRestatementResolverTests
     }
 
     [Fact]
+    public async Task SoftClosedPeriod_IndeterminateCanonicalCandidateLookup_FailsClosed()
+    {
+        var resolver = NewResolver(
+            new FakeLockReader(_ => LedgerPeriodStatusDto.SoftClosed),
+            new IndeterminateRestatementCandidateResolver());
+
+        var decision = await resolver.ResolveAsync(Event(affectedBooks: [BookA]));
+
+        decision.RestatementRequired.Should().BeTrue(
+            "an unavailable canonical released-run lookup must not be interpreted as no exposure");
+        decision.Candidates.Should().BeEmpty(
+            "the bridge must not fabricate legacy report-pack identities");
+    }
+
+    [Fact]
     public async Task MultipleBooks_OneHardClosed_AggregatesToRestatementRequired()
     {
         var lockReader = new FakeLockReader(book => book == BookB ? LedgerPeriodStatusDto.HardClosed : LedgerPeriodStatusDto.Open);

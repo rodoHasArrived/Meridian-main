@@ -6,7 +6,7 @@ module_id: SRC-DOMAIN
 path: src/Meridian.Domain
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-06-06
+last_reviewed: 2026-07-25
 ---
 
 # src/Meridian.Domain
@@ -36,10 +36,21 @@ Use this module for domain behavior that should remain stable across providers, 
 ## API contract notes
 
 - Statement reconciliation domain models include typed normalized positions, cash balances, transactions, security references, and source-row references. Each normalized entity carries `StatementRunId`, `SourceRowNumber`, `SourceRowHash`, and `RawSnapshot` traceability fields so downstream reconciliation evidence can be tied back to the raw statement line.
+- Statement import identity retains the raw source SHA-256 separately from the canonical parse
+  artifact SHA-256. Duplicate keys bind both identities when they differ, so normalized artifacts
+  cannot replace or obscure the operator-supplied source evidence. Compatible-key lookup retains
+  canonical-only duplicate identities created before this split while new runs use the hardened
+  raw-plus-canonical identity.
 - `IEventQuarantineSink` is the domain event-flow port for retaining market events that require
   quarantine or dead-letter review. Application supplies the concrete dead-letter implementation;
   Data Integration can depend on the port while keeping canonicalization free of Application
   storage dependencies.
+- `MarketTradeUpdate.SequenceStreamId` can define a provider's continuity domain separately from
+  the published trade `StreamId` and venue. The trade collector uses that explicit key for sequence
+  and rolling order-flow state, excluding venue so per-ticker provider sequences are compared across
+  execution venues without discarding trade-ID or venue provenance from emitted events.
+  `SequenceSessionDate` scopes a provider-reset stream to its market session date; adapters own the
+  timezone conversion rather than letting the collector mistake UTC midnight for a session boundary.
 
 ## Diagrams
 
@@ -53,6 +64,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
+| `W10-RECON-004` | Operator-taught match rules with promotion gate |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

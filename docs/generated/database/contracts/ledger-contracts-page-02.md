@@ -2,11 +2,113 @@
 
 # `ledger-contracts` data objects - page 2 of 4
 
-Objects 81-160 of 283. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 297. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_AccountingBasisProjectionSetDto["AccountingBasisProjectionSetDto"] {
+        +string Currency
+        +DateOnly EffectiveDate
+        +decimal EventAmount
+        +string FundProfileId
+        +IReadOnlyList~AccountingBasisProjectionItemDto~ Items
+        +DateTimeOffset ProjectedAtUtc
+        +Guid SourceEventId
+        +string SourceEventType
+    }
+    class Meridian_Contracts_Ledger_AccountingBasisProjectionSetRequestDto["AccountingBasisProjectionSetRequestDto"] {
+        +DateTimeOffset AccountingTimestamp
+        +string Actor
+        +string? CompanyId
+        +Guid? CorrelationId
+        +string? CounterpartyId
+        +string Currency
+        +string Description
+        +DateOnly EffectiveDate
+        +decimal EventAmount
+        +IReadOnlyList~string~ EvidenceLinks
+        +string FundProfileId
+        +string? InstrumentSymbol
+    }
+    class Meridian_Contracts_Ledger_AccountingBasisProjectionTargetDto["AccountingBasisProjectionTargetDto"] {
+        +AccountingBasisKindDto AccountingBasis
+        +LedgerDimensionSetDto? Dimensions
+        +Guid LedgerBookId
+        +Guid PeriodId
+        +string? PolicyId
+        +AccountingTreatmentKindDto? TreatmentKind
+    }
+    class Meridian_Contracts_Ledger_AccountingBookContextDto["AccountingBookContextDto"] {
+        +AccountingBasisKindDto AccountingBasis
+        +string AccountingPolicyId
+        +string AccountingPolicyVersion
+        +string BaseCurrency
+        +LedgerDimensionSetDto? Dimensions
+        +string DisplayName
+        +string FundProfileId
+        +Guid FundStructureNodeId
+        +FundStructureNodeKindDto FundStructureNodeKind
+        +Guid LedgerBookId
+        +Guid? PeriodId
+    }
+    class Meridian_Contracts_Ledger_AccountingCertificationStateDto["AccountingCertificationStateDto"] {
+    }
+    class Meridian_Contracts_Ledger_AccountingCloseReadinessItemDto["AccountingCloseReadinessItemDto"] {
+        +int BlockingIssueCount
+        +IReadOnlyList~AccountingConfigurationValidationIssueDto~ BlockingIssues
+        +string Category
+        +LedgerDimensionSetDto Dimensions
+        +IReadOnlyList~string~ EvidenceLinks
+        +string ItemId
+        +string Label
+        +Guid? LedgerBookId
+        +string RequiredAction
+        +AccountingReadinessStateDto State
+        +string Summary
+    }
+    class Meridian_Contracts_Ledger_AccountingConfigurationStatusDto["AccountingConfigurationStatusDto"] {
+    }
+    class Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto["AccountingConfigurationValidationIssueDto"] {
+        +string Code
+        +string Message
+        +AccountingConfigurationValidationSeverityDto Severity
+        +string? SuggestedAction
+        +string? TargetId
+    }
+    class Meridian_Contracts_Ledger_AccountingConfigurationValidationSeverityDto["AccountingConfigurationValidationSeverityDto"] {
+    }
+    class Meridian_Contracts_Ledger_AccountingConfigurationWorkspaceDto["AccountingConfigurationWorkspaceDto"] {
+        +IReadOnlyList~AccountingActionAuditEventDto~ AuditTrail
+        +IReadOnlyList~ChartOfAccountsNodeDto~ ChartOfAccounts
+        +string? CompanyId
+        +string ConfigurationVersion
+        +string FundProfileId
+        +IReadOnlyList~JournalEntryTemplateDto~ JournalTemplates
+        +Guid? LedgerBookId
+        +IReadOnlyList~LedgerBookDto~ LedgerBooks
+        +LedgerBookSetupCandidateDto? LedgerBookSetupCandidate
+        +IReadOnlyList~PostingRuleDto~ PostingRules
+        +AccountingRulesStudioDto? RulesStudio
+        +IReadOnlyList~AccountingRuleTestCaseDto~ RuleTestCases
+    }
+    class Meridian_Contracts_Ledger_AccountingJournalPreviewLineDto["AccountingJournalPreviewLineDto"] {
+        +string AccountName
+        +string AccountPath
+        +decimal Amount
+        +string Currency
+        +string? Description
+        +AccountingTemplateLineSideDto Side
+    }
+    class Meridian_Contracts_Ledger_AccountingJournalTemplatePreviewDto["AccountingJournalTemplatePreviewDto"] {
+        +string DisplayName
+        +bool IsBalanced
+        +IReadOnlyList~AccountingJournalPreviewLineDto~ Lines
+        +string TemplateId
+        +decimal TotalCredits
+        +decimal TotalDebits
+        +IReadOnlyList~AccountingConfigurationValidationIssueDto~ ValidationIssues
+    }
     class Meridian_Contracts_Ledger_AccountingPolicyDto["AccountingPolicyDto"] {
         +AccountingBasisKindDto AccountingBasis
         +DateTimeOffset CreatedAt
@@ -603,136 +705,30 @@ classDiagram
         +string RequestedBy
         +Guid WorkflowId
     }
-    class Meridian_Contracts_Ledger_CreateLedgerBookRequest["CreateLedgerBookRequest"] {
-        +AccountingBasisKindDto AccountingBasis
-        +string AccountingPolicyId
-        +string AccountingPolicyVersion
-        +string BaseCurrency
-        +string? Description
-        +string DisplayName
-        +string FundProfileId
-        +Guid FundStructureNodeId
-        +FundStructureNodeKindDto FundStructureNodeKind
-    }
-    class Meridian_Contracts_Ledger_CreateLedgerPeriodRequest["CreateLedgerPeriodRequest"] {
-        +DateOnly EndDate
-        +int FiscalYear
-        +string Label
-        +Guid LedgerBookId
-        +int PeriodNo
-        +DateOnly StartDate
-    }
-    class Meridian_Contracts_Ledger_DimensionMappingProfileDto["DimensionMappingProfileDto"] {
-        +AccountingCertificationStateDto CertificationState
-        +string DisplayName
-        +LedgerDimensionSetDto ExternalDimensions
-        +LedgerDimensionSetDto MeridianDimensions
-        +string ProfileId
-        +string ProviderId
-        +IReadOnlyList~AccountingConfigurationValidationIssueDto~ ValidationIssues
-    }
-    class Meridian_Contracts_Ledger_ExecuteAccountingRuleTestCasesRequestDto["ExecuteAccountingRuleTestCasesRequestDto"] {
-        +string Actor
-        +string? CompanyId
-        +string? CorrelationId
-        +string FundProfileId
-        +Guid? LedgerBookId
-        +string? TenantId
-        +IReadOnlyList~AccountingRuleTestCaseDto~ TestCases
-    }
-    class Meridian_Contracts_Ledger_ExternalGlExportCertificationDto["ExternalGlExportCertificationDto"] {
-        +string Actor
-        +string CertificationId
-        +IReadOnlyList~string~ EvidenceLinks
-        +DateTimeOffset RecordedAtUtc
-        +AccountingCertificationStateDto State
-        +string Summary
-    }
-    class Meridian_Contracts_Ledger_ExternalGlExportLineDto["ExternalGlExportLineDto"] {
-        +string AccountName
-        +decimal Credit
-        +string Currency
-        +decimal Debit
-        +IReadOnlyList~string~ EvidenceLinks
-        +string ExportLineId
-        +string ExternalAccountId
-        +LedgerDimensionSetDto? ExternalDimensions
-        +string MeridianAccountCode
-        +LedgerDimensionSetDto? MeridianDimensions
-        +decimal NetAmount
-        +string ReconciliationRowId
-    }
-    class Meridian_Contracts_Ledger_ExternalGlExportPackageDto["ExternalGlExportPackageDto"] {
-        +ExternalGlExportCertificationDto? Certification
-        +string? CompanyId
-        +DateTimeOffset CreatedAtUtc
-        +string CreatedBy
-        +IReadOnlyList~string~ EvidenceLinks
-        +string ExportPackageId
-        +string FundProfileId
-        +IReadOnlyList~ExternalGlExportLineDto~ GeneratedLines
-        +IReadOnlyList~Guid~ JournalEntryIds
-        +Guid? LedgerBookId
-        +string? MappingProfileId
-        +DateOnly PeriodEnd
-    }
-    class Meridian_Contracts_Ledger_ExternalGlExportPackageManifestDto["ExternalGlExportPackageManifestDto"] {
-        +AccountingCertificationStateDto CertificationState
-        +string? CompanyId
-        +string ContentHash
-        +string ContentType
-        +IReadOnlyList~string~ EvidenceLinks
-        +string ExportPackageId
-        +bool ExternalPostingAllowed
-        +string FileName
-        +string FundProfileId
-        +DateTimeOffset GeneratedAtUtc
-        +IReadOnlyList~ExternalGlExportLineDto~ GeneratedLines
-        +Guid? LedgerBookId
-    }
-    class Meridian_Contracts_Ledger_ExternalGlExportReconciliationSafeguardStateDto["ExternalGlExportReconciliationSafeguardStateDto"] {
-    }
-    class Meridian_Contracts_Ledger_ExternalGlMappingProfileDto["ExternalGlMappingProfileDto"] {
-        +IReadOnlyDictionary~string__string~ AccountMappings
-        +AccountingCertificationStateDto CertificationState
-        +IReadOnlyList~DimensionMappingProfileDto~ DimensionMappings
-        +string DisplayName
-        +string ProfileId
-        +string ProviderId
-        +DateTimeOffset UpdatedAtUtc
-    }
-    class Meridian_Contracts_Ledger_FinancialStatementPackageDto["FinancialStatementPackageDto"] {
-        +ReportCertificationDto? Certification
-        +AccountingCertificationStateDto CertificationState
-        +LedgerDimensionSetDto Dimensions
-        +IReadOnlyList~string~ EvidenceLinks
-        +string FundProfileId
-        +Guid? LedgerBookId
-        +IReadOnlyList~ReportLineProvenanceDto~ LineProvenance
-        +string PackageId
-        +string PeriodId
-        +RestatementWorkflowDto? Restatement
-        +IReadOnlyList~string~ StatementIds
-    }
-    class Meridian_Contracts_Ledger_GeneratedPostingLineDto["GeneratedPostingLineDto"] {
-        +string AccountPath
-        +decimal Amount
-        +string AmountFormulaId
-        +string Currency
-        +string? Description
-        +LedgerDimensionSetDto? Dimensions
-        +string LineId
-        +AccountingTemplateLineSideDto Side
-    }
+    Meridian_Contracts_Ledger_AccountingBasisProjectionSetRequestDto --> Meridian_Contracts_Ledger_AccountingBasisProjectionTargetDto
+    Meridian_Contracts_Ledger_AccountingBasisProjectionTargetDto --> Meridian_Contracts_Ledger_AccountingTreatmentKindDto
+    Meridian_Contracts_Ledger_AccountingCloseReadinessItemDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
+    Meridian_Contracts_Ledger_AccountingCloseReadinessItemDto --> Meridian_Contracts_Ledger_AccountingReadinessStateDto
+    Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationSeverityDto
+    Meridian_Contracts_Ledger_AccountingConfigurationWorkspaceDto --> Meridian_Contracts_Ledger_AccountingConfigurationStatusDto
+    Meridian_Contracts_Ledger_AccountingConfigurationWorkspaceDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
+    Meridian_Contracts_Ledger_AccountingConfigurationWorkspaceDto --> Meridian_Contracts_Ledger_AccountingRuleTestCaseDto
+    Meridian_Contracts_Ledger_AccountingConfigurationWorkspaceDto --> Meridian_Contracts_Ledger_AccountingRulesStudioDto
+    Meridian_Contracts_Ledger_AccountingConfigurationWorkspaceDto --> Meridian_Contracts_Ledger_ChartOfAccountsNodeDto
+    Meridian_Contracts_Ledger_AccountingJournalPreviewLineDto --> Meridian_Contracts_Ledger_AccountingTemplateLineSideDto
+    Meridian_Contracts_Ledger_AccountingJournalTemplatePreviewDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
+    Meridian_Contracts_Ledger_AccountingJournalTemplatePreviewDto --> Meridian_Contracts_Ledger_AccountingJournalPreviewLineDto
     Meridian_Contracts_Ledger_AccountingPolicyDto --> Meridian_Contracts_Ledger_AccountingPolicyRulePackDto
     Meridian_Contracts_Ledger_AccountingPolicyRuleDto --> Meridian_Contracts_Ledger_AccountingTreatmentKindDto
     Meridian_Contracts_Ledger_AccountingPolicyRulePackDto --> Meridian_Contracts_Ledger_AccountingPolicyRuleDto
+    Meridian_Contracts_Ledger_AccountingPostingCommandDto --> Meridian_Contracts_Ledger_AccountingBookContextDto
     Meridian_Contracts_Ledger_AccountingPostingCommandDto --> Meridian_Contracts_Ledger_AccountingPostingApprovalStateDto
     Meridian_Contracts_Ledger_AccountingPostingCommandDto --> Meridian_Contracts_Ledger_AccountingPostingEvidenceReferenceDto
     Meridian_Contracts_Ledger_AccountingPostingCommandDto --> Meridian_Contracts_Ledger_AccountingPostingIntentDto
     Meridian_Contracts_Ledger_AccountingPostingCommandDto --> Meridian_Contracts_Ledger_AccountingRulePackReferenceDto
     Meridian_Contracts_Ledger_AccountingPostingEvidenceReferenceDto --> Meridian_Contracts_Ledger_AccountingPostingEvidenceKindDto
-    Meridian_Contracts_Ledger_AccountingReportPackageBundleDto --> Meridian_Contracts_Ledger_FinancialStatementPackageDto
+    Meridian_Contracts_Ledger_AccountingReportPackageBundleDto --> Meridian_Contracts_Ledger_AccountingCloseReadinessItemDto
+    Meridian_Contracts_Ledger_AccountingReportPackageBundleDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_AccountingRuleConditionDto --> Meridian_Contracts_Ledger_AccountingRuleConditionOperatorDto
     Meridian_Contracts_Ledger_AccountingRuleConditionGroupDto --> Meridian_Contracts_Ledger_AccountingRuleConditionDto
     Meridian_Contracts_Ledger_AccountingRuleConditionGroupDto --> Meridian_Contracts_Ledger_AccountingRuleConditionGroupOperatorDto
@@ -741,9 +737,9 @@ classDiagram
     Meridian_Contracts_Ledger_AccountingRuleDefinitionDto --> Meridian_Contracts_Ledger_AccountingRuleFormulaDto
     Meridian_Contracts_Ledger_AccountingRuleDefinitionDto --> Meridian_Contracts_Ledger_AccountingRuleVersionDto
     Meridian_Contracts_Ledger_AccountingRuleDefinitionDto --> Meridian_Contracts_Ledger_AllocationRuleDto
-    Meridian_Contracts_Ledger_AccountingRuleDefinitionDto --> Meridian_Contracts_Ledger_GeneratedPostingLineDto
+    Meridian_Contracts_Ledger_AccountingRuleDryRunMatchDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_AccountingRuleFormulaDto --> Meridian_Contracts_Ledger_AccountingRuleFormulaKindDto
-    Meridian_Contracts_Ledger_AccountingRuleTestCaseDto --> Meridian_Contracts_Ledger_GeneratedPostingLineDto
+    Meridian_Contracts_Ledger_AccountingRuleTestCaseResultDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_AccountingRuleTestSuiteResultDto --> Meridian_Contracts_Ledger_AccountingRuleTestCaseResultDto
     Meridian_Contracts_Ledger_AccountingRulesStudioDto --> Meridian_Contracts_Ledger_AccountingRulesStudioPromotionQueueItemDto
     Meridian_Contracts_Ledger_AccountingRulesStudioDto --> Meridian_Contracts_Ledger_AccountingRulesStudioRuleRowDto
@@ -751,21 +747,27 @@ classDiagram
     Meridian_Contracts_Ledger_AllocationRuleDto --> Meridian_Contracts_Ledger_AllocationRuleBasisDto
     Meridian_Contracts_Ledger_AutomatedJournalEvidenceAssessmentDto --> Meridian_Contracts_Ledger_AutomatedJournalEvidenceQualityDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationRuleDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationInputDto
+    Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationRuleDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchAuditDrillThroughDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchInvestorAccountDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchStatementLineageDto
+    Meridian_Contracts_Ledger_CapitalAccountWorkbenchInvestorAccountDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchStatementLineageDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchRestatementChangedLineDto
     Meridian_Contracts_Ledger_CloseCalendarMilestoneDto --> Meridian_Contracts_Ledger_CloseTaskStatusDto
+    Meridian_Contracts_Ledger_CloseOperatingCoverageItemDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_CloseOperatingCoverageItemDto --> Meridian_Contracts_Ledger_AccountingReadinessStateDto
+    Meridian_Contracts_Ledger_ClosePeriodLockResultDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_ClosePeriodLockResultDto --> Meridian_Contracts_Ledger_ClosePeriodPlanDto
     Meridian_Contracts_Ledger_ClosePeriodPlanConfigurationDto --> Meridian_Contracts_Ledger_CloseTaskConfigurationDto
+    Meridian_Contracts_Ledger_ClosePeriodPlanDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_ClosePeriodPlanDto --> Meridian_Contracts_Ledger_CloseCalendarMilestoneDto
     Meridian_Contracts_Ledger_ClosePeriodPlanDto --> Meridian_Contracts_Ledger_CloseEvidenceReviewDto
     Meridian_Contracts_Ledger_ClosePeriodPlanDto --> Meridian_Contracts_Ledger_CloseOperatingCoverageItemDto
     Meridian_Contracts_Ledger_ClosePeriodPlanDto --> Meridian_Contracts_Ledger_ClosePeriodPlanConfigurationDto
     Meridian_Contracts_Ledger_ClosePeriodPlanDto --> Meridian_Contracts_Ledger_ClosePostingGateDto
     Meridian_Contracts_Ledger_ClosePeriodPlanDto --> Meridian_Contracts_Ledger_CloseTaskDto
+    Meridian_Contracts_Ledger_ClosePeriodReopenResultDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_ClosePeriodReopenResultDto --> Meridian_Contracts_Ledger_ClosePeriodPlanDto
     Meridian_Contracts_Ledger_ClosePeriodReopenResultDto --> Meridian_Contracts_Ledger_ClosePostingGateDto
     Meridian_Contracts_Ledger_ClosePostingGateDto --> Meridian_Contracts_Ledger_ClosePostingBalanceDto
@@ -777,12 +779,4 @@ classDiagram
     Meridian_Contracts_Ledger_CloseTaskDto --> Meridian_Contracts_Ledger_CloseSignOffRequirementDto
     Meridian_Contracts_Ledger_CloseTaskDto --> Meridian_Contracts_Ledger_CloseTaskStatusDto
     Meridian_Contracts_Ledger_CreateAccountingPolicyRequest --> Meridian_Contracts_Ledger_AccountingPolicyRulePackDto
-    Meridian_Contracts_Ledger_ExecuteAccountingRuleTestCasesRequestDto --> Meridian_Contracts_Ledger_AccountingRuleTestCaseDto
-    Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportCertificationDto
-    Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportLineDto
-    Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportReconciliationSafeguardStateDto
-    Meridian_Contracts_Ledger_ExternalGlExportPackageManifestDto --> Meridian_Contracts_Ledger_ExternalGlExportLineDto
-    Meridian_Contracts_Ledger_ExternalGlExportPackageManifestDto --> Meridian_Contracts_Ledger_ExternalGlExportReconciliationSafeguardStateDto
-    Meridian_Contracts_Ledger_ExternalGlMappingProfileDto --> Meridian_Contracts_Ledger_DimensionMappingProfileDto
-    Meridian_Contracts_Ledger_GeneratedPostingLineDto --> Meridian_Contracts_Ledger_AccountingTemplateLineSideDto
 ```

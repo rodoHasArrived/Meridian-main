@@ -121,7 +121,7 @@ public sealed class MultiSymbolMergeEnumeratorTests
         MarketEvent.Trade(
             timestamp,
             symbol,
-            new Trade(timestamp, symbol, 100m, 10L, AggressorSide.Buy, timestamp.ToUnixTimeMilliseconds(), Venue: "test"));
+            new Trade(timestamp, symbol, 100m, 10L, AggressorSide.Buy, timestamp.ToUnixTimeMilliseconds(), Venue: "test"), source: "TEST");
 
     private static MarketEvent MakeBarEvent(string symbol, DateTimeOffset timestamp, decimal close) =>
         MarketEvent.HistoricalBar(
@@ -136,7 +136,7 @@ public sealed class MultiSymbolMergeEnumeratorTests
                 close,
                 Volume: 1_000L,
                 Source: "test",
-                SequenceNumber: timestamp.ToUnixTimeMilliseconds()));
+                SequenceNumber: timestamp.ToUnixTimeMilliseconds()), source: "TEST");
 
     private sealed class TrackingAsyncEnumerable(IReadOnlyList<MarketEvent> events) : IAsyncEnumerable<MarketEvent>
     {

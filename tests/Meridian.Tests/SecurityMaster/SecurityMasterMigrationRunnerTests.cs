@@ -4,8 +4,7 @@ using Npgsql;
 namespace Meridian.Tests.SecurityMaster;
 
 [Trait("Category", "Integration")]
-[Collection(nameof(SecurityMasterDatabaseCollection))]
-public sealed class SecurityMasterMigrationRunnerTests
+public sealed class SecurityMasterMigrationRunnerTests : IClassFixture<SecurityMasterDatabaseFixture>
 {
     private readonly SecurityMasterDatabaseFixture _fixture;
 

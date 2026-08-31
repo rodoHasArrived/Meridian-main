@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Text;
+
 namespace Meridian.Backtesting.Sdk;
 
 /// <summary>
@@ -138,6 +141,78 @@ public sealed record BacktestRequest(
     decimal DelistingHaircutPercent = 0m,
     int DelistingGraceDays = 5)
 {
+    /// <summary>
+    /// Captures every setting on this request that changes what numbers the run produces, so run
+    /// identity can account for execution realism rather than strategy inputs alone.
+    /// </summary>
+    public ExecutionRealismDescriptor ToRealismDescriptor() => new(
+        DefaultExecutionModel,
+        FillTiming,
+        FillConservatism,
+        DelistingPolicy,
+        DelistingHaircutPercent,
+        DelistingGraceDays,
+        CommissionKind,
+        CommissionRate,
+        CommissionMinimum,
+        CommissionMaximum,
+        SlippageBasisPoints,
+        MaxParticipationRate,
+        MarketImpactCoefficient,
+        OrderBookQueueAheadFraction,
+        AdjustForCorporateActions,
+        RiskFreeRate,
+        AnnualMarginRate,
+        AnnualShortRebateRate,
+        CanonicalAccountFinancing(),
+        CanonicalRiskFreeRateSeries(),
+        DefaultBrokerageAccountId);
+
+    /// <summary>
+    /// Canonical form of the resolved account financing configuration. Uses <see cref="ResolveAccounts"/>
+    /// so the legacy single-account fallback and an explicit account list that describe the same
+    /// simulation produce the same text.
+    /// </summary>
+    private string CanonicalAccountFinancing()
+    {
+        var builder = new StringBuilder();
+        foreach (var account in ResolveAccounts().OrderBy(a => a.AccountId, StringComparer.Ordinal))
+        {
+            var rules = account.Rules ?? new FinancialAccountRules();
+            builder.Append(account.AccountId).Append(':')
+                .Append(account.Kind).Append(':')
+                .Append(account.InitialCash.ToString("0.############################", CultureInfo.InvariantCulture)).Append(':')
+                .Append(rules.AllowMargin ? '1' : '0')
+                .Append(rules.AllowShortSelling ? '1' : '0').Append(':')
+                .Append(rules.AnnualMarginRate.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                .Append(rules.AnnualShortRebateRate.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                .Append(rules.AnnualCashInterestRate.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                .Append(rules.LotSelection).Append(';');
+        }
+
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// Canonical form of the risk-free-rate series. The series overrides <see cref="RiskFreeRate"/>
+    /// on the dates it covers, so hashing only the scalar would let runs with materially different
+    /// Sharpe and Sortino values share an identity. Ordered by date for a stable digest.
+    /// </summary>
+    private string CanonicalRiskFreeRateSeries()
+    {
+        if (RiskFreeRateSeries is not { Count: > 0 })
+            return string.Empty;
+
+        var builder = new StringBuilder();
+        foreach (var (date, rate) in RiskFreeRateSeries.OrderBy(pair => pair.Key))
+        {
+            builder.Append(date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append('=')
+                .Append(rate.ToString("R", CultureInfo.InvariantCulture)).Append(';');
+        }
+
+        return builder.ToString();
+    }
+
     /// <summary>
     /// Returns the normalized account list, falling back to a single default brokerage account for
     /// backward compatibility with older callers.

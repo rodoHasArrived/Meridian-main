@@ -1,6 +1,6 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Identity.Auth;
 using Meridian.Strategies.Models;
@@ -34,7 +34,7 @@ public static class StrategyLifecycleEndpoints
             var result = statuses.Select(kvp => new StrategyStatusDto(kvp.Key, kvp.Value.ToString())).ToArray();
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetAllStrategyStatuses")
+        .WithName("GetAllStrategyStatuses").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyStatusDto[]>(200)
         .Produces(503);
 
@@ -50,7 +50,7 @@ public static class StrategyLifecycleEndpoints
 
             return Results.Json(new StrategyStatusDto(strategyId, status.ToString()), jsonOptions);
         })
-        .WithName("GetStrategyStatus")
+        .WithName("GetStrategyStatus").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyStatusDto>(200)
         .Produces(404)
         .Produces(503);
@@ -409,7 +409,7 @@ public static class StrategyLifecycleEndpoints
     }
 
     private static string HashText(string value) =>
-        Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
+        Sha256Digest.ComputeUtf8(value);
 }
 
 // --- DTOs ---

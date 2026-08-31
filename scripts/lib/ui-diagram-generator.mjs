@@ -811,6 +811,12 @@ function inferViewModelName(pageType) {
     : `${pageType}ViewModel`;
 }
 
+/** True when `content` names `signal` itself rather than containing it inside a longer identifier. */
+function matchesIdentifier(content, signal) {
+  const escaped = signal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(?<![A-Za-z0-9_])${escaped}(?![A-Za-z0-9_])`).test(content);
+}
+
 function findTestReferences(page, testSources) {
   const signals = [
     page.pageType,
@@ -819,8 +825,13 @@ function findTestReferences(page, testSources) {
   ].filter(Boolean);
   const references = [];
 
+  // `includes` counted a signal that merely appeared inside a longer identifier, so the
+  // `Options` page collected `EvidenceWorkbenchViewModelTests` as evidence on the strength of
+  // `TaskCreationOptions.RunContinuationsAsynchronously` — a screen credited with a test that
+  // never exercises it. Require an identifier boundary; a test that really does name
+  // `OptionsPage` still matches through the `pageType` signal.
   for (const source of testSources) {
-    if (signals.some((signal) => source.content.includes(signal))) {
+    if (signals.some((signal) => matchesIdentifier(source.content, signal))) {
       references.push(source.path);
     }
   }

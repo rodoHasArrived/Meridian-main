@@ -5,7 +5,7 @@ schema:
 
 design_source:
   path: docs/product/meridian-design-document.md
-  section: "15. Recommended Architecture Style"
+  section: "12. Recommended Architecture Style"
 
 conformance_mode: physical-module-projects
 notes:

@@ -131,6 +131,7 @@ export function useAccountingCloseReportPackageViewModel(
   const [lockClosePeriodBusy, setLockClosePeriodBusy] = useState(false);
   const [lockClosePeriodStatusText, setLockClosePeriodStatusText] = useState<string | null>(null);
   const [lockClosePeriodStatusTone, setLockClosePeriodStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
+  const [lockClosePeriodArmed, setLockClosePeriodArmed] = useState(false);
   const [queueClosingEntriesBusy, setQueueClosingEntriesBusy] = useState(false);
   const [queueClosingEntriesStatusText, setQueueClosingEntriesStatusText] = useState<string | null>(null);
   const [queueClosingEntriesStatusTone, setQueueClosingEntriesStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
@@ -192,6 +193,10 @@ export function useAccountingCloseReportPackageViewModel(
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    setLockClosePeriodArmed(false);
+  }, [closePlan?.closePlanId, closePlan?.isPeriodLocked, workflow?.workflowId]);
 
   const buildReportPackage = useCallback(async () => {
     if (!workflow) {
@@ -388,6 +393,14 @@ export function useAccountingCloseReportPackageViewModel(
       return;
     }
 
+    if (!lockClosePeriodArmed) {
+      setLockClosePeriodArmed(true);
+      setLockClosePeriodStatusText(`Locking close period ${closePlan.periodId} blocks further posting until a governed reopen. Select Confirm lock period to proceed.`);
+      setLockClosePeriodStatusTone("neutral");
+      return;
+    }
+
+    setLockClosePeriodArmed(false);
     const selectedBundle = packages.find((bundle) => bundle.financialStatements.packageId === selectedPackageId) ?? packages[0] ?? null;
     setLockClosePeriodBusy(true);
     setLockClosePeriodStatusText(null);
@@ -420,7 +433,7 @@ export function useAccountingCloseReportPackageViewModel(
     } finally {
       setLockClosePeriodBusy(false);
     }
-  }, [closePlan, packages, selectedPackageId, services, workflow]);
+  }, [closePlan, lockClosePeriodArmed, packages, selectedPackageId, services, workflow]);
 
   const configureClosePlan = useCallback(async () => {
     if (!workflow || !closePlan) {
@@ -754,6 +767,7 @@ export function useAccountingCloseReportPackageViewModel(
       lockClosePeriodBusy,
       lockClosePeriodStatusText,
       lockClosePeriodStatusTone,
+      lockClosePeriodArmed,
       queueClosingEntriesBusy,
       queueClosingEntriesStatusText,
       queueClosingEntriesStatusTone,
@@ -809,6 +823,7 @@ export function useAccountingCloseReportPackageViewModel(
       certifyStatusTone,
       closePlan,
       lockClosePeriod,
+      lockClosePeriodArmed,
       lockClosePeriodBusy,
       lockClosePeriodStatusText,
       lockClosePeriodStatusTone,
@@ -1107,6 +1122,7 @@ function buildAccountingCloseReportPackageViewState({
   lockClosePeriodBusy,
   lockClosePeriodStatusText,
   lockClosePeriodStatusTone,
+  lockClosePeriodArmed,
   queueClosingEntriesBusy,
   queueClosingEntriesStatusText,
   queueClosingEntriesStatusTone,
@@ -1169,6 +1185,7 @@ function buildAccountingCloseReportPackageViewState({
   lockClosePeriodBusy: boolean;
   lockClosePeriodStatusText: string | null;
   lockClosePeriodStatusTone: "neutral" | "success" | "danger";
+  lockClosePeriodArmed: boolean;
   queueClosingEntriesBusy: boolean;
   queueClosingEntriesStatusText: string | null;
   queueClosingEntriesStatusTone: "neutral" | "success" | "danger";
@@ -1438,6 +1455,7 @@ function buildAccountingCloseReportPackageViewState({
     lockClosePeriodBusy,
     lockClosePeriodStatusText,
     lockClosePeriodStatusTone,
+    lockClosePeriodArmed,
     queueClosingEntriesBusy,
     queueClosingEntriesStatusText,
     queueClosingEntriesStatusTone,
@@ -1463,7 +1481,7 @@ function buildAccountingCloseReportPackageViewState({
     certifyDisabledReason,
     signOffButtonLabel: signOffTarget ? `${closeSignOffDraft.decision} ${signOffTarget.task.displayName}` : "Sign off selected task",
     signOffDisabledReason,
-    lockClosePeriodButtonLabel: locked ? "Period locked" : "Lock period",
+    lockClosePeriodButtonLabel: locked ? "Period locked" : lockClosePeriodArmed ? "Confirm lock period" : "Lock period",
     lockClosePeriodDisabledReason,
     queueClosingEntriesButtonLabel: "Queue closing entries",
     queueClosingEntriesDisabledReason,
@@ -2000,8 +2018,8 @@ function buildCloseOperatingCoverageRows(closePlan: ClosePeriodPlan): Accounting
     evidenceLabel: formatCount(item.evidenceCount, "evidence link"),
     blockerLabel: formatCount(item.blockingIssueCount, "blocking issue"),
     requiredAction: item.requiredAction,
-    issueLabels: (item.blockingIssues ?? []).map((issue) =>
-      `${issue.severity} | ${issue.code}${issue.targetId ? ` | ${issue.targetId}` : ""}`)
+    issueLabels: (item.blockingIssues ?? []).map((issue) => `${issue.severity} | ${issue.code}${issue.targetId ? ` | ${issue.targetId}` : ""}`),
+    evidenceReferences: (item.evidenceLinks ?? []).filter((link) => link.trim().length > 0)
   }));
 }
 

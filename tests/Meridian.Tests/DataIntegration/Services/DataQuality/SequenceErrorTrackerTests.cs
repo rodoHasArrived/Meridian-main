@@ -314,6 +314,261 @@ public sealed class SequenceErrorTrackerTests : IDisposable
         error.Should().BeNull();
     }
 
+    [Fact]
+    public void ResetSymbolState_DoesNotResetPrefixMatchingSymbol()
+    {
+        var baseTime = DateTimeOffset.UtcNow;
+        _sut.CheckSequence("AAPL", "trade", 100, baseTime);
+        _sut.CheckSequence("AAPL2", "trade", 100, baseTime);
+
+        _sut.ResetSymbolState("AAPL");
+
+        _sut.CheckSequence("AAPL", "trade", 1, baseTime.AddSeconds(1)).Should().BeNull();
+        var prefixError = _sut.CheckSequence("AAPL2", "trade", 1, baseTime.AddSeconds(1));
+        prefixError.Should().NotBeNull();
+        prefixError!.ErrorType.Should().Be(SequenceErrorType.OutOfOrder);
+    }
+
+    [Fact]
+    public void CheckSequence_DelimiterBearingIdentifiersUseDistinctStreamState()
+    {
+        var baseTime = DateTimeOffset.UtcNow;
+
+        _sut.CheckSequence("A:B", "trade", 100, baseTime).Should().BeNull();
+        _sut.CheckSequence("A", "B:trade", 1, baseTime).Should().BeNull();
+
+        _sut.CheckSequence("A:B", "trade", 101, baseTime.AddSeconds(1)).Should().BeNull();
+        _sut.CheckSequence("A", "B:trade", 2, baseTime.AddSeconds(1)).Should().BeNull();
+
+        _sut.CheckSequence("MSFT", "quote:depth", 50, baseTime, "primary").Should().BeNull();
+        _sut.CheckSequence("MSFT", "quote", 5, baseTime, "depth:primary").Should().BeNull();
+
+        _sut.CheckSequence("MSFT", "quote:depth", 51, baseTime.AddSeconds(1), "primary").Should().BeNull();
+        _sut.CheckSequence("MSFT", "quote", 6, baseTime.AddSeconds(1), "depth:primary").Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ConcurrentCheckResetAndRead_UsesConsistentPerStreamStateAndSnapshots()
+    {
+        const int writerCount = 8;
+        const int eventsPerWriter = 500;
+        var baseTime = DateTimeOffset.UtcNow;
+        var writers = Enumerable.Range(0, writerCount)
+            .Select(writer => Task.Run(() =>
+            {
+                for (var index = 0; index < eventsPerWriter; index++)
+                {
+                    var sequence = (writer * eventsPerWriter) + index + 1;
+                    _sut.CheckSequence("AAPL", "trade", sequence, baseTime.AddTicks(sequence), "primary");
+                    if (index % 10 == 0)
+                    {
+                        _ = _sut.GetSummary("AAPL");
+                        _ = _sut.GetRecentErrors();
+                        _ = _sut.GetStatistics();
+                    }
+                }
+            }));
+        var resetter = Task.Run(() =>
+        {
+            for (var index = 0; index < eventsPerWriter; index++)
+            {
+                _sut.ResetSymbolState("AAPL", "trade", "primary");
+            }
+        });
+
+        await Task.WhenAll(writers.Append(resetter));
+
+        _sut.TotalEventsChecked.Should().Be(writerCount * eventsPerWriter);
+        _sut.GetRecentErrors().Should().OnlyContain(error => error.Symbol == "AAPL");
+    }
+
+    [Fact]
+    public void CheckSequence_CanonicalizesSymbolEventTypeAndProviderWithoutMergingProviders()
+    {
+        var baseTime = DateTimeOffset.UtcNow;
+
+        _sut.CheckSequence(
+                " aapl ",
+                " Trade ",
+                100,
+                baseTime,
+                streamId: "feed-1",
+                provider: " Alpha ")
+            .Should()
+            .BeNull();
+        _sut.CheckSequence(
+                "AAPL",
+                "trade",
+                1,
+                baseTime,
+                streamId: "feed-1",
+                provider: "Beta")
+            .Should()
+            .BeNull();
+
+        _sut.CheckSequence(
+                "AaPl",
+                "TRADE",
+                101,
+                baseTime.AddSeconds(1),
+                streamId: "feed-1",
+                provider: "alpha")
+            .Should()
+            .BeNull();
+        _sut.CheckSequence(
+                "aapl",
+                "trade",
+                2,
+                baseTime.AddSeconds(1),
+                streamId: "feed-1",
+                provider: " BETA ")
+            .Should()
+            .BeNull();
+
+        var duplicate = _sut.CheckSequence(
+            "AAPL",
+            "Trade",
+            101,
+            baseTime.AddSeconds(2),
+            streamId: "feed-1",
+            provider: "ALPHA");
+
+        duplicate.Should().NotBeNull();
+        duplicate!.ErrorType.Should().Be(SequenceErrorType.Duplicate);
+        _sut.GetErrors(" aapl ", " TRADE ")
+            .Should()
+            .ContainSingle(error => error.ErrorType == SequenceErrorType.Duplicate);
+    }
+
+    [Fact]
+    public void ResetSymbolState_ResetsAllProvidersUnlessProviderIsExplicitlyScoped()
+    {
+        var baseTime = DateTimeOffset.UtcNow;
+        _sut.CheckSequence("AAPL", "trade", 100, baseTime, "feed", "alpha");
+        _sut.CheckSequence("AAPL", "trade", 200, baseTime, "feed", "beta");
+
+        _sut.ResetSymbolState(" aapl ", " TRADE ", "feed", " ALPHA ");
+
+        _sut.CheckSequence("AAPL", "trade", 1, baseTime.AddSeconds(1), "feed", "alpha")
+            .Should()
+            .BeNull();
+        var betaError = _sut.CheckSequence(
+            "AAPL",
+            "trade",
+            199,
+            baseTime.AddSeconds(1),
+            "feed",
+            "BETA");
+        betaError.Should().NotBeNull();
+        betaError!.ErrorType.Should().Be(SequenceErrorType.OutOfOrder);
+
+        _sut.ResetSymbolState("AAPL", "trade", "feed");
+
+        _sut.CheckSequence("AAPL", "trade", 2, baseTime.AddSeconds(2), "feed", "alpha")
+            .Should()
+            .BeNull();
+        _sut.CheckSequence("AAPL", "trade", 1, baseTime.AddSeconds(2), "feed", "beta")
+            .Should()
+            .BeNull();
+    }
+
+    [Fact]
+    public void GetStatistics_SeparatesLifetimeErrorsFromRetainedRecords()
+    {
+        using var tracker = new SequenceErrorTracker(new SequenceErrorConfig
+        {
+            GapThreshold = 1,
+            MaxErrorsPerSymbol = 1
+        });
+        var baseTime = DateTimeOffset.UtcNow;
+
+        tracker.CheckSequence("SPY", "trade", 1, baseTime);
+        tracker.CheckSequence("SPY", "trade", 10, baseTime.AddSeconds(1));
+        tracker.CheckSequence("SPY", "trade", 20, baseTime.AddSeconds(2));
+
+        var stats = tracker.GetStatistics();
+
+        stats.TotalEventsChecked.Should().Be(3);
+        stats.TotalErrors.Should().Be(1);
+        stats.RetainedTotalErrors.Should().Be(1);
+        stats.LifetimeTotalErrors.Should().Be(2);
+        stats.ErrorsByType[SequenceErrorType.Gap].Should().Be(2);
+        stats.RetainedErrorRate.Should().BeApproximately(100d / 3d, 0.0001);
+        stats.LifetimeErrorRate.Should().BeApproximately(200d / 3d, 0.0001);
+    }
+
+    [Fact]
+    public async Task RunCleanup_DoesNotRemoveReplacementErrorBuffer()
+    {
+        var timeProvider = new MutableTimeProvider(
+            new DateTimeOffset(2026, 8, 5, 12, 0, 0, TimeSpan.Zero));
+        using var retired = new ManualResetEventSlim();
+        using var release = new ManualResetEventSlim();
+        var hooks = new SequenceErrorTrackerTestHooks
+        {
+            ErrorBufferRetiredBeforeRemoval = () =>
+            {
+                retired.Set();
+                WaitOrThrow(release, "release retired sequence error buffer");
+            }
+        };
+        using var tracker = new SequenceErrorTracker(
+            new SequenceErrorConfig { RetentionDays = 1 },
+            timeProvider,
+            hooks);
+        tracker.RecordError(CreateGapError(timeProvider.GetUtcNow(), provider: "alpha"));
+        timeProvider.Advance(TimeSpan.FromDays(2));
+
+        var cleanupTask = Task.Run(tracker.RunCleanup);
+        WaitOrThrow(retired, "retire sequence error buffer");
+
+        var replacement = CreateGapError(timeProvider.GetUtcNow(), provider: "ALPHA");
+        tracker.RecordError(replacement);
+        release.Set();
+        await cleanupTask.WaitAsync(TimeSpan.FromSeconds(5));
+
+        tracker.GetRecentErrors().Should().ContainSingle().Which.Should().Be(replacement);
+        var stats = tracker.GetStatistics();
+        stats.RetainedTotalErrors.Should().Be(1);
+        stats.LifetimeTotalErrors.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task RunCleanup_DoesNotRemoveReplacementSequenceState()
+    {
+        var timeProvider = new MutableTimeProvider(
+            new DateTimeOffset(2026, 8, 5, 12, 0, 0, TimeSpan.Zero));
+        using var retired = new ManualResetEventSlim();
+        using var release = new ManualResetEventSlim();
+        var hooks = new SequenceErrorTrackerTestHooks
+        {
+            StateRetiredBeforeRemoval = () =>
+            {
+                retired.Set();
+                WaitOrThrow(release, "release retired sequence state");
+            }
+        };
+        using var tracker = new SequenceErrorTracker(null, timeProvider, hooks);
+        tracker.CheckSequence("AAPL", "trade", 1, timeProvider.GetUtcNow(), provider: "alpha");
+        timeProvider.Advance(TimeSpan.FromHours(7));
+
+        var cleanupTask = Task.Run(tracker.RunCleanup);
+        WaitOrThrow(retired, "retire sequence state");
+
+        tracker.CheckSequence("aapl", "TRADE", 100, timeProvider.GetUtcNow(), provider: "ALPHA")
+            .Should()
+            .BeNull();
+        tracker.CheckSequence("AAPL", "trade", 101, timeProvider.GetUtcNow(), provider: "alpha")
+            .Should()
+            .BeNull();
+        release.Set();
+        await cleanupTask.WaitAsync(TimeSpan.FromSeconds(5));
+
+        tracker.CheckSequence("AAPL", "trade", 102, timeProvider.GetUtcNow(), provider: "alpha")
+            .Should()
+            .BeNull();
+    }
+
     #endregion
 
     #region Configuration
@@ -326,6 +581,48 @@ public sealed class SequenceErrorTrackerTests : IDisposable
         config.GapThreshold.Should().Be(1);
         config.ResetThreshold.Should().Be(10000);
         config.SignificantGapSize.Should().Be(100);
+    }
+
+    [Fact]
+    public void Constructor_RejectsInvalidConfigurationRanges()
+    {
+        var invalidConfigurations = new[]
+        {
+            new SequenceErrorConfig { GapThreshold = 0 },
+            new SequenceErrorConfig { SignificantGapSize = -1 },
+            new SequenceErrorConfig { ResetThreshold = -1 },
+            new SequenceErrorConfig { MaxErrorsPerSymbol = -1 },
+            new SequenceErrorConfig { RetentionDays = -1 }
+        };
+
+        foreach (var config in invalidConfigurations)
+        {
+            Action construct = () => _ = new SequenceErrorTracker(config);
+            construct.Should().Throw<ArgumentOutOfRangeException>();
+        }
+    }
+
+    [Fact]
+    public void CheckSequence_ExtremeValuesUseSaturatingArithmetic()
+    {
+        using var tracker = new SequenceErrorTracker(new SequenceErrorConfig
+        {
+            GapThreshold = long.MaxValue,
+            ResetThreshold = long.MaxValue,
+            SignificantGapSize = long.MaxValue
+        });
+        var baseTime = DateTimeOffset.UtcNow;
+
+        tracker.CheckSequence("SPY", "trade", 1, baseTime).Should().BeNull();
+        tracker.CheckSequence("SPY", "trade", long.MaxValue, baseTime.AddSeconds(1))
+            .Should()
+            .BeNull();
+        var error = tracker.CheckSequence("SPY", "trade", 0, baseTime.AddSeconds(2));
+
+        error.Should().NotBeNull();
+        error!.ErrorType.Should().Be(SequenceErrorType.OutOfOrder);
+        error.ExpectedSequence.Should().Be(long.MaxValue);
+        error.GapSize.Should().Be(long.MaxValue);
     }
 
     #endregion
@@ -343,5 +640,110 @@ public sealed class SequenceErrorTrackerTests : IDisposable
         error.Should().BeNull();
     }
 
+    [Fact]
+    public async Task Dispose_WaitsForActiveCallbacksAndRejectsPostDisposeMutations()
+    {
+        using var callbackEntered = new ManualResetEventSlim();
+        using var releaseCallback = new ManualResetEventSlim();
+        using var disposeRequested = new ManualResetEventSlim();
+        var hooks = new SequenceErrorTrackerTestHooks
+        {
+            DisposeRequested = disposeRequested.Set
+        };
+        var tracker = new SequenceErrorTracker(null, TimeProvider.System, hooks);
+        var callbackCount = 0;
+        tracker.OnSequenceError += _ =>
+        {
+            Interlocked.Increment(ref callbackCount);
+            callbackEntered.Set();
+            WaitOrThrow(releaseCallback, "release sequence callback");
+        };
+        var baseTime = DateTimeOffset.UtcNow;
+        tracker.CheckSequence("SPY", "trade", 1, baseTime);
+        var checkTask = Task.Run(() =>
+            tracker.CheckSequence("SPY", "trade", 10, baseTime.AddSeconds(1)));
+        WaitOrThrow(callbackEntered, "enter sequence callback");
+
+        var disposeTask = Task.Run(tracker.Dispose);
+        WaitOrThrow(disposeRequested, "request sequence tracker disposal");
+        disposeTask.IsCompleted.Should().BeFalse();
+
+        releaseCallback.Set();
+        (await checkTask.WaitAsync(TimeSpan.FromSeconds(5))).Should().NotBeNull();
+        await disposeTask.WaitAsync(TimeSpan.FromSeconds(5));
+
+        var gapCount = tracker.TotalGapErrors;
+        tracker.CheckSequence("SPY", "trade", 20, baseTime.AddSeconds(2)).Should().BeNull();
+        tracker.RecordError(CreateGapError(baseTime.AddSeconds(2)));
+        tracker.TotalGapErrors.Should().Be(gapCount);
+        callbackCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Dispose_FromSequenceErrorCallback_DoesNotDeadlock()
+    {
+        var tracker = new SequenceErrorTracker();
+        tracker.OnSequenceError += _ => tracker.Dispose();
+        var baseTime = DateTimeOffset.UtcNow;
+        tracker.CheckSequence("SPY", "trade", 1, baseTime);
+
+        var error = await Task.Run(() =>
+                tracker.CheckSequence("SPY", "trade", 10, baseTime.AddSeconds(1)))
+            .WaitAsync(TimeSpan.FromSeconds(5));
+
+        error.Should().NotBeNull();
+        tracker.CheckSequence("SPY", "trade", 20, baseTime.AddSeconds(2)).Should().BeNull();
+        tracker.Dispose();
+    }
+
     #endregion
+
+    private static SequenceError CreateGapError(DateTimeOffset timestamp, string provider = "alpha")
+    {
+        return new SequenceError(
+            Timestamp: timestamp,
+            Symbol: "AAPL",
+            EventType: "trade",
+            ErrorType: SequenceErrorType.Gap,
+            ExpectedSequence: 2,
+            ActualSequence: 10,
+            GapSize: 8,
+            StreamId: "feed",
+            Provider: provider);
+    }
+
+    private static void WaitOrThrow(ManualResetEventSlim signal, string operation)
+    {
+        if (!signal.Wait(TimeSpan.FromSeconds(5)))
+        {
+            throw new TimeoutException($"Timed out waiting to {operation}.");
+        }
+    }
+
+    private sealed class MutableTimeProvider : TimeProvider
+    {
+        private readonly object _sync = new();
+        private DateTimeOffset _utcNow;
+
+        public MutableTimeProvider(DateTimeOffset utcNow)
+        {
+            _utcNow = utcNow;
+        }
+
+        public override DateTimeOffset GetUtcNow()
+        {
+            lock (_sync)
+            {
+                return _utcNow;
+            }
+        }
+
+        public void Advance(TimeSpan duration)
+        {
+            lock (_sync)
+            {
+                _utcNow += duration;
+            }
+        }
+    }
 }

@@ -36,8 +36,8 @@ public sealed class QualityReportOptions
     public List<string>? Symbols { get; set; }
     public DateOnly? FromDate { get; set; }
     public DateOnly? ToDate { get; set; }
-    public bool IncludeCharts { get; set; } = true;
-    public string Format { get; set; } = "HTML";
+    public bool IncludeCharts { get; set; }
+    public string Format { get; set; } = "CSV";
 }
 
 public sealed class OrderFlowExportOptions
@@ -46,7 +46,7 @@ public sealed class OrderFlowExportOptions
     public DateOnly? FromDate { get; set; }
     public DateOnly? ToDate { get; set; }
     public string[]? Metrics { get; set; }
-    public string Aggregation { get; set; } = "Minute";
+    public string Aggregation { get; set; } = "Raw";
     public string Format { get; set; } = "Parquet";
     public string? OutputPath { get; set; }
 }
@@ -70,7 +70,7 @@ public sealed class ResearchPackageOptions
     public DateOnly? ToDate { get; set; }
     public DataTypeInclusion IncludeData { get; set; } = new();
     public bool IncludeMetadata { get; set; } = true;
-    public bool IncludeQualityReport { get; set; } = true;
+    public bool IncludeQualityReport { get; set; }
     public string Format { get; set; } = "Parquet";
     public string? OutputPath { get; set; }
 }
@@ -90,6 +90,7 @@ public sealed class AnalysisExportResult
 {
     public bool Success { get; set; }
     public string? Error { get; set; }
+    public string? Format { get; set; }
     public string? OutputPath { get; set; }
     public List<string> FilesCreated { get; set; } = new();
     public long RowsExported { get; set; }
@@ -124,6 +125,7 @@ public sealed class QualityReportResult
 {
     public bool Success { get; set; }
     public string? Error { get; set; }
+    public string? Format { get; set; }
     public string? ReportPath { get; set; }
     public QualityReportSummary? Summary { get; set; }
 }
@@ -141,6 +143,7 @@ public sealed class ResearchPackageResult
 {
     public bool Success { get; set; }
     public string? Error { get; set; }
+    public string? Format { get; set; }
     public string? PackagePath { get; set; }
     public string? ManifestPath { get; set; }
     public long SizeBytes { get; set; }
@@ -208,6 +211,30 @@ public sealed record ExportAnalysisApiResponse(
     IReadOnlyList<ExportAnalysisApiFile> Files,
     DateTimeOffset Timestamp);
 
+/// <summary>
+/// Shared response contract for the specialized export compatibility routes.
+/// These routes use the canonical analysis exporter and therefore return the
+/// same artifact-level evidence instead of implying a separate renderer.
+/// </summary>
+public sealed record SpecializedExportApiResponse(
+    string? JobId,
+    bool Success,
+    string Status,
+    string Format,
+    string[]? Symbols,
+    int FilesGenerated,
+    long TotalRecords,
+    long TotalBytes,
+    string? OutputDirectory,
+    string? Error,
+    string[] Warnings,
+    IReadOnlyList<ExportAnalysisApiFile> Files,
+    string? DataDictionaryPath,
+    string? LoaderScriptPath,
+    string? LineageManifestPath,
+    QualityReportSummary? QualitySummary,
+    DateTimeOffset Timestamp);
+
 public sealed class ExportFormatsResponse
 {
     public List<ExportFormatInfo>? Formats { get; set; }
@@ -261,4 +288,3 @@ public enum CompressionType : byte
     Snappy,
     ZSTD
 }
-

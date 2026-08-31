@@ -172,6 +172,98 @@ public sealed class SecurityMasterMappingInteropTests
         otherSecurity.Item.Maturity.Value.Should().Be(new DateOnly(2032, 6, 30));
     }
 
+    [Fact]
+    public void ToCreateCommand_UnknownEquityClassification_RejectsTheWrite()
+    {
+        // Read tolerance (Other(raw) for legacy rows) must not leak into WRITES: a typo like
+        // "Commmon" would silently persist as Other("Commmon"), changing the security's economic
+        // classification instead of surfacing the mistake to the caller.
+        FluentActions.Invoking(() => SecurityMasterMapping.ToCreateCommand(EquityCreateRequest(new
+        {
+            shareClass = "A",
+            classification = "Commmon"
+        })))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage("*Unknown equity classification 'Commmon'*");
+    }
+
+    [Fact]
+    public void ToCreateCommand_OtherClassificationWithoutName_RejectsTheWrite()
+    {
+        // A write explicitly selecting "Other" must NAME the classification: defaulting to the
+        // placeholder label would persist an economically meaningless classification.
+        FluentActions.Invoking(() => SecurityMasterMapping.ToCreateCommand(EquityCreateRequest(new
+        {
+            shareClass = "A",
+            classification = "Other"
+        })))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage("*requires a non-empty 'otherClassification'*");
+    }
+
+    private static CreateSecurityRequest EquityCreateRequest(object assetSpecificTerms)
+    {
+        var now = DateTimeOffset.UtcNow;
+        return new CreateSecurityRequest(
+            SecurityId: Guid.NewGuid(),
+            AssetClass: "Equity",
+            CommonTerms: JsonSerializer.SerializeToElement(new
+            {
+                displayName = "Equity classification write guard",
+                currency = "USD"
+            }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(assetSpecificTerms),
+            Identifiers:
+            [
+                new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "EQ-CLASS-1", true, now)
+            ],
+            EffectiveFrom: now,
+            SourceSystem: "interop-tests",
+            UpdatedBy: "interop-tests",
+            SourceRecordId: "equity-classification-write-guard",
+            Reason: "Write mapping must fail closed on unknown classifications");
+    }
+
+    [Fact]
+    public void ToCreateCommand_NonProviderSymbolIdentifier_PreservesProviderMetadata()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var request = new CreateSecurityRequest(
+            SecurityId: Guid.NewGuid(),
+            AssetClass: "Equity",
+            CommonTerms: JsonSerializer.SerializeToElement(new
+            {
+                displayName = "Provider-scoped ISIN",
+                currency = "USD"
+            }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(new { shareClass = "Common" }),
+            Identifiers:
+            [
+                new SecurityIdentifierDto(
+                    SecurityIdentifierKind.Isin,
+                    "us-0378331005",
+                    true,
+                    now,
+                    Provider: "xnas")
+            ],
+            EffectiveFrom: now,
+            SourceSystem: "interop-tests",
+            UpdatedBy: "interop-tests",
+            SourceRecordId: "provider-metadata",
+            Reason: "Provider metadata must survive the C# and F# command seam");
+
+        var command = SecurityMasterMapping.ToCreateCommand(request);
+        var result = SecurityMasterCommandFacade.Create(command);
+
+        result.IsSuccess.Should().BeTrue(
+            string.Join("; ", result.ErrorDetails.Select(error => $"{error.Code}: {error.Message}")));
+        var identifier = SecurityMasterMapping.ToProjection(result.Snapshot).Identifiers.Should().ContainSingle().Subject;
+        identifier.Kind.Should().Be(SecurityIdentifierKind.Isin);
+        identifier.Provider.Should().Be("xnas");
+        identifier.NormalizedValue.Should().Be("US0378331005");
+        identifier.NormalizedProvider.Should().Be("XNAS");
+    }
+
     /// <summary>
     /// Serializes a fully populated asset-specific-terms payload through the F# snapshot writer, reads
     /// it back through the C# <see cref="SecurityMasterMapping"/> deserializer, and re-serializes it,

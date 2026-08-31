@@ -91,6 +91,39 @@ public sealed class OrderBookViewModelTests
     }
 
     [Fact]
+    public void BuildOrderFlowPosture_WhenDepthServiceUnavailable_StatesOutageInsteadOfFabricating()
+    {
+        var posture = OrderBookViewModel.BuildOrderFlowPosture(
+            selectedSymbol: "SPY",
+            depthLevels: 10,
+            connectionStatus: "Connected",
+            bidCount: 0,
+            askCount: 0,
+            recentTradeCount: 0,
+            spread: null,
+            imbalancePercent: null,
+            cumulativeDeltaText: "--",
+            depthServiceUnavailable: true);
+
+        posture.Title.Should().Be("Depth service unavailable");
+        posture.Detail.Should().Contain("SPY");
+        posture.Detail.Should().Contain("stay empty until real data arrives");
+        posture.ScopeText.Should().Be("SPY - 10 levels - 0 bid / 0 ask rows");
+        posture.ActionText.Should().Be("Check depth service");
+    }
+
+    [Fact]
+    public void OrderBookViewModelSource_DoesNotFabricateDepthOrTrades()
+    {
+        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\OrderBookViewModel.cs"));
+
+        viewModel.Should().NotContain("LoadDemoOrderBook");
+        viewModel.Should().NotContain("LoadDemoTrades");
+        viewModel.Should().NotContain("Random");
+        viewModel.Should().Contain("ClearBookForUnavailableDepthService");
+    }
+
+    [Fact]
     public void BuildOrderFlowPosture_WithDepthButNoTape_TargetsTradeTape()
     {
         var posture = OrderBookViewModel.BuildOrderFlowPosture(

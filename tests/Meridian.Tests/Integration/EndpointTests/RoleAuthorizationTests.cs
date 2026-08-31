@@ -275,11 +275,12 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     [Fact]
     public async Task AuthRoleProfiles_WithManageUsers_CreatesCustomProfileAndPreservesSessionPermissions()
     {
+        await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
         var profileName = $"Close Reviewer {Guid.NewGuid():N}";
         Environment.SetEnvironmentVariable("MDC_USERS", $$"""[{"username":"admin","passwordHash":"{{PwHash}}","role":"Admin"}]""");
         try
         {
-            using var cookieClient = Fixture.CreateNoRedirectClient();
+            using var cookieClient = isolated.Fixture.CreateNoRedirectClient();
             var loginResp = await cookieClient.PostAsJsonAsync("/api/auth/login", new { Username = "admin", Password = "pw" });
             loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
             var authCookies = ExtractAuthCookies(loginResp);
@@ -316,7 +317,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         Environment.SetEnvironmentVariable("MDC_USERS", $$"""[{"username":"reviewer","passwordHash":"{{PwHash}}","role":"Accounting","roleProfileName":"{{profileName}}"}]""");
         try
         {
-            using var reviewerClient = Fixture.CreateNoRedirectClient();
+            using var reviewerClient = isolated.Fixture.CreateNoRedirectClient();
             var loginResp = await reviewerClient.PostAsJsonAsync("/api/auth/login", new { Username = "reviewer", Password = "pw" });
             loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
             var sessionCookie = loginResp.Headers
@@ -348,10 +349,11 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     [Fact]
     public async Task AuthRoleProfiles_InvalidPermission_ReturnsBadRequest()
     {
+        await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
         Environment.SetEnvironmentVariable("MDC_USERS", $$"""[{"username":"admin","passwordHash":"{{PwHash}}","role":"Admin"}]""");
         try
         {
-            using var cookieClient = Fixture.CreateNoRedirectClient();
+            using var cookieClient = isolated.Fixture.CreateNoRedirectClient();
             var loginResp = await cookieClient.PostAsJsonAsync("/api/auth/login", new { Username = "admin", Password = "pw" });
             loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
             var authCookies = ExtractAuthCookies(loginResp);
@@ -621,6 +623,55 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         }
     }
 
+    // ── GET /api/auth/roles ──────────────────────────────────────────────────
+
+    [Fact]
+    public async Task AuthRoles_WithoutSession_ReturnsUnauthorized()
+    {
+        // LoginSessionMiddleware exempts the whole /api/auth prefix before it validates a cookie, so
+        // a declaration on this route enforces nothing and the handler has to resolve the session
+        // itself. The catalog names the deployment's custom roles and the permissions each grants.
+        var response = await Client.GetAsync("/api/auth/roles");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task AuthRoles_AfterLogin_ReturnsTheCatalog()
+    {
+        var usersJson = $$"""[{"username":"analyst","passwordHash":"{{A1Hash}}","role":"Analysis","companyId":"company-alpha"}]""";
+        Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
+        try
+        {
+            using var loginContent = new StringContent(
+                JsonSerializer.Serialize(new { Username = "analyst", Password = "a1" }),
+                Encoding.UTF8, "application/json");
+
+            using var cookieClient = Fixture.CreateNoRedirectClient();
+            var loginResp = await cookieClient.PostAsync("/api/auth/login", loginContent);
+            loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var sessionCookie = loginResp.Headers
+                .Where(h => h.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
+                .SelectMany(h => h.Value)
+                .FirstOrDefault(v => v.Contains("mdc-session"));
+            sessionCookie.Should().NotBeNullOrWhiteSpace("a session cookie must be set after login");
+
+            // The other direction: the catalog is open to any authenticated operator, including one
+            // holding no administrative permission, because each needs it to name the authority they
+            // already carry.
+            using var rolesRequest = new HttpRequestMessage(HttpMethod.Get, "/api/auth/roles");
+            rolesRequest.Headers.Add("Cookie", sessionCookie);
+            var rolesResp = await cookieClient.SendAsync(rolesRequest);
+
+            rolesResp.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", null);
+        }
+    }
+
     // ── GET /api/auth/me ─────────────────────────────────────────────────────
 
     [Fact]
@@ -734,8 +785,9 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     [Fact]
     public async Task AuthAccounts_WithManageUsers_AdministersAccountLifecycleAndRevokesSessions()
     {
+        await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
         var username = $"ops-{Guid.NewGuid():N}";
-        using var adminClient = Fixture.CreatePermittedClient(UserPermission.ManageUsers);
+        using var adminClient = isolated.Fixture.CreatePermittedClient(UserPermission.ManageUsers);
 
         var createResponse = await adminClient.PutAsJsonAsync(
             $"/api/auth/accounts/{username}",
@@ -765,7 +817,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         listJson.Should().NotContain("passwordHash");
         listJson.Should().NotContain("initial-pass");
 
-        using var sessionClient = Fixture.CreateNoRedirectClient();
+        using var sessionClient = isolated.Fixture.CreateNoRedirectClient();
         var loginResponse = await sessionClient.PostAsJsonAsync("/api/auth/login", new { Username = username, Password = "initial-pass" });
         loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var loginBody = await loginResponse.Content.ReadFromJsonAsync<JsonElement>(JsonOpts);
@@ -835,7 +887,8 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     [Fact]
     public async Task AuthScopedAccess_WithAutomationOrigin_ReturnsBadRequestWithoutMutatingAuthority()
     {
-        using var adminClient = Fixture.CreatePermittedClient(UserPermission.ManageUsers);
+        await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
+        using var adminClient = isolated.Fixture.CreatePermittedClient(UserPermission.ManageUsers);
         var blockedPrincipal = $"assistant-admin-{Guid.NewGuid():N}";
         var createResponse = await adminClient.PostAsJsonAsync(
             "/api/auth/access-assignments",
@@ -905,6 +958,107 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         retained.RevokedBy.Should().BeNull();
     }
 
+    [Fact]
+    public async Task AccountAdministration_SessionlessMalformedBody_IsRefusedBeforeBinding()
+    {
+        await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
+        Environment.SetEnvironmentVariable("MDC_USERS", $$"""[{"username":"admin","passwordHash":"{{PwHash}}","role":"Admin"}]""");
+        try
+        {
+            using var client = isolated.Fixture.CreateNoRedirectClient();
+            foreach (var (method, path) in new[]
+            {
+                (HttpMethod.Put, "/api/auth/accounts/target-user"),
+                (HttpMethod.Post, "/api/auth/sessions/revoke"),
+                (HttpMethod.Post, "/api/auth/role-profiles"),
+                (HttpMethod.Post, "/api/auth/access-assignments")
+            })
+            {
+                using var request = new HttpRequestMessage(method, path)
+                {
+                    // Deliberately malformed JSON: an endpoint filter only runs after binding, so
+                    // this body would be parsed and answered with a binding 400 without ever
+                    // presenting a session. The middleware guard must refuse it first.
+                    Content = new StringContent("{", Encoding.UTF8, "application/json")
+                };
+
+                var response = await client.SendAsync(request);
+
+                response.StatusCode.Should().Be(
+                    HttpStatusCode.Unauthorized,
+                    $"a sessionless {method} {path} with a malformed body must be refused before binding");
+            }
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", null);
+        }
+    }
+
+    [Fact]
+    public async Task AccountAdministration_MalformedBodyWithoutManageUsers_IsForbiddenBeforeBinding()
+    {
+        await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
+        Environment.SetEnvironmentVariable(
+            "MDC_USERS",
+            $$"""[{"username":"fund-ops","passwordHash":"{{PwHash}}","role":"Accounting"}]""");
+        try
+        {
+            using var client = isolated.Fixture.CreateNoRedirectClient();
+            var loginResp = await client.PostAsJsonAsync("/api/auth/login", new { Username = "fund-ops", Password = "pw" });
+            loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
+            var authCookies = ExtractAuthCookies(loginResp);
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/role-profiles")
+            {
+                Content = new StringContent("{", Encoding.UTF8, "application/json")
+            };
+            request.Headers.Add("Cookie", authCookies.CookieHeader);
+            request.Headers.Add("X-CSRF-Token", authCookies.CsrfToken);
+
+            var response = await client.SendAsync(request);
+
+            response.StatusCode.Should().Be(
+                HttpStatusCode.Forbidden,
+                "a session without ManageUsers must be refused before its malformed body is bound");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", null);
+        }
+    }
+
+    [Fact]
+    public async Task AccountAdministration_MalformedBodyWithManageUsers_StillFailsBinding()
+    {
+        await using var isolated = await IsolatedEndpointTestScope.CreateAsync();
+        Environment.SetEnvironmentVariable("MDC_USERS", $$"""[{"username":"admin","passwordHash":"{{PwHash}}","role":"Admin"}]""");
+        try
+        {
+            using var client = isolated.Fixture.CreateNoRedirectClient();
+            var loginResp = await client.PostAsJsonAsync("/api/auth/login", new { Username = "admin", Password = "pw" });
+            loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
+            var authCookies = ExtractAuthCookies(loginResp);
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/role-profiles")
+            {
+                Content = new StringContent("{", Encoding.UTF8, "application/json")
+            };
+            request.Headers.Add("Cookie", authCookies.CookieHeader);
+            request.Headers.Add("X-CSRF-Token", authCookies.CsrfToken);
+
+            var response = await client.SendAsync(request);
+
+            response.StatusCode.Should().Be(
+                HttpStatusCode.BadRequest,
+                "an authorized caller's malformed body is still answered by binding, proving the guard sits before binding rather than replacing it");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", null);
+        }
+    }
+
     private static AuthCookies ExtractAuthCookies(HttpResponseMessage response)
     {
         var setCookies = response.Headers
@@ -938,5 +1092,35 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     }
 
     private sealed record AuthCookies(string CookieHeader, string CsrfToken);
+
+    /// <summary>
+    /// Owns a disposable endpoint host for scenarios that persist account, role-profile, or scoped-access state.
+    /// The host's unique data root prevents one destructive authorization scenario from changing later logins.
+    /// </summary>
+    private sealed class IsolatedEndpointTestScope : IAsyncDisposable
+    {
+        private readonly EndpointTestFixture _fixture;
+
+        private IsolatedEndpointTestScope(EndpointTestFixture fixture) => _fixture = fixture;
+
+        public EndpointTestFixture Fixture => _fixture;
+
+        public static async Task<IsolatedEndpointTestScope> CreateAsync()
+        {
+            var fixture = new EndpointTestFixture();
+            try
+            {
+                await fixture.InitializeAsync();
+                return new IsolatedEndpointTestScope(fixture);
+            }
+            catch
+            {
+                await fixture.DisposeAsync();
+                throw;
+            }
+        }
+
+        public async ValueTask DisposeAsync() => await _fixture.DisposeAsync();
+    }
 
 }

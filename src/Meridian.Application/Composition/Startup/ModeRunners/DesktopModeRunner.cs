@@ -11,13 +11,27 @@ namespace Meridian.Application.Composition.Startup.ModeRunners;
 /// </summary>
 public sealed class DesktopModeRunner
 {
+    private static readonly TimeSpan DefaultStopTimeout = TimeSpan.FromSeconds(15);
+
     private readonly ILogger _log;
     private readonly DashboardServerFactory _dashboardServerFactory;
+    private readonly TimeSpan _stopTimeout;
 
     public DesktopModeRunner(ILogger log, DashboardServerFactory dashboardServerFactory)
+        : this(log, dashboardServerFactory, DefaultStopTimeout)
+    {
+    }
+
+    internal DesktopModeRunner(
+        ILogger log,
+        DashboardServerFactory dashboardServerFactory,
+        TimeSpan stopTimeout)
     {
         _log = log;
         _dashboardServerFactory = dashboardServerFactory;
+        _stopTimeout = stopTimeout > TimeSpan.Zero
+            ? stopTimeout
+            : throw new ArgumentOutOfRangeException(nameof(stopTimeout));
     }
 
     /// <summary>
@@ -31,12 +45,15 @@ public sealed class DesktopModeRunner
     {
         _log.Information("Desktop mode: starting UI server ({ModeDescription})...", ctx.Deployment.ModeDescription);
 
-        IHostDashboardServer uiServer = _dashboardServerFactory(ctx.ConfigPath, ctx.Deployment.HttpPort, ctx.Lifecycle);
-        await uiServer.StartAsync(ct);
-        _log.Information("Desktop mode UI server started at http://localhost:{Port}", ctx.Deployment.HttpPort);
-
+        IHostDashboardServer? uiServer = null;
+        var started = false;
         try
         {
+            uiServer = _dashboardServerFactory(ctx.ConfigPath, ctx.Deployment.HttpPort, ctx.Lifecycle);
+            await uiServer.StartAsync(ct).ConfigureAwait(false);
+            started = true;
+            _log.Information("Desktop mode UI server started at http://localhost:{Port}", ctx.Deployment.HttpPort);
+
             if (ct.IsCancellationRequested || ctx.Lifecycle.IsShutdownRequested)
             {
                 _log.Information(
@@ -62,7 +79,8 @@ public sealed class DesktopModeRunner
         }
         finally
         {
-            if (ctx.Lifecycle.IsShutdownRequested &&
+            if (started &&
+                ctx.Lifecycle.IsShutdownRequested &&
                 ctx.Lifecycle is IRuntimeLifecycleControlPlane runtimeLifecycle &&
                 !runtimeLifecycle.TerminationToken.IsCancellationRequested)
             {
@@ -76,22 +94,49 @@ public sealed class DesktopModeRunner
                 }
             }
 
-            using var shutdownCts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+            if (uiServer is not null)
+                await StopAndDisposeAsync(uiServer).ConfigureAwait(false);
+        }
+    }
+
+    private async Task StopAndDisposeAsync(IHostDashboardServer uiServer)
+    {
+        using (var shutdownCts = new CancellationTokenSource(_stopTimeout))
+        {
             try
             {
                 _log.Information("Desktop mode: stopping UI server");
-                await uiServer.StopAsync(shutdownCts.Token);
+                var stopTask = uiServer.StopAsync(shutdownCts.Token);
+                await stopTask.WaitAsync(shutdownCts.Token).ConfigureAwait(false);
                 _log.Information("Desktop mode: UI server stopped");
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) when (shutdownCts.IsCancellationRequested)
             {
-                _log.Warning("Desktop mode: UI server stop timed out after {TimeoutSeconds} seconds", 15);
+                _log.Warning(
+                    "Desktop mode: UI server stop timed out after {TimeoutSeconds} seconds",
+                    _stopTimeout.TotalSeconds);
             }
-            finally
+            catch (Exception ex)
             {
-                await uiServer.DisposeAsync();
-                _log.Information("Desktop mode: UI server disposed");
+                _log.Warning(ex, "Desktop mode: UI server stop raised an error");
             }
+        }
+
+        using var disposeCts = new CancellationTokenSource(_stopTimeout);
+        try
+        {
+            await uiServer.DisposeAsync().AsTask().WaitAsync(disposeCts.Token).ConfigureAwait(false);
+            _log.Information("Desktop mode: UI server disposed");
+        }
+        catch (OperationCanceledException) when (disposeCts.IsCancellationRequested)
+        {
+            _log.Warning(
+                "Desktop mode: UI server disposal timed out after {TimeoutSeconds} seconds",
+                _stopTimeout.TotalSeconds);
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(ex, "Desktop mode: UI server disposal raised an error");
         }
     }
 }

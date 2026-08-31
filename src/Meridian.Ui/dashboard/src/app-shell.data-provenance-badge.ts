@@ -5,7 +5,7 @@
  * operator must see the label. The C# seam is `Meridian.Contracts.Operations.DataProvenance`.
  */
 
-export type DataProvenanceKind = "real" | "simulated" | "seeded" | "sample";
+export type DataProvenanceKind = "real" | "simulated" | "seeded" | "sample" | "unknown";
 
 export interface DataProvenanceBadgeViewModel {
   role: "status";
@@ -42,18 +42,33 @@ const NON_REAL_COPY: Record<
     label: "SAMPLE",
     headline: "Sample data",
     detail: "This is sample placeholder data with no operational meaning."
+  },
+  unknown: {
+    label: "UNKNOWN",
+    headline: "Data source unverified",
+    detail:
+      "The workstation could not confirm whether this session runs on real or simulated data. Retry the live-data check before trusting quotes, fills, valuations, or P&L."
   }
 };
 
+/**
+ * Provenance kinds the server can assert over the wire. `unknown` is deliberately absent: it is a
+ * client-side transport state (the probe never answered), never a server claim, so a wire token
+ * "unknown" still fails closed to `simulated` below.
+ */
 const KNOWN_PROVENANCE: readonly DataProvenanceKind[] = ["real", "simulated", "seeded", "sample"];
 
 /**
  * Normalizes a loose provenance token from the wire. Unknown tokens resolve to `simulated` — never
  * `real` — so an unrecognized value can never be silently upgraded into "real".
  */
-export function normalizeDataProvenance(token: string | null | undefined): DataProvenanceKind {
-  const normalized = (token ?? "").trim().toLowerCase();
-  if (normalized === "" || normalized === "live") {
+export function normalizeDataProvenance(token: unknown): DataProvenanceKind {
+  if (typeof token !== "string") {
+    return "simulated";
+  }
+
+  const normalized = token.trim().toLowerCase();
+  if (normalized === "real" || normalized === "live") {
     return "real";
   }
   if ((KNOWN_PROVENANCE as readonly string[]).includes(normalized)) {
@@ -66,6 +81,54 @@ export function normalizeDataProvenance(token: string | null | undefined): DataP
     return "sample";
   }
   return "simulated";
+}
+
+export interface WorkstationDataProvenanceInput {
+  usingDevelopmentFixtures: boolean;
+  demoMode: {
+    enabled?: boolean;
+    provenance?: unknown;
+  } | null;
+}
+
+/**
+ * Resolves the shell-wide trust label.
+ *
+ * The server's pinned `provenance` is authoritative whenever it is present, **whether or not
+ * `enabled` is set**. `enabled` is derived from a credentials heuristic, so a host holding an
+ * Alpaca or Polygon key while replaying a pinned-Simulated tape reports `enabled: false` — which
+ * is precisely the case the pin exists for. Reading the label only under `enabled` threw the pin
+ * away and rendered no banner on a simulated tape.
+ *
+ * Demo mode still refuses a `real` claim, development-fixture usage still outranks a disabled
+ * posture, and an unanswered probe stays `unknown` — a persistent badge with a retry affordance —
+ * rather than branding a real install SIMULATED because one request failed. Nothing here ever
+ * silently claims real data.
+ */
+export function resolveWorkstationDataProvenance({
+  usingDevelopmentFixtures,
+  demoMode
+}: WorkstationDataProvenanceInput): DataProvenanceKind {
+  if (!demoMode) {
+    return usingDevelopmentFixtures ? "seeded" : "unknown";
+  }
+
+  if (demoMode.enabled) {
+    const reported = normalizeDataProvenance(demoMode.provenance);
+    return reported === "real" ? "simulated" : reported;
+  }
+
+  if (usingDevelopmentFixtures) {
+    return "seeded";
+  }
+
+  // A response that carries no provenance at all states nothing to honor. That is unresolved,
+  // not real and not confirmed simulated, so it takes the retryable `unknown` badge.
+  if (demoMode.provenance === undefined || demoMode.provenance === null) {
+    return "unknown";
+  }
+
+  return normalizeDataProvenance(demoMode.provenance);
 }
 
 export function buildDataProvenanceBadgeViewModel({

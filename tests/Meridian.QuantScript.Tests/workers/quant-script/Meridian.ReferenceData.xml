@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Meridian.ReferenceData</name>
+    </assembly>
+    <members>
+        <member name="T:Meridian.ReferenceData.DesignModule">
+            <summary>Physical module marker for the Reference Data bounded context.</summary>
+        </member>
+        <member name="T:Meridian.ReferenceData.SecurityMaster.SecurityKindMapping">
+             <summary>
+             Read-only bridge between <see cref="T:Meridian.Contracts.Domain.Enums.InstrumentType"/> (market-data layer) and the
+             F# <c>SecurityKind</c> asset-class strings (security master layer).
+            
+             <para>
+             These two classification systems evolved independently: <see cref="T:Meridian.Contracts.Domain.Enums.InstrumentType"/> is
+             used by the data-collection pipeline and provider adapters, while the security master uses
+             F# discriminated-union asset-class names. This static lookup provides a non-breaking,
+             read-only mapping so routing code does not need to hardcode string comparisons.
+             </para>
+             </summary>
+        </member>
+        <member name="M:Meridian.ReferenceData.SecurityMaster.SecurityKindMapping.ToAssetClass(Meridian.Contracts.Domain.Enums.InstrumentType)">
+            <summary>
+            Returns the canonical security master asset-class string for the given
+            <paramref name="instrumentType"/>, or <c>null</c> when no mapping exists.
+            </summary>
+        </member>
+        <member name="M:Meridian.ReferenceData.SecurityMaster.SecurityKindMapping.ToInstrumentTypes(System.String)">
+            <summary>
+            Returns all <see cref="T:Meridian.Contracts.Domain.Enums.InstrumentType"/> values that correspond to the given
+            security master <paramref name="assetClass"/> string.
+            Returns an empty list when the asset class is not mapped to a market-data instrument type.
+            </summary>
+        </member>
+        <member name="M:Meridian.ReferenceData.SecurityMaster.SecurityKindMapping.ToPrimaryInstrumentType(System.String)">
+            <summary>
+            Returns the single most-specific <see cref="T:Meridian.Contracts.Domain.Enums.InstrumentType"/> hint for a given
+            <paramref name="assetClass"/>, or <c>null</c> when ambiguous or unmapped.
+            Useful for provider subscription routing when a precise type is needed.
+            </summary>
+        </member>
+        <member name="M:Meridian.ReferenceData.SecurityMaster.SecurityKindMapping.ToInstrumentTypeDescriptors(System.String)">
+            <summary>
+            Returns contract-owned operational descriptors compatible with a security master asset class.
+            Direct mappings are returned first; asset classes without a direct market-data mapping can still
+            return descriptors whose compatibility list names the asset class.
+            </summary>
+        </member>
+        <member name="M:Meridian.ReferenceData.SecurityMaster.SecurityKindMapping.ToInstrumentTypeDescriptor(Meridian.Contracts.Domain.Enums.InstrumentType)">
+            <summary>
+            Returns the descriptor for an instrument type when the catalog contains operational metadata.
+            </summary>
+        </member>
+        <member name="M:Meridian.ReferenceData.SecurityMaster.SecurityKindMapping.GetCompatibilityProfile(System.String)">
+            <summary>
+            Returns the compatibility profile for a security master asset class.
+            </summary>
+        </member>
+        <member name="M:Meridian.ReferenceData.SecurityMaster.SecurityKindMapping.GetCompatibilityProfile(Meridian.Contracts.Domain.Enums.InstrumentType)">
+            <summary>
+            Returns the compatibility profile for an instrument type.
+            </summary>
+        </member>
+        <member name="M:Meridian.ReferenceData.SecurityMaster.SecurityKindMapping.TryNormalizeAssetClass(System.String,System.String@)">
+            <summary>
+            Normalizes an asset-class string to the canonical security master casing when it is known.
+            </summary>
+        </member>
+        <member name="T:Meridian.ReferenceData.SecurityMaster.ReferenceTaxonomyDto">
+            <summary>
+            A named reference taxonomy: an allowed-value code list keyed by a stable vocabulary key that
+            both the built-in asset-class validators and the custom asset-profile field validators resolve
+            enum vocabularies from.
+            </summary>
+        </member>
+        <member name="M:Meridian.ReferenceData.SecurityMaster.ReferenceTaxonomyDto.#ctor(System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{System.String})">
+            <summary>
+            A named reference taxonomy: an allowed-value code list keyed by a stable vocabulary key that
+            both the built-in asset-class validators and the custom asset-profile field validators resolve
+            enum vocabularies from.
+            </summary>
+        </member>
+        <member name="T:Meridian.ReferenceData.SecurityMaster.SecurityReferenceTaxonomyKeys">
+            <summary>
+            Stable vocabulary keys shared across the two Security Master validation engines so enum
+            allowed-value lists resolve from one source instead of being duplicated as inline string arrays.
+            </summary>
+        </member>
+        <member name="T:Meridian.ReferenceData.SecurityMaster.ISecurityReferenceTaxonomyCatalog">
+            <summary>
+            Read access to the shared, data-driven Security Master reference taxonomies.
+            </summary>
+        </member>
+        <member name="T:Meridian.ReferenceData.SecurityMaster.SecurityReferenceTaxonomyCatalog">
+            <summary>
+            Shared reference taxonomies (named allowed-value code lists) consumed by both Security Master
+            validation engines. The authoritative data lives in the embedded
+            <c>SecurityMaster/Data/security-reference-taxonomies.json</c> document so the vocabularies are
+            loaded from data rather than hard-coded at each call site; an equivalent code fallback keeps
+            validation behaviour intact if the embedded resource is ever mis-wired.
+            </summary>
+        </member>
+        <member name="P:Meridian.ReferenceData.SecurityMaster.SecurityReferenceTaxonomyCatalog.LoadedFromEmbeddedResource">
+            <summary>
+            True when <see cref="P:Meridian.ReferenceData.SecurityMaster.SecurityReferenceTaxonomyCatalog.Default"/> was populated from the embedded taxonomy document rather
+            than the in-code fallback. Surfaced so a test can pin the embedded-resource wiring.
+            </summary>
+        </member>
+        <member name="P:Meridian.ReferenceData.SecurityMaster.SecurityReferenceTaxonomyCatalog.Default">
+            <summary>Process-wide default catalog loaded from the embedded taxonomy document.</summary>
+        </member>
+        <member name="T:Meridian.ReferenceData.SecurityMaster.SecurityReferenceTaxonomyFallback">
+            <summary>
+            In-code mirror of the embedded taxonomy document used only when the embedded resource cannot be
+            loaded, so validation vocabularies never regress even if the resource wiring drifts. Keep in
+            sync with <c>SecurityMaster/Data/security-reference-taxonomies.json</c> (the authoritative copy).
+            </summary>
+        </member>
+    </members>
+</doc>

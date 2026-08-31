@@ -21,6 +21,8 @@ public sealed class LoginSessionService
     public static readonly TimeSpan SessionDuration = TimeSpan.FromHours(8);
 
     private const int MaximumFailedAttempts = 5;
+    // Keep unauthenticated login state bounded even when callers supply distinct usernames.
+    private const int MaximumTrackedFailedAttemptWindows = 1_024;
     private static readonly TimeSpan AttemptWindow = TimeSpan.FromMinutes(15);
     private static readonly TimeSpan LockoutDuration = TimeSpan.FromMinutes(15);
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web) { WriteIndented = true };
@@ -29,6 +31,7 @@ public sealed class LoginSessionService
     private readonly UserProfileRegistry profileRegistry;
     private readonly ConcurrentDictionary<string, SessionEntry> _sessions = new();
     private readonly ConcurrentDictionary<string, FailedAttemptWindow> _failedAttempts = new(StringComparer.Ordinal);
+    private readonly object _failedAttemptGate = new();
     private readonly object _persistenceGate = new();
     private readonly string? _sessionStorePath;
 
@@ -71,18 +74,16 @@ public sealed class LoginSessionService
     {
         var attemptKey = BuildAttemptKey(username, clientKey);
         var now = DateTimeOffset.UtcNow;
-        if (_failedAttempts.TryGetValue(attemptKey, out var current) && current.LockedUntil > now)
+        var throttle = GetPreAuthenticationThrottle(attemptKey, now);
+        if (throttle is not null)
         {
-            return LoginAttemptResult.Locked(current.LockedUntil.Value - now);
+            return throttle;
         }
 
         var profile = profileRegistry.Authenticate(username, password);
         if (profile is null)
         {
-            var failed = _failedAttempts.AddOrUpdate(
-                attemptKey,
-                _ => FailedAttemptWindow.First(now),
-                (_, existing) => existing.Register(now));
+            var failed = RegisterFailedAttempt(attemptKey, now);
             if (failed.LockedUntil > now)
             {
                 return LoginAttemptResult.Locked(failed.LockedUntil.Value - now);
@@ -91,7 +92,10 @@ public sealed class LoginSessionService
             return LoginAttemptResult.Invalid(MaximumFailedAttempts - failed.Count);
         }
 
-        _failedAttempts.TryRemove(attemptKey, out _);
+        lock (_failedAttemptGate)
+        {
+            _failedAttempts.TryRemove(attemptKey, out _);
+        }
 
         var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         _sessions[HashToken(token)] = new SessionEntry(
@@ -210,9 +214,79 @@ public sealed class LoginSessionService
         }
     }
 
+    // Deliberately NOT routed through Sha256Digest (which lowercases): kept consistent with
+    // HashToken below, whose casing is load-bearing for persisted session keys (#2691).
     private static string BuildAttemptKey(string username, string clientKey)
-        => $"{username.Trim().ToUpperInvariant()}|{clientKey.Trim().ToUpperInvariant()}";
+        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
+            $"{username.Trim().ToUpperInvariant()}|{clientKey.Trim().ToUpperInvariant()}")));
 
+    private FailedAttemptWindow RegisterFailedAttempt(string attemptKey, DateTimeOffset now)
+    {
+        lock (_failedAttemptGate)
+        {
+            PruneExpiredFailedAttempts(now);
+            if (_failedAttempts.TryGetValue(attemptKey, out var existing))
+            {
+                var updated = existing.Register(now);
+                _failedAttempts[attemptKey] = updated;
+                return updated;
+            }
+
+            if (_failedAttempts.Count >= MaximumTrackedFailedAttemptWindows)
+            {
+                return FailedAttemptWindow.CapacityLocked(GetCapacityRetryAtNoLock(now));
+            }
+
+            var first = FailedAttemptWindow.First(now);
+            _failedAttempts[attemptKey] = first;
+            return first;
+        }
+    }
+
+    private LoginAttemptResult? GetPreAuthenticationThrottle(string attemptKey, DateTimeOffset now)
+    {
+        lock (_failedAttemptGate)
+        {
+            PruneExpiredFailedAttempts(now);
+            if (_failedAttempts.TryGetValue(attemptKey, out var current))
+            {
+                return current.LockedUntil > now
+                    ? LoginAttemptResult.Locked(current.LockedUntil.Value - now)
+                    : null;
+            }
+
+            // Do not perform password verification for an untracked target after the bounded
+            // state is saturated. Returning a deterministic retry window is deliberately
+            // fail-closed: the previous zero-count fallback allowed unlimited target churn.
+            return _failedAttempts.Count >= MaximumTrackedFailedAttemptWindows
+                ? LoginAttemptResult.Locked(GetCapacityRetryAtNoLock(now) - now)
+                : null;
+        }
+    }
+
+    private DateTimeOffset GetCapacityRetryAtNoLock(DateTimeOffset now)
+    {
+        var retryAt = _failedAttempts.Values
+            .Select(window => window.ExpiresAt)
+            .DefaultIfEmpty(now + AttemptWindow)
+            .Min();
+        return retryAt > now ? retryAt : now + TimeSpan.FromSeconds(1);
+    }
+
+    private void PruneExpiredFailedAttempts(DateTimeOffset now)
+    {
+        foreach (var (attemptKey, window) in _failedAttempts)
+        {
+            if (window.ExpiresAt <= now)
+            {
+                _failedAttempts.TryRemove(attemptKey, out _);
+            }
+        }
+    }
+
+    // Deliberately NOT routed through Sha256Digest (which lowercases): token hashes key the
+    // session dictionary AND the durable session store, so changing the casing would orphan
+    // every session persisted before the change on rehydrate (#2691).
     private static string HashToken(string token)
         => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token.Trim())));
 
@@ -282,6 +356,11 @@ public sealed class LoginSessionService
     private sealed record FailedAttemptWindow(int Count, DateTimeOffset WindowStartedAt, DateTimeOffset? LockedUntil)
     {
         public static FailedAttemptWindow First(DateTimeOffset now) => new(1, now, null);
+
+        public static FailedAttemptWindow CapacityLocked(DateTimeOffset retryAt)
+            => new(MaximumFailedAttempts, retryAt - AttemptWindow, retryAt);
+
+        public DateTimeOffset ExpiresAt => LockedUntil ?? WindowStartedAt + AttemptWindow;
 
         public FailedAttemptWindow Register(DateTimeOffset now)
         {

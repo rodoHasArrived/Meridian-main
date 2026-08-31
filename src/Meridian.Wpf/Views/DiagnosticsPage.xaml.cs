@@ -40,6 +40,7 @@ public partial class DiagnosticsPage : Page
     private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
         // Bind text-block values from ViewModel (one-time population of system info fields)
+        AppVersionText.Text = DiagnosticsPageViewModel.AppVersion;
         RuntimeVersionText.Text = _viewModel.RuntimeVersion;
         OsVersionText.Text = _viewModel.OsVersion;
         WorkingDirectoryText.Text = _viewModel.WorkingDirectory;

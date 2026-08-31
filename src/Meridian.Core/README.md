@@ -6,7 +6,7 @@ module_id: SRC-CORE
 path: src/Meridian.Core
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-06-07
+last_reviewed: 2026-07-25
 ---
 
 # src/Meridian.Core
@@ -53,6 +53,8 @@ validation pipeline stages, credential placeholder detection, default config-pat
 environment-variable override handling, configuration-template generation, and debounced config
 file hot-reload watching for Application commands, configuration services, WPF setup flows, and
 shared endpoints.
+Schema generation excludes members marked `JsonIgnore`: those members may remain as in-process
+compatibility aliases, but they are not accepted configuration inputs.
 These Core configuration records and helpers use the `Meridian.Core.Config` namespace; Application
 keeps only configuration orchestration, credential testing, and deployment/startup adapters.
 Core exception, logging, pipeline-policy, subscription model, serialization, and monitoring helper
@@ -66,6 +68,11 @@ Application consumers do not carry local masking helpers.
 diagnostics. Storage sinks, Application pipeline components, and Platform runtime shutdown handlers
 consume these Core-owned contracts so durable persistence layers do not depend on Application
 service namespaces.
+`IO/RootedPathGuard.cs` validates portable single-component identifiers, rejects rooted and dot
+segments, reserved device names, mixed separators, and identity-colliding trailing characters,
+then verifies that resolved descendants stay under the configured root without crossing an
+existing symbolic link or reparse point. Storage and execution file stores use this shared
+primitive instead of sanitizing untrusted identities into potentially colliding paths.
 `Serialization/MarketDataJsonContext.cs` and `Serialization/SecurityMasterJsonContext.cs` include
 source-generated metadata for market-data events, Security Master validation, reference-data,
 custom asset profile, custom profile governance, and Passport Workbench governed-write DTOs so

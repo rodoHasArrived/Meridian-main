@@ -276,19 +276,20 @@ internal sealed class SecurityMasterCommands : ICliCommand
                 await _securityMasterService.CreateAsync(request, ct).ConfigureAwait(false);
                 imported++;
             }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                // Cancellation ends the ingest; it is not a per-ticker outcome.
+                throw;
+            }
+            catch (Exception ex) when (SecurityMasterIngestFailureClassifier.IsAlreadyMastered(ex))
+            {
+                skipped++;
+            }
             catch (Exception ex)
             {
-                if (ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase) ||
-                    ex.Message.Contains("duplicate", StringComparison.OrdinalIgnoreCase))
-                {
-                    skipped++;
-                }
-                else
-                {
-                    failed++;
-                    var ticker = request.Identifiers.FirstOrDefault()?.Value ?? "?";
-                    errors.Add($"{ticker}: {ex.Message}");
-                }
+                failed++;
+                var ticker = request.Identifiers.FirstOrDefault()?.Value ?? "?";
+                errors.Add($"{ticker}: {ex.Message}");
             }
 
             if ((i + 1) % ProgressReportInterval == 0 || i == requests.Count - 1)
@@ -356,7 +357,17 @@ internal sealed class SecurityMasterCommands : ICliCommand
                 Console.WriteLine($"  Progress: {p.Processed}/{p.Total} ({p.Imported} imported, {p.Failed} failed)");
         });
 
-        var result = await _importService!.ImportAsync(content, extension, progress, ct)
+        // Every imported security is recorded against this actor. Prefer an explicitly named
+        // operator, fall back to the invoking OS account, and only then to the CLI's own workload
+        // identity — an unattended run is legitimately a workload, but it should still say so
+        // rather than borrowing a placeholder.
+        var importedBy = CliArguments.GetValue(args, "--imported-by") is { Length: > 0 } named
+            ? named
+            : Environment.UserName is { Length: > 0 } osUser
+                ? osUser
+                : "meridian-cli";
+
+        var result = await _importService!.ImportAsync(content, extension, importedBy, progress, ct)
             .ConfigureAwait(false);
 
         Console.WriteLine();

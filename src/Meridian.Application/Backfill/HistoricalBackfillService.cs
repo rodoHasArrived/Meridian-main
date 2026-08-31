@@ -308,7 +308,11 @@ public sealed class HistoricalBackfillService
                             continue;
                         }
 
-                        var evt = MarketEvent.AggregateBar(bar.EndTime, bar.Symbol, bar, bar.SequenceNumber, provider.Name);
+                        // Attribute the event to the inner provider that actually served the
+                        // bar (each provider stamps bar.Source with its own name), not to the
+                        // top-level provider — which is "composite" on the failover path and
+                        // would erase the winning vendor from the envelope and disk layout.
+                        var evt = MarketEvent.AggregateBar(bar.EndTime, bar.Symbol, bar, ResolveEventSource(bar.Source, provider.Name), bar.SequenceNumber);
                         await pipeline.PublishAsync(evt, ct).ConfigureAwait(false);
                         _metrics.IncHistoricalBars();
                         Interlocked.Increment(ref barsWritten);
@@ -341,7 +345,9 @@ public sealed class HistoricalBackfillService
 
                     foreach (var bar in bars)
                     {
-                        var evt = MarketEvent.HistoricalBar(bar.ToTimestampUtc(), bar.Symbol, bar, bar.SequenceNumber, provider.Name);
+                        // Attribute the event to the inner provider that actually served the
+                        // bar; "composite" must never appear as a durable Source value.
+                        var evt = MarketEvent.HistoricalBar(bar.ToTimestampUtc(), bar.Symbol, bar, ResolveEventSource(bar.Source, provider.Name), bar.SequenceNumber);
                         await pipeline.PublishAsync(evt, ct).ConfigureAwait(false);
                         _metrics.IncHistoricalBars();
                         Interlocked.Increment(ref barsWritten);
@@ -468,9 +474,21 @@ public sealed class HistoricalBackfillService
                 bar.Close,
                 bar.Volume,
                 bar.Source,
-                bar.SequenceNumber))
+                bar.SequenceNumber,
+                bar.IsAdjusted))
             .ToArray();
     }
+
+    /// <summary>
+    /// Resolves the Source stamped on a published market event: the per-bar provider stamp
+    /// (the inner provider that actually served the data on a composite/failover path) wins;
+    /// the top-level provider name is only a fallback for bars without one. "composite" is
+    /// an aggregator label, never a vendor, and must not become a durable Source value.
+    /// </summary>
+    internal static string ResolveEventSource(string? barSource, string providerName)
+        => string.IsNullOrWhiteSpace(barSource) || string.Equals(barSource, "composite", StringComparison.OrdinalIgnoreCase)
+            ? providerName
+            : barSource!;
 
     private static IReadOnlyList<BackfillPartitionEstimate>? BuildExecutionPartitions(
         IHistoricalDataProvider provider,

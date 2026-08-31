@@ -169,6 +169,11 @@ erDiagram
         timestamp_with_time_zone ingested_at
         text loaded_by
     }
+    fund_accounts_fund_account_legacy_import_receipt {
+        text source_hash PK
+        timestamp_with_time_zone imported_at
+        integer account_count
+    }
     fund_accounts_fund_account_schema_migrations {
         text filename PK
         text checksum

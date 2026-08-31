@@ -43,6 +43,53 @@ public sealed class EClientSocket
 
     public void cancelMktData(int tickerId) { }
 
+    public void reqScannerSubscription(
+        int reqId,
+        ScannerSubscription subscription,
+        IList<TagValue>? scannerSubscriptionOptions,
+        IList<TagValue>? scannerSubscriptionFilterOptions)
+    { }
+
+    public void reqContractDetails(int reqId, Contract contract) { }
+
+    public void reqSecDefOptParams(
+        int reqId,
+        string underlyingSymbol,
+        string futFopExchange,
+        string underlyingSecType,
+        int underlyingConId)
+    { }
+
+    public void reqHistoricalNews(
+        int reqId,
+        int conId,
+        string providerCodes,
+        string startDateTime,
+        string endDateTime,
+        int totalResults,
+        IList<TagValue>? historicalNewsOptions)
+    { }
+
+    public void reqNewsArticle(
+        int reqId,
+        string providerCode,
+        string articleId,
+        IList<TagValue>? newsArticleOptions)
+    { }
+
+    public void reqFundamentalData(
+        int reqId,
+        Contract contract,
+        string reportType,
+        IList<TagValue>? fundamentalDataOptions)
+    { }
+
+    public void reqPnL(int reqId, string account, string modelCode) { }
+
+    public void reqMarketRule(int marketRuleId) { }
+
+    public void reqMktDepthExchanges() { }
+
     public void reqHistoricalData(
         int reqId,
         Contract contract,
@@ -100,6 +147,16 @@ public sealed class Contract
     public string? Right { get; set; }                    // "C" or "P"
     public string? LastTradeDateOrContractMonth { get; set; }
     public string? Multiplier { get; set; }
+}
+
+public sealed class ScannerSubscription
+{
+    public string? Instrument { get; set; }
+    public string? LocationCode { get; set; }
+    public string? ScanCode { get; set; }
+    public int NumberOfRows { get; set; }
+    public string? AbovePrice { get; set; }
+    public string? AboveVolume { get; set; }
 }
 
 public sealed class Order
@@ -166,11 +223,62 @@ public sealed class TickAttrib
 
 public sealed class TickAttribLast { }
 
-public sealed class ContractDetails { }
+public sealed class TickAttribBidAsk
+{
+    public TickAttribBidAsk()
+    {
+    }
+
+    public TickAttribBidAsk(bool bidPastLow, bool askPastHigh)
+    {
+        BidPastLow = bidPastLow;
+        AskPastHigh = askPastHigh;
+    }
+
+    public bool BidPastLow { get; set; }
+    public bool AskPastHigh { get; set; }
+}
+
+public sealed class PriceIncrement
+{
+    public PriceIncrement()
+    {
+    }
+
+    public PriceIncrement(double lowEdge, double increment)
+    {
+        LowEdge = lowEdge;
+        Increment = increment;
+    }
+
+    public double LowEdge { get; set; }
+    public double Increment { get; set; }
+}
+
+public sealed class ContractDetails
+{
+    public Contract Contract { get; set; } = new();
+    public string? MarketRuleIds { get; set; }
+    public double MinTick { get; set; }
+    public string? LongName { get; set; }
+    public string? Industry { get; set; }
+    public string? Category { get; set; }
+    public string? Subcategory { get; set; }
+    public string? TimeZoneId { get; set; }
+    public string? TradingHours { get; set; }
+    public string? LiquidHours { get; set; }
+}
 
 public sealed class ContractDescription { }
 
-public sealed class DepthMktDataDescription { }
+public sealed class DepthMktDataDescription
+{
+    public string? Exchange { get; set; }
+    public string? SecType { get; set; }
+    public string? ListingExch { get; set; }
+    public string? ServiceDataType { get; set; }
+    public int AggGroup { get; set; }
+}
 
 public sealed class NewsProvider { }
 

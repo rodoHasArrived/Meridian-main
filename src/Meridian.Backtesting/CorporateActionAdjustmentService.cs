@@ -1,4 +1,5 @@
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Instruments.AssetOperations;
 using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
@@ -166,7 +167,11 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
             Close: bar.Close * dividendFactor / splitDivisor,
             Volume: (long)Math.Round(bar.Volume * splitDivisor, MidpointRounding.AwayFromZero),
             Source: bar.Source,
-            SequenceNumber: bar.SequenceNumber);
+            SequenceNumber: bar.SequenceNumber,
+            // Only a bar an actual factor rewrote is claimed as adjusted; a bar the factor
+            // computation skipped (CA_DEF_001: missing prior close) keeps its input regime, so
+            // the flag can never assert an adjustment that silently did not happen.
+            IsAdjusted: dividendFactor != 1m || splitDivisor != 1m ? true : bar.IsAdjusted);
     }
 
     private static IReadOnlyDictionary<DateOnly, decimal> BuildDividendFactors(
@@ -333,6 +338,6 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
             action.DistributionRatio?.ToString("G29", System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
             action.Currency ?? string.Empty,
             action.LifecycleState ?? string.Empty);
-        return $"sha256:{Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(source))).ToLowerInvariant()}";
+        return $"sha256:{Sha256Digest.ComputeUtf8(source)}";
     }
 }

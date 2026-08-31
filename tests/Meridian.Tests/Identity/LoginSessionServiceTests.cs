@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Identity;
 using Meridian.Identity.Auth;
+using System.Reflection;
 using Xunit;
 
 namespace Meridian.Tests.Identity;
@@ -159,6 +160,28 @@ public sealed class LoginSessionServiceTests
     }
 
     [Fact]
+    public void TryCreateSession_DistinctInvalidUsernames_BoundsTrackedAttemptWindows()
+    {
+        using var env = ConfigureUsers(("operator", "pw-operator", UserRole.Accounting));
+        var service = CreateService("Production");
+
+        for (var index = 0; index < 1_024; index++)
+        {
+            service.TryCreateSession($"unknown-{index}", "wrong", "127.0.0.1")
+                .Status.Should().Be(LoginAttemptStatus.InvalidCredentials);
+        }
+
+        var saturatedTarget = service.TryCreateSession("new-target", "wrong", "127.0.0.1");
+        var validButUntrackedTarget = service.TryCreateSession("operator", "pw-operator", "127.0.0.1");
+
+        saturatedTarget.Status.Should().Be(LoginAttemptStatus.LockedOut);
+        saturatedTarget.RetryAfter.Should().BeGreaterThan(TimeSpan.Zero);
+        validButUntrackedTarget.Status.Should().Be(LoginAttemptStatus.LockedOut,
+            "saturation must be checked before even valid credentials are verified");
+        GetTrackedFailedAttemptWindowCount(service).Should().Be(1_024);
+    }
+
+    [Fact]
     public void DurableSessionStore_RestartAndRevocationPreserveAuthoritativeStateWithoutRawToken()
     {
         using var env = ConfigureUsers(("operator", "pw-operator", UserRole.Accounting));
@@ -197,6 +220,13 @@ public sealed class LoginSessionServiceTests
 
     private static LoginSessionService CreateService(string environmentName)
         => new(new FakeHostEnvironment(environmentName), new UserProfileRegistry());
+
+    private static int GetTrackedFailedAttemptWindowCount(LoginSessionService service)
+    {
+        var field = typeof(LoginSessionService).GetField("_failedAttempts", BindingFlags.Instance | BindingFlags.NonPublic);
+        field.Should().NotBeNull();
+        return (int)field!.GetValue(service)!.GetType().GetProperty("Count")!.GetValue(field.GetValue(service))!;
+    }
 
     private static EnvironmentVariableScope ConfigureUsers(params (string Username, string Password, UserRole Role)[] users)
     {

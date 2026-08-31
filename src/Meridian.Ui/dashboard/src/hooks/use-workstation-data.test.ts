@@ -357,6 +357,8 @@ describe("useWorkstationData", () => {
     expect(result.current.strategy).toEqual({ marker: "secondary strategy" });
     expect(result.current.trading).toEqual({ marker: "secondary trading" });
     expect(result.current.refreshStatus.inFlight).toBe(false);
+    expect(result.current.refreshStatus.phase).toBe("succeeded");
+    expect(result.current.refreshStatus.lastSucceededAt).not.toBeNull();
   });
 
   it("runs later manual refreshes against only the active workspace scope", async () => {
@@ -397,6 +399,66 @@ describe("useWorkstationData", () => {
     expect(api.getAccountingWorkspace).toHaveBeenCalledTimes(1);
     expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(1);
     expect(api.getTradingWorkspace).toHaveBeenCalledTimes(1);
+  });
+
+  it("refreshes both canonical brokerage status entries after Settings mutations", async () => {
+    const { result } = renderHook(() => useWorkstationData({ activeWorkspace: "settings" }));
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+    expect(api.getAlpacaConnectionStatus).toHaveBeenCalledTimes(1);
+    expect(api.getRobinhoodConnectionStatus).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await resolveRefreshBatch(0, "initial settings");
+      await flushAsync();
+    });
+    await waitFor(() => expect(result.current.refreshStatus.inFlight).toBe(false));
+
+    let settingsRefresh!: Promise<void>;
+    act(() => {
+      settingsRefresh = result.current.refreshWorkspace("settings");
+    });
+
+    await waitFor(() => expect(api.getAlpacaConnectionStatus).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(api.getRobinhoodConnectionStatus).toHaveBeenCalledTimes(2));
+    await act(async () => {
+      await resolveRefreshBatch(1, "settings mutation");
+      await settingsRefresh;
+    });
+
+    expect(result.current.brokerageConnection).toEqual({ marker: "settings mutation connection" });
+    expect(result.current.robinhoodConnection).toEqual({ marker: "settings mutation robinhood" });
+  });
+
+  it("can refresh every Control Tower workspace after bootstrap", async () => {
+    const { result } = renderHook(() => useWorkstationData({ activeWorkspace: "trading" }));
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      await resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+    await waitFor(() => expect(result.current.refreshStatus.inFlight).toBe(false));
+
+    let controlTowerRefresh!: Promise<void>;
+    act(() => {
+      controlTowerRefresh = result.current.refresh({ includeDeferred: true });
+    });
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(api.getTradingWorkspace).toHaveBeenCalledTimes(2));
+    await act(async () => {
+      await resolveRefreshBatch(1, "control tower");
+      await controlTowerRefresh;
+    });
+
+    expect(api.getDataWorkspace).toHaveBeenCalledTimes(2);
+    expect(api.getAccountingWorkspace).toHaveBeenCalledTimes(2);
+    expect(api.getReportingWorkspace).toHaveBeenCalledTimes(2);
+    expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(2);
+    expect(api.getStrategyWorkspace).toHaveBeenCalledTimes(2);
+    expect(result.current.data).toEqual({ marker: "control tower data" });
+    expect(result.current.accounting).toEqual({ marker: "control tower accounting" });
   });
 
   it("refetches stale active workspace slices when the active workspace changes", async () => {
@@ -902,12 +964,49 @@ describe("useWorkstationData", () => {
         presets: []
       });
       await flushAsync();
+      await resolveDeferredRefreshBatch("partial-failure");
+      await flushAsync();
     });
 
     expect(result.current.workspaceErrors.portfolio).toBe(
       "Portfolio workspace timed out.; Alpaca connection status failed.; Brokerage household sync failed."
     );
     expect(result.current.error).toBe(result.current.workspaceErrors.portfolio);
+    expect(result.current.refreshStatus.phase).toBe("partial");
+    expect(result.current.refreshStatus.message).toMatch(/partially refreshed/);
+    expect(result.current.refreshStatus.lastSucceededAt).toBeNull();
+  });
+
+  it("publishes a failed refresh without advancing freshness when every required request fails", async () => {
+    const { result } = renderHook(() => useWorkstationData({ activeWorkspace: "trading" }));
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      await resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+    await waitFor(() => expect(result.current.refreshStatus.phase).toBe("succeeded"));
+    const lastSucceededAt = result.current.refreshStatus.lastSucceededAt;
+
+    vi.mocked(api.getWorkstationWorkflowSummary).mockRejectedValueOnce(new Error("Workflow summary failed."));
+    let failedRefresh!: Promise<void>;
+    act(() => {
+      failedRefresh = result.current.refreshWorkspace("trading");
+    });
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(2));
+
+    await act(async () => {
+      rejectRequest("session", 1, new Error("Session failed."));
+      rejectRequest("overview", 1, new Error("Overview failed."));
+      rejectRequest("trading", 1, new Error("Trading failed."));
+      rejectRequest("workflowLibrary", 1, new Error("Workflow library failed."));
+      rejectRequest("workflowPresets", 1, new Error("Workflow presets failed."));
+      await failedRefresh;
+    });
+
+    expect(result.current.refreshStatus.phase).toBe("failed");
+    expect(result.current.refreshStatus.message).toBe("Workstation refresh failed.");
+    expect(result.current.refreshStatus.lastSucceededAt).toBe(lastSucceededAt);
   });
 
   it("clears the trading-only refresh failure after a later trading refresh succeeds", async () => {

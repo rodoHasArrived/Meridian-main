@@ -1,5 +1,6 @@
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Execution.Sdk;
+using Meridian.Infrastructure.Resilience;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Polygon;
@@ -26,7 +27,8 @@ public static class ProviderCapabilityDescriptorCatalog
     public static IReadOnlyList<ProviderCapabilityDescriptor> Descriptors { get; } =
     [
         new("alpaca", typeof(AlpacaMarketDataClient), typeof(AlpacaHistoricalDataProvider), typeof(AlpacaSymbolSearchProvider), typeof(AlpacaCorporateActionProvider), typeof(AlpacaOptionsChainProvider), typeof(AlpacaBrokerageGateway),
-            InstrumentTypes: [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.Crypto]),
+            InstrumentTypes: [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption, InstrumentType.Crypto],
+            StreamingAssetClasses: [MarketDataAssetClass.Equities, MarketDataAssetClass.Options, MarketDataAssetClass.Crypto, MarketDataAssetClass.News]),
         new("synthetic", Historical: typeof(SyntheticHistoricalDataProvider),
             InstrumentTypes: [InstrumentType.Equity]),
         new("ibkr", Streaming: typeof(IBMarketDataClient), Historical: typeof(IBHistoricalDataProvider), Brokerage: typeof(IBBrokerageGateway),
@@ -77,7 +79,8 @@ public sealed record ProviderCapabilityDescriptor(
     Type? Options = null,
     Type? Brokerage = null,
     IBProviderCapabilityExecutionMode ExecutionMode = IBProviderCapabilityExecutionMode.NotApplicable,
-    IReadOnlyList<InstrumentType>? InstrumentTypes = null)
+    IReadOnlyList<InstrumentType>? InstrumentTypes = null,
+    IReadOnlyList<MarketDataAssetClass>? StreamingAssetClasses = null)
 {
     /// <summary>
     /// Instrument types this provider is declared to cover. Declared here, next to the adapter
@@ -85,6 +88,8 @@ public sealed record ProviderCapabilityDescriptor(
     /// Defaults to equities when a provider has not declared broader coverage.
     /// </summary>
     public IReadOnlyList<InstrumentType> SupportedInstrumentTypes { get; } = InstrumentTypes ?? [InstrumentType.Equity];
+
+    public IReadOnlyList<MarketDataAssetClass> SupportedStreamingAssetClasses { get; } = StreamingAssetClasses ?? [];
 
     public bool HasStreaming => Streaming is not null;
     public bool HasHistorical => Historical is not null;

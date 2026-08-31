@@ -264,6 +264,12 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
     route: WORKSTATION_ROUTE_CATALOG.strategyCoveredCall
   },
   {
+    id: "strategy-run-ledger",
+    label: "Run Ledger Explorer",
+    description: "Inspect a strategy run's simulated ledger, trial balance, and journal evidence.",
+    route: WORKSTATION_ROUTE_CATALOG.strategyRunLedger
+  },
+  {
     id: "data-import",
     label: "Import data",
     description: "Load a file, preview its records, and validate the import before committing it to a governed data workflow.",
@@ -604,7 +610,7 @@ function buildWorkspaceItems(
       description: workspace.description,
       route,
       routeLabel: route,
-      statusLabel: active ? "Current" : workspace.status,
+      statusLabel: active ? "Current" : workspace.maturity,
       statusTone: active ? "current" : "neutral",
       statusVisible: active,
       commandLabel: active ? `Stay in ${workspace.label}` : `Open ${workspace.label}`,

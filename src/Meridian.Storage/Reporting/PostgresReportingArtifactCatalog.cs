@@ -5,6 +5,7 @@ using System.Text.Json;
 using Meridian.Reporting;
 using Npgsql;
 using NpgsqlTypes;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.Reporting;
 
@@ -36,12 +37,12 @@ public sealed class PostgresReportingArtifactCatalog : IReportingArtifactCatalog
         ArgumentNullException.ThrowIfNull(package);
         var tenantId = ValidatePackage(package);
         var packagePayload = SerializePackage(package);
-        var packageHash = ComputeSha256(packagePayload);
+        var packageHash = Sha256Digest.ComputeUtf8(packagePayload);
         var artifactPayloads = package.Artifacts
             .Select(static artifact =>
             {
                 var payload = SerializeArtifact(artifact);
-                return new SerializedArtifact(artifact.ArtifactId, payload, ComputeSha256(payload));
+                return new SerializedArtifact(artifact.ArtifactId, payload, Sha256Digest.ComputeUtf8(payload));
             })
             .ToArray();
 
@@ -678,16 +679,13 @@ public sealed class PostgresReportingArtifactCatalog : IReportingArtifactCatalog
                 $"Retained {label} carries an invalid SHA-256 hash.");
         }
 
-        var actualHash = ComputeSha256(payload);
+        var actualHash = Sha256Digest.ComputeUtf8(payload);
         if (!string.Equals(declaredHash, actualHash, StringComparison.Ordinal))
         {
             throw new ReportingArtifactCatalogIntegrityException(
                 $"Retained {label} hash '{declaredHash}' does not match payload hash '{actualHash}'.");
         }
     }
-
-    private static string ComputeSha256(string payload) =>
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
 
     private static void AddArtifactKeyParameters(
         NpgsqlCommand command,

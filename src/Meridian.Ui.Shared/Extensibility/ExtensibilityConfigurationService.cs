@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Meridian.Contracts.Extensibility;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Extensibility;
 
@@ -19,7 +20,9 @@ public interface IExtensibilityConfigurationStore
     Task RecordActivationResultAsync(string tenantId, TenantTemplateActivationResultDto result, CancellationToken ct = default);
 }
 
-public sealed class InMemoryExtensibilityConfigurationStore : IExtensibilityConfigurationStore
+public sealed class InMemoryExtensibilityConfigurationStore :
+    IExtensibilityConfigurationStore,
+    Meridian.Application.Composition.INonProductionOnlyService
 {
     private readonly Dictionary<string, Dictionary<string, TenantTemplateConfigurationBundleDto>> _tenantTemplatesByTenant = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, List<TenantTemplateActivationResultDto>> _activationHistoryByTenant = new(StringComparer.OrdinalIgnoreCase);
@@ -78,7 +81,7 @@ public sealed class InMemoryExtensibilityConfigurationStore : IExtensibilityConf
     {
         ct.ThrowIfCancellationRequested();
         var normalizedTenantId = NormalizeTenantId(tenantId);
-        var normalizedId = NormalizeOptionalTenantTemplateId(tenantTemplateId);
+        var normalizedId = NormalizeOptional(tenantTemplateId);
         lock (_activationHistoryByTenant)
         {
             if (!_activationHistoryByTenant.TryGetValue(normalizedTenantId, out var activationHistory))
@@ -122,9 +125,6 @@ public sealed class InMemoryExtensibilityConfigurationStore : IExtensibilityConf
         => string.IsNullOrWhiteSpace(value)
             ? throw new ArgumentException("Tenant template id is required.", nameof(value))
             : value.Trim();
-
-    private static string? NormalizeOptionalTenantTemplateId(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
 public sealed class FileExtensibilityConfigurationStore : IExtensibilityConfigurationStore
@@ -189,7 +189,7 @@ public sealed class FileExtensibilityConfigurationStore : IExtensibilityConfigur
 
     public async Task<IReadOnlyList<TenantTemplateActivationResultDto>> ListActivationHistoryAsync(string tenantId, string? tenantTemplateId = null, CancellationToken ct = default)
     {
-        var normalizedId = NormalizeOptionalTenantTemplateId(tenantTemplateId);
+        var normalizedId = NormalizeOptional(tenantTemplateId);
         var snapshot = await ReadSnapshotAsync(tenantId, ct).ConfigureAwait(false);
         return snapshot.ActivationHistory
             .Where(item => normalizedId is null || string.Equals(item.TenantTemplateId, normalizedId, StringComparison.OrdinalIgnoreCase))
@@ -312,9 +312,6 @@ public sealed class FileExtensibilityConfigurationStore : IExtensibilityConfigur
         => string.IsNullOrWhiteSpace(value)
             ? throw new ArgumentException("Tenant template id is required.", nameof(value))
             : value.Trim();
-
-    private static string? NormalizeOptionalTenantTemplateId(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
 }
 

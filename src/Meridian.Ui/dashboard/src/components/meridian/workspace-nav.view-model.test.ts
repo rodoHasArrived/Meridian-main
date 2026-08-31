@@ -12,26 +12,26 @@ describe("workspace nav view model", () => {
       route: "/portfolio",
       active: true,
       ariaCurrent: undefined,
-      statusLabel: "Preview · Current",
-      statusTone: "preview",
-      ariaLabel: "Portfolio workspace, active section, Preview"
+      maturityLabel: "Preview · Current",
+      maturityTone: "preview",
+      ariaLabel: "Portfolio workspace, active section, Preview product maturity"
     });
     expect(model.currentWorkspace).toMatchObject({
       label: "Portfolio",
-      statusLabel: "Preview posture",
-      statusTone: "preview",
+      maturityLabel: "Preview product maturity",
+      maturityTone: "preview",
       route: "/portfolio",
       routeAriaLabel: "Canonical route /portfolio",
-      ariaLabel: "Current workspace: Portfolio, Preview posture"
+      ariaLabel: "Current workspace: Portfolio, Preview product maturity"
     });
     expect(model.deliveryShortcutLabel).toBe("Ctrl K");
     expect(model.items.find((item) => item.key === "trading")).toMatchObject({
       route: "/trading",
       active: false,
       ariaCurrent: undefined,
-      statusLabel: "Review",
-      statusTone: "review",
-      ariaLabel: "Open Trading workspace, Review"
+      maturityLabel: "Available",
+      maturityTone: "available",
+      ariaLabel: "Open Trading workspace, Available product maturity"
     });
     expect(model.items.find((item) => item.key === "trading")?.subItems.map((item) => item.route)).toEqual([
       "/trading",
@@ -48,13 +48,13 @@ describe("workspace nav view model", () => {
     expect(model.items.find((item) => item.key === "data")).toMatchObject({
       active: true,
       ariaCurrent: undefined,
-      statusLabel: "Live · Current",
-      statusTone: "live"
+      maturityLabel: "Available · Current",
+      maturityTone: "available"
     });
     expect(model.currentWorkspace).toMatchObject({
       label: "Data",
-      statusLabel: "Live posture",
-      statusTone: "live"
+      maturityLabel: "Available product maturity",
+      maturityTone: "available"
     });
   });
 
@@ -64,28 +64,28 @@ describe("workspace nav view model", () => {
         key: "strategy",
         label: "Research",
         description: "Legacy research root label.",
-        status: "Preview"
+        maturity: "Preview"
       },
       {
         key: "accounting",
         label: "Governance",
         description: "Legacy governance root label.",
-        status: "Live"
+        maturity: "Available"
       },
       {
         key: "data",
         label: "Data Operations",
         description: "Legacy data-operations root label.",
-        status: "Review"
+        maturity: "Setup"
       }
     ];
 
     const model = buildWorkspaceNavViewModel("/governance/reconciliation", staleWorkspaces);
 
-    expect(model.items.map((item) => [item.key, item.label, item.statusLabel])).toEqual([
-      ["accounting", "Accounting", "Live · Current"],
+    expect(model.items.map((item) => [item.key, item.label, item.maturityLabel])).toEqual([
+      ["accounting", "Accounting", "Available · Current"],
       ["strategy", "Strategy", "Preview"],
-      ["data", "Data", "Review"]
+      ["data", "Data", "Setup"]
     ]);
     expect(model.items.map((item) => item.label)).not.toEqual(
       expect.arrayContaining(["Research", "Governance", "Data Operations"])
@@ -93,7 +93,7 @@ describe("workspace nav view model", () => {
     expect(model.currentWorkspace).toMatchObject({
       label: "Accounting",
       description: "Ledger, cash-flow, reconciliation, Security Master coverage, and fund-account evidence.",
-      statusLabel: "Live posture"
+      maturityLabel: "Available product maturity"
     });
   });
 
@@ -107,13 +107,12 @@ describe("workspace nav view model", () => {
       "/portfolio/asset-detail",
       "/portfolio/brokerage-sync",
       "/portfolio/cash-ladder",
-      "/portfolio/family-office"
+      "/portfolio/family-office",
+      "/portfolio/loan-book"
     ]);
-    expect(portfolio?.subItems.find((item) => item.route === "/portfolio/family-office")).toMatchObject({
-      label: "Family office",
-      active: true,
-      ariaCurrent: "page"
-    });
+    // Family Office left UNWIRED_WORKSTATION_ROUTES once the screen started loading
+    // /api/workstation/family-office/overview, so it belongs in primary navigation again.
+    expect(portfolio?.subItems.find((item) => item.route === "/portfolio/family-office")).toBeDefined();
 
     const cashLadder = buildWorkspaceNavViewModel("/portfolio/cash-ladder")
       .items.find((item) => item.key === "portfolio")
@@ -137,23 +136,36 @@ describe("workspace nav view model", () => {
     });
   });
 
-  it("surfaces the accounting ledger lane as a first-class subroute", () => {
+  it("groups one Accounting destination list by lifecycle", () => {
     const model = buildWorkspaceNavViewModel("/accounting/ledger");
     const accounting = model.items.find((item) => item.key === "accounting");
 
     expect(accounting?.subItems.map((item) => item.route)).toEqual([
       "/accounting",
       "/accounting/operations-continuity",
-      "/accounting/entity-setup",
+      "/accounting/close-calendar",
       "/accounting/ledger",
       "/accounting/journal-entries",
+      "/accounting/capital-accounts",
+      "/accounting/capital-calls",
+      "/accounting/security-master",
+      "/accounting/statement-import",
       "/accounting/reconciliation",
       "/accounting/reconciliation/external-gl",
-      "/accounting/statement-import",
       "/accounting/exceptions",
-      "/accounting/security-master",
       "/accounting/approvals",
+      "/accounting/entity-setup",
       "/accounting/configure"
+    ]);
+    expect(accounting?.subItemGroups.map((group) => [
+      group.label,
+      group.items.map((item) => item.label)
+    ])).toEqual([
+      ["Close", ["Today", "Operations continuity", "Close calendar"]],
+      ["Records", ["Ledger explorer", "Adjustments", "Capital accounts", "Capital calls", "Security Master"]],
+      ["Reconciliation", ["Import statement", "Casework", "External GL"]],
+      ["Review", ["Exceptions", "Approvals"]],
+      ["Administration", ["Entity setup", "Configure"]]
     ]);
     expect(accounting?.subItems[0]).toMatchObject({
       label: "Today",
@@ -162,16 +174,16 @@ describe("workspace nav view model", () => {
       ariaLabel: "Open Today"
     });
     expect(accounting?.subItems[1]).toMatchObject({
-      label: "Close",
+      label: "Operations continuity",
       active: false,
       ariaCurrent: undefined,
-      ariaLabel: "Open Close"
+      ariaLabel: "Open Operations continuity"
     });
     expect(accounting?.subItems[3]).toMatchObject({
-      label: "Ledger",
+      label: "Ledger explorer",
       active: true,
       ariaCurrent: "page",
-      ariaLabel: "Ledger, current page"
+      ariaLabel: "Ledger explorer, current page"
     });
   });
 
@@ -217,6 +229,39 @@ describe("workspace nav view model", () => {
       ariaLabel: "External GL, current page"
     });
     expect(accounting?.subItems.find((item) => item.route === "/accounting/reconciliation")?.active).toBe(false);
+  });
+
+  it.each([
+    ["/accounting/accounts/detail", "Ledger explorer"],
+    ["/accounting/reconciliation/match", "Casework"],
+    ["/accounting/journal-entries/detail", "Adjustments"],
+    ["/accounting/approvals/inbox", "Approvals"]
+  ])("selects one owning Accounting destination for the %s deep link", (pathname, label) => {
+    const accounting = buildWorkspaceNavViewModel(pathname)
+      .items.find((item) => item.key === "accounting");
+    const activeItems = accounting?.subItems.filter((item) => item.active) ?? [];
+
+    expect(activeItems).toHaveLength(1);
+    expect(activeItems[0]).toMatchObject({
+      label,
+      ariaCurrent: "page"
+    });
+  });
+
+  it("preserves shared Accounting scope but drops route-local selection", () => {
+    const model = buildWorkspaceNavViewModel(
+      "/accounting/approvals",
+      undefined,
+      "?fundAccountId=account-alpha&runId=run-42&fundProfileId=fund-alpha&ledgerBookId=book-alpha&periodId=2026-05&workflowStatus=Blocked&approvalId=approval-1&tab=reference"
+    );
+    const accounting = model.items.find((item) => item.key === "accounting");
+    const ledger = accounting?.subItems.find((item) => item.label === "Ledger explorer");
+
+    expect(ledger?.route).toBe(
+      "/accounting/ledger?fundAccountId=account-alpha&runId=run-42&fundProfileId=fund-alpha&ledgerBookId=book-alpha&periodId=2026-05&workflowStatus=Blocked"
+    );
+    expect(ledger?.route).not.toContain("approvalId");
+    expect(ledger?.route).not.toContain("tab=");
   });
 
   it("surfaces the operations-record release route under Reporting", () => {
@@ -278,7 +323,8 @@ describe("workspace nav view model", () => {
       "/strategy/covered-call",
       "/strategy/promotions",
       "/strategy/lab",
-      "/strategy/quant-lab"
+      "/strategy/quant-lab",
+      "/strategy/run-ledger"
     ]);
     expect(strategy?.subItems.find((item) => item.route === "/strategy/covered-call")).toMatchObject({
       label: "Covered call",
@@ -380,11 +426,11 @@ describe("workspace nav view model", () => {
     expect(model.operatingScopeLabel).toBe("Subject: AAPL / Provider: alpaca");
     expect(trading).toMatchObject({
       route: "/trading?symbol=AAPL&provider=alpaca",
-      ariaLabel: "Open Trading workspace, Review, preserving Subject: AAPL / Provider: alpaca"
+      ariaLabel: "Open Trading workspace, Available product maturity, preserving Subject: AAPL / Provider: alpaca"
     });
     expect(data).toMatchObject({
       route: "/data?symbol=AAPL&provider=alpaca",
-      ariaLabel: "Data workspace, active section, Live, preserving Subject: AAPL / Provider: alpaca"
+      ariaLabel: "Data workspace, active section, Available product maturity, preserving Subject: AAPL / Provider: alpaca"
     });
     expect(quotes).toMatchObject({
       route: "/data/quotes?symbol=AAPL&provider=alpaca",
@@ -405,7 +451,7 @@ describe("workspace nav view model", () => {
     });
     expect(model.items.find((item) => item.key === "accounting")).toMatchObject({
       route: "/accounting?fundAccountId=fund-001&runId=run-44",
-      ariaLabel: "Open Accounting workspace, Review, preserving Account: fund-001 / Run: Selected run"
+      ariaLabel: "Open Accounting workspace, Available product maturity, preserving Account: fund-001 / Run: Selected run"
     });
   });
 });

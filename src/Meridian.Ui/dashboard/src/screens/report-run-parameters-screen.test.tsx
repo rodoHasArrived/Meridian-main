@@ -439,7 +439,7 @@ describe("ReportRunParametersScreen", () => {
     await user.clear(screen.getByLabelText("Presentation currency"));
     await user.type(screen.getByLabelText("Presentation currency"), "eur");
     await user.selectOptions(screen.getByLabelText("Consolidation level"), "Portfolio");
-    await user.selectOptions(screen.getByLabelText("Output format"), "Xlsx");
+    await user.selectOptions(screen.getByLabelText("Output format"), "ClientPackage");
     await user.click(screen.getByLabelText("Include supporting schedules"));
     await user.click(screen.getByLabelText("Include evidence appendix"));
     fireEvent.change(screen.getByLabelText("Ledger dimensions (JSON)"), {
@@ -487,7 +487,7 @@ describe("ReportRunParametersScreen", () => {
         accountingBasis: "Statutory",
         presentationCurrency: "EUR",
         consolidationLevel: "Portfolio",
-        outputFormat: "Xlsx",
+        outputFormat: "ClientPackage",
         finality: "Draft",
         includeSupportingSchedules: false,
         includeEvidenceAppendix: false,

@@ -6,6 +6,7 @@ using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Meridian.Identity.Auth;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -44,7 +45,7 @@ public static class PortfolioCashLadderEndpoints
             var ladder = await service.GetCashLadderAsync(query, ct).ConfigureAwait(false);
             return Results.Json(ladder, jsonOptions);
         })
-        .WithName("GetPortfolioCashLadder")
+        .WithName("GetPortfolioCashLadder").RequirePermission(UserPermission.ViewTrades)
         .Produces<PortfolioCashLadderDto>(StatusCodes.Status200OK);
 
         /// <summary>
@@ -53,7 +54,7 @@ public static class PortfolioCashLadderEndpoints
         /// </summary>
         group.MapGet("/scenarios", (HttpContext _) =>
             Results.Json(PortfolioCashLadderEngine.ScenarioCatalog, jsonOptions))
-        .WithName("GetPortfolioCashLadderScenarios")
+        .WithName("GetPortfolioCashLadderScenarios").RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<PortfolioCashScenarioDto>>(StatusCodes.Status200OK);
     }
 

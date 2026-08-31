@@ -309,6 +309,23 @@ public sealed class ScheduledMaintenanceServiceTests
         Enum.GetValues<MaintenanceTaskType>().Should().HaveCount(6);
     }
 
+    [Fact]
+    public void IsSuccessfulArchiveMaintenanceExecution_CompletedWithWarningsAndFailedMaintenance_ReturnsFalse()
+    {
+        ScheduledMaintenanceService.IsSuccessfulArchiveMaintenanceExecution(
+            "CompletedWithWarnings",
+            maintenanceSucceeded: false).Should().BeFalse(
+            "maintenance warnings can represent archive integrity failures");
+    }
+
+    [Fact]
+    public void IsSuccessfulArchiveMaintenanceExecution_CompletedAndSuccessfulMaintenance_ReturnsTrue()
+    {
+        ScheduledMaintenanceService.IsSuccessfulArchiveMaintenanceExecution(
+            "Completed",
+            maintenanceSucceeded: true).Should().BeTrue();
+    }
+
     // ── ScheduleType enum ───────────────────────────────────────────
 
     [Theory]

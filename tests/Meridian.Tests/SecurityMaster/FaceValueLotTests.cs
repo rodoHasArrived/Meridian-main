@@ -127,4 +127,95 @@ public sealed class FaceValueLotTests
         (fromPerUnit.Quantity * (fromPerUnit.UnitCost - FaceValueLotExtensions.LedgerLotParBasis))
             .Should().Be(perUnit.PremiumDiscount);
     }
+
+    // ---- Effective-interest (constant-yield) amortization ------------------------------------
+
+    private static readonly DateOnly Acquired = new(2026, 1, 1);
+    private static readonly DateOnly Maturity = new(2031, 1, 1);
+
+    [Fact]
+    public void ConstantYield_PremiumLot_AmortizesTowardPar_SlowerThanStraightLineEarly()
+    {
+        // ASC 310-20's signature profile: with income recognised as a constant proportion of
+        // carrying value, a PREMIUM amortizes slowly at first and accelerates toward maturity —
+        // so at mid-life the constant-yield basis sits ABOVE the straight-line basis.
+        var lot = new FaceValueLot("lot-cy", SecurityId, Acquired, originalFace: 1000m, pricePercentOfPar: 105m);
+        var midLife = new DateOnly(2028, 7, 1);
+
+        var constantYield = lot.ConstantYieldAmortizedBasisAsOf(
+            DayCountConvention.Thirty360, Maturity, midLife, annualCouponRatePercent: 5m);
+        var straightLine = lot.AmortizedBasisAsOf(DayCountConvention.Thirty360, Maturity, midLife);
+
+        constantYield.Should().BeLessThan(lot.CostBasis, "the premium must amortize down");
+        constantYield.Should().BeGreaterThan(1000m, "the basis cannot cross par before maturity");
+        constantYield.Should().BeGreaterThan(straightLine,
+            "constant-yield premium amortization is back-loaded relative to straight-line");
+    }
+
+    [Fact]
+    public void ConstantYield_DiscountLot_AccretesTowardPar()
+    {
+        var lot = new FaceValueLot("lot-cy", SecurityId, Acquired, originalFace: 1000m, pricePercentOfPar: 96m);
+        var midLife = new DateOnly(2028, 7, 1);
+
+        var basis = lot.ConstantYieldAmortizedBasisAsOf(
+            DayCountConvention.Thirty360, Maturity, midLife, annualCouponRatePercent: 4m);
+
+        basis.Should().BeGreaterThan(lot.CostBasis, "a discount accretes upward");
+        basis.Should().BeLessThan(1000m, "the basis cannot cross par before maturity");
+    }
+
+    [Fact]
+    public void ConstantYield_Boundaries_ReturnCostBasisAtAcquisitionAndParAtMaturity()
+    {
+        var lot = new FaceValueLot("lot-cy", SecurityId, Acquired, originalFace: 1000m, pricePercentOfPar: 105m);
+
+        lot.ConstantYieldAmortizedBasisAsOf(DayCountConvention.Thirty360, Maturity, Acquired, 5m)
+            .Should().Be(lot.CostBasis);
+        lot.ConstantYieldAmortizedBasisAsOf(DayCountConvention.Thirty360, Maturity, Maturity, 5m)
+            .Should().Be(1000m);
+        lot.ConstantYieldAmortizedBasisAsOf(DayCountConvention.Thirty360, Maturity, Maturity.AddYears(1), 5m)
+            .Should().Be(1000m);
+    }
+
+    [Fact]
+    public void ConstantYield_ZeroCouponDiscount_AccretesGeometrically()
+    {
+        // Pure accretion: no coupon, so each period's income is basis × yield entirely.
+        var lot = new FaceValueLot("lot-zero", SecurityId, Acquired, originalFace: 1000m, pricePercentOfPar: 78m);
+        var midLife = new DateOnly(2028, 7, 1);
+
+        var basis = lot.ConstantYieldAmortizedBasisAsOf(
+            DayCountConvention.Thirty360, Maturity, midLife, annualCouponRatePercent: 0m);
+
+        basis.Should().BeGreaterThan(780m);
+        basis.Should().BeLessThan(1000m);
+        // Geometric accretion of a deep discount is back-loaded: mid-life sits below the
+        // straight-line midpoint (890).
+        basis.Should().BeLessThan(890m);
+    }
+
+    [Fact]
+    public void AmortizedBasisAsOf_RoutesByMethod()
+    {
+        var lot = new FaceValueLot("lot-route", SecurityId, Acquired, originalFace: 1000m, pricePercentOfPar: 105m);
+        var midLife = new DateOnly(2028, 7, 1);
+
+        lot.AmortizedBasisAsOf(
+                Meridian.Contracts.FixedIncome.BondAmortizationMethod.NoAmortization,
+                DayCountConvention.Thirty360, Maturity, midLife, 5m)
+            .Should().Be(lot.CostBasis, "NoAmortization holds the book flat");
+        lot.AmortizedBasisAsOf(
+                Meridian.Contracts.FixedIncome.BondAmortizationMethod.AuctionRate,
+                DayCountConvention.Thirty360, Maturity, midLife, 5m)
+            .Should().Be(1000m, "AuctionRate recognises the premium to par immediately");
+        lot.AmortizedBasisAsOf(
+                Meridian.Contracts.FixedIncome.BondAmortizationMethod.StraightLine,
+                DayCountConvention.Thirty360, Maturity, midLife, 5m)
+            .Should().Be(lot.AmortizedBasisAsOf(DayCountConvention.Thirty360, Maturity, midLife));
+        lot.AmortizedBasisAsOf(
+                Meridian.Contracts.FixedIncome.BondAmortizationMethod.ConstantYield,
+                DayCountConvention.Thirty360, Maturity, midLife, 5m)
+            .Should().Be(lot.ConstantYieldAmortizedBasisAsOf(DayCountConvention.Thirty360, Maturity, midLife, 5m));
+    }
 }

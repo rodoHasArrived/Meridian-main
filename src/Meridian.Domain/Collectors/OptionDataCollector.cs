@@ -57,7 +57,7 @@ public sealed class OptionDataCollector
         var key = BuildContractKey(quote.Contract);
         _latestQuotes[key] = quote;
 
-        _publisher.TryPublish(MarketEvent.OptionQuote(quote.Timestamp, quote.Symbol, quote));
+        _publisher.TryPublish(MarketEvent.OptionQuote(quote.Timestamp, quote.Symbol, quote, quote.Source));
     }
 
     /// <summary>
@@ -74,7 +74,7 @@ public sealed class OptionDataCollector
         var ring = _recentTrades.GetOrAdd(key, _ => new RecentOptionTradeRing(MaxRecentTrades));
         ring.Add(trade);
 
-        _publisher.TryPublish(MarketEvent.OptionTrade(trade.Timestamp, trade.Symbol, trade));
+        _publisher.TryPublish(MarketEvent.OptionTrade(trade.Timestamp, trade.Symbol, trade, trade.Source));
     }
 
     /// <summary>
@@ -89,7 +89,7 @@ public sealed class OptionDataCollector
         var key = BuildContractKey(greeks.Contract);
         _latestGreeks[key] = greeks;
 
-        _publisher.TryPublish(MarketEvent.OptionGreeks(greeks.Timestamp, greeks.Symbol, greeks));
+        _publisher.TryPublish(MarketEvent.OptionGreeks(greeks.Timestamp, greeks.Symbol, greeks, greeks.Source));
     }
 
     /// <summary>
@@ -104,7 +104,7 @@ public sealed class OptionDataCollector
         var key = BuildChainKey(chain.UnderlyingSymbol, chain.Expiration);
         _latestChains[key] = chain;
 
-        _publisher.TryPublish(MarketEvent.OptionChain(chain.Timestamp, chain.UnderlyingSymbol, chain));
+        _publisher.TryPublish(MarketEvent.OptionChain(chain.Timestamp, chain.UnderlyingSymbol, chain, chain.Source));
     }
 
     /// <summary>
@@ -119,7 +119,7 @@ public sealed class OptionDataCollector
         var key = BuildContractKey(update.Contract);
         _latestOpenInterest[key] = update;
 
-        _publisher.TryPublish(MarketEvent.OpenInterest(update.Timestamp, update.Symbol, update));
+        _publisher.TryPublish(MarketEvent.OpenInterest(update.Timestamp, update.Symbol, update, update.Source));
     }
 
     /// <summary>

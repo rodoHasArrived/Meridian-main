@@ -16,6 +16,7 @@ using Meridian.Identity.Auth;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared.Endpoints;
+using IReportingScheduleStore = Meridian.Reporting.IReportingScheduleStore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -31,6 +32,7 @@ namespace Meridian.Tests.Ui;
 /// </summary>
 public sealed class ReportPackWorkflowServiceTests
 {
+    private const string CertifiedAccountingPeriodId = "66666666-6666-6666-6666-666666666666";
     private const string TestTenantId = "tenant-a";
     private const string TestCompanyId = "company-a";
 
@@ -1515,7 +1517,7 @@ public sealed class ReportPackWorkflowServiceTests
         var record = workflow.Create(
             "fund-alpha",
             "acct-main",
-            "2026-05",
+            CertifiedAccountingPeriodId,
             new VersionedReportTemplateIdDto("shadow-nav-pack", 1),
             "report.author",
             accessContext: new ReportAccessQueryContext(
@@ -1530,7 +1532,7 @@ public sealed class ReportPackWorkflowServiceTests
             "company-a",
             "fund-alpha",
             "book-main",
-            "2026-05");
+            CertifiedAccountingPeriodId);
         var access = new ReportingAccessScope(
             "legacy-pack-binding",
             "1",
@@ -1725,7 +1727,7 @@ public sealed class ReportPackWorkflowServiceTests
             "company-a",
             "fund-alpha",
             "book-main",
-            "2026-05");
+            CertifiedAccountingPeriodId);
         var access = new ReportingAccessScope(
             "policy-company-a",
             "1",
@@ -4611,33 +4613,46 @@ public sealed class ReportPackWorkflowServiceTests
                         Metrics: [new ReportWriterMetricDefinitionDto("pnl", "pnl")])
                 ],
                 AccessPolicy: new ReportAccessPolicyDto(ReportAccessModeDto.Private, OwnerPrincipalId: "owner.user")),
-            "owner.user");
-        registry.Submit(draft.Definition.TemplateId, "owner.user", "ready");
-        registry.Approve(draft.Definition.TemplateId, new ReportTemplateDecisionRequestDto("approved", "APP-GRID-PRIVATE-1"), "controller.admin");
+            "owner.user",
+            companyId: TestCompanyId,
+            tenantId: TestTenantId);
+        registry.Submit(
+            draft.Definition.TemplateId,
+            "owner.user",
+            "ready",
+            BoundAccessContext("owner.user"));
+        registry.Approve(
+            draft.Definition.TemplateId,
+            new ReportTemplateDecisionRequestDto("approved", "APP-GRID-PRIVATE-1"),
+            "controller.admin",
+            BoundAccessContext("controller.admin"));
+        var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Meridian-Test-User", "owner.user");
 
-        var orchestration = app.Services.GetRequiredService<IReportingOrchestrationService>();
-        var manifest = await orchestration.ExecuteAsync(
-            new ReportingJobContract(
-                "private-retained-grid",
+        var runResponse = await client.PostAsJsonAsync(
+            "/api/fund-structure/reporting/runs",
+            new ReportingRunRequestDto(
                 draft.Definition.TemplateId.Name,
                 new DateOnly(2026, 5, 5),
-                ReportingRunTrigger.AdHoc,
-                0,
-                "owner.user",
-                new DateTimeOffset(2026, 5, 5, 9, 0, 0, TimeSpan.Zero),
-                DatasetRows:
-                [
-                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        ["sector"] = "Technology",
-                        ["pnl"] = "250"
-                    }
-                ]),
-            CancellationToken.None);
-        manifest.RenderedReportWriterGrids.Should().ContainSingle(grid => grid.GridId == "private-sector-pnl");
-        var client = app.GetTestClient();
+                JobId: "private-retained-grid",
+                Parameters: BuildEndpointScheduleRunParameters() with
+                {
+                    PeriodId = CertifiedAccountingPeriodId
+                }),
+            ServerJsonOptions);
 
-        var response = await client.GetAsync($"/api/fund-structure/reporting/runs/{manifest.RunId}/report-writer-grids/private-sector-pnl");
+        runResponse.StatusCode.Should().Be(
+            HttpStatusCode.Created,
+            "the private template owner should be able to create the governed run: {0}",
+            await runResponse.Content.ReadAsStringAsync());
+        var run = await runResponse.Content.ReadFromJsonAsync<ReportingRunResultDto>(ServerJsonOptions);
+        run.Should().NotBeNull();
+        run!.Run.GeneratedReportWriterGrids.Should().ContainSingle(grid => grid.GridId == "private-sector-pnl");
+
+        client.DefaultRequestHeaders.Remove("X-Meridian-Test-User");
+        client.DefaultRequestHeaders.Add("X-Meridian-Test-User", "viewer.user");
+
+        var response = await client.GetAsync($"/api/fund-structure/reporting/runs/{run.Run.RunId}/report-writer-grids/private-sector-pnl");
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -4801,6 +4816,95 @@ public sealed class ReportPackWorkflowServiceTests
             .Select(static schedule => schedule.ScheduleId)
             .Should()
             .BeEquivalentTo(result.State.SeedScheduleIds);
+    }
+
+    [Fact]
+    public async Task Endpoint_ReportingMutations_WithoutRegisteredStores_FailClosedWithoutInMemoryAuthority()
+    {
+        await using var app = await CreateFundStructureAppAsync(
+            UserRole.Admin,
+            registerMutationStores: false);
+        var client = app.GetTestClient();
+
+        using var registerResponse = await client.PostAsJsonAsync(
+            "/api/fund-structure/reporting/templates",
+            new ReportTemplateDefinitionDto(
+                new VersionedReportTemplateIdDto("fileless-template", 1),
+                "Fileless Template",
+                [],
+                ["summary"]),
+            ServerJsonOptions);
+        using var draftResponse = await client.PostAsJsonAsync(
+            "/api/fund-structure/reporting/templates/drafts",
+            new ReportTemplateDraftRequestDto(
+                "fileless-template",
+                "Fileless Template",
+                ["summary"],
+                [],
+                Family: "CustomReport",
+                Rationale: "A missing persistence store must block mutation."),
+            ServerJsonOptions);
+        using var submitResponse = await client.PostAsJsonAsync(
+            "/api/fund-structure/reporting/templates/fileless-template/versions/1/submit",
+            new ReportTemplateDecisionRequestDto("Submit must remain durable."),
+            ServerJsonOptions);
+        using var approveResponse = await client.PostAsJsonAsync(
+            "/api/fund-structure/reporting/templates/fileless-template/versions/1/approve",
+            new ReportTemplateDecisionRequestDto("Approve must remain durable.", "APP-FILELESS-1"),
+            ServerJsonOptions);
+        using var rejectResponse = await client.PostAsJsonAsync(
+            "/api/fund-structure/reporting/templates/fileless-template/versions/1/reject",
+            new ReportTemplateDecisionRequestDto("Reject must remain durable."),
+            ServerJsonOptions);
+        using var provisionResponse = await client.PostAsync(
+            "/api/fund-structure/reporting/starter-kits/emerging-manager/provision",
+            null);
+
+        var responses = new[]
+        {
+            registerResponse,
+            draftResponse,
+            submitResponse,
+            approveResponse,
+            rejectResponse,
+            provisionResponse
+        };
+        responses.Should().OnlyContain(response =>
+            response.StatusCode == HttpStatusCode.ServiceUnavailable);
+        app.Services.GetRequiredService<ReportTemplateRegistryService>()
+            .List(includeSuperseded: true)
+            .Should().NotBeEmpty()
+            .And.OnlyContain(static template => template.IsBuiltIn);
+        app.Services.GetRequiredService<ReportingScheduleService>()
+            .ListSchedules(BoundAccessContext("controller.admin"))
+            .Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Endpoint_LegacyReportPackReads_WithoutRepository_ReturnGoneWithCanonicalGuidance()
+    {
+        await using var app = await CreateFundStructureAppAsync(
+            UserRole.Admin,
+            registerMutationStores: false);
+        var client = app.GetTestClient();
+        var reportId = Guid.Parse("4359a90a-1466-4ecf-92fb-25e102512c2d");
+
+        using var historyResponse = await client.GetAsync(
+            "/api/fund-structure/report-packs?fundProfileId=fund-a");
+        using var detailResponse = await client.GetAsync(
+            $"/api/fund-structure/report-packs/{reportId:D}");
+        using var provenanceResponse = await client.GetAsync(
+            $"/api/fund-structure/report-packs/{reportId:D}/ledger-provenance?scopeKey=Cash");
+
+        var responses = new[] { historyResponse, detailResponse, provenanceResponse };
+        responses.Should().OnlyContain(response => response.StatusCode == HttpStatusCode.Gone);
+        responses.Should().OnlyContain(response =>
+            response.Headers.CacheControl != null
+            && response.Headers.CacheControl.NoStore);
+        var historyProblem = await historyResponse.Content.ReadFromJsonAsync<JsonElement>(
+            ServerJsonOptions);
+        historyProblem.GetProperty("detail").GetString()
+            .Should().Contain("/api/fund-structure/reporting/runs");
     }
 
     [Fact]
@@ -5480,7 +5584,8 @@ public sealed class ReportPackWorkflowServiceTests
         FundOperationsWorkspaceReadService? workspaceService = null,
         string? roleProfileName = null,
         string? companyId = TestCompanyId,
-        string? tenantId = TestTenantId)
+        string? tenantId = TestTenantId,
+        bool registerMutationStores = true)
     {
         var resolvedCompanyId = string.IsNullOrWhiteSpace(companyId)
             ? "company-test"
@@ -5490,6 +5595,13 @@ public sealed class ReportPackWorkflowServiceTests
             EnvironmentName = Environments.Development
         });
         builder.WebHost.UseTestServer();
+        if (registerMutationStores)
+        {
+            builder.Services.AddSingleton<IReportTemplateGovernanceStore>(
+                new InMemoryReportTemplateGovernanceStore());
+            builder.Services.AddSingleton<IReportingStarterKitStore>(
+                new InMemoryReportingStarterKitStore());
+        }
         builder.Services.AddSingleton<ReportTemplateRegistryService>();
         builder.Services.AddSingleton<DefaultReportingTemplateCatalog>();
         builder.Services.AddSingleton<IReportingStarterKitCatalog, DefaultReportingStarterKitCatalog>();
@@ -5517,6 +5629,8 @@ public sealed class ReportPackWorkflowServiceTests
                 new EmptyReportingRunReadinessDependencyEvaluator()));
         builder.Services.AddSingleton<ReportingRunCertificationService>();
         builder.Services.AddSingleton<ReportingRunCommandService>();
+        builder.Services.AddSingleton<IReportingDeploymentReadinessService>(
+            new ReadyReportingDeploymentReadinessService());
         builder.Services.AddSingleton(sp =>
             new ReportingScheduleService(
                 sp.GetRequiredService<IReportingOrchestrationService>(),
@@ -5581,6 +5695,50 @@ public sealed class ReportPackWorkflowServiceTests
         public void Save(IReadOnlyList<ReportingScheduleRecordDto> schedules)
         {
         }
+    }
+
+    private sealed class InMemoryReportTemplateGovernanceStore : IReportTemplateGovernanceStore
+    {
+        private IReadOnlyList<ReportTemplateGovernanceRecordDto> _records = [];
+
+        public IReadOnlyList<ReportTemplateGovernanceRecordDto> Load() => _records;
+
+        public void Save(IReadOnlyList<ReportTemplateGovernanceRecordDto> records)
+        {
+            _records = records.ToArray();
+        }
+    }
+
+    private sealed class InMemoryReportingStarterKitStore : IReportingStarterKitStore
+    {
+        private readonly Dictionary<(string TenantId, string CompanyId), ReportingStarterKitStateDto> _states = [];
+
+        public ReportingStarterKitStateDto? Load(string tenantId, string companyId) =>
+            _states.GetValueOrDefault((tenantId, companyId));
+
+        public void Save(string tenantId, string companyId, ReportingStarterKitStateDto state)
+        {
+            _states[(tenantId, companyId)] = state;
+        }
+    }
+
+    private sealed class ReadyReportingDeploymentReadinessService
+        : IReportingDeploymentReadinessService
+    {
+        public ReportingDeploymentCapabilityDto Evaluate() =>
+            new(
+                IsReady: true,
+                DurableGovernance: true,
+                DurableArtifacts: true,
+                DurableReconciliationEvidence: true,
+                DurableRuns: true,
+                DurableScheduling: true,
+                DurableDelivery: true,
+                RecipientDestinationsConfigured: true,
+                ClientDocumentsConfigured: true,
+                MigrationsManaged: true,
+                Components: [],
+                BlockingReasons: []);
     }
 
     private sealed class InMemoryReportPackDeliveryRecordStore(IReadOnlyList<ReportPackDeliveryAttemptDto> attempts)

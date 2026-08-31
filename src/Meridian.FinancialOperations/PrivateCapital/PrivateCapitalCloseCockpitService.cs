@@ -3,6 +3,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.OperationsContinuity;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.PrivateCapital;
 
@@ -123,11 +124,11 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
                              approvalStatus == EvidenceStatusDto.Ready;
 
         return new PrivateCapitalCloseCockpitDto(
-            FundProfileId: Normalize(activity?.FundProfileId) ?? Normalize(fundProfileId),
+            FundProfileId: NormalizeOptional(activity?.FundProfileId) ?? NormalizeOptional(fundProfileId),
             LedgerBookId: activity?.LedgerBookId ?? ledgerBookId,
             FundAccountId: fundAccountId,
-            PeriodId: Normalize(periodId),
-            EntityId: Normalize(entityId),
+            PeriodId: NormalizeOptional(periodId),
+            EntityId: NormalizeOptional(entityId),
             ProjectedAtUtc: activity?.ProjectedAtUtc ?? DateTimeOffset.UtcNow,
             CockpitRoute: BuildCockpitRoute(fundProfileId, ledgerBookId, fundAccountId, periodId, entityId),
             OverallStatus: overallStatus,
@@ -164,7 +165,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
         }
 
         var summaries = await _operationsContinuityWorkflowService
-            .ListAsync(fundAccountId, Normalize(periodId), status: null, ct: ct, ledgerBookId: ledgerBookId)
+            .ListAsync(fundAccountId, NormalizeOptional(periodId), status: null, ct: ct, ledgerBookId: ledgerBookId)
             .ConfigureAwait(false);
         var workflows = new List<OperationsContinuityWorkflowDto>(summaries.Count);
         foreach (var summary in summaries)
@@ -539,7 +540,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
                     : shadowNavReady
                         ? "NAV support package has shadow NAV evidence but still waits on administrator NAV tie-out, position, cash, pricing, or validation readiness."
                         : "NAV support package is missing retained shadow NAV, administrator NAV tie-out, or required close-readiness components.",
-                Normalize(route),
+                NormalizeOptional(route),
                 tieOut.MeridianShadowNav ?? EstimateShadowNav(records),
                 ResolveNavCurrency(records),
                 evidence.Length,
@@ -723,7 +724,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             component?.BlockingReason ?? (isReady
                 ? $"{component?.Label ?? SplitComponentLabel(key)} support is ready for NAV support."
                 : $"{component?.Label ?? SplitComponentLabel(key)} support is missing from close readiness."),
-            Normalize(component?.RouteHint),
+            NormalizeOptional(component?.RouteHint),
             component?.Score ?? (isReady ? 100 : 0));
     }
 
@@ -780,7 +781,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
         var route = FirstReportRoute(administratorNavOutputs) ?? FirstReportRoute(shadowNavOutputs);
         var currency = ResolveNavCurrency(records) ??
                        shadowNavOutputs.Concat(administratorNavOutputs)
-                           .Select(static output => Normalize(output.Currency))
+                           .Select(static output => NormalizeOptional(output.Currency))
                            .FirstOrDefault(static value => value is not null);
         var status = ResolveShadowNavTieOutStatus(shadowNavOutputs, administratorNavOutputs, variance);
         var requiredActions = BuildShadowNavTieOutRequiredActions(status, shadowNavOutputs, administratorNavOutputs, variance);
@@ -795,7 +796,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             Tolerance: ShadowNavTieOutTolerance,
             Currency: currency,
             Summary: BuildShadowNavTieOutSummary(status, meridianShadowNav, administratorNav, variance),
-            Route: Normalize(route),
+            Route: NormalizeOptional(route),
             EvidenceLinkCount: evidence.Length,
             EvidenceLinks: evidence,
             RequiredActions: requiredActions);
@@ -1088,7 +1089,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
                 EvidenceStatusDto.Blocked => $"Close-control checklist has blocked items for {string.Join(", ", unresolved)}.",
                 _ => $"Close-control checklist still needs retained evidence or approval for {string.Join(", ", unresolved)}."
             },
-            Normalize(route),
+            NormalizeOptional(route),
             evidence.Length,
             evidence,
             requiredActions);
@@ -1167,7 +1168,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
 
     private static bool IsChecklistTaskComplete(OperationsCloseChecklistTaskDto task)
     {
-        var status = Normalize(task.Status);
+        var status = NormalizeOptional(task.Status);
         return string.Equals(status, "Done", StringComparison.OrdinalIgnoreCase) ||
                string.Equals(status, "Complete", StringComparison.OrdinalIgnoreCase) ||
                string.Equals(status, "Completed", StringComparison.OrdinalIgnoreCase) ||
@@ -1177,7 +1178,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
 
     private static bool IsCloseControlTaskBlocked(OperationsCloseChecklistTaskDto task)
     {
-        var status = Normalize(task.Status);
+        var status = NormalizeOptional(task.Status);
         return string.Equals(status, "Blocked", StringComparison.OrdinalIgnoreCase) ||
                string.Equals(status, "Expired", StringComparison.OrdinalIgnoreCase) ||
                !string.IsNullOrWhiteSpace(task.BlockingReason);
@@ -1194,7 +1195,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
 
         var approvals = workflow.ClosePackage?.ChecklistControlApprovals ?? [];
         var approvalCount = approvals
-            .Where(approval => string.Equals(Normalize(approval.TaskId), Normalize(task.TaskId), StringComparison.OrdinalIgnoreCase))
+            .Where(approval => string.Equals(NormalizeOptional(approval.TaskId), NormalizeOptional(task.TaskId), StringComparison.OrdinalIgnoreCase))
             .Where(static approval => !string.IsNullOrWhiteSpace(approval.ApprovedBy))
             .Where(static approval => approval.ApprovedAtUtc != default)
             .Select(static approval => approval.ApprovedBy.Trim())
@@ -1211,7 +1212,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             .Select(static item => new OperationsEvidenceLinkDto(
                 item.Task.EvidencePointer!.Trim(),
                 item.Task.Label,
-                Normalize(item.Task.RemediationRoute) ?? BuildWorkflowRoute(item.Workflow.WorkflowId),
+                NormalizeOptional(item.Task.RemediationRoute) ?? BuildWorkflowRoute(item.Workflow.WorkflowId),
                 "operations-continuity-close-checklist",
                 item.Task.AcknowledgedAtUtc ?? item.Workflow.UpdatedAtUtc))
             .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
@@ -1336,7 +1337,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             status,
             isReady,
             summary,
-            Normalize(route),
+            NormalizeOptional(route),
             evidenceLinks.Count,
             evidenceLinks,
             isReady ? [] : [requiredAction]);
@@ -1366,7 +1367,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             return [];
         }
 
-        var normalizedPeriodId = Normalize(periodId);
+        var normalizedPeriodId = NormalizeOptional(periodId);
         return workbench.Drafts
             .Where(static draft => draft.TreasuryContext?.IdempotencyKey?.StartsWith(
                 "fair-value|",
@@ -1387,8 +1388,8 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             return [];
         }
 
-        var normalizedPeriodId = Normalize(periodId);
-        var normalizedEntityId = Normalize(entityId);
+        var normalizedPeriodId = NormalizeOptional(periodId);
+        var normalizedEntityId = NormalizeOptional(entityId);
         return workbench.Drafts
             .Where(static draft => draft.TreasuryContext?.IdempotencyKey is { } key &&
                 (key.StartsWith("mgmt-fee|", StringComparison.OrdinalIgnoreCase) ||
@@ -1435,14 +1436,14 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
 
     private static bool MatchesPeriod(DateOnly effectiveDate, string? periodId)
     {
-        var normalized = Normalize(periodId);
+        var normalized = NormalizeOptional(periodId);
         return normalized is null ||
                string.Equals(effectiveDate.ToString("yyyy-MM", CultureInfo.InvariantCulture), normalized, StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool MatchesEntity(PrivateCapitalFundEventLedgerRecordDto record, string? entityId)
     {
-        var normalized = Normalize(entityId);
+        var normalized = NormalizeOptional(entityId);
         return normalized is null ||
                record.LedgerImpacts
                    .SelectMany(static impact => impact.Lines)
@@ -1737,13 +1738,13 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             .Concat(shadowNavOutputs.Select(static output => output.ReportOutputId))
             .Concat(administratorNavOutputs.Select(static output => output.ReportOutputId))
             .FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value));
-        return $"shadow-nav-tie-out:{Normalize(scope) ?? "close-scope"}";
+        return $"shadow-nav-tie-out:{NormalizeOptional(scope) ?? "close-scope"}";
     }
 
     private static string? ResolveNavCurrency(IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records)
     {
         var currencies = records
-            .Select(static record => Normalize(record.Currency))
+            .Select(static record => NormalizeOptional(record.Currency))
             .Where(static currency => currency is not null)
             .Select(static currency => currency!)
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -1759,7 +1760,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
 
     private static OperationsEvidenceLinkDto LinkFromRoute(string route, string label, string source)
     {
-        var trimmed = Normalize(route) ?? "unresolved";
+        var trimmed = NormalizeOptional(route) ?? "unresolved";
         var evidenceId = trimmed
             .Trim('/')
             .Replace('/', ':')
@@ -2058,5 +2059,4 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             ? UiApiRoutes.OperationsPrivateCapitalCloseCockpit
             : UiApiRoutes.WithQuery(UiApiRoutes.OperationsPrivateCapitalCloseCockpit, string.Join("&", query));
     }
-
 }

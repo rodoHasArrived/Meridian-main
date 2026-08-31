@@ -86,7 +86,7 @@ export function StatementFetchPanel({ connectors, profiles, services }: Statemen
                 ))}
               </Select>
             </FetchField>
-            <FetchField label="Fetch from" field="sinceDate" error={viewModel.draftErrors.sinceDate}>
+            <FetchField label="Fetch / ledger period start" field="sinceDate" error={viewModel.draftErrors.sinceDate}>
               <Input
                 id="statement-fetch-since-date"
                 type="date"
@@ -181,6 +181,16 @@ export function StatementFetchPanel({ connectors, profiles, services }: Statemen
                   id="statement-fetch-tolerance-profile-id"
                   value={viewModel.draft.toleranceProfileId}
                   onChange={(event) => viewModel.updateDraft("toleranceProfileId", event.target.value)}
+                />
+              </FetchField>
+              <FetchField label="Ledger period end" field="periodEnd" error={viewModel.draftErrors.periodEnd}>
+                <Input
+                  id="statement-fetch-period-end"
+                  type="date"
+                  value={viewModel.draft.periodEnd}
+                  aria-invalid={Boolean(viewModel.draftErrors.periodEnd)}
+                  aria-describedby={viewModel.draftErrors.periodEnd ? "statement-fetch-period-end-error" : undefined}
+                  onChange={(event) => viewModel.updateDraft("periodEnd", event.target.value)}
                 />
               </FetchField>
               <FetchField label="Cadence (hours)" field="cadenceHours" error={viewModel.draftErrors.cadenceHours}>
@@ -356,15 +366,30 @@ function StatementFetchSchedulesTable({
                         <Button
                           type="button"
                           size="sm"
-                          variant="ghost"
-                          aria-label={`Delete schedule ${schedule.scheduleId}`}
+                          variant={viewModel.pendingDeleteScheduleId === schedule.scheduleId ? "destructive" : "ghost"}
+                          aria-label={viewModel.pendingDeleteScheduleId === schedule.scheduleId
+                            ? `Confirm delete schedule ${schedule.scheduleId}. This permanently removes the fetch schedule.`
+                            : `Delete schedule ${schedule.scheduleId}`}
+                          aria-describedby={viewModel.pendingDeleteScheduleId === schedule.scheduleId
+                            ? `statement-fetch-delete-${schedule.scheduleId}-status`
+                            : undefined}
                           busy={viewModel.deleteBusyId === schedule.scheduleId}
                           busyLabel="Deleting…"
                           onClick={() => void viewModel.deleteSchedule(schedule.scheduleId)}
                         >
                           <Trash2 className="size-3.5" aria-hidden="true" />
-                          Delete
+                          {viewModel.pendingDeleteScheduleId === schedule.scheduleId ? "Confirm delete" : "Delete"}
                         </Button>
+                        {viewModel.pendingDeleteScheduleId === schedule.scheduleId ? (
+                          <p
+                            id={`statement-fetch-delete-${schedule.scheduleId}-status`}
+                            role="status"
+                            aria-live="polite"
+                            className="basis-full text-right text-[11px] leading-4 text-warning"
+                          >
+                            Delete confirmation pending for {schedule.scheduleId}. Confirm delete permanently removes this schedule.
+                          </p>
+                        ) : null}
                       </div>
                     </td>
                   </tr>

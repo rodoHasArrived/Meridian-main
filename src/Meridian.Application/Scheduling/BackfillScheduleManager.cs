@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using Meridian.Core.Scheduling;
+using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.Scheduling;
@@ -11,7 +12,7 @@ namespace Meridian.Application.Scheduling;
 /// </summary>
 public sealed class BackfillScheduleManager
 {
-    private readonly ConcurrentDictionary<string, BackfillSchedule> _schedules = new();
+    private volatile ConcurrentDictionary<string, BackfillSchedule> _schedules = new();
     private readonly SemaphoreSlim _persistLock = new(1, 1);
     private readonly ILogger<BackfillScheduleManager> _logger;
     private readonly string _schedulesDirectory;
@@ -66,46 +67,92 @@ public sealed class BackfillScheduleManager
     /// </summary>
     public async Task LoadSchedulesAsync(CancellationToken ct = default)
     {
-        if (_isLoaded)
+        if (Volatile.Read(ref _isLoaded))
             return;
 
+        await _persistLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await _persistLock.WaitAsync(ct);
+            if (_isLoaded)
+                return;
 
             if (!Directory.Exists(_schedulesDirectory))
             {
                 Directory.CreateDirectory(_schedulesDirectory);
-                _isLoaded = true;
+                Volatile.Write(ref _isLoaded, true);
                 return;
             }
 
             var files = Directory.GetFiles(_schedulesDirectory, "schedule_*.json");
-            var loadedCount = 0;
+            var loadedSchedules = new ConcurrentDictionary<string, BackfillSchedule>();
 
             foreach (var file in files)
             {
+                ct.ThrowIfCancellationRequested();
+
                 try
                 {
-                    var json = await File.ReadAllTextAsync(file, ct);
+                    var json = await File.ReadAllTextAsync(file, ct).ConfigureAwait(false);
                     var schedule = JsonSerializer.Deserialize<BackfillSchedule>(json, _jsonOptions);
 
                     if (schedule != null)
                     {
-                        // Recalculate next execution time
-                        schedule.NextExecutionAt = schedule.CalculateNextExecution();
-                        _schedules[schedule.ScheduleId] = schedule;
-                        loadedCount++;
+                        string? repairReason = null;
+                        if (BackfillSchedulePresets.TryMigrateLegacyMonthlyDeepBackfill(schedule))
+                        {
+                            repairReason =
+                                "Migrated the retained monthly-deep-backfill preset to explicit first-Sunday cron semantics.";
+                            _logger.LogInformation(
+                                "Migrated loaded backfill schedule {ScheduleId} to explicit first-Sunday cron semantics",
+                                schedule.ScheduleId);
+                        }
+
+                        if (schedule.Enabled)
+                        {
+                            if (TryCalculateNextExecution(schedule, out var nextExecution))
+                            {
+                                schedule.NextExecutionAt = nextExecution;
+                            }
+                            else
+                            {
+                                schedule.Enabled = false;
+                                schedule.NextExecutionAt = null;
+                                repairReason =
+                                    "Disabled the retained schedule because its cron expression or time zone has no valid future occurrence.";
+                                _logger.LogWarning(
+                                    "Disabled loaded backfill schedule {ScheduleId} because its cron expression or time zone has no valid future occurrence",
+                                    schedule.ScheduleId);
+                            }
+                        }
+                        else
+                        {
+                            schedule.NextExecutionAt = null;
+                        }
+
+                        if (repairReason is not null)
+                        {
+                            MarkScheduleRepair(schedule, repairReason);
+                            await PersistScheduleUnderLockAsync(schedule, ct).ConfigureAwait(false);
+                        }
+
+                        loadedSchedules[schedule.ScheduleId] = schedule;
                     }
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    throw;
                 }
                 catch (Exception ex)
                 {
+                    ct.ThrowIfCancellationRequested();
                     _logger.LogWarning(ex, "Failed to load schedule from {File}", file);
                 }
             }
 
-            _logger.LogInformation("Loaded {Count} backfill schedules", loadedCount);
-            _isLoaded = true;
+            ct.ThrowIfCancellationRequested();
+            _schedules = loadedSchedules;
+            _logger.LogInformation("Loaded {Count} backfill schedules", loadedSchedules.Count);
+            Volatile.Write(ref _isLoaded, true);
         }
         finally
         {
@@ -122,24 +169,30 @@ public sealed class BackfillScheduleManager
     {
         ArgumentNullException.ThrowIfNull(schedule);
 
-        if (!CronExpressionParser.IsValid(schedule.CronExpression))
-            throw new ArgumentException($"Invalid cron expression: {schedule.CronExpression}");
-
         if (string.IsNullOrWhiteSpace(schedule.Name))
             throw new ArgumentException("Schedule name is required");
 
-        // Calculate next execution
-        schedule.NextExecutionAt = schedule.CalculateNextExecution();
+        var candidate = CloneSchedule(schedule);
+        candidate.NextExecutionAt = ValidateAndCalculateNextExecution(candidate);
 
-        _schedules[schedule.ScheduleId] = schedule;
-        await PersistScheduleAsync(schedule, ct);
+        await _persistLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await PersistScheduleUnderLockAsync(candidate, ct).ConfigureAwait(false);
+            _schedules[candidate.ScheduleId] = candidate;
+        }
+        finally
+        {
+            _persistLock.Release();
+        }
 
         _logger.LogInformation(
             "Created schedule {ScheduleId}: {Name}, next execution: {NextExecution}",
-            schedule.ScheduleId, schedule.Name, schedule.NextExecutionAt);
+            candidate.ScheduleId, candidate.Name, candidate.NextExecutionAt);
 
-        ScheduleCreated?.Invoke(this, schedule);
-        return schedule;
+        var created = CloneSchedule(candidate);
+        ScheduleCreated?.Invoke(this, created);
+        return created;
     }
 
     /// <summary>
@@ -172,50 +225,105 @@ public sealed class BackfillScheduleManager
     {
         ArgumentNullException.ThrowIfNull(schedule);
 
-        if (!_schedules.ContainsKey(schedule.ScheduleId))
-            throw new KeyNotFoundException($"Schedule not found: {schedule.ScheduleId}");
+        var candidate = CloneSchedule(schedule);
+        candidate.ModifiedAt = DateTimeOffset.UtcNow;
+        candidate.NextExecutionAt = ValidateAndCalculateNextExecution(candidate);
 
-        if (!CronExpressionParser.IsValid(schedule.CronExpression))
-            throw new ArgumentException($"Invalid cron expression: {schedule.CronExpression}");
+        await _persistLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (!_schedules.ContainsKey(candidate.ScheduleId))
+                throw new KeyNotFoundException($"Schedule not found: {candidate.ScheduleId}");
 
-        schedule.ModifiedAt = DateTimeOffset.UtcNow;
-        schedule.NextExecutionAt = schedule.CalculateNextExecution();
-
-        _schedules[schedule.ScheduleId] = schedule;
-        await PersistScheduleAsync(schedule, ct);
+            await PersistScheduleUnderLockAsync(candidate, ct).ConfigureAwait(false);
+            _schedules[candidate.ScheduleId] = candidate;
+        }
+        finally
+        {
+            _persistLock.Release();
+        }
 
         _logger.LogInformation(
             "Updated schedule {ScheduleId}: {Name}",
-            schedule.ScheduleId, schedule.Name);
+            candidate.ScheduleId, candidate.Name);
 
-        ScheduleUpdated?.Invoke(this, schedule);
-        return schedule;
+        var updated = CloneSchedule(candidate);
+        ScheduleUpdated?.Invoke(this, updated);
+        return updated;
     }
 
     /// <summary>
     /// Delete a schedule.
     /// </summary>
-    public Task<bool> DeleteScheduleAsync(string scheduleId, CancellationToken ct = default)
+    public async Task<bool> DeleteScheduleAsync(string scheduleId, CancellationToken ct = default)
     {
-        if (!_schedules.TryRemove(scheduleId, out var removed))
-            return Task.FromResult(false);
+        BackfillSchedule? removed = null;
+        string? tombstonePath = null;
 
-        var filePath = GetScheduleFilePath(scheduleId);
-        if (File.Exists(filePath))
+        await _persistLock.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            try
+            if (!_schedules.TryGetValue(scheduleId, out var retained) || retained is null)
+                return false;
+            removed = retained;
+
+            ct.ThrowIfCancellationRequested();
+
+            var filePath = GetScheduleFilePath(scheduleId);
+            if (Directory.Exists(filePath))
             {
-                File.Delete(filePath);
+                throw new IOException(
+                    $"Schedule file path is a directory and cannot be deleted: {filePath}");
             }
-            catch (Exception ex)
+
+            if (File.Exists(filePath))
             {
-                _logger.LogWarning(ex, "Failed to delete schedule file: {Path}", filePath);
+                tombstonePath = GetDeletionTombstonePath(scheduleId);
+                File.Move(filePath, tombstonePath);
+
+                try
+                {
+                    await AtomicFileWriter.SyncDirectoryAsync(
+                            _schedulesDirectory,
+                            CancellationToken.None)
+                        .ConfigureAwait(false);
+                }
+                catch (Exception syncException)
+                {
+                    try
+                    {
+                        File.Move(tombstonePath, filePath);
+                        await AtomicFileWriter.SyncDirectoryAsync(
+                                _schedulesDirectory,
+                                CancellationToken.None)
+                            .ConfigureAwait(false);
+                        tombstonePath = null;
+                    }
+                    catch (Exception rollbackException)
+                    {
+                        throw new AggregateException(
+                            "Failed to make the schedule deletion durable and failed to restore the schedule file.",
+                            syncException,
+                            rollbackException);
+                    }
+
+                    throw;
+                }
             }
+
+            _schedules.TryRemove(scheduleId, out _);
+        }
+        finally
+        {
+            _persistLock.Release();
         }
 
-        _logger.LogInformation("Deleted schedule {ScheduleId}: {Name}", scheduleId, removed.Name);
+        if (tombstonePath is not null)
+            await DeleteTombstoneBestEffortAsync(tombstonePath).ConfigureAwait(false);
+
+        _logger.LogInformation("Deleted schedule {ScheduleId}: {Name}", scheduleId, removed!.Name);
         ScheduleDeleted?.Invoke(this, scheduleId);
-        return Task.FromResult(true);
+        return true;
     }
 
     /// <summary>
@@ -223,7 +331,9 @@ public sealed class BackfillScheduleManager
     /// </summary>
     public BackfillSchedule? GetSchedule(string scheduleId)
     {
-        return _schedules.TryGetValue(scheduleId, out var schedule) ? schedule : null;
+        return _schedules.TryGetValue(scheduleId, out var schedule)
+            ? CloneSchedule(schedule)
+            : null;
     }
 
     /// <summary>
@@ -231,7 +341,10 @@ public sealed class BackfillScheduleManager
     /// </summary>
     public IReadOnlyList<BackfillSchedule> GetAllSchedules()
     {
-        return _schedules.Values.OrderBy(s => s.Name).ToList();
+        return _schedules.Values
+            .OrderBy(s => s.Name)
+            .Select(CloneSchedule)
+            .ToList();
     }
 
     /// <summary>
@@ -242,6 +355,7 @@ public sealed class BackfillScheduleManager
         return _schedules.Values
             .Where(s => s.Enabled)
             .OrderBy(s => s.NextExecutionAt)
+            .Select(CloneSchedule)
             .ToList();
     }
 
@@ -254,6 +368,7 @@ public sealed class BackfillScheduleManager
         return _schedules.Values
             .Where(s => s.Enabled && s.NextExecutionAt.HasValue && s.NextExecutionAt.Value <= now)
             .OrderBy(s => s.NextExecutionAt)
+            .Select(CloneSchedule)
             .ToList();
     }
 
@@ -273,22 +388,34 @@ public sealed class BackfillScheduleManager
         bool enabled,
         CancellationToken ct = default)
     {
-        if (!_schedules.TryGetValue(scheduleId, out var schedule))
-            return false;
+        BackfillSchedule candidate = null!;
 
-        schedule.Enabled = enabled;
-        schedule.ModifiedAt = DateTimeOffset.UtcNow;
+        await _persistLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (!_schedules.TryGetValue(scheduleId, out var existing))
+                return false;
 
-        if (enabled)
-            schedule.NextExecutionAt = schedule.CalculateNextExecution();
+            candidate = CloneSchedule(existing);
+            candidate.Enabled = enabled;
+            candidate.ModifiedAt = DateTimeOffset.UtcNow;
+            candidate.NextExecutionAt = enabled
+                ? ValidateAndCalculateNextExecution(candidate)
+                : null;
 
-        await PersistScheduleAsync(schedule, ct);
+            await PersistScheduleUnderLockAsync(candidate, ct).ConfigureAwait(false);
+            _schedules[scheduleId] = candidate;
+        }
+        finally
+        {
+            _persistLock.Release();
+        }
 
         _logger.LogInformation(
             "{Action} schedule {ScheduleId}: {Name}",
-            enabled ? "Enabled" : "Disabled", scheduleId, schedule.Name);
+            enabled ? "Enabled" : "Disabled", scheduleId, candidate.Name);
 
-        ScheduleUpdated?.Invoke(this, schedule);
+        ScheduleUpdated?.Invoke(this, CloneSchedule(candidate));
         return true;
     }
 
@@ -300,24 +427,72 @@ public sealed class BackfillScheduleManager
         BackfillExecutionLog execution,
         CancellationToken ct = default)
     {
-        schedule.LastExecutedAt = DateTimeOffset.UtcNow;
-        schedule.LastJobId = execution.JobId;
-        schedule.ExecutionCount++;
+        ArgumentNullException.ThrowIfNull(schedule);
+        ArgumentNullException.ThrowIfNull(execution);
 
-        if (execution.Status == ExecutionStatus.Completed)
-            schedule.SuccessfulExecutions++;
-        else if (execution.Status == ExecutionStatus.Failed)
-            schedule.FailedExecutions++;
+        BackfillSchedule? candidate = null;
 
-        // Calculate next execution
-        schedule.NextExecutionAt = schedule.CalculateNextExecution();
+        await _persistLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (_schedules.TryGetValue(schedule.ScheduleId, out var existing))
+            {
+                candidate = CloneSchedule(existing);
 
-        await PersistScheduleAsync(schedule, ct);
-        _executionHistory.AddExecution(execution);
+                candidate.LastExecutedAt = DateTimeOffset.UtcNow;
+                candidate.LastJobId = execution.JobId;
+                candidate.ExecutionCount++;
+
+                if (execution.Status == ExecutionStatus.Completed)
+                    candidate.SuccessfulExecutions++;
+                else if (execution.Status == ExecutionStatus.Failed)
+                    candidate.FailedExecutions++;
+
+                if (candidate.Enabled)
+                {
+                    if (TryCalculateNextExecution(candidate, out var nextExecution))
+                    {
+                        candidate.NextExecutionAt = nextExecution;
+                    }
+                    else
+                    {
+                        candidate.Enabled = false;
+                        candidate.NextExecutionAt = null;
+                        MarkScheduleRepair(
+                            candidate,
+                            "Disabled the schedule after execution because it has no valid future occurrence.");
+                        _logger.LogWarning(
+                            "Disabled backfill schedule {ScheduleId} after execution because it has no valid future occurrence",
+                            candidate.ScheduleId);
+                    }
+                }
+                else
+                {
+                    candidate.NextExecutionAt = null;
+                }
+
+                await PersistScheduleUnderLockAsync(candidate, ct).ConfigureAwait(false);
+                _schedules[candidate.ScheduleId] = candidate;
+            }
+
+            _executionHistory.AddExecution(execution);
+        }
+        finally
+        {
+            _persistLock.Release();
+        }
+
+        if (candidate is null)
+        {
+            _logger.LogInformation(
+                "Recorded execution for deleted schedule {ScheduleId}: status={Status}; schedule state was not restored",
+                schedule.ScheduleId, execution.Status);
+            return;
+        }
 
         _logger.LogInformation(
             "Recorded execution for schedule {ScheduleId}: status={Status}, next={NextExecution}",
-            schedule.ScheduleId, execution.Status, schedule.NextExecutionAt);
+            candidate.ScheduleId, execution.Status, candidate.NextExecutionAt);
     }
 
     /// <summary>
@@ -345,6 +520,7 @@ public sealed class BackfillScheduleManager
         return _schedules.Values
             .Where(s => s.Tags.Contains(tag, StringComparer.OrdinalIgnoreCase))
             .OrderBy(s => s.Name)
+            .Select(CloneSchedule)
             .ToList();
     }
 
@@ -382,28 +558,106 @@ public sealed class BackfillScheduleManager
         };
     }
 
-    private async Task PersistScheduleAsync(BackfillSchedule schedule, CancellationToken ct)
+    private async Task PersistScheduleUnderLockAsync(
+        BackfillSchedule schedule,
+        CancellationToken ct)
     {
+        if (!Directory.Exists(_schedulesDirectory))
+            Directory.CreateDirectory(_schedulesDirectory);
+
+        var filePath = GetScheduleFilePath(schedule.ScheduleId);
+        var json = JsonSerializer.Serialize(schedule, _jsonOptions);
+        await AtomicFileWriter.WriteAsync(filePath, json, ct).ConfigureAwait(false);
+    }
+
+    private static DateTimeOffset? ValidateAndCalculateNextExecution(BackfillSchedule schedule)
+    {
+        if (!CronExpressionParser.IsValid(schedule.CronExpression))
+            throw new ArgumentException($"Invalid cron expression: {schedule.CronExpression}", nameof(schedule));
+
+        DateTimeOffset? nextExecution;
         try
         {
-            await _persistLock.WaitAsync(ct);
-
-            if (!Directory.Exists(_schedulesDirectory))
-                Directory.CreateDirectory(_schedulesDirectory);
-
-            var filePath = GetScheduleFilePath(schedule.ScheduleId);
-            var json = JsonSerializer.Serialize(schedule, _jsonOptions);
-            await File.WriteAllTextAsync(filePath, json, ct);
+            nextExecution = schedule.CalculateNextExecution();
         }
-        finally
+        catch (Exception ex) when (ex is TimeZoneNotFoundException or InvalidTimeZoneException)
         {
-            _persistLock.Release();
+            throw new ArgumentException($"Invalid time zone: {schedule.TimeZoneId}", nameof(schedule), ex);
         }
+
+        if (schedule.Enabled && !nextExecution.HasValue)
+        {
+            throw new ArgumentException(
+                $"Enabled schedule '{schedule.ScheduleId}' has no future occurrence within the supported cron calendar horizon.",
+                nameof(schedule));
+        }
+
+        return schedule.Enabled ? nextExecution : null;
+    }
+
+    private static bool TryCalculateNextExecution(
+        BackfillSchedule schedule,
+        out DateTimeOffset? nextExecution)
+    {
+        nextExecution = null;
+        if (!CronExpressionParser.IsValid(schedule.CronExpression))
+            return false;
+
+        try
+        {
+            nextExecution = schedule.CalculateNextExecution();
+            return nextExecution.HasValue;
+        }
+        catch (Exception ex) when (ex is TimeZoneNotFoundException or InvalidTimeZoneException)
+        {
+            return false;
+        }
+    }
+
+    private static void MarkScheduleRepair(BackfillSchedule schedule, string reason)
+    {
+        var repairedAt = DateTimeOffset.UtcNow;
+        schedule.ModifiedAt = repairedAt;
+        schedule.LastRepairReason = reason;
+        schedule.LastRepairedAt = repairedAt;
+    }
+
+    private BackfillSchedule CloneSchedule(BackfillSchedule schedule)
+    {
+        var json = JsonSerializer.Serialize(schedule, _jsonOptions);
+        return JsonSerializer.Deserialize<BackfillSchedule>(json, _jsonOptions)
+            ?? throw new JsonException("Backfill schedule serialization produced a null value.");
     }
 
     private string GetScheduleFilePath(string scheduleId)
     {
         return Path.Combine(_schedulesDirectory, $"schedule_{scheduleId}.json");
+    }
+
+    private string GetDeletionTombstonePath(string scheduleId)
+    {
+        return Path.Combine(
+            _schedulesDirectory,
+            $"deleted_{scheduleId}_{Guid.NewGuid():N}.schedule-tombstone");
+    }
+
+    private async Task DeleteTombstoneBestEffortAsync(string tombstonePath)
+    {
+        try
+        {
+            File.Delete(tombstonePath);
+            await AtomicFileWriter.SyncDirectoryAsync(
+                    _schedulesDirectory,
+                    CancellationToken.None)
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Deleted backfill schedule remains as ignored tombstone {Path}",
+                tombstonePath);
+        }
     }
 }
 
