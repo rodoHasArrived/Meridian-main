@@ -122,6 +122,9 @@ and `/startup` surfaces for local process supervision and pre-login progress. Au
 and WPF operator controls use the loopback-only `/api/system/lifecycle`,
 `/api/system/shutdown`, shutdown-operation, and latest-receipt routes. Clients consume the shared
 `Meridian.Contracts.Lifecycle` payloads and never infer readiness or terminate processes locally.
+The comprehensive `/health` route remains authenticated. Prometheus `/metrics` is the only
+unauthenticated rich monitoring payload and is supported only behind the loopback-bound compose
+posture enforced by `validate-monitoring-deployment.py`; the compose healthcheck calls `/readyz`.
 
 `FundStructureSetupWorkflowService` backs `/api/fund-structure/setup-drafts/validate` and `/api/fund-structure/setup-drafts/create`, composing `IFundStructureService` commands once for browser and WPF entity setup instead of duplicating setup sequencing in clients.
 Ownership lifecycle mutation routes under `/api/fund-structure/links/{id}` require the session-derived `ManageFundStructure` permission before updating, expiring, or replacing governance-impacting ownership links, and the underlying ownership/cash-flow policy is owned by `Meridian.Entities.FundStructure`.
