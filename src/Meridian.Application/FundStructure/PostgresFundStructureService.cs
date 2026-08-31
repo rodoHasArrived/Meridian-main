@@ -1094,6 +1094,14 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
         public HashSet<Guid> AllNodeIds = [];
 
         /// <summary>
+        /// Every investment-portfolio node id, unscoped. Narrower than
+        /// <see cref="AllNodeIds"/> on purpose: it answers whether a value names a
+        /// <b>portfolio</b>, which is the only question an account's free-text
+        /// <c>PortfolioId</c> raises.
+        /// </summary>
+        public HashSet<Guid> AllInvestmentPortfolioIds = [];
+
+        /// <summary>
         /// Every ownership-link id in the store, across all tenants, captured before tenant scoping.
         /// </summary>
         public HashSet<Guid> AllOwnershipLinkIds = [];
@@ -1155,6 +1163,13 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
         // uniqueness against only the caller's own view would pass on an id another tenant already
         // holds and then upsert straight over their node — turning the read gate into a write leak.
         snap.AllNodeIds = [.. structureNodeIds, .. snap.LinkedAccountIds];
+
+        // Captured here for the same reason and at the same moment, but kept separate: an account's
+        // PortfolioId is free text that may hold an external brokerage id, and asking the all-kinds
+        // set whether it names a node answers yes for a collision with any unrelated node -- which
+        // then fails the investment-portfolio lookup and hides the account (Codex review finding on
+        // PR #2871). Only a portfolio can make a PortfolioId structural.
+        snap.AllInvestmentPortfolioIds = [.. snap.InvestmentPortfolios.Keys];
 
         // Edges carry identity on exactly the same terms, and every store write for them is an
         // unconditional ON CONFLICT DO UPDATE. The dictionaries below are about to be filtered, so

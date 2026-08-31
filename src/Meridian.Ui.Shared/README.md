@@ -61,7 +61,9 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
   because the caller owns what a refusal means for its lifetime and swallowing one in a shared helper
   is how a guard comes to have no effect at all -- and it reports a guard that fails for any *other*
   reason as a refusal too, since a guard that cannot tell whether the composition is safe has not
-  said that it is. Lives here, like `HostStartupEscalation`, so the behaviour the WPF shell
+  said that it is. Constructing the guards is inside that same wrapper: resolving them runs their
+  constructors and their dependencies', so a broken one would otherwise escape before any per-guard
+  handling could see it. Lives here, like `HostStartupEscalation`, so the behaviour the WPF shell
   depends on is covered by tests that run off Windows. Only guards that answer cheaply belong in it:
   ADR-019's `ProductionRegistrationGuardService` is a refusal guard but stays unmarked, because in a
   production posture it resolves every factory-registered singleton.

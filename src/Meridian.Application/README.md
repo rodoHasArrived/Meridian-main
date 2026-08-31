@@ -485,7 +485,12 @@ and UI presentation concerns in their owning layers.
   `ProductionRegistrationGuardService` is deliberately **not** marked: in a production composition it
   resolves every factory-registered singleton to prove the graph is constructible, and eager
   validation of that size belongs behind a visible shell, so it stays an ordinary hosted service
-  running first in the chain. `Meridian.Ui.Shared.Services.StartupRefusalPreflight` runs the marked
+  running first in the chain. Its descriptor-only half is marked, as
+  `StaticProductionRegistrationGuardService`, which `AddProductionRegistrationGuard` registers
+  alongside it: `ProductionServiceRegistrationPolicy` performs no resolution at all, so that half
+  satisfies the "answer without unbounded work" requirement, and leaving it behind the shell meant a
+  statically prohibited production graph stayed interactive until hosted-service startup refused it.
+  The two overlap on purpose, so a host that does not pre-run the guards is covered by the same rules. `Meridian.Ui.Shared.Services.StartupRefusalPreflight` runs the marked
   ones, and reports a guard that *fails* as a refusal as well: a guard that cannot determine whether
   the composition is safe has not said that it is, and the ordinary hosted-service tolerance would
   otherwise let the rejected posture serve.

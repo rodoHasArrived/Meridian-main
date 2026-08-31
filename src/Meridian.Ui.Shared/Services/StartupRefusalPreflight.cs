@@ -43,6 +43,13 @@ public static class StartupRefusalPreflight
     /// Wrapping here rather than in each caller is what makes the fail-closed reading the default
     /// for every host that pre-runs the guards.</para>
     ///
+    /// <para><b>Constructing the guards is inside the same wrapper.</b> Resolving
+    /// <see cref="IStartupRefusalGuard"/> runs their constructors and their dependencies', so a
+    /// per-guard <c>try</c> around <c>StartAsync</c> alone leaves a broken constructor escaping as
+    /// an ordinary exception — no guard decision obtained, and the caller's ordinary tolerance
+    /// applied to it (Codex review finding on PR #2871). The set is materialized inside the
+    /// <c>try</c> rather than enumerated by the loop for exactly that reason.</para>
+    ///
     /// <para>Cancellation is not a refusal: it means the startup this was part of is being torn
     /// down, so it propagates unchanged.</para>
     /// </remarks>
@@ -50,7 +57,21 @@ public static class StartupRefusalPreflight
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        foreach (var guard in services.GetServices<IStartupRefusalGuard>())
+        IStartupRefusalGuard[] guards;
+        try
+        {
+            guards = [.. services.GetServices<IStartupRefusalGuard>()];
+        }
+        catch (Exception ex) when (
+            ex is not OperationCanceledException && !HostStartupEscalation.IsRefusal(ex))
+        {
+            throw new StartupRefusedException(
+                "The startup refusal guards could not be constructed, so whether this composition "
+                + "is safe to serve was never decided. Resolve the underlying fault and start again.",
+                ex);
+        }
+
+        foreach (var guard in guards)
         {
             ct.ThrowIfCancellationRequested();
             try

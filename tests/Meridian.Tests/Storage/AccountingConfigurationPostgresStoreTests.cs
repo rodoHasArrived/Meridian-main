@@ -1,5 +1,7 @@
+using System.Globalization;
 using FluentAssertions;
 using Meridian.Contracts.Ledger;
+using Npgsql;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
 
@@ -539,6 +541,136 @@ public sealed class AccountingConfigurationPostgresStoreTests
         await nextMutation.Should().NotThrowAsync();
         var workspace = await store.GetAsync("fund-alpha");
         workspace!.ChartOfAccounts.Should().HaveCount(2);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AnEventEditedInTheMiddleOfTheChain_StopsTheNextAppend()
+    {
+        // Seventeenth Codex review round. VerifyChainHeadAsync read only the newest chained row, so
+        // an edit anywhere earlier passed and the append added another valid-looking successor: each
+        // entry hash binds to its predecessor's ENTRY hash, never to that predecessor's current
+        // payload, so checking the tail cannot see historical mutation. The file posture already
+        // verified every link on every append, which made AppendAsync's claim that the two postures
+        // carry identical tamper-evidence false.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var store = database.AccountingConfigurationStore;
+
+        var first = AuditEvent();
+        await store.AppendAsync(first);
+        await store.AppendAsync(AuditEvent());
+        await store.AppendAsync(AuditEvent());
+
+        // Edit the FIRST event, leaving its payload_hash and the whole tail untouched.
+        await ExecuteAsync(
+            database,
+            "update {0}.accounting_action_audit_events set actor = 'intruder@example.test' where audit_event_id = @id;",
+            ("id", first.AuditEventId));
+
+        var appendNext = async () => await store.AppendAsync(AuditEvent());
+
+        var refusal = await appendNext.Should().ThrowAsync<AccountingAuditChainIntegrityException>();
+        refusal.Which.Verification.Status.Should().Be(AccountingAuditChainStatus.EventMutated);
+        refusal.Which.Verification.FailedSequence.Should().Be(
+            AccountingAuditChainState.FirstSequence,
+            "an operator needs the row that broke, not the end of the chain");
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AnEventDeletedFromTheMiddleOfTheChain_StopsTheNextAppend()
+    {
+        // The other shape of the same gap. Every surviving link still digests and binds correctly,
+        // so nothing but a scan of the sequence itself can see that one is missing.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var store = database.AccountingConfigurationStore;
+
+        await store.AppendAsync(AuditEvent());
+        var second = AuditEvent();
+        await store.AppendAsync(second);
+        await store.AppendAsync(AuditEvent());
+
+        await ExecuteAsync(
+            database,
+            "delete from {0}.accounting_action_audit_events where audit_event_id = @id;",
+            ("id", second.AuditEventId));
+
+        var appendNext = async () => await store.AppendAsync(AuditEvent());
+
+        var refusal = await appendNext.Should().ThrowAsync<AccountingAuditChainIntegrityException>();
+        refusal.Which.Verification.Status.Should().Be(AccountingAuditChainStatus.BrokenSequence);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AnUntouchedChain_StillAppends()
+    {
+        // The control the two tests above need: verifying every link must not make an intact chain
+        // refuse. Four appends, each verifying everything before it.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var store = database.AccountingConfigurationStore;
+
+        var append = async () =>
+        {
+            for (var i = 0; i < 4; i++)
+            {
+                await store.AppendAsync(AuditEvent());
+            }
+        };
+
+        await append.Should().NotThrowAsync();
+        (await store.ListAsync("fund-alpha")).Should().HaveCount(4);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AMarkerFromAMutationCarryingPaddedOptionalText_IsClearedRatherThanRaised()
+    {
+        // Seventeenth Codex review round. ReplaceChartAsync writes ParentPath, Symbol and
+        // FinancialAccountId through AddTextOrNull, which trims and nulls blank text, while the
+        // digest hashed the original strings -- so a padded value reloaded as something AfterHash
+        // never covered, and recovery raised on it forever. Same permanent-block shape as the
+        // RulesStudio divergence, reached through a different field.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var store = database.AccountingConfigurationStore;
+        using var markerRoot = new TempDirectory();
+        var markers = new FileAccountingAuditPendingMarkerStore(
+            Path.Combine(markerRoot.Path, "pending-audit.json"));
+
+        await CreateService(store, markers).UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            "fund-alpha",
+            new ChartOfAccountsNodeDto(
+                "node-padded",
+                "assets.node-padded",
+                "Cash",
+                "Asset",
+                ParentPath: "  assets  ",
+                Symbol: "   ",
+                FinancialAccountId: "  FA-1  "),
+            Actor: "operator@example.test"));
+        var declared = (await store.ListAsync("fund-alpha")).Should().ContainSingle().Subject;
+        await markers.WriteAsync(new AccountingAuditPendingMarker(declared, DateTimeOffset.UtcNow));
+
+        var recovery = await CreateService(store, markers).RecoverPendingAuditAsync();
+
+        recovery.Outcome.Should().Be(AccountingAuditRecoveryOutcome.AlreadyAudited);
+        (await markers.ReadAsync()).Should().BeNull("a resolved marker must not re-fire");
+    }
+
+    private static async Task ExecuteAsync(
+        LedgerPostgresTestDatabase database,
+        string commandTemplate,
+        params (string Name, object Value)[] parameters)
+    {
+        await using var connection = new NpgsqlConnection(database.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = string.Format(
+            CultureInfo.InvariantCulture,
+            commandTemplate,
+            "\"" + database.Options.SchemaName + "\"");
+        foreach (var (name, value) in parameters)
+        {
+            command.Parameters.AddWithValue(name, value);
+        }
+
+        await command.ExecuteNonQueryAsync();
     }
 
     private static AccountingConfigurationService CreateService(

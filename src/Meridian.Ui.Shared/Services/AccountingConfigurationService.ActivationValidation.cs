@@ -987,6 +987,16 @@ public sealed partial class AccountingConfigurationService
     /// <c>order by</c>, so a digest over the in-memory sequence would depend on the order a caller
     /// happened to build it in. Ordering here makes the digest a function of the content alone.</para>
     ///
+    /// <para><b>Optional text is reduced the way a store reduces it.</b>
+    /// <c>PostgresAccountingConfigurationStore.ReplaceChartAsync</c> writes <c>ParentPath</c>,
+    /// <c>Symbol</c> and <c>FinancialAccountId</c> through <c>AddTextOrNull</c>, which trims and
+    /// nulls blank text, so a padded or blank value reloads as something the digest never covered
+    /// (Codex review finding on PR #2871). This is the rule <c>NormalizeForPersistence</c> already
+    /// applies to the audit event itself, applied to the workspace for the same reason: what is
+    /// hashed and what is written have to be the same string. Both postures then also agree that
+    /// <c>"  x  "</c> and <c>"x"</c> are one configuration, which is the answer either would give
+    /// if asked.</para>
+    ///
     /// <para><b>The timestamp is reduced to storable precision.</b> <c>timestamptz</c> holds
     /// microseconds and Npgsql truncates to them when it encodes the parameter, so a workspace
     /// hashed at the full 100ns tick and then reloaded digests to two different values — the second
@@ -1004,6 +1014,12 @@ public sealed partial class AccountingConfigurationService
             ChartOfAccounts =
             [
                 .. workspace.ChartOfAccounts
+                    .Select(static n => n with
+                    {
+                        ParentPath = NormalizeOptional(n.ParentPath),
+                        Symbol = NormalizeOptional(n.Symbol),
+                        FinancialAccountId = NormalizeOptional(n.FinancialAccountId),
+                    })
                     .OrderBy(static n => n.Path, StringComparer.Ordinal)
                     .ThenBy(static n => n.NodeId, StringComparer.Ordinal)
             ],

@@ -336,11 +336,19 @@ public sealed partial class PostgresFundStructureService
     /// names no fund-structure node at all.
     /// </summary>
     /// <remarks>
-    /// Checked against the <b>unscoped</b> node set on purpose. Scoping it would answer "not a
-    /// node" for a portfolio another tenant holds, which is exactly the case that has to keep
-    /// refusing; the question here is only whether the value identifies a node at all, and the
-    /// visibility of the node it identifies is <see cref="IsAccountParentVisible"/>'s to decide.
+    /// <para>Checked against the <b>unscoped</b> portfolio set on purpose. Scoping it would answer
+    /// "not a node" for a portfolio another tenant holds, which is exactly the case that has to keep
+    /// refusing; the question here is only whether the value identifies a portfolio at all, and the
+    /// visibility of the one it identifies is <see cref="IsAccountParentVisible"/>'s to decide.</para>
+    ///
+    /// <para>Portfolios specifically, not <see cref="MutableSnapshot.AllNodeIds"/>. That set holds
+    /// every node kind and every linked account, so an external id colliding with an unrelated
+    /// fund, entity or account would be classified structural and then fail the investment-portfolio
+    /// lookup below — hiding an account over a collision that says nothing about ownership (Codex
+    /// review finding on PR #2871).</para>
     /// </remarks>
     private static Guid? StructuralPortfolioId(string? portfolioId, MutableSnapshot snap)
-        => TryParseGuid(portfolioId, out var id) && snap.AllNodeIds.Contains(id) ? id : null;
+        => TryParseGuid(portfolioId, out var id) && snap.AllInvestmentPortfolioIds.Contains(id)
+            ? id
+            : null;
 }

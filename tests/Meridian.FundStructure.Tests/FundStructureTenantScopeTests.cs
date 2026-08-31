@@ -520,6 +520,44 @@ public sealed class FundStructureTenantScopeTests
     }
 
     [Fact]
+    public async Task AnExternalPortfolioReferenceCollidingWithANonPortfolioNode_StaysExternal()
+    {
+        // Seventeenth Codex review round, narrowing the sixteenth's fix. Resolving PortfolioId
+        // against AllNodeIds asked "is this any node?", and that set holds every node kind and
+        // every linked account -- so an external brokerage id that happened to equal a fund, an
+        // entity or an account was classified structural and then failed the investment-portfolio
+        // lookup, hiding the account over a collision that says nothing about ownership. Only a
+        // portfolio can make a PortfolioId structural.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var accountService = new InMemoryFundAccountService();
+
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+        var alphaService = CreateService(
+            store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed, accountService);
+
+        // The external reference collides with a node the caller can see, and which is not a
+        // portfolio -- their own legal entity.
+        var alphaEntity = await alphaService.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            Guid.NewGuid(), LegalEntityTypeDto.LimitedPartner, "LP-ALPHA-EXT", "Alpha Limited Partner",
+            "US", "USD", EffectiveFrom, "tenant-scope-test"));
+
+        var account = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(), AccountTypeDto.Custody, "ACC-EXT-COLLIDE", "Custodian Account",
+            "USD", EffectiveFrom, "tenant-scope-test",
+            FundId: alpha.FundId,
+            PortfolioId: alphaEntity.EntityId.ToString("D", CultureInfo.InvariantCulture)));
+
+        var assignment = await alphaService.AssignNodeAsync(new AssignFundStructureNodeRequest(
+            Guid.NewGuid(), account.AccountId, LedgerGroupingRules.LedgerGroupAssignmentType,
+            "ALPHA.OPS:EXT-COLLIDE", EffectiveFrom, "tenant-scope-test"));
+
+        Assert.Equal(account.AccountId, assignment.NodeId);
+
+        var view = await alphaService.GetOrganizationStructureAsync(new OrganizationStructureQuery());
+        Assert.Contains(view.Accounts, a => a.AccountId == account.AccountId);
+    }
+
+    [Fact]
     public async Task FailClosed_RefusesAnAccountWhoseOnlyParentIsAForeignPortfolio()
     {
         // The other half of the same fix: counting the portfolio as a parent has to gate on it too,

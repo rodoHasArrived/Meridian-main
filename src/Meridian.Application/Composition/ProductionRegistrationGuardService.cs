@@ -27,21 +27,7 @@ public sealed class ProductionRegistrationGuardService : IHostedService
     {
         if (!ProductionServiceRegistrationPolicy.IsProductionComposition(_services))
         {
-            // W9-TRUTH-001: the supported local posture asserts durable money-path stores at
-            // startup unless the composition deliberately runs labeled — a pinned non-real
-            // provenance declaration is the only sanctioned way to keep fabricated in-memory
-            // stores, because the label then rides every workspace surface. An unlabeled local
-            // graph with in-memory durable bindings refuses startup naming the bindings.
-            if (ProductionServiceRegistrationPolicy.IsSupportedLocalComposition(_services))
-            {
-                var runsLabeled =
-                    ProductionServiceRegistrationPolicy.TryResolveForcedProvenance(_services, out var forced)
-                    && forced.IsNonReal();
-                ProductionServiceRegistrationPolicy.ValidateSupportedLocal(
-                    _services,
-                    requireDurableStores: !runsLabeled);
-            }
-
+            ValidateStatically(_services);
             return Task.CompletedTask;
         }
 
@@ -54,6 +40,45 @@ public sealed class ProductionRegistrationGuardService : IHostedService
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    /// <summary>
+    /// Everything ADR-019 can decide from the service descriptors alone, with nothing resolved.
+    /// </summary>
+    /// <remarks>
+    /// <para>Split out so <see cref="StaticProductionRegistrationGuardService"/> can run it in
+    /// front of a shell. <c>ProductionServiceRegistrationPolicy</c> resolves nothing — every check
+    /// it makes is a scan of <see cref="IServiceCollection"/> — so this half is cheap and answers
+    /// immediately, which is what <c>IStartupRefusalGuard</c> requires. Only
+    /// <see cref="CollectFactoryViolations"/> is expensive, and it stays behind the window where
+    /// the ninth review round put it.</para>
+    ///
+    /// <para>W9-TRUTH-001: the supported local posture asserts durable money-path stores at startup
+    /// unless the composition deliberately runs labeled — a pinned non-real provenance declaration
+    /// is the only sanctioned way to keep fabricated in-memory stores, because the label then rides
+    /// every workspace surface. An unlabeled local graph with in-memory durable bindings refuses
+    /// startup naming the bindings.</para>
+    /// </remarks>
+    internal static void ValidateStatically(IServiceCollection services)
+    {
+        if (ProductionServiceRegistrationPolicy.IsProductionComposition(services))
+        {
+            ProductionServiceRegistrationPolicy.ThrowIfViolations(
+                new SortedSet<string>(
+                    ProductionServiceRegistrationPolicy.CollectStaticViolations(services),
+                    StringComparer.Ordinal));
+            return;
+        }
+
+        if (ProductionServiceRegistrationPolicy.IsSupportedLocalComposition(services))
+        {
+            var runsLabeled =
+                ProductionServiceRegistrationPolicy.TryResolveForcedProvenance(services, out var forced)
+                && forced.IsNonReal();
+            ProductionServiceRegistrationPolicy.ValidateSupportedLocal(
+                services,
+                requireDurableStores: !runsLabeled);
+        }
+    }
 
     private IEnumerable<string> CollectFactoryViolations(CancellationToken cancellationToken)
     {
@@ -124,12 +149,55 @@ public static class ProductionRegistrationGuardServiceCollectionExtensions
         services.Insert(0, ServiceDescriptor.Singleton<IHostedService>(
             sp => sp.GetRequiredService<ProductionRegistrationGuardService>()));
 
-        // Deliberately NOT registered as an IStartupRefusalGuard. In a production composition this
-        // guard resolves every singleton registered by factory, to prove the graph is constructible
-        // -- eager validation that is the whole point of it, and far too much work to put in front
-        // of a shell. A blocked constructor there would leave an authenticated operator with no
-        // window at all, which is the failure the preflight exists to avoid rather than cause.
-        // It keeps running as an ordinary hosted service, first in the chain, as it always has.
+        // ProductionRegistrationGuardService itself is deliberately NOT an IStartupRefusalGuard. In
+        // a production composition it resolves every singleton registered by factory, to prove the
+        // graph is constructible -- eager validation that is far too much work to put in front of a
+        // shell, because a blocked constructor there would leave an authenticated operator with no
+        // window at all. It keeps running as an ordinary hosted service, first in the chain.
+        //
+        // Its STATIC half does go in front of the shell, as a separate guard. Postponing that half
+        // too meant a prohibited production graph stayed interactive -- MainWindow shown, workflows
+        // started -- until hosted-service startup got round to shutting it down, and the descriptor
+        // scan that would have refused it resolves nothing and answers immediately (Codex review
+        // finding on PR #2871).
+        // Appended, not inserted at the front: the ADR-019 hosted service has to stay the FIRST
+        // IHostedService, and inserting a descriptor of any type at index 0 displaces it. Order
+        // among refusal guards carries no meaning -- StartupRefusalPreflight runs all of them.
+        services.AddSingleton(_ => new StaticProductionRegistrationGuardService(services));
+        services.AddSingleton<IStartupRefusalGuard>(
+            sp => sp.GetRequiredService<StaticProductionRegistrationGuardService>());
+
         return services;
     }
+}
+
+/// <summary>
+/// The descriptor-only half of ADR-019's final-graph guard, run ahead of a shell.
+/// </summary>
+/// <remarks>
+/// <para>Registered as an <see cref="IStartupRefusalGuard"/> because it satisfies both halves of
+/// that contract: it asks a question about the composition rather than acting on it, so running it
+/// twice changes nothing, and it answers from <see cref="IServiceCollection"/> alone with nothing
+/// resolved, so it cannot block in front of a window.</para>
+///
+/// <para><see cref="ProductionRegistrationGuardService"/> still runs the same static checks behind
+/// the shell, alongside the factory validation this one deliberately omits. That overlap is the
+/// point: a host that does not pre-run the guards is covered by exactly the same rules.</para>
+/// </remarks>
+public sealed class StaticProductionRegistrationGuardService : IStartupRefusalGuard
+{
+    private readonly IServiceCollection _services;
+
+    public StaticProductionRegistrationGuardService(IServiceCollection services)
+    {
+        _services = services ?? throw new ArgumentNullException(nameof(services));
+    }
+
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        ProductionRegistrationGuardService.ValidateStatically(_services);
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }

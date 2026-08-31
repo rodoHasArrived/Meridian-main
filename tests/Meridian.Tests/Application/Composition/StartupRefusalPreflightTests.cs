@@ -100,25 +100,31 @@ public sealed class StartupRefusalPreflightTests
     }
 
     [Fact]
-    public void TheProductionRegistrationGuard_IsNotAPreflightGuard()
+    public void TheEagerFactoryValidation_IsNotAPreflightGuard()
     {
-        // Ninth Codex review round. Marking it in the eighth was a mistake: in a production
-        // composition it resolves every factory-registered singleton to prove the graph is
-        // constructible, so running it in the preflight would build the application graph with no
-        // window on screen and a blocked constructor would leave the operator nothing at all --
-        // exactly the failure the preflight was introduced to remove. A desktop reaches that branch
-        // whenever MERIDIAN_MODE, DOTNET_ENVIRONMENT or the other posture variables say production,
-        // so this is a real configuration rather than a hypothetical one.
+        // Ninth Codex review round. Marking ProductionRegistrationGuardService itself in the eighth
+        // was a mistake: in a production composition it resolves every factory-registered singleton
+        // to prove the graph is constructible, so running it in the preflight would build the
+        // application graph with no window on screen and a blocked constructor would leave the
+        // operator nothing at all -- exactly the failure the preflight was introduced to remove.
         //
-        // It still runs, first in the chain, as an ordinary hosted service behind the shell.
+        // The seventeenth round then split it: the descriptor-only half does go in front of the
+        // shell, because it resolves nothing. This pins both halves of that arrangement, which is
+        // why it asserts on the guard's TYPE rather than on the mere presence of a registration.
         var services = new ServiceCollection();
         services.AddProductionRegistrationGuard();
+        using var provider = services.BuildServiceProvider();
 
-        services.Should().NotContain(
-            descriptor => descriptor.ServiceType == typeof(IStartupRefusalGuard),
+        var preflightGuards = provider.GetServices<IStartupRefusalGuard>().ToArray();
+
+        preflightGuards.Should().ContainSingle()
+            .Which.Should().BeOfType<StaticProductionRegistrationGuardService>(
+                "only the descriptor scan is cheap enough to run in front of a shell");
+        preflightGuards.Should().NotContain(
+            guard => guard is ProductionRegistrationGuardService,
             "eager factory validation must not run in front of the shell");
-        services.Should().Contain(
-            descriptor => descriptor.ServiceType == typeof(IHostedService),
+        provider.GetServices<IHostedService>().Should().Contain(
+            hosted => hosted is ProductionRegistrationGuardService,
             "it still validates the final graph during host startup");
     }
 
@@ -180,6 +186,27 @@ public sealed class StartupRefusalPreflightTests
 
         var thrown = await preflight.Should().ThrowAsync<OperationCanceledException>();
         HostStartupEscalation.IsRefusal(thrown.Which).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task AGuardThatCannotBeConstructed_IsARefusalRatherThanAnOrdinaryFailure()
+    {
+        // Seventeenth Codex review round. The per-guard try wrapped StartAsync only, but resolving
+        // IStartupRefusalGuard runs the guards' constructors and their dependencies' -- which
+        // happens while GetServices is enumerated, outside that try. A broken constructor therefore
+        // escaped as an ordinary exception and the shell showed with no guard decision at all,
+        // which is the same hole the sixteenth round closed one layer in.
+        var services = new ServiceCollection();
+        services.AddSingleton<IStartupRefusalGuard>(
+            _ => throw new IOException("the guard's dependency could not be read"));
+        await using var provider = services.BuildServiceProvider();
+
+        var preflight = async () => await StartupRefusalPreflight.RunAsync(provider);
+
+        var thrown = await preflight.Should().ThrowAsync<StartupRefusedException>();
+        HostStartupEscalation.IsRefusal(thrown.Which).Should().BeTrue();
+        HostStartupEscalation.TryFindRefusal(thrown.Which)!.Message.Should().Contain(
+            "could not be constructed");
     }
 
     private sealed class UnanswerableGuard : IStartupRefusalGuard

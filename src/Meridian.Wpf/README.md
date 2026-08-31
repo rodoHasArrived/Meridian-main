@@ -86,7 +86,10 @@ implementations to be safe to run twice: a guard must ask a question about the c
 act on it. It also requires them to answer without unbounded work, since they run with nothing on
 screen -- which is why ADR-019's `ProductionRegistrationGuardService` is *not* marked, despite being
 a refusal guard: in a production posture it resolves every factory-registered singleton, and that
-belongs behind the window. Register a new guard against the interface as well as `IHostedService`
+belongs behind the window. Its *static* half is marked, as the separate
+`StaticProductionRegistrationGuardService`: `ProductionServiceRegistrationPolicy` resolves nothing,
+so the descriptor scan answers immediately, and postponing it too left a prohibited production graph
+interactive until hosted-service startup shut it down. Register a new guard against the interface as well as `IHostedService`
 -- mapping one singleton to both -- and the preflight picks it up without this shell being edited;
 if the guard cannot answer cheaply, leave it an ordinary hosted service instead.
 

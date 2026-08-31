@@ -319,12 +319,22 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
     }
 
     /// <summary>
-    /// Verifies the head against the final chained event before building on it.
+    /// Verifies <b>every</b> chained event, and the head against the last of them, before building
+    /// on it.
     /// </summary>
     /// <remarks>
-    /// Deliberately checks both directions. A head that claims events which are not there is a
+    /// <para>Every link, not the tail. Each entry hash binds to its predecessor's <i>entry hash</i>,
+    /// not to the predecessor's current payload, so a tail-only check cannot see an event edited or
+    /// deleted anywhere earlier: verification passed and the append added another valid-looking
+    /// successor over mutated history (Codex review finding on PR #2871). That also made this
+    /// method's own claim — that the file posture and this one carry identical tamper-evidence —
+    /// false, since the file posture runs <c>AccountingAuditChain.Verify</c> across the whole chain
+    /// on every append. It now costs one scan of the chained rows per append, which is the price of
+    /// the claim being true.</para>
+    ///
+    /// <para>Deliberately checks both directions. A head that claims events which are not there is a
     /// truncated tail; chained events past the head are a forked or rewound chain. Either read as
-    /// "fine" if only one direction were checked.
+    /// "fine" if only one direction were checked.</para>
     /// </remarks>
     private async Task VerifyChainHeadAsync(
         NpgsqlConnection connection,
@@ -347,6 +357,9 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 + $"is not version {AccountingAuditChainState.CurrentSchemaVersion.ToString(CultureInfo.InvariantCulture)}.");
         }
 
+        // Ascending, and every row: each link is checked against the predecessor this scan just
+        // verified, so a break is reported at the sequence it actually occurred rather than at the
+        // tail.
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText =
@@ -358,14 +371,76 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                    entry_hash
             from {Qualified("accounting_action_audit_events")}
             where chain_sequence is not null
-            order by chain_sequence desc
-            limit 1;
+            order by chain_sequence;
             """;
 
-        await using var reader = await command
-            .ExecuteReaderAsync(CommandBehavior.SingleRow, ct)
-            .ConfigureAwait(false);
-        var hasChainedEvent = await reader.ReadAsync(ct).ConfigureAwait(false);
+        long? sequence = null;
+        string? retainedHash = null;
+
+        await using (var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false))
+        {
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            {
+                var linkEvent = ReadAuditEvent(reader);
+                var linkSequence = reader.GetInt64(14);
+                var linkPayloadHash = reader.GetString(15);
+                var linkPreviousHash = reader.IsDBNull(16) ? null : reader.GetString(16);
+                var linkEntryHash = reader.GetString(17);
+
+                // Recomputed from the retained event, not taken from the stored payload_hash.
+                // Deriving the entry hash from a column the same edit could have rewritten checks
+                // only that the row is self-consistent: an actor, action or evidence list edited
+                // together with nothing else would still satisfy it.
+                if (!string.Equals(
+                        AccountingAuditChain.ComputePayloadHash(linkEvent),
+                        linkPayloadHash,
+                        StringComparison.Ordinal))
+                {
+                    throw ChainFailure(
+                        AccountingAuditChainStatus.EventMutated, head,
+                        $"The chained accounting audit event at sequence "
+                        + $"{linkSequence.ToString(CultureInfo.InvariantCulture)} no longer matches "
+                        + "its recorded digest.",
+                        linkSequence);
+                }
+
+                // Position and predecessor, from the row before it in this same scan. A gap, a
+                // repeat or a reorder is a break here even when every individual row digests
+                // correctly.
+                var expectedSequence = sequence is { } previousSequence
+                    ? previousSequence + 1
+                    : head.GenesisSequence;
+                if (linkSequence != expectedSequence)
+                {
+                    throw ChainFailure(
+                        AccountingAuditChainStatus.BrokenSequence, head,
+                        $"The chained accounting audit events jump from sequence "
+                        + $"{(sequence?.ToString(CultureInfo.InvariantCulture) ?? "the genesis boundary")} "
+                        + $"to {linkSequence.ToString(CultureInfo.InvariantCulture)}.",
+                        linkSequence);
+                }
+
+                if (!string.Equals(linkPreviousHash, retainedHash, StringComparison.Ordinal)
+                    || !string.Equals(
+                        linkEntryHash,
+                        AccountingAuditChain.ComputeEntryHash(
+                            linkSequence, linkPreviousHash, linkPayloadHash),
+                        StringComparison.Ordinal))
+                {
+                    throw ChainFailure(
+                        AccountingAuditChainStatus.BrokenLink, head,
+                        $"The chained accounting audit event at sequence "
+                        + $"{linkSequence.ToString(CultureInfo.InvariantCulture)} does not bind to "
+                        + "its predecessor.",
+                        linkSequence);
+                }
+
+                sequence = linkSequence;
+                retainedHash = linkEntryHash;
+            }
+        }
+
+        var hasChainedEvent = sequence is not null;
 
         if (head.NextSequence == head.GenesisSequence)
         {
@@ -393,18 +468,15 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 "The accounting audit chain head points past every retained chained event.");
         }
 
-        var finalEvent = ReadAuditEvent(reader);
-        var sequence = reader.GetInt64(14);
-        var payloadHash = reader.GetString(15);
-        var previousHash = reader.IsDBNull(16) ? null : reader.GetString(16);
-        var retainedHash = reader.GetString(17);
-
+        // The chain itself verified above, link by link. What is left is the head retained outside
+        // it, which is the only thing that can see a rollback: a chain that is internally perfect
+        // but shorter than the head recorded is a truncated tail, not a valid chain.
         if (sequence != head.NextSequence - 1)
         {
             throw ChainFailure(
                 AccountingAuditChainStatus.AnchorMismatch, head,
                 $"The chain head expects sequence {(head.NextSequence - 1).ToString(CultureInfo.InvariantCulture)} "
-                + $"but the final retained event is {sequence.ToString(CultureInfo.InvariantCulture)}.");
+                + $"but the final retained event is {sequence?.ToString(CultureInfo.InvariantCulture)}.");
         }
 
         if (head.LastHash is null)
@@ -414,29 +486,11 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 "A non-empty accounting audit chain is missing its predecessor hash.");
         }
 
-        // Recomputed from the retained event, not taken from the stored payload_hash. Deriving the
-        // entry hash from a column the same edit could have rewritten checks only that the row is
-        // self-consistent: an actor, action or evidence list edited together with nothing else would
-        // still satisfy it, and this append would then extend tampered history while reporting that
-        // it had verified the chain.
-        if (!string.Equals(
-                AccountingAuditChain.ComputePayloadHash(finalEvent),
-                payloadHash,
-                StringComparison.Ordinal))
+        if (!string.Equals(retainedHash, head.LastHash, StringComparison.Ordinal))
         {
             throw ChainFailure(
-                AccountingAuditChainStatus.EventMutated, head,
-                $"The final chained accounting audit event at sequence "
-                + $"{sequence.ToString(CultureInfo.InvariantCulture)} no longer matches its recorded digest.");
-        }
-
-        var computed = AccountingAuditChain.ComputeEntryHash(sequence, previousHash, payloadHash);
-        if (!string.Equals(retainedHash, head.LastHash, StringComparison.Ordinal)
-            || !string.Equals(retainedHash, computed, StringComparison.Ordinal))
-        {
-            throw ChainFailure(
-                AccountingAuditChainStatus.BrokenLink, head,
-                "The accounting audit chain head or its final event failed hash verification.");
+                AccountingAuditChainStatus.AnchorMismatch, head,
+                "The accounting audit chain head does not name the final retained event.");
         }
     }
 
@@ -475,16 +529,22 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         }
     }
 
+    /// <param name="sequence">
+    /// The sequence the break was found at. Defaults to the head's next slot, which is right for a
+    /// failure about the head itself; a per-link failure passes the link's own sequence so an
+    /// operator is pointed at the row that broke rather than at the end of the chain.
+    /// </param>
     private static AccountingAuditChainIntegrityException ChainFailure(
         AccountingAuditChainStatus status,
         AccountingAuditChainHead head,
-        string detail)
+        string detail,
+        long? sequence = null)
         => new(new AccountingAuditChainVerification(
             status,
             LinksChecked: (int)Math.Min(int.MaxValue, Math.Max(0, head.NextSequence - head.GenesisSequence)),
             PreChainEventCount: (int)Math.Min(int.MaxValue, head.PreChainEventCount),
             detail,
-            head.NextSequence));
+            sequence ?? head.NextSequence));
 
     public async Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAsync(
         string? fundProfileId = null,
