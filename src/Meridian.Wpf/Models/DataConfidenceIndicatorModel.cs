@@ -1,5 +1,5 @@
 using Meridian.Contracts.Workstation;
-using Meridian.Ui.Services.Services;
+using Meridian.Ui.Services;
 
 namespace Meridian.Wpf.Models;
 

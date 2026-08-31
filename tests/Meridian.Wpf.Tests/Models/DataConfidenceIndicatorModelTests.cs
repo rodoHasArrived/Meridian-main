@@ -1,6 +1,6 @@
 #if WINDOWS
 using Meridian.Contracts.Workstation;
-using Meridian.Ui.Services.Services;
+using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Tests.Models;
