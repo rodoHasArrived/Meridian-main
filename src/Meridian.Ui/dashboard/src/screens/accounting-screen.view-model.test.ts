@@ -165,7 +165,13 @@ const corporateActions: CorporateAction[] = [
     acquirerSecurityId: null,
     exchangeRatio: null,
     subscriptionPricePerShare: null,
-    rightsPerShare: null
+    rightsPerShare: null,
+    recordDate: null,
+    lifecycleState: null,
+    supersedesCorpActId: null,
+    redemptionPricePercentOfPar: null,
+    payload: null,
+    payloadSchemaVersion: 1
   },
   {
     corpActId: "ca-split-1",
@@ -181,7 +187,13 @@ const corporateActions: CorporateAction[] = [
     acquirerSecurityId: null,
     exchangeRatio: null,
     subscriptionPricePerShare: null,
-    rightsPerShare: null
+    rightsPerShare: null,
+    recordDate: null,
+    lifecycleState: null,
+    supersedesCorpActId: null,
+    redemptionPricePercentOfPar: null,
+    payload: null,
+    payloadSchemaVersion: 1
   }
 ];
 
@@ -1983,6 +1995,30 @@ describe("accounting-screen view model", () => {
     expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
       { label: "Amount or ratio", value: "4:1 split", tone: "default" },
       { label: "Pay date", value: "—", tone: "warning" }
+    ]));
+  });
+
+  it("retains canonical lifecycle, amendment, redemption, and typed-payload fields in corporate-action detail", () => {
+    const amended = {
+      ...corporateActions[0],
+      recordDate: "2026-05-02T00:00:00Z",
+      lifecycleState: "Confirmed",
+      supersedesCorpActId: "ca-div-original",
+      redemptionPricePercentOfPar: 101.25,
+      payload: { treatmentHint: "source-assertion", optionCode: "CASH" },
+      payloadSchemaVersion: 2
+    };
+
+    const state = buildCorporateActionsViewState("sec-1", [amended], amended.corpActId, false, null);
+
+    expect(state.selectedDetail?.statusLabel).toBe("Confirmed");
+    expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Record date", value: "May 2, 2026", tone: "default" },
+      { label: "Lifecycle", value: "Confirmed", tone: "default" },
+      { label: "Supersedes", value: "ca-div-original" },
+      { label: "Redemption price (% par)", value: "101.25" },
+      { label: "Payload schema", value: "2", tone: "default" },
+      { label: "Typed payload", value: "{\"treatmentHint\":\"source-assertion\",\"optionCode\":\"CASH\"}", tone: "default" }
     ]));
   });
 

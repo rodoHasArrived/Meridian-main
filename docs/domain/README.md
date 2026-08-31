@@ -9,6 +9,7 @@ This directory contains Meridian's domain dictionary for AI-assisted and human d
 Start with:
 
 - [Brokerage Account Snapshot](brokerage-account-snapshot.md)
+- [Corporate Action Case](corporate-action-case.md)
 - [Fund Event](fund-event.md)
 - [Operational Evidence Graph](operational-evidence-graph.md)
 - [Security](security.md)

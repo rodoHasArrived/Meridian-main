@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
@@ -48,6 +49,9 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
     }
 
     public string ProviderId => "alphavantage";
+
+    public CorporateActionProviderReleaseStatusDto ReleaseStatus =>
+        CorporateActionProviderReleaseStatusDto.ReviewOnly;
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<CorporateActionCommand>> FetchAsync(

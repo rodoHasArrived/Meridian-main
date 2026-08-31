@@ -262,13 +262,22 @@
       "sha256": "ea6d018f72ada53278482e5176394c82cdaa3ff5d565a33eabbb447decdddf76"
     },
     {
-      "filename": "030_security_master_normalized_primary_identifier_uniqueness.sql",
+      "filename": "030_security_master_corporate_action_operations.sql",
       "immutable": true,
       "migration_set_id": "security-master",
       "ordinal": 30,
-      "path": "src/Meridian.Storage/SecurityMaster/Migrations/030_security_master_normalized_primary_identifier_uniqueness.sql",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/030_security_master_corporate_action_operations.sql",
       "schema": "security_master",
-      "sha256": "b15293c20f7f6f045a58fe901ab8f4e0aa24ae6d8badd349b111f77120568de5"
+      "sha256": "a9a4a5027f9e1a375998d9c61ceaacd8d2d2bdb15563136a5c11f2ab74a099b8"
+    },
+    {
+      "filename": "031_security_master_normalized_primary_identifier_uniqueness.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 31,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/031_security_master_normalized_primary_identifier_uniqueness.sql",
+      "schema": "security_master",
+      "sha256": "dcd03214df033ea1dc51c13238bf582c52768a0e0f0ef78ae57ce4029265b858"
     },
     {
       "filename": "001_direct_lending.sql",
@@ -694,6 +703,15 @@
       "sha256": "a537f4fe37dd46331761c2fbdbaec22e7ae4be972a46ebbd634d3ae3eee9dbdc"
     },
     {
+      "filename": "V_ledger_032__accounting_audit_chain.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_032__accounting_audit_chain.sql",
+      "schema": "ledger",
+      "sha256": "7a0163183148291a1e056d35c0c47eb755e9e78f09e1527c4a3ee463dd36e881"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -719,6 +737,15 @@
       "path": "src/Meridian.Storage/FundStructure/Migrations/003_linked_accounts.sql",
       "schema": "fund_structure",
       "sha256": "4bac18f0162775127d8aed914e96bf6b44e9ab9bc9312d1b006dcaa859859b98"
+    },
+    {
+      "filename": "004_fund_structure_tenant_columns.sql",
+      "immutable": true,
+      "migration_set_id": "fund-structure",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundStructure/Migrations/004_fund_structure_tenant_columns.sql",
+      "schema": "fund_structure",
+      "sha256": "71b59aca8301298b74d42a0eb0cbd12e7def512f444d5752e6156e4400ec042f"
     },
     {
       "filename": "001_fund_accounts.sql",
@@ -920,7 +947,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "2a05184e025021720886e4adb2ca5718cdc88461b52185ff27d228f5042cc04d",
+  "fingerprint": "9cb22f12d29a8b17894ec99ac275fff89a953d2be24ff0e6d49015bfe4782622",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1158,7 +1185,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 102,
+    "files": 105,
     "migration_sets": 10,
     "waivers": 7,
     "warnings": 0
@@ -1201,7 +1228,7 @@
     },
     {
       "category": "destructive_changes",
-      "path": "src/Meridian.Storage/SecurityMaster/Migrations/030_security_master_normalized_primary_identifier_uniqueness.sql",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/031_security_master_normalized_primary_identifier_uniqueness.sql",
       "reason": "The migration drops only the superseded raw-value unique index and normalized non-unique index after its deterministic collision preflight succeeds, then immediately creates the normalized unique index. No table data or identifier history is removed.",
       "review_after": "2027-02-28",
       "rule_id": "migration-drop-object"

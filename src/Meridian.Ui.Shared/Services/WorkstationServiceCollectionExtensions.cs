@@ -139,6 +139,18 @@ public static class WorkstationServiceCollectionExtensions
                 Environment.GetEnvironmentVariable("MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED"),
                 "true",
                 StringComparison.OrdinalIgnoreCase)));
+        // W9-GOV-008 criterion 2: read-side posture, the counterpart of the write gate above. Kept on
+        // the deployment-boundary default because fail-closed over a graph whose tenant attribution
+        // has not run hides the retained structure from every caller rather than closing a leak -- a
+        // deployment attributes first (FundStructureTenantAttribution, migration 004), reviews what
+        // the attribution quarantined, and then sets MERIDIAN_TENANT_SCOPE_ENFORCEMENT=fail-closed.
+        services.TryAddSingleton(TenantScopeEnforcementOptions.FromEnvironmentValue(
+            Environment.GetEnvironmentVariable(TenantScopeEnforcementOptions.EnvironmentVariable),
+            TenantScopeEnforcementOptions.DeploymentBoundary));
+        // W9-GOV-008 criterion 2: the fund-structure implementation with no tenant partition must not
+        // serve a deployment configured for more than one company. Checked once at startup rather
+        // than per call; see InMemoryFundStructureTenancyGuard for why that is the safer shape.
+        services.AddHostedService<InMemoryFundStructureTenancyGuard>();
         services.TryAddSingleton<IRolePermissionProfileStore, FileRolePermissionProfileStore>();
         services.TryAddSingleton<IUserAccountStore, FileUserAccountStore>();
         services.TryAddSingleton<IAccessRoleAssignmentStore, UserAccountAccessRoleAssignmentStore>();
@@ -860,6 +872,13 @@ public static class WorkstationServiceCollectionExtensions
             new FileAccountingConfigurationStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "accounting-configuration.json")));
         services.TryAddSingleton<IAccountingConfigurationStore>(sp => sp.GetRequiredService<FileAccountingConfigurationStore>());
+        // W9-GOV-008 criterion 3: the configuration store and the audit store are separate artifacts
+        // with no transaction to share, so the mutation and its audit append are made recoverable as a
+        // pair through a marker declared before the mutation and cleared after the append.
+        services.TryAddSingleton<IAccountingAuditPendingMarkerStore>(sp =>
+            new FileAccountingAuditPendingMarkerStore(
+                FileAccountingAuditPendingMarkerStore.MarkerPathFor(
+                    Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "accounting-configuration.json"))));
         services.TryAddSingleton<IAccountingActionAuditStore>(sp =>
             sp.GetRequiredService<IAccountingConfigurationStore>() is IAccountingActionAuditStore auditStore
                 ? auditStore
