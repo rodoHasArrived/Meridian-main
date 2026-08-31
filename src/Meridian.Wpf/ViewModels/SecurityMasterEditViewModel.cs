@@ -22,6 +22,7 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
     private readonly WpfServices.NotificationService _notificationService;
     private readonly ISecurityMasterService _service;
     private readonly WpfServices.IDesktopActorSource? _actorSource;
+    private readonly WpfServices.IDesktopMutationAuthorization? _mutationAuthorization;
     private JsonElement _assetSpecificTerms;
 
     private static readonly IReadOnlyList<string> AssetClassesList = SecurityAssetClassCatalog.AssetClasses;
@@ -92,15 +93,38 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
         WpfServices.LoggingService loggingService,
         WpfServices.NotificationService notificationService,
         ISecurityMasterService service,
-        WpfServices.IDesktopActorSource? actorSource = null)
+        WpfServices.IDesktopActorSource? actorSource = null,
+        WpfServices.IDesktopMutationAuthorization? mutationAuthorization = null)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
         _service = service;
         _actorSource = actorSource;
+        _mutationAuthorization = mutationAuthorization;
         _assetSpecificTerms = CreateAssetSpecificTermsTemplate("Equity");
 
         CancelCommand = new RelayCommand(() => CancelRequested?.Invoke());
+    }
+
+    /// <summary>
+    /// Authorization gate for this dialog's create and amend paths, which reach
+    /// <see cref="ISecurityMasterService"/> in-process with no endpoint filter in between. Every
+    /// HTTP route that mutates the golden record requires
+    /// <see cref="Meridian.Identity.Auth.UserPermission.ModifySecurityMaster"/>; the save is held to
+    /// the same grant, and fails closed when composed without an authorization seam. Checked before
+    /// the actor is resolved — attribution and authorization are separate properties, and recording
+    /// a named operator on a write the operator had no right to make would be worse than refusing.
+    /// </summary>
+    private bool IsMutationGranted()
+        => _mutationAuthorization is not null &&
+           _mutationAuthorization.IsGranted(Meridian.Identity.Auth.UserPermission.ModifySecurityMaster);
+
+    private void ReportUnauthorizedWrite()
+    {
+        const string message = "This operator is not permitted to modify the Security Master.";
+        StatusText = message;
+        _notificationService.ShowNotification("Security Master", message, NotificationType.Error);
+        _loggingService.LogWarning("Security Master save refused: this desktop session does not hold the ModifySecurityMaster permission.");
     }
 
     /// <summary>
@@ -124,9 +148,10 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
         WpfServices.LoggingService loggingService,
         WpfServices.NotificationService notificationService,
         ISecurityMasterService service,
-        WpfServices.IDesktopActorSource? actorSource = null)
+        WpfServices.IDesktopActorSource? actorSource = null,
+        WpfServices.IDesktopMutationAuthorization? mutationAuthorization = null)
     {
-        return new SecurityMasterEditViewModel(loggingService, notificationService, service, actorSource)
+        return new SecurityMasterEditViewModel(loggingService, notificationService, service, actorSource, mutationAuthorization)
         {
             IsEditMode = false,
             Currency = "USD",
@@ -165,6 +190,13 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
     private async Task SaveAsync(CancellationToken ct)
     {
         ClearValidationErrors();
+
+        if (!IsMutationGranted())
+        {
+            ReportUnauthorizedWrite();
+            return;
+        }
+
         IsBusy = true;
         StatusText = "Saving…";
 

@@ -118,10 +118,21 @@ public abstract class JsonFileSnapshotStore<TSnapshot> where TSnapshot : class
     /// </param>
     /// <param name="beforeWrite">Runs after the replacement is produced, before it is persisted.</param>
     /// <param name="afterWrite">Runs once the replacement is durably persisted.</param>
+    /// <param name="shouldWrite">
+    /// Whether this cycle changed anything and must persist. Returning false skips the write and
+    /// both hooks, leaving the retained file exactly as found.
+    ///
+    /// <para>Not a micro-optimization. This store replaces the whole document on every write, and the
+    /// gate above is in-process only, so re-writing an unchanged snapshot is a chance to lose data
+    /// rather than a no-op: another process that appended between this cycle's read and its write
+    /// would have its record replaced by this cycle's stale copy. A cycle with nothing to say must
+    /// say nothing.</para>
+    /// </param>
     protected async Task<TResult> UpdateSnapshotAsync<TResult>(
         Func<TSnapshot, CancellationToken, Task<(TSnapshot Snapshot, TResult Result)>> update,
         Func<TSnapshot, TResult, CancellationToken, Task>? beforeWrite,
         Func<TSnapshot, TResult, CancellationToken, Task>? afterWrite,
+        Func<TResult, bool>? shouldWrite,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(update);
@@ -131,6 +142,11 @@ public abstract class JsonFileSnapshotStore<TSnapshot> where TSnapshot : class
         {
             var current = await LoadSnapshotAsync(ct).ConfigureAwait(false);
             var (replacement, result) = await update(current, ct).ConfigureAwait(false);
+
+            if (shouldWrite is not null && !shouldWrite(result))
+            {
+                return result;
+            }
 
             if (beforeWrite is not null)
             {

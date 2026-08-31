@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Contracts.Operations;
+using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -24,6 +25,73 @@ public sealed class ProductionRegistrationGuardServiceTests
 
         (await act.Should().ThrowAsync<InvalidOperationException>())
             .WithMessage("*rejected non-production DI registrations*InMemoryTestStore*");
+    }
+
+    [Fact]
+    public async Task Preflight_ProductionPosture_RefusesAStaticallyProhibitedBindingBeforeAnyShell()
+    {
+        // Seventeenth Codex review round. Keeping the whole guard behind the shell meant a
+        // prohibited production graph stayed interactive -- MainWindow shown, its loaded workflow
+        // started -- until hosted-service startup got round to refusing it. The descriptor scan
+        // that decides this resolves nothing, so it belongs in front of the window.
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        services.AddProductionRegistrationGuard();
+        services.AddSingleton<ITestStore, InMemoryTestStore>();
+        await using var provider = services.BuildServiceProvider();
+
+        var preflight = async () => await StartupRefusalPreflight.RunAsync(provider);
+
+        (await preflight.Should().ThrowAsync<InvalidOperationException>())
+            .WithMessage("*rejected non-production DI registrations*InMemoryTestStore*");
+    }
+
+    [Fact]
+    public async Task Preflight_DoesNotResolveFactorySingletons()
+    {
+        // The other half of the same split, and the reason the ninth round kept this guard out of
+        // the preflight in the first place: a factory that cannot construct must NOT stop the shell
+        // appearing. If the preflight ever started resolving singletons, this composition would
+        // refuse here instead of behind the window, and an operator would be left with nothing.
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        services.AddProductionRegistrationGuard();
+        services.AddSingleton<ITestStore>(_ => throw new InvalidOperationException("cannot construct"));
+        await using var provider = services.BuildServiceProvider();
+
+        var preflight = async () => await StartupRefusalPreflight.RunAsync(provider);
+
+        await preflight.Should().NotThrowAsync(
+            "eager factory validation belongs behind the shell, where the ninth round put it");
+
+        // ...and it is still caught there.
+        var behindTheShell = async () => await provider
+            .GetRequiredService<ProductionRegistrationGuardService>()
+            .StartAsync(CancellationToken.None);
+        await behindTheShell.Should().ThrowAsync<StartupRefusedException>();
+    }
+
+    [Fact]
+    public async Task StartAsync_UnconstructibleSingleton_RaisesARefusalAHostCannotDegradePast()
+    {
+        // Codex review finding on PR #2871. The three refusal sites in
+        // ProductionServiceRegistrationPolicy took StartupRefusedException, but this one -- raised
+        // when final-graph validation cannot construct a registered singleton -- stayed a bare
+        // InvalidOperationException. HostStartupEscalation.IsRefusal therefore did not match it, so
+        // the WPF shell's tolerant catch went on swallowing exactly the bypass that change closes.
+        using var host = BuildHost(services =>
+        {
+            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+            services.AddProductionRegistrationGuard();
+            services.AddSingleton<ITestStore>(_ => throw new InvalidOperationException("cannot construct"));
+        });
+
+        Func<Task> act = () => host.StartAsync();
+
+        var refusal = await act.Should().ThrowAsync<StartupRefusedException>();
+        refusal.Which.Message.Should().Contain("could not construct singleton service");
+        HostStartupEscalation.IsRefusal(refusal.Which).Should().BeTrue(
+            "a host that escalates refusals must be able to tell this apart from a worker failing");
     }
 
     [Fact]
