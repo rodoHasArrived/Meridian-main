@@ -348,18 +348,19 @@ public static class RiskEndpoints
                     }
                 }
 
-                // The retained actor is the original submitter, not the approver releasing
-                // this particular escalation. Preserve it so any later rule in the same
-                // validation chain enforces segregation of duties against that submitter.
+                // "actor" names the operator performing this release: it feeds ReleasedBy
+                // and the queue's consumption-time segregation check, so it must be the
+                // approver, never the submitter. The original submitter travels under
+                // SubmitterMetadataKey instead, so a rule that escalates again during this
+                // release re-parks under the submitter's identity — otherwise the submitter
+                // could approve a later stage of their own order while the independent
+                // approver is refused as a false self-release.
                 metadata[RiskEscalationQueueService.ApprovalMetadataKey] =
                     RiskEscalationQueueService.JoinTokens(carriedTokens);
+                metadata["actor"] = actor;
                 if (!string.IsNullOrWhiteSpace(approved.Actor))
                 {
-                    metadata["actor"] = approved.Actor;
-                }
-                else
-                {
-                    metadata.Remove("actor");
+                    metadata[RiskEscalationQueueService.SubmitterMetadataKey] = approved.Actor;
                 }
                 metadata["correlationId"] = $"risk-escalation-{approved.EscalationId}";
 

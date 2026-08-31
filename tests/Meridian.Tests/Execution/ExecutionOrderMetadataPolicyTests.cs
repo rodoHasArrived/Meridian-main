@@ -27,7 +27,8 @@ public sealed class ExecutionOrderMetadataPolicyTests
         "liveReadinessEvidenceReference",
         "live_readiness_evidence_reference",
         "livePromotionAuditReference",
-        "live_promotion_audit_reference");
+        "live_promotion_audit_reference",
+        "riskSubmitter");
 
     [Fact]
     public void ContainsClientRejectedServerOwnedKey_NullMetadata_ReturnsFalse()

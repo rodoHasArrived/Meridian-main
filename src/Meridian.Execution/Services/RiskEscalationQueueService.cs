@@ -105,6 +105,18 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
     /// </summary>
     public const string EvaluationOnlyMetadataKey = "riskEvaluationOnly";
 
+    /// <summary>
+    /// Order-metadata key carrying the original submitting operator across a chained
+    /// release. The <c>actor</c> key on a release names the operator performing the
+    /// release — it feeds <see cref="RiskEscalationEntry.ReleasedBy"/> and the
+    /// consumption-time segregation check — so it cannot also carry the submitter.
+    /// Without this key, a re-park during a chained release would record the previous
+    /// stage's approver as the escalation's actor: the original submitter could then
+    /// approve a later stage of their own order, while the independent approver would
+    /// be refused as a false self-release.
+    /// </summary>
+    public const string SubmitterMetadataKey = "riskSubmitter";
+
     private readonly ConcurrentDictionary<string, RiskEscalationEntry> _entries = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentQueue<string> _entryOrder = new();
     private readonly ExecutionAuditTrailService? _auditTrail;
@@ -146,7 +158,10 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
             Request: FreezeRequest(request),
             Reason: string.IsNullOrWhiteSpace(reason) ? "Escalated for governed approval." : reason,
             RuleName: ruleName,
-            Actor: actor,
+            // A chained release re-parks with metadata["actor"] naming the releasing
+            // approver; the retained submitter, when stamped, is the identity the
+            // segregation-of-duties checks must bind to.
+            Actor: ResolveSubmitter(request, actor),
             RunId: runId,
             CorrelationId: correlationId,
             ParkedAt: DateTimeOffset.UtcNow,
@@ -617,11 +632,28 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
     /// <summary>
     /// Metadata keys the release path itself stamps (or rewrites) on a resubmission and
     /// which therefore cannot participate in the fingerprint: the approval token, the
-    /// approving actor, and the release correlation id. Every other metadata key must
-    /// match the parked order exactly.
+    /// retained submitter, the approving actor, and the release correlation id. Every
+    /// other metadata key must match the parked order exactly.
     /// </summary>
     private static readonly HashSet<string> ReleaseMetadataKeys =
-        new(StringComparer.OrdinalIgnoreCase) { ApprovalMetadataKey, "actor", "correlationId" };
+        new(StringComparer.OrdinalIgnoreCase) { ApprovalMetadataKey, SubmitterMetadataKey, "actor", "correlationId" };
+
+    /// <summary>
+    /// The escalation's bound submitter: the retained <see cref="SubmitterMetadataKey"/>
+    /// when a chained release stamped one, otherwise the caller-supplied actor (on a
+    /// first park that is the submitting operator read from the order's own metadata).
+    /// </summary>
+    private static string? ResolveSubmitter(OrderRequest request, string? actor)
+    {
+        if (request.Metadata is not null &&
+            request.Metadata.TryGetValue(SubmitterMetadataKey, out var submitter) &&
+            !string.IsNullOrWhiteSpace(submitter))
+        {
+            return submitter;
+        }
+
+        return actor;
+    }
 
     /// <summary>
     /// Compares every routing- and payoff-relevant field of the parked order against the

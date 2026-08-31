@@ -23,7 +23,12 @@ public static class ExecutionOrderMetadataPolicy
         "liveReadinessEvidenceReference",
         "live_readiness_evidence_reference",
         "livePromotionAuditReference",
-        "live_promotion_audit_reference"
+        "live_promotion_audit_reference",
+        // RiskEscalationQueueService.SubmitterMetadataKey: only the internal chained-release
+        // path may stamp the retained submitter. A caller-supplied value would bind an
+        // escalation's segregation-of-duties identity to someone other than the real
+        // submitter, letting the submitter approve their own escalation.
+        "riskSubmitter"
     ];
 
     private static readonly string[] ServerOwnedRoutingKeys =
