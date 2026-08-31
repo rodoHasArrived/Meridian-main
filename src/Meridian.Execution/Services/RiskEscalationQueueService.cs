@@ -675,14 +675,26 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
     }
 
     /// <summary>
-    /// Recovers the chain's original submitter for a request carrying approval tokens:
-    /// the first linked token names the original park, whose actor is the true
-    /// submitter. The link is trusted only when that entry is a chain root and its
-    /// order matches this request's non-release fingerprint — clients could attach
-    /// arbitrary token values to an order, so an unverified reference must never
-    /// rebind identity. Returns true when the chain is verified; <paramref name="submitter"/>
-    /// may still be blank for a chain whose original park was anonymous.
+    /// Recovers the chain's original submitter for a request carrying approval tokens.
+    /// The link is trusted only when the referenced entry's order matches this request's
+    /// non-release fingerprint — clients could attach arbitrary token values to an
+    /// order, so an unverified reference must never rebind identity. A chain root's
+    /// actor is the submitter by construction; a linked entry that is itself chained
+    /// (a direct resubmission at a later stage carries only that stage's token) is
+    /// trusted only when it carries the invariant the trusted path always writes —
+    /// its actor corroborated by its stamped <see cref="SubmitterMetadataKey"/> — so
+    /// recovery works at any chain depth while an unrepaired or denied legacy link
+    /// cannot lend its mis-bound actor. Returns true when the chain is verified;
+    /// <paramref name="submitter"/> may still be blank for a chain whose original
+    /// park was anonymous.
     /// </summary>
+    /// <summary>
+    /// Upper bound on the upstream walk in <see cref="TryRecoverChainSubmitter"/>. Genuine
+    /// chains are short (one hop per escalating rule stage) and reference chronology makes
+    /// cycles impossible through the API, but a snapshot is still external input.
+    /// </summary>
+    private const int MaxChainRecoveryDepth = 16;
+
     private bool TryRecoverChainSubmitter(OrderRequest request, out string? submitter)
     {
         submitter = null;
@@ -692,15 +704,42 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
             return false;
         }
 
-        if (!_entries.TryGetValue(linkedApprovals[0], out var origin) ||
-            ReadLinkedApprovalIds(origin.Request).Count != 0 ||
-            !FingerprintMatches(origin.Request, request))
+        // A direct resubmission at a later stage carries only that stage's token, so the
+        // first link may be an intermediate chained entry rather than the root. Walk
+        // upstream — every hop fingerprint-verified against this order — until a chain
+        // root (its actor is the submitter by construction) or an entry carrying the
+        // corroborated-stamp invariant the trusted path always writes. An unverifiable
+        // hop fails the whole recovery: a mis-bound legacy actor must never be adopted.
+        var nextId = linkedApprovals[0];
+        for (var depth = 0; depth < MaxChainRecoveryDepth; depth++)
         {
-            return false;
+            if (!_entries.TryGetValue(nextId, out var linked) ||
+                !FingerprintMatches(linked.Request, request))
+            {
+                return false;
+            }
+
+            var linkedTokens = ReadLinkedApprovalIds(linked.Request);
+            if (linkedTokens.Count == 0)
+            {
+                submitter = linked.Actor;
+                return true;
+            }
+
+            if (linked.Request.Metadata is not null &&
+                linked.Request.Metadata.TryGetValue(SubmitterMetadataKey, out var linkedSubmitter) &&
+                !string.IsNullOrWhiteSpace(linkedSubmitter) &&
+                !string.IsNullOrWhiteSpace(linked.Actor) &&
+                string.Equals(linkedSubmitter.Trim(), linked.Actor.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                submitter = linked.Actor;
+                return true;
+            }
+
+            nextId = linkedTokens[0];
         }
 
-        submitter = origin.Actor;
-        return true;
+        return false;
     }
 
     /// <summary>
@@ -950,9 +989,11 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
     {
         var repaired = 0;
         var denied = 0;
-        foreach (var escalationId in _entries.Keys.ToArray())
+        // Park order matters: a chain's upstream entries must be repaired (and stamped)
+        // before a downstream entry that links only to an intermediate stage reads them.
+        foreach (var entry in _entries.Values.OrderBy(static loaded => loaded.ParkedAt).ToArray())
         {
-            var entry = _entries[escalationId];
+            var escalationId = entry.EscalationId;
             if (entry.Status is not (RiskEscalationStatus.PendingApproval or RiskEscalationStatus.Approved))
             {
                 continue;

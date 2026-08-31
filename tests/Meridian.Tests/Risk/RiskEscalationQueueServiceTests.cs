@@ -640,7 +640,8 @@ public sealed class RiskEscalationQueueServiceTests
         string escalationId,
         OrderRequest request,
         string? actor,
-        RiskEscalationStatus status = RiskEscalationStatus.PendingApproval) => new(
+        RiskEscalationStatus status = RiskEscalationStatus.PendingApproval,
+        double ageMinutes = 5) => new(
         escalationId,
         request,
         "escalated",
@@ -648,7 +649,7 @@ public sealed class RiskEscalationQueueServiceTests
         Actor: actor,
         RunId: null,
         CorrelationId: null,
-        ParkedAt: DateTimeOffset.UtcNow.AddMinutes(-5),
+        ParkedAt: DateTimeOffset.UtcNow.AddMinutes(-ageMinutes),
         Status: status);
 
     private static OrderRequest LegacyChainedRequest(string originEscalationId) => CreateOrder() with
@@ -768,6 +769,25 @@ public sealed class RiskEscalationQueueServiceTests
     }
 
     [Fact]
+    public void Restart_RebindsLegacyChainsLinkedThroughIntermediateStages()
+    {
+        var options = CreateOptions();
+        // A direct resubmission at stage two carried only that stage's token, so the
+        // final entry links to an intermediate chained entry rather than the root.
+        WriteSnapshot(
+            options,
+            LegacyEntry("origin-1", CreateOrder(), actor: "trader-alice", RiskEscalationStatus.Released, ageMinutes: 30),
+            LegacyEntry("chained-1", LegacyChainedRequest("origin-1"), actor: "risk-officer-bob", RiskEscalationStatus.Released, ageMinutes: 20),
+            LegacyEntry("chained-2", LegacyChainedRequest("chained-1"), actor: "risk-officer-carol", ageMinutes: 10));
+
+        var restarted = CreateQueue(options);
+
+        // Upstream repairs run first (park order), so the intermediate link is already
+        // rebound and stamped when the final entry recovers through it.
+        restarted.TryGet("chained-2")!.Actor.Should().Be("trader-alice");
+    }
+
+    [Fact]
     public void Park_TokenCarryingResubmissionWithoutSubmitterMetadata_BindsToTheChainOrigin()
     {
         var queue = CreateQueue();
@@ -793,5 +813,43 @@ public sealed class RiskEscalationQueueServiceTests
 
         second.Actor.Should().Be("trader-alice");
         second.Request.Metadata.Should().Contain(RiskEscalationQueueService.SubmitterMetadataKey, "trader-alice");
+    }
+
+    [Fact]
+    public void Park_LaterStageResubmissionWithOnlyThatStagesToken_StillBindsToTheOriginalSubmitter()
+    {
+        var queue = CreateQueue();
+        var first = queue.Park(CreateOrder(), "first rule", ruleName: "OrderNotional", actor: "trader-alice");
+        queue.Approve(first.EscalationId, actor: "risk-officer-bob", reason: "cleared");
+
+        var stageOneRelease = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = first.EscalationId,
+                ["actor"] = "risk-officer-bob"
+            }
+        };
+        queue.TryConsumeApproval(stageOneRelease).Should().NotBeNull();
+        var second = queue.Park(stageOneRelease, "second rule", ruleName: "PortfolioNotional", actor: "risk-officer-bob");
+        second.Actor.Should().Be("trader-alice");
+
+        queue.Approve(second.EscalationId, actor: "risk-officer-carol", reason: "cleared");
+
+        // The stage-two approver resubmits directly carrying only that stage's token, so
+        // the chain link points at an intermediate entry, not the root.
+        var stageTwoRelease = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = second.EscalationId,
+                ["actor"] = "risk-officer-carol"
+            }
+        };
+        queue.TryConsumeApproval(stageTwoRelease).Should().NotBeNull();
+        var third = queue.Park(stageTwoRelease, "third rule", ruleName: "DeskReview", actor: "risk-officer-carol");
+
+        third.Actor.Should().Be("trader-alice");
+        third.Request.Metadata.Should().Contain(RiskEscalationQueueService.SubmitterMetadataKey, "trader-alice");
     }
 }
