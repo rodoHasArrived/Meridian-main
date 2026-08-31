@@ -1,6 +1,6 @@
 {
   "total_files": 662,
-  "total_lines": 136858,
+  "total_lines": 136860,
   "orphaned_count": 253,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2416,7 +2416,7 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-01.md",
-      "line_count": 726,
+      "line_count": 728,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
