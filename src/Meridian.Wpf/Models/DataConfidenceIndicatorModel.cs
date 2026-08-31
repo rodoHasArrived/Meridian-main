@@ -174,7 +174,9 @@ public sealed record DataConfidenceIndicatorModel(
             status,
             degraded,
             asOf,
-            Normalize(notes, provider.LastFailureKind, provider.LifecycleState, provider.WebSocketState),
+            // Degraded-stream reasons outrank the generic lifecycle fallbacks: when a stream
+            // is the sole cause of the warning, its actionable reason must reach the badge.
+            Normalize(notes, provider.LastFailureKind, DegradedStreamReasons(provider.Streams), provider.LifecycleState, provider.WebSocketState),
             reconciliationStatus,
             explanationRoute,
             freshnessWindow);
@@ -307,6 +309,22 @@ public sealed record DataConfidenceIndicatorModel(
     private static bool HasDegradedStream(
         IReadOnlyList<Meridian.Contracts.Api.ProviderStreamStatusResponse>? streams)
         => streams is not null && streams.Any(static stream => stream.IsDegraded);
+
+    private static string? DegradedStreamReasons(
+        IReadOnlyList<Meridian.Contracts.Api.ProviderStreamStatusResponse>? streams)
+    {
+        if (streams is null)
+        {
+            return null;
+        }
+
+        var reasons = streams
+            .Where(static stream => stream.IsDegraded && !string.IsNullOrWhiteSpace(stream.DegradationReason))
+            .Select(static stream => stream.DegradationReason!.Trim())
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        return reasons.Length == 0 ? null : string.Join("; ", reasons);
+    }
 
     private static string Normalize(params string?[] candidates)
         => candidates.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim() ?? string.Empty;

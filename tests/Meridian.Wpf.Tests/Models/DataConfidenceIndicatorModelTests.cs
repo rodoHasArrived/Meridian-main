@@ -282,6 +282,10 @@ public sealed class DataConfidenceIndicatorModelTests
 
         model.ConfidenceLabel.Should().Be(DataConfidenceLabels.ProviderDegraded);
         model.Tone.Should().Be(WorkspaceTone.Warning);
+        // The stream's reason is the sole cause of the warning, so the notes, tooltip, and
+        // accessible explanation must carry it instead of a generic lifecycle value.
+        model.Notes.Should().Be("Entitlement downgraded to delayed data.");
+        model.AccessibleExplanation.Should().Contain("Entitlement downgraded to delayed data.");
     }
 
     [Fact]
