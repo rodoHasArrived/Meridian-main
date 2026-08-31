@@ -950,6 +950,92 @@ public sealed class CorporateActionOperationsServiceTests
     }
 
     [Fact]
+    public async Task CaseAvailability_AdvertisesReadyForApprovalOnlyWithACurrentBalancedBinding()
+    {
+        var fixture = CreateFixture(SourceProposal(Dividend()));
+        var baseCase = AcceptanceResult(
+            AcceptRequest(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), null, false).Case with
+        {
+            State = CorporateActionCaseStates.AccountingReview,
+            Version = 6,
+        };
+        var withoutBinding = baseCase;
+        var withCurrentBinding = baseCase with
+        {
+            AccountingStatus = new CorporateActionCaseAccountingStatusDto(
+                Guid.NewGuid(), 6, ProjectionBalanced: true, "fund-accountant", null, null, null, null),
+        };
+        var withStaleBinding = baseCase with
+        {
+            AccountingStatus = new CorporateActionCaseAccountingStatusDto(
+                Guid.NewGuid(), 5, ProjectionBalanced: true, "fund-accountant", null, null, null, null),
+        };
+        fixture.Store.ListCasesAsync(
+                "tenant-a", "company-a", null, null, 25, Arg.Any<CancellationToken>())
+            .Returns(new[] { withoutBinding, withCurrentBinding, withStaleBinding });
+
+        var cases = await fixture.Service.ListCasesAsync(
+            "tenant-a", "company-a", securityId: null, state: null, take: 25);
+
+        cases[0].ActionAvailability!.AllowedTransitionTargets
+            .Should().NotContain(CorporateActionCaseStates.ReadyForApproval);
+        cases[0].ActionAvailability!.Blockers.Should().Contain(blocker =>
+            blocker.Contains(CorporateActionProblemCodes.ProjectionStale, StringComparison.Ordinal));
+        cases[1].ActionAvailability!.AllowedTransitionTargets
+            .Should().Contain(CorporateActionCaseStates.ReadyForApproval);
+        cases[1].ActionAvailability!.Blockers.Should().NotContain(blocker =>
+            blocker.Contains(CorporateActionProblemCodes.ProjectionStale, StringComparison.Ordinal));
+        cases[2].ActionAvailability!.AllowedTransitionTargets
+            .Should().NotContain(
+                CorporateActionCaseStates.ReadyForApproval,
+                "a binding bound to a superseded case version is stale");
+    }
+
+    [Fact]
+    public async Task CaseAvailability_AdvertisesApprovalAndPostingOnlyFromTheirGovernedStates()
+    {
+        var fixture = CreateFixture(SourceProposal(Dividend()));
+        var baseCase = AcceptanceResult(
+            AcceptRequest(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), null, false).Case;
+        var projectionId = Guid.NewGuid();
+        var readyWithBinding = baseCase with
+        {
+            State = CorporateActionCaseStates.ReadyForApproval,
+            Version = 7,
+            AccountingStatus = new CorporateActionCaseAccountingStatusDto(
+                projectionId, 6, ProjectionBalanced: true, "fund-accountant", null, null, null, null),
+        };
+        var approvedWithApproval = baseCase with
+        {
+            State = CorporateActionCaseStates.Approved,
+            Version = 8,
+            AccountingStatus = new CorporateActionCaseAccountingStatusDto(
+                projectionId, 6, ProjectionBalanced: true, "fund-accountant",
+                Guid.NewGuid(), "controller", null, null),
+        };
+        var approvedWithoutApproval = approvedWithApproval with
+        {
+            AccountingStatus = new CorporateActionCaseAccountingStatusDto(
+                projectionId, 6, ProjectionBalanced: true, "fund-accountant", null, null, null, null),
+        };
+        fixture.Store.ListCasesAsync(
+                "tenant-a", "company-a", null, null, 25, Arg.Any<CancellationToken>())
+            .Returns(new[] { readyWithBinding, approvedWithApproval, approvedWithoutApproval });
+
+        var cases = await fixture.Service.ListCasesAsync(
+            "tenant-a", "company-a", securityId: null, state: null, take: 25);
+
+        cases[0].ActionAvailability!.CanApproveAccounting.Should().BeTrue();
+        cases[0].ActionAvailability!.CanPostAccounting.Should().BeFalse();
+        cases[1].ActionAvailability!.CanApproveAccounting.Should().BeFalse();
+        cases[1].ActionAvailability!.CanPostAccounting.Should().BeTrue();
+        cases[2].ActionAvailability!.CanPostAccounting.Should().BeFalse(
+            "posting is never advertised without an active maker-checker approval");
+        cases[2].ActionAvailability!.Blockers.Should().Contain(blocker =>
+            blocker.Contains(CorporateActionProblemCodes.MakerCheckerRequired, StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task ResolveConflict_RequiresDurableEvidenceAndForwardsVersionedIdempotentCommand()
     {
         var fixture = CreateFixture(SourceProposal(Dividend()));
@@ -1021,9 +1107,19 @@ public sealed class CorporateActionOperationsServiceTests
     }
 
     [Fact]
-    public async Task TransitionCase_ReadyForApprovalWithoutDurableProjection_FailsClosed()
+    public async Task TransitionCase_ReadyForApproval_IsDecidedByTheDurableStoreGuard()
     {
+        // The exact-version accounting projection binding is persisted state, so the refusal (or
+        // admission) belongs to the store's transactional guard rather than a read-side pre-check
+        // that could only race it. The service must forward the authorized command unchanged.
         var fixture = CreateFixture(SourceProposal(Dividend()));
+        fixture.Store.TransitionCaseAsync(
+                Arg.Any<TransitionCorporateActionCaseRequestDto>(),
+                Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo => Task.FromException<CorporateActionCaseTransitionResultDto>(
+                new CorporateActionOperationException(
+                    CorporateActionProblemCodes.ProjectionStale,
+                    "ReadyForApproval requires a durable accounting projection bound to the exact case version.")));
         var request = new TransitionCorporateActionCaseRequestDto(
             CaseId: Guid.Parse("e9487d84-fafa-4e06-9a20-d95d3b318bb1"),
             ExpectedVersion: 3,
@@ -1044,8 +1140,9 @@ public sealed class CorporateActionOperationsServiceTests
 
         var exception = await act.Should().ThrowAsync<CorporateActionOperationException>();
         exception.Which.Code.Should().Be(CorporateActionProblemCodes.ProjectionStale);
-        await fixture.Store.DidNotReceive().TransitionCaseAsync(
-            Arg.Any<TransitionCorporateActionCaseRequestDto>(),
+        await fixture.Store.Received(1).TransitionCaseAsync(
+            Arg.Is<TransitionCorporateActionCaseRequestDto>(static value =>
+                value.ToState == CorporateActionCaseStates.ReadyForApproval),
             Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 

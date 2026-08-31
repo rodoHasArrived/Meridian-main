@@ -112,6 +112,16 @@ public static class CorporateActionCaseTransitionPolicy
                 [CorporateActionCaseStates.ReadyForApproval, CorporateActionCaseStates.Blocked, CorporateActionCaseStates.RestatementRequired, CorporateActionCaseStates.Cancelled, CorporateActionCaseStates.Superseded],
             [CorporateActionCaseStates.ReadyForApproval] =
                 [CorporateActionCaseStates.AccountingReview, CorporateActionCaseStates.Blocked, CorporateActionCaseStates.RestatementRequired, CorporateActionCaseStates.Cancelled, CorporateActionCaseStates.Superseded],
+            // A governed return from Approved to AccountingReview withdraws the approval candidate
+            // for rework; the durable store voids the maker-checker approval on this transition.
+            // It never grants a downstream outcome and re-entering ReadyForApproval requires a
+            // freshly attached exact-version projection.
+            [CorporateActionCaseStates.Approved] =
+                [CorporateActionCaseStates.AccountingReview],
+            // A posted case's journals stay immutable; the only governed continuation the generic
+            // command offers is opening a restatement decision, mirroring Closed.
+            [CorporateActionCaseStates.Posted] =
+                [CorporateActionCaseStates.RestatementRequired],
             [CorporateActionCaseStates.Blocked] =
                 [CorporateActionCaseStates.NeedsTerms, CorporateActionCaseStates.Disputed, CorporateActionCaseStates.AccountingReview, CorporateActionCaseStates.Cancelled, CorporateActionCaseStates.Superseded],
             [CorporateActionCaseStates.RestatementRequired] =
@@ -278,6 +288,8 @@ public static class CorporateActionProblemCodes
     public const string IdempotencyCollision = "corporate_action_idempotency_collision";
     public const string VersionConflict = "corporate_action_version_conflict";
     public const string ReconciliationIncomplete = "corporate_action_reconciliation_incomplete";
+    public const string JournalUnbalanced = "corporate_action_journal_unbalanced";
+    public const string MakerCheckerRequired = "corporate_action_maker_checker_required";
 
     // Honest operation-layer extensions. These do not misclassify infrastructure or generic
     // workflow errors as one of the governed business blockers above.
@@ -475,7 +487,8 @@ public sealed record CorporateActionProcessingCaseDto(
     string UpdatedBy,
     DateTimeOffset UpdatedAtUtc,
     CorporateActionCaseActionAvailabilityDto? ActionAvailability = null,
-    CorporateActionCaseSourceSnapshotDto? SourceSnapshot = null);
+    CorporateActionCaseSourceSnapshotDto? SourceSnapshot = null,
+    CorporateActionCaseAccountingStatusDto? AccountingStatus = null);
 
 /// <summary>Server-owned action posture consumed by browser and desktop clients.</summary>
 public sealed record CorporateActionCaseActionAvailabilityDto(
@@ -486,7 +499,8 @@ public sealed record CorporateActionCaseActionAvailabilityDto(
     bool CanApproveAccounting,
     IReadOnlyList<string> AllowedTransitionTargets,
     IReadOnlyList<string> Blockers,
-    bool CanResolveConflict = false);
+    bool CanResolveConflict = false,
+    bool CanPostAccounting = false);
 
 public sealed record CorporateActionEvidenceDto(
     Guid EvidenceId,
@@ -593,7 +607,8 @@ public sealed record AddCorporateActionEvidenceRequestDto(
     string? EvidenceHash = null,
     string? Description = null,
     JsonElement? Metadata = null,
-    string? CorrelationId = null);
+    string? CorrelationId = null,
+    CorporateActionCaseScopeDto? ScopeAssertion = null);
 
 public sealed record RecordCorporateActionConflictRequestDto(
     Guid CaseId,
@@ -606,7 +621,8 @@ public sealed record RecordCorporateActionConflictRequestDto(
     IReadOnlyList<CorporateActionConflictCandidateDto> Candidates,
     string Actor,
     Guid? ConflictId = null,
-    string? CorrelationId = null);
+    string? CorrelationId = null,
+    CorporateActionCaseScopeDto? ScopeAssertion = null);
 
 /// <summary>
 /// Versioned, idempotent disposition of one open source-term conflict. Waivers require retained
@@ -624,7 +640,8 @@ public sealed record ResolveCorporateActionConflictRequestDto(
     string EvidenceReference,
     string EvidenceHash,
     string Actor,
-    string? CorrelationId = null);
+    string? CorrelationId = null,
+    CorporateActionCaseScopeDto? ScopeAssertion = null);
 
 public sealed record UpsertCorporateActionProcessingOptionRequestDto(
     Guid CaseId,
@@ -641,7 +658,8 @@ public sealed record UpsertCorporateActionProcessingOptionRequestDto(
     string? SourceMethodology = null,
     IReadOnlyList<string>? Blockers = null,
     JsonElement? Parameters = null,
-    string? CorrelationId = null);
+    string? CorrelationId = null,
+    CorporateActionCaseScopeDto? ScopeAssertion = null);
 
 public sealed record TransitionCorporateActionCaseRequestDto(
     Guid CaseId,
@@ -656,7 +674,8 @@ public sealed record TransitionCorporateActionCaseRequestDto(
     string? AssignedTo = null,
     string? CorrelationId = null,
     bool PolicyOverride = false,
-    CorporateActionCaseTransitionAuthorityDto? Authority = null);
+    CorporateActionCaseTransitionAuthorityDto? Authority = null,
+    CorporateActionCaseScopeDto? ScopeAssertion = null);
 
 public sealed record CorporateActionSourceProposalDecisionResultDto(
     CorporateActionSourceProposalDto Proposal,
