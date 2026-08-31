@@ -98,6 +98,7 @@ public partial class DenseDataGridControl : UserControl
             new PropertyMetadata(null));
 
     private INotifyCollectionChanged? _observedRows;
+    private readonly Dictionary<GridViewColumn, WorkstationTableColumnModel> _viewColumnModels = new();
     private readonly List<KeyBinding> _filterTargetBindings = [];
     private UIElement? _filterTargetWithBindings;
 
@@ -267,6 +268,7 @@ public partial class DenseDataGridControl : UserControl
 
     private void RebuildColumns()
     {
+        _viewColumnModels.Clear();
         var gridView = new GridView
         {
             ColumnHeaderContainerStyle = TryFindResource("DenseGridColumnHeaderStyle") as Style
@@ -279,15 +281,44 @@ public partial class DenseDataGridControl : UserControl
                 binding.StringFormat = column.StringFormat;
             }
 
-            gridView.Columns.Add(new GridViewColumn
+            var viewColumn = new GridViewColumn
             {
                 Header = column.Header,
                 Width = column.Width,
                 DisplayMemberBinding = binding
-            });
+            };
+            _viewColumnModels[viewColumn] = column;
+            gridView.Columns.Add(viewColumn);
         }
 
         RowsList.View = gridView;
+    }
+
+    /// <summary>
+    /// The model columns in the order the operator currently sees them: GridView reorders
+    /// its column collection in place when a header is dragged, so the clipboard must
+    /// follow the view's order or a paste no longer matches the visible table.
+    /// </summary>
+    private IReadOnlyList<WorkstationTableColumnModel> DisplayedColumns()
+    {
+        var columns = Table?.Columns ?? Array.Empty<WorkstationTableColumnModel>();
+        if (RowsList?.View is not GridView gridView || gridView.Columns.Count != columns.Count)
+        {
+            return columns;
+        }
+
+        var ordered = new List<WorkstationTableColumnModel>(gridView.Columns.Count);
+        foreach (var viewColumn in gridView.Columns)
+        {
+            if (!_viewColumnModels.TryGetValue(viewColumn, out var model))
+            {
+                return columns;
+            }
+
+            ordered.Add(model);
+        }
+
+        return ordered;
     }
 
     private void AttachRowsCollection()
@@ -431,7 +462,7 @@ public partial class DenseDataGridControl : UserControl
             return string.Empty;
         }
 
-        var columns = Table?.Columns ?? Array.Empty<WorkstationTableColumnModel>();
+        var columns = DisplayedColumns();
         var lines = new List<string>();
         if (columns.Count > 0)
         {

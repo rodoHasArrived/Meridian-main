@@ -297,12 +297,13 @@ public sealed class WorkstationPrimitiveControlsTests
                 var rowsList = denseGrid.FindName("RowsList").Should().BeOfType<ListView>().Subject;
                 rowsList.SelectedItem = tableRows[1];
 
-                denseGrid.CommandBindings.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.FocusFilter);
-                denseGrid.CommandBindings.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.OpenSelectedDetails);
-                denseGrid.CommandBindings.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.CloseDetails);
-                denseGrid.CommandBindings.Should().Contain(binding => binding.Command == ApplicationCommands.Copy);
-                denseGrid.CommandBindings.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.ClearFilters);
-                denseGrid.CommandBindings.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.JumpToRelatedRecords);
+                var commandBindings = denseGrid.CommandBindings.OfType<CommandBinding>().ToList();
+                commandBindings.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.FocusFilter);
+                commandBindings.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.OpenSelectedDetails);
+                commandBindings.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.CloseDetails);
+                commandBindings.Should().Contain(binding => binding.Command == ApplicationCommands.Copy);
+                commandBindings.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.ClearFilters);
+                commandBindings.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.JumpToRelatedRecords);
 
                 DenseGridKeyboardCommands.FocusFilter.Execute(null, denseGrid);
                 filterBox.IsKeyboardFocusWithin.Should().BeTrue();
@@ -402,6 +403,42 @@ public sealed class WorkstationPrimitiveControlsTests
                     "Provider\tStatus\n" +
                     "\"Fund \"\"A\"\"\"\t\"Degraded\nrestarting feed\"\n" +
                     "Fund B\t\"Holds\ttab\"");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DenseDataGridControl_ShouldCopyColumnsInTheDisplayedOrder()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var tableRows = new ObservableCollection<RowFixture> { new("Alpaca", "Degraded") };
+            var denseGrid = new DenseDataGridControl
+            {
+                Table = new WorkstationTableModel<RowFixture>(
+                    tableRows,
+                    [new("Provider", nameof(RowFixture.Name), 120), new("Status", nameof(RowFixture.Status), 100)],
+                    "Provider readiness table")
+            };
+
+            var window = Show(denseGrid);
+            try
+            {
+                var rowsList = denseGrid.FindName("RowsList").Should().BeOfType<ListView>().Subject;
+                rowsList.SelectedItem = tableRows[0];
+
+                // Drag-reordering a header moves the GridView column collection in place;
+                // the clipboard must follow the operator's current left-to-right order.
+                var gridView = rowsList.View.Should().BeOfType<GridView>().Subject;
+                gridView.Columns.Move(0, 1);
+
+                denseGrid.FormatSelectedRowsForClipboard().Should().Be("Status\tProvider\nDegraded\tAlpaca");
             }
             finally
             {
