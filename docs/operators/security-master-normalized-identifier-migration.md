@@ -1,6 +1,6 @@
 # Security Master Normalized Identifier Uniqueness Migration
 
-Migration 031 replaces raw primary-identifier uniqueness with uniqueness over
+Migration 032 replaces raw primary-identifier uniqueness with uniqueness over
 `(primary_identifier_kind, normalized_primary_identifier_value)`, matching the identifier
 resolution contract.
 
@@ -56,7 +56,7 @@ order by indexname;
 Exactly `ux_securities_normalized_primary_identifier` should remain. Test one non-production
 punctuation variant and confirm PostgreSQL rejects it with unique-violation `23505`.
 
-If migration 031 reports collisions, it has made no schema changes: remediate and retry. After a
+If migration 032 reports collisions, it has made no schema changes: remediate and retry. After a
 successful deployment, rollback requires recreating the former raw unique index before dropping the
 normalized unique index; do this only under an approved rollback because it weakens the identity
 invariant.

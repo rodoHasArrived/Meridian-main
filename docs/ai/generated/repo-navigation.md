@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-08-24T06:17:53Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-08-31T06:37:41Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Execution/OrderManagementSystem.cs` | Execution, Risk, and Strategies | `0854e607d` (2026-08-24T04:06:54Z) | 10 |
-| `src/Meridian.Execution.Sdk/Models.cs` | Execution, Risk, and Strategies | `0854e607d` (2026-08-24T04:06:54Z) | 2 |
-| `src/Meridian.Execution/Services/PaperTradingPortfolio.cs` | Execution, Risk, and Strategies | `0854e607d` (2026-08-24T04:06:54Z) | 2 |
-| `src/Meridian.Execution/PaperTradingGateway.cs` | Execution, Risk, and Strategies | `0854e607d` (2026-08-24T04:06:54Z) | 1 |
-| `src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 13 |
-| `src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 13 |
-| `src/Meridian.Ui.Shared/Endpoints/ApiKeyMiddleware.cs` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 10 |
-| `src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs` | Providers and Storage | `d60d4100d` (2026-08-24T00:54:53Z) | 6 |
-| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 6 |
-| `src/Meridian.Contracts/Operations/DataProvenance.cs` | Host and Composition | `d60d4100d` (2026-08-24T00:54:53Z) | 2 |
-| `src/Meridian/UiServer.cs` | Host and Composition | `d60d4100d` (2026-08-24T00:54:53Z) | 2 |
-| `src/Meridian.Execution/Events/TradeExecutedEvent.cs` | Execution, Risk, and Strategies | `d60d4100d` (2026-08-24T00:54:53Z) | 1 |
-| `src/Meridian.Execution/OrderManagementSystem.FillIdentity.cs` | Execution, Risk, and Strategies | `d60d4100d` (2026-08-24T00:54:53Z) | 1 |
-| `src/Meridian.Wpf/ViewModels/DataBrowserViewModel.cs` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 1 |
-| `src/Meridian.Wpf/Views/DataBrowserPage.xaml` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 1 |
+| `src/Meridian.FinancialOperations/README.md` | Unmapped | `7a40e6970` (2026-08-30T04:02:38Z) | 16 |
+| `src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs` | Unmapped | `7a40e6970` (2026-08-30T04:02:38Z) | 13 |
+| `src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaActivityStatementConnector.cs` | Unmapped | `7a40e6970` (2026-08-30T04:02:38Z) | 7 |
+| `src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvStatementConnector.cs` | Unmapped | `b47f9df7a` (2026-08-30T03:37:39Z) | 10 |
+| `src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs` | Unmapped | `b47f9df7a` (2026-08-30T03:37:39Z) | 8 |
+| `src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs` | Unmapped | `4eac56733` (2026-08-30T03:17:20Z) | 11 |
+| `src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs` | Unmapped | `03a29b7f1` (2026-08-30T03:05:30Z) | 11 |
+| `src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs` | Unmapped | `73dd54ea9` (2026-08-29T23:33:52Z) | 6 |
+| `src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs` | Unmapped | `b37e3cea5` (2026-08-29T23:24:41Z) | 18 |
+| `src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs` | Unmapped | `b37e3cea5` (2026-08-29T23:24:41Z) | 5 |
+| `src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs` | Unmapped | `2f72a8f3a` (2026-08-29T17:23:14Z) | 1 |
+| `src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs` | Desktop and UI Workflows | `291695dcf` (2026-08-29T15:33:55Z) | 5 |
+| `src/Meridian.Wpf/App.xaml.cs` | Desktop and UI Workflows | `291695dcf` (2026-08-29T15:33:55Z) | 1 |
+| `src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs` | Unmapped | `8d2484482` (2026-08-29T15:32:03Z) | 3 |
+| `src/Meridian.Storage/Ledger/PostgresAccountingConfigurationStore.cs` | Providers and Storage | `22e39ea6d` (2026-08-29T15:25:46Z) | 4 |
 

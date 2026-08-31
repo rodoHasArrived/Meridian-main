@@ -120,7 +120,7 @@ public sealed class SecurityMasterMigrationRunnerTests : IClassFixture<SecurityM
                 AppContext.BaseDirectory,
                 "SecurityMaster",
                 "Migrations",
-                "031_security_master_normalized_primary_identifier_uniqueness.sql");
+                "032_security_master_normalized_primary_identifier_uniqueness.sql");
             var migrationSql = (await File.ReadAllTextAsync(migrationPath))
                 .Replace("__SCHEMA__", schema, StringComparison.Ordinal);
             var act = async () =>
@@ -132,7 +132,7 @@ public sealed class SecurityMasterMigrationRunnerTests : IClassFixture<SecurityM
 
             var exception = await act.Should().ThrowAsync<PostgresException>();
             exception.Which.SqlState.Should().Be(PostgresErrorCodes.UniqueViolation);
-            exception.Which.MessageText.Should().Be("Normalized primary identifier collisions block migration 031.");
+            exception.Which.MessageText.Should().Be("Normalized primary identifier collisions block migration 032.");
             exception.Which.Detail.Should().Be(
                 "Isin|US0378331005|00000000-0000-0000-0000-000000000001,00000000-0000-0000-0000-000000000002\n" +
                 "Ticker|ABC|00000000-0000-0000-0000-000000000003,00000000-0000-0000-0000-000000000004");
