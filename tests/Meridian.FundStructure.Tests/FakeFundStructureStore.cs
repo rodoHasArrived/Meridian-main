@@ -201,12 +201,38 @@ public sealed class FakeFundStructureStore : IFundStructureStore
             ? new FundStructureTenantMap(IsPartitioned: true, new Dictionary<Guid, string>(_nodeTenants))
             : FundStructureTenantMap.Unpartitioned);
 
-    /// <summary>First-owner-wins, matching the Postgres store's <c>tenant_id IS NULL</c> guard.</summary>
+    /// <summary>
+    /// First-owner-wins, matching the Postgres store's <c>tenant_id IS NULL</c> guard — and a no-op
+    /// for a node that does not exist, matching that it is an <c>UPDATE</c>.
+    /// </summary>
+    /// <remarks>
+    /// The existence precondition is modelled deliberately. <c>StampNodeTenantAsync</c> issues
+    /// <c>UPDATE ... WHERE id = @node_id AND tenant_id IS NULL</c> across the node tables, so
+    /// stamping before the row is written affects zero rows and the attribution is silently lost. A
+    /// fake that stamped into a free-standing dictionary would accept a caller ordering the stamp
+    /// first and report success, which is how a reordering that broke exactly that landed with all
+    /// of this suite passing.
+    /// </remarks>
     public Task StampNodeTenantAsync(Guid nodeId, string tenantId, CancellationToken ct = default)
     {
-        _nodeTenants.TryAdd(nodeId, tenantId.Trim());
+        if (NodeExists(nodeId))
+        {
+            _nodeTenants.TryAdd(nodeId, tenantId.Trim());
+        }
+
         return Task.CompletedTask;
     }
+
+    private bool NodeExists(Guid nodeId)
+        => _organizations.ContainsKey(nodeId)
+            || _businesses.ContainsKey(nodeId)
+            || _clients.ContainsKey(nodeId)
+            || _funds.ContainsKey(nodeId)
+            || _sleeves.ContainsKey(nodeId)
+            || _vehicles.ContainsKey(nodeId)
+            || _entities.ContainsKey(nodeId)
+            || _portfolios.ContainsKey(nodeId)
+            || _linkedAccountIds.Contains(nodeId);
 
     /// <summary>Attributes a node directly, standing in for a completed backfill.</summary>
     public void SeedNodeTenant(Guid nodeId, string tenantId) => _nodeTenants[nodeId] = tenantId;

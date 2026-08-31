@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-27
+last_reviewed: 2026-08-30
 ---
 
 # src/Meridian.Wpf
@@ -42,6 +42,56 @@ scope fails before any provider rows are read.
 - `Shell/` and `Services/` - navigation, route, launch, and desktop service seams.
 
 ## Important workflows
+
+**Startup refusals are fatal.** `App.StartHostServicesAsync` deliberately tolerates a hosted service
+that fails to start -- a database-backed projection or worker that cannot reach its store leaves the
+desktop running with reduced processing rather than not running at all. That tolerance does not
+extend to a governance guard. When `Meridian.Ui.Shared.Services.HostStartupEscalation.IsRefusal`
+matches the fault -- any `Meridian.Application.Composition.StartupRefusedException`, including one
+wrapped in an aggregate -- the shell reports it in a modal dialog carrying the guard's remediation
+text and shuts down, because continuing is precisely what the guard forbade. A toast is not used: an
+application that is closing does not show one. The guards that reach this path today are ADR-019's
+`ProductionRegistrationGuardService` and W9-GOV-008's `InMemoryFundStructureTenancyGuard`; do not
+reintroduce a blanket catch around host startup that swallows them.
+
+Both are registered by `App.ConfigureServices`, and the ADR-019 one has to be: this desktop composes
+its own graph and never calls `AddMarketDataServices`, the only other caller of
+`AddProductionRegistrationGuard`, so leaving it out meant the lane whose tolerant catch this posture
+exists to close had no final-graph guard at all. It is a no-op on an ordinary launch — without a
+`MeridianDeploymentPostureDeclaration` or one of the posture environment variables, its `StartAsync`
+takes neither the production nor the supported-local branch — so it costs nothing until a posture is
+actually declared.
+
+**Refusals are decided before the shell exists, and only refusals.**
+`App.RunStartupRefusalPreflightAsync` runs every registered
+`Meridian.Application.Composition.IStartupRefusalGuard` in `OnStartup` *before* `MainWindow` is
+resolved or shown, and a refusal returns without constructing it. Keep that order. A guard that
+*fails* rather than refuses counts as a refusal here: `StartupRefusalPreflight` converts it, because
+"I cannot tell whether this composition is safe" is not "it is safe", and the ordinary
+hosted-service tolerance behind the window would otherwise let the rejected posture serve.
+`MainWindow.OnWindowLoaded` navigates to the fund-profile page, starts the shell view model, and
+loads workspaces as soon as the window is shown, so showing first would leave the operator an
+interactive shell backed by exactly the posture the guard rejects for as long as the guard and the
+teardown behind it take. Checking the refusal flag afterwards only suppresses the later visibility
+recovery; it cannot un-serve what was already on screen.
+
+The preflight deliberately does **not** start the host. `IHost.StartAsync` returns only once every
+hosted service has started, and this composition starts a symbol-registry initializer and a
+canonical-registry migration that read the configured data root -- a slow or unreachable root would
+then hold the shell back indefinitely, which is a worse outcome than the one the preflight exists to
+prevent. Host startup therefore stays in `SafeOnStartupAsync`, behind the window, alongside theme,
+tray, connection monitoring, and background services; that method keeps its own refusal catch as
+defence in depth. The guards run in both places, which is why `IStartupRefusalGuard` requires
+implementations to be safe to run twice: a guard must ask a question about the composition, never
+act on it. It also requires them to answer without unbounded work, since they run with nothing on
+screen -- which is why ADR-019's `ProductionRegistrationGuardService` is *not* marked, despite being
+a refusal guard: in a production posture it resolves every factory-registered singleton, and that
+belongs behind the window. Its *static* half is marked, as the separate
+`StaticProductionRegistrationGuardService`: `ProductionServiceRegistrationPolicy` resolves nothing,
+so the descriptor scan answers immediately, and postponing it too left a prohibited production graph
+interactive until hosted-service startup shut it down. Register a new guard against the interface as well as `IHostedService`
+-- mapping one singleton to both -- and the preflight picks it up without this shell being edited;
+if the guard cannot answer cheaply, leave it an ordinary hosted service instead.
 
 Application startup now shows `StartupWindow` before the main shell. After authentication, the main shell defaults to `HomeWorkspace`, a source-backed WPF launch checkpoint that groups provider health, data freshness, reconciliation, approvals, accounting/reporting readiness, and recent activity before operators enter deeper task workspaces. The startup view model validates
 credentials through the Identity-owned `UserProfileRegistry` and `LoginSessionService`, keeps the
