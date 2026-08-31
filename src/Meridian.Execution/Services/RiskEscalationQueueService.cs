@@ -862,6 +862,102 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
             _entries[entry.EscalationId] = entry with { ReleaseInFlight = false };
             _entryOrder.Enqueue(entry.EscalationId);
         }
+
+        NormalizeLegacyChainedEntries();
+    }
+
+    /// <summary>
+    /// Chained entries persisted before the retained-submitter channel existed carry the
+    /// previous stage's approver — not the original submitter — as
+    /// <see cref="RiskEscalationEntry.Actor"/>, so the segregation-of-duties checks would
+    /// compare against the wrong identity and let the original submitter approve or
+    /// release a later stage of their own order. The chain's first linked approval token
+    /// names the original park, whose Actor is the true submitter: recover it from the
+    /// retained snapshot when possible; when the original entry is gone the chain's
+    /// identity is unverifiable and the entry fails closed to Denied with an audited
+    /// reason, leaving the submitter to re-enter the order through the normal flow.
+    /// </summary>
+    private void NormalizeLegacyChainedEntries()
+    {
+        var repaired = 0;
+        var denied = 0;
+        foreach (var escalationId in _entries.Keys.ToArray())
+        {
+            var entry = _entries[escalationId];
+            if (entry.Status is not (RiskEscalationStatus.PendingApproval or RiskEscalationStatus.Approved))
+            {
+                continue;
+            }
+
+            var linkedApprovals = ReadLinkedApprovalIds(entry.Request);
+            if (linkedApprovals.Count == 0)
+            {
+                // A first park binds Actor to the submitter under both the old and the
+                // current release code; nothing to repair.
+                continue;
+            }
+
+            if (entry.Request.Metadata is not null &&
+                entry.Request.Metadata.TryGetValue(SubmitterMetadataKey, out var submitter) &&
+                !string.IsNullOrWhiteSpace(submitter))
+            {
+                // Written by the current release path; Actor already holds the retained
+                // submitter.
+                continue;
+            }
+
+            if (_entries.TryGetValue(linkedApprovals[0], out var origin) &&
+                ReadLinkedApprovalIds(origin.Request).Count == 0)
+            {
+                if (string.IsNullOrWhiteSpace(origin.Actor))
+                {
+                    // The chain began with an anonymous submitter: there is no identity
+                    // to segregate, and the retained approver-as-Actor matches what the
+                    // current release path records for such chains.
+                    continue;
+                }
+
+                _entries[escalationId] = entry with { Actor = origin.Actor };
+                repaired++;
+                _logger.LogWarning(
+                    "Risk escalation {EscalationId} rebound to its original submitter from linked approval {OriginEscalationId}: "
+                    + "the entry predates the retained-submitter channel and had the approving operator recorded as its actor",
+                    escalationId,
+                    origin.EscalationId);
+                continue;
+            }
+
+            var deniedEntry = entry with
+            {
+                Status = RiskEscalationStatus.Denied,
+                ResolvedBy = "system",
+                ResolutionReason =
+                    "Denied at startup: this chained escalation predates the retained-submitter channel and its "
+                    + "original park is no longer retained, so the submitter identity the segregation-of-duties "
+                    + "checks must bind to cannot be recovered. Re-submit the order to obtain a fresh governed approval.",
+                ResolvedAt = DateTimeOffset.UtcNow
+            };
+            _entries[escalationId] = deniedEntry;
+            denied++;
+            _logger.LogWarning(
+                "Risk escalation {EscalationId} denied at startup: legacy chained entry whose original submitter cannot be recovered",
+                escalationId);
+            RecordAudit(
+                action: "ParkedOrderDenied",
+                outcome: "Denied",
+                entry: deniedEntry,
+                message: "Legacy chained escalation denied at startup: the original submitter could not be recovered for segregation-of-duties enforcement.");
+        }
+
+        if (repaired > 0 || denied > 0)
+        {
+            lock (_resolveLock)
+            {
+                // Best-effort convergence of the on-disk snapshot; the in-memory repair is
+                // deterministic and re-runs identically on the next start if this write fails.
+                PersistSnapshotLocked();
+            }
+        }
     }
 
     private void RecordAudit(string action, string outcome, RiskEscalationEntry entry, string message)

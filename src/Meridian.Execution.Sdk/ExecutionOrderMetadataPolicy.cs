@@ -72,11 +72,18 @@ public static class ExecutionOrderMetadataPolicy
             return false;
         }
 
-        foreach (var key in keys)
+        // The incoming dictionary's own comparer may be case-sensitive (JSON-deserialized request
+        // bags are), while downstream merges copy into ordinal-ignore-case dictionaries — so a
+        // differently-cased server-owned key would slip past ContainsKey here yet still be read
+        // downstream. Compare keys case-insensitively ourselves.
+        foreach (var metadataKey in metadata.Keys)
         {
-            if (metadata.ContainsKey(key))
+            foreach (var key in keys)
             {
-                return true;
+                if (string.Equals(metadataKey, key, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
             }
         }
 

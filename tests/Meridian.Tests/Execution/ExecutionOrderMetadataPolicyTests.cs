@@ -62,6 +62,22 @@ public sealed class ExecutionOrderMetadataPolicyTests
             .Should().BeTrue($"'{rejectedKey}' is server-owned and must be rejected when a client supplies it");
     }
 
+    [Theory]
+    [MemberData(nameof(ClientRejectedKeys))]
+    public void ContainsClientRejectedServerOwnedKey_DetectsKeysRegardlessOfCasingAndComparer(string rejectedKey)
+    {
+        // JSON-deserialized request bags use a case-sensitive comparer, while downstream merges
+        // read the bag ordinal-ignore-case — a differently-cased key must still be rejected here.
+        var metadata = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["strategy_run_id"] = "run-2026-07-06-01",
+            [rejectedKey.ToUpperInvariant()] = "client-supplied-value"
+        };
+
+        ExecutionOrderMetadataPolicy.ContainsClientRejectedServerOwnedKey(metadata)
+            .Should().BeTrue($"'{rejectedKey}' is server-owned and must be rejected regardless of the casing a client uses");
+    }
+
     [Fact]
     public void RemoveClientRejectedServerOwnedKeys_NullMetadata_ReturnsNull()
     {
