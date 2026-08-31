@@ -65,6 +65,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Reconciliation/StatementRunWorkflowService.cs` - statement-run workflow that imports canonical statements, matches rows against Meridian's internal book through the shared sided `StatementMatchingEngine`, and persists linked breaks and case materialization for shared UI consumers. Rows with no internal counterpart — and internal records missing from the statement — surface as genuine breaks instead of self-matches.
 - `Reconciliation/StatementRunMatchingService.cs` - normalizes imported statement rows and projects the sided `StatementMatchingEngine` results into break records and per-row match outcomes for the live workflow; `ToleranceBreached` is computed from the actual variance.
 - `Reconciliation/InternalReconciliationBook.cs` - the internal-book seam (`IInternalReconciliationBookSource`) supplying the positions, cash balances, and ledger transactions a statement run is reconciled against; the default `EmptyInternalReconciliationBookSource` yields honest unmatched breaks until a real source is registered.
+- `Reconciliation/Connectors/StatementIngressLimits.cs` - the single PRD-010 ingress bound shared by
+  every statement connector and by `StatementImportService`, with the named diagnostic codes each
+  refusal carries. Registered once in `Reconciliation/ReconciliationServiceRegistration.cs`.
 - `Reconciliation/Connectors/StatementImportService.cs` - preview and authoritative import-commit
   boundary used by the persisted statement reconciliation report coordinator; a committed import is
   checkpointed before Evidence Vault linkage or JSON/CSV reconciliation artifact retention so
@@ -109,6 +112,75 @@ Use this README to understand the module before editing source files. Update the
 Statement reconciliation also lives here. Broker/custodian statement intake, mapping profiles, validation, duplicate detection, matching, break classification, reconciliation decision journals, statement-run persistence, and durable case materialization are Financial Operations behavior. Application commands and shared UI services invoke the module workflow, but they do not own reconciliation state, matching rules, or statement-run persistence.
 
 The statement connector library (`Reconciliation/Connectors/`, ADR-018) extends that intake seam: connectors parse CSV, OFX, uploaded or Web-Service-fetched IB Flex XML, and Alpaca snapshot sources into canonical records classified per kind (position, transaction, cash balance, fee, dividend), driven by declarative, operator-editable mapping-profile documents rather than code. Institutional bank cash statements are also ingested directly by the profile-less ISO 20022 camt.053 and BAI2 connectors (content-sniffed, closing-balance and signed entries mapped straight to canonical records) so most bank statements reconcile without hand-conversion. Commit renders a deterministic canonical-CSV artifact and hands it to `IStatementRunWorkflowService`, so the downstream matching, break, and case pipeline is unchanged and duplicate-key idempotency is preserved. A sibling `canonical-evidence.json` retains provider account margin, activity subtype and cursor completeness, option lifecycle, tax-lot, and securities-borrow evidence without widening the legacy reconciliation CSV seam. Profiles record the last accepted column layout for format-drift warnings, and fetch-capable connectors reuse the existing brokerage gateways and provider credential store — never a new secret store. Alpaca activity retrieval pages to a bounded complete cursor and fails closed if the provider cannot prove continuity. IB Flex uses the documented v3 request/retrieve flow with bounded polling and trusted-host enforcement. Persisted schedules retain an explicit broker/custodian source classification, support operator run-now and background cadence, and default legacy snapshots to broker; a failed fetch records only the exception type and advances a separate attempt/cadence watermark so provider or configuration failures do not retry every scheduler tick while the last-successful-fetch cursor remains available for recovery.
+
+Statement ingress is bounded (PRD-010). Before this bound a caller-supplied `StatementSourceDocument`
+sized the parse rather than the operator: `Camt053StatementConnector` built a whole-document
+`XDocument` and `Bai2StatementConnector` split the entire payload on newlines, neither enforced a
+record limit, and `StatementImportService` copied the source bytes before a connector was even
+resolved — so the transport-level upload and CLI caps never covered that seam. `StatementIngressLimits`
+is now one record shared by every connector and by the import service, so both refuse the same payload
+and a deployment raises a cap in one place instead of per seam. Connectors refuse mid-parse, before
+the allocation; the import service re-checks on preview, validate, and commit as the backstop no
+connector can leave open — that check counts `StatementParseResult.TotalRetainedRows`, not
+`Records.Count`, because the five evidence-only collections (account snapshots, activity events,
+activity cursors, tax lots, borrow positions) are retained just as durably as canonical records.
+
+`StatementIngressLimits.Default` bounds a document at `StatementConnectorLimits.MaxFileBytes`
+(20 MiB — the statement-specific cap the workstation endpoint and CLI already enforce, deliberately
+not the general 5 MiB data-upload cap, because IB Flex XML exports routinely exceed 5 MiB), 250,000
+retained rows, 64 KiB per line, 64 levels of XML nesting, 50,000 nodes in any one materialized XML
+subtree, 500,000 parsed nodes per document, 25,000 retained parse issues, and 500,000 flattened OFX
+aggregates. Every bound refuses with a named code:
+
+| Code | Bound |
+| --- | --- |
+| `STATEMENT_DOCUMENT_TOO_LARGE` | `MaxDocumentBytes`, checked by the import service and by every connector before it decodes — IB Flex included, which reported a private `STATEMENT_TOO_LARGE` until it took the shared limits, so a caller routing on this code missed Flex refusals alone |
+| `STATEMENT_TOO_MANY_RECORDS` | `MaxRecords`, against total retained rows — charged on the append by every connector, and by the import service as the backstop. Nothing is charged against a prediction of what a payload will yield. camt.053, BAI2 and OFX previously charged *candidates* — an entry, detail line, or aggregate about to be attempted — so a pending camt entry, a malformed BAI2 amount, or an aggregate the mapper rejects consumed a record allowance it never drew on, and refused documents whose canonical rows sat well inside the bound. Work that retains no record is bounded by the budget that owns it instead. Alpaca charges its five evidence collections up front, since `Deserialize` has already materialized them, then one row per canonical append; a rich activity is retained twice (record and activity event) while a corporate action with no amount is not retained at all |
+| `STATEMENT_TOO_MANY_ENTRIES` | `MaxDocumentEntries`, an UPPER bound on the objects a document could materialize before anything is mapped — raw OFX aggregates `OfxDocumentParser` flattens into entry dictionaries, and JSON objects the Alpaca pre-scan counts. Upper rather than exact: a deserializer skips unknown properties, so objects beneath a forward-compatible extension are charged here and never allocated. That is structural — a pre-scan must refuse before the allocation it prevents, so it can only bound what the payload contains, not what the deserializer keeps. Distinct from the record cap because the mapper rejects some aggregates, so aggregates and retained records are different counts; set above `MaxRecords` so an aggregate that maps to nothing does not consume a record's worth of the allowance. At the shipped defaults it cannot fire before `MaxParseNodes`: every object costs at least two tokens, so a 500,000-node budget is reached at roughly 250,000 objects. It is therefore an operator knob for deployments wanting a materialization ceiling stricter than the traversal budget, and only bites when set below about half of `MaxParseNodes` |
+| `STATEMENT_LINE_TOO_LONG` | `MaxLineBytes`, measured in UTF-8 bytes |
+| `STATEMENT_TOO_MANY_LINES` | `MaxDocumentLines`, the raw lines a line-oriented parser may walk, in both CSV and BAI2; refused before mapping. Blank lines count in both — they produce no canonical row but still cost an iteration to discover, and the byte cap alone permits twenty million of them. Only the synthetic final segment a terminating newline leaves is exempt, so acceptance does not depend on newline convention. CSV derived this from `MaxRecords` until 2026-08-30, which charged rows the mapper rejects to the record allowance one step removed |
+| `STATEMENT_NESTING_TOO_DEEP` | `MaxNestingDepth`, inclusive — a document nested at exactly the limit is accepted and one level deeper is refused, identically in every connector that reads it |
+| `STATEMENT_SUBTREE_TOO_LARGE` | `MaxSubtreeNodes`, one materialized XML subtree |
+| `STATEMENT_TOO_MANY_NODES` | `MaxParseNodes`, the whole-document node budget, charged by the camt.053, OFX and IB Flex parsers, and by the Alpaca JSON pre-scan — one activity's `Metadata` dictionary is open-ended, so members have to be counted before `Deserialize` materializes them |
+| `STATEMENT_TOO_MANY_DIAGNOSTICS` | `MaxDiagnostics`, retained parse issues; charged by every connector — the CSV, OFX, IB Flex and Alpaca row mappers, and the camt.053 and BAI2 per-row candidate charges, which also re-check after their parse loop so the final row's diagnostic cannot slip past |
+| `ROW_LIMIT_EXCEEDED` | `MaxRecords`, reported by the IB Flex connector against its retained rows |
+
+Preview returns these as issue objects, so a caller can branch on `issue.Code` directly. The other two
+paths report as text — commit throws `InvalidDataException`, and `ValidateAsync` returns a
+`StatementImportValidationResult` whose `Errors` is a list of strings — so both carry the code in
+brackets ahead of the prose. Otherwise the same document yields an actionable code from one path and an
+unclassifiable sentence from the others.
+
+These messages advise raising the configured limit deliberately. A deployment does that by registering
+its own `StatementIngressLimits` before `AddReconciliationServices`, since registration uses
+`TryAddSingleton(StatementIngressLimits.Default)` and takes the first registration that wins:
+
+```csharp
+services.AddSingleton(StatementIngressLimits.Default with { MaxRecords = 1_000_000 });
+services.AddStatementReconciliationServices();
+```
+
+Raise only the bound that actually refused, and record why: the defaults sit well above any real bank
+statement, so a breach is far more often a malformed or hostile payload than a large one.
+
+`MaxParseNodes` bounds how many nodes a parse walks, not how deep it goes or how large one subtree
+is. It was defined for the XML connectors and, until this change, only OFX charged it: camt.053 could
+walk hundreds of thousands of uniquely named shallow elements outside the single valid statement, with
+the reader's name table retaining every distinct name string, and no bound fired. Both camt passes now
+charge it, and IB Flex charges it in a streaming pre-scan ahead of the `XDocument` it still builds:
+`MaxCharactersInDocument` bounds the characters read, not the object graph built from them, so a
+permitted payload of many tiny elements could expand well past its own byte size before any row counter
+existed. The pre-scan allocates nothing and refuses first.
+
+`IbFlexStatementConnector` reads `MaxRecords` and `MaxDocumentBytes` like every other connector. It previously held a private
+100,000-row ceiling, which made the paragraph above false for Flex imports: a deployment could raise
+`MaxRecords` and still have a legitimate Flex report refused at row 100,001 by a number it had no way
+to configure. Both bounds counted the same thing - retained rows - so they are now one bound. This
+raises the default Flex ceiling from 100,000 to the shared 250,000; a deployment that wants the old
+ceiling sets `MaxRecords` to 100,000. The same applied to document size, which kept a private 32 MiB
+ceiling for one more round: it now reads `MaxDocumentBytes`, moving the Flex default the other way,
+32 MiB down to 20 MiB. On the import path the service already refused above 20 MiB before the connector
+saw the document, so that tightening binds only the direct fetch path.
 
 The shared Margin Control Center reads retained canonical evidence across providers, accounts, and
 prime brokers. Provider-reported buying power, maintenance margin, excess liquidity, and restriction

@@ -46,8 +46,34 @@ public static class OfxDocumentParser
             || head.Contains("<OFX ", StringComparison.OrdinalIgnoreCase);
     }
 
-    public static OfxDocument Parse(string content)
+    public static OfxDocument Parse(string content) =>
+        Parse(content, int.MaxValue, int.MaxValue, int.MaxValue, out _);
+
+    /// <summary>
+    /// Parses an OFX document, refusing one that exceeds the ingress bounds instead of building it first.
+    /// </summary>
+    /// <remarks>
+    /// Three bounds, because the parse has two allocation phases and a check after the second cannot undo
+    /// the first. <paramref name="maxDepth"/> caps aggregate nesting, which also caps the recursion in
+    /// <see cref="CollectEntries"/>: without it a deeply nested document overflows the stack, which no
+    /// caller can catch. <paramref name="maxEntries"/> stops entry discovery at the bound.
+    /// <paramref name="maxNodes"/> caps everything the parse retains - aggregates and leaf values alike -
+    /// because entries are built from the node tree, so the tree is complete before any entry exists to
+    /// count. It is passed in as an absolute figure rather than derived from
+    /// <paramref name="maxEntries"/>: an earlier form multiplied the record allowance, which tied a
+    /// memory ceiling to an unrelated knob and, at the default allowance, put the cap above the node
+    /// count the document byte limit can produce at all - a bound that cannot be reached is not a bound.
+    /// </remarks>
+    public static OfxDocument Parse(
+        string content,
+        int maxEntries,
+        int maxDepth,
+        int maxNodes,
+        out OfxParseBound bound)
     {
+        bound = OfxParseBound.None;
+        var nodes = 0;
+        var entryCount = 0;
         var root = new OfxNode("OFX-ROOT", null);
         var stack = new Stack<OfxNode>();
         stack.Push(root);
@@ -101,11 +127,63 @@ public static class OfxDocumentParser
             var value = (valueEnd < 0 ? body[index..] : body[index..valueEnd]).Trim();
             if (value.Length > 0)
             {
+                // The same depth comparison the aggregate branch below makes, so a leaf is refused exactly
+                // where a child aggregate in its place would be. Only aggregates were checked, so a leaf
+                // inside an aggregate nested at the limit was retained one level past it - the shared
+                // nesting ceiling being ineffective at its own boundary for OFX alone, while the camt and
+                // Flex readers check every retained element. Whatever the parse retains is checked, not
+                // just whatever the loop calls a node.
+                if (stack.Count - 1 > maxDepth)
+                {
+                    bound = OfxParseBound.NestingTooDeep;
+                    break;
+                }
+
+                // Leaves are charged too. They are not aggregates, so an earlier version of this budget
+                // never counted them - and a document of hundreds of thousands of uniquely named leaf
+                // tags built an arbitrarily large dictionary and string graph while the aggregate count
+                // stayed near zero. Same shape as attributes escaping the camt subtree budget: whatever
+                // the parse retains has to be charged, not just whatever the loop calls a node.
+                if (++nodes > maxNodes)
+                {
+                    bound = OfxParseBound.TooManyNodes;
+                    break;
+                }
+
                 stack.Peek().Leaves[name] = DecodeEntities(value);
             }
             else
             {
+                // stack carries the synthetic OFX-ROOT pushed before the walk, so its Count is one more
+                // than the aggregate depth the document actually declares. Comparing Count directly
+                // refused a document nested at exactly MaxNestingDepth, one level earlier than the camt
+                // and Flex guards, which accept reader.Depth == MaxNestingDepth. The same configured
+                // limit has to mean the same thing in every connector that reads it.
+                if (stack.Count - 1 > maxDepth)
+                {
+                    bound = OfxParseBound.NestingTooDeep;
+                    break;
+                }
+
+                if (++nodes > maxNodes)
+                {
+                    bound = OfxParseBound.TooManyNodes;
+                    break;
+                }
+
                 var aggregate = new OfxNode(name, stack.Peek());
+
+                // Counted here rather than only in CollectEntries. Entry discovery ran after the whole
+                // tree was retained, so a document carrying maxEntries + 1 compact entries stayed under
+                // both the byte cap and the node budget and still built every node object, and then every
+                // flattened dictionary, before the record bound could fire. IsEntryNode only needs the
+                // name and the parent, both of which are known here.
+                if (IsEntryNode(aggregate) && ++entryCount > maxEntries)
+                {
+                    bound = OfxParseBound.TooManyEntries;
+                    break;
+                }
+
                 stack.Peek().Children.Add(aggregate);
                 stack.Push(aggregate);
             }
@@ -113,7 +191,11 @@ public static class OfxDocumentParser
 
         var entries = new List<IReadOnlyDictionary<string, string>>();
         var accountId = FindFirstLeaf(root, "ACCTID");
-        CollectEntries(root, accountId, entries);
+        if (bound == OfxParseBound.None && !CollectEntries(root, accountId, entries, maxEntries))
+        {
+            bound = OfxParseBound.TooManyEntries;
+        }
+
         return new OfxDocument(accountId, entries);
     }
 
@@ -129,7 +211,13 @@ public static class OfxDocumentParser
             && (node.Parent is null || !WrapperAggregates.Contains(node.Parent.Name));
     }
 
-    private static void CollectEntries(OfxNode node, string? accountId, List<IReadOnlyDictionary<string, string>> entries)
+    // Returns false when the entry bound stopped the walk. One entry past the bound is collected so the
+    // caller can tell "exactly at the bound" from "over it" by count alone.
+    private static bool CollectEntries(
+        OfxNode node,
+        string? accountId,
+        List<IReadOnlyDictionary<string, string>> entries,
+        int maxEntries)
     {
         if (IsEntryNode(node))
         {
@@ -140,6 +228,10 @@ public static class OfxDocumentParser
             FlattenLeaves(node, entry);
             NormalizeEntry(entry, accountId);
             entries.Add(entry);
+            if (entries.Count > maxEntries)
+            {
+                return false;
+            }
         }
 
         // Keep walking children even below an entry aggregate so a malformed SGML file
@@ -147,8 +239,13 @@ public static class OfxDocumentParser
         // every entry instead of silently merging them.
         foreach (var child in node.Children)
         {
-            CollectEntries(child, accountId, entries);
+            if (!CollectEntries(child, accountId, entries, maxEntries))
+            {
+                return false;
+            }
         }
+
+        return true;
     }
 
     private static void FlattenLeaves(OfxNode node, IDictionary<string, string> entry)
@@ -300,3 +397,19 @@ public static class OfxDocumentParser
 public sealed record OfxDocument(
     string? AccountId,
     IReadOnlyList<IReadOnlyDictionary<string, string>> Entries);
+
+/// <summary>Which ingress bound, if any, stopped an OFX parse before the document was complete.</summary>
+public enum OfxParseBound
+{
+    /// <summary>The document was parsed in full.</summary>
+    None = 0,
+
+    /// <summary>Entry discovery stopped the parse.</summary>
+    TooManyEntries = 1,
+
+    /// <summary>Aggregate nesting exceeded the depth bound.</summary>
+    NestingTooDeep = 2,
+
+    /// <summary>The retained node budget - aggregates plus leaves - stopped the parse.</summary>
+    TooManyNodes = 3,
+}
