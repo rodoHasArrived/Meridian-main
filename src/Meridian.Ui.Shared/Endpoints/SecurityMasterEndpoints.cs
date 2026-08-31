@@ -358,7 +358,9 @@ public static partial class SecurityMasterEndpoints
             if (authorizationResult is not null)
                 return authorizationResult;
 
-            var detail = await service.CreateAsync(request, ct).ConfigureAwait(false);
+            var detail = await service
+                .CreateAsync(request with { UpdatedBy = ResolveActor(context) }, ct)
+                .ConfigureAwait(false);
             return Results.Json(detail, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
         .WithName("CreateSecurityMaster").RequirePermission(UserPermission.ModifySecurityMaster)
@@ -390,7 +392,9 @@ public static partial class SecurityMasterEndpoints
             if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
                 return governedRefusal;
 
-            var detail = await service.AmendTermsAsync(request, ct).ConfigureAwait(false);
+            var detail = await service
+                .AmendTermsAsync(request with { UpdatedBy = ResolveActor(context) }, ct)
+                .ConfigureAwait(false);
             return Results.Json(detail, jsonOptions);
         })
         .WithName("AmendSecurityMaster").RequirePermission(UserPermission.ModifySecurityMaster)
@@ -418,7 +422,9 @@ public static partial class SecurityMasterEndpoints
             if (authorizationResult is not null)
                 return authorizationResult;
 
-            await service.DeactivateAsync(request, ct).ConfigureAwait(false);
+            await service
+                .DeactivateAsync(request with { UpdatedBy = ResolveActor(context) }, ct)
+                .ConfigureAwait(false);
             return Results.NoContent();
         })
         .WithName("DeactivateSecurityMaster").RequirePermission(UserPermission.ModifySecurityMaster)
@@ -446,7 +452,9 @@ public static partial class SecurityMasterEndpoints
             if (authorizationResult is not null)
                 return authorizationResult;
 
-            var alias = await service.UpsertAliasAsync(request, ct).ConfigureAwait(false);
+            var alias = await service
+                .UpsertAliasAsync(request with { CreatedBy = ResolveActor(context) }, ct)
+                .ConfigureAwait(false);
             return Results.Json(alias, jsonOptions);
         })
         .WithName("UpsertSecurityMasterAlias").RequirePermission(UserPermission.ModifySecurityMaster)
@@ -527,7 +535,7 @@ public static partial class SecurityMasterEndpoints
             }
 
             var detail = await service
-                .AmendPreferredEquityTermsAsync(securityId, request, ct)
+                .AmendPreferredEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
                 .ConfigureAwait(false);
 
             return Results.Json(detail, jsonOptions);
@@ -588,7 +596,7 @@ public static partial class SecurityMasterEndpoints
             }
 
             var detail = await service
-                .AmendConvertibleEquityTermsAsync(securityId, request, ct)
+                .AmendConvertibleEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
                 .ConfigureAwait(false);
 
             return Results.Json(detail, jsonOptions);
@@ -835,6 +843,7 @@ public static partial class SecurityMasterEndpoints
             var result = await importService.ImportAsync(
                 request.FileContent,
                 request.FileExtension,
+                actor: ResolveActor(context),
                 progress: null,
                 ct: ct).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
@@ -1046,13 +1055,22 @@ public static partial class SecurityMasterEndpoints
             HttpContext context,
             [FromServices] ISecurityMasterQueryService queryService,
             [FromServices] ISecurityMasterService service,
+            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
             CancellationToken ct) =>
         {
+            // Legacy alias for the canonical preferred-equity-terms PATCH route: it reaches the same
+            // AmendPreferredEquityTermsAsync amendment, so it carries the same maker-checker gate.
+            // Refuse before the existence probe, matching the canonical route.
+            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+                return governedRefusal;
+
             var existing = await queryService.GetPreferredEquityTermsAsync(securityId, ct).ConfigureAwait(false);
             if (existing is null)
                 return Results.NotFound();
 
-            var detail = await service.AmendPreferredEquityTermsAsync(securityId, request, ct).ConfigureAwait(false);
+            var detail = await service
+                .AmendPreferredEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
+                .ConfigureAwait(false);
             return Results.Json(detail, jsonOptions);
         })
         .WithName("PatchSecurityPreferredTerms").RequirePermission(UserPermission.ModifySecurityMaster)
@@ -1162,6 +1180,20 @@ public static partial class SecurityMasterEndpoints
         return (chosenWinnerSource, reason);
     }
 
+    /// <summary>
+    /// The single source of actor identity for Security Master writes. Every mutation route stamps
+    /// its request's <c>UpdatedBy</c>/<c>CreatedBy</c> from this rather than trusting the body, so a
+    /// caller cannot attribute its own write to somebody else. Unattended callers are not refused:
+    /// <see cref="ApiKeyMiddleware"/> stamps a workload identity as the current user, so an ingest
+    /// authenticating with a key is recorded as that workload rather than as a human operator.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately narrow. <c>SourceSystem</c> stays caller-supplied because it identifies the
+    /// upstream SOURCE for conflict detection and precedence, not the actor — deriving it from the
+    /// principal would collapse distinct vendors into one and corrupt the precedence ladder. Likewise
+    /// <c>Reason</c>, <c>SourceRecordId</c> and the valid-time fields stay caller-authored: they
+    /// describe the change and its upstream record, which only the caller knows.
+    /// </remarks>
     private static string ResolveActor(HttpContext context)
     {
         if (EndpointAuthorization.TryResolveActor(context, out var username))
@@ -1185,11 +1217,17 @@ public static partial class SecurityMasterEndpoints
     /// <summary>
     /// ADR-guarded maker-checker enforcement for DIRECT term amendments: when
     /// <see cref="AppSecurityMaster.SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments"/>
-    /// is enabled, the generic amend route and the bespoke preferred/convertible equity PATCH
-    /// routes are refused with guidance to stage the correction through the governed workbench
-    /// (Draft → Submitted → Approved → Published), whose canonical-merge publish handler applies
-    /// the approved value to the golden record. Null when direct amendments remain permitted.
+    /// is enabled, the generic amend route, the bespoke preferred/convertible equity PATCH routes,
+    /// and the legacy <c>/equities/{securityId}/preferred-terms</c> alias are refused with guidance
+    /// to stage the correction through the governed workbench (Draft → Submitted → Approved →
+    /// Published), whose canonical-merge publish handler applies the approved value to the golden
+    /// record. Null when direct amendments remain permitted.
     /// </summary>
+    /// <remarks>
+    /// Every route that reaches an <c>Amend*TermsAsync</c> mutation must call this; the legacy alias
+    /// was previously an ungated path to the same amendment, so a deployment that enabled the flag
+    /// specifically to force maker-checker still had a direct write surface.
+    /// </remarks>
     private static IResult? RequireGovernedTermAmendmentRoute(
         Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions)
         => workbenchOptions.CurrentValue.RequireGovernedTermAmendments

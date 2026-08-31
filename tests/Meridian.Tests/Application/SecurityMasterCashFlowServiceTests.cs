@@ -15,7 +15,7 @@ public sealed class SecurityMasterCashFlowServiceTests
     public async Task GetProjectionAsync_CalculatedBullet_ShouldGenerateCouponAndMaturityScheduleFromRetainedTerms()
     {
         var securityId = Guid.Parse("11111111-aaaa-aaaa-aaaa-111111111111");
-        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var asOf = WholePeriodIssueDate();
         var store = Substitute.For<ISecurityMasterCashFlowStore>();
         store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
             .Returns(new SecurityCashFlowSourceDto(
@@ -675,7 +675,7 @@ public sealed class SecurityMasterCashFlowServiceTests
     public async Task BuildLedgerPostingsAsync_FreshBaseProjection_ShouldProduceBalancedCouponAccruals()
     {
         var securityId = Guid.Parse("55555555-eeee-eeee-eeee-555555555555");
-        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var asOf = WholePeriodIssueDate();
         var store = Substitute.For<ISecurityMasterCashFlowStore>();
         store.GetSourceAsync(securityId, Arg.Any<CancellationToken>())
             .Returns(new SecurityCashFlowSourceDto(
@@ -753,7 +753,7 @@ public sealed class SecurityMasterCashFlowServiceTests
     public async Task GetProjectionAsync_SwapLegsWithDirections_ShouldNetReceiveMinusPay()
     {
         var securityId = Guid.Parse("66666666-ffff-ffff-ffff-666666666666");
-        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var asOf = WholePeriodIssueDate();
         var service = BuildService(
             StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet),
             QueryWith(securityId, JsonSerializer.SerializeToElement(new
@@ -788,7 +788,7 @@ public sealed class SecurityMasterCashFlowServiceTests
     public async Task GetProjectionAsync_SingleFloatingLeg_ProjectsFloatingRateNoteWithPrincipalExchange()
     {
         var securityId = Guid.Parse("77777777-aaaa-bbbb-cccc-777777777777");
-        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var asOf = WholePeriodIssueDate();
         var terms = JsonSerializer.SerializeToElement(new
         {
             issueDate = asOf,
@@ -820,7 +820,7 @@ public sealed class SecurityMasterCashFlowServiceTests
     public async Task GetProjectionAsync_FloatingLeg_AppliesScenarioShiftToFloatingRatesOnly()
     {
         var securityId = Guid.Parse("88888888-aaaa-bbbb-cccc-888888888888");
-        var asOf = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var asOf = WholePeriodIssueDate();
         var service = BuildService(
             StoreWith(securityId, StructuredCashFlowSourceKind.CalculatedBullet),
             QueryWith(securityId, JsonSerializer.SerializeToElement(new
@@ -873,6 +873,14 @@ public sealed class SecurityMasterCashFlowServiceTests
         projection!.Schedule.Should().BeEmpty();
         projection.LegSchedules.Should().HaveCount(2);
         projection.LegSchedules![0].Schedule.Should().NotBeEmpty();
+    }
+
+    private static DateOnly WholePeriodIssueDate()
+    {
+        // Exact coupon assertions require whole 30/360 periods. The first of the current UTC month
+        // keeps every payment ahead of the service's real-time cutoff and avoids month-end clamping.
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        return new DateOnly(today.Year, today.Month, 1);
     }
 
     private static ISecurityMasterCashFlowStore StoreWith(Guid securityId, StructuredCashFlowSourceKind sourceKind)

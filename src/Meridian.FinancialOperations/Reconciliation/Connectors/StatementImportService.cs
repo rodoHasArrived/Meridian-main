@@ -77,8 +77,11 @@ public sealed class StatementImportService(
     StatementConnectorRegistry connectors,
     StatementMappingProfileCatalog catalog,
     IStatementRunWorkflowService workflow,
-    string dataRoot) : IStatementImportCommitService
+    string dataRoot,
+    StatementIngressLimits? ingressLimits = null) : IStatementImportCommitService
 {
+    private readonly StatementIngressLimits _ingressLimits = ingressLimits ?? StatementIngressLimits.Default;
+
     private const int SamplesPerKind = 5;
     private const int MaxProfileSuggestions = 3;
     private const string ReadyStatus = "ReadyToImport";
@@ -98,6 +101,18 @@ public sealed class StatementImportService(
         string? connectorId,
         CancellationToken ct = default)
     {
+        if (document.Content.Length > _ingressLimits.MaxDocumentBytes)
+        {
+            return BuildPreview(
+                connectorId ?? "unknown",
+                connectorId ?? "Unknown connector",
+                profileId: document.MappingProfileId,
+                document,
+                parse: null,
+                extraIssues: [_ingressLimits.DocumentTooLarge(document.Content.Length)],
+                suggestions: []);
+        }
+
         var (connector, resolutionIssue) = ResolveConnector(document, connectorId);
         if (connector is null)
         {
@@ -113,6 +128,28 @@ public sealed class StatementImportService(
 
         var parse = await connector.ParseAsync(document, ct).ConfigureAwait(false);
         var issues = new List<StatementParseIssue>();
+        // TotalRetainedRows, not Records.Count. Five evidence-only collections on the parse result -
+        // account snapshots, activity events, activity cursors, tax lots, borrow positions - never
+        // contribute to Records, so a connector could return one canonical row alongside hundreds of
+        // thousands of evidence rows, pass this cap, and have every one of them serialized into the
+        // retained artifact. Bounding the total makes the cap a property of this seam rather than of
+        // whichever loops each connector happens to guard, and it covers connectors added later.
+        if (parse.TotalRetainedRows > _ingressLimits.MaxRecords)
+        {
+            // Return here rather than falling through. BuildPreview groups every canonical record and
+            // activity event and projects every account snapshot into fresh collections, so continuing
+            // would allocate in proportion to a payload already known to be refused - the opposite of what
+            // this bound is for. Commit and Validate both return at this point; Preview did not.
+            return BuildPreview(
+                connector.Descriptor.ConnectorId,
+                connector.Descriptor.DisplayName,
+                parse.ProfileId,
+                document,
+                parse: null,
+                extraIssues: [_ingressLimits.TooManyRecords()],
+                suggestions: []);
+        }
+
         var profile = await catalog.FindAsync(parse.ProfileId, ct).ConfigureAwait(false);
         if (profile is not null && StatementMappingProfileCatalog.CheckDrift(profile, parse.Fingerprint) is { } drift)
         {
@@ -135,6 +172,17 @@ public sealed class StatementImportService(
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+
+        // The byte cap has to be checked before this copy, not after. Every connector enforces the same
+        // bound, but the copy below is what actually doubles an oversize payload in memory, and it happens
+        // before the connector is even resolved — so a check that lived only in the connector would run
+        // after the allocation it exists to prevent.
+        if (request.Document.Content.Length > _ingressLimits.MaxDocumentBytes)
+        {
+            throw new InvalidDataException(
+                $"Statement cannot be imported: {Describe(_ingressLimits.DocumentTooLarge(request.Document.Content.Length))}");
+        }
+
         var capturedSourceBytes = request.Document.Content.ToArray();
         var capturedDocument = request.Document with { Content = capturedSourceBytes };
         var sourceKind = NormalizeSourceKind(request.SourceKind);
@@ -142,15 +190,26 @@ public sealed class StatementImportService(
         var (connector, resolutionIssue) = ResolveConnector(capturedDocument, request.ConnectorId);
         if (connector is null)
         {
-            throw new InvalidDataException(resolutionIssue!.Message);
+            throw new InvalidDataException(Describe(resolutionIssue!));
         }
 
         var parse = await connector.ParseAsync(capturedDocument, ct).ConfigureAwait(false);
+
+        // The record cap is enforced here, not only inside the connectors that stream it. camt.053 and
+        // BAI2 refuse mid-parse, but every other connector resolves through this service too, so without
+        // this check a format that accumulates rows without counting them could commit a document past
+        // the configured bound.
+        if (parse.TotalRetainedRows > _ingressLimits.MaxRecords)
+        {
+            throw new InvalidDataException(
+                $"Statement cannot be imported: {Describe(_ingressLimits.TooManyRecords())}");
+        }
+
         if (parse.HasErrors)
         {
             var errors = parse.Issues
                 .Where(static issue => issue.Severity == StatementParseIssue.ErrorSeverity)
-                .Select(static issue => issue.RowNumber is { } row ? $"Row {row}: {issue.Message}" : issue.Message);
+                .Select(Describe);
             throw new InvalidDataException($"Statement cannot be imported: {string.Join(" ", errors)}");
         }
 
@@ -380,16 +439,35 @@ public sealed class StatementImportService(
     {
         ArgumentNullException.ThrowIfNull(document);
 
+        if (document.Content.Length > _ingressLimits.MaxDocumentBytes)
+        {
+            return new StatementImportValidationResult(
+                false,
+                0,
+                [Describe(_ingressLimits.DocumentTooLarge(document.Content.Length))]);
+        }
+
         var (connector, resolutionIssue) = ResolveConnector(document, connectorId);
         if (connector is null)
         {
-            return new StatementImportValidationResult(false, 0, [resolutionIssue!.Message]);
+            return new StatementImportValidationResult(false, 0, [Describe(resolutionIssue!)]);
         }
 
         var parse = await connector.ParseAsync(document, ct).ConfigureAwait(false);
+        if (parse.TotalRetainedRows > _ingressLimits.MaxRecords)
+        {
+            return new StatementImportValidationResult(
+                false,
+                parse.Records.Count,
+                [Describe(_ingressLimits.TooManyRecords())]);
+        }
+
+        // StatementImportValidationResult.Errors is a string list, not issue objects, so the code has to
+        // travel inside the text here exactly as it does in the commit throws. Preview is the only path
+        // that returns StatementImportIssueDto with Code as its own field.
         var errors = parse.Issues
             .Where(static issue => string.Equals(issue.Severity, StatementParseIssue.ErrorSeverity, StringComparison.OrdinalIgnoreCase))
-            .Select(static issue => issue.RowNumber is { } row ? $"Row {row}: {issue.Message}" : issue.Message)
+            .Select(Describe)
             .ToArray();
 
         if (parse.HasErrors)
@@ -674,6 +752,20 @@ public sealed class StatementImportService(
 
         return $"\"{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
     }
+
+    /// <summary>
+    /// Renders an issue with its stable code intact for the two paths that report as text. Preview is the
+    /// only one that returns the code as its own field, on StatementImportIssueDto; commit throws an
+    /// InvalidDataException carrying a message, and validate returns StatementImportValidationResult
+    /// whose Errors is a list of strings. Without this, the same document yielded an actionable
+    /// STATEMENT_DOCUMENT_TOO_LARGE from preview and prose a caller cannot branch on from either of the
+    /// others. The code is the part an operator or a client can act on programmatically, so it belongs in
+    /// the text wherever the text is all that survives.
+    /// </summary>
+    private static string Describe(StatementParseIssue issue)
+        => issue.RowNumber is { } row
+            ? $"[{issue.Code}] Row {row}: {issue.Message}"
+            : $"[{issue.Code}] {issue.Message}";
 
     private static string NormalizeSourceKind(string sourceKind)
     {

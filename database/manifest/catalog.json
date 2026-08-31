@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "8ccedfa31097c95ee26b62f384c13356d6431c1856a431a1048f21b139a1b3ab",
+  "database_fingerprint": "76c08d201226b6189dace96e46886d8ed162fbc3616e5e75487569aa5bc4e550",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -1115,6 +1115,102 @@
       "target": "ledger.accounting_periods_pkey",
       "target_kind": "index",
       "target_name": "accounting_periods_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "3603dafc9f618d6717e6342f08eac1fdf440fcc3d94d5d7b0329891377117ba3",
+      "kind": "normal",
+      "source": "ledger.ck_accounting_audit_chain_genesis on ledger.accounting_action_audit_chain_head",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.accounting_action_audit_chain_head.genesis_sequence",
+      "target_kind": "table column",
+      "target_name": "accounting_action_audit_chain_head",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "548a49f34b1983d22153925c12f78c7e5e388de9f783f59a043599230a68a0bd",
+      "kind": "normal",
+      "source": "ledger.ck_accounting_audit_chain_genesis on ledger.accounting_action_audit_chain_head",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.accounting_action_audit_chain_head.next_sequence",
+      "target_kind": "table column",
+      "target_name": "accounting_action_audit_chain_head",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "64b9a62e08919122bb5e491bf6835a5217a6baa5220d3fa2c400a7a0d9234c1a",
+      "kind": "normal",
+      "source": "ledger.ck_accounting_audit_chain_last_hash on ledger.accounting_action_audit_chain_head",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.accounting_action_audit_chain_head.last_hash",
+      "target_kind": "table column",
+      "target_name": "accounting_action_audit_chain_head",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "48897ff97aa3fbb445202c9963a2dc0d5a6fe51e349dfe276c46ec55b1d16943",
+      "kind": "normal",
+      "source": "ledger.ck_accounting_audit_chain_next_sequence on ledger.accounting_action_audit_chain_head",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.accounting_action_audit_chain_head.next_sequence",
+      "target_kind": "table column",
+      "target_name": "accounting_action_audit_chain_head",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "8da0d3928a8d0428f064046f381d92f244634cc53cd856b581c53e57379edba9",
+      "kind": "normal",
+      "source": "ledger.ck_accounting_audit_chain_singleton on ledger.accounting_action_audit_chain_head",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.accounting_action_audit_chain_head.chain_id",
+      "target_kind": "table column",
+      "target_name": "accounting_action_audit_chain_head",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "ebe2f0b114b2e8e7316a377341112b602200463d9b249a70b4dc3d35dc73af12",
+      "kind": "normal",
+      "source": "ledger.ck_accounting_audit_entry_hash_digest on ledger.accounting_action_audit_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.accounting_action_audit_events.entry_hash",
+      "target_kind": "table column",
+      "target_name": "accounting_action_audit_events",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "25837d1aad53cd859e4479cccd66057a018645373c9554952fb4dda78e525223",
+      "kind": "normal",
+      "source": "ledger.ck_accounting_audit_payload_hash_digest on ledger.accounting_action_audit_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.accounting_action_audit_events.payload_hash",
+      "target_kind": "table column",
+      "target_name": "accounting_action_audit_events",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "c90fbcfe276dc6e403a68141ce2156f0c3823591527766e1c2305d41ad01b417",
+      "kind": "normal",
+      "source": "ledger.ck_accounting_audit_previous_hash_digest on ledger.accounting_action_audit_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.accounting_action_audit_events.previous_hash",
+      "target_kind": "table column",
+      "target_name": "accounting_action_audit_events",
       "target_schema": "ledger"
     },
     {
@@ -8673,6 +8769,10 @@
       "object": "column:fund_structure.business.organization_id"
     },
     {
+      "fingerprint": "5e37bb2d58f02bf69fcf2b96d6fe06658a723f72c5922621e093c02c8c20b645",
+      "object": "column:fund_structure.business.tenant_id"
+    },
+    {
       "fingerprint": "f3414c549a177216f9ab9a85277ee4629a210d35088b21eb097bc667244cad0e",
       "object": "column:fund_structure.business.updated_at"
     },
@@ -8719,6 +8819,10 @@
     {
       "fingerprint": "03fc6c2258119aac4a24c9a9825c2db829f10c4d1db8c64970b18f9078ca5e33",
       "object": "column:fund_structure.client.name"
+    },
+    {
+      "fingerprint": "6ac35a1fe9dcc866eb8254e51ef4b7266da2bbb8173d05fa674214d4cbddb87f",
+      "object": "column:fund_structure.client.tenant_id"
     },
     {
       "fingerprint": "a161b2d8fe7d9485d4ae9dc7a112ea78526d088ff1dde365dc5fabba1c9cb288",
@@ -8777,6 +8881,10 @@
       "object": "column:fund_structure.fund.sleeve_ids"
     },
     {
+      "fingerprint": "3f3f4f0d0cadce108f557ecccc69406a8dacb84df9f3c3416a7a58ade3b94ccf",
+      "object": "column:fund_structure.fund.tenant_id"
+    },
+    {
       "fingerprint": "4e9cce8918c462f4b6ed2e1e3743e3e051dd21619e3b2b3260ff67c17340e62e",
       "object": "column:fund_structure.fund.updated_at"
     },
@@ -8813,6 +8921,10 @@
       "object": "column:fund_structure.fund_structure_assignment.node_id"
     },
     {
+      "fingerprint": "3d8ea888209e177123bd4c30a285068a0d64b981cabc9f5fa1af1aca109418ea",
+      "object": "column:fund_structure.fund_structure_assignment.tenant_id"
+    },
+    {
       "fingerprint": "e158711c3621c93899b2a806fa2dbccf6e9bbcc068d3f698bce05021478e47ce",
       "object": "column:fund_structure.fund_structure_assignment.updated_at"
     },
@@ -8833,6 +8945,10 @@
       "object": "column:fund_structure.fund_structure_linked_account.account_id"
     },
     {
+      "fingerprint": "bb890f24869d69add953668d78c11e53c55b3e660177a12758b40977ca895205",
+      "object": "column:fund_structure.fund_structure_linked_account.tenant_id"
+    },
+    {
       "fingerprint": "4aaebd50d5f2a575b3299949099d719545015ba8c1cdf97c2072d40ee22dc2be",
       "object": "column:fund_structure.fund_structure_linked_account.updated_at"
     },
@@ -8847,6 +8963,38 @@
     {
       "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
       "object": "column:fund_structure.fund_structure_schema_migrations.filename"
+    },
+    {
+      "fingerprint": "18c7e02fa29d3fcef034e27aff3f5c6e6a2ede4d462bf4d3efdfdde99773757b",
+      "object": "column:fund_structure.fund_structure_tenant_quarantine.candidate_tenant_ids"
+    },
+    {
+      "fingerprint": "68e6061670ae76ecf64e35b1f16145da46923b048a8dd75504482cc2aa1b1146",
+      "object": "column:fund_structure.fund_structure_tenant_quarantine.detected_at_utc"
+    },
+    {
+      "fingerprint": "31a6610508b8c18b39c437f2245fe7d6b874e3ed47d73100906025c06d0503e7",
+      "object": "column:fund_structure.fund_structure_tenant_quarantine.node_id"
+    },
+    {
+      "fingerprint": "e1c03dec1172c559c9d087373073e277e7a510961ad3dae58ebfc7bcb6b3cb00",
+      "object": "column:fund_structure.fund_structure_tenant_quarantine.node_kind"
+    },
+    {
+      "fingerprint": "850e0da2cbcfea4b2edd7c1dc6100fe0719b33d8c73d0b7ea760b8d00752f6c5",
+      "object": "column:fund_structure.fund_structure_tenant_quarantine.reason"
+    },
+    {
+      "fingerprint": "2ebbcc17e869056eda6062622ebec3f3526d9ae0c181245b32e589361daab4a4",
+      "object": "column:fund_structure.fund_structure_tenant_quarantine.resolution_note"
+    },
+    {
+      "fingerprint": "ee21099bfb3ddcd6a3a69dab7d9e35a7596aae436422d0d612083bd11bae780c",
+      "object": "column:fund_structure.fund_structure_tenant_quarantine.resolved_at_utc"
+    },
+    {
+      "fingerprint": "ed2bcad081a2b8c935f1e6f7c032500343766bbe66fdb083d29bc6c6071ca95a",
+      "object": "column:fund_structure.fund_structure_tenant_quarantine.resolved_tenant_id"
     },
     {
       "fingerprint": "a7c52aa2f079653f43d0c756d9dda3296d81f49e3a0b94f538432c2282fb5166",
@@ -8903,6 +9051,10 @@
     {
       "fingerprint": "f2a2743b8ef8cd1fae350f08622caaf0ed3d5c8332d2a048f80e4128ff264caa",
       "object": "column:fund_structure.investment_portfolio.sleeve_id"
+    },
+    {
+      "fingerprint": "ab141221643e62e2ecccbb9dbb99395926e05f1c3caa20ac85117d61245bb4e2",
+      "object": "column:fund_structure.investment_portfolio.tenant_id"
     },
     {
       "fingerprint": "80854d226356951b163ab7f1c4960b7cf6591f97f3ddaf2ecda7c65a48e4aa62",
@@ -8973,6 +9125,10 @@
       "object": "column:fund_structure.legal_entity.registration_number"
     },
     {
+      "fingerprint": "ab141221643e62e2ecccbb9dbb99395926e05f1c3caa20ac85117d61245bb4e2",
+      "object": "column:fund_structure.legal_entity.tenant_id"
+    },
+    {
       "fingerprint": "80854d226356951b163ab7f1c4960b7cf6591f97f3ddaf2ecda7c65a48e4aa62",
       "object": "column:fund_structure.legal_entity.updated_at"
     },
@@ -9013,6 +9169,10 @@
       "object": "column:fund_structure.organization.organization_id"
     },
     {
+      "fingerprint": "844b0b31d17ab74811ea261b15285f42feb3ab7de5c6ec1f084cb4637317f911",
+      "object": "column:fund_structure.organization.tenant_id"
+    },
+    {
       "fingerprint": "d4f33bf42cce7c57976cb6878163b3ee2802cba26a96d385c5734af6943cc82f",
       "object": "column:fund_structure.organization.updated_at"
     },
@@ -9051,6 +9211,10 @@
     {
       "fingerprint": "84adbb5430f51b18f74212f930847c5d88fbdb2aea7096acb2076b0aa81a14fd",
       "object": "column:fund_structure.ownership_link.relationship_type"
+    },
+    {
+      "fingerprint": "844b0b31d17ab74811ea261b15285f42feb3ab7de5c6ec1f084cb4637317f911",
+      "object": "column:fund_structure.ownership_link.tenant_id"
     },
     {
       "fingerprint": "d4f33bf42cce7c57976cb6878163b3ee2802cba26a96d385c5734af6943cc82f",
@@ -9101,6 +9265,10 @@
       "object": "column:fund_structure.sleeve.strategy_ids"
     },
     {
+      "fingerprint": "6ac35a1fe9dcc866eb8254e51ef4b7266da2bbb8173d05fa674214d4cbddb87f",
+      "object": "column:fund_structure.sleeve.tenant_id"
+    },
+    {
       "fingerprint": "a161b2d8fe7d9485d4ae9dc7a112ea78526d088ff1dde365dc5fabba1c9cb288",
       "object": "column:fund_structure.sleeve.updated_at"
     },
@@ -9147,6 +9315,10 @@
     {
       "fingerprint": "1d061d831f5d71a3d310891a7382b7a11c523fcf2fb72d408926944e6a44ab9e",
       "object": "column:fund_structure.vehicle.name"
+    },
+    {
+      "fingerprint": "97ea3991c58e8d9ba9e95210cbb2c7084d8d73757d721b3572f0b804b068b310",
+      "object": "column:fund_structure.vehicle.tenant_id"
     },
     {
       "fingerprint": "980e61f5c7b3bd4221e5bbf35cfaa3e159e114b19db4e4ca9f0e05b8cacee5f3",
@@ -9265,6 +9437,34 @@
       "object": "column:identity_access.user_access_assignment.version"
     },
     {
+      "fingerprint": "26cc88022f5330bd61f4471361a84b62040bb5df1c8b9de22079e06fbcc284d2",
+      "object": "column:ledger.accounting_action_audit_chain_head.chain_id"
+    },
+    {
+      "fingerprint": "36fd62e3bc1a033db59209ec946347af3edd1a3535462a3e3291c307646eea15",
+      "object": "column:ledger.accounting_action_audit_chain_head.genesis_recorded_at_utc"
+    },
+    {
+      "fingerprint": "3737f2e870294f34fb963ba7fd7daba2005264ac908aed74cfdf0e4d4911d9e4",
+      "object": "column:ledger.accounting_action_audit_chain_head.genesis_sequence"
+    },
+    {
+      "fingerprint": "f9bff6096628fa4a5d7be9ed79f699761bc5445964a8eb938434b6bcaac01c32",
+      "object": "column:ledger.accounting_action_audit_chain_head.last_hash"
+    },
+    {
+      "fingerprint": "1f4ef2101b3ad306b9bb96792975b8feb91e982b89915d91ffea96d246d1367b",
+      "object": "column:ledger.accounting_action_audit_chain_head.next_sequence"
+    },
+    {
+      "fingerprint": "d814f8c71b9e8c67ef35c732968c3d5e4e998b3a702d24c858a4f7c3fda0cb25",
+      "object": "column:ledger.accounting_action_audit_chain_head.pre_chain_event_count"
+    },
+    {
+      "fingerprint": "2307ae89bd57fae444ec6410db4b429a75054b03485e7bf2078762ce4d202baf",
+      "object": "column:ledger.accounting_action_audit_chain_head.schema_version"
+    },
+    {
       "fingerprint": "c4847d8da34b8bbdf49218ee1e6e295ea4f7c3050adfd3f04f1129cc0ef49eb3",
       "object": "column:ledger.accounting_action_audit_events.action"
     },
@@ -9285,12 +9485,20 @@
       "object": "column:ledger.accounting_action_audit_events.before_hash"
     },
     {
+      "fingerprint": "bd76a28f51f9a92792f371b8d00879b7e7e8c1fa3d70e475a4d20a2ad6e10f3f",
+      "object": "column:ledger.accounting_action_audit_events.chain_sequence"
+    },
+    {
       "fingerprint": "6cfbdb7e31de307bb8384a499fee3aedc26c8f64cacc9c61135fdce2b5e0a04a",
       "object": "column:ledger.accounting_action_audit_events.company_id"
     },
     {
       "fingerprint": "3d417b78f8a485713ab48ac5e7daaad7cd658e2f7433454678e9a42a42299055",
       "object": "column:ledger.accounting_action_audit_events.correlation_id"
+    },
+    {
+      "fingerprint": "c2786e82ae10b708f0cdbb3e39fcd0421efb0a975037e9fba76fcf9830333b43",
+      "object": "column:ledger.accounting_action_audit_events.entry_hash"
     },
     {
       "fingerprint": "a7a374b2e253426584960f4a0fc638a7001805abdaf797112e306be47265323c",
@@ -9303,6 +9511,14 @@
     {
       "fingerprint": "7e73004071b996196f85f2fe326d8e01704fe3d672b96a4cb4482871ca3b561d",
       "object": "column:ledger.accounting_action_audit_events.ledger_book_id"
+    },
+    {
+      "fingerprint": "dae3b9237ddcc51a4881fee2c4597c019992f013e54e7809564d2e5f2b0b4001",
+      "object": "column:ledger.accounting_action_audit_events.payload_hash"
+    },
+    {
+      "fingerprint": "f9d07e980e3cf5bfa9a1bbe8d33f98af8fe985911e1b97b7a2e9c4ae02645adc",
+      "object": "column:ledger.accounting_action_audit_events.previous_hash"
     },
     {
       "fingerprint": "0df6b3177831e92218d9318738ea509cd5aa1bb5ec3a377ef3272b768c474da6",
@@ -14929,6 +15145,14 @@
       "object": "comment:schema:public"
     },
     {
+      "fingerprint": "213963d36125ba654e9b0281109eb6a80356a5d92f154cabc3ce6f7305603f22",
+      "object": "comment:table:fund_structure.fund_structure_tenant_quarantine"
+    },
+    {
+      "fingerprint": "2559e9695ea90341f1cd97f7f81d9851a9d587bec525d982fecbe6b33bb2b332",
+      "object": "comment:table:ledger.accounting_action_audit_chain_head"
+    },
+    {
       "fingerprint": "662387c5ef335ca3a3bb6e0725e799c48edddff894143d6884c1c4ef37b4e94f",
       "object": "comment:table:ledger.journal_leg_currency_affirmations"
     },
@@ -15209,6 +15433,10 @@
       "object": "constraint:fund_structure.fund_structure_schema_migrations.fund_structure_schema_migrations_pkey"
     },
     {
+      "fingerprint": "4acdfa20455bde2516bcfd20670263f0ef7f830f64e3113abb5bc61460412a11",
+      "object": "constraint:fund_structure.fund_structure_tenant_quarantine.fund_structure_tenant_quarantine_pkey"
+    },
+    {
       "fingerprint": "505816faec246546e6825084ccbd0056929a0c5c5f69fc681f27e30e80668071",
       "object": "constraint:fund_structure.investment_portfolio.investment_portfolio_pkey"
     },
@@ -15241,8 +15469,40 @@
       "object": "constraint:identity_access.user_access_assignment.user_access_assignment_pkey"
     },
     {
+      "fingerprint": "076a5bbdb9c1c5666988c80d385e015578dd16c3be4b505972a1e886f3c1626c",
+      "object": "constraint:ledger.accounting_action_audit_chain_head.accounting_action_audit_chain_head_pkey"
+    },
+    {
+      "fingerprint": "e9ba89538cdbfcf6d914c82caa38e21f08b3fbf785910e2ac9b31b5d5dd8c1dc",
+      "object": "constraint:ledger.accounting_action_audit_chain_head.ck_accounting_audit_chain_genesis"
+    },
+    {
+      "fingerprint": "d02b1665c16021e543b750a50de68c0ec18bf78f3cef2c9961ac53651292af49",
+      "object": "constraint:ledger.accounting_action_audit_chain_head.ck_accounting_audit_chain_last_hash"
+    },
+    {
+      "fingerprint": "b80085c6be995a57a9349cfe371128e546d281de478dd10b1f320f063938099d",
+      "object": "constraint:ledger.accounting_action_audit_chain_head.ck_accounting_audit_chain_next_sequence"
+    },
+    {
+      "fingerprint": "91c108c26fd7ded5a3bec8f83399c0080512a2036da6388426c0b039eba2d2ea",
+      "object": "constraint:ledger.accounting_action_audit_chain_head.ck_accounting_audit_chain_singleton"
+    },
+    {
       "fingerprint": "0477620e7aad0d31272844b2c922300efcc8eb01e8d035e23506c9eee8db4f67",
       "object": "constraint:ledger.accounting_action_audit_events.accounting_action_audit_events_pkey"
+    },
+    {
+      "fingerprint": "dce6cb7659c374866423ccafd4ce3377e127c60eef6862c2a5ce6a680ad43900",
+      "object": "constraint:ledger.accounting_action_audit_events.ck_accounting_audit_entry_hash_digest"
+    },
+    {
+      "fingerprint": "defe0d8dbd37929bbaa544dba5effff18e26484377871c9e6fb16edf78894333",
+      "object": "constraint:ledger.accounting_action_audit_events.ck_accounting_audit_payload_hash_digest"
+    },
+    {
+      "fingerprint": "04acf5c158a5e908e80829bf52f494134e251e8bc4cf1f7a669679a7d0a2da95",
+      "object": "constraint:ledger.accounting_action_audit_events.ck_accounting_audit_previous_hash_digest"
     },
     {
       "fingerprint": "2c715af77634ddead30961f5dad74fb577827b6ac468a2551233335a319eb047",
@@ -17419,6 +17679,38 @@
     {
       "fingerprint": "8bc229cb9e51a19dc6a947b00d78d8435998835639b9c8c49155d6c8387a4fe0",
       "object": "dependency:ledger.atomic_tax_lot_posting_batches_period_id_fkey on ledger.atomic_tax_lot_posting_batches->ledger.accounting_periods_pkey:normal"
+    },
+    {
+      "fingerprint": "3603dafc9f618d6717e6342f08eac1fdf440fcc3d94d5d7b0329891377117ba3",
+      "object": "dependency:ledger.ck_accounting_audit_chain_genesis on ledger.accounting_action_audit_chain_head->ledger.accounting_action_audit_chain_head.genesis_sequence:normal"
+    },
+    {
+      "fingerprint": "548a49f34b1983d22153925c12f78c7e5e388de9f783f59a043599230a68a0bd",
+      "object": "dependency:ledger.ck_accounting_audit_chain_genesis on ledger.accounting_action_audit_chain_head->ledger.accounting_action_audit_chain_head.next_sequence:normal"
+    },
+    {
+      "fingerprint": "64b9a62e08919122bb5e491bf6835a5217a6baa5220d3fa2c400a7a0d9234c1a",
+      "object": "dependency:ledger.ck_accounting_audit_chain_last_hash on ledger.accounting_action_audit_chain_head->ledger.accounting_action_audit_chain_head.last_hash:normal"
+    },
+    {
+      "fingerprint": "48897ff97aa3fbb445202c9963a2dc0d5a6fe51e349dfe276c46ec55b1d16943",
+      "object": "dependency:ledger.ck_accounting_audit_chain_next_sequence on ledger.accounting_action_audit_chain_head->ledger.accounting_action_audit_chain_head.next_sequence:normal"
+    },
+    {
+      "fingerprint": "8da0d3928a8d0428f064046f381d92f244634cc53cd856b581c53e57379edba9",
+      "object": "dependency:ledger.ck_accounting_audit_chain_singleton on ledger.accounting_action_audit_chain_head->ledger.accounting_action_audit_chain_head.chain_id:normal"
+    },
+    {
+      "fingerprint": "ebe2f0b114b2e8e7316a377341112b602200463d9b249a70b4dc3d35dc73af12",
+      "object": "dependency:ledger.ck_accounting_audit_entry_hash_digest on ledger.accounting_action_audit_events->ledger.accounting_action_audit_events.entry_hash:normal"
+    },
+    {
+      "fingerprint": "25837d1aad53cd859e4479cccd66057a018645373c9554952fb4dda78e525223",
+      "object": "dependency:ledger.ck_accounting_audit_payload_hash_digest on ledger.accounting_action_audit_events->ledger.accounting_action_audit_events.payload_hash:normal"
+    },
+    {
+      "fingerprint": "c90fbcfe276dc6e403a68141ce2156f0c3823591527766e1c2305d41ad01b417",
+      "object": "dependency:ledger.ck_accounting_audit_previous_hash_digest on ledger.accounting_action_audit_events->ledger.accounting_action_audit_events.previous_hash:normal"
     },
     {
       "fingerprint": "708398d85c1b7792b62c5b9d91448efe6b90f2bd90bded74a615cd624c24a433",
@@ -19893,12 +20185,52 @@
       "object": "index:fund_structure.fund_structure_schema_migrations_pkey"
     },
     {
+      "fingerprint": "5d5580092dc23c1f0402d1d2b7c5c587499a00fdbb0f800ab8b9c25ba1326a40",
+      "object": "index:fund_structure.fund_structure_tenant_quarantine_pkey"
+    },
+    {
       "fingerprint": "fe57257d454fc1e1284c2580d070b0513bd5c027c3899005747ece404f664c18",
       "object": "index:fund_structure.investment_portfolio_pkey"
     },
     {
+      "fingerprint": "6ab76dc7d838e83e5e98ede14c2e287dd795fa1d2a93ffbcb02a9cb499caa347",
+      "object": "index:fund_structure.ix_business_tenant"
+    },
+    {
+      "fingerprint": "1f39704eb71a126be9a7dbb774174c1919ba148dc63d0568de0d6ebdce374a54",
+      "object": "index:fund_structure.ix_client_tenant"
+    },
+    {
       "fingerprint": "2e6ef204ccfea3c2a12cb2448701692bbbd408691baec7827c547599ac908a3f",
       "object": "index:fund_structure.ix_fund_structure_assignment_node"
+    },
+    {
+      "fingerprint": "97255d35240667235077288acf1b5270ccafe2162f7ae5a70148f0f2a770b5b3",
+      "object": "index:fund_structure.ix_fund_structure_assignment_tenant"
+    },
+    {
+      "fingerprint": "a6d6a16ada6a663782135f568e6b4ce217151b7f96d0996492c53d28560ecc78",
+      "object": "index:fund_structure.ix_fund_structure_linked_account_tenant"
+    },
+    {
+      "fingerprint": "9a6364fc4122c79870e708df697ed4cd9728c1452aca3fc2b1a12f1e8e41e299",
+      "object": "index:fund_structure.ix_fund_structure_tenant_quarantine_open"
+    },
+    {
+      "fingerprint": "2334c4f87ad48ae7f58a36b8a40476a79f8acee77d7f85770b0eaf24d093380b",
+      "object": "index:fund_structure.ix_fund_tenant"
+    },
+    {
+      "fingerprint": "fb99ef514cf60644a05bfaab4b5d5fb235eebf01e471fe9dde0153f06610e208",
+      "object": "index:fund_structure.ix_investment_portfolio_tenant"
+    },
+    {
+      "fingerprint": "d16ba33b4f202ddc5a35221597a020fce9d13d6072c1bb8ca9f37b7aa5699f9e",
+      "object": "index:fund_structure.ix_legal_entity_tenant"
+    },
+    {
+      "fingerprint": "018a5d3c0aad0705cab7fdbd99cad629bd226da1e6484e3c988a058e949b4b16",
+      "object": "index:fund_structure.ix_organization_tenant"
     },
     {
       "fingerprint": "67e9d13bb0da7144845d20fb9c0a980636721ce5c4aa3abaa9a4b3830907fc87",
@@ -19907,6 +20239,18 @@
     {
       "fingerprint": "9df99a56c172d2d68975b1ec2fb0f04199c67c9fa14f2ad923ea88f7f9ca5ebd",
       "object": "index:fund_structure.ix_ownership_link_parent"
+    },
+    {
+      "fingerprint": "ad7536242d312145248c2211c41ef8e47ec09cd4e6ded490454cca8ad2951f22",
+      "object": "index:fund_structure.ix_ownership_link_tenant"
+    },
+    {
+      "fingerprint": "315cc9940eeb31651b11c5242e37b8a4e3b00319af484ff11b383af78d4e7547",
+      "object": "index:fund_structure.ix_sleeve_tenant"
+    },
+    {
+      "fingerprint": "ca938b4e3847ee15c175ae207b38a2621a4963c891e0db9ac17ee3e24c74e177",
+      "object": "index:fund_structure.ix_vehicle_tenant"
     },
     {
       "fingerprint": "d59793daf33d4390670310151de7b59cef8ed9551bebaafaefde5248d4c64e23",
@@ -19939,6 +20283,10 @@
     {
       "fingerprint": "633f14c4a475dcb5ff266e8e11f8efe88ef7f5d387813fdc8581820120c09cd3",
       "object": "index:identity_access.user_access_assignment_pkey"
+    },
+    {
+      "fingerprint": "a7682f666ab8f87c558d5126d766a9a2be9435c60a89565f863a934f50221560",
+      "object": "index:ledger.accounting_action_audit_chain_head_pkey"
     },
     {
       "fingerprint": "a9e8c69634f7ab877d2b4154f6a3e10f178cce2da3ae9889871792e18f100360",
@@ -20271,6 +20619,10 @@
     {
       "fingerprint": "cb18b0f410f54a185e1c45c62e015baeb0d5475073684178e559f8d79243a448",
       "object": "index:ledger.tax_lots_pkey"
+    },
+    {
+      "fingerprint": "6cf43531c51da98364a64d0595151d17d1d5dd1ba79c0f2e1d7db65ca8effa8a",
+      "object": "index:ledger.ux_accounting_audit_chain_sequence"
     },
     {
       "fingerprint": "c8d27bd69c46c426317dcb1ae8acf827538ac3179e66b621033b044c7cedf5b4",
@@ -21477,6 +21829,10 @@
       "object": "rls:fund_structure.fund_structure_schema_migrations"
     },
     {
+      "fingerprint": "f4bcb7504269eb497456459ec99db932ad909d55284f97bf2c6dd100af05b413",
+      "object": "rls:fund_structure.fund_structure_tenant_quarantine"
+    },
+    {
       "fingerprint": "680b3c9f5224d699fe2a9d24f3b36d31ce78a71b9474c5ae610199b8f367486b",
       "object": "rls:fund_structure.investment_portfolio"
     },
@@ -21507,6 +21863,10 @@
     {
       "fingerprint": "1a5c7b0def6d4ab456d146992f490a5f8a44637d3638a388656d26e0f051593e",
       "object": "rls:identity_access.user_access_assignment"
+    },
+    {
+      "fingerprint": "8364f879558361242599ded4edd9139f09a10fc537b93eef5561ddb0cb7f9168",
+      "object": "rls:ledger.accounting_action_audit_chain_head"
     },
     {
       "fingerprint": "1adc93769a440d2a976aa61bed69ac53df7a35bc5c3ce7cc7e418a4b813f3a33",
@@ -22013,7 +22373,7 @@
       "object": "schema:fund_accounts"
     },
     {
-      "fingerprint": "83ea628e231975151306afed4ae0b8d80760bcbaf8f1d18a7637664779de2ff0",
+      "fingerprint": "4f123aa32d6e44178f3f199fd913b862bd56ffea352d457f413a3670bae3a299",
       "object": "schema:fund_structure"
     },
     {
@@ -22021,7 +22381,7 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "0f70e02f996ad51eed57e59165f5b7902023c4ba295503aa258f367266c1ce73",
+      "fingerprint": "167a27b209b2cb89a5c701a2cdb167a16609136e19689a2db875026a9ad5302d",
       "object": "schema:ledger"
     },
     {
@@ -22189,19 +22549,19 @@
       "object": "table:fund_accounts.fund_account_schema_migrations"
     },
     {
-      "fingerprint": "a2f8550a7e16c1ac39b91361f6ed686e45939fde78f3c45ad3a8ef7f6e274420",
+      "fingerprint": "490cbca3ac32a4135cf585bddcfe48a942e2e43d41c69cf0dab3a51a3d703019",
       "object": "table:fund_structure.business"
     },
     {
-      "fingerprint": "92e017864a37d8ef4d75c5068a0571337957f8e00d0b1855bb14749120e449f1",
+      "fingerprint": "2bc1fb4cec596b5085b0d3d8e851123507277993243b7352f5de27e4ae0e8465",
       "object": "table:fund_structure.client"
     },
     {
-      "fingerprint": "8b238c3122694d1dea59f9636fb1982d0638968d2b5b6dd6244b73facead4dea",
+      "fingerprint": "674b92a2be528a5304f8f425cc89650615872fb8c846a6b58ddb258f8579ad66",
       "object": "table:fund_structure.fund"
     },
     {
-      "fingerprint": "2ff7e953b023a9e141469e6b87d869ab5c70178fa2b3dde390983aa1f8f413c3",
+      "fingerprint": "6e727f25a83206a99c9064eec0a76e09eafeb840e62a6ac5c2ac8912043954da",
       "object": "table:fund_structure.fund_structure_assignment"
     },
     {
@@ -22209,7 +22569,7 @@
       "object": "table:fund_structure.fund_structure_legacy_import_receipt"
     },
     {
-      "fingerprint": "ffb68b6664df5beb83095948bc0f1f2212112c3a77c4a40397bb2c895d10ae1b",
+      "fingerprint": "3eddc016baa0f60d2a52749fb031c358bf972c492faeb4d8294b82f812cf828c",
       "object": "table:fund_structure.fund_structure_linked_account"
     },
     {
@@ -22217,27 +22577,31 @@
       "object": "table:fund_structure.fund_structure_schema_migrations"
     },
     {
-      "fingerprint": "62ec2802f61999cce75ab4a3be505d471042237984b5810adc8fa68b85cb0a88",
+      "fingerprint": "d4858fe94371e621d5938591dcdb5a82da3c6bbff6a5a0a236c132f0409b4b87",
+      "object": "table:fund_structure.fund_structure_tenant_quarantine"
+    },
+    {
+      "fingerprint": "07c6aaa85a53f2af168159461e2b5965edeb9198d7987e2a397085d6e10b643d",
       "object": "table:fund_structure.investment_portfolio"
     },
     {
-      "fingerprint": "8daa1a1729bcc36b9385d257a32cfcad7bce88976971a9475b35624becead910",
+      "fingerprint": "2a73d8e882d1058b1a1d3b353c75e5ed421387e677792012924aa4e2d33913c8",
       "object": "table:fund_structure.legal_entity"
     },
     {
-      "fingerprint": "d940c9b40ec5acece092bd4718a291af38ebb4beb21f990b859fc003a83256f7",
+      "fingerprint": "c09c8a17557fbf139aa3fc70255a312c3130556c30434cd4ce9ef4465263c96e",
       "object": "table:fund_structure.organization"
     },
     {
-      "fingerprint": "0bde1fc0288ad4490d00acf2d34b195bf5a4bfb6eec1cb25b2a5bbc13ebbab20",
+      "fingerprint": "4837066909fe139f73f5ec3c35624b0d1c8a7961bfe197750fc035dc0c55c8d8",
       "object": "table:fund_structure.ownership_link"
     },
     {
-      "fingerprint": "4898a004a19d997d341a8945c0c616329aef737a21000f0de8c5b4a5e2a5f175",
+      "fingerprint": "95ae94971b9dc2e31b9aec6beb5ea1dc1c72ab8ff4b71e017e72bbfba3f3224b",
       "object": "table:fund_structure.sleeve"
     },
     {
-      "fingerprint": "7b3b0d5701a7c7eb5ba564ba805eab56a241a7aee674ed3ecefd08d735180754",
+      "fingerprint": "4b2084f2aa38f10b782e80ebe4c31e3ca1ba9078a278ab3515b0d7913b1fcb30",
       "object": "table:fund_structure.vehicle"
     },
     {
@@ -22249,7 +22613,11 @@
       "object": "table:identity_access.user_access_assignment"
     },
     {
-      "fingerprint": "2aad6bef33a6492011238f1def26c7a08340a121493ee8ba68db5c28b8dda81b",
+      "fingerprint": "ffba6fe11175af6dd315f54d961e7bdc73c762229a3da5e07c315d468ac2fbb5",
+      "object": "table:ledger.accounting_action_audit_chain_head"
+    },
+    {
+      "fingerprint": "52acc97a8db055fd295d0a384f0df75df040879559488c3d53d5c7249f65343b",
       "object": "table:ledger.accounting_action_audit_events"
     },
     {
@@ -45753,7 +46121,14 @@
         }
       ],
       "comment": null,
-      "comments": [],
+      "comments": [
+        {
+          "comment": "Fund-structure nodes the W9-GOV-008 tenant attribution declined to attribute: MixedOwnership for a genuinely shared ancestor whose descendants resolve to more than one tenant, Underivable for a node the fund_profile_tenancy registry cannot reach in either direction. Rows here are an operator decision, not a defect - resolving one records the chosen tenant and the reason.",
+          "fingerprint": "213963d36125ba654e9b0281109eb6a80356a5d92f154cabc3ce6f7305603f22",
+          "object": "fund_structure.fund_structure_tenant_quarantine",
+          "object_type": "table"
+        }
+      ],
       "composite_types": [],
       "dependencies": [
         {
@@ -45773,7 +46148,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "83ea628e231975151306afed4ae0b8d80760bcbaf8f1d18a7637664779de2ff0",
+      "fingerprint": "4f123aa32d6e44178f3f199fd913b862bd56ffea352d457f413a3670bae3a299",
       "foreign_tables": [],
       "functions": [],
       "logical_modules": [
@@ -46055,6 +46430,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5e37bb2d58f02bf69fcf2b96d6fe06658a723f72c5922621e093c02c8c20b645",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -46082,7 +46473,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "a2f8550a7e16c1ac39b91361f6ed686e45939fde78f3c45ad3a8ef7f6e274420",
+          "fingerprint": "490cbca3ac32a4135cf585bddcfe48a942e2e43d41c69cf0dab3a51a3d703019",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -46106,6 +46497,28 @@
               "ready": true,
               "security_labels": [],
               "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_business_tenant ON fund_structure.business USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "6ab76dc7d838e83e5e98ede14c2e287dd795fa1d2a93ffbcb02a9cb499caa347",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_business_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
               "valid": true
             }
           ],
@@ -46361,6 +46774,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "6ac35a1fe9dcc866eb8254e51ef4b7266da2bbb8173d05fa674214d4cbddb87f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -46388,7 +46817,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "92e017864a37d8ef4d75c5068a0571337957f8e00d0b1855bb14749120e449f1",
+          "fingerprint": "2bc1fb4cec596b5085b0d3d8e851123507277993243b7352f5de27e4ae0e8465",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -46412,6 +46841,28 @@
               "ready": true,
               "security_labels": [],
               "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_client_tenant ON fund_structure.client USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "1f39704eb71a126be9a7dbb774174c1919ba148dc63d0568de0d6ebdce374a54",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_client_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
               "valid": true
             }
           ],
@@ -46715,6 +47166,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "3f3f4f0d0cadce108f557ecccc69406a8dacb84df9f3c3416a7a58ade3b94ccf",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -46742,7 +47209,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "8b238c3122694d1dea59f9636fb1982d0638968d2b5b6dd6244b73facead4dea",
+          "fingerprint": "674b92a2be528a5304f8f425cc89650615872fb8c846a6b58ddb258f8579ad66",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -46766,6 +47233,28 @@
               "ready": true,
               "security_labels": [],
               "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_fund_tenant ON fund_structure.fund USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "2334c4f87ad48ae7f58a36b8a40476a79f8acee77d7f85770b0eaf24d093380b",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_fund_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
               "valid": true
             }
           ],
@@ -46957,6 +47446,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "3d8ea888209e177123bd4c30a285068a0d64b981cabc9f5fa1af1aca109418ea",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -46984,7 +47489,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "2ff7e953b023a9e141469e6b87d869ab5c70178fa2b3dde390983aa1f8f413c3",
+          "fingerprint": "6e727f25a83206a99c9064eec0a76e09eafeb840e62a6ac5c2ac8912043954da",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -47026,6 +47531,28 @@
               "options": [],
               "owner": "meridian",
               "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_fund_structure_assignment_tenant ON fund_structure.fund_structure_assignment USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "97255d35240667235077288acf1b5270ccafe2162f7ae5a70148f0f2a770b5b3",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_fund_structure_assignment_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
               "primary": false,
               "ready": true,
               "security_labels": [],
@@ -47307,6 +47834,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "bb890f24869d69add953668d78c11e53c55b3e660177a12758b40977ca895205",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -47334,7 +47877,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "ffb68b6664df5beb83095948bc0f1f2212112c3a77c4a40397bb2c895d10ae1b",
+          "fingerprint": "3eddc016baa0f60d2a52749fb031c358bf972c492faeb4d8294b82f812cf828c",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -47358,6 +47901,28 @@
               "ready": true,
               "security_labels": [],
               "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_fund_structure_linked_account_tenant ON fund_structure.fund_structure_linked_account USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "a6d6a16ada6a663782135f568e6b4ce217151b7f96d0996492c53d28560ecc78",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_fund_structure_linked_account_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
               "valid": true
             }
           ],
@@ -47526,6 +48091,271 @@
           "is_partition": false,
           "kind": "table",
           "name": "fund_structure_schema_migrations",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "fund_structure",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "31a6610508b8c18b39c437f2245fe7d6b874e3ed47d73100906025c06d0503e7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "node_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "e1c03dec1172c559c9d087373073e277e7a510961ad3dae58ebfc7bcb6b3cb00",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "node_kind",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "850e0da2cbcfea4b2edd7c1dc6100fe0719b33d8c73d0b7ea760b8d00752f6c5",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reason",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": "'[]'::jsonb",
+              "fingerprint": "18c7e02fa29d3fcef034e27aff3f5c6e6a2ede4d462bf4d3efdfdde99773757b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "candidate_tenant_ids",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "68e6061670ae76ecf64e35b1f16145da46923b048a8dd75504482cc2aa1b1146",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "detected_at_utc",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "ee21099bfb3ddcd6a3a69dab7d9e35a7596aae436422d0d612083bd11bae780c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "resolved_at_utc",
+              "nullable": true,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "ed2bcad081a2b8c935f1e6f7c032500343766bbe66fdb083d29bc6c6071ca95a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "resolved_tenant_id",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "2ebbcc17e869056eda6062622ebec3f3526d9ae0c181245b32e589361daab4a4",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "resolution_note",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Fund-structure nodes the W9-GOV-008 tenant attribution declined to attribute: MixedOwnership for a genuinely shared ancestor whose descendants resolve to more than one tenant, Underivable for a node the fund_profile_tenancy registry cannot reach in either direction. Rows here are an operator decision, not a defect - resolving one records the chosen tenant and the reason.",
+          "constraints": [
+            {
+              "columns": [
+                "node_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (node_id)",
+              "delete_action": null,
+              "fingerprint": "4acdfa20455bde2516bcfd20670263f0ef7f830f64e3113abb5bc61460412a11",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "fund_structure_tenant_quarantine_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "d4858fe94371e621d5938591dcdb5a82da3c6bbff6a5a0a236c132f0409b4b87",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX fund_structure_tenant_quarantine_pkey ON fund_structure.fund_structure_tenant_quarantine USING btree (node_id)",
+              "expression": null,
+              "fingerprint": "5d5580092dc23c1f0402d1d2b7c5c587499a00fdbb0f800ab8b9c25ba1326a40",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "node_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "fund_structure_tenant_quarantine_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_fund_structure_tenant_quarantine_open ON fund_structure.fund_structure_tenant_quarantine USING btree (reason, detected_at_utc DESC) WHERE (resolved_at_utc IS NULL)",
+              "expression": null,
+              "fingerprint": "9a6364fc4122c79870e708df697ed4cd9728c1452aca3fc2b1a12f1e8e41e299",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "reason",
+                "detected_at_utc"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_fund_structure_tenant_quarantine_open",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "resolved_at_utc IS NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "fund_structure_tenant_quarantine",
           "options": [],
           "owner": "meridian",
           "persistence": "permanent",
@@ -47839,6 +48669,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "ab141221643e62e2ecccbb9dbb99395926e05f1c3caa20ac85117d61245bb4e2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -47866,7 +48712,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "62ec2802f61999cce75ab4a3be505d471042237984b5810adc8fa68b85cb0a88",
+          "fingerprint": "07c6aaa85a53f2af168159461e2b5965edeb9198d7987e2a397085d6e10b643d",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -47890,6 +48736,28 @@
               "ready": true,
               "security_labels": [],
               "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_investment_portfolio_tenant ON fund_structure.investment_portfolio USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "fb99ef514cf60644a05bfaab4b5d5fb235eebf01e471fe9dde0153f06610e208",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_investment_portfolio_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
               "valid": true
             }
           ],
@@ -48209,6 +49077,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "ab141221643e62e2ecccbb9dbb99395926e05f1c3caa20ac85117d61245bb4e2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -48236,10 +49120,32 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "8daa1a1729bcc36b9385d257a32cfcad7bce88976971a9475b35624becead910",
+          "fingerprint": "2a73d8e882d1058b1a1d3b353c75e5ed421387e677792012924aa4e2d33913c8",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_legal_entity_tenant ON fund_structure.legal_entity USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "d16ba33b4f202ddc5a35221597a020fce9d13d6072c1bb8ca9f37b7aa5699f9e",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_legal_entity_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
             {
               "comment": null,
               "definition": "CREATE UNIQUE INDEX legal_entity_pkey ON fund_structure.legal_entity USING btree (entity_id)",
@@ -48483,6 +49389,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "844b0b31d17ab74811ea261b15285f42feb3ab7de5c6ec1f084cb4637317f911",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -48510,10 +49432,32 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "d940c9b40ec5acece092bd4718a291af38ebb4beb21f990b859fc003a83256f7",
+          "fingerprint": "c09c8a17557fbf139aa3fc70255a312c3130556c30434cd4ce9ef4465263c96e",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_organization_tenant ON fund_structure.organization USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "018a5d3c0aad0705cab7fdbd99cad629bd226da1e6484e3c988a058e949b4b16",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_organization_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
             {
               "comment": null,
               "definition": "CREATE UNIQUE INDEX organization_pkey ON fund_structure.organization USING btree (organization_id)",
@@ -48757,6 +49701,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "844b0b31d17ab74811ea261b15285f42feb3ab7de5c6ec1f084cb4637317f911",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -48784,7 +49744,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "0bde1fc0288ad4490d00acf2d34b195bf5a4bfb6eec1cb25b2a5bbc13ebbab20",
+          "fingerprint": "4837066909fe139f73f5ec3c35624b0d1c8a7961bfe197750fc035dc0c55c8d8",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -48826,6 +49786,28 @@
               "options": [],
               "owner": "meridian",
               "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_ownership_link_tenant ON fund_structure.ownership_link USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "ad7536242d312145248c2211c41ef8e47ec09cd4e6ded490454cca8ad2951f22",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_ownership_link_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
               "primary": false,
               "ready": true,
               "security_labels": [],
@@ -49107,6 +50089,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "6ac35a1fe9dcc866eb8254e51ef4b7266da2bbb8173d05fa674214d4cbddb87f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -49134,10 +50132,32 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "4898a004a19d997d341a8945c0c616329aef737a21000f0de8c5b4a5e2a5f175",
+          "fingerprint": "95ae94971b9dc2e31b9aec6beb5ea1dc1c72ab8ff4b71e017e72bbfba3f3224b",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_sleeve_tenant ON fund_structure.sleeve USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "315cc9940eeb31651b11c5242e37b8a4e3b00319af484ff11b383af78d4e7547",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_sleeve_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
             {
               "comment": null,
               "definition": "CREATE UNIQUE INDEX sleeve_pkey ON fund_structure.sleeve USING btree (sleeve_id)",
@@ -49429,6 +50449,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "97ea3991c58e8d9ba9e95210cbb2c7084d8d73757d721b3572f0b804b068b310",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -49456,10 +50492,32 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "7b3b0d5701a7c7eb5ba564ba805eab56a241a7aee674ed3ecefd08d735180754",
+          "fingerprint": "4b2084f2aa38f10b782e80ebe4c31e3ca1ba9078a278ab3515b0d7913b1fcb30",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_vehicle_tenant ON fund_structure.vehicle USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "ca938b4e3847ee15c175ae207b38a2621a4963c891e0db9ac17ee3e24c74e177",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_vehicle_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
             {
               "comment": null,
               "definition": "CREATE UNIQUE INDEX vehicle_pkey ON fund_structure.vehicle USING btree (vehicle_id)",
@@ -49554,6 +50612,14 @@
           "forced": false,
           "policies": [],
           "relation": "fund_structure_schema_migrations",
+          "schema": "fund_structure"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "f4bcb7504269eb497456459ec99db932ad909d55284f97bf2c6dd100af05b413",
+          "forced": false,
+          "policies": [],
+          "relation": "fund_structure_tenant_quarantine",
           "schema": "fund_structure"
         },
         {
@@ -49877,6 +50943,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5e37bb2d58f02bf69fcf2b96d6fe06658a723f72c5922621e093c02c8c20b645",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -49904,7 +50986,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "a2f8550a7e16c1ac39b91361f6ed686e45939fde78f3c45ad3a8ef7f6e274420",
+          "fingerprint": "490cbca3ac32a4135cf585bddcfe48a942e2e43d41c69cf0dab3a51a3d703019",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -49928,6 +51010,28 @@
               "ready": true,
               "security_labels": [],
               "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_business_tenant ON fund_structure.business USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "6ab76dc7d838e83e5e98ede14c2e287dd795fa1d2a93ffbcb02a9cb499caa347",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_business_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
               "valid": true
             }
           ],
@@ -50183,6 +51287,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "6ac35a1fe9dcc866eb8254e51ef4b7266da2bbb8173d05fa674214d4cbddb87f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -50210,7 +51330,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "92e017864a37d8ef4d75c5068a0571337957f8e00d0b1855bb14749120e449f1",
+          "fingerprint": "2bc1fb4cec596b5085b0d3d8e851123507277993243b7352f5de27e4ae0e8465",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -50234,6 +51354,28 @@
               "ready": true,
               "security_labels": [],
               "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_client_tenant ON fund_structure.client USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "1f39704eb71a126be9a7dbb774174c1919ba148dc63d0568de0d6ebdce374a54",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_client_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
               "valid": true
             }
           ],
@@ -50537,6 +51679,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "3f3f4f0d0cadce108f557ecccc69406a8dacb84df9f3c3416a7a58ade3b94ccf",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -50564,7 +51722,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "8b238c3122694d1dea59f9636fb1982d0638968d2b5b6dd6244b73facead4dea",
+          "fingerprint": "674b92a2be528a5304f8f425cc89650615872fb8c846a6b58ddb258f8579ad66",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -50588,6 +51746,28 @@
               "ready": true,
               "security_labels": [],
               "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_fund_tenant ON fund_structure.fund USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "2334c4f87ad48ae7f58a36b8a40476a79f8acee77d7f85770b0eaf24d093380b",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_fund_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
               "valid": true
             }
           ],
@@ -50779,6 +51959,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "3d8ea888209e177123bd4c30a285068a0d64b981cabc9f5fa1af1aca109418ea",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -50806,7 +52002,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "2ff7e953b023a9e141469e6b87d869ab5c70178fa2b3dde390983aa1f8f413c3",
+          "fingerprint": "6e727f25a83206a99c9064eec0a76e09eafeb840e62a6ac5c2ac8912043954da",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -50848,6 +52044,28 @@
               "options": [],
               "owner": "meridian",
               "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_fund_structure_assignment_tenant ON fund_structure.fund_structure_assignment USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "97255d35240667235077288acf1b5270ccafe2162f7ae5a70148f0f2a770b5b3",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_fund_structure_assignment_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
               "primary": false,
               "ready": true,
               "security_labels": [],
@@ -51129,6 +52347,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "bb890f24869d69add953668d78c11e53c55b3e660177a12758b40977ca895205",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -51156,7 +52390,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "ffb68b6664df5beb83095948bc0f1f2212112c3a77c4a40397bb2c895d10ae1b",
+          "fingerprint": "3eddc016baa0f60d2a52749fb031c358bf972c492faeb4d8294b82f812cf828c",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -51180,6 +52414,28 @@
               "ready": true,
               "security_labels": [],
               "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_fund_structure_linked_account_tenant ON fund_structure.fund_structure_linked_account USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "a6d6a16ada6a663782135f568e6b4ce217151b7f96d0996492c53d28560ecc78",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_fund_structure_linked_account_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
               "valid": true
             }
           ],
@@ -51348,6 +52604,271 @@
           "is_partition": false,
           "kind": "table",
           "name": "fund_structure_schema_migrations",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "fund_structure",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "31a6610508b8c18b39c437f2245fe7d6b874e3ed47d73100906025c06d0503e7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "node_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "e1c03dec1172c559c9d087373073e277e7a510961ad3dae58ebfc7bcb6b3cb00",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "node_kind",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "850e0da2cbcfea4b2edd7c1dc6100fe0719b33d8c73d0b7ea760b8d00752f6c5",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reason",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": "'[]'::jsonb",
+              "fingerprint": "18c7e02fa29d3fcef034e27aff3f5c6e6a2ede4d462bf4d3efdfdde99773757b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "candidate_tenant_ids",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "68e6061670ae76ecf64e35b1f16145da46923b048a8dd75504482cc2aa1b1146",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "detected_at_utc",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "ee21099bfb3ddcd6a3a69dab7d9e35a7596aae436422d0d612083bd11bae780c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "resolved_at_utc",
+              "nullable": true,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "ed2bcad081a2b8c935f1e6f7c032500343766bbe66fdb083d29bc6c6071ca95a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "resolved_tenant_id",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "2ebbcc17e869056eda6062622ebec3f3526d9ae0c181245b32e589361daab4a4",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "resolution_note",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Fund-structure nodes the W9-GOV-008 tenant attribution declined to attribute: MixedOwnership for a genuinely shared ancestor whose descendants resolve to more than one tenant, Underivable for a node the fund_profile_tenancy registry cannot reach in either direction. Rows here are an operator decision, not a defect - resolving one records the chosen tenant and the reason.",
+          "constraints": [
+            {
+              "columns": [
+                "node_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (node_id)",
+              "delete_action": null,
+              "fingerprint": "4acdfa20455bde2516bcfd20670263f0ef7f830f64e3113abb5bc61460412a11",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "fund_structure_tenant_quarantine_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "d4858fe94371e621d5938591dcdb5a82da3c6bbff6a5a0a236c132f0409b4b87",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX fund_structure_tenant_quarantine_pkey ON fund_structure.fund_structure_tenant_quarantine USING btree (node_id)",
+              "expression": null,
+              "fingerprint": "5d5580092dc23c1f0402d1d2b7c5c587499a00fdbb0f800ab8b9c25ba1326a40",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "node_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "fund_structure_tenant_quarantine_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_fund_structure_tenant_quarantine_open ON fund_structure.fund_structure_tenant_quarantine USING btree (reason, detected_at_utc DESC) WHERE (resolved_at_utc IS NULL)",
+              "expression": null,
+              "fingerprint": "9a6364fc4122c79870e708df697ed4cd9728c1452aca3fc2b1a12f1e8e41e299",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "reason",
+                "detected_at_utc"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_fund_structure_tenant_quarantine_open",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "resolved_at_utc IS NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "fund_structure_tenant_quarantine",
           "options": [],
           "owner": "meridian",
           "persistence": "permanent",
@@ -51661,6 +53182,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "ab141221643e62e2ecccbb9dbb99395926e05f1c3caa20ac85117d61245bb4e2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -51688,7 +53225,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "62ec2802f61999cce75ab4a3be505d471042237984b5810adc8fa68b85cb0a88",
+          "fingerprint": "07c6aaa85a53f2af168159461e2b5965edeb9198d7987e2a397085d6e10b643d",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -51712,6 +53249,28 @@
               "ready": true,
               "security_labels": [],
               "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_investment_portfolio_tenant ON fund_structure.investment_portfolio USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "fb99ef514cf60644a05bfaab4b5d5fb235eebf01e471fe9dde0153f06610e208",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_investment_portfolio_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
               "valid": true
             }
           ],
@@ -52031,6 +53590,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "ab141221643e62e2ecccbb9dbb99395926e05f1c3caa20ac85117d61245bb4e2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -52058,10 +53633,32 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "8daa1a1729bcc36b9385d257a32cfcad7bce88976971a9475b35624becead910",
+          "fingerprint": "2a73d8e882d1058b1a1d3b353c75e5ed421387e677792012924aa4e2d33913c8",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_legal_entity_tenant ON fund_structure.legal_entity USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "d16ba33b4f202ddc5a35221597a020fce9d13d6072c1bb8ca9f37b7aa5699f9e",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_legal_entity_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
             {
               "comment": null,
               "definition": "CREATE UNIQUE INDEX legal_entity_pkey ON fund_structure.legal_entity USING btree (entity_id)",
@@ -52305,6 +53902,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "844b0b31d17ab74811ea261b15285f42feb3ab7de5c6ec1f084cb4637317f911",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -52332,10 +53945,32 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "d940c9b40ec5acece092bd4718a291af38ebb4beb21f990b859fc003a83256f7",
+          "fingerprint": "c09c8a17557fbf139aa3fc70255a312c3130556c30434cd4ce9ef4465263c96e",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_organization_tenant ON fund_structure.organization USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "018a5d3c0aad0705cab7fdbd99cad629bd226da1e6484e3c988a058e949b4b16",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_organization_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
             {
               "comment": null,
               "definition": "CREATE UNIQUE INDEX organization_pkey ON fund_structure.organization USING btree (organization_id)",
@@ -52579,6 +54214,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "844b0b31d17ab74811ea261b15285f42feb3ab7de5c6ec1f084cb4637317f911",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -52606,7 +54257,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "0bde1fc0288ad4490d00acf2d34b195bf5a4bfb6eec1cb25b2a5bbc13ebbab20",
+          "fingerprint": "4837066909fe139f73f5ec3c35624b0d1c8a7961bfe197750fc035dc0c55c8d8",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -52648,6 +54299,28 @@
               "options": [],
               "owner": "meridian",
               "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_ownership_link_tenant ON fund_structure.ownership_link USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "ad7536242d312145248c2211c41ef8e47ec09cd4e6ded490454cca8ad2951f22",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_ownership_link_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
               "primary": false,
               "ready": true,
               "security_labels": [],
@@ -52929,6 +54602,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "6ac35a1fe9dcc866eb8254e51ef4b7266da2bbb8173d05fa674214d4cbddb87f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -52956,10 +54645,32 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "4898a004a19d997d341a8945c0c616329aef737a21000f0de8c5b4a5e2a5f175",
+          "fingerprint": "95ae94971b9dc2e31b9aec6beb5ea1dc1c72ab8ff4b71e017e72bbfba3f3224b",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_sleeve_tenant ON fund_structure.sleeve USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "315cc9940eeb31651b11c5242e37b8a4e3b00319af484ff11b383af78d4e7547",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_sleeve_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
             {
               "comment": null,
               "definition": "CREATE UNIQUE INDEX sleeve_pkey ON fund_structure.sleeve USING btree (sleeve_id)",
@@ -53251,6 +54962,22 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "97ea3991c58e8d9ba9e95210cbb2c7084d8d73757d721b3572f0b804b068b310",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -53278,10 +55005,32 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "7b3b0d5701a7c7eb5ba564ba805eab56a241a7aee674ed3ecefd08d735180754",
+          "fingerprint": "4b2084f2aa38f10b782e80ebe4c31e3ca1ba9078a278ab3515b0d7913b1fcb30",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_vehicle_tenant ON fund_structure.vehicle USING btree (lower(TRIM(BOTH FROM tenant_id))) WHERE (tenant_id IS NOT NULL)",
+              "expression": "lower(TRIM(BOTH FROM tenant_id))",
+              "fingerprint": "ca938b4e3847ee15c175ae207b38a2621a4963c891e0db9ac17ee3e24c74e177",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(TRIM(BOTH FROM tenant_id))"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_vehicle_tenant",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "tenant_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
             {
               "comment": null,
               "definition": "CREATE UNIQUE INDEX vehicle_pkey ON fund_structure.vehicle USING btree (vehicle_id)",
@@ -54772,6 +56521,12 @@
       "comment": null,
       "comments": [
         {
+          "comment": "Single-row head of the accounting-action audit hash chain: the next sequence, the last entry hash, and the declared genesis boundary separating chained events from the pre-chain history that was appended before V_ledger_032 and which nothing ever protected. Locked FOR UPDATE and advanced inside the append transaction so concurrent writers cannot fork the chain.",
+          "fingerprint": "2559e9695ea90341f1cd97f7f81d9851a9d587bec525d982fecbe6b33bb2b332",
+          "object": "ledger.accounting_action_audit_chain_head",
+          "object_type": "table"
+        },
+        {
           "comment": "Operator assertions that a ledger book with no retained currency evidence transacted only in its base currency, and the currency-blind journal legs each assertion completed. Append-only: this is the authority for a repair the data alone could not determine.",
           "fingerprint": "662387c5ef335ca3a3bb6e0725e799c48edddff894143d6884c1c4ef37b4e94f",
           "object": "ledger.journal_leg_currency_affirmations",
@@ -55138,6 +56893,102 @@
           "target": "ledger.accounting_periods_pkey",
           "target_kind": "index",
           "target_name": "accounting_periods_pkey",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "3603dafc9f618d6717e6342f08eac1fdf440fcc3d94d5d7b0329891377117ba3",
+          "kind": "normal",
+          "source": "ledger.ck_accounting_audit_chain_genesis on ledger.accounting_action_audit_chain_head",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.accounting_action_audit_chain_head.genesis_sequence",
+          "target_kind": "table column",
+          "target_name": "accounting_action_audit_chain_head",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "548a49f34b1983d22153925c12f78c7e5e388de9f783f59a043599230a68a0bd",
+          "kind": "normal",
+          "source": "ledger.ck_accounting_audit_chain_genesis on ledger.accounting_action_audit_chain_head",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.accounting_action_audit_chain_head.next_sequence",
+          "target_kind": "table column",
+          "target_name": "accounting_action_audit_chain_head",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "64b9a62e08919122bb5e491bf6835a5217a6baa5220d3fa2c400a7a0d9234c1a",
+          "kind": "normal",
+          "source": "ledger.ck_accounting_audit_chain_last_hash on ledger.accounting_action_audit_chain_head",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.accounting_action_audit_chain_head.last_hash",
+          "target_kind": "table column",
+          "target_name": "accounting_action_audit_chain_head",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "48897ff97aa3fbb445202c9963a2dc0d5a6fe51e349dfe276c46ec55b1d16943",
+          "kind": "normal",
+          "source": "ledger.ck_accounting_audit_chain_next_sequence on ledger.accounting_action_audit_chain_head",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.accounting_action_audit_chain_head.next_sequence",
+          "target_kind": "table column",
+          "target_name": "accounting_action_audit_chain_head",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "8da0d3928a8d0428f064046f381d92f244634cc53cd856b581c53e57379edba9",
+          "kind": "normal",
+          "source": "ledger.ck_accounting_audit_chain_singleton on ledger.accounting_action_audit_chain_head",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.accounting_action_audit_chain_head.chain_id",
+          "target_kind": "table column",
+          "target_name": "accounting_action_audit_chain_head",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "ebe2f0b114b2e8e7316a377341112b602200463d9b249a70b4dc3d35dc73af12",
+          "kind": "normal",
+          "source": "ledger.ck_accounting_audit_entry_hash_digest on ledger.accounting_action_audit_events",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.accounting_action_audit_events.entry_hash",
+          "target_kind": "table column",
+          "target_name": "accounting_action_audit_events",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "25837d1aad53cd859e4479cccd66057a018645373c9554952fb4dda78e525223",
+          "kind": "normal",
+          "source": "ledger.ck_accounting_audit_payload_hash_digest on ledger.accounting_action_audit_events",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.accounting_action_audit_events.payload_hash",
+          "target_kind": "table column",
+          "target_name": "accounting_action_audit_events",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "c90fbcfe276dc6e403a68141ce2156f0c3823591527766e1c2305d41ad01b417",
+          "kind": "normal",
+          "source": "ledger.ck_accounting_audit_previous_hash_digest on ledger.accounting_action_audit_events",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.accounting_action_audit_events.previous_hash",
+          "target_kind": "table column",
+          "target_name": "accounting_action_audit_events",
           "target_schema": "ledger"
         },
         {
@@ -56369,7 +58220,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "0f70e02f996ad51eed57e59165f5b7902023c4ba295503aa258f367266c1ce73",
+      "fingerprint": "167a27b209b2cb89a5c701a2cdb167a16609136e19689a2db875026a9ad5302d",
       "foreign_tables": [],
       "functions": [
         {
@@ -56773,6 +58624,313 @@
             {
               "collation": null,
               "comment": null,
+              "data_type": "smallint",
+              "default": null,
+              "fingerprint": "26cc88022f5330bd61f4471361a84b62040bb5df1c8b9de22079e06fbcc284d2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "chain_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "int2",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "integer",
+              "default": "1",
+              "fingerprint": "2307ae89bd57fae444ec6410db4b429a75054b03485e7bf2078762ce4d202baf",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "schema_version",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "int4",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "1f4ef2101b3ad306b9bb96792975b8feb91e982b89915d91ffea96d246d1367b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "next_sequence",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f9bff6096628fa4a5d7be9ed79f699761bc5445964a8eb938434b6bcaac01c32",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "last_hash",
+              "nullable": true,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": "1",
+              "fingerprint": "3737f2e870294f34fb963ba7fd7daba2005264ac908aed74cfdf0e4d4911d9e4",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "genesis_sequence",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": "0",
+              "fingerprint": "d814f8c71b9e8c67ef35c732968c3d5e4e998b3a702d24c858a4f7c3fda0cb25",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "pre_chain_event_count",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "36fd62e3bc1a033db59209ec946347af3edd1a3535462a3e3291c307646eea15",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "genesis_recorded_at_utc",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Single-row head of the accounting-action audit hash chain: the next sequence, the last entry hash, and the declared genesis boundary separating chained events from the pre-chain history that was appended before V_ledger_032 and which nothing ever protected. Locked FOR UPDATE and advanced inside the append transaction so concurrent writers cannot fork the chain.",
+          "constraints": [
+            {
+              "columns": [
+                "genesis_sequence",
+                "next_sequence"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (genesis_sequence > 0 AND next_sequence >= genesis_sequence)",
+              "delete_action": null,
+              "fingerprint": "e9ba89538cdbfcf6d914c82caa38e21f08b3fbf785910e2ac9b31b5d5dd8c1dc",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_accounting_audit_chain_genesis",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "last_hash"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (last_hash IS NULL OR last_hash ~ '^[0-9a-f]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "d02b1665c16021e543b750a50de68c0ec18bf78f3cef2c9961ac53651292af49",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_accounting_audit_chain_last_hash",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "next_sequence"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (next_sequence > 0)",
+              "delete_action": null,
+              "fingerprint": "b80085c6be995a57a9349cfe371128e546d281de478dd10b1f320f063938099d",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_accounting_audit_chain_next_sequence",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "chain_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (chain_id = 1)",
+              "delete_action": null,
+              "fingerprint": "91c108c26fd7ded5a3bec8f83399c0080512a2036da6388426c0b039eba2d2ea",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_accounting_audit_chain_singleton",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "chain_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (chain_id)",
+              "delete_action": null,
+              "fingerprint": "076a5bbdb9c1c5666988c80d385e015578dd16c3be4b505972a1e886f3c1626c",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "accounting_action_audit_chain_head_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "ffba6fe11175af6dd315f54d961e7bdc73c762229a3da5e07c315d468ac2fbb5",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX accounting_action_audit_chain_head_pkey ON ledger.accounting_action_audit_chain_head USING btree (chain_id)",
+              "expression": null,
+              "fingerprint": "a7682f666ab8f87c558d5126d766a9a2be9435c60a89565f863a934f50221560",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "chain_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "accounting_action_audit_chain_head_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "accounting_action_audit_chain_head",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
               "data_type": "uuid",
               "default": null,
               "fingerprint": "60abd22e1bbb52093b95481a836c766a516811453b43c8575cdc420d632bfba9",
@@ -56993,10 +59151,134 @@
               "security_labels": [],
               "type_name": "text",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "bd76a28f51f9a92792f371b8d00879b7e7e8c1fa3d70e475a4d20a2ad6e10f3f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "chain_sequence",
+              "nullable": true,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "dae3b9237ddcc51a4881fee2c4597c019992f013e54e7809564d2e5f2b0b4001",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload_hash",
+              "nullable": true,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f9d07e980e3cf5bfa9a1bbe8d33f98af8fe985911e1b97b7a2e9c4ae02645adc",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "previous_hash",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "c2786e82ae10b708f0cdbb3e39fcd0421efb0a975037e9fba76fcf9830333b43",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "entry_hash",
+              "nullable": true,
+              "ordinal_position": 18,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "entry_hash"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (entry_hash IS NULL OR entry_hash ~ '^[0-9a-f]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "dce6cb7659c374866423ccafd4ce3377e127c60eef6862c2a5ce6a680ad43900",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_accounting_audit_entry_hash_digest",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "payload_hash"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (payload_hash IS NULL OR payload_hash ~ '^[0-9a-f]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "defe0d8dbd37929bbaa544dba5effff18e26484377871c9e6fb16edf78894333",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_accounting_audit_payload_hash_digest",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "previous_hash"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (previous_hash IS NULL OR previous_hash ~ '^[0-9a-f]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "04acf5c158a5e908e80829bf52f494134e251e8bc4cf1f7a669679a7d0a2da95",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_accounting_audit_previous_hash_digest",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
             {
               "columns": [
                 "audit_event_id"
@@ -57020,7 +59302,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "2aad6bef33a6492011238f1def26c7a08340a121493ee8ba68db5c28b8dda81b",
+          "fingerprint": "52acc97a8db055fd295d0a384f0df75df040879559488c3d53d5c7249f65343b",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -57138,6 +59420,28 @@
               "ready": true,
               "security_labels": [],
               "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_accounting_audit_chain_sequence ON ledger.accounting_action_audit_events USING btree (chain_sequence) WHERE (chain_sequence IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "6cf43531c51da98364a64d0595151d17d1d5dd1ba79c0f2e1d7db65ca8effa8a",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "chain_sequence"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_accounting_audit_chain_sequence",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "chain_sequence IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
               "valid": true
             }
           ],
@@ -68285,6 +70589,14 @@
       "row_level_security": [
         {
           "enabled": false,
+          "fingerprint": "8364f879558361242599ded4edd9139f09a10fc537b93eef5561ddb0cb7f9168",
+          "forced": false,
+          "policies": [],
+          "relation": "accounting_action_audit_chain_head",
+          "schema": "ledger"
+        },
+        {
+          "enabled": false,
           "fingerprint": "1adc93769a440d2a976aa61bed69ac53df7a35bc5c3ce7cc7e418a4b813f3a33",
           "forced": false,
           "policies": [],
@@ -68582,6 +70894,313 @@
             {
               "collation": null,
               "comment": null,
+              "data_type": "smallint",
+              "default": null,
+              "fingerprint": "26cc88022f5330bd61f4471361a84b62040bb5df1c8b9de22079e06fbcc284d2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "chain_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "int2",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "integer",
+              "default": "1",
+              "fingerprint": "2307ae89bd57fae444ec6410db4b429a75054b03485e7bf2078762ce4d202baf",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "schema_version",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "int4",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "1f4ef2101b3ad306b9bb96792975b8feb91e982b89915d91ffea96d246d1367b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "next_sequence",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f9bff6096628fa4a5d7be9ed79f699761bc5445964a8eb938434b6bcaac01c32",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "last_hash",
+              "nullable": true,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": "1",
+              "fingerprint": "3737f2e870294f34fb963ba7fd7daba2005264ac908aed74cfdf0e4d4911d9e4",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "genesis_sequence",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": "0",
+              "fingerprint": "d814f8c71b9e8c67ef35c732968c3d5e4e998b3a702d24c858a4f7c3fda0cb25",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "pre_chain_event_count",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "36fd62e3bc1a033db59209ec946347af3edd1a3535462a3e3291c307646eea15",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "genesis_recorded_at_utc",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Single-row head of the accounting-action audit hash chain: the next sequence, the last entry hash, and the declared genesis boundary separating chained events from the pre-chain history that was appended before V_ledger_032 and which nothing ever protected. Locked FOR UPDATE and advanced inside the append transaction so concurrent writers cannot fork the chain.",
+          "constraints": [
+            {
+              "columns": [
+                "genesis_sequence",
+                "next_sequence"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (genesis_sequence > 0 AND next_sequence >= genesis_sequence)",
+              "delete_action": null,
+              "fingerprint": "e9ba89538cdbfcf6d914c82caa38e21f08b3fbf785910e2ac9b31b5d5dd8c1dc",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_accounting_audit_chain_genesis",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "last_hash"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (last_hash IS NULL OR last_hash ~ '^[0-9a-f]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "d02b1665c16021e543b750a50de68c0ec18bf78f3cef2c9961ac53651292af49",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_accounting_audit_chain_last_hash",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "next_sequence"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (next_sequence > 0)",
+              "delete_action": null,
+              "fingerprint": "b80085c6be995a57a9349cfe371128e546d281de478dd10b1f320f063938099d",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_accounting_audit_chain_next_sequence",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "chain_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (chain_id = 1)",
+              "delete_action": null,
+              "fingerprint": "91c108c26fd7ded5a3bec8f83399c0080512a2036da6388426c0b039eba2d2ea",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_accounting_audit_chain_singleton",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "chain_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (chain_id)",
+              "delete_action": null,
+              "fingerprint": "076a5bbdb9c1c5666988c80d385e015578dd16c3be4b505972a1e886f3c1626c",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "accounting_action_audit_chain_head_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "ffba6fe11175af6dd315f54d961e7bdc73c762229a3da5e07c315d468ac2fbb5",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX accounting_action_audit_chain_head_pkey ON ledger.accounting_action_audit_chain_head USING btree (chain_id)",
+              "expression": null,
+              "fingerprint": "a7682f666ab8f87c558d5126d766a9a2be9435c60a89565f863a934f50221560",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "chain_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "accounting_action_audit_chain_head_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "accounting_action_audit_chain_head",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
               "data_type": "uuid",
               "default": null,
               "fingerprint": "60abd22e1bbb52093b95481a836c766a516811453b43c8575cdc420d632bfba9",
@@ -68802,10 +71421,134 @@
               "security_labels": [],
               "type_name": "text",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "bd76a28f51f9a92792f371b8d00879b7e7e8c1fa3d70e475a4d20a2ad6e10f3f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "chain_sequence",
+              "nullable": true,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "dae3b9237ddcc51a4881fee2c4597c019992f013e54e7809564d2e5f2b0b4001",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload_hash",
+              "nullable": true,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f9d07e980e3cf5bfa9a1bbe8d33f98af8fe985911e1b97b7a2e9c4ae02645adc",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "previous_hash",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "c2786e82ae10b708f0cdbb3e39fcd0421efb0a975037e9fba76fcf9830333b43",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "entry_hash",
+              "nullable": true,
+              "ordinal_position": 18,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "entry_hash"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (entry_hash IS NULL OR entry_hash ~ '^[0-9a-f]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "dce6cb7659c374866423ccafd4ce3377e127c60eef6862c2a5ce6a680ad43900",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_accounting_audit_entry_hash_digest",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "payload_hash"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (payload_hash IS NULL OR payload_hash ~ '^[0-9a-f]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "defe0d8dbd37929bbaa544dba5effff18e26484377871c9e6fb16edf78894333",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_accounting_audit_payload_hash_digest",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "previous_hash"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (previous_hash IS NULL OR previous_hash ~ '^[0-9a-f]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "04acf5c158a5e908e80829bf52f494134e251e8bc4cf1f7a669679a7d0a2da95",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_accounting_audit_previous_hash_digest",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
             {
               "columns": [
                 "audit_event_id"
@@ -68829,7 +71572,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "2aad6bef33a6492011238f1def26c7a08340a121493ee8ba68db5c28b8dda81b",
+          "fingerprint": "52acc97a8db055fd295d0a384f0df75df040879559488c3d53d5c7249f65343b",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -68947,6 +71690,28 @@
               "ready": true,
               "security_labels": [],
               "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_accounting_audit_chain_sequence ON ledger.accounting_action_audit_events USING btree (chain_sequence) WHERE (chain_sequence IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "6cf43531c51da98364a64d0595151d17d1d5dd1ba79c0f2e1d7db65ca8effa8a",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "chain_sequence"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_accounting_audit_chain_sequence",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "chain_sequence IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
               "valid": true
             }
           ],

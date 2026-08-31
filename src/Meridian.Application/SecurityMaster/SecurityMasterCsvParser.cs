@@ -25,9 +25,21 @@ public sealed class SecurityMasterCsvParser
     /// </summary>
     /// <param name="csvContent">Raw CSV file content</param>
     /// <param name="errors">List of row-level parsing errors</param>
+    /// <param name="actor">
+    /// The operator or workload on whose authority the import runs, recorded as <c>UpdatedBy</c> on
+    /// every row. Callers resolve this from their authenticated session; a CSV file carries no
+    /// identity of its own, so the parser will not invent one. This is deliberately separate from
+    /// <c>SourceSystem</c>, which stays the constant import-source identifier that conflict detection
+    /// and source precedence key on.
+    /// </param>
     /// <returns>List of successfully parsed CreateSecurityRequest records</returns>
-    public IReadOnlyList<CreateSecurityRequest> Parse(string csvContent, out IReadOnlyList<string> errors)
+    public IReadOnlyList<CreateSecurityRequest> Parse(
+        string csvContent,
+        out IReadOnlyList<string> errors,
+        string actor)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(actor);
+
         var commands = new List<CreateSecurityRequest>();
         var errorList = new List<string>();
 
@@ -59,7 +71,7 @@ public sealed class SecurityMasterCsvParser
             }
 
             // Parse data row
-            var record = ParseRow(values.ToArray(), headers, rowNumber, out var rowError);
+            var record = ParseRow(values.ToArray(), headers, rowNumber, actor, out var rowError);
             if (rowError != null)
             {
                 errorList.Add(rowError);
@@ -74,7 +86,7 @@ public sealed class SecurityMasterCsvParser
         return commands;
     }
 
-    private CreateSecurityRequest? ParseRow(string[] values, string[] headers, int rowNumber, out string? error)
+    private CreateSecurityRequest? ParseRow(string[] values, string[] headers, int rowNumber, string actor, out string? error)
     {
         error = null;
 
@@ -151,7 +163,7 @@ public sealed class SecurityMasterCsvParser
             Identifiers: identifiers,
             EffectiveFrom: DateTimeOffset.UtcNow,
             SourceSystem: "SecurityMasterImport",
-            UpdatedBy: "WpfImport",
+            UpdatedBy: actor,
             SourceRecordId: null,
             Reason: null
         );
