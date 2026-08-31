@@ -250,7 +250,7 @@ public sealed class FileAccountingAuditChainTests : IDisposable
 
         // Simulate a crash after the head was declared but before the snapshot write landed.
         var anchor = new FileAccountingAuditChainAnchor(store.AuditChainAnchorPath);
-        await anchor.DeclareAsync(2, new string('a', 64));
+        await anchor.DeclareAsync(2, new string('a', 64), AccountingAuditChainState.FirstSequence, preChainEventCount: 0);
 
         var verification = await store.VerifyAuditChainAsync();
         verification.Status.Should().Be(AccountingAuditChainStatus.InterruptedAppend);
@@ -301,11 +301,11 @@ public sealed class FileAccountingAuditChainTests : IDisposable
     public async Task Anchor_RefusesAHeadThatDoesNotAdvance()
     {
         var anchor = new FileAccountingAuditChainAnchor(Path.Combine(_root, "head.log"));
-        await anchor.DeclareAsync(1, new string('a', 64));
-        await anchor.CommitAsync(1, new string('a', 64));
-        await anchor.DeclareAsync(2, new string('b', 64));
+        await anchor.DeclareAsync(1, new string('a', 64), AccountingAuditChainState.FirstSequence, preChainEventCount: 0);
+        await anchor.CommitAsync(1, new string('a', 64), AccountingAuditChainState.FirstSequence, preChainEventCount: 0);
+        await anchor.DeclareAsync(2, new string('b', 64), AccountingAuditChainState.FirstSequence, preChainEventCount: 0);
 
-        var rewind = async () => await anchor.DeclareAsync(1, new string('c', 64));
+        var rewind = async () => await anchor.DeclareAsync(1, new string('c', 64), AccountingAuditChainState.FirstSequence, preChainEventCount: 0);
 
         await rewind.Should().ThrowAsync<AccountingAuditChainAnchorException>();
     }
@@ -315,10 +315,10 @@ public sealed class FileAccountingAuditChainTests : IDisposable
     {
         var anchorPath = Path.Combine(_root, "head.log");
         var anchor = new FileAccountingAuditChainAnchor(anchorPath);
-        await anchor.DeclareAsync(1, new string('a', 64));
-        await anchor.CommitAsync(1, new string('a', 64));
-        await anchor.DeclareAsync(2, new string('b', 64));
-        await anchor.CommitAsync(2, new string('b', 64));
+        await anchor.DeclareAsync(1, new string('a', 64), AccountingAuditChainState.FirstSequence, preChainEventCount: 0);
+        await anchor.CommitAsync(1, new string('a', 64), AccountingAuditChainState.FirstSequence, preChainEventCount: 0);
+        await anchor.DeclareAsync(2, new string('b', 64), AccountingAuditChainState.FirstSequence, preChainEventCount: 0);
+        await anchor.CommitAsync(2, new string('b', 64), AccountingAuditChainState.FirstSequence, preChainEventCount: 0);
 
         var lines = await File.ReadAllLinesAsync(anchorPath);
         var forged = JsonNode.Parse(lines[^1])!.AsObject();
@@ -383,7 +383,7 @@ public sealed class FileAccountingAuditChainTests : IDisposable
         await store.AppendAsync(AuditEvent("post-journal"));
 
         var anchor = new FileAccountingAuditChainAnchor(store.AuditChainAnchorPath);
-        await anchor.DeclareAsync(2, new string('a', 64));
+        await anchor.DeclareAsync(2, new string('a', 64), AccountingAuditChainState.FirstSequence, preChainEventCount: 0);
 
         (await store.VerifyAuditChainAsync()).Status
             .Should().Be(AccountingAuditChainStatus.InterruptedAppend, "the declared write never landed");
@@ -565,6 +565,55 @@ public sealed class FileAccountingAuditChainTests : IDisposable
 
         (await collision.Should().ThrowAsync<InvalidOperationException>())
             .Which.Message.Should().Contain("different content");
+
+        (await store.VerifyAuditChainAsync()).IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task VerifyAuditChainAsync_DetectsAnInjectedEventCoveredByARaisedPreChainCount()
+    {
+        // Nineteenth Codex review round. The unlinked-event check bounds the retained count by
+        // PreChainEventCount + Links.Count -- and BOTH of those live in the snapshot being
+        // protected. So the check could be satisfied by the same edit that defeats it: add an
+        // unlinked event, raise the pre-chain count by one, and every link still verifies while the
+        // anchor still passes, because the anchor hash bound only the chain head. The injected
+        // record was then served by ListAsync as ordinary audit history.
+        //
+        // A count checked against a number the attacker also controls is not a check. The boundary
+        // now rides the anchor, inside the anchor's own hash, so the snapshot cannot restate it.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        await store.AppendAsync(AuditEvent("post-journal"));
+        await store.AppendAsync(AuditEvent("close-period"));
+
+        MutateSnapshot(snapshot =>
+        {
+            var events = snapshot["auditEvents"]!.AsArray();
+            var injected = events[0]!.DeepClone()!.AsObject();
+            injected["auditEventId"] = Guid.NewGuid().ToString("D");
+            injected["actor"] = "intruder@example.test";
+            events.Add(injected);
+
+            // The cover-up: one more event, one higher boundary, so the arithmetic still balances.
+            var chain = snapshot["auditChain"]!.AsObject();
+            chain["preChainEventCount"] = chain["preChainEventCount"]!.GetValue<int>() + 1;
+        });
+
+        var verification = await store.VerifyAuditChainAsync();
+
+        verification.Status.Should().Be(AccountingAuditChainStatus.AnchorMismatch);
+        verification.IsValid.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task VerifyAuditChainAsync_AcceptsAChainWhoseGenesisMatchesItsAnchor()
+    {
+        // The control the test above needs: binding the boundary must not make an untouched store
+        // report tampering, including across several appends where the anchor is rewritten each
+        // time and the boundary has to stay consistent between them.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        await store.AppendAsync(AuditEvent("post-journal"));
+        await store.AppendAsync(AuditEvent("close-period"));
+        await store.AppendAsync(AuditEvent("approve-pack"));
 
         (await store.VerifyAuditChainAsync()).IsValid.Should().BeTrue();
     }

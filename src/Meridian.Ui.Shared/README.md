@@ -303,7 +303,13 @@ ledger-book scope, the same workspace carries a server-derived ledger-book setup
 clients can call the shared ledger-book endpoint without reconstructing fund-structure node details
 locally.
 `FileAccountingConfigurationStore` persists accounting configuration workspaces by authenticated
-tenant, company, fund profile, and ledger book. The shared accounting endpoints stamp the resolved
+tenant, company, fund profile, and ledger book. Its audit history is hash-chained against an
+external head journal (`FileAccountingAuditChainAnchor`), whose records bind the chain head **and**
+the declared genesis boundary -- the pre-chain event count is what bounds how many retained events
+may sit outside the chain, and it lives in the snapshot being protected, so an anchor that did not
+carry it could be satisfied by the same edit that defeated it. **That journal is at format version
+2; a v1 journal written before the boundary was bound is refused by name on read** rather than
+verified under the weaker rules or reported as tampering. The shared accounting endpoints stamp the resolved
 tenant/company context on chart, template, posting-rule, rule-test, promotion, activation, read,
 dry-run, execution, and audit requests so browser and WPF clients cannot spoof a different
 configuration workspace through request body fields. Configuration audit history is filtered by the

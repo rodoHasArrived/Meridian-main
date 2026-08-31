@@ -291,10 +291,23 @@ public sealed class FileAccountingConfigurationStore :
                     },
                     link);
             },
-            beforeWrite: async (_, link, token) =>
-                await _auditChainAnchor.DeclareAsync(link!.Sequence, link.EntryHash, token).ConfigureAwait(false),
-            afterWrite: async (_, link, token) =>
-                await _auditChainAnchor.CommitAsync(link!.Sequence, link.EntryHash, token).ConfigureAwait(false),
+            // The genesis boundary rides both anchor writes. It is snapshot-resident everywhere
+            // else, and the retained-event count is checked against it, so without a copy outside
+            // the snapshot an actor could raise it to cover an injected unlinked event.
+            beforeWrite: async (written, link, token) =>
+                await _auditChainAnchor.DeclareAsync(
+                    link!.Sequence,
+                    link.EntryHash,
+                    written.AuditChain!.GenesisSequence,
+                    written.AuditChain.PreChainEventCount,
+                    token).ConfigureAwait(false),
+            afterWrite: async (written, link, token) =>
+                await _auditChainAnchor.CommitAsync(
+                    link!.Sequence,
+                    link.EntryHash,
+                    written.AuditChain!.GenesisSequence,
+                    written.AuditChain.PreChainEventCount,
+                    token).ConfigureAwait(false),
             // A repeat produces no link, and must therefore write nothing at all. Returning the
             // unchanged snapshot through the write path would replace the retained file with this
             // cycle's copy of it -- losing any event another process appended in between, while the
