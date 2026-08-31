@@ -11,7 +11,6 @@
              AutomationProperties.Name="{Binding ElementName=Root, Path=Model.AccessibleExplanation}">
     <Button x:Name="ExplanationButton"
             DataContext="{Binding ElementName=Root}"
-            Command="{Binding ExplanationCommand}"
             CommandParameter="{Binding ExplanationCommandParameter}"
             ToolTip="{Binding Model.Explanation}"
             Padding="0"
@@ -22,27 +21,39 @@
             AutomationProperties.AutomationId="{Binding IndicatorAutomationId}"
             AutomationProperties.Name="{Binding Model.AccessibleExplanation}">
         <Button.Style>
+            <!-- Command lives in the style (not as a local attribute) so the click-through
+                 trigger can actually null it out: a local value would win over the trigger
+                 and the disabled indicator would still invoke the explanation command. -->
             <Style TargetType="Button">
                 <Setter Property="Cursor" Value="Hand" />
                 <Setter Property="Focusable" Value="True" />
+                <Setter Property="Command" Value="{Binding ExplanationCommand}" />
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding IsClickThroughEnabled}" Value="False">
                         <Setter Property="Cursor" Value="Arrow" />
                         <Setter Property="Focusable" Value="False" />
+                        <Setter Property="Command" Value="{x:Null}" />
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
         </Button.Style>
         <Border Style="{StaticResource WorkspaceToneBadgeStyle}"
                 Padding="8,5">
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <!-- Auto icon column plus a star text column: a horizontal StackPanel would
+                 measure the text stack with unbounded width, so ellipsis and wrapping below
+                 would never engage and a long source or note would stretch the badge. -->
+            <Grid VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
                 <TextBlock Text="{Binding Model.IconGlyph}"
                            FontFamily="{StaticResource SymbolThemeFontFamily}"
                            Margin="0,0,7,0"
                            VerticalAlignment="Center"
                            Style="{StaticResource WorkspaceToneBadgeTextStyle}"
                            AutomationProperties.AutomationId="{Binding IconAutomationId}" />
-                <StackPanel>
+                <StackPanel Grid.Column="1">
                     <WrapPanel>
                         <TextBlock Text="{Binding Model.ConfidenceLabel}"
                                    FontSize="11"
@@ -87,7 +98,7 @@
                         </TextBlock.Style>
                     </TextBlock>
                 </StackPanel>
-            </StackPanel>
+            </Grid>
         </Border>
     </Button>
 </UserControl>

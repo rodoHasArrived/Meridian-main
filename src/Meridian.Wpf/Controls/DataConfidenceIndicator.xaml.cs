@@ -8,12 +8,19 @@ namespace Meridian.Wpf.Controls;
 
 public partial class DataConfidenceIndicator : UserControl
 {
+    // A binding can push null during async loading or a data-context transition; coerce it
+    // to the unknown model so the change callback never dereferences a missing model.
+    private static readonly DataConfidenceIndicatorModel UnknownModel = DataConfidenceIndicatorModel.Unknown();
+
     public static readonly DependencyProperty ModelProperty =
         DependencyProperty.Register(
             nameof(Model),
             typeof(DataConfidenceIndicatorModel),
             typeof(DataConfidenceIndicator),
-            new PropertyMetadata(DataConfidenceIndicatorModel.Unknown(), OnModelChanged));
+            new PropertyMetadata(
+                UnknownModel,
+                OnModelChanged,
+                static (_, value) => value ?? UnknownModel));
 
     public static readonly DependencyProperty ToneProperty =
         DependencyProperty.Register(nameof(Tone), typeof(string), typeof(DataConfidenceIndicator), new PropertyMetadata(WorkspaceTone.Neutral));

@@ -8,14 +8,15 @@ namespace Meridian.Wpf.Tests.Models;
 public sealed class DataConfidenceIndicatorModelTests
 {
     [Fact]
-    public void FromEvidence_WithReadyFreshEvidence_UsesCurrentReconciledLabels()
+    public void FromEvidence_WithReadyFreshEvidenceAndSuppliedReconciliation_UsesCurrentReconciledLabels()
     {
         var asOf = new DateTimeOffset(2026, 6, 15, 12, 30, 0, TimeSpan.Zero);
 
         var model = DataConfidenceIndicatorModel.FromEvidence(
             EvidenceStatusDto.Ready,
             new EvidenceFreshnessDto(asOf, IsStale: false, Reason: null),
-            "Portfolio ledger");
+            "Portfolio ledger",
+            reconciliationStatus: DataConfidenceReconciliationStatus.Reconciled);
 
         model.ConfidenceLabel.Should().Be(DataConfidenceLabels.Current);
         model.ReconciliationLabel.Should().Be(DataConfidenceLabels.Reconciled);
@@ -26,7 +27,36 @@ public sealed class DataConfidenceIndicatorModelTests
     }
 
     [Fact]
-    public void FromEvidence_WithReviewRequiredStaleEvidence_SurfacesPartialUnreconciledNotes()
+    public void FromEvidence_WithoutASuppliedReconciliation_DoesNotClaimReconciled()
+    {
+        // EvidenceStatusDto describes evidence readiness only; a Ready delivery package or
+        // provider artifact is not a reconciliation result.
+        var model = DataConfidenceIndicatorModel.FromEvidence(
+            EvidenceStatusDto.Ready,
+            new EvidenceFreshnessDto(new DateTimeOffset(2026, 6, 15, 12, 30, 0, TimeSpan.Zero), IsStale: false, Reason: null),
+            "Delivery package");
+
+        model.ConfidenceLabel.Should().Be(DataConfidenceLabels.Current);
+        model.ReconciliationLabel.Should().Be(DataConfidenceLabels.Unknown);
+        model.Tone.Should().Be(WorkspaceTone.Neutral);
+    }
+
+    [Fact]
+    public void FromEvidence_ReadyWithoutAnAsOfInstant_StaysUnknownInsteadOfCurrent()
+    {
+        // The shared DTO permits a missing timestamp; "Current · As of unavailable" would
+        // contradict itself.
+        var model = DataConfidenceIndicatorModel.FromEvidence(
+            EvidenceStatusDto.Ready,
+            new EvidenceFreshnessDto(AsOf: null, IsStale: false, Reason: null),
+            "Portfolio ledger");
+
+        model.ConfidenceLabel.Should().Be(DataConfidenceLabels.Unknown);
+        model.FreshnessLabel.Should().Be("As of unavailable");
+    }
+
+    [Fact]
+    public void FromEvidence_WithReviewRequiredStaleEvidence_SurfacesPartialAndNotes()
     {
         var model = DataConfidenceIndicatorModel.FromEvidence(
             EvidenceStatusDto.ReviewRequired,
@@ -34,7 +64,7 @@ public sealed class DataConfidenceIndicatorModelTests
             "Accounting import");
 
         model.ConfidenceLabel.Should().Be(DataConfidenceLabels.Partial);
-        model.ReconciliationLabel.Should().Be(DataConfidenceLabels.Unreconciled);
+        model.ReconciliationLabel.Should().Be(DataConfidenceLabels.Unknown);
         model.Notes.Should().Be("Source file is older than policy.");
         model.Tone.Should().Be(WorkspaceTone.Warning);
     }
@@ -60,6 +90,107 @@ public sealed class DataConfidenceIndicatorModelTests
     }
 
     [Fact]
+    public void FromProviderStatus_ConnectedWithoutAnyFreshnessSignal_DoesNotClaimCurrent()
+    {
+        // A connected socket is not proof of current data.
+        var model = DataConfidenceIndicatorModel.FromProviderStatus(new ProviderStatusInfo
+        {
+            Name = "polygon",
+            DisplayName = "Polygon.io",
+            IsEnabled = true,
+            IsConnected = true,
+            Status = "Connected"
+        });
+
+        model.ConfidenceLabel.Should().Be(DataConfidenceLabels.Unknown);
+        model.FreshnessLabel.Should().Be("As of unavailable");
+    }
+
+    [Fact]
+    public void FromProviderStatus_WithAFreshnessWindow_MarksOldDataStaleWhileConnected()
+    {
+        var model = DataConfidenceIndicatorModel.FromProviderStatus(
+            new ProviderStatusInfo
+            {
+                Name = "polygon",
+                DisplayName = "Polygon.io",
+                IsEnabled = true,
+                IsConnected = true,
+                Status = "Connected",
+                LastMessageReceivedAt = DateTimeOffset.UtcNow.AddHours(-6)
+            },
+            freshnessWindow: TimeSpan.FromMinutes(15));
+
+        model.ConfidenceLabel.Should().Be(DataConfidenceLabels.Stale);
+        model.Tone.Should().Be(WorkspaceTone.Warning);
+    }
+
+    [Fact]
+    public void FromProviderStatus_WithTheSharedRouteContract_MapsConnectionStateAndFreshness()
+    {
+        var lastMessage = new DateTimeOffset(2026, 6, 15, 10, 5, 0, TimeSpan.Zero);
+        var model = DataConfidenceIndicatorModel.FromProviderStatus(
+            new Meridian.Contracts.Api.ProviderStatusResponse(
+                ProviderId: "polygon",
+                Name: "Polygon.io",
+                ProviderType: "MarketData",
+                IsConnected: true,
+                IsEnabled: true,
+                Priority: 1,
+                ActiveSubscriptions: 3,
+                LastHeartbeat: lastMessage,
+                ConnectionState: "Streaming",
+                LastMessageReceivedAt: lastMessage),
+            reconciliationStatus: DataConfidenceReconciliationStatus.Reconciled);
+
+        model.ConfidenceLabel.Should().Be(DataConfidenceLabels.Current);
+        model.ProviderLabel.Should().Be("Polygon.io · Streaming");
+        model.FreshnessLabel.Should().Be("2026-06-15 10:05 UTC");
+        model.Tone.Should().Be(WorkspaceTone.Success);
+    }
+
+    [Fact]
+    public void FromProviderStatus_ExplanationUsesTheNameFallbackWhenDisplayNameIsBlank()
+    {
+        var model = DataConfidenceIndicatorModel.FromProviderStatus(new ProviderStatusInfo
+        {
+            Name = "ibkr",
+            DisplayName = " ",
+            IsEnabled = true,
+            IsConnected = true,
+            Status = "Connected",
+            LastMessageReceivedAt = new DateTimeOffset(2026, 6, 15, 10, 5, 0, TimeSpan.Zero)
+        });
+
+        model.ProviderLabel.Should().StartWith("ibkr");
+        model.Explanation.Should().Contain("ibkr", "the tooltip and the visible provider label must not contradict each other");
+        model.Explanation.Should().NotContain("source not reported");
+    }
+
+    [Fact]
+    public void Tone_GivesUnreconciledWarningPrecedenceOverCurrent()
+    {
+        var model = DataConfidenceIndicatorModel.Unknown() with
+        {
+            ConfidenceLevel = DataConfidenceLevel.Current,
+            ReconciliationStatus = DataConfidenceReconciliationStatus.Unreconciled
+        };
+
+        model.Tone.Should().Be(WorkspaceTone.Warning, "a reconciliation exception must not be visually suppressed by a Current badge");
+    }
+
+    [Fact]
+    public void FreshnessLabel_ConvertsOffsetTimestampsToUtcBeforeLabelingThemUtc()
+    {
+        var model = DataConfidenceIndicatorModel.Unknown() with
+        {
+            FreshnessTimestamp = new DateTimeOffset(2026, 6, 15, 12, 0, 0, TimeSpan.FromHours(2))
+        };
+
+        model.FreshnessLabel.Should().Be("2026-06-15 10:00 UTC");
+    }
+
+    [Fact]
     public void Unknown_UsesExplicitUnavailableState()
     {
         var model = DataConfidenceIndicatorModel.Unknown();
@@ -68,6 +199,15 @@ public sealed class DataConfidenceIndicatorModelTests
         model.ReconciliationLabel.Should().Be(DataConfidenceLabels.Unknown);
         model.FreshnessLabel.Should().Be("As of unavailable");
         model.Tone.Should().Be(WorkspaceTone.Neutral);
+    }
+
+    [Fact]
+    public void Unknown_WithANote_CarriesTheNoteIntoTheExplanation()
+    {
+        var model = DataConfidenceIndicatorModel.Unknown(notes: "Valuation feed offline.");
+
+        model.Explanation.Should().Contain("Valuation feed offline.");
+        model.AccessibleExplanation.Should().Contain("Valuation feed offline.");
     }
 }
 #endif
