@@ -33,7 +33,7 @@ public static class UiEndpoints
 
     /// <summary>
     /// Registers shared services with a pre-configured StatusEndpointHandlers instance.
-    /// Use this when you want to share the same handlers with StatusHttpServer.
+    /// Use this when the workstation host supplies an existing handler instance.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="statusHandlers">Status endpoint handlers to register.</param>
