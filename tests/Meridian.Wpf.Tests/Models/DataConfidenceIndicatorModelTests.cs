@@ -169,6 +169,41 @@ public sealed class DataConfidenceIndicatorModelTests
     }
 
     [Fact]
+    public void FromEvidence_BlankSource_UsesTheSameFallbackInLabelAndExplanation()
+    {
+        var model = DataConfidenceIndicatorModel.FromEvidence(
+            EvidenceStatusDto.Ready,
+            new EvidenceFreshnessDto(new DateTimeOffset(2026, 6, 15, 12, 30, 0, TimeSpan.Zero), IsStale: false, Reason: null),
+            sourceSystem: "  ");
+
+        model.ProviderLabel.Should().Be("Evidence");
+        model.Explanation.Should().Contain("Evidence");
+        model.Explanation.Should().NotContain("source not reported",
+            "the tooltip must not contradict the visible provider label");
+    }
+
+    [Fact]
+    public void FromProviderStatus_MetricsSnapshotTimeAlone_IsNotAFreshnessSignal()
+    {
+        // The route populates LastHeartbeat from a stored metrics-snapshot timestamp when
+        // it has no live diagnostics; a snapshot time is not evidence that data arrived.
+        var model = DataConfidenceIndicatorModel.FromProviderStatus(
+            new Meridian.Contracts.Api.ProviderStatusResponse(
+                ProviderId: "polygon",
+                Name: "Polygon.io",
+                ProviderType: "MarketData",
+                IsConnected: true,
+                IsEnabled: true,
+                Priority: 1,
+                ActiveSubscriptions: 0,
+                LastHeartbeat: DateTimeOffset.UtcNow,
+                ConnectionState: "Connected"));
+
+        model.ConfidenceLabel.Should().Be(DataConfidenceLabels.Unknown);
+        model.FreshnessLabel.Should().Be("As of unavailable");
+    }
+
+    [Fact]
     public void FromProviderStatus_UnknownConnectivityFromTheSharedContract_IsNotDegraded()
     {
         // The route deliberately emits IsConnected = null with ConnectionState "unknown"

@@ -79,13 +79,17 @@ public sealed record DataConfidenceIndicatorModel(
 
         // EvidenceStatusDto describes evidence readiness, not a reconciliation result, so no
         // reconciliation posture is derived from it: callers that have one supply it explicitly.
+        // The visible label and the explanation share one normalized source so the tooltip
+        // cannot say "source not reported" while the badge shows the fallback name.
+        var source = Normalize(sourceSystem, "Evidence");
+        var evidenceNotes = Normalize(notes, freshness.Reason);
         return new DataConfidenceIndicatorModel(
             confidence,
             freshness.AsOf,
-            Normalize(sourceSystem, "Evidence"),
+            source,
             reconciliationStatus,
-            Normalize(notes, freshness.Reason),
-            BuildExplanation(confidence, reconciliationStatus, sourceSystem, freshness.AsOf, Normalize(notes, freshness.Reason)),
+            evidenceNotes,
+            BuildExplanation(confidence, reconciliationStatus, source, freshness.AsOf, evidenceNotes),
             explanationRoute);
     }
 
@@ -145,9 +149,10 @@ public sealed record DataConfidenceIndicatorModel(
             || ContainsAny(status, "degraded", "unhealthy", "error", "failed", "blocked", "disconnected")
             || !string.IsNullOrWhiteSpace(provider.LastFailureKind)
             || provider.FailedSubscriptions is > 0;
-        var asOf = provider.LastMessageReceivedAt
-            ?? provider.LastHeartbeatReceivedAt
-            ?? provider.LastHeartbeat;
+        // Only genuine received-at fields feed the freshness instant: the route populates
+        // LastHeartbeat from a stored metrics-snapshot timestamp when it has no live
+        // diagnostics, and a snapshot time is not evidence that data arrived.
+        var asOf = provider.LastMessageReceivedAt ?? provider.LastHeartbeatReceivedAt;
 
         return FromProviderCore(
             Normalize(provider.Name, "Provider"),
