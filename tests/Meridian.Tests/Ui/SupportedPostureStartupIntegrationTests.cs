@@ -103,6 +103,35 @@ public sealed class SupportedPostureStartupIntegrationTests
     }
 
     [Fact]
+    public async Task UiServer_AuthenticatedPosture_ServesReadinessAndScrapeButGovernsHealth()
+    {
+        using var environment = UiServerDevelopmentEnvironmentScope.Enable();
+        var root = CreateTempRoot();
+        var configPath = WriteMinimalConfig(root);
+        SeedGovernedUserAccount(root);
+        try
+        {
+            await using var server = new UiServer(configPath, port: 0);
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+            await server.StartAsync(timeout.Token);
+            var app = GetServerApp(server);
+            var address = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.First();
+            using var handler = new HttpClientHandler { AllowAutoRedirect = false };
+            using var client = new HttpClient(handler) { BaseAddress = new Uri(address) };
+            (await client.GetAsync("/api/status", timeout.Token)).StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            using var health = await client.GetAsync("/health", timeout.Token);
+            health.StatusCode.Should().Be(HttpStatusCode.Redirect);
+            using var readiness = await client.GetAsync("/readyz", timeout.Token);
+            readiness.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
+            using var metrics = await client.GetAsync("/metrics", timeout.Token);
+            metrics.StatusCode.Should().Be(HttpStatusCode.OK);
+            (await metrics.Content.ReadAsStringAsync(timeout.Token)).Should().Contain("mdc_published");
+            await server.StopAsync(timeout.Token);
+        }
+        finally { CleanupTempRoot(root); }
+    }
+
+    [Fact]
     public async Task UiServer_StartAsync_CompletesReportingMigrationBeforeHostedServiceConstruction()
     {
         using var environment = UiServerDevelopmentEnvironmentScope.Enable();
@@ -367,6 +396,14 @@ public sealed class SupportedPostureStartupIntegrationTests
         problem.GetProperty("timestamp").GetDateTimeOffset().Should().BeCloseTo(
             DateTimeOffset.UtcNow,
             TimeSpan.FromMinutes(1));
+    }
+
+    private static void SeedGovernedUserAccount(string root)
+    {
+        var governanceDir = Path.Combine(root, "data", "governance");
+        Directory.CreateDirectory(governanceDir);
+        File.WriteAllText(Path.Combine(governanceDir, "user-accounts.json"),
+            """{"accounts":[{"username":"posture-admin","passwordHash":"pbkdf2-sha256$210000$oOQU8zfLm/Pzwrl8VZlatQ==$ePPcBmch9qAIfhbablmoBT/tKPGb/TKmFBHlFWKV1uU=","role":"Admin"}]}""");
     }
 
     private static string CreateTempRoot()
