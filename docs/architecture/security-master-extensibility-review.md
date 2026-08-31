@@ -2477,7 +2477,15 @@ single-stream path computes
 `var annualRate = NormalizeAnnualRate(terms.CouponRate ?? 0m) + ScenarioRateShift(scenario)`
 (`SecurityMasterCashFlowService.cs:314`) — solely from `CouponRate`, defaulting to **zero**. So a
 floating `DirectLoan` supplying `referenceIndex` and `spreadBps` but omitting the optional
-`currentCouponRate` still projects zero interest after that fix. Unlike the leg path, there is also
+`currentCouponRate` still projects zero interest **on the base scenario** after that fix — and
+something worse on the others. `ScenarioRateShift` adds `0.01m`/`0.02m`/`0.03m` for
+`Up100`/`Up200`/`Up300` and `0.03m` for `Stress` (`:677-688`), so with no coupon those scenarios
+project interest at a bare 1–3% that is not the instrument's rate at all — a plausible-looking number
+rather than an obviously missing one. The downward scenarios go negative and are clamped back to zero
+by `if (annualRate < 0m)`. Only `_ => 0m`, the base case — the one `BuildLedgerPostingsAsync` uses —
+is the clean zero. An earlier version of this paragraph asserted zero interest for every calculated
+projection, which the `+ ScenarioRateShift(scenario)` term in the very line it quoted rules out; each
+of the three behaviours needs stating and testing separately. Unlike the leg path, there is also
 no current index fixing to combine with the spread. Closing the floating case requires deciding
 *where the all-in rate comes from* — an ingest-supplied all-in `currentCouponRate`, or a current
 fixing source the projection can combine with the spread — and adding the members and the rate
@@ -2571,6 +2579,18 @@ passes, and then an accidental removal of its specification also passes, because
 keeps supplying catalog coverage. That recreates precisely the silent omission A3 is meant to
 prevent, with a green guard over it.
 
+**The guard is necessary and not sufficient, and an earlier version of this entry offered it as the
+whole remedy.** Adding the thirteen omitted classes to `IntentionallyUnspecifiedClasses` satisfies
+both set conditions while changing nothing an operator sees: `GetReadinessAsync` projects from
+`Specifications` alone (`:255-256`), so a `request.AssetClass` filter naming `Deposit` still returns
+zero rows, and the unfiltered summary still counts thirteen classes as the universe. An implementer
+could close the guard and leave both defects this finding actually reports — the missing "not
+modeled" state and the understated readiness total — untouched. The remedy therefore has two parts:
+materialize intentionally-unspecified catalog classes as an explicit **unmodeled** (or blocked)
+readiness state rather than as absent rows, and base the summary totals on the **catalog** rather
+than on `Specifications`. The parity guard then keeps the declared gap honest instead of standing in
+for the fix.
+
 ### A4 — The custom-profile extension point declares projected and searchable fields and honours neither
 
 `SecurityAssetProfileFieldDefinitionDto` carries `IsProjected` and `IsSearchable`
@@ -2659,7 +2679,8 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    The **floating** case is not a resolver change: `StructuredCashFlowTerms` has no top-level
    `referenceIndex`/`spreadBps` members and the single-stream path takes its rate solely from
    `terms.CouponRate`, defaulting to zero (`SecurityMasterCashFlowService.cs:314`), so resolving
-   those keys alone still projects zero interest. Decide where the all-in rate or current fixing
+   those keys alone still projects zero interest on the base scenario, and a fabricated 1–3% on
+   `Up100`/`Up200`/`Up300`/`Stress` via `ScenarioRateShift`. Decide where the all-in rate or current fixing
    comes from, and add the members and rate derivation with it. The
    durable half is a parity guard tying resolver aliases to `SecurityAssetTermsSchema` for the
    cash-flow-capable classes — scoped to an explicit **cash-flow-relevant subset** of schema keys, not
@@ -2669,7 +2690,15 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
 2. **Reconcile identifier detection with identifier resolution (A2).** Run the duplicate query first
    to size it, then pick one key. The current split is the one state that guarantees the conflict
    surface cannot see the ambiguity the resolver acts on. The two answers are **not** equally cheap:
-   normalized detection keys are self-contained, while the unique normalized index inherits P5's
+   normalized detection keys reach only the identifier half — they are **not** self-contained, and an
+   earlier version of this entry said they were. `SecurityMasterConflictDetection` iterates
+   `Identifiers` only (`:31, :105, :114`) and never reads aliases, while `ResolveSecurityIdAsync`
+   also searches enabled, validity-windowed aliases and returns an arbitrary claimant through an
+   unordered `limit 1` (`PostgresSecurityMasterStore.cs:655-663`). Normalizing the detection keys
+   alone would therefore declare detection reconciled with resolution while leaving ambiguous aliases
+   entirely undetected — P1's alias gap, reappearing as a false closure. Carry alias values,
+   providers, enabled state and overlapping validity windows into this remediation. Meanwhile the
+   unique normalized index inherits P5's
    precondition — `ExecuteCreateAsync` appends the stream before the projection upsert
    (`SecurityMasterService.cs:323-324`), so the index must land together with atomic
    append-plus-projection creation or it converts normalized collisions into orphaned event streams.
@@ -2677,7 +2706,11 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    risk than the five that already exist — with the difference that this registry's gap is visible to
    operators as an understated readiness summary rather than only to the next contributor. Assert the
    two sets are **disjoint as well as exhaustive**; union alone lets a stale waiver mask a later
-   accidental removal of a specification, which is the omission the guard exists to catch.
+   accidental removal of a specification, which is the omission the guard exists to catch. The guard
+   alone does **not** close the finding: `GetReadinessAsync` projects from `Specifications`
+   (`:255-256`), so also materialize unspecified classes as an explicit unmodeled state and base the
+   summary totals on the catalog — otherwise the guard goes green while `Deposit` still returns no
+   row and the total still reads thirteen.
 4. **Decide what `IsProjected` / `IsSearchable` mean (A4).** Enforce the flags over the profile-field
    search path that **already exists** (`SecurityMasterQueryService.SearchAsync:488-489, 528-542`) and
    give it an index, or demote the flags to intent — do not build a second query capability beside it.
