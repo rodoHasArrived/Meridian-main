@@ -1204,13 +1204,14 @@ the earlier passes did not compare is the *other* open-lot types the platform al
 not two**, and an earlier draft of this item compared only two of them and drew a conclusion that
 does not survive the third:
 
-| | `FaceValueLot` (`Contracts/SecurityMaster/FaceValueLot.cs:14`) | `LedgerTaxLot` (`Meridian.Ledger/LedgerTaxLot.cs:6`) | `TaxLot` (`Meridian.Execution.Sdk/TaxLot.cs:16`) |
-| --- | --- | --- | --- |
-| Instrument key | `Guid SecurityId` | `Guid? SecurityId` | `string Symbol` |
-| Quantity | `decimal OriginalFace` + `BookedFactor` + `ParBasis` | `decimal Quantity` + `decimal UnitCost` | `long Quantity` |
-| Currency / FX at acquisition | absent | absent | absent |
-| Amortization | straight-line and constant-yield | none | none |
-| Relief / depletion | none | `LedgerTaxLotReliefProjector` (FIFO/LIFO/HIFO/SpecificId) | `ITaxLotSelector` (FIFO/LIFO/HIFO/SpecificId) |
+| | `FaceValueLot` (`Contracts/SecurityMaster/FaceValueLot.cs:14`) | `LedgerTaxLotRecord` (`Storage/Ledger/ILedgerJournalStore.cs:332`) | `LedgerTaxLot` (`Meridian.Ledger/LedgerTaxLot.cs:6`) | `TaxLot` (`Meridian.Execution.Sdk/TaxLot.cs:16`) |
+| --- | --- | --- | --- | --- |
+| Role | contract shape for par instruments | **durable / persisted** | in-memory relief shape | execution-side only |
+| Instrument key | `Guid SecurityId` | `Guid SecurityId` | `Guid? SecurityId` | `string Symbol` |
+| Quantity | `decimal OriginalFace` + `BookedFactor` + `ParBasis` | `decimal OriginalQuantity` + `OpenQuantity` + `UnitCost` | `decimal Quantity` + `decimal UnitCost` | `long Quantity` |
+| Currency / FX **at acquisition** | absent | absent — its `Currency` is the journal *functional* currency, an identity key, not acquisition currency | absent | absent |
+| Amortization | straight-line and constant-yield | none | none | none |
+| Relief / depletion | none | scoping for relief (filters open lots by functional currency) | `LedgerTaxLotReliefProjector` (FIFO/LIFO/HIFO/SpecificId) | `ITaxLotSelector` (FIFO/LIFO/HIFO/SpecificId) |
 
 **The convergence seam already exists.** `FaceValueLotExtensions.ToLedgerTaxLot`
 (`Meridian.Application/SecurityMaster/FaceValueLotExtensions.cs:19-31`) adapts a `FaceValueLot` into
@@ -1240,18 +1241,32 @@ multi-currency cost basis "has nowhere to live in any of them". `LedgerTaxLotRec
 `Currency` the whole time. The prior draft had swept two models and stopped; this one swept three and
 stopped. Restated precisely, so the surviving claim is checkable rather than sweeping:
 
-- **Acquisition currency** — present on `LedgerTaxLotRecord`; absent from `FaceValueLot`,
-  `LedgerTaxLot` and Execution's `TaxLot`. The gap is that the durable model holds it and the
-  in-memory relief model does not, so currency is dropped on the way into relief.
-- **Acquisition FX rate** — absent from all four, `LedgerTaxLotRecord` included. That half stands.
+- **Acquisition currency** — **absent from all four.** `LedgerTaxLotRecord.Currency` is the
+  journal's *functional* currency, not the acquisition or transaction currency:
+  `ResolveAtomicFunctionalCurrency` reads `line.Currency?.FunctionalCurrency` and requires exactly one
+  across every line (`PostgresLedgerJournalStore.AtomicTaxLots.cs:1651-1662`), the acquisition path
+  refuses a lot whose currency differs from it — *"Atomic acquisition lot currency must match the
+  durable journal functional currency"* (`:354-360`) — and the disposal path filters open lots by it
+  before mapping them into `LedgerTaxLot` (`:641-651`). It is an identity and scoping key, not a
+  record of what the position was bought in.
+- **Acquisition FX rate** — absent from all four. Unchanged.
 
-This also changes the target. Directing convergence at `LedgerTaxLot` without accounting for the
-storage model risks doing exactly what this item warns against — standing up another parallel seam
-beside the authoritative one. The question the item should put is how `LedgerTaxLotRecord`,
-`LedgerTaxLot` and the adapter relate: which is the contract new lot-bearing surfaces adopt, why
-`Currency` survives persistence but not relief, and where an FX rate belongs. The convergence is also
-still partial in the ways already noted — the adapter runs one way, `LedgerTaxLot` has no
-amortization, and nothing requires adoption.
+**Two drafts of this bullet were wrong in opposite directions, and the record is worth keeping.** The
+first said no model carries an acquisition currency — correct, but asserted without checking the
+durable model. The second "corrected" it on the strength of `LedgerTaxLotRecord.Currency` existing,
+and read a field name as settling a semantic question it does not settle. The first draft's claim
+stands; only its evidence was missing. Nothing about currency is *dropped on the way into relief* —
+relief filters by it deliberately — so the sentence saying so is withdrawn, and so is the remedy that
+followed from it, which would have added redundant functional-currency context to `LedgerTaxLot`
+while leaving the real gap untouched.
+
+The target question is unchanged and stands on its other grounds: directing convergence at
+`LedgerTaxLot` without accounting for the storage model risks standing up another parallel seam
+beside the authoritative one. The item should ask how `LedgerTaxLotRecord`, `LedgerTaxLot` and the
+adapter relate, which is the contract new lot-bearing surfaces adopt, and where an acquisition
+currency and FX rate belong — noting that adding them means adding a genuinely new pair, not
+plumbing an existing field further. The convergence is also still partial in the ways already noted:
+the adapter runs one way, `LedgerTaxLot` has no amortization, and nothing requires adoption.
 
 Symbol-keyed lots remain the specific thing corporate actions break — the subsystem models ticker
 changes (`SecurityMasterTickerChangeService`, `PermTicker`, the historical symbol timeline)
@@ -1328,15 +1343,18 @@ surfaces adopt. That is a real plan item and a smaller one than the draft implie
    means projecting a normalized primary provider column first.
 4. **P6** — plan (do not refactor) the lot-model convergence, and **start by reconciling the four
    models rather than naming a target**. `LedgerTaxLotRecord`
-   (`Storage/Ledger/ILedgerJournalStore.cs:332-349`) is the durable model and already carries
-   `Currency`; `LedgerTaxLot` is the in-memory relief shape and does not;
-   `FaceValueLotExtensions.ToLedgerTaxLot` adapts the par model into the latter; Execution's `TaxLot`
-   has no consumer outside Execution and is not the thing to converge. The open work is why currency
-   survives persistence but not relief, where an acquisition FX rate belongs (absent from all four),
-   where amortization lives, whether an explicit quantity basis belongs on the type or in the
-   adapter, and which of the ledger pair is the contract new lot-bearing surfaces adopt. An earlier
-   version of this entry named `LedgerTaxLot` as the target without accounting for the storage model,
-   which risked standing up another parallel seam beside the authoritative one.
+   (`Storage/Ledger/ILedgerJournalStore.cs:332-349`) is the durable model; `LedgerTaxLot` is the
+   in-memory relief shape; `FaceValueLotExtensions.ToLedgerTaxLot` adapts the par model into the
+   latter; Execution's `TaxLot` has no consumer outside Execution and is not the thing to converge.
+   **Acquisition currency and FX rate are absent from all four** — `LedgerTaxLotRecord.Currency` is
+   the journal *functional* currency, required to match on acquisition and used to filter open lots
+   on disposal (`PostgresLedgerJournalStore.AtomicTaxLots.cs:354-360, :641-651, :1651-1662`), so
+   adding acquisition currency means adding a genuinely new pair rather than plumbing an existing
+   field further. The open work is that pair, where amortization lives, whether an explicit quantity
+   basis belongs on the type or in the adapter, and which of the ledger pair is the contract new
+   lot-bearing surfaces adopt. Two earlier versions of this entry were wrong in opposite directions:
+   one named `LedgerTaxLot` as the target without accounting for the storage model, the other read
+   `LedgerTaxLotRecord.Currency` as acquisition currency on the strength of the field name.
 5. **The profile-backed parity guard** — small and mechanical.
 6. **P3** — **not** small and not mechanical, which an earlier version of this list got wrong.
    Emitting the missing claimant pairs is the easy half; resolving an `IdentifierAmbiguity` today
