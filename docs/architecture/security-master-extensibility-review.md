@@ -1194,8 +1194,17 @@ projecting a normalized primary provider column and including it for `ProviderSy
 constraint below is stated for the canonical kinds; do not widen it to `ProviderSymbol` without
 that column.
 
-The fix is a unique index on `(primary_identifier_kind, normalized_primary_identifier_value)`,
-which needs a dedup pass over existing rows first.
+The constraint is a unique index on `(primary_identifier_kind, normalized_primary_identifier_value)`,
+which needs a dedup pass over existing rows first. **It is not sufficient alone, and must not ship
+alone.** `ExecuteCreateAsync` appends the event stream *before* upserting the projection
+(`SecurityMasterService.cs:323-324`), in two separate awaits with no shared transaction, so a row
+rejected at the projection insert leaves its committed stream behind. That is precisely the
+orphaned-stream partial write this document establishes below for the *existing raw* constraint (see
+*What happens next is not a silent second golden record*). Adding a normalized index without
+changing that ordering does not enforce the invariant safely — it extends the same partial write to
+normalized collisions, which today slip past the raw index and insert cleanly. Scope the remediation
+to make the event append and the projection insert atomic, or to detect and compensate the committed
+stream, and land that **with** the constraint rather than after it.
 
 ### P6 — Three open-lot models, a partial convergence seam, and no acquisition-currency anywhere
 
@@ -1283,11 +1292,21 @@ already bridges the par model into it, and no consumer of Execution's `TaxLot` e
 Execution. Ranking it first over-stated it, and the target it named would have rebuilt a seam that
 exists.
 
-Restated: the work is to **finish the existing convergence**, not to design a replacement — give
-`LedgerTaxLot` an acquisition currency and FX rate, decide whether an explicit quantity basis
-(units vs. face) belongs on it or stays encoded in the adapter, settle where amortization lives now
-that the par economics survive the adaptation, and make the ledger seam the one new lot-bearing
-surfaces adopt. That is a real plan item and a smaller one than the draft implied.
+Restated: the work is to **finish the existing convergence**, not to design a replacement — but it
+begins by reconciling the two ledger models rather than naming either as the target. Establish how
+`LedgerTaxLotRecord` (durable), `LedgerTaxLot` (the in-memory relief shape) and the adapter relate
+and which of that pair is the contract new lot-bearing surfaces adopt; decide where an acquisition
+currency and FX rate belong, noting they are absent from **all four** models, so this adds a
+genuinely new pair rather than plumbing an existing field further; decide whether an explicit
+quantity basis (units vs. face) belongs on the type or stays encoded in the adapter; and settle where
+amortization lives now that the par economics survive the adaptation. That is a real plan item and a
+smaller one than the draft implied.
+
+An earlier version of this paragraph survived the four-model correction unchanged and still read
+"give `LedgerTaxLot` an acquisition currency and FX rate … and make the ledger seam the one new
+lot-bearing surfaces adopt". Following it would have attached the new pair to the shape that is *not*
+persisted and named it the adoption target — standing up exactly the parallel seam this item warns
+against, two paragraphs after the correction that withdrew that target.
 
 ### Smaller notes, not filed as findings
 
@@ -1336,8 +1355,12 @@ surfaces adopt. That is a real plan item and a smaller one than the draft implie
    holds the facts to decide. These conflicts **are** dismissible and stay dismissed, so the case is
    the recurring adjudication cost, not a queue that cannot reach zero; rank it as workload relief.
 3. **P5** — unique index on the normalized primary identifier, after a dedup pass, **scoped to the
-   canonical kinds**. This is what makes P1's guarantee hold at the database rather than by
-   convention. It must not be applied to `ProviderSymbol`: provider is part of identity for that kind
+   canonical kinds** and **paired with making the event append and projection insert atomic**. This
+   is what makes P1's guarantee hold at the database rather than by convention. The atomicity half is
+   not optional and not a follow-up: `ExecuteCreateAsync` appends the stream before the projection
+   upsert (`SecurityMasterService.cs:323-324`), so a constraint rejection leaves an orphaned event
+   stream — shipping the index by itself extends that partial write to normalized collisions instead
+   of closing the gap. It must not be applied to `ProviderSymbol`: provider is part of identity for that kind
    (`ValidateCrossRecordDuplicates`, `:441-449`), two providers may legitimately share symbol text,
    and the denormalized `securities` columns carry no provider to express the rule with. Widening it
    means projecting a normalized primary provider column first.
