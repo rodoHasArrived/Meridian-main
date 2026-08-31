@@ -22,6 +22,9 @@ This module owns application workflows that coordinate providers, storage, execu
 reporting, and UI-facing services through contracts. Keep transport, persistence implementation,
 and UI presentation concerns in their owning layers.
 
+Runtime health, readiness, status, and Prometheus responses are served only through the ASP.NET
+Core workstation host. Do not introduce a second listener or independent monitoring state.
+
 ## Key folders and files
 
 - `Tenancy/` - the authoritative multi-tenant scope fan-out authority. `AuthoritativeScopeFanOutService`

@@ -421,6 +421,22 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
     }
 
+    [Theory]
+    [InlineData("/healthz", true)]
+    [InlineData("/ready", true)]
+    [InlineData("/readyz", true)]
+    [InlineData("/live", true)]
+    [InlineData("/livez", true)]
+    [InlineData("/startup", true)]
+    [InlineData("/startupz", true)]
+    [InlineData("/metrics", true)]
+    [InlineData("/health", false)]
+    [InlineData("/health/detailed", false)]
+    [InlineData("/api/health", false)]
+    [InlineData("/metricsz", false)]
+    public void MonitoringEndpointExemptions_ExposeOnlySanitizedProbesAndScrape(string path, bool expected)
+        => MonitoringEndpointExemptions.IsExempt(path).Should().Be(expected);
+
     [Fact]
     public async Task ApiKeyMiddleware_SessionAuthenticatedRequest_PassesWithoutApiKey()
     {
