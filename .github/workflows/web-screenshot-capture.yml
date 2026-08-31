@@ -55,7 +55,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v7.0.1
         with:
           # Always capture and propose the refresh from the canonical default branch so a
           # dispatch from a feature branch cannot publish that branch's commits into the
@@ -258,7 +258,7 @@ jobs:
 
     steps:
       - name: Check out pull request head
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v7.0.1
         with:
           # The pull request's own commit, not the merge ref. This job answers
           # "does this change still render", and the merge ref would fold in
