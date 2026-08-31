@@ -1119,9 +1119,22 @@ re-detection inserts with `ON CONFLICT DO NOTHING` — whose comment states the 
 it "preserves any existing resolution state so a re-detected, already-resolved conflict is never
 re-opened" (`:46-47`). So the queue *can* be driven to zero and stays there.
 
-The defect is therefore unnecessary manual adjudication, not an unclearable queue: every recycled
-ticker costs an operator a dismissal that the system already holds the facts to decide, and that
-cost recurs for every reassignment the market makes. That is a weaker claim than the draft made and
+**But the same stickiness cuts the other way, which an earlier version of this item recorded only as
+a benefit.** `DeterministicConflictId(kind, value, a.SecurityId, b.SecurityId)` (`:70, :123`) is
+composed of the identifier and the two security ids and **nothing about validity windows or which
+occurrence produced the claim**. So when a dismissed recycled-ticker pair later becomes a *genuine*
+overlap — one of the two securities receives a new active occurrence of the same ticker — re-detection
+computes the identical `conflict_id`, the insert is a no-op under `on conflict (conflict_id) do
+nothing` (`:733`), and the row keeps its `Dismissed` status. The queue stays clean while the lookup
+is newly ambiguous: a dismissal made on one set of facts silently continues to suppress a conflict
+raised on different ones. The remediation therefore needs a version or reopen path keyed on the claim
+windows, plus a decision about the dismissed rows already stored — not only detection that reads the
+windows in the first place.
+
+The defect is therefore unnecessary manual adjudication *and* a stale-suppression risk, not an
+unclearable queue: every recycled ticker costs an operator a dismissal that the system already holds
+the facts to decide, that cost recurs for every reassignment the market makes, and the dismissal then
+outlives the facts it was based on. That is a weaker claim than the draft made and
 still worth fixing — but it is a workload argument, not a correctness one, and it should be ranked
 as such.
 
@@ -1273,15 +1286,48 @@ multi-currency cost basis "has nowhere to live in any of them". `LedgerTaxLotRec
 `Currency` the whole time. The prior draft had swept two models and stopped; this one swept three and
 stopped. Restated precisely, so the surviving claim is checkable rather than sweeping:
 
-- **Acquisition currency** — **absent from all four.** `LedgerTaxLotRecord.Currency` is the
-  journal's *functional* currency, not the acquisition or transaction currency:
+**And the enumeration was still short — this is the third time.** A repository-wide sweep for
+lot-*bearing* record types (as distinct from the many types that operate *on* lots — relief results,
+disposal selections, mutations, policies, projections) returns **six**, not four. The two missing ones
+are both active:
+
+- **`OpenLot`** (`src/Meridian.Backtesting.Sdk/OpenLot.cs:8`) — `LotId`, `Symbol`, `long Quantity`,
+  `EntryPrice`, `OpenedAt`, `OpenFillId`. Populated by the simulator, retained in the portfolio
+  snapshot, and projected to the workstation as `OpenLotSummary`
+  (`Contracts/Workstation/StrategyRunReadModels.cs:1111`). **Symbol-keyed with a `long` quantity**, so
+  it carries the same corporate-action fragility already noted for Execution's `TaxLot` — and unlike
+  that one it *does* have consumers outside its own subsystem.
+- **`BrokerageTaxLotSnapshotDto`** (`src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:274-281`) —
+  `AcquiredDate`, `Quantity`, `CostBasis`, **`Currency`**, `UnitCost`, carried through brokerage
+  portfolio and statement ingestion.
+
+That second one forces a narrowing of the currency claim below. The IB Flex connector builds it with
+`Currency: Attribute(element, "currency") ?? "USD"`
+(`IbFlexStatementConnector.cs:943-950`) — read off the **broker's own open-lot row**, alongside the
+acquired date and cost basis from that same row. That is not a journal functional currency imposed
+downstream; it is the lot's own currency as reported. So a per-lot acquisition currency does exist at
+the ingestion boundary and is dropped on the way in, which strengthens the underlying finding while
+correcting its scope.
+
+- **Acquisition currency** — **absent from the five ledger, contract, execution and backtesting
+  models; present on the brokerage ingestion DTO and discarded at the boundary.**
+  `LedgerTaxLotRecord.Currency` is the journal's *functional* currency, not the acquisition or
+  transaction currency:
   `ResolveAtomicFunctionalCurrency` reads `line.Currency?.FunctionalCurrency` and requires exactly one
   across every line (`PostgresLedgerJournalStore.AtomicTaxLots.cs:1651-1662`), the acquisition path
   refuses a lot whose currency differs from it — *"Atomic acquisition lot currency must match the
   durable journal functional currency"* (`:354-360`) — and the disposal path filters open lots by it
   before mapping them into `LedgerTaxLot` (`:641-651`). It is an identity and scoping key, not a
   record of what the position was bought in.
-- **Acquisition FX rate** — absent from all four. Unchanged.
+- **Acquisition FX rate** — absent from **all six**. Unchanged, and the one half of the original
+  claim that has survived every revision.
+
+**Do not read this list as closed.** It has now been short three times — two models, then three, then
+four, now six — and each correction came from review rather than from the sweep that preceded it. The
+current count comes from a repo-wide search for lot-bearing record declarations, separating them from
+types that operate on lots; a different search axis (interfaces, DTO envelopes, read models such as
+`OpenLotSummary` and `SnapshotOpenLotEnvelope`) may well surface more. Before planning convergence,
+re-run the sweep rather than trusting this enumeration.
 
 **Two drafts of this bullet were wrong in opposite directions, and the record is worth keeping.** The
 first said no model carries an acquisition currency — correct, but asserted without checking the
@@ -1319,7 +1365,9 @@ Restated: the work is to **finish the existing convergence**, not to design a re
 begins by reconciling the two ledger models rather than naming either as the target. Establish how
 `LedgerTaxLotRecord` (durable), `LedgerTaxLot` (the in-memory relief shape) and the adapter relate
 and which of that pair is the contract new lot-bearing surfaces adopt; decide where an acquisition
-currency and FX rate belong, noting they are absent from **all four** models, so this adds a
+currency and FX rate belong, noting the FX rate is absent from **all six** models and the currency
+from all but the brokerage ingestion DTO — which reads it off the broker's own lot row and drops it
+at the boundary — so this adds a
 genuinely new pair rather than plumbing an existing field further; decide whether an explicit
 quantity basis (units vs. face) belongs on the type or stays encoded in the adapter; and settle where
 amortization lives now that the par economics survive the adaptation. That is a real plan item and a
@@ -1376,7 +1424,11 @@ against, two paragraphs after the correction that withdrew that target.
    change"; it is one change plus the alias surface it does not reach.
 2. **P2** — window-filter detection so recycled tickers stop generating conflicts the system already
    holds the facts to decide. These conflicts **are** dismissible and stay dismissed, so the case is
-   the recurring adjudication cost, not a queue that cannot reach zero; rank it as workload relief.
+   the recurring adjudication cost, not a queue that cannot reach zero; rank it as workload relief —
+   **plus a correctness half**: because `DeterministicConflictId` carries no window or occurrence
+   component and re-detection is `on conflict do nothing`, a dismissal survives into a period when the
+   overlap has become genuine, suppressing a real conflict. Version or reopen on changed claim
+   windows, and decide what to do with the dismissed rows already stored.
 3. **P5** — unique index on the normalized primary identifier, after a dedup pass, **scoped to the
    canonical kinds** and **paired with making the event append and projection insert atomic**. This
    is what makes P1's guarantee hold at the database rather than by convention. The atomicity half is
@@ -1392,11 +1444,18 @@ against, two paragraphs after the correction that withdrew that target.
    (`Storage/Ledger/ILedgerJournalStore.cs:332-349`) is the durable model; `LedgerTaxLot` is the
    in-memory relief shape; `FaceValueLotExtensions.ToLedgerTaxLot` adapts the par model into the
    latter; Execution's `TaxLot` has no consumer outside Execution and is not the thing to converge.
-   **Acquisition currency and FX rate are absent from all four** — `LedgerTaxLotRecord.Currency` is
+   **The inventory is six, not four**, and has been short three times — `OpenLot`
+   (`Backtesting.Sdk/OpenLot.cs:8`, symbol-keyed, simulator-populated, projected to the workstation)
+   and `BrokerageTaxLotSnapshotDto` (`Execution.Sdk/IBrokerageAccountSync.cs:274-281`) are both
+   active seams. Re-run the sweep before planning; do not trust this count either.
+   **The acquisition FX rate is absent from all six**; the acquisition *currency* is absent from five
+   but **present on the brokerage DTO**, read off the broker's own open-lot row
+   (`IbFlexStatementConnector.cs:943-950`) and dropped at the boundary.
+   `LedgerTaxLotRecord.Currency` is
    the journal *functional* currency, required to match on acquisition and used to filter open lots
    on disposal (`PostgresLedgerJournalStore.AtomicTaxLots.cs:354-360, :641-651, :1651-1662`), so
-   adding acquisition currency means adding a genuinely new pair rather than plumbing an existing
-   field further. The open work is that pair, where amortization lives, whether an explicit quantity
+   adding acquisition currency to the ledger pair means adding a genuinely new field rather than
+   plumbing an existing one further — but the ingestion boundary shows the value already arrives. The open work is that pair, where amortization lives, whether an explicit quantity
    basis belongs on the type or in the adapter, and which of the ledger pair is the contract new
    lot-bearing surfaces adopt. Two earlier versions of this entry were wrong in opposite directions:
    one named `LedgerTaxLot` as the target without accounting for the storage model, the other read
