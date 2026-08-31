@@ -276,6 +276,29 @@ public sealed class DataConfidenceIndicatorModelTests
     }
 
     [Fact]
+    public void FromProviderStatus_DisconnectingLifecycle_ReadsAsDegraded()
+    {
+        // The supervisor publishes Disconnecting before the transport closes, so the route
+        // can report ConnectionState "disconnecting" while IsConnected is still true; a
+        // graceful shutdown in progress is not an operational feed.
+        var model = DataConfidenceIndicatorModel.FromProviderStatus(
+            new Meridian.Contracts.Api.ProviderStatusResponse(
+                ProviderId: "polygon",
+                Name: "Polygon.io",
+                ProviderType: "MarketData",
+                IsConnected: true,
+                IsEnabled: true,
+                Priority: 1,
+                ActiveSubscriptions: 3,
+                LastHeartbeat: null,
+                ConnectionState: "Disconnecting",
+                LastMessageReceivedAt: DateTimeOffset.UtcNow));
+
+        model.ConfidenceLabel.Should().Be(DataConfidenceLabels.ProviderDegraded);
+        model.Tone.Should().Be(WorkspaceTone.Warning);
+    }
+
+    [Fact]
     public void FromProviderStatus_ReconnectingLegacyProvider_ReadsAsDegraded()
     {
         var model = DataConfidenceIndicatorModel.FromProviderStatus(new ProviderStatusInfo

@@ -114,7 +114,7 @@ public sealed record DataConfidenceIndicatorModel(
         // connected: the provider-health endpoint classifies the same flag as yellow.
         var degraded = !provider.IsConnected
             || !provider.IsEnabled
-            || ContainsAny(status, "degraded", "unhealthy", "error", "failed", "blocked", "disconnected")
+            || ContainsAny(status, "degraded", "unhealthy", "error", "failed", "blocked", "disconnected", "disconnecting")
             || provider.IsReconnecting is true
             || !string.IsNullOrWhiteSpace(provider.LastError)
             || !string.IsNullOrWhiteSpace(provider.LastFailureKind);
@@ -161,7 +161,7 @@ public sealed record DataConfidenceIndicatorModel(
         // a stream the contract itself marks degraded is a partial degradation.
         var degraded = provider.IsConnected is false
             || !provider.IsEnabled
-            || ContainsAny(status, "degraded", "unhealthy", "error", "failed", "blocked", "disconnected")
+            || ContainsAny(status, "degraded", "unhealthy", "error", "failed", "blocked", "disconnected", "disconnecting")
             || provider.IsReconnecting is true
             || !string.IsNullOrWhiteSpace(provider.LastFailureKind)
             || provider.FailedSubscriptions is > 0
