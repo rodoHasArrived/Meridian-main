@@ -387,6 +387,11 @@ public sealed class WorkstationPrimitiveControlsTests
                 indicator.ExplanationCommand = new RoutedCommand();
                 button.Cursor.Should().Be(Cursors.Hand, "binding a command restores the click affordance");
                 button.Focusable.Should().BeTrue();
+
+                // WPF suppresses tooltips on disabled controls; the explanation must stay
+                // readable while a bound command reports CanExecute = false.
+                ToolTipService.GetShowOnDisabled(button).Should().BeTrue(
+                    "the explanation tooltip must remain visible while the command cannot execute");
             }
             finally
             {

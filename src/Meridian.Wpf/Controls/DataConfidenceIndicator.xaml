@@ -13,6 +13,7 @@
             DataContext="{Binding ElementName=Root}"
             CommandParameter="{Binding EffectiveExplanationCommandParameter}"
             ToolTip="{Binding Model.Explanation}"
+            ToolTipService.ShowOnDisabled="True"
             Padding="0"
             BorderThickness="0"
             Background="Transparent"
