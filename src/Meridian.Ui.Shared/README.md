@@ -202,6 +202,20 @@ derived cache rebuilt from persisted workflow records and carries no source-of-t
 Corporate-action mutations posted through shared Security Master endpoints delegate validation and
 append auditing to the application-owned
 `ISecurityMasterCorporateActionCommandService`.
+Corporate-action *source decisions* (accepting or rejecting a globally observed provider proposal)
+are gated on the authoritative scope fan-out authority rather than on a constant. The read-side
+posture reports decisions unavailable whenever `ICorporateActionScopeFanOutGate` is not composed,
+which is a composition fact and not an operator-configurable toggle; that posture is advisory by
+construction, since only the decision path can know whether a particular proposal passes. Both
+decision routes resolve workstation tenant/company scope first. Acceptance asks the authority
+inside the atomic command, after the idempotency receipt replay, so a committed retry still returns
+its original receipt when holdings have since moved; rejection resolves nothing and so is gated at
+the endpoint. Narrow scope fields (fund, account, portfolio, custody, ledger book, basis, currency,
+jurisdiction) remain caller-forbidden and are now server-resolved from the assignment authority and
+stamped by the acceptance command. A decision is applied only when the affected set is exactly one
+scope owned by the caller; a fan-out that is incomplete, empty, reaches another tenant, or spans
+several scopes is refused with its own problem code, because the durable acceptance path opens one
+case in one transaction and applying to part of the affected set is not atomic.
 The ledger explorer carries canonical `LedgerDimensionSetDto` scope into row cells, drill-in fields,
 and dimension filter chips so browser and WPF users can inspect fund, entity, sleeve, strategy,
 portfolio, book, account, investor, capital-account, instrument, position, tax-lot, cost-center,

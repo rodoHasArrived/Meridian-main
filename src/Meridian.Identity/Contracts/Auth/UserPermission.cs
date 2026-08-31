@@ -116,4 +116,35 @@ public enum UserPermission : long
     // ── Compliance ───────────────────────────────────────────────────────────
     /// <summary>File and decide compliance approvals, run access reviews, and extract the audit chain.</summary>
     ManageCompliance = 1L << 29,
+
+    // ── Corporate actions ────────────────────────────────────────────────────
+    /// <summary>View corporate-action source facts, scoped cases, treatment, and proof.</summary>
+    ViewCorporateActions = 1L << 30,
+
+    /// <summary>Run or manage corporate-action provider ingest without accounting authority.</summary>
+    IngestCorporateActions = 1L << 31,
+
+    /// <summary>Resolve source conflicts and confirm normalized corporate-action terms.</summary>
+    ResolveCorporateActionTerms = 1L << 32,
+
+    /// <summary>Prepare, submit, amend, withdraw, or confirm a holder election.</summary>
+    RecordCorporateActionElection = 1L << 33,
+
+    /// <summary>Select policy-supported treatments and generate accounting projections.</summary>
+    PrepareCorporateActionAccounting = 1L << 34,
+
+    /// <summary>Approve an exact corporate-action evidence and projection version.</summary>
+    ApproveCorporateActionAccounting = 1L << 35,
+
+    /// <summary>Commit approved corporate-action journals and lot mutations.</summary>
+    PostCorporateActionAccounting = 1L << 36,
+
+    /// <summary>Finalize corporate-action tax classification and tax-basis treatment.</summary>
+    ReviewCorporateActionTax = 1L << 37,
+
+    /// <summary>Apply an authorized, reasoned exception to corporate-action policy.</summary>
+    OverrideCorporateActionPolicy = 1L << 38,
+
+    /// <summary>Reopen a closed corporate-action case or initiate correction/restatement.</summary>
+    ReopenCorporateActionCase = 1L << 39,
 }

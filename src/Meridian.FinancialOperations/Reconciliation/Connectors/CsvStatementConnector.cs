@@ -10,8 +10,12 @@ namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 /// and mixed-kind files (positions, transactions, cash balances, fees, dividends in one
 /// statement).
 /// </summary>
-public sealed class CsvStatementConnector(StatementMappingProfileCatalog catalog) : IStatementConnector
+public sealed class CsvStatementConnector(
+    StatementMappingProfileCatalog catalog,
+    StatementIngressLimits? ingressLimits = null) : IStatementConnector
 {
+    private readonly StatementIngressLimits _ingressLimits = ingressLimits ?? StatementIngressLimits.Default;
+
     public const string ConnectorId = "csv-mapped";
 
     private static readonly char[] CandidateDelimiters = [',', ';', '\t', '|'];
@@ -24,6 +28,16 @@ public sealed class CsvStatementConnector(StatementMappingProfileCatalog catalog
         SupportsRemoteFetch: false,
         RequiresMappingProfile: true,
         DefaultProfileId: StatementMappingProfileRegistry.CanonicalCsvV1ProfileId);
+
+    private static StatementParseResult CsvIngressRefusal(StatementParseIssue issue)
+        => new(
+            ConnectorId,
+            ProfileId: null,
+            [],
+            ColumnMappings: [],
+            [],
+            [issue],
+            new StatementFormatFingerprint(string.Empty, [], "csv-mapped"));
 
     public bool CanHandle(StatementSourceDocument document)
     {
@@ -38,6 +52,17 @@ public sealed class CsvStatementConnector(StatementMappingProfileCatalog catalog
         var profileId = string.IsNullOrWhiteSpace(document.MappingProfileId)
             ? Descriptor.DefaultProfileId!
             : document.MappingProfileId.Trim();
+        // Refuse before decoding, as camt.053, BAI2 and IB Flex already do. StatementImportService
+        // checks this cap too, but ParseAsync is public connector API reached directly by in-process
+        // callers and by these tests, and the decode below materializes the whole payload as a UTF-16
+        // string: a document whose single leaf is enormous stays under the node, entry and depth bounds
+        // while allocating twice its byte size. The bound has to be checked where the allocation is.
+        if (document.Content.Length > _ingressLimits.MaxDocumentBytes)
+        {
+            issues.Add(_ingressLimits.DocumentTooLarge(document.Content.Length));
+            return EmptyResult(profileId, issues, []);
+        }
+
         var profile = await catalog.FindAsync(profileId, ct).ConfigureAwait(false);
         if (profile is null)
         {
@@ -54,7 +79,61 @@ public sealed class CsvStatementConnector(StatementMappingProfileCatalog catalog
         }
 
         var content = Encoding.UTF8.GetString(document.Content.Span);
-        var lines = CsvLineSplitter.SplitLines(content);
+        // Its own bound, not a MaxRecords derivation. This was MaxRecords * 2 + 4, and the allowance was
+        // built to cover a header, the terminal empty segment a trailing newline leaves, and an equal
+        // number of blank lines - but it still scaled with the record cap, so rejected rows were charged
+        // to the record allowance one step removed. MapRecord rejects rows: a header, one valid row and
+        // five unparseable ones is seven lines against a cap of six at MaxRecords = 1, refused, though the
+        // parse retains one record and five diagnostics and both sit well inside their bounds.
+        //
+        // No multiplier fixes that, for the reason the BAI2 path already records: lines-per-record has no
+        // upper bound, because a legal file may hold any number of rows that map to nothing. Deriving from
+        // MaxRecords + MaxDiagnostics fails too, since a blank line is neither. So this is MaxDocumentLines,
+        // the budget that owns raw lines, set far above any real statement and biting only on abuse - and
+        // it reports STATEMENT_TOO_MANY_LINES, a different claim about the file than record overflow.
+        var hardLineCap = _ingressLimits.MaxDocumentLines;
+        // One more than the bound, so a truncation *at* the bound cannot be mistaken for the synthetic
+        // trailing segment below. Asking for exactly hardLineCap makes the two indistinguishable at
+        // hardLineCap + 1 returned lines.
+        //
+        // Saturating, because int.MaxValue is the natural value for a deployment that wants this ceiling
+        // effectively off, and hardLineCap + 1 would wrap to int.MinValue - SplitLines guards maxLines
+        // with ThrowIfNegative, so every CSV document would throw instead of parsing. A bound configured
+        // to permit everything must permit everything, not fail closed on arithmetic.
+        var discoveryAllowance = hardLineCap == int.MaxValue ? int.MaxValue : hardLineCap + 1;
+        var lines = CsvLineSplitter.SplitLines(
+            content, discoveryAllowance, _ingressLimits.MaxLineBytes, out var lineTooLong);
+
+        if (lineTooLong)
+        {
+            return CsvIngressRefusal(_ingressLimits.LineTooLong(lines.Count + 1));
+        }
+
+        // There is deliberately no "nonblank lines cannot exceed MaxRecords + 1" precheck here. It read as
+        // a cheap early refusal, but it predicted one canonical record per nonblank line, and MapRecord
+        // rejects rows: a file of one valid row and three malformed ones retains a single record and three
+        // diagnostics, both well inside their bounds, yet that precheck refused it as record overflow.
+        // Allocation is bounded without predicting anything - MaxDocumentLines above bounds line discovery,
+        // the mapping loop bounds records as it appends them, and MaxDiagnostics bounds what rejected rows
+        // retain - so the bound that fires is the one whose message is true of the file.
+
+        // Reported separately from the record bound, because they are not the same statement about the
+        // file. Blank lines produce no canonical row but still cost a list entry, so a document can breach
+        // the allocation bound while carrying only a handful of records - and calling that "too many
+        // records" told the operator something untrue about what they had submitted. Row numbers are
+        // physical line indices, so blank lines cannot simply be dropped to dodge the bound.
+        // An empty final segment can only mean the content ended with a newline, so it is synthetic and
+        // must not be billed. Without this a file of exactly MaxDocumentLines lines was refused when it
+        // ended with a newline and accepted when it did not - acceptance turning on newline convention,
+        // which is the defect the BAI2 path exempts the same segment to avoid. The old MaxRecords * 2 + 4
+        // cap carried enough slack to absorb it; replacing that derivation with the real line budget
+        // removed the slack and left the segment charged.
+        var discoveredLines = lines.Count > 0 && lines[^1].Length == 0 ? lines.Count - 1 : lines.Count;
+        if (discoveredLines > hardLineCap)
+        {
+            return CsvIngressRefusal(_ingressLimits.TooManyLines(hardLineCap));
+        }
+
         var firstContentLine = lines.FirstOrDefault(static line => !string.IsNullOrWhiteSpace(line));
         if (firstContentLine is null)
         {
@@ -163,7 +242,29 @@ public sealed class CsvStatementConnector(StatementMappingProfileCatalog catalog
                     mappedValues, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes);
                 if (record is not null)
                 {
+                    // Stop accumulating at the bound rather than building the whole set and having the
+                    // import service reject it afterwards: a compact CSV inside the byte cap can still
+                    // carry millions of rows, and the peak allocation is what the cap exists to avoid.
+                    if (records.Count >= _ingressLimits.MaxRecords)
+                    {
+                        issues.Add(_ingressLimits.TooManyRecords());
+                        break;
+                    }
+
                     records.Add(record);
+                }
+
+                // The record cap above bounds what a row produces; it does not bound what a row that
+                // produces nothing still retains. MapRecord returns null for a rejected row and keeps its
+                // error, so a file of unparseable rows accumulates diagnostics while records.Count stays
+                // put and this cap never fires. The line pre-check bounds the iteration count, so the
+                // growth is bounded rather than unbounded - but at roughly two issues per row it is
+                // bounded well above the record allowance, and diagnostics are retained and projected
+                // into the preview exactly like records.
+                if (issues.Count > _ingressLimits.MaxDiagnostics)
+                {
+                    issues.Add(_ingressLimits.TooManyDiagnostics());
+                    break;
                 }
             }
 

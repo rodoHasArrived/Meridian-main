@@ -13,6 +13,26 @@ public interface IFundAccountStore
     Task<AccountSummaryDto?> GetAccountAsync(Guid accountId, CancellationToken ct = default);
     Task<IReadOnlyList<AccountSummaryDto>> QueryAccountsAsync(AccountStructureQuery query, CancellationToken ct = default);
 
+    /// <summary>
+    /// Enumerates matching accounts across every tenant, deliberately bypassing the ambient
+    /// caller-tenant read predicate that <see cref="QueryAccountsAsync"/> applies.
+    ///
+    /// <para>This exists for one caller: the authoritative scope fan-out authority, which has to
+    /// answer "which tenants does this security-level fact reach?" and would otherwise get a
+    /// caller-scoped answer that looks complete while omitting every other tenant's holdings.
+    /// Nothing read here may be returned to a caller — the authority reports only whether the
+    /// affected set is confined to the caller's own scope, never what the other scopes are.</para>
+    ///
+    /// <para>The default implementation fails closed so a store that cannot honour the
+    /// cross-tenant contract can never be mistaken for one that returned an empty set.</para>
+    /// </summary>
+    Task<IReadOnlyList<AccountSummaryDto>> QueryAccountsAcrossTenantsAsync(
+        AccountStructureQuery query,
+        CancellationToken ct = default)
+        => Task.FromException<IReadOnlyList<AccountSummaryDto>>(
+            new NotSupportedException(
+                "This fund-account store cannot enumerate accounts across tenants."));
+
     // Balance snapshots
     Task InsertBalanceSnapshotAsync(AccountBalanceSnapshotDto snapshot, CancellationToken ct = default);
     Task<IReadOnlyList<AccountBalanceSnapshotDto>> GetBalanceHistoryAsync(Guid accountId, DateOnly? fromDate, DateOnly? toDate, CancellationToken ct = default);

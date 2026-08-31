@@ -14,6 +14,7 @@ namespace Meridian.Tests.SecurityMaster;
 public sealed class SecurityMasterCsvParserTests
 {
     private const string Header = "Ticker,Name,AssetClass,Currency,Exchange,ISIN,CUSIP,FIGI";
+    private const string TestActor = "import.operator";
 
     [Fact]
     public void ParsedRow_CarriesTheDisplayNameAndCurrencyTheCreatePathRequires()
@@ -72,7 +73,7 @@ public sealed class SecurityMasterCsvParserTests
         foreach (var assetClass in SecurityAssetClassCatalog.IdentifierOnlyImportableAssetClasses)
         {
             var parsed = new SecurityMasterCsvParser()
-                .Parse($"{Header}\nSYM,Some security,{assetClass},USD,,,,", out var errors);
+                .Parse($"{Header}\nSYM,Some security,{assetClass},USD,,,,", out var errors, TestActor);
 
             errors.Should().BeEmpty($"'{assetClass}' declares SupportsIdentifierOnlyImport");
             parsed.Should().ContainSingle().Which.AssetClass.Should().Be(assetClass);
@@ -85,7 +86,7 @@ public sealed class SecurityMasterCsvParserTests
         // Option needs an underlying, put/call, strike, expiry and multiplier. A CSV row carries
         // none of them, and defaulting them would mint a governed record on invented economics.
         new SecurityMasterCsvParser()
-            .Parse($"{Header}\nAAPL240621C00150000,Apple call,Option,USD,,,,", out var errors);
+            .Parse($"{Header}\nAAPL240621C00150000,Apple call,Option,USD,,,,", out var errors, TestActor);
 
         errors.Should().ContainSingle().Which
             .Should().Contain("requires asset-specific terms");
@@ -95,7 +96,7 @@ public sealed class SecurityMasterCsvParserTests
     public void AnUnknownClassIsRefusedAsUnknown()
     {
         new SecurityMasterCsvParser()
-            .Parse($"{Header}\nSYM,Some security,TokenizedCarbonCredit,USD,,,,", out var errors);
+            .Parse($"{Header}\nSYM,Some security,TokenizedCarbonCredit,USD,,,,", out var errors, TestActor);
 
         errors.Should().ContainSingle().Which
             .Should().Contain("Unknown AssetClass");
@@ -115,9 +116,37 @@ public sealed class SecurityMasterCsvParserTests
             .Should().BeEquivalentTo(new[] { "Equity", "InvestmentFund" });
     }
 
+    /// <summary>
+    /// The audit actor comes from the caller's authenticated session, not from a constant baked into
+    /// the parser. A CSV file carries no identity of its own, and a placeholder there occupies the
+    /// field that is supposed to say who made the change.
+    /// </summary>
+    [Fact]
+    public void ParsedRow_RecordsTheSuppliedActor_NotAConstant()
+    {
+        var parsed = new SecurityMasterCsvParser()
+            .Parse($"{Header}\nAAPL,Apple Inc.,Equity,USD,,,,", out _, "jordan.rivera");
+
+        var request = parsed.Should().ContainSingle().Subject;
+        request.UpdatedBy.Should().Be("jordan.rivera");
+
+        // SourceSystem identifies the upstream source for conflict precedence, so it stays constant
+        // and must not be derived from the actor.
+        request.SourceSystem.Should().Be("SecurityMasterImport");
+    }
+
+    [Fact]
+    public void Parse_RefusesAnEmptyActor()
+    {
+        var parse = () => new SecurityMasterCsvParser()
+            .Parse($"{Header}\nAAPL,Apple Inc.,Equity,USD,,,,", out _, "   ");
+
+        parse.Should().Throw<ArgumentException>();
+    }
+
     private static IReadOnlyList<CreateSecurityRequest> Parse(string csv, int expectedErrors = 0)
     {
-        var parsed = new SecurityMasterCsvParser().Parse(csv, out var errors);
+        var parsed = new SecurityMasterCsvParser().Parse(csv, out var errors, TestActor);
         errors.Should().HaveCount(expectedErrors, string.Join("; ", errors));
         return parsed;
     }

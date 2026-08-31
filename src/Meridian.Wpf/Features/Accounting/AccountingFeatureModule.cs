@@ -103,6 +103,12 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
             new FileAccountingConfigurationStore(
                 Path.Combine(ResolveAccountingDataDirectory(sp), "accounting-configuration.json")));
         services.TryAddSingleton<IAccountingConfigurationStore>(sp => sp.GetRequiredService<FileAccountingConfigurationStore>());
+        // W9-GOV-008 criterion 3: makes the mutation and its audit append recoverable as a pair. The
+        // desktop lane needs this as much as the browser one — it runs the same file-backed stores.
+        services.TryAddSingleton<IAccountingAuditPendingMarkerStore>(sp =>
+            new FileAccountingAuditPendingMarkerStore(
+                FileAccountingAuditPendingMarkerStore.MarkerPathFor(
+                    Path.Combine(ResolveAccountingDataDirectory(sp), "accounting-configuration.json"))));
         services.TryAddSingleton<IAccountingActionAuditStore>(sp =>
             sp.GetRequiredService<IAccountingConfigurationStore>() is IAccountingActionAuditStore auditStore
                 ? auditStore

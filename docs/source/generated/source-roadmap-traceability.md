@@ -22,6 +22,7 @@ do_not_edit: true
 | `SRC-APP` | Meridian application layer | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `SRC-APP` | Meridian application layer | `W3-CONT-001` | Research to paper continuity |
 | `SRC-APP` | Meridian application layer | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-APP` | Meridian application layer | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `SRC-APP` | Meridian application layer | `W10-MARK-001` | Fail-closed stale-mark policy and mark-age surfacing |
 | `SRC-BACKTESTING` | Meridian backtesting | `W3-CONT-001` | Research to paper continuity |
 | `SRC-BACKTESTING` | Meridian backtesting | `W5-MASSET-001` | Multi-asset operational coverage proof lane |

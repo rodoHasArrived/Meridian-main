@@ -753,7 +753,13 @@ const corporateActions: CorporateAction[] = [
     acquirerSecurityId: null,
     exchangeRatio: null,
     subscriptionPricePerShare: null,
-    rightsPerShare: null
+    rightsPerShare: null,
+    recordDate: null,
+    lifecycleState: null,
+    supersedesCorpActId: null,
+    redemptionPricePercentOfPar: null,
+    payload: null,
+    payloadSchemaVersion: 1
   },
   {
     corpActId: "ca-split-1",
@@ -769,7 +775,13 @@ const corporateActions: CorporateAction[] = [
     acquirerSecurityId: null,
     exchangeRatio: null,
     subscriptionPricePerShare: null,
-    rightsPerShare: null
+    rightsPerShare: null,
+    recordDate: null,
+    lifecycleState: null,
+    supersedesCorpActId: null,
+    redemptionPricePercentOfPar: null,
+    payload: null,
+    payloadSchemaVersion: 1
   }
 ];
 

@@ -27,20 +27,36 @@ public sealed class PostgresOperationsContinuityStore :
     // IHttpContextAccessor-backed implementation. Null (no tenant in scope) => reads are not scoped.
     private readonly IFundScopeTenantAccessor? _tenantAccessor;
 
+    // W9-GOV-008 criterion 2: how strictly to enforce that scope. Defaults to the deployment-boundary
+    // posture so existing construction sites keep their behaviour; the host injects the configured one.
+    private readonly TenantScopeEnforcementOptions _tenantScope;
+
     public PostgresOperationsContinuityStore(
         LedgerJournalStoreOptions options,
         ITransactionalLedgerJournalStore ledgerJournalStore,
         IOperationsStatusDerivationService statusDerivation,
-        IFundScopeTenantAccessor? tenantAccessor = null)
+        IFundScopeTenantAccessor? tenantAccessor = null,
+        TenantScopeEnforcementOptions? tenantScope = null)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _ledgerJournalStore = ledgerJournalStore ?? throw new ArgumentNullException(nameof(ledgerJournalStore));
         _statusDerivation = statusDerivation ?? throw new ArgumentNullException(nameof(statusDerivation));
         _tenantAccessor = tenantAccessor;
+        _tenantScope = tenantScope ?? TenantScopeEnforcementOptions.DeploymentBoundary;
     }
 
-    // SEC-005 slice 4c: the caller's tenant for the current ambient scope, or null (fail-open).
+    // SEC-005 slice 4c: the caller's tenant for the current ambient scope, or null.
     private string? ResolveCallerTenant() => _tenantAccessor?.ResolveCallerTenant();
+
+    // Rejected, not emptied: an empty result is indistinguishable from a genuinely empty workflow set.
+    // A background job holding retained authority declares it via FundScopeTenantAuthority.
+    private void RejectUnscopedRead(string? callerTenantId)
+    {
+        if (TenantReadPredicate.ShouldRejectRead(callerTenantId, _tenantScope.Mode))
+        {
+            throw new TenantScopeRejectedException("operations-continuity workflows");
+        }
+    }
 
     public async Task SaveAsync(OperationsContinuityWorkflow workflow, CancellationToken ct = default)
     {
@@ -65,12 +81,14 @@ public sealed class PostgresOperationsContinuityStore :
             where workflow_id = @workflow_id
             """;
         command.Parameters.AddWithValue("workflow_id", workflowId);
-        // SEC-005 slice 4c: scope by the workflow's stamped tenant_id so a foreign workflow GUID resolves to
-        // not-found rather than leaking the workflow. Fail-open for a tenantless caller / unbound workflow.
+        // SEC-005 slice 4c: scope by the workflow's stamped tenant_id so a foreign workflow GUID resolves
+        // to not-found rather than leaking the workflow. Under the deployment-boundary posture an unbound
+        // workflow still resolves; under fail-closed it does not, and a tenantless caller is refused.
         var callerTenant = ResolveCallerTenant();
+        RejectUnscopedRead(callerTenant);
         if (TenantReadPredicate.ShouldFilter(callerTenant))
         {
-            command.CommandText += TenantReadPredicate.FilterClause("tenant_id");
+            command.CommandText += TenantReadPredicate.FilterClause("tenant_id", _tenantScope.Mode);
             command.Parameters.AddWithValue(
                 TenantReadPredicate.ParameterName,
                 TenantReadPredicate.NormalizeParameter(callerTenant!));
@@ -123,12 +141,13 @@ public sealed class PostgresOperationsContinuityStore :
 
         // SEC-005 slice 4c: scope by the workflow's stamped tenant_id, closing the slice-3b residual where
         // the close-cockpit / workflow-summary reach this store by fund_account_id / ledgerBookId without a
-        // fund_profile_id. Fail-open — applied only for a tenant-scoped caller; a null-tenant (unbound)
-        // workflow or a tenantless caller passes, so single-company-per-deployment behavior is unchanged.
+        // fund_profile_id. Applied only for a tenant-scoped caller; under the deployment-boundary posture
+        // an unbound workflow still passes, so single-company-per-deployment behavior is unchanged.
         var callerTenant = ResolveCallerTenant();
+        RejectUnscopedRead(callerTenant);
         if (TenantReadPredicate.ShouldFilter(callerTenant))
         {
-            command.CommandText += TenantReadPredicate.FilterClause("tenant_id");
+            command.CommandText += TenantReadPredicate.FilterClause("tenant_id", _tenantScope.Mode);
             command.Parameters.AddWithValue(
                 TenantReadPredicate.ParameterName,
                 TenantReadPredicate.NormalizeParameter(callerTenant!));
