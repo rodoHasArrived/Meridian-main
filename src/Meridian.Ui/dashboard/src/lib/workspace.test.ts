@@ -301,6 +301,7 @@ describe("workspace metadata", () => {
       "OperationsClose",
       "OperationsContinuity",
       "PortfolioFamilyOffice",
+      "PortfolioLoanBook",
       "PortfolioShell",
       "ProviderHealth",
       "ProviderTrust",

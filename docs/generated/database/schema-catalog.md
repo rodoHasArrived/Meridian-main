@@ -9,13 +9,13 @@ This catalog is extracted from a disposable PostgreSQL database after every regi
 | [`asset_operations`](modules/asset_operations.md) | `asset-operations` | 16 | 1 | 2 | 0 | `78161959c33a` |
 | [`banking`](modules/banking.md) | `banking` | 3 | 0 | 0 | 0 | `13eb85175584` |
 | [`fund_accounts`](modules/fund_accounts.md) | `fund-accounts` | 12 | 0 | 0 | 0 | `c11c69e353f5` |
-| [`fund_structure`](modules/fund_structure.md) | `fund-structure` | 13 | 0 | 0 | 0 | `83ea628e2319` |
+| [`fund_structure`](modules/fund_structure.md) | `fund-structure` | 14 | 0 | 0 | 0 | `4f123aa32d6e` |
 | [`identity_access`](modules/identity_access.md) | `identity-access` | 2 | 0 | 0 | 0 | `bef1840f1d59` |
-| [`ledger`](modules/ledger.md) | `ledger` | 26 | 11 | 15 | 0 | `0f70e02f996a` |
+| [`ledger`](modules/ledger.md) | `ledger` | 27 | 11 | 15 | 0 | `167a27b209b2` |
 | [`money_market`](modules/money_market.md) | `money-market` | 4 | 0 | 0 | 0 | `4c336b5362a4` |
 | [`public`](modules/public.md) | - | 0 | 0 | 0 | 0 | `d50d95b1e1f1` |
 | [`reporting`](modules/reporting.md) | `reporting` | 20 | 18 | 21 | 0 | `33a0abf15576` |
-| [`security_master`](modules/security_master.md) | `security-master`, `direct-lending` | 71 | 1 | 1 | 0 | `74e065d60376` |
+| [`security_master`](modules/security_master.md) | `security-master`, `direct-lending` | 80 | 1 | 1 | 0 | `9943f8c5935d` |
 
 ## Default topology
 

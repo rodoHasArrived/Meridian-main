@@ -9,6 +9,7 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// <summary>
 /// Marker metadata recorded on endpoints that attach a permission gate through
 /// <see cref="EndpointAuthorization.RequirePermission{TBuilder}"/> or
+/// <see cref="EndpointAuthorization.RequireAllPermissions{TBuilder}"/> or
 /// <see cref="EndpointAuthorization.RequireAnyPermission{TBuilder}"/>. Coverage tests inspect this
 /// metadata to prove every mapped route declares an explicit authorization requirement.
 /// </summary>
@@ -448,6 +449,28 @@ public static class EndpointAuthorization
                 EndpointHelpers.Forbidden(context.HttpContext));
         };
 
+    private static Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> RequireAll(
+        params UserPermission[] permissions)
+        => (context, next) =>
+        {
+            if (!TryGetPermissions(context.HttpContext, out _))
+            {
+                return ValueTask.FromResult<object?>(
+                    ApiProblemDetails.Unauthorized(context.HttpContext));
+            }
+
+            foreach (var permission in permissions)
+            {
+                if (!HasPermission(context.HttpContext, permission))
+                {
+                    return ValueTask.FromResult<object?>(
+                        EndpointHelpers.Forbidden(context.HttpContext));
+                }
+            }
+
+            return next(context);
+        };
+
     /// <summary>
     /// Attaches a single-permission authorization filter to the route (or group) and records
     /// <see cref="EndpointAuthorizationMetadata"/> so the requirement is discoverable in endpoint metadata.
@@ -458,6 +481,26 @@ public static class EndpointAuthorization
     {
         builder.AddEndpointFilter(Require(permission));
         builder.WithMetadata(new EndpointAuthorizationMetadata(new[] { permission }, requireAll: true));
+        return builder;
+    }
+
+    /// <summary>
+    /// Attaches one all-of authorization filter and one metadata declaration for routes that require
+    /// every listed permission. Keeping the complete requirement in a single declaration ensures
+    /// pre-binding authorization middleware evaluates the same policy as the endpoint filter.
+    /// </summary>
+    public static TBuilder RequireAllPermissions<TBuilder>(this TBuilder builder, params UserPermission[] permissions)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        ArgumentNullException.ThrowIfNull(permissions);
+        if (permissions.Length == 0)
+        {
+            throw new ArgumentException("At least one permission is required.", nameof(permissions));
+        }
+
+        var required = permissions.Distinct().ToArray();
+        builder.AddEndpointFilter(RequireAll(required));
+        builder.WithMetadata(new EndpointAuthorizationMetadata(required, requireAll: true));
         return builder;
     }
 

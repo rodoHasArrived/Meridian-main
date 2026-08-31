@@ -2405,7 +2405,7 @@ const fixtureCorporateActions: CorporateAction[] = [
     acquirerSecurityId: null,
     exchangeRatio: null,
     subscriptionPricePerShare: null,
-    rightsPerShare: null
+    rightsPerShare: null, recordDate: null, lifecycleState: "Paid", supersedesCorpActId: null, redemptionPricePercentOfPar: null, payload: null, payloadSchemaVersion: 1
   },
   {
     corpActId: "ca-aapl-split-2020-08",
@@ -2421,7 +2421,7 @@ const fixtureCorporateActions: CorporateAction[] = [
     acquirerSecurityId: null,
     exchangeRatio: null,
     subscriptionPricePerShare: null,
-    rightsPerShare: null
+    rightsPerShare: null, recordDate: null, lifecycleState: "Paid", supersedesCorpActId: null, redemptionPricePercentOfPar: null, payload: null, payloadSchemaVersion: 1
   }
 ];
 

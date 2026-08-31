@@ -458,6 +458,7 @@ import {
   securityMasterAmendEndpoint,
   securityMasterConflictsEndpoint,
   securityMasterConflictResolveEndpoint,
+  securityMasterCorporateActionSourceProposalAcceptEndpoint,
   securityMasterCorporateActionsEndpoint,
   securityMasterEntryEndpoint,
   securityMasterOperatorOverridesEndpoint,
@@ -3736,8 +3737,9 @@ export function getSecurityMasterQualityReport() {
   return getJson<import("@/types").SecurityMasterQualityReport>(SECURITY_MASTER_API_ENDPOINTS.qualityReportLatest);
 }
 
-export function applyCorporateActionInboxProposal(request: import("@/types").CorporateActionInboxApplyRequest) {
-  return postJson<unknown>(SECURITY_MASTER_API_ENDPOINTS.corporateActionInboxApply, request);
+export function acceptCorporateActionInboxProposal(request: import("@/types").CorporateActionInboxAcceptRequest) {
+  const endpoint = securityMasterCorporateActionSourceProposalAcceptEndpoint(request.proposalId);
+  return postJson<import("@/types").CorporateActionInboxAcceptResult>(endpoint, request);
 }
 
 export function getQualityAnomalies() {

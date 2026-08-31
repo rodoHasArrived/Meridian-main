@@ -1031,9 +1031,14 @@ public sealed record MultiAssetPackCoverageDto(
     AssetPackAdmissionPolicy AdmissionPolicy,
     string LedgerExtensionPolicy,
     string RegistryValidationStatus = "Unknown",
-    IReadOnlyList<AssetPackRegistryValidationIssue>? RegistryValidationIssues = null)
+    IReadOnlyList<AssetPackRegistryValidationIssue>? RegistryValidationIssues = null,
+    // Coverage the pack anticipates but the Security Master cannot represent yet. Reported apart
+    // from AssetClasses so a readiness reader never mistakes planned coverage for present coverage.
+    IReadOnlyList<string>? PlannedAssetClasses = null)
 {
     public IReadOnlyList<AssetPackRegistryValidationIssue> RegistryValidationIssues { get; init; } = RegistryValidationIssues ?? [];
+
+    public IReadOnlyList<string> PlannedAssetClasses { get; init; } = PlannedAssetClasses ?? [];
 }
 
 /// <summary>

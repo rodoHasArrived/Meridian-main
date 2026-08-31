@@ -26,7 +26,7 @@ namespace Meridian.Wpf.ViewModels;
 /// Wraps <see cref="SecurityMasterWorkstationDto"/>-backed search and detail
 /// surfaced by the <c>/api/workstation/security-master</c> endpoints.
 /// </summary>
-public sealed class SecurityMasterViewModel : BindableBase, IDisposable
+public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 {
     private const string AllAssetClassesFilterLabel = "All asset classes";
     private const string AllProvidersFilterLabel = "All providers";
@@ -42,6 +42,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private readonly WpfServices.NavigationService _navigationService;
     private readonly ISmQueryService _queryService;
     private readonly ISmService _service;
+    private readonly WpfServices.DesktopAuthenticationSession? _authenticationSession;
     private readonly bool _hasPolygonApiKey;
     private readonly object _selectedSecurityLoadGate = new();
     private bool _isRefreshingSearchWorkspaceFilters;
@@ -1547,8 +1548,11 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _queryService = queryService;
         _service = service;
+        _authenticationSession = authenticationSession;
         if (authenticationSession?.CurrentActor is { Length: > 0 } sessionActor)
         {
+            // Pre-fills the operator text box only. Governed writes resolve their actor through
+            // DesktopAuthenticationSession.TryGetAuthenticatedActor, which validates the session.
             _conflictOperatorText = sessionActor;
         }
         _hasPolygonApiKey = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("POLYGON_API_KEY"));
@@ -1628,7 +1632,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void OnCreateNew()
     {
-        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService, _service);
+        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService, _service, _authenticationSession);
         WireEditVmEvents();
         IsEditPanelVisible = true;
     }
@@ -1656,7 +1660,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             {
                 await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService, _service);
+                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService, _service, _authenticationSession);
                     EditVm.LoadForEdit(detail);
                     WireEditVmEvents();
                     IsEditPanelVisible = true;
@@ -4316,93 +4320,5 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             _loggingService.LogError("Failed to resolve Security Master conflict", ex);
             _notificationService.ShowNotification("Security Master", "Conflict resolution failed.", NotificationType.Error);
         }
-    }
-
-    // ── Bulk Import ──────────────────────────────────────────────────────────
-    private async Task OnImportFromFile(CancellationToken ct = default)
-    {
-        var openDialog = new Microsoft.Win32.OpenFileDialog
-        {
-            Filter = "CSV/JSON Files|*.csv;*.json",
-            DefaultExt = ".csv",
-            Title = "Import Securities"
-        };
-
-        if (openDialog.ShowDialog() != true)
-            return;
-
-        try
-        {
-            IsImporting = true;
-            ImportTotal = 0;
-            ImportProcessed = 0;
-            ImportImported = 0;
-            ImportFailed = 0;
-            IsImportResultVisible = false;
-
-            var fileContent = await System.IO.File.ReadAllTextAsync(openDialog.FileName, ct).ConfigureAwait(false);
-            var fileExtension = System.IO.Path.GetExtension(openDialog.FileName);
-
-            var progress = new Progress<SecurityMasterImportProgress>(p =>
-            {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    ImportTotal = p.Total;
-                    ImportProcessed = p.Processed;
-                    ImportImported = p.Imported;
-                    ImportFailed = p.Failed;
-                    RaisePropertyChanged(nameof(ImportStatus));
-                });
-            });
-
-            var result = await _importService.ImportAsync(fileContent, fileExtension, progress, ct).ConfigureAwait(false);
-
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                ImportTotal = result.Imported + result.Skipped + result.Failed;
-                ImportImported = result.Imported;
-                ImportFailed = result.Failed;
-
-                var summary = $"Imported {result.Imported} securities, Skipped {result.Skipped}, Failed {result.Failed}.";
-                if (result.Errors.Any())
-                {
-                    summary += $"\r\nErrors:\r\n{string.Join("\r\n", result.Errors.Take(10))}";
-                    if (result.Errors.Count > 10)
-                        summary += $"\r\n... and {result.Errors.Count - 10} more errors.";
-                }
-
-                ImportResultSummary = summary;
-                IsImportResultVisible = true;
-                RaisePropertyChanged(nameof(ImportStatus));
-
-                _notificationService.ShowNotification(
-                    "Security Master Import",
-                    $"Import completed: {result.Imported} imported, {result.Failed} failed.",
-                    result.Failed == 0 ? NotificationType.Success : NotificationType.Warning);
-            });
-
-            // Refresh search results
-            _ = SearchAsync();
-            _ = RefreshOperatorWorkflowAsync();
-        }
-        catch (OperationCanceledException)
-        {
-            _notificationService.ShowNotification("Security Master Import", "Import cancelled.", NotificationType.Info);
-        }
-        catch (Exception ex)
-        {
-            _loggingService.LogError("Security Master import failed", ex);
-            _notificationService.ShowNotification("Security Master Import", $"Import failed: {ex.Message}", NotificationType.Error);
-        }
-        finally
-        {
-            IsImporting = false;
-        }
-    }
-
-    private void OnCloseImportResult()
-    {
-        IsImportResultVisible = false;
-        ImportResultSummary = string.Empty;
     }
 }

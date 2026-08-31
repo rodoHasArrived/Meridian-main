@@ -387,6 +387,17 @@ public partial class App : System.Windows.Application
         services.AddSingleton<UserProfileRegistry>(sp => new UserProfileRegistry(
             roleProfileStore: null,
             accountStore: sp.GetRequiredService<IUserAccountStore>()));
+
+        // W9-GOV-008 criterion 2. AccountingFeatureModule registers the unpartitioned in-memory
+        // fund structure, and this desktop never calls AddWorkstationSharedServices, so the
+        // multi-company refusal that guard exists for ran only for the browser workstation: the
+        // desktop started and served one shared graph to operators across companies.
+        //
+        // Registered in the composition root rather than in that feature module, because the guard
+        // reads IUserAccountStore -- registered here, a few lines up -- and the module is
+        // constructed standalone by its own tests. Putting it there made resolving IHostedService
+        // throw for want of an account store the module never owned.
+        services.AddHostedService<Meridian.Ui.Shared.Services.InMemoryFundStructureTenancyGuard>();
         services.AddSingleton<LoginSessionService>();
         services.AddSingleton<WpfServices.DesktopAuthenticationSession>();
         services.AddTransient<StartupWindowViewModel>();

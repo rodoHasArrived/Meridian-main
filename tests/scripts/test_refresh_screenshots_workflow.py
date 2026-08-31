@@ -368,7 +368,10 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         # that no longer renders.
         # 78 after adding W03O (web-accounting-capital-calls) for the new
         # /accounting/capital-calls issuance screen.
-        self.assertEqual(79, len(captures))
+        # 80 after adding W02F (web-portfolio-loan-book) for the new /portfolio/loan-book
+        # screen, which gives the browser the direct-lending read surface that previously
+        # only the desktop client reached.
+        self.assertEqual(80, len(captures))
         self.assertNotIn("W05E", captures)
         self.assertEqual("/data/import", captures["W06I"].get("path"))
         self.assertEqual("/data/operations", captures["W06J"].get("path"))

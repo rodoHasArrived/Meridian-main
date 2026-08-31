@@ -861,6 +861,53 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.selectedPosition).toBeNull();
   });
 
+  it("offers no next step when the workspace failed to load", () => {
+    // "Unavailable" is a load failure, not an empty desk. Sending the operator to import would
+    // hide the problem rather than solve it.
+    const vm = buildPortfolioScreenViewModel({ trading: null, strategy, accounting });
+
+    expect(vm.positionEmptyAction).toBeNull();
+  });
+
+  it("points a loaded but empty portfolio workspace at statement import", () => {
+    const emptyPortfolio = { ...portfolio, positions: [] };
+    const vm = buildPortfolioScreenViewModel({ trading: null, portfolio: emptyPortfolio, strategy, accounting });
+
+    expect(vm.hasPositions).toBe(false);
+    expect(vm.positionEmptyAction).toEqual({
+      label: "Import a statement",
+      route: "/accounting/statement-import"
+    });
+    expect(vm.positionEmptyText).toContain("Import a statement");
+  });
+
+  it("points an empty paper session at the trading desk instead of import", () => {
+    const emptyTrading = { ...trading, positions: [] };
+    const vm = buildPortfolioScreenViewModel({ trading: emptyTrading, strategy, accounting });
+
+    expect(vm.hasPositions).toBe(false);
+    expect(vm.positionEmptyAction).toEqual({ label: "Open the trading desk", route: "/trading" });
+    expect(vm.positionEmptyText).toContain("once an order fills");
+  });
+
+  it("keeps the offered step consistent with the sentence beside it", () => {
+    // The button must never contradict the adjacent text, so both read the same branch.
+    const emptyTrading = { ...trading, positions: [] };
+    const paper = buildPortfolioScreenViewModel({ trading: emptyTrading, strategy, accounting });
+    expect(paper.positionEmptyText).toContain("paper session");
+    expect(paper.positionEmptyAction?.route).toBe("/trading");
+
+    const emptyPortfolio = { ...portfolio, positions: [] };
+    const workspace = buildPortfolioScreenViewModel({
+      trading: null,
+      portfolio: emptyPortfolio,
+      strategy,
+      accounting
+    });
+    expect(workspace.positionEmptyText).toContain("No holdings yet");
+    expect(workspace.positionEmptyAction?.route).toBe("/accounting/statement-import");
+  });
+
   it("returns empty run text when strategy data is null", () => {
     const vm = buildPortfolioScreenViewModel({ trading, strategy: null, accounting });
     expect(vm.hasRuns).toBe(false);

@@ -1,5 +1,12 @@
 import { useState } from "react";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import {
+  buildMultiAssetCoverageGroups,
+  multiAssetReadinessDetail,
+  multiAssetReadinessGroup,
+  multiAssetStatusLabel,
+  multiAssetStatusTone
+} from "./portfolio-screen.multi-asset-coverage";
 import { PORTFOLIO_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
   comparisonToneForPnl,
@@ -411,6 +418,17 @@ export interface PortfolioRunEvidenceAction {
   ariaLabel: string;
 }
 
+/**
+ * The next step offered from an empty holdings table.
+ *
+ * Kept in step with `positionEmptyText` -- same branch order -- so the button can never
+ * contradict the sentence printed beside it.
+ */
+export interface PortfolioPositionEmptyAction {
+  label: string;
+  route: string;
+}
+
 export interface PortfolioScreenViewModel {
   metricsFromTrading: boolean;
   metricCards: TradingWorkspaceResponse["metrics"];
@@ -457,6 +475,8 @@ export interface PortfolioScreenViewModel {
   runEvidenceChip: PortfolioHeaderChip;
   positionDetailEmptyTitle: string;
   positionEmptyText: string;
+  /** Where an operator with no holdings goes next; null when there is nothing honest to offer. */
+  positionEmptyAction: PortfolioPositionEmptyAction | null;
   selectedPosition: PortfolioPositionDetail | null;
   selectPosition: (id: string) => void;
   hasRuns: boolean;
@@ -799,10 +819,18 @@ export function buildPortfolioScreenViewModel({
     runEvidenceChip: { label: "Run evidence", value: buildLinkedRunEvidenceLabel(runRows.length) },
     positionDetailEmptyTitle: "No holding selected",
     positionEmptyText: trading
-      ? "No open positions in the active paper session."
+      ? "No open positions in the active paper session. Positions appear here once an order fills."
       : portfolio
-        ? "No open positions in the Portfolio workspace."
+        ? "No holdings yet. Import a statement or holdings file, or connect a provider, and they appear here."
         : "Portfolio workspace data unavailable.",
+    // Only offered where there is a true next step: a loaded workspace with nothing in it yet, or a
+    // paper session waiting on a fill. "Unavailable" is a failure to load, not an empty desk, so it
+    // gets no button -- routing an operator elsewhere would just hide the problem.
+    positionEmptyAction: trading
+      ? { label: "Open the trading desk", route: WORKSTATION_ROUTE_CATALOG.trading }
+      : portfolio
+        ? { label: "Import a statement", route: WORKSTATION_ROUTE_CATALOG.accountingStatementImport }
+        : null,
     selectedPosition,
     selectPosition,
     hasRuns: runRows.length > 0,
@@ -1412,71 +1440,6 @@ export function buildMultiAssetCoveragePanel(
     evidenceRouteLabel: `GET ${evidenceRoute}`,
     asOfLabel: `As of ${coverage.asOfUtc}`
   };
-}
-
-function multiAssetStatusTone(status: string): PortfolioMultiAssetCoverageRow["statusTone"] {
-  if (status === "Ready") return "success";
-  if (status === "Blocked") return "danger";
-  if (status === "ReviewRequired" || status === "Degraded") return "warning";
-  return "default";
-}
-
-function multiAssetStatusLabel(status: string): string {
-  if (status === "ReviewRequired") return "Review required";
-  return status;
-}
-
-function multiAssetReadinessGroup(status: string): Pick<PortfolioMultiAssetCoverageGroup, "id" | "label" | "statusTone"> {
-  if (status === "Ready") return { id: "ready", label: "Ready", statusTone: "success" };
-  if (status === "Blocked") return { id: "blocked", label: "Blocked", statusTone: "danger" };
-  if (status === "ReviewRequired" || status === "Degraded") return { id: "review", label: "Review required", statusTone: "warning" };
-  return { id: "other", label: "Other state", statusTone: "default" };
-}
-
-function multiAssetReadinessDetail(
-  status: string,
-  statusLabel: string,
-  blockerCount: number,
-  evidenceReady: number,
-  evidenceTotal: number
-): string {
-  if (status === "Ready") {
-    return `${statusLabel}: ${evidenceReady}/${evidenceTotal} evidence targets ready.`;
-  }
-
-  const blockerLabel = blockerCount === 0
-    ? "no blockers"
-    : `${blockerCount} blocker${blockerCount === 1 ? "" : "s"}`;
-  return `${statusLabel}: ${evidenceReady}/${evidenceTotal} evidence targets ready with ${blockerLabel}.`;
-}
-
-function buildMultiAssetCoverageGroups(rows: PortfolioMultiAssetCoverageRow[]): PortfolioMultiAssetCoverageGroup[] {
-  const order = ["blocked", "review", "ready", "other"];
-  const groups = order
-    .map((id) => {
-      const groupRows = rows.filter((row) => row.readinessGroupId === id);
-      if (groupRows.length === 0) {
-        return null;
-      }
-
-      const label = groupRows[0].readinessGroupLabel;
-      return {
-        id,
-        label,
-        statusTone: groupRows[0].readinessGroupId === "blocked"
-          ? "danger"
-          : groupRows[0].readinessGroupId === "ready"
-            ? "success"
-            : groupRows[0].readinessGroupId === "review"
-              ? "warning"
-              : "default",
-        summary: `${groupRows.length} asset class${groupRows.length === 1 ? "" : "es"}`,
-        rows: groupRows
-      };
-    })
-    .filter((group): group is PortfolioMultiAssetCoverageGroup => group !== null);
-
-  return groups;
 }
 
 function buildBrokerageAccountOptions(
