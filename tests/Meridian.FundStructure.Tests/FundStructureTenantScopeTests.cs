@@ -553,6 +553,45 @@ public sealed class FundStructureTenantScopeTests
     }
 
     [Fact]
+    public async Task UnderTheBoundaryPosture_AForeignParentedAccountIsHiddenButTheCallersIsServed()
+    {
+        // The read half of the thirteenth round's correction. The boundary posture shares what is
+        // unattributed and hides what another tenant holds, so the account filter has to make the
+        // same distinction the node filter already makes -- rather than being skipped wholesale.
+        //
+        // The straddling shape specifically -- beta's fund plus alpha's entity. An account carrying
+        // ONLY beta's fund proves nothing here: FilterAccountsByScope already excludes it, because
+        // nothing it references is in alpha's scoped structure. It is the shared entity that gets a
+        // foreign-funded account past that filter, which is exactly what round 12 fixed for
+        // fail-closed and this extends to the boundary posture.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var accountService = new InMemoryFundAccountService();
+
+        var beta = await SeedOrganizationAsync(store, TenantBeta, "BETA");
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+
+        var alphaService = CreateService(
+            store, TenantAlpha, TenantScopeEnforcementOptions.DeploymentBoundary, accountService);
+        var alphaEntity = await alphaService.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            Guid.NewGuid(), LegalEntityTypeDto.LimitedPartner, "LP-ALPHA-BND", "Alpha Limited Partner",
+            "US", "USD", EffectiveFrom, "tenant-scope-test"));
+
+        var straddling = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(), AccountTypeDto.Custody, "ACC-BND-STRADDLE", "Straddling Account",
+            "USD", EffectiveFrom, "tenant-scope-test",
+            FundId: beta.FundId, EntityId: alphaEntity.EntityId));
+
+        var alphaOwn = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(), AccountTypeDto.Custody, "ACC-BND-ALPHA", "Alpha Account",
+            "USD", EffectiveFrom, "tenant-scope-test", FundId: alpha.FundId));
+
+        var view = await alphaService.GetOrganizationStructureAsync(new OrganizationStructureQuery());
+
+        Assert.DoesNotContain(view.Accounts, a => a.AccountId == straddling.AccountId);
+        Assert.Contains(view.Accounts, a => a.AccountId == alphaOwn.AccountId);
+    }
+
+    [Fact]
     public async Task FailClosed_LinksAnAlreadyVisibleAccountThatHasNoStructuralParent()
     {
         // Twelfth Codex review round. An account can be a fund-structure node stamped to the caller
@@ -722,14 +761,19 @@ public sealed class FundStructureTenantScopeTests
     }
 
     [Fact]
-    public async Task UnderTheBoundaryPosture_AnAccountAnotherTenantHolds_IsSharedButNotReclaimed()
+    public async Task UnderTheBoundaryPosture_AnAccountAnotherTenantHolds_IsRefusedRatherThanShared()
     {
-        // The mirror of Create_DoesNotClaimAPreExistingUnattributedNode, for accounts. Under the
-        // deployment boundary the shared link is still permitted — that posture's whole premise is
-        // that the deployment is the control — but ownership must not move to whoever links next,
-        // which is the incidental-write claim the stamping refuses to make. (Under fail-closed the
-        // same attempt is refused outright; see
-        // FailClosed_RefusesAnAccountAlreadyStandingAsAnotherTenantsNode.)
+        // Thirteenth Codex review round, and a correction to this test's own earlier premise. It
+        // used to assert that the boundary posture permitted the link and merely declined to
+        // re-stamp, on the reasoning that "the deployment is the control". That conflated
+        // unattributed with foreign. FundStructureTenantScope.IsVisible hides a node attributed to
+        // another tenant under BOTH postures — only the unattributed row differs — so alpha could
+        // never read this account or its fund anyway. Permitting the write meant alpha authored an
+        // edge neither endpoint of which it could see, and which beta inherited outright.
+        //
+        // Genuine boundary sharing is unaffected because it runs on UNATTRIBUTED accounts, which
+        // stay visible in that posture: see UnderTheBoundaryPosture_LinkingAnUnattributedAccount_
+        // DoesNotClaimIt, which still passes unchanged.
         var store = new FakeFundStructureStore(isTenantPartitioned: true);
         var accountService = new InMemoryFundAccountService();
 
@@ -744,12 +788,15 @@ public sealed class FundStructureTenantScopeTests
                 OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
 
         var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
-        await CreateService(
+        var hijack = () => CreateService(
                 store, TenantAlpha, TenantScopeEnforcementOptions.DeploymentBoundary, accountService)
             .LinkNodesAsync(new LinkFundStructureNodesRequest(
                 Guid.NewGuid(), alpha.FundId, account.AccountId,
                 OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
 
+        await Assert.ThrowsAsync<FundStructureTenantScopeException>(hijack);
+
+        // And ownership is untouched: refusing must not have re-stamped it either.
         Assert.Equal(TenantBeta, store.TenantOf(account.AccountId));
     }
 

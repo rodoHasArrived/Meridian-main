@@ -1587,10 +1587,12 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
     /// caller-visible entity alongside its foreign fund reached the organization and accounting
     /// views even though linking it was refused (Codex review finding on PR #2871).</para>
     ///
-    /// <para>Gated on <c>FailClosed</c> for the same reason the claim is: under the deployment
-    /// boundary an unattributed account is deliberately visible to everyone, and hiding it here
-    /// would empty the views of the very deployments that posture exists to serve. Where the
-    /// account store does scope its own reads this filter is a no-op, which is what it should be.</para>
+    /// <para>Applied under both postures, because <c>FundStructureTenantScope.IsVisible</c> hides a
+    /// node attributed to another tenant under both — only the unattributed row differs. What stays
+    /// posture-specific is the demand for positive ownership evidence: under the deployment boundary
+    /// an account with no structural reference is the shared, unattributed shape that posture exists
+    /// to serve, so it is served, while one hanging off another tenant's fund is not. Where the
+    /// account store scopes its own reads this filter is a no-op, which is what it should be.</para>
     /// </remarks>
     private async Task<IReadOnlyList<AccountSummaryDto>> GetVisibleAccountsAsync(
         bool activeOnly, DateTimeOffset asOf, MutableSnapshot tenantScoped, CancellationToken ct)
@@ -1601,17 +1603,14 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
         var withinWindow = accounts
             .Where(a => IsVisible(a.IsActive, a.EffectiveFrom, a.EffectiveTo, activeOnly, asOf));
 
-        if (_tenantScope.Mode != TenantScopeEnforcementMode.FailClosed)
-        {
-            return withinWindow.ToList();
-        }
-
         // Already a node in the scoped snapshot means its own tenant stamp is visible, which is
         // stronger proof than anything derivable from the DTO; otherwise every populated parent has
-        // to resolve, exactly as MaterializeLinkedAccountAsync requires before claiming one.
+        // to resolve, exactly as MaterializeLinkedAccountAsync requires before claiming one -- and
+        // under the same posture rule, so the read and the write agree on what "foreign" means.
+        var requireOwnershipEvidence = _tenantScope.Mode == TenantScopeEnforcementMode.FailClosed;
         return withinWindow
             .Where(a => tenantScoped.LinkedAccountIds.Contains(a.AccountId)
-                        || IsAccountParentVisible(a, tenantScoped))
+                        || IsAccountParentVisible(a, tenantScoped, requireOwnershipEvidence))
             .ToList();
     }
 

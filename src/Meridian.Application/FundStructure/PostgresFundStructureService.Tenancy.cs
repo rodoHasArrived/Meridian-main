@@ -208,29 +208,35 @@ public sealed partial class PostgresFundStructureService
             return;
         }
 
-        if (_tenantScope.Mode == TenantScopeEnforcementMode.FailClosed)
+        // Ownership is established from the account's own parents against this caller's already
+        // scoped snapshot, not from the fact that the account service returned it. Which service is
+        // composed decides what that return means: PostgresFundAccountStore applies the tenant
+        // predicate, InMemoryFundAccountService applies nothing at all, and IFundAccountService
+        // promises neither.
+        //
+        // Checked before anything is recorded, and for every link rather than only a first
+        // materialization: an account already standing as another tenant's node fails the AllNodeIds
+        // reservation below, so a check that ran only on first materialization would wave exactly
+        // the foreign account through.
+        //
+        // Run under BOTH postures. Gating the whole check on fail-closed conflated "unattributed"
+        // with "foreign": the deployment boundary shares unattributed nodes, but it hides nodes
+        // attributed to another tenant just as fail-closed does, so an account hanging off another
+        // tenant's fund was never boundary-visible either. Skipping the check there let a caller
+        // persist an edge or a ledger assignment against it, which the rightful tenant then
+        // inherited once attribution reached the account (Codex review finding on PR #2871). Only
+        // the ownership-evidence requirement stays posture-specific.
+        var requireOwnershipEvidence = _tenantScope.Mode == TenantScopeEnforcementMode.FailClosed;
+        var account = await _fundAccountService.GetAccountAsync(accountId, ct).ConfigureAwait(false);
+        if (account is null || !IsAccountParentVisible(account, snap, requireOwnershipEvidence))
         {
-            // Ownership is established from the account's own parents against this caller's already
-            // scoped snapshot, not from the fact that the account service returned it. Which service
-            // is composed decides what that return means: PostgresFundAccountStore applies the
-            // tenant predicate, InMemoryFundAccountService applies nothing at all, and
-            // IFundAccountService promises neither.
-            //
-            // Checked before anything is recorded, and for every link rather than only a first
-            // materialization: an account already standing as another tenant's node fails the
-            // AllNodeIds reservation below, so a check that ran only on first materialization would
-            // wave exactly the foreign account through.
-            var account = await _fundAccountService.GetAccountAsync(accountId, ct).ConfigureAwait(false);
-            if (account is null || !IsAccountParentVisible(account, snap))
-            {
-                // Refused rather than merely left unstamped. Declining the stamp alone still wrote
-                // the edge or assignment and the linked-account id, so the relationship survived
-                // unattributed -- and whenever the account was later attributed to its rightful
-                // tenant, that tenant inherited a relationship a stranger had authored.
-                throw new FundStructureTenantScopeException(
-                    $"Account {accountId} is not within the calling tenant's scope: no fund, entity, "
-                    + "sleeve or vehicle it belongs to is visible to this caller.");
-            }
+            // Refused rather than merely left unstamped. Declining the stamp alone still wrote the
+            // edge or assignment and the linked-account id, so the relationship survived
+            // unattributed -- and whenever the account was later attributed to its rightful tenant,
+            // that tenant inherited a relationship a stranger had authored.
+            throw new FundStructureTenantScopeException(
+                $"Account {accountId} is not within the calling tenant's scope: a fund, entity, "
+                + "sleeve, vehicle or portfolio it belongs to is not visible to this caller.");
         }
 
         snap.LinkedAccountIds.Add(accountId);
@@ -268,7 +274,8 @@ public sealed partial class PostgresFundStructureService
     /// to derive ownership from, and inventing it is the judgement this service quarantines rather
     /// than makes.</para>
     /// </remarks>
-    private static bool IsAccountParentVisible(AccountSummaryDto account, MutableSnapshot snap)
+    private static bool IsAccountParentVisible(
+        AccountSummaryDto account, MutableSnapshot snap, bool requireOwnershipEvidence)
     {
         var populated = 0;
 
@@ -292,6 +299,12 @@ public sealed partial class PostgresFundStructureService
                 TryParseGuid(account.PortfolioId, out var portfolioId) ? portfolioId : null,
                 snap.InvestmentPortfolios);
 
-        return allInScope && populated > 0;
+        // A parent the snapshot does not hold is refused in either posture, because
+        // FundStructureTenantScope.IsVisible already hides a node attributed to another tenant under
+        // both -- only the unattributed row differs. Requiring at least one populated parent is the
+        // part that is fail-closed only: under the deployment boundary an account with no structural
+        // reference is not evidence of foreignness, it is the shared, unattributed shape that
+        // posture exists to serve, and refusing it would break the default deployment.
+        return allInScope && (!requireOwnershipEvidence || populated > 0);
     }
 }
