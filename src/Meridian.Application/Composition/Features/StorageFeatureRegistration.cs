@@ -16,6 +16,7 @@ using Meridian.Instruments.Futures;
 using Meridian.Instruments.FxSpot;
 using Meridian.Instruments.MoneyMarketFunds;
 using Meridian.Instruments.Options;
+using Meridian.FinancialOperations.Ledger;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Application.SecurityMaster;
@@ -271,6 +272,14 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 // Resolved optionally on purpose: the scope authority is composed only where the
                 // holdings and tenancy stores exist, and acceptance fails closed without it.
                 sp.GetService<ICorporateActionScopeFanOutGate>()));
+            services.AddSingleton<ICorporateActionCaseAccountingService>(sp => new CorporateActionCaseAccountingService(
+                sp.GetRequiredService<ICorporateActionOperationsStore>(),
+                // Resolved optionally on purpose: the accounting lane fails closed with a typed
+                // persistence-unavailable refusal when the spine store, spine posting authority,
+                // or ledger book/period authority is not composed.
+                sp.GetService<IAssetAccountingEventProjectionStore>(),
+                sp.GetService<IAccountingPostingCandidatePostService>(),
+                sp.GetService<ILedgerBookService>()));
             services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
             services.AddSingleton<IBondReferenceProjectionStore, PostgresBondReferenceProjectionStore>();
@@ -424,6 +433,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityValidationService, NullSecurityValidationService>();
         services.TryAddSingleton<ICorporateActionCommandService, NullCorporateActionCommandService>();
         services.TryAddSingleton<ICorporateActionOperationsService, NullCorporateActionOperationsService>();
+        services.TryAddSingleton<ICorporateActionCaseAccountingService, NullCorporateActionCaseAccountingService>();
         services.TryAddSingleton<ICorporateActionRestatementTrigger, NullCorporateActionRestatementTrigger>();
         services.TryAddSingleton<ISecurityMasterEventStore, NullSecurityMasterEventStore>();
         services.TryAddSingleton<IOperatorOverridesStore, NullOperatorOverridesStore>();
