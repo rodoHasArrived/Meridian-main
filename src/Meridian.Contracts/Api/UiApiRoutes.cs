@@ -5,7 +5,7 @@ namespace Meridian.Contracts.Api;
 /// </summary>
 public static class UiApiRoutes
 {
-    // Health and status endpoints (shared with StatusHttpServer)
+    // Health and status endpoints served by the ASP.NET Core workstation host
     public const string Health = "/health";
     public const string HealthDetailed = "/health/detailed";
     public const string Ready = "/ready";
