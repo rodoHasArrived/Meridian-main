@@ -629,6 +629,17 @@ public sealed partial class PostgresCorporateActionOperationsStore
             .ConfigureAwait(false);
 
         var now = DateTimeOffset.UtcNow;
+
+        // A governed return out of Approved withdraws the maker-checker approval: the unconsumed
+        // approval is voided (audit-preserved) so posting can never consume an approval whose case
+        // left the approved state. Re-approval requires a fresh exact-version binding.
+        if (string.Equals(processingCase.State, CorporateActionCaseStates.Approved, StringComparison.Ordinal))
+        {
+            await VoidActiveApprovalsAsync(
+                    connection, transaction, processingCase.CaseId, request.Actor, now, ct)
+                .ConfigureAwait(false);
+        }
+
         var blockedReason = string.Equals(request.ToState, CorporateActionCaseStates.Blocked, StringComparison.Ordinal)
             ? request.BlockedReason
             : null;
@@ -718,9 +729,20 @@ public sealed partial class PostgresCorporateActionOperationsStore
 
         if (string.Equals(targetState, CorporateActionCaseStates.ReadyForApproval, StringComparison.Ordinal))
         {
-            throw new CorporateActionOperationException(
-                CorporateActionProblemCodes.ProjectionStale,
-                "ReadyForApproval requires a durable accounting projection and policy decision bound to the exact case, evidence, scope, and period versions; that authority is not yet persisted.");
+            // ReadyForApproval is gated on the durable exact-version accounting projection
+            // authority. The binding must target the case's current version — every content
+            // mutation bumps the version, so superseded preparation can never become an
+            // approval candidate.
+            var projection = await LoadCurrentProjectionAsync(
+                    connection,
+                    transaction,
+                    processingCase.CaseId,
+                    processingCase.Scope.TenantId,
+                    processingCase.Scope.CompanyId,
+                    ct)
+                .ConfigureAwait(false);
+            CorporateActionCaseAccountingPolicy.EnsureBindingSupportsReadyForApproval(
+                projection, processingCase);
         }
     }
 
@@ -799,7 +821,7 @@ public sealed partial class PostgresCorporateActionOperationsStore
         CancellationToken ct) =>
         await LoadScopedCaseForMutationAsync(
             connection, transaction, request.CaseId, request.TenantId, request.CompanyId,
-            request.ExpectedVersion, ct).ConfigureAwait(false);
+            request.ExpectedVersion, request.ScopeAssertion, ct).ConfigureAwait(false);
 
     private async Task<CorporateActionProcessingCaseDto> LoadScopedCaseForMutationAsync(
         NpgsqlConnection connection,
@@ -808,7 +830,7 @@ public sealed partial class PostgresCorporateActionOperationsStore
         CancellationToken ct) =>
         await LoadScopedCaseForMutationAsync(
             connection, transaction, request.CaseId, request.TenantId, request.CompanyId,
-            request.ExpectedVersion, ct).ConfigureAwait(false);
+            request.ExpectedVersion, request.ScopeAssertion, ct).ConfigureAwait(false);
 
     private async Task<CorporateActionProcessingCaseDto> LoadScopedCaseForMutationAsync(
         NpgsqlConnection connection,
@@ -817,7 +839,7 @@ public sealed partial class PostgresCorporateActionOperationsStore
         CancellationToken ct) =>
         await LoadScopedCaseForMutationAsync(
             connection, transaction, request.CaseId, request.TenantId, request.CompanyId,
-            request.ExpectedVersion, ct).ConfigureAwait(false);
+            request.ExpectedVersion, request.ScopeAssertion, ct).ConfigureAwait(false);
 
     private async Task<CorporateActionProcessingCaseDto> LoadScopedCaseForMutationAsync(
         NpgsqlConnection connection,
@@ -826,7 +848,7 @@ public sealed partial class PostgresCorporateActionOperationsStore
         CancellationToken ct) =>
         await LoadScopedCaseForMutationAsync(
             connection, transaction, request.CaseId, request.TenantId, request.CompanyId,
-            request.ExpectedVersion, ct).ConfigureAwait(false);
+            request.ExpectedVersion, request.ScopeAssertion, ct).ConfigureAwait(false);
 
     private async Task<CorporateActionProcessingCaseDto> LoadScopedCaseForMutationAsync(
         NpgsqlConnection connection,
@@ -835,7 +857,7 @@ public sealed partial class PostgresCorporateActionOperationsStore
         CancellationToken ct) =>
         await LoadScopedCaseForMutationAsync(
             connection, transaction, request.CaseId, request.TenantId, request.CompanyId,
-            request.ExpectedVersion, ct).ConfigureAwait(false);
+            request.ExpectedVersion, request.ScopeAssertion, ct).ConfigureAwait(false);
 
     private async Task<CorporateActionProcessingCaseDto> LoadScopedCaseForMutationAsync(
         NpgsqlConnection connection,
@@ -844,16 +866,26 @@ public sealed partial class PostgresCorporateActionOperationsStore
         string tenantId,
         string companyId,
         long expectedVersion,
+        CorporateActionCaseScopeDto? scopeAssertion,
         CancellationToken ct)
     {
         var processingCase = await LoadCaseAsync(
             connection, transaction, caseId, tenantId, companyId, forUpdate: true, ct)
             .ConfigureAwait(false)
             ?? throw new CorporateActionNotFoundException("Corporate-action processing case", caseId);
-        if (HasNarrowScope(processingCase.Scope))
+        if (HasNarrowScope(processingCase.Scope) && scopeAssertion is null)
         {
             throw new CorporateActionScopeMismatchException(
-                "Narrowly scoped corporate-action cases cannot be mutated through a tenant/company-only command. Supply an authoritative full-scope command path.");
+                "Narrowly scoped corporate-action cases cannot be mutated through a tenant/company-only command. Supply a full-scope assertion that exactly matches the stored case scope.");
+        }
+
+        // The assertion proves the caller acts on the exact stored scope it read; it never
+        // resolves or widens an assignment. A supplied assertion is verified even on a
+        // tenant/company-only case so a stale echo fails closed.
+        if (scopeAssertion is not null)
+        {
+            CorporateActionCaseAccountingPolicy.EnsureScopeAssertionMatches(
+                scopeAssertion, processingCase.Scope);
         }
 
         EnsureVersion(caseId, expectedVersion, processingCase.Version);
@@ -1033,6 +1065,18 @@ public sealed partial class PostgresCorporateActionOperationsStore
             providerIdentity,
             displayMetadata);
 
+        var accountingStatus = reader.IsDBNull(38) && reader.IsDBNull(44)
+            ? null
+            : new CorporateActionCaseAccountingStatusDto(
+                reader.IsDBNull(38) ? null : reader.GetGuid(38),
+                reader.IsDBNull(39) ? null : reader.GetInt64(39),
+                !reader.IsDBNull(40) && reader.GetBoolean(40),
+                reader.IsDBNull(41) ? null : reader.GetString(41),
+                reader.IsDBNull(42) ? null : reader.GetGuid(42),
+                reader.IsDBNull(43) ? null : reader.GetString(43),
+                reader.IsDBNull(44) ? null : reader.GetGuid(44),
+                reader.IsDBNull(45) ? null : ReadTimestamp(reader, 45));
+
         return new CorporateActionProcessingCaseDto(
             reader.GetGuid(0),
             reader.GetGuid(1),
@@ -1048,7 +1092,8 @@ public sealed partial class PostgresCorporateActionOperationsStore
             ReadTimestamp(reader, 22),
             reader.GetString(23),
             ReadTimestamp(reader, 24),
-            SourceSnapshot: sourceSnapshot);
+            SourceSnapshot: sourceSnapshot,
+            AccountingStatus: accountingStatus);
     }
 
     private static CorporateActionConflictDto ReadConflict(NpgsqlDataReader reader) =>
@@ -1079,9 +1124,23 @@ public sealed partial class PostgresCorporateActionOperationsStore
                p.proposed_action::text, p.provider_id, p.source_event_id, p.source_event_version,
                p.observed_at, p.evidence_hash, p.evidence_reference, p.provider_release_status,
                p.display_ticker, p.winning_source, p.agreeing_sources::text,
-               p.dissenting_sources::text, p.dissent_fields::text
+               p.dissenting_sources::text, p.dissent_fields::text,
+               ap.projection_id, ap.bound_case_version,
+               (ap.total_debits = ap.total_credits and ap.total_debits > 0) as projection_balanced,
+               ap.prepared_by, aa.approval_id, aa.approved_by,
+               cp.journal_entry_id, cp.posted_at
         from {Qualified("corporate_action_processing_cases")} pc
         join {Qualified("corporate_action_source_proposals")} p on p.proposal_id = pc.proposal_id
+        left join {Qualified("corporate_action_case_accounting_projections")} ap
+            on ap.case_id = pc.case_id and ap.is_current
+        left join {Qualified("corporate_action_case_accounting_approvals")} aa
+            on aa.case_id = pc.case_id and aa.voided_at is null
+        left join lateral (
+            select p2.journal_entry_id, p2.posted_at
+            from {Qualified("corporate_action_case_accounting_postings")} p2
+            where p2.case_id = pc.case_id
+            order by p2.posted_at desc
+            limit 1) cp on true
         """;
 
     private string ConflictSelect =>
