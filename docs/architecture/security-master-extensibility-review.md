@@ -2466,10 +2466,18 @@ the interest gap sits directly underneath a passing test that names the class.
 `Aliases` list — the schema is a declared alias vocabulary. The resolver's twenty private alias arrays
 are a second one, hand-maintained, covering vendor spellings the schema does not know and *missing*
 canonical keys the schema does. Nothing locks them together, and the round-trip guard cannot see the
-gap because the resolver is not a codec surface. The generalizing fix is a parity guard asserting that
-every `Required`/`Opt` key in `SecurityAssetTermsSchema` is reachable by at least one resolver alias
-family for the classes the catalog marks cash-flow capable; the immediate fix is adding
-`currentCouponRate` and top-level index/spread resolution.
+gap because the resolver is not a codec surface. The immediate fix is adding `currentCouponRate` and
+top-level index/spread resolution.
+
+The generalizing fix needs care, and the obvious statement of it is wrong. A parity guard asserting
+that **every** `Required`/`Opt` key in `SecurityAssetTermsSchema` is reachable by a resolver alias
+family would fail the shipped schema even after the coupon fix: `DirectLoan` declares `borrower`
+(`Req`), `covenants` (`Req`) and `pricingSource` (`Opt`)
+(`SecurityAssetTermsSchema.cs:245-252`), and `StructuredCashFlowTerms` deliberately has no
+counterparts because they are not projection economics. Stated literally the guard would either fail
+permanently on the shipped registry or force unrelated terms into the cash-flow resolver. The guard
+has to run over a **defined cash-flow-relevant subset** — an explicit schema-key-to-resolver mapping,
+maintained alongside the resolver — not over every declared key.
 
 ### A2 — Identifier ambiguity is detected on raw values and resolved on normalized values
 
@@ -2501,6 +2509,16 @@ exist in a live universe today; a one-off `group by identifier_kind, normalized_
 having count(distinct security_id) > 1` is the cheapest way to size it, and is worth running before
 choosing between a unique normalized index (fail-closed on write) and normalized detection keys
 (detect-and-review, matching the current golden-record posture).
+
+**Those two options are not interchangeable, and the index one carries a precondition this document
+establishes elsewhere.** `ExecuteCreateAsync` appends the event stream before upserting the projection
+(`SecurityMasterService.cs:323-324`, separate awaits, no shared transaction), so on a normalized
+collision a unique normalized index rejects at the projection insert *after* the stream is committed
+— the orphaned-stream partial write described under P5 and at *What happens next is not a silent
+second golden record*. Choosing the index therefore means also making the append and projection
+insert atomic, or detecting and compensating the committed stream, and landing that with the
+constraint; see P5, which states the same requirement. The detection-key option carries no such
+precondition, which is part of what distinguishes them.
 
 ### A3 — Operational readiness models 13 of 26 asset classes, with no parity guard and no "unmodeled" state
 
@@ -2549,11 +2567,24 @@ which carries no GIN index; the full-text `search_vector` covers six fixed colum
 (migration 002) — and no profile content. `CustomAsset` is one of the fifteen classes with no
 relational projection.
 
-So the designated extension point for new asset classes — governed profiles, which the promotion
-pipeline is explicitly built to grow into first-class packages — can define a field, mark it
-projected and searchable, approve it through the full governance lifecycle, and produce a field that
-cannot be queried or searched by any path. This is not drift: the flags have never had an
-implementation. It is worth either building the generic indexed seam they imply (a
+**A query path does exist, and an earlier version of this item wrongly said none did.**
+`SecurityMasterQueryService.SearchAsync` accepts `ProfileFieldKey` and `ProfileFieldValue`
+(`:488-489`), filters loaded projections by key and by value (`:528-542`), and its profile-aware text
+matching scans every profile field. So a profile field *can* be queried — but by loading projections
+and scanning them in memory, over the full universe, with no index behind it.
+
+That relocates the defect rather than removing it. The flags govern nothing: `IsSearchable` is read
+at exactly one place in the application layer, `SecurityAssetProfileGovernanceService.cs:525`, and
+only to *count* fields for the readiness score. Nothing consults it when serving a search. So a field
+an operator marks **non**-searchable is searched anyway, a field marked searchable gets no index, and
+`IsProjected` selects nothing for projection. The designated extension point for new asset classes —
+governed profiles, which the promotion pipeline is built to grow into first-class packages — can
+define a field, mark it projected and searchable, approve it through the full governance lifecycle,
+and have both flags mean nothing at query time.
+
+The remedy is therefore to **enforce the flags over the path that already exists and give it an
+index**, not to build a second query capability beside it. It is worth either building the generic
+indexed seam the flags imply (a
 `security_profile_field_projection` keyed `(security_id, profile_id, field_key)` populated from
 declared-projected fields, plus profile content in the search vector for declared-searchable ones),
 or restating the two properties as promotion-readiness *intent* so no profile author reads them as a
@@ -2572,10 +2603,17 @@ the profile-backed ones.
   interfaces that nothing locks together.
 - **`StructuredCashFlowSourceKind` names vendors in a closed enum.** `MIAC` and `MoodysAnalytics` are
   enum members persisted as values (`SecurityMasterCashFlow.cs:12-13`), so onboarding a cash-flow
-  vendor is a contract change plus a stored-value migration. The corporate-action envelope moved off
-  exactly this shape in migration 029; a provider-id string resolved against the registered
-  `IStructuredCashFlowProvider` set would match that precedent. The `Calculated*` and
-  `ClientProvided` members are genuine modes and would stay.
+  vendor is a contract change: the enum member plus the provider mapping. It is **not** a stored-value
+  migration, and an earlier version of this bullet said it was. `source_kind` is unconstrained `text
+  not null` with no check constraint (migration `018_security_master_cashflow_sources.sql:8`), the
+  store writes `SourceKind.ToString()`, and reads parse unknown strings through
+  `SecurityMasterEnumReads.ParseOrFallback(..., StructuredCashFlowSourceKind.Unknown)`
+  (`PostgresSecurityMasterCashFlowStore.cs:31`) — so a new value persists and reads back without
+  touching the database. Migration 029 is not evidence here either: it addressed a wide-table
+  corporate-action payload, a different problem. Overstating the cost weakened the actual
+  recommendation, which stands on its own — a provider-id string resolved against the registered
+  `IStructuredCashFlowProvider` set removes the contract change and the closed vocabulary. The
+  `Calculated*` and `ClientProvided` members are genuine modes and would stay.
 - **Normalization rules are stated twice.** The kind lists that decide alphanumeric-stripping live in
   `SecurityIdentifierNormalizer.NormalizeValue` (`:25-32`) and again as SQL `case` arms in migration
   016. The migration is one-time so the two cannot diverge retroactively, but a new identifier kind
@@ -2588,22 +2626,39 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
 1. **Teach the cash-flow resolver `DirectLoan`'s coupon, then guard the alias vocabularies (A1).**
    Adding `currentCouponRate`, `referenceIndex` and `spreadBps` to the resolver is a few lines; the
    durable half is a parity guard tying resolver aliases to `SecurityAssetTermsSchema` for the
-   cash-flow-capable classes. Fix the two "DirectLoan-shaped" tests to use the keys `DirectLoan`
+   cash-flow-capable classes — scoped to an explicit **cash-flow-relevant subset** of schema keys, not
+   every `Required`/`Opt` key, which would fail the shipped `DirectLoan` schema on `borrower`,
+   `covenants` and `pricingSource`. Fix the two "DirectLoan-shaped" tests to use the keys `DirectLoan`
    actually emits at the same time — as written they would have caught this and did not.
 2. **Reconcile identifier detection with identifier resolution (A2).** Run the duplicate query first
-   to size it, then pick one key. Either answer is cheap; the current split is the one state that
-   guarantees the conflict surface cannot see the ambiguity the resolver acts on.
+   to size it, then pick one key. The current split is the one state that guarantees the conflict
+   surface cannot see the ambiguity the resolver acts on. The two answers are **not** equally cheap:
+   normalized detection keys are self-contained, while the unique normalized index inherits P5's
+   precondition — `ExecuteCreateAsync` appends the stream before the projection upsert
+   (`SecurityMasterService.cs:323-324`), so the index must land together with atomic
+   append-plus-projection creation or it converts normalized collisions into orphaned event streams.
 3. **Add the sixth parity guard, over the readiness catalog (A3).** Same shape, same cost, and lower
    risk than the five that already exist — with the difference that this registry's gap is visible to
    operators as an understated readiness summary rather than only to the next contributor.
-4. **Decide what `IsProjected` / `IsSearchable` mean (A4).** Build the generic profile-field seam or
-   demote the flags to intent. Building it is the one move that also answers the standing
+4. **Decide what `IsProjected` / `IsSearchable` mean (A4).** Enforce the flags over the profile-field
+   search path that **already exists** (`SecurityMasterQueryService.SearchAsync:488-489, 528-542`) and
+   give it an index, or demote the flags to intent — do not build a second query capability beside it.
+   Today the path is an unindexed full-universe scan that ignores both flags, so a field marked
+   non-searchable is searched anyway. Indexing it is the one move that also answers the standing
    private/alternative-projection item, since those classes are the profile-backed ones.
 5. **N4 and N5, together.** Both are `SecurityAssetPackRegistry`, both are unchanged across two
-   passes, and both are the same question: is this type a gate or documentation? Answering it once —
-   make `ValidateAll()` able to fire its own rule and promote the prose members to checkable per-pack
-   values, or restate the type as descriptive metadata — closes both and stops the registry
-   accumulating further weight either way.
+   passes, and both are the same question: is this type a gate or documentation? Answering it once
+   closes both and stops the registry accumulating further weight either way.
+   **Not by making `ValidateAll()` fire the overlap rule as written** — an earlier version of this
+   entry said that, resurrecting a remedy this document had already withdrawn. Firing it would mean
+   removing or bypassing the candidate filter (`SecurityAssetPackRegistry.cs:289`), and the filter is
+   deliberate: `DirectLoan` belongs to both `private-loan-credit` (`:198`) and
+   `mortgage-facility-intercompany` (`:222`), `FindByAssetClass` returns a collection by contract, and
+   `AssetPackRegistry_ValidateAll_ShouldAcceptBuiltInPacks` requires that registry to stay valid. The
+   symmetric rule would reject supported many-to-many coverage. Keep validation candidate-scoped,
+   make the incumbent allowances explicit, and extend only the planned-coverage check — alongside
+   promoting N5's prose members to checkable per-pack values, or restating the type as descriptive
+   metadata.
 
 *Deferred and unchanged in posture:* N6 projection fan-out amplification, relational projections for
 the private/alternative classes, valid-time term history, codec generation from
