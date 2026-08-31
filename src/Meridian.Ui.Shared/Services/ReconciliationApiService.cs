@@ -1,17 +1,35 @@
 using System.Globalization;
-using Meridian.FinancialOperations.Reconciliation;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
+using Meridian.FinancialOperations.Reconciliation;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.Ui.Shared.Contracts.Reconciliation;
 using WorkstationStatementMatchTier = Meridian.Contracts.Workstation.StatementMatchTier;
 
 namespace Meridian.Ui.Shared.Services;
 
-public class ReconciliationApiService(
-    IStatementRunWorkflowService statementRunWorkflowService) : IReconciliationApiService
+public class ReconciliationApiService : IReconciliationApiService
 {
-    public async Task<IReadOnlyList<StatementImportSummaryDto>> ListImportsAsync(CancellationToken ct = default)
-        => (await statementRunWorkflowService.ListImportsAsync(ct).ConfigureAwait(false))
+    private readonly IStatementRunWorkflowService _statementRunWorkflowService;
+    private readonly IAccountQueryService? _accounts;
+    private readonly IFundProfileTenancyRegistry? _tenancy;
+
+    public ReconciliationApiService(
+        IStatementRunWorkflowService statementRunWorkflowService,
+        IAccountQueryService? accounts = null,
+        IFundProfileTenancyRegistry? tenancy = null)
+    {
+        _statementRunWorkflowService = statementRunWorkflowService
+            ?? throw new ArgumentNullException(nameof(statementRunWorkflowService));
+        _accounts = accounts;
+        _tenancy = tenancy;
+    }
+
+    public async Task<IReadOnlyList<StatementImportSummaryDto>> ListImportsAsync(
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct = default)
+        => (await ListAuthorizedImportsAsync(accessScope, ct).ConfigureAwait(false))
             .Select(static import => new StatementImportSummaryDto(
                 import.ImportId,
                 import.Broker,
@@ -21,10 +39,20 @@ public class ReconciliationApiService(
                 import.NormalizedRowCount))
             .ToList();
 
-    public async Task<IReadOnlyList<StatementRunSummaryDto>> ListStatementRunsAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<StatementRunSummaryDto>> ListStatementRunsAsync(
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct = default)
     {
-        var imports = await statementRunWorkflowService.ListImportsAsync(ct).ConfigureAwait(false);
-        var openBreaks = await statementRunWorkflowService.ListOpenBreaksAsync(ct).ConfigureAwait(false);
+        var imports = await ListAuthorizedImportsAsync(accessScope, ct).ConfigureAwait(false);
+        if (imports.Count == 0)
+        {
+            return [];
+        }
+
+        var authorizedIds = ImportIds(imports);
+        var openBreaks = (await _statementRunWorkflowService.ListOpenBreaksAsync(ct).ConfigureAwait(false))
+            .Where(item => IsForAuthorizedImport(item, authorizedIds))
+            .ToArray();
         var openBreakCounts = openBreaks
             .GroupBy(static item => string.IsNullOrWhiteSpace(item.RunId) ? item.ImportId : item.RunId, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(static group => group.Key, static group => group.Count(), StringComparer.OrdinalIgnoreCase);
@@ -34,22 +62,117 @@ public class ReconciliationApiService(
             .ToList();
     }
 
-    public async Task<StatementRunDto?> CreateStatementRunAsync(StatementRunCreateDto request, CancellationToken ct = default)
+    public async Task<StatementRunDto?> CreateStatementRunAsync(
+        StatementRunCreateDto request,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(accessScope);
         ValidateCreateRequest(request);
+        if (!await IsAuthorizedFundAccountAsync(request.FundAccountId, accessScope, ct).ConfigureAwait(false))
+        {
+            return null;
+        }
 
-        var result = await statementRunWorkflowService
+        var result = await _statementRunWorkflowService
             .CreateAsync(ToWorkflowRequest(request), ct)
             .ConfigureAwait(false);
+        if (!string.Equals(
+                result.Import.FundAccountId?.Trim(),
+                request.FundAccountId.Trim(),
+                StringComparison.OrdinalIgnoreCase)
+            || !await IsAuthorizedImportAsync(result.Import, accessScope, ct).ConfigureAwait(false)
+            || !HasConsistentRunMetadata(result))
+        {
+            return null;
+        }
+
         var breakDtos = result.Breaks.Select(ToRunBreakDto).ToArray();
         var status = breakDtos.Length == 0 ? StatementRunStatus.Completed : StatementRunStatus.ReviewRequired;
         return ToRunDto(result.Import, breakDtos, status, request.Notes, result.Cases);
     }
 
-    public async Task<StatementRunDto?> GetStatementRunAsync(string runId, CancellationToken ct = default)
+    public async Task<bool> OwnsStatementRunAsync(
+        string runId,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct = default)
+        => await FindAuthorizedImportAsync(runId, accessScope, ct).ConfigureAwait(false) is not null;
+
+    public async Task<ReconciliationFundAccountAuthorization?> GetAuthorizedFundAccountAsync(
+        Guid fundAccountId,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct = default)
     {
-        var result = await statementRunWorkflowService.GetAsync(runId, ct).ConfigureAwait(false);
+        if (fundAccountId == Guid.Empty)
+        {
+            return null;
+        }
+
+        var authority = await ResolveAuthorizedFundAccountAsync(
+                fundAccountId.ToString("D"),
+                accessScope,
+                ct)
+            .ConfigureAwait(false);
+        return authority is null
+            ? null
+            : new ReconciliationFundAccountAuthorization(
+                authority.Value.FundAccountId,
+                authority.Value.FundProfileId);
+    }
+
+    public async Task<StatementReconciliationRunAuthorization?> GetStatementRunAuthorizationAsync(
+        string runId,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct = default)
+    {
+        var result = await GetAuthorizedRunAsync(runId, accessScope, ct).ConfigureAwait(false);
+        if (result is null
+            || !Guid.TryParse(result.Import.FundAccountId, out var fundAccountId)
+            || fundAccountId == Guid.Empty
+            || result.Import.AccountingScope is null
+            || result.Import.StatementPeriodStart == default
+            || result.Import.StatementPeriodEnd == default
+            || result.Import.StatementPeriodStart > result.Import.StatementPeriodEnd
+            || result.Import.AccountingScope.LedgerBookId == Guid.Empty
+            || result.Import.AccountingScope.AccountingPeriodId == Guid.Empty
+            || result.Import.AccountingScope.AsOfDate != result.Import.StatementPeriodEnd)
+        {
+            return null;
+        }
+
+        var fundAuthority = await ResolveAuthorizedFundAccountAsync(
+                result.Import.FundAccountId,
+                accessScope,
+                ct)
+            .ConfigureAwait(false);
+        if (fundAuthority is null
+            || fundAuthority.Value.FundAccountId != fundAccountId
+            || !string.Equals(
+                fundAuthority.Value.FundProfileId,
+                result.Import.AccountingScope.FundProfileId?.Trim(),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return new StatementReconciliationRunAuthorization(
+            result.Import.ImportId,
+            fundAccountId,
+            fundAuthority.Value.FundProfileId,
+            result.Import.AccountingScope.LedgerBookId,
+            result.Import.AccountingScope.AccountingPeriodId,
+            result.Import.AccountingScope.AsOfDate,
+            result.Import.StatementPeriodStart,
+            result.Import.StatementPeriodEnd);
+    }
+
+    public async Task<StatementRunDto?> GetStatementRunAsync(
+        string runId,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct = default)
+    {
+        var result = await GetAuthorizedRunAsync(runId, accessScope, ct).ConfigureAwait(false);
         if (result is null)
         {
             return null;
@@ -66,9 +189,12 @@ public class ReconciliationApiService(
             cases: cases);
     }
 
-    public async Task<StatementRunValidationDto?> GetStatementRunValidationAsync(string runId, CancellationToken ct = default)
+    public async Task<StatementRunValidationDto?> GetStatementRunValidationAsync(
+        string runId,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct = default)
     {
-        var run = await GetStatementRunAsync(runId, ct).ConfigureAwait(false);
+        var run = await GetStatementRunAsync(runId, accessScope, ct).ConfigureAwait(false);
         return run is null
             ? null
             : new StatementRunValidationDto(
@@ -77,16 +203,23 @@ public class ReconciliationApiService(
                 run.ValidationIssues?.Any(static issue => issue.Severity is StatementValidationSeverity.Critical or StatementValidationSeverity.Error) == true);
     }
 
-    public async Task<IReadOnlyList<StatementRunBreakDto>?> ListStatementRunBreaksAsync(string runId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<StatementRunBreakDto>?> ListStatementRunBreaksAsync(
+        string runId,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct = default)
     {
-        var result = await statementRunWorkflowService.GetAsync(runId, ct).ConfigureAwait(false);
+        var result = await GetAuthorizedRunAsync(runId, accessScope, ct).ConfigureAwait(false);
         return result is null ? null : result.Breaks.Select(ToRunBreakDto).ToArray();
     }
 
-    public async Task<StatementRunDto?> ReconcileStatementRunAsync(string runId, StatementRunReconcileRequestDto request, CancellationToken ct = default)
+    public async Task<StatementRunDto?> ReconcileStatementRunAsync(
+        string runId,
+        StatementRunReconcileRequestDto request,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        var result = await statementRunWorkflowService.GetAsync(runId, ct).ConfigureAwait(false);
+        var result = await GetAuthorizedRunAsync(runId, accessScope, ct).ConfigureAwait(false);
         if (result is null)
         {
             return null;
@@ -100,8 +233,19 @@ public class ReconciliationApiService(
             cases: result.Cases);
     }
 
-    public async Task<IReadOnlyList<StatementRunExceptionDto>> ListOpenExceptionsAsync(CancellationToken ct = default)
-        => (await statementRunWorkflowService.ListOpenBreaksAsync(ct).ConfigureAwait(false))
+    public async Task<IReadOnlyList<StatementRunExceptionDto>> ListOpenExceptionsAsync(
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct = default)
+    {
+        var authorizedIds = ImportIds(
+            await ListAuthorizedImportsAsync(accessScope, ct).ConfigureAwait(false));
+        if (authorizedIds.Count == 0)
+        {
+            return [];
+        }
+
+        return (await _statementRunWorkflowService.ListOpenBreaksAsync(ct).ConfigureAwait(false))
+            .Where(item => IsForAuthorizedImport(item, authorizedIds))
             .Select(static item => new StatementRunExceptionDto(
                 item.BreakId,
                 item.RunId,
@@ -115,11 +259,24 @@ public class ReconciliationApiService(
                 item.CreatedAtUtc.ToString("O"),
                 item.Status))
             .ToList();
+    }
 
-    public async Task<IReadOnlyList<StatementBreakDto>> ListOpenStatementBreaksAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<StatementBreakDto>> ListOpenStatementBreaksAsync(
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct = default)
     {
-        var breaks = await statementRunWorkflowService.ListOpenBreaksAsync(ct).ConfigureAwait(false);
-        var casesByBreakId = (await statementRunWorkflowService.ListCasesAsync(ct).ConfigureAwait(false))
+        var authorizedIds = ImportIds(
+            await ListAuthorizedImportsAsync(accessScope, ct).ConfigureAwait(false));
+        if (authorizedIds.Count == 0)
+        {
+            return [];
+        }
+
+        var breaks = (await _statementRunWorkflowService.ListOpenBreaksAsync(ct).ConfigureAwait(false))
+            .Where(item => IsForAuthorizedImport(item, authorizedIds))
+            .ToArray();
+        var casesByBreakId = (await _statementRunWorkflowService.ListCasesAsync(ct).ConfigureAwait(false))
+            .Where(item => authorizedIds.Contains(item.ImportId))
             .SelectMany(static reconciliationCase => ResolveCaseBreakIds(reconciliationCase)
                 .Select(breakId => new KeyValuePair<string, ReconciliationCase>(breakId, reconciliationCase)))
             .GroupBy(static item => item.Key, StringComparer.OrdinalIgnoreCase)
@@ -136,18 +293,42 @@ public class ReconciliationApiService(
             .ToList();
     }
 
-    public async Task<IReadOnlyList<ReconciliationCaseSummaryDto>> ListOpenCasesAsync(CancellationToken ct = default)
-        => (await statementRunWorkflowService.ListCasesAsync(ct).ConfigureAwait(false))
+    public async Task<IReadOnlyList<ReconciliationCaseSummaryDto>> ListOpenCasesAsync(
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct = default)
+    {
+        var authorizedIds = ImportIds(
+            await ListAuthorizedImportsAsync(accessScope, ct).ConfigureAwait(false));
+        if (authorizedIds.Count == 0)
+        {
+            return [];
+        }
+
+        return (await _statementRunWorkflowService.ListCasesAsync(ct).ConfigureAwait(false))
+            .Where(item => authorizedIds.Contains(item.ImportId))
             .Where(static item => string.Equals(item.Status, "Open", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(item.Status, "InReview", StringComparison.OrdinalIgnoreCase))
             .Select(ToCaseSummary)
             .ToList();
+    }
 
-    public async Task<IReadOnlyList<ReconciliationQueueAccountStatusDto>> ListQueueStatusAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<ReconciliationQueueAccountStatusDto>> ListQueueStatusAsync(
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct = default)
     {
-        var imports = await statementRunWorkflowService.ListImportsAsync(ct).ConfigureAwait(false);
-        var breaks = await statementRunWorkflowService.ListOpenBreaksAsync(ct).ConfigureAwait(false);
-        var cases = await statementRunWorkflowService.ListCasesAsync(ct).ConfigureAwait(false);
+        var imports = await ListAuthorizedImportsAsync(accessScope, ct).ConfigureAwait(false);
+        if (imports.Count == 0)
+        {
+            return [];
+        }
+
+        var authorizedIds = ImportIds(imports);
+        var breaks = (await _statementRunWorkflowService.ListOpenBreaksAsync(ct).ConfigureAwait(false))
+            .Where(item => IsForAuthorizedImport(item, authorizedIds))
+            .ToArray();
+        var cases = (await _statementRunWorkflowService.ListCasesAsync(ct).ConfigureAwait(false))
+            .Where(item => authorizedIds.Contains(item.ImportId))
+            .ToArray();
         var importById = imports.ToDictionary(static item => item.ImportId, StringComparer.OrdinalIgnoreCase);
 
         return breaks
@@ -177,6 +358,164 @@ public class ReconciliationApiService(
             })
             .ToList();
     }
+
+    private async Task<IReadOnlyList<CanonicalStatementImport>> ListAuthorizedImportsAsync(
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(accessScope);
+        if (_accounts is null || _tenancy is null)
+        {
+            return [];
+        }
+
+        var imports = await _statementRunWorkflowService.ListImportsAsync(ct).ConfigureAwait(false);
+        var authorized = new List<CanonicalStatementImport>(imports.Count);
+        var unambiguousImports = imports
+            .Where(static import => !string.IsNullOrWhiteSpace(import.ImportId))
+            .GroupBy(static import => import.ImportId.Trim(), StringComparer.OrdinalIgnoreCase)
+            .Where(static group => group.Count() == 1)
+            .Select(static group => group.Single());
+        foreach (var import in unambiguousImports)
+        {
+            if (await IsAuthorizedImportAsync(import, accessScope, ct).ConfigureAwait(false))
+            {
+                authorized.Add(import);
+            }
+        }
+
+        return authorized;
+    }
+
+    private async Task<CanonicalStatementImport?> FindAuthorizedImportAsync(
+        string runId,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        var imports = await ListAuthorizedImportsAsync(accessScope, ct).ConfigureAwait(false);
+        return imports.FirstOrDefault(import =>
+            string.Equals(import.ImportId, runId.Trim(), StringComparison.OrdinalIgnoreCase));
+    }
+
+    private async Task<StatementRunWorkflowResult?> GetAuthorizedRunAsync(
+        string runId,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct)
+    {
+        var authorizedImport = await FindAuthorizedImportAsync(runId, accessScope, ct).ConfigureAwait(false);
+        if (authorizedImport is null)
+        {
+            return null;
+        }
+
+        var result = await _statementRunWorkflowService.GetAsync(runId, ct).ConfigureAwait(false);
+        if (result is null
+            || !string.Equals(
+                result.Import.ImportId,
+                authorizedImport.ImportId,
+                StringComparison.OrdinalIgnoreCase)
+            || !await IsAuthorizedImportAsync(result.Import, accessScope, ct).ConfigureAwait(false)
+            || !HasConsistentRunMetadata(result))
+        {
+            return null;
+        }
+
+        return result;
+    }
+
+    private Task<bool> IsAuthorizedImportAsync(
+        CanonicalStatementImport import,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct)
+        => IsAuthorizedFundAccountAsync(import.FundAccountId, accessScope, ct);
+
+    private async Task<bool> IsAuthorizedFundAccountAsync(
+        string? fundAccountId,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct)
+        => await ResolveAuthorizedFundAccountAsync(fundAccountId, accessScope, ct)
+            .ConfigureAwait(false) is not null;
+
+    private async Task<(Guid FundAccountId, string FundProfileId)?> ResolveAuthorizedFundAccountAsync(
+        string? fundAccountId,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(accessScope);
+        if (_accounts is null
+            || _tenancy is null
+            || !Guid.TryParse(fundAccountId, out var accountId)
+            || accountId == Guid.Empty)
+        {
+            return null;
+        }
+
+        try
+        {
+            var account = await _accounts.GetAccountAsync(accountId, ct).ConfigureAwait(false);
+            if (account is null
+                || account.AccountId != accountId
+                || !account.IsActive
+                || !account.FundId.HasValue
+                || account.FundId.Value == Guid.Empty)
+            {
+                return null;
+            }
+
+            var owner = await _tenancy
+                .ResolveAsync(account.FundId.Value.ToString("D"), ct)
+                .ConfigureAwait(false);
+            if (owner is null
+                || !string.Equals(
+                    owner.FundProfileId?.Trim(),
+                    account.FundId.Value.ToString("D"),
+                    StringComparison.OrdinalIgnoreCase)
+                || !owner.IsHeldBy(accessScope.TenantId)
+                || string.IsNullOrWhiteSpace(owner.CompanyId)
+                || !string.Equals(
+                    owner.CompanyId.Trim(),
+                    accessScope.CompanyId,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            return (accountId, account.FundId.Value.ToString("D"));
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            return null;
+        }
+    }
+
+    private static HashSet<string> ImportIds(IReadOnlyList<CanonicalStatementImport> imports)
+        => imports
+            .Select(static import => import.ImportId)
+            .Where(static importId => !string.IsNullOrWhiteSpace(importId))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+    private static bool IsForAuthorizedImport(
+        ReconciliationBreakRecord item,
+        IReadOnlySet<string> authorizedIds)
+        => authorizedIds.Contains(item.ImportId)
+            && authorizedIds.Contains(item.RunId);
+
+    private static bool IsForImport(ReconciliationBreakRecord item, string importId)
+        => string.Equals(item.ImportId, importId, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(item.RunId, importId, StringComparison.OrdinalIgnoreCase);
+
+    private static bool HasConsistentRunMetadata(StatementRunWorkflowResult result)
+        => !string.IsNullOrWhiteSpace(result.Import.ImportId)
+            && result.Breaks.All(item => IsForImport(item, result.Import.ImportId))
+            && result.Cases.All(item => string.Equals(
+                item.ImportId,
+                result.Import.ImportId,
+                StringComparison.OrdinalIgnoreCase));
 
     private static string ResolveQueueAccountCode(
         ReconciliationBreakRecord breakRecord,
@@ -249,13 +588,23 @@ public class ReconciliationApiService(
         casesByBreakId.TryGetValue(item.BreakId, out var reconciliationCase);
         var owner = FirstNonBlank(reconciliationCase?.Owner);
         var escalation = BuildStatementBreakEscalation(item, reconciliationCase, DateTimeOffset.UtcNow);
+        // A break classified as "internal population unavailable" is structurally unmatched rather
+        // than a measured discrepancy, so it surfaces as informational instead of an error.
+        var informational = string.Equals(
+            item.Classification,
+            ReconciliationBreakClassifications.InternalTransactionPopulationUnavailable,
+            StringComparison.OrdinalIgnoreCase);
         return new StatementBreakDto(
             BreakId: item.BreakId,
             BreakType: MapBreakType(item.BreakCode),
-            Severity: item.ToleranceBreached ? StatementValidationSeverity.Error : StatementValidationSeverity.Warning,
+            Severity: informational
+                ? StatementValidationSeverity.Info
+                : item.ToleranceBreached ? StatementValidationSeverity.Error : StatementValidationSeverity.Warning,
             MatchTier: WorkstationStatementMatchTier.Manual,
             StatementReference: item.SourceReference,
-            Description: $"{item.Category} break {item.BreakCode} requires statement reconciliation review.",
+            Description: informational
+                ? $"{item.Category} break {item.BreakCode} is informational: the internal ledger-transaction population is unavailable, so statement movements cannot be matched."
+                : $"{item.Category} break {item.BreakCode} requires statement reconciliation review.",
             StatementAmount: item.Delta,
             BookAmount: null,
             Delta: item.Delta,
@@ -273,7 +622,8 @@ public class ReconciliationApiService(
             SlaBreachedAtUtc: escalation.BreachedAtUtc,
             SlaState: escalation.SlaState,
             EscalationLabel: escalation.Label,
-            EscalationReason: escalation.Reason);
+            EscalationReason: escalation.Reason,
+            Classification: item.Classification);
     }
 
     private static string ResolveStatementBreakEvidenceLink(

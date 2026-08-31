@@ -104,7 +104,7 @@ public sealed class AlpacaAssetStreamRoutingTests
 
 
     [Fact]
-    public void ProviderModule_RegistersCapabilityRouterAndAllAssetStreams()
+    public async Task ProviderModule_RegistersCapabilityRouterAndAllAssetStreams()
     {
         var previousKey = Environment.GetEnvironmentVariable("ALPACA_KEY_ID");
         var previousSecret = Environment.GetEnvironmentVariable("ALPACA_SECRET_KEY");
@@ -121,7 +121,7 @@ public sealed class AlpacaAssetStreamRoutingTests
             services.AddSingleton(new QuoteCollector(publisher));
             new AlpacaProviderModule().Register(services, new DataSourceRegistry());
 
-            using var provider = services.BuildServiceProvider();
+            await using var provider = services.BuildServiceProvider();
             provider.GetServices<IAlpacaAssetStream>().Select(stream => stream.AssetClass).Should().BeEquivalentTo(
                 [MarketDataAssetClass.Equities, MarketDataAssetClass.Options, MarketDataAssetClass.Crypto, MarketDataAssetClass.News]);
             provider.GetRequiredService<IAlpacaMarketDataRouter>().Resolve(MarketDataAssetClass.Crypto)

@@ -3,9 +3,12 @@ using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
+using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
+using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Meridian.Tests.Strategies;
@@ -39,6 +42,111 @@ public sealed class StrategyRunReadServiceTests
         row.Identity!.CanonicalRunKey.Should().Be(row.RunId);
         row.Identity.Mode.Should().Be(row.Mode);
         StrategyRunContractCompatibility.EnsureCanonicalIdentity(row);
+    }
+
+    [Fact]
+    public async Task ScopedReads_FilterForeignAndMalformedEntries_WhilePreservingLegacyRuns()
+    {
+        var store = new StrategyRunStore();
+        var startedAt = new DateTimeOffset(2026, 8, 3, 12, 0, 0, TimeSpan.Zero);
+        await store.RecordRunAsync(new StrategyRunEntry(
+            "foreign-scoped-run",
+            "covered-call-overwrite:foreign",
+            "Foreign Covered Call",
+            RunType.Backtest,
+            startedAt.AddMinutes(4),
+            null,
+            null,
+            ParameterSet: new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["workstationTenantId"] = "tenant-b",
+                ["workstationCompanyId"] = "company-b"
+            }));
+        await store.RecordRunAsync(new StrategyRunEntry(
+            "malformed-scoped-run",
+            "covered-call-overwrite:malformed",
+            "Malformed Covered Call",
+            RunType.Backtest,
+            startedAt.AddMinutes(3),
+            null,
+            null,
+            ParameterSet: new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["workstationTenantId"] = "tenant-a"
+            }));
+        await store.RecordRunAsync(new StrategyRunEntry(
+            "local-scoped-run",
+            "covered-call-overwrite:local",
+            "Local Covered Call",
+            RunType.Backtest,
+            startedAt.AddMinutes(2),
+            null,
+            null,
+            ParameterSet: new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["workstationTenantId"] = "tenant-a",
+                ["workstationCompanyId"] = "company-a"
+            }));
+        await store.RecordRunAsync(new StrategyRunEntry(
+            "legacy-unscoped-run",
+            "legacy-strategy",
+            "Legacy Strategy",
+            RunType.Backtest,
+            startedAt.AddMinutes(1),
+            null,
+            null));
+        await store.RecordRunAsync(new StrategyRunEntry(
+            "legacy-global-covered-call-run",
+            "covered-call-overwrite",
+            "Legacy Global Covered Call",
+            RunType.Backtest,
+            startedAt,
+            null,
+            null));
+
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService());
+        var scope = new StrategyRunReadScope("tenant-a", "company-a");
+
+        var runs = await service.GetRunsAsync(new StrategyRunHistoryQuery(Limit: 2), scope);
+        var unscopedRuns = await service.GetRunsAsync(new StrategyRunHistoryQuery(Limit: 10));
+
+        runs.Select(static run => run.RunId).Should().Equal("local-scoped-run", "legacy-unscoped-run");
+        unscopedRuns.Select(static run => run.RunId).Should().Equal("legacy-unscoped-run");
+        (await service.GetRunDetailAsync("local-scoped-run", scope)).Should().NotBeNull();
+        (await service.GetRunDetailAsync("legacy-unscoped-run", scope)).Should().NotBeNull();
+        (await service.GetRunDetailAsync("foreign-scoped-run", scope)).Should().BeNull();
+        (await service.GetRunDetailAsync("malformed-scoped-run", scope)).Should().BeNull();
+        (await service.GetRunDetailAsync("legacy-global-covered-call-run", scope)).Should().BeNull();
+        (await service.GetRunDetailAsync("local-scoped-run")).Should().BeNull();
+        (await service.GetRunDetailAsync("legacy-global-covered-call-run")).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ScopedHistoryRead_PushesClampedLimitAndTrustedScopeIntoRepositoryQuery()
+    {
+        var repository = new CapturingVisibilityRepository();
+        var service = new StrategyRunReadService(
+            repository,
+            new PortfolioReadService(),
+            new LedgerReadService());
+
+        var runs = await service.GetRunsAsync(
+            new StrategyRunHistoryQuery(
+                Modes: [StrategyRunMode.Backtest],
+                StrategyId: "covered-call-overwrite:local",
+                Limit: 17),
+            new StrategyRunReadScope(" tenant-a ", " company-a "));
+
+        runs.Should().BeEmpty();
+        repository.Query.Should().NotBeNull();
+        repository.Query!.Limit.Should().Be(17);
+        repository.Query.StrategyId.Should().Be("covered-call-overwrite:local");
+        repository.Query.RunTypes.Should().Equal(RunType.Backtest);
+        repository.Scope.Should().Be(new StrategyRunRepositoryScope(" tenant-a ", " company-a "));
+        repository.UnscopedQueryWasUsed.Should().BeFalse();
     }
 
     [Fact]
@@ -88,6 +196,7 @@ public sealed class StrategyRunReadServiceTests
         detail.Promotion!.State.Should().Be(StrategyRunPromotionState.CandidateForPaper);
         detail.Governance.Should().NotBeNull();
         detail.Governance!.DatasetReference.Should().Be("dataset/us-equities/2026-q1");
+        detail.EvidenceLoop.Should().BeNull();
         detail.Portfolio.Should().NotBeNull();
         detail.Portfolio!.Cash.Should().Be(40_000m);
         detail.Portfolio.GrossExposure.Should().Be(85_000m);
@@ -105,6 +214,326 @@ public sealed class StrategyRunReadServiceTests
         detail.Ledger.ExpenseBalance.Should().Be(125m);
         detail.Ledger.TrialBalance.Should().Contain(line => line.AccountName == "Cash");
         detail.Ledger.Journal.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task GetRunDetailAsync_ProjectsBacktestEvidenceLoopForReviewPackets()
+    {
+        var store = new StrategyRunStore();
+        var run = StrategyRunEntry.StartWithEvidence(
+            "evidence-strategy",
+            "Evidence Strategy",
+            RunType.Backtest,
+            "evidence-run",
+            operatorAcceptanceCriteria: ["Operator approved the retained backtest evidence."],
+            retainedEvidenceReferences: ["evidence://strategy-runs/evidence-run"],
+            accountingRecordReferences: ["ledger://books/11111111-1111-1111-1111-111111111111/accounts/strategy-runs/evidence-run"],
+            approvalReferences: ["approval://strategy-runs/evidence-run"],
+            paperValidationReferences: ["workflow://fund/22222222-2222-2222-2222-222222222222"],
+            governedReportReferences: ["reporting-run://evidence-run/manifest"]);
+        await store.RecordRunAsync(run);
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService());
+
+        var detail = await service.GetRunDetailAsync(run.RunId);
+
+        detail.Should().NotBeNull();
+        detail!.EvidenceLoop.Should().NotBeNull();
+        detail.EvidenceLoop!.OperatorAcceptanceCriteria.Should()
+            .ContainSingle("Operator approved the retained backtest evidence.");
+        detail.EvidenceLoop.RetainedEvidenceReferences.Should()
+            .ContainSingle("evidence://strategy-runs/evidence-run");
+        detail.EvidenceLoop.AccountingRecordReferences.Should()
+            .ContainSingle("ledger://books/11111111-1111-1111-1111-111111111111/accounts/strategy-runs/evidence-run");
+        detail.EvidenceLoop.ApprovalReferences.Should()
+            .ContainSingle("approval://strategy-runs/evidence-run");
+        detail.EvidenceLoop.PaperValidationReferences.Should()
+            .ContainSingle("workflow://fund/22222222-2222-2222-2222-222222222222");
+        detail.EvidenceLoop.GovernedReportReferences.Should()
+            .ContainSingle("reporting-run://evidence-run/manifest");
+    }
+
+    [Fact]
+    public async Task GetRunDetailAsync_EligibleCoveredCallWithoutDurableDecision_LeavesCanonicalChecklistReviewRequired()
+    {
+        var store = new StrategyRunStore();
+        var run = BuildCompletedCoveredCallRun("covered-call-pending");
+        await store.RecordRunAsync(run);
+        var service = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
+
+        var detail = await service.GetRunDetailAsync(
+            run.RunId,
+            new StrategyRunReadScope("tenant-alpha", "company-alpha"));
+
+        detail.Should().NotBeNull();
+        detail!.AcceptanceChecklist.Should().HaveCount(4);
+        detail.AcceptanceChecklist.Should().OnlyContain(item =>
+            item.Status == StrategyRunAcceptanceChecklistStatusDto.ReviewRequired &&
+            item.DecidedBy == null &&
+            item.DecidedAt == null &&
+            item.AuditReference == null);
+        detail.AcceptanceChecklist.Select(static item => item.ChecklistId).Should().Equal(
+            PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper));
+    }
+
+    [Fact]
+    public async Task GetRunDetailAsync_AfterDurableApprovedReload_ProjectsExactChecklistAuthorityAndRunBackedEvidence()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"strategy-checklist-{Guid.NewGuid():N}");
+        try
+        {
+            var store = new StrategyRunStore();
+            var run = BuildCompletedCoveredCallRun("covered-call-approved");
+            await store.RecordRunAsync(run);
+            await store.RecordRunAsync(BuildPaperTarget(run, "covered-call-paper"));
+            var promotedAt = new DateTimeOffset(2026, 8, 3, 18, 30, 0, TimeSpan.Zero);
+            var required = PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper);
+            var evidenceReferences = required
+                .Select(static checklistId => $"{checklistId}:evidence://evidence-vault/ev-0123456789abcdef01234567")
+                .ToArray();
+            var writer = new JsonlPromotionRecordStore(root, NullLogger<JsonlPromotionRecordStore>.Instance);
+            await writer.AppendAsync(new StrategyPromotionRecord(
+                PromotionId: "promotion-covered-call-approved",
+                StrategyId: run.StrategyId,
+                StrategyName: run.StrategyName,
+                SourceRunType: RunType.Backtest,
+                TargetRunType: RunType.Paper,
+                SourceRunId: run.RunId,
+                TargetRunId: "covered-call-paper",
+                QualifyingSharpe: 1.1,
+                QualifyingMaxDrawdownPercent: 0.03m,
+                QualifyingTotalReturn: 0.2m,
+                Decision: PromotionDecisionKinds.Approved,
+                PromotedAt: promotedAt,
+                ApprovalReason: "Paper review approved.",
+                ApprovalChecklist: required,
+                EvidenceReferences: evidenceReferences,
+                AuditReference: "audit-covered-call-approved",
+                ApprovedBy: "portfolio-manager"));
+
+            var readerAfterRestart = new JsonlPromotionRecordStore(root, NullLogger<JsonlPromotionRecordStore>.Instance);
+            var serviceAfterRestart = new StrategyRunReadService(
+                store,
+                new PortfolioReadService(),
+                new LedgerReadService(),
+                readerAfterRestart);
+
+            var detail = await serviceAfterRestart.GetRunDetailAsync(
+                run.RunId,
+                new StrategyRunReadScope("tenant-alpha", "company-alpha"));
+
+            detail.Should().NotBeNull();
+            detail!.AcceptanceChecklist.Should().HaveCount(4);
+            detail.AcceptanceChecklist.Should().OnlyContain(item =>
+                item.Status == StrategyRunAcceptanceChecklistStatusDto.Ready &&
+                item.DecidedBy == "portfolio-manager" &&
+                item.DecidedAt == promotedAt &&
+                item.AuditReference == "audit-covered-call-approved" &&
+                item.EvidenceReference == $"{item.ChecklistId}:evidence://evidence-vault/ev-0123456789abcdef01234567" &&
+                item.Blocker == null);
+            detail.Promotion!.PromotedAt.Should().Be(promotedAt);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task GetRunDetailAsync_ApprovedChecklistEvidenceNotRetainedBySource_RemainsReviewRequired()
+    {
+        var store = new StrategyRunStore();
+        var run = BuildCompletedCoveredCallRun("covered-call-mismatch");
+        await store.RecordRunAsync(run);
+        await store.RecordRunAsync(BuildPaperTarget(run, "covered-call-paper-mismatch"));
+        var required = PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper);
+        var decision = new StrategyPromotionRecord(
+            "promotion-covered-call-mismatch",
+            run.StrategyId,
+            run.StrategyName,
+            RunType.Backtest,
+            RunType.Paper,
+            run.RunId,
+            "covered-call-paper-mismatch",
+            1.1,
+            0.03m,
+            0.2m,
+            PromotionDecisionKinds.Approved,
+            new DateTimeOffset(2026, 8, 3, 19, 0, 0, TimeSpan.Zero),
+            ApprovalReason: "Approved with stale references.",
+            ApprovalChecklist: required,
+            EvidenceReferences: required.Select(static id => $"{id}:evidence://evidence-vault/ev-fedcba987654321001234567").ToArray(),
+            AuditReference: "audit-covered-call-mismatch",
+            ApprovedBy: "portfolio-manager");
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService(),
+            new StubPromotionRecordStore([decision]));
+
+        var detail = await service.GetRunDetailAsync(
+            run.RunId,
+            new StrategyRunReadScope("tenant-alpha", "company-alpha"));
+
+        detail!.AcceptanceChecklist.Should().OnlyContain(item =>
+            item.Status == StrategyRunAcceptanceChecklistStatusDto.ReviewRequired &&
+            item.Blocker == "The keyed evidence value does not match any retained reference on the source run.");
+    }
+
+    [Theory]
+    [InlineData("missing")]
+    [InlineData("foreign-scope")]
+    [InlineData("wrong-run-type")]
+    [InlineData("wrong-parent")]
+    [InlineData("wrong-strategy")]
+    public async Task GetRunDetailAsync_ApprovedDecisionWithoutExactScopedPaperChild_RemainsReviewRequired(
+        string targetShape)
+    {
+        var store = new StrategyRunStore();
+        var sourceRun = BuildCompletedCoveredCallRun($"covered-call-target-{targetShape}");
+        var targetRunId = $"paper-target-{targetShape}";
+        await store.RecordRunAsync(sourceRun);
+
+        if (targetShape != "missing")
+        {
+            var targetRun = BuildPaperTarget(sourceRun, targetRunId);
+            targetRun = targetShape switch
+            {
+                "foreign-scope" => targetRun with
+                {
+                    ParameterSet = new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["workstationTenantId"] = "foreign-tenant",
+                        ["workstationCompanyId"] = "foreign-company"
+                    }
+                },
+                "wrong-run-type" => targetRun with { RunType = RunType.Backtest },
+                "wrong-parent" => targetRun with { ParentRunId = "another-source-run" },
+                "wrong-strategy" => targetRun with { StrategyId = "covered-call-overwrite:another-scope" },
+                _ => targetRun
+            };
+            await store.RecordRunAsync(targetRun);
+        }
+
+        var decision = BuildApprovedPromotionDecision(
+            sourceRun,
+            targetRunId,
+            new DateTimeOffset(2026, 8, 3, 19, 30, 0, TimeSpan.Zero));
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService(),
+            new StubPromotionRecordStore([decision]));
+
+        var detail = await service.GetRunDetailAsync(
+            sourceRun.RunId,
+            new StrategyRunReadScope("tenant-alpha", "company-alpha"));
+
+        detail!.AcceptanceChecklist.Should().OnlyContain(item =>
+            item.Status == StrategyRunAcceptanceChecklistStatusDto.ReviewRequired &&
+            item.Blocker == "The durable approval does not resolve to its exact tenant/company-scoped Paper child run.");
+    }
+
+    [Fact]
+    public async Task GetRunDetailAsync_ApprovedDecisionWithoutDecisionTime_RemainsReviewRequired()
+    {
+        var store = new StrategyRunStore();
+        var sourceRun = BuildCompletedCoveredCallRun("covered-call-default-decision-time");
+        const string targetRunId = "paper-default-decision-time";
+        await store.RecordRunAsync(sourceRun);
+        await store.RecordRunAsync(BuildPaperTarget(sourceRun, targetRunId));
+        var decision = BuildApprovedPromotionDecision(sourceRun, targetRunId, default);
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService(),
+            new StubPromotionRecordStore([decision]));
+
+        var detail = await service.GetRunDetailAsync(
+            sourceRun.RunId,
+            new StrategyRunReadScope("tenant-alpha", "company-alpha"));
+
+        detail!.AcceptanceChecklist.Should().OnlyContain(item =>
+            item.Status == StrategyRunAcceptanceChecklistStatusDto.ReviewRequired &&
+            item.Blocker == "The durable decision is missing its operator, decision time, or audit authority.");
+    }
+
+    [Fact]
+    public async Task GetRunDetailAsync_DurableRejection_ProjectsRejectedChecklistWithoutSynthesizedAuthority()
+    {
+        var store = new StrategyRunStore();
+        var run = BuildCompletedCoveredCallRun("covered-call-rejected");
+        await store.RecordRunAsync(run);
+        var rejectedAt = new DateTimeOffset(2026, 8, 3, 20, 0, 0, TimeSpan.Zero);
+        var decision = new StrategyPromotionRecord(
+            "promotion-covered-call-rejected",
+            run.StrategyId,
+            run.StrategyName,
+            RunType.Backtest,
+            RunType.Paper,
+            run.RunId,
+            null,
+            1.1,
+            0.03m,
+            0.2m,
+            PromotionDecisionKinds.Rejected,
+            rejectedAt,
+            ApprovalReason: "Risk review rejected the candidate.",
+            AuditReference: "audit-covered-call-rejected",
+            ApprovedBy: "risk-manager");
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService(),
+            new StubPromotionRecordStore([decision]));
+
+        var detail = await service.GetRunDetailAsync(
+            run.RunId,
+            new StrategyRunReadScope("tenant-alpha", "company-alpha"));
+
+        detail!.AcceptanceChecklist.Should().OnlyContain(item =>
+            item.Status == StrategyRunAcceptanceChecklistStatusDto.Rejected &&
+            item.DecidedBy == "risk-manager" &&
+            item.DecidedAt == rejectedAt &&
+            item.AuditReference == "audit-covered-call-rejected" &&
+            item.Blocker == "Risk review rejected the candidate.");
+    }
+
+    [Theory]
+    [InlineData("criterion-only")]
+    [InlineData("reference-only")]
+    public async Task GetRunDetailAsync_PartialLegacyEvidenceMetadata_DoesNotProjectCompleteEvidenceLoop(
+        string legacyShape)
+    {
+        var store = new StrategyRunStore();
+        var run = StrategyRunEntry.Start(
+            $"legacy-{legacyShape}",
+            "Legacy Partial Evidence",
+            RunType.Backtest,
+            $"legacy-{legacyShape}-run") with
+        {
+            OperatorAcceptanceCriteria = legacyShape == "criterion-only"
+                ? ["Operator reviewed a legacy criterion."]
+                : [],
+            RetainedEvidenceReferences = legacyShape == "reference-only"
+                ? [$"evidence://strategy-runs/legacy-{legacyShape}-run"]
+                : []
+        };
+        await store.RecordRunAsync(run);
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService());
+
+        var detail = await service.GetRunDetailAsync(run.RunId);
+
+        detail.Should().NotBeNull();
+        detail!.EvidenceLoop.Should().BeNull();
     }
 
     [Fact]
@@ -617,6 +1046,72 @@ public sealed class StrategyRunReadServiceTests
         detail.Ledger.TrialBalance.Should().OnlyContain(line => line.EntityScopeId == entityScopeId);
     }
 
+    private static StrategyRunEntry BuildCompletedCoveredCallRun(string runId)
+        => BuildCompletedRun(
+            runId,
+            "covered-call-overwrite:tenant-alpha:company-alpha",
+            "Covered Call Overwrite (AAPL)",
+            finalEquity: 120_000m,
+            netPnl: 20_000m,
+            totalReturn: 0.2m,
+            realizedPnl: 10_000m,
+            unrealizedPnl: 10_000m,
+            fillCount: 2,
+            sharpeRatio: 1.1,
+            maxDrawdown: 3_000m) with
+        {
+            ParameterSet = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["workstationTenantId"] = "tenant-alpha",
+                ["workstationCompanyId"] = "company-alpha"
+            },
+            OperatorAcceptanceCriteria = ["Operator must review the retained covered-call evidence before promotion."],
+            RetainedEvidenceReferences = ["evidence://evidence-vault/ev-0123456789abcdef01234567"]
+        };
+
+    private static StrategyRunEntry BuildPaperTarget(StrategyRunEntry sourceRun, string targetRunId)
+        => new(
+            RunId: targetRunId,
+            StrategyId: sourceRun.StrategyId,
+            StrategyName: sourceRun.StrategyName,
+            RunType: RunType.Paper,
+            StartedAt: new DateTimeOffset(2026, 8, 3, 18, 31, 0, TimeSpan.Zero),
+            EndedAt: null,
+            Metrics: null,
+            PortfolioId: $"{sourceRun.StrategyId}-paper-portfolio",
+            LedgerReference: $"{sourceRun.StrategyId}-paper-ledger",
+            Engine: "BrokerPaper",
+            ParameterSet: sourceRun.ParameterSet,
+            ParentRunId: sourceRun.RunId);
+
+    private static StrategyPromotionRecord BuildApprovedPromotionDecision(
+        StrategyRunEntry sourceRun,
+        string targetRunId,
+        DateTimeOffset promotedAt)
+    {
+        var required = PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper);
+        return new StrategyPromotionRecord(
+            PromotionId: $"promotion-{sourceRun.RunId}",
+            StrategyId: sourceRun.StrategyId,
+            StrategyName: sourceRun.StrategyName,
+            SourceRunType: RunType.Backtest,
+            TargetRunType: RunType.Paper,
+            SourceRunId: sourceRun.RunId,
+            TargetRunId: targetRunId,
+            QualifyingSharpe: 1.1,
+            QualifyingMaxDrawdownPercent: 0.03m,
+            QualifyingTotalReturn: 0.2m,
+            Decision: PromotionDecisionKinds.Approved,
+            PromotedAt: promotedAt,
+            ApprovalReason: "Paper review approved.",
+            ApprovalChecklist: required,
+            EvidenceReferences: required
+                .Select(static checklistId => $"{checklistId}:evidence://evidence-vault/ev-0123456789abcdef01234567")
+                .ToArray(),
+            AuditReference: $"audit-{sourceRun.RunId}",
+            ApprovedBy: "portfolio-manager");
+    }
+
     private static StrategyRunEntry BuildCompletedRun(
         string runId,
         string strategyId,
@@ -779,6 +1274,89 @@ public sealed class StrategyRunReadServiceTests
         {
             _references.TryGetValue(symbol, out var reference);
             return Task.FromResult<WorkstationSecurityReference?>(reference);
+        }
+    }
+
+    private sealed class StubPromotionRecordStore(IReadOnlyList<StrategyPromotionRecord> records) : IPromotionRecordStore
+    {
+        private readonly List<StrategyPromotionRecord> _records = [.. records];
+        private readonly SemaphoreSlim _decisionGate = new(1, 1);
+
+        public Task<IReadOnlyList<StrategyPromotionRecord>> LoadAllAsync(CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<StrategyPromotionRecord>>(_records.ToArray());
+
+        public Task AppendAsync(StrategyPromotionRecord record, CancellationToken ct = default)
+        {
+            _records.Add(record);
+            return Task.CompletedTask;
+        }
+
+        public async Task<PromotionDecisionReservation> ReserveFirstDecisionAsync(
+            StrategyPromotionRecord record,
+            CancellationToken ct = default)
+        {
+            await _decisionGate.WaitAsync(ct);
+            var existing = _records.FirstOrDefault(candidate =>
+                candidate.SourceRunId == record.SourceRunId &&
+                candidate.SourceRunType == record.SourceRunType &&
+                candidate.TargetRunType == record.TargetRunType);
+            var wasAppended = existing is null;
+            if (wasAppended)
+            {
+                _records.Add(record);
+            }
+
+            return new PromotionDecisionReservation(
+                existing ?? record,
+                wasAppended,
+                () =>
+                {
+                    _decisionGate.Release();
+                    return ValueTask.CompletedTask;
+                });
+        }
+    }
+
+    private sealed class CapturingVisibilityRepository : IStrategyRepository
+    {
+        public StrategyRunRepositoryQuery? Query { get; private set; }
+
+        public StrategyRunRepositoryScope? Scope { get; private set; }
+
+        public bool UnscopedQueryWasUsed { get; private set; }
+
+        public Task RecordRunAsync(StrategyRunEntry entry, CancellationToken ct = default) =>
+            Task.CompletedTask;
+
+        public async IAsyncEnumerable<StrategyRunEntry> GetRunsAsync(
+            string strategyId,
+            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+
+        public Task<StrategyRunEntry?> GetLatestRunAsync(
+            string strategyId,
+            CancellationToken ct = default) =>
+            Task.FromResult<StrategyRunEntry?>(null);
+
+        public Task<IReadOnlyList<StrategyRunEntry>> QueryRunsAsync(
+            StrategyRunRepositoryQuery query,
+            CancellationToken ct = default)
+        {
+            UnscopedQueryWasUsed = true;
+            return Task.FromResult<IReadOnlyList<StrategyRunEntry>>([]);
+        }
+
+        public Task<IReadOnlyList<StrategyRunEntry>> QueryVisibleRunsAsync(
+            StrategyRunRepositoryQuery query,
+            StrategyRunRepositoryScope? scope,
+            CancellationToken ct = default)
+        {
+            Query = query;
+            Scope = scope;
+            return Task.FromResult<IReadOnlyList<StrategyRunEntry>>([]);
         }
     }
 

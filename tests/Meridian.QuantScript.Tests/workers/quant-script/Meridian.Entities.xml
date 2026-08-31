@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Meridian.Entities</name>
+    </assembly>
+    <members>
+        <member name="T:Meridian.Entities.DesignModule">
+            <summary>Physical module marker for the Entities bounded context.</summary>
+        </member>
+    </members>
+</doc>

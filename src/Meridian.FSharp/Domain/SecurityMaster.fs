@@ -219,10 +219,43 @@ type BondSubclass =
     | Other of string
 
 [<RequireQualifiedAccess>]
+module BondSubclass =
+    /// Canonical serialization label. Named cases use the case name; <c>Other</c> carries its raw
+    /// label — serializing the union's ToString (<c>Other "X"</c>) made every unknown subclass
+    /// re-wrap itself one level deeper per codec pass instead of round-tripping.
+    let label (subclass: BondSubclass) =
+        match subclass with
+        | BondSubclass.Other name -> name
+        | named -> string named
+
+/// A dated coupon-rate step: the annual rate payable from <c>EffectiveDate</c> until the next
+/// entry's effective date (or maturity for the last entry). The term data that makes the
+/// <see cref="BondSubclass.StepRate"/> and <see cref="BondSubclass.FixedToFloat"/> taxonomy
+/// computable instead of a label.
+type StepCouponEntry = {
+    EffectiveDate: DateOnly
+    Rate: decimal
+}
+
+[<RequireQualifiedAccess>]
 type BondCouponStructure =
     | Fixed of rate: decimal * dayCount: string option
     | Floating of index: string * spreadBps: decimal option * capRate: decimal option * floorRate: decimal option * dayCount: string option
     | ZeroCoupon
+    /// Step-rate coupon: a contractual dated rate schedule (step-up notes, step coupons around
+    /// call dates). The schedule is the coupon — there is no single scalar rate.
+    | Step of schedule: StepCouponEntry list * dayCount: string option
+    /// Inflation-linked coupon (TIPS, linkers): a real rate accruing on index-adjusted principal.
+    /// <c>indexName</c> names the reference index (e.g. "CPI-U"); <c>baseIndexValue</c> is the
+    /// index level at issue and <c>indexRatio</c> the current index ratio applied to principal.
+    | InflationLinked of realRate: decimal * indexName: string * baseIndexValue: decimal option * indexRatio: decimal option * dayCount: string option
+
+/// A scheduled principal repayment (amortizing instalment, sinking-fund payment, or term-loan
+/// instalment). Shared by bond and direct-loan terms.
+type PrincipalPaymentEntry = {
+    PaymentDate: DateOnly
+    Amount: decimal
+}
 
 type BondTerms = {
     Maturity: DateOnly
@@ -248,6 +281,10 @@ type BondTerms = {
     PreRefundDate: DateOnly option
     /// Date of a mandatory put feature that obligates the holder to tender at a set price.
     MandatoryPutDate: DateOnly option
+    /// Contractual principal instalment schedule for sinking-fund and other scheduled-principal
+    /// subclasses. Empty for bullet bonds. The BondSubclass taxonomy already names SinkingFund;
+    /// this is the term data that lets cash-flow and amortization math act on it.
+    PrincipalSchedule: PrincipalPaymentEntry list
 }
 
 [<RequireQualifiedAccess>]
@@ -256,31 +293,53 @@ module BondTerms =
         { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Fixed(couponRate, dayCount)
           IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
           Subclass = BondSubclass.Corporate
-          Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None }
+          Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
+          PrincipalSchedule = [] }
 
     let floatingRate maturity index spreadBps issuerName =
         { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Floating(index, spreadBps, None, None, None)
           IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
           Subclass = BondSubclass.FloatingRate
-          Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None }
+          Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
+          PrincipalSchedule = [] }
 
     let zeroCoupon maturity issuerName =
         { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.ZeroCoupon
           IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
           Subclass = BondSubclass.Corporate
-          Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None }
+          Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
+          PrincipalSchedule = [] }
 
     let couponRate (terms: BondTerms) =
         match terms.Coupon with
         | BondCouponStructure.Fixed(rate, _) -> Some rate
         | BondCouponStructure.Floating _ -> None
         | BondCouponStructure.ZeroCoupon -> None
+        // Step rates live in the dated schedule (see couponRateAsOf); a single scalar would
+        // misstate every period but the one it was sampled in.
+        | BondCouponStructure.Step _ -> None
+        | BondCouponStructure.InflationLinked(realRate, _, _, _, _) -> Some realRate
 
     let dayCount (terms: BondTerms) =
         match terms.Coupon with
         | BondCouponStructure.Fixed(_, dc) -> dc
         | BondCouponStructure.Floating(_, _, _, _, dc) -> dc
         | BondCouponStructure.ZeroCoupon -> None
+        | BondCouponStructure.Step(_, dc) -> dc
+        | BondCouponStructure.InflationLinked(_, _, _, _, dc) -> dc
+
+    /// The coupon rate payable as of a date: for step coupons, the latest scheduled step
+    /// effective on or before <paramref name="asOf"/>; for other structures, the scalar rate
+    /// (when one exists). None for floating/zero coupons and for a step date before the first step.
+    let couponRateAsOf (asOf: DateOnly) (terms: BondTerms) =
+        match terms.Coupon with
+        | BondCouponStructure.Step(schedule, _) ->
+            schedule
+            |> List.filter (fun entry -> entry.EffectiveDate <= asOf)
+            |> List.sortBy (fun entry -> entry.EffectiveDate)
+            |> List.tryLast
+            |> Option.map (fun entry -> entry.Rate)
+        | _ -> couponRate terms
 
 type FxSpotTerms = {
     BaseCurrency: string
@@ -370,12 +429,6 @@ type Covenant = {
     Notes: string option
 }
 
-/// A scheduled principal repayment (amortizing or term-loan instalment).
-type PrincipalPaymentEntry = {
-    PaymentDate: DateOnly
-    Amount: decimal
-}
-
 type DirectLoanTerms = {
     Borrower: string
     Maturity: DateOnly option
@@ -395,6 +448,14 @@ type DirectLoanTerms = {
     PricingSource: string option
 }
 
+/// A dated pool-factor point: the outstanding factor effective on <c>AsOfDate</c>. The typed
+/// counterpart of the free-text factor-schedule term, so amortization can be seeded from a dated
+/// schedule instead of a single scalar factor.
+type FactorScheduleEntry = {
+    AsOfDate: DateOnly
+    Factor: decimal
+}
+
 type StructuredCreditTerms = {
     Tranche: string
     PoolId: string option
@@ -402,7 +463,16 @@ type StructuredCreditTerms = {
     OriginalFace: decimal
     CurrentFactor: decimal option
     CouponOrIndex: string
+    /// Free-text factor-schedule reference (e.g. a trustee-report pointer). Kept for legacy rows;
+    /// dated factor data belongs in <see cref="FactorScheduleEntries"/>.
     FactorSchedule: string option
+    /// Typed, dated factor schedule consumed by the structured cash-flow resolver's
+    /// <c>FactorAsOf</c> lookup. Empty when no schedule has been supplied.
+    FactorScheduleEntries: FactorScheduleEntry list
+    /// Legal final maturity of the tranche. Cash-flow projection anchors on this date — without a
+    /// persisted maturity the calculated projection paths produce nothing for the record, so the
+    /// factor schedule alone cannot drive amortization math.
+    Maturity: DateOnly option
 }
 
 type PrivateFundInterestTerms = {
@@ -490,6 +560,23 @@ type WarrantTerms = {
     Multiplier: decimal option
 }
 
+/// Profile-backed custom asset: the typed governance envelope plus the complete
+/// asset-specific-terms document preserved verbatim. Profile fields are dynamic and governed
+/// by the approved profile version, so the domain carries the document opaquely instead of
+/// modeling per-profile shapes; the envelope fields are the ones every custom asset must carry.
+/// Carrying the raw document is what makes serialize → deserialize → serialize lossless for
+/// the extension point — previously CustomAsset collapsed into OtherSecurity and dropped the
+/// profile envelope on any amend.
+type CustomAssetTerms = {
+    /// Identifier of the approved custom-asset profile governing this record.
+    CustomProfileId: string
+    /// Version of the approved profile the record's fields were validated against.
+    ProfileVersion: int
+    /// The complete asset-specific-terms JSON document (envelope, profileFields, and any
+    /// additional governed keys such as category/subType/evidenceLinks), preserved verbatim.
+    TermsJson: string
+}
+
 [<RequireQualifiedAccess>]
 type SecurityKind =
     | Equity of EquityTerms
@@ -519,6 +606,9 @@ type SecurityKind =
     /// Mutual fund, ETF, hedge fund, REIT, or closed-end fund.
     /// Market value = units × NAV (or market price); no amortization in general.
     | InvestmentFund of InvestmentFundTerms
+    /// Governed profile-backed custom asset (MBS/ABS/CLO/CMBS and private assets modeled via
+    /// approved custom profiles). Terms are carried as an opaque, verbatim document.
+    | CustomAsset of CustomAssetTerms
 
 /// Structural classification metadata for a single asset class.
 /// Data-dependent refinements (e.g. demand vs. time deposits, free-text OtherSecurity
@@ -582,7 +672,7 @@ module AssetClassRegistry =
             SubType = SecuritySubType.SwapContract; IssuerType = None; RiskCountry = None; IsDerivative = true }
           { AssetClassName = "DirectLoan"; AssetClass = AssetClass.PrivateCredit; Family = Some AssetFamily.PrivateLoan
             SubType = SecuritySubType.DirectLoan; IssuerType = None; RiskCountry = None; IsDerivative = false }
-          { AssetClassName = "StructuredCredit"; AssetClass = AssetClass.FixedIncome; Family = Some AssetFamily.StructuredCash
+          { AssetClassName = "StructuredCredit"; AssetClass = AssetClass.FixedIncome; Family = Some AssetFamily.SecuritizedCredit
             SubType = SecuritySubType.StructuredCredit; IssuerType = Some "StructuredVehicle"; RiskCountry = None; IsDerivative = false }
           { AssetClassName = "PrivateFundInterest"; AssetClass = AssetClass.Fund; Family = Some AssetFamily.PartnershipEquity
             SubType = SecuritySubType.LimitedPartnershipInterest; IssuerType = Some "FundVehicle"; RiskCountry = None; IsDerivative = false }
@@ -601,7 +691,9 @@ module AssetClassRegistry =
           { AssetClassName = "Warrant"; AssetClass = AssetClass.Derivative; Family = Some AssetFamily.ListedDerivative
             SubType = SecuritySubType.OtherSubType "Warrant"; IssuerType = None; RiskCountry = None; IsDerivative = true }
           { AssetClassName = "InvestmentFund"; AssetClass = AssetClass.Fund; Family = None
-            SubType = SecuritySubType.OtherSubType "InvestmentFund"; IssuerType = None; RiskCountry = None; IsDerivative = false } ]
+            SubType = SecuritySubType.OtherSubType "InvestmentFund"; IssuerType = None; RiskCountry = None; IsDerivative = false }
+          { AssetClassName = "CustomAsset"; AssetClass = AssetClass.Other; Family = Some (AssetFamily.OtherFamily "CustomAsset")
+            SubType = SecuritySubType.OtherSubType "CustomAsset"; IssuerType = None; RiskCountry = None; IsDerivative = false } ]
 
     let private byName =
         descriptors |> List.map (fun descriptor -> descriptor.AssetClassName, descriptor) |> Map.ofList
@@ -636,6 +728,7 @@ module AssetClassRegistry =
         | SecurityKind.Cfd _ -> "Cfd"
         | SecurityKind.Warrant _ -> "Warrant"
         | SecurityKind.InvestmentFund _ -> "InvestmentFund"
+        | SecurityKind.CustomAsset _ -> "CustomAsset"
 
     /// Every asset-class name known to the registry, in declaration order.
     let assetClasses : string list =

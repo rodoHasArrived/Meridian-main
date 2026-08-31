@@ -1,5 +1,6 @@
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.Ledger;
 
@@ -98,7 +99,4 @@ internal static class LedgerJournalConstruction
 
         return normalized;
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

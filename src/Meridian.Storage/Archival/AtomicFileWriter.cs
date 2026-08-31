@@ -1,8 +1,8 @@
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using Meridian.Contracts.Integrity;
 using Meridian.Core.Logging;
 using Serilog;
 
@@ -70,9 +70,25 @@ public static partial class AtomicFileWriter
     /// Atomically writes content to a file.
     /// Uses a temporary file with rename to ensure atomicity.
     /// </summary>
+    public static Task WriteAsync(
+        string destinationPath,
+        string content,
+        CancellationToken ct = default)
+        => WriteAsync(destinationPath, content, unixCreateMode: null, ct);
+
+    /// <summary>
+    /// Atomically writes text content to a file, creating it with an explicit Unix permission mode.
+    /// </summary>
+    /// <remarks>
+    /// Text counterpart of the <see cref="byte"/>-array overload, with the same contract: the mode
+    /// is applied at creation rather than chmod'ed afterwards, and it suppresses the copy of the
+    /// destination's security metadata so an existing over-permissive file cannot re-widen its
+    /// replacement. Ignored on Windows, where ACLs rather than mode bits govern.
+    /// </remarks>
     public static async Task WriteAsync(
         string destinationPath,
         string content,
+        UnixFileMode? unixCreateMode,
         CancellationToken ct = default)
     {
         var directory = Path.GetDirectoryName(destinationPath);
@@ -87,13 +103,20 @@ public static partial class AtomicFileWriter
         try
         {
             // Write to temp file (no BOM: readers token-split the raw content, e.g. checksum sidecars)
-            await File.WriteAllTextAsync(tempPath, content, Utf8NoBom, ct);
+            if (unixCreateMode is { } mode && !OperatingSystem.IsWindows())
+            {
+                await WriteAllBytesWithModeAsync(tempPath, Utf8NoBom.GetBytes(content), mode, ct);
+            }
+            else
+            {
+                await File.WriteAllTextAsync(tempPath, content, Utf8NoBom, ct);
+            }
 
             // Sync the temp file to disk while it is still writable, before copying any
             // (possibly read-only) security metadata from the destination onto it.
             await SyncFileAsync(tempPath, ct);
 
-            if (destinationExists)
+            if (destinationExists && unixCreateMode is null)
             {
                 CopySecurityMetadata(destinationPath, tempPath);
             }
@@ -118,9 +141,28 @@ public static partial class AtomicFileWriter
     /// <summary>
     /// Atomically writes binary content to a file.
     /// </summary>
+    public static Task WriteAsync(
+        string destinationPath,
+        byte[] content,
+        CancellationToken ct = default)
+        => WriteAsync(destinationPath, content, unixCreateMode: null, ct);
+
+    /// <summary>
+    /// Atomically writes binary content to a file, creating it with an explicit Unix permission
+    /// mode.
+    /// </summary>
+    /// <remarks>
+    /// For secrets the mode has to be in place from the instant the file exists: chmod-after-write
+    /// leaves the content readable for the width of the write, and the temp file this method
+    /// renames is real, on-disk, and holding the same bytes. <paramref name="unixCreateMode"/> is
+    /// therefore applied at creation rather than afterwards, and suppresses the usual copy of the
+    /// destination's security metadata so an existing over-permissive file cannot re-widen the
+    /// replacement. Ignored on Windows, where ACLs rather than mode bits govern.
+    /// </remarks>
     public static async Task WriteAsync(
         string destinationPath,
         byte[] content,
+        UnixFileMode? unixCreateMode,
         CancellationToken ct = default)
     {
         var directory = Path.GetDirectoryName(destinationPath);
@@ -135,13 +177,20 @@ public static partial class AtomicFileWriter
         try
         {
             // Write to temp file
-            await File.WriteAllBytesAsync(tempPath, content, ct);
+            if (unixCreateMode is { } mode && !OperatingSystem.IsWindows())
+            {
+                await WriteAllBytesWithModeAsync(tempPath, content, mode, ct);
+            }
+            else
+            {
+                await File.WriteAllBytesAsync(tempPath, content, ct);
+            }
 
             // Sync the temp file to disk while it is still writable, before copying any
             // (possibly read-only) security metadata from the destination onto it.
             await SyncFileAsync(tempPath, ct);
 
-            if (destinationExists)
+            if (destinationExists && unixCreateMode is null)
             {
                 CopySecurityMetadata(destinationPath, tempPath);
             }
@@ -386,14 +435,14 @@ public static partial class AtomicFileWriter
         try
         {
             // Compute checksum
-            var checksum = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+            var checksum = Sha256Digest.Compute(content);
 
             // Write to temp file
             await File.WriteAllBytesAsync(tempPath, content, ct);
 
             // Verify what was written
             var verifyBytes = await File.ReadAllBytesAsync(tempPath, ct);
-            var verifyChecksum = Convert.ToHexString(SHA256.HashData(verifyBytes)).ToLowerInvariant();
+            var verifyChecksum = Sha256Digest.Compute(verifyBytes);
 
             if (checksum != verifyChecksum)
             {
@@ -449,7 +498,7 @@ public static partial class AtomicFileWriter
             .ToLowerInvariant();
 
         var content = await File.ReadAllBytesAsync(filePath, ct);
-        var actualChecksum = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+        var actualChecksum = Sha256Digest.Compute(content);
 
         if (expectedChecksum == actualChecksum)
         {
@@ -542,6 +591,28 @@ public static partial class AtomicFileWriter
         var directory = Path.GetDirectoryName(destinationPath) ?? ".";
         var fileName = Path.GetFileName(destinationPath);
         return Path.Combine(directory, $".{fileName}.{Guid.NewGuid():N}.tmp");
+    }
+
+    // FileStreamOptions.UnixCreateMode passes the mode to open(2), so the file is never visible at
+    // the umask default first. File.WriteAllBytesAsync offers no equivalent, which is why this
+    // exists rather than a chmod after the fact.
+    private static async Task WriteAllBytesWithModeAsync(
+        string path,
+        byte[] content,
+        UnixFileMode mode,
+        CancellationToken ct)
+    {
+        var options = new FileStreamOptions
+        {
+            Mode = FileMode.CreateNew,
+            Access = FileAccess.Write,
+            Share = FileShare.None,
+            Options = FileOptions.Asynchronous,
+            UnixCreateMode = mode,
+        };
+
+        await using var stream = new FileStream(path, options);
+        await stream.WriteAsync(content, ct);
     }
 
     private static void CopySecurityMetadata(string sourcePath, string targetPath)

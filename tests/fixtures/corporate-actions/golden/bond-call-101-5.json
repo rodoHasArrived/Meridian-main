@@ -27,5 +27,6 @@
   ],
   "bars": [],
   "postingContext": { "positionQuantity": 50000, "withholdingTaxRate": 0, "financialAccountId": null },
-  "invariantTags": [ "journal-balanced" ]
+  "invariantTags": [ "journal-balanced" ],
+  "knownDefectIds": []
 }

@@ -5,9 +5,12 @@ import { getLocalStorage } from "@/lib/theme";
 // the operator actually visits the corresponding route, so progress reflects
 // real actions on the real UI rather than a checklist they clicked through.
 export const ONBOARDING_STORAGE_KEY = "meridian.workstation.onboarding.v1";
+export const DEFAULT_ONBOARDING_JOURNEY_ID = "financial-operations";
 
 export interface OnboardingState {
   version: 1;
+  /** The task journey the operator chose for this tour. */
+  journeyId: string;
   /** Ids of tour steps the operator has completed (by visiting their route). */
   completedStepIds: string[];
   /** True once the operator dismisses the tour; hides the coach-mark and ring. */
@@ -15,7 +18,7 @@ export interface OnboardingState {
 }
 
 export function emptyOnboardingState(): OnboardingState {
-  return { version: 1, completedStepIds: [], dismissed: false };
+  return { version: 1, journeyId: DEFAULT_ONBOARDING_JOURNEY_ID, completedStepIds: [], dismissed: false };
 }
 
 function normalizeState(value: unknown): OnboardingState {
@@ -28,6 +31,9 @@ function normalizeState(value: unknown): OnboardingState {
     : [];
   return {
     version: 1,
+    journeyId: typeof source.journeyId === "string" && source.journeyId.length > 0
+      ? source.journeyId
+      : DEFAULT_ONBOARDING_JOURNEY_ID,
     completedStepIds,
     dismissed: source.dismissed === true
   };
@@ -56,4 +62,11 @@ export function withCompletedStep(state: OnboardingState, stepId: string): Onboa
     return state;
   }
   return { ...state, completedStepIds: [...state.completedStepIds, stepId] };
+}
+
+export function withSelectedOnboardingJourney(state: OnboardingState, journeyId: string): OnboardingState {
+  if (state.journeyId === journeyId) {
+    return state;
+  }
+  return { ...state, journeyId, dismissed: false };
 }

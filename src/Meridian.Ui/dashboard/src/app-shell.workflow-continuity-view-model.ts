@@ -7,10 +7,9 @@ import {
 import type { AppShellLinkedContextItem } from "@/app-shell.linked-context";
 import { buildOperatorFocusCandidate, type OperatorFocusCandidate } from "@/app-shell.operator-focus";
 import {
-  findActiveWorkflowStepIndex,
   primaryOperatorWorkflowStepDefinitions,
   resolvePrimaryOperatorWorkflowStepId,
-  selectWorkflowContinuityTrail,
+  resolveWorkflowContinuityRoute,
   type WorkflowContinuityStepStatus,
   type WorkflowContinuityTrailStepDefinition
 } from "@/app-shell.workflow-continuity";
@@ -79,13 +78,17 @@ export function buildWorkflowContinuityViewModel(
     symbol: operatingContextScope?.symbol ?? operatingContextSymbol
   }, pathname);
   const subjectSymbol = operatingScope.subjectSymbol;
+  const isShellHome = pathname === "/";
   const currentRoute = `${pathname}${search}${hash}`;
-  const trail = selectWorkflowContinuityTrail(pathname, hash);
-  const steps = trail.steps.map((step) => materializeContinuityStep(step, operatingScope));
-  const activeIndex = findActiveWorkflowStepIndex(trail.steps, pathname, hash);
-  const nextIndex = steps.length > 0 ? Math.min(activeIndex + 1, steps.length - 1) : 0;
-  const activeStep = steps[activeIndex] ?? null;
-  const nextStep = steps[nextIndex] ?? activeStep;
+  const routeResolution = resolveWorkflowContinuityRoute(pathname, hash);
+  const trail = routeResolution.trail;
+  const steps = (trail?.steps ?? []).map((step) => materializeContinuityStep(step, operatingScope));
+  const activeIndex = routeResolution.activeStepIndex;
+  const nextIndex = activeIndex === null || steps.length === 0
+    ? null
+    : Math.min(activeIndex + 1, steps.length - 1);
+  const activeStep = activeIndex === null ? null : steps[activeIndex] ?? null;
+  const nextStep = nextIndex === null ? null : steps[nextIndex] ?? activeStep;
   const stepStatuses = steps.map((step) => buildWorkflowContinuityStepStatus(step.id, statusContext));
   const attentionCount = stepStatuses.filter((status) => status.tone === "blocked" || status.tone === "review").length;
   const operatorFocus = buildOperatorFocusViewModel(statusContext, operatingScope, pathname === "/");
@@ -93,18 +96,43 @@ export function buildWorkflowContinuityViewModel(
   const linkedContext = buildLinkedContextViewModel(statusContext, subjectSymbol, operatingScope);
   const disclosure = buildWorkflowContinuityDisclosureState(statusContext, operatorFocus, evidenceTimeline, linkedContext);
   const primaryOperatorFlowSteps = buildPrimaryOperatorWorkflowSteps(pathname, operatingScope);
+  const title = trail?.title ?? "Choose a task";
+  const summary = trail
+    ? buildWorkflowContinuitySummary(
+      trail.summary,
+      activeStep?.label ?? activeWorkspace.label,
+      nextStep?.label ?? activeWorkspace.label,
+      subjectSymbol,
+      attentionCount
+    )
+    : routeResolution.mode === "choose-task"
+      ? `No continuity step is selected for ${activeWorkspace.label}. Choose a task from the local workspace navigation; the current operating scope will be preserved.`
+      : "The requested route is not part of a Meridian workspace. Open the Daily Control Tower to choose a task.";
+  const contextOwnerLabel = isShellHome ? "Daily Control Tower" : activeWorkspace.label;
   const contextValue = subjectSymbol
-    ? `${activeWorkspace.label} / ${subjectSymbol}`
+    ? `${contextOwnerLabel} / ${subjectSymbol}`
     : operatingScope.hasScope
-      ? `${activeWorkspace.label} / Scoped workflow`
-    : `${activeWorkspace.label} / ${activeStep?.label ?? "Workspace"}`;
-  const nextActionLabel = activeStep && nextStep && activeStep.id === nextStep.id
-    ? `Stay on ${activeStep.label}`
-    : `Next: ${nextStep?.label ?? activeWorkspace.label}`;
-  const nextActionAriaLabel = activeStep && nextStep && activeStep.id === nextStep.id
-    ? `Stay on ${activeStep.label}`
-    : `Continue workflow to ${nextStep?.label ?? activeWorkspace.label}`;
-  const nextActionHref = nextStep?.href ?? workspacePath(activeWorkspace.key);
+      ? `${contextOwnerLabel} / Scoped workflow`
+      : `${contextOwnerLabel} / ${activeStep?.label ?? "Choose a task"}`;
+  const nextActionLabel = routeResolution.mode === "matched"
+    ? activeStep && nextStep && activeStep.id === nextStep.id
+      ? `Stay on ${activeStep.label}`
+      : `Next: ${nextStep?.label ?? activeWorkspace.label}`
+    : routeResolution.mode === "choose-task"
+      ? "Choose a task"
+      : "Open Daily Control Tower";
+  const nextActionAriaLabel = routeResolution.mode === "matched"
+    ? activeStep && nextStep && activeStep.id === nextStep.id
+      ? `Stay on ${activeStep.label}`
+      : `Continue workflow to ${nextStep?.label ?? activeWorkspace.label}`
+    : routeResolution.mode === "choose-task"
+      ? `Choose a task in ${activeWorkspace.label}`
+      : "Open Daily Control Tower to choose a task";
+  const nextActionHref = routeResolution.mode === "matched"
+    ? nextStep?.href ?? appendOperatingScopeToRoute(workspacePath(activeWorkspace.key), operatingScope)
+    : routeResolution.mode === "choose-task"
+      ? appendOperatingScopeToRoute(workspacePath(activeWorkspace.key), operatingScope)
+      : appendOperatingScopeToRoute("/", operatingScope);
   const decisionBrief = buildDecisionBriefViewModel({
     activeWorkspace,
     nextActionLabel,
@@ -117,14 +145,9 @@ export function buildWorkflowContinuityViewModel(
   });
 
   return {
-    title: trail.title,
-    summary: buildWorkflowContinuitySummary(
-      trail.summary,
-      activeStep?.label ?? activeWorkspace.label,
-      nextStep?.label ?? activeWorkspace.label,
-      subjectSymbol,
-      attentionCount
-    ),
+    mode: routeResolution.mode,
+    title,
+    summary,
     primaryOperatorFlowLabel: "Primary operator workflow",
     primaryOperatorFlowSummary: "Import -> Validate -> Reconcile -> Investigate -> Approve -> Report",
     primaryOperatorFlowStepsLabel: "Primary operator workflow steps",
@@ -135,8 +158,8 @@ export function buildWorkflowContinuityViewModel(
     clearSubjectAriaLabel: operatingScope.clearAriaLabel,
     operatingScope,
     routeLabel: currentRoute || "/",
-    stepsLabel: `${trail.title} workflow steps`,
-    ariaLabel: `${trail.title} continuity`,
+    stepsLabel: trail ? `${trail.title} workflow steps` : `${contextOwnerLabel} task workflow steps`,
+    ariaLabel: trail ? `${trail.title} continuity` : `${contextOwnerLabel} task choice`,
     nextActionLabel,
     nextActionAriaLabel,
     nextActionHref,
@@ -167,8 +190,8 @@ export function buildWorkflowContinuityViewModel(
     linkedContextItems: linkedContext.items,
     steps: steps.map((step, index) => {
       const status = stepStatuses[index] ?? { label: "Route", tone: "pending" as const };
-      const active = index === activeIndex;
-      const next = index === nextIndex && index !== activeIndex;
+      const active = activeIndex !== null && index === activeIndex;
+      const next = nextIndex !== null && index === nextIndex && index !== activeIndex;
       return {
         ...step,
         active,

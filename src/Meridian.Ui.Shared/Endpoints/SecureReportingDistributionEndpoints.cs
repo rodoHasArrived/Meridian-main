@@ -278,12 +278,14 @@ public static class SecureReportingDistributionEndpoints
                     .ConfigureAwait(false);
                 return Results.Accepted();
             }).ConfigureAwait(false))
+            .DeclareIndependentAuthentication("Provider delivery receipt, authenticated by the X-Meridian-Reporting-Timestamp and X-Meridian-Reporting-Signature HMAC headers the transport was configured with; the caller is the provider, never the ambient operator principal.")
             .AddEndpointFilter(RejectQueryBearerAsync);
 
         app.MapGet("/portal/reporting/access-grants/{grantId}/exchange", (
                 string grantId,
                 HttpContext context) =>
             ExecuteLandingPage(grantId, context))
+            .DeclareOpenRead("Static token-entry page for an external report recipient; carries no package data and no grant is honoured until the opaque token is exchanged through the sibling POST.")
             .AddEndpointFilter(RejectQueryBearerAsync);
 
         app.MapPost("/portal/reporting/access-grants/{grantId}/exchange", async (
@@ -304,6 +306,7 @@ public static class SecureReportingDistributionEndpoints
                     download.Artifact.FileName,
                     enableRangeProcessing: false);
             }).ConfigureAwait(false))
+            .DeclareIndependentAuthentication("Grant exchange for an external report recipient, authenticated by the opaque one-use grant token in the request body; the recipient holds no operator principal and cannot be judged as one.")
             .AddEndpointFilter(RejectQueryBearerAsync);
     }
 

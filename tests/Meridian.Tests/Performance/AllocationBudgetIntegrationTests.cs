@@ -347,7 +347,7 @@ public sealed class AllocationBudgetIntegrationTests : IDisposable
                 Aggressor: AggressorSide.Buy,
                 SequenceNumber: 1234567,
                 StreamId: "ALPACA",
-                Venue: "XNAS"));
+                Venue: "XNAS"), source: "TEST");
 
     private static MarketEvent[] BuildEventMatrix(int symbolCount, int typeCardinality)
     {
@@ -433,13 +433,13 @@ public sealed class AllocationBudgetIntegrationTests : IDisposable
                     Spread: 0.05m,
                     SequenceNumber: sequence,
                     StreamId: source,
-                    Venue: "XNAS")),
+                    Venue: "XNAS"), source: "TEST"),
             MarketEventType.L2Snapshot => MarketEvent.L2Snapshot(
                 timestamp,
                 symbol,
                 BuildSnapshot(timestamp, symbol, sequence, source),
-                sequence,
-                source),
+                source,
+                sequence),
             MarketEventType.OrderFlow => MarketEvent.OrderFlow(
                 timestamp,
                 symbol,
@@ -455,8 +455,8 @@ public sealed class AllocationBudgetIntegrationTests : IDisposable
                     SequenceNumber: sequence,
                     StreamId: source,
                     Venue: "XNAS"),
-                sequence,
-                source),
+                source,
+                sequence),
             MarketEventType.OptionTrade => MarketEvent.OptionTrade(
                 timestamp,
                 symbol,
@@ -474,8 +474,8 @@ public sealed class AllocationBudgetIntegrationTests : IDisposable
                     UnderlyingPrice: 150m,
                     SequenceNumber: sequence,
                     Source: source),
-                sequence,
-                source),
+                source,
+                sequence),
             _ => MarketEvent.Trade(
                 timestamp,
                 symbol,
@@ -488,8 +488,8 @@ public sealed class AllocationBudgetIntegrationTests : IDisposable
                     SequenceNumber: sequence,
                     StreamId: source,
                     Venue: "XNAS"),
-                sequence,
-                source)
+                source,
+                sequence)
         };
     }
 

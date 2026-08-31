@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-07-20
+last_reviewed: 2026-08-03
 ---
 
 # src/Meridian.Contracts
@@ -24,19 +24,43 @@ or provider implementations.
 
 ## Key folders and files
 
+- `Integrity/` - the canonical SHA-256 digest contract. `Sha256Digest` is the single required seam
+  for digest validation and comparison; do not add a local `IsSha256`/`FixedHashEquals` helper.
+  It keeps three questions apart on purpose: `IsCanonical` enforces Meridian's canonical form
+  (64 lowercase hex) on write and certification paths, `IsWellFormed` accepts any 64 hex characters
+  for read paths, and `Compare`/`FixedEquals` decide whether two digests denote the same bytes.
+  Comparison is case-insensitive, because hex casing is a presentation detail and not a security
+  property, and it reports a malformed digest distinctly from a genuine mismatch so callers can stop
+  surfacing a data-hygiene problem as an integrity failure.
 - `Lifecycle/` - shared runtime state, readiness-check, shutdown-operation, shutdown-receipt,
   supervisor-manifest, exact-process-identity, database-identity, and session-receipt contracts.
 - `Operations/` - the program-wide verified terminal-outcome contract and append-only operational
   case-history port. Terminal operations use only `Succeeded`, `CompletedWithWarnings`, `Failed`,
   or `Blocked`, with evaluated postconditions, retained evidence and artifacts, issues, and
   actionable recovery guidance. Durable stores assign case-event sequence and hash-chain values.
-- `Workstation/` - workstation and operator workflow DTOs, including the persisted
-  statement-to-report status, stage, retained-artifact, evidence-link, and recovery payloads.
+  `OperationsOriginGuard` owns the "reviewed automation may not perform this action; a human
+  operator is required" control — the predicate and the canonical refusal message live there, so the
+  rule evolves in one place instead of across every module that enforces it. Only the throwing gates
+  carry `HumanOperatorRequiredException`, either directly or as the inner exception of a
+  module-specific type, so those refusals are identifiable by type; it derives from
+  `InvalidOperationException` so existing catch sites keep working. Gates that return the refusal as
+  data instead carry shared refusal text in an ordinary blocker or error DTO and throw nothing —
+  `BlockerMessage` where an operator reads a blocked workflow, `RefusalMessage` where a caller reads
+  a rejected request — so absence of the exception does not mean the action passed, and a structured
+  result has to be read on its own terms rather than by catching.
+- `Workstation/` - workstation and operator workflow DTOs, including the persisted statement
+  reconciliation report status, stage, current retained JSON/CSV artifact generation, immutable
+  superseded-generation manifest and receipt history, evidence-link, and recovery payloads.
 - `AssetOperations/` - shared Security Master-keyed asset operations DTOs, readiness payloads,
   terms/obligations timeline payloads, instrument-role and book-position semantics, economic-state
   and event references, projection lineage, and query/command service contracts.
 - `Ledger/` - shared accounting configuration, ledger-book, posting-intent, journal query, dimension,
   authoritative book-context snapshot, and existing rule-pack reference contracts.
+  `LedgerDimensionTags` is the single owner of GL-dimension tag parsing and of the
+  "does this dimension set carry anything?" predicate. Storage, endpoint, reporting, and close
+  callers consume it rather than redeclaring a local copy, so a whitespace-only dimension value
+  cannot be treated as present at one layer and absent at another. Whitespace-only counts as
+  absent, matching the `NormalizeOptional` convention used across the ledger surface.
 - `SecurityMaster/` - shared Security Master command/read payloads, including corporate-action
   append requests, append results, structured audit metadata, and the injectable command service
   contract used by HTTP endpoints, imports, provider backfills, and workstation commands. The
@@ -108,6 +132,18 @@ publish `OperationsClosePackagePublicationDto` with close-package id, retained m
 evidence hash, sign-off actor/rationale, report pack id, evidence links, checklist approvals, and
 frozen vault document snapshots so clients can inspect close-package publication without rebuilding
 package metadata locally.
+Strategy-run detail payloads add a read-only acceptance checklist for the bounded Covered Call W6
+path. Each item carries its canonical checklist id, server-derived status, keyed evidence link,
+operator, decision time, audit reference, and blocker. Consumers must treat unknown or missing
+items as review-required and must not infer completion from retained declarations, metric
+eligibility, or a locally created Paper session. Evidence Vault identities and document/query
+payloads carry additive tenant/company scope; legacy unscoped store calls remain obsolete,
+source-visible fail-closed compatibility shims.
+`Workstation/EvidenceVaultReference.cs` owns the server-side canonical Vault reference grammar:
+`evidence://evidence-vault/ev-` plus 24 hexadecimal characters, normalized to lowercase, with no
+port, user info, query, fragment, extra/encoded path, or traversal. Browser validation mirrors this
+contract and its shared malformed-vector proof; storage, Covered Call admission, and Paper
+promotion must call the contract helper rather than maintain separate parsers.
 Strategy-run trial-balance and journal DTOs expose the canonical `LedgerDimensionSetDto` beside
 legacy account/entity/sleeve/vehicle scope fields so browser and WPF ledger drill-throughs can use
 the same dimensional accounting vocabulary as rules, drafts, period reports, and external GL
@@ -124,6 +160,10 @@ references that do not name the resolved symbol or Security Master id. Operation
 journal candidate lines also carry optional `LedgerDimensionSetDto` scope so reviewed close,
 reconciliation, or accrual postings can preserve line-level fund/entity/cost-center/counterparty
 and external-GL dimensions through the Financial Operations posting gate.
+Strategy-run reconciliation summaries and rows also carry optional bank-entity/source scope,
+Operations Continuity correlation keys, a versioned logical-break identity, and the retained first
+observation time. These additive fields let shared governance and workstation consumers distinguish
+entity-scoped incidents without changing the legacy positional record constructors.
 Reconciliation break queue items carry optional `LedgerBookId` scope so shared Accounting,
 Reconciliation, and close-readiness surfaces can filter explicit book cases without inferring
 accounting ownership from fund labels, routes, or exception text.
@@ -1371,7 +1411,18 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W5X-CONNECT-001` | Custodian and broker statement connector library |
 | `W5X-EVIDENCE-001` | Evidence Vault productization |
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
+| `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
+| `W10-MARK-001` | Fail-closed stale-mark policy and mark-age surfacing |
+| `W10-RECON-001` | Durable break lineage identity and run-over-run break diff |
+| `W10-PROV-001` | Ledger-amount evidence subject and shared proof drawer |
+| `W10-RECON-002` | Break clustering and bulk-resolution activation |
+| `W10-JRNL-001` | Durable recurring journal schedules and draft runner |
+| `W10-TAX-001` | Tax character, wash-sale, and lot-relief operator surface |
+| `W10-SEAM-001` | Unified close-readiness projection behind one shared contract |
+| `W10-RECON-004` | Operator-taught match rules with promotion gate |
+| `W10-PERF-001` | Portfolio and investor return measurement |
+| `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
@@ -1383,6 +1434,16 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-todos:end -->
 
 ## API and contract notes
+
+Canonical symbol registries retain their stable read/write interfaces. Implementations that can
+apply a startup seed batch atomically opt into `ICanonicalSymbolRegistryMigrationWriter`; callers
+must require that additive capability rather than widening the general registry contract or
+falling back to per-definition writes.
+
+`WorkstationWorkspaceCatalog` classifies browser workspaces by product maturity only:
+`Preview`, `Setup`, or `Available`. Execution environment (`Demo`, `Paper`, or `Live`) and runtime
+operator state (`Ready`, `Review`, or `Blocked`) come from session, provenance, and readiness
+evidence; they must not be encoded in static workspace metadata.
 
 The instrument-to-journal semantic alignment is additive and requires no initial schema migration.
 It does not replace Security Master identity, create an Instrument Master above Security Master,

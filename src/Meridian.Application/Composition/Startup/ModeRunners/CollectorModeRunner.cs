@@ -8,6 +8,7 @@ using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Platform.Results;
 using Meridian.Application.Services;
+using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.DataIntegration.Monitoring;
@@ -51,11 +52,13 @@ public sealed class CollectorModeRunner
 
         ConfigWatcher? watcher = null;
 
-        await using var hostStartup = HostStartupFactory.Create(ctx.Deployment, ctx.ConfigPath);
+        await using var hostStartup = await HostStartupFactory
+            .CreateAsync(ctx.Deployment, ctx.ConfigPath, ct)
+            .ConfigureAwait(false);
         var storageOpt = hostStartup.StorageOptions;
         var pipeline = hostStartup.Pipeline;
 
-        await pipeline.RecoverAsync();
+        await pipeline.RecoverAsync(ct);
         _log.Information("WAL enabled for pipeline durability");
 
         var policy = hostStartup.GetRequiredService<JsonlStoragePolicy>();
@@ -98,71 +101,87 @@ public sealed class CollectorModeRunner
             _log.Information("Streaming failover enabled with {RuleCount} rules", failoverRules.Length);
 
             healthMonitor = new ConnectionHealthMonitor();
-            failoverService = new StreamingFailoverService(healthMonitor);
-
-            var rule = failoverRules[0];
             var providerMap = new Dictionary<string, IMarketDataClient>(StringComparer.OrdinalIgnoreCase);
-            var allProviderIds = new[] { rule.PrimaryProviderId }
-                .Concat(rule.BackupProviderIds)
-                .Distinct(StringComparer.OrdinalIgnoreCase);
-
-            var sources = failoverCfg!.Sources ?? Array.Empty<DataSourceConfig>();
-            var providerIds = allProviderIds.ToList();
-            var creationTasks = providerIds.Select(providerId =>
+            FailoverAwareMarketDataClient? failoverClient = null;
+            try
             {
-                var source = sources.FirstOrDefault(
-                    s => string.Equals(s.Id, providerId, StringComparison.OrdinalIgnoreCase));
-                var providerKind = source?.Provider ?? ctx.Config.DataSource;
-                return Task.Run(() =>
+                failoverService = new StreamingFailoverService(healthMonitor);
+                var rule = failoverRules[0];
+                var allProviderIds = new[] { rule.PrimaryProviderId }
+                    .Concat(rule.BackupProviderIds)
+                    .Distinct(StringComparer.OrdinalIgnoreCase);
+
+                var sources = failoverCfg!.Sources ?? Array.Empty<DataSourceConfig>();
+                foreach (var providerId in allProviderIds)
                 {
+                    ct.ThrowIfCancellationRequested();
+                    var source = sources.FirstOrDefault(
+                        s => string.Equals(s.Id, providerId, StringComparison.OrdinalIgnoreCase));
+                    var providerKind = source?.Provider ?? ctx.Config.DataSource;
                     try
                     {
                         var client = providerRegistry.CreateStreamingClient(providerKind);
-                        return (providerId, client: (IMarketDataClient?)client, providerKind, error: (Exception?)null);
+                        providerMap[providerId] = client;
+                        if (client is IReconnectionGapSource clientGapSource)
+                            gapSources.Add(clientGapSource);
+                        failoverService.RegisterProvider(providerId);
+                        _log.Information(
+                            "Created streaming client for failover provider {ProviderId} ({Kind})",
+                            providerId,
+                            providerKind);
                     }
                     catch (Exception ex)
                     {
-                        return (providerId, client: (IMarketDataClient?)null, providerKind, error: (Exception?)ex);
+                        _log.Warning(
+                            ex,
+                            "Failed to create streaming client for provider {ProviderId}; skipping",
+                            providerId);
                     }
-                }, ct);
-            });
+                }
 
-            var results = await Task.WhenAll(creationTasks);
-            foreach (var (providerId, client, providerKind, error) in results)
-            {
-                if (client != null)
+                if (providerMap.Count == 0)
                 {
-                    providerMap[providerId] = client;
-                    if (client is IReconnectionGapSource clientGapSource)
-                        gapSources.Add(clientGapSource);
-                    failoverService.RegisterProvider(providerId);
-                    _log.Information(
-                        "Created streaming client for failover provider {ProviderId} ({Kind})",
-                        providerId,
-                        providerKind);
+                    _log.Error("No streaming providers could be created for failover; falling back to single provider");
+                    dataClient = providerRegistry.CreateStreamingClient(ctx.Config.DataSource);
                 }
                 else
                 {
-                    _log.Warning(
-                        error,
-                        "Failed to create streaming client for provider {ProviderId}; skipping",
-                        providerId);
+                    var initialProvider = providerMap.ContainsKey(rule.PrimaryProviderId)
+                        ? rule.PrimaryProviderId
+                        : providerMap.Keys.First();
+
+                    failoverClient = new FailoverAwareMarketDataClient(
+                        providerMap,
+                        failoverService,
+                        rule.Id,
+                        initialProvider,
+                        integrityPublisher: hostStartup.GetService<Meridian.Domain.Events.IMarketEventPublisher>());
+                    dataClient = failoverClient;
+                    failoverService.Start(
+                        failoverCfg,
+                        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            [rule.Id] = initialProvider
+                        });
                 }
             }
-
-            if (providerMap.Count == 0)
+            catch
             {
-                _log.Error("No streaming providers could be created for failover; falling back to single provider");
-                dataClient = providerRegistry.CreateStreamingClient(ctx.Config.DataSource);
-            }
-            else
-            {
-                var initialProvider = providerMap.ContainsKey(rule.PrimaryProviderId)
-                    ? rule.PrimaryProviderId
-                    : providerMap.Keys.First();
+                if (failoverClient is not null)
+                {
+                    await DisposeClientAsync(failoverClient).ConfigureAwait(false);
+                }
+                else
+                {
+                    foreach (var client in new HashSet<IMarketDataClient>(
+                                 providerMap.Values,
+                                 ReferenceEqualityComparer.Instance))
+                        await DisposeClientAsync(client).ConfigureAwait(false);
+                }
 
-                dataClient = new FailoverAwareMarketDataClient(providerMap, failoverService, rule.Id, initialProvider);
-                failoverService.Start(failoverCfg);
+                failoverService?.Dispose();
+                healthMonitor.Dispose();
+                throw;
             }
         }
         else
@@ -170,6 +189,7 @@ public sealed class CollectorModeRunner
             dataClient = providerRegistry.CreateStreamingClient(ctx.Config.DataSource);
         }
 
+        using var failoverResources = new FailoverResourceLease(failoverService, healthMonitor);
         await using var dataClientDisposable = dataClient;
 
         // The failover wrapper is not itself a gap source; its inner clients were captured
@@ -188,7 +208,8 @@ public sealed class CollectorModeRunner
                 backfillExecutor: (_, _) => throw new InvalidOperationException("Direct gap backfill execution is not used in collector mode."),
                 subscribedSymbols: () => gapBackfillSymbols,
                 minimumGap: autoGapRemediation.MinimumGapDuration,
-                guardedRemediation: autoGapRemediation);
+                guardedRemediation: autoGapRemediation,
+                integrityPublisher: hostStartup.GetService<Meridian.Domain.Events.IMarketEventPublisher>());
             foreach (var gapSource in gapSources)
                 gapBackfill.Subscribe(gapSource);
 
@@ -214,6 +235,11 @@ public sealed class CollectorModeRunner
             using var connectTimeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             connectTimeoutCts.CancelAfter(TimeSpan.FromSeconds(30));
             await dataClient.ConnectAsync(connectTimeoutCts.Token);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            _log.Information("Shutdown requested while connecting to the data provider");
+            return 0;
         }
         catch (OperationCanceledException)
         {
@@ -282,15 +308,16 @@ public sealed class CollectorModeRunner
                 var now = DateTimeOffset.UtcNow;
                 var sym = symbols[0].Symbol;
 
-                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Bid, 500.24m, 300m, "MM1"));
-                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Ask, 500.26m, 250m, "MM2"));
-                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Update, OrderBookSide.Bid, 500.24m, 350m, "MM1"));
-                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 3, DepthOperation.Update, OrderBookSide.Ask, 500.30m, 100m, "MMX"));
+                // The simulated feed self-identifies as SAMPLE — never as a real vendor.
+                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Bid, 500.24m, 300m, "MM1", Source: MarketDataSources.Sample));
+                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Ask, 500.26m, 250m, "MM2", Source: MarketDataSources.Sample));
+                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Update, OrderBookSide.Bid, 500.24m, 350m, "MM1", Source: MarketDataSources.Sample));
+                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 3, DepthOperation.Update, OrderBookSide.Ask, 500.30m, 100m, "MMX", Source: MarketDataSources.Sample));
                 depthCollector.ResetSymbolStream(sym);
-                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Bid, 500.20m, 100m, "MM3"));
-                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Ask, 500.22m, 90m, "MM4"));
+                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Bid, 500.20m, 100m, "MM3", Source: MarketDataSources.Sample));
+                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Ask, 500.22m, 90m, "MM4", Source: MarketDataSources.Sample));
 
-                tradeCollector.OnTrade(new MarketTradeUpdate(now, sym, 500.21m, 100, AggressorSide.Buy, SequenceNumber: 1, StreamId: "SIM", Venue: "TEST"));
+                tradeCollector.OnTrade(new MarketTradeUpdate(now, sym, 500.21m, 100, AggressorSide.Buy, SequenceNumber: 1, StreamId: "SIM", Venue: "TEST", Source: MarketDataSources.Sample));
 
                 await Task.Delay(200, ct);
             }
@@ -333,9 +360,6 @@ public sealed class CollectorModeRunner
                 _log.Warning(ex, "Data provider disconnect raised an error during shutdown");
             }
 
-            failoverService?.Dispose();
-            healthMonitor?.Dispose();
-
             var pipelineMetrics = pipeline.EventMetrics;
             _log.Information(
                 "Shutdown complete. Metrics: published={Published}, integrity={Integrity}, dropped={Dropped}",
@@ -345,5 +369,37 @@ public sealed class CollectorModeRunner
         }
 
         return 0;
+    }
+
+    private async ValueTask DisposeClientAsync(IMarketDataClient client)
+    {
+        try
+        {
+            await client.DisposeAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(ex, "Streaming provider client raised an error during failed failover construction cleanup");
+        }
+    }
+
+    private sealed class FailoverResourceLease : IDisposable
+    {
+        private readonly StreamingFailoverService? _failoverService;
+        private readonly ConnectionHealthMonitor? _healthMonitor;
+
+        public FailoverResourceLease(
+            StreamingFailoverService? failoverService,
+            ConnectionHealthMonitor? healthMonitor)
+        {
+            _failoverService = failoverService;
+            _healthMonitor = healthMonitor;
+        }
+
+        public void Dispose()
+        {
+            _failoverService?.Dispose();
+            _healthMonitor?.Dispose();
+        }
     }
 }

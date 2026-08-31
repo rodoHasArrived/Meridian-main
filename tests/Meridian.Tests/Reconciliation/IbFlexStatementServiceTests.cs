@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using FluentAssertions;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
@@ -204,6 +206,21 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Import_RejectsStaleSuppliedHashWithoutPersistingFlexRows()
+    {
+        var path = WriteFlexFile(SampleFlexXml);
+        var staleHash = Convert.ToHexString(
+            SHA256.HashData(Encoding.UTF8.GetBytes(SampleFlexXml + "\n<!-- stale -->")));
+        var request = MakeRequest(path) with { SourceFileHash = staleHash };
+
+        var import = () => _service.ImportAsync(request);
+
+        await import.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*assertion does not match*");
+        (await _store.ListImportsAsync()).Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task Import_ProducesCanonicalRowsWithCurrencyAndExternalIds()
     {
         var path = WriteFlexFile(SampleFlexXml);
@@ -255,7 +272,10 @@ public sealed class IbFlexStatementServiceTests : IDisposable
         // CSV broker with a CSV file → validates via the CSV parser.
         var csvPath = Path.Combine(_tempDir, "statement.csv");
         File.WriteAllText(csvPath, "account,symbol,quantity,price,cashAmount,activityType,tradeDate\nA1,SPY,10,500,0,position,2026-06-30\n");
-        var csvRequest = new BrokerStatementImportRequest("samplebroker", csvPath, new DateOnly(2026, 6, 30));
+        var csvRequest = new BrokerStatementImportRequest("samplebroker", csvPath, new DateOnly(2026, 6, 30)) with
+        {
+            ExternalAccountId = "A1"
+        };
         var csvResult = await router.ValidateAsync(csvRequest);
         csvResult.IsValid.Should().BeTrue();
         csvResult.RowCount.Should().Be(1);
@@ -268,7 +288,10 @@ public sealed class IbFlexStatementServiceTests : IDisposable
             new CsvBrokerStatementService(_store),
             _service);
         var path = WriteFlexFile(SampleFlexXml);
-        var request = new BrokerStatementImportRequest("broker", path, new DateOnly(2026, 6, 30));
+        var request = new BrokerStatementImportRequest("broker", path, new DateOnly(2026, 6, 30)) with
+        {
+            ExternalAccountId = "U1234567"
+        };
 
         var result = await router.ValidateAsync(request);
 
@@ -344,7 +367,7 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     [Fact]
     public async Task StatementRunWorkflow_ImportsFlexStatementEndToEnd()
     {
-        var workflow = new StatementRunWorkflowService(
+        var workflow = StatementRunWorkflowService.CreateEphemeralForTesting(
             _store,
             new JsonReconciliationCaseStore(_tempDir),
             new JsonReconciliationBreakStore(_tempDir),
@@ -389,7 +412,7 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     [Fact]
     public async Task StatementRunWorkflow_ImportsFlexStatementWithGenericBrokerKind()
     {
-        var workflow = new StatementRunWorkflowService(
+        var workflow = StatementRunWorkflowService.CreateEphemeralForTesting(
             _store,
             new JsonReconciliationCaseStore(_tempDir),
             new JsonReconciliationBreakStore(_tempDir),

@@ -3,25 +3,37 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Meridian.Contracts.EnvironmentDesign;
 using Meridian.Contracts.FundStructure;
+using Meridian.Identity.Auth;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
 
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class EnvironmentDesignerEndpointTests
+public sealed class EnvironmentDesignerEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
-    private readonly HttpClient _client;
+    // Drafts, published versions, and the resolved runtime are the deployment's own configuration,
+    // so the reads answer the configuration permissions the publish path already requires -- ViewConfig
+    // to read, ModifyConfig to change.
+    private readonly HttpClient _designerReadClient;
+    private readonly HttpClient _designerMutationClient;
 
     public EnvironmentDesignerEndpointTests(EndpointTestFixture fixture)
     {
-        _client = fixture.Client;
+        _designerReadClient = fixture.CreatePermittedClient(UserPermission.ViewConfig);
+        _designerMutationClient = fixture.CreatePermittedClient(UserPermission.ModifyConfig);
+    }
+
+    public void Dispose()
+    {
+        _designerReadClient.Dispose();
+        _designerMutationClient.Dispose();
     }
 
     [Fact]
     public async Task ListDrafts_WhenUsingStatusBackedEndpointMapping_ReturnsOk()
     {
-        var response = await _client.GetAsync("/api/environment-designer/drafts");
+        var response = await _designerReadClient.GetAsync("/api/environment-designer/drafts");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var drafts = await response.Content.ReadFromJsonAsync<IReadOnlyList<EnvironmentDraftDto>>();
@@ -33,13 +45,13 @@ public sealed class EnvironmentDesignerEndpointTests
     {
         var request = CreateDraftRequest();
 
-        var createResponse = await _client.PostAsJsonAsync("/api/environment-designer/drafts", request);
+        var createResponse = await _designerMutationClient.PostAsJsonAsync("/api/environment-designer/drafts", request);
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var draft = await createResponse.Content.ReadFromJsonAsync<EnvironmentDraftDto>();
         draft.Should().NotBeNull();
 
-        var validateResponse = await _client.PostAsJsonAsync(
+        var validateResponse = await _designerMutationClient.PostAsJsonAsync(
             "/api/environment-designer/validate",
             new ValidateDraftEnvelope(draft!));
         validateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -53,7 +65,7 @@ public sealed class EnvironmentDesignerEndpointTests
             PublishedBy: "endpoint-test",
             VersionLabel: "v001");
 
-        var publishResponse = await _client.PostAsJsonAsync("/api/environment-designer/publish", publishPlan);
+        var publishResponse = await _designerMutationClient.PostAsJsonAsync("/api/environment-designer/publish", publishPlan);
         publishResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var published = await publishResponse.Content.ReadFromJsonAsync<PublishedEnvironmentVersionDto>();
@@ -61,7 +73,7 @@ public sealed class EnvironmentDesignerEndpointTests
         published!.OrganizationName.Should().Be("Northwind Advisory Group");
         published.Runtime.Nodes.Should().NotBeEmpty();
 
-        var versionsCurrentResponse = await _client.GetAsync(
+        var versionsCurrentResponse = await _designerReadClient.GetAsync(
             $"/api/environment-designer/versions/current?organizationId={draft.Definition.OrganizationId:D}");
         versionsCurrentResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -69,7 +81,7 @@ public sealed class EnvironmentDesignerEndpointTests
         currentVersion.Should().NotBeNull();
         currentVersion!.VersionId.Should().Be(published.VersionId);
 
-        var runtimeCurrentResponse = await _client.GetAsync(
+        var runtimeCurrentResponse = await _designerReadClient.GetAsync(
             $"/api/environment-designer/runtime/current?organizationId={draft.Definition.OrganizationId:D}");
         runtimeCurrentResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 

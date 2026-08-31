@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using Meridian.Wpf.Workstation.Models;
 
@@ -66,8 +67,18 @@ public partial class WorkstationCommandBarControl : UserControl
                     : $"{command.Label}  {command.ShortcutHint}",
                 Tag = command,
                 IsEnabled = command.IsEnabled,
-                ToolTip = command.DisabledReason
+
+                // Null rather than empty: an empty tooltip still pops an empty popup on hover.
+                ToolTip = string.IsNullOrWhiteSpace(command.DisabledReason)
+                    ? null
+                    : command.DisabledReason
             };
+
+            // Overflow commands render no inline disabled reason, so the tooltip is the only place
+            // it surfaces — and tooltips are suppressed on disabled items unless asked otherwise.
+            ToolTipService.SetShowOnDisabled(menuItem, true);
+            AutomationProperties.SetAutomationId(menuItem, command.AutomationId);
+            AutomationProperties.SetName(menuItem, command.Label);
 
             menuItem.Click += OnSecondaryCommandClick;
             menu.Items.Add(menuItem);

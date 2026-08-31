@@ -38,7 +38,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         var path = await WriteStatementAsync(
             "empty-book.csv",
             "EXT-1,SPY,10,500,5000,position,2026-05-28,,USD,,",
-            "EXT-1,,0,0,2500.25,cash,2026-05-28,,USD,,",
+            "EXT-1,,0,0,2500.25,cash,2026-05-31,,USD,,",
             "EXT-1,MSFT,5,20,100,trade,2026-05-28,,USD,,EXT-9");
         var workflow = CreateWorkflow();
 
@@ -53,16 +53,61 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task CreateAsync_WithEmptyInternalTransactionPopulation_ClassifiesTransactionBreaksInformational()
+    {
+        var path = await WriteStatementAsync(
+            "informational-tx.csv",
+            "EXT-1,SPY,10,500,5000,position,2026-05-28,,USD,,",
+            "EXT-1,,0,0,2500.25,cash,2026-05-31,,USD,,",
+            "EXT-1,MSFT,5,20,-100,trade,2026-05-28,2026-05-30,USD,,EXT-9");
+        var workflow = CreateWorkflow(Populations(new InternalReconciliationPopulations([], [], [])));
+
+        var result = await workflow.CreateAsync(Request(path), CancellationToken.None);
+
+        // Transaction matching ran against a deliberately empty internal ledger-transaction
+        // population, so its unmatched break is honest evidence but informational only — it must
+        // carry the machine-readable classification the governed queue uses to withhold close blocks.
+        result.Breaks.Should().HaveCount(3);
+        var transactionBreak = result.Breaks.Single(breakRecord => breakRecord.BreakCode == "TRANSACTION_UNMATCHED");
+        transactionBreak.Classification.Should().Be(
+            ReconciliationBreakClassifications.InternalTransactionPopulationUnavailable);
+        result.Breaks
+            .Where(breakRecord => breakRecord.BreakCode != "TRANSACTION_UNMATCHED")
+            .Should().OnlyContain(
+                breakRecord => breakRecord.Classification == null,
+                "cash and position breaks keep their current close-blocking authority");
+    }
+
+    [Fact]
+    public async Task CreateAsync_WithRetainedInternalTransactionPopulation_KeepsTransactionBreakAuthority()
+    {
+        var path = await WriteStatementAsync(
+            "authoritative-tx.csv",
+            "EXT-1,MSFT,5,20,-100,trade,2026-05-28,2026-05-30,USD,,EXT-9");
+        var workflow = CreateWorkflow(Populations(new InternalReconciliationPopulations(
+            [],
+            [],
+            [new InternalLedgerTransaction("i-tx", "EXT-8", "EXT-1", "AAPL", "USD", new DateOnly(2026, 5, 20), new DateOnly(2026, 5, 22), "trade", 7m, -350m, "internal:tx")])));
+
+        var result = await workflow.CreateAsync(Request(path), CancellationToken.None);
+
+        // A retained internal transaction population was actually compared against, so transaction
+        // breaks remain authoritative (no informational classification, blocking behavior preserved).
+        result.Breaks.Should().NotBeEmpty();
+        result.Breaks.Should().OnlyContain(breakRecord => breakRecord.Classification == null);
+    }
+
+    [Fact]
     public async Task CreateAsync_WhenInternalBookMatches_ProducesNoBreaks()
     {
         var path = await WriteStatementAsync(
             "matched.csv",
             "EXT-1,SPY,10,500,5000,position,2026-05-28,,USD,,",
-            "EXT-1,,0,0,2500.25,cash,2026-05-28,,USD,,",
+            "EXT-1,,0,0,2500.25,cash,2026-05-31,,USD,,",
             "EXT-1,MSFT,5,20,-100,trade,2026-05-28,2026-05-30,USD,,EXT-9");
         var workflow = CreateWorkflow(Populations(new InternalReconciliationPopulations(
             [new InternalPortfolioPosition("i-spy", "EXT-1", "SPY", new DateOnly(2026, 5, 28), 10m, 5000m, "internal:pos:spy")],
-            [new InternalCashBalance("i-cash", "EXT-1", "USD", 2500.25m, "internal:cash", new DateOnly(2026, 5, 28))],
+            [new InternalCashBalance("i-cash", "EXT-1", "USD", 2500.25m, "internal:cash", new DateOnly(2026, 5, 31))],
             [new InternalLedgerTransaction("i-tx", "EXT-9", "EXT-1", "MSFT", "USD", new DateOnly(2026, 5, 28), new DateOnly(2026, 5, 30), "trade", 5m, -100m, "internal:tx")])));
 
         var result = await workflow.CreateAsync(Request(path), CancellationToken.None);
@@ -120,11 +165,11 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         // matching identity. A USD reporting-currency balance must not substitute for this EUR balance.
         var path = await WriteStatementAsync(
             "fx.csv",
-            "EXT-1,,0,0,1000,cash,2026-05-28,,EUR,,");
+            "EXT-1,,0,0,1000,cash,2026-05-31,,EUR,,");
         var workflow = CreateWorkflow(
             Populations(new InternalReconciliationPopulations(
                 [],
-                [new InternalCashBalance("i-cash", "EXT-1", "EUR", 1000m, "internal:cash", new DateOnly(2026, 5, 28))],
+                [new InternalCashBalance("i-cash", "EXT-1", "EUR", 1000m, "internal:cash", new DateOnly(2026, 5, 31))],
                 [])),
             new TableReconciliationFxRateProvider([new ReconciliationFxQuote("EUR", "USD", 1.085m, new DateOnly(2026, 5, 1))]));
 
@@ -141,14 +186,14 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         // prevent an exact match and leave both discrepancies for operator review.
         var path = await WriteStatementAsync(
             "swapped-per-currency-cash.csv",
-            "EXT-1,,0,0,200,cash,2026-05-28,,USD,,",
-            "EXT-1,,0,0,120,cash,2026-05-28,,EUR,,");
+            "EXT-1,,0,0,200,cash,2026-05-31,,USD,,",
+            "EXT-1,,0,0,120,cash,2026-05-31,,EUR,,");
         var workflow = CreateWorkflow(
             Populations(new InternalReconciliationPopulations(
                 [],
                 [
-                    new InternalCashBalance("i-usd", "EXT-1", "USD", 240m, "internal:cash:usd", new DateOnly(2026, 5, 28)),
-                    new InternalCashBalance("i-eur", "EXT-1", "EUR", 100m, "internal:cash:eur", new DateOnly(2026, 5, 28)),
+                    new InternalCashBalance("i-usd", "EXT-1", "USD", 240m, "internal:cash:usd", new DateOnly(2026, 5, 31)),
+                    new InternalCashBalance("i-eur", "EXT-1", "EUR", 100m, "internal:cash:eur", new DateOnly(2026, 5, 31)),
                 ],
                 [])),
             new TableReconciliationFxRateProvider([new ReconciliationFxQuote("EUR", "USD", 2m, new DateOnly(2026, 5, 1))]));
@@ -157,8 +202,13 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
 
         result.Breaks.Should().HaveCount(2);
         result.Breaks.Should().OnlyContain(breakRecord => breakRecord.BreakCode == "CASH_CANDIDATE");
-        result.Breaks.Should().Contain(breakRecord => breakRecord.SourceReference.EndsWith(":1", StringComparison.Ordinal));
+        result.Breaks.Should().OnlyContain(breakRecord => breakRecord.ToleranceBreached);
         result.Breaks.Should().Contain(breakRecord => breakRecord.SourceReference.EndsWith(":2", StringComparison.Ordinal));
+        result.Breaks.Should().Contain(breakRecord => breakRecord.SourceReference.EndsWith(":3", StringComparison.Ordinal));
+        result.Cases.Should().OnlyContain(reconciliationCase => reconciliationCase.Priority == "High");
+        result.Cases.Should().OnlyContain(reconciliationCase =>
+            reconciliationCase.BreakExplanation != null
+            && reconciliationCase.BreakExplanation.RequiredSignoffRole == "Fund accounting");
     }
 
     [Fact]
@@ -166,10 +216,10 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
     {
         var path = await WriteStatementAsync(
             "fx-missing.csv",
-            "EXT-1,,0,0,1000,cash,2026-05-28,,EUR,,");
+            "EXT-1,,0,0,1000,cash,2026-05-31,,EUR,,");
         var workflow = CreateWorkflow(Populations(new InternalReconciliationPopulations(
             [],
-            [new InternalCashBalance("i-cash", "FUND-1", "USD", 1085m, "internal:cash", new DateOnly(2026, 5, 28))],
+            [new InternalCashBalance("i-cash", "EXT-1", "USD", 1085m, "internal:cash", new DateOnly(2026, 5, 31))],
             [])));
 
         var result = await workflow.CreateAsync(Request(path), CancellationToken.None);
@@ -219,10 +269,10 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         // profile, not a hard-coded default, drives the thresholds.
         var path = await WriteStatementAsync(
             "tolerance-default.csv",
-            "EXT-1,,0,0,1000.50,cash,2026-05-28,,USD,,");
+            "EXT-1,,0,0,1000.50,cash,2026-05-31,,USD,,");
         var workflow = CreateWorkflow(Populations(new InternalReconciliationPopulations(
             [],
-            [new InternalCashBalance("i-cash", "EXT-1", "USD", 1000m, "internal:cash", new DateOnly(2026, 5, 28))],
+            [new InternalCashBalance("i-cash", "EXT-1", "USD", 1000m, "internal:cash", new DateOnly(2026, 5, 31))],
             [])));
 
         var result = await workflow.CreateAsync(Request(path), CancellationToken.None);
@@ -238,7 +288,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         // ToleranceProfileId threads into the matcher instead of always using the default thresholds.
         var path = await WriteStatementAsync(
             "tolerance-loose.csv",
-            "EXT-1,,0,0,1000.50,cash,2026-05-28,,USD,,");
+            "EXT-1,,0,0,1000.50,cash,2026-05-31,,USD,,");
         var looseProfile = new StatementToleranceProfile(
             "statement-loose",
             1,
@@ -248,7 +298,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         var workflow = CreateWorkflow(
             Populations(new InternalReconciliationPopulations(
                 [],
-                [new InternalCashBalance("i-cash", "EXT-1", "USD", 1000m, "internal:cash", new DateOnly(2026, 5, 28))],
+                [new InternalCashBalance("i-cash", "EXT-1", "USD", 1000m, "internal:cash", new DateOnly(2026, 5, 31))],
                 [])),
             toleranceProfileProvider: new InMemoryStatementToleranceProfileProvider(
                 [StatementToleranceProfile.Default, looseProfile]));
@@ -325,7 +375,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         IStatementToleranceProfileProvider? toleranceProfileProvider = null)
     {
         var importStore = new JsonCanonicalStatementStore(_root);
-        return new StatementRunWorkflowService(
+        return StatementRunWorkflowService.CreateEphemeralForTesting(
             importStore,
             new JsonReconciliationCaseStore(_root),
             new JsonReconciliationBreakStore(_root),

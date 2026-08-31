@@ -6,12 +6,14 @@ using FluentAssertions;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.SecurityMaster;
+using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
 using Meridian.ProviderSdk;
@@ -43,7 +45,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
         {
             await using var fixture = await CreateFixtureAsync(root, includeSecurityLookup: true);
 
-            var detail = await fixture.Reconciliation.RunAsync(
+            var detail = await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
@@ -95,7 +97,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 includeSecurityLookup: true,
                 operatorOverridesStore: new StaticOperatorOverridesStore(securityId));
 
-            var detail = await fixture.Reconciliation.RunAsync(
+            var detail = await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
@@ -136,7 +138,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                         DateTimeOffset.UtcNow.AddMinutes(-15),
                         "Open")));
 
-            var detail = await fixture.Reconciliation.RunAsync(
+            var detail = await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
@@ -164,7 +166,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
             await using var fixture = await CreateFixtureAsync(root, includeSecurityLookup: true);
             await BackdateBrokerageProjectionAsync(fixture, TimeSpan.FromHours(2));
 
-            var detail = await fixture.Reconciliation.RunAsync(
+            var detail = await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(ProviderStaleAfterMinutes: 30, RequestedBy: "ops-user"));
 
@@ -196,7 +198,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 includeBreakQueue: true);
             await BackdateBrokerageProjectionAsync(fixture, TimeSpan.FromHours(2));
 
-            var detail = await fixture.Reconciliation.RunAsync(
+            var detail = await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(ProviderStaleAfterMinutes: 30, RequestedBy: "ops-user"));
 
@@ -241,7 +243,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 includeSecurityLookup: true,
                 recordCustodianPosition: true);
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Matched);
             detail.ShadowBookComparison.Should().NotBeNull();
@@ -285,7 +287,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 recordCustodianPosition: true,
                 custodianPositionMarketValue: 18_600m);
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Breaks);
             detail.Breaks.Should().ContainSingle(breakRow =>
@@ -322,7 +324,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 custodianPositionCostBasis: 14_750m,
                 includeBreakQueue: true);
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             var costBasisBreak = detail.Breaks.Should().ContainSingle(item =>
                 item.Code == "SHADOW_BOOK_POSITION_COST_BASIS_AAPL_MISMATCH"
@@ -368,7 +370,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 custodianPositionQuantity: 99m,
                 includeBreakQueue: true);
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
             var quantityBreak = detail.Breaks.Should().ContainSingle(item =>
                 item.Code == "SHADOW_BOOK_POSITION_QUANTITY_AAPL_MISMATCH"
                 && item.Symbol == "AAPL").Subject;
@@ -408,7 +410,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 bankIncomeAmount: 142.25m,
                 internalAccruedInterest: null);
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Matched);
             detail.ShadowBookComparison.Should().NotBeNull();
@@ -450,7 +452,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 bankIncomeAmount: 100m,
                 internalAccruedInterest: null);
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Breaks);
             detail.Breaks.Should().Contain(breakRow =>
@@ -494,7 +496,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 includeSecurityLookup: true,
                 capabilityRouter: new FixedCapabilityRouter(IsRoutable: true));
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Matched);
             detail.Checks.Should().Contain(check =>
@@ -538,7 +540,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 includeSecurityLookup: true,
                 capabilityRouter: new FixedCapabilityRouter(IsRoutable: false));
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Blocked);
             detail.Breaks.Should().Contain(breakRow =>
@@ -566,7 +568,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 includeSecurityLookup: true,
                 capabilityRouter: new SelectiveCapabilityRouter(ProviderCapabilityKind.CorporateActions));
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Breaks);
             detail.Breaks.Should().ContainSingle(breakRow =>
@@ -610,7 +612,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 includeSecurityLookup: true,
                 capabilityRouter: new AssetClassPositionCapabilityRouter("Equity"));
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Breaks);
             detail.Checks.Should().Contain(check =>
@@ -642,7 +644,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 includeSecurityLookup: true,
                 capabilityRouter: new SelectiveCapabilityRouter(ProviderCapabilityKind.HistoricalQuotes));
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Breaks);
             detail.Checks.Should().Contain(check =>
@@ -695,7 +697,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                         "contract.multiplier",
                         "settlement.calendar")));
 
-            var detail = await fixture.Reconciliation.RunAsync(
+            var detail = await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
@@ -746,7 +748,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 internalPendingSettlement: 250m,
                 activityAdapter: new FxSettlementActivityAdapter());
 
-            var detail = await fixture.Reconciliation.RunAsync(
+            var detail = await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
@@ -792,7 +794,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 capabilityRouter: new FixedCapabilityRouter(IsRoutable: true),
                 portfolioAdapter: new FixedIncomePortfolioAdapter());
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Matched);
             detail.CorporateActionReadiness.Should().NotBeNull();
@@ -838,7 +840,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 capabilityRouter: new SelectiveCapabilityRouter(ProviderCapabilityKind.FactorSchedule),
                 portfolioAdapter: new FixedIncomePortfolioAdapter());
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Breaks);
             detail.Breaks.Should().ContainSingle(breakRow =>
@@ -888,7 +890,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 capabilityRouter: new SelectiveCapabilityRouter(ProviderCapabilityKind.FactorSchedule),
                 portfolioAdapter: new FixedIncomePortfolioAdapter());
 
-            var detail = await fixture.Reconciliation.RunAsync(
+            var detail = await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
@@ -946,7 +948,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 portfolioAdapter: new FixedIncomePortfolioAdapter(),
                 activityAdapter: new LoanScheduleActivityAdapter());
 
-            var detail = await fixture.Reconciliation.RunAsync(
+            var detail = await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
@@ -1007,7 +1009,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 portfolioAdapter: new FixedIncomePortfolioAdapter(),
                 activityAdapter: new CorporateActionActivityAdapter());
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Matched);
             detail.CorporateActionReadiness.Should().NotBeNull();
@@ -1064,7 +1066,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 portfolioAdapter: new FixedIncomePortfolioAdapter(),
                 activityAdapter: new LoanScheduleActivityAdapter());
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Matched);
             detail.CorporateActionReadiness.Should().NotBeNull();
@@ -1122,7 +1124,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 portfolioAdapter: new FixedIncomePortfolioAdapter(),
                 activityAdapter: new AmortizationScheduleActivityAdapter());
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Matched);
             detail.CorporateActionReadiness.Should().NotBeNull();
@@ -1178,7 +1180,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 activityAdapter: new IncomeActivityAdapter(),
                 internalAccruedInterest: null);
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Matched);
             detail.CorporateActionReadiness.Should().NotBeNull();
@@ -1238,7 +1240,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 portfolioAdapter: new FixedIncomePortfolioAdapter(),
                 activityAdapter: new PrincipalActivityAdapter());
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Matched);
             detail.CorporateActionReadiness.Should().NotBeNull();
@@ -1283,7 +1285,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
         {
             await using var fixture = await CreateFixtureAsync(root, includeSecurityLookup: true, internalCash: 49_900m);
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Breaks);
             var cashBreak = detail.Breaks.Should().ContainSingle(breakRow =>
@@ -1320,7 +1322,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 includeSecurityLookup: true,
                 internalUnrealizedPnl: 3_100m);
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Breaks);
             detail.Breaks.Should().ContainSingle(breakRow =>
@@ -1357,7 +1359,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 internalRealizedPnl: 925m,
                 activityAdapter: new RealizedPnlActivityAdapter(925m));
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Matched);
             detail.ShadowBookComparison.Should().NotBeNull();
@@ -1389,7 +1391,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 internalRealizedPnl: 900m,
                 activityAdapter: new RealizedPnlActivityAdapter(925m));
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Breaks);
             detail.Breaks.Should().ContainSingle(breakRow =>
@@ -1426,16 +1428,19 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 internalCash: 49_900m,
                 includeBreakQueue: true);
 
-            var detail = await fixture.Reconciliation.RunAsync(
+            var detail = await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
             var repository = fixture.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
-            var cases = await repository.GetAllAsync();
+            var cases = await repository.GetAllAsync(fixture.QueueScope);
             var cashCase = cases.Should().ContainSingle(item =>
                 item.Category == ReconciliationBreakCategory.CashMismatch &&
                 item.FundAccountId == fixture.AccountId.ToString("D")).Subject;
 
+            cashCase.TenantId.Should().Be(fixture.QueueScope.TenantId);
+            cashCase.CompanyId.Should().Be(fixture.QueueScope.CompanyId);
+            cashCase.FundProfileId.Should().Be(fixture.AccountId.ToString("D"));
             cashCase.BreakId.Should().StartWith($"provider-ledger:{fixture.AccountId:N}:");
             cashCase.RunId.Should().Be(detail.Summary.ReconciliationRunId.ToString("N"));
             cashCase.Status.Should().Be(ReconciliationBreakQueueStatus.Open);
@@ -1483,6 +1488,95 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 entry.EventType == "CaseCreated" &&
                 entry.BreakId == cashCase.BreakId &&
                 entry.SignoffStatus == "assigned");
+            (await repository.GetAllAsync(
+                    new ReconciliationBreakQueueScope("another-tenant", fixture.QueueScope.CompanyId)))
+                .Should()
+                .BeEmpty();
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_ProviderLedgerReconciliation_WithBreaksAndNoAuthoritativeScope_BlocksWithoutWritingCasework()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                internalCash: 49_900m,
+                includeBreakQueue: true);
+
+            var detail = await fixture.Reconciliation.RunAsync(
+                fixture.AccountId,
+                new ProviderLedgerReconciliationRequestDto(
+                    OperationId: "missing-authoritative-scope",
+                    RequestedBy: "direct-test"));
+
+            detail.Outcome.Should().NotBeNull();
+            detail.Outcome!.State.Should().Be(OperationTerminalState.Blocked);
+            detail.Outcome.Issues.Should().ContainSingle(issue =>
+                issue.IsBlocking &&
+                issue.Message.Contains("tenant and company scope", StringComparison.OrdinalIgnoreCase));
+
+            var repository = fixture.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
+            (await repository.GetAllAsync()).Should().BeEmpty();
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_ProviderLedgerReconciliation_ForeignScopeIsRejectedBeforeRunStateAndLatestRead()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                internalCash: 49_900m,
+                includeBreakQueue: true);
+            var foreignScope = new ReconciliationBreakQueueScope(
+                "tenant-provider-ledger-foreign",
+                "company-provider-ledger-foreign");
+
+            var rejected = await fixture.Reconciliation.RunAsync(
+                fixture.AccountId,
+                foreignScope,
+                new ProviderLedgerReconciliationRequestDto(
+                    OperationId: "foreign-authority-preflight",
+                    RequestedBy: "foreign-operator"));
+
+            rejected.Outcome.Should().NotBeNull();
+            rejected.Outcome!.State.Should().Be(OperationTerminalState.Blocked);
+            rejected.Outcome.Issues.Should().ContainSingle(issue =>
+                issue.Code == "PROVIDER_RECONCILIATION_FUND_NOT_AUTHORIZED" &&
+                issue.IsBlocking);
+            Directory.Exists(Path.Combine(
+                    root,
+                    "reconciliation",
+                    fixture.AccountId.ToString("N")))
+                .Should()
+                .BeFalse("foreign authority must be rejected before intent or detail persistence");
+
+            await fixture.RunReconciliationAsync(
+                fixture.AccountId,
+                new ProviderLedgerReconciliationRequestDto(
+                    OperationId: "owner-authority-run",
+                    RequestedBy: "owner-operator"));
+            (await fixture.Reconciliation.GetLatestAsync(fixture.AccountId, foreignScope))
+                .Should()
+                .BeNull("foreign callers must not read the owner's retained latest result");
+            (await fixture.Reconciliation.GetLatestAsync(fixture.AccountId, fixture.QueueScope))
+                .Should()
+                .NotBeNull();
         }
         finally
         {
@@ -1503,17 +1597,26 @@ public sealed class ProviderLedgerReconciliationServiceTests
             var createCalls = 0;
             var intentExistedBeforeFirstCase = false;
 
-            repository.GetByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            repository.GetByIdAsync(
+                    Arg.Any<ReconciliationBreakQueueScope>(),
+                    Arg.Any<string>(),
+                    Arg.Any<CancellationToken>())
                 .Returns(call => Task.FromResult(
-                    cases.TryGetValue(call.ArgAt<string>(0), out var item)
+                    cases.TryGetValue(call.ArgAt<string>(1), out var item)
                         ? item
                         : null));
-            repository.GetAllAsync(Arg.Any<ReconciliationBreakQueueStatus?>(), Arg.Any<CancellationToken>())
+            repository.GetAllAsync(
+                    Arg.Any<ReconciliationBreakQueueScope>(),
+                    Arg.Any<ReconciliationBreakQueueStatus?>(),
+                    Arg.Any<CancellationToken>())
                 .Returns(_ => Task.FromResult<IReadOnlyList<ReconciliationBreakQueueItem>>(cases.Values.ToArray()));
-            repository.CreateIfMissingAsync(Arg.Any<ReconciliationBreakQueueItem>(), Arg.Any<CancellationToken>())
+            repository.CreateIfMissingAsync(
+                    Arg.Any<ReconciliationBreakQueueScope>(),
+                    Arg.Any<ReconciliationBreakQueueItem>(),
+                    Arg.Any<CancellationToken>())
                 .Returns(call =>
                 {
-                    var item = call.ArgAt<ReconciliationBreakQueueItem>(0);
+                    var item = call.ArgAt<ReconciliationBreakQueueItem>(1);
                     createCalls++;
                     var operationKey = Convert.ToHexString(
                             System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(operationId)))
@@ -1544,7 +1647,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 RequestedBy: "ops-user",
                 OperationId: operationId);
 
-            var failed = await fixture.Reconciliation.RunAsync(fixture.AccountId, request);
+            var failed = await fixture.RunReconciliationAsync(fixture.AccountId, request);
 
             failed.Outcome.Should().NotBeNull();
             failed.Outcome!.State.Should().Be(OperationTerminalState.Failed);
@@ -1565,7 +1668,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 "runs",
                 $"{failed.Summary.ReconciliationRunId:N}.json")).Should().BeTrue();
 
-            var recovered = await fixture.Reconciliation.RunAsync(fixture.AccountId, request);
+            var recovered = await fixture.RunReconciliationAsync(fixture.AccountId, request);
 
             recovered.Summary.ReconciliationRunId.Should().Be(failed.Summary.ReconciliationRunId);
             recovered.Outcome.Should().NotBeNull();
@@ -1577,7 +1680,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 item.RunId == recovered.Summary.ReconciliationRunId.ToString("N"));
             var createsAfterRecovery = createCalls;
 
-            var replayed = await fixture.Reconciliation.RunAsync(fixture.AccountId, request);
+            var replayed = await fixture.RunReconciliationAsync(fixture.AccountId, request);
 
             replayed.Should().BeEquivalentTo(recovered);
             createCalls.Should().Be(createsAfterRecovery);
@@ -1600,7 +1703,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 capabilityRouter: new SelectiveCapabilityRouter(ProviderCapabilityKind.CorporateActions),
                 includeBreakQueue: true);
 
-            var detail = await fixture.Reconciliation.RunAsync(
+            var detail = await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
@@ -1659,7 +1762,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 activityAdapter: new IncomeActivityAdapter(),
                 includeBreakQueue: true);
 
-            var detail = await fixture.Reconciliation.RunAsync(
+            var detail = await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
@@ -1705,7 +1808,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 activityAdapter: new PrincipalActivityAdapter(),
                 includeBreakQueue: true);
 
-            var detail = await fixture.Reconciliation.RunAsync(
+            var detail = await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
@@ -1747,10 +1850,10 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 internalCash: 49_900m,
                 includeBreakQueue: true);
 
-            var firstDetail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var firstDetail = await fixture.RunReconciliationAsync(fixture.AccountId);
             var firstCashBreak = firstDetail.Breaks.Single(breakRow => breakRow.Code == "CASH_BALANCE_MISMATCH");
 
-            Func<Task> act = async () => await fixture.Reconciliation.RunAsync(
+            Func<Task> act = async () => await fixture.RunReconciliationAsync(
                     fixture.AccountId,
                     new ProviderLedgerReconciliationRequestDto(
                         RequestedBy: "ops-user",
@@ -1788,12 +1891,12 @@ public sealed class ProviderLedgerReconciliationServiceTests
         {
             await using var fixture = await CreateFixtureAsync(root, includeSecurityLookup: true, internalCash: 49_900m);
 
-            var firstDetail = await fixture.Reconciliation.RunAsync(
+            var firstDetail = await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(DefaultBreakOwner: "fund-controller"));
             var firstCashBreak = firstDetail.Breaks.Single(breakRow => breakRow.Code == "CASH_BALANCE_MISMATCH");
 
-            var repeatedDetail = await fixture.Reconciliation.RunAsync(
+            var repeatedDetail = await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(
                     DefaultBreakOwner: "fund-controller"));
@@ -1820,7 +1923,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
         {
             await using var fixture = await CreateFixtureAsync(root, includeSecurityLookup: true, internalSecuritiesMarketValue: 18_000m);
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Breaks);
             detail.Breaks.Should().Contain(breakRow =>
@@ -1842,7 +1945,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
         {
             await using var fixture = await CreateFixtureAsync(root, includeSecurityLookup: true, runProviderSync: false, recordInternalSnapshot: false);
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Blocked);
             detail.Breaks.Should().Contain(breakRow => breakRow.Code == "PROVIDER_PROJECTION_MISSING");
@@ -1862,7 +1965,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
         {
             await using var fixture = await CreateFixtureAsync(root, includeSecurityLookup: false);
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Breaks);
             detail.Summary.SecurityIssueCount.Should().Be(1);
@@ -1907,7 +2010,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                         "profile.covenants",
                         "profile.evidence")));
 
-            var detail = await fixture.Reconciliation.RunAsync(
+            var detail = await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
@@ -1957,9 +2060,10 @@ public sealed class ProviderLedgerReconciliationServiceTests
             await using var fixture = await CreateFixtureAsync(
                 root,
                 includeSecurityLookup: true,
+                includeBreakQueue: true,
                 securityStatus: SecurityStatusDto.Inactive);
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Blocked);
             detail.Summary.SecurityIssueCount.Should().Be(1);
@@ -1974,7 +2078,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
             passport.ResolutionSource.Should().Be("security-master-status");
             passport.Reason.Should().Contain("active approved Security Master status");
 
-            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId);
+            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId, fixture.QueueScope);
 
             readiness.Should().NotBeNull();
             readiness!.Status.Should().Be(FundAccountCloseReadinessStatusDto.Blocked);
@@ -1982,7 +2086,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 component.Key == "security-master-completeness" &&
                 component.Status == FundAccountCloseReadinessStatusDto.Blocked);
             readiness.Blockers.Should().Contain(blocker =>
-                blocker.Code == "close.security_master.blocked" &&
+                blocker.Code == "close.security_master.casework_blocked" &&
                 blocker.Category == "SecurityMaster" &&
                 blocker.Severity == "Critical");
         }
@@ -2003,7 +2107,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 includeSecurityLookup: false,
                 includeBreakQueue: true);
 
-            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
 
             detail.Breaks.Should().Contain(breakRow =>
                 breakRow.Code == "SM_PROVIDER_POSITION_SECURITY_UNRESOLVED" &&
@@ -2078,6 +2182,76 @@ public sealed class ProviderLedgerReconciliationServiceTests
     }
 
     [Fact]
+    public async Task Endpoint_ProviderLedgerReconciliation_RequiresTenantAndCompanyScopeWithoutWritingCasework()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                internalCash: 49_900m,
+                includeBreakQueue: true);
+            await using var app = await CreateEndpointAppAsync(
+                fixture,
+                includeTenantCompanyScope: false);
+
+            var response = await app.GetTestClient().PostAsJsonAsync(
+                $"/api/fund-accounts/{fixture.AccountId}/brokerage-sync/reconcile-ledger",
+                new ProviderLedgerReconciliationRequestDto(RequestedBy: "spoofed-operator"),
+                JsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            var repository = fixture.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
+            (await repository.GetAllAsync()).Should().BeEmpty();
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Endpoint_ProviderLedgerReconciliation_RetainsCaseworkOnlyForAuthenticatedScope()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                internalCash: 49_900m,
+                includeBreakQueue: true);
+            await using var app = await CreateEndpointAppAsync(fixture);
+
+            var response = await app.GetTestClient().PostAsJsonAsync(
+                $"/api/fund-accounts/{fixture.AccountId}/brokerage-sync/reconcile-ledger",
+                new ProviderLedgerReconciliationRequestDto(
+                    OperationId: "authenticated-scope-casework",
+                    RequestedBy: "spoofed-operator"),
+                JsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var repository = fixture.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
+            var retained = await repository.GetAllAsync(fixture.QueueScope);
+            retained.Should().Contain(item =>
+                item.Category == ReconciliationBreakCategory.CashMismatch &&
+                item.TenantId == fixture.QueueScope.TenantId &&
+                item.CompanyId == fixture.QueueScope.CompanyId);
+            (await repository.GetAllAsync(
+                    new ReconciliationBreakQueueScope(
+                        fixture.QueueScope.TenantId,
+                        "another-company")))
+                .Should()
+                .BeEmpty();
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task Endpoint_ProviderLedgerReconciliation_RejectsClientAssertedSignoff()
     {
         var root = CreateTempRoot();
@@ -2138,11 +2312,11 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 includeSecurityLookup: true,
                 includeBreakQueue: true,
                 capabilityRouter: new FixedCapabilityRouter(IsRoutable: true));
-            await fixture.Reconciliation.RunAsync(
+            await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
-            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId);
+            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId, fixture.QueueScope);
 
             readiness.Should().NotBeNull();
             readiness!.Status.Should().Be(FundAccountCloseReadinessStatusDto.Ready);
@@ -2175,7 +2349,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 includeSecurityLookup: true,
                 includeBreakQueue: true,
                 capabilityRouter: new FixedCapabilityRouter(IsRoutable: true));
-            var detail = await fixture.Reconciliation.RunAsync(
+            var detail = await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
             var securityId = detail.SecurityMasterPassports.Should().ContainSingle(passport => passport.Symbol == "AAPL").Subject.SecurityId;
@@ -2183,7 +2357,9 @@ public sealed class ProviderLedgerReconciliationServiceTests
 
             var repository = fixture.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
             var detectedAt = DateTimeOffset.UtcNow.AddMinutes(-15);
-            await repository.CreateIfMissingAsync(new ReconciliationBreakQueueItem(
+            await repository.CreateIfMissingAsync(
+                fixture.QueueScope,
+                new ReconciliationBreakQueueItem(
                 BreakId: $"security-master:override:{securityId!.Value:N}",
                 RunId: "security-master-overrides",
                 StrategyName: "Security Master exception casework",
@@ -2203,9 +2379,13 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 RoutingDetail: securityId.Value.ToString("D"),
                 RecommendedAction: "Approve or reject the operator override before close.",
                 Team: "Security Master",
-                UpstreamSyncCursor: $"security-master-override:{securityId.Value:N}:Pending"));
+                UpstreamSyncCursor: $"security-master-override:{securityId.Value:N}:Pending")
+                {
+                    TenantId = fixture.QueueScope.TenantId,
+                    CompanyId = fixture.QueueScope.CompanyId
+                });
 
-            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId);
+            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId, fixture.QueueScope);
 
             readiness.Should().NotBeNull();
             readiness!.Status.Should().Be(FundAccountCloseReadinessStatusDto.Blocked);
@@ -2247,9 +2427,10 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 root,
                 includeSecurityLookup: true,
                 runProviderSync: false,
-                recordInternalSnapshot: true);
+                recordInternalSnapshot: true,
+                includeBreakQueue: true);
 
-            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId);
+            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId, fixture.QueueScope);
 
             readiness.Should().NotBeNull();
             readiness!.Status.Should().Be(FundAccountCloseReadinessStatusDto.Blocked);
@@ -2275,13 +2456,18 @@ public sealed class ProviderLedgerReconciliationServiceTests
             await using var fixture = await CreateFixtureAsync(
                 root,
                 includeSecurityLookup: true,
+                includeBreakQueue: true,
                 capabilityRouter: new FixedCapabilityRouter(IsRoutable: true));
             await BackdateBrokerageProjectionAsync(fixture, TimeSpan.FromHours(2));
-            await fixture.Reconciliation.RunAsync(
+            var reconciliation = await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(ProviderStaleAfterMinutes: 30, RequestedBy: "ops-user"));
+            reconciliation.SecurityMasterPassports.Should().ContainSingle(passport =>
+                passport.Symbol == "AAPL" &&
+                passport.Status == ProviderSecurityMasterPassportStatusDto.Resolved &&
+                passport.ProviderIsStale);
 
-            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId);
+            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId, fixture.QueueScope);
 
             readiness.Should().NotBeNull();
             readiness!.Status.Should().Be(FundAccountCloseReadinessStatusDto.ReviewRequired);
@@ -2289,14 +2475,14 @@ public sealed class ProviderLedgerReconciliationServiceTests
             readiness.Components.Should().Contain(component =>
                 component.Key == "security-master-completeness" &&
                 component.Status == FundAccountCloseReadinessStatusDto.ReviewRequired &&
-                component.BlockingReason.Contains("stale provider evidence", StringComparison.OrdinalIgnoreCase));
+                component.BlockingReason.Contains("remain open for steward review", StringComparison.OrdinalIgnoreCase));
             readiness.Blockers.Should().Contain(blocker =>
-                blocker.Code == "close.security_master.stale_provider_mapping" &&
+                blocker.Code == "close.security_master.casework_review" &&
                 blocker.Category == "SecurityMaster" &&
                 blocker.Severity == "Warning" &&
                 blocker.EvidenceLink == $"/api/fund-accounts/{fixture.AccountId}/brokerage-sync/reconciliation/latest");
             readiness.NextActions.Should().Contain(action =>
-                action.Code == "close.security_master.stale_provider_mapping" &&
+                action.Code == "close.security_master.casework_review" &&
                 action.Label == "Resolve Security Master coverage");
         }
         finally
@@ -2314,12 +2500,13 @@ public sealed class ProviderLedgerReconciliationServiceTests
             await using var fixture = await CreateFixtureAsync(
                 root,
                 includeSecurityLookup: true,
+                includeBreakQueue: true,
                 capabilityRouter: new FixedCapabilityRouter(IsRoutable: false));
-            await fixture.Reconciliation.RunAsync(
+            await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
-            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId);
+            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId, fixture.QueueScope);
 
             readiness.Should().NotBeNull();
             readiness!.Status.Should().Be(FundAccountCloseReadinessStatusDto.Blocked);
@@ -2350,14 +2537,15 @@ public sealed class ProviderLedgerReconciliationServiceTests
             await using var fixture = await CreateFixtureAsync(
                 root,
                 includeSecurityLookup: true,
+                includeBreakQueue: true,
                 capabilityRouter: new FixedCapabilityRouter(IsRoutable: true),
                 recordCustodianPosition: true,
                 custodianPositionMarketValue: 18_600m);
-            await fixture.Reconciliation.RunAsync(
+            await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
-            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId);
+            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId, fixture.QueueScope);
 
             readiness.Should().NotBeNull();
             readiness!.Status.Should().Be(FundAccountCloseReadinessStatusDto.ReviewRequired);
@@ -2389,11 +2577,11 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 includeSecurityLookup: true,
                 capabilityRouter: new SelectiveCapabilityRouter(ProviderCapabilityKind.CorporateActions),
                 includeBreakQueue: true);
-            await fixture.Reconciliation.RunAsync(
+            await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
-            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId);
+            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId, fixture.QueueScope);
 
             readiness.Should().NotBeNull();
             readiness!.Status.Should().Be(FundAccountCloseReadinessStatusDto.ReviewRequired);
@@ -2431,15 +2619,16 @@ public sealed class ProviderLedgerReconciliationServiceTests
             await using var fixture = await CreateFixtureAsync(
                 root,
                 includeSecurityLookup: true,
+                includeBreakQueue: true,
                 internalSecuritiesMarketValue: 9_900m,
                 internalUnrealizedPnl: -100m,
                 capabilityRouter: new FixedCapabilityRouter(IsRoutable: true),
                 portfolioAdapter: new FixedIncomePortfolioAdapter());
-            await fixture.Reconciliation.RunAsync(
+            await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
-            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId);
+            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId, fixture.QueueScope);
 
             readiness.Should().NotBeNull();
             readiness!.Status.Should().Be(FundAccountCloseReadinessStatusDto.ReviewRequired);
@@ -2470,16 +2659,17 @@ public sealed class ProviderLedgerReconciliationServiceTests
             await using var fixture = await CreateFixtureAsync(
                 root,
                 includeSecurityLookup: true,
+                includeBreakQueue: true,
                 internalSecuritiesMarketValue: 9_900m,
                 internalUnrealizedPnl: -100m,
                 capabilityRouter: new FixedCapabilityRouter(IsRoutable: true),
                 portfolioAdapter: new FixedIncomePortfolioAdapter(),
                 activityAdapter: new CorporateActionActivityAdapter());
-            await fixture.Reconciliation.RunAsync(
+            await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
-            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId);
+            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId, fixture.QueueScope);
 
             readiness.Should().NotBeNull();
             readiness!.Status.Should().Be(FundAccountCloseReadinessStatusDto.Ready);
@@ -2506,16 +2696,17 @@ public sealed class ProviderLedgerReconciliationServiceTests
             await using var fixture = await CreateFixtureAsync(
                 root,
                 includeSecurityLookup: true,
+                includeBreakQueue: true,
                 internalSecuritiesMarketValue: 9_900m,
                 internalUnrealizedPnl: -100m,
                 capabilityRouter: new FixedCapabilityRouter(IsRoutable: true),
                 portfolioAdapter: new FixedIncomePortfolioAdapter(),
                 activityAdapter: new LoanScheduleActivityAdapter());
-            await fixture.Reconciliation.RunAsync(
+            await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
-            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId);
+            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId, fixture.QueueScope);
 
             readiness.Should().NotBeNull();
             readiness!.Status.Should().Be(FundAccountCloseReadinessStatusDto.Ready);
@@ -2542,16 +2733,17 @@ public sealed class ProviderLedgerReconciliationServiceTests
             await using var fixture = await CreateFixtureAsync(
                 root,
                 includeSecurityLookup: true,
+                includeBreakQueue: true,
                 internalSecuritiesMarketValue: 9_900m,
                 internalUnrealizedPnl: -100m,
                 capabilityRouter: new FixedCapabilityRouter(IsRoutable: true),
                 portfolioAdapter: new FixedIncomePortfolioAdapter(),
                 activityAdapter: new PrincipalActivityAdapter());
-            await fixture.Reconciliation.RunAsync(
+            await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
-            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId);
+            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId, fixture.QueueScope);
 
             readiness.Should().NotBeNull();
             readiness!.Status.Should().Be(FundAccountCloseReadinessStatusDto.Ready);
@@ -2580,11 +2772,11 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 includeSecurityLookup: true,
                 includeBreakQueue: true,
                 internalCash: 49_000m);
-            await fixture.Reconciliation.RunAsync(
+            await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
 
-            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId);
+            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId, fixture.QueueScope);
 
             readiness.Should().NotBeNull();
             readiness!.Status.Should().Be(FundAccountCloseReadinessStatusDto.Blocked);
@@ -2610,7 +2802,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 includeSecurityLookup: true,
                 includeBreakQueue: true,
                 capabilityRouter: new FixedCapabilityRouter(IsRoutable: true));
-            await fixture.Reconciliation.RunAsync(
+            await fixture.RunReconciliationAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
             await using var app = await CreateEndpointAppAsync(fixture);
@@ -2623,6 +2815,129 @@ public sealed class ProviderLedgerReconciliationServiceTests
             readiness.Should().NotBeNull();
             readiness!.Status.Should().Be(FundAccountCloseReadinessStatusDto.Ready);
             readiness.Score.Should().Be(100);
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_FundAccountCloseReadiness_IgnoresCrossTenantCaseworkAndRejectsForeignAuthority()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                includeBreakQueue: true,
+                capabilityRouter: new FixedCapabilityRouter(IsRoutable: true));
+            await fixture.RunReconciliationAsync(
+                fixture.AccountId,
+                new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
+            var foreignScope = new ReconciliationBreakQueueScope("tenant-foreign", "company-foreign");
+            var repository = fixture.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
+            var detectedAt = DateTimeOffset.UtcNow.AddMinutes(-15);
+            await repository.CreateIfMissingAsync(
+                foreignScope,
+                new ReconciliationBreakQueueItem(
+                    BreakId: $"foreign-close-case:{fixture.AccountId:N}",
+                    RunId: "foreign-provider-ledger-run",
+                    StrategyName: "Foreign provider ledger reconciliation",
+                    Category: ReconciliationBreakCategory.AmountMismatch,
+                    Status: ReconciliationBreakQueueStatus.Open,
+                    Variance: 250m,
+                    Reason: "Foreign tenant casework must not affect this close.",
+                    AssignedTo: "foreign-controller",
+                    DetectedAt: detectedAt,
+                    LastUpdatedAt: detectedAt,
+                    Severity: ReconciliationBreakSeverity.Critical,
+                    RequiredSignoffRole: "Controller",
+                    SignoffStatus: "pending-signoff",
+                    FundAccountId: fixture.AccountId.ToString("D"))
+                {
+                    TenantId = foreignScope.TenantId,
+                    CompanyId = foreignScope.CompanyId
+                });
+
+            var owned = await fixture.CloseReadiness.GetAsync(
+                fixture.AccountId,
+                fixture.QueueScope);
+            var foreign = await fixture.CloseReadiness.GetAsync(
+                fixture.AccountId,
+                foreignScope);
+
+            owned.Should().NotBeNull();
+            owned!.Status.Should().Be(FundAccountCloseReadinessStatusDto.Ready);
+            owned.Blockers.Should().BeEmpty();
+            foreign.Should().NotBeNull();
+            foreign!.Status.Should().Be(FundAccountCloseReadinessStatusDto.Blocked);
+            foreign.IsReadyToClose.Should().BeFalse();
+            foreign.LatestReconciliationRunId.Should().BeNull();
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_FundAccountCloseReadiness_MissingScopeOrCaseworkStore_FailsClosed()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                includeBreakQueue: false,
+                capabilityRouter: new FixedCapabilityRouter(IsRoutable: true));
+
+#pragma warning disable CS0618 // Explicitly verifies the retained compatibility surface fails closed.
+            var unscoped = await fixture.CloseReadiness.GetAsync(fixture.AccountId);
+#pragma warning restore CS0618
+            var missingStore = await fixture.CloseReadiness.GetAsync(
+                fixture.AccountId,
+                fixture.QueueScope);
+
+            unscoped.Should().NotBeNull();
+            unscoped!.Status.Should().Be(FundAccountCloseReadinessStatusDto.Blocked);
+            unscoped.IsReadyToClose.Should().BeFalse();
+            unscoped.LatestReconciliationRunId.Should().BeNull();
+            unscoped.Blockers.Should().ContainSingle(blocker =>
+                blocker.Code == "close.authority.scope_required");
+            missingStore.Should().NotBeNull();
+            missingStore!.Status.Should().Be(FundAccountCloseReadinessStatusDto.Blocked);
+            missingStore.IsReadyToClose.Should().BeFalse();
+            missingStore.LatestReconciliationRunId.Should().BeNull();
+            missingStore.Blockers.Should().ContainSingle(blocker =>
+                blocker.Code == "close.casework.authority_unavailable");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Endpoint_FundAccountCloseReadiness_RequiresTenantAndCompanyScope()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                includeBreakQueue: true);
+            await using var app = await CreateEndpointAppAsync(
+                fixture,
+                includeTenantCompanyScope: false);
+
+            var response = await app.GetTestClient().GetAsync(
+                $"/api/fund-accounts/{fixture.AccountId}/close-readiness");
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         }
         finally
         {
@@ -2656,7 +2971,9 @@ public sealed class ProviderLedgerReconciliationServiceTests
         decimal bankClosingBalance = 50_000m,
         decimal? bankIncomeAmount = null,
         SecurityStatusDto securityStatus = SecurityStatusDto.Active,
-        IReconciliationBreakQueueRepository? breakQueueRepository = null)
+        IReconciliationBreakQueueRepository? breakQueueRepository = null,
+        string owningTenantId = "tenant-provider-ledger-tests",
+        string owningCompanyId = "company-provider-ledger-tests")
     {
         var accountId = Guid.NewGuid();
         var ledgerBookId = Guid.NewGuid();
@@ -2700,6 +3017,15 @@ public sealed class ProviderLedgerReconciliationServiceTests
                     Version: 1)
             ]));
         services.AddSingleton(ledgerBookService);
+        var tenancyRegistry = Substitute.For<IFundProfileTenancyRegistry>();
+        tenancyRegistry
+            .ResolveAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(call => Task.FromResult<FundProfileOwnership?>(
+                new FundProfileOwnership(
+                    call.ArgAt<string>(0),
+                    owningTenantId,
+                    owningCompanyId)));
+        services.AddSingleton(tenancyRegistry);
         services.AddSingleton<IBrokeragePortfolioSync>(portfolioAdapter ?? new FixedPortfolioAdapter());
         services.AddSingleton(activityAdapter ?? new EmptyActivityAdapter());
         if (includeSecurityLookup)
@@ -2748,6 +3074,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
             "USD",
             DateTimeOffset.UtcNow.AddDays(-10),
             "tests",
+            FundId: accountId,
             Institution: "alpaca",
             LedgerReference: "BROKERAGE-CASH"));
 
@@ -2864,7 +3191,8 @@ public sealed class ProviderLedgerReconciliationServiceTests
         UserPermission permissions =
             UserPermission.ManageDirectLending |
             UserPermission.ViewTrades |
-            UserPermission.ExecuteTrades)
+            UserPermission.ExecuteTrades,
+        bool includeTenantCompanyScope = true)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -2877,17 +3205,52 @@ public sealed class ProviderLedgerReconciliationServiceTests
         builder.Services.AddSingleton(fixture.BrokerageSync);
         builder.Services.AddSingleton(fixture.Reconciliation);
         builder.Services.AddSingleton(fixture.CloseReadiness);
+        builder.Services.AddSingleton<IScopedAuthorizationService>(
+            new AccountScopedAuthorizationService(fixture.AccountId));
 
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
             context.Items[LoginSessionMiddleware.CurrentUserKey] = "ops-user";
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
+            if (includeTenantCompanyScope)
+            {
+                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = fixture.QueueScope.TenantId;
+                context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = fixture.QueueScope.CompanyId;
+            }
             await next();
         });
         app.MapFundAccountEndpoints(JsonOptions);
         await app.StartAsync();
         return app;
+    }
+
+    private sealed class AccountScopedAuthorizationService(Guid allowedAccountId) : IScopedAuthorizationService
+    {
+        public Task<ScopedAuthorizationDecisionDto> AuthorizeAsync(
+            string actor,
+            UserPermission required,
+            AccessScopeKindDto scopeKind,
+            Guid? scopeId,
+            UserPermission globalPermissions,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var isAllowed =
+                scopeKind == AccessScopeKindDto.Account &&
+                scopeId == allowedAccountId &&
+                (globalPermissions & required) == required;
+
+            return Task.FromResult(new ScopedAuthorizationDecisionDto(
+                IsAllowed: isAllowed,
+                Actor: actor,
+                RequiredPermission: required,
+                ScopeKind: scopeKind,
+                ScopeId: scopeId,
+                Reason: isAllowed
+                    ? "The endpoint fixture grants the actor access to its test account."
+                    : "The endpoint fixture denies access outside its test account."));
+        }
     }
 
     private static string CreateTempRoot()
@@ -2939,6 +3302,15 @@ public sealed class ProviderLedgerReconciliationServiceTests
         ProviderLedgerReconciliationService Reconciliation,
         FundAccountCloseReadinessService CloseReadiness) : IAsyncDisposable
     {
+        public ReconciliationBreakQueueScope QueueScope { get; } =
+            new("tenant-provider-ledger-tests", "company-provider-ledger-tests");
+
+        public Task<ProviderLedgerReconciliationDetailDto> RunReconciliationAsync(
+            Guid accountId,
+            ProviderLedgerReconciliationRequestDto? request = null,
+            CancellationToken ct = default)
+            => Reconciliation.RunAsync(accountId, QueueScope, request, ct);
+
         public async ValueTask DisposeAsync()
         {
             await Services.DisposeAsync();
@@ -3426,6 +3798,9 @@ public sealed class ProviderLedgerReconciliationServiceTests
             Task.CompletedTask;
 
         public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct) =>
+            Task.CompletedTask;
+
+        public Task ReconcileOpenFieldConflictsAsync(SecurityProjectionRecord persisted, CancellationToken ct) =>
             Task.CompletedTask;
     }
 

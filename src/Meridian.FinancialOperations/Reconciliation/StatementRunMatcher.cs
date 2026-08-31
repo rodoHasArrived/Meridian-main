@@ -1,4 +1,6 @@
 using Meridian.Domain.Reconciliation;
+using System.Globalization;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
@@ -87,6 +89,11 @@ internal static class StatementRunMatcher
 
         var breaks = new List<StatementRunBreak>();
         var matchCount = 0;
+        var breakOrdinal = 0;
+        // With no retained internal ledger transactions, every statement movement is structurally
+        // unmatched — the breaks are real evidence but carry no comparison. Classify them so the
+        // governed queue publishes them as informational instead of close blockers.
+        var internalTransactionsUnavailable = populations.LedgerTransactions.Count == 0;
         foreach (var result in engineResult.Results)
         {
             if (result.MatchTier is StatementMatchTier.Exact or StatementMatchTier.Tolerance)
@@ -104,25 +111,55 @@ internal static class StatementRunMatcher
             var sourceReference = result.BrokerEvidenceReference
                 ?? result.InternalEvidenceReference
                 ?? $"{import.ImportId}:unmatched";
-            var toleranceBreached = result.MatchTier == StatementMatchTier.Unmatched;
+            var toleranceBreached = IsToleranceBreached(result);
+            var breakCode = BuildBreakCode(result);
 
             var record = new ReconciliationBreakRecord(
-                BreakId: Guid.NewGuid().ToString("N"),
+                BreakId: BuildBreakId(import.ImportId, breakOrdinal++, sourceReference, breakCode),
                 RunId: import.ImportId,
                 ImportId: import.ImportId,
                 SourceReference: sourceReference,
-                BreakCode: BuildBreakCode(result),
+                BreakCode: breakCode,
                 Category: statementRow?.ActivityType ?? result.Kind.ToString().ToLowerInvariant(),
                 Delta: result.Variance.LargestAbsoluteAmount,
                 Tolerance: ResolveToleranceAmount(result.Tolerance),
                 ToleranceBreached: toleranceBreached,
                 CreatedAtUtc: createdAtUtc,
-                Status: "Open");
+                Status: "Open")
+            {
+                Classification = internalTransactionsUnavailable && result.Kind == StatementMatchKind.Transaction
+                    ? ReconciliationBreakClassifications.InternalTransactionPopulationUnavailable
+                    : null
+            };
 
             breaks.Add(new StatementRunBreak(record, result, statementRow));
         }
 
         return new StatementRunMatchResult(breaks, matchCount);
+    }
+
+    /// <summary>
+    /// Derives a break identity from the break's own material instead of minting a random one. The
+    /// statement run's recovery design rebuilds the match artifact when a replay resumes an
+    /// interrupted run and refuses to adopt an artifact that differs from the retained one, so a
+    /// random id would make every replay conflict with the evidence it is trying to recover. The
+    /// enumeration ordinal is part of the material because two unmatched results can legitimately
+    /// share a source reference; the engine's result order is deterministic for a given input.
+    /// </summary>
+    private static string BuildBreakId(
+        string importId,
+        int ordinal,
+        string sourceReference,
+        string breakCode)
+    {
+        var material = string.Join(
+            '|',
+            importId,
+            ordinal.ToString(CultureInfo.InvariantCulture),
+            sourceReference,
+            breakCode);
+        // 32 hex characters keeps the shape callers already store and index on.
+        return Sha256Digest.ComputeUtf8(material)[..32];
     }
 
     private static void ValidateStatementAccounts(
@@ -184,7 +221,8 @@ internal static class StatementRunMatcher
         IReconciliationFxRateProvider fxRateProvider,
         string baseCurrency)
     {
-        var (currency, amount) = ToBaseCurrency(row.CashAmount, row.Currency, baseCurrency, row.TradeDate, fxRateProvider);
+        var sourceCurrency = NormalizeCurrency(row.Currency, baseCurrency);
+        var (_, amount) = ToBaseCurrency(row.CashAmount, sourceCurrency, baseCurrency, row.TradeDate, fxRateProvider);
         // A cash balance is a closing balance only when it is dated at the run's closing period. Keep the
         // source as-of date for evidence and mark an out-of-period row ineligible for matching. This
         // prevents a stale cash row from reconciling if a faulty internal source happens to return the
@@ -192,7 +230,7 @@ internal static class StatementRunMatcher
         return new NormalizedStatementCashBalance(
             evidence,
             account,
-            currency,
+            sourceCurrency,
             amount,
             evidence,
             row.TradeDate,
@@ -279,6 +317,21 @@ internal static class StatementRunMatcher
 
     private static decimal ResolveToleranceAmount(StatementMatchTolerance tolerance) =>
         Math.Max(tolerance.Quantity ?? 0m, tolerance.Amount ?? 0m);
+
+    private static bool IsToleranceBreached(StatementMatchResult result)
+    {
+        if (result.Variance.Quantity is { } quantityVariance
+            && Math.Abs(quantityVariance) > (result.Tolerance.Quantity ?? 0m))
+        {
+            return true;
+        }
+
+        var amountTolerance = result.Tolerance.Amount ?? 0m;
+        return (result.Variance.MarketValue is { } marketValueVariance
+                && Math.Abs(marketValueVariance) > amountTolerance)
+            || (result.Variance.Amount is { } amountVariance
+                && Math.Abs(amountVariance) > amountTolerance);
+    }
 
     private static string BuildBreakCode(StatementMatchResult result)
     {

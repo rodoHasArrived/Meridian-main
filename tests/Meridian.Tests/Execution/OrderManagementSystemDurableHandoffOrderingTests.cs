@@ -250,11 +250,66 @@ public sealed class OrderManagementSystemDurableHandoffOrderingTests
 
     private abstract class PaperSessionStoreStub : IPaperSessionStore
     {
+        private readonly object _fillSync = new();
+        private readonly Dictionary<string, List<PaperSessionFillRecord>> _fills =
+            new(StringComparer.Ordinal);
+
         public Task SaveSessionMetadataAsync(PersistedSessionRecord record, CancellationToken ct = default) =>
             Task.CompletedTask;
 
         public Task AppendFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default) =>
             Task.CompletedTask;
+
+        public Task<PaperSessionFillAppendResult> TryAppendFillAsync(
+            string sessionId,
+            PaperSessionFillRecord record,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            record.Validate();
+            lock (_fillSync)
+            {
+                if (!_fills.TryGetValue(sessionId, out var fills))
+                    _fills[sessionId] = fills = [];
+
+                var existing = fills.FirstOrDefault(candidate => candidate.FillId == record.FillId);
+                if (existing is not null)
+                {
+                    return Task.FromResult(new PaperSessionFillAppendResult(
+                        string.Equals(existing.CanonicalHash, record.CanonicalHash, StringComparison.Ordinal)
+                            ? PaperSessionFillAppendStatus.ExistingSame
+                            : PaperSessionFillAppendStatus.Conflict,
+                        existing.CanonicalHash));
+                }
+
+                fills.Add(record with { IsApplied = false });
+                return Task.FromResult(new PaperSessionFillAppendResult(PaperSessionFillAppendStatus.Added));
+            }
+        }
+
+        public Task MarkFillAppliedAsync(
+            string sessionId,
+            Guid fillId,
+            string canonicalHash,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            lock (_fillSync)
+            {
+                var fills = _fills.GetValueOrDefault(sessionId)
+                    ?? throw new InvalidDataException("Unknown paper-session fill.");
+                var index = fills.FindIndex(candidate => candidate.FillId == fillId);
+                if (index < 0 ||
+                    !string.Equals(fills[index].CanonicalHash, canonicalHash, StringComparison.Ordinal))
+                {
+                    throw new InvalidDataException("Conflicting paper-session fill acknowledgement.");
+                }
+
+                fills[index] = fills[index] with { IsApplied = true };
+            }
+
+            return Task.CompletedTask;
+        }
 
         public virtual Task AppendOrderUpdateAsync(
             string sessionId,
@@ -269,12 +324,23 @@ public sealed class OrderManagementSystemDurableHandoffOrderingTests
             Task.CompletedTask;
 
         public Task<IReadOnlyList<PersistedSessionRecord>> LoadAllSessionsAsync(CancellationToken ct = default) =>
-            Task.FromResult<IReadOnlyList<PersistedSessionRecord>>([]);
+            Task.FromResult<IReadOnlyList<PersistedSessionRecord>>(
+            [
+                Session("session-a"),
+                Session("session-b")
+            ]);
 
         public Task<IReadOnlyList<ExecutionReport>> LoadFillsAsync(
             string sessionId,
-            CancellationToken ct = default) =>
-            Task.FromResult<IReadOnlyList<ExecutionReport>>([]);
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            lock (_fillSync)
+            {
+                return Task.FromResult<IReadOnlyList<ExecutionReport>>(
+                    _fills.GetValueOrDefault(sessionId)?.Select(static record => record.Fill).ToArray() ?? []);
+            }
+        }
 
         public Task<IReadOnlyList<OrderState>> LoadOrderHistoryAsync(
             string sessionId,
@@ -285,5 +351,16 @@ public sealed class OrderManagementSystemDurableHandoffOrderingTests
             string sessionId,
             CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<PersistedJournalEntryDto>>([]);
+
+        private static PersistedSessionRecord Session(string sessionId) =>
+            new(
+                sessionId,
+                "durable-handoff-ordering",
+                "Durable handoff ordering",
+                100_000m,
+                DateTimeOffset.UnixEpoch,
+                ClosedAt: null,
+                IsActive: true,
+                Symbols: ["AAPL"]);
     }
 }

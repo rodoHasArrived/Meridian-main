@@ -147,5 +147,11 @@ public sealed class SettingsViewModelOperationsControlTests
 
         public Task<OperationsCloseCalendarDto?> GetCloseCalendarAsync(CancellationToken ct = default)
             => Task.FromResult(Calendar);
+
+        public Task<IReadOnlyList<OperationsContinuityWorkflowSummaryDto>?> GetWorkflowsAsync(CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<OperationsContinuityWorkflowSummaryDto>?>(null);
+
+        public Task<OperationsContinuityWorkflowDto?> GetWorkflowAsync(Guid workflowId, CancellationToken ct = default)
+            => Task.FromResult<OperationsContinuityWorkflowDto?>(null);
     }
 }

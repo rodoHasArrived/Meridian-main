@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Meridian.Contracts.Integrity;
 using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
 using Meridian.Storage.Interfaces;
@@ -557,7 +557,7 @@ public sealed class StorageSearchService : IStorageSearchService
 
         return new IndexSnapshot(
             ordered.Length,
-            Convert.ToHexStringLower(SHA256.HashData(stream.ToArray())),
+            Sha256Digest.Compute(stream.ToArray()),
             capturedAtUtc);
     }
 

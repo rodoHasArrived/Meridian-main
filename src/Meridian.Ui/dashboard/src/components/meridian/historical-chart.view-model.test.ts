@@ -1,6 +1,8 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getHistoricalBars } from "@/lib/api";
+import { computeCandlestickIndicators } from "@/lib/historical-chart/indicators";
+import { createIndicatorsWorker } from "@/lib/historical-chart/indicators-worker-client";
 import {
   COMPARE_SYMBOL_LIMIT,
   HISTORICAL_CHART_TIMEFRAMES,
@@ -8,6 +10,7 @@ import {
   buildCompareChartViewModel,
   buildHistoricalChartSparklineViewModel,
   buildHistoricalChartStatePanel,
+  candlestickIndicatorKey,
   computeBollingerBands,
   computeChartStats,
   computePercentChangeSeries,
@@ -19,6 +22,10 @@ import type { HistoricalBarPoint } from "@/types";
 
 vi.mock("@/lib/api", () => ({
   getHistoricalBars: vi.fn()
+}));
+
+vi.mock("@/lib/historical-chart/indicators-worker-client", () => ({
+  createIndicatorsWorker: vi.fn()
 }));
 
 function bar(start: string, open: number, high: number, low: number, close: number, volume: number): HistoricalBarPoint {
@@ -36,8 +43,13 @@ function deferred<T>() {
   return { promise, resolve, reject };
 }
 
+beforeEach(() => {
+  vi.mocked(createIndicatorsWorker).mockReturnValue(null);
+});
+
 afterEach(() => {
   vi.mocked(getHistoricalBars).mockReset();
+  vi.mocked(createIndicatorsWorker).mockReset();
 });
 
 describe("buildHistoricalChartStatePanel", () => {
@@ -463,12 +475,90 @@ describe("candlestick indicators visibility", () => {
   });
 });
 
+describe("candlestickIndicatorKey", () => {
+  it("distinguishes equal-length close series that collide under the former weighted checksum", () => {
+    const first = Array.from({ length: 60 }, () => 1);
+    const second = [...first];
+    second[0] = 3;
+    second[1] = 0;
+
+    const formerWeightedSum = (values: number[]) =>
+      values.reduce((sum, value, index) => sum + value * (index + 1), 0);
+
+    expect(formerWeightedSum(first)).toBe(formerWeightedSum(second));
+    expect(candlestickIndicatorKey(first)).not.toBe(candlestickIndicatorKey(second));
+  });
+
+  it("retains order and negative-zero identity in its versioned canonical encoding", () => {
+    expect(candlestickIndicatorKey([1, 2])).not.toBe(candlestickIndicatorKey([2, 1]));
+    expect(candlestickIndicatorKey([-0])).not.toBe(candlestickIndicatorKey([0]));
+    expect(candlestickIndicatorKey([1.25])).toBe("v2:1:1.25");
+  });
+});
+
 describe("useHistoricalChartViewModel", () => {
+  it("recomputes worker indicators when formerly colliding close sequences replace the bars", async () => {
+    const firstCloses = Array.from({ length: 60 }, () => 1);
+    const secondCloses = [...firstCloses];
+    secondCloses[0] = 3;
+    secondCloses[1] = 0;
+    const toBars = (closes: number[]) => closes.map((close, index) =>
+      bar(
+        new Date(Date.UTC(2026, 4, 1, 14, 30 + index)).toISOString(),
+        close,
+        close + 1,
+        close - 1,
+        close,
+        1_000 + index
+      )
+    );
+    const response = (symbol: string, closes: number[]) => ({
+      success: true,
+      message: null,
+      symbol,
+      intervalMinutes: 5,
+      from: null,
+      to: null,
+      totalBars: closes.length,
+      filesProcessed: 1,
+      totalFiles: 1,
+      queryTimeMs: 1,
+      bars: toBars(closes),
+      sources: []
+    });
+    const run = vi.fn((closes: number[]) =>
+      Promise.resolve(computeCandlestickIndicators(closes)));
+    vi.mocked(createIndicatorsWorker).mockReturnValue({
+      supported: true,
+      run,
+      dispose: vi.fn()
+    });
+    vi.mocked(getHistoricalBars)
+      .mockResolvedValueOnce(response("AAPL", firstCloses))
+      .mockResolvedValueOnce(response("MSFT", secondCloses));
+
+    const { result, rerender } = renderHook(
+      ({ symbol }: { symbol: string }) => useHistoricalChartViewModel(symbol),
+      { initialProps: { symbol: "AAPL" } }
+    );
+
+    await waitFor(() => expect(run).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(result.current.candlestickChart?.smaOverlays).toHaveLength(2));
+    const firstSmaPoints = result.current.candlestickChart?.smaOverlays[0]?.points;
+
+    rerender({ symbol: "MSFT" });
+
+    await waitFor(() => expect(run).toHaveBeenCalledTimes(2));
+    expect(run.mock.calls[1]?.[0]).toEqual(secondCloses);
+    await waitFor(() =>
+      expect(result.current.candlestickChart?.smaOverlays[0]?.points).not.toBe(firstSmaPoints));
+  });
+
   it("defaults to candles chart mode and exposes a working toggle", async () => {
     vi.mocked(getHistoricalBars).mockResolvedValue({
       success: true, message: null, symbol: "AAPL", intervalMinutes: 5,
       from: null, to: null, totalBars: 0, filesProcessed: 0, totalFiles: 0,
-      queryTimeMs: 0, bars: []
+      queryTimeMs: 0, bars: [], sources: []
     });
 
     const { result } = renderHook(() => useHistoricalChartViewModel("AAPL"));
@@ -492,7 +582,7 @@ describe("useHistoricalChartViewModel", () => {
     vi.mocked(getHistoricalBars).mockResolvedValue({
       success: true, message: null, symbol: "AAPL", intervalMinutes: 5,
       from: null, to: null, totalBars: 0, filesProcessed: 0, totalFiles: 0,
-      queryTimeMs: 0, bars: []
+      queryTimeMs: 0, bars: [], sources: []
     });
 
     const { result } = renderHook(() => useHistoricalChartViewModel("AAPL"));
@@ -546,7 +636,8 @@ describe("useHistoricalChartViewModel", () => {
         filesProcessed: 0,
         totalFiles: 0,
         queryTimeMs: 0,
-        bars: []
+        bars: [],
+        sources: []
       });
       await second.promise;
     });
@@ -559,7 +650,7 @@ describe("useHistoricalChartViewModel", () => {
     vi.mocked(getHistoricalBars).mockResolvedValue({
       success: true, message: null, symbol: "AAPL", intervalMinutes: 5,
       from: null, to: null, totalBars: 0, filesProcessed: 0, totalFiles: 0,
-      queryTimeMs: 0, bars: []
+      queryTimeMs: 0, bars: [], sources: []
     });
 
     const { result } = renderHook(() => useHistoricalChartViewModel("AAPL"));
@@ -616,7 +707,7 @@ describe("useHistoricalChartViewModel", () => {
     vi.mocked(getHistoricalBars).mockResolvedValue({
       success: true, message: null, symbol: "AAPL", intervalMinutes: 5,
       from: null, to: null, totalBars: 0, filesProcessed: 0, totalFiles: 0,
-      queryTimeMs: 0, bars: []
+      queryTimeMs: 0, bars: [], sources: []
     });
 
     const { result } = renderHook(() => useHistoricalChartViewModel("AAPL"));
@@ -644,7 +735,7 @@ describe("useHistoricalChartViewModel", () => {
     vi.mocked(getHistoricalBars).mockResolvedValue({
       success: true, message: null, symbol: "AAPL", intervalMinutes: 5,
       from: null, to: null, totalBars: 0, filesProcessed: 0, totalFiles: 0,
-      queryTimeMs: 0, bars: []
+      queryTimeMs: 0, bars: [], sources: []
     });
 
     const { result } = renderHook(() => useHistoricalChartViewModel("AAPL"));

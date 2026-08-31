@@ -439,12 +439,21 @@ public sealed class MaintenanceSchedulerTests : IDisposable
             await scheduler.ScheduleAsync(job, new ScheduleOptions());
 
             scheduler.Start();
-            for (var attempt = 0;
-                 attempt < 100 && scheduler.GetPendingJobs().All(pending => pending.Id != job.Id);
-                 attempt++)
-                await Task.Delay(20);
 
-            history.RunningAppendAttempts.Should().BeGreaterThan(0);
+            // ScheduleAsync already placed the job in the pending queue, so waiting for pending
+            // membership exits on the first iteration with the scheduler having done nothing yet.
+            // Wait for the admission attempt itself, which is the behaviour under test.
+            await WaitUntilAsync(
+                () => history.RunningAppendAttempts > 0,
+                "the scheduler must attempt to retain the running transition before admitting a job");
+
+            // The requeue happens after that append fails, so let the queue settle rather than
+            // sampling it mid-transition.
+            await WaitUntilAsync(
+                () => scheduler.GetPendingJobs().Any(pending => pending.Id == job.Id)
+                    && scheduler.GetRunningJobs().Count == 0,
+                "a job whose running transition cannot be retained must be requeued, not left running");
+
             scheduler.GetPendingJobs().Should().ContainSingle(pending => pending.Id == job.Id);
             scheduler.GetRunningJobs().Should().BeEmpty();
             scheduler.GetJobStatus(job.Id).Should().BeNull();
@@ -553,6 +562,24 @@ public sealed class MaintenanceSchedulerTests : IDisposable
                 new string('c', 64),
                 verified.Readback.CapturedAtUtc)
         };
+    }
+
+    /// <summary>
+    /// Polls <paramref name="condition"/> until it holds or the deadline passes, then asserts it so
+    /// a genuine failure still reports through FluentAssertions rather than as a timeout.
+    /// </summary>
+    private static async Task WaitUntilAsync(Func<bool> condition, string because)
+    {
+        var deadline = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(5);
+        while (DateTimeOffset.UtcNow < deadline)
+        {
+            if (condition())
+                return;
+
+            await Task.Delay(10);
+        }
+
+        condition().Should().BeTrue(because);
     }
 
     private static OperationalScheduleConfig AlwaysOpenConfig() =>

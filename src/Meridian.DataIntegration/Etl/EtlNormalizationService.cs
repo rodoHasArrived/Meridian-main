@@ -1,9 +1,9 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Etl;
+using Meridian.Contracts.Integrity;
 using Meridian.DataIntegration.Canonicalization;
 using Meridian.Domain.Events;
 
@@ -117,7 +117,7 @@ public sealed class EtlNormalizationService
                 : record.RecordIndex;
 
             var trade = new Trade(timestamp, symbol!, price, size, aggressor, seq, record.SourceFileName, venue);
-            var evt = MarketEvent.Trade(timestamp, symbol!, trade, seq, definition.LogicalSourceName).StampReceiveTime(timestamp);
+            var evt = MarketEvent.Trade(timestamp, symbol!, trade, definition.LogicalSourceName, seq).StampReceiveTime(timestamp);
             evt = _canonicalizer.Canonicalize(evt, ct);
 
             return ValueTask.FromResult(new NormalizationOutcome
@@ -149,5 +149,5 @@ public sealed class EtlNormalizationService
         };
 
     private static string ComputeRecordHash(string checksum, long index)
-        => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes($"{checksum}:{index}")))[..24];
+        => Sha256Digest.ComputeUtf8($"{checksum}:{index}")[..24];
 }

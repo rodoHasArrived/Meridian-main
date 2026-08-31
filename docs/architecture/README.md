@@ -57,6 +57,7 @@ This directory contains documentation about the system's design, architectural d
 | [Provider Management](provider-management.md) | Provider abstraction and failover |
 | [Provider Integration Manifest Runtime](provider-integration-manifest-runtime.md) | No-code provider integration manifests, generic connector runtime, raw payload retention, mapping, validation, quarantine, and certified trading boundary |
 | [Domain Boundaries](domains.md) | Domain model responsibilities |
+| [Security Master Extensibility Review](security-master-extensibility-review.md) | Cross-asset extensibility assessment of the Security Master: asset model normalization, identifier resolution, projection coverage, provenance depth, editable-workflow reach, and refactoring priorities |
 | [C4 Diagrams Reference](c4-diagrams.md) | C4 views plus the runtime, workstation, Security Master, and fund-ops diagram catalog |
 | [Crystallized Storage Format](crystallized-storage-format.md) | Storage format specification |
 | [Ledger Architecture](ledger-architecture.md) | Ledger, portfolio, Security Master expected accounting, and accounting architecture notes |

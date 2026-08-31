@@ -663,7 +663,7 @@
                                 <Border Style="{StaticResource WorkspaceQueueCardStyle}">
                                     <StackPanel>
                                         <TextBlock Text="{Binding TradeTimeText}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                        <TextBlock Text="Trade time" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBlock Text="Refreshed" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                                     </StackPanel>
                                 </Border>
                             </UniformGrid>
@@ -690,7 +690,7 @@
                     <Run Text="{Binding MinMktTimeText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                     <Run Text=" • Max Mkt Time " />
                     <Run Text="{Binding MaxMktTimeText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                    <Run Text=" • Trade Time " />
+                    <Run Text=" • Refreshed " />
                     <Run Text="{Binding TradeTimeText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                 </TextBlock>
             </StackPanel>

@@ -8,8 +8,14 @@ import { AmountCell } from "./AmountCell";
 import { toNumber } from "./money";
 
 export interface AccountNode {
-  /** Account code/number (mono prefix). Also the expand/select key — must be unique. */
+  /** Account code/number. The expand/select key — must be unique. */
   code: string;
+  /**
+   * What to render as the mono prefix, when the unique key is not itself readable as an account
+   * code. A ledger returns one row per account per dimension set, so the same GL account arrives
+   * more than once and the account number alone cannot be the key.
+   */
+  codeLabel?: string;
   name: string;
   /** Explicit balance. Omit on a parent to roll up its children. */
   balance?: number | string;
@@ -170,7 +176,7 @@ export function AccountTree({
                 •
               </span>
             )}
-            {node.code && <span className="act__code">{node.code}</span>}
+            {(node.codeLabel ?? node.code) && <span className="act__code">{node.codeLabel ?? node.code}</span>}
             <span className="act__label">{node.name}</span>
           </div>
           <AmountCell

@@ -33,6 +33,22 @@
 
     <DockPanel>
 
+        <!-- ═══ DATA PROVENANCE ═══ -->
+        <!-- This screen has no market-data service dependency yet: every record it shows is
+             fabricated from a fixed seed (DataBrowserViewModel.BuildSampleData). The badge is
+             unconditional and non-dismissable until the grid reads real stored data. -->
+        <Border DockPanel.Dock="Top"
+                Style="{StaticResource DataProvenanceBadgeBorderStyle}"
+                Margin="16,12,16,0"
+                AutomationProperties.Name="Data provenance">
+            <StackPanel>
+                <TextBlock Style="{StaticResource DataProvenanceBadgeLabelStyle}"
+                           Text="SAMPLE DATA — FABRICATED RECORDS" />
+                <TextBlock Style="{StaticResource DataProvenanceBadgeDetailStyle}"
+                           Text="Every row on this screen is generated from a fixed random seed for layout preview. No stored market data is read. Do not use these records for any operational decision." />
+            </StackPanel>
+        </Border>
+
         <!-- ═══ TOP FILTER TOOLBAR ═══ -->
         <Border DockPanel.Dock="Top"
                 Height="52"

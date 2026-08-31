@@ -9,6 +9,96 @@ namespace Meridian.Tests.Infrastructure.Providers;
 public sealed class IBDataServicesTests
 {
     [Fact]
+    public void DurableRequest_WithoutTenantAndCompanyOwnership_FailsBeforeTransport()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-ib-durable", Guid.NewGuid().ToString("N"));
+        var transport = new RecordingTransport();
+        var store = new JsonIBDurableResultStore(Path.Combine(root, "results.json"));
+        using var services = new IBDataServices(transport, new IBDurableResultProjector(store));
+
+        var request = () => services.RequestScanner(
+            new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
+
+        request.Should().Throw<InvalidOperationException>()
+            .WithMessage("*tenant and company ownership*");
+        transport.Calls.Should().BeEmpty("ownership is required before transport submission");
+        services.GetRequests().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Scenario_SharedGatewayRequestIds_DurableCallbacksRemainTenantAndCompanyIsolated()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-ib-durable", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var storePath = Path.Combine(root, "results.json");
+            var store = new JsonIBDurableResultStore(storePath);
+            var alphaOwner = new IBDataRequestOwnership("tenant-shared", "company-alpha");
+            var betaOwner = new IBDataRequestOwnership("tenant-shared", "company-beta");
+            using var alpha = new IBDataServices(
+                new RecordingTransport(),
+                new IBDurableResultProjector(store),
+                "ib-gateway:shared");
+            using var beta = new IBDataServices(
+                new RecordingTransport(),
+                new IBDurableResultProjector(store),
+                "ib-gateway:shared");
+
+            var alphaRequest = alpha.RequestScanner(
+                new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"),
+                ownership: alphaOwner);
+            var betaRequest = beta.RequestScanner(
+                new IBScannerRequest("STK", "STK.US.MAJOR", "HOT_BY_VOLUME"),
+                ownership: betaOwner);
+            alpha.RecordScannerResult(
+                alphaRequest,
+                new ProviderScannerResult(
+                    0,
+                    "ALPHA",
+                    "NASDAQ",
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow)));
+            beta.RecordScannerResult(
+                betaRequest,
+                new ProviderScannerResult(
+                    0,
+                    "BETA",
+                    "NASDAQ",
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow)));
+
+            alphaRequest.Should().Be(betaRequest, "independent gateway lifetimes reuse IB request ids");
+            var restarted = new JsonIBDurableResultStore(storePath);
+            var alphaResults = restarted.Get("tenant-shared", "company-alpha");
+            var betaResults = restarted.Get("tenant-shared", "company-beta");
+            alphaResults.Should().ContainSingle();
+            betaResults.Should().ContainSingle();
+            alphaResults[0].Request.ScannerResults.Should().ContainSingle()
+                .Which.Symbol.Should().Be("ALPHA");
+            betaResults[0].Request.ScannerResults.Should().ContainSingle()
+                .Which.Symbol.Should().Be("BETA");
+            alphaResults[0].RequestCorrelationId.Should().NotBe(
+                betaResults[0].RequestCorrelationId,
+                "request correlation remains unique across gateway restarts");
+            alpha.GetRequests("tenant-shared", "company-beta").Should().BeEmpty();
+            beta.GetRequests("tenant-shared", "company-alpha").Should().BeEmpty();
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task Materializer_PersistsAnUpdateBeforePublishingItToOperatorReaders()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-ib-materializer", Guid.NewGuid().ToString("N"));
@@ -16,25 +106,159 @@ public sealed class IBDataServicesTests
         {
             using var services = new IBDataServices(new RecordingTransport());
             var store = new JsonFileIBDataResultStore(new IBDataResultStoreOptions { DataRoot = root });
-            var materializer = new IBDataResultMaterializer(services, store);
+            using var materializer = new IBDataResultMaterializer(services, store);
+            var owner = new IBDataRequestOwnership("tenant-shared", "company-alpha");
             using var cts = new CancellationTokenSource();
-            var worker = materializer.MaterializeAsync(cts.Token);
-            await Task.Delay(25);
+            var worker = materializer.MaterializeAsync(owner.TenantId, owner.CompanyId, cts.Token);
+            await using var enumerator = materializer
+                .WatchAsync(owner.TenantId, owner.CompanyId, cts.Token)
+                .GetAsyncEnumerator();
+            var observedUpdate = enumerator.MoveNextAsync().AsTask();
 
-            var requestId = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
-            await using var enumerator = materializer.WatchAsync(cts.Token).GetAsyncEnumerator();
-            (await enumerator.MoveNextAsync()).Should().BeTrue();
+            var requestId = services.RequestScanner(
+                new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"),
+                ownership: owner);
+            (await observedUpdate.WaitAsync(TimeSpan.FromSeconds(5))).Should().BeTrue();
 
-            var persisted = await store.QueryAsync(new IBDataResultQuery(RequestIdentity: requestId.ToString(), Limit: 1));
+            var persisted = await store.QueryAsync(new IBDataResultQuery(
+                owner.TenantId,
+                owner.CompanyId,
+                RequestIdentity: requestId.ToString(),
+                Limit: 1));
             persisted.Should().ContainSingle();
             persisted[0].Lineage.RequestId.Should().Be(requestId);
             persisted[0].NormalizedPayload.Should().Contain("interactive-brokers");
+            materializer.GetRequests().Should().BeEmpty("unscoped operator reads fail closed");
+            materializer.GetRequests(owner.TenantId, owner.CompanyId)
+                .Should().ContainSingle().Which.RequestId.Should().Be(requestId);
+            materializer.GetRequests(owner.TenantId, "company-beta").Should().BeEmpty();
             cts.Cancel();
-            await worker.ContinueWith(_ => { });
+            await FluentActions.Awaiting(() => worker)
+                .Should().ThrowAsync<OperationCanceledException>();
         }
         finally
         {
-            if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_ScopedWatch_ExcludesOtherTenantAndCompanyUpdates()
+    {
+        using var services = new IBDataServices(new RecordingTransport());
+        var requestedOwner = new IBDataRequestOwnership("tenant-shared", "company-alpha");
+        var otherOwner = new IBDataRequestOwnership("tenant-shared", "company-beta");
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await using var enumerator = services
+            .WatchAsync(requestedOwner.TenantId, requestedOwner.CompanyId, cts.Token)
+            .GetAsyncEnumerator();
+        var nextUpdate = enumerator.MoveNextAsync().AsTask();
+
+        services.RequestScanner(
+            new IBScannerRequest("STK", "STK.US.MAJOR", "HOT_BY_VOLUME"),
+            ownership: otherOwner);
+        var requestedId = services.RequestScanner(
+            new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"),
+            ownership: requestedOwner);
+
+        (await nextUpdate).Should().BeTrue();
+        enumerator.Current.RequestId.Should().Be(requestedId);
+        services.GetRequests(requestedOwner.TenantId, requestedOwner.CompanyId)
+            .Should().ContainSingle().Which.RequestId.Should().Be(requestedId);
+    }
+
+    [Fact]
+    public async Task Scenario_UnscopedCompatibilityReadAndWatch_ExcludeOwnerBoundRequests()
+    {
+        using var services = new IBDataServices(new RecordingTransport());
+        var owner = new IBDataRequestOwnership("tenant-shared", "company-alpha");
+        var unscopedLineageUpdates = new List<int>();
+        var unscopedReadModelUpdates = new List<int>();
+        services.LineageUpdated += lineage => unscopedLineageUpdates.Add(lineage.RequestId);
+        services.ReadModelUpdated += request => unscopedReadModelUpdates.Add(request.RequestId);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await using var enumerator = services
+            .WatchAsync(timeout.Token)
+            .GetAsyncEnumerator();
+        var nextUpdate = enumerator.MoveNextAsync().AsTask();
+
+        var ownedRequestId = services.RequestScanner(
+            new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"),
+            ownership: owner);
+        var ownerlessRequestId = services.RequestScanner(
+            new IBScannerRequest("STK", "STK.US.MAJOR", "HOT_BY_VOLUME"));
+
+        (await nextUpdate).Should().BeTrue();
+        enumerator.Current.RequestId.Should().Be(
+            ownerlessRequestId,
+            "the unscoped compatibility stream must skip owner-bound updates");
+        services.GetRequests().Should().ContainSingle()
+            .Which.RequestId.Should().Be(ownerlessRequestId);
+        services.GetRequests().Should().NotContain(
+            request => request.RequestId == ownedRequestId);
+        services.GetRequests(owner.TenantId, owner.CompanyId).Should().ContainSingle()
+            .Which.RequestId.Should().Be(ownedRequestId);
+
+        services.RecordStatus(ownedRequestId, "owned-status");
+        services.RecordStatus(ownerlessRequestId, "ownerless-status");
+
+        services.GetLineage().Should().ContainSingle()
+            .Which.RequestId.Should().Be(ownerlessRequestId);
+        services.GetLineage(owner.TenantId, owner.CompanyId).Should().ContainSingle()
+            .Which.RequestId.Should().Be(ownedRequestId);
+        services.GetLineage(owner.TenantId, "company-beta").Should().BeEmpty();
+        unscopedLineageUpdates.Should().NotBeEmpty()
+            .And.OnlyContain(requestId => requestId == ownerlessRequestId);
+        unscopedReadModelUpdates.Should().NotBeEmpty()
+            .And.OnlyContain(requestId => requestId == ownerlessRequestId);
+    }
+
+    [Fact]
+    public void Scenario_SynchronousTransportCallback_CannotBeOverwrittenByRequestedState()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-ib-durable", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var storePath = Path.Combine(root, "results.json");
+            var transport = new CallbackTransport
+            {
+                ScannerResultDuringRequest = new ProviderScannerResult(
+                    0,
+                    "AAPL",
+                    "NASDAQ",
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow))
+            };
+            var owner = new IBDataRequestOwnership("tenant-a", "company-a");
+            using var services = new IBDataServices(
+                transport,
+                new IBDurableResultProjector(new JsonIBDurableResultStore(storePath)));
+
+            var requestId = services.RequestScanner(
+                new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"),
+                ownership: owner);
+
+            var retained = services.GetRequests(owner.TenantId, owner.CompanyId)
+                .Should().ContainSingle().Which;
+            retained.RequestId.Should().Be(requestId);
+            retained.Status.Should().Be(ProviderDataRequestStatus.Streaming);
+            retained.ScannerResults.Should().ContainSingle().Which.Symbol.Should().Be("AAPL");
+
+            var restarted = new JsonIBDurableResultStore(storePath);
+            var durable = restarted.Get(owner.TenantId, owner.CompanyId)
+                .Should().ContainSingle().Which.Request;
+            durable.Status.Should().Be(ProviderDataRequestStatus.Streaming);
+            durable.ScannerResults.Should().ContainSingle().Which.Symbol.Should().Be("AAPL");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
         }
     }
 
@@ -166,7 +390,8 @@ public sealed class IBDataServicesTests
         scannerKeys[0].Should().Be(scannerKeys[1], "identical provider callbacks must retain the same deduplication key");
         records.Single(x => x.RequestId == bars).RealTimeBars!.Single().Provenance.SourceTimestamp.Should().Be(callbackTime);
         records.Single(x => x.RequestId == bars).RealTimeBars!.Single().Provenance.ReceiptTimestamp.Should().NotBe(callbackTime);
-        records.Single(x => x.RequestId == scanner).ScannerResults!.Single().Provenance.MarketDataAvailability.Should().Be("Delayed");
+        records.Single(x => x.RequestId == scanner).ScannerResults!
+            .Should().OnlyContain(result => result.Provenance.MarketDataAvailability == "Delayed");
     }
 
     [Fact]
@@ -259,17 +484,18 @@ public sealed class IBDataServicesTests
         var pnl = services.SubscribePnl("DU123");
         var rules = services.RequestMarketRule(26);
 
-        transport.RaiseContract(contract, new ProviderContractDetails("265598", "AAPL", null, "STK", "NASDAQ", null, "USD", null, null, null, null, "26", .01m, "Apple", null, null, null, null, null, null));
+        var callbackEvidence = ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow);
+        transport.RaiseContract(contract, new ProviderContractDetails("265598", "AAPL", null, "STK", "NASDAQ", null, "USD", null, null, null, null, null, "26", .01m, "Apple", null, null, null, null, null, null));
         transport.RaiseChain(chain, new ProviderOptionChainDefinition("SMART", "265598", "AAPL", "100", [new DateOnly(2027, 1, 15)], [250m]));
         transport.RaiseHeadline(headlines, new ProviderNewsHeadline(DateTimeOffset.UtcNow, "BRFG", "headline-1", "Apple headline"));
-        transport.RaiseArticle(article, new ProviderNewsArticle(0, "article text"));
+        transport.RaiseArticle(article, new ProviderNewsArticlePayload(0, "article text"));
         transport.RaiseFundamental(fundamentals, new ProviderFundamentalReport("<Report />"));
         transport.RaiseTick(ticks, new ProviderTickByTickObservation(DateTimeOffset.UtcNow, "last", 200m, 10m));
         transport.RaiseDepth(depth, [new ProviderDepthExchangeDescription("NASDAQ", "STK", "NASDAQ", "Deep", false)]);
         transport.RaiseDividend(dividends, new ProviderDividendEarnings(1m, 1.1m, new DateOnly(2027, 2, 1), .30m, 7m, 30m));
-        transport.RaiseScanner(scanner, new ProviderScannerResult(0, "AAPL", "NASDAQ", "265598", null, null, null, null));
-        transport.RaisePnl(pnl, new ProviderAccountPnl("DU123", null, 1m, 2m, 3m));
-        transport.RaiseMarketRule(rules, [new ProviderMarketRuleIncrement(0m, .01m)]);
+        transport.RaiseScanner(scanner, new ProviderScannerResult(0, "AAPL", "NASDAQ", "265598", null, null, null, null, callbackEvidence));
+        transport.RaisePnl(pnl, new ProviderAccountPnl("DU123", null, 1m, 2m, 3m, null, null, callbackEvidence));
+        transport.RaiseMarketRule(rules, [new ProviderMarketRuleIncrement(0m, .01m, callbackEvidence)]);
         transport.RaiseCompleted(contract);
         transport.RaiseRejected(ticks, "354", "Not subscribed");
 
@@ -314,17 +540,20 @@ public sealed class IBDataServicesTests
         public void RequestPnl(int requestId, string account, string? modelCode) => Calls.Add($"pnl:{requestId}:{account}");
         public void RequestMarketRule(int requestId, int marketRuleId) => Calls.Add($"market-rule:{requestId}:{marketRuleId}");
         public void RequestDepthExchanges(int requestId) => Calls.Add($"depth-exchanges:{requestId}");
+        public void RequestRealTimeBars(int requestId, IBRealTimeBarRequest request) => Calls.Add($"real-time-bars:{requestId}:{request.Contract.Symbol}");
+        public void RequestHistoricalTicks(int requestId, IBHistoricalTickRequest request) => Calls.Add($"historical-ticks:{requestId}:{request.Contract.Symbol}");
         public void CancelDataRequest(int requestId, string capability) => Calls.Add($"cancel:{requestId}:{capability}");
     }
 
     private sealed class CallbackTransport : RecordingTransport, IIBDataLineageSource, IIBDataCallbackSource, IIBProviderConnectionIdentity
     {
         public string ProviderConnectionId => "ib-gateway:live:7";
+        public ProviderScannerResult? ScannerResultDuringRequest { get; init; }
         public event EventHandler<IBMarketDataTypeUpdate>? MarketDataTypeReceived;
         public event EventHandler<(int RequestId, ProviderContractDetails Details)>? ContractDetailsReceived;
         public event EventHandler<(int RequestId, ProviderOptionChainDefinition Definition)>? OptionChainDefinitionReceived;
         public event EventHandler<(int RequestId, ProviderNewsHeadline Headline)>? HistoricalNewsReceived;
-        public event EventHandler<(int RequestId, ProviderNewsArticle Article)>? NewsArticleReceived;
+        public event EventHandler<(int RequestId, ProviderNewsArticlePayload Article)>? NewsArticleReceived;
         public event EventHandler<(int RequestId, ProviderFundamentalReport Report)>? FundamentalReportReceived;
         public event EventHandler<(int RequestId, ProviderTickByTickObservation Observation)>? TickByTickReceived;
         public event EventHandler<(int RequestId, IReadOnlyList<ProviderDepthExchangeDescription> Exchanges)>? DepthExchangesReceived;
@@ -338,14 +567,34 @@ public sealed class IBDataServicesTests
         public event EventHandler<int>? RequestCompleted;
         public event EventHandler<(int RequestId, string Code, string Message)>? RequestRejected;
 
+        public void RequestScanner(int requestId, IBScannerRequest request)
+        {
+            if (ScannerResultDuringRequest is { } scannerResult)
+                ScannerResultReceived?.Invoke(this, (requestId, scannerResult));
+        }
+        public void RequestContractDetails(int requestId, SymbolConfig contract) { }
+        public void RequestOptionChain(int requestId, SymbolConfig underlying) { }
+        public void RequestHistoricalNews(int requestId, int conId, string providerCodes, DateTimeOffset start, DateTimeOffset end, int maximumResults) { }
+        public void RequestNewsArticle(int requestId, string providerCode, string articleId) { }
+        public void RequestFundamentals(int requestId, SymbolConfig contract, string reportType) { }
+        public void RequestDividendEarnings(int requestId, SymbolConfig contract) { }
+        public void RequestTickByTick(int requestId, SymbolConfig contract, string tickType, int numberOfTicks, bool ignoreSize) { }
+        public void RequestPnl(int requestId, string account, string? modelCode) { }
+        public void RequestMarketRule(int requestId, int marketRuleId) { }
+        public void RequestDepthExchanges(int requestId) { }
         public void RaiseContract(int id, ProviderContractDetails value) => ContractDetailsReceived?.Invoke(this, (id, value));
         public void RaiseChain(int id, ProviderOptionChainDefinition value) => OptionChainDefinitionReceived?.Invoke(this, (id, value));
         public void RaiseHeadline(int id, ProviderNewsHeadline value) => HistoricalNewsReceived?.Invoke(this, (id, value));
-        public void RaiseArticle(int id, ProviderNewsArticle value) => NewsArticleReceived?.Invoke(this, (id, value));
+        public void RaiseArticle(int id, ProviderNewsArticlePayload value) => NewsArticleReceived?.Invoke(this, (id, value));
         public void RaiseFundamental(int id, ProviderFundamentalReport value) => FundamentalReportReceived?.Invoke(this, (id, value));
         public void RaiseTick(int id, ProviderTickByTickObservation value) => TickByTickReceived?.Invoke(this, (id, value));
         public void RaiseDepth(int id, IReadOnlyList<ProviderDepthExchangeDescription> value) => DepthExchangesReceived?.Invoke(this, (id, value));
         public void RaiseDividend(int id, ProviderDividendEarnings value) => DividendEarningsReceived?.Invoke(this, (id, value));
+        public void RaiseScanner(int id, ProviderScannerResult value) => ScannerResultReceived?.Invoke(this, (id, value));
+        public void RaisePnl(int id, ProviderAccountPnl value) => PnlReceived?.Invoke(this, (id, value));
+        public void RaiseMarketRule(int id, IReadOnlyList<ProviderMarketRuleIncrement> value) => MarketRuleReceived?.Invoke(this, (id, value));
+        public void RaiseCompleted(int id) => RequestCompleted?.Invoke(this, id);
+        public void RaiseRejected(int id, string code, string message) => RequestRejected?.Invoke(this, (id, code, message));
         public void RaiseScannerResult(int requestId, ProviderScannerResult result) => ScannerResultReceived?.Invoke(this, (requestId, result));
         public void RaiseMarketDataType(int requestId, int marketDataType) => MarketDataTypeReceived?.Invoke(this, new IBMarketDataTypeUpdate(requestId, marketDataType));
         public void RaiseScanner(int id, ProviderScannerResult value) => ScannerResultReceived?.Invoke(this, (id, value));

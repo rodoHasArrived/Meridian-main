@@ -32,10 +32,23 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
     }
 
     private static StructuredCashFlowProjectionDto Projection(params StructuredCashFlowScheduleEntry[] schedule)
-        => new(SecurityId, StructuredCashFlowSourceKind.CalculatedBullet, StructuredCashFlowScenario.Base, DateTimeOffset.UtcNow, schedule);
+        => new(
+            SecurityId,
+            StructuredCashFlowSourceKind.CalculatedBullet,
+            StructuredCashFlowScenario.Base,
+            DateTimeOffset.UtcNow,
+            schedule,
+            Staleness: StructuredCashFlowStaleness.Fresh);
 
     private static StructuredCashFlowProjectionDto Projection(StructuredCashFlowTerms terms, params StructuredCashFlowScheduleEntry[] schedule)
-        => new(SecurityId, StructuredCashFlowSourceKind.CalculatedBullet, StructuredCashFlowScenario.Base, DateTimeOffset.UtcNow, schedule, TermsUsed: terms);
+        => new(
+            SecurityId,
+            StructuredCashFlowSourceKind.CalculatedBullet,
+            StructuredCashFlowScenario.Base,
+            DateTimeOffset.UtcNow,
+            schedule,
+            Staleness: StructuredCashFlowStaleness.Fresh,
+            TermsUsed: terms);
 
     private static StructuredCashFlowTerms TermsWith(DateOnly maturity, string dayCount = "ACT/365")
         => StructuredCashFlowTerms.Empty with { MaturityDate = maturity, DayCountConvention = dayCount };
@@ -275,6 +288,22 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
         var projection = ScenarioProjection(
             StructuredCashFlowScenario.Base,
             StructuredCashFlowStaleness.Stale,
+            Period(2026, 6, 30, interest: 30m));
+        var bridge = BuildBridge(CashFlowServiceWith(projection));
+        var ledger = new DomainLedger();
+
+        var posted = await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger);
+
+        posted.Should().Be(0);
+        ledger.Journal.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task PostProjectedCashFlowsAsync_WithUnknownFreshness_PostsNothing()
+    {
+        var projection = ScenarioProjection(
+            StructuredCashFlowScenario.Base,
+            StructuredCashFlowStaleness.Unknown,
             Period(2026, 6, 30, interest: 30m));
         var bridge = BuildBridge(CashFlowServiceWith(projection));
         var ledger = new DomainLedger();

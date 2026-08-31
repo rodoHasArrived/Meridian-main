@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
-using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Reporting;
@@ -23,9 +24,28 @@ public sealed record ReportingReconciliationBreakEvidence(
     string? ApprovalReference = null);
 
 /// <summary>
+/// Immutable proof that the accounting-close workflow committed after the ledger hard close.
+/// Final reporting must not treat a hard-close-only receipt as completed close authority.
+/// </summary>
+public sealed record ReportingCloseWorkflowCompletionEvidence(
+    string WorkflowId,
+    long WorkflowVersion,
+    string FundAccountId,
+    string LedgerBookId,
+    string AccountingPeriodId,
+    string ApprovalId,
+    string ApprovalEvidenceHash,
+    string ChecklistEvidenceHash,
+    string ClosePackageId,
+    string ClosePackageEvidenceHash,
+    string CloseAuditEventId,
+    string CloseAuditHash);
+
+/// <summary>
 /// Durable result of a reconciliation/close process. Reporting can consume only an exact retained
 /// receipt bound to the same authoritative source checkpoint; it must never synthesize one.
 /// </summary>
+[method: JsonConstructor]
 public sealed record ReportingReconciliationEvidenceReceipt(
     string TenantId,
     string OrganizationId,
@@ -44,7 +64,95 @@ public sealed record ReportingReconciliationEvidenceReceipt(
     ImmutableArray<string> EvidenceIds,
     string? CompletionCheckpointId = null,
     string? CompletionCheckpointHash = null,
-    ImmutableArray<ReportingReconciliationBreakEvidence> BreakEvidence = default);
+    ImmutableArray<ReportingReconciliationBreakEvidence> BreakEvidence = default,
+    ReportingCloseWorkflowCompletionEvidence? CloseWorkflowCompletion = null)
+{
+    /// <summary>
+    /// Binary-compatibility constructor for consumers compiled before committed-close evidence
+    /// became part of the retained receipt.
+    /// </summary>
+    public ReportingReconciliationEvidenceReceipt(
+        string TenantId,
+        string OrganizationId,
+        string? CompanyId,
+        string FundId,
+        string LedgerBookId,
+        string AccountingPeriodId,
+        string AccountingBasis,
+        DateOnly AsOfDate,
+        string SourceCheckpointId,
+        string SourceCheckpointHash,
+        string ReconciliationCheckpointId,
+        string ReconciliationCheckpointHash,
+        DateTimeOffset ReconciledAtUtc,
+        bool HasOpenBreaks,
+        ImmutableArray<string> EvidenceIds,
+        string? CompletionCheckpointId = null,
+        string? CompletionCheckpointHash = null,
+        ImmutableArray<ReportingReconciliationBreakEvidence> BreakEvidence = default)
+        : this(
+            TenantId,
+            OrganizationId,
+            CompanyId,
+            FundId,
+            LedgerBookId,
+            AccountingPeriodId,
+            AccountingBasis,
+            AsOfDate,
+            SourceCheckpointId,
+            SourceCheckpointHash,
+            ReconciliationCheckpointId,
+            ReconciliationCheckpointHash,
+            ReconciledAtUtc,
+            HasOpenBreaks,
+            EvidenceIds,
+            CompletionCheckpointId,
+            CompletionCheckpointHash,
+            BreakEvidence,
+            CloseWorkflowCompletion: null)
+    {
+    }
+
+    public void Deconstruct(
+        out string TenantId,
+        out string OrganizationId,
+        out string? CompanyId,
+        out string FundId,
+        out string LedgerBookId,
+        out string AccountingPeriodId,
+        out string AccountingBasis,
+        out DateOnly AsOfDate,
+        out string SourceCheckpointId,
+        out string SourceCheckpointHash,
+        out string ReconciliationCheckpointId,
+        out string ReconciliationCheckpointHash,
+        out DateTimeOffset ReconciledAtUtc,
+        out bool HasOpenBreaks,
+        out ImmutableArray<string> EvidenceIds,
+        out string? CompletionCheckpointId,
+        out string? CompletionCheckpointHash,
+        out ImmutableArray<ReportingReconciliationBreakEvidence> BreakEvidence)
+    {
+        TenantId = this.TenantId;
+        OrganizationId = this.OrganizationId;
+        CompanyId = this.CompanyId;
+        FundId = this.FundId;
+        LedgerBookId = this.LedgerBookId;
+        AccountingPeriodId = this.AccountingPeriodId;
+        AccountingBasis = this.AccountingBasis;
+        AsOfDate = this.AsOfDate;
+        SourceCheckpointId = this.SourceCheckpointId;
+        SourceCheckpointHash = this.SourceCheckpointHash;
+        ReconciliationCheckpointId = this.ReconciliationCheckpointId;
+        ReconciliationCheckpointHash = this.ReconciliationCheckpointHash;
+        ReconciledAtUtc = this.ReconciledAtUtc;
+        HasOpenBreaks = this.HasOpenBreaks;
+        EvidenceIds = this.EvidenceIds;
+        CompletionCheckpointId = this.CompletionCheckpointId;
+        CompletionCheckpointHash = this.CompletionCheckpointHash;
+        BreakEvidence = this.BreakEvidence;
+    }
+}
 
 /// <summary>
 /// Immutable result emitted by a server-owned close/reconciliation workflow. The reporting
@@ -56,7 +164,47 @@ public sealed record ReportingReconciliationCompletionEvidence(
     DateTimeOffset CompletedAtUtc,
     bool HasOpenBreaks,
     ImmutableArray<string> EvidenceIds,
-    ImmutableArray<ReportingReconciliationBreakEvidence> BreakEvidence = default);
+    ImmutableArray<ReportingReconciliationBreakEvidence> BreakEvidence = default,
+    ReportingCloseWorkflowCompletionEvidence? CloseWorkflowCompletion = null)
+{
+    /// <summary>
+    /// Binary-compatibility constructor for consumers compiled before committed-close evidence
+    /// became part of reconciliation completion.
+    /// </summary>
+    public ReportingReconciliationCompletionEvidence(
+        string CompletionCheckpointId,
+        string CompletionCheckpointHash,
+        DateTimeOffset CompletedAtUtc,
+        bool HasOpenBreaks,
+        ImmutableArray<string> EvidenceIds,
+        ImmutableArray<ReportingReconciliationBreakEvidence> BreakEvidence)
+        : this(
+            CompletionCheckpointId,
+            CompletionCheckpointHash,
+            CompletedAtUtc,
+            HasOpenBreaks,
+            EvidenceIds,
+            BreakEvidence,
+            CloseWorkflowCompletion: null)
+    {
+    }
+
+    public void Deconstruct(
+        out string CompletionCheckpointId,
+        out string CompletionCheckpointHash,
+        out DateTimeOffset CompletedAtUtc,
+        out bool HasOpenBreaks,
+        out ImmutableArray<string> EvidenceIds,
+        out ImmutableArray<ReportingReconciliationBreakEvidence> BreakEvidence)
+    {
+        CompletionCheckpointId = this.CompletionCheckpointId;
+        CompletionCheckpointHash = this.CompletionCheckpointHash;
+        CompletedAtUtc = this.CompletedAtUtc;
+        HasOpenBreaks = this.HasOpenBreaks;
+        EvidenceIds = this.EvidenceIds;
+        BreakEvidence = this.BreakEvidence;
+    }
+}
 
 /// <summary>
 /// Durable evidence read boundary. Implementations must return only an exact retained receipt for
@@ -120,10 +268,15 @@ public static class ReportingReconciliationEvidenceValidation
         RequireText(source.AccountingBasis, nameof(source.AccountingBasis));
         RequireText(source.CheckpointId, nameof(source.CheckpointId));
         RequireHash(source.CheckpointHash, nameof(source.CheckpointHash));
+        ValidateCloseWorkflowCompletion(
+            completion.CloseWorkflowCompletion,
+            source.LedgerBookId,
+            source.AccountingPeriodId);
 
         var evidence = (source.EvidenceIds.IsDefault ? [] : source.EvidenceIds)
             .Concat(completion.EvidenceIds)
             .Append($"reconciliation-completion:{completion.CompletionCheckpointId}:{completion.CompletionCheckpointHash}")
+            .Concat(BuildCloseWorkflowEvidenceIds(completion.CloseWorkflowCompletion))
             .Where(static item => !string.IsNullOrWhiteSpace(item))
             .Select(static item => item.Trim())
             .Distinct(StringComparer.Ordinal)
@@ -146,7 +299,8 @@ public static class ReportingReconciliationEvidenceValidation
             completion.CompletedAtUtc,
             completion.HasOpenBreaks,
             evidence,
-            breakEvidence);
+            breakEvidence,
+            completion.CloseWorkflowCompletion);
         var checkpointId = $"report-reconciliation-{hash[..32]}";
         return new ReportingReconciliationEvidenceReceipt(
             source.TenantId,
@@ -166,7 +320,8 @@ public static class ReportingReconciliationEvidenceValidation
             evidence.Append($"reconciliation-checkpoint:{checkpointId}:{hash}").ToImmutableArray(),
             completion.CompletionCheckpointId,
             completion.CompletionCheckpointHash,
-            breakEvidence);
+            breakEvidence,
+            completion.CloseWorkflowCompletion);
     }
 
     public static void ValidateCompletion(ReportingReconciliationCompletionEvidence completion)
@@ -186,6 +341,7 @@ public static class ReportingReconciliationEvidenceValidation
         }
 
         var breakEvidence = NormalizeBreakEvidence(completion.BreakEvidence);
+        ValidateCloseWorkflowCompletion(completion.CloseWorkflowCompletion);
         if (completion.HasOpenBreaks != breakEvidence.Any(static item => item.Disposition is null))
         {
             throw new ArgumentException(
@@ -210,6 +366,10 @@ public static class ReportingReconciliationEvidenceValidation
         RequireHash(receipt.SourceCheckpointHash, nameof(receipt.SourceCheckpointHash));
         RequireHash(receipt.ReconciliationCheckpointHash, nameof(receipt.ReconciliationCheckpointHash));
         RequireHash(receipt.CompletionCheckpointHash, nameof(receipt.CompletionCheckpointHash));
+        ValidateCloseWorkflowCompletion(
+            receipt.CloseWorkflowCompletion,
+            receipt.LedgerBookId,
+            receipt.AccountingPeriodId);
         if (receipt.EvidenceIds.IsDefaultOrEmpty)
         {
             throw new ArgumentException(
@@ -240,7 +400,8 @@ public static class ReportingReconciliationEvidenceValidation
             receipt.ReconciledAtUtc,
             receipt.HasOpenBreaks,
             evidenceWithoutReceipt,
-            breakEvidence);
+            breakEvidence,
+            receipt.CloseWorkflowCompletion);
         var matchedHash = string.Equals(receipt.ReconciliationCheckpointHash, expectedHash, StringComparison.Ordinal)
             ? expectedHash
             : null;
@@ -262,12 +423,31 @@ public static class ReportingReconciliationEvidenceValidation
             || !receipt.EvidenceIds.Contains(
                 $"reconciliation-checkpoint:{receipt.ReconciliationCheckpointId}:{receipt.ReconciliationCheckpointHash}",
                 StringComparer.Ordinal)
+            || BuildCloseWorkflowEvidenceIds(receipt.CloseWorkflowCompletion)
+                .Any(required => !receipt.EvidenceIds.Contains(required, StringComparer.Ordinal))
             || receipt.HasOpenBreaks != breakEvidence.Any(static item => item.Disposition is null))
         {
             throw new ArgumentException(
                 "A retained reconciliation receipt requires a UTC timestamp, distinct source/reconciliation identities, and unique exact evidence.",
                 nameof(receipt));
         }
+    }
+
+    /// <summary>
+    /// Requires the retained close receipt to prove that the exact scoped Operations Continuity
+    /// workflow committed its approval, checklist, close package, and hash-chained close audit.
+    /// </summary>
+    public static ReportingCloseWorkflowCompletionEvidence RequireCommittedCloseWorkflow(
+        ReportingReconciliationEvidenceReceipt receipt)
+    {
+        ArgumentNullException.ThrowIfNull(receipt);
+        Validate(receipt);
+        var completion = receipt.CloseWorkflowCompletion
+            ?? throw new ArgumentException(
+                "Final reporting requires retained proof that the accounting-close workflow committed after ledger hard close.",
+                nameof(receipt));
+        ValidateCloseWorkflowCompletion(completion, receipt.LedgerBookId, receipt.AccountingPeriodId);
+        return completion;
     }
 
     public static bool HasSameKey(
@@ -399,7 +579,8 @@ public static class ReportingReconciliationEvidenceValidation
         DateTimeOffset reconciledAtUtc,
         bool hasOpenBreaks,
         ImmutableArray<string> evidenceIds,
-        ImmutableArray<ReportingReconciliationBreakEvidence> breakEvidence)
+        ImmutableArray<ReportingReconciliationBreakEvidence> breakEvidence,
+        ReportingCloseWorkflowCompletionEvidence? closeWorkflowCompletion)
     {
         using var stream = new MemoryStream();
         using (var writer = new Utf8JsonWriter(stream))
@@ -431,10 +612,108 @@ public static class ReportingReconciliationEvidenceValidation
                 WriteBreakEvidence(writer, breakItem, includeDeclaredHash: true);
             }
             writer.WriteEndArray();
+            WriteCloseWorkflowCompletion(writer, closeWorkflowCompletion);
             writer.WriteEndObject();
         }
 
-        return Convert.ToHexString(SHA256.HashData(stream.ToArray())).ToLowerInvariant();
+        return Sha256Digest.Compute(stream.ToArray());
+    }
+
+    private static ImmutableArray<string> BuildCloseWorkflowEvidenceIds(
+        ReportingCloseWorkflowCompletionEvidence? completion)
+    {
+        if (completion is null)
+        {
+            return [];
+        }
+
+        return
+        [
+            $"operations-workflow:{completion.WorkflowId}:version:{completion.WorkflowVersion}:closed",
+            $"operations-approval:{completion.ApprovalId}:{completion.ApprovalEvidenceHash}",
+            $"operations-close-checklist:{completion.ChecklistEvidenceHash}",
+            $"operations-close-package:{completion.ClosePackageId}:{completion.ClosePackageEvidenceHash}",
+            $"operations-close-audit:{completion.CloseAuditEventId}:{completion.CloseAuditHash}"
+        ];
+    }
+
+    private static void ValidateCloseWorkflowCompletion(
+        ReportingCloseWorkflowCompletionEvidence? completion,
+        string? expectedLedgerBookId = null,
+        string? expectedAccountingPeriodId = null)
+    {
+        if (completion is null)
+        {
+            return;
+        }
+
+        RequireGuid(completion.WorkflowId, nameof(completion.WorkflowId));
+        RequireGuid(completion.FundAccountId, nameof(completion.FundAccountId));
+        RequireGuid(completion.LedgerBookId, nameof(completion.LedgerBookId));
+        RequireGuid(completion.AccountingPeriodId, nameof(completion.AccountingPeriodId));
+        RequireText(completion.ApprovalId, nameof(completion.ApprovalId));
+        RequireText(completion.ClosePackageId, nameof(completion.ClosePackageId));
+        RequireGuid(completion.CloseAuditEventId, nameof(completion.CloseAuditEventId));
+        RequireHash(completion.ApprovalEvidenceHash, nameof(completion.ApprovalEvidenceHash));
+        RequireHash(completion.ChecklistEvidenceHash, nameof(completion.ChecklistEvidenceHash));
+        RequireHash(completion.ClosePackageEvidenceHash, nameof(completion.ClosePackageEvidenceHash));
+        RequireHash(completion.CloseAuditHash, nameof(completion.CloseAuditHash));
+        if (completion.WorkflowVersion <= 0)
+        {
+            throw new ArgumentException(
+                "Committed close workflow evidence requires a positive workflow version.",
+                nameof(completion));
+        }
+        if (expectedLedgerBookId is not null
+            && !string.Equals(completion.LedgerBookId, expectedLedgerBookId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(
+                "Committed close workflow evidence does not match the retained ledger-book scope.",
+                nameof(completion));
+        }
+        if (expectedAccountingPeriodId is not null
+            && !string.Equals(completion.AccountingPeriodId, expectedAccountingPeriodId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(
+                "Committed close workflow evidence does not match the retained accounting-period scope.",
+                nameof(completion));
+        }
+    }
+
+    private static void RequireGuid(string? value, string parameterName)
+    {
+        RequireText(value, parameterName);
+        if (!Guid.TryParse(value, out var parsed) || parsed == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Committed close workflow identifiers must be non-empty GUID values.",
+                parameterName);
+        }
+    }
+
+    private static void WriteCloseWorkflowCompletion(
+        Utf8JsonWriter writer,
+        ReportingCloseWorkflowCompletionEvidence? completion)
+    {
+        if (completion is null)
+        {
+            return;
+        }
+
+        writer.WriteStartObject("closeWorkflowCompletion");
+        writer.WriteString("workflowId", completion.WorkflowId);
+        writer.WriteNumber("workflowVersion", completion.WorkflowVersion);
+        writer.WriteString("fundAccountId", completion.FundAccountId);
+        writer.WriteString("ledgerBookId", completion.LedgerBookId);
+        writer.WriteString("accountingPeriodId", completion.AccountingPeriodId);
+        writer.WriteString("approvalId", completion.ApprovalId);
+        writer.WriteString("approvalEvidenceHash", completion.ApprovalEvidenceHash);
+        writer.WriteString("checklistEvidenceHash", completion.ChecklistEvidenceHash);
+        writer.WriteString("closePackageId", completion.ClosePackageId);
+        writer.WriteString("closePackageEvidenceHash", completion.ClosePackageEvidenceHash);
+        writer.WriteString("closeAuditEventId", completion.CloseAuditEventId);
+        writer.WriteString("closeAuditHash", completion.CloseAuditHash);
+        writer.WriteEndObject();
     }
 
     private static ImmutableArray<ReportingReconciliationBreakEvidence> NormalizeBreakEvidence(
@@ -541,7 +820,7 @@ public static class ReportingReconciliationEvidenceValidation
         {
             WriteBreakEvidence(writer, item, includeDeclaredHash: false);
         }
-        return Convert.ToHexString(SHA256.HashData(stream.ToArray())).ToLowerInvariant();
+        return Sha256Digest.Compute(stream.ToArray());
     }
 
     private static void WriteBreakEvidence(

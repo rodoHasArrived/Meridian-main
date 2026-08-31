@@ -21,8 +21,12 @@ internal static class BankingStartup
         }
     }
 
-    public static void EnsureDatabaseReady(IServiceProvider serviceProvider, ILogger? logger = null)
+    public static async Task EnsureDatabaseReadyAsync(
+        IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default,
+        ILogger? logger = null)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         EnsureEnvironmentDefaults();
         if (!IsConfigured())
         {
@@ -34,7 +38,7 @@ internal static class BankingStartup
 
         var options = serviceProvider.GetRequiredService<BankingStoreOptions>();
         var runner = new BankingMigrationRunner(options);
-        runner.EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
+        await runner.EnsureMigratedAsync(cancellationToken).ConfigureAwait(false);
         logger?.LogInformation(
             "Banking schema '{Schema}' is ready.",
             options.Schema);

@@ -157,7 +157,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public event EventHandler<(int RequestId, ProviderContractDetails Details)>? ContractDetailsReceived;
     public event EventHandler<(int RequestId, ProviderOptionChainDefinition Definition)>? OptionChainDefinitionReceived;
     public event EventHandler<(int RequestId, ProviderNewsHeadline Headline)>? HistoricalNewsReceived;
-    public event EventHandler<(int RequestId, ProviderNewsArticle Article)>? NewsArticleReceived;
+    public event EventHandler<(int RequestId, ProviderNewsArticlePayload Article)>? NewsArticleReceived;
     public event EventHandler<(int RequestId, ProviderFundamentalReport Report)>? FundamentalReportReceived;
     public event EventHandler<(int RequestId, ProviderTickByTickObservation Observation)>? TickByTickReceived;
     public event EventHandler<(int RequestId, IReadOnlyList<ProviderDepthExchangeDescription> Exchanges)>? DepthExchangesReceived;
@@ -390,6 +390,11 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
                 Interlocked.Exchange(ref _lastMessageTimestamp, Stopwatch.GetTimestamp());
             }
             catch (Exception ex) when (!ct.IsCancellationRequested && ex is System.Net.WebSockets.WebSocketException or IOException or InvalidOperationException)
+            {
+                NotifyConnectionLost(ex);
+                break;
+            }
+            catch (Exception ex) when (!ct.IsCancellationRequested)
             {
                 NotifyConnectionLost(ex);
                 break;
@@ -716,16 +721,22 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         return Task.CompletedTask;
     }
 
-    public int RequestAccountSummary()
+    public int ReserveAccountSummaryRequestId()
     {
         if (!IsConnected) throw new InvalidOperationException("Not connected to IB Gateway/TWS");
 
-        var requestId = Interlocked.Increment(ref _nextBrokerRequestId);
+        return Interlocked.Increment(ref _nextBrokerRequestId);
+    }
+
+    public void RequestAccountSummary(int requestId)
+    {
+        if (!IsConnected) throw new InvalidOperationException("Not connected to IB Gateway/TWS");
+        if (requestId <= 0) throw new ArgumentOutOfRangeException(nameof(requestId));
+
         _clientSocket.reqAccountSummary(
             requestId,
             "All",
             "NetLiquidation,TotalCashValue,BuyingPower,Currency");
-        return requestId;
     }
 
     public void CancelAccountSummary(int requestId)
@@ -1136,7 +1147,8 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         if (expiration is not null && contract.Strike > 0 && !string.IsNullOrWhiteSpace(contract.Right))
             OptionContractReceived?.Invoke(this, (reqId, new ProviderOptionContract(contract.Symbol ?? string.Empty, string.Empty,
                 expiration.Value, (decimal)contract.Strike, contract.Right, contract.Exchange ?? string.Empty,
-                contract.TradingClass, contract.Multiplier, contract.ConId.ToString(CultureInfo.InvariantCulture))));
+                contract.TradingClass, contract.Multiplier, contract.ConId.ToString(CultureInfo.InvariantCulture),
+                ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow))));
     }
 
     public void contractDetailsEnd(int reqId)
@@ -1167,7 +1179,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         var contract = contractDetails.Contract;
         ScannerResultReceived?.Invoke(this, (reqId, new ProviderScannerResult(rank, contract.Symbol ?? string.Empty,
             contract.Exchange, contract.ConId > 0 ? contract.ConId.ToString(CultureInfo.InvariantCulture) : null,
-            distance, benchmark, projection, legs)));
+            distance, benchmark, projection, legs, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow))));
     }
 
     public void scannerDataEnd(int reqId)
@@ -1193,7 +1205,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public void newsArticle(int requestId, int articleType, string articleText)
     {
         RecordMessageReceived();
-        NewsArticleReceived?.Invoke(this, (requestId, new ProviderNewsArticle(articleType, articleText)));
+        NewsArticleReceived?.Invoke(this, (requestId, new ProviderNewsArticlePayload(articleType, articleText)));
     }
 
     public void historicalNews(int requestId, string time, string providerCode, string articleId, string headline)
@@ -1234,14 +1246,18 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         RecordMessageReceived();
         if (_marketRuleRequests.TryRemove(marketRuleId, out var requestId))
             MarketRuleReceived?.Invoke(this, (requestId, priceIncrements.Select(value =>
-                new ProviderMarketRuleIncrement((decimal)value.LowEdge, (decimal)value.Increment)).ToArray()));
+                new ProviderMarketRuleIncrement(
+                    (decimal)value.LowEdge,
+                    (decimal)value.Increment,
+                    ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow))).ToArray()));
     }
 
     public void pnl(int reqId, string account, string modelCode, double dailyPnL, double unrealizedPnL, double realizedPnL)
     {
         RecordMessageReceived();
         PnlReceived?.Invoke(this, (reqId, new ProviderAccountPnl(account, string.IsNullOrWhiteSpace(modelCode) ? null : modelCode,
-            (decimal)dailyPnL, (decimal)unrealizedPnL, (decimal)realizedPnL)));
+            (decimal)dailyPnL, (decimal)unrealizedPnL, (decimal)realizedPnL, null, null,
+            ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow))));
     }
 
     public void headTimestamp(int reqId, string headTimestamp) { }

@@ -88,9 +88,13 @@ these cases:
 - Performing broad multi-surface edits across `.codex/`, `.agents/`, `.github/`, `CLAUDE.md`,
   `AGENTS.md`, and `docs/ai/`.
 
-These pause-and-confirm rules apply to ordinary assistant sessions regardless of provider. Use the
-Chief of Staff approval path for multi-domain, approval-gated, or evidence-synthesis work that needs
-structured sign-off, trace retention, or operator-facing briefing.
+These pause-and-confirm rules apply to ordinary assistant sessions regardless of provider. For
+multi-domain, approval-gated, or evidence-synthesis work that needs structured sign-off, trace
+retention, or operator-facing briefing, use provider-agnostic coordinator escalation. Follow
+`docs/ai/agent-handoff-checklist.md`, generate and validate a task-specific handoff packet, and capture
+the required evidence and validation-floor state. The checked-in
+`docs/status/ai-handoff-packet.json` is a deterministic automation artifact, not evidence of approval;
+explicit human confirmation remains a separate gate before implementation continues.
 
 ### Agent Orchestration
 

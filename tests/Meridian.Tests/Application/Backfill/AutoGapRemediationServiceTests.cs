@@ -1,9 +1,13 @@
 using System.Net.Http;
 using FluentAssertions;
 using Meridian.Application.Backfill;
+using Meridian.Contracts.Domain.Enums;
+using Meridian.Contracts.Domain.Models;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Scheduling;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Resilience;
+using Meridian.Tests.TestHelpers;
 using Xunit;
 using AppBackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 using QualityDataGap = Meridian.DataIntegration.Monitoring.DataQuality.DataGap;
@@ -104,6 +108,101 @@ public sealed class AutoGapRemediationServiceTests
 
         gateway.Calls.Should().Be(1);
         history.GetRecentExecutions(10).Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task ConcurrentDuplicateTrigger_HasSingleIdempotencyOwner()
+    {
+        var gateway = new FirstCallBlockingGateway();
+        var history = new BackfillExecutionHistory();
+        using var service = new AutoGapRemediationService(
+            gateway,
+            history,
+            policy: new AutoGapRemediationPolicy(
+                MinimumGapDuration: TimeSpan.FromMinutes(1),
+                MinimumGapSize: 1,
+                SymbolCooldown: TimeSpan.FromMinutes(30),
+                ProviderCooldown: TimeSpan.Zero,
+                MaxConcurrentRemediations: 2,
+                DefaultProvider: "stooq"));
+        var gap = new QualityDataGap(
+            Symbol: "AAPL",
+            EventType: "Trade",
+            GapStart: DateTimeOffset.UtcNow.AddMinutes(-10),
+            GapEnd: DateTimeOffset.UtcNow.AddMinutes(-5),
+            Duration: TimeSpan.FromMinutes(5),
+            MissedSequenceStart: 1,
+            MissedSequenceEnd: 10,
+            EstimatedMissedEvents: 10,
+            Severity: QualityGapSeverity.Significant,
+            PossibleCause: null);
+
+        var first = service.HandleDataQualityGapAsync(gap);
+        try
+        {
+            await gateway.FirstCallEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+            var duplicate = await service
+                .RequestDataQualityGapAsync(gap)
+                .WaitAsync(TimeSpan.FromSeconds(5));
+            duplicate.Outcome.Should().Be(AutoRemediationOutcome.Skipped);
+        }
+        finally
+        {
+            gateway.ReleaseFirstCall();
+        }
+
+        await first.WaitAsync(TimeSpan.FromSeconds(5));
+
+        gateway.Calls.Should().Be(1);
+        history.GetRecentExecutions(10).Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task PostSlotCancellation_IsRecordedPropagatedAndReleasesIdempotencyClaim()
+    {
+        var gateway = new FirstCallBlockingGateway();
+        var history = new BackfillExecutionHistory();
+        using var service = new AutoGapRemediationService(
+            gateway,
+            history,
+            policy: new AutoGapRemediationPolicy(
+                MinimumGapDuration: TimeSpan.FromMinutes(1),
+                MinimumGapSize: 1,
+                SymbolCooldown: TimeSpan.FromMinutes(30),
+                ProviderCooldown: TimeSpan.Zero,
+                MaxConcurrentRemediations: 1,
+                DefaultProvider: "stooq"));
+        var gap = new QualityDataGap(
+            Symbol: "AAPL",
+            EventType: "Trade",
+            GapStart: DateTimeOffset.UtcNow.AddMinutes(-10),
+            GapEnd: DateTimeOffset.UtcNow.AddMinutes(-5),
+            Duration: TimeSpan.FromMinutes(5),
+            MissedSequenceStart: 1,
+            MissedSequenceEnd: 10,
+            EstimatedMissedEvents: 10,
+            Severity: QualityGapSeverity.Significant,
+            PossibleCause: null);
+        using var cts = new CancellationTokenSource();
+
+        var cancelledRequest = service.HandleDataQualityGapAsync(gap, ct: cts.Token);
+        await gateway.FirstCallEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        cts.Cancel();
+
+        var act = async () => await cancelledRequest;
+        await act.Should().ThrowAsync<OperationCanceledException>();
+
+        gateway.ReleaseFirstCall();
+        await service.HandleDataQualityGapAsync(gap).WaitAsync(TimeSpan.FromSeconds(5));
+
+        gateway.Calls.Should().Be(2);
+        var executions = history.GetRecentExecutions(10);
+        executions.Should().HaveCount(2);
+        executions.Should().ContainSingle(execution => execution.Status == ExecutionStatus.Cancelled);
+        executions.Should().ContainSingle(execution => execution.Status == ExecutionStatus.Completed);
+        executions.Should().Contain(execution =>
+            execution.AutoRemediationLastOutcome == AutoRemediationOutcome.Cancelled.ToString());
     }
 
     [Fact]
@@ -522,6 +621,93 @@ public sealed class AutoGapRemediationServiceTests
         });
     }
 
+    // ── integrity disclosure for sub-threshold reconnection gaps ──────────────
+
+    [Fact]
+    public async Task RequestReconnectionGapAsync_BelowRemediationFloor_DisclosesSkippedWindowOnTape()
+    {
+        var gateway = new FakeGateway();
+        var publisher = new TestMarketEventPublisher();
+        using var service = new AutoGapRemediationService(
+            gateway,
+            new BackfillExecutionHistory(),
+            policy: SkipFloorPolicy(),
+            integrityPublisher: publisher);
+        var reconnectedAt = new DateTimeOffset(2026, 08, 24, 14, 30, 45, TimeSpan.Zero);
+        var disconnectedAt = reconnectedAt.AddSeconds(-30);
+        var gap = new ReconnectionGap("polygon", disconnectedAt, reconnectedAt, ReconnectAttempts: 1);
+
+        var outcome = await service.RequestReconnectionGapAsync(gap, ["AAPL", "MSFT"]);
+
+        outcome.Should().Be(AutoRemediationOutcome.Skipped);
+        gateway.Calls.Should().Be(0, "the marker discloses the hole; it must not trigger remediation");
+        publisher.PublishedEvents.Should().HaveCount(2);
+        publisher.PublishedEvents.Should().OnlyContain(e => e.Type == MarketEventType.Integrity);
+        publisher.PublishedEvents.Should().OnlyContain(e => e.Source == "polygon",
+            "the marker must carry the real provider whose feed dropped");
+        publisher.PublishedEvents.Select(e => e.Symbol).Should().BeEquivalentTo(["AAPL", "MSFT"]);
+        var integrity = publisher.PublishedEvents[0].Payload.Should().BeOfType<IntegrityEvent>().Subject;
+        integrity.ErrorCode.Should().Be(1009);
+        integrity.Description.Should().Contain("below remediation floor");
+        integrity.Description.Should().Contain(disconnectedAt.ToString("O"));
+        integrity.Description.Should().Contain(reconnectedAt.ToString("O"));
+    }
+
+    [Fact]
+    public async Task RequestReconnectionGapAsync_AboveRemediationFloor_DoesNotPublishSkipMarker()
+    {
+        var gateway = new FakeGateway();
+        var publisher = new TestMarketEventPublisher();
+        using var service = new AutoGapRemediationService(
+            gateway,
+            new BackfillExecutionHistory(),
+            policy: SkipFloorPolicy(),
+            integrityPublisher: publisher);
+        var gap = new ReconnectionGap(
+            "polygon",
+            DateTimeOffset.UtcNow.AddMinutes(-10),
+            DateTimeOffset.UtcNow,
+            ReconnectAttempts: 1);
+
+        var outcome = await service.RequestReconnectionGapAsync(gap, ["AAPL"]);
+
+        outcome.Should().Be(AutoRemediationOutcome.Completed);
+        publisher.PublishedEvents.Should().BeEmpty(
+            "a remediated gap is not a coverage hole and must not be falsely disclosed as one");
+    }
+
+    [Fact]
+    public async Task RequestReconnectionGapAsync_MarkerPublishFailure_FailsOpenAndStillSkips()
+    {
+        var gateway = new FakeGateway();
+        var publisher = new ThrowingMarketEventPublisher();
+        using var service = new AutoGapRemediationService(
+            gateway,
+            new BackfillExecutionHistory(),
+            policy: SkipFloorPolicy(),
+            integrityPublisher: publisher);
+        var gap = new ReconnectionGap(
+            "polygon",
+            DateTimeOffset.UtcNow.AddSeconds(-30),
+            DateTimeOffset.UtcNow,
+            ReconnectAttempts: 1);
+
+        var outcome = AutoRemediationOutcome.None;
+        var act = async () => outcome = await service.RequestReconnectionGapAsync(gap, ["AAPL"]);
+
+        await act.Should().NotThrowAsync("integrity disclosure must fail open around the remediation path");
+        outcome.Should().Be(AutoRemediationOutcome.Skipped);
+        publisher.Attempts.Should().BeGreaterThan(0, "the publish must actually have been attempted");
+    }
+
+    private static AutoGapRemediationPolicy SkipFloorPolicy() => new(
+        MinimumGapDuration: TimeSpan.FromMinutes(2),
+        MinimumGapSize: 1,
+        SymbolCooldown: TimeSpan.Zero,
+        ProviderCooldown: TimeSpan.Zero,
+        MaxConcurrentRemediations: 1,
+        DefaultProvider: "composite");
+
     private sealed class FakeGateway : IBackfillExecutionGateway
     {
         public int Calls { get; private set; }
@@ -548,6 +734,42 @@ public sealed class AutoGapRemediationServiceTests
                 StartedUtc: DateTimeOffset.UtcNow.AddSeconds(-2),
                 CompletedUtc: DateTimeOffset.UtcNow));
         }
+    }
+
+    private sealed class FirstCallBlockingGateway : IBackfillExecutionGateway
+    {
+        private readonly TaskCompletionSource<bool> _releaseFirstCall =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _calls;
+
+        public TaskCompletionSource<bool> FirstCallEntered { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public int Calls => Volatile.Read(ref _calls);
+
+        public async Task<BackfillResult> RunAsync(
+            AppBackfillRequest request,
+            CancellationToken ct = default)
+        {
+            var call = Interlocked.Increment(ref _calls);
+            if (call == 1)
+            {
+                FirstCallEntered.TrySetResult(true);
+                await _releaseFirstCall.Task.WaitAsync(ct);
+            }
+
+            return new BackfillResult(
+                Success: true,
+                Provider: request.Provider,
+                Symbols: request.Symbols.ToArray(),
+                From: request.From,
+                To: request.To,
+                BarsWritten: 10,
+                StartedUtc: DateTimeOffset.UtcNow.AddSeconds(-2),
+                CompletedUtc: DateTimeOffset.UtcNow);
+        }
+
+        public void ReleaseFirstCall() => _releaseFirstCall.TrySetResult(true);
     }
 
     private static DataQualityMonitoringService CreateQualityServiceWithShortGapThreshold() =>

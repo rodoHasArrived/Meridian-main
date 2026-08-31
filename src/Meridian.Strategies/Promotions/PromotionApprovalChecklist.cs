@@ -23,6 +23,13 @@ public static class PromotionApprovalChecklist
     public const string AuditRetentionReviewed = "AUDIT_RETENTION_REVIEWED";
     public const string LiveOverrideReviewed = "LIVE_OVERRIDE_REVIEWED";
 
+    /// <summary>
+    /// Records the paper matching and cost model versions (e.g.
+    /// <c>paper-match/1+paper-cost/1</c>) of the paper session a paper-to-live promotion
+    /// cites, so promotion evidence names the execution realism policy that produced it.
+    /// </summary>
+    public const string PaperExecutionModelReviewed = "PAPER_EXECUTION_MODEL_REVIEWED";
+
     private static readonly string[] PaperRequiredItems =
     [
         Dk1TrustPacketReviewed,
@@ -46,7 +53,8 @@ public static class PromotionApprovalChecklist
         ExceptionHandlingReviewed,
         RollbackKillSwitchReviewed,
         AuditRetentionReviewed,
-        LiveOverrideReviewed
+        LiveOverrideReviewed,
+        PaperExecutionModelReviewed
     ];
 
     public static string[] CreateRequiredFor(RunType targetRunType)

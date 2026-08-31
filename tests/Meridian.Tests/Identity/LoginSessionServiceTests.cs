@@ -162,21 +162,23 @@ public sealed class LoginSessionServiceTests
     [Fact]
     public void TryCreateSession_DistinctInvalidUsernames_BoundsTrackedAttemptWindows()
     {
-        using var env = new EnvironmentVariableScope()
-            .Set("MDC_USERS", null)
-            .Set("MDC_DEMO_USERS", null)
-            .Set("MDC_USERNAME", null)
-            .Set("MDC_PASSWORD_HASH", null)
-            .Set("MDC_AUTH_MODE", null);
+        using var env = ConfigureUsers(("operator", "pw-operator", UserRole.Accounting));
         var service = CreateService("Production");
 
-        for (var index = 0; index < 1_100; index++)
+        for (var index = 0; index < 1_024; index++)
         {
             service.TryCreateSession($"unknown-{index}", "wrong", "127.0.0.1")
                 .Status.Should().Be(LoginAttemptStatus.InvalidCredentials);
         }
 
-        GetTrackedFailedAttemptWindowCount(service).Should().BeLessOrEqualTo(1_024);
+        var saturatedTarget = service.TryCreateSession("new-target", "wrong", "127.0.0.1");
+        var validButUntrackedTarget = service.TryCreateSession("operator", "pw-operator", "127.0.0.1");
+
+        saturatedTarget.Status.Should().Be(LoginAttemptStatus.LockedOut);
+        saturatedTarget.RetryAfter.Should().BeGreaterThan(TimeSpan.Zero);
+        validButUntrackedTarget.Status.Should().Be(LoginAttemptStatus.LockedOut,
+            "saturation must be checked before even valid credentials are verified");
+        GetTrackedFailedAttemptWindowCount(service).Should().Be(1_024);
     }
 
     [Fact]

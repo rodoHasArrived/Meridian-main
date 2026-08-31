@@ -1,11 +1,10 @@
 using System.Reflection;
 using System.Text.Json;
 using Meridian.Backtesting.Sdk;
-using Meridian.Strategies.Interfaces;
-using Meridian.Strategies.Models;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
-using Meridian.Storage;
+using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Models;
 using Meridian.Ui.Shared;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -16,12 +15,14 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 /// <summary>
 /// Extension methods for registering QuantConnect Lean integration API endpoints.
-/// Provides actual LEAN_PATH detection, algorithm scanning, and data sync capabilities.
+/// Provides actual LEAN_PATH detection, algorithm scanning, symbol mapping, auto-export, and
+/// results ingestion for externally run backtests. The data-sync and backtest lifecycle routes
+/// (start/status/results) answer 501: no Lean engine integration exists, and honest refusal beats
+/// a fabricated "queued" job that never runs.
 /// </summary>
 public static class LeanEndpoints
 {
     private static readonly Dictionary<string, BacktestInfo> s_backtests = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly Dictionary<string, SyncJobInfo> s_syncJobs = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<string, IngestedResultInfo> s_ingestedResults = new(StringComparer.OrdinalIgnoreCase);
 
     public static void MapLeanEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
@@ -48,12 +49,17 @@ public static class LeanEndpoints
                 leanPath,
                 dataPath,
                 version,
-                activeBacktests = s_backtests.Count(b => b.Value.Status == "running"),
-                activeSyncs = s_syncJobs.Count(s => s.Value.Status == "running"),
+                // Meridian neither launches Lean backtests nor runs sync jobs (those routes answer
+                // 501), so neither can ever be non-zero. Reported as constants rather than counted:
+                // the only records held here are results ingested after an external run finished,
+                // all of them "completed", so filtering them for "running" only read as though it
+                // could return something.
+                activeBacktests = 0,
+                activeSyncs = 0,
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetLeanStatus")
+        .WithName("GetLeanStatus").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces(200);
 
         // Lean config - returns actual detected configuration
@@ -80,7 +86,7 @@ public static class LeanEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetLeanConfig")
+        .WithName("GetLeanConfig").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces(200);
 
         // Verify Lean installation - performs actual filesystem checks
@@ -142,6 +148,7 @@ public static class LeanEndpoints
             }, jsonOptions);
         })
         .WithName("VerifyLean")
+        .RequirePermission(UserPermission.ManageStrategies)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -172,163 +179,71 @@ public static class LeanEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetLeanAlgorithms")
+        .WithName("GetLeanAlgorithms").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces(200);
 
-        // Sync data to Lean format - initiates actual file copy/conversion
-        group.MapPost(UiApiRoutes.LeanSync, (LeanSyncRequest? req, [FromServices] StorageOptions? storageOptions) =>
-        {
-            var leanPath = Environment.GetEnvironmentVariable("LEAN_PATH");
-            var dataPath = Environment.GetEnvironmentVariable("LEAN_DATA_PATH")
-                ?? (leanPath != null ? Path.Combine(leanPath, "Data") : null);
-
-            if (string.IsNullOrEmpty(dataPath))
-            {
-                return Results.Json(new
-                {
-                    jobId = (string?)null,
-                    status = "failed",
-                    error = "LEAN_PATH or LEAN_DATA_PATH environment variable not set",
-                    timestamp = DateTimeOffset.UtcNow
-                }, jsonOptions);
-            }
-
-            var sourceRoot = storageOptions?.RootPath ?? "data";
-            var jobId = Guid.NewGuid().ToString("N")[..12];
-            var symbols = req?.Symbols ?? Array.Empty<string>();
-
-            // Count available JSONL files for the requested symbols
-            var fileCount = 0;
-            if (Directory.Exists(sourceRoot))
-            {
-                foreach (var file in Directory.EnumerateFiles(sourceRoot, "*.jsonl*", SearchOption.AllDirectories))
-                {
-                    if (symbols.Length == 0 || symbols.Any(s => file.Contains(s, StringComparison.OrdinalIgnoreCase)))
-                        fileCount++;
-                }
-            }
-
-            var syncJob = new SyncJobInfo(jobId, "queued", symbols, sourceRoot, dataPath, DateTimeOffset.UtcNow, fileCount);
-            s_syncJobs[jobId] = syncJob;
-
-            return Results.Json(new
-            {
-                jobId,
-                symbols,
-                status = "queued",
-                sourceDirectory = sourceRoot,
-                targetDirectory = dataPath,
-                filesToSync = fileCount,
-                timestamp = DateTimeOffset.UtcNow
-            }, jsonOptions);
-        })
+        // No Lean engine integration exists behind the sync and backtest lifecycle routes: jobs
+        // were created "queued", never transitioned, and results hardcoded zeros for a state no
+        // job could reach. The routes stay mapped — with their authorization declarations intact —
+        // so clients get an honest 501 problem document instead of a 404 that reads as a wrong URL
+        // or a fabricated 200. The results-ingest route below remains the real path for recording
+        // externally run Lean backtests.
+        group.MapPost(UiApiRoutes.LeanSync, (HttpContext context) =>
+            ApiProblemDetails.NotImplemented(
+                context,
+                "No Lean engine integration exists: data sync jobs are not implemented. "
+                + "Use the auto-export service (/api/lean/auto-export) to mirror stored data into the Lean data folder."))
         .WithName("StartLeanSync")
-        .Produces(200)
+        .RequirePermission(UserPermission.ManageStrategies)
+        .Produces(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        // Sync status - returns actual sync job status
-        group.MapGet(UiApiRoutes.LeanSyncStatus, () =>
-        {
-            var latestJob = s_syncJobs.Values
-                .OrderByDescending(j => j.StartedAt)
-                .FirstOrDefault();
+        group.MapGet(UiApiRoutes.LeanSyncStatus, (HttpContext context) =>
+            ApiProblemDetails.NotImplemented(
+                context,
+                "No Lean engine integration exists: data sync jobs are not implemented, so there is no sync status to report."))
+        .WithName("GetLeanSyncStatus").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .Produces(StatusCodes.Status501NotImplemented);
 
-            return Results.Json(new
-            {
-                isRunning = latestJob?.Status == "running",
-                lastSyncAt = latestJob?.StartedAt,
-                lastJobId = latestJob?.JobId,
-                lastJobStatus = latestJob?.Status,
-                totalJobs = s_syncJobs.Count,
-                timestamp = DateTimeOffset.UtcNow
-            }, jsonOptions);
-        })
-        .WithName("GetLeanSyncStatus")
-        .Produces(200);
-
-        // Start backtest
-        group.MapPost(UiApiRoutes.LeanBacktestStart, (BacktestStartRequest? req) =>
-        {
-            var leanPath = Environment.GetEnvironmentVariable("LEAN_PATH");
-            if (string.IsNullOrEmpty(leanPath) || !Directory.Exists(leanPath))
-            {
-                return Results.Json(new
-                {
-                    backtestId = (string?)null,
-                    status = "failed",
-                    error = "Lean Engine not installed. Set LEAN_PATH environment variable.",
-                    timestamp = DateTimeOffset.UtcNow
-                }, jsonOptions);
-            }
-
-            var backtestId = Guid.NewGuid().ToString("N")[..12];
-            var info = new BacktestInfo(backtestId, req?.AlgorithmName ?? "unknown", "queued", DateTimeOffset.UtcNow);
-            s_backtests[backtestId] = info;
-
-            return Results.Json(new
-            {
-                backtestId,
-                algorithmName = req?.AlgorithmName,
-                status = "queued",
-                leanPath,
-                timestamp = DateTimeOffset.UtcNow
-            }, jsonOptions);
-        })
+        group.MapPost(UiApiRoutes.LeanBacktestStart, (HttpContext context) =>
+            ApiProblemDetails.NotImplemented(
+                context,
+                "No Lean engine integration exists: Meridian does not launch Lean backtests. "
+                + "Run the backtest with the Lean CLI and record its result via /api/lean/results/ingest."))
         .WithName("StartLeanBacktest")
-        .Produces(200)
+        .RequirePermission(UserPermission.ManageStrategies)
+        .Produces(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        // Backtest status
-        group.MapGet(UiApiRoutes.LeanBacktestStatus, (string backtestId) =>
-        {
-            if (!s_backtests.TryGetValue(backtestId, out var info))
-                return Results.NotFound(new { error = $"Backtest '{backtestId}' not found" });
+        group.MapGet(UiApiRoutes.LeanBacktestStatus, (string backtestId, HttpContext context) =>
+            ApiProblemDetails.NotImplemented(
+                context,
+                "No Lean engine integration exists: Meridian does not run Lean backtests, so there is no live status to report. "
+                + "Ingested results appear in /api/lean/backtest/history."))
+        .WithName("GetLeanBacktestStatus").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .Produces(StatusCodes.Status501NotImplemented);
 
-            return Results.Json(new
-            {
-                backtestId = info.Id,
-                algorithmName = info.AlgorithmName,
-                status = info.Status,
-                startedAt = info.StartedAt
-            }, jsonOptions);
-        })
-        .WithName("GetLeanBacktestStatus")
-        .Produces(200)
-        .Produces(404);
+        group.MapGet(UiApiRoutes.LeanBacktestResults, (string backtestId, HttpContext context) =>
+            ApiProblemDetails.NotImplemented(
+                context,
+                "No Lean engine integration exists: Meridian does not run Lean backtests and fabricates no metrics. "
+                + "Record an externally run backtest's result file via /api/lean/results/ingest."))
+        .WithName("GetLeanBacktestResults").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .Produces(StatusCodes.Status501NotImplemented);
 
-        // Backtest results
-        group.MapGet(UiApiRoutes.LeanBacktestResults, (string backtestId) =>
-        {
-            if (!s_backtests.TryGetValue(backtestId, out var info))
-                return Results.NotFound(new { error = $"Backtest '{backtestId}' not found" });
-
-            return Results.Json(new
-            {
-                backtestId = info.Id,
-                status = info.Status,
-                results = info.Status == "completed" ? new { totalReturn = 0.0, sharpeRatio = 0.0, totalTrades = 0 } : (object?)null,
-                message = info.Status != "completed"
-                    ? $"Backtest is currently '{info.Status}'. Results will be available when the backtest completes."
-                    : null
-            }, jsonOptions);
-        })
-        .WithName("GetLeanBacktestResults")
-        .Produces(200)
-        .Produces(404);
-
-        // Stop backtest
-        group.MapPost(UiApiRoutes.LeanBacktestStop, (string backtestId) =>
-        {
-            if (!s_backtests.TryGetValue(backtestId, out var info))
-                return Results.NotFound(new { error = $"Backtest '{backtestId}' not found" });
-
-            info = info with { Status = "stopped" };
-            s_backtests[backtestId] = info;
-            return Results.Json(new { backtestId, status = "stopped" }, jsonOptions);
-        })
+        // Stop backtest. Meridian never launched one, so there is nothing here to stop: the only
+        // records this route could find are results ingested *after* an external Lean run had
+        // already finished. Marking one "stopped" claimed an action Meridian cannot perform and
+        // overwrote a completed result's status while doing it, which is the fabrication the rest
+        // of this lifecycle was already retired for (#2726).
+        group.MapPost(UiApiRoutes.LeanBacktestStop, (string backtestId, HttpContext context) =>
+            ApiProblemDetails.NotImplemented(
+                context,
+                "No Lean engine integration exists: Meridian does not launch Lean backtests and cannot stop one. "
+                + "Stop the run with the Lean CLI that started it."))
         .WithName("StopLeanBacktest")
-        .Produces(200)
-        .Produces(404)
+        .RequirePermission(UserPermission.ManageStrategies)
+        .Produces(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // Backtest history
@@ -369,7 +284,7 @@ public static class LeanEndpoints
 
             return Results.Json(new { backtests = deduped, total = deduped.Length, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetLeanBacktestHistory")
+        .WithName("GetLeanBacktestHistory").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces(200);
 
         // Delete backtest
@@ -381,6 +296,7 @@ public static class LeanEndpoints
                 : Results.NotFound(new { error = $"Backtest '{backtestId}' not found" });
         })
         .WithName("DeleteLeanBacktest")
+        .RequirePermission(UserPermission.ManageStrategies)
         .Produces(200)
         .Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -413,7 +329,7 @@ public static class LeanEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetLeanAutoExportStatus")
+        .WithName("GetLeanAutoExportStatus").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces(200);
 
         // Auto-export configure — POST /api/lean/auto-export/configure
@@ -447,6 +363,7 @@ public static class LeanEndpoints
             }, jsonOptions);
         })
         .WithName("ConfigureLeanAutoExport")
+        .RequirePermission(UserPermission.ManageStrategies)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -539,7 +456,7 @@ public static class LeanEndpoints
                 });
             }
         })
-        .WithName("IngestLeanResults")
+        .WithName("IngestLeanResults").RequirePermission(UserPermission.ManageStrategies)
         .Produces(200)
         .Produces(400)
         .Produces(404)
@@ -566,7 +483,7 @@ public static class LeanEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetLeanSymbolMap")
+        .WithName("GetLeanSymbolMap").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces(200);
     }
 
@@ -631,9 +548,6 @@ public static class LeanEndpoints
     }
 
     private sealed record BacktestInfo(string Id, string AlgorithmName, string Status, DateTimeOffset StartedAt);
-    private sealed record SyncJobInfo(string JobId, string Status, string[] Symbols, string SourcePath, string TargetPath, DateTimeOffset StartedAt, int FileCount);
-    private sealed record LeanSyncRequest(string[]? Symbols, DateTime? FromDate, DateTime? ToDate);
-    private sealed record BacktestStartRequest(string? AlgorithmName, string? AlgorithmLanguage);
     private sealed record LeanAutoExportConfigureRequest(bool? Enabled, string? LeanDataPath, int IntervalSeconds, string[]? Symbols);
     private sealed record LeanResultsIngestRequest(string ResultsFilePath, string? BacktestId, string? AlgorithmName);
     private sealed record IngestedResultInfo(

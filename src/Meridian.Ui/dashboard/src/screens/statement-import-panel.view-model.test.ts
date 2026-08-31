@@ -7,6 +7,7 @@ import {
   statementMappingProfileFromDraft,
   useStatementImportPanelViewModel,
   validateStatementImportCommitForm,
+  buildStatementImportPreviewRequirements,
   DEFAULT_STATEMENT_IMPORT_COMMIT_FORM,
   type StatementImportPanelServices
 } from "@/screens/statement-import-panel.view-model";
@@ -176,6 +177,77 @@ describe("validateStatementImportCommitForm", () => {
   });
 });
 
+describe("buildStatementImportPreviewRequirements", () => {
+  const completeForm = {
+    ...DEFAULT_STATEMENT_IMPORT_COMMIT_FORM,
+    sourceInstitution: "IBKR",
+    fundAccountId: "FUND-A",
+    externalAccountId: "U-100",
+    periodStart: "2026-06-01",
+    periodEnd: "2026-06-30"
+  };
+
+  it("stays quiet until a file is chosen, so an untouched panel does not nag", () => {
+    const requirements = buildStatementImportPreviewRequirements(DEFAULT_STATEMENT_IMPORT_COMMIT_FORM, null);
+
+    expect(requirements.blocked).toBe(false);
+    expect(requirements.detail).toBe("");
+  });
+
+  it("names every field the preview is waiting on once a file is chosen", () => {
+    const requirements = buildStatementImportPreviewRequirements(DEFAULT_STATEMENT_IMPORT_COMMIT_FORM, makeFile());
+
+    expect(requirements.blocked).toBe(true);
+    expect(requirements.missingFields).toEqual([
+      "sourceInstitution",
+      "fundAccountId",
+      "externalAccountId",
+      "periodStart",
+      "periodEnd"
+    ]);
+    expect(requirements.detail).toContain("Source institution");
+    expect(requirements.detail).toContain("Period end");
+    expect(requirements.detail).toContain("Commit import");
+  });
+
+  it("names the statement so the message is about the file the user just dropped", () => {
+    const requirements = buildStatementImportPreviewRequirements(
+      DEFAULT_STATEMENT_IMPORT_COMMIT_FORM,
+      makeFile("june-statement.csv")
+    );
+
+    expect(requirements.detail).toContain("june-statement.csv");
+  });
+
+  it("narrows to the one field still outstanding", () => {
+    const requirements = buildStatementImportPreviewRequirements(
+      { ...completeForm, periodEnd: "" },
+      makeFile()
+    );
+
+    expect(requirements.missingLabels).toEqual(["Period end"]);
+    expect(requirements.detail).toContain("complete Period end");
+  });
+
+  it("reports a filled-but-invalid field too, since the preview is equally blocked", () => {
+    const requirements = buildStatementImportPreviewRequirements(
+      { ...completeForm, periodStart: "2026-07-01" },
+      makeFile()
+    );
+
+    expect(requirements.blocked).toBe(true);
+    expect(requirements.missingLabels).toEqual(["Period end"]);
+  });
+
+  it("clears once the form is complete", () => {
+    const requirements = buildStatementImportPreviewRequirements(completeForm, makeFile());
+
+    expect(requirements.blocked).toBe(false);
+    expect(requirements.missingFields).toEqual([]);
+    expect(requirements.title).toBe("");
+  });
+});
+
 describe("statement mapping profile drafts", () => {
   it("round-trips a profile through the editable draft", () => {
     const draft = buildStatementMappingProfileDraft(fixtureProfiles[1]);
@@ -223,6 +295,47 @@ describe("useStatementImportPanelViewModel", () => {
     expect(result.current.fileAccept).toBe(".csv,.ofx");
   });
 
+  it("fills Source institution from the connector the user picked", async () => {
+    // One of the five fields that hold the preview back answers itself: the connector is the
+    // institution, so the user should not have to retype what they just selected.
+    const services = makeServices();
+    const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => result.current.selectConnector("generic-csv"));
+
+    expect(result.current.commitForm.sourceInstitution).toBe("Generic CSV");
+  });
+
+  it("never overwrites a Source institution the user typed", async () => {
+    const services = makeServices();
+    const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    act(() => result.current.updateCommitForm("sourceInstitution", "My custodian"));
+
+    act(() => result.current.selectConnector("generic-csv"));
+
+    expect(result.current.commitForm.sourceInstitution).toBe("My custodian");
+  });
+
+  it("explains what the preview is waiting on, and stops once the form is complete", async () => {
+    const services = makeServices();
+    const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => result.current.selectFile(makeFile()));
+
+    // Previously this state was silent: no preview, no error, and a commit button asking for a
+    // preview the panel was refusing to run.
+    expect(result.current.previewRequirements.blocked).toBe(true);
+    expect(result.current.previewRequirements.missingLabels).toContain("Fund account");
+    expect(result.current.commitDisabledReason).toContain("Fund account");
+    expect(result.current.commitDisabledReason).not.toContain("Preview the statement before committing");
+
+    fillCommitForm(result);
+    await waitFor(() => expect(result.current.previewRequirements.blocked).toBe(false));
+  });
+
   it("surfaces a load error when the connector library fails", async () => {
     const services = makeServices({
       getConnectors: vi.fn(async () => {
@@ -240,6 +353,7 @@ describe("useStatementImportPanelViewModel", () => {
     const services = makeServices();
     const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
     await waitFor(() => expect(result.current.loading).toBe(false));
+    fillCommitForm(result);
 
     await act(async () => {
       result.current.selectFile(makeFile());
@@ -267,6 +381,7 @@ describe("useStatementImportPanelViewModel", () => {
     });
     const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
     await waitFor(() => expect(result.current.loading).toBe(false));
+    fillCommitForm(result);
 
     await act(async () => {
       result.current.selectFile(makeFile());
@@ -282,6 +397,7 @@ describe("useStatementImportPanelViewModel", () => {
     const services = makeServices();
     const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
     await waitFor(() => expect(result.current.loading).toBe(false));
+    fillCommitForm(result);
 
     await act(async () => {
       result.current.selectFile(makeFile());
@@ -316,6 +432,7 @@ describe("useStatementImportPanelViewModel", () => {
     const services = makeServices();
     const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
     await waitFor(() => expect(result.current.loading).toBe(false));
+    fillCommitForm(result);
 
     await act(async () => {
       result.current.selectFile(makeFile());
@@ -368,6 +485,7 @@ describe("useStatementImportPanelViewModel", () => {
     const services = makeServices();
     const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
     await waitFor(() => expect(result.current.loading).toBe(false));
+    fillCommitForm(result);
 
     await act(async () => {
       result.current.selectFile(makeFile());
@@ -377,7 +495,6 @@ describe("useStatementImportPanelViewModel", () => {
     act(() => result.current.selectProfile("custom-ibkr"));
     await waitFor(() => expect(services.previewImport).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(result.current.canCommit).toBe(true));
-    fillCommitForm(result);
 
     await act(async () => {
       await result.current.commit();
@@ -411,12 +528,12 @@ describe("useStatementImportPanelViewModel", () => {
     });
     const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
     await waitFor(() => expect(result.current.loading).toBe(false));
+    fillCommitForm(result);
 
     await act(async () => {
       result.current.selectFile(makeFile());
     });
     await waitFor(() => expect(result.current.preview?.status).toBe("NeedsAttention"));
-    fillCommitForm(result);
 
     expect(result.current.canCommit).toBe(false);
     expect(result.current.commitDisabledReason).toContain("Resolve preview errors");
@@ -435,12 +552,12 @@ describe("useStatementImportPanelViewModel", () => {
     });
     const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
     await waitFor(() => expect(result.current.loading).toBe(false));
+    fillCommitForm(result);
 
     await act(async () => {
       result.current.selectFile(makeFile());
     });
     await waitFor(() => expect(result.current.preview).not.toBeNull());
-    fillCommitForm(result);
 
     await act(async () => {
       await result.current.commit();
@@ -474,12 +591,12 @@ describe("useStatementImportPanelViewModel", () => {
     });
     const { result } = renderHook(() => useStatementImportPanelViewModel({ services }));
     await waitFor(() => expect(result.current.loading).toBe(false));
+    fillCommitForm(result);
 
     await act(async () => {
       result.current.selectFile(makeFile());
     });
     await waitFor(() => expect(result.current.preview).not.toBeNull());
-    fillCommitForm(result);
 
     await act(async () => {
       await result.current.commit();

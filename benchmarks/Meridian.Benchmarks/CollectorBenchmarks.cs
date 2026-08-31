@@ -46,7 +46,7 @@ public class TradeCollectorBenchmarks
                 SequenceNumber: i,
                 StreamId: "BENCH",
                 Venue: "TEST"
-            );
+            , Source: "BENCH");
         }
 
         // Pre-build derived arrays to avoid LINQ allocation inside the benchmark methods.
@@ -146,7 +146,7 @@ public class DepthCollectorBenchmarks
                 SequenceNumber: i + 1,
                 StreamId: "BENCH",
                 Venue: "TEST"
-            );
+            , Source: "BENCH");
         }
 
         // Mixed operations (insert, update, delete)
@@ -181,7 +181,7 @@ public class DepthCollectorBenchmarks
                 SequenceNumber: i + 1,
                 StreamId: "BENCH",
                 Venue: "TEST"
-            );
+            , Source: "BENCH");
         }
     }
 

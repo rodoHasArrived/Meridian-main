@@ -570,6 +570,12 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
             ? key!
             : DataBrowserTimePeriodOption.AllTimeKey;
 
+    /// <summary>
+    /// Fabricated, deterministically seeded preview records: this screen has no market-data
+    /// service dependency yet. DataBrowserPage.xaml renders a persistent, non-dismissable
+    /// data-provenance badge over this data — when the grid is wired to real storage, remove
+    /// this generator and that badge together.
+    /// </summary>
     private static List<DataBrowserRecord> BuildSampleData()
     {
         var random = new Random(42);

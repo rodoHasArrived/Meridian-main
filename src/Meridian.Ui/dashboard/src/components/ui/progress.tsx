@@ -4,10 +4,12 @@ import { cn } from "@/lib/utils";
 export interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
   value?: number | null;
   max?: number;
+  /** Overrides the fill color (e.g. a status tone) while keeping the track styling. */
+  indicatorClassName?: string;
 }
 
 export const Progress = forwardRef<HTMLDivElement, ProgressProps>(
-  ({ className, value = 0, max = 100, ...props }, ref) => {
+  ({ className, value = 0, max = 100, indicatorClassName, ...props }, ref) => {
     const safeMax = Number.isFinite(max) && max > 0 ? max : 100;
     const safeValue = Number.isFinite(value ?? 0) ? value ?? 0 : 0;
     const percent = Math.min(100, Math.max(0, (safeValue / safeMax) * 100));
@@ -23,7 +25,7 @@ export const Progress = forwardRef<HTMLDivElement, ProgressProps>(
         {...props}
       >
         <div
-          className="h-full rounded-[2px] bg-primary transition-all duration-300"
+          className={cn("h-full rounded-[2px] bg-primary transition-all duration-300", indicatorClassName)}
           style={{ width: `${percent}%` }}
         />
       </div>

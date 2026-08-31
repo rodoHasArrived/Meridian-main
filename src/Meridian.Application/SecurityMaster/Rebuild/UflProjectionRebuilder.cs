@@ -28,11 +28,13 @@ public sealed class UflProjectionRebuilder : IUflProjectionRebuilder
         }
 
         _logger.LogInformation(
-            "Rebuilding UFL projections for asset class {AssetClass}; current phase replays the shared security master projection pipeline.",
+            "Rebuilding UFL projections scoped to asset class {AssetClass}.",
             normalizedAssetClass);
 
-        // Phase-0 intentionally rebuilds the shared projection cache; asset-class-scoped replay is deferred.
-        await _orchestrator.RebuildAsync(ct).ConfigureAwait(false);
+        // The signature's promise is now delivered: only the requested class's securities are
+        // re-folded, so the rebuild cost stays bounded by that class's population instead of a
+        // full shared replay (the Phase-0 behavior this replaced).
+        await _orchestrator.RebuildAssetClassAsync(normalizedAssetClass, ct).ConfigureAwait(false);
     }
 }
 

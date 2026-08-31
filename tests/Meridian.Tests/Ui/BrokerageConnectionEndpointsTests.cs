@@ -9,6 +9,7 @@ using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
 using Meridian.FinancialOperations.Reconciliation;
+using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Workstation;
 using Meridian;
@@ -221,6 +222,12 @@ public sealed class BrokerageConnectionEndpointsTests
             app.Services.GetRequiredService<IBrokerStatementService>().Should().NotBeNull();
             app.Services.GetRequiredService<IStatementRunWorkflowService>().Should().NotBeNull();
             app.Services.GetRequiredService<IReconciliationApiService>().Should().NotBeNull();
+            app.Services.GetRequiredService<IStatementFetchScheduleStore>().Should().NotBeNull();
+            app.Services.GetRequiredService<StatementFetchScheduleRunner>().Should().NotBeNull();
+            var scheduler = app.Services.GetRequiredService<StatementFetchSchedulerService>();
+            app.Services.GetServices<IHostedService>().Should().ContainSingle(
+                hostedService => ReferenceEquals(hostedService, scheduler),
+                "the primary UiServer must start the existing persisted statement-schedule worker");
         }
         finally
         {

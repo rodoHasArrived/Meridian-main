@@ -12,7 +12,7 @@
     "passed_checks": 3,
     "gap_checks": 3,
     "missing_source_count": 0,
-    "missing_term_count": 9
+    "missing_term_count": 8
   },
   "checks": [
     {
@@ -66,11 +66,12 @@
         "Owner decision",
         "migration notes"
       ],
-      "found_terms": [],
+      "found_terms": [
+        "migration notes"
+      ],
       "missing_terms": [
         "Contract review packet",
-        "Owner decision",
-        "migration notes"
+        "Owner decision"
       ],
       "detail": "",
       "remediation": "Record contract-review packet evidence and owner decisions in the matrix."

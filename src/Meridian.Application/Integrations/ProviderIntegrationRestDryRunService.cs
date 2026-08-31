@@ -1,11 +1,12 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Meridian.Contracts.Integrations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using static Meridian.Application.Integrations.ProviderIntegrationFieldTransforms;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.Integrations;
 
@@ -514,7 +515,11 @@ public sealed class ProviderIntegrationRestDryRunService
             "uppercase" => value.Trim().ToUpperInvariant(),
             "lowercase" => value.Trim().ToLowerInvariant(),
             "decimal" or "decimalparsing" => ParseDecimal(value, mapping.TargetField, issues),
-            "signedamount" => ParseSignedAmount(value, mapping, record, issues),
+            "signedamount" => ParseSignedAmount(
+                value,
+                mapping,
+                path => ReadJsonString(record, path),
+                issues),
             "date" or "dateparsing" or "isodate" => ParseDate(value, mapping.TargetField, issues),
             "enum" or "enummapping" => MapEnum(value, mapping, issues),
             _ => value
@@ -538,78 +543,6 @@ public sealed class ProviderIntegrationRestDryRunService
             "Add this provider value to the enum mapping before activation."));
         return null;
     }
-
-    private static object? ParseSignedAmount(
-        string value,
-        FieldMappingDto mapping,
-        JsonElement record,
-        List<ValidationIssueDto> issues)
-    {
-        var parsed = ParseDecimal(value, mapping.TargetField, issues);
-        if (parsed is not decimal amount)
-        {
-            return null;
-        }
-
-        var conditionPath = GetTransformParameter(mapping, "conditionSourcePath") ??
-            GetTransformParameter(mapping, "conditionColumn");
-        if (string.IsNullOrWhiteSpace(conditionPath))
-        {
-            return amount;
-        }
-
-        var conditionValue = ReadJsonString(record, conditionPath);
-        if (string.IsNullOrWhiteSpace(conditionValue))
-        {
-            return amount;
-        }
-
-        var negativeValues = SplitTransformList(GetTransformParameter(mapping, "negativeValues"));
-        return negativeValues.Contains(conditionValue.Trim(), StringComparer.OrdinalIgnoreCase)
-            ? -Math.Abs(amount)
-            : amount;
-    }
-
-    private static object? ParseDecimal(string value, string targetField, List<ValidationIssueDto> issues)
-    {
-        var normalized = value.Replace(",", string.Empty, StringComparison.Ordinal).Trim();
-        if (decimal.TryParse(normalized, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed))
-        {
-            return parsed;
-        }
-
-        issues.Add(new ValidationIssueDto(
-            "transform.decimal.invalid",
-            ProviderIntegrationIssueSeverityDto.Critical,
-            $"Value '{value}' could not be parsed as a decimal.",
-            targetField,
-            "Confirm the source number format or choose the correct decimal parsing transform."));
-        return null;
-    }
-
-    private static object? ParseDate(string value, string targetField, List<ValidationIssueDto> issues)
-    {
-        if (DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsed))
-        {
-            return parsed.UtcDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        }
-
-        issues.Add(new ValidationIssueDto(
-            "transform.date.invalid",
-            ProviderIntegrationIssueSeverityDto.Critical,
-            $"Value '{value}' could not be parsed as a date.",
-            targetField,
-            "Confirm the provider date format or choose the correct date parsing transform."));
-        return null;
-    }
-
-    private static string? GetTransformParameter(FieldMappingDto mapping, string key)
-        => mapping.Transform?.Parameters.TryGetValue(key, out var value) == true ? value : null;
-
-    private static IReadOnlyList<string> SplitTransformList(string? value)
-        => string.IsNullOrWhiteSpace(value)
-            ? []
-            : value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
     private static string? ReadJsonString(JsonElement root, string sourcePath)
     {
@@ -708,7 +641,6 @@ public sealed class ProviderIntegrationRestDryRunService
     private static string StableId(params string[] parts)
     {
         var input = string.Join("|", parts);
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
-        return Convert.ToHexString(hash)[..24].ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(input)[..24];
     }
 }

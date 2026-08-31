@@ -54,9 +54,10 @@ public sealed class PendingOperation
 /// </summary>
 internal sealed class PendingOperationsEnvelope
 {
-    public int Version { get; set; } = 1;
+    public int Version { get; set; } = PendingOperationsQueueService.CurrentEnvelopeVersion;
     public DateTimeOffset SavedAt { get; set; }
     public List<PersistedPendingOperation> Operations { get; set; } = [];
+    public List<PendingOperationQuarantineRecord> QuarantinedOperations { get; set; } = [];
 }
 
 /// <summary>
@@ -73,6 +74,22 @@ internal sealed class PersistedPendingOperation
 }
 
 /// <summary>
+/// Payload-free audit record for a pending operation that cannot safely be replayed. The original
+/// payload is intentionally omitted because retired reconciliation mutations may contain operator
+/// notes or other sensitive casework data.
+/// </summary>
+public sealed record PendingOperationQuarantineRecord(
+    string OperationId,
+    string OperationType,
+    DateTime CreatedAt,
+    int RetryCount,
+    int MaxRetries,
+    DateTimeOffset QuarantinedAtUtc,
+    int SourceEnvelopeVersion,
+    string ReasonCode,
+    string Reason);
+
+/// <summary>
 /// Service for managing a durable queue of pending operations: mutations that failed while the
 /// backend was unreachable are enqueued here, persisted to local storage via
 /// <see cref="AtomicFileWriter"/> so they survive shutdown and crashes, and replayed through
@@ -81,15 +98,27 @@ internal sealed class PersistedPendingOperation
 /// </summary>
 public sealed class PendingOperationsQueueService
 {
+    internal const int CurrentEnvelopeVersion = 2;
     private const string FileName = "pending-operations.json";
+    private const string RetiredOperationReasonCode = "retired-auth-context-sensitive-replay";
+    private const string RetiredOperationReason =
+        "Automatic reconciliation mutation replay was retired because the initiating authenticated session cannot be preserved.";
     private static readonly AsyncLocal<string?> FilePathOverride = new();
+    private static readonly HashSet<string> RetiredOperationTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "reconciliation.review-break",
+        "reconciliation.resolve-break"
+    };
 
     private static readonly Lazy<PendingOperationsQueueService> _instance =
         new(() => new PendingOperationsQueueService());
 
     private readonly ConcurrentQueue<PendingOperation> _queue = new();
+    private readonly ConcurrentDictionary<string, PendingOperationQuarantineRecord> _quarantinedOperations =
+        new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, Func<object?, Task>> _handlers = new();
     private readonly SemaphoreSlim _persistGate = new(1, 1);
+    private readonly Func<DateTimeOffset> _utcNow;
     private bool _initialized;
     private volatile bool _persistenceSuppressed;
 
@@ -108,8 +137,15 @@ public sealed class PendingOperationsQueueService
     /// </summary>
     public int PendingCount => _queue.Count;
 
-    internal PendingOperationsQueueService()
+    /// <summary>
+    /// Gets the number of payload-free quarantine records retained for operations that cannot be
+    /// replayed safely.
+    /// </summary>
+    public int QuarantinedCount => _quarantinedOperations.Count;
+
+    internal PendingOperationsQueueService(Func<DateTimeOffset>? utcNow = null)
     {
+        _utcNow = utcNow ?? (static () => DateTimeOffset.UtcNow);
     }
 
     /// <summary>
@@ -144,7 +180,12 @@ public sealed class PendingOperationsQueueService
         }
 
         _persistenceSuppressed = false;
-        await RestorePersistedOperationsAsync().ConfigureAwait(false);
+        var migratedRetiredOperations = await RestorePersistedOperationsAsync().ConfigureAwait(false);
+        if (migratedRetiredOperations)
+        {
+            await PersistAsync().ConfigureAwait(false);
+        }
+
         _initialized = true;
     }
 
@@ -247,10 +288,25 @@ public sealed class PendingOperationsQueueService
     }
 
     /// <summary>
+    /// Gets a stable audit snapshot of operations moved out of the replay queue. Quarantine
+    /// records contain metadata only and never expose the original operation payload.
+    /// </summary>
+    public IReadOnlyList<PendingOperationQuarantineRecord> GetQuarantinedOperations()
+    {
+        return _quarantinedOperations.Values
+            .OrderBy(static record => record.QuarantinedAtUtc)
+            .ThenBy(static record => record.OperationType, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static record => record.OperationId, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    /// <summary>
     /// Processes all pending operations by dequeuing and executing their registered handlers.
     /// Operations that fail and have retries remaining are re-enqueued. Operations with no
     /// registered handler are kept in the queue so a handler registered later (or by the next
-    /// session) can still process them. The surviving queue is persisted afterwards.
+    /// session) can still process them. Explicitly retired authentication-sensitive operation
+    /// types are moved to payload-free quarantine before handler lookup. The surviving queue and
+    /// quarantine audit are persisted afterwards.
     /// </summary>
     /// <returns>A task representing the async operation.</returns>
     public async Task ProcessAllAsync(CancellationToken ct = default)
@@ -260,6 +316,12 @@ public sealed class PendingOperationsQueueService
         {
             if (!_queue.TryDequeue(out var op))
                 break;
+
+            if (IsRetiredOperationType(op.OperationType))
+            {
+                Quarantine(op, CurrentEnvelopeVersion);
+                continue;
+            }
 
             if (!_handlers.TryGetValue(op.OperationType, out var handler))
             {
@@ -321,7 +383,8 @@ public sealed class PendingOperationsQueueService
         {
             var envelope = new PendingOperationsEnvelope
             {
-                SavedAt = DateTimeOffset.UtcNow,
+                Version = CurrentEnvelopeVersion,
+                SavedAt = _utcNow(),
                 Operations = _queue
                     .Select(static op => new PersistedPendingOperation
                     {
@@ -332,7 +395,8 @@ public sealed class PendingOperationsQueueService
                         RetryCount = op.RetryCount,
                         MaxRetries = op.MaxRetries
                     })
-                    .ToList()
+                    .ToList(),
+                QuarantinedOperations = GetQuarantinedOperations().ToList()
             };
 
             var json = JsonSerializer.Serialize(envelope, Meridian.Ui.Services.DesktopJsonOptions.PrettyPrint);
@@ -346,14 +410,14 @@ public sealed class PendingOperationsQueueService
         }
     }
 
-    private async Task RestorePersistedOperationsAsync()
+    private async Task<bool> RestorePersistedOperationsAsync()
     {
         try
         {
             var path = GetFilePath();
             if (!File.Exists(path))
             {
-                return;
+                return false;
             }
 
             var json = await File.ReadAllTextAsync(path).ConfigureAwait(false);
@@ -361,11 +425,27 @@ public sealed class PendingOperationsQueueService
                 json, Meridian.Ui.Services.DesktopJsonOptions.PrettyPrint);
             if (envelope is null)
             {
-                return;
+                return false;
             }
 
+            foreach (var quarantined in envelope.QuarantinedOperations ?? [])
+            {
+                _quarantinedOperations.TryAdd(BuildQuarantineKey(
+                    quarantined.OperationId,
+                    quarantined.OperationType,
+                    quarantined.CreatedAt), quarantined);
+            }
+
+            var migratedRetiredOperations = false;
             foreach (var persisted in envelope.Operations)
             {
+                if (IsRetiredOperationType(persisted.OperationType))
+                {
+                    Quarantine(persisted, envelope.Version);
+                    migratedRetiredOperations = true;
+                    continue;
+                }
+
                 _queue.Enqueue(new PendingOperation
                 {
                     Id = persisted.Id,
@@ -376,13 +456,70 @@ public sealed class PendingOperationsQueueService
                     MaxRetries = persisted.MaxRetries
                 });
             }
+
+            return migratedRetiredOperations;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
         {
             // A damaged snapshot must not block startup; recovery resumes with an empty queue.
             Trace.TraceWarning("Pending-operations queue restore failed: {0}", ex.Message);
+            return false;
         }
     }
+
+    private static bool IsRetiredOperationType(string operationType)
+        => RetiredOperationTypes.Contains(operationType);
+
+    private void Quarantine(PendingOperation operation, int sourceEnvelopeVersion)
+    {
+        Quarantine(
+            operation.Id,
+            operation.OperationType,
+            operation.CreatedAt,
+            operation.RetryCount,
+            operation.MaxRetries,
+            sourceEnvelopeVersion);
+    }
+
+    private void Quarantine(PersistedPendingOperation operation, int sourceEnvelopeVersion)
+    {
+        Quarantine(
+            operation.Id,
+            operation.OperationType,
+            operation.CreatedAt,
+            operation.RetryCount,
+            operation.MaxRetries,
+            sourceEnvelopeVersion);
+    }
+
+    private void Quarantine(
+        string operationId,
+        string operationType,
+        DateTime createdAt,
+        int retryCount,
+        int maxRetries,
+        int sourceEnvelopeVersion)
+    {
+        var record = new PendingOperationQuarantineRecord(
+            operationId,
+            operationType,
+            createdAt,
+            retryCount,
+            maxRetries,
+            _utcNow(),
+            sourceEnvelopeVersion,
+            RetiredOperationReasonCode,
+            RetiredOperationReason);
+        _quarantinedOperations.TryAdd(
+            BuildQuarantineKey(operationId, operationType, createdAt),
+            record);
+    }
+
+    private static string BuildQuarantineKey(
+        string operationId,
+        string operationType,
+        DateTime createdAt)
+        => $"{operationType}\u001f{operationId}\u001f{createdAt.Ticks}\u001f{(int)createdAt.Kind}";
 
     private static JsonElement? SerializePayload(object? payload)
     {

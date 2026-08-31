@@ -1,8 +1,8 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Etl;
 using Meridian.Contracts.Coordination;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Pipeline;
 using Meridian.Storage.Etl;
@@ -701,14 +701,14 @@ public sealed partial class EtlJobOrchestrator
         var canonicalBytes = JsonSerializer.SerializeToUtf8Bytes(
             definition,
             EtlOperationJsonContext.Default.EtlJobDefinition);
-        return Convert.ToHexStringLower(SHA256.HashData(canonicalBytes));
+        return Sha256Digest.Compute(canonicalBytes);
     }
 
     private static string ComputeJobInputHash(string jobId) =>
-        Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(jobId)));
+        Sha256Digest.ComputeUtf8(jobId);
 
     private static string ComputeTextHash(string value) =>
-        Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
+        Sha256Digest.ComputeUtf8(value);
 
     private async Task PersistCheckpointAsync(string jobId, EtlCheckpointToken checkpoint, CancellationToken ct)
     {

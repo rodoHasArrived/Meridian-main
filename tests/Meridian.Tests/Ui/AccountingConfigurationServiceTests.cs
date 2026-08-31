@@ -1552,7 +1552,12 @@ public sealed class AccountingConfigurationServiceTests
             configured.FundProfileId,
             "controller",
             "Approve and post the complete trusted closing-mark batch.",
-            ["evidence://accounting/valuation/initial-batch"]));
+            ["evidence://accounting/valuation/initial-batch"],
+            // Declared explicitly now that the request defaults to AutomationAssistant. This test
+            // drives the real ManualJournalEntryWorkbenchService, whose RequireHumanOperator gate
+            // it previously satisfied on the DTO's old permissive default rather than on anything
+            // the caller established -- which is the hole the new default closes (#2673).
+            ActionOrigin: OperationsActionOriginDto.HumanOperator));
 
         initialPosting.IsComplete.Should().BeTrue();
         initialPosting.JournalEntryIds.Should().HaveCount(2);
@@ -1596,7 +1601,8 @@ public sealed class AccountingConfigurationServiceTests
             configured.FundProfileId,
             "controller",
             "Approve and post both corrected same-day marks.",
-            ["evidence://accounting/valuation/correction-batch"]));
+            ["evidence://accounting/valuation/correction-batch"],
+            ActionOrigin: OperationsActionOriginDto.HumanOperator));
 
         correctionPosting.IsComplete.Should().BeTrue();
         correctionPosting.JournalEntryIds.Should().HaveCount(2);
@@ -2001,7 +2007,8 @@ public sealed class AccountingConfigurationServiceTests
 
         var editSubmitted = async () => await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
             submitted with { Memo = "Attempted edit while submitted." },
-            "ops-user"));
+            "ops-user",
+            LedgerBookId: submitted.LedgerBookId));
 
         await editSubmitted.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*is Submitted and cannot be edited through draft save*");
@@ -2028,7 +2035,8 @@ public sealed class AccountingConfigurationServiceTests
             EvidenceLinks: [ManualJournalReviewEvidence(submitted)]));
         var repaired = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
             rejected.JournalEntry with { Memo = "Corrected after rejection." },
-            "ops-user"));
+            "ops-user",
+            LedgerBookId: rejected.JournalEntry.LedgerBookId));
 
         repaired.Status.Should().Be(ManualJournalEntryStatusDto.Draft);
         repaired.Version.Should().Be(rejected.JournalEntry.Version + 1);
@@ -2061,7 +2069,8 @@ public sealed class AccountingConfigurationServiceTests
             EvidenceLinks: [ManualJournalApprovalEvidence(resubmitted)]));
         var editApproved = async () => await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
             approved.JournalEntry with { Memo = "Attempted edit while approved." },
-            "ops-user"));
+            "ops-user",
+            LedgerBookId: approved.JournalEntry.LedgerBookId));
 
         await editApproved.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*is Approved and cannot be edited through draft save*");
@@ -2076,7 +2085,8 @@ public sealed class AccountingConfigurationServiceTests
             EvidenceLinks: [ManualJournalPostingEvidence(approved.JournalEntry)]));
         var editPosted = async () => await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
             posted.JournalEntry with { Memo = "Attempted edit after posting." },
-            "ops-user"));
+            "ops-user",
+            LedgerBookId: posted.JournalEntry.LedgerBookId));
 
         await editPosted.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*is Posted and cannot be edited through draft save*");
@@ -2201,6 +2211,70 @@ public sealed class AccountingConfigurationServiceTests
                 "controller")));
         await immutable.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Posted, reversed, rebooked, and close-locked journal entries are immutable; attach evidence before posting or create a correction draft.");
+    }
+
+    [Fact]
+    public async Task Scenario_ManualJournalEntry_CarriesEveryDimensionFieldThroughNormalization()
+    {
+        // NormalizeDimensionSet rebuilds the DTO from named arguments. Seven of the nineteen
+        // constructor parameters were omitted, and because they default to null the caller's
+        // organization, portfolio, book, account, customer, vendor, and project dimensions were
+        // silently discarded -- even here, where FundId keeps the set alive so the loss is not
+        // visible as "no dimensions". AccountingReportPackageService's same-named normalizer
+        // already carried all nineteen, so the two disagreed on what survives (#2672).
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var service = CreateManualJournalEntryWorkbenchService(configuration);
+        var draft = BalancedManualJournalEntry() with
+        {
+            Dimensions = new LedgerDimensionSetDto(
+                FundId: "fund-alpha",
+                OrganizationId: "org-1",
+                PortfolioId: "portfolio-1",
+                BookId: "book-1",
+                AccountId: "account-1",
+                CustomerId: "customer-1",
+                VendorId: "vendor-1",
+                ProjectId: "project-1")
+        };
+
+        var validated = await service.ValidateDraftAsync(new ValidateManualJournalEntryDraftRequest(
+            draft,
+            "controller"));
+
+        validated.Dimensions.Should().NotBeNull();
+        validated.Dimensions!.OrganizationId.Should().Be("org-1");
+        validated.Dimensions.PortfolioId.Should().Be("portfolio-1");
+        validated.Dimensions.BookId.Should().Be("book-1");
+        validated.Dimensions.AccountId.Should().Be("account-1");
+        validated.Dimensions.CustomerId.Should().Be("customer-1");
+        validated.Dimensions.VendorId.Should().Be("vendor-1");
+        validated.Dimensions.ProjectId.Should().Be("project-1");
+    }
+
+    [Fact]
+    public async Task Scenario_ManualJournalEntry_KeepsADimensionSetCarriedOnlyByBook()
+    {
+        // A caller supplying only a book dimension. Note the set is never dropped wholesale on
+        // this path -- NormalizeDimensionSet is called with `fundId: draft.FundNodeId ??
+        // fundProfileId`, so FundId is always populated and the predicate always says
+        // "dimensioned". That is why the local predicate's 11-of-19 gap was unreachable, and why
+        // the real defect is the discarded fields rather than the misclassification.
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var service = CreateManualJournalEntryWorkbenchService(configuration);
+        var draft = BalancedManualJournalEntry() with
+        {
+            FundNodeId = null,
+            Dimensions = new LedgerDimensionSetDto(BookId: "book-only")
+        };
+
+        var validated = await service.ValidateDraftAsync(new ValidateManualJournalEntryDraftRequest(
+            draft,
+            "controller"));
+
+        validated.Dimensions.Should().NotBeNull();
+        validated.Dimensions!.BookId.Should().Be("book-only");
     }
 
     [Fact]

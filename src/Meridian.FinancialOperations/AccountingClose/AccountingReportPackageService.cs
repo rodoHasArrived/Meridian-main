@@ -1,11 +1,14 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
+using static Meridian.Contracts.Ledger.LedgerDimensionTags;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.AccountingClose;
 
@@ -1364,12 +1367,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
            reference[index] is '/' or ':' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}' or ' ' or '\t' or '\r' or '\n';
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
-    {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
-        {
-            throw new InvalidOperationException($"Reviewed automation cannot {action}; a human operator must perform this accounting report action.");
-        }
-    }
+        => OperationsOriginGuard.RequireHumanOperator(actionOrigin, action);
 
     private async Task SavePackageAsync(AccountingReportPackageBundleDto bundle, CancellationToken ct)
     {
@@ -1707,7 +1705,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             payload += $"|positionId={dimensions.PositionId.Value:D}";
         }
 
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(payload);
     }
 
     private static ReportExportArtifactManifestDto BuildExportArtifactManifest(
@@ -2086,7 +2084,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         {
             PositionId = dimensions.PositionId
         };
-        return HasAnyDimensionScope(normalized) ? normalized : null;
+        return HasAnyDimension(normalized) ? normalized : null;
     }
 
     private static bool HasExplicitDimensionScope(
@@ -2099,27 +2097,6 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             BookId: ledgerBookId?.ToString("D"));
         return !MatchesDimensionScope(filter, dimensions) || !MatchesDimensionScope(dimensions, filter);
     }
-
-    private static bool HasAnyDimensionScope(LedgerDimensionSetDto dimensions)
-        => dimensions.FundId is not null
-           || dimensions.EntityId is not null
-           || dimensions.SleeveId is not null
-           || dimensions.StrategyId is not null
-           || dimensions.InvestorId is not null
-           || dimensions.CapitalAccountId is not null
-           || dimensions.InstrumentId.HasValue
-           || dimensions.PositionId.HasValue
-           || dimensions.TaxLotId is not null
-           || dimensions.CostCenterId is not null
-           || dimensions.CounterpartyId is not null
-           || dimensions.OrganizationId is not null
-           || dimensions.PortfolioId is not null
-           || dimensions.BookId is not null
-           || dimensions.AccountId is not null
-           || dimensions.CustomerId is not null
-           || dimensions.VendorId is not null
-           || dimensions.ProjectId is not null
-           || dimensions.ExternalGlDimensions.Count > 0;
 
     private static IReadOnlyList<string> BuildScopedDimensionKeys(LedgerDimensionSetDto dimensions)
     {
@@ -2197,7 +2174,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             payload += $"|positionId={dimensions.PositionId.Value:D}";
         }
 
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)))[..12].ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(payload)[..12];
     }
 
     private static bool MatchesTenantScope(
@@ -2232,9 +2209,6 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
 
         return $"tenant-{Sanitize(normalizedTenantId ?? "default")}-company-{Sanitize(normalizedCompanyId ?? "default")}";
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string RequireText(string? value, string label)
         => string.IsNullOrWhiteSpace(value)

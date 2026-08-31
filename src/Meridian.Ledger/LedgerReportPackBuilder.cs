@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 
 using static Meridian.Contracts.Ledger.LedgerCurrencyRounding;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ledger;
 
@@ -53,7 +54,7 @@ public static class LedgerReportPackBuilder
 
         var signature = new LedgerReportPackSignature(
             "SHA256",
-            ComputeSha256(payload),
+            Sha256Digest.ComputeUtf8(payload),
             request.GeneratedBy,
             request.GeneratedAtUtc);
 
@@ -67,7 +68,12 @@ public static class LedgerReportPackBuilder
         IReadOnlyList<LedgerTaxLotReliefProjection> projections)
     {
         var builder = new StringBuilder();
-        builder.AppendLine("SaleDate,AccountName,Symbol,FinancialAccountId,ReliefMethod,LotId,AcquiredDate,QuantityRelieved,UnitCost,Proceeds,CostBasis,RealizedGainOrLoss,DisallowedWashSaleLoss,RecognizedGainOrLoss");
+        builder.AppendLine(
+            "SaleDate,AccountName,Symbol,FinancialAccountId,ReliefMethod,LotId,AcquiredDate," +
+            "HoldingPeriodStartDate,HoldingPeriodDays,TaxCharacter,HoldingPeriodExtendedByWashSale," +
+            "QuantityRelieved,UnitCost,Proceeds,CostBasis," +
+            "RealizedGainOrLoss,DisallowedWashSaleLoss,RecognizedGainOrLoss," +
+            "ShortTermRecognizedGainOrLoss,LongTermRecognizedGainOrLoss");
 
         foreach (var projection in projections
             .OrderBy(static projection => projection.Input.SaleDate)
@@ -84,15 +90,13 @@ public static class LedgerReportPackBuilder
             // Spread the disallowed amount across the relieved lots by quantity so each row's
             // recognized gain/loss nets to what was actually booked (residual on the final row),
             // instead of the export overstating the current-period realized loss.
-            var disallowedTotal = projection.WashSale?.DisallowedLoss ?? 0m;
+            var disallowedTotal = projection.DisallowedWashSaleLoss;
             var totalQuantity = orderedSelections.Sum(static selection => selection.QuantityRelieved);
             var allocatedDisallowed = 0m;
 
             for (var index = 0; index < orderedSelections.Count; index++)
             {
                 var selection = orderedSelections[index];
-                var proceeds = RoundCurrency(selection.QuantityRelieved * projection.Input.SalePrice);
-                var realizedGainOrLoss = proceeds - selection.CostBasis;
 
                 decimal disallowed;
                 if (disallowedTotal == 0m)
@@ -117,7 +121,12 @@ public static class LedgerReportPackBuilder
 
                 // Disallowed loss is a positive amount that reduces the recognized loss (a realized
                 // loss is negative, so adding the deferred portion moves it toward zero).
-                var recognizedGainOrLoss = realizedGainOrLoss + disallowed;
+                var recognizedGainOrLoss = selection.RealizedGainOrLoss + disallowed;
+
+                // The recognized amount lands in exactly one of the two character columns, so a
+                // reader can total short- and long-term results by summing a column rather than
+                // pivoting on the character label. The two columns sum back to RecognizedGainOrLoss.
+                var isLongTerm = selection.TaxCharacter == TaxCharacter.LongTerm;
 
                 builder.Append(projection.Input.SaleDate.ToString("O", CultureInfo.InvariantCulture));
                 builder.Append(',');
@@ -133,30 +142,42 @@ public static class LedgerReportPackBuilder
                 builder.Append(',');
                 builder.Append(selection.Lot.AcquiredDate.ToString("O", CultureInfo.InvariantCulture));
                 builder.Append(',');
+                builder.Append(selection.Lot.HoldingPeriodStart.ToString("O", CultureInfo.InvariantCulture));
+                builder.Append(',');
+                builder.Append(selection.HoldingPeriodDays.ToString(CultureInfo.InvariantCulture));
+                builder.Append(',');
+                builder.Append(selection.TaxCharacter);
+                builder.Append(',');
+                builder.Append(selection.HoldingPeriodExtendedByWashSale ? "true" : "false");
+                builder.Append(',');
                 builder.Append(FormatDecimal(selection.QuantityRelieved));
                 builder.Append(',');
                 builder.Append(FormatDecimal(selection.UnitCost));
                 builder.Append(',');
-                builder.Append(FormatDecimal(proceeds));
+                builder.Append(FormatDecimal(selection.Proceeds));
                 builder.Append(',');
                 builder.Append(FormatDecimal(selection.CostBasis));
                 builder.Append(',');
-                builder.Append(FormatDecimal(realizedGainOrLoss));
+                builder.Append(FormatDecimal(selection.RealizedGainOrLoss));
                 builder.Append(',');
                 builder.Append(FormatDecimal(disallowed));
                 builder.Append(',');
-                builder.AppendLine(FormatDecimal(recognizedGainOrLoss));
+                builder.Append(FormatDecimal(recognizedGainOrLoss));
+                builder.Append(',');
+                builder.Append(FormatDecimal(isLongTerm ? 0m : recognizedGainOrLoss));
+                builder.Append(',');
+                builder.AppendLine(FormatDecimal(isLongTerm ? recognizedGainOrLoss : 0m));
             }
         }
 
         var content = builder.ToString();
-        return new LedgerReportPackArtifact("tax-lot-realized-gains.csv", "text/csv", content, ComputeSha256(content));
+        return new LedgerReportPackArtifact("tax-lot-realized-gains.csv", "text/csv", content, Sha256Digest.ComputeUtf8(content));
     }
 
     private static LedgerReportPackArtifact CreateCsvArtifact(string name, IReadOnlyList<LedgerChartBalance> rows)
     {
         var content = BuildCsv(rows);
-        return new LedgerReportPackArtifact(name, "text/csv", content, ComputeSha256(content));
+        return new LedgerReportPackArtifact(name, "text/csv", content, Sha256Digest.ComputeUtf8(content));
     }
 
     private static LedgerReportPackArtifact CreateCashFlowArtifact(string name, LedgerCashFlowStatement? cashFlow)
@@ -187,7 +208,7 @@ public static class LedgerReportPackBuilder
         }
 
         var content = builder.ToString();
-        return new LedgerReportPackArtifact(name, "text/csv", content, ComputeSha256(content));
+        return new LedgerReportPackArtifact(name, "text/csv", content, Sha256Digest.ComputeUtf8(content));
     }
 
     private static void AppendCashFlowTotal(StringBuilder builder, string label, decimal amount)
@@ -253,7 +274,7 @@ public static class LedgerReportPackBuilder
         }
 
         var content = builder.ToString();
-        return new LedgerReportPackArtifact(name, "text/csv", content, ComputeSha256(content));
+        return new LedgerReportPackArtifact(name, "text/csv", content, Sha256Digest.ComputeUtf8(content));
     }
 
     private static LedgerReportPackArtifact CreateFinancialStatementsJsonArtifact(
@@ -288,7 +309,7 @@ public static class LedgerReportPackBuilder
         builder.AppendLine("}");
 
         var content = builder.ToString();
-        return new LedgerReportPackArtifact("financial-statements.json", "application/json", content, ComputeSha256(content));
+        return new LedgerReportPackArtifact("financial-statements.json", "application/json", content, Sha256Digest.ComputeUtf8(content));
     }
 
     private static void AppendRows(
@@ -364,7 +385,7 @@ public static class LedgerReportPackBuilder
         }
 
         var content = builder.ToString();
-        return new LedgerReportPackArtifact("manifest.csv", "text/csv", content, ComputeSha256(content));
+        return new LedgerReportPackArtifact("manifest.csv", "text/csv", content, Sha256Digest.ComputeUtf8(content));
     }
 
     private static IReadOnlyList<LedgerReportLineProvenance> BuildLineProvenance(
@@ -457,7 +478,7 @@ public static class LedgerReportPackBuilder
         }
 
         var content = builder.ToString();
-        return new LedgerReportPackArtifact("line-provenance.csv", "text/csv", content, ComputeSha256(content));
+        return new LedgerReportPackArtifact("line-provenance.csv", "text/csv", content, Sha256Digest.ComputeUtf8(content));
     }
 
     private static string BuildCsv(IReadOnlyList<LedgerChartBalance> rows)
@@ -525,12 +546,6 @@ public static class LedgerReportPackBuilder
 
     private static bool MatchesLineDimensions(LedgerLineDimensionSet? actual, LedgerLineDimensionSet? expected)
         => LedgerLineDimensionSetNormalizer.Matches(actual, expected);
-
-    private static string ComputeSha256(string value)
-    {
-        var bytes = Encoding.UTF8.GetBytes(value);
-        return Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
-    }
 
     private static string FormatDecimal(decimal value)
         => value.ToString("0.############################", CultureInfo.InvariantCulture);

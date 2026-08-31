@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+using Meridian.Contracts.Integrity;
 using Meridian.Domain.Reconciliation;
 
 namespace Meridian.FinancialOperations.Reconciliation;
@@ -17,7 +17,26 @@ public sealed record StatementRunCreateRequest(
     string ImportedBy,
     string SourceFileHash)
 {
-    public string DuplicateKey => StatementDuplicateKey.Create(FundAccountId, StatementPeriodStart, StatementPeriodEnd, SourceFileHash);
+    public string? CanonicalSourcePath { get; init; }
+
+    public string CanonicalArtifactHash { get; init; } = string.Empty;
+
+    public StatementAccountingScope? AccountingScope { get; init; }
+
+    public string DuplicateKey => AccountingScope is null
+        ? StatementDuplicateKey.Create(
+            FundAccountId,
+            StatementPeriodStart,
+            StatementPeriodEnd,
+            SourceFileHash,
+            CanonicalArtifactHash)
+        : StatementDuplicateKey.Create(
+            FundAccountId,
+            StatementPeriodStart,
+            StatementPeriodEnd,
+            SourceFileHash,
+            CanonicalArtifactHash,
+            AccountingScope);
 
     public static async Task<StatementRunCreateRequest> FromFileAsync(
         string broker,
@@ -46,8 +65,10 @@ public sealed record StatementRunCreateRequest(
             throw new ArgumentException("Statement period end must be on or after statement period start.", nameof(statementPeriodEnd));
 
         await using var stream = File.OpenRead(sourcePath);
-        var hashBytes = await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false);
-        var sourceFileHash = Convert.ToHexString(hashBytes);
+        // Same SourceFileHash family as BrokerStatementInfrastructure.CaptureFileAsync and
+        // StatementRunWorkflowService.ComputeFileHashAsync — all three producers must emit the
+        // canonical encoding so the value is consistent wherever it is recorded (#2691).
+        var sourceFileHash = await Sha256Digest.ComputeAsync(stream, ct).ConfigureAwait(false);
 
         return new StatementRunCreateRequest(
             broker.Trim(),
@@ -77,7 +98,12 @@ public sealed record StatementRunCreateRequest(
             MappingProfileId,
             ToleranceProfileId,
             ImportedBy,
-            SourceFileHash);
+            SourceFileHash)
+        {
+            CanonicalSourcePath = CanonicalSourcePath,
+            CanonicalArtifactHash = CanonicalArtifactHash,
+            AccountingScope = AccountingScope
+        };
 
     public StatementRunRequest ToStatementRunRequest()
         => new(
@@ -92,7 +118,12 @@ public sealed record StatementRunCreateRequest(
             MappingProfileId,
             ToleranceProfileId,
             ImportedBy,
-            SourceFileHash);
+            SourceFileHash)
+        {
+            CanonicalSourcePath = CanonicalSourcePath,
+            CanonicalArtifactHash = CanonicalArtifactHash,
+            AccountingScope = AccountingScope
+        };
 
     private static void ValidateRequired(string parameterName, string value)
     {

@@ -39,7 +39,7 @@ public static class AdminEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetAdminMaintenanceSchedule")
+        .WithName("GetAdminMaintenanceSchedule").RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200);
 
         // Run maintenance
@@ -61,7 +61,7 @@ public static class AdminEndpoints
             var execution = await maintService.ExecuteMaintenanceAsync(taskType, null, req?.TargetPaths, ct);
             return Results.Json(execution, jsonOptions);
         })
-        .WithName("RunAdminMaintenance")
+        .WithName("RunAdminMaintenance").RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -75,7 +75,7 @@ public static class AdminEndpoints
             var execution = history?.GetExecution(runId);
             return execution is null ? Results.NotFound() : Results.Json(execution, jsonOptions);
         })
-        .WithName("GetAdminMaintenanceRunById")
+        .WithName("GetAdminMaintenanceRunById").RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .Produces(404);
 
@@ -94,7 +94,7 @@ public static class AdminEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetAdminMaintenanceHistory")
+        .WithName("GetAdminMaintenanceHistory").RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200);
 
         // Storage tiers
@@ -109,7 +109,7 @@ public static class AdminEndpoints
             var stats = await tierService.GetTierStatisticsAsync(ct);
             return Results.Json(new { tiers = stats.TierInfo, generatedAt = stats.GeneratedAt }, jsonOptions);
         })
-        .WithName("GetAdminStorageTiers")
+        .WithName("GetAdminStorageTiers").RequirePermission(UserPermission.ManageStorage)
         .Produces(200);
 
         // Storage migrate
@@ -129,7 +129,7 @@ public static class AdminEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("MigrateAdminStorage")
+        .WithName("MigrateAdminStorage").RequirePermission(UserPermission.ManageStorage)
         .Produces(200)
         .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -172,7 +172,7 @@ public static class AdminEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetAdminStorageUsage")
+        .WithName("GetAdminStorageUsage").RequirePermission(UserPermission.ManageStorage)
         .Produces(200);
 
         // Retention policies
@@ -192,7 +192,7 @@ public static class AdminEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetAdminRetention")
+        .WithName("GetAdminRetention").RequirePermission(UserPermission.ManageStorage)
         .Produces(200);
 
         // Delete retention policy
@@ -208,7 +208,7 @@ public static class AdminEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("DeleteAdminRetention")
+        .WithName("DeleteAdminRetention").RequirePermission(UserPermission.ManageStorage)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -224,7 +224,7 @@ public static class AdminEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("ApplyAdminRetention")
+        .WithName("ApplyAdminRetention").RequirePermission(UserPermission.ManageStorage)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -265,7 +265,7 @@ public static class AdminEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetAdminCleanupPreview")
+        .WithName("GetAdminCleanupPreview").RequirePermission(UserPermission.ManageStorage)
         .Produces(200);
 
         // Execute cleanup
@@ -281,7 +281,7 @@ public static class AdminEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("ExecuteAdminCleanup")
+        .WithName("ExecuteAdminCleanup").RequirePermission(UserPermission.ManageStorage)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -316,7 +316,7 @@ public static class AdminEndpoints
 
             return Results.Json(new { rootPath, readable, writable, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetAdminStoragePermissions")
+        .WithName("GetAdminStoragePermissions").RequirePermission(UserPermission.ManageStorage)
         .Produces(200);
 
         // Admin selftest
@@ -341,7 +341,7 @@ public static class AdminEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("RunAdminSelftest")
+        .WithName("RunAdminSelftest").RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -355,7 +355,7 @@ public static class AdminEndpoints
                 .Select(e => new { code = (int)e, name = e.ToString() });
             return Results.Json(new { errorCodes = codes, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetAdminErrorCodes")
+        .WithName("GetAdminErrorCodes").RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200);
 
         // Admin show config
@@ -374,7 +374,7 @@ public static class AdminEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetAdminShowConfig")
+        .WithName("GetAdminShowConfig").RequirePermission(UserPermission.ViewConfig)
         .Produces(200);
 
         // Admin quick check
@@ -394,7 +394,7 @@ public static class AdminEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetAdminQuickCheck")
+        .WithName("GetAdminQuickCheck").RequirePermission(UserPermission.ViewConfig)
         .Produces(200);
     }
 

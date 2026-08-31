@@ -104,7 +104,21 @@ internal static class DefaultAssetClassValidators
                     FieldRule.OptionalNonNegative("couponRate", "SM_BOND_COUPON_RATE_INVALID", "Bond coupon rate is invalid", "Fixed coupon rates must be zero or greater."),
                     FieldRule.OptionalNonNegative("spreadBps", "SM_BOND_FLOATING_SPREAD_INVALID", "Bond floating spread is invalid", "Floating-rate spread must be zero or greater when supplied."),
                     DateOrderRule.Optional("issueDate", "maturity", "SM_BOND_ISSUE_DATE_INVALID", "Bond issue date is invalid", "Bond issue date must be on or before maturity."),
-                    DateOrderRule.Optional("callDate", "maturity", "SM_BOND_CALL_DATE_INVALID", "Bond call date is invalid", "Bond call date must be on or before maturity.")
+                    DateOrderRule.Optional("callDate", "maturity", "SM_BOND_CALL_DATE_INVALID", "Bond call date is invalid", "Bond call date must be on or before maturity."),
+                    // ADR-022 canonical-home enforcement: securitized products (MBS/ABS/CLO/CMBS/CDO
+                    // tranches and IO/PO strips) have ONE canonical home — StructuredCredit, which
+                    // carries the tranche, pool, factor-schedule, and maturity economics that pool
+                    // amortization and cash-flow math require and BondTerms lacks. A Bond classified
+                    // into a securitized subclass is a label those pipelines cannot act on, and a
+                    // second modeling route reporting/risk/reconciliation cannot partition against.
+                    DisallowedStringValuesRule.Create(
+                        "subclass",
+                        ["AssetBacked", "MortgageBacked", "AgencyMbs", "CommercialMbs", "Cmo", "Clo", "Cdo", "PrincipalOnly", "InterestOnly", "InverseInterestOnly"],
+                        SecurityValidationSeverityDto.Error,
+                        "SM_BOND_SECURITIZED_SUBCLASS_NONCANONICAL",
+                        "Securitized products must be modeled as StructuredCredit",
+                        "Bond subclass '{0}' models a securitized product; StructuredCredit is the canonical home for MBS/ABS/CLO/CMBS/CDO tranches and IO/PO strips (ADR-022).",
+                        "Re-model the instrument as StructuredCredit (tranche, pool, factor schedule) through a governed amendment so downstream cash-flow, amortization, and reconciliation pipelines can act on its economics.")
                 ]),
             new JsonAssetClassValidator(
                 "FxSpot",
@@ -263,7 +277,44 @@ internal static class DefaultAssetClassValidators
                     FieldRule.OptionalPositive("strike", "SM_WARRANT_STRIKE_INVALID", "Warrant strike is invalid", "Warrant strike must be greater than zero when supplied."),
                     FieldRule.OptionalPositive("multiplier", "SM_WARRANT_MULTIPLIER_INVALID", "Warrant multiplier is invalid", "Warrant multiplier must be greater than zero when supplied.")
                 ]),
-            requiredProfileValidator
+            // ADR-022 canonical-home guidance: MoneyMarketFund is the canonical home for
+            // stable-NAV money-market and government liquidity vehicles; the generic fund wrapper
+            // flagged stable-NAV is the overlap the review called out. Warning (not Error): the
+            // InvestmentFundTerms contract documents the flag, so existing records are steered,
+            // not blocked, toward the canonical class.
+            new JsonAssetClassValidator(
+                "InvestmentFund",
+                [
+                    DiscouragedTrueBooleanRule.Create(
+                        "isStableNav",
+                        SecurityValidationSeverityDto.Warning,
+                        "SM_INVESTMENT_FUND_STABLE_NAV_NONCANONICAL",
+                        "Stable-NAV vehicles belong in MoneyMarketFund",
+                        "This InvestmentFund record is flagged stable-NAV; MoneyMarketFund is the canonical home for stable-NAV money-market and government liquidity vehicles (ADR-022).",
+                        "Model the vehicle as MoneyMarketFund (fund family, sweep eligibility, WAM, liquidity-fee eligibility) through a governed amendment.")
+                ]),
+            new CompositeAssetClassValidator(
+                "CustomAsset",
+                [
+                    requiredProfileValidator,
+                    // ADR-022: a CustomAsset envelope whose classification metadata names a
+                    // securitized product should resolve to StructuredCredit via a registered
+                    // reclassifying profile (e.g. structured-credit-io-po), not stay a generic
+                    // custom asset — CustomAsset remains the home for private/other assets with no
+                    // first-class kind. Warning: the profile map, not metadata, decides identity.
+                    new JsonAssetClassValidator(
+                        "CustomAsset",
+                        [
+                            DisallowedStringValuesRule.Create(
+                                "category",
+                                ["MBS", "ABS", "CLO", "CMBS", "StructuredCredit"],
+                                SecurityValidationSeverityDto.Warning,
+                                "SM_CUSTOM_ASSET_SECURITIZED_NONCANONICAL",
+                                "Securitized products belong in StructuredCredit",
+                                "CustomAsset category '{0}' names a securitized product; StructuredCredit is the canonical home for MBS/ABS/CLO/CMBS tranches (ADR-022).",
+                                "Pin the record to a profile that resolves to StructuredCredit (e.g. structured-credit-io-po) or re-model it as a first-class StructuredCredit record.")
+                        ])
+                ])
         ];
     }
 }
@@ -338,15 +389,18 @@ internal sealed class SecurityAssetProfileAssetClassValidator : ISecurityAssetCl
 
     private readonly ISecurityAssetProfileCatalog _assetProfileCatalog;
     private readonly bool _requireProfileReference;
+    private readonly bool _enforceWriteTimeGovernance;
 
     public SecurityAssetProfileAssetClassValidator(
         string assetClass,
         ISecurityAssetProfileCatalog assetProfileCatalog,
-        bool requireProfileReference)
+        bool requireProfileReference,
+        bool enforceWriteTimeGovernance = false)
     {
         AssetClass = assetClass;
         _assetProfileCatalog = assetProfileCatalog;
         _requireProfileReference = requireProfileReference;
+        _enforceWriteTimeGovernance = enforceWriteTimeGovernance;
     }
 
     public string AssetClass { get; }
@@ -408,6 +462,30 @@ internal sealed class SecurityAssetProfileAssetClassValidator : ISecurityAssetCl
                 "Route the profile version through approval before using it for Security Master create or amend workflows."));
         }
 
+        // Status alone is not enough at WRITE time: an Approved version may not be effective yet,
+        // and a Superseded version carries the window in which it WAS the governing definition. A
+        // write evaluated outside [EffectiveFrom, EffectiveTo] pins a version that never governed
+        // the record's effective date — a current write to an expired version, or a backdated
+        // write to one not yet in force. Read-path validation deliberately skips this: a record
+        // legitimately keeps its pinned (now-superseded) version so history stays interpretable.
+        if (_enforceWriteTimeGovernance)
+        {
+            var evaluatedDate = DateOnly.FromDateTime(context.EvaluatedAtUtc.UtcDateTime.Date);
+            if (evaluatedDate < profile.EffectiveFrom
+                || (profile.EffectiveTo is DateOnly effectiveTo && evaluatedDate > effectiveTo))
+            {
+                issues.Add(SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Error,
+                    "SM_CUSTOM_PROFILE_VERSION_NOT_EFFECTIVE",
+                    "Custom asset profile version is outside its effective window",
+                    $"Profile '{profile.Name}' version '{profile.Version}' is effective " +
+                    $"{profile.EffectiveFrom:yyyy-MM-dd}–{profile.EffectiveTo?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "open"}, " +
+                    $"which does not cover the evaluated date {evaluatedDate:yyyy-MM-dd}.",
+                    ["assetSpecificTerms.customProfileId", "assetSpecificTerms.profileVersion"],
+                    "Pin the profile version whose effective window covers the write's effective date."));
+            }
+        }
+
         if (!JsonValidationReader.TryGetProperty(assetSpecificTerms, "profileFields", out var profileFields)
             || profileFields.ValueKind != JsonValueKind.Object)
         {
@@ -432,7 +510,7 @@ internal sealed class SecurityAssetProfileAssetClassValidator : ISecurityAssetCl
         }
 
         issues.AddRange(ValidateIdentifierCoverage(profile, context.Record, context.EvaluatedAtUtc));
-        issues.AddRange(ValidateProfileApprovalMetadata(assetSpecificTerms));
+        issues.AddRange(ValidateProfileApprovalMetadata(assetSpecificTerms, profile, _enforceWriteTimeGovernance));
 
         return issues;
     }
@@ -586,27 +664,60 @@ internal sealed class SecurityAssetProfileAssetClassValidator : ISecurityAssetCl
         return issues;
     }
 
-    private static IReadOnlyList<SecurityValidationIssueDto> ValidateProfileApprovalMetadata(JsonElement assetSpecificTerms)
+    private static IReadOnlyList<SecurityValidationIssueDto> ValidateProfileApprovalMetadata(
+        JsonElement assetSpecificTerms,
+        SecurityAssetProfileDefinitionDto profile,
+        bool enforceWriteTimeGovernance)
     {
-        if (JsonValidationReader.TryGetProperty(assetSpecificTerms, "profileApproval", out var approval)
+        if (!(JsonValidationReader.TryGetProperty(assetSpecificTerms, "profileApproval", out var approval)
             && approval.ValueKind == JsonValueKind.Object
-            && JsonValidationReader.TryGetString(approval, "approvedBy", out _)
-            && JsonValidationReader.TryGetDateTimeOffset(approval, "approvedAtUtc", out _)
-            && JsonValidationReader.TryGetString(approval, "approvalReference", out _))
+            && JsonValidationReader.TryGetString(approval, "approvedBy", out var approvedBy)
+            && JsonValidationReader.TryGetDateTimeOffset(approval, "approvedAtUtc", out var approvedAtUtc)
+            && JsonValidationReader.TryGetString(approval, "approvalReference", out var approvalReference)))
         {
-            return [];
+            return
+            [
+                SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Error,
+                    "SM_CUSTOM_PROFILE_APPROVAL_METADATA_REQUIRED",
+                    "Custom asset profile approval metadata is missing",
+                    "Profile-backed securities must retain immutable profile approval metadata with the pinned profile version.",
+                    ["assetSpecificTerms.profileApproval"],
+                    "Persist profileApproval.approvedBy, approvedAtUtc, and approvalReference from the governed profile approval event.")
+            ];
         }
 
-        return
-        [
-            SecurityValidationIssueFactory.Create(
-                SecurityValidationSeverityDto.Error,
-                "SM_CUSTOM_PROFILE_APPROVAL_METADATA_REQUIRED",
-                "Custom asset profile approval metadata is missing",
-                "Profile-backed securities must retain immutable profile approval metadata with the pinned profile version.",
-                ["assetSpecificTerms.profileApproval"],
-                "Persist profileApproval.approvedBy, approvedAtUtc, and approvalReference from the governed profile approval event.")
-        ];
+        // At WRITE time the approval metadata is evidence, not free text: it persists as the
+        // record's immutable audit trail, so values contradicting the governed catalog's approval
+        // facts would corrupt that trail from the first write. Read-path validation skips the
+        // comparison — a historical record's metadata reflects the approval event as it stood
+        // when written, which a later catalog re-approval must not retroactively invalidate.
+        // The approval reference is verifiable only when the catalog carries one (definitions
+        // predating the ApprovalReference field have no fact to compare, and free-text acceptance
+        // is exactly what this check exists to prevent — not a reason to fail legacy profiles).
+        var referenceContradictsCatalog = profile.ApprovalReference is { } catalogReference
+            && !string.IsNullOrWhiteSpace(catalogReference)
+            && !string.Equals(approvalReference.Trim(), catalogReference.Trim(), StringComparison.OrdinalIgnoreCase);
+        if (enforceWriteTimeGovernance
+            && (!string.Equals(approvedBy.Trim(), profile.ApprovedBy.Trim(), StringComparison.OrdinalIgnoreCase)
+                || approvedAtUtc != profile.ApprovedAtUtc
+                || referenceContradictsCatalog))
+        {
+            return
+            [
+                SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Error,
+                    "SM_CUSTOM_PROFILE_APPROVAL_METADATA_MISMATCH",
+                    "Custom asset profile approval metadata contradicts the governed catalog",
+                    $"profileApproval names approvedBy '{approvedBy}' at '{approvedAtUtc:O}' (reference '{approvalReference}'), " +
+                    $"but profile '{profile.Name}' version '{profile.Version}' was approved by '{profile.ApprovedBy}' at " +
+                    $"'{profile.ApprovedAtUtc:O}'{(profile.ApprovalReference is null ? string.Empty : $" (reference '{profile.ApprovalReference}')")}.",
+                    ["assetSpecificTerms.profileApproval"],
+                    "Copy the approval metadata from the governed profile approval event instead of supplying free text.")
+            ];
+        }
+
+        return [];
     }
 
     private static bool IsCurrencyCode(JsonElement value)
@@ -769,6 +880,95 @@ internal sealed record DistinctStringRule(
                 [$"assetSpecificTerms.{LeftFieldPath}", $"assetSpecificTerms.{RightFieldPath}"],
                 "Correct the currency pair definition and resubmit the Security Master amendment.")
             : null;
+    }
+}
+
+/// <summary>
+/// ADR-022 canonical-home rule: flags a string term whose value routes the instrument into a
+/// non-canonical modeling home (e.g. a Bond subclass naming a securitized product whose canonical
+/// home is StructuredCredit). Absent or unlisted values pass — this rule partitions homes, it does
+/// not require the field.
+/// </summary>
+internal sealed record DisallowedStringValuesRule(
+    string FieldPath,
+    IReadOnlyList<string> DisallowedValues,
+    SecurityValidationSeverityDto Severity,
+    string Code,
+    string Title,
+    string MessageFormat,
+    string SuggestedAction) : ISecurityValidationRule
+{
+    public static DisallowedStringValuesRule Create(
+        string fieldPath,
+        IReadOnlyList<string> disallowedValues,
+        SecurityValidationSeverityDto severity,
+        string code,
+        string title,
+        string messageFormat,
+        string suggestedAction)
+        => new(fieldPath, disallowedValues, severity, code, title, messageFormat, suggestedAction);
+
+    public SecurityValidationIssueDto? Validate(SecurityValidationContext context)
+    {
+        if (!JsonValidationReader.TryGetAssetTermString(context.Record.AssetSpecificTerms, FieldPath, context.Record.AssetClass, out var value))
+        {
+            return null;
+        }
+
+        var disallowed = DisallowedValues.FirstOrDefault(
+            candidate => string.Equals(candidate, value, StringComparison.OrdinalIgnoreCase));
+        if (disallowed is null)
+        {
+            return null;
+        }
+
+        return SecurityValidationIssueFactory.Create(
+            Severity,
+            Code,
+            Title,
+            string.Format(CultureInfo.InvariantCulture, MessageFormat, value),
+            [$"assetSpecificTerms.{FieldPath}"],
+            SuggestedAction);
+    }
+}
+
+/// <summary>
+/// ADR-022 canonical-home rule: flags a boolean term whose <c>true</c> value indicates the record
+/// belongs in a different canonical asset class (e.g. an InvestmentFund flagged stable-NAV, whose
+/// canonical home is MoneyMarketFund). Absent or <c>false</c> values pass.
+/// </summary>
+internal sealed record DiscouragedTrueBooleanRule(
+    string FieldPath,
+    SecurityValidationSeverityDto Severity,
+    string Code,
+    string Title,
+    string Message,
+    string SuggestedAction) : ISecurityValidationRule
+{
+    public static DiscouragedTrueBooleanRule Create(
+        string fieldPath,
+        SecurityValidationSeverityDto severity,
+        string code,
+        string title,
+        string message,
+        string suggestedAction)
+        => new(fieldPath, severity, code, title, message, suggestedAction);
+
+    public SecurityValidationIssueDto? Validate(SecurityValidationContext context)
+    {
+        if (!JsonValidationReader.TryGetAssetTermProperty(context.Record.AssetSpecificTerms, FieldPath, context.Record.AssetClass, out var property)
+            || property.ValueKind != JsonValueKind.True)
+        {
+            return null;
+        }
+
+        return SecurityValidationIssueFactory.Create(
+            Severity,
+            Code,
+            Title,
+            Message,
+            [$"assetSpecificTerms.{FieldPath}"],
+            SuggestedAction);
     }
 }
 

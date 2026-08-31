@@ -14,9 +14,9 @@ namespace Meridian.Tests.SecurityMaster;
 public sealed class CorporateActionTypeDescriptorCatalogTests
 {
     [Fact]
-    public void All_ContainsEighteenDescriptors_WithUniqueCanonicalNames()
+    public void All_ContainsTwentyNineDescriptors_WithUniqueCanonicalNames()
     {
-        CorporateActionTypeDescriptorCatalog.All.Should().HaveCount(18);
+        CorporateActionTypeDescriptorCatalog.All.Should().HaveCount(29);
         CorporateActionTypeDescriptorCatalog.All
             .Select(static descriptor => descriptor.CanonicalName)
             .Should().OnlyHaveUniqueItems();

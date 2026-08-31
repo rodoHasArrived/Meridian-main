@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Reporting;
 using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Shared.Streaming;
@@ -17,7 +18,7 @@ public static partial class FundStructureEndpoints
     /// <summary>
     /// Register the report-run status Server-Sent Events endpoint. Authorization is enforced here,
     /// where the <see cref="HttpContext"/> is available; the background broadcaster then rebuilds each
-    /// run's payload by run id alone (a run's status is a property of the run, not the viewer).
+    /// run's payload by its immutable tenant, company, and run identity.
     /// </summary>
     public static void MapReportingRunStreamEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
@@ -45,7 +46,20 @@ public static partial class FundStructureEndpoints
             }
 
             var trimmedRunId = (runId ?? string.Empty).Trim();
-            var manifest = orchestration.GetManifest(trimmedRunId);
+            var accessContext = BuildReportAccessQueryContext(context);
+            if (accessContext.RequireBoundScope != true
+                || string.IsNullOrWhiteSpace(accessContext.TenantId)
+                || string.IsNullOrWhiteSpace(accessContext.CompanyId))
+            {
+                return Results.Problem(
+                    "Reporting run streams require a bound tenant and company scope.",
+                    statusCode: StatusCodes.Status403Forbidden);
+            }
+
+            var manifest = orchestration.GetManifest(
+                    accessContext.TenantId,
+                    trimmedRunId)
+                ?? orchestration.GetManifest(trimmedRunId);
             if (manifest is null)
             {
                 return Results.Problem($"Reporting run '{runId}' was not found.", statusCode: StatusCodes.Status404NotFound);
@@ -54,7 +68,6 @@ public static partial class FundStructureEndpoints
             // Historical run access is governed by the immutable tenant and access snapshot retained
             // on the manifest, not by the template's current policy. Legacy unscoped manifests fail
             // closed on this tenant-bound endpoint.
-            var accessContext = BuildReportAccessQueryContext(context);
             var evaluation = ReportAccessPolicyEvaluator.Evaluate(manifest, accessContext);
             if (!evaluation.IsAccessible)
             {
@@ -71,7 +84,10 @@ public static partial class FundStructureEndpoints
             }
 
             var subscription = broadcaster.TrySubscribe(
-                StreamTopic.ReportRun(trimmedRunId),
+                StreamTopic.ReportRun(
+                    accessContext.TenantId,
+                    accessContext.CompanyId,
+                    manifest.RunId),
                 StreamEndpointHelpers.ResolveStreamSessionId(context));
             if (subscription is null)
             {
@@ -92,7 +108,7 @@ public static partial class FundStructureEndpoints
 
             return Results.Empty;
         })
-        .WithName("GetReportingRunStream")
+        .WithName("GetReportingRunStream").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
@@ -101,12 +117,11 @@ public static partial class FundStructureEndpoints
     }
 
     /// <summary>
-    /// Build a report-run status/audit payload by run id alone, for the report-run stream fan-out
+    /// Build a report-run status/audit payload by scoped identity for report-run stream fan-out
     /// (<see cref="Meridian.Ui.Shared.Streaming.ReportRunStreamBroadcaster"/>). Authorization is
-    /// enforced at subscribe time by the SSE endpoint, so this pure builder needs no access context —
-    /// a run's status is a property of the run, not the viewer. Returns null when the orchestration
-    /// service or the run is unavailable. The payload is emitted only to subscriptions that were
-    /// authorized against the manifest's immutable tenant/access snapshot.
+    /// enforced at subscribe time by the SSE endpoint. Returns null when the orchestration service,
+    /// scoped run, or retained company binding is unavailable. Legacy unscoped topic arguments remain
+    /// readable only when the orchestration boundary can resolve one unambiguous run.
     /// </summary>
     internal static ReportingRunAuditTrailDto? TryBuildReportRunAuditTrail(IServiceProvider services, string runId)
     {
@@ -116,9 +131,36 @@ public static partial class FundStructureEndpoints
             return null;
         }
 
-        var manifest = orchestration.GetManifest((runId ?? string.Empty).Trim());
+        var argument = (runId ?? string.Empty).Trim();
+        ReportingOutputManifest? manifest;
+        IReadOnlyList<ReportingRunAuditEntry> audit;
+        if (StreamTopic.TryParseScopedReportRun(
+                argument,
+                out var tenantId,
+                out var companyId,
+                out var scopedRunId))
+        {
+            manifest = orchestration.GetManifest(tenantId, scopedRunId);
+            if (!string.Equals(
+                    manifest?.OperationalScope?.CompanyId,
+                    companyId,
+                    StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            audit = orchestration.GetAudit(tenantId, scopedRunId);
+        }
+        else
+        {
+            manifest = orchestration.GetManifest(argument);
+            audit = manifest is null
+                ? []
+                : orchestration.GetAudit(manifest.RunId);
+        }
+
         return manifest is null
             ? null
-            : ProjectReportingRunAuditTrail(manifest, orchestration.GetAudit(manifest.RunId));
+            : ProjectReportingRunAuditTrail(manifest, audit);
     }
 }

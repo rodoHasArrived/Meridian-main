@@ -19,6 +19,7 @@ using Meridian.Storage.Archival;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -962,9 +963,6 @@ public sealed partial class ProviderLedgerReconciliationService
 
     private static string NormalizeSymbol(string? symbol)
         => string.IsNullOrWhiteSpace(symbol) ? string.Empty : symbol.Trim().ToUpperInvariant();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static bool IsIncomeTransaction(string transactionType)
     {

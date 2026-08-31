@@ -1,7 +1,9 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Threading;
+using Meridian.Core.IO;
 using Meridian.Core.Logging;
+using Meridian.Storage.Archival;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Core;
@@ -12,12 +14,22 @@ namespace Meridian.Infrastructure.Adapters.Core;
 /// </summary>
 public sealed class BackfillJobManager : IDisposable
 {
+    internal const string HostShutdownPauseReason =
+        "Paused during host shutdown; resume the job to rebuild pending requests.";
+    internal const string InterruptedHostPauseReason =
+        "Recovered after an interrupted host lifecycle; resume the job to rebuild pending requests.";
+
     private readonly ConcurrentDictionary<string, BackfillJob> _jobs = new();
     private readonly DataGapAnalyzer _gapAnalyzer;
     private readonly BackfillRequestQueue _requestQueue;
     private readonly string _jobsDirectory;
+    private readonly RootedPathGuard _jobsPathGuard;
+    private readonly Func<string, string, CancellationToken, Task> _atomicWriteAsync;
     private readonly ILogger _log;
     private readonly SemaphoreSlim _persistLock = new(1, 1);
+    private readonly object _jobCancellationHandlerSync = new();
+    private Func<string, CancellationToken, Task>? _jobCancellationHandler;
+    private Func<IReadOnlyCollection<BackfillRequest>, Task>? _uncommittedBatchCancellationHandler;
     private bool _disposed;
 
     /// <summary>
@@ -35,10 +47,28 @@ public sealed class BackfillJobManager : IDisposable
         BackfillRequestQueue requestQueue,
         string jobsDirectory,
         ILogger? log = null)
+        : this(
+            gapAnalyzer,
+            requestQueue,
+            jobsDirectory,
+            AtomicFileWriter.WriteAsync,
+            log)
+    {
+    }
+
+    internal BackfillJobManager(
+        DataGapAnalyzer gapAnalyzer,
+        BackfillRequestQueue requestQueue,
+        string jobsDirectory,
+        Func<string, string, CancellationToken, Task> atomicWriteAsync,
+        ILogger? log = null)
     {
         _gapAnalyzer = gapAnalyzer;
         _requestQueue = requestQueue;
-        _jobsDirectory = jobsDirectory;
+        _jobsPathGuard = new RootedPathGuard(jobsDirectory);
+        _jobsDirectory = _jobsPathGuard.RootPath;
+        _atomicWriteAsync = atomicWriteAsync
+            ?? throw new ArgumentNullException(nameof(atomicWriteAsync));
         _log = log ?? LoggingSetup.ForContext<BackfillJobManager>();
 
         // Ensure jobs directory exists
@@ -46,6 +76,37 @@ public sealed class BackfillJobManager : IDisposable
         {
             Directory.CreateDirectory(_jobsDirectory);
         }
+    }
+
+    /// <summary>
+    /// Registers the worker-owned cancellation boundary for admitted provider attempts.
+    /// The job manager remains usable without a worker, in which case cancellation is limited
+    /// to pending queue entries.
+    /// </summary>
+    internal IDisposable RegisterJobCancellationHandler(
+        Func<string, CancellationToken, Task> cancellationHandler,
+        Func<IReadOnlyCollection<BackfillRequest>, Task> uncommittedBatchCancellationHandler)
+    {
+        ArgumentNullException.ThrowIfNull(cancellationHandler);
+        ArgumentNullException.ThrowIfNull(uncommittedBatchCancellationHandler);
+
+        lock (_jobCancellationHandlerSync)
+        {
+            if (_jobCancellationHandler is not null ||
+                _uncommittedBatchCancellationHandler is not null)
+            {
+                throw new InvalidOperationException(
+                    "A backfill job cancellation handler is already registered.");
+            }
+
+            _jobCancellationHandler = cancellationHandler;
+            _uncommittedBatchCancellationHandler = uncommittedBatchCancellationHandler;
+        }
+
+        return new JobCancellationRegistration(
+            this,
+            cancellationHandler,
+            uncommittedBatchCancellationHandler);
     }
 
     /// <summary>
@@ -63,14 +124,38 @@ public sealed class BackfillJobManager : IDisposable
         {
             try
             {
+                _jobsPathGuard.EnsurePath(file);
                 var json = await File.ReadAllTextAsync(file, ct).ConfigureAwait(false);
                 var job = JsonSerializer.Deserialize<BackfillJob>(json);
 
                 if (job != null)
                 {
+                    EnsurePersistedJobIdentity(job, file);
+                    var previousStatus = job.Status;
+                    if (job.Status is BackfillJobStatus.Running or BackfillJobStatus.RateLimited)
+                    {
+                        // Request-queue contents are intentionally process-local. Persisted jobs
+                        // that claimed to be active when the previous process ended must not be
+                        // reloaded as Running with no work behind them.
+                        job.Status = BackfillJobStatus.Paused;
+                        job.PausedAt = DateTimeOffset.UtcNow;
+                        job.StatusReason = InterruptedHostPauseReason;
+                    }
+
                     _jobs[job.JobId] = job;
+
+                    if (job.Status != previousStatus)
+                    {
+                        await PersistJobAsync(job, ct).ConfigureAwait(false);
+                        OnJobStatusChanged?.Invoke(job, previousStatus);
+                    }
+
                     _log.Debug("Loaded job {JobId}: {Name} ({Status})", job.JobId, job.Name, job.Status);
                 }
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -124,7 +209,10 @@ public sealed class BackfillJobManager : IDisposable
         if (!job.CanStart)
             throw new InvalidOperationException($"Job {jobId} cannot be started (status: {job.Status})");
 
-        var previousStatus = job.Status;
+        var startSnapshot = BackfillJobStartSnapshot.Capture(job);
+        var previousStatus = startSnapshot.Status;
+        IReadOnlyList<BackfillRequest> admittedRequests = Array.Empty<BackfillRequest>();
+        var durableStartStatePersisted = false;
         job.Status = BackfillJobStatus.Running;
         job.StartedAt ??= DateTimeOffset.UtcNow;
         job.PausedAt = null;
@@ -153,12 +241,16 @@ public sealed class BackfillJobManager : IDisposable
                     job.CompletedAt = DateTimeOffset.UtcNow;
                     job.StatusReason = "No data gaps detected";
                     await PersistJobAsync(job, ct).ConfigureAwait(false);
+                    durableStartStatePersisted = true;
                     OnJobStatusChanged?.Invoke(job, previousStatus);
                     return;
                 }
 
                 // Enqueue requests for gaps
-                await _requestQueue.EnqueueJobRequestsAsync(job, gapAnalysis, ct).ConfigureAwait(false);
+                admittedRequests = await _requestQueue.EnqueueJobRequestsAsync(
+                    job,
+                    gapAnalysis,
+                    ct).ConfigureAwait(false);
             }
             else
             {
@@ -185,22 +277,118 @@ public sealed class BackfillJobManager : IDisposable
                     };
                 }
 
-                await _requestQueue.EnqueueJobRequestsAsync(job, gapAnalysis, ct).ConfigureAwait(false);
+                admittedRequests = await _requestQueue.EnqueueJobRequestsAsync(
+                    job,
+                    gapAnalysis,
+                    ct).ConfigureAwait(false);
             }
 
             await PersistJobAsync(job, ct).ConfigureAwait(false);
+            durableStartStatePersisted = true;
             OnJobStatusChanged?.Invoke(job, previousStatus);
 
             _log.Information("Started job {JobId}: {PendingRequests} requests queued",
                 jobId, _requestQueue.PendingCount);
         }
-        catch (Exception ex)
+        catch (OperationCanceledException cancellation) when (ct.IsCancellationRequested)
         {
+            if (durableStartStatePersisted)
+                throw;
+
+            var rollbackFailures = new List<Exception>();
+            try
+            {
+                await RevokeUncommittedBatchAsync(admittedRequests).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                rollbackFailures.Add(new InvalidOperationException(
+                    $"Failed to roll back requests admitted while starting backfill job {jobId}.",
+                    ex));
+            }
+
+            startSnapshot.Restore(job);
+            try
+            {
+                // The caller token is already cancelled. Use a non-cancellable durability
+                // boundary so cancellation is never persisted as a normal job failure.
+                await PersistJobAsync(job, CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                rollbackFailures.Add(new InvalidOperationException(
+                    $"Failed to persist the restored state for cancelled backfill job start {jobId}.",
+                    ex));
+            }
+
+            if (rollbackFailures.Count > 0)
+            {
+                rollbackFailures.Insert(0, cancellation);
+                throw new AggregateException(
+                    $"Backfill job {jobId} start was cancelled and rollback completed with failures.",
+                    rollbackFailures);
+            }
+
+            throw;
+        }
+        catch (Exception originalFailure)
+        {
+            if (durableStartStatePersisted)
+                throw;
+
+            var transitionFailures = new List<Exception>();
+            try
+            {
+                // A Running-state persistence failure means this batch never acquired durable
+                // ownership. Revoke pending entries and await any provider attempt that already
+                // dequeued one before publishing a terminal job state.
+                await RevokeUncommittedBatchAsync(admittedRequests).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                transitionFailures.Add(new InvalidOperationException(
+                    $"Failed to revoke requests admitted while starting backfill job {jobId}.",
+                    ex));
+            }
+
             job.Status = BackfillJobStatus.Failed;
-            job.StatusReason = ex.Message;
+            job.StatusReason = originalFailure.Message;
             job.CompletedAt = DateTimeOffset.UtcNow;
-            await PersistJobAsync(job, ct).ConfigureAwait(false);
-            OnJobStatusChanged?.Invoke(job, previousStatus);
+            var failedStatePersisted = false;
+            try
+            {
+                await PersistJobAsync(job, CancellationToken.None).ConfigureAwait(false);
+                failedStatePersisted = true;
+            }
+            catch (Exception ex)
+            {
+                transitionFailures.Add(new InvalidOperationException(
+                    $"Failed to persist the terminal state for backfill job {jobId}.",
+                    ex));
+            }
+
+            if (failedStatePersisted)
+            {
+                try
+                {
+                    OnJobStatusChanged?.Invoke(job, previousStatus);
+                }
+                catch (Exception ex)
+                {
+                    transitionFailures.Add(new InvalidOperationException(
+                        $"A backfill status observer failed while reporting job {jobId}.",
+                        ex));
+                }
+            }
+
+            if (transitionFailures.Count > 0)
+            {
+                transitionFailures.Insert(0, originalFailure);
+                throw new AggregateException(
+                    $"Backfill job {jobId} failed to start and terminal cleanup completed with failures.",
+                    transitionFailures);
+            }
+
             throw;
         }
     }
@@ -238,6 +426,18 @@ public sealed class BackfillJobManager : IDisposable
         if (job.Status != BackfillJobStatus.Paused && job.Status != BackfillJobStatus.RateLimited)
             throw new InvalidOperationException($"Job {jobId} is not paused (status: {job.Status})");
 
+        var queuedRequests = await _requestQueue.GetJobRequestsAsync(jobId, ct).ConfigureAwait(false);
+        if (queuedRequests.Count == 0)
+        {
+            // After restart there is no durable request queue. Re-run gap analysis so only
+            // still-missing data is admitted, and reset stale per-attempt progress first.
+            if (job.Status == BackfillJobStatus.RateLimited)
+                job.Status = BackfillJobStatus.Paused;
+            job.SymbolProgress.Clear();
+            await StartJobAsync(jobId, ct).ConfigureAwait(false);
+            return;
+        }
+
         var previousStatus = job.Status;
         job.Status = BackfillJobStatus.Running;
         job.PausedAt = null;
@@ -261,14 +461,34 @@ public sealed class BackfillJobManager : IDisposable
             throw new InvalidOperationException($"Job {jobId} is already complete");
 
         var previousStatus = job.Status;
+
+        // Cancellation is a two-phase transition. First prevent new admissions and wait for
+        // every provider attempt already owned by this job to observe cancellation. Only then
+        // may the durable job record claim the terminal Cancelled state.
+        Func<string, CancellationToken, Task>? cancellationHandler;
+        lock (_jobCancellationHandlerSync)
+        {
+            cancellationHandler = _jobCancellationHandler;
+        }
+
+        if (cancellationHandler is null)
+        {
+            await _requestQueue.CancelJobRequestsAsync(
+                jobId,
+                CancellationToken.None).ConfigureAwait(false);
+        }
+        else
+        {
+            await cancellationHandler(jobId, ct).ConfigureAwait(false);
+        }
+
         job.Status = BackfillJobStatus.Cancelled;
         job.CompletedAt = DateTimeOffset.UtcNow;
         job.StatusReason = "Cancelled by user";
 
-        // Cancel pending requests
-        await _requestQueue.CancelJobRequestsAsync(jobId, ct).ConfigureAwait(false);
-
-        await PersistJobAsync(job, ct).ConfigureAwait(false);
+        // Once queue/provider ownership has been revoked, persist the truthful terminal state
+        // even if the initiating caller cancels immediately after that commit point.
+        await PersistJobAsync(job, CancellationToken.None).ConfigureAwait(false);
         OnJobStatusChanged?.Invoke(job, previousStatus);
 
         _log.Information("Cancelled job {JobId}", jobId);
@@ -443,7 +663,8 @@ public sealed class BackfillJobManager : IDisposable
             {
                 WriteIndented = true
             });
-            await File.WriteAllTextAsync(filePath, json, ct).ConfigureAwait(false);
+            _jobsPathGuard.EnsurePath(filePath);
+            await _atomicWriteAsync(filePath, json, ct).ConfigureAwait(false);
         }
         finally
         {
@@ -453,7 +674,23 @@ public sealed class BackfillJobManager : IDisposable
 
     private string GetJobFilePath(string jobId)
     {
-        return Path.Combine(_jobsDirectory, $"{jobId}.json");
+        RootedPathGuard.ValidatePathSegment(jobId, nameof(jobId));
+        return _jobsPathGuard.ResolvePath($"{jobId}.json");
+    }
+
+    private void EnsurePersistedJobIdentity(BackfillJob job, string sourcePath)
+    {
+        var expectedPath = GetJobFilePath(job.JobId);
+        var actualPath = Path.GetFullPath(sourcePath);
+        var comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+
+        if (!string.Equals(actualPath, expectedPath, comparison))
+        {
+            throw new InvalidDataException(
+                $"Persisted backfill job identity '{job.JobId}' does not match file '{actualPath}'.");
+        }
     }
 
     private static List<DateOnly> GenerateTradingDays(DateOnly from, DateOnly to)
@@ -471,6 +708,120 @@ public sealed class BackfillJobManager : IDisposable
         }
 
         return days;
+    }
+
+    private void UnregisterJobCancellationHandler(
+        Func<string, CancellationToken, Task> cancellationHandler,
+        Func<IReadOnlyCollection<BackfillRequest>, Task> uncommittedBatchCancellationHandler)
+    {
+        lock (_jobCancellationHandlerSync)
+        {
+            if (ReferenceEquals(_jobCancellationHandler, cancellationHandler))
+                _jobCancellationHandler = null;
+            if (ReferenceEquals(
+                    _uncommittedBatchCancellationHandler,
+                    uncommittedBatchCancellationHandler))
+            {
+                _uncommittedBatchCancellationHandler = null;
+            }
+        }
+    }
+
+    private async Task RevokeUncommittedBatchAsync(
+        IReadOnlyCollection<BackfillRequest> admittedRequests)
+    {
+        Func<IReadOnlyCollection<BackfillRequest>, Task>? batchCancellationHandler;
+        lock (_jobCancellationHandlerSync)
+        {
+            batchCancellationHandler = _uncommittedBatchCancellationHandler;
+        }
+
+        if (batchCancellationHandler is null)
+        {
+            await _requestQueue.RollbackPendingRequestsAsync(
+                admittedRequests,
+                CancellationToken.None).ConfigureAwait(false);
+            return;
+        }
+
+        // A live worker may already have dequeued part of the uncommitted batch. Revoke and
+        // observe exactly these request objects before the job leaves its provisional state.
+        await batchCancellationHandler(admittedRequests).ConfigureAwait(false);
+    }
+
+    private sealed class JobCancellationRegistration(
+        BackfillJobManager owner,
+        Func<string, CancellationToken, Task> cancellationHandler,
+        Func<IReadOnlyCollection<BackfillRequest>, Task> uncommittedBatchCancellationHandler)
+        : IDisposable
+    {
+        private BackfillJobManager? _owner = owner;
+
+        public void Dispose()
+        {
+            Interlocked.Exchange(ref _owner, null)?
+                .UnregisterJobCancellationHandler(
+                    cancellationHandler,
+                    uncommittedBatchCancellationHandler);
+        }
+    }
+
+    private sealed record BackfillJobStartSnapshot(
+        BackfillJobStatus Status,
+        DateTimeOffset? StartedAt,
+        DateTimeOffset? CompletedAt,
+        DateTimeOffset? PausedAt,
+        string? StatusReason,
+        int GapsDetected,
+        IReadOnlyDictionary<string, SymbolBackfillProgress> SymbolProgress)
+    {
+        public static BackfillJobStartSnapshot Capture(BackfillJob job)
+            => new(
+                job.Status,
+                job.StartedAt,
+                job.CompletedAt,
+                job.PausedAt,
+                job.StatusReason,
+                job.Statistics.GapsDetected,
+                job.SymbolProgress.ToDictionary(
+                    static pair => pair.Key,
+                    static pair => CloneProgress(pair.Value),
+                    StringComparer.Ordinal));
+
+        public void Restore(BackfillJob job)
+        {
+            job.Status = Status;
+            job.StartedAt = StartedAt;
+            job.CompletedAt = CompletedAt;
+            job.PausedAt = PausedAt;
+            job.StatusReason = StatusReason;
+            job.Statistics.GapsDetected = GapsDetected;
+            job.SymbolProgress.Clear();
+            foreach (var (symbol, progress) in SymbolProgress)
+                job.SymbolProgress[symbol] = CloneProgress(progress);
+        }
+
+        private static SymbolBackfillProgress CloneProgress(SymbolBackfillProgress source)
+        {
+            var clone = new SymbolBackfillProgress
+            {
+                Symbol = source.Symbol,
+                DatesToFill = [.. source.DatesToFill],
+                TotalRequests = source.TotalRequests,
+                CompletedRequests = source.CompletedRequests,
+                FailedRequests = source.FailedRequests,
+                BarsRetrieved = source.BarsRetrieved,
+                SuccessfulProvider = source.SuccessfulProvider,
+                LastError = source.LastError,
+                StartedAt = source.StartedAt,
+                CompletedAt = source.CompletedAt,
+                Status = source.Status
+            };
+
+            clone.FilledDates.UnionWith(source.FilledDates);
+            clone.FailedDates.UnionWith(source.FailedDates);
+            return clone;
+        }
     }
 
     public void Dispose()

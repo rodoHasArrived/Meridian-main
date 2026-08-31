@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
@@ -56,6 +57,27 @@ public sealed class ExportValidatorTests : IDisposable
         result.IsValid.Should().BeTrue();
         result.Errors.Should().BeEmpty();
         result.EstimatedRecordCount.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task ValidateAsync_BySymbolCompressedSourceWithRequireData_ShouldCountRecords()
+    {
+        await WriteBySymbolGzipJsonlAsync("SPY", "Trade", new DateTime(2026, 1, 3), 3);
+
+        var result = await _validator.ValidateAsync(new ExportRequest
+        {
+            OutputDirectory = _outputDir,
+            Symbols = new[] { "SPY" },
+            EventTypes = new[] { "Trade" },
+            StartDate = new DateTime(2026, 1, 1),
+            EndDate = new DateTime(2026, 1, 5),
+            ValidationRules = new ExportValidationRulesRequest { RequireData = true }
+        });
+
+        result.IsValid.Should().BeTrue();
+        result.Errors.Should().BeEmpty();
+        result.EstimatedRecordCount.Should().Be(3);
+        result.EstimatedSizeBytes.Should().BeGreaterThan(0);
     }
 
     [Fact]
@@ -441,6 +463,23 @@ public sealed class ExportValidatorTests : IDisposable
         for (int i = 0; i < lineCount; i++)
             sb.AppendLine($"{{\"index\":{i}}}");
         await File.WriteAllTextAsync(path, sb.ToString());
+    }
+
+    private async Task WriteBySymbolGzipJsonlAsync(
+        string symbol,
+        string eventType,
+        DateTime date,
+        int lineCount)
+    {
+        var directory = Path.Combine(_dataRoot, symbol, eventType);
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, $"{date:yyyy-MM-dd}.jsonl.gz");
+
+        await using var file = File.Create(path);
+        await using var gzip = new GZipStream(file, CompressionLevel.SmallestSize);
+        await using var writer = new StreamWriter(gzip, Encoding.UTF8);
+        for (var index = 0; index < lineCount; index++)
+            await writer.WriteLineAsync($"{{\"index\":{index}}}");
     }
 
     private async Task WriteManifestAsync<T>(T[] outputs)

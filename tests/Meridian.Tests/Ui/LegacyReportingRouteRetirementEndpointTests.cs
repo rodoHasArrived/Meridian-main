@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
+using Meridian.Reporting;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NSubstitute;
 
 namespace Meridian.Tests.Ui;
 
@@ -142,6 +144,147 @@ public sealed class LegacyReportingRouteRetirementEndpointTests
         records[0].AccessPolicySnapshotHash.Should().NotBeNullOrWhiteSpace();
     }
 
+    [Fact]
+    public async Task LegacyPackHistoryRead_WithoutLegacyRepository_ReturnsGoneWithCanonicalGuidance()
+    {
+        await using var app = await CreateAppAsync();
+
+        using var response = await app.GetTestClient().GetAsync(
+            "/api/fund-structure/reporting/packs/history?period=2026-03&fundAccountId=acct-1");
+        var body = await response.Content.ReadAsStringAsync();
+
+        response.StatusCode.Should().Be(HttpStatusCode.Gone);
+        body.Should().Contain("/api/fund-structure/reporting/runs");
+        body.Should().Contain("Legacy reporting route retired");
+    }
+
+    [Fact]
+    public async Task CanonicalRunHistory_ProjectsTenantScopedRunAndImmutableDeliveryReceipts()
+    {
+        var now = new DateTimeOffset(2026, 7, 26, 12, 0, 0, TimeSpan.Zero);
+        var manifest = new ReportingOutputManifest(
+            "canonical-run-history-001",
+            "investor-monthly-statement",
+            new DateOnly(2026, 7, 25),
+            ReportingRunStatus.Released,
+            [],
+            ["artifact://canonical-run-history-001/investor-statement.pdf"],
+            1,
+            ReportingRunTrigger.AdHoc,
+            OperationalScope: new ReportingOperationalScope(
+                "tenant-alpha",
+                "organization-alpha",
+                "company-alpha",
+                "fund-alpha",
+                "book-alpha",
+                "2026-07"),
+            ImmutableAccessScope: new ReportingAccessScope(
+                "policy-company-alpha",
+                "1",
+                ReportingGovernanceAccessMode.CompanyWide,
+                "admin.alpha",
+                AllowOwnerAccess: true,
+                Principals: [],
+                PolicyHash: new string('a', 64)));
+        var snapshot = new ReportingRunSnapshot(manifest, [], now);
+        var runStore = Substitute.For<IReportingRunStore>();
+        runStore
+            .ListRuns("tenant-alpha", "company-alpha", Arg.Any<int>(), Arg.Any<int>())
+            .Returns([snapshot]);
+
+        const string packageId = "report-package-history-001";
+        var receipt = new ReportingDeliveryReceipt(
+            "receipt-history-001",
+            ReportingDeliveryReceiptKind.Delivered,
+            now,
+            "secure-email",
+            "provider-history-001",
+            "provider-evidence-history-001");
+        var release = new ReportingDeliveryReleaseAuthorization(
+            "release-history-001",
+            ReportingReleaseState.Released,
+            "tenant-alpha",
+            packageId,
+            manifest.RunId,
+            "revision-1",
+            new string('b', 64),
+            [],
+            ["release-evidence-history-001"],
+            now.AddMinutes(-1),
+            "release.officer",
+            "release-proof-history-001");
+        var job = new ReportingDeliveryJobRecord(
+            "delivery-history-001",
+            "tenant-alpha",
+            packageId,
+            "investor-relations",
+            "secure-email",
+            release,
+            "controller.user",
+            new string('c', 64),
+            new ReportingDeliveryPayload(
+                "Investor relations",
+                "Investor relations",
+                "investor@example.test",
+                "Report ready",
+                "Use the secure portal.",
+                $"/portal/reporting/secure/packages/{manifest.RunId}"),
+            ReportingDeliveryState.Delivered,
+            1,
+            3,
+            now.AddMinutes(-1),
+            now,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "provider-history-001",
+            null,
+            [receipt]);
+        var deliveryStore = Substitute.For<IReportingDeliveryStore>();
+        deliveryStore
+            .ListByRunAsync("tenant-alpha", manifest.RunId, Arg.Any<CancellationToken>())
+            .Returns([job]);
+        var readiness = Substitute.For<IReportingDeploymentReadinessService>();
+        readiness.Evaluate().Returns(new ReportingDeploymentCapabilityDto(
+            IsReady: true,
+            DurableGovernance: true,
+            DurableArtifacts: true,
+            DurableReconciliationEvidence: true,
+            DurableRuns: true,
+            DurableScheduling: true,
+            DurableDelivery: true,
+            RecipientDestinationsConfigured: true,
+            ClientDocumentsConfigured: true,
+            MigrationsManaged: true,
+            Components: [],
+            BlockingReasons: []));
+
+        await using var app = await CreateAppAsync(
+            configureServices: services =>
+            {
+                services.AddSingleton(readiness);
+                services.AddSingleton(new ReportPackRunReadService(
+                    new DefaultReportingTemplateCatalog(),
+                    runStore,
+                    canonicalDeliveryStore: deliveryStore));
+            });
+
+        var history = await app.GetTestClient()
+            .GetFromJsonAsync<WorkstationReportingHistoryPayload>(
+                "/api/fund-structure/reporting/runs?limit=10",
+                JsonOptions);
+
+        history.Should().NotBeNull();
+        history!.Runs.Should().ContainSingle(run => run.RunId == manifest.RunId);
+        var delivery = history.Deliveries.Should().ContainSingle().Subject;
+        delivery.JobId.Should().Be(job.JobId);
+        delivery.Receipts.Should().ContainSingle(projected =>
+            projected.ReceiptId == receipt.ReceiptId
+            && projected.ProviderReference == receipt.ProviderReference);
+    }
+
     private static ReportAccessQueryContext BoundAccess(string actor, string tenantId, string companyId) =>
         new(
             ActorPrincipalId: actor,
@@ -151,7 +294,9 @@ public sealed class LegacyReportingRouteRetirementEndpointTests
             TenantId: tenantId,
             RequireBoundScope: true);
 
-    private static async Task<WebApplication> CreateAppAsync(ReportPackWorkflowService? workflow = null)
+    private static async Task<WebApplication> CreateAppAsync(
+        ReportPackWorkflowService? workflow = null,
+        Action<IServiceCollection>? configureServices = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -160,6 +305,12 @@ public sealed class LegacyReportingRouteRetirementEndpointTests
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton(workflow ?? new ReportPackWorkflowService());
         builder.Services.AddSingleton<ReportPackDeliveryService>();
+        if (workflow is not null)
+        {
+            builder.Services.AddSingleton(Substitute.For<IGovernanceReportPackRepository>());
+        }
+
+        configureServices?.Invoke(builder.Services);
 
         var app = builder.Build();
         app.Use(async (context, next) =>

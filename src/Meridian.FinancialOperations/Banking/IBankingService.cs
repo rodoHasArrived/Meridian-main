@@ -20,6 +20,15 @@ public interface IBankingService : IBankTransactionSource
     /// <summary>Approve a pending payment intent without recording bank execution.</summary>
     Task<PendingPaymentDto?> ApprovePaymentAsync(Guid pendingPaymentId, ApprovePaymentRequest request, CancellationToken ct = default);
 
+    /// <summary>
+    /// Repair the missing currency of a legacy Pending payment while retaining operator evidence.
+    /// Existing currencies and reviewed payments are immutable.
+    /// </summary>
+    Task<PendingPaymentDto?> RemediatePaymentCurrencyAsync(
+        Guid pendingPaymentId,
+        RemediatePaymentCurrencyRequest request,
+        CancellationToken ct = default);
+
     /// <summary>Reject a pending payment without recording bank evidence.</summary>
     Task<PendingPaymentDto?> RejectPaymentAsync(Guid pendingPaymentId, RejectPaymentRequest request, CancellationToken ct = default);
 

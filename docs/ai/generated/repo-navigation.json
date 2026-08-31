@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-12T02:50:18Z",
+  "generatedAt": "2026-08-24T06:17:53Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -181,6 +181,7 @@
         "src/Meridian.Ui.Services",
         "src/Meridian.Ui.Shared",
         "src/Meridian.Ui/dashboard/package.json",
+        "src/Meridian.Ui/dashboard/src/app.tsx",
         "src/Meridian.Ui/dashboard/src/main.tsx",
         "src/Meridian.Wpf/App.xaml.cs",
         "src/Meridian.Wpf/MainWindow.xaml",
@@ -439,6 +440,7 @@
       "projectReferences": [
         "Meridian.Application",
         "Meridian.Audit",
+        "Meridian.Backtesting",
         "Meridian.Contracts",
         "Meridian.Core",
         "Meridian.Domain",
@@ -446,6 +448,7 @@
         "Meridian.Infrastructure",
         "Meridian.ProviderSdk",
         "Meridian.QuantScript",
+        "Meridian.QuantScript.Worker",
         "Meridian.Storage",
         "Meridian.Ui.Services",
         "Meridian.Ui.Shared"
@@ -527,6 +530,7 @@
       "projectReferences": [
         "Meridian.Application",
         "Meridian.Backtesting.Sdk",
+        "Meridian.Instruments",
         "Meridian.Storage",
         "Meridian.Strategies"
       ],
@@ -676,7 +680,8 @@
         "Meridian.Contracts",
         "Meridian.Core",
         "Meridian.Execution.Sdk",
-        "Meridian.Ledger"
+        "Meridian.Ledger",
+        "Meridian.Storage"
       ],
       "relatedDocs": []
     },
@@ -867,6 +872,7 @@
         "Meridian.Backtesting.Sdk",
         "Meridian.Contracts",
         "Meridian.Domain",
+        "Meridian.ProcessIsolation",
         "Meridian.ProviderSdk",
         "Meridian.Storage"
       ],
@@ -935,7 +941,8 @@
         "Meridian.Core",
         "Meridian.Domain",
         "Meridian.Ledger",
-        "Meridian.ProviderSdk"
+        "Meridian.ProviderSdk",
+        "Meridian.Reporting"
       ],
       "relatedDocs": [
         "docs/ai/claude/CLAUDE.storage.md"
@@ -972,7 +979,8 @@
         "Meridian.FSharp",
         "Meridian.FSharp.Ledger",
         "Meridian.FSharp.Trading",
-        "Meridian.Infrastructure"
+        "Meridian.Infrastructure",
+        "Meridian.Instruments"
       ],
       "relatedDocs": []
     },
@@ -1036,6 +1044,7 @@
         "Meridian.Backtesting.Sdk",
         "Meridian.Contracts",
         "Meridian.DataIntegration",
+        "Meridian.Documents",
         "Meridian.Entities",
         "Meridian.Execution",
         "Meridian.FSharp",
@@ -1045,9 +1054,11 @@
         "Meridian.Instruments",
         "Meridian.Platform",
         "Meridian.PortfolioRecords",
+        "Meridian.ProviderSdk",
         "Meridian.QuantScript",
         "Meridian.ReferenceData",
         "Meridian.Reporting",
+        "Meridian.Risk",
         "Meridian.Storage",
         "Meridian.Strategies"
       ],
@@ -1083,10 +1094,12 @@
       ],
       "projectReferences": [
         "Meridian.Backtesting",
+        "Meridian.Contracts",
         "Meridian.Identity",
         "Meridian.Infrastructure",
         "Meridian.Platform",
         "Meridian.QuantScript",
+        "Meridian.QuantScript.Worker",
         "Meridian.Reporting",
         "Meridian.Storage",
         "Meridian.Strategies",
@@ -1232,7 +1245,8 @@
       ],
       "entrypoints": [
         "src/Meridian.Ui/dashboard/package.json",
-        "src/Meridian.Ui/dashboard/src/main.tsx"
+        "src/Meridian.Ui/dashboard/src/main.tsx",
+        "src/Meridian.Ui/dashboard/src/app.tsx"
       ],
       "keyContracts": [
         "src/Meridian.Ui/dashboard/package.json",
@@ -1700,6 +1714,11 @@
     },
     {
       "from": "Meridian",
+      "to": "Meridian.Backtesting",
+      "reason": "Meridian references Meridian.Backtesting directly via project reference."
+    },
+    {
+      "from": "Meridian",
       "to": "Meridian.Contracts",
       "reason": "Meridian references Meridian.Contracts directly via project reference."
     },
@@ -1872,6 +1891,11 @@
       "from": "Meridian.Execution",
       "to": "Meridian.Ledger",
       "reason": "Meridian.Execution references Meridian.Ledger directly via project reference."
+    },
+    {
+      "from": "Meridian.Execution",
+      "to": "Meridian.Storage",
+      "reason": "Meridian.Execution references Meridian.Storage directly via project reference."
     },
     {
       "from": "Meridian.Execution.Sdk",
@@ -2110,8 +2134,18 @@
     },
     {
       "from": "Meridian.Ui.Shared",
+      "to": "Meridian.ProviderSdk",
+      "reason": "Meridian.Ui.Shared references Meridian.ProviderSdk directly via project reference."
+    },
+    {
+      "from": "Meridian.Ui.Shared",
       "to": "Meridian.QuantScript",
       "reason": "Meridian.Ui.Shared references Meridian.QuantScript directly via project reference."
+    },
+    {
+      "from": "Meridian.Ui.Shared",
+      "to": "Meridian.Risk",
+      "reason": "Meridian.Ui.Shared references Meridian.Risk directly via project reference."
     },
     {
       "from": "Meridian.Ui.Shared",
@@ -2127,6 +2161,11 @@
       "from": "Meridian.Wpf",
       "to": "Meridian.Backtesting",
       "reason": "Meridian.Wpf references Meridian.Backtesting directly via project reference."
+    },
+    {
+      "from": "Meridian.Wpf",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.Wpf references Meridian.Contracts directly via project reference."
     },
     {
       "from": "Meridian.Wpf",
@@ -2186,324 +2225,324 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx",
+      "path": "src/Meridian.Execution/OrderManagementSystem.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-08-24T04:06:54Z",
+      "lastCommit": "0854e607d",
+      "lastSummary": "Carry face-value sizing through replay, marks, and the paper gateway",
+      "touches": 10
+    },
+    {
+      "path": "src/Meridian.Execution.Sdk/Models.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-08-24T04:06:54Z",
+      "lastCommit": "0854e607d",
+      "lastSummary": "Carry face-value sizing through replay, marks, and the paper gateway",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Execution/Services/PaperTradingPortfolio.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-08-24T04:06:54Z",
+      "lastCommit": "0854e607d",
+      "lastSummary": "Carry face-value sizing through replay, marks, and the paper gateway",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Execution/PaperTradingGateway.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-08-24T04:06:54Z",
+      "lastCommit": "0854e607d",
+      "lastSummary": "Carry face-value sizing through replay, marks, and the paper gateway",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-12T00:56:51+00:00",
-      "lastCommit": "80cd751e",
-      "lastSummary": "Fix inherited settings-screen.tsx breakage from main's WIP metric-tone refactor",
-      "touches": 18
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
+      "touches": 13
     },
     {
-      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-07-12T00:15:29+00:00",
-      "lastCommit": "086a1277",
-      "lastSummary": "Extract OperationsLedgerPostingService from the continuity workflow facade",
-      "touches": 5
+      "path": "src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
+      "touches": 13
     },
     {
-      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowText.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-07-12T00:15:29+00:00",
-      "lastCommit": "086a1277",
-      "lastSummary": "Extract OperationsLedgerPostingService from the continuity workflow facade",
-      "touches": 1
+      "path": "src/Meridian.Ui.Shared/Endpoints/ApiKeyMiddleware.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
+      "touches": 10
     },
     {
-      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsLedgerPostingService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-07-12T00:15:29+00:00",
-      "lastCommit": "086a1277",
-      "lastSummary": "Extract OperationsLedgerPostingService from the continuity workflow facade",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs",
+      "path": "src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-07-11T17:19:54-07:00",
-      "lastCommit": "29839b47",
-      "lastSummary": "wip: preserve uncommitted ETL export post-processing fix from worktree consolidation",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Etl/EtlServices.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-07-11T17:19:54-07:00",
-      "lastCommit": "29839b47",
-      "lastSummary": "wip: preserve uncommitted ETL export post-processing fix from worktree consolidation",
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
       "touches": 6
     },
     {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs",
+      "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Contracts/Operations/DataProvenance.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-07-08T19:44:56+00:00",
-      "lastCommit": "3d60c866",
-      "lastSummary": "Address review: fix amortization rounding sign-flip and day-count details",
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs",
+      "path": "src/Meridian/UiServer.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-07-08T19:44:56+00:00",
-      "lastCommit": "3d60c866",
-      "lastSummary": "Address review: fix amortization rounding sign-flip and day-count details",
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Ledger/README.md",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-07-08T19:33:38+00:00",
-      "lastCommit": "6d874a95",
-      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Ledger/LedgerTaxLot.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-07-08T19:33:38+00:00",
-      "lastCommit": "6d874a95",
-      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Ledger/LedgerTaxLotReliefInput.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-07-08T19:33:38+00:00",
-      "lastCommit": "6d874a95",
-      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-07-08T19:33:38+00:00",
-      "lastCommit": "6d874a95",
-      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-07-08T19:33:38+00:00",
-      "lastCommit": "6d874a95",
-      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Ledger/LedgerTaxLotBasisAdjuster.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-07-08T19:33:38+00:00",
-      "lastCommit": "6d874a95",
-      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
+      "path": "src/Meridian.Execution/Events/TradeExecutedEvent.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ledger/LedgerTaxLotBasisAdjustment.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-07-08T19:33:38+00:00",
-      "lastCommit": "6d874a95",
-      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
+      "path": "src/Meridian.Execution/OrderManagementSystem.FillIdentity.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ledger/LedgerTaxLotBasisAdjustmentKind.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-07-08T19:33:38+00:00",
-      "lastCommit": "6d874a95",
-      "lastSummary": "Link tax-lot cost-basis relief to Security Master reference data",
+      "path": "src/Meridian.Wpf/ViewModels/DataBrowserViewModel.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx",
+      "path": "src/Meridian.Wpf/Views/DataBrowserPage.xaml",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-08T02:12:54-07:00",
-      "lastCommit": "e7796095",
-      "lastSummary": "sfsf",
-      "touches": 27
+      "lastModified": "2026-08-24T00:54:53Z",
+      "lastCommit": "d60d4100d",
+      "lastSummary": "Close the release-readiness alpha blockers",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-08T02:12:54-07:00",
-      "lastCommit": "e7796095",
-      "lastSummary": "sfsf",
-      "touches": 24
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.test.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-08T02:12:54-07:00",
-      "lastCommit": "e7796095",
-      "lastSummary": "sfsf",
-      "touches": 12
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/daily-control-tower-screen.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-08T02:12:54-07:00",
-      "lastCommit": "e7796095",
-      "lastSummary": "sfsf",
-      "touches": 12
-    },
-    {
-      "path": "src/Meridian.Infrastructure/README.md",
+      "path": "src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-07-08T02:12:54-07:00",
-      "lastCommit": "e7796095",
-      "lastSummary": "sfsf",
-      "touches": 10
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/operator-readiness-console.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-08T02:12:54-07:00",
-      "lastCommit": "e7796095",
-      "lastSummary": "sfsf",
-      "touches": 10
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-07-08T02:12:54-07:00",
-      "lastCommit": "e7796095",
-      "lastSummary": "sfsf",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-hub.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-08T02:12:54-07:00",
-      "lastCommit": "e7796095",
-      "lastSummary": "sfsf",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-08T02:12:54-07:00",
-      "lastCommit": "e7796095",
-      "lastSummary": "sfsf",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/operations-record-release-screen.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-08T02:12:54-07:00",
-      "lastCommit": "e7796095",
-      "lastSummary": "sfsf",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-hub.test.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-08T02:12:54-07:00",
-      "lastCommit": "e7796095",
-      "lastSummary": "sfsf",
+      "lastModified": "2026-08-22T00:58:53Z",
+      "lastCommit": "d319d33b1",
+      "lastSummary": "Settle the line pairing by counting instead of searching",
       "touches": 5
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T23:22:05-07:00",
-      "lastCommit": "603ecaef",
-      "lastSummary": "Split data workstation workstreams",
-      "touches": 15
+      "path": "src/Meridian.Storage/Ledger/LedgerRetainedValueComparison.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-08-22T00:58:53Z",
+      "lastCommit": "d319d33b1",
+      "lastSummary": "Settle the line pairing by counting instead of searching",
+      "touches": 4
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts",
+      "path": "src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T23:22:05-07:00",
-      "lastCommit": "603ecaef",
-      "lastSummary": "Split data workstation workstreams",
-      "touches": 7
+      "lastModified": "2026-08-21T00:43:27Z",
+      "lastCommit": "422678bba",
+      "lastSummary": "Use the tenant-filtered runs, and authorize report records before capping",
+      "touches": 13
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.route-state.ts",
+      "path": "src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T23:22:05-07:00",
-      "lastCommit": "603ecaef",
-      "lastSummary": "Split data workstation workstreams",
+      "lastModified": "2026-08-21T00:43:27Z",
+      "lastCommit": "422678bba",
+      "lastSummary": "Use the tenant-filtered runs, and authorize report records before capping",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Collateral.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-21T00:43:27Z",
+      "lastCommit": "422678bba",
+      "lastSummary": "Use the tenant-filtered runs, and authorize report records before capping",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-21T00:43:27Z",
+      "lastCommit": "422678bba",
+      "lastSummary": "Use the tenant-filtered runs, and authorize report records before capping",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Identity/Application/ScopedAccessServices.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-21T00:43:27Z",
+      "lastCommit": "422678bba",
+      "lastSummary": "Use the tenant-filtered runs, and authorize report records before capping",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ReportingWorkflowService.AccessibleRecords.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-21T00:43:27Z",
+      "lastCommit": "422678bba",
+      "lastSummary": "Use the tenant-filtered runs, and authorize report records before capping",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.workstreams.tsx",
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T23:22:05-07:00",
-      "lastCommit": "603ecaef",
-      "lastSummary": "Split data workstation workstreams",
-      "touches": 1
+      "lastModified": "2026-08-21T00:20:11Z",
+      "lastCommit": "118164551",
+      "lastSummary": "Bound the report explorers and the workflow summary to the request tenant",
+      "touches": 36
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/lib/workspace.ts",
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FinancialRecordExplorers.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T22:35:41-07:00",
-      "lastCommit": "27f0ae10",
-      "lastSummary": "Add browser workstation object shell",
+      "lastModified": "2026-08-21T00:20:11Z",
+      "lastCommit": "118164551",
+      "lastSummary": "Bound the report explorers and the workflow summary to the request tenant",
       "touches": 11
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/workspace-nav.view-model.ts",
+      "path": "src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T22:35:41-07:00",
-      "lastCommit": "27f0ae10",
-      "lastSummary": "Add browser workstation object shell",
-      "touches": 10
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/components/meridian/workspace-nav.view-model.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T22:35:41-07:00",
-      "lastCommit": "27f0ae10",
-      "lastSummary": "Add browser workstation object shell",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T22:35:41-07:00",
-      "lastCommit": "27f0ae10",
-      "lastSummary": "Add browser workstation object shell",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T22:35:41-07:00",
-      "lastCommit": "27f0ae10",
-      "lastSummary": "Add browser workstation object shell",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/workspace.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T22:35:41-07:00",
-      "lastCommit": "27f0ae10",
-      "lastSummary": "Add browser workstation object shell",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T22:35:41-07:00",
-      "lastCommit": "27f0ae10",
-      "lastSummary": "Add browser workstation object shell",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T22:35:41-07:00",
-      "lastCommit": "27f0ae10",
-      "lastSummary": "Add browser workstation object shell",
+      "lastModified": "2026-08-21T00:20:11Z",
+      "lastCommit": "118164551",
+      "lastSummary": "Bound the report explorers and the workflow summary to the request tenant",
       "touches": 7
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.test.tsx",
+      "path": "src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-07-07T22:35:41-07:00",
-      "lastCommit": "27f0ae10",
-      "lastSummary": "Add browser workstation object shell",
+      "lastModified": "2026-08-21T00:20:11Z",
+      "lastCommit": "118164551",
+      "lastSummary": "Bound the report explorers and the workflow summary to the request tenant",
       "touches": 6
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AccountingWorkspace.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-21T00:20:11Z",
+      "lastCommit": "118164551",
+      "lastSummary": "Bound the report explorers and the workflow summary to the request tenant",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/AccountingWorkspaceReadScope.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-21T00:20:11Z",
+      "lastCommit": "118164551",
+      "lastSummary": "Bound the report explorers and the workflow summary to the request tenant",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/CollateralExposureService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-20T23:26:19Z",
+      "lastCommit": "b166ebbd8",
+      "lastSummary": "Refuse an unbufferable observation, and let a read-only role render a template",
+      "touches": 14
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/RetainedPostingEquivalence.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-08-20T21:31:05Z",
+      "lastCommit": "e30ca8a13",
+      "lastSummary": "Mirror the store's own timestamp encoding, and treat an identity translation as no claim",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorInbox.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-20T12:27:20Z",
+      "lastCommit": "7b0958b86",
+      "lastSummary": "Scope run cards, keep the blocker, and fold padding out of exposure identities",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Wpf/Services/DesktopWorkflowReadScopeResolver.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-20T11:31:44Z",
+      "lastCommit": "2ccf0921a",
+      "lastSummary": "Refuse unattributed runs under tenancy, and fail closed on a bad role",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-20T11:31:44Z",
+      "lastCommit": "2ccf0921a",
+      "lastSummary": "Refuse unattributed runs under tenancy, and fail closed on a bad role",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-20T10:54:12Z",
+      "lastCommit": "0440cad06",
+      "lastSummary": "Admit established principals to host status, and close three residuals",
+      "touches": 14
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-20T10:54:12Z",
+      "lastCommit": "0440cad06",
+      "lastSummary": "Admit established principals to host status, and close three residuals",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-20T10:54:12Z",
+      "lastCommit": "0440cad06",
+      "lastSummary": "Admit established principals to host status, and close three residuals",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-20T10:29:54Z",
+      "lastCommit": "fc771b89d",
+      "lastSummary": "Scope explorer sources by tenant, and stop capping self-authenticating routes",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/SecureReportingDistributionEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-20T10:29:54Z",
+      "lastCommit": "fc771b89d",
+      "lastSummary": "Scope explorer sources by tenant, and stop capping self-authenticating routes",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-20T08:56:18Z",
+      "lastCommit": "c7de32903",
+      "lastSummary": "Project symbol status by authority, and free the brokerage reads",
+      "touches": 8
     }
   ],
   "recentChangesWindowDays": 14,

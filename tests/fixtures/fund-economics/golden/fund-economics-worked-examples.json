@@ -1,0 +1,286 @@
+{
+  "description": "Hand-computed worked examples for the fund-economics calculation kernels. Every expected figure was derived independently of the implementation (banker's rounding, 2 decimals for currency, 6 for units and unit prices). Threaded series assert each step so multi-period state transitions (high-water marks, waterfall cumulative tiers) are pinned end to end.",
+  "managementFeeAccruals": [
+    {
+      "id": "mgmt-fee-quarter-360",
+      "narrative": "2% annual on 50,000,000 net assets for a 90-day quarter on a 360-day basis: 50,000,000 x 0.02 x 90/360 = 250,000.",
+      "netAssets": 50000000,
+      "annualRate": 0.02,
+      "accrualDays": 90,
+      "yearBasisDays": 360,
+      "expectedFee": 250000.00
+    },
+    {
+      "id": "mgmt-fee-91-365",
+      "narrative": "2% annual on 50,000,000 for 91 days on an actual/365 basis: 91,000,000/365 = 249,315.068... rounds to 249,315.07.",
+      "netAssets": 50000000,
+      "annualRate": 0.02,
+      "accrualDays": 91,
+      "yearBasisDays": 365,
+      "expectedFee": 249315.07
+    },
+    {
+      "id": "mgmt-fee-zero-days",
+      "narrative": "No accrual days means no fee.",
+      "netAssets": 50000000,
+      "annualRate": 0.02,
+      "accrualDays": 0,
+      "yearBasisDays": 360,
+      "expectedFee": 0.00
+    }
+  ],
+  "expenseAccruals": [
+    {
+      "id": "expense-31-360",
+      "narrative": "480,000 annual audit fee accrued for a 31-day month on a 360-day basis: 480,000 x 31/360 = 41,333.333... rounds to 41,333.33.",
+      "annualAmount": 480000,
+      "accrualDays": 31,
+      "yearBasisDays": 360,
+      "expectedAccrual": 41333.33
+    },
+    {
+      "id": "expense-30-360",
+      "narrative": "480,000 annual for an even 30-day month: exactly 40,000.",
+      "annualAmount": 480000,
+      "accrualDays": 30,
+      "yearBasisDays": 360,
+      "expectedAccrual": 40000.00
+    }
+  ],
+  "performanceFeeSeries": {
+    "id": "perf-fee-hwm-crystallization-cycle",
+    "narrative": "Four valuation periods of a 20% performance fee with a 200,000 currency hurdle against a 10,000,000 opening high-water mark: accrue without crystallizing, crystallize on a lower NAV, sit under water, then recover and crystallize again. The high-water mark only moves on crystallization and only to the post-fee NAV.",
+    "performanceFeeRate": 0.20,
+    "openingHighWaterMark": 10000000,
+    "periods": [
+      {
+        "id": "p1-accrue-only",
+        "endingNavBeforeFee": 11000000,
+        "hurdleAmount": 200000,
+        "crystallize": false,
+        "expected": {
+          "grossProfit": 1000000,
+          "feeBase": 800000,
+          "performanceFee": 160000.00,
+          "crystallizedFee": 0.00,
+          "newHighWaterMark": 10000000
+        }
+      },
+      {
+        "id": "p2-crystallize-lower-nav",
+        "endingNavBeforeFee": 10500000,
+        "hurdleAmount": 200000,
+        "crystallize": true,
+        "expected": {
+          "grossProfit": 500000,
+          "feeBase": 300000,
+          "performanceFee": 60000.00,
+          "crystallizedFee": 60000.00,
+          "newHighWaterMark": 10440000
+        }
+      },
+      {
+        "id": "p3-under-water",
+        "endingNavBeforeFee": 10400000,
+        "hurdleAmount": 200000,
+        "crystallize": true,
+        "expected": {
+          "grossProfit": 0,
+          "feeBase": 0,
+          "performanceFee": 0.00,
+          "crystallizedFee": 0.00,
+          "newHighWaterMark": 10440000
+        }
+      },
+      {
+        "id": "p4-recover-and-crystallize",
+        "endingNavBeforeFee": 11240000,
+        "hurdleAmount": 200000,
+        "crystallize": true,
+        "expected": {
+          "grossProfit": 800000,
+          "feeBase": 600000,
+          "performanceFee": 120000.00,
+          "crystallizedFee": 120000.00,
+          "newHighWaterMark": 11120000
+        }
+      }
+    ]
+  },
+  "waterfallSeries": {
+    "id": "european-waterfall-8-pref-20-carry-full-catchup",
+    "narrative": "A 10,000,000 fund distributing 14,000,000 across three distributions under a European waterfall with an 800,000 accrued preferred return, 20% carry, and a 100% GP catch-up. Distribution 1 is a partial return of capital; distribution 2 completes capital, pays the full pref, solves the catch-up pool (0.2 x 800,000 / 0.8 = 200,000), and splits residual carry; distribution 3 is pure carried interest. Cumulatively the GP receives exactly 20% of the 4,000,000 profit above contributed capital.",
+    "carryRate": 0.20,
+    "catchUpRate": 1.0,
+    "contributedCapital": 10000000,
+    "preferredReturnAccrued": 800000,
+    "distributions": [
+      {
+        "id": "d1-partial-return-of-capital",
+        "amountToDistribute": 5000000,
+        "expected": {
+          "returnOfCapital": 5000000,
+          "preferredReturn": 0,
+          "gpCatchUp": 0.00,
+          "lpCatchUp": 0.00,
+          "lpCarry": 0.00,
+          "gpCarry": 0.00,
+          "lpTotal": 5000000.00,
+          "gpTotal": 0.00
+        }
+      },
+      {
+        "id": "d2-through-all-tiers",
+        "amountToDistribute": 8000000,
+        "expected": {
+          "returnOfCapital": 5000000,
+          "preferredReturn": 800000,
+          "gpCatchUp": 200000.00,
+          "lpCatchUp": 0.00,
+          "lpCarry": 1600000.00,
+          "gpCarry": 400000.00,
+          "lpTotal": 7400000.00,
+          "gpTotal": 600000.00
+        }
+      },
+      {
+        "id": "d3-pure-carry",
+        "amountToDistribute": 1000000,
+        "expected": {
+          "returnOfCapital": 0,
+          "preferredReturn": 0,
+          "gpCatchUp": 0.00,
+          "lpCatchUp": 0.00,
+          "lpCarry": 800000.00,
+          "gpCarry": 200000.00,
+          "lpTotal": 800000.00,
+          "gpTotal": 200000.00
+        }
+      }
+    ],
+    "cumulativeExpected": {
+      "gpTotal": 800000.00,
+      "lpTotal": 13200000.00,
+      "gpShareOfProfit": 0.20
+    }
+  },
+  "partialCatchUpWaterfall": {
+    "id": "european-waterfall-80-percent-catchup",
+    "narrative": "Single 12,000,000 distribution on a 10,000,000 fund with an 800,000 pref, 20% carry, and an 80% catch-up: the catch-up pool solves to 0.2 x 800,000 / (0.8 - 0.2) = 266,666.67, of which the GP takes 80% (213,333.34) and LPs 20% (53,333.33); the 933,333.33 residual splits 20/80 (186,666.67 GP / 746,666.66 LP). The one-cent GP overshoot against the ideal 400,000.00 is the documented pool-rounding drift.",
+    "carryRate": 0.20,
+    "catchUpRate": 0.80,
+    "contributedCapital": 10000000,
+    "preferredReturnAccrued": 800000,
+    "amountToDistribute": 12000000,
+    "expected": {
+      "returnOfCapital": 10000000,
+      "preferredReturn": 800000,
+      "gpCatchUp": 213333.34,
+      "lpCatchUp": 53333.33,
+      "lpCarry": 746666.66,
+      "gpCarry": 186666.67,
+      "lpTotal": 11599999.99,
+      "gpTotal": 400000.01
+    }
+  },
+  "equalizations": [
+    {
+      "id": "equalization-credit-above-hwm",
+      "narrative": "Subscribing 5,000 units at NAV 110 against a 100 high-water mark with a 20% performance fee: existing holders bore fee on the 10-per-unit appreciation, so the subscriber receives 0.2 x 10 x 5,000 = 10,000 equalisation credit.",
+      "navPerUnit": 110,
+      "highWaterNavPerUnit": 100,
+      "subscriptionUnits": 5000,
+      "performanceFeeRate": 0.20,
+      "expectedEqualisationCredit": 10000.00,
+      "expectedContingentRedemption": 0.00
+    },
+    {
+      "id": "equalization-contingent-below-hwm",
+      "narrative": "Subscribing 2,000 units at NAV 105 against a 110 high-water mark: the subscriber would ride the 5-per-unit recovery fee-free, so a 0.2 x 5 x 2,000 = 2,000 contingent redemption is tracked.",
+      "navPerUnit": 105,
+      "highWaterNavPerUnit": 110,
+      "subscriptionUnits": 2000,
+      "performanceFeeRate": 0.20,
+      "expectedEqualisationCredit": 0.00,
+      "expectedContingentRedemption": 2000.00
+    },
+    {
+      "id": "equalization-at-hwm",
+      "narrative": "Subscribing exactly at the high-water mark needs no adjustment.",
+      "navPerUnit": 100,
+      "highWaterNavPerUnit": 100,
+      "subscriptionUnits": 1000,
+      "performanceFeeRate": 0.20,
+      "expectedEqualisationCredit": 0.00,
+      "expectedContingentRedemption": 0.00
+    }
+  ],
+  "unitRegisterScenario": {
+    "id": "equalising-class-full-year",
+    "narrative": "An equalising class (20% performance fee, 100.000000 inception NAV per unit) over one year: investor-a subscribes 1,000,000 at inception (10,000 units); investor-b subscribes 550,000 at 110 (5,000 units, 10,000 equalisation credit against the 100 high-water mark); investor-a redeems 4,000 units at 105 (420,000 cash); investor-c subscribes 210,000 at 105 (2,000 units, 2,000 contingent redemption against the 110 high-water mark). At the 1,495,000 valuation the 13,000 outstanding units price at exactly 115.000000, the high-water mark advances to 115, and aggregate holding value ties to class NAV.",
+    "shareClass": {
+      "shareClassId": "class-a",
+      "fundProfileId": "fund-golden",
+      "name": "Class A",
+      "currency": "USD",
+      "managementFeeRateAnnual": 0.02,
+      "performanceFeeRate": 0.20,
+      "inceptionNavPerUnit": 100,
+      "inceptionDate": "2026-01-01",
+      "equalising": true
+    },
+    "transactions": [
+      {
+        "transactionId": "t1-a-subscribe",
+        "investorId": "investor-a",
+        "dealingDate": "2026-01-01",
+        "type": "Subscription",
+        "navPerUnit": 100,
+        "amount": 1000000
+      },
+      {
+        "transactionId": "t2-b-subscribe",
+        "investorId": "investor-b",
+        "dealingDate": "2026-03-31",
+        "type": "Subscription",
+        "navPerUnit": 110,
+        "amount": 550000
+      },
+      {
+        "transactionId": "t3-a-redeem",
+        "investorId": "investor-a",
+        "dealingDate": "2026-06-30",
+        "type": "Redemption",
+        "navPerUnit": 105,
+        "units": 4000
+      },
+      {
+        "transactionId": "t4-c-subscribe",
+        "investorId": "investor-c",
+        "dealingDate": "2026-07-01",
+        "type": "Subscription",
+        "navPerUnit": 105,
+        "amount": 210000
+      }
+    ],
+    "asOf": "2026-12-31",
+    "classNav": 1495000,
+    "expected": {
+      "unitsOutstanding": 13000.000000,
+      "navPerUnit": 115.000000,
+      "highWaterNavPerUnit": 115,
+      "aggregateHoldingValueTiesToClassNav": true,
+      "movements": [
+        { "transactionId": "t1-a-subscribe", "units": 10000.000000, "equalisationCredit": 0.00, "contingentRedemption": 0.00 },
+        { "transactionId": "t2-b-subscribe", "units": 5000.000000, "equalisationCredit": 10000.00, "contingentRedemption": 0.00 },
+        { "transactionId": "t3-a-redeem", "units": 4000.000000, "amount": 420000.00 },
+        { "transactionId": "t4-c-subscribe", "units": 2000.000000, "equalisationCredit": 0.00, "contingentRedemption": 2000.00 }
+      ],
+      "holdings": [
+        { "investorId": "investor-a", "units": 6000.000000, "subscribedAmount": 1000000.00, "redeemedAmount": 420000.00, "equalisationCredit": 0.00, "contingentRedemption": 0.00 },
+        { "investorId": "investor-b", "units": 5000.000000, "subscribedAmount": 550000.00, "redeemedAmount": 0.00, "equalisationCredit": 10000.00, "contingentRedemption": 0.00 },
+        { "investorId": "investor-c", "units": 2000.000000, "subscribedAmount": 210000.00, "redeemedAmount": 0.00, "equalisationCredit": 0.00, "contingentRedemption": 2000.00 }
+      ]
+    }
+  }
+}

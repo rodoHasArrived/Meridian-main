@@ -127,7 +127,7 @@ public sealed class IBBrokerageGatewayTests
 
         await act.Should().ThrowAsync<NotSupportedException>()
             .WithMessage("*EnableIbApiVendor=true*")
-            .WithMessage("*interactive-brokers-setup.md*");
+            .WithMessage("*provider-onboarding-interactive-brokers.md*");
     }
 #endif
 
@@ -527,12 +527,10 @@ public sealed class IBBrokerageGatewayTests
             return Task.CompletedTask;
         }
 
-        public int RequestAccountSummary()
-        {
-            var requestId = Interlocked.Increment(ref _nextRequestId);
+        public int ReserveAccountSummaryRequestId() => Interlocked.Increment(ref _nextRequestId);
+
+        public void RequestAccountSummary(int requestId) =>
             OnRequestAccountSummary?.Invoke(this, requestId);
-            return requestId;
-        }
 
         public void CancelAccountSummary(int requestId)
         {

@@ -418,12 +418,18 @@ public sealed class ProviderRoutingServiceTests : IDisposable
             => Task.FromResult(new ProviderTradingCalendarResponse(
                 Sessions: [],
                 Closures: [],
-                Provenance: new ProviderCalendarProvenance(
+                Provenance: new ProviderDataProvenance(
                     ProviderId,
-                    SourceReference: "test/calendar",
-                    RetrievedAtUtc: DateTimeOffset.UtcNow,
-                    SourceAsOfUtc: null,
-                    DataProvenance: DataProvenance.Simulated)));
+                    "test-connection",
+                    DateTimeOffset.UtcNow,
+                    DateTimeOffset.UtcNow,
+                    "test-entitlement",
+                    "test-calendar",
+                    "simulated",
+                    "test/calendar",
+                    "test-calendar",
+                    "test-calendar",
+                    "test-calendar")));
 
         public Task<ProviderMarketRule?> GetMarketRuleAsync(MarketRuleRequest request, CancellationToken ct = default)
             => Task.FromResult<ProviderMarketRule?>(null);
@@ -458,7 +464,7 @@ public sealed class ProviderRoutingServiceTests : IDisposable
 
         public string Description => "test";
 
-        public IReadOnlyList<ProviderCapabilityDescriptor> CapabilityDescriptors =>
+        public IReadOnlyList<Meridian.ProviderSdk.ProviderCapabilityDescriptor> CapabilityDescriptors =>
         [
             new(ProviderCapabilityKind.HistoricalBars, "bars"),
             new(ProviderCapabilityKind.OrderExecution, "execution", RequiresAccountBinding: true, SupportsFailover: false)

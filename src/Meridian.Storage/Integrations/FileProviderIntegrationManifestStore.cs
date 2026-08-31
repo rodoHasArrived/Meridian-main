@@ -1,11 +1,27 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Integrations;
+using Meridian.Contracts.Integrity;
 using Meridian.Storage.Archival;
 
 namespace Meridian.Storage.Integrations;
 
+/// <summary>
+/// File-backed provider-integration manifest, connection, payload, quarantine, and staging store.
+/// </summary>
+/// <remarks>
+/// <para>
+/// <b>Concurrency posture: per-entity atomic replace, last write wins.</b> Every mutation is a
+/// whole-entity <c>Save*</c> that writes one file at that entity's own path through
+/// <c>AtomicFileWriter</c>, so a reader never observes a partially written entity and two writers
+/// touching different entities never contend. No read-modify-write of a shared collection happens
+/// here, so there is no sequence for a cross-process lease to protect (#2697).
+/// </para>
+/// <para>
+/// The consequence to know: two concurrent writers of the <i>same</i> entity resolve last-write-wins
+/// rather than merging. Callers needing compare-and-set semantics must carry their own version guard.
+/// </para>
+/// </remarks>
 public sealed class FileProviderIntegrationManifestStore :
     IProviderIntegrationManifestStore,
     IProviderIntegrationTenantManifestStoreFactory
@@ -288,5 +304,5 @@ public sealed class FileProviderIntegrationManifestStore :
     }
 
     private static string HashSegment(string value)
-        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
+        => Sha256Digest.ComputeUtf8(value);
 }

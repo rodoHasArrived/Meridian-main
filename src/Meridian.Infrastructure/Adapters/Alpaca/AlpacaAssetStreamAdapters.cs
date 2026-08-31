@@ -64,7 +64,8 @@ public sealed class AlpacaNewsEventBuffer : IAlpacaNewsEventSink
         lock (_gate)
         {
             _events.Enqueue(newsEvent);
-            while (_events.Count > Capacity) _events.Dequeue();
+            while (_events.Count > Capacity)
+                _events.Dequeue();
         }
     }
 }
@@ -120,11 +121,13 @@ public sealed class AlpacaNewsMarketDataClient : AlpacaMarketDataClient, IAlpaca
     protected override string BuildSubscriptionPayload() => BuildNewsSubscriptionMessage(Subscriptions.GetSymbolsByKind("news"));
     protected override void HandleMessage(System.Text.Json.JsonElement element)
     {
-        if (!element.TryGetProperty("T", out var type) || type.GetString() != "n") return;
+        if (!element.TryGetProperty("T", out var type) || type.GetString() != "n")
+            return;
         var timestamp = element.TryGetProperty("created_at", out var created) && DateTimeOffset.TryParse(created.GetString(), out var parsed) ? parsed : default;
         var id = element.TryGetProperty("id", out var idProp) ? idProp.ValueKind == System.Text.Json.JsonValueKind.String ? idProp.GetString() : idProp.ToString() : null;
         var headline = element.TryGetProperty("headline", out var headlineProp) ? headlineProp.GetString() : null;
-        if (timestamp == default || string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(headline)) return;
+        if (timestamp == default || string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(headline))
+            return;
         var symbols = element.TryGetProperty("symbols", out var symbolsProp) && symbolsProp.ValueKind == System.Text.Json.JsonValueKind.Array
             ? symbolsProp.EnumerateArray().Select(static item => item.GetString()).Where(static symbol => !string.IsNullOrWhiteSpace(symbol)).Select(static symbol => symbol!).ToArray() : [];
         _sink.Publish(new AlpacaNewsEvent(id!, headline!, element.TryGetProperty("summary", out var summary) ? summary.GetString() ?? string.Empty : string.Empty,

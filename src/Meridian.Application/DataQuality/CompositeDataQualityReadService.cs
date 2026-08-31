@@ -1,7 +1,5 @@
 using System.Collections.Concurrent;
 using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
 using Meridian.Contracts.Api.Quality;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Infrastructure.Adapters.Core;
@@ -10,6 +8,7 @@ using Meridian.Storage.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using StreamingDataGap = Meridian.DataIntegration.Monitoring.DataQuality.DataGap;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.DataQuality;
 
@@ -419,7 +418,7 @@ public sealed class CompositeDataQualityReadService : ICompositeDataQualityReadS
             provider?.Trim().ToUpperInvariant() ?? string.Empty,
             gap.GapStart.UtcTicks.ToString(CultureInfo.InvariantCulture),
             gap.GapEnd.UtcTicks.ToString(CultureInfo.InvariantCulture));
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)))[..24].ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical)[..24];
     }
 
     private static IReadOnlyList<QualityComponentResponse> BuildAggregateComponents(

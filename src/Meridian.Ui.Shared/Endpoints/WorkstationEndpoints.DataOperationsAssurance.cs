@@ -27,7 +27,7 @@ public static partial class WorkstationEndpoints
                 ? Results.Problem("Ingestion operations service is unavailable.", statusCode: StatusCodes.Status503ServiceUnavailable)
                 : Results.Ok(service.GetSnapshot(state, workload, provider, resumableOnly ?? false));
         })
-        .WithName("GetWorkstationIngestionOperations")
+        .WithName("GetWorkstationIngestionOperations").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill)
         .Produces<IngestionOperationsSnapshotDto>()
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status503ServiceUnavailable);
@@ -44,7 +44,7 @@ public static partial class WorkstationEndpoints
             var detail = service.GetDetail(jobId);
             return detail is null ? Results.NotFound() : Results.Ok(detail);
         })
-        .WithName("GetWorkstationIngestionOperation")
+        .WithName("GetWorkstationIngestionOperation").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill)
         .Produces<IngestionOperationDetailDto>()
         .Produces(StatusCodes.Status404NotFound);
 
@@ -66,7 +66,16 @@ public static partial class WorkstationEndpoints
                 return Results.BadRequest(new { error = "Idempotency key and rationale are required." });
             try
             {
-                var result = await service.ApplyActionAsync(jobId, action, request, actor, ct).ConfigureAwait(false);
+                var trustedScope = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await service.ApplyActionAsync(
+                        jobId,
+                        action,
+                        request,
+                        actor,
+                        trustedScope.TenantId!,
+                        trustedScope.CompanyId!,
+                        ct)
+                    .ConfigureAwait(false);
                 return result is null ? Results.NotFound() : Results.Ok(result);
             }
             catch (InvalidOperationException ex)
@@ -74,13 +83,14 @@ public static partial class WorkstationEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("ApplyWorkstationIngestionOperationAction")
+        .WithName("ApplyWorkstationIngestionOperationAction").RequirePermission(UserPermission.TriggerBackfill)
         .Produces<IngestionOperationActionResultDto>()
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStorageAssurance), async (
             HttpContext context,
@@ -99,7 +109,7 @@ public static partial class WorkstationEndpoints
                 EndpointAuthorization.HasPermission(context, UserPermission.ManageStorage) && EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance));
             return Results.Ok(await service.GetSnapshotAsync(permissions, ct).ConfigureAwait(false));
         })
-        .WithName("GetWorkstationStorageAssurance")
+        .WithName("GetWorkstationStorageAssurance").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.ManageStorage)
         .Produces<StorageAssuranceSnapshotDto>()
         .Produces(StatusCodes.Status403Forbidden);
 
@@ -122,7 +132,7 @@ public static partial class WorkstationEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("PreviewWorkstationStorageMaintenance")
+        .WithName("PreviewWorkstationStorageMaintenance").RequirePermission(UserPermission.ManageStorage)
         .Produces<StorageMaintenancePreviewDto>()
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -147,7 +157,14 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             try
             {
-                var result = await service.ExecuteAsync(request, actor, ct).ConfigureAwait(false);
+                var trustedScope = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await service.ExecuteAsync(
+                        request,
+                        actor,
+                        trustedScope.TenantId!,
+                        trustedScope.CompanyId!,
+                        ct)
+                    .ConfigureAwait(false);
                 return Results.Ok(result);
             }
             catch (KeyNotFoundException ex)
@@ -163,14 +180,15 @@ public static partial class WorkstationEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("ExecuteWorkstationStorageMaintenance")
+        .WithName("ExecuteWorkstationStorageMaintenance").RequirePermission(UserPermission.ManageStorage)
         .Produces<StorageMaintenanceResultDto>()
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status410Gone)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequireWorkstationTenantCompanyScope();
     }
 
     private static bool CanPreviewStorageAction(HttpContext context, StorageMaintenanceActionDto action) =>

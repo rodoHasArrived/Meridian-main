@@ -1,14 +1,18 @@
 import { buildOperatorFocusCandidate, type OperatorFocusCandidate } from "@/app-shell.operator-focus";
 import { getReportPackDistributions } from "@/lib/reporting-distributions";
+import {
+  normalizeReportingWorkspace,
+  type ReportingWorkspacePayload
+} from "@/lib/reporting-workspace";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
-import type { ReportingWorkspaceResponse } from "@/types";
 
-export function buildReportingOperatorFocusItems(reporting: ReportingWorkspaceResponse | null): OperatorFocusCandidate[] {
+export function buildReportingOperatorFocusItems(reportingPayload: ReportingWorkspacePayload | null): OperatorFocusCandidate[] {
+  const reporting = normalizeReportingWorkspace(reportingPayload);
   if (!reporting) {
     return [];
   }
 
-  const distributions = getReportPackDistributions(reporting.reporting);
+  const distributions = getReportPackDistributions(reporting);
   return distributions.length === 0
     ? [buildOperatorFocusCandidate({
         id: "reporting:missing-report-pack-distribution",

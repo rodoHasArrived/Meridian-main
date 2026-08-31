@@ -26,10 +26,13 @@ public sealed class OrderManagementSystemTests : IDisposable
     public OrderManagementSystemTests()
     {
         // These tests exercise OMS behavior over a gateway that fills feed-less market
-        // orders, so scaffold pricing is explicitly opted in.
+        // orders, so scaffold pricing is explicitly opted in. Costs are zeroed so cash
+        // assertions stay about fill application; cost math is covered by
+        // PaperTradingCostModelTests and PaperFillEnvelopeRegressionTests.
         _gateway = new ExecutionGateway(
             NullLogger<ExecutionGateway>.Instance,
-            options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true });
+            options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true },
+            costOptions: new Meridian.Execution.PaperMatching.PaperTradingCostOptions { CommissionRate = 0m });
         _oms = new OrderManagementSystem(_gateway, NullLogger<OrderManagementSystem>.Instance);
     }
 
@@ -123,6 +126,112 @@ public sealed class OrderManagementSystemTests : IDisposable
         var position = portfolio.Positions["MSFT"].Should().BeOfType<ExecutionPositionModel>().Subject;
         position.Quantity.Should().Be(4);
         position.AverageCostBasis.Should().Be(25m);
+    }
+
+    // ---- Broker-native notional metadata is scoped to gateways that route it ----
+
+    [Theory]
+    [InlineData("notional", "1")]
+    [InlineData("alpaca:notional", "1")]
+    [InlineData("Notional", "true")]
+    public async Task PlaceOrderAsync_OnGatewayThatRoutesQuantity_RejectsNotionalSizingMetadata(
+        string key,
+        string value)
+    {
+        using var oms = new OrderManagementSystem(_gateway, NullLogger<OrderManagementSystem>.Instance);
+
+        // The paper gateway routes Quantity. Measuring this as a $1 order while it fills
+        // 100,000 shares would consume none of the notional, gross, or concentration limits.
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 100_000m,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { [key] = value }
+        });
+
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("notional");
+        result.ErrorMessage.Should().Contain("routes order quantity");
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_OnGatewayThatAdvertisesNotionalSizing_AcceptsNotionalMetadata()
+    {
+        var gateway = new NotionalSizingPaperExecutionGateway("alpaca");
+        using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 1m,
+            LimitPrice = 100m,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["notional"] = "2500" }
+        });
+
+        result.Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_WhenTheGatewayRoutesQuantityForThisAssetClass_RejectsNotionalMetadata()
+    {
+        // The capability is per order, not per gateway. Alpaca honours notional sizing for
+        // equities but clears it and routes face-value quantity for fixed income, so a
+        // treasury order carrying notional metadata must be refused even though the same
+        // gateway routes it for equities.
+        var gateway = new AssetClassAwareNotionalGateway("alpaca");
+        using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "T-BILL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 5_000m,
+            LimitPrice = 100m,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["notional"] = "1",
+                ["asset_class"] = "treasury"
+            }
+        });
+
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("notional");
+    }
+
+    /// <summary>Routes notional dollars except for fixed income, mirroring Alpaca.</summary>
+    private sealed class AssetClassAwareNotionalGateway(string gatewayId)
+        : TypedPaperExecutionGatewayBase(gatewayId), INotionalOrderSizingGateway, IFaceValueOrderSizingGateway
+    {
+        public bool UsesFaceValuePercentageOfPar(OrderRequest request) =>
+            request.Metadata is not null
+            && request.Metadata.TryGetValue("asset_class", out var assetClass)
+            && assetClass is "treasury" or "corporate";
+
+        public bool RoutesNotionalMetadata(OrderRequest request) =>
+            !UsesFaceValuePercentageOfPar(request);
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_OnGatewayThatRoutesQuantity_AllowsOrdersWithoutNotionalMetadata()
+    {
+        using var oms = new OrderManagementSystem(_gateway, NullLogger<OrderManagementSystem>.Instance);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["actor"] = "desk" }
+        });
+
+        result.Success.Should().BeTrue();
     }
 
     // ---- GetCompletedOrders — cancelled orders are included ----
@@ -867,7 +976,139 @@ public sealed class OrderManagementSystemTests : IDisposable
         }
     }
 
-    private sealed class TypedPaperExecutionGateway(string gatewayId) : IExecutionGateway, IExecutionGatewayModeProvider
+    /// <summary>
+    /// Paper gateway that also advertises broker-native notional sizing, standing in for the
+    /// Alpaca adapter in tests that need the notional metadata to be routable.
+    /// </summary>
+    /// <summary>
+    /// An amended request is rebuilt from <see cref="OrderState"/>, so a sizing classification that
+    /// is not put back is lost. Broker-native notional sizing means the quantity field carries
+    /// dollars and the gateway discards it — dropping that makes every rule reading quantity treat a
+    /// dollar amount as a share count, and a price-only amendment does not change how the venue
+    /// sizes the order.
+    /// </summary>
+    [Fact]
+    public async Task ModifyOrderAsync_NotionalSizedOrder_KeepsItsDollarClassificationInTheProbe()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            new NotionalSizingPaperExecutionGateway("alpaca"),
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        // Alpaca-style: the quantity field carries dollars and the gateway routes those.
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 2_500m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-NOTIONAL-AMEND",
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["notional"] = "2500"
+            }
+        });
+        placed.Success.Should().BeTrue();
+
+        var probes = new List<OrderRequest>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                probes.Add(call.Arg<OrderRequest>());
+                return Task.FromResult(RiskValidationResult.Approved());
+            });
+
+        var modified = await oms.ModifyOrderAsync(
+            placed.OrderId,
+            new OrderModification { NewLimitPrice = 101m });
+
+        modified.Success.Should().BeTrue();
+        probes.Should().NotBeEmpty("the amendment is revalidated");
+
+        var probe = probes[^1];
+        BrokerNotionalMetadata.TryRead(probe.Metadata, probe.Quantity).Should().Be(
+            2_500m,
+            "the rules must still read this order's quantity as dollars, not as 2,500 shares");
+
+        // The probe is only half of it. The accepted state feeds the exposure provider, which falls
+        // back to Quantity x price when there is no routed notional — so dropping it here would
+        // reserve the working order at a fraction of the dollars the broker holds and let later
+        // orders clear portfolio ceilings against understated exposure.
+        oms.GetOrder(placed.OrderId)!.RoutedNotional.Should().Be(
+            2_500m,
+            "a price-only amendment cannot change the dollars the broker routed");
+    }
+
+    /// <summary>
+    /// A quantity amendment ends the dollar sizing rather than preserving it.
+    /// <c>AlpacaBrokerageGateway.ModifyOrderAsync</c> serializes <c>NewQuantity</c> as <c>qty</c> and
+    /// sends no notional field, so the replacement the venue holds is unit-sized. Carrying the old
+    /// dollars past that point under-reserves — 100 shares of a $100 symbol is $10,000 at the broker
+    /// against a $2,500 reserve — and the retained marker would also make the fat-finger quantity
+    /// limb read the new share count as dollars and skip its ceiling on the one amendment that
+    /// actually changed the size.
+    /// </summary>
+    [Fact]
+    public async Task ModifyOrderAsync_NotionalSizedOrder_DropsDollarSizingWhenQuantityIsAmended()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            new NotionalSizingPaperExecutionGateway("alpaca"),
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 2_500m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-NOTIONAL-QTY-AMEND",
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["notional"] = "2500"
+            }
+        });
+        placed.Success.Should().BeTrue();
+
+        var probes = new List<OrderRequest>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                probes.Add(call.Arg<OrderRequest>());
+                return Task.FromResult(RiskValidationResult.Approved());
+            });
+
+        var modified = await oms.ModifyOrderAsync(
+            placed.OrderId,
+            new OrderModification { NewQuantity = 100m });
+
+        modified.Success.Should().BeTrue();
+        probes.Should().NotBeEmpty();
+
+        BrokerNotionalMetadata.TryRead(probes[^1].Metadata, probes[^1].Quantity).Should().BeNull(
+            "the amended order is unit-sized, so the unit rails must apply to it");
+        oms.GetOrder(placed.OrderId)!.RoutedNotional.Should().BeNull(
+            "keeping the old dollars would reserve $2,500 against $10,000 at the broker");
+    }
+
+    private sealed class NotionalSizingPaperExecutionGateway(string gatewayId)
+        : TypedPaperExecutionGatewayBase(gatewayId), INotionalOrderSizingGateway
+    {
+        public bool RoutesNotionalMetadata(OrderRequest request) => true;
+    }
+
+    private sealed class TypedPaperExecutionGateway(string gatewayId)
+        : TypedPaperExecutionGatewayBase(gatewayId);
+
+    private abstract class TypedPaperExecutionGatewayBase(string gatewayId) : IExecutionGateway, IExecutionGatewayModeProvider
     {
         public string GatewayId => gatewayId;
 
@@ -1130,6 +1371,42 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     }
 
     [Fact]
+    public async Task PlaceOrderAsync_CallerFaceValueSizingMarker_IsStrippedBeforeRisk()
+    {
+        OrderRequest? validatedRequest = null;
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                validatedRequest = callInfo.Arg<OrderRequest>();
+                return RiskValidationResult.Approved();
+            });
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 1m,
+            LimitPrice = 100m,
+            Metadata = new Dictionary<string, string>
+            {
+                [OrderSizingMetadata.FaceValuePercentageOfParKey] = "true"
+            }
+        });
+
+        result.Success.Should().BeTrue();
+        validatedRequest.Should().NotBeNull();
+        OrderSizingMetadata.UsesFaceValuePercentageOfPar(validatedRequest!.Metadata).Should().BeFalse(
+            "only the active gateway may choose face-value sizing semantics");
+        result.OrderState!.UsesFaceValuePercentageOfPar.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task PlaceOrderAsync_WhenGateRejects_ReturnsFailureWithoutSubmittingToGateway()
     {
         var gate = new RejectAllGate("UNKNWN is not in Security Master");
@@ -1229,6 +1506,1382 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         result.Success.Should().BeFalse();
         oms.GetOrder("CLIENT-4")!.Status.Should().Be(OrderStatus.Rejected,
             "a gate rejection under a previously unused id must still be visible in the order table");
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_RiskEscalation_ReturnsTypedParkedOutcome()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Escalated("Parked for governed approval (esc-1): above band", "esc-1"));
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1,
+            ClientOrderId = "CLIENT-PARKED"
+        });
+
+        result.Success.Should().BeFalse("a parked order does not route");
+        result.RequiresApproval.Should().BeTrue("an escalation awaits governed approval instead of hard-rejecting");
+        result.EscalationId.Should().Be("esc-1");
+        oms.GetOrder("CLIENT-PARKED")!.Status.Should().Be(OrderStatus.Rejected,
+            "nothing is live at the broker while the escalation awaits its decision");
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_RiskRejectionWithWarnings_CarriesWarningsOnResult()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Rejected("limit breach") with
+            {
+                Warnings = ["concentration-watch: approaching cap"]
+            });
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1,
+            ClientOrderId = "CLIENT-WARNED"
+        });
+
+        result.Success.Should().BeFalse();
+        result.RequiresApproval.Should().BeFalse();
+        result.RiskWarnings.Should().ContainSingle(warning => warning.Contains("approaching cap"),
+            "non-blocking flags accumulated before the rejection must survive on the result");
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_WhenGatewayFaultsAfterDispatch_RetiresTheConsumedGovernedApproval()
+    {
+        // A validator that approves while reporting it consumed a one-shot approval.
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+        var order = new OrderRequest { Symbol = "AAPL", Side = OrderSide.Buy, Type = OrderType.Market, Quantity = 1 };
+        var parked = queue.Park(order, "above band");
+        queue.Approve(parked.EscalationId, actor: "risk-desk");
+        var releaseRequest = order with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parked.EscalationId
+            }
+        };
+        queue.TryConsumeApproval(releaseRequest).Should().NotBeNull();
+
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved() with { ConsumedApprovalId = parked.EscalationId });
+
+        // "paper" keeps the brokerage placement gate in simulated mode so the order
+        // reaches the gateway, where submission then faults.
+        var faultingGateway = Substitute.For<IExecutionGateway>();
+        faultingGateway.GatewayId.Returns("paper");
+        faultingGateway.SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns<Task<ExecutionReport>>(_ => throw new InvalidOperationException("gateway unreachable"));
+
+        using var oms = new OrderManagementSystem(
+            faultingGateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue);
+
+        var result = await oms.PlaceOrderAsync(order with { ClientOrderId = "CLIENT-FAULT" });
+
+        result.Success.Should().BeFalse();
+        queue.TryGet(parked.EscalationId)!.Status.Should().Be(
+            RiskEscalationStatus.Released,
+            "a fault after dispatch is ambiguous, so the one-shot approval cannot authorize a retry");
+        queue.TryConsumeApproval(releaseRequest).Should().BeNull(
+            "an ambiguous submission may still execute and the consumed approval must not be replayed");
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_RiskIncreasingAmendment_IsRevalidated()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-AMEND"
+        });
+        placed.Success.Should().BeTrue();
+
+        // The rails now refuse the larger order: amending up must not bypass them.
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Rejected("Order notional limit exceeded"));
+
+        var modified = await oms.ModifyOrderAsync(placed.OrderId, new OrderModification { NewQuantity = 10_000m });
+
+        modified.Success.Should().BeFalse("a risk-increasing amendment is a new risk decision");
+        modified.ErrorMessage.Should().Contain("Order notional limit");
+        oms.GetOrder(placed.OrderId)!.Quantity.Should().Be(10m, "the refused amendment leaves the original order intact");
+    }
+
+    [Theory]
+    [InlineData(OrderType.Limit, OrderSide.Sell)]
+    [InlineData(OrderType.StopMarket, OrderSide.Buy)]
+    public async Task ModifyOrderAsync_DangerousPriceDecrease_IsRevalidated(
+        OrderType orderType,
+        OrderSide side)
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = side,
+            Type = orderType,
+            Quantity = 10m,
+            LimitPrice = orderType is OrderType.Limit ? 100m : null,
+            StopPrice = orderType is OrderType.StopMarket ? 110m : null,
+            ClientOrderId = $"CLIENT-PRICE-AMEND-{orderType}"
+        });
+        placed.Success.Should().BeTrue();
+
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Rejected("Fat-finger price control rejected the amendment"));
+
+        var modification = orderType is OrderType.Limit
+            ? new OrderModification { NewLimitPrice = 1m }
+            : new OrderModification { NewStopPrice = 1m };
+        var modified = await oms.ModifyOrderAsync(placed.OrderId, modification);
+
+        modified.Success.Should().BeFalse("every supplied routed price needs a fresh risk decision");
+        modified.ErrorMessage.Should().Contain("Fat-finger price control");
+        oms.GetOrder(placed.OrderId)!.LimitPrice.Should().Be(placed.OrderState!.LimitPrice);
+        oms.GetOrder(placed.OrderId)!.StopPrice.Should().Be(placed.OrderState.StopPrice);
+    }
+
+    /// <summary>
+    /// The caller's metadata dictionary is read at several points in placement — sizing capability,
+    /// risk validation, retained state, gateway submission — with awaits between them. An in-process
+    /// caller holding a mutable dictionary could otherwise change it mid-flight and have risk
+    /// measure a different order from the one routed, so placement snapshots it once.
+    /// </summary>
+    [Fact]
+    public async Task PlaceOrderAsync_WhenCallerMutatesMetadataMidFlight_ValidatesAndRoutesOneOrder()
+    {
+        var callerMetadata = new Dictionary<string, string>
+        {
+            ["runId"] = "RUN-1",
+            ["asset_class"] = "us_treasury"
+        };
+
+        IReadOnlyDictionary<string, string>? seenByRisk = null;
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                seenByRisk = call.Arg<OrderRequest>().Metadata;
+                // The caller flips the class while validation is in flight.
+                callerMetadata["asset_class"] = "us_equity";
+                return Task.FromResult(RiskValidationResult.Approved());
+            });
+
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-METADATA-RACE",
+            Metadata = callerMetadata
+        });
+
+        placed.Success.Should().BeTrue();
+        seenByRisk.Should().NotBeNull();
+        seenByRisk!["asset_class"].Should().Be(
+            "us_treasury",
+            "risk must measure the order as submitted, not as the caller later rewrote it");
+
+        // The snapshot is a copy, so the caller's later write is visible on their own dictionary
+        // and nowhere else — that separation is the whole property.
+        callerMetadata["asset_class"].Should().Be("us_equity");
+        seenByRisk.Should().NotBeSameAs(callerMetadata);
+    }
+
+    /// <summary>
+    /// Metadata is not the only caller-owned collection on a request. <c>Legs</c> is a list the
+    /// caller may still hold, and the fat-finger quantity limb multiplies by the largest leg ratio,
+    /// so a ratio raised while validation is awaiting would route more contracts than the ceiling
+    /// approved. Snapshotting one collection and not the other only moves the race.
+    /// </summary>
+    [Fact]
+    public async Task PlaceOrderAsync_WhenCallerMutatesLegsMidFlight_ValidatesAndRoutesOneOrder()
+    {
+        var callerLegs = new List<OrderLeg>
+        {
+            new() { Symbol = "AAPL_C1", Side = OrderSide.Buy, RatioQuantity = 1m }
+        };
+
+        IReadOnlyList<OrderLeg>? seenByRisk = null;
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                seenByRisk = call.Arg<OrderRequest>().Legs;
+                // The caller inflates the ratio while validation is in flight.
+                callerLegs[0] = new OrderLeg { Symbol = "AAPL_C1", Side = OrderSide.Buy, RatioQuantity = 1_000m };
+                return Task.FromResult(RiskValidationResult.Approved());
+            });
+
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-LEGS-RACE",
+            Legs = callerLegs
+        });
+
+        placed.Success.Should().BeTrue();
+        seenByRisk.Should().NotBeNull();
+        seenByRisk![0].RatioQuantity.Should().Be(
+            1m,
+            "risk must measure the legs as submitted, not as the caller later rewrote them");
+        seenByRisk.Should().NotBeSameAs(callerLegs);
+    }
+
+    /// <summary>
+    /// An amendment that does not raise exposure must not be projected on top of the reservation it
+    /// replaces. The snapshot still holds the working order at its original size, so handing the
+    /// rules the full amended order reads an unchanged $1,000 sell as $2,000 and a $1,000 buy cut
+    /// to $900 as $1,900 — a gross ceiling between the two then refuses the amendment and, at
+    /// Critical severity, trips the breaker over an amendment that lowered exposure or changed
+    /// none of it. Harmless while only increases were revalidated; not once every supplied price
+    /// is, which is when unchanged and reducing amendments started coming down this path.
+    /// <para>
+    /// Every side is covered because the first fix was scoped to buy limits and left sells and
+    /// stops double-counted — including the explicitly-unchanged price the gate deliberately
+    /// revalidates, which is the case guaranteed to occur.
+    /// </para>
+    /// </summary>
+    [Theory]
+    [InlineData(OrderSide.Buy, OrderType.Limit, 90.0, "reducing a buy limit adds nothing")]
+    [InlineData(OrderSide.Buy, OrderType.Limit, 100.0, "an unchanged buy limit adds nothing")]
+    [InlineData(OrderSide.Sell, OrderType.Limit, 90.0, "reducing a sell limit adds nothing")]
+    [InlineData(OrderSide.Sell, OrderType.Limit, 100.0, "an unchanged sell limit adds nothing")]
+    // An uncapped order repriced *upward* at the same quantity is still the same shares against the
+    // same mark, so it adds no exposure either — the entered price is not what a sell receives.
+    [InlineData(OrderSide.Sell, OrderType.Limit, 110.0, "repricing a sell upward adds no exposure")]
+    public async Task ModifyOrderAsync_NonIncreasingAmendment_DoesNotDoubleCountTheWorkingOrder(
+        OrderSide side,
+        OrderType orderType,
+        double amendedPrice,
+        string because)
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = side,
+            Type = orderType,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            ClientOrderId = $"CLIENT-NONINCREASING-{side}-{amendedPrice}"
+        });
+        placed.Success.Should().BeTrue();
+
+        var probes = new List<OrderRequest>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                probes.Add(call.Arg<OrderRequest>());
+                return Task.FromResult(RiskValidationResult.Approved());
+            });
+
+        var modified = await oms.ModifyOrderAsync(
+            placed.OrderId,
+            new OrderModification { NewLimitPrice = (decimal)amendedPrice });
+
+        modified.Success.Should().BeTrue();
+        probes.Should().NotBeEmpty("the amendment is revalidated");
+
+        var probe = probes[^1];
+        probe.Metadata.Should().ContainKey(
+            RiskEscalationQueueService.IncrementalNotionalMetadataKey,
+            "a non-increasing amendment states its increment rather than falling through to the full order");
+        probe.Metadata![RiskEscalationQueueService.IncrementalNotionalMetadataKey]
+            .Should().Be("0", because);
+    }
+
+    /// <summary>
+    /// A composite rejection headlines its highest-severity rule and keeps the rest in
+    /// <c>Violations</c>. Recording only the modification fields therefore loses a fat-finger breach
+    /// sitting behind a gross-exposure headline entirely — and the rule then reports Healthy while
+    /// actively rejecting amendments, because rule status is projected from the audit trail. The
+    /// placement path already carries these; the amendment path makes the same claim about the same
+    /// rules and needs the same evidence.
+    /// </summary>
+    [Fact]
+    public async Task ModifyOrderAsync_RiskRefusal_RecordsTheViolationsBehindTheHeadline()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        var tempRoot = Path.Combine(Path.GetTempPath(), "meridian-amend-violations-" + Guid.NewGuid().ToString("N"));
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            auditTrail: auditTrail);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-AMEND-VIOLATIONS"
+        });
+        placed.Success.Should().BeTrue();
+
+        // Headline from the higher-severity rule; the fat-finger breach survives only in Violations.
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Rejected("Gross exposure ceiling breached.") with
+            {
+                Violations =
+                [
+                    new RiskViolation(
+                        "GrossExposure",
+                        RiskRuleSeverity.Critical,
+                        "GROSS_EXPOSURE_EXCEEDED",
+                        "Gross exposure ceiling breached."),
+                    new RiskViolation(
+                        "FatFinger",
+                        RiskRuleSeverity.Error,
+                        "FAT_FINGER_PRICE_DEVIATION_EXCEEDED",
+                        "Fat-finger price band breached.")
+                ]
+            });
+
+        var modified = await oms.ModifyOrderAsync(
+            placed.OrderId,
+            new OrderModification { NewQuantity = 10_000m });
+
+        modified.Success.Should().BeFalse();
+
+        var entries = await auditTrail.GetRecentAsync(50);
+        var rejection = entries.LastOrDefault(entry => entry.Action == "OrderModifyRejected");
+        rejection.Should().NotBeNull("the refusal is audited");
+        rejection!.Metadata.Should().NotBeNull();
+        rejection.Metadata!.Values.Should().Contain(
+            value => value.Contains("FatFinger"),
+            "a breach behind the headline has to reach the trail or rule status cannot see it");
+    }
+
+    /// <summary>
+    /// On an uncapped order the measured value understates, so measured value and real exposure can
+    /// move in opposite directions: a sell amended from 10 shares at $100 to 100 at $1 measures
+    /// 1,000 down to 100 while exposure at a $100 mark grows tenfold. Treating "measured value did
+    /// not rise" as "adds no exposure" would stamp a zero increment and let the portfolio rules
+    /// approve a tenfold increase against the original reservation — under-reserving, which admits
+    /// a breach rather than refusing one. The mark is common to both sides, so quantity is what
+    /// proves the uncapped case.
+    /// </summary>
+    [Fact]
+    public async Task ModifyOrderAsync_UncappedQuantityIncreaseWithLowerPrice_IsNotTreatedAsZeroExposure()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Sell,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-UNCAPPED-QTY-UP"
+        });
+        placed.Success.Should().BeTrue();
+
+        var probes = new List<OrderRequest>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                probes.Add(call.Arg<OrderRequest>());
+                return Task.FromResult(RiskValidationResult.Approved());
+            });
+
+        // Measured value falls 1,000 -> 100; real exposure rises tenfold.
+        var modified = await oms.ModifyOrderAsync(
+            placed.OrderId,
+            new OrderModification { NewQuantity = 100m, NewLimitPrice = 1m });
+
+        modified.Success.Should().BeTrue();
+        probes.Should().NotBeEmpty();
+
+        var probe = probes[^1];
+        probe.Metadata.Should().NotContainKey(
+            RiskEscalationQueueService.IncrementalNotionalMetadataKey,
+            "a quantity increase on an uncapped order must be valued at the mark, not zeroed");
+        probe.Quantity.Should().Be(100m);
+    }
+
+    /// <summary>
+    /// The zero case must not swallow a genuine increase on a market-executed order. A sell's own
+    /// limit is not what it pays, so the increment cannot be computed from the order's fields — the
+    /// whole amended order goes to the rules to be priced at the mark, over-reserving in the one
+    /// direction where over-reserving can only refuse and never admit.
+    /// </summary>
+    [Fact]
+    public async Task ModifyOrderAsync_SellQuantityIncrease_StillCarriesTheFullAmendedOrder()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Sell,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-SELL-INCREASE"
+        });
+        placed.Success.Should().BeTrue();
+
+        var probes = new List<OrderRequest>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                probes.Add(call.Arg<OrderRequest>());
+                return Task.FromResult(RiskValidationResult.Approved());
+            });
+
+        var modified = await oms.ModifyOrderAsync(
+            placed.OrderId,
+            new OrderModification { NewQuantity = 100m, NewLimitPrice = 100m });
+
+        modified.Success.Should().BeTrue();
+        probes.Should().NotBeEmpty();
+
+        var probe = probes[^1];
+        probe.Metadata.Should().NotContainKey(
+            RiskEscalationQueueService.IncrementalNotionalMetadataKey,
+            "a sell's own limit understates what it pays, so the rules price the whole order at the mark");
+        probe.Quantity.Should().Be(100m);
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_ExplicitUnchangedPrice_IsRevalidated()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Sell,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-UNCHANGED-PRICE-AMEND"
+        });
+        placed.Success.Should().BeTrue();
+
+        var modified = await oms.ModifyOrderAsync(
+            placed.OrderId,
+            new OrderModification { NewLimitPrice = 100m });
+
+        modified.Success.Should().BeTrue();
+        await riskValidator.Received(2).ValidateOrderAsync(
+            Arg.Any<OrderRequest>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_FaceValueSizing_PreservesGatewayResolvedSemantics()
+    {
+        var gateway = Substitute.For<IExecutionGateway, IFaceValueOrderSizingGateway>();
+        gateway.GatewayId.Returns("paper");
+        ((IFaceValueOrderSizingGateway)gateway)
+            .UsesFaceValuePercentageOfPar(Arg.Any<OrderRequest>())
+            .Returns(callInfo =>
+            {
+                var metadata = callInfo.Arg<OrderRequest>().Metadata;
+                return metadata is not null
+                    && metadata.TryGetValue("asset_class", out var assetClass)
+                    && assetClass == "treasury";
+            });
+
+        OrderRequest? submittedRequest = null;
+        gateway.SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                submittedRequest = callInfo.Arg<OrderRequest>();
+                return new ExecutionReport
+                {
+                    OrderId = submittedRequest.ClientOrderId ?? "FACE-VALUE-1",
+                    ClientOrderId = submittedRequest.ClientOrderId,
+                    ReportType = ExecutionReportType.New,
+                    Symbol = submittedRequest.Symbol,
+                    Side = submittedRequest.Side,
+                    OrderStatus = OrderStatus.Accepted,
+                    OrderQuantity = submittedRequest.Quantity,
+                    Timestamp = DateTimeOffset.UtcNow
+                };
+            });
+        gateway.ModifyOrderAsync(
+                Arg.Any<string>(),
+                Arg.Any<OrderModification>(),
+                Arg.Any<CancellationToken>())
+            .Returns(callInfo => new ExecutionReport
+            {
+                OrderId = callInfo.ArgAt<string>(0),
+                ReportType = ExecutionReportType.Modified,
+                Symbol = "912797AB1",
+                Side = OrderSide.Buy,
+                OrderStatus = OrderStatus.Accepted,
+                Timestamp = DateTimeOffset.UtcNow
+            });
+
+        var validatedRequests = new List<OrderRequest>();
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(
+                Arg.Do<OrderRequest>(validatedRequests.Add),
+                Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "912797AB1",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 100_000m,
+            LimitPrice = 101.25m,
+            ClientOrderId = "FACE-VALUE-1",
+            Metadata = new Dictionary<string, string> { ["asset_class"] = "treasury" }
+        });
+        var modified = await oms.ModifyOrderAsync(
+            placed.OrderId,
+            new OrderModification { NewLimitPrice = 101m });
+
+        placed.Success.Should().BeTrue();
+        modified.Success.Should().BeTrue();
+        submittedRequest.Should().NotBeNull();
+        submittedRequest!.Metadata.Should().NotContainKey(
+            OrderSizingMetadata.FaceValuePercentageOfParKey,
+            "the server-only risk marker must not be sent to the broker");
+        validatedRequests.Should().HaveCount(2);
+        validatedRequests.Should().OnlyContain(request =>
+            OrderSizingMetadata.UsesFaceValuePercentageOfPar(request.Metadata));
+        var tracked = oms.GetOrder(placed.OrderId)!;
+        tracked.UsesFaceValuePercentageOfPar.Should().BeTrue();
+        tracked.LimitPrice.Should().Be(101m);
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_ApprovedAmendment_CarriesRiskWarningsToTheCaller()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-AMEND-WARN"
+        });
+        placed.Success.Should().BeTrue();
+
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.ApprovedWithWarnings("GrossExposure at 82% of limit"));
+
+        var modified = await oms.ModifyOrderAsync(placed.OrderId, new OrderModification { NewQuantity = 100m });
+
+        modified.Success.Should().BeTrue();
+        modified.RiskWarnings.Should().ContainSingle()
+            .Which.Should().Contain("82%", "warnings describe the exposure the caller now holds, not only refusals");
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_WhenTheOrderChangesUnderTheGate_RefusesInsteadOfRoutingUnreserved()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-AMEND-RACE"
+        });
+        placed.Success.Should().BeTrue();
+
+        // Mutate the tracked order from inside the amendment's own validation, exactly as a
+        // concurrent lifecycle event would: the state the reservation is written against is
+        // stale by the time it is installed, so the amended size can never be published.
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(async _ =>
+            {
+                await oms.CancelOrderAsync(placed.OrderId);
+                return RiskValidationResult.Approved();
+            });
+
+        var modified = await oms.ModifyOrderAsync(placed.OrderId, new OrderModification { NewQuantity = 500m });
+
+        modified.Success.Should().BeFalse("the larger size was never published to concurrent placements");
+        modified.ErrorMessage.Should().Contain("being reserved")
+            .And.Contain("changed", "the caller is told the amendment lost a race, not that risk refused it");
+        oms.GetOrder(placed.OrderId)!.Quantity.Should().Be(10m, "the unreserved amendment never took effect");
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_RiskReducingAmendment_SkipsRevalidation()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 100m,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-REDUCE"
+        });
+        placed.Success.Should().BeTrue();
+
+        // Even with the rails now refusing everything, shrinking the order still works:
+        // reducing exposure is never gated.
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Rejected("would reject anything"));
+
+        var modified = await oms.ModifyOrderAsync(placed.OrderId, new OrderModification { NewQuantity = 10m });
+
+        modified.Success.Should().BeTrue("a risk-reducing amendment does not need re-approval");
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_WhenGatewayFaultsAfterDispatch_RetiresEveryConsumedApproval()
+    {
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+        var order = new OrderRequest { Symbol = "AAPL", Side = OrderSide.Buy, Type = OrderType.Market, Quantity = 1 };
+        var first = queue.Park(order, "rule A", ruleName: "OrderNotional");
+        var second = queue.Park(order, "rule B", ruleName: "DeskReview");
+        queue.Approve(first.EscalationId, actor: "risk-desk");
+        queue.Approve(second.EscalationId, actor: "risk-desk");
+        var tokens = RiskEscalationQueueService.JoinTokens([first.EscalationId, second.EscalationId]);
+        queue.TryConsumeApprovals(order with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = tokens
+            }
+        }).Should().HaveCount(2);
+
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved() with { ConsumedApprovalId = tokens });
+
+        var faultingGateway = Substitute.For<IExecutionGateway>();
+        faultingGateway.GatewayId.Returns("paper");
+        faultingGateway.SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns<Task<ExecutionReport>>(_ => throw new InvalidOperationException("gateway unreachable"));
+
+        using var oms = new OrderManagementSystem(
+            faultingGateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue);
+
+        await oms.PlaceOrderAsync(order with { ClientOrderId = "CLIENT-MULTI-FAULT" });
+
+        // Every decision in the joined token set stays retired after ambiguous dispatch.
+        queue.TryGet(first.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Released);
+        queue.TryGet(second.EscalationId)!.Status.Should().Be(RiskEscalationStatus.Released);
+        queue.TryConsumeApprovals(order with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = tokens
+            }
+        }).Should().BeEmpty(
+            "an ambiguous submission may still execute and none of its one-shot approvals may be replayed");
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_WithoutClientOrderId_ParksTheRequestUnderTheGeneratedId()
+    {
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator
+            .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                // Park exactly what the OMS handed the validator, as the composite does.
+                var seen = call.Arg<OrderRequest>();
+                var parked = queue.Park(seen, "above band", ruleName: "OrderNotional");
+                return RiskValidationResult.Escalated("parked", parked.EscalationId);
+            });
+
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1
+            // No ClientOrderId: the OMS generates one.
+        });
+
+        result.RequiresApproval.Should().BeTrue();
+        queue.TryGet(result.EscalationId!)!.Request.ClientOrderId.Should().Be(
+            result.OrderId,
+            "releasing the retained request must route under the id the submitter already knows");
+    }
+
+    [Fact]
+    public async Task FractionalFundFill_DoesNotInventAnOpposingResidualContribution()
+    {
+        var portfolio = new PaperTradingPortfolio(1_000_000m);
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio);
+
+        var fundAccountId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        (await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 0.5m,
+            LimitPrice = 100m,
+            FundAccountId = fundAccountId
+        })).Success.Should().BeTrue();
+
+        var registry = new PortfolioRegistry();
+        registry.Register("run-1", portfolio);
+        var aggregate = new Meridian.Strategies.Services.AggregatePortfolioService(registry);
+
+        var aapl = aggregate.GetAggregatedPositions(null).Single(static p => p.Symbol == "AAPL");
+
+        // IPosition.Quantity is whole shares, so deriving the unattributed remainder from
+        // it turned a 0.5-share fund holding into +0.5 owned and -0.5 unowned: zero net
+        // exposure and double gross, straight into the portfolio rails.
+        aapl.Contributions.Should().ContainSingle("a wholly attributed fractional fill leaves no remainder");
+        aapl.Contributions[0].Quantity.Should().Be(0.5m);
+        aapl.TotalQuantity.Should().Be(0.5m);
+        aapl.ShortQuantity.Should().Be(0m, "no phantom opposing side is invented");
+    }
+
+    [Fact]
+    public async Task ParkedOrder_RetainsItsFundScopeForAuthorizationChecks()
+    {
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator
+            .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var parked = queue.Park(call.Arg<OrderRequest>(), "above band", ruleName: "OrderNotional");
+                return RiskValidationResult.Escalated("parked", parked.EscalationId);
+            });
+
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue);
+
+        var fundAccountId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1,
+            ClientOrderId = "parked-scoped-1",
+            FundAccountId = fundAccountId
+        });
+
+        placed.RequiresApproval.Should().BeTrue();
+
+        // Cancelling a parked order withdraws its governed approval, and the cancel endpoint
+        // authorizes that against the tracked state's fund scope. If the parked state drops
+        // the field, that check has nothing to compare and silently permits a cross-fund
+        // withdrawal — so the scope must survive the park, not just the submission.
+        oms.GetOrder("parked-scoped-1")!.FundAccountId.Should().Be(
+            fundAccountId,
+            "the parked state is what the cancel authorization reads");
+    }
+
+    [Fact]
+    public async Task ParkedOrder_SurvivesTerminalOrderRetentionTrimming()
+    {
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator
+            .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var seen = call.Arg<OrderRequest>();
+                if (seen.Symbol != "PARKED")
+                {
+                    return RiskValidationResult.Approved();
+                }
+
+                var parked = queue.Park(seen, "above band", ruleName: "OrderNotional");
+                return RiskValidationResult.Escalated("parked", parked.EscalationId);
+            });
+
+        // A tiny retention budget so ordinary traffic immediately pressures the table.
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue,
+            options: new OrderManagementSystemOptions { MaxRetainedOrders = 2 });
+
+        var parkedResult = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "PARKED",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1,
+            ClientOrderId = "parked-order-1"
+        });
+
+        parkedResult.RequiresApproval.Should().BeTrue();
+
+        // Fill enough ordinary orders to push the parked entry well past the retention
+        // budget. A parked order is recorded Rejected, so before this fix the trimmer
+        // treated it as finished history and evicted it.
+        for (var i = 0; i < 6; i++)
+        {
+            (await oms.PlaceOrderAsync(new OrderRequest
+            {
+                Symbol = "MSFT",
+                Side = OrderSide.Buy,
+                Type = OrderType.Market,
+                Quantity = 1,
+                LimitPrice = 10m,
+                ClientOrderId = $"ordinary-{i}"
+            })).Success.Should().BeTrue();
+        }
+
+        // The escalation is still live, so the submitter must still be able to withdraw it.
+        oms.GetOrder("parked-order-1").Should().NotBeNull(
+            "a parked order is not finished history while its approval can still route");
+
+        var cancelled = await oms.CancelOrderAsync("parked-order-1");
+
+        cancelled.Success.Should().BeTrue("the parked order must stay cancellable");
+        queue.TryGet(parkedResult.EscalationId!)!.Status.Should().Be(RiskEscalationStatus.Denied);
+    }
+
+    [Fact]
+    public async Task WasRiskApprovalDeclined_TracksTheParkedOrderUntilTheEscalationResolves()
+    {
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator
+            .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var parked = queue.Park(call.Arg<OrderRequest>(), "above band", ruleName: "OrderNotional");
+                return RiskValidationResult.Escalated("parked", parked.EscalationId);
+            });
+
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue);
+
+        var parkedResult = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1,
+            ClientOrderId = "CLIENT-DECLINE"
+        });
+
+        parkedResult.RequiresApproval.Should().BeTrue();
+        oms.WasRiskApprovalDeclined(parkedResult.OrderId).Should().BeFalse(
+            "an approval still pending may yet release the order, so its tracking must survive");
+
+        queue.Deny(parkedResult.EscalationId!, actor: "risk-officer", reason: "Breaches the fund mandate.");
+
+        oms.WasRiskApprovalDeclined(parkedResult.OrderId).Should().BeTrue(
+            "a declined escalation never routes, so no execution report will ever retire the order");
+        oms.WasRiskApprovalDeclined("CLIENT-NEVER-PARKED").Should().BeFalse(
+            "an order that was never parked has nothing to retire");
+    }
+
+    [Fact]
+    public async Task WasRiskApprovalDeclined_AfterTheApprovedOrderRoutes_IsFalse()
+    {
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+        var order = new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 1,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-RELEASE"
+        };
+
+        var riskValidator = Substitute.For<IRiskValidator>();
+        var parkOnFirstCall = true;
+        riskValidator
+            .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                if (!parkOnFirstCall)
+                {
+                    return RiskValidationResult.Approved();
+                }
+
+                parkOnFirstCall = false;
+                var parked = queue.Park(call.Arg<OrderRequest>(), "above band", ruleName: "OrderNotional");
+                return RiskValidationResult.Escalated("parked", parked.EscalationId);
+            });
+
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue);
+
+        var parkedResult = await oms.PlaceOrderAsync(order);
+        parkedResult.RequiresApproval.Should().BeTrue();
+        queue.Approve(parkedResult.EscalationId!, actor: "risk-desk", reason: "cleared");
+
+        // The release re-places under the same client order id, so the report stream owns
+        // the order from here — the run's mapping must stay alive to receive the fill.
+        var released = await oms.PlaceOrderAsync(order with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parkedResult.EscalationId!
+            }
+        });
+
+        released.Success.Should().BeTrue();
+        oms.WasRiskApprovalDeclined(order.ClientOrderId!).Should().BeFalse(
+            "the order routed, so nothing about it was declined");
+    }
+
+    [Fact]
+    public async Task Construction_ReReservesClientOrderIdsHeldByEscalationsThatOutlivedTheHost()
+    {
+        var options = new RiskEscalationQueueOptions(
+            Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json"));
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: options);
+        var order = new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 1,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-SURVIVES-RESTART"
+        };
+
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator
+            .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var parked = queue.Park(call.Arg<OrderRequest>(), "above band", ruleName: "OrderNotional");
+                return RiskValidationResult.Escalated("parked", parked.EscalationId);
+            });
+
+        using (var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue))
+        {
+            (await oms.PlaceOrderAsync(order)).RequiresApproval.Should().BeTrue();
+        }
+
+        // A restarted host: the queue reloads from its snapshot, but the OMS order table
+        // and its id reservations start empty. Without rehydration a retry under the
+        // parked id would route now and the escalation could route again later, putting
+        // two executions under one order id.
+        var restartedQueue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: options);
+        var approveEverything = Substitute.For<IRiskValidator>();
+        approveEverything.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+
+        using var restarted = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: approveEverything,
+            escalationQueue: restartedQueue);
+
+        var retry = await restarted.PlaceOrderAsync(order);
+
+        retry.Success.Should().BeFalse("the client order id is still reserved by the live escalation");
+
+        // The escalation's own release still reclaims it.
+        var escalationId = restartedQueue.GetPending().Single().EscalationId;
+        restartedQueue.Approve(escalationId, actor: "risk-desk", reason: "cleared");
+        var released = await restarted.PlaceOrderAsync(order with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = escalationId
+            }
+        });
+
+        released.Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_ResubmittingAParkedOrderWithItsOwnEscalationId_IsRefusedUntilApproved()
+    {
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+        var order = new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 1,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-PENDING-REPLAY"
+        };
+
+        var riskValidator = Substitute.For<IRiskValidator>();
+        var parkNext = true;
+        riskValidator
+            .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                if (!parkNext)
+                {
+                    // The threshold moved: the rule no longer escalates this order at all.
+                    return RiskValidationResult.Approved();
+                }
+
+                parkNext = false;
+                var parked = queue.Park(call.Arg<OrderRequest>(), "above band", ruleName: "OrderNotional");
+                return RiskValidationResult.Escalated("parked", parked.EscalationId);
+            });
+
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue);
+
+        var parkedResult = await oms.PlaceOrderAsync(order);
+        parkedResult.RequiresApproval.Should().BeTrue();
+
+        // The escalation id came back in the submitter's own parked response. It is not an
+        // approval, so replaying it must not route the order while the desk has not decided.
+        var replay = await oms.PlaceOrderAsync(order with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parkedResult.EscalationId!
+            }
+        });
+
+        replay.Success.Should().BeFalse("a pending escalation is not a governed approval");
+        queue.TryGet(parkedResult.EscalationId!)!.Status.Should().Be(RiskEscalationStatus.PendingApproval);
+    }
+
+    [Fact]
+    public async Task CancelOrderAsync_WhenTheEscalationCannotBeWithdrawn_DoesNotReportSuccess()
+    {
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator
+            .ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var parked = queue.Park(call.Arg<OrderRequest>(), "above band", ruleName: "OrderNotional");
+                return RiskValidationResult.Escalated("parked", parked.EscalationId);
+            });
+
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue);
+
+        var parked = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 1,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-CANCEL-APPROVED"
+        });
+        parked.RequiresApproval.Should().BeTrue();
+
+        // An operator approved but has not released. Cancelling must withdraw that
+        // approval, not merely report success while it stays releasable.
+        queue.Approve(parked.EscalationId!, actor: "risk-desk", reason: "cleared");
+
+        var cancelled = await oms.CancelOrderAsync(parked.OrderId);
+
+        cancelled.Success.Should().BeTrue();
+        queue.TryGet(parked.EscalationId!)!.Status.Should().Be(
+            RiskEscalationStatus.Denied,
+            "an approved-but-unreleased escalation must be withdrawn when its order is cancelled");
+    }
+
+    [Fact]
+    public async Task Fills_CarryTheOwningFundAndContractMultiplierIntoThePortfolio()
+    {
+        var fundAccountId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
+        var portfolio = new PaperTradingPortfolio(1_000_000m);
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 10m,
+            ClientOrderId = "CLIENT-FUND-ATTRIBUTION",
+            FundAccountId = fundAccountId
+        });
+
+        placed.Success.Should().BeTrue();
+
+        // The shared execution account holds every fund's flow, so without the fill
+        // carrying its owner the position names a book rather than an owner — and every
+        // consumer that scopes or nets by fund is left guessing.
+        var position = portfolio.Accounts
+            .SelectMany(static account => account.Positions.Values)
+            .Single(static p => p.Symbol == "AAPL");
+
+        position.OwnerQuantities.Should().ContainKey(fundAccountId.ToString("D"));
+        position.OwnerQuantities[fundAccountId.ToString("D")].Should().Be(10m);
+
+        // ...but it must never reach the wire. /api/execution/positions and /portfolio
+        // serialize this record with no fund-account scope check, so an emitted map would
+        // disclose other funds' ids and exact holdings to any authenticated reader.
+        var serialized = System.Text.Json.JsonSerializer.Serialize(
+            (Meridian.Execution.Models.ExecutionPosition)position);
+
+        serialized.Should().NotContainEquivalentOf("ownerQuantities");
+        serialized.Should().NotContain(fundAccountId.ToString("D"));
+    }
+
+    [Fact]
+    public async Task OptionFills_CarryTheContractMultiplierIntoThePortfolio()
+    {
+        var portfolio = new PaperTradingPortfolio(1_000_000m);
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 10m,
+            ClientOrderId = "CLIENT-OPTION-MULTIPLIER",
+            OptionContract = new OptionContractIdentity
+            {
+                UnderlyingSymbol = "AAPL",
+                ExpirationDate = new DateOnly(2026, 12, 18),
+                StrikePrice = 250m,
+                Right = "C"
+            }
+        });
+
+        placed.Success.Should().BeTrue();
+
+        // No adapter-stamped multiplier: equity options are 100x, and assuming 1 would let
+        // every exposure check after this fill run against a hundredth of the real position.
+        var position = portfolio.Accounts
+            .SelectMany(static account => account.Positions.Values)
+            .Single(static p => p.Symbol == "AAPL");
+
+        position.ContractMultiplier.Should().Be(100m);
+    }
+
+    [Fact]
+    public async Task OffsettingFundBooks_InAFlatSharedAccount_StillReportExposure()
+    {
+        var fundA = Guid.Parse("aaaaaaaa-1111-1111-1111-aaaaaaaaaaaa");
+        var fundB = Guid.Parse("bbbbbbbb-2222-2222-2222-bbbbbbbbbbbb");
+        var portfolio = new PaperTradingPortfolio(1_000_000m);
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio);
+
+        (await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 100m,
+            ClientOrderId = "CLIENT-FUND-A-LONG",
+            FundAccountId = fundA
+        })).Success.Should().BeTrue();
+
+        (await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Sell,
+            Type = OrderType.Market,
+            Quantity = 100m,
+            ClientOrderId = "CLIENT-FUND-B-SHORT",
+            FundAccountId = fundB
+        })).Success.Should().BeTrue();
+
+        // The shared execution account nets to zero, but two funds hold real opposing
+        // books. Dropping the position here would erase both from every gross limit.
+        var position = portfolio.Accounts
+            .SelectMany(static account => account.Positions.Values)
+            .SingleOrDefault(static p => p.Symbol == "AAPL");
+
+        position.Should().NotBeNull("a net-flat shared book is not a flat book");
+        position!.Quantity.Should().Be(0);
+        position.OwnerQuantities[fundA.ToString("D")].Should().Be(100m);
+        position.OwnerQuantities[fundB.ToString("D")].Should().Be(-100m);
     }
 
     // ---- Stubs ----

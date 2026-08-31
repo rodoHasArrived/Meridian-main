@@ -1,0 +1,869 @@
+{
+  "schema": "meridian.contract-type-parity",
+  "version": "1.0.0",
+  "policy": "Every entry in 'pairs' must agree exactly; check-contract-type-parity.py fails on any member, nullability, or collection-shape difference. 'known_divergences' enumerates pairs that already differ at the commit this registry was introduced. They do not fail the gate, but a divergence that has since been repaired does: move it into 'pairs' so the parity is enforced from then on. The list is a ratchet and may shrink to empty.",
+  "pairs": [
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/UiDashboardModels.cs",
+      "csharp_record": "CanonicalProviderAliasResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/canonical-symbol.ts",
+      "typescript_interface": "CanonicalProviderAliasResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/UiDashboardModels.cs",
+      "csharp_record": "CanonicalSymbolAliasResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/canonical-symbol.ts",
+      "typescript_interface": "CanonicalSymbolAliasResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/UiDashboardModels.cs",
+      "csharp_record": "CanonicalSymbolIdentifiersResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/canonical-symbol.ts",
+      "typescript_interface": "CanonicalSymbolIdentifiersResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/UiDashboardModels.cs",
+      "csharp_record": "CanonicalSymbolMigrationResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/canonical-symbol.ts",
+      "typescript_interface": "CanonicalSymbolMigrationResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/UiDashboardModels.cs",
+      "csharp_record": "CanonicalSymbolRegistryEntryResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/canonical-symbol.ts",
+      "typescript_interface": "CanonicalSymbolRegistryEntryResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/UiDashboardModels.cs",
+      "csharp_record": "CanonicalSymbolRegistryResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/canonical-symbol.ts",
+      "typescript_interface": "CanonicalSymbolRegistryResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/UiDashboardModels.cs",
+      "csharp_record": "CanonicalSymbolResolutionMismatchResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/canonical-symbol.ts",
+      "typescript_interface": "CanonicalSymbolResolutionMismatchResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs",
+      "csharp_record": "HistoricalBarPoint",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/market-data.ts",
+      "typescript_interface": "HistoricalBarPoint"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/LiveDataModels.cs",
+      "csharp_record": "OrderBookLevelDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/market-data.ts",
+      "typescript_interface": "OrderBookLevelDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/LiveDataModels.cs",
+      "csharp_record": "OrderBookResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/market-data.ts",
+      "typescript_interface": "OrderBookResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/LiveDataModels.cs",
+      "csharp_record": "QuoteDataResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/market-data.ts",
+      "typescript_interface": "QuoteDataResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/LiveDataModels.cs",
+      "csharp_record": "QuotesResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/market-data.ts",
+      "typescript_interface": "QuotesResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/LiveDataModels.cs",
+      "csharp_record": "QuotesSnapshotItem",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/market-data.ts",
+      "typescript_interface": "QuotesSnapshotItem"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/LiveDataModels.cs",
+      "csharp_record": "QuotesSnapshotResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/market-data.ts",
+      "typescript_interface": "QuotesSnapshotResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/LiveDataModels.cs",
+      "csharp_record": "SessionStatsDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/market-data.ts",
+      "typescript_interface": "SessionStatsDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/LiveDataModels.cs",
+      "csharp_record": "TradeDataResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/market-data.ts",
+      "typescript_interface": "TradeDataResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/LiveDataModels.cs",
+      "csharp_record": "TradesResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/market-data.ts",
+      "typescript_interface": "TradesResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/ProviderCatalog.cs",
+      "csharp_record": "ProviderCatalogResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/provider-accounting.ts",
+      "typescript_interface": "ProviderCatalogResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/ProviderRateLimits.cs",
+      "csharp_record": "ProviderConnectionHealthResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/provider-accounting.ts",
+      "typescript_interface": "ProviderConnectionHealthResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/ProviderRateLimits.cs",
+      "csharp_record": "ProviderRateLimitsResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/provider-accounting.ts",
+      "typescript_interface": "ProviderRateLimitsResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/FeatureCapabilityDtos.cs",
+      "csharp_record": "FeatureCapabilitySettingsResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "FeatureCapabilitySettingsResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/FeatureCapabilityDtos.cs",
+      "csharp_record": "FeatureCapabilityToggleRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "FeatureCapabilityToggleRequest"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs",
+      "csharp_record": "FinancialRecordExplorerCellDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "FinancialRecordExplorerCellDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs",
+      "csharp_record": "FinancialRecordExplorerColumnDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "FinancialRecordExplorerColumnDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs",
+      "csharp_record": "FinancialRecordExplorerDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "FinancialRecordExplorerDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs",
+      "csharp_record": "FinancialRecordExplorerFilterDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "FinancialRecordExplorerFilterDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs",
+      "csharp_record": "FinancialRecordExplorerGraphEdgeDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "FinancialRecordExplorerGraphEdgeDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs",
+      "csharp_record": "FinancialRecordExplorerGraphNodeDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "FinancialRecordExplorerGraphNodeDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs",
+      "csharp_record": "FinancialRecordExplorerProofActionDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "FinancialRecordExplorerProofActionDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs",
+      "csharp_record": "FinancialRecordExplorerRecordGraphDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "FinancialRecordExplorerRecordGraphDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs",
+      "csharp_record": "FinancialRecordExplorerRelationshipDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "FinancialRecordExplorerRelationshipDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs",
+      "csharp_record": "FinancialRecordExplorerRowDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "FinancialRecordExplorerRowDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs",
+      "csharp_record": "FinancialRecordExplorerSavedViewDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "FinancialRecordExplorerSavedViewDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs",
+      "csharp_record": "FinancialRecordExplorerSavedViewSaveRequestDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "FinancialRecordExplorerSavedViewSaveRequestDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs",
+      "csharp_record": "FinancialRecordExplorerScopeItemDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "FinancialRecordExplorerScopeItemDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs",
+      "csharp_record": "FinancialRecordExplorerSelectedRecordDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "FinancialRecordExplorerSelectedRecordDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs",
+      "csharp_record": "FinancialRecordExplorerSummaryItemDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "FinancialRecordExplorerSummaryItemDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs",
+      "csharp_record": "WorkflowBlockerSummary",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "WorkflowBlockerSummary"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs",
+      "csharp_record": "WorkflowEvidenceBadge",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "WorkflowEvidenceBadge"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs",
+      "csharp_record": "WorkflowNextAction",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "WorkflowNextAction"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs",
+      "csharp_record": "WorkflowPresetSaveRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "WorkflowPresetSaveRequest"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs",
+      "csharp_record": "WorkspaceWorkflowSummary",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "WorkspaceWorkflowSummary"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs",
+      "csharp_record": "StrategyBriefingAlert",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-3.ts",
+      "typescript_interface": "StrategyBriefingAlert"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs",
+      "csharp_record": "StrategyBriefingRun",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-3.ts",
+      "typescript_interface": "StrategyBriefingRun"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs",
+      "csharp_record": "StrategyBriefingWorkspaceSummary",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-3.ts",
+      "typescript_interface": "StrategyBriefingWorkspaceSummary"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs",
+      "csharp_record": "StrategyRunDrillInLinks",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-3.ts",
+      "typescript_interface": "StrategyRunDrillInLinks"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs",
+      "csharp_record": "StrategySavedComparison",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-3.ts",
+      "typescript_interface": "StrategySavedComparison"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs",
+      "csharp_record": "StrategySavedComparisonMode",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-3.ts",
+      "typescript_interface": "StrategySavedComparisonMode"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs",
+      "csharp_record": "StrategyWhatChangedItem",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-3.ts",
+      "typescript_interface": "StrategyWhatChangedItem"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "MetricsDiff",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "typescript_interface": "MetricsDiff"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "ParameterDiff",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "typescript_interface": "ParameterDiff"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "PositionDiffEntry",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "typescript_interface": "PositionDiffEntry"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs",
+      "csharp_record": "ReconciliationCaseComment",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "typescript_interface": "ReconciliationCaseComment"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs",
+      "csharp_record": "ReconciliationCaseworkOperationResult",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "typescript_interface": "ReconciliationCaseworkOperationResult"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "StrategyRunArtifactCompleteness",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "typescript_interface": "StrategyRunArtifactCompleteness"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "EquityCurvePoint",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "EquityCurvePoint"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "EquityCurveSummary",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "EquityCurveSummary"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "LedgerJournalLine",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "LedgerJournalLine"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "RunCashFlowSummary",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "RunCashFlowSummary"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "RunCashLadder",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "RunCashLadder"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "RunFillEntry",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "RunFillEntry"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "StrategyRunCashFlowDigest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "StrategyRunCashFlowDigest"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "StrategyRunContinuityDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "StrategyRunContinuityDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "StrategyRunContinuityLineage",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "StrategyRunContinuityLineage"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "StrategyRunContinuityLink",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "StrategyRunContinuityLink"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "StrategyRunContinuityStatus",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "StrategyRunContinuityStatus"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "StrategyRunContinuityWarning",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "StrategyRunContinuityWarning"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "StrategyRunEvidenceLoop",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "StrategyRunEvidenceLoop"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "SymbolAttributionEntry",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "SymbolAttributionEntry"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs",
+      "csharp_record": "OperatorOverridesDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "OperatorOverridesDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs",
+      "csharp_record": "OperatorOverridesPatchRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "OperatorOverridesPatchRequest"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Plaid/PlaidModels.cs",
+      "csharp_record": "PlaidAccountLinkRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "PlaidAccountLinkRequest"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Plaid/PlaidModels.cs",
+      "csharp_record": "PlaidInstitutionSearchResult",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "PlaidInstitutionSearchResult"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Plaid/PlaidModels.cs",
+      "csharp_record": "PlaidLinkTokenRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "PlaidLinkTokenRequest"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Plaid/PlaidModels.cs",
+      "csharp_record": "PlaidLinkTokenResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "PlaidLinkTokenResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Plaid/PlaidModels.cs",
+      "csharp_record": "PlaidPublicTokenExchangeRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "PlaidPublicTokenExchangeRequest"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/Quality/QualityApiModels.cs",
+      "csharp_record": "QualityComponentResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "QualityComponentResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/Quality/QualityApiModels.cs",
+      "csharp_record": "QualityCompositeDashboardResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "QualityCompositeDashboardResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/Quality/QualityApiModels.cs",
+      "csharp_record": "QualityCompositeGapResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "QualityCompositeGapResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/Quality/QualityApiModels.cs",
+      "csharp_record": "QualityCompositeSymbolResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "QualityCompositeSymbolResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/Quality/QualityApiModels.cs",
+      "csharp_record": "QualityGapRemediationRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "QualityGapRemediationRequest"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/Quality/QualityApiModels.cs",
+      "csharp_record": "QualityGapRemediationResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "QualityGapRemediationResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/Quality/QualityApiModels.cs",
+      "csharp_record": "QualityProviderFreshnessResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "QualityProviderFreshnessResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs",
+      "csharp_record": "SecurityMasterConflict",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "SecurityMasterConflict"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs",
+      "csharp_record": "StrategyDesignCell",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-8.ts",
+      "typescript_interface": "StrategyDesignCell"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs",
+      "csharp_record": "StrategyDesignCompiledScript",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-8.ts",
+      "typescript_interface": "StrategyDesignCompiledScript"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs",
+      "csharp_record": "StrategyDesignDocument",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-8.ts",
+      "typescript_interface": "StrategyDesignDocument"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs",
+      "csharp_record": "StrategyDesignDraftSaveRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-8.ts",
+      "typescript_interface": "StrategyDesignDraftSaveRequest"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs",
+      "csharp_record": "StrategyDesignDraftSaveResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-8.ts",
+      "typescript_interface": "StrategyDesignDraftSaveResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs",
+      "csharp_record": "StrategyDesignDraftSummary",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-8.ts",
+      "typescript_interface": "StrategyDesignDraftSummary"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs",
+      "csharp_record": "StrategyDesignFieldCatalogItem",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-8.ts",
+      "typescript_interface": "StrategyDesignFieldCatalogItem"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs",
+      "csharp_record": "StrategyDesignPreviewResult",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-8.ts",
+      "typescript_interface": "StrategyDesignPreviewResult"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs",
+      "csharp_record": "StrategyDesignPreviewRow",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-8.ts",
+      "typescript_interface": "StrategyDesignPreviewRow"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs",
+      "csharp_record": "StrategyDesignRunBacktestResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-8.ts",
+      "typescript_interface": "StrategyDesignRunBacktestResponse"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs",
+      "csharp_record": "StrategyDesignRunTraceEntry",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-8.ts",
+      "typescript_interface": "StrategyDesignRunTraceEntry"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs",
+      "csharp_record": "StrategyDesignTemplate",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-8.ts",
+      "typescript_interface": "StrategyDesignTemplate"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs",
+      "csharp_record": "StrategyDesignTransition",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-8.ts",
+      "typescript_interface": "StrategyDesignTransition"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs",
+      "csharp_record": "StrategyDesignValidationMessage",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-8.ts",
+      "typescript_interface": "StrategyDesignValidationMessage"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs",
+      "csharp_record": "StrategyDesignValidationResult",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-8.ts",
+      "typescript_interface": "StrategyDesignValidationResult"
+    }
+  ],
+  "known_divergences": [
+    {
+      "csharp_file": "src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs",
+      "csharp_record": "ActivateAccountingConfigurationRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "ActivateAccountingConfigurationRequest",
+      "problem_count": 2
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs",
+      "csharp_record": "ApprovePostingRulePromotionRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "ApprovePostingRulePromotionRequest",
+      "problem_count": 2
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs",
+      "csharp_record": "AttachManualJournalEntryEvidenceRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "AttachManualJournalEntryEvidenceRequest",
+      "problem_count": 2
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Ledger/LedgerBookDtos.cs",
+      "csharp_record": "CreateLedgerBookRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "typescript_interface": "CreateLedgerBookRequest",
+      "problem_count": 3
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs",
+      "csharp_record": "EvidencePacketExportRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-2.ts",
+      "typescript_interface": "EvidencePacketExportRequest",
+      "problem_count": 3
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs",
+      "csharp_record": "EvidencePacketExportResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-2.ts",
+      "typescript_interface": "EvidencePacketExportResponse",
+      "problem_count": 1
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "LedgerSummary",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "LedgerSummary",
+      "problem_count": 9
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "LedgerTrialBalanceLine",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "LedgerTrialBalanceLine",
+      "problem_count": 9
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs",
+      "csharp_record": "OperatorWorkflowHomeSummary",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-1.ts",
+      "typescript_interface": "OperatorWorkflowHomeSummary",
+      "problem_count": 1
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Plaid/PlaidModels.cs",
+      "csharp_record": "PlaidPublicTokenExchangeResult",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "PlaidPublicTokenExchangeResult",
+      "problem_count": 4
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "PortfolioPositionSummary",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "typescript_interface": "PortfolioPositionSummary",
+      "problem_count": 8
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "PortfolioSummary",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "typescript_interface": "PortfolioSummary",
+      "problem_count": 15
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs",
+      "csharp_record": "PreviewJournalTemplateRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "PreviewJournalTemplateRequest",
+      "problem_count": 2
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/ProviderSetupApiModels.cs",
+      "csharp_record": "ProviderSetupRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "ProviderSetupRequest",
+      "problem_count": 4
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/ProviderSetupApiModels.cs",
+      "csharp_record": "ProviderSetupResult",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "ProviderSetupResult",
+      "problem_count": 2
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/Quality/QualityApiModels.cs",
+      "csharp_record": "QualityDashboardResponse",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "QualityDashboardResponse",
+      "problem_count": 8
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs",
+      "csharp_record": "ReconciliationBreakQueueItem",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "typescript_interface": "ReconciliationBreakQueueItem",
+      "problem_count": 27
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs",
+      "csharp_record": "ReconciliationBulkCaseworkRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "typescript_interface": "ReconciliationBulkCaseworkRequest",
+      "problem_count": 2
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs",
+      "csharp_record": "ReconciliationBulkCaseworkResult",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "typescript_interface": "ReconciliationBulkCaseworkResult",
+      "problem_count": 2
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs",
+      "csharp_record": "ReconciliationCaseworkCommand",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "typescript_interface": "ReconciliationCaseworkCommand",
+      "problem_count": 3
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs",
+      "csharp_record": "ReconciliationRunSummary",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "ReconciliationRunSummary",
+      "problem_count": 1
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs",
+      "csharp_record": "ResolveConflictRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "ResolveConflictRequest",
+      "problem_count": 1
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs",
+      "csharp_record": "ResolveReconciliationBreakRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "typescript_interface": "ResolveReconciliationBreakRequest",
+      "problem_count": 1
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs",
+      "csharp_record": "ReviewReconciliationBreakRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "typescript_interface": "ReviewReconciliationBreakRequest",
+      "problem_count": 1
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "RunAttributionSummary",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "RunAttributionSummary",
+      "problem_count": 1
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "RunFillSummary",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "RunFillSummary",
+      "problem_count": 1
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs",
+      "csharp_record": "SaveManualJournalEntryDraftRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "SaveManualJournalEntryDraftRequest",
+      "problem_count": 1
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs",
+      "csharp_record": "StrategyDesignRunBacktestRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-8.ts",
+      "typescript_interface": "StrategyDesignRunBacktestRequest",
+      "problem_count": 6
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "StrategyRunDetail",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "StrategyRunDetail",
+      "problem_count": 3
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "StrategyRunSummary",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "StrategyRunSummary",
+      "problem_count": 12
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs",
+      "csharp_record": "SubmitManualJournalEntryApprovalRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "SubmitManualJournalEntryApprovalRequest",
+      "problem_count": 2
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs",
+      "csharp_record": "UpsertAccountingRuleTestCaseRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "typescript_interface": "UpsertAccountingRuleTestCaseRequest",
+      "problem_count": 1
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs",
+      "csharp_record": "UpsertChartOfAccountsNodeRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "UpsertChartOfAccountsNodeRequest",
+      "problem_count": 1
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs",
+      "csharp_record": "UpsertJournalEntryTemplateRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "UpsertJournalEntryTemplateRequest",
+      "problem_count": 2
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs",
+      "csharp_record": "UpsertPostingRuleRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "UpsertPostingRuleRequest",
+      "problem_count": 3
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs",
+      "csharp_record": "ValidateManualJournalEntryDraftRequest",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "typescript_interface": "ValidateManualJournalEntryDraftRequest",
+      "problem_count": 1
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs",
+      "csharp_record": "VerifiedOperationOutcome",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "typescript_interface": "VerifiedOperationOutcome",
+      "problem_count": 4
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",
+      "csharp_record": "WorkstationSecurityReference",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "typescript_interface": "WorkstationSecurityReference",
+      "problem_count": 11
+    }
+  ]
+}

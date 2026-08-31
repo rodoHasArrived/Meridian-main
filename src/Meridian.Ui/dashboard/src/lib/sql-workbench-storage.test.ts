@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { SqlWorkbenchStorageState } from "@/lib/sql-workbench-storage";
 import {
   SQL_WORKBENCH_HISTORY_LIMIT,
   SQL_WORKBENCH_STORAGE_KEY,
@@ -36,7 +37,7 @@ describe("sql workbench storage", () => {
   });
 
   it("records deduped query history with a fixed limit", () => {
-    let state = { version: 1 as const, history: [], savedQueries: [] };
+    let state: SqlWorkbenchStorageState = { version: 1, history: [], savedQueries: [] };
 
     for (let index = 0; index < SQL_WORKBENCH_HISTORY_LIMIT + 2; index += 1) {
       state = recordSqlQueryHistory(state, `SELECT ${index}`, `2026-01-01T00:00:${String(index).padStart(2, "0")}Z`);

@@ -5,28 +5,6 @@ namespace Meridian.Ledger;
 /// </summary>
 public static class MultiCurrencyLedgerTranslator
 {
-    // ISO-4217 currency codes accepted when inferring an account's currency from its symbol.
-    // Mirrors the Security Master reference list (SecurityMasterDataQualityService.Iso4217Codes):
-    // active national codes, precious metals (XAU/XAG/XPT/XPD), supranational units, offshore CNH,
-    // and recently retired codes that can still appear on historical balances. Pure accounting
-    // "funds" codes (BOV, CHE, CHW, COU, MXV, USN, UYW) are deliberately excluded — they never
-    // denominate ledger balances and some collide with listed equity tickers (e.g. NYSE:CHE).
-    private static readonly HashSet<string> KnownCurrencyCodes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "USD","EUR","GBP","JPY","CHF","CAD","AUD","NZD","HKD","SGD","SEK","NOK","DKK","CNY","CNH",
-        "BRL","MXN","INR","ZAR","KRW","TRY","PLN","CZK","HUF","ILS","SAR","AED","MYR","THB","IDR",
-        "PHP","CLP","COP","PEN","ARS","VND","NGN","EGP","PKR","BDT","UAH","RON","BGN","HRK","RSD",
-        "ISK","GEL","KZT","UZS","AZN","AMD","BYN","BYR","MDL","MKD","ALL","BAM","RUB","TND","MAD",
-        "DZD","LYD","IQD","KWD","BHD","OMR","QAR","JOD","LBP","SYP","YER","AFN","IRR","XAU","XAG",
-        "XPT","XPD","XDR","XOF","XAF","XCD","XCG","XPF","CLF","UYU","UYI","SOS","GHS","ETB","TZS",
-        "UGX","MZN","AOA","KES","RWF","ZMW","BWP","MGA","ZWL","ZWG","NAD","SCR","MUR","MWK","SZL",
-        "LSL","CVE","GMD","GNF","LRD","SLL","SLE","STN","XSU","XUA","NIO","GTQ","HNL","CRC","PAB",
-        "DOP","JMD","TTD","BBD","BSD","HTG","CUP","CUC","AWG","ANG","SRD","GYD","BMD","KYD","BZD",
-        "FJD","PGK","SBD","VUV","WST","TOP","MOP","BND","MMK","KHR","LAK","MNT","NPR","LKR","MVR",
-        "BTN","TJS","TMT","KGS","KPW","TWD","BOB","PYG","VES","VED","SVC","SDG","SSP","ERN","DJF",
-        "BIF","KMF","CDF","MRU","FKP","GIP","SHP",
-    };
-
     /// <summary>
     /// Translates the current ledger trial balance to <paramref name="baseCurrency"/>.
     /// Account currency is supplied by <paramref name="accountCurrencies"/> or inferred from
@@ -163,7 +141,7 @@ public static class MultiCurrencyLedgerTranslator
         if (LedgerAccounts.UsesInstrumentSymbol(account))
             return baseCurrency;
 
-        return IsKnownCurrencyCode(account.Symbol) ? account.Symbol!.ToUpperInvariant() : baseCurrency;
+        return CurrencyCodeCatalog.IsRecognized(account.Symbol) ? account.Symbol!.ToUpperInvariant() : baseCurrency;
     }
 
     private static decimal ResolveRate(
@@ -212,14 +190,10 @@ public static class MultiCurrencyLedgerTranslator
     }
 
     /// <summary>
-    /// True only for candidates that are both currency-shaped and known ISO-4217 codes.
-    /// Used for symbol-based inference so 3-letter instrument tickers (IBM, GLD, SPY, ...)
-    /// are not misread as currencies; explicitly supplied currency parameters are validated
-    /// by <see cref="NormalizeCurrency"/> for shape only.
+    /// Returns whether an explicitly supplied currency has the three-letter ISO-style shape.
+    /// Symbol-based inference separately uses <see cref="CurrencyCodeCatalog"/> so instrument
+    /// tickers are not misread as currencies.
     /// </summary>
-    private static bool IsKnownCurrencyCode(string? candidate)
-        => candidate is not null && IsCurrencyShaped(candidate) && KnownCurrencyCodes.Contains(candidate);
-
     private static bool IsCurrencyShaped(string currency)
         => currency is { Length: 3 } && currency.All(static c => c is >= 'A' and <= 'Z' or >= 'a' and <= 'z');
 }

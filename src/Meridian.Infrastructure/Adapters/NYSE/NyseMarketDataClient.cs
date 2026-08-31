@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Net.Http;
 using System.Reactive.Disposables;
 using Meridian.Core.Logging;
+using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
@@ -158,7 +159,8 @@ public sealed class NyseMarketDataClient :
             trade.SequenceNumber ?? 0,
             trade.SourceId,
             trade.Exchange,
-            SplitConditions(trade.Conditions)));
+            SplitConditions(trade.Conditions),
+            Source: MarketDataSources.Nyse));
     }
 
     private void OnQuote(RealtimeQuote quote)
@@ -172,7 +174,8 @@ public sealed class NyseMarketDataClient :
             quote.AskSize,
             quote.SequenceNumber,
             quote.SourceId,
-            quote.BidExchange ?? quote.AskExchange));
+            quote.BidExchange ?? quote.AskExchange,
+            Source: MarketDataSources.Nyse));
     }
 
     private void OnDepth(RealtimeDepthUpdate depth)
@@ -187,7 +190,8 @@ public sealed class NyseMarketDataClient :
             depth.Size,
             depth.MarketMaker,
             depth.SequenceNumber ?? 0,
-            depth.SourceId));
+            depth.SourceId,
+            Source: MarketDataSources.Nyse));
     }
 
     private static string[]? SplitConditions(string? conditions)

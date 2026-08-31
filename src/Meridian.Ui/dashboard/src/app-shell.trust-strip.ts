@@ -1,7 +1,10 @@
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { pluralizeCount } from "@/lib/format";
 import type { AppShellWorkspaceErrorMap } from "@/app-shell.status-panel";
-import packageJson from "../package.json";
+import {
+  buildDataProvenanceBadgeViewModel,
+  type DataProvenanceKind
+} from "@/app-shell.data-provenance-badge";
 import type { DataWorkspaceResponse, SessionInfo } from "@/types";
 
 export type AppShellTrustStripTone = "ready" | "review" | "blocked" | "pending";
@@ -26,6 +29,7 @@ export function buildTrustStripState({
   loading,
   bootstrapFailed,
   usingDevelopmentFixtures,
+  dataProvenance,
   workspaceErrors,
   session,
   data
@@ -33,103 +37,142 @@ export function buildTrustStripState({
   loading: boolean;
   bootstrapFailed: boolean;
   usingDevelopmentFixtures: boolean;
+  dataProvenance?: DataProvenanceKind;
   workspaceErrors: AppShellWorkspaceErrorMap;
   session: SessionInfo | null;
   data: DataWorkspaceResponse | null;
 }): AppShellTrustStripState {
-  const providerPosture = buildProviderTrustStripItem(data);
-  const failedWorkspaceCount = Object.keys(workspaceErrors).length;
+  const providerPosture = buildProviderTrustStripItem({
+    data,
+    loading,
+    bootstrapFailed,
+    dataWorkspaceError: workspaceErrors.data
+  });
+  const resolvedProvenance = usingDevelopmentFixtures
+    ? "seeded"
+    : dataProvenance ?? "unknown";
+  const provenanceBadge = buildDataProvenanceBadgeViewModel({
+    provenance: resolvedProvenance
+  });
 
   const environmentValue = loading
     ? "Loading"
-    : session?.environment
-      ? titleCase(session.environment)
-      : "Unknown";
-  const environmentTone: AppShellTrustStripTone = session?.environment === "live"
-    ? "blocked"
-    : session?.environment === "paper"
-      ? "ready"
-      : loading
-        ? "pending"
-        : "review";
-
-  const dataSourceValue = usingDevelopmentFixtures
-    ? "Demo data"
-    : bootstrapFailed
-      ? "Unavailable"
-      : failedWorkspaceCount > 0
-        ? "Limited data"
-        : "Connected";
-  const dataSourceTone: AppShellTrustStripTone = usingDevelopmentFixtures
+    : session?.environment === "live"
+      ? "Live"
+      : session?.environment === "paper"
+        ? "Paper"
+        : "Demo";
+  const environmentTone: AppShellTrustStripTone = loading
     ? "pending"
-    : bootstrapFailed
-      ? "blocked"
-      : failedWorkspaceCount > 0
-        ? "review"
-        : "ready";
-  const dataSourceDetail = usingDevelopmentFixtures
-    ? "Demo data is visible; confirm live source status before making operating decisions."
-    : bootstrapFailed
-      ? "Workspace data is unavailable from this machine. Try again or open diagnostics."
-      : failedWorkspaceCount > 0
-        ? `${formatCount(failedWorkspaceCount, "workspace area")} did not load.`
-        : "Workspace data loaded from Meridian.";
+    : environmentValue === "Live"
+      ? "review"
+      : environmentValue === "Paper"
+        ? "ready"
+        : "review";
+  const environmentDetail = loading
+    ? "Session environment is loading."
+    : session?.environment === "research"
+      ? `Session ${session.displayName} is operating in research mode, shown as Demo.`
+      : session
+        ? `Session ${session.displayName} is operating in ${environmentValue.toLowerCase()} mode.`
+        : "Session environment is not loaded; Demo is the safe default.";
+
+  const dataSourceValue = resolvedProvenance.toUpperCase();
+  const dataSourceTone: AppShellTrustStripTone = provenanceBadge.visible
+    ? "review"
+    : "ready";
+  const dataSourceDetail = provenanceBadge.visible
+    ? `${provenanceBadge.headline}. ${provenanceBadge.detail}`
+    : "Server mode evidence identifies the loaded workstation data as real.";
+  const dataSourceHref = provenanceBadge.visible
+    ? WORKSTATION_ROUTE_CATALOG.dataProviders
+    : null;
+  const dataSourceActionLabel = provenanceBadge.visible
+    ? "Connect live source"
+    : null;
 
   return {
-    ariaLabel: "Workstation build, mode, data source, and provider posture",
+    ariaLabel: "Workstation build, environment, provenance, and provider posture",
     items: [
       {
         id: "build",
         label: "Build",
-        value: `v${packageJson.version}`,
+        value: `v${__APP_VERSION__}`,
         detail: "Current Meridian web release.",
         tone: "ready",
-        ariaLabel: `Build ${packageJson.version}. Current Meridian web release.`,
+        ariaLabel: `Build ${__APP_VERSION__}. Current Meridian web release.`,
         href: null,
         actionLabel: null
       },
       {
         id: "mode",
-        label: "Mode",
+        label: "Environment",
         value: environmentValue,
-        detail: session
-          ? `Session ${session.displayName} is operating in ${environmentValue.toLowerCase()} mode.`
-          : "Session environment is not loaded yet.",
+        detail: environmentDetail,
         tone: environmentTone,
-        ariaLabel: `Mode ${environmentValue}. ${session ? `Session ${session.displayName} is operating in ${environmentValue.toLowerCase()} mode.` : "Session environment is not loaded yet."}`,
-        href: session?.environment === "live"
+        ariaLabel: `Environment ${environmentValue}. ${environmentDetail}`,
+        href: environmentValue === "Live"
           ? WORKSTATION_ROUTE_CATALOG.tradingReadiness
           : null,
-        actionLabel: session?.environment === "live" ? "Review readiness" : null
+        actionLabel: environmentValue === "Live" ? "Review readiness" : null
       },
       {
         id: "source",
-        label: "Source",
+        label: "Provenance",
         value: dataSourceValue,
         detail: dataSourceDetail,
         tone: dataSourceTone,
-        ariaLabel: `Data source ${dataSourceValue}. ${dataSourceDetail}`,
-        href: bootstrapFailed || failedWorkspaceCount > 0
-          ? WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage
-          : null,
-        actionLabel: bootstrapFailed || failedWorkspaceCount > 0 ? "Open diagnostics" : null
+        ariaLabel: `Data provenance ${dataSourceValue}. ${dataSourceDetail}`,
+        href: dataSourceHref,
+        actionLabel: dataSourceActionLabel
       },
       providerPosture
     ]
   };
 }
 
-function buildProviderTrustStripItem(data: DataWorkspaceResponse | null): AppShellTrustStripItem {
+function buildProviderTrustStripItem({
+  data,
+  loading,
+  bootstrapFailed,
+  dataWorkspaceError
+}: {
+  data: DataWorkspaceResponse | null;
+  loading: boolean;
+  bootstrapFailed: boolean;
+  dataWorkspaceError?: string;
+}): AppShellTrustStripItem {
   if (!data) {
+    if (loading) {
+      return {
+        id: "providers",
+        label: "Providers",
+        value: "Pending",
+        detail: "Provider posture has not loaded yet.",
+        tone: "pending",
+        ariaLabel: "Providers Pending. Provider posture has not loaded yet.",
+        href: null,
+        actionLabel: null
+      };
+    }
+
+    const failed = bootstrapFailed || Boolean(dataWorkspaceError);
+    const detail = dataWorkspaceError
+      ? `Data workspace failed: ${dataWorkspaceError}`
+      : failed
+        ? "Workspace bootstrap failed before provider posture loaded."
+        : "Provider posture is unavailable in the loaded workspace data.";
     return {
       id: "providers",
       label: "Providers",
-      value: "Pending",
-      detail: "Provider posture has not loaded yet.",
-      tone: "pending",
-      ariaLabel: "Providers Pending. Provider posture has not loaded yet.",
-      href: WORKSTATION_ROUTE_CATALOG.dataProviders,
-      actionLabel: "Open provider posture"
+      value: "Unavailable",
+      detail,
+      tone: failed ? "blocked" : "review",
+      ariaLabel: `Providers Unavailable. ${detail}`,
+      href: failed
+        ? WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage
+        : WORKSTATION_ROUTE_CATALOG.dataProviders,
+      actionLabel: failed ? "Open diagnostics" : "Open provider posture"
     };
   }
 
@@ -147,20 +190,30 @@ function buildProviderTrustStripItem(data: DataWorkspaceResponse | null): AppShe
     };
   }
 
+  const blocked = providers.filter((provider) => provider.status === "Blocked").length;
   const degraded = providers.filter((provider) => provider.status === "Degraded").length;
   const warning = providers.filter((provider) => provider.status === "Warning").length;
   const healthy = providers.filter((provider) => provider.status === "Healthy").length;
-  const value = degraded > 0
-    ? `${degraded} degraded`
+  const value = blocked > 0
+    ? `${blocked} blocked`
+    : degraded > 0
+      ? `${degraded} degraded`
+      : warning > 0
+        ? `${warning} warning`
+        : `${healthy}/${providers.length} healthy`;
+  const detail = blocked > 0
+    ? `${formatCount(blocked, "provider")} blocked; restore provider connectivity before relying on workstation data.`
+    : degraded > 0
+      ? `${formatCount(degraded, "provider")} degraded; open Data provider posture before trading decisions.`
+      : warning > 0
+        ? `${formatCount(warning, "provider")} warning; review provider trust before relying on fresh data.`
+        : `${formatCount(healthy, "provider")} healthy in the loaded data posture.`;
+  const needsAction = blocked > 0 || degraded > 0 || warning > 0;
+  const tone: AppShellTrustStripTone = blocked > 0 || degraded > 0
+    ? "blocked"
     : warning > 0
-      ? `${warning} warning`
-      : `${healthy}/${providers.length} healthy`;
-  const detail = degraded > 0
-    ? `${formatCount(degraded, "provider")} degraded; open Data provider posture before trading decisions.`
-    : warning > 0
-      ? `${formatCount(warning, "provider")} warning; review provider trust before relying on fresh data.`
-      : `${formatCount(healthy, "provider")} healthy in the loaded data posture.`;
-  const tone: AppShellTrustStripTone = degraded > 0 ? "blocked" : warning > 0 ? "review" : "ready";
+      ? "review"
+      : "ready";
 
   return {
     id: "providers",
@@ -169,15 +222,11 @@ function buildProviderTrustStripItem(data: DataWorkspaceResponse | null): AppShe
     detail,
     tone,
     ariaLabel: `Providers ${value}. ${detail}`,
-    href: degraded > 0 || warning > 0
+    href: needsAction
       ? WORKSTATION_ROUTE_CATALOG.dataProviders
       : null,
-    actionLabel: degraded > 0 || warning > 0 ? "Open provider posture" : null
+    actionLabel: needsAction ? "Open provider posture" : null
   };
-}
-
-function titleCase(value: string): string {
-  return value.length > 0 ? `${value.charAt(0).toUpperCase()}${value.slice(1).toLowerCase()}` : value;
 }
 
 function formatCount(count: number, singular: string, plural = `${singular}s`): string {

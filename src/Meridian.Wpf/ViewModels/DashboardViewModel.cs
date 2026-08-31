@@ -517,10 +517,15 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
     /// </summary>
     private void UpdateDataProvenanceBadge()
     {
-        var provenance = Meridian.Ui.Services.Services.FixtureModeDetector.Instance.ModeKind switch
+        var detector = Meridian.Ui.Services.Services.FixtureModeDetector.Instance;
+        var provenance = detector.ModeKind switch
         {
             Meridian.Ui.Services.Services.FixtureModeKind.Fixture => Meridian.Contracts.Operations.DataProvenance.Seeded,
             Meridian.Ui.Services.Services.FixtureModeKind.Offline => Meridian.Contracts.Operations.DataProvenance.Sample,
+            // A connected backend that reports seeded/simulated data keeps the badge on;
+            // the token fails closed to Simulated when unrecognized (W9-TRUTH-001).
+            _ when detector.ServerDataProvenanceToken is { } token =>
+                Meridian.Contracts.Operations.DataProvenanceExtensions.ParseTokenOrSimulated(token),
             _ => Meridian.Contracts.Operations.DataProvenance.Real
         };
 

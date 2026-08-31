@@ -78,6 +78,7 @@ public sealed record ProviderCapabilityDescriptor(
     Type? CorporateActions = null,
     Type? Options = null,
     Type? Brokerage = null,
+    IBProviderCapabilityExecutionMode ExecutionMode = IBProviderCapabilityExecutionMode.NotApplicable,
     IReadOnlyList<InstrumentType>? InstrumentTypes = null,
     IReadOnlyList<MarketDataAssetClass>? StreamingAssetClasses = null)
 {

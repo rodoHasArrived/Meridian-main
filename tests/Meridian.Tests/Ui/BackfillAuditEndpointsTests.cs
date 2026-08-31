@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Xunit;
+using UiBackfillCoordinator = Meridian.Ui.Shared.Services.BackfillCoordinator;
 
 namespace Meridian.Tests.Ui;
 
@@ -29,6 +30,20 @@ public sealed class BackfillAuditEndpointsTests
         var response = await app.GetTestClient().GetAsync(UiApiRoutes.BackfillProviderConfigAudit);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task GetProviderConfigAudit_WithoutAuditReader_FailsClosed()
+    {
+        await using var app = await CreateAppAsync(UserPermission.ManageProviders);
+
+        var response = await app.GetTestClient().GetAsync(UiApiRoutes.BackfillProviderConfigAudit);
+
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        response.Content.Headers.ContentType?.MediaType.Should().Be("application/problem+json");
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        document.RootElement.GetProperty("type").GetString()
+            .Should().Be(ApiProblemTypes.ServiceUnavailable);
     }
 
     [Fact]
@@ -72,7 +87,7 @@ public sealed class BackfillAuditEndpointsTests
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton(new ConfigStore(configPath));
-        builder.Services.AddSingleton<BackfillCoordinator>();
+        builder.Services.AddSingleton<UiBackfillCoordinator>();
         if (auditReader is not null)
         {
             builder.Services.AddSingleton(auditReader);
@@ -81,6 +96,8 @@ public sealed class BackfillAuditEndpointsTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "backfill-audit-operator";
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-backfill-audit-tests";
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
             await next();
         });

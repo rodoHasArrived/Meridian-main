@@ -155,9 +155,17 @@ public sealed partial class InMemoryDirectLendingService
                 throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Prepayment is not permitted under the current loan terms."));
             }
 
+            var authoritativePrincipal = stored.Servicing.Balances.PrincipalOutstanding;
+            if (request.OutstandingPrincipal != authoritativePrincipal)
+            {
+                throw new DirectLendingCommandException(new DirectLendingCommandError(
+                    DirectLendingErrorCode.ConcurrencyConflict,
+                    $"Prepayment penalty principal basis conflict for loan '{loanId}': supplied basis does not match the authoritative current principal balance."));
+            }
+
             var penaltyRate = stored.TermsVersions[^1].Terms.PrepaymentPenaltyRate ?? 0m;
             var penaltyAmount = penaltyRate > 0m
-                ? Math.Round(request.OutstandingPrincipal * penaltyRate, 2, MidpointRounding.AwayFromZero)
+                ? Math.Round(authoritativePrincipal * penaltyRate, 2, MidpointRounding.AwayFromZero)
                 : 0m;
 
             stored.Servicing = stored.Servicing with
@@ -168,7 +176,7 @@ public sealed partial class InMemoryDirectLendingService
                 }
             };
             AppendRevision(stored, "InternalEvent", request.EffectiveDate, $"Prepayment penalty charged for {penaltyAmount:0.00}.");
-            AppendEvent(stored, "loan.prepayment-penalty-charged", request.EffectiveDate, new { loanId, request.OutstandingPrincipal, PenaltyAmount = penaltyAmount, request.EffectiveDate, request.ExternalRef }, metadata);
+            AppendEvent(stored, "loan.prepayment-penalty-charged", request.EffectiveDate, new { loanId, OutstandingPrincipal = authoritativePrincipal, PenaltyAmount = penaltyAmount, request.EffectiveDate, request.ExternalRef }, metadata);
             return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
         }
     }

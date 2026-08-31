@@ -850,13 +850,22 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.Validation, "Prepayment is not permitted under the current loan terms.");
         }
 
-        var decision = DirectLendingAggregateInterop.ChargePrepaymentPenalty(stored.Servicing, stored.Contract.CurrentTerms, request);
+        var authoritativePrincipal = stored.Servicing.Balances.PrincipalOutstanding;
+        if (request.OutstandingPrincipal != authoritativePrincipal)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(
+                DirectLendingErrorCode.ConcurrencyConflict,
+                $"Prepayment penalty principal basis conflict for loan '{loanId}': supplied basis does not match the authoritative current principal balance.");
+        }
+
+        var authoritativeRequest = request with { OutstandingPrincipal = authoritativePrincipal };
+        var decision = DirectLendingAggregateInterop.ChargePrepaymentPenalty(stored.Servicing, stored.Contract.CurrentTerms, authoritativeRequest);
         var servicing = decision.Servicing;
 
         using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
         {
             loanId,
-            request.OutstandingPrincipal,
+            OutstandingPrincipal = authoritativePrincipal,
             PenaltyAmount = decision.PenaltyAmount,
             request.EffectiveDate,
             request.ExternalRef

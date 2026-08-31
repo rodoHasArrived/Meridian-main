@@ -405,7 +405,7 @@ public class JsonlBatchWriteTests : TempDirectoryTestBase
             AggressorSide.Buy,
             sequence);
 
-        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade, sequence, "TEST");
+        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade, "TEST", sequence);
     }
 
     private sealed class TestStoragePolicy : IStoragePolicy

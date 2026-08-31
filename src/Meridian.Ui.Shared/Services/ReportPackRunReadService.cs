@@ -1,11 +1,12 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Integrity;
 using Meridian.Reporting;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Export;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -110,6 +111,7 @@ public sealed partial class ReportPackRunReadService
 
     private readonly IReportingTemplateCatalog _templateCatalog;
     private readonly IReportingRunStore? _runStore;
+    private readonly IReportingDeliveryStore? _canonicalDeliveryStore;
     private readonly ReportPackWorkflowService? _workflowService;
     private readonly ReportTemplateRegistryService? _templateRegistry;
     private readonly ReportPackDeliveryService? _deliveryService;
@@ -157,10 +159,12 @@ public sealed partial class ReportPackRunReadService
         ReportTemplateRegistryService? templateRegistry = null,
         ReportPackDeliveryService? deliveryService = null,
         ReportingScheduleService? scheduleService = null,
-        ReportingStarterKitService? starterKitService = null)
+        ReportingStarterKitService? starterKitService = null,
+        IReportingDeliveryStore? canonicalDeliveryStore = null)
     {
         _templateCatalog = templateCatalog ?? throw new ArgumentNullException(nameof(templateCatalog));
         _runStore = runStore;
+        _canonicalDeliveryStore = canonicalDeliveryStore;
         _workflowService = workflowService;
         _templateRegistry = templateRegistry;
         _deliveryService = deliveryService;
@@ -173,16 +177,33 @@ public sealed partial class ReportPackRunReadService
 
     public WorkstationReportingPayload BuildPayload(
         ReportAccessQueryContext? accessContext,
-        int recentRunLimit = DefaultRecentRunLimit)
+        int recentRunLimit = DefaultRecentRunLimit) =>
+        BuildPayloadCore(
+            accessContext,
+            recentRunLimit,
+            includeCompatibilitySources: _canonicalDeliveryStore is null);
+
+    private WorkstationReportingPayload BuildPayloadCore(
+        ReportAccessQueryContext? accessContext,
+        int recentRunLimit,
+        bool includeCompatibilitySources)
     {
         var profiles = BuildProfiles();
         var recommended = profiles
             .Where(static profile => profile.Id is "excel" or "python-pandas" or "postgresql" or "arrow-feather")
             .Select(static profile => profile.Id)
             .ToArray();
-        var allWorkflowRecords = _workflowService?.ListRecords(200) ?? [];
-        var allDeliveryAttempts = _deliveryService?.ListAttempts(500) ?? [];
+        // Production composition supplies the canonical delivery authority. In that mode the
+        // legacy workflow and GUID-based delivery records are compatibility-only and must not be
+        // presented as reporting truth, even when their services remain registered for local reads.
+        var allWorkflowRecords = includeCompatibilitySources
+            ? _workflowService?.ListRecords(200) ?? []
+            : [];
+        var allDeliveryAttempts = includeCompatibilitySources
+            ? _deliveryService?.ListAttempts(500) ?? []
+            : [];
         var allSchedules = _scheduleService?.ListSchedules(accessContext, 100) ?? [];
+        var runSnapshots = ListRunSnapshots(accessContext, 200);
         var starterKits = _starterKitService?.ListKits() ?? [];
         var starterKitState = _starterKitService?.GetState(accessContext);
         var templates = ApplyStarterKitTemplateFilter(BuildTemplates(accessContext), starterKitState);
@@ -203,12 +224,12 @@ public sealed partial class ReportPackRunReadService
             familyByTemplate,
             templatesById,
             workflowRecords,
-            accessContext);
+            runSnapshots);
         var deliveryAttempts = ReportingDeliveryReadModelSecurity.FilterVisibleAttempts(
             allDeliveryAttempts,
             accessContext,
             allWorkflowRecords,
-            _runStore?.ListRuns(500));
+            runSnapshots);
         var schedules = FilterSchedules(
             allSchedules,
             accessContext,
@@ -290,7 +311,8 @@ public sealed partial class ReportPackRunReadService
             AccessAudit: accessAudit,
             DailyWork: dailyWork,
             StarterKits: starterKits,
-            StarterKitState: starterKitState);
+            StarterKitState: starterKitState,
+            CanonicalDeliveries: includeCompatibilitySources ? null : []);
     }
 
     public static WorkstationReportingPayload BuildFallbackPayload() =>
@@ -903,7 +925,7 @@ public sealed partial class ReportPackRunReadService
             retainedPath,
             retainedManifestPath,
             versionStamp);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(input))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(input);
     }
 
     private static string BuildStructuredExportIntegritySummary(
@@ -1248,7 +1270,7 @@ public sealed partial class ReportPackRunReadService
             builder.Append(row.TryGetValue(column.Name, out var value) ? value : string.Empty);
         }
 
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     private static IReadOnlyList<string> BuildPortfolioCutTags(
@@ -1623,16 +1645,8 @@ public sealed partial class ReportPackRunReadService
         IReadOnlyDictionary<string, string> familyByTemplate,
         IReadOnlyDictionary<string, WorkstationReportingTemplatePayload> templatesById,
         IReadOnlyList<ReportPackWorkflowRecordDto> workflowRecords,
-        ReportAccessQueryContext? accessContext)
+        IReadOnlyList<ReportingRunSnapshot> genericSnapshots)
     {
-        IReadOnlyList<ReportingRunSnapshot> genericSnapshots = _runStore?.ListRuns(200) ?? [];
-        if (accessContext is not null)
-        {
-            genericSnapshots = genericSnapshots
-                .Where(snapshot => ReportAccessPolicyEvaluator.Evaluate(snapshot.Manifest, accessContext).IsAccessible)
-                .ToArray();
-        }
-
         var genericRuns = ProjectGenericRuns(genericSnapshots, familyByTemplate, templatesById);
         var workflowRuns = workflowRecords
             .Take(limit)
@@ -2349,9 +2363,6 @@ public sealed partial class ReportPackRunReadService
         return ReportPackDeliveryModeDto.SecurePortal;
     }
 
-    private static string? NormalizeOptional(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
     private static WorkstationReportPackDistributionPayload BuildDistribution(
         ReportPackDistributionPolicy policy,
         int blockedCount,
@@ -2598,7 +2609,9 @@ public sealed partial class ReportPackRunReadService
             return null;
         }
 
-        var manifest = _runStore.GetManifest(record.ReportId.ToString("D", CultureInfo.InvariantCulture));
+        var manifest = _runStore.GetManifest(
+            record.TenantId,
+            record.ReportId.ToString("D", CultureInfo.InvariantCulture));
         var scope = manifest?.OperationalScope;
         var access = manifest?.ImmutableAccessScope;
         if (manifest is null
@@ -3052,22 +3065,9 @@ public sealed partial class ReportPackRunReadService
         parameters.LedgerBook.LedgerBookId?.ToString("D", CultureInfo.InvariantCulture)
         ?? NormalizeOptional(parameters.LedgerBook.LedgerBookCode);
 
-    private static bool IsSha256Hash(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value) || value.Trim().Length != 64)
-        {
-            return false;
-        }
-
-        try
-        {
-            return Convert.FromHexString(value.Trim()).Length == 32;
-        }
-        catch (FormatException)
-        {
-            return false;
-        }
-    }
+    // Report-pack hashes are read back from persisted payloads, so surrounding whitespace is
+    // tolerated before the shared digest contract is applied.
+    private static bool IsSha256Hash(string? value) => Sha256Digest.IsWellFormed(value?.Trim());
 
     private static string BuildRunAuditRoute(string runId) =>
         UiApiRoutes.WithParam(UiApiRoutes.ReportingRunAuditTrail, "runId", runId);
@@ -3276,73 +3276,4 @@ public sealed partial class ReportPackRunReadService
     private static bool IsHttpRoute(string? route) => !string.IsNullOrWhiteSpace(route) && route.StartsWith("/", StringComparison.Ordinal);
 
     private static string Plural(int count) => count == 1 ? string.Empty : "s";
-
-    private static readonly ReportPackDistributionPolicy[] DistributionPolicies =
-    [
-        new(
-            "board-reporting-committee",
-            "Board reporting committee",
-            "Board",
-            "Board portal",
-            "fund-controller",
-            "/reporting/report-packs?recipient=board",
-            TimeSpan.FromHours(24),
-            TimeSpan.FromHours(8),
-            TimeSpan.FromHours(12),
-            TimeSpan.FromHours(4)),
-        new(
-            "investor-relations",
-            "Investor relations",
-            "Investor communications",
-            "Investor portal",
-            "investor-relations",
-            "/reporting/report-packs?recipient=investor-relations",
-            TimeSpan.FromHours(24),
-            TimeSpan.FromHours(8),
-            TimeSpan.FromHours(12),
-            TimeSpan.FromHours(4)),
-        new(
-            "compliance-archive",
-            "Compliance archive",
-            "Compliance",
-            "Retained evidence vault",
-            "compliance-reviewer",
-            "/reporting/evidence?subject=report-pack",
-            TimeSpan.FromHours(12),
-            TimeSpan.FromHours(4),
-            TimeSpan.FromHours(8),
-            TimeSpan.FromHours(2)),
-        new(
-            "fund-operations",
-            "Fund operations",
-            "Operations",
-            "Operations close packet",
-            "fund-operations",
-            "/accounting/report-pack",
-            TimeSpan.FromHours(12),
-            TimeSpan.FromHours(4),
-            TimeSpan.FromHours(8),
-            TimeSpan.FromHours(2))
-    ];
-
-    public sealed record ReportPackDistributionPolicy(
-        string DistributionId,
-        string Recipient,
-        string RecipientRole,
-        string Channel,
-        string Owner,
-        string Route,
-        TimeSpan ApprovalSla,
-        TimeSpan PublicationSla,
-        TimeSpan DeliverySla,
-        TimeSpan CorrectionSla);
-
-    private sealed record UnifiedReportingRun(WorkstationReportingRunPayload Payload, DateTimeOffset UpdatedAtUtc);
-
-    private sealed record ReportingLineChangeCounts(int Changed, int Added, int Removed);
-
-    private sealed record ScheduleDeliveryReadiness(
-        bool IsReady,
-        string Summary,
-        IReadOnlyList<string> Blockers);
 }

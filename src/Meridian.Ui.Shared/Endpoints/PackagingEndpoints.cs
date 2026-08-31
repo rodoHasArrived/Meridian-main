@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Storage.Packaging;
 using Microsoft.AspNetCore.Builder;
@@ -78,7 +79,7 @@ public static class PackagingEndpoints
             },
             "Package creation failed",
             includeExceptionMessage: true);
-        });
+        }).RequirePermission(UserPermission.ManageStorage);
 
         // ==================== PACKAGE IMPORT ====================
 
@@ -127,7 +128,7 @@ public static class PackagingEndpoints
             },
             "Package import failed",
             includeExceptionMessage: true);
-        });
+        }).RequirePermission(UserPermission.ManageStorage);
 
         // ==================== PACKAGE VALIDATION ====================
 
@@ -161,7 +162,7 @@ public static class PackagingEndpoints
             },
             "Package validation failed",
             includeExceptionMessage: true);
-        });
+        }).RequirePermission(UserPermission.ManageStorage);
 
         // ==================== PACKAGE CONTENTS ====================
 
@@ -193,7 +194,8 @@ public static class PackagingEndpoints
                 _ => null
             },
             includeExceptionMessage: true);
-        });
+        })
+        .RequireAnyPermission(UserPermission.ExportData, UserPermission.ManageStorage);
 
         // ==================== LIST PACKAGES ====================
 
@@ -237,7 +239,8 @@ public static class PackagingEndpoints
             },
             "Failed to list packages",
             includeExceptionMessage: true);
-        });
+        })
+        .RequireAnyPermission(UserPermission.ExportData, UserPermission.ManageStorage);
 
         // ==================== DELETE PACKAGE ====================
 
@@ -274,7 +277,7 @@ public static class PackagingEndpoints
             },
             "Failed to delete package",
             includeExceptionMessage: true);
-        });
+        }).RequirePermission(UserPermission.ManageStorage);
 
         // ==================== PACKAGE DOWNLOAD ====================
 
@@ -317,7 +320,8 @@ public static class PackagingEndpoints
             },
             "Failed to download package",
             includeExceptionMessage: true);
-        });
+        })
+        .RequireAnyPermission(UserPermission.ExportData, UserPermission.ManageStorage);
     }
 
     private static PackageFormat ParseFormat(string? format)

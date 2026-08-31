@@ -13,7 +13,9 @@ using Meridian.Storage.Store;
 
 namespace Meridian.Ui.Shared.Services;
 
-public sealed class InMemoryManualJournalEntryDraftStore : IManualJournalEntryDraftStore
+public sealed class InMemoryManualJournalEntryDraftStore :
+    IManualJournalEntryDraftStore,
+    Meridian.Application.Composition.INonProductionOnlyService
 {
     private Dictionary<string, ManualJournalEntryDraftDto> _drafts = new(StringComparer.OrdinalIgnoreCase);
     private readonly object _gate = new();

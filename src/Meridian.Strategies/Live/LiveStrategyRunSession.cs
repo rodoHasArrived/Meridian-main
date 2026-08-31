@@ -1,5 +1,6 @@
 using System.Threading.Channels;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Execution;
 using Meridian.Execution.Live;
 using Meridian.Execution.Services;
 using ExecutionSdk = Meridian.Execution.Sdk;
@@ -33,13 +34,17 @@ internal sealed class LiveStrategyRunSession
     private readonly bool _useSynchronousFillFallback;
     private readonly Channel<ExecutionSdk.ExecutionReport> _fillReports;
     private readonly CancellationTokenSource _stopRequested = new();
+    private readonly Lock _stopSync = new();
     private readonly Dictionary<string, Order> _ordersByClientId = new(StringComparer.Ordinal);
     private readonly Dictionary<Guid, string> _clientIdsByOrderId = new();
+    private readonly HashSet<string> _parkedClientOrderIds = new(StringComparer.Ordinal);
     private readonly LiveRunMetricsTracker _metrics;
     private readonly string _clientOrderIdPrefix;
 
     private DateOnly? _currentDate;
     private volatile bool _completeRunOnExit = true;
+    private Exception? _requestedFailure;
+    private int _outboundOrderAdmissionClosed;
 
     public LiveStrategyRunSession(
         StrategyRunEntry run,
@@ -99,16 +104,42 @@ internal sealed class LiveStrategyRunSession
         return true;
     }
 
-    /// <summary>Queues an execution report for processing on the session's event loop.</summary>
-    public void EnqueueExecutionReport(ExecutionSdk.ExecutionReport report)
+    /// <summary>
+    /// Queues an execution report for processing on the session's event loop. A saturated inbox
+    /// applies asynchronous backpressure; it never turns an authoritative fill into a failed
+    /// <c>TryWrite</c> that the strategy silently misses.
+    /// </summary>
+    public async ValueTask EnqueueExecutionReportAsync(
+        ExecutionSdk.ExecutionReport report,
+        CancellationToken ct = default)
+        => await _fillReports.Writer.WriteAsync(report, ct).ConfigureAwait(false);
+
+    /// <summary>Completes this session's fill inbox after its engine-owned delivery worker drains.</summary>
+    public void CompleteExecutionReportAdmission()
+        => _fillReports.Writer.TryComplete();
+
+    /// <summary>
+    /// Stops strategy callbacks from creating new broker work while keeping the event loop alive
+    /// to consume fills for operations admitted before shutdown.
+    /// </summary>
+    public void CloseOutboundOrderAdmission()
+        => Interlocked.Exchange(ref _outboundOrderAdmissionClosed, 1);
+
+    /// <summary>
+    /// Fails the run because an accepted broker report could not be delivered to its event loop.
+    /// The first delivery failure owns the terminal reason; later reports are retained against the
+    /// same failed outcome by the engine.
+    /// </summary>
+    public void RequestFailure(Exception failure)
     {
-        if (!_fillReports.Writer.TryWrite(report))
+        ArgumentNullException.ThrowIfNull(failure);
+        lock (_stopSync)
         {
-            _logger.LogError(
-                "Run {RunId} could not queue execution report for order {OrderId}; the session inbox is full or completed.",
-                _run.RunId,
-                report.OrderId);
+            _requestedFailure ??= failure;
+            _completeRunOnExit = true;
         }
+
+        _stopRequested.Cancel();
     }
 
     /// <summary>
@@ -117,7 +148,14 @@ internal sealed class LiveStrategyRunSession
     /// </summary>
     public void RequestStop(bool completeRun)
     {
-        _completeRunOnExit = completeRun;
+        lock (_stopSync)
+        {
+            if (_requestedFailure is null)
+            {
+                _completeRunOnExit = completeRun;
+            }
+        }
+
         _stopRequested.Cancel();
     }
 
@@ -144,7 +182,13 @@ internal sealed class LiveStrategyRunSession
         }
         catch (OperationCanceledException) when (_stopRequested.IsCancellationRequested || engineToken.IsCancellationRequested)
         {
-            await FinishAsync(faulted: null).ConfigureAwait(false);
+            Exception? requestedFailure;
+            lock (_stopSync)
+            {
+                requestedFailure = _requestedFailure;
+            }
+
+            await FinishAsync(requestedFailure).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -155,20 +199,24 @@ internal sealed class LiveStrategyRunSession
 
     private async Task RunEventLoopAsync(CancellationToken ct)
     {
-        await using var events = _feed.SubscribeAsync(_context.Universe, ct).GetAsyncEnumerator(ct);
+        using var loopStop = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        var loopToken = loopStop.Token;
+        await using var events = _feed
+            .SubscribeAsync(_context.Universe, loopToken)
+            .GetAsyncEnumerator(loopToken);
         Task<bool>? moveNext = null;
         Task<bool>? fillReady = null;
         var fillChannelCompleted = false;
         try
         {
-            while (!ct.IsCancellationRequested && _strategy.Status != StrategyStatus.Stopped)
+            while (!loopToken.IsCancellationRequested && _strategy.Status != StrategyStatus.Stopped)
             {
                 moveNext ??= events.MoveNextAsync().AsTask();
                 // Track the pending wait across iterations: the fill channel is
                 // SingleReader, so only one WaitToReadAsync may ever be in flight.
                 if (!fillChannelCompleted)
                 {
-                    fillReady ??= _fillReports.Reader.WaitToReadAsync(ct).AsTask();
+                    fillReady ??= _fillReports.Reader.WaitToReadAsync(loopToken).AsTask();
                 }
 
                 if (fillReady is null)
@@ -201,7 +249,7 @@ internal sealed class LiveStrategyRunSession
                     break;
                 }
 
-                await ProcessMarketEventAsync(events.Current, ct).ConfigureAwait(false);
+                await ProcessMarketEventAsync(events.Current, loopToken).ConfigureAwait(false);
             }
         }
         finally
@@ -210,6 +258,18 @@ internal sealed class LiveStrategyRunSession
             // private inbox before awaiting its outstanding read so that teardown cannot
             // wait indefinitely for a writer that no longer exists.
             _fillReports.Writer.TryComplete();
+
+            // A fill callback can fail while the market-feed advance is still pending. Cancel
+            // this loop's owned token before awaiting that advance so the original fill failure
+            // reaches ExecuteAsync and is retained instead of hanging behind an idle feed.
+            try
+            {
+                await loopStop.CancelAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Live session {RunId} event-loop cancellation callback failed.", _run.RunId);
+            }
 
             // The enumerator cannot be disposed while a MoveNextAsync is still pending;
             // cancellation flows into the feed subscription, so the pending advance
@@ -258,6 +318,11 @@ internal sealed class LiveStrategyRunSession
 
         _context.Advance(evt.Timestamp);
 
+        if (Volatile.Read(ref _outboundOrderAdmissionClosed) != 0)
+        {
+            return;
+        }
+
         // Pause gates market-event processing but never fill processing: fills belong to
         // orders that already reached the broker and the strategy state must stay coherent.
         if (_strategy.Status != StrategyStatus.Running)
@@ -303,6 +368,13 @@ internal sealed class LiveStrategyRunSession
 
     private async Task RouteQueuedOrdersAsync(CancellationToken ct)
     {
+        if (Volatile.Read(ref _outboundOrderAdmissionClosed) != 0)
+        {
+            return;
+        }
+
+        RetireDeclinedEscalations();
+
         foreach (var cancelledOrderId in _context.DrainPendingCancellations())
         {
             if (!_clientIdsByOrderId.TryGetValue(cancelledOrderId, out var clientOrderId))
@@ -323,6 +395,12 @@ internal sealed class LiveStrategyRunSession
 
         foreach (var order in _context.DrainPendingOrders())
         {
+            if (Volatile.Read(ref _outboundOrderAdmissionClosed) != 0)
+            {
+                break;
+            }
+
+            ExecutionSdk.ExecutionReport? synchronousFill = null;
             var clientOrderId = $"{_clientOrderIdPrefix}{order.OrderId:N}";
             var request = MapOrder(order, clientOrderId);
             _ordersByClientId[clientOrderId] = order;
@@ -331,7 +409,19 @@ internal sealed class LiveStrategyRunSession
             try
             {
                 var result = await _orderManager.PlaceOrderAsync(request, ct).ConfigureAwait(false);
-                if (!result.Success)
+                if (result.RequiresApproval)
+                {
+                    // Parked for governed approval, not rejected: the order can still be
+                    // released later, and its execution report will carry this client
+                    // order id. Keep the mapping alive so the run receives the fill, and
+                    // remember the park so a decline — which produces no report at all —
+                    // still retires it.
+                    _parkedClientOrderIds.Add(clientOrderId);
+                    _logger.LogInformation(
+                        "Run {RunId} order {ClientOrderId} for {Symbol} is parked for governed risk approval ({EscalationId})",
+                        _run.RunId, clientOrderId, order.Symbol, result.EscalationId ?? "unknown");
+                }
+                else if (!result.Success)
                 {
                     _logger.LogWarning(
                         "Run {RunId} order {ClientOrderId} for {Symbol} was rejected: {Reason}",
@@ -342,8 +432,10 @@ internal sealed class LiveStrategyRunSession
                          && result.OrderState is { FilledQuantity: > 0m } state)
                 {
                     // Without an OMS report pump (e.g. a stub order manager in tests), the
-                    // synchronous fill on the placement result is the only fill signal.
-                    EnqueueExecutionReport(new ExecutionSdk.ExecutionReport
+                    // synchronous fill on the placement result is the only fill signal. This
+                    // method already runs on the sole session event loop, so writing to the
+                    // bounded channel that only this loop drains would self-deadlock once full.
+                    synchronousFill = new ExecutionSdk.ExecutionReport
                     {
                         OrderId = state.OrderId,
                         ClientOrderId = state.OrderId,
@@ -356,9 +448,18 @@ internal sealed class LiveStrategyRunSession
                         OrderQuantity = state.Quantity,
                         FilledQuantity = state.FilledQuantity,
                         FillPrice = state.AverageFillPrice,
-                        Timestamp = state.LastUpdatedAt ?? DateTimeOffset.UtcNow
-                    });
+                        Timestamp = state.LastUpdatedAt ?? DateTimeOffset.UtcNow,
+                        // Carried from the tracked state so this fallback path books the same
+                        // par-scaled cash flow the OMS-stamped report stream would deliver.
+                        UsesFaceValuePercentageOfPar = state.UsesFaceValuePercentageOfPar
+                    };
                 }
+            }
+            catch (OrderManagementSystem.ExecutionReportDeliveryException)
+            {
+                // The venue accepted a fill but authoritative strategy delivery could not be
+                // durably accounted. This is a run failure, not an ordinary submit rejection.
+                throw;
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
@@ -366,6 +467,14 @@ internal sealed class LiveStrategyRunSession
                     "Run {RunId} order {ClientOrderId} for {Symbol} could not be submitted.",
                     _run.RunId, clientOrderId, order.Symbol);
                 ForgetOrder(clientOrderId, order.OrderId);
+            }
+
+            // Keep fill-contract failures outside the submission catch above. A fractional or
+            // otherwise invalid broker fill must fail the run, not be logged as a submit error and
+            // silently discarded.
+            if (synchronousFill is not null)
+            {
+                HandleExecutionReport(synchronousFill);
             }
         }
     }
@@ -381,8 +490,7 @@ internal sealed class LiveStrategyRunSession
         if (report.OrderStatus is ExecutionSdk.OrderStatus.Filled or ExecutionSdk.OrderStatus.PartiallyFilled
             && report.FilledQuantity > 0m)
         {
-            var unsignedQuantity = (long)report.FilledQuantity;
-            var signedQuantity = report.Side == ExecutionSdk.OrderSide.Sell ? -unsignedQuantity : unsignedQuantity;
+            var signedQuantity = ConvertToBacktestFillQuantity(report);
             var fillPrice = report.FillPrice
                 ?? _context.GetLastPrice(report.Symbol)
                 ?? order.LimitPrice
@@ -397,7 +505,10 @@ internal sealed class LiveStrategyRunSession
                 FilledAt: report.Timestamp,
                 AccountId: order.AccountId);
 
-            _metrics.RecordFill(fill, report.Timestamp);
+            // The report's OMS-stamped sizing classification rides along so a fixed-income
+            // fill (face value at percent-of-par) books its par-scaled cash flow instead of
+            // a 100x raw quantity-times-price movement.
+            _metrics.RecordFill(fill, report.Timestamp, report.UsesFaceValuePercentageOfPar);
             if (_strategy.Status != StrategyStatus.Stopped)
             {
                 _strategy.OnOrderFill(fill, _context);
@@ -413,10 +524,72 @@ internal sealed class LiveStrategyRunSession
         }
     }
 
+    /// <summary>
+    /// The shared execution contract represents broker quantities as decimal, while the retained
+    /// Backtesting SDK <see cref="FillEvent"/> contract is whole-unit <see cref="long"/>. This is
+    /// the true narrowing boundary: fractional or out-of-range live fills fail the run explicitly
+    /// instead of being truncated into a different economic event.
+    /// </summary>
+    private static long ConvertToBacktestFillQuantity(ExecutionSdk.ExecutionReport report)
+    {
+        var quantity = report.FilledQuantity;
+        if (quantity != decimal.Truncate(quantity))
+        {
+            throw new InvalidOperationException(
+                $"Execution fill for order '{report.OrderId}' has fractional quantity {quantity}; "
+                + "the strategy FillEvent contract supports whole units only, so the live run failed closed.");
+        }
+
+        if (quantity > long.MaxValue)
+        {
+            throw new InvalidOperationException(
+                $"Execution fill for order '{report.OrderId}' has quantity {quantity}, which exceeds "
+                + "the strategy FillEvent whole-unit range; the live run failed closed.");
+        }
+
+        var unsignedQuantity = decimal.ToInt64(quantity);
+        return report.Side == ExecutionSdk.OrderSide.Sell ? -unsignedQuantity : unsignedQuantity;
+    }
+
     private void ForgetOrder(string clientOrderId, Guid orderId)
     {
         _ordersByClientId.Remove(clientOrderId);
         _clientIdsByOrderId.Remove(orderId);
+        _parkedClientOrderIds.Remove(clientOrderId);
+    }
+
+    /// <summary>
+    /// Drops bookkeeping for parked orders whose governed approval was declined. Only a
+    /// released escalation re-enters the report stream; a declined one is terminal and
+    /// silent, so without this the run would hold its order mapping for the whole session.
+    /// </summary>
+    private void RetireDeclinedEscalations()
+    {
+        if (_parkedClientOrderIds.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var clientOrderId in _parkedClientOrderIds.ToArray())
+        {
+            if (!_orderManager.WasRiskApprovalDeclined(clientOrderId))
+            {
+                continue;
+            }
+
+            _logger.LogInformation(
+                "Run {RunId} order {ClientOrderId} was declined for governed risk approval; retiring its tracking.",
+                _run.RunId, clientOrderId);
+
+            if (_ordersByClientId.TryGetValue(clientOrderId, out var order))
+            {
+                ForgetOrder(clientOrderId, order.OrderId);
+            }
+            else
+            {
+                _parkedClientOrderIds.Remove(clientOrderId);
+            }
+        }
     }
 
     private ExecutionSdk.OrderRequest MapOrder(Order order, string clientOrderId) => new()
@@ -484,8 +657,88 @@ internal sealed class LiveStrategyRunSession
             }
         }
 
+        // Only when the run is actually ending. A host shutdown calls RequestStop with
+        // completeRun: false precisely so the run can be resumed, and denying its parked
+        // orders there would durably discard live approvals and trade intentions on every
+        // deployment.
+        if (_completeRunOnExit)
+        {
+            // An escalation that survives teardown can still route an order into a run that
+            // no longer exists, whose fills reach no session. If any withdrawal fails the
+            // run is not cleanly complete, and must not be recorded as if it were.
+            var unwithdrawn = await WithdrawParkedOrdersAsync().ConfigureAwait(false);
+            if (unwithdrawn > 0)
+            {
+                faulted ??= new InvalidOperationException(
+                    $"{unwithdrawn} governed risk escalation(s) could not be withdrawn as the run ended; "
+                    + "an approval could still route an order this run cannot receive.");
+            }
+        }
         await RecordTerminalRunStateAsync(faulted).ConfigureAwait(false);
         await RecordSessionAuditAsync(faulted).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Cancels orders still awaiting governed approval as the run ends. The run is about to
+    /// be removed from the engine, so an approval granted after this point would route an
+    /// order for a strategy that is no longer running — and its fills would reach no
+    /// session at all. Cancelling withdraws the escalation, which is what makes the
+    /// approval unreachable rather than merely unattended.
+    /// </summary>
+    /// <returns>How many escalations remain actionable because withdrawal failed.</returns>
+    private async Task<int> WithdrawParkedOrdersAsync()
+    {
+        if (_parkedClientOrderIds.Count == 0)
+        {
+            return 0;
+        }
+
+        var unwithdrawn = 0;
+
+        foreach (var clientOrderId in _parkedClientOrderIds.ToArray())
+        {
+            try
+            {
+                // Ask before cancelling, not after. An escalation the desk already denied
+                // needs no withdrawal, and cancelling one drops its parked reservation on
+                // the way to a gateway cancel that fails for an order which never routed —
+                // after which the denial is no longer recognizable and an otherwise clean
+                // run is recorded Failed.
+                if (_orderManager.WasRiskApprovalDeclined(clientOrderId))
+                {
+                    _parkedClientOrderIds.Remove(clientOrderId);
+                    continue;
+                }
+
+                var cancelled = await _orderManager
+                    .CancelOrderAsync(clientOrderId, CancellationToken.None)
+                    .ConfigureAwait(false);
+                if (!cancelled.Success)
+                {
+                    unwithdrawn++;
+                    _logger.LogError(
+                        "Run {RunId} ended with order {ClientOrderId} parked, and its escalation could not be withdrawn: {Reason}",
+                        _run.RunId, clientOrderId, cancelled.ErrorMessage ?? "no reason given");
+                    continue;
+                }
+
+                _parkedClientOrderIds.Remove(clientOrderId);
+                _logger.LogInformation(
+                    "Run {RunId} ended; withdrew the governed escalation still holding order {ClientOrderId}.",
+                    _run.RunId, clientOrderId);
+            }
+            catch (Exception ex)
+            {
+                unwithdrawn++;
+                _logger.LogError(ex,
+                    "Run {RunId} could not withdraw parked order {ClientOrderId} during teardown.",
+                    _run.RunId, clientOrderId);
+            }
+        }
+
+        // Ids that failed to withdraw stay tracked: they are still actionable, and clearing
+        // them would lose the only record that they need resolving.
+        return unwithdrawn;
     }
 
     private async Task RecordTerminalRunStateAsync(Exception? faulted)

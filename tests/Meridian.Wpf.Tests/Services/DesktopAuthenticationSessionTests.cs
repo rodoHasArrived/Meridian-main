@@ -161,7 +161,7 @@ public sealed class DesktopAuthenticationSessionTests
             new UserProfileRegistry()));
 
     internal static string HashedDesktopAdminUsersJson()
-        => $$"""[{"username":"desktop-admin","passwordHash":"{{PasswordHashing.HashPassword("pw")}}","role":"Admin"}]""";
+        => $$"""[{"username":"desktop-admin","passwordHash":"{{PasswordHashing.HashPassword("pw")}}","role":"Admin","companyId":"company-alpha"}]""";
 
     internal static string HashedDesktopReadOnlyUsersJson()
         => $$"""[{"username":"desktop-viewer","passwordHash":"{{PasswordHashing.HashPassword("pw")}}","role":"ReadOnly"}]""";
