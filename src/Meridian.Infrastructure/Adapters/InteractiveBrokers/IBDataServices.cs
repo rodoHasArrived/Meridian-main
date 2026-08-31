@@ -510,27 +510,103 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
             RecordMarketDataType(update.RequestId, update.MarketDataType);
     }
 
-    private void OnContractDetailsReceived(object? sender, (int RequestId, ProviderContractDetails Details) value) => HandleCallback(value.RequestId, () => RecordContractDetails(value.RequestId, value.Details));
-    private void OnOptionChainDefinitionReceived(object? sender, (int RequestId, ProviderOptionChainDefinition Definition) value) => HandleCallback(value.RequestId, () => RecordOptionChainDefinition(value.RequestId, value.Definition));
-    private void OnHistoricalNewsReceived(object? sender, (int RequestId, ProviderNewsHeadline Headline) value) => HandleCallback(value.RequestId, () => RecordNewsHeadline(value.RequestId, value.Headline));
-    private void OnNewsArticleReceived(object? sender, (int RequestId, ProviderNewsArticlePayload Article) value) => HandleCallback(value.RequestId, () => RecordNewsArticle(value.RequestId, value.Article));
-    private void OnFundamentalReportReceived(object? sender, (int RequestId, ProviderFundamentalReport Report) value) => HandleCallback(value.RequestId, () => RecordFundamentalReport(value.RequestId, value.Report));
-    private void OnTickByTickReceived(object? sender, (int RequestId, ProviderTickByTickObservation Observation) value) => HandleCallback(value.RequestId, () => RecordTickByTick(value.RequestId, value.Observation));
-    private void OnDepthExchangesReceived(object? sender, (int RequestId, IReadOnlyList<ProviderDepthExchangeDescription> Exchanges) value) => HandleCallback(value.RequestId, () => RecordDepthExchanges(value.RequestId, value.Exchanges));
-    private void OnDividendEarningsReceived(object? sender, (int RequestId, ProviderDividendEarnings Payload) value) => HandleCallback(value.RequestId, () => RecordDividendEarnings(value.RequestId, value.Payload));
-    private void OnOptionContractReceived(object? sender, (int RequestId, ProviderOptionContract Contract) value) => HandleCallback(value.RequestId, () => RecordOptionContract(value.RequestId, value.Contract));
-    private void OnScannerResultReceived(object? sender, (int RequestId, ProviderScannerResult Result) value) => HandleCallback(value.RequestId, () => RecordScannerResult(value.RequestId, value.Result));
-    private void OnRealTimeBarReceived(object? sender, (int RequestId, ProviderRealTimeBar Bar) value) => HandleCallback(value.RequestId, () => RecordRealTimeBar(value.RequestId, value.Bar));
-    private void OnHistoricalTickReceived(object? sender, (int RequestId, ProviderHistoricalTick Tick, bool Completed) value) => HandleCallback(value.RequestId, () => RecordHistoricalTick(value.RequestId, value.Tick, value.Completed));
-    private void OnPnlReceived(object? sender, (int RequestId, ProviderAccountPnl Pnl) value) => HandleCallback(value.RequestId, () => RecordPnl(value.RequestId, value.Pnl));
-    private void OnMarketRuleReceived(object? sender, (int RequestId, IReadOnlyList<ProviderMarketRuleIncrement> Increments) value) => HandleCallback(value.RequestId, () => RecordMarketRule(value.RequestId, value.Increments));
-    private void OnRequestCompleted(object? sender, int requestId) => HandleCallback(requestId, () => CompleteRequest(requestId));
-    private void OnRequestRejected(object? sender, (int RequestId, string Code, string Message) value) => HandleCallback(value.RequestId, () => RejectRequest(value.RequestId, value.Code, value.Message));
+    // Ownership guards are inline rather than a shared delegate-taking wrapper: these run on
+    // the IB reader loop at market-data rates, and a capturing lambda per callback would
+    // allocate a closure for every vendor tick, tracked or not.
+    private void OnContractDetailsReceived(object? sender, (int RequestId, ProviderContractDetails Details) value)
+    {
+        if (_requests.ContainsKey(value.RequestId))
+            RecordContractDetails(value.RequestId, value.Details);
+    }
 
-    private void HandleCallback(int requestId, Action callback)
+    private void OnOptionChainDefinitionReceived(object? sender, (int RequestId, ProviderOptionChainDefinition Definition) value)
+    {
+        if (_requests.ContainsKey(value.RequestId))
+            RecordOptionChainDefinition(value.RequestId, value.Definition);
+    }
+
+    private void OnHistoricalNewsReceived(object? sender, (int RequestId, ProviderNewsHeadline Headline) value)
+    {
+        if (_requests.ContainsKey(value.RequestId))
+            RecordNewsHeadline(value.RequestId, value.Headline);
+    }
+
+    private void OnNewsArticleReceived(object? sender, (int RequestId, ProviderNewsArticlePayload Article) value)
+    {
+        if (_requests.ContainsKey(value.RequestId))
+            RecordNewsArticle(value.RequestId, value.Article);
+    }
+
+    private void OnFundamentalReportReceived(object? sender, (int RequestId, ProviderFundamentalReport Report) value)
+    {
+        if (_requests.ContainsKey(value.RequestId))
+            RecordFundamentalReport(value.RequestId, value.Report);
+    }
+
+    private void OnTickByTickReceived(object? sender, (int RequestId, ProviderTickByTickObservation Observation) value)
+    {
+        if (_requests.ContainsKey(value.RequestId))
+            RecordTickByTick(value.RequestId, value.Observation);
+    }
+
+    private void OnDepthExchangesReceived(object? sender, (int RequestId, IReadOnlyList<ProviderDepthExchangeDescription> Exchanges) value)
+    {
+        if (_requests.ContainsKey(value.RequestId))
+            RecordDepthExchanges(value.RequestId, value.Exchanges);
+    }
+
+    private void OnDividendEarningsReceived(object? sender, (int RequestId, ProviderDividendEarnings Payload) value)
+    {
+        if (_requests.ContainsKey(value.RequestId))
+            RecordDividendEarnings(value.RequestId, value.Payload);
+    }
+
+    private void OnOptionContractReceived(object? sender, (int RequestId, ProviderOptionContract Contract) value)
+    {
+        if (_requests.ContainsKey(value.RequestId))
+            RecordOptionContract(value.RequestId, value.Contract);
+    }
+
+    private void OnScannerResultReceived(object? sender, (int RequestId, ProviderScannerResult Result) value)
+    {
+        if (_requests.ContainsKey(value.RequestId))
+            RecordScannerResult(value.RequestId, value.Result);
+    }
+
+    private void OnRealTimeBarReceived(object? sender, (int RequestId, ProviderRealTimeBar Bar) value)
+    {
+        if (_requests.ContainsKey(value.RequestId))
+            RecordRealTimeBar(value.RequestId, value.Bar);
+    }
+
+    private void OnHistoricalTickReceived(object? sender, (int RequestId, ProviderHistoricalTick Tick, bool Completed) value)
+    {
+        if (_requests.ContainsKey(value.RequestId))
+            RecordHistoricalTick(value.RequestId, value.Tick, value.Completed);
+    }
+
+    private void OnPnlReceived(object? sender, (int RequestId, ProviderAccountPnl Pnl) value)
+    {
+        if (_requests.ContainsKey(value.RequestId))
+            RecordPnl(value.RequestId, value.Pnl);
+    }
+
+    private void OnMarketRuleReceived(object? sender, (int RequestId, IReadOnlyList<ProviderMarketRuleIncrement> Increments) value)
+    {
+        if (_requests.ContainsKey(value.RequestId))
+            RecordMarketRule(value.RequestId, value.Increments);
+    }
+
+    private void OnRequestCompleted(object? sender, int requestId)
     {
         if (_requests.ContainsKey(requestId))
-            callback();
+            CompleteRequest(requestId);
+    }
+
+    private void OnRequestRejected(object? sender, (int RequestId, string Code, string Message) value)
+    {
+        if (_requests.ContainsKey(value.RequestId))
+            RejectRequest(value.RequestId, value.Code, value.Message);
     }
 
     private int Issue(
