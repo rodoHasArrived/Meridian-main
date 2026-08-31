@@ -19,9 +19,56 @@ namespace Meridian.Contracts.Ledger;
 /// </remarks>
 /// <param name="AuditEvent">The fully-formed event the completed mutation is to be audited with.</param>
 /// <param name="DeclaredAtUtc">When the intent was recorded, for operator diagnostics.</param>
+/// <param name="BeforeStateRetained">
+/// Whether a workspace was retained for this scope when the intent was declared.
+///
+/// <para>Recorded because absence at recovery time is otherwise ambiguous, and the two readings call
+/// for opposite actions. If nothing was retained beforehand either, absence now is consistent with a
+/// save that never landed, and the mutation is discarded. If a workspace <i>was</i> retained, absence
+/// now cannot have been produced by the save — it only ever inserts or replaces — so something
+/// destroyed retained state, and that is an incident to raise rather than a mutation to discard.
+/// Without this flag recovery reads both as "never landed" and clears the only marker that recorded
+/// either.</para>
+///
+/// <para>Defaults to <c>true</c> so a marker written by an older build, which has no such field,
+/// takes the conservative branch and raises rather than silently discarding.</para>
+/// </param>
+/// <param name="Phase">
+/// How far the mutation-and-audit cycle had got when this marker was last written.
+///
+/// <para>Needed because <paramref name="BeforeStateRetained"/> alone cannot settle the first
+/// mutation in a scope. There, nothing was retained beforehand, so absence at recovery reads the
+/// same whether the save never ran or it completed and the retained state was destroyed afterwards
+/// — and only one of those is a discardable mutation. Recording that the save returned turns the
+/// second into something recovery can see.</para>
+///
+/// <para>Defaults to <see cref="AccountingAuditPendingMarkerPhase.Declared"/>, which is safe for a
+/// marker written by a build without the field: such a marker also carries the default
+/// <paramref name="BeforeStateRetained"/> of <c>true</c>, so it still takes the conservative
+/// branch.</para>
+/// </param>
 public sealed record AccountingAuditPendingMarker(
     AccountingActionAuditEventDto AuditEvent,
-    DateTimeOffset DeclaredAtUtc);
+    DateTimeOffset DeclaredAtUtc,
+    bool BeforeStateRetained = true,
+    AccountingAuditPendingMarkerPhase Phase = AccountingAuditPendingMarkerPhase.Declared);
+
+/// <summary>How far an interrupted mutation-and-audit cycle had progressed.</summary>
+public enum AccountingAuditPendingMarkerPhase
+{
+    /// <summary>
+    /// The intent was recorded and the mutation had not been observed to complete. A crash here may
+    /// have preceded the save entirely.
+    /// </summary>
+    Declared,
+
+    /// <summary>
+    /// The store reported the mutation saved; only the audit append is unconfirmed. Retained state
+    /// existing is therefore expected, and its absence is a loss rather than a mutation that never
+    /// happened.
+    /// </summary>
+    Saved,
+}
 
 /// <summary>How an outstanding marker was resolved.</summary>
 public enum AccountingAuditRecoveryOutcome
