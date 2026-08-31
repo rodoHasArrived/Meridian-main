@@ -336,6 +336,32 @@ public sealed class ExecutionWriteEndpointsTests
         orderManager.CancelledOrderIds.Should().BeEmpty();
     }
 
+    /// <summary>
+    /// A sweep that emptied the in-memory book but never saw the broker's own book has not
+    /// established an empty book: after an OMS restart the broker can hold orders the process
+    /// has never heard of. The response must carry that distinctly, or a Completed status quietly
+    /// vouches for a book nobody looked at.
+    /// </summary>
+    [Fact]
+    public async Task CancelAllOrders_WhenTheBrokerBookCouldNotBeEnumerated_FlagsTheBrokerViewOnTheTicket()
+    {
+        var orderManager = new RecordingOrderManager(CreateOrderState("ord-live-001", "AAPL", 1m))
+        {
+            ReportBrokerViewUnavailable = true
+        };
+
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IOrderManager>(orderManager));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync("/api/execution/orders/cancel-all", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await ReadActionResultAsync(response);
+        result.Status.Should().Be("Completed", "every order the sweep saw was cancelled");
+        result.BrokerViewUnavailable.Should().BeTrue("the caller must see the broker book was never established");
+        result.Message.Should().Contain("broker", "the rendered ticket has to say the broker book needs verifying");
+    }
+
     // ------------------------------------------------------------------ //
     //  POST /api/execution/positions/*                                    //
     // ------------------------------------------------------------------ //
@@ -1859,6 +1885,12 @@ file sealed class RecordingOrderManager(params OrderState[] openOrders) : IOrder
     /// <summary>Order ids this double refuses to cancel, standing in for a broker that says no.</summary>
     public HashSet<string> RefuseToCancel { get; } = new(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// When set, the sweep reports that the broker's own open-order book could not be enumerated,
+    /// standing in for a broker whose order listing is down while cancellations still work.
+    /// </summary>
+    public bool ReportBrokerViewUnavailable { get; set; }
+
     public Task<KillSwitchSweepResult> CancelAllAsync(CancellationToken ct = default)
     {
         CancelAllCallCount++;
@@ -1876,7 +1908,10 @@ file sealed class RecordingOrderManager(params OrderState[] openOrders) : IOrder
             cancelled++;
         }
 
-        return Task.FromResult(KillSwitchSweepResult.From(_openOrders.Count, cancelled, failures));
+        var sweep = KillSwitchSweepResult.From(_openOrders.Count, cancelled, failures);
+        return Task.FromResult(ReportBrokerViewUnavailable
+            ? sweep with { BrokerViewUnavailable = true, BrokerViewError = "the broker order listing timed out" }
+            : sweep);
     }
 
     public IReadOnlyList<OrderState> GetCompletedOrders(int take = 20) => Array.Empty<OrderState>();

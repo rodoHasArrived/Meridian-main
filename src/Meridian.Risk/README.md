@@ -22,8 +22,8 @@ This layer owns risk decision logic and reusable rules. It should stay independe
 ## Key folders and files
 
 - `Rules/` - individual risk rules: position limit, drawdown circuit breaker, order-rate
-  throttle, the order-entry fat-finger gate, and the portfolio-aware gross-exposure,
-  symbol-concentration, and order-notional gates.
+  throttle, the order-entry fat-finger gate, the price collar, the bracket child-limb price
+  gate, and the portfolio-aware gross-exposure, symbol-concentration, and order-notional gates.
 - `PortfolioExposure.cs` - `IPortfolioExposureProvider` and the exposure snapshot the
   portfolio-aware rules consume (fed from `IAggregatePortfolioService` by the host).
 - Risk interfaces and shared validation primitives.
@@ -83,9 +83,15 @@ questions:
 
 These limbs gate both submission and every amendment that supplies a limit or stop price. The OMS
 re-enters the validator regardless of numeric direction, because lowering a sell limit or buy stop
-can be more dangerous even while measured notional falls. The rule still reads only the top-level
-`LimitPrice` and `StopPrice`, so the attached legs of an Alpaca bracket, OCO, or OTO order — routed
-from metadata — are not measured; that gap remains recorded on the roadmap row.
+can be more dangerous even while measured notional falls. The rule itself reads only the top-level
+`LimitPrice` and `StopPrice`; the take-profit/stop-loss legs an Alpaca bracket, OCO, or OTO order
+routes from metadata are price-checked by `Rules/BracketChildLimbRule.cs` (Priority -8), which runs
+the same shared limbs and fat-finger band over each child leg as the exit order it becomes — the
+opposite side of the entry — and additionally refuses a take-profit/stop-loss pair that cannot
+bracket the market. That rule is deliberately price-sanity only: the limbs reserve no notional or
+gross-exposure capacity, because under one-cancels-other semantics at most one exit executes and
+reserving both would double-count the position the parent's reservation already carries.
+Reservation-aware OCO arithmetic remains future work on the roadmap row.
 
 Both thresholds are read as a single `FatFingerThresholds` value rather than two accessors, so an
 evaluation cannot straddle a two-field configuration update and observe a pair that never existed.
@@ -112,7 +118,11 @@ exposes one. Rule severity maps to a real outcome in `CompositeRiskValidator`:
   arms a one-shot, fingerprint-matched release token that lets exactly that order back through
   the escalation while every other rule still enforces.
 - `Critical` - the order is rejected and the execution circuit breaker
-  (`ExecutionOperatorControlService`) trips, halting routing until an operator closes it.
+  (`ExecutionOperatorControlService`) trips, halting routing until an operator closes it. When an
+  `ICircuitBreakerTripHandler` is composed (the workstation registers `KillSwitchSweepTripHandler`),
+  the trip is followed by the same kill-switch cancel-all sweep of the open book the operator
+  breaker endpoint performs, with the sweep outcome audited as `controls/CircuitBreakerCancelAll`;
+  the sweep runs strictly after the trip and can never delay, block, or revert it.
 
 Portfolio-aware rules read a `PortfolioExposureSnapshot` per evaluation, so thresholds tuned
 through the UI runtime service apply immediately and enforcement always sees the same

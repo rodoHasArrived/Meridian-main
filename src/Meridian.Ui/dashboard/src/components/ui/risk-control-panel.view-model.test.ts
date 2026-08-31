@@ -40,6 +40,11 @@ describe("buildRiskControlPanelViewModel", () => {
         message: "Drawdown threshold breached at -6.10%."
       }
     ]);
+    expect(vm.fatFingerQuantityField).toBeDefined();
+    expect(vm.fatFingerDeviationField).toBeDefined();
+    expect(vm.saveFatFingerAction).toBeDefined();
+    expect(vm.priceCollarField).toBeDefined();
+    expect(vm.savePriceCollarAction).toBeDefined();
   });
 
   it("projects drawdown save disabled reasons and field semantics from command state", () => {
@@ -49,6 +54,11 @@ describe("buildRiskControlPanelViewModel", () => {
       loadFailed: false,
       drawdownPercent: "",
       submitted: true,
+      fatFingerQuantity: "",
+      fatFingerDeviation: "",
+      submittedFatFinger: false,
+      priceCollar: "",
+      submittedPriceCollar: false,
       statusMessage: null,
       statusTone: "default"
     });
@@ -65,6 +75,8 @@ describe("buildRiskControlPanelViewModel", () => {
       disabledReason: "Enter a drawdown threshold before saving.",
       ariaLabel: "Save drawdown threshold unavailable: Enter a drawdown threshold before saving."
     });
+    expect(vm.fatFingerQuantityField).toBeDefined();
+    expect(vm.priceCollarField).toBeDefined();
   });
 
   it("projects loading, refresh, and successful save announcement state", () => {
@@ -74,6 +86,11 @@ describe("buildRiskControlPanelViewModel", () => {
       loadFailed: false,
       drawdownPercent: "5",
       submitted: false,
+      fatFingerQuantity: "",
+      fatFingerDeviation: "",
+      submittedFatFinger: false,
+      priceCollar: "",
+      submittedPriceCollar: false,
       statusMessage: "Drawdown threshold saved.",
       statusTone: "success"
     });
@@ -88,5 +105,118 @@ describe("buildRiskControlPanelViewModel", () => {
       disabledReason: "Risk controls are already refreshing."
     });
     expect(vm.statusAnnouncement).toBe("Loading risk controls.");
+    expect(vm.fatFingerQuantityField).toBeDefined();
+    expect(vm.priceCollarField).toBeDefined();
+  });
+
+  it("projects fat-finger and price collar field errors when submitted with empty values", () => {
+    const vm = buildRiskControlPanelViewModel([], {
+      loading: false,
+      saving: false,
+      loadFailed: false,
+      drawdownPercent: "5",
+      submitted: false,
+      fatFingerQuantity: "",
+      fatFingerDeviation: "",
+      submittedFatFinger: true,
+      priceCollar: "",
+      submittedPriceCollar: true,
+      statusMessage: null,
+      statusTone: "default"
+    });
+
+    expect(vm.fatFingerQuantityField).toMatchObject({
+      id: "risk-fat-finger-quantity",
+      label: "Maximum order quantity",
+      error: true,
+      helpText: "Maximum order quantity is required before saving."
+    });
+    expect(vm.fatFingerQuantityField.describedBy).toBe("risk-fat-finger-quantity-help risk-control-status");
+    expect(vm.fatFingerDeviationField).toMatchObject({
+      id: "risk-fat-finger-deviation",
+      label: "Maximum price deviation percent",
+      error: true,
+      helpText: "Price deviation percent is required before saving."
+    });
+    expect(vm.saveFatFingerAction).toMatchObject({
+      disabled: true,
+      disabledReason: "Enter a maximum order quantity before saving.",
+      ariaLabel: "Save fat-finger limits unavailable: Enter a maximum order quantity before saving."
+    });
+    expect(vm.priceCollarField).toMatchObject({
+      id: "risk-price-collar",
+      label: "Price collar percent",
+      error: true,
+      helpText: "Price collar percent is required before saving."
+    });
+    expect(vm.priceCollarField.describedBy).toBe("risk-price-collar-help risk-control-status");
+    expect(vm.savePriceCollarAction).toMatchObject({
+      disabled: true,
+      disabledReason: "Enter a price collar percent before saving.",
+      ariaLabel: "Save price collar unavailable: Enter a price collar percent before saving."
+    });
+  });
+
+  it("validates fat-finger quantity as a positive integer and deviation as < 100", () => {
+    const vm = buildRiskControlPanelViewModel([], {
+      loading: false,
+      saving: false,
+      loadFailed: false,
+      drawdownPercent: "5",
+      submitted: false,
+      fatFingerQuantity: "1.5",
+      fatFingerDeviation: "150",
+      submittedFatFinger: true,
+      priceCollar: "150",
+      submittedPriceCollar: true,
+      statusMessage: null,
+      statusTone: "default"
+    });
+
+    expect(vm.fatFingerQuantityField).toMatchObject({
+      error: true,
+      helpText: "Enter a positive whole number, for example 1000."
+    });
+    expect(vm.fatFingerDeviationField).toMatchObject({
+      error: true,
+      helpText: "Enter a positive number less than 100, for example 5."
+    });
+    expect(vm.saveFatFingerAction).toMatchObject({
+      disabled: true,
+      disabledReason: "Enter a positive whole number for maximum order quantity."
+    });
+    expect(vm.priceCollarField).toMatchObject({
+      error: true,
+      helpText: "Enter a positive number less than 100, for example 3."
+    });
+    expect(vm.savePriceCollarAction).toMatchObject({
+      disabled: true,
+      disabledReason: "Enter a positive number less than 100 for the price collar."
+    });
+  });
+
+  it("enables fat-finger and price collar save actions with valid values", () => {
+    const vm = buildRiskControlPanelViewModel([], {
+      loading: false,
+      saving: false,
+      loadFailed: false,
+      drawdownPercent: "5",
+      submitted: false,
+      fatFingerQuantity: "1000",
+      fatFingerDeviation: "5",
+      submittedFatFinger: true,
+      priceCollar: "3",
+      submittedPriceCollar: true,
+      statusMessage: null,
+      statusTone: "default"
+    });
+
+    expect(vm.fatFingerQuantityField.error).toBe(false);
+    expect(vm.fatFingerDeviationField.error).toBe(false);
+    expect(vm.saveFatFingerAction.disabled).toBe(false);
+    expect(vm.saveFatFingerAction.ariaLabel).toBe("Save fat-finger limits");
+    expect(vm.priceCollarField.error).toBe(false);
+    expect(vm.savePriceCollarAction.disabled).toBe(false);
+    expect(vm.savePriceCollarAction.ariaLabel).toBe("Save price collar");
   });
 });

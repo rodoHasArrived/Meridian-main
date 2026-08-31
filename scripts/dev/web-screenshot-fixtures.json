@@ -561,6 +561,272 @@
       ],
       "cashFlow": null
     },
+    "/api/workstation/family-office/overview": {
+      "familyOfficeId": "11111111-1111-1111-1111-111111111111",
+      "displayName": "Ridgeline Family Office",
+      "baseCurrency": "USD",
+      "asOfDate": "2026-05-29",
+      "balanceSheet": {
+        "familyOfficeId": "11111111-1111-1111-1111-111111111111",
+        "baseCurrency": "USD",
+        "totalAssets": 92000000,
+        "totalLiabilities": 7000000,
+        "netWorth": 85000000,
+        "liquidAssets": 12000000,
+        "marketableSecurities": 48000000,
+        "privateAssets": 26000000,
+        "realAssets": 6000000,
+        "cashAndEquivalents": 9500000,
+        "unfundedCommitments": 4250000,
+        "sourceSystem": "fund-structure",
+        "sourceDocumentId": "bs-2026-05",
+        "asOfDate": "2026-05-29",
+        "valuationDate": "2026-05-29",
+        "evidenceCompleteness": "Complete",
+        "reconciliationStatus": "OpenBreaks",
+        "lastReviewedBy": "controller@example.com",
+        "lastReviewedAtUtc": "2026-05-29T12:00:00Z"
+      },
+      "entities": [
+        {
+          "entityId": "11111111-1111-1111-1111-111111111111",
+          "displayName": "Ridgeline Family Office",
+          "entityType": "FamilyOfficeClient",
+          "jurisdiction": null,
+          "taxResidency": null,
+          "baseCurrency": "USD",
+          "parentEntityId": null,
+          "ownershipPercent": null,
+          "isOperatingEntity": false,
+          "evidenceLinks": []
+        },
+        {
+          "entityId": "22222222-2222-2222-2222-222222222222",
+          "displayName": "Ridgeline Family Trust",
+          "entityType": "Trust",
+          "jurisdiction": "Delaware",
+          "taxResidency": null,
+          "baseCurrency": "USD",
+          "parentEntityId": "11111111-1111-1111-1111-111111111111",
+          "ownershipPercent": 60,
+          "isOperatingEntity": false,
+          "evidenceLinks": []
+        },
+        {
+          "entityId": "33333333-3333-3333-3333-333333333333",
+          "displayName": "Ridgeline Holdings LLC",
+          "entityType": "LimitedLiabilityCompany",
+          "jurisdiction": "Delaware",
+          "taxResidency": null,
+          "baseCurrency": "USD",
+          "parentEntityId": "11111111-1111-1111-1111-111111111111",
+          "ownershipPercent": null,
+          "isOperatingEntity": true,
+          "evidenceLinks": []
+        }
+      ],
+      "ownershipGraph": {
+        "asOfDate": "2026-05-29",
+        "nodes": [
+          {
+            "nodeId": "11111111-1111-1111-1111-111111111111",
+            "displayName": "Ridgeline Family Office",
+            "nodeType": "Client"
+          },
+          {
+            "nodeId": "22222222-2222-2222-2222-222222222222",
+            "displayName": "Ridgeline Family Trust",
+            "nodeType": "LegalEntity"
+          },
+          {
+            "nodeId": "33333333-3333-3333-3333-333333333333",
+            "displayName": "Ridgeline Holdings LLC",
+            "nodeType": "LegalEntity"
+          }
+        ],
+        "edges": [
+          {
+            "edgeId": "edge-trust",
+            "sourceNodeId": "11111111-1111-1111-1111-111111111111",
+            "targetNodeId": "22222222-2222-2222-2222-222222222222",
+            "relationshipType": "Ownership",
+            "ownershipPercent": 60
+          }
+        ],
+        "evidenceLinks": []
+      },
+      "accounts": [
+        {
+          "accountId": "account-trust",
+          "entityId": "22222222-2222-2222-2222-222222222222",
+          "displayName": "account-trust custody",
+          "accountType": "Custody",
+          "custodian": "Example Custody",
+          "providerAccountId": null,
+          "currency": "USD",
+          "cashBalance": 4500000,
+          "marketValue": 26500000,
+          "accruedIncome": 0,
+          "totalEquity": 31000000,
+          "sourceSystem": "fund-accounts",
+          "sourceDocumentId": "account-trust",
+          "asOfDate": "2026-05-29",
+          "valuationDate": "2026-05-29",
+          "evidenceCompleteness": "Complete",
+          "reconciliationStatus": "Reconciled",
+          "lastReviewedBy": null,
+          "lastReviewedAtUtc": null
+        },
+        {
+          "accountId": "account-llc",
+          "entityId": "33333333-3333-3333-3333-333333333333",
+          "displayName": "account-llc custody",
+          "accountType": "Custody",
+          "custodian": "Example Custody",
+          "providerAccountId": null,
+          "currency": "USD",
+          "cashBalance": 5000000,
+          "marketValue": 17000000,
+          "accruedIncome": 0,
+          "totalEquity": 22000000,
+          "sourceSystem": "fund-accounts",
+          "sourceDocumentId": "account-llc",
+          "asOfDate": "2026-05-29",
+          "valuationDate": "2026-05-29",
+          "evidenceCompleteness": "Complete",
+          "reconciliationStatus": "OpenBreaks",
+          "lastReviewedBy": null,
+          "lastReviewedAtUtc": null
+        }
+      ],
+      "publicAssets": [
+        {
+          "assetId": "asset-equity",
+          "entityId": "22222222-2222-2222-2222-222222222222",
+          "accountId": null,
+          "displayName": "Public equity sleeve",
+          "assetClass": "Public equity",
+          "symbol": null,
+          "currency": "USD",
+          "quantity": 1,
+          "marketValue": 28000000,
+          "costBasis": 28000000,
+          "unrealizedGainLoss": 0,
+          "percentOfNetWorth": 0,
+          "sourceSystem": "fund-accounts",
+          "sourceDocumentId": "asset-equity",
+          "asOfDate": "2026-05-29",
+          "valuationDate": "2026-05-29",
+          "evidenceCompleteness": "Complete",
+          "reconciliationStatus": "Reconciled",
+          "lastReviewedBy": null,
+          "lastReviewedAtUtc": null
+        },
+        {
+          "assetId": "asset-credit",
+          "entityId": "33333333-3333-3333-3333-333333333333",
+          "accountId": null,
+          "displayName": "Fixed income sleeve",
+          "assetClass": "Fixed income",
+          "symbol": null,
+          "currency": "USD",
+          "quantity": 1,
+          "marketValue": 20000000,
+          "costBasis": 20000000,
+          "unrealizedGainLoss": 0,
+          "percentOfNetWorth": 0,
+          "sourceSystem": "fund-accounts",
+          "sourceDocumentId": "asset-credit",
+          "asOfDate": "2026-05-29",
+          "valuationDate": "2026-05-29",
+          "evidenceCompleteness": "Complete",
+          "reconciliationStatus": "Reconciled",
+          "lastReviewedBy": null,
+          "lastReviewedAtUtc": null
+        },
+        {
+          "assetId": "asset-equity-llc",
+          "entityId": "33333333-3333-3333-3333-333333333333",
+          "accountId": null,
+          "displayName": "Public equity sleeve",
+          "assetClass": "Public equity",
+          "symbol": null,
+          "currency": "USD",
+          "quantity": 1,
+          "marketValue": 2000000,
+          "costBasis": 2000000,
+          "unrealizedGainLoss": 0,
+          "percentOfNetWorth": 0,
+          "sourceSystem": "fund-accounts",
+          "sourceDocumentId": "asset-equity-llc",
+          "asOfDate": "2026-05-29",
+          "valuationDate": "2026-05-29",
+          "evidenceCompleteness": "Complete",
+          "reconciliationStatus": "Reconciled",
+          "lastReviewedBy": null,
+          "lastReviewedAtUtc": null
+        }
+      ],
+      "privateAssets": [
+        {
+          "privateAssetId": "private-fund-vii",
+          "entityId": "22222222-2222-2222-2222-222222222222",
+          "displayName": "Ridgeline PE Fund VII",
+          "assetType": "PrivateAsset",
+          "currency": "USD",
+          "currentValue": 26000000,
+          "commitmentAmount": 30000000,
+          "calledCapital": 26000000,
+          "distributedCapital": 1000000,
+          "valuationMethod": "AssignmentReference",
+          "sourceSystem": "fund-structure-assignment",
+          "sourceDocumentId": "pe-vii",
+          "asOfDate": "2026-05-29",
+          "valuationDate": null,
+          "evidenceCompleteness": "Partial",
+          "reconciliationStatus": "NotReconciled",
+          "lastReviewedBy": null,
+          "lastReviewedAtUtc": null
+        }
+      ],
+      "capitalCommitments": [
+        {
+          "commitmentId": "commitment-pe-vii",
+          "entityId": "22222222-2222-2222-2222-222222222222",
+          "vehicleName": "Ridgeline PE Fund VII",
+          "strategy": "PrivateMarkets",
+          "currency": "USD",
+          "commitmentAmount": 30000000,
+          "calledAmount": 26000000,
+          "unfundedAmount": 4250000,
+          "distributedAmount": 1000000,
+          "currentNav": 26000000,
+          "vintageYear": 2024,
+          "sourceSystem": "fund-structure-assignment",
+          "sourceDocumentId": "pe-vii",
+          "asOfDate": "2026-05-29",
+          "valuationDate": null,
+          "evidenceCompleteness": "Partial",
+          "reconciliationStatus": "NotReconciled",
+          "lastReviewedBy": null,
+          "lastReviewedAtUtc": null
+        }
+      ],
+      "recentCapitalActivity": [],
+      "readiness": {
+        "status": "NeedsReview",
+        "evidenceCompleteness": "Partial",
+        "reconciliationStatus": "OpenBreaks",
+        "openExceptionCount": 3,
+        "itemsNeedingReviewCount": 2,
+        "generatedAtUtc": "2026-05-29T12:00:00Z",
+        "lastReviewedBy": "controller@example.com",
+        "lastReviewedAtUtc": "2026-05-29T12:00:00Z",
+        "blockers": [],
+        "evidenceLinks": []
+      },
+      "evidenceLinks": []
+    },
     "/api/workstation/portfolio/multi-asset-coverage": {
       "fundAccountId": "all",
       "entity": "portfolio",
@@ -1920,6 +2186,234 @@
         }
       }
     ],
+    "/api/ledger/books": [
+      {
+        "ledgerBookId": "00000000-0000-0000-0000-0000000000aa",
+        "fundProfileId": "fund-alpha",
+        "fundStructureNodeId": "00000000-0000-0000-0000-0000000000bb",
+        "fundStructureNodeKind": "Fund",
+        "displayName": "Fund Alpha Master Book",
+        "baseCurrency": "USD",
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-07-31T00:00:00Z",
+        "description": "Governed posting book for Fund Alpha.",
+        "accountingBasis": "Primary",
+        "accountingPolicyId": "fund-alpha-gaap",
+        "accountingPolicyVersion": "2026.1"
+      }
+    ],
+    "/api/ledger/periods": [
+      {
+        "periodId": "11111111-1111-1111-1111-111111111111",
+        "ledgerBookId": "00000000-0000-0000-0000-0000000000aa",
+        "fiscalYear": 2026,
+        "periodNo": 6,
+        "label": "June 2026",
+        "startDate": "2026-06-01",
+        "endDate": "2026-06-30",
+        "status": "HardClosed",
+        "openedAt": "2026-06-01T00:00:00Z",
+        "closedAt": "2026-07-02T00:00:00Z",
+        "version": 1,
+        "accountingBasis": "Primary",
+        "accountingPolicyId": "fund-alpha-gaap",
+        "accountingPolicyVersion": "2026.1"
+      }
+    ],
+    "/api/ledger/periods/11111111-1111-1111-1111-111111111111/trial-balance": [
+      {
+        "accountName": "Cash",
+        "accountType": "Asset",
+        "symbol": null,
+        "financialAccountId": "acct-cash",
+        "debitTotal": 120500,
+        "creditTotal": 0,
+        "balance": 120500,
+        "entryCount": 3,
+        "accountingBasis": "Primary",
+        "accountingPolicyId": "fund-alpha-gaap",
+        "accountingPolicyVersion": "2026.1",
+        "sourceJournalEntryId": "je-cash-1",
+        "dimensions": {
+          "fundId": "fund-alpha",
+          "entityId": "entity-fund-alpha"
+        }
+      },
+      {
+        "accountName": "Public Investments",
+        "accountType": "Asset",
+        "symbol": null,
+        "financialAccountId": "acct-investments",
+        "debitTotal": 380000,
+        "creditTotal": 0,
+        "balance": 380000,
+        "entryCount": 2,
+        "accountingBasis": "Primary",
+        "accountingPolicyId": "fund-alpha-gaap",
+        "accountingPolicyVersion": "2026.1",
+        "sourceJournalEntryId": "je-invest-1",
+        "dimensions": {
+          "fundId": "fund-alpha",
+          "entityId": "entity-fund-alpha"
+        }
+      },
+      {
+        "accountName": "Contributed Capital",
+        "accountType": "Equity",
+        "symbol": null,
+        "financialAccountId": "acct-capital",
+        "debitTotal": 0,
+        "creditTotal": 500500,
+        "balance": 500500,
+        "entryCount": 1,
+        "accountingBasis": "Primary",
+        "accountingPolicyId": "fund-alpha-gaap",
+        "accountingPolicyVersion": "2026.1",
+        "sourceJournalEntryId": "je-capital-1",
+        "dimensions": {
+          "fundId": "fund-alpha",
+          "entityId": "entity-fund-alpha"
+        }
+      }
+    ],
+    "/api/ledger/periods/11111111-1111-1111-1111-111111111111/journal-entries": [
+      {
+        "journalEntryId": "je-cash-1",
+        "periodId": "11111111-1111-1111-1111-111111111111",
+        "ledgerBookId": "00000000-0000-0000-0000-0000000000aa",
+        "timestamp": "2026-06-30T00:00:00Z",
+        "description": "Cash sweep",
+        "totalDebits": 500,
+        "totalCredits": 500,
+        "isBalanced": true,
+        "accountingBasis": "Primary",
+        "lines": [
+          {
+            "entryId": "je-cash-1-line-1",
+            "journalEntryId": "je-cash-1",
+            "timestamp": "2026-06-30T00:00:00Z",
+            "accountName": "Cash",
+            "accountType": "Asset",
+            "symbol": null,
+            "financialAccountId": "acct-cash",
+            "debit": 500,
+            "credit": 0,
+            "description": "Cash sweep receipt",
+            "dimensions": {
+              "fundId": "fund-alpha",
+              "entityId": "entity-fund-alpha",
+              "instrumentId": "cash-usd"
+            }
+          },
+          {
+            "entryId": "je-cash-1-line-2",
+            "journalEntryId": "je-cash-1",
+            "timestamp": "2026-06-30T00:00:00Z",
+            "accountName": "Public Investments",
+            "accountType": "Asset",
+            "symbol": null,
+            "financialAccountId": "acct-investments",
+            "debit": 0,
+            "credit": 500,
+            "description": "Cash sweep funding",
+            "dimensions": {
+              "fundId": "fund-alpha",
+              "entityId": "entity-fund-alpha"
+            }
+          }
+        ]
+      },
+      {
+        "journalEntryId": "je-capital-1",
+        "periodId": "11111111-1111-1111-1111-111111111111",
+        "ledgerBookId": "00000000-0000-0000-0000-0000000000aa",
+        "timestamp": "2026-06-15T00:00:00Z",
+        "description": "Capital contribution",
+        "totalDebits": 500500,
+        "totalCredits": 500500,
+        "isBalanced": true,
+        "accountingBasis": "Primary",
+        "lines": [
+          {
+            "entryId": "je-capital-1-line-1",
+            "journalEntryId": "je-capital-1",
+            "timestamp": "2026-06-15T00:00:00Z",
+            "accountName": "Cash",
+            "accountType": "Asset",
+            "symbol": null,
+            "financialAccountId": "acct-cash",
+            "debit": 500500,
+            "credit": 0,
+            "description": "Investor contribution received",
+            "dimensions": {
+              "fundId": "fund-alpha",
+              "entityId": "entity-fund-alpha",
+              "investorId": "investor-1"
+            }
+          },
+          {
+            "entryId": "je-capital-1-line-2",
+            "journalEntryId": "je-capital-1",
+            "timestamp": "2026-06-15T00:00:00Z",
+            "accountName": "Contributed Capital",
+            "accountType": "Equity",
+            "symbol": null,
+            "financialAccountId": "acct-capital",
+            "debit": 0,
+            "credit": 500500,
+            "description": "Investor contribution recorded",
+            "dimensions": {
+              "fundId": "fund-alpha",
+              "entityId": "entity-fund-alpha",
+              "investorId": "investor-1"
+            }
+          }
+        ]
+      }
+    ],
+    "/api/ledger/periods/11111111-1111-1111-1111-111111111111/pnl-summary": {
+      "periodId": "11111111-1111-1111-1111-111111111111",
+      "ledgerBookId": "00000000-0000-0000-0000-0000000000aa",
+      "fiscalYear": 2026,
+      "periodNo": 6,
+      "label": "June 2026",
+      "totalRevenue": 18400,
+      "totalExpenses": 6200,
+      "netIncome": 12200,
+      "periodOnPeriodVariance": 1450,
+      "openBreakCount": 0,
+      "signoffStatus": "SignedOff",
+      "completedAt": "2026-07-02T00:00:00Z",
+      "accountingBasis": "Primary",
+      "accountingPolicyId": "fund-alpha-gaap",
+      "accountingPolicyVersion": "2026.1",
+      "revenueLines": [
+        {
+          "accountName": "Realized Gains",
+          "accountType": "Revenue",
+          "symbol": null,
+          "financialAccountId": "acct-realized-gains",
+          "debitTotal": 0,
+          "creditTotal": 18400,
+          "balance": 18400,
+          "entryCount": 4,
+          "accountingBasis": "Primary"
+        }
+      ],
+      "expenseLines": [
+        {
+          "accountName": "Management Fees",
+          "accountType": "Expense",
+          "symbol": null,
+          "financialAccountId": "acct-management-fees",
+          "debitTotal": 6200,
+          "creditTotal": 0,
+          "balance": 6200,
+          "entryCount": 1,
+          "accountingBasis": "Primary"
+        }
+      ]
+    },
     "/api/accounting-system/import/preview": {
       "summary": {
         "importId": "qbo-fixture-20260131",
@@ -2735,14 +3229,22 @@
         "cancelled": 0,
         "resumable": 3
       },
-      "providers": ["alpaca", "databento", "polygon"],
+      "providers": [
+        "alpaca",
+        "databento",
+        "polygon"
+      ],
       "jobs": [
         {
           "jobId": "ING-4102",
           "workloadType": "Historical backfill",
           "state": "Running",
           "provider": "databento",
-          "symbols": ["AAPL", "MSFT", "NVDA"],
+          "symbols": [
+            "AAPL",
+            "MSFT",
+            "NVDA"
+          ],
           "createdAt": "2026-07-14T16:40:00Z",
           "startedAt": "2026-07-14T16:41:00Z",
           "completedAt": null,
@@ -2754,8 +3256,18 @@
           "errorMessage": null,
           "evidenceRoute": "/data/evidence?subjectId=ING-4102",
           "actions": [
-            { "action": "pause", "label": "Pause", "enabled": true, "disabledReason": null },
-            { "action": "cancel", "label": "Cancel", "enabled": true, "disabledReason": null }
+            {
+              "action": "pause",
+              "label": "Pause",
+              "enabled": true,
+              "disabledReason": null
+            },
+            {
+              "action": "cancel",
+              "label": "Cancel",
+              "enabled": true,
+              "disabledReason": null
+            }
           ]
         },
         {
@@ -2763,7 +3275,9 @@
           "workloadType": "Intraday import",
           "state": "Running",
           "provider": "alpaca",
-          "symbols": ["SPY"],
+          "symbols": [
+            "SPY"
+          ],
           "createdAt": "2026-07-14T17:05:00Z",
           "startedAt": "2026-07-14T17:06:00Z",
           "completedAt": null,
@@ -2775,7 +3289,12 @@
           "errorMessage": null,
           "evidenceRoute": "/data/evidence?subjectId=ING-4103",
           "actions": [
-            { "action": "pause", "label": "Pause", "enabled": true, "disabledReason": null }
+            {
+              "action": "pause",
+              "label": "Pause",
+              "enabled": true,
+              "disabledReason": null
+            }
           ]
         },
         {
@@ -2783,7 +3302,10 @@
           "workloadType": "Historical backfill",
           "state": "Failed",
           "provider": "polygon",
-          "symbols": ["TSLA", "AMD"],
+          "symbols": [
+            "TSLA",
+            "AMD"
+          ],
           "createdAt": "2026-07-14T15:10:00Z",
           "startedAt": "2026-07-14T15:12:00Z",
           "completedAt": null,
@@ -2795,8 +3317,18 @@
           "errorMessage": "Provider rate limit exceeded during range 2026-06-01..2026-06-30.",
           "evidenceRoute": "/data/evidence?subjectId=ING-4098",
           "actions": [
-            { "action": "retry", "label": "Retry", "enabled": true, "disabledReason": null },
-            { "action": "cancel", "label": "Cancel", "enabled": true, "disabledReason": null }
+            {
+              "action": "retry",
+              "label": "Retry",
+              "enabled": true,
+              "disabledReason": null
+            },
+            {
+              "action": "cancel",
+              "label": "Cancel",
+              "enabled": true,
+              "disabledReason": null
+            }
           ]
         },
         {
@@ -2804,7 +3336,9 @@
           "workloadType": "Corporate actions sync",
           "state": "Queued",
           "provider": "databento",
-          "symbols": ["QQQ"],
+          "symbols": [
+            "QQQ"
+          ],
           "createdAt": "2026-07-14T17:45:00Z",
           "startedAt": null,
           "completedAt": null,
@@ -2816,7 +3350,12 @@
           "errorMessage": null,
           "evidenceRoute": null,
           "actions": [
-            { "action": "cancel", "label": "Cancel", "enabled": true, "disabledReason": null }
+            {
+              "action": "cancel",
+              "label": "Cancel",
+              "enabled": true,
+              "disabledReason": null
+            }
           ]
         },
         {
@@ -2824,7 +3363,9 @@
           "workloadType": "Historical backfill",
           "state": "Completed",
           "provider": "alpaca",
-          "symbols": ["IWM"],
+          "symbols": [
+            "IWM"
+          ],
           "createdAt": "2026-07-14T14:00:00Z",
           "startedAt": "2026-07-14T14:01:00Z",
           "completedAt": "2026-07-14T14:38:00Z",
@@ -2857,7 +3398,9 @@
         "filesAnalyzed": 18420,
         "averageScore": 0.982,
         "lowQualityFileCount": 24,
-        "recommendations": ["Re-run canonicalization for providers with soft failures."],
+        "recommendations": [
+          "Re-run canonicalization for providers with soft failures."
+        ],
         "message": null
       },
       "canonicalization": {
@@ -2869,8 +3412,22 @@
         "hardFailTotal": 32,
         "matchRatePercent": 99.8,
         "providers": [
-          { "provider": "alpaca", "total": 60112, "success": 60050, "softFail": 55, "hardFail": 7, "matchRatePercent": 99.9 },
-          { "provider": "databento", "total": 71001, "success": 70820, "softFail": 160, "hardFail": 21, "matchRatePercent": 99.7 }
+          {
+            "provider": "alpaca",
+            "total": 60112,
+            "success": 60050,
+            "softFail": 55,
+            "hardFail": 7,
+            "matchRatePercent": 99.9
+          },
+          {
+            "provider": "databento",
+            "total": 71001,
+            "success": 70820,
+            "softFail": 160,
+            "hardFail": 21,
+            "matchRatePercent": 99.7
+          }
         ]
       },
       "capacity": {
@@ -2881,9 +3438,21 @@
         "status": "Healthy"
       },
       "tiers": [
-        { "tier": "Hot", "fileCount": 5210, "totalBytes": 1610612736 },
-        { "tier": "Warm", "fileCount": 9800, "totalBytes": 2684354560 },
-        { "tier": "Cold", "fileCount": 3410, "totalBytes": 1203664384 }
+        {
+          "tier": "Hot",
+          "fileCount": 5210,
+          "totalBytes": 1610612736
+        },
+        {
+          "tier": "Warm",
+          "fileCount": 9800,
+          "totalBytes": 2684354560
+        },
+        {
+          "tier": "Cold",
+          "fileCount": 3410,
+          "totalBytes": 1203664384
+        }
       ],
       "alerts": [
         {
@@ -2894,7 +3463,12 @@
           "detectedAt": "2026-07-14T12:30:00Z"
         }
       ],
-      "permissions": { "canView": true, "canRunQualityCheck": true, "canMigrate": true, "canDelete": true }
+      "permissions": {
+        "canView": true,
+        "canRunQualityCheck": true,
+        "canMigrate": true,
+        "canDelete": true
+      }
     },
     "/api/quality/dashboard": {
       "overallScore": 98.7,
@@ -4552,7 +5126,7 @@
         "recipient": "investor-anchor-lp",
         "recipientKind": "Company",
         "destination": "Secure portal package",
-        "subject": "Investor Monthly Statement — May 2026",
+        "subject": "Investor Monthly Statement \u2014 May 2026",
         "state": "Delivered",
         "attemptCount": 1,
         "maxAttempts": 3,
@@ -4593,7 +5167,7 @@
         "recipient": "investor-anchor-lp",
         "recipientKind": "Company",
         "destination": "statements@anchor-lp.example",
-        "subject": "Investor Monthly Statement — May 2026",
+        "subject": "Investor Monthly Statement \u2014 May 2026",
         "state": "Retrying",
         "attemptCount": 2,
         "maxAttempts": 3,
@@ -4667,6 +5241,511 @@
         "revocationReason": "Superseded by the portal grant after the email transport throttled.",
         "allowPackageRead": false
       }
-    ]
+    ],
+    "/api/workstation/financial-record-explorers/ledger": {
+      "explorerId": "ledger",
+      "title": "Strategy Run Ledger Explorer",
+      "description": "Explore the selected strategy run's simulated trial-balance records and their proof links. This is a run artifact, not the posted journal.",
+      "sourceState": "Source-backed ledger projection from run run-42.",
+      "isBlocked": false,
+      "blockedReason": "",
+      "scopeItems": [
+        {
+          "label": "Ledger source",
+          "value": "Strategy run (simulation) \u2014 not the posted journal",
+          "tone": "Default"
+        },
+        {
+          "label": "Run",
+          "value": "run-42",
+          "tone": "Default"
+        }
+      ],
+      "savedViews": [],
+      "summaryItems": [
+        {
+          "label": "Accounts",
+          "value": "3",
+          "detail": "Retained trial-balance rows.",
+          "tone": "Success"
+        }
+      ],
+      "filters": [],
+      "columns": [
+        {
+          "columnId": "accountName",
+          "header": "Account",
+          "cellKind": "text",
+          "width": 220,
+          "isRightAligned": false
+        },
+        {
+          "columnId": "balance",
+          "header": "Balance",
+          "cellKind": "money",
+          "width": 120,
+          "isRightAligned": true
+        }
+      ],
+      "rows": [
+        {
+          "recordId": "ledger:run-42:acct-cash",
+          "recordType": "ledger-account",
+          "label": "Cash",
+          "source": "Strategy run run-42",
+          "status": "Simulated",
+          "tone": "Success",
+          "sourceRunId": "run-42",
+          "cells": [
+            {
+              "columnId": "accountName",
+              "displayValue": "Cash",
+              "rawValue": "Cash",
+              "tone": "Default",
+              "linkHref": "/accounting/accounts/detail?accountId=acct-cash&runId=run-42"
+            },
+            {
+              "columnId": "balance",
+              "displayValue": "$120,500.00",
+              "rawValue": "120500.0",
+              "tone": "Success",
+              "linkHref": ""
+            }
+          ],
+          "detail": {
+            "recordId": "ledger:run-42:acct-cash",
+            "recordType": "ledger-account",
+            "title": "Cash",
+            "subtitle": "Asset \u00b7 Strategy run run-42",
+            "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
+            "tone": "Success",
+            "fields": [
+              {
+                "label": "Account type",
+                "value": "Asset",
+                "detail": "",
+                "tone": "Default"
+              },
+              {
+                "label": "Balance",
+                "value": "$120,500.00",
+                "detail": "Run-scoped simulated balance.",
+                "tone": "Success"
+              },
+              {
+                "label": "Entity",
+                "value": "Fund Alpha",
+                "detail": "",
+                "tone": "Default"
+              }
+            ],
+            "proofActions": [
+              {
+                "actionId": "open-journal:je-cash-1",
+                "label": "Open source journal entry",
+                "description": "Open the run journal entry that produced this balance.",
+                "href": "/accounting/journal-entries/detail?journalEntryId=je-cash-1&runId=run-42",
+                "tone": "Default"
+              }
+            ],
+            "usedIn": [
+              {
+                "relationshipId": "journal:je-cash-1",
+                "label": "Cash sweep",
+                "description": "Journal entry je-cash-1 posted this account's run balance.",
+                "href": "/accounting/journal-entries/detail?journalEntryId=je-cash-1&runId=run-42",
+                "tone": "Default"
+              }
+            ],
+            "impacts": [
+              {
+                "relationshipId": "trial-balance:ledger:run-42:acct-cash",
+                "label": "Run trial balance",
+                "description": "Included in the strategy run's simulated trial balance.",
+                "href": "/strategy/run-ledger?runId=run-42",
+                "tone": "Default"
+              }
+            ],
+            "fullRecordHref": "/accounting/accounts/detail?accountId=acct-cash&runId=run-42"
+          }
+        },
+        {
+          "recordId": "ledger:run-42:acct-investments",
+          "recordType": "ledger-account",
+          "label": "Public Investments",
+          "source": "Strategy run run-42",
+          "status": "Simulated",
+          "tone": "Default",
+          "sourceRunId": "run-42",
+          "cells": [
+            {
+              "columnId": "accountName",
+              "displayValue": "Public Investments",
+              "rawValue": "Public Investments",
+              "tone": "Default",
+              "linkHref": "/accounting/accounts/detail?accountId=acct-investments&runId=run-42"
+            },
+            {
+              "columnId": "balance",
+              "displayValue": "$380,000.00",
+              "rawValue": "380000.0",
+              "tone": "Default",
+              "linkHref": ""
+            }
+          ],
+          "detail": {
+            "recordId": "ledger:run-42:acct-investments",
+            "recordType": "ledger-account",
+            "title": "Public Investments",
+            "subtitle": "Asset \u00b7 Strategy run run-42",
+            "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
+            "tone": "Default",
+            "fields": [
+              {
+                "label": "Account type",
+                "value": "Asset",
+                "detail": "",
+                "tone": "Default"
+              },
+              {
+                "label": "Balance",
+                "value": "$380,000.00",
+                "detail": "Run-scoped simulated balance.",
+                "tone": "Default"
+              },
+              {
+                "label": "Entity",
+                "value": "Fund Alpha",
+                "detail": "",
+                "tone": "Default"
+              }
+            ],
+            "proofActions": [
+              {
+                "actionId": "open-journal:je-invest-1",
+                "label": "Open source journal entry",
+                "description": "Open the run journal entry that produced this balance.",
+                "href": "/accounting/journal-entries/detail?journalEntryId=je-invest-1&runId=run-42",
+                "tone": "Default"
+              }
+            ],
+            "usedIn": [
+              {
+                "relationshipId": "journal:je-invest-1",
+                "label": "Position revaluation",
+                "description": "Journal entry je-invest-1 posted this account's run balance.",
+                "href": "/accounting/journal-entries/detail?journalEntryId=je-invest-1&runId=run-42",
+                "tone": "Default"
+              }
+            ],
+            "impacts": [
+              {
+                "relationshipId": "trial-balance:ledger:run-42:acct-investments",
+                "label": "Run trial balance",
+                "description": "Included in the strategy run's simulated trial balance.",
+                "href": "/strategy/run-ledger?runId=run-42",
+                "tone": "Default"
+              }
+            ],
+            "fullRecordHref": "/accounting/accounts/detail?accountId=acct-investments&runId=run-42"
+          }
+        },
+        {
+          "recordId": "ledger:run-42:acct-capital",
+          "recordType": "ledger-account",
+          "label": "Contributed Capital",
+          "source": "Strategy run run-42",
+          "status": "Simulated",
+          "tone": "Default",
+          "sourceRunId": "run-42",
+          "cells": [
+            {
+              "columnId": "accountName",
+              "displayValue": "Contributed Capital",
+              "rawValue": "Contributed Capital",
+              "tone": "Default",
+              "linkHref": "/accounting/accounts/detail?accountId=acct-capital&runId=run-42"
+            },
+            {
+              "columnId": "balance",
+              "displayValue": "($500,500.00)",
+              "rawValue": "-500500.0",
+              "tone": "Default",
+              "linkHref": ""
+            }
+          ],
+          "detail": {
+            "recordId": "ledger:run-42:acct-capital",
+            "recordType": "ledger-account",
+            "title": "Contributed Capital",
+            "subtitle": "Equity \u00b7 Strategy run run-42",
+            "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
+            "tone": "Default",
+            "fields": [
+              {
+                "label": "Account type",
+                "value": "Equity",
+                "detail": "",
+                "tone": "Default"
+              },
+              {
+                "label": "Balance",
+                "value": "($500,500.00)",
+                "detail": "Run-scoped simulated balance.",
+                "tone": "Default"
+              },
+              {
+                "label": "Entity",
+                "value": "Fund Alpha",
+                "detail": "",
+                "tone": "Default"
+              }
+            ],
+            "proofActions": [
+              {
+                "actionId": "open-journal:je-capital-1",
+                "label": "Open source journal entry",
+                "description": "Open the run journal entry that produced this balance.",
+                "href": "/accounting/journal-entries/detail?journalEntryId=je-capital-1&runId=run-42",
+                "tone": "Default"
+              }
+            ],
+            "usedIn": [
+              {
+                "relationshipId": "journal:je-capital-1",
+                "label": "Capital contribution",
+                "description": "Journal entry je-capital-1 posted this account's run balance.",
+                "href": "/accounting/journal-entries/detail?journalEntryId=je-capital-1&runId=run-42",
+                "tone": "Default"
+              }
+            ],
+            "impacts": [
+              {
+                "relationshipId": "trial-balance:ledger:run-42:acct-capital",
+                "label": "Run trial balance",
+                "description": "Included in the strategy run's simulated trial balance.",
+                "href": "/strategy/run-ledger?runId=run-42",
+                "tone": "Default"
+              }
+            ],
+            "fullRecordHref": "/accounting/accounts/detail?accountId=acct-capital&runId=run-42"
+          }
+        }
+      ],
+      "selectedRecord": {
+        "recordId": "ledger:run-42:acct-cash",
+        "recordType": "ledger-account",
+        "title": "Cash",
+        "subtitle": "Asset \u00b7 Strategy run run-42",
+        "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
+        "tone": "Success",
+        "fields": [
+          {
+            "label": "Account type",
+            "value": "Asset",
+            "detail": "",
+            "tone": "Default"
+          },
+          {
+            "label": "Balance",
+            "value": "$120,500.00",
+            "detail": "Run-scoped simulated balance.",
+            "tone": "Success"
+          },
+          {
+            "label": "Entity",
+            "value": "Fund Alpha",
+            "detail": "",
+            "tone": "Default"
+          }
+        ],
+        "proofActions": [
+          {
+            "actionId": "open-journal:je-cash-1",
+            "label": "Open source journal entry",
+            "description": "Open the run journal entry that produced this balance.",
+            "href": "/accounting/journal-entries/detail?journalEntryId=je-cash-1&runId=run-42",
+            "tone": "Default"
+          }
+        ],
+        "usedIn": [
+          {
+            "relationshipId": "journal:je-cash-1",
+            "label": "Cash sweep",
+            "description": "Journal entry je-cash-1 posted this account's run balance.",
+            "href": "/accounting/journal-entries/detail?journalEntryId=je-cash-1&runId=run-42",
+            "tone": "Default"
+          }
+        ],
+        "impacts": [
+          {
+            "relationshipId": "trial-balance:ledger:run-42:acct-cash",
+            "label": "Run trial balance",
+            "description": "Included in the strategy run's simulated trial balance.",
+            "href": "/strategy/run-ledger?runId=run-42",
+            "tone": "Default"
+          }
+        ],
+        "fullRecordHref": "/accounting/accounts/detail?accountId=acct-cash&runId=run-42"
+      },
+      "proofActions": [
+        {
+          "actionId": "open-run-trial-balance",
+          "label": "Open run trial balance",
+          "description": "Review the full simulated trial balance for run run-42.",
+          "href": "/strategy/run-ledger?runId=run-42",
+          "tone": "Default"
+        }
+      ],
+      "recordGraph": {
+        "nodes": [
+          {
+            "nodeId": "ledger:run-42:acct-cash",
+            "label": "Cash",
+            "nodeType": "ledger-account",
+            "tone": "Success",
+            "href": "/accounting/accounts/detail?accountId=acct-cash&runId=run-42"
+          },
+          {
+            "nodeId": "rel:journal:je-cash-1",
+            "label": "Cash sweep",
+            "nodeType": "relationship",
+            "tone": "Default",
+            "href": "/accounting/journal-entries/detail?journalEntryId=je-cash-1&runId=run-42"
+          },
+          {
+            "nodeId": "ledger:run-42:acct-investments",
+            "label": "Public Investments",
+            "nodeType": "ledger-account",
+            "tone": "Default",
+            "href": "/accounting/accounts/detail?accountId=acct-investments&runId=run-42"
+          },
+          {
+            "nodeId": "rel:journal:je-invest-1",
+            "label": "Position revaluation",
+            "nodeType": "relationship",
+            "tone": "Default",
+            "href": "/accounting/journal-entries/detail?journalEntryId=je-invest-1&runId=run-42"
+          },
+          {
+            "nodeId": "ledger:run-42:acct-capital",
+            "label": "Contributed Capital",
+            "nodeType": "ledger-account",
+            "tone": "Default",
+            "href": "/accounting/accounts/detail?accountId=acct-capital&runId=run-42"
+          },
+          {
+            "nodeId": "rel:journal:je-capital-1",
+            "label": "Capital contribution",
+            "nodeType": "relationship",
+            "tone": "Default",
+            "href": "/accounting/journal-entries/detail?journalEntryId=je-capital-1&runId=run-42"
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "ledger:run-42:acct-cash",
+            "targetNodeId": "rel:journal:je-cash-1",
+            "label": "used in",
+            "tone": "Default"
+          },
+          {
+            "sourceNodeId": "ledger:run-42:acct-investments",
+            "targetNodeId": "rel:journal:je-invest-1",
+            "label": "used in",
+            "tone": "Default"
+          },
+          {
+            "sourceNodeId": "ledger:run-42:acct-capital",
+            "targetNodeId": "rel:journal:je-capital-1",
+            "label": "used in",
+            "tone": "Default"
+          }
+        ]
+      }
+    },
+    "/api/loans/portfolio": {
+      "totalLoans": 4,
+      "activeLoans": 3,
+      "defaultedLoans": 1,
+      "nonPerformingLoans": 0,
+      "workoutLoans": 0,
+      "totalCommitment": 24000000,
+      "totalPrincipalOutstanding": 16850000,
+      "totalInterestAccruedUnpaid": 128400,
+      "totalPenaltyAccruedUnpaid": 15200,
+      "totalAvailableToDraw": 7150000,
+      "totalCollateralValue": 29400000,
+      "loans": [
+        {
+          "loanId": "3f1a6d2e-8c47-4b19-9f03-5a7c2e814d60",
+          "facilityName": "Senior Term Facility A",
+          "borrowerId": "9b2c4f18-7d35-4e62-a1c8-3f6d905b27ae",
+          "borrowerName": "Harbour Logistics",
+          "status": "Active",
+          "baseCurrency": "USD",
+          "commitmentAmount": 9000000,
+          "principalOutstanding": 6400000,
+          "interestAccruedUnpaid": 41200,
+          "penaltyAccruedUnpaid": 0,
+          "availableToDraw": 2600000,
+          "originationDate": "2025-02-14",
+          "maturityDate": "2030-02-14",
+          "lastAccrualDate": "2026-05-28",
+          "lastPaymentDate": "2026-05-01"
+        },
+        {
+          "loanId": "c5e70a91-4b62-49d8-8f13-2a6b48e0c375",
+          "facilityName": "Revolving Credit Facility B",
+          "borrowerId": "1d84e73a-52f9-4c07-b6e1-8c9507f3ab24",
+          "borrowerName": "Meridian Growth Partners",
+          "status": "Active",
+          "baseCurrency": "USD",
+          "commitmentAmount": 7500000,
+          "principalOutstanding": 4100000,
+          "interestAccruedUnpaid": 27600,
+          "penaltyAccruedUnpaid": 0,
+          "availableToDraw": 3400000,
+          "originationDate": "2025-07-01",
+          "maturityDate": "2028-07-01",
+          "lastAccrualDate": "2026-05-28",
+          "lastPaymentDate": "2026-05-15"
+        },
+        {
+          "loanId": "7a3d1c68-9e04-4f75-b28a-6d40e51c9832",
+          "facilityName": "Mezzanine Note C",
+          "borrowerId": "4e69b207-3a15-48cd-9072-b5813fe6a49c",
+          "borrowerName": "Cedarline Manufacturing",
+          "status": "Defaulted",
+          "baseCurrency": "USD",
+          "commitmentAmount": 5000000,
+          "principalOutstanding": 4850000,
+          "interestAccruedUnpaid": 48300,
+          "penaltyAccruedUnpaid": 15200,
+          "availableToDraw": 0,
+          "originationDate": "2024-09-30",
+          "maturityDate": "2027-09-30",
+          "lastAccrualDate": "2026-05-28",
+          "lastPaymentDate": "2026-01-31"
+        },
+        {
+          "loanId": "e0b94f35-6d81-4a27-8c53-9fa2b706d418",
+          "facilityName": "Bridge Facility D",
+          "borrowerId": "8c07d3b5-1f4e-4629-a83d-70b2e5c19f46",
+          "borrowerName": "Northgate Real Estate",
+          "status": "Active",
+          "baseCurrency": "EUR",
+          "commitmentAmount": 2500000,
+          "principalOutstanding": 1500000,
+          "interestAccruedUnpaid": 11300,
+          "penaltyAccruedUnpaid": 0,
+          "availableToDraw": 1000000,
+          "originationDate": "2026-01-12",
+          "maturityDate": "2027-01-12",
+          "lastAccrualDate": "2026-05-28",
+          "lastPaymentDate": null
+        }
+      ]
+    }
   }
 }

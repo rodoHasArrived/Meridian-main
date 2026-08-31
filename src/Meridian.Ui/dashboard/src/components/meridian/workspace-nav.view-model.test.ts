@@ -106,13 +106,13 @@ describe("workspace nav view model", () => {
       "/portfolio/attribution",
       "/portfolio/asset-detail",
       "/portfolio/brokerage-sync",
-      "/portfolio/cash-ladder"
+      "/portfolio/cash-ladder",
+      "/portfolio/family-office",
+      "/portfolio/loan-book"
     ]);
-    // Family Office is in UNWIRED_WORKSTATION_ROUTES because the screen is mounted without an
-    // entityStructure and can only render "not connected". It stays routable for deep links and
-    // old bookmarks, but must not appear in primary navigation — including while the operator is
-    // standing on it, which is exactly when a nav entry would look most trustworthy.
-    expect(portfolio?.subItems.find((item) => item.route === "/portfolio/family-office")).toBeUndefined();
+    // Family Office left UNWIRED_WORKSTATION_ROUTES once the screen started loading
+    // /api/workstation/family-office/overview, so it belongs in primary navigation again.
+    expect(portfolio?.subItems.find((item) => item.route === "/portfolio/family-office")).toBeDefined();
 
     const cashLadder = buildWorkspaceNavViewModel("/portfolio/cash-ladder")
       .items.find((item) => item.key === "portfolio")
@@ -147,6 +147,7 @@ describe("workspace nav view model", () => {
       "/accounting/ledger",
       "/accounting/journal-entries",
       "/accounting/capital-accounts",
+      "/accounting/capital-calls",
       "/accounting/security-master",
       "/accounting/statement-import",
       "/accounting/reconciliation",
@@ -161,7 +162,7 @@ describe("workspace nav view model", () => {
       group.items.map((item) => item.label)
     ])).toEqual([
       ["Close", ["Today", "Operations continuity", "Close calendar"]],
-      ["Records", ["Ledger explorer", "Adjustments", "Capital accounts", "Security Master"]],
+      ["Records", ["Ledger explorer", "Adjustments", "Capital accounts", "Capital calls", "Security Master"]],
       ["Reconciliation", ["Import statement", "Casework", "External GL"]],
       ["Review", ["Exceptions", "Approvals"]],
       ["Administration", ["Entity setup", "Configure"]]
@@ -322,7 +323,8 @@ describe("workspace nav view model", () => {
       "/strategy/covered-call",
       "/strategy/promotions",
       "/strategy/lab",
-      "/strategy/quant-lab"
+      "/strategy/quant-lab",
+      "/strategy/run-ledger"
     ]);
     expect(strategy?.subItems.find((item) => item.route === "/strategy/covered-call")).toMatchObject({
       label: "Covered call",

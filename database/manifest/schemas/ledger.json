@@ -16,6 +16,12 @@
   "comment": null,
   "comments": [
     {
+      "comment": "Single-row head of the accounting-action audit hash chain: the next sequence, the last entry hash, and the declared genesis boundary separating chained events from the pre-chain history that was appended before V_ledger_032 and which nothing ever protected. Locked FOR UPDATE and advanced inside the append transaction so concurrent writers cannot fork the chain.",
+      "fingerprint": "2559e9695ea90341f1cd97f7f81d9851a9d587bec525d982fecbe6b33bb2b332",
+      "object": "ledger.accounting_action_audit_chain_head",
+      "object_type": "table"
+    },
+    {
       "comment": "Operator assertions that a ledger book with no retained currency evidence transacted only in its base currency, and the currency-blind journal legs each assertion completed. Append-only: this is the authority for a repair the data alone could not determine.",
       "fingerprint": "662387c5ef335ca3a3bb6e0725e799c48edddff894143d6884c1c4ef37b4e94f",
       "object": "ledger.journal_leg_currency_affirmations",
@@ -385,6 +391,102 @@
       "target_schema": "ledger"
     },
     {
+      "fingerprint": "3603dafc9f618d6717e6342f08eac1fdf440fcc3d94d5d7b0329891377117ba3",
+      "kind": "normal",
+      "source": "ledger.ck_accounting_audit_chain_genesis on ledger.accounting_action_audit_chain_head",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.accounting_action_audit_chain_head.genesis_sequence",
+      "target_kind": "table column",
+      "target_name": "accounting_action_audit_chain_head",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "548a49f34b1983d22153925c12f78c7e5e388de9f783f59a043599230a68a0bd",
+      "kind": "normal",
+      "source": "ledger.ck_accounting_audit_chain_genesis on ledger.accounting_action_audit_chain_head",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.accounting_action_audit_chain_head.next_sequence",
+      "target_kind": "table column",
+      "target_name": "accounting_action_audit_chain_head",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "64b9a62e08919122bb5e491bf6835a5217a6baa5220d3fa2c400a7a0d9234c1a",
+      "kind": "normal",
+      "source": "ledger.ck_accounting_audit_chain_last_hash on ledger.accounting_action_audit_chain_head",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.accounting_action_audit_chain_head.last_hash",
+      "target_kind": "table column",
+      "target_name": "accounting_action_audit_chain_head",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "48897ff97aa3fbb445202c9963a2dc0d5a6fe51e349dfe276c46ec55b1d16943",
+      "kind": "normal",
+      "source": "ledger.ck_accounting_audit_chain_next_sequence on ledger.accounting_action_audit_chain_head",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.accounting_action_audit_chain_head.next_sequence",
+      "target_kind": "table column",
+      "target_name": "accounting_action_audit_chain_head",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "8da0d3928a8d0428f064046f381d92f244634cc53cd856b581c53e57379edba9",
+      "kind": "normal",
+      "source": "ledger.ck_accounting_audit_chain_singleton on ledger.accounting_action_audit_chain_head",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.accounting_action_audit_chain_head.chain_id",
+      "target_kind": "table column",
+      "target_name": "accounting_action_audit_chain_head",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "ebe2f0b114b2e8e7316a377341112b602200463d9b249a70b4dc3d35dc73af12",
+      "kind": "normal",
+      "source": "ledger.ck_accounting_audit_entry_hash_digest on ledger.accounting_action_audit_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.accounting_action_audit_events.entry_hash",
+      "target_kind": "table column",
+      "target_name": "accounting_action_audit_events",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "25837d1aad53cd859e4479cccd66057a018645373c9554952fb4dda78e525223",
+      "kind": "normal",
+      "source": "ledger.ck_accounting_audit_payload_hash_digest on ledger.accounting_action_audit_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.accounting_action_audit_events.payload_hash",
+      "target_kind": "table column",
+      "target_name": "accounting_action_audit_events",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "c90fbcfe276dc6e403a68141ce2156f0c3823591527766e1c2305d41ad01b417",
+      "kind": "normal",
+      "source": "ledger.ck_accounting_audit_previous_hash_digest on ledger.accounting_action_audit_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.accounting_action_audit_events.previous_hash",
+      "target_kind": "table column",
+      "target_name": "accounting_action_audit_events",
+      "target_schema": "ledger"
+    },
+    {
       "fingerprint": "708398d85c1b7792b62c5b9d91448efe6b90f2bd90bded74a615cd624c24a433",
       "kind": "normal",
       "source": "ledger.ck_accounting_periods_date_range on ledger.accounting_periods",
@@ -538,6 +640,18 @@
       "target": "ledger.journal_entries.posting_kind",
       "target_kind": "table column",
       "target_name": "journal_entries",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "5fd088d2cd463c1050236e98bfa783485b3003a66b7d62f644d617788ca75b8c",
+      "kind": "normal",
+      "source": "ledger.ck_journal_entry_integrity_seals_leg_count on ledger.journal_entry_integrity_seals",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.journal_entry_integrity_seals.leg_count",
+      "target_kind": "table column",
+      "target_name": "journal_entry_integrity_seals",
       "target_schema": "ledger"
     },
     {
@@ -1129,6 +1243,78 @@
       "target_schema": "ledger"
     },
     {
+      "fingerprint": "779b771b226f258f785e4cfd94b36451bf122a27b79fd3f44e519a0d7049279f",
+      "kind": "normal",
+      "source": "ledger.fk_journal_legs_journal_entry on ledger.journal_legs",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.journal_entries.journal_entry_id",
+      "target_kind": "table column",
+      "target_name": "journal_entries",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "6973fed1b69a0a792c8d904ca3f4e30ea209ae2ab540388a19b815d7d8a9ee9d",
+      "kind": "normal",
+      "source": "ledger.fk_journal_legs_journal_entry on ledger.journal_legs",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.journal_entries_journal_entry_id_key",
+      "target_kind": "index",
+      "target_name": "journal_entries_journal_entry_id_key",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "062038d159d8d22adfc6742be200b92c1c4bd0c53e0b74b1664bf5d818b5ab91",
+      "kind": "normal",
+      "source": "ledger.journal_entry_integrity_seals_journal_entry_id_fkey on ledger.journal_entry_integrity_seals",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.journal_entries.journal_entry_id",
+      "target_kind": "table column",
+      "target_name": "journal_entries",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "de381cda4f3e418087bcd339277fd54ba244f88d301d0c1b011eafea44b436fa",
+      "kind": "normal",
+      "source": "ledger.journal_entry_integrity_seals_journal_entry_id_fkey on ledger.journal_entry_integrity_seals",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.journal_entries_journal_entry_id_key",
+      "target_kind": "index",
+      "target_name": "journal_entries_journal_entry_id_key",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "b132e779e569add9ca17418e247acac8ad5bc422af74dd5cad239e0816bf34db",
+      "kind": "normal",
+      "source": "ledger.journal_entry_open_postings_journal_entry_id_fkey on ledger.journal_entry_open_postings",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.journal_entries.journal_entry_id",
+      "target_kind": "table column",
+      "target_name": "journal_entries",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "ca1971a163bb558b5f72fa4af3aa1036008efba61320ec3ab9287ce43d1758a9",
+      "kind": "normal",
+      "source": "ledger.journal_entry_open_postings_journal_entry_id_fkey on ledger.journal_entry_open_postings",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.journal_entries_journal_entry_id_key",
+      "target_kind": "index",
+      "target_name": "journal_entries_journal_entry_id_key",
+      "target_schema": "ledger"
+    },
+    {
       "fingerprint": "bdd7296f789a0ecc141215a1ecf8bb88a4bef529c4f4c3433da2afef78b45894",
       "kind": "normal",
       "source": "ledger.journal_leg_currency_affirmations_ledger_book_id_fkey on ledger.journal_leg_currency_affirmations",
@@ -1186,30 +1372,6 @@
       "target": "ledger.ledger_books",
       "target_kind": "relation",
       "target_name": "ledger_books",
-      "target_schema": "ledger"
-    },
-    {
-      "fingerprint": "5c9f2a1e38660c01967207ced5b8af181659cfa9be81e13429e3968f642a83b4",
-      "kind": "normal",
-      "source": "ledger.journal_legs_journal_entry_id_fkey on ledger.journal_legs",
-      "source_kind": "table constraint",
-      "source_name": null,
-      "source_schema": "ledger",
-      "target": "ledger.journal_entries.journal_entry_id",
-      "target_kind": "table column",
-      "target_name": "journal_entries",
-      "target_schema": "ledger"
-    },
-    {
-      "fingerprint": "40ddd355c0f64142bad13a83eab64c2bd441567fc973b0fbb958e2f28d3f4862",
-      "kind": "normal",
-      "source": "ledger.journal_legs_journal_entry_id_fkey on ledger.journal_legs",
-      "source_kind": "table constraint",
-      "source_name": null,
-      "source_schema": "ledger",
-      "target": "ledger.journal_entries_journal_entry_id_key",
-      "target_kind": "index",
-      "target_name": "journal_entries_journal_entry_id_key",
       "target_schema": "ledger"
     },
     {
@@ -1553,9 +1715,164 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "e24e3b56070d72a913b1a31b89913d51fe4a8dad53a75af5b9957ddf19950505",
+  "fingerprint": "167a27b209b2cb89a5c701a2cdb167a16609136e19689a2db875026a9ad5302d",
   "foreign_tables": [],
   "functions": [
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "59cbd813c9765970d7a13841b24255682fce7f21c032786abeed80a79112ce35",
+      "fingerprint": "7c6113cba8d3e0020c219f0b76598e6cf873090ff45b7b2b44d085be5522eea6",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "acquire_journal_entry_integrity_lock",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "void",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "acquire_journal_entry_integrity_lock(schema_name text, journal_entry_id uuid)",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "c8febf5dc1ce5615848e7c949efa065e0f0a88ad8cd8fdbd3aae9643ff6e20f0",
+      "fingerprint": "950938772a09aabbf21584b01d24cbd2b1fdf9c5d431dcf62d54ebcc8450bfd3",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "enforce_journal_entry_balance",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "enforce_journal_entry_balance()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "67013ef9eb6b3a478d741b24bab869515b6e85961c6b32820a8c1611d072ac32",
+      "fingerprint": "cf1d9321aafce82acb5267a85c0d9480845041efac6505a0dca3c1009524085c",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "guard_journal_open_posting_mutation",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "guard_journal_open_posting_mutation()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "9c685307602f78fb2e1058453e3eb59eb1d9f9d154df41e47b112a26adab7cf1",
+      "fingerprint": "0d63474ac8d0c885688bc58a5b517f697af11a080ac7c625acc3bcfe2b50c9b7",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "lock_new_journal_entry_integrity",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "lock_new_journal_entry_integrity()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "16b61c63d832e040a1825d3a1558fb8e5700c8bb8a6c3f561d54a4dda3af6d1f",
+      "fingerprint": "c400a1536b25d6f30ee3c75b8ad7e1da6ab8175b5bc795e5e0722d3cf0ff4b2d",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "mark_new_journal_entry_open",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "mark_new_journal_entry_open()",
+      "strict": false,
+      "volatility": "volatile"
+    },
     {
       "acl": [
         {
@@ -1586,6 +1903,161 @@
       "signature": "reject_atomic_tax_lot_audit_mutation()",
       "strict": false,
       "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "85417c1a19c8cfca924c407e68cd05b5d471e466eb9b4f078acebbb8aa3fa1df",
+      "fingerprint": "885cffaa167852e2cb1b592625903d8f949b67946ef477695003ea64452bc6f5",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "reject_journal_entry_mutation",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "reject_journal_entry_mutation()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "59da7e109782862443a3e34765c8cf6a0a1199f10a6e60c895f4fca03b200c5e",
+      "fingerprint": "4ffbc771941d13fcf20a374b8aafaf80deff36f0166126dc8efb591b12ab6f57",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "reject_journal_integrity_seal_mutation",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "reject_journal_integrity_seal_mutation()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "bc690f760aa629ae04920eeb8154807e6f993c9d6a034809b3409c8748e54f07",
+      "fingerprint": "08cc1ef5140fbdf012d9349268a802cb7d824ee93bb0c5679d11121af3448c98",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "reject_journal_leg_mutation",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "reject_journal_leg_mutation()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "1f9372952d1bde667555731fd0c18f3103bbfbd7cc472210798f8e97e790911f",
+      "fingerprint": "e8b6487a2f86bd2d86fda2f5d4ec4383c3de13f5b2ceb8eccc63f8d806d56581",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "reject_sealed_journal_leg_insert",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "reject_sealed_journal_leg_insert()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "ef99f5611c8b4f75d830bced4576bb671fc7981efafbab32d5fdb3ae6a83e191",
+      "fingerprint": "9637bff7255f56235f23fdde781867ee8b8075ffd0e3936a4daad023e89d7ab8",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "seal_complete_journal_entry",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "seal_complete_journal_entry()",
+      "strict": false,
+      "volatility": "volatile"
     }
   ],
   "logical_modules": [
@@ -1598,6 +2070,313 @@
   "policies": [],
   "procedures": [],
   "relations": [
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "smallint",
+          "default": null,
+          "fingerprint": "26cc88022f5330bd61f4471361a84b62040bb5df1c8b9de22079e06fbcc284d2",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "chain_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "int2",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": "1",
+          "fingerprint": "2307ae89bd57fae444ec6410db4b429a75054b03485e7bf2078762ce4d202baf",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "schema_version",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "1f4ef2101b3ad306b9bb96792975b8feb91e982b89915d91ffea96d246d1367b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "next_sequence",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "f9bff6096628fa4a5d7be9ed79f699761bc5445964a8eb938434b6bcaac01c32",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "last_hash",
+          "nullable": true,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": "1",
+          "fingerprint": "3737f2e870294f34fb963ba7fd7daba2005264ac908aed74cfdf0e4d4911d9e4",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "genesis_sequence",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": "0",
+          "fingerprint": "d814f8c71b9e8c67ef35c732968c3d5e4e998b3a702d24c858a4f7c3fda0cb25",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "pre_chain_event_count",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "36fd62e3bc1a033db59209ec946347af3edd1a3535462a3e3291c307646eea15",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "genesis_recorded_at_utc",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Single-row head of the accounting-action audit hash chain: the next sequence, the last entry hash, and the declared genesis boundary separating chained events from the pre-chain history that was appended before V_ledger_032 and which nothing ever protected. Locked FOR UPDATE and advanced inside the append transaction so concurrent writers cannot fork the chain.",
+      "constraints": [
+        {
+          "columns": [
+            "genesis_sequence",
+            "next_sequence"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (genesis_sequence > 0 AND next_sequence >= genesis_sequence)",
+          "delete_action": null,
+          "fingerprint": "e9ba89538cdbfcf6d914c82caa38e21f08b3fbf785910e2ac9b31b5d5dd8c1dc",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_accounting_audit_chain_genesis",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "last_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (last_hash IS NULL OR last_hash ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "d02b1665c16021e543b750a50de68c0ec18bf78f3cef2c9961ac53651292af49",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_accounting_audit_chain_last_hash",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "next_sequence"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (next_sequence > 0)",
+          "delete_action": null,
+          "fingerprint": "b80085c6be995a57a9349cfe371128e546d281de478dd10b1f320f063938099d",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_accounting_audit_chain_next_sequence",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "chain_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (chain_id = 1)",
+          "delete_action": null,
+          "fingerprint": "91c108c26fd7ded5a3bec8f83399c0080512a2036da6388426c0b039eba2d2ea",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_accounting_audit_chain_singleton",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "chain_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (chain_id)",
+          "delete_action": null,
+          "fingerprint": "076a5bbdb9c1c5666988c80d385e015578dd16c3be4b505972a1e886f3c1626c",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "accounting_action_audit_chain_head_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "ffba6fe11175af6dd315f54d961e7bdc73c762229a3da5e07c315d468ac2fbb5",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX accounting_action_audit_chain_head_pkey ON ledger.accounting_action_audit_chain_head USING btree (chain_id)",
+          "expression": null,
+          "fingerprint": "a7682f666ab8f87c558d5126d766a9a2be9435c60a89565f863a934f50221560",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "chain_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "accounting_action_audit_chain_head_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "accounting_action_audit_chain_head",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
     {
       "acl": [
         {
@@ -1867,10 +2646,134 @@
           "security_labels": [],
           "type_name": "text",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "bd76a28f51f9a92792f371b8d00879b7e7e8c1fa3d70e475a4d20a2ad6e10f3f",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "chain_sequence",
+          "nullable": true,
+          "ordinal_position": 15,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "dae3b9237ddcc51a4881fee2c4597c019992f013e54e7809564d2e5f2b0b4001",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload_hash",
+          "nullable": true,
+          "ordinal_position": 16,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "f9d07e980e3cf5bfa9a1bbe8d33f98af8fe985911e1b97b7a2e9c4ae02645adc",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "previous_hash",
+          "nullable": true,
+          "ordinal_position": 17,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "c2786e82ae10b708f0cdbb3e39fcd0421efb0a975037e9fba76fcf9830333b43",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "entry_hash",
+          "nullable": true,
+          "ordinal_position": 18,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
       "constraints": [
+        {
+          "columns": [
+            "entry_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (entry_hash IS NULL OR entry_hash ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "dce6cb7659c374866423ccafd4ce3377e127c60eef6862c2a5ce6a680ad43900",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_accounting_audit_entry_hash_digest",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "payload_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (payload_hash IS NULL OR payload_hash ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "defe0d8dbd37929bbaa544dba5effff18e26484377871c9e6fb16edf78894333",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_accounting_audit_payload_hash_digest",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "previous_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (previous_hash IS NULL OR previous_hash ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "04acf5c158a5e908e80829bf52f494134e251e8bc4cf1f7a669679a7d0a2da95",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_accounting_audit_previous_hash_digest",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
         {
           "columns": [
             "audit_event_id"
@@ -1894,7 +2797,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "2aad6bef33a6492011238f1def26c7a08340a121493ee8ba68db5c28b8dda81b",
+      "fingerprint": "52acc97a8db055fd295d0a384f0df75df040879559488c3d53d5c7249f65343b",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -2012,6 +2915,28 @@
           "ready": true,
           "security_labels": [],
           "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ux_accounting_audit_chain_sequence ON ledger.accounting_action_audit_events USING btree (chain_sequence) WHERE (chain_sequence IS NOT NULL)",
+          "expression": null,
+          "fingerprint": "6cf43531c51da98364a64d0595151d17d1d5dd1ba79c0f2e1d7db65ca8effa8a",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "chain_sequence"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ux_accounting_audit_chain_sequence",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "chain_sequence IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
           "valid": true
         }
       ],
@@ -5944,7 +6869,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "e129a93cf84370787042d4f3d34e378e7cc75709dc6b4e4d510cb0d3df664ae6",
+      "fingerprint": "ea733b3ee258239bbf5e5730800bbe47b2e5f02b6ad7a4e6ce1d1266c891707a",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -6334,7 +7259,94 @@
       "schema": "ledger",
       "security_labels": [],
       "sequence": null,
-      "triggers": []
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE CONSTRAINT TRIGGER ctrg_journal_entry_complete AFTER INSERT ON ledger.journal_entries DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION ledger.seal_complete_journal_entry()",
+          "definition_hash": "999d916207141d5fa17cbf75e4b8d6de0cb9ef1d031d066b68e7409b7bd20717",
+          "enabled": "origin",
+          "events": [
+            "insert"
+          ],
+          "fingerprint": "be7b67ee5e10fb0548e96535ea81f33d1999a6fd2c611fd4f9791f2b4fe11315",
+          "function_schema": "ledger",
+          "function_signature": "seal_complete_journal_entry()",
+          "level": "row",
+          "name": "ctrg_journal_entry_complete",
+          "relation": "journal_entries",
+          "schema": "ledger",
+          "timing": "after"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_entries_immutable BEFORE DELETE OR UPDATE ON ledger.journal_entries FOR EACH ROW EXECUTE FUNCTION ledger.reject_journal_entry_mutation()",
+          "definition_hash": "2901c7458844dd84345a802a7222c3632d5ad4b961e879351fa58b988e5f7925",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "dce57a42b8cafecb8a077efc23736a7d77504646b7c68c8b39d091ed11bb2f32",
+          "function_schema": "ledger",
+          "function_signature": "reject_journal_entry_mutation()",
+          "level": "row",
+          "name": "trg_journal_entries_immutable",
+          "relation": "journal_entries",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_entries_integrity_lock BEFORE INSERT ON ledger.journal_entries FOR EACH ROW EXECUTE FUNCTION ledger.lock_new_journal_entry_integrity()",
+          "definition_hash": "946f8dd97befceaf814addd10317d46afd592839815706919f5708538cd900b6",
+          "enabled": "origin",
+          "events": [
+            "insert"
+          ],
+          "fingerprint": "28b5ddd19e33b08ef27594052dd76bef2a258f2606fae3cabe814a70495589fb",
+          "function_schema": "ledger",
+          "function_signature": "lock_new_journal_entry_integrity()",
+          "level": "row",
+          "name": "trg_journal_entries_integrity_lock",
+          "relation": "journal_entries",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_entries_mark_open AFTER INSERT ON ledger.journal_entries FOR EACH ROW EXECUTE FUNCTION ledger.mark_new_journal_entry_open()",
+          "definition_hash": "8a0b8f79bf2c3b3b02eed02c5ef777f0e23926d9f014f5146992777ea92b0d2e",
+          "enabled": "origin",
+          "events": [
+            "insert"
+          ],
+          "fingerprint": "c75d766404d4d75a37e586371ebc29fc010db8d06fe76d33ffb22f00f05a31ed",
+          "function_schema": "ledger",
+          "function_signature": "mark_new_journal_entry_open()",
+          "level": "row",
+          "name": "trg_journal_entries_mark_open",
+          "relation": "journal_entries",
+          "schema": "ledger",
+          "timing": "after"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_entries_truncate_guard BEFORE TRUNCATE ON ledger.journal_entries FOR EACH STATEMENT EXECUTE FUNCTION ledger.reject_journal_entry_mutation()",
+          "definition_hash": "b59af69dc687e35f82ba4a9ab50e1cebe16b29d3ddbcfc8760f5f2eed037c3f4",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "5b4af1e0b343a38c07a1de1b5be7825496da2ee5f21754fec18486db726992b3",
+          "function_schema": "ledger",
+          "function_signature": "reject_journal_entry_mutation()",
+          "level": "statement",
+          "name": "trg_journal_entries_truncate_guard",
+          "relation": "journal_entries",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -6388,6 +7400,451 @@
         "start": 1
       },
       "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "762d6f2ee1f48ec3d0d765bb62bbb2eae1704ee18c320e264baca62c0860aa19",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "journal_entry_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "25cd2ca45da677dd0121ebb7ed673cfa705075039391a40aa3d7ebf7a78615bf",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "leg_count",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "dee684e3a3e532520adc82d0789630b0335d1664ccb7f982086b4c34f60d06f4",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "sealed_at",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "leg_count"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (leg_count >= 2)",
+          "delete_action": null,
+          "fingerprint": "b0a61fa8b9431b9b2664abfb74d353597e40f6987f1dfc2f8ef1851f9d9a1c6e",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_journal_entry_integrity_seals_leg_count",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "journal_entry_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (journal_entry_id) REFERENCES ledger.journal_entries(journal_entry_id)",
+          "delete_action": "no_action",
+          "fingerprint": "0c7f6d2bc589da49cb0809aa7c0f18af8aba5ce635d921f14aa3693646aa7eba",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "journal_entry_integrity_seals_journal_entry_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "journal_entry_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "journal_entries",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "journal_entry_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (journal_entry_id)",
+          "delete_action": null,
+          "fingerprint": "2b1766a6c67bb7c8f37ddf052e18e095727ae84dcf1c089809bbcab62f9e4778",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "journal_entry_integrity_seals_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "f6f144eaf947841b29676a4bf0f13d9041256869de2751085c188fa99a0200ea",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX journal_entry_integrity_seals_pkey ON ledger.journal_entry_integrity_seals USING btree (journal_entry_id)",
+          "expression": null,
+          "fingerprint": "b5f2660d92733c9bddff649d59ed9b45291710f982f72ec34b66883acc42a935",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "journal_entry_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "journal_entry_integrity_seals_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "journal_entry_integrity_seals",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_integrity_seals_immutable BEFORE DELETE OR UPDATE ON ledger.journal_entry_integrity_seals FOR EACH ROW EXECUTE FUNCTION ledger.reject_journal_integrity_seal_mutation()",
+          "definition_hash": "715370368b71334eeb8400a2d8172b589dc702affa6874a5ee34057600b30976",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "9eb2b099cffcd7c26bd080566572f3359094a483bbd00b5e95672bd4c3fbe1ea",
+          "function_schema": "ledger",
+          "function_signature": "reject_journal_integrity_seal_mutation()",
+          "level": "row",
+          "name": "trg_journal_integrity_seals_immutable",
+          "relation": "journal_entry_integrity_seals",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_integrity_seals_truncate_guard BEFORE TRUNCATE ON ledger.journal_entry_integrity_seals FOR EACH STATEMENT EXECUTE FUNCTION ledger.reject_journal_integrity_seal_mutation()",
+          "definition_hash": "418ffe89f1ca06718140c56d9470aebd414df02a3263724a6d234d6a3438faf2",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "4ad100da336941a96f629d8ac4a1d8c79230055135eadf6e97173d6bf990eb7c",
+          "function_schema": "ledger",
+          "function_signature": "reject_journal_integrity_seal_mutation()",
+          "level": "statement",
+          "name": "trg_journal_integrity_seals_truncate_guard",
+          "relation": "journal_entry_integrity_seals",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "762d6f2ee1f48ec3d0d765bb62bbb2eae1704ee18c320e264baca62c0860aa19",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "journal_entry_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "xid8",
+          "default": null,
+          "fingerprint": "3b38240dfe371f0af7eb1ab5bfbd48c92e4fb7b1ba539eee86a1e495dff2ea3f",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "opening_xid",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "xid8",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "journal_entry_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (journal_entry_id) REFERENCES ledger.journal_entries(journal_entry_id)",
+          "delete_action": "no_action",
+          "fingerprint": "017ed528b5480aeb11f71eb839568de8ba9a80e3cfaa721a68b407c5c4ad0ec2",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "journal_entry_open_postings_journal_entry_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "journal_entry_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "journal_entries",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "journal_entry_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (journal_entry_id)",
+          "delete_action": null,
+          "fingerprint": "ebffc596d240b7f16f9d0b7be488b894f2d554d27c0924a127d5e32e78c5e670",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "journal_entry_open_postings_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "483dc41f0afefab01e05d6f9e0761d2560bc15826c7b82d8215acd57b995a593",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX journal_entry_open_postings_pkey ON ledger.journal_entry_open_postings USING btree (journal_entry_id)",
+          "expression": null,
+          "fingerprint": "ef8aa08b6f67b732cfbcb88dc52128091e03300909b8573e0252b1edf1188fca",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "journal_entry_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "journal_entry_open_postings_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "journal_entry_open_postings",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_open_postings_guard BEFORE INSERT OR DELETE OR UPDATE ON ledger.journal_entry_open_postings FOR EACH ROW EXECUTE FUNCTION ledger.guard_journal_open_posting_mutation()",
+          "definition_hash": "2808aa7d972db80f1a0df22d970f18e863ff463851de19d0d0989a7abdd1a0c3",
+          "enabled": "origin",
+          "events": [
+            "insert",
+            "delete",
+            "update"
+          ],
+          "fingerprint": "6c518fe10299caa4c2e6d1080fe27371ba8c45126e83c681dabd6b05e255d8f9",
+          "function_schema": "ledger",
+          "function_signature": "guard_journal_open_posting_mutation()",
+          "level": "row",
+          "name": "trg_journal_open_postings_guard",
+          "relation": "journal_entry_open_postings",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_open_postings_truncate_guard BEFORE TRUNCATE ON ledger.journal_entry_open_postings FOR EACH STATEMENT EXECUTE FUNCTION ledger.guard_journal_open_posting_mutation()",
+          "definition_hash": "fe3a20c2b8d065380273b74c40069408903e4e9c45424cbe65a12ba3ce067d2d",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "5737e01217c3b1cc6cee15c4600caa8da56b1f61d75ca34a02ebddbbf5fe0daf",
+          "function_schema": "ledger",
+          "function_signature": "guard_journal_open_posting_mutation()",
+          "level": "statement",
+          "name": "trg_journal_open_postings_truncate_guard",
+          "relation": "journal_entry_open_postings",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -7540,12 +8997,12 @@
           ],
           "comment": null,
           "deferrable": false,
-          "definition": "FOREIGN KEY (journal_entry_id) REFERENCES ledger.journal_entries(journal_entry_id) ON DELETE CASCADE",
-          "delete_action": "cascade",
-          "fingerprint": "1df05633dab9e260508ce902280eb8ce7fc16cd5eefe7deb0c30137cbe9a4402",
+          "definition": "FOREIGN KEY (journal_entry_id) REFERENCES ledger.journal_entries(journal_entry_id)",
+          "delete_action": "no_action",
+          "fingerprint": "651c2a24b022d7f51f0fa38bdb84964351608bf5a564f37e83cd741da946218f",
           "initially_deferred": false,
           "match_type": "simple",
-          "name": "journal_legs_journal_entry_id_fkey",
+          "name": "fk_journal_legs_journal_entry",
           "no_inherit": true,
           "referenced_columns": [
             "journal_entry_id"
@@ -7600,7 +9057,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "49dbc4129d3d9da2963f617f2e7f65876fa929249708895d9667ffa22aaa92cc",
+      "fingerprint": "d5e184c5b7f10b3646ce5b308ef0664d1392b0c47b97dea45f4d62346449eb90",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -7823,7 +9280,77 @@
       "schema": "ledger",
       "security_labels": [],
       "sequence": null,
-      "triggers": []
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE CONSTRAINT TRIGGER ctrg_journal_legs_entry_balanced AFTER INSERT ON ledger.journal_legs DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION ledger.enforce_journal_entry_balance()",
+          "definition_hash": "0f6f4b4020b90e845b378d84bf77b65f6b3029b4a393d36287cc47126a9f4575",
+          "enabled": "origin",
+          "events": [
+            "insert"
+          ],
+          "fingerprint": "cc09759b8afe8bd2baab383b516a4161d01f1917e725ea121323c1111e5db82d",
+          "function_schema": "ledger",
+          "function_signature": "enforce_journal_entry_balance()",
+          "level": "row",
+          "name": "ctrg_journal_legs_entry_balanced",
+          "relation": "journal_legs",
+          "schema": "ledger",
+          "timing": "after"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_legs_immutable BEFORE DELETE OR UPDATE ON ledger.journal_legs FOR EACH ROW EXECUTE FUNCTION ledger.reject_journal_leg_mutation()",
+          "definition_hash": "10d9769b4255b06d4feadaa096ff2975b91325dc89c43aaa44541b8bfa69dd43",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "8bffc69e3d79df0f761bdfcef481cffc48afa8a0c091b7188ec02803fa84d855",
+          "function_schema": "ledger",
+          "function_signature": "reject_journal_leg_mutation()",
+          "level": "row",
+          "name": "trg_journal_legs_immutable",
+          "relation": "journal_legs",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_legs_reject_sealed_insert BEFORE INSERT ON ledger.journal_legs FOR EACH ROW EXECUTE FUNCTION ledger.reject_sealed_journal_leg_insert()",
+          "definition_hash": "2add4c229cf8ce9036c7c2f41f74e4dcfe1726aa7db87981453cae95af956f90",
+          "enabled": "origin",
+          "events": [
+            "insert"
+          ],
+          "fingerprint": "d3ab465718535033b83d0d65842af27af4cd5aa3b54e9a595d68cbea97f1c1c1",
+          "function_schema": "ledger",
+          "function_signature": "reject_sealed_journal_leg_insert()",
+          "level": "row",
+          "name": "trg_journal_legs_reject_sealed_insert",
+          "relation": "journal_legs",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_legs_truncate_guard BEFORE TRUNCATE ON ledger.journal_legs FOR EACH STATEMENT EXECUTE FUNCTION ledger.reject_journal_leg_mutation()",
+          "definition_hash": "3c4307326b77c4fcd366e7277dcef27937b19e5ef1f446aad0304a4789d028a7",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "195b704fddd21543cbe1321c673deb29e151a7868285b1be5e3745a3ac9c8d8d",
+          "function_schema": "ledger",
+          "function_signature": "reject_journal_leg_mutation()",
+          "level": "statement",
+          "name": "trg_journal_legs_truncate_guard",
+          "relation": "journal_legs",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -12557,6 +14084,14 @@
   "row_level_security": [
     {
       "enabled": false,
+      "fingerprint": "8364f879558361242599ded4edd9139f09a10fc537b93eef5561ddb0cb7f9168",
+      "forced": false,
+      "policies": [],
+      "relation": "accounting_action_audit_chain_head",
+      "schema": "ledger"
+    },
+    {
+      "enabled": false,
       "fingerprint": "1adc93769a440d2a976aa61bed69ac53df7a35bc5c3ce7cc7e418a4b813f3a33",
       "forced": false,
       "policies": [],
@@ -12641,6 +14176,22 @@
       "forced": false,
       "policies": [],
       "relation": "journal_entries",
+      "schema": "ledger"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "e06e115b36a1e176830b4759473be9f1f5077340f25c68fb6666f208ba82f1e5",
+      "forced": false,
+      "policies": [],
+      "relation": "journal_entry_integrity_seals",
+      "schema": "ledger"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "6ce016f35c3f6dc88b1063764a6efb3734bbe4fb2e28e8bd0b6c2f130f955880",
+      "forced": false,
+      "policies": [],
+      "relation": "journal_entry_open_postings",
       "schema": "ledger"
     },
     {
@@ -12789,6 +14340,313 @@
     }
   ],
   "tables": [
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "smallint",
+          "default": null,
+          "fingerprint": "26cc88022f5330bd61f4471361a84b62040bb5df1c8b9de22079e06fbcc284d2",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "chain_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "int2",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": "1",
+          "fingerprint": "2307ae89bd57fae444ec6410db4b429a75054b03485e7bf2078762ce4d202baf",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "schema_version",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "1f4ef2101b3ad306b9bb96792975b8feb91e982b89915d91ffea96d246d1367b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "next_sequence",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "f9bff6096628fa4a5d7be9ed79f699761bc5445964a8eb938434b6bcaac01c32",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "last_hash",
+          "nullable": true,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": "1",
+          "fingerprint": "3737f2e870294f34fb963ba7fd7daba2005264ac908aed74cfdf0e4d4911d9e4",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "genesis_sequence",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": "0",
+          "fingerprint": "d814f8c71b9e8c67ef35c732968c3d5e4e998b3a702d24c858a4f7c3fda0cb25",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "pre_chain_event_count",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "36fd62e3bc1a033db59209ec946347af3edd1a3535462a3e3291c307646eea15",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "genesis_recorded_at_utc",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Single-row head of the accounting-action audit hash chain: the next sequence, the last entry hash, and the declared genesis boundary separating chained events from the pre-chain history that was appended before V_ledger_032 and which nothing ever protected. Locked FOR UPDATE and advanced inside the append transaction so concurrent writers cannot fork the chain.",
+      "constraints": [
+        {
+          "columns": [
+            "genesis_sequence",
+            "next_sequence"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (genesis_sequence > 0 AND next_sequence >= genesis_sequence)",
+          "delete_action": null,
+          "fingerprint": "e9ba89538cdbfcf6d914c82caa38e21f08b3fbf785910e2ac9b31b5d5dd8c1dc",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_accounting_audit_chain_genesis",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "last_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (last_hash IS NULL OR last_hash ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "d02b1665c16021e543b750a50de68c0ec18bf78f3cef2c9961ac53651292af49",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_accounting_audit_chain_last_hash",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "next_sequence"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (next_sequence > 0)",
+          "delete_action": null,
+          "fingerprint": "b80085c6be995a57a9349cfe371128e546d281de478dd10b1f320f063938099d",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_accounting_audit_chain_next_sequence",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "chain_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (chain_id = 1)",
+          "delete_action": null,
+          "fingerprint": "91c108c26fd7ded5a3bec8f83399c0080512a2036da6388426c0b039eba2d2ea",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_accounting_audit_chain_singleton",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "chain_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (chain_id)",
+          "delete_action": null,
+          "fingerprint": "076a5bbdb9c1c5666988c80d385e015578dd16c3be4b505972a1e886f3c1626c",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "accounting_action_audit_chain_head_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "ffba6fe11175af6dd315f54d961e7bdc73c762229a3da5e07c315d468ac2fbb5",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX accounting_action_audit_chain_head_pkey ON ledger.accounting_action_audit_chain_head USING btree (chain_id)",
+          "expression": null,
+          "fingerprint": "a7682f666ab8f87c558d5126d766a9a2be9435c60a89565f863a934f50221560",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "chain_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "accounting_action_audit_chain_head_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "accounting_action_audit_chain_head",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
     {
       "acl": [
         {
@@ -13058,10 +14916,134 @@
           "security_labels": [],
           "type_name": "text",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "bd76a28f51f9a92792f371b8d00879b7e7e8c1fa3d70e475a4d20a2ad6e10f3f",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "chain_sequence",
+          "nullable": true,
+          "ordinal_position": 15,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "dae3b9237ddcc51a4881fee2c4597c019992f013e54e7809564d2e5f2b0b4001",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload_hash",
+          "nullable": true,
+          "ordinal_position": 16,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "f9d07e980e3cf5bfa9a1bbe8d33f98af8fe985911e1b97b7a2e9c4ae02645adc",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "previous_hash",
+          "nullable": true,
+          "ordinal_position": 17,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "c2786e82ae10b708f0cdbb3e39fcd0421efb0a975037e9fba76fcf9830333b43",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "entry_hash",
+          "nullable": true,
+          "ordinal_position": 18,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
       "constraints": [
+        {
+          "columns": [
+            "entry_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (entry_hash IS NULL OR entry_hash ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "dce6cb7659c374866423ccafd4ce3377e127c60eef6862c2a5ce6a680ad43900",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_accounting_audit_entry_hash_digest",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "payload_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (payload_hash IS NULL OR payload_hash ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "defe0d8dbd37929bbaa544dba5effff18e26484377871c9e6fb16edf78894333",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_accounting_audit_payload_hash_digest",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "previous_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (previous_hash IS NULL OR previous_hash ~ '^[0-9a-f]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "04acf5c158a5e908e80829bf52f494134e251e8bc4cf1f7a669679a7d0a2da95",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_accounting_audit_previous_hash_digest",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
         {
           "columns": [
             "audit_event_id"
@@ -13085,7 +15067,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "2aad6bef33a6492011238f1def26c7a08340a121493ee8ba68db5c28b8dda81b",
+      "fingerprint": "52acc97a8db055fd295d0a384f0df75df040879559488c3d53d5c7249f65343b",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -13203,6 +15185,28 @@
           "ready": true,
           "security_labels": [],
           "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ux_accounting_audit_chain_sequence ON ledger.accounting_action_audit_events USING btree (chain_sequence) WHERE (chain_sequence IS NOT NULL)",
+          "expression": null,
+          "fingerprint": "6cf43531c51da98364a64d0595151d17d1d5dd1ba79c0f2e1d7db65ca8effa8a",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "chain_sequence"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ux_accounting_audit_chain_sequence",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "chain_sequence IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
           "valid": true
         }
       ],
@@ -17135,7 +19139,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "e129a93cf84370787042d4f3d34e378e7cc75709dc6b4e4d510cb0d3df664ae6",
+      "fingerprint": "ea733b3ee258239bbf5e5730800bbe47b2e5f02b6ad7a4e6ce1d1266c891707a",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -17525,7 +19529,539 @@
       "schema": "ledger",
       "security_labels": [],
       "sequence": null,
-      "triggers": []
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE CONSTRAINT TRIGGER ctrg_journal_entry_complete AFTER INSERT ON ledger.journal_entries DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION ledger.seal_complete_journal_entry()",
+          "definition_hash": "999d916207141d5fa17cbf75e4b8d6de0cb9ef1d031d066b68e7409b7bd20717",
+          "enabled": "origin",
+          "events": [
+            "insert"
+          ],
+          "fingerprint": "be7b67ee5e10fb0548e96535ea81f33d1999a6fd2c611fd4f9791f2b4fe11315",
+          "function_schema": "ledger",
+          "function_signature": "seal_complete_journal_entry()",
+          "level": "row",
+          "name": "ctrg_journal_entry_complete",
+          "relation": "journal_entries",
+          "schema": "ledger",
+          "timing": "after"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_entries_immutable BEFORE DELETE OR UPDATE ON ledger.journal_entries FOR EACH ROW EXECUTE FUNCTION ledger.reject_journal_entry_mutation()",
+          "definition_hash": "2901c7458844dd84345a802a7222c3632d5ad4b961e879351fa58b988e5f7925",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "dce57a42b8cafecb8a077efc23736a7d77504646b7c68c8b39d091ed11bb2f32",
+          "function_schema": "ledger",
+          "function_signature": "reject_journal_entry_mutation()",
+          "level": "row",
+          "name": "trg_journal_entries_immutable",
+          "relation": "journal_entries",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_entries_integrity_lock BEFORE INSERT ON ledger.journal_entries FOR EACH ROW EXECUTE FUNCTION ledger.lock_new_journal_entry_integrity()",
+          "definition_hash": "946f8dd97befceaf814addd10317d46afd592839815706919f5708538cd900b6",
+          "enabled": "origin",
+          "events": [
+            "insert"
+          ],
+          "fingerprint": "28b5ddd19e33b08ef27594052dd76bef2a258f2606fae3cabe814a70495589fb",
+          "function_schema": "ledger",
+          "function_signature": "lock_new_journal_entry_integrity()",
+          "level": "row",
+          "name": "trg_journal_entries_integrity_lock",
+          "relation": "journal_entries",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_entries_mark_open AFTER INSERT ON ledger.journal_entries FOR EACH ROW EXECUTE FUNCTION ledger.mark_new_journal_entry_open()",
+          "definition_hash": "8a0b8f79bf2c3b3b02eed02c5ef777f0e23926d9f014f5146992777ea92b0d2e",
+          "enabled": "origin",
+          "events": [
+            "insert"
+          ],
+          "fingerprint": "c75d766404d4d75a37e586371ebc29fc010db8d06fe76d33ffb22f00f05a31ed",
+          "function_schema": "ledger",
+          "function_signature": "mark_new_journal_entry_open()",
+          "level": "row",
+          "name": "trg_journal_entries_mark_open",
+          "relation": "journal_entries",
+          "schema": "ledger",
+          "timing": "after"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_entries_truncate_guard BEFORE TRUNCATE ON ledger.journal_entries FOR EACH STATEMENT EXECUTE FUNCTION ledger.reject_journal_entry_mutation()",
+          "definition_hash": "b59af69dc687e35f82ba4a9ab50e1cebe16b29d3ddbcfc8760f5f2eed037c3f4",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "5b4af1e0b343a38c07a1de1b5be7825496da2ee5f21754fec18486db726992b3",
+          "function_schema": "ledger",
+          "function_signature": "reject_journal_entry_mutation()",
+          "level": "statement",
+          "name": "trg_journal_entries_truncate_guard",
+          "relation": "journal_entries",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "762d6f2ee1f48ec3d0d765bb62bbb2eae1704ee18c320e264baca62c0860aa19",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "journal_entry_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "25cd2ca45da677dd0121ebb7ed673cfa705075039391a40aa3d7ebf7a78615bf",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "leg_count",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "dee684e3a3e532520adc82d0789630b0335d1664ccb7f982086b4c34f60d06f4",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "sealed_at",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "leg_count"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (leg_count >= 2)",
+          "delete_action": null,
+          "fingerprint": "b0a61fa8b9431b9b2664abfb74d353597e40f6987f1dfc2f8ef1851f9d9a1c6e",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_journal_entry_integrity_seals_leg_count",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "journal_entry_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (journal_entry_id) REFERENCES ledger.journal_entries(journal_entry_id)",
+          "delete_action": "no_action",
+          "fingerprint": "0c7f6d2bc589da49cb0809aa7c0f18af8aba5ce635d921f14aa3693646aa7eba",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "journal_entry_integrity_seals_journal_entry_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "journal_entry_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "journal_entries",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "journal_entry_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (journal_entry_id)",
+          "delete_action": null,
+          "fingerprint": "2b1766a6c67bb7c8f37ddf052e18e095727ae84dcf1c089809bbcab62f9e4778",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "journal_entry_integrity_seals_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "f6f144eaf947841b29676a4bf0f13d9041256869de2751085c188fa99a0200ea",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX journal_entry_integrity_seals_pkey ON ledger.journal_entry_integrity_seals USING btree (journal_entry_id)",
+          "expression": null,
+          "fingerprint": "b5f2660d92733c9bddff649d59ed9b45291710f982f72ec34b66883acc42a935",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "journal_entry_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "journal_entry_integrity_seals_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "journal_entry_integrity_seals",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_integrity_seals_immutable BEFORE DELETE OR UPDATE ON ledger.journal_entry_integrity_seals FOR EACH ROW EXECUTE FUNCTION ledger.reject_journal_integrity_seal_mutation()",
+          "definition_hash": "715370368b71334eeb8400a2d8172b589dc702affa6874a5ee34057600b30976",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "9eb2b099cffcd7c26bd080566572f3359094a483bbd00b5e95672bd4c3fbe1ea",
+          "function_schema": "ledger",
+          "function_signature": "reject_journal_integrity_seal_mutation()",
+          "level": "row",
+          "name": "trg_journal_integrity_seals_immutable",
+          "relation": "journal_entry_integrity_seals",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_integrity_seals_truncate_guard BEFORE TRUNCATE ON ledger.journal_entry_integrity_seals FOR EACH STATEMENT EXECUTE FUNCTION ledger.reject_journal_integrity_seal_mutation()",
+          "definition_hash": "418ffe89f1ca06718140c56d9470aebd414df02a3263724a6d234d6a3438faf2",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "4ad100da336941a96f629d8ac4a1d8c79230055135eadf6e97173d6bf990eb7c",
+          "function_schema": "ledger",
+          "function_signature": "reject_journal_integrity_seal_mutation()",
+          "level": "statement",
+          "name": "trg_journal_integrity_seals_truncate_guard",
+          "relation": "journal_entry_integrity_seals",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "762d6f2ee1f48ec3d0d765bb62bbb2eae1704ee18c320e264baca62c0860aa19",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "journal_entry_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "xid8",
+          "default": null,
+          "fingerprint": "3b38240dfe371f0af7eb1ab5bfbd48c92e4fb7b1ba539eee86a1e495dff2ea3f",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "opening_xid",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "xid8",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "journal_entry_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (journal_entry_id) REFERENCES ledger.journal_entries(journal_entry_id)",
+          "delete_action": "no_action",
+          "fingerprint": "017ed528b5480aeb11f71eb839568de8ba9a80e3cfaa721a68b407c5c4ad0ec2",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "journal_entry_open_postings_journal_entry_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "journal_entry_id"
+          ],
+          "referenced_schema": "ledger",
+          "referenced_table": "journal_entries",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "journal_entry_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (journal_entry_id)",
+          "delete_action": null,
+          "fingerprint": "ebffc596d240b7f16f9d0b7be488b894f2d554d27c0924a127d5e32e78c5e670",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "journal_entry_open_postings_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "483dc41f0afefab01e05d6f9e0761d2560bc15826c7b82d8215acd57b995a593",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX journal_entry_open_postings_pkey ON ledger.journal_entry_open_postings USING btree (journal_entry_id)",
+          "expression": null,
+          "fingerprint": "ef8aa08b6f67b732cfbcb88dc52128091e03300909b8573e0252b1edf1188fca",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "journal_entry_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "journal_entry_open_postings_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "journal_entry_open_postings",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_open_postings_guard BEFORE INSERT OR DELETE OR UPDATE ON ledger.journal_entry_open_postings FOR EACH ROW EXECUTE FUNCTION ledger.guard_journal_open_posting_mutation()",
+          "definition_hash": "2808aa7d972db80f1a0df22d970f18e863ff463851de19d0d0989a7abdd1a0c3",
+          "enabled": "origin",
+          "events": [
+            "insert",
+            "delete",
+            "update"
+          ],
+          "fingerprint": "6c518fe10299caa4c2e6d1080fe27371ba8c45126e83c681dabd6b05e255d8f9",
+          "function_schema": "ledger",
+          "function_signature": "guard_journal_open_posting_mutation()",
+          "level": "row",
+          "name": "trg_journal_open_postings_guard",
+          "relation": "journal_entry_open_postings",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_open_postings_truncate_guard BEFORE TRUNCATE ON ledger.journal_entry_open_postings FOR EACH STATEMENT EXECUTE FUNCTION ledger.guard_journal_open_posting_mutation()",
+          "definition_hash": "fe3a20c2b8d065380273b74c40069408903e4e9c45424cbe65a12ba3ce067d2d",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "5737e01217c3b1cc6cee15c4600caa8da56b1f61d75ca34a02ebddbbf5fe0daf",
+          "function_schema": "ledger",
+          "function_signature": "guard_journal_open_posting_mutation()",
+          "level": "statement",
+          "name": "trg_journal_open_postings_truncate_guard",
+          "relation": "journal_entry_open_postings",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -18480,12 +21016,12 @@
           ],
           "comment": null,
           "deferrable": false,
-          "definition": "FOREIGN KEY (journal_entry_id) REFERENCES ledger.journal_entries(journal_entry_id) ON DELETE CASCADE",
-          "delete_action": "cascade",
-          "fingerprint": "1df05633dab9e260508ce902280eb8ce7fc16cd5eefe7deb0c30137cbe9a4402",
+          "definition": "FOREIGN KEY (journal_entry_id) REFERENCES ledger.journal_entries(journal_entry_id)",
+          "delete_action": "no_action",
+          "fingerprint": "651c2a24b022d7f51f0fa38bdb84964351608bf5a564f37e83cd741da946218f",
           "initially_deferred": false,
           "match_type": "simple",
-          "name": "journal_legs_journal_entry_id_fkey",
+          "name": "fk_journal_legs_journal_entry",
           "no_inherit": true,
           "referenced_columns": [
             "journal_entry_id"
@@ -18540,7 +21076,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "49dbc4129d3d9da2963f617f2e7f65876fa929249708895d9667ffa22aaa92cc",
+      "fingerprint": "d5e184c5b7f10b3646ce5b308ef0664d1392b0c47b97dea45f4d62346449eb90",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -18763,7 +21299,77 @@
       "schema": "ledger",
       "security_labels": [],
       "sequence": null,
-      "triggers": []
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE CONSTRAINT TRIGGER ctrg_journal_legs_entry_balanced AFTER INSERT ON ledger.journal_legs DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION ledger.enforce_journal_entry_balance()",
+          "definition_hash": "0f6f4b4020b90e845b378d84bf77b65f6b3029b4a393d36287cc47126a9f4575",
+          "enabled": "origin",
+          "events": [
+            "insert"
+          ],
+          "fingerprint": "cc09759b8afe8bd2baab383b516a4161d01f1917e725ea121323c1111e5db82d",
+          "function_schema": "ledger",
+          "function_signature": "enforce_journal_entry_balance()",
+          "level": "row",
+          "name": "ctrg_journal_legs_entry_balanced",
+          "relation": "journal_legs",
+          "schema": "ledger",
+          "timing": "after"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_legs_immutable BEFORE DELETE OR UPDATE ON ledger.journal_legs FOR EACH ROW EXECUTE FUNCTION ledger.reject_journal_leg_mutation()",
+          "definition_hash": "10d9769b4255b06d4feadaa096ff2975b91325dc89c43aaa44541b8bfa69dd43",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "8bffc69e3d79df0f761bdfcef481cffc48afa8a0c091b7188ec02803fa84d855",
+          "function_schema": "ledger",
+          "function_signature": "reject_journal_leg_mutation()",
+          "level": "row",
+          "name": "trg_journal_legs_immutable",
+          "relation": "journal_legs",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_legs_reject_sealed_insert BEFORE INSERT ON ledger.journal_legs FOR EACH ROW EXECUTE FUNCTION ledger.reject_sealed_journal_leg_insert()",
+          "definition_hash": "2add4c229cf8ce9036c7c2f41f74e4dcfe1726aa7db87981453cae95af956f90",
+          "enabled": "origin",
+          "events": [
+            "insert"
+          ],
+          "fingerprint": "d3ab465718535033b83d0d65842af27af4cd5aa3b54e9a595d68cbea97f1c1c1",
+          "function_schema": "ledger",
+          "function_signature": "reject_sealed_journal_leg_insert()",
+          "level": "row",
+          "name": "trg_journal_legs_reject_sealed_insert",
+          "relation": "journal_legs",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_journal_legs_truncate_guard BEFORE TRUNCATE ON ledger.journal_legs FOR EACH STATEMENT EXECUTE FUNCTION ledger.reject_journal_leg_mutation()",
+          "definition_hash": "3c4307326b77c4fcd366e7277dcef27937b19e5ef1f446aad0304a4789d028a7",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "195b704fddd21543cbe1321c673deb29e151a7868285b1be5e3745a3ac9c8d8d",
+          "function_schema": "ledger",
+          "function_signature": "reject_journal_leg_mutation()",
+          "level": "statement",
+          "name": "trg_journal_legs_truncate_guard",
+          "relation": "journal_legs",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -23510,6 +26116,232 @@
       "level": "row",
       "name": "trg_atomic_tax_lot_batches_immutable",
       "relation": "atomic_tax_lot_posting_batches",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE CONSTRAINT TRIGGER ctrg_journal_entry_complete AFTER INSERT ON ledger.journal_entries DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION ledger.seal_complete_journal_entry()",
+      "definition_hash": "999d916207141d5fa17cbf75e4b8d6de0cb9ef1d031d066b68e7409b7bd20717",
+      "enabled": "origin",
+      "events": [
+        "insert"
+      ],
+      "fingerprint": "be7b67ee5e10fb0548e96535ea81f33d1999a6fd2c611fd4f9791f2b4fe11315",
+      "function_schema": "ledger",
+      "function_signature": "seal_complete_journal_entry()",
+      "level": "row",
+      "name": "ctrg_journal_entry_complete",
+      "relation": "journal_entries",
+      "schema": "ledger",
+      "timing": "after"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER trg_journal_entries_immutable BEFORE DELETE OR UPDATE ON ledger.journal_entries FOR EACH ROW EXECUTE FUNCTION ledger.reject_journal_entry_mutation()",
+      "definition_hash": "2901c7458844dd84345a802a7222c3632d5ad4b961e879351fa58b988e5f7925",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "dce57a42b8cafecb8a077efc23736a7d77504646b7c68c8b39d091ed11bb2f32",
+      "function_schema": "ledger",
+      "function_signature": "reject_journal_entry_mutation()",
+      "level": "row",
+      "name": "trg_journal_entries_immutable",
+      "relation": "journal_entries",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER trg_journal_entries_integrity_lock BEFORE INSERT ON ledger.journal_entries FOR EACH ROW EXECUTE FUNCTION ledger.lock_new_journal_entry_integrity()",
+      "definition_hash": "946f8dd97befceaf814addd10317d46afd592839815706919f5708538cd900b6",
+      "enabled": "origin",
+      "events": [
+        "insert"
+      ],
+      "fingerprint": "28b5ddd19e33b08ef27594052dd76bef2a258f2606fae3cabe814a70495589fb",
+      "function_schema": "ledger",
+      "function_signature": "lock_new_journal_entry_integrity()",
+      "level": "row",
+      "name": "trg_journal_entries_integrity_lock",
+      "relation": "journal_entries",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER trg_journal_entries_mark_open AFTER INSERT ON ledger.journal_entries FOR EACH ROW EXECUTE FUNCTION ledger.mark_new_journal_entry_open()",
+      "definition_hash": "8a0b8f79bf2c3b3b02eed02c5ef777f0e23926d9f014f5146992777ea92b0d2e",
+      "enabled": "origin",
+      "events": [
+        "insert"
+      ],
+      "fingerprint": "c75d766404d4d75a37e586371ebc29fc010db8d06fe76d33ffb22f00f05a31ed",
+      "function_schema": "ledger",
+      "function_signature": "mark_new_journal_entry_open()",
+      "level": "row",
+      "name": "trg_journal_entries_mark_open",
+      "relation": "journal_entries",
+      "schema": "ledger",
+      "timing": "after"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER trg_journal_entries_truncate_guard BEFORE TRUNCATE ON ledger.journal_entries FOR EACH STATEMENT EXECUTE FUNCTION ledger.reject_journal_entry_mutation()",
+      "definition_hash": "b59af69dc687e35f82ba4a9ab50e1cebe16b29d3ddbcfc8760f5f2eed037c3f4",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "5b4af1e0b343a38c07a1de1b5be7825496da2ee5f21754fec18486db726992b3",
+      "function_schema": "ledger",
+      "function_signature": "reject_journal_entry_mutation()",
+      "level": "statement",
+      "name": "trg_journal_entries_truncate_guard",
+      "relation": "journal_entries",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER trg_journal_integrity_seals_immutable BEFORE DELETE OR UPDATE ON ledger.journal_entry_integrity_seals FOR EACH ROW EXECUTE FUNCTION ledger.reject_journal_integrity_seal_mutation()",
+      "definition_hash": "715370368b71334eeb8400a2d8172b589dc702affa6874a5ee34057600b30976",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "9eb2b099cffcd7c26bd080566572f3359094a483bbd00b5e95672bd4c3fbe1ea",
+      "function_schema": "ledger",
+      "function_signature": "reject_journal_integrity_seal_mutation()",
+      "level": "row",
+      "name": "trg_journal_integrity_seals_immutable",
+      "relation": "journal_entry_integrity_seals",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER trg_journal_integrity_seals_truncate_guard BEFORE TRUNCATE ON ledger.journal_entry_integrity_seals FOR EACH STATEMENT EXECUTE FUNCTION ledger.reject_journal_integrity_seal_mutation()",
+      "definition_hash": "418ffe89f1ca06718140c56d9470aebd414df02a3263724a6d234d6a3438faf2",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "4ad100da336941a96f629d8ac4a1d8c79230055135eadf6e97173d6bf990eb7c",
+      "function_schema": "ledger",
+      "function_signature": "reject_journal_integrity_seal_mutation()",
+      "level": "statement",
+      "name": "trg_journal_integrity_seals_truncate_guard",
+      "relation": "journal_entry_integrity_seals",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER trg_journal_open_postings_guard BEFORE INSERT OR DELETE OR UPDATE ON ledger.journal_entry_open_postings FOR EACH ROW EXECUTE FUNCTION ledger.guard_journal_open_posting_mutation()",
+      "definition_hash": "2808aa7d972db80f1a0df22d970f18e863ff463851de19d0d0989a7abdd1a0c3",
+      "enabled": "origin",
+      "events": [
+        "insert",
+        "delete",
+        "update"
+      ],
+      "fingerprint": "6c518fe10299caa4c2e6d1080fe27371ba8c45126e83c681dabd6b05e255d8f9",
+      "function_schema": "ledger",
+      "function_signature": "guard_journal_open_posting_mutation()",
+      "level": "row",
+      "name": "trg_journal_open_postings_guard",
+      "relation": "journal_entry_open_postings",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER trg_journal_open_postings_truncate_guard BEFORE TRUNCATE ON ledger.journal_entry_open_postings FOR EACH STATEMENT EXECUTE FUNCTION ledger.guard_journal_open_posting_mutation()",
+      "definition_hash": "fe3a20c2b8d065380273b74c40069408903e4e9c45424cbe65a12ba3ce067d2d",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "5737e01217c3b1cc6cee15c4600caa8da56b1f61d75ca34a02ebddbbf5fe0daf",
+      "function_schema": "ledger",
+      "function_signature": "guard_journal_open_posting_mutation()",
+      "level": "statement",
+      "name": "trg_journal_open_postings_truncate_guard",
+      "relation": "journal_entry_open_postings",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE CONSTRAINT TRIGGER ctrg_journal_legs_entry_balanced AFTER INSERT ON ledger.journal_legs DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION ledger.enforce_journal_entry_balance()",
+      "definition_hash": "0f6f4b4020b90e845b378d84bf77b65f6b3029b4a393d36287cc47126a9f4575",
+      "enabled": "origin",
+      "events": [
+        "insert"
+      ],
+      "fingerprint": "cc09759b8afe8bd2baab383b516a4161d01f1917e725ea121323c1111e5db82d",
+      "function_schema": "ledger",
+      "function_signature": "enforce_journal_entry_balance()",
+      "level": "row",
+      "name": "ctrg_journal_legs_entry_balanced",
+      "relation": "journal_legs",
+      "schema": "ledger",
+      "timing": "after"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER trg_journal_legs_immutable BEFORE DELETE OR UPDATE ON ledger.journal_legs FOR EACH ROW EXECUTE FUNCTION ledger.reject_journal_leg_mutation()",
+      "definition_hash": "10d9769b4255b06d4feadaa096ff2975b91325dc89c43aaa44541b8bfa69dd43",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "8bffc69e3d79df0f761bdfcef481cffc48afa8a0c091b7188ec02803fa84d855",
+      "function_schema": "ledger",
+      "function_signature": "reject_journal_leg_mutation()",
+      "level": "row",
+      "name": "trg_journal_legs_immutable",
+      "relation": "journal_legs",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER trg_journal_legs_reject_sealed_insert BEFORE INSERT ON ledger.journal_legs FOR EACH ROW EXECUTE FUNCTION ledger.reject_sealed_journal_leg_insert()",
+      "definition_hash": "2add4c229cf8ce9036c7c2f41f74e4dcfe1726aa7db87981453cae95af956f90",
+      "enabled": "origin",
+      "events": [
+        "insert"
+      ],
+      "fingerprint": "d3ab465718535033b83d0d65842af27af4cd5aa3b54e9a595d68cbea97f1c1c1",
+      "function_schema": "ledger",
+      "function_signature": "reject_sealed_journal_leg_insert()",
+      "level": "row",
+      "name": "trg_journal_legs_reject_sealed_insert",
+      "relation": "journal_legs",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER trg_journal_legs_truncate_guard BEFORE TRUNCATE ON ledger.journal_legs FOR EACH STATEMENT EXECUTE FUNCTION ledger.reject_journal_leg_mutation()",
+      "definition_hash": "3c4307326b77c4fcd366e7277dcef27937b19e5ef1f446aad0304a4789d028a7",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "195b704fddd21543cbe1321c673deb29e151a7868285b1be5e3745a3ac9c8d8d",
+      "function_schema": "ledger",
+      "function_signature": "reject_journal_leg_mutation()",
+      "level": "statement",
+      "name": "trg_journal_legs_truncate_guard",
+      "relation": "journal_legs",
       "schema": "ledger",
       "timing": "before"
     },

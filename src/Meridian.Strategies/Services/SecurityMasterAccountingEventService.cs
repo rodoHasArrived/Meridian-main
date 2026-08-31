@@ -25,7 +25,7 @@ public sealed record SecurityMasterAccountingEventRequest(
     DateOnly PeriodEnd,
     IReadOnlyList<SecurityMasterAccountingSecurity> Securities,
     IReadOnlyList<SecurityMasterAccountingPosition> Positions,
-    IReadOnlyList<SecurityFactorScheduleEntry>? FactorSchedule = null,
+    IReadOnlyList<SecurityFactorObservation>? FactorSchedule = null,
     IReadOnlyList<SecurityActualCashActivity>? ActualActivity = null,
     decimal AmountTolerance = 0.01m);
 
@@ -86,7 +86,17 @@ public sealed record SecurityMasterAccountingPosition(
     public bool IsShort { get; init; }
 }
 
-public sealed record SecurityFactorScheduleEntry(
+/// <summary>
+/// One reconciliation-period factor OBSERVATION for a factor-based security: the prior→current
+/// factor pair with its source and evidence lineage, as expected paydown generation consumes it.
+/// This is deliberately NOT a factor-schedule term shape — the canonical dated factor schedule is
+/// <see cref="Meridian.FSharp.Domain.FactorScheduleEntry"/> on <c>StructuredCreditTerms</c>
+/// (declared as <c>factorScheduleEntries</c> and read by <c>StructuredCashFlowTermsResolver</c>);
+/// the source adapter derives these observations FROM that canonical schedule, pairing each factor
+/// with its ordered predecessor and attaching provenance/evidence. Formerly named
+/// <c>SecurityFactorScheduleEntry</c>, which misread as a third, incompatible schedule shape.
+/// </summary>
+public sealed record SecurityFactorObservation(
     Guid SecurityId,
     DateOnly AsOfDate,
     decimal PriorFactor,
@@ -278,8 +288,16 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         return securitiesBySymbol.TryGetValue(position.Symbol, out var securityBySymbol) ? securityBySymbol : null;
     }
 
+    /// <summary>
+    /// The gate for this first accounting slice. The canonical producer
+    /// (<c>SecurityMasterAccountingEventSourceAdapter</c>) now emits only the declared
+    /// <see cref="SecurityAccountingInstrumentClasses"/> values, resolved from the catalog rather
+    /// than inferred from classification prose; the remaining spellings stay accepted as read
+    /// tolerance for securities supplied by other adapters or by older callers.
+    /// </summary>
     private static bool IsFixedIncome(string assetClass) =>
-        assetClass.Equals("Bond", StringComparison.OrdinalIgnoreCase) ||
+        assetClass.Equals(SecurityAccountingInstrumentClasses.Bond, StringComparison.OrdinalIgnoreCase) ||
+        assetClass.Equals(SecurityAccountingInstrumentClasses.AssetBackedSecurity, StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("CertificateOfDeposit", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("CommercialPaper", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("TreasuryBill", StringComparison.OrdinalIgnoreCase) ||
@@ -287,7 +305,6 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         assetClass.Equals("MortgageBackedSecurity", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("Mbs", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("AssetBacked", StringComparison.OrdinalIgnoreCase) ||
-        assetClass.Equals("AssetBackedSecurity", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("Abs", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("Loan", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("AmortizingLoan", StringComparison.OrdinalIgnoreCase);
@@ -320,7 +337,7 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         SecurityMasterAccountingEventRequest request,
         Guid securityId)
     {
-        var entries = (request.FactorSchedule ?? Array.Empty<SecurityFactorScheduleEntry>())
+        var entries = (request.FactorSchedule ?? Array.Empty<SecurityFactorObservation>())
             .Where(entry => entry.SecurityId == securityId)
             .ToArray();
         if (entries.Length == 0)
@@ -502,7 +519,7 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         // Period end is EXCLUSIVE, matching the coupon window and the production adapter's
         // schedule trim: an adapter that supplies the full retained schedule must not have a
         // next-month-first-day row generate the same paydown in both adjacent runs.
-        var factors = (request.FactorSchedule ?? Array.Empty<SecurityFactorScheduleEntry>())
+        var factors = (request.FactorSchedule ?? Array.Empty<SecurityFactorObservation>())
             .Where(entry => entry.SecurityId == security.SecurityId && entry.AsOfDate >= request.PeriodStart && entry.AsOfDate < request.PeriodEnd)
             .Where(static entry => entry.CurrentFactor != entry.PriorFactor)
             .OrderBy(static entry => entry.AsOfDate)

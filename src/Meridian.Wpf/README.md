@@ -278,7 +278,13 @@ success. Assign, resolve, waive, and supersede commands therefore surface blocke
 failed persistence, retained evidence, and recovery guidance instead of inferring completion from an
 HTTP response or compatibility message. `CompletedWithWarnings` retains the successful mutation,
 refreshes the shared queue, and keeps its issues and recovery guidance visible; only `Blocked` or
-`Failed` suppresses the success path. Strategy workspace composition resolves the durable
+`Failed` suppresses the success path. Reconciliation reads distinguish a confirmed missing run
+record from a failed detail request: partial reads render a degraded notice, a complete detail-read
+outage renders an unavailable notice, and only a successful read with no known runs uses the
+verified empty state. Break-queue and calibration failures are also retained as unavailable instead
+of producing zero-count metrics or a synthesized `Ready` posture; overview and security-coverage
+counts are suppressed or marked as lower bounds whenever their detail population is incomplete.
+Strategy workspace composition resolves the durable
 strategy-run store and operational case-history store; lifecycle state, attempts, input hashes,
 artifacts, exceptions, and recovery events survive desktop restart rather than falling back to an
 in-memory production history.

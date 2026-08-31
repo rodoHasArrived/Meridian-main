@@ -40,12 +40,20 @@ internal sealed class LiveRunMetricsTracker
 
     public long EventsProcessed { get; set; }
 
-    public void RecordFill(FillEvent fill, DateTimeOffset timestamp)
+    public void RecordFill(FillEvent fill, DateTimeOffset timestamp, bool usesFaceValuePercentageOfPar = false)
     {
         _fills.Add(fill);
+
+        // A face-value fill routes its quantity as face value and quotes its price as a
+        // percentage of par (fixed income), so the booked cash movement scales the price to a
+        // fraction of par before multiplying — the same convention TradeExecutedEvent.GrossValue
+        // and the pre-trade risk gate use. Multiplying the two raw books 100,000 face at 101.25
+        // as a $10,125,000 cash flow instead of $101,250. Quantity and Price stay as quoted;
+        // Amount alone carries the economic cash impact, matching SimulatedPortfolio.
+        var effectivePrice = usesFaceValuePercentageOfPar ? fill.FillPrice / 100m : fill.FillPrice;
         var tradeCashFlow = new TradeCashFlow(
             Timestamp: timestamp,
-            Amount: -(fill.FilledQuantity * fill.FillPrice),
+            Amount: -(fill.FilledQuantity * effectivePrice),
             Symbol: fill.Symbol,
             Quantity: fill.FilledQuantity,
             Price: fill.FillPrice,

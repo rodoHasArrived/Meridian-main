@@ -16,6 +16,15 @@ public interface ISecurityValidationSnapshotStore
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// File-backed retention of security-master validation snapshots.
+/// </summary>
+/// <remarks>
+/// <b>Concurrency posture: append-only.</b> <c>RecordAsync</c> appends one JSON line per snapshot
+/// through <c>AtomicFileWriter.AppendLinesAsync</c> and never rewrites an existing line, so there is
+/// no read-modify-write sequence for a cross-process lease to protect. Snapshots are evidence
+/// records: they accumulate and are never mutated in place (#2697).
+/// </remarks>
 public sealed class FileSecurityValidationSnapshotStore : ISecurityValidationSnapshotStore
 {
     private readonly string _rootDirectory;

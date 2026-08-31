@@ -40,7 +40,7 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
-public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway
+public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway
 {
     /// <inheritdoc />
     public bool UsesFaceValuePercentageOfPar(OrderRequest request)
@@ -78,6 +78,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     private const string BrokerApiSandboxBaseUrl = "https://broker-api.sandbox.alpaca.markets";
     private const string BrokerApiLiveBaseUrl = "https://broker-api.alpaca.markets";
     private const int AccountActivityPageSize = 100;
+    private const int OpenOrderPageSize = 500;
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly AlpacaOptions _options;
@@ -239,53 +240,12 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
             OrderQuantity = request.Quantity,
             GatewayOrderId = order?.Id,
             Timestamp = order?.CreatedAt ?? DateTimeOffset.UtcNow,
-        };
-        await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
-        return report;
-    }
-
-    /// <inheritdoc />
-    public async Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(orderId);
-        ObjectDisposedException.ThrowIf(_disposed, this);
-        EnsureConnected();
-
-        using var client = CreateHttpClient();
-
-        // Fetch current order details so the report carries the correct symbol and side.
-        AlpacaOrderResponse? existing = null;
-        try
-        {
-            var getResponse = await client.GetAsync($"{BaseUrl}/v2/orders/{orderId}", ct).ConfigureAwait(false);
-            if (getResponse.IsSuccessStatusCode)
-                existing = await getResponse.Content.ReadFromJsonAsync(
-                    AlpacaBrokerageSerializerContext.Default.AlpacaOrderResponse, ct).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Alpaca failed to fetch order {OrderId} before cancel", orderId);
-        }
-
-        var deleteResponse = await client.DeleteAsync($"{BaseUrl}/v2/orders/{orderId}", ct).ConfigureAwait(false);
-
-        if (!deleteResponse.IsSuccessStatusCode)
-        {
-            var errorBody = await deleteResponse.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            _logger.LogWarning("Alpaca cancel failed for {OrderId}: {Body}", orderId, errorBody);
-        }
-
-        var report = new ExecutionReport
-        {
-            OrderId = orderId,
-            ClientOrderId = existing?.ClientOrderId,
-            ReportType = deleteResponse.IsSuccessStatusCode ? ExecutionReportType.Cancelled : ExecutionReportType.Rejected,
-            Symbol = existing?.Symbol ?? string.Empty,
-            Side = existing?.Side == "sell" ? OrderSide.Sell : OrderSide.Buy,
-            OrderStatus = deleteResponse.IsSuccessStatusCode ? OrderStatus.Cancelled : OrderStatus.Rejected,
-            RejectReason = deleteResponse.IsSuccessStatusCode ? null : "Cancel request failed",
-            GatewayOrderId = orderId,
-            Timestamp = DateTimeOffset.UtcNow,
+            // A bracket/OCO submission comes back with server-created child legs carrying their
+            // own order ids. Surfacing them on the acknowledgement lets the OMS register them as
+            // tracked orders instead of dropping their execution reports as untracked.
+            ChildOrders = order?.Legs is { Length: > 0 } childLegs
+                ? childLegs.Select(MapBrokerOrder).ToList().AsReadOnly()
+                : null,
         };
         await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
         return report;
@@ -415,30 +375,91 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
     public async Task<IReadOnlyList<BrokerOrder>> GetOpenOrdersAsync(CancellationToken ct = default)
     {
         using var client = CreateHttpClient();
-        var response = await client.GetAsync($"{BaseUrl}/v2/orders?status=open", ct).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
 
-        var orders = await response.Content.ReadFromJsonAsync(
-            AlpacaBrokerageSerializerContext.Default.AlpacaOrderResponseArray, ct).ConfigureAwait(false);
+        // nested=true so bracket/OCO child legs are returned under their parents regardless of
+        // how the flat listing treats held legs; they are flattened below so the kill-switch
+        // sweep and reconciliation see every order the broker is actually working. Alpaca's list
+        // is bounded (50 by default, 500 maximum), so walk the broker-ID cursor until the final
+        // short page; a kill-switch cannot equate "first page" with "open book".
+        var flattened = new List<BrokerOrder>();
+        var seenOrderIds = new HashSet<string>(StringComparer.Ordinal);
+        var seenCursors = new HashSet<string>(StringComparer.Ordinal);
+        string? beforeOrderId = null;
 
-        if (orders is null)
-            return Array.Empty<BrokerOrder>();
-
-        return orders.Select(o => new BrokerOrder
+        while (true)
         {
-            OrderId = o.Id ?? string.Empty,
-            ClientOrderId = o.ClientOrderId,
-            Symbol = o.Symbol ?? string.Empty,
-            Side = o.Side == "sell" ? OrderSide.Sell : OrderSide.Buy,
-            Type = ParseOrderType(o.Type),
-            Quantity = ParseDecimal(o.Qty),
-            FilledQuantity = ParseDecimal(o.FilledQty),
-            LimitPrice = string.IsNullOrEmpty(o.LimitPrice) ? null : ParseDecimal(o.LimitPrice),
-            StopPrice = string.IsNullOrEmpty(o.StopPrice) ? null : ParseDecimal(o.StopPrice),
-            Status = MapAlpacaStatus(o.Status),
-            CreatedAt = o.CreatedAt ?? DateTimeOffset.UtcNow,
-        }).ToList().AsReadOnly();
+            var cursorQuery = beforeOrderId is null
+                ? string.Empty
+                : $"&before_order_id={Uri.EscapeDataString(beforeOrderId)}";
+            using var response = await client.GetAsync(
+                $"{BaseUrl}/v2/orders?status=open&nested=true&limit={OpenOrderPageSize}&direction=desc{cursorQuery}",
+                ct).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+
+            var page = await response.Content.ReadFromJsonAsync(
+                AlpacaBrokerageSerializerContext.Default.AlpacaOrderResponseArray, ct).ConfigureAwait(false)
+                ?? [];
+
+            foreach (var order in page)
+            {
+                AppendOrderWithLegs(order, flattened, seenOrderIds);
+            }
+
+            if (page.Length < OpenOrderPageSize)
+            {
+                break;
+            }
+
+            var nextCursor = page[^1].Id;
+            if (string.IsNullOrWhiteSpace(nextCursor) || !seenCursors.Add(nextCursor))
+            {
+                throw new InvalidDataException(
+                    "Alpaca returned a full open-order page without a usable advancing broker-order cursor.");
+            }
+
+            beforeOrderId = nextCursor;
+        }
+
+        return flattened.AsReadOnly();
     }
+
+    private static void AppendOrderWithLegs(
+        AlpacaOrderResponse order,
+        List<BrokerOrder> orders,
+        HashSet<string> seenOrderIds)
+    {
+        if (order.Id is { Length: > 0 } && !seenOrderIds.Add(order.Id))
+        {
+            return;
+        }
+
+        orders.Add(MapBrokerOrder(order));
+
+        if (order.Legs is not { Length: > 0 } legs)
+        {
+            return;
+        }
+
+        foreach (var leg in legs)
+        {
+            AppendOrderWithLegs(leg, orders, seenOrderIds);
+        }
+    }
+
+    private static BrokerOrder MapBrokerOrder(AlpacaOrderResponse o) => new()
+    {
+        OrderId = o.Id ?? string.Empty,
+        ClientOrderId = o.ClientOrderId,
+        Symbol = o.Symbol ?? string.Empty,
+        Side = o.Side == "sell" ? OrderSide.Sell : OrderSide.Buy,
+        Type = ParseOrderType(o.Type),
+        Quantity = ParseDecimal(o.Qty),
+        FilledQuantity = ParseDecimal(o.FilledQty),
+        LimitPrice = string.IsNullOrEmpty(o.LimitPrice) ? null : ParseDecimal(o.LimitPrice),
+        StopPrice = string.IsNullOrEmpty(o.StopPrice) ? null : ParseDecimal(o.StopPrice),
+        Status = MapAlpacaStatus(o.Status),
+        CreatedAt = o.CreatedAt ?? DateTimeOffset.UtcNow,
+    };
 
     /// <inheritdoc />
     public async Task<BrokerHealthStatus> CheckHealthAsync(CancellationToken ct = default)
@@ -1798,6 +1819,13 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         [JsonPropertyName("canceled_at")] public DateTimeOffset? CanceledAt { get; set; }
         [JsonPropertyName("expired_at")] public DateTimeOffset? ExpiredAt { get; set; }
         [JsonPropertyName("failed_at")] public DateTimeOffset? FailedAt { get; set; }
+
+        /// <summary>
+        /// Child orders nested under a bracket/OCO/OTO parent — full order objects with their own
+        /// ids, returned on submit and on nested order listings. Dropping them is how TP/SL legs
+        /// become invisible to the OMS and to the kill-switch sweep.
+        /// </summary>
+        [JsonPropertyName("legs")] public AlpacaOrderResponse[]? Legs { get; set; }
     }
 
     internal sealed class AlpacaAccountResponse

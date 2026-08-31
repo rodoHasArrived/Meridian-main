@@ -27,7 +27,8 @@ function response(bars: HistoricalBarPoint[], intervalMinutes = 5): HistoricalBa
     filesProcessed: 1,
     totalFiles: 1,
     queryTimeMs: 1,
-    bars
+    bars,
+    sources: []
   };
 }
 

@@ -27,6 +27,9 @@ concurrency:
 
 env:
   CI: true
+  # Bind the free-text dispatch input as data. Shell blocks must read this environment
+  # variable only after the preflight job validates the complete value.
+  EVALUATION_VERSION: ${{ inputs.version }}
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
   DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
   DOTNET_NOLOGO: "true"
@@ -38,6 +41,14 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 55
     steps:
+      - name: Validate the evaluation version
+        shell: pwsh
+        run: |
+          $versionPattern = '\A[0-9]{1,5}\.[0-9]{1,5}\.[0-9]{1,5}(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?\z'
+          if ($env:EVALUATION_VERSION -cnotmatch $versionPattern) {
+            throw 'Evaluation version must be Major.Minor.Patch with an optional safe prerelease suffix.'
+          }
+
       - name: Check out repository
         uses: actions/checkout@v6.0.2
         with:
@@ -150,17 +161,14 @@ jobs:
         env:
           MDC_SIGNING_CERT_PFX: ${{ steps.signing.outputs.pfx_path }}
           MDC_SIGNING_CERT_PASSWORD: ${{ steps.signing.outputs.password }}
-          MDC_PACKAGE_VERSION: ${{ inputs.version }}
+          EVALUATION_RUNTIME: ${{ matrix.runtime }}
         run: |
           # The manifest needs a four-part numeric version; take the numeric head of the evaluation
           # version and drop any prerelease suffix.
-          if ($env:MDC_PACKAGE_VERSION -match '^(\d+)\.(\d+)\.(\d+)') {
-            $env:MDC_PACKAGE_VERSION = "$($Matches[1]).$($Matches[2]).$($Matches[3]).0"
-          } else {
-            throw "Version '${{ inputs.version }}' must start with Major.Minor.Patch."
-          }
+          $numericVersion = $env:EVALUATION_VERSION.Split('-', 2)[0].Split('.')
+          $env:MDC_PACKAGE_VERSION = "$($numericVersion[0]).$($numericVersion[1]).$($numericVersion[2]).0"
 
-          $architecture = if ('${{ matrix.runtime }}' -eq 'win-arm64') { 'ARM64' } else { 'x64' }
+          $architecture = if ($env:EVALUATION_RUNTIME -eq 'win-arm64') { 'ARM64' } else { 'x64' }
           pwsh ./build/scripts/install/install.ps1 `
             -Mode Desktop `
             -Architecture $architecture `
@@ -179,8 +187,11 @@ jobs:
 
       - name: Collect the evaluation artifacts
         shell: pwsh
+        env:
+          EVALUATION_RUNTIME: ${{ matrix.runtime }}
+          EVALUATION_SIGNING_CERT_CER: ${{ steps.signing.outputs.cer_path }}
         run: |
-          $runtime = '${{ matrix.runtime }}'
+          $runtime = $env:EVALUATION_RUNTIME
           $sourceRoot = "dist/$runtime/msix"
           if (-not (Test-Path $sourceRoot)) { throw "Expected package output root not found: $sourceRoot" }
 
@@ -191,7 +202,7 @@ jobs:
             Where-Object { $_.Extension.ToLowerInvariant() -in @('.msix', '.msixbundle') }
           if (-not $packageFiles) { throw "No packaged installer files found under $sourceRoot" }
           Copy-Item -Path $packageFiles.FullName -Destination $releaseRoot -Force -ErrorAction Stop
-          Copy-Item -LiteralPath '${{ steps.signing.outputs.cer_path }}' `
+          Copy-Item -LiteralPath $env:EVALUATION_SIGNING_CERT_CER `
             -Destination (Join-Path $releaseRoot "meridian-evaluation-signing-$runtime.cer") -Force
 
           Get-ChildItem -LiteralPath $releaseRoot -File | Where-Object Name -ne 'SHA256SUMS' |
@@ -201,16 +212,19 @@ jobs:
 
       - name: Generate the evaluation SBOM
         shell: pwsh
+        env:
+          EVALUATION_RUNTIME: ${{ matrix.runtime }}
         run: |
+          $releaseRoot = "artifacts/evaluation/$env:EVALUATION_RUNTIME"
           dotnet tool install --global Microsoft.Sbom.DotNetTool --version 4.1.5
           pwsh ./build/scripts/publish/generate-sbom.ps1 `
-            -BuildDropPath artifacts/evaluation/${{ matrix.runtime }} `
+            -BuildDropPath $releaseRoot `
             -BuildComponentPath . `
             -PackageName Meridian-Desktop-Evaluation `
-            -PackageVersion '${{ inputs.version }}-${{ matrix.runtime }}'
-          $generated = Get-ChildItem artifacts/evaluation/${{ matrix.runtime }}/_manifest -Filter manifest.spdx.json -File -Recurse | Select-Object -First 1
+            -PackageVersion "$env:EVALUATION_VERSION-$env:EVALUATION_RUNTIME"
+          $generated = Get-ChildItem (Join-Path $releaseRoot '_manifest') -Filter manifest.spdx.json -File -Recurse | Select-Object -First 1
           if ($null -eq $generated) { throw "Microsoft SBOM Tool did not emit manifest.spdx.json." }
-          Copy-Item -LiteralPath $generated.FullName -Destination artifacts/evaluation/${{ matrix.runtime }}/sbom.spdx.json -Force
+          Copy-Item -LiteralPath $generated.FullName -Destination (Join-Path $releaseRoot 'sbom.spdx.json') -Force
 
       - name: Upload the evaluation artifact
         uses: actions/upload-artifact@v7.0.1
@@ -220,9 +234,117 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  # The MSIX above is the desktop shell alone: no lifecycle supervisor, no bundled database, no
+  # first-account bootstrap. An evaluator who has nothing but the MSIX lands on required auth with
+  # zero accounts. Meridian-Setup.exe is the artifact that actually solves the first mile - it
+  # bundles the workstation host, desktop shell, supervisor, and a PostgreSQL runtime, and its
+  # first run opens the browser bootstrap to create the first account - so the evaluation
+  # prerelease attaches it too. x64 only: PostgreSQL publishes no Windows ARM64 server build.
+  package-consumer-setup:
+    name: package-evaluation-consumer-setup (win-x64)
+    needs: preflight
+    runs-on: windows-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.4.0
+        with:
+          global-json-file: global.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: "24"
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-desktop-installer-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-desktop-installer-
+            ${{ runner.os }}-nuget-
+
+      # Same payload source as the production installer lane: the hosted image's own PostgreSQL.
+      - name: Materialize the PostgreSQL payload
+        shell: pwsh
+        run: |
+          $postgres = Get-ChildItem 'C:\Program Files\PostgreSQL' -Directory -ErrorAction Stop |
+            Where-Object { $_.Name -match '^\d+' } |
+            Sort-Object { [int]($_.Name -replace '^(\d+).*$', '$1') } -Descending | Select-Object -First 1
+          if ($null -eq $postgres) { throw 'The hosted Windows runner has no PostgreSQL runtime to bundle.' }
+          $payload = 'artifacts/postgresql-payload/win-x64'
+          New-Item -ItemType Directory -Path $payload -Force | Out-Null
+          Copy-Item -Path (Join-Path $postgres.FullName '*') -Destination $payload -Recurse -Force
+
+      # Unsigned on purpose: this is the same posture the MSIX discloses. An evaluation build has
+      # no verified publisher identity, and pretending otherwise with a throwaway Authenticode
+      # signature would not change what SmartScreen tells the user. The checksum is the integrity
+      # story.
+      - name: Build the consumer package
+        shell: pwsh
+        run: |
+          pwsh ./build/scripts/install/build-consumer-setup.ps1 `
+            -PostgreSqlPayloadRoot artifacts/postgresql-payload `
+            -Runtimes @('win-x64')
+
+      - name: Generate consumer setup SBOM, checksum, and evidence
+        shell: pwsh
+        env:
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+        run: |
+          python build/scripts/ci/generate-release-evidence-manifest.py `
+            --project consumer-setup `
+            --runtime windows `
+            --artifact-root artifacts/consumer-setup `
+            --output artifacts/consumer-setup/release-evidence.json `
+            --workflow-run-id $env:WORKFLOW_RUN_ID `
+            --validation-lane verify-evaluation-preflight `
+            --validation-lane package-evaluation-consumer-setup
+
+          dotnet tool install --global Microsoft.Sbom.DotNetTool --version 4.1.5
+          pwsh ./build/scripts/publish/generate-sbom.ps1 `
+            -BuildDropPath artifacts/consumer-setup `
+            -BuildComponentPath . `
+            -PackageName Meridian-Consumer-Setup-Evaluation `
+            -PackageVersion $env:EVALUATION_VERSION
+          $generated = Get-ChildItem artifacts/consumer-setup/_manifest -Filter manifest.spdx.json -File -Recurse | Select-Object -First 1
+          if ($null -eq $generated) { throw "Microsoft SBOM Tool did not emit manifest.spdx.json." }
+
+          # Release asset names are flat and must be unique across every job that feeds the
+          # publish step, so the consumer files carry distinct names instead of reusing
+          # SHA256SUMS/sbom.spdx.json from the MSIX jobs.
+          $staging = 'artifacts/evaluation/consumer-setup'
+          New-Item -ItemType Directory -Path $staging -Force | Out-Null
+          Copy-Item artifacts/consumer-setup/Meridian-Setup.exe -Destination $staging -ErrorAction Stop
+          Copy-Item -LiteralPath $generated.FullName -Destination (Join-Path $staging 'consumer-setup.sbom.spdx.json') -Force
+          Copy-Item artifacts/consumer-setup/release-evidence.json -Destination (Join-Path $staging 'consumer-setup-release-evidence.json') -Force
+          $hash = (Get-FileHash -LiteralPath (Join-Path $staging 'Meridian-Setup.exe') -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  Meridian-Setup.exe" | Set-Content -LiteralPath (Join-Path $staging 'Meridian-Setup.exe.sha256') -Encoding ascii
+
+      - name: Upload the consumer setup artifact
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: meridian-evaluation-consumer-setup-${{ github.run_id }}
+          path: artifacts/evaluation/consumer-setup/
+          if-no-files-found: error
+          retention-days: 30
+
   publish:
     name: publish-evaluation-prerelease
-    needs: package
+    needs: [package, package-consumer-setup]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -249,7 +371,26 @@ jobs:
           release gate in the Implementation and Readiness Tracker requires every `P0` row to be
           complete on one release commit, and that has not happened.
 
-          ### Installing
+          ### The easiest install: `Meridian-Setup.exe` (x64)
+
+          The one-click consumer setup bundles the workstation host, the desktop shell, the
+          lifecycle supervisor, and a PostgreSQL runtime. Its first run opens your browser at the
+          setup page so you create the first operator account before anything else — no
+          environment variables, no hand-written password hashes.
+
+          It is **unsigned**, deliberately: an evaluation build has no verified publisher
+          identity either way, and SmartScreen will say so ("More info" → "Run anyway"). Verify
+          the download first:
+
+          ```powershell
+          (Get-FileHash .\Meridian-Setup.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          # compare against Meridian-Setup.exe.sha256
+          ```
+
+          There is no ARM64 consumer setup because PostgreSQL publishes no Windows ARM64 server
+          build; on ARM64 use the MSIX below or run from source.
+
+          ### Installing the MSIX
 
           Each architecture ships an `.msix` and the public half of the certificate that signed it.
           Windows will not install an MSIX whose publisher it does not trust, so you have to trust
@@ -305,3 +446,7 @@ jobs:
             artifacts/evaluation/**/*.cer
             artifacts/evaluation/**/SHA256SUMS
             artifacts/evaluation/**/sbom.spdx.json
+            artifacts/evaluation/**/Meridian-Setup.exe
+            artifacts/evaluation/**/Meridian-Setup.exe.sha256
+            artifacts/evaluation/**/consumer-setup.sbom.spdx.json
+            artifacts/evaluation/**/consumer-setup-release-evidence.json

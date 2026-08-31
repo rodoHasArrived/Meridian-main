@@ -24,14 +24,61 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     priority rationale (`W9-TRUTH-001` through `W9-INGEST-009`, decision `DEC-PRIORITY-SLATE-001`);
     live status stays in the roadmap registry
   - [2026-08 W9 Close-Out Delivery Plan](w9-close-out-delivery-plan-2026-08.md) — adopted sequence
-    for the three W9 rows still open (`W9-SAFETY-007`, `W9-GOV-008`, `W9-INGEST-009`, decision
+    for the three original W9 close-out rows (`W9-SAFETY-007`, `W9-GOV-008`, `W9-INGEST-009`, decision
     `DEC-W9-CLOSEOUT-001`), with the source constraints found while checking each row against
     current code; live status stays in the roadmap registry
+  - [2026-08-29 W9 Operator Acceptance Record](w9-operator-acceptance-2026-08-29.md) — the operator
+    chronology for the original six-row acceptance and `W9-ALPACA-004` hold, followed by the
+    corrected-evidence reassessment that leaves five rows accepted and reopens `W9-CORPACT-011`
+    (decisions `DEC-W9-ACCEPTANCE-001` and `DEC-W9-ACCEPTANCE-002`); live status stays in the roadmap
+    registry
   - [2026-07 Depth Slate](w10-depth-slate-2026-07.md) — W10 rationale for deepening existing
     functionality (`W10-MARK-001` through `W10-CONSOL-001`, decision `DEC-DEPTH-SLATE-001`);
     live status stays in the roadmap registry. `W10-MARK-001` and `W10-SEAM-001` are pulled forward
     ahead of the W9 close-out because they serve the release gate
 - Treat the following as dated working design inputs, not canonical status sources:
+  - [Adversarial Program Review (2026-08-25)](adversarial-program-review-2026-08-25.md) — latest
+    independent whole-program adverse review; re-tests the 2026-08-24 open items against the 39
+    commits landed since, then extends into cross-catalog consistency between the authorization
+    model, the shared API surface, and the client surface. Findings are anchored at `e232ece1`;
+    the document's addendum records that PR #2824 has since wired the posted-journal trial balance
+    and P&L into `AccountingPostedLedgerSection`, so **that half is no longer current state**. A
+    third addendum records `main` at `3eb6961a` (PR #2828) and rechecks five open items that remain
+    unchanged; the second addendum's citations stay in the `bb43e0e6` frame its heading declares.
+    That second addendum records `main` at `bb43e0e6`: the `ViewLedgerReports`/`ManageLedgerReports` split
+    landed and the posted-ledger panel no longer depends on `ManageDirectLending`, and the run-scoped
+    explorer was retired from Accounting to `/strategy/run-ledger`. What remains open is
+    assigned-fund scoping (the new tenant filter is cross-tenant and fail-open, and the client sends
+    no fund id), one run-scoped binding under `/accounting/accounts/detail`, the missing
+    `ViewCompliance` read grant (which must also be subtracted from the `Developer` role, defined as
+    `Admin` minus a list), the compliance read surfaces that need server work beyond that grant —
+    `controls/attestation` evaluates none of the four controls it names, neither read route is
+    tenant-scoped, and the chain records policy evaluations rather than actions (the evaluate route
+    never dispatches, and the caller supplies the object identity and both state snapshots) — the option contract multiplier that reaches the two aggregate
+    exposure projections but none of the paper transaction, valuation, persistence or margin paths
+    — nor the Trading screen's own exposure and P&L arithmetic, which the book-side fix does not
+    reach — and an estimated 29%
+    of route constants (250 of 862) referenced by no client layer — a reference-based measure the
+    review itself qualifies as an estimate with error in both directions, not a settled count. The
+    denominator is itself imperfect: at least two catalog constants are registered by no server
+    route and reach the browser through the generated mirror, and the review states plainly that
+    the scale of that class is unmeasured. A fourth addendum records `main` at `7d675f40`
+    (PR #2831) and rechecks no claims at all: it measures which of the 79 files the review cites are
+    byte-identical between the anchor and that tree — **59 are**, including all three carrying the
+    headline finding — so those citations resolve in both frames unchanged, and the same four counts
+    held one merge earlier at `8c0c6e36`. `main` has advanced nine times since the anchor and all
+    nine are merged in here, but **only three of the nine have a claim-level addendum**; the fourth
+    states that limit rather than covering it over.
+    **Completeness caveat:** the 41-round adversarial loop
+    behind this document stopped when the reviewer hit a usage limit, not on convergence — the last
+    three rounds produced two new codebase defects and two self-inflicted contradictions — so every
+    claim in it has been checked but the set of claims is not exhausted
+  - [Adversarial Program Review (2026-08-24)](adversarial-program-review-2026-08-24.md) —
+    independent whole-program adverse review; re-tests every headline finding of the 2026-08-18
+    pass against the 218 commits landed since, verifies the three built-but-dead flagship fixes
+    and the authorization burn-down as genuinely wired, documents the instance-vs-class
+    remediation pattern with `file:line` evidence, and re-ranks improvement areas by end-user
+    value uplift
   - [Adversarial Program Review (2026-08-18)](adversarial-program-review-2026-08-18.md) — follow-up
     independent whole-program adverse review that re-tests all 25 headline findings of the
     2026-08-10 pass against the ~321 commits landed since, documents the built-but-unwired
@@ -96,12 +143,18 @@ bounded W6 Covered Call evidence loop as complete; WPF parity (`W8-WPF-PARITY-00
 screen consolidation (`W8-UX-CONSOL-001`) remain active. The accepted W1-W7 bounded milestones are
 capability claims, not blanket production certification.
 
-As of 2026-08-11 the W9 slate is mostly closed: `W9-ASSET-010` is `done`; `W9-TRUTH-001`,
-`W9-DEMO-002`, `W9-PAPER-003`, `W9-ALPACA-004`, `W9-REPORT-005`, and `W9-NAV-006` are
-`ready_for_acceptance` with implementation-complete evidence; `W9-SAFETY-007` is `in_progress`; and
-`W9-GOV-008` and `W9-INGEST-009` remain `planned`. Those three open rows are sequenced by the
-[2026-08 W9 Close-Out Delivery Plan](w9-close-out-delivery-plan-2026-08.md). Every W10 row still
-carries planned-evidence posture. The registry remains live truth for all of this.
+As of 2026-08-30 the W9 slate is mostly closed: `W9-ASSET-010` is `done`; `W9-TRUTH-001`,
+`W9-DEMO-002`, `W9-PAPER-003`, `W9-REPORT-005`, and `W9-NAV-006` remain `accepted` on operator
+decision `DEC-W9-ACCEPTANCE-001`; and `W9-CORPACT-011` is reopened as `in_progress` with
+`evidence_posture: in_progress` and `health: red` under `DEC-W9-ACCEPTANCE-002` pending unchanged
+exit criterion four. Both decisions and their chronology are recorded in the
+[2026-08-29 W9 Operator Acceptance Record](w9-operator-acceptance-2026-08-29.md).
+`W9-ALPACA-004` was deliberately held and stays `ready_for_acceptance` pending its three recorded
+fill-path caveats; `W9-SAFETY-007`, `W9-GOV-008`, and `W9-INGEST-009` also remain `in_progress`.
+Those latter three open rows are sequenced by the
+[2026-08 W9 Close-Out Delivery Plan](w9-close-out-delivery-plan-2026-08.md). Acceptance of a bounded
+row is not a release certification and does not move a row to `done`. Every W10 row still carries
+planned-evidence posture. The registry remains live truth for all of this.
 
 Production readiness is currently **blocked**. The release posture changes only when the
 [Implementation and Readiness Tracker](implementation-todo-list.md), roadmap evidence, packaging,

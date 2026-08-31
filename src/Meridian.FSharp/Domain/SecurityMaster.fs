@@ -219,10 +219,36 @@ type BondSubclass =
     | Other of string
 
 [<RequireQualifiedAccess>]
+module BondSubclass =
+    /// Canonical serialization label. Named cases use the case name; <c>Other</c> carries its raw
+    /// label — serializing the union's ToString (<c>Other "X"</c>) made every unknown subclass
+    /// re-wrap itself one level deeper per codec pass instead of round-tripping.
+    let label (subclass: BondSubclass) =
+        match subclass with
+        | BondSubclass.Other name -> name
+        | named -> string named
+
+/// A dated coupon-rate step: the annual rate payable from <c>EffectiveDate</c> until the next
+/// entry's effective date (or maturity for the last entry). The term data that makes the
+/// <see cref="BondSubclass.StepRate"/> and <see cref="BondSubclass.FixedToFloat"/> taxonomy
+/// computable instead of a label.
+type StepCouponEntry = {
+    EffectiveDate: DateOnly
+    Rate: decimal
+}
+
+[<RequireQualifiedAccess>]
 type BondCouponStructure =
     | Fixed of rate: decimal * dayCount: string option
     | Floating of index: string * spreadBps: decimal option * capRate: decimal option * floorRate: decimal option * dayCount: string option
     | ZeroCoupon
+    /// Step-rate coupon: a contractual dated rate schedule (step-up notes, step coupons around
+    /// call dates). The schedule is the coupon — there is no single scalar rate.
+    | Step of schedule: StepCouponEntry list * dayCount: string option
+    /// Inflation-linked coupon (TIPS, linkers): a real rate accruing on index-adjusted principal.
+    /// <c>indexName</c> names the reference index (e.g. "CPI-U"); <c>baseIndexValue</c> is the
+    /// index level at issue and <c>indexRatio</c> the current index ratio applied to principal.
+    | InflationLinked of realRate: decimal * indexName: string * baseIndexValue: decimal option * indexRatio: decimal option * dayCount: string option
 
 /// A scheduled principal repayment (amortizing instalment, sinking-fund payment, or term-loan
 /// instalment). Shared by bond and direct-loan terms.
@@ -289,12 +315,31 @@ module BondTerms =
         | BondCouponStructure.Fixed(rate, _) -> Some rate
         | BondCouponStructure.Floating _ -> None
         | BondCouponStructure.ZeroCoupon -> None
+        // Step rates live in the dated schedule (see couponRateAsOf); a single scalar would
+        // misstate every period but the one it was sampled in.
+        | BondCouponStructure.Step _ -> None
+        | BondCouponStructure.InflationLinked(realRate, _, _, _, _) -> Some realRate
 
     let dayCount (terms: BondTerms) =
         match terms.Coupon with
         | BondCouponStructure.Fixed(_, dc) -> dc
         | BondCouponStructure.Floating(_, _, _, _, dc) -> dc
         | BondCouponStructure.ZeroCoupon -> None
+        | BondCouponStructure.Step(_, dc) -> dc
+        | BondCouponStructure.InflationLinked(_, _, _, _, dc) -> dc
+
+    /// The coupon rate payable as of a date: for step coupons, the latest scheduled step
+    /// effective on or before <paramref name="asOf"/>; for other structures, the scalar rate
+    /// (when one exists). None for floating/zero coupons and for a step date before the first step.
+    let couponRateAsOf (asOf: DateOnly) (terms: BondTerms) =
+        match terms.Coupon with
+        | BondCouponStructure.Step(schedule, _) ->
+            schedule
+            |> List.filter (fun entry -> entry.EffectiveDate <= asOf)
+            |> List.sortBy (fun entry -> entry.EffectiveDate)
+            |> List.tryLast
+            |> Option.map (fun entry -> entry.Rate)
+        | _ -> couponRate terms
 
 type FxSpotTerms = {
     BaseCurrency: string
@@ -627,7 +672,7 @@ module AssetClassRegistry =
             SubType = SecuritySubType.SwapContract; IssuerType = None; RiskCountry = None; IsDerivative = true }
           { AssetClassName = "DirectLoan"; AssetClass = AssetClass.PrivateCredit; Family = Some AssetFamily.PrivateLoan
             SubType = SecuritySubType.DirectLoan; IssuerType = None; RiskCountry = None; IsDerivative = false }
-          { AssetClassName = "StructuredCredit"; AssetClass = AssetClass.FixedIncome; Family = Some AssetFamily.StructuredCash
+          { AssetClassName = "StructuredCredit"; AssetClass = AssetClass.FixedIncome; Family = Some AssetFamily.SecuritizedCredit
             SubType = SecuritySubType.StructuredCredit; IssuerType = Some "StructuredVehicle"; RiskCountry = None; IsDerivative = false }
           { AssetClassName = "PrivateFundInterest"; AssetClass = AssetClass.Fund; Family = Some AssetFamily.PartnershipEquity
             SubType = SecuritySubType.LimitedPartnershipInterest; IssuerType = Some "FundVehicle"; RiskCountry = None; IsDerivative = false }

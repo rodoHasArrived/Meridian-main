@@ -60,7 +60,7 @@ public sealed record OpenInterestUpdate : MarketEventPayload
         long Volume,
         long? PreviousOpenInterest = null,
         long SequenceNumber = 0,
-        string Source = "IB")
+        string Source = MarketDataSources.Unknown)
     {
         if (string.IsNullOrWhiteSpace(Symbol))
             throw new ArgumentException("Symbol is required", nameof(Symbol));

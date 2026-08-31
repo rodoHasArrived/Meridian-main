@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 211,
-    "warning": 211
+    "total": 226,
+    "warning": 226
   },
   "failed": false,
   "findings": [
@@ -530,6 +530,26 @@
     {
       "details": {
         "schema": "ledger",
+        "table": "journal_entry_integrity_seals"
+      },
+      "message": "Business table ledger.journal_entry_integrity_seals does not have a table comment.",
+      "object": "ledger.journal_entry_integrity_seals",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "journal_entry_open_postings"
+      },
+      "message": "Business table ledger.journal_entry_open_postings does not have a table comment.",
+      "object": "ledger.journal_entry_open_postings",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
         "table": "journal_legs"
       },
       "message": "Business table ledger.journal_legs does not have a table comment.",
@@ -914,6 +934,96 @@
       },
       "message": "Business table security_master.commodity_projection does not have a table comment.",
       "object": "security_master.commodity_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_action_canonical_sources"
+      },
+      "message": "Business table security_master.corporate_action_canonical_sources does not have a table comment.",
+      "object": "security_master.corporate_action_canonical_sources",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_action_case_conflicts"
+      },
+      "message": "Business table security_master.corporate_action_case_conflicts does not have a table comment.",
+      "object": "security_master.corporate_action_case_conflicts",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_action_case_evidence"
+      },
+      "message": "Business table security_master.corporate_action_case_evidence does not have a table comment.",
+      "object": "security_master.corporate_action_case_evidence",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_action_case_transitions"
+      },
+      "message": "Business table security_master.corporate_action_case_transitions does not have a table comment.",
+      "object": "security_master.corporate_action_case_transitions",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_action_command_receipts"
+      },
+      "message": "Business table security_master.corporate_action_command_receipts does not have a table comment.",
+      "object": "security_master.corporate_action_command_receipts",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_action_processing_cases"
+      },
+      "message": "Business table security_master.corporate_action_processing_cases does not have a table comment.",
+      "object": "security_master.corporate_action_processing_cases",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_action_processing_options"
+      },
+      "message": "Business table security_master.corporate_action_processing_options does not have a table comment.",
+      "object": "security_master.corporate_action_processing_options",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_action_restatement_obligations"
+      },
+      "message": "Business table security_master.corporate_action_restatement_obligations does not have a table comment.",
+      "object": "security_master.corporate_action_restatement_obligations",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_action_source_proposals"
+      },
+      "message": "Business table security_master.corporate_action_source_proposals does not have a table comment.",
+      "object": "security_master.corporate_action_source_proposals",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -1743,6 +1853,62 @@
     {
       "details": {
         "columns": [
+          "accepted_corp_act_id"
+        ],
+        "constraint": "corporate_action_source_proposals_accepted_corp_act_id_fkey",
+        "schema": "security_master",
+        "table": "corporate_action_source_proposals"
+      },
+      "message": "Foreign key security_master.corporate_action_source_proposals.corporate_action_source_proposals_accepted_corp_act_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.corporate_action_source_proposals.corporate_action_source_proposals_accepted_corp_act_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "supersedes_proposal_id"
+        ],
+        "constraint": "corporate_action_source_proposals_supersedes_proposal_id_fkey",
+        "schema": "security_master",
+        "table": "corporate_action_source_proposals"
+      },
+      "message": "Foreign key security_master.corporate_action_source_proposals.corporate_action_source_proposals_supersedes_proposal_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.corporate_action_source_proposals.corporate_action_source_proposals_supersedes_proposal_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "initial_case_id"
+        ],
+        "constraint": "fk_corporate_action_source_initial_case",
+        "schema": "security_master",
+        "table": "corporate_action_source_proposals"
+      },
+      "message": "Foreign key security_master.corporate_action_source_proposals.fk_corporate_action_source_initial_case is not covered by a left-prefix index.",
+      "object": "security_master.corporate_action_source_proposals.fk_corporate_action_source_initial_case",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "supersedes_corp_act_id"
+        ],
+        "constraint": "fk_corporate_actions_superseded_action",
+        "schema": "security_master",
+        "table": "corporate_actions"
+      },
+      "message": "Foreign key security_master.corporate_actions.fk_corporate_actions_superseded_action is not covered by a left-prefix index.",
+      "object": "security_master.corporate_actions.fk_corporate_actions_superseded_action",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
           "source_event_id"
         ],
         "constraint": "fee_balance_source_event_id_fkey",
@@ -2291,5 +2457,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "fecc7edd8c8b92a5a146e68754848cfd360e29f1e6b020a5745f1afbe802cb34"
+  "fingerprint": "ce3a5ae6ddd68e1a96a87b77697b0e2add3a06d787beec723711f0f7323bed05"
 }

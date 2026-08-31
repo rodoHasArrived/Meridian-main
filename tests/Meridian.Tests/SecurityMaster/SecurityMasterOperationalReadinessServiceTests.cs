@@ -204,7 +204,11 @@ public sealed class SecurityMasterOperationalReadinessServiceTests
         var result = await service.GetReadinessAsync(new SecurityMasterOperationalReadinessRequest(AssetClass: "CustomAsset"));
 
         var row = result.AssetClasses.Should().ContainSingle().Subject;
-        row.DisplayName.Should().Contain("MBS");
+        // ADR-022: CustomAsset is the profile-backed home for private/other assets; securitized
+        // products (MBS/ABS/CLO/CMBS) belong in StructuredCredit and must no longer be advertised
+        // as CustomAsset's identity.
+        row.DisplayName.Should().Contain("Profile-backed");
+        row.DisplayName.Should().NotContain("MBS");
         row.EvidenceRequirements.Should().Contain(static requirement =>
             requirement.Category == "Governance" &&
             requirement.Status == "Ready");

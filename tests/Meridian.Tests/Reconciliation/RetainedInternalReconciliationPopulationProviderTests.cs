@@ -4,6 +4,7 @@ using Meridian.Contracts.Domain;
 using Meridian.Contracts.FundStructure;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.PortfolioRecords.Accounts;
+using Meridian.Tests.TestHelpers;
 using NSubstitute;
 
 namespace Meridian.Tests.Reconciliation;
@@ -11,8 +12,10 @@ namespace Meridian.Tests.Reconciliation;
 /// <summary>
 /// Verifies the retained internal-book provider that replaces the empty default across the browser
 /// workstation and CLI graphs: it resolves Meridian's retained cash balance and position snapshot for a
-/// fund account as of the statement period end, labels them with the run's external account key, and
-/// fails closed to an empty book on any resolution gap so the matcher never fabricates a match.
+/// fund account as of the statement period end, projects the account's posted journals into the
+/// ledger-transaction population through the composed <see cref="IInternalLedgerTransactionSource"/>,
+/// labels every record with the run's external account key, and fails closed to an empty book on any
+/// resolution gap so the matcher never fabricates a match.
 /// </summary>
 public sealed class RetainedInternalReconciliationPopulationProviderTests
 {
@@ -48,7 +51,78 @@ public sealed class RetainedInternalReconciliationPopulationProviderTests
         position.AsOfDate.Should().Be(new DateOnly(2026, 5, 28));
         position.MarketValue.Should().BeNull("market value is left unspecified so the engine matches on quantity");
 
-        result.LedgerTransactions.Should().BeEmpty("ledger-transaction population is not sourced yet");
+        result.LedgerTransactions.Should().BeEmpty("no ledger-transaction source is composed for this provider");
+    }
+
+    [Fact]
+    public async Task GetPopulationsAsync_ProjectsLedgerTransactionsThroughComposedSource()
+    {
+        var accounts = Substitute.For<IAccountQueryService>();
+        accounts.GetAccountAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(Account("FUND-1", "run-1"));
+
+        var ledgerSource = Substitute.For<IInternalLedgerTransactionSource>();
+        InternalLedgerTransactionQuery? captured = null;
+        ledgerSource
+            .GetTransactionsAsync(Arg.Do<InternalLedgerTransactionQuery>(query => captured = query), Arg.Any<CancellationToken>())
+            .Returns(new[]
+            {
+                new InternalLedgerTransaction(
+                    "internal-txn:EXT-1:j-1", "EXT-9", "EXT-1", "MSFT", "USD",
+                    new DateOnly(2026, 5, 28), new DateOnly(2026, 5, 30), "trade", 5m, -100m, "internal:journal:j-1"),
+            });
+
+        var provider = new RetainedInternalReconciliationPopulationProvider(accounts, ledgerTransactionSource: ledgerSource);
+
+        var result = await provider.GetPopulationsAsync(Context(AccountId.ToString("D")));
+
+        var transaction = result.LedgerTransactions.Should().ContainSingle().Subject;
+        transaction.Account.Should().Be("EXT-1", "projected transactions are labeled with the run's external account key");
+        captured.Should().NotBeNull();
+        captured!.AccountLabel.Should().Be("EXT-1");
+        captured.AccountAliases.Should().Contain(
+            AccountId.ToString("D"), "journals stamped with the fund-account GUID must attribute to this account");
+        captured.AccountAliases.Should().Contain(
+            "EXT-1", "journals stamped with the external custodian key must attribute to this account");
+        captured.PeriodStart.Should().Be(new DateOnly(2026, 5, 1));
+        captured.PeriodEnd.Should().Be(new DateOnly(2026, 5, 31));
+    }
+
+    [Fact]
+    public async Task GetPopulationsAsync_ComposedSourceFailureDoesNotLogExternalAccountIdentifier()
+    {
+        const string sensitiveIban = "GB82WEST12345698765432";
+        var accounts = Substitute.For<IAccountQueryService>();
+        accounts.GetAccountAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(Account("FUND-1", "run-1"));
+        accounts.GetBalanceTimelineAsync(
+                Arg.Any<Guid>(),
+                Arg.Any<DateOnly?>(),
+                Arg.Any<DateOnly?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new List<AccountBalanceSnapshotDto>());
+
+        var ledgerSource = Substitute.For<IInternalLedgerTransactionSource>();
+        ledgerSource
+            .GetTransactionsAsync(Arg.Any<InternalLedgerTransactionQuery>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<IReadOnlyList<InternalLedgerTransaction>>(
+                new InvalidOperationException($"Provider account {sensitiveIban} is unavailable.")));
+        var logger = new RecordingLogger<RetainedInternalReconciliationPopulationProvider>();
+        var provider = new RetainedInternalReconciliationPopulationProvider(
+            accounts,
+            logger: logger,
+            ledgerTransactionSource: ledgerSource);
+
+        var result = await provider.GetPopulationsAsync(
+            new InternalReconciliationPopulationContext(
+                AccountId.ToString("D"),
+                sensitiveIban,
+                new DateOnly(2026, 5, 1),
+                new DateOnly(2026, 5, 31),
+                "USD"));
+
+        result.Should().BeSameAs(InternalReconciliationPopulations.Empty);
+        var entry = logger.Entries.Should().ContainSingle().Subject;
+        entry.Message.Should().NotContain(sensitiveIban);
+        entry.Exception.Should().BeNull();
     }
 
     [Fact]

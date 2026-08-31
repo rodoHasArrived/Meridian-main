@@ -118,6 +118,7 @@ const DailyControlTowerScreen = lazy(() => import("@/screens/daily-control-tower
 const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-screen").then((module) => ({ default: module.EvidenceWorkbenchScreen })));
 const AccountingScreen = lazy(() => import("@/screens/accounting-screen").then((module) => ({ default: memo(module.AccountingScreen) })));
 const FamilyOfficeScreen = lazy(() => import("@/screens/family-office-screen").then((module) => ({ default: module.FamilyOfficeScreen })));
+const LoanBookScreen = lazy(() => import("@/screens/loan-book-screen").then((module) => ({ default: module.LoanBookScreen })));
 const CashLadderScreen = lazy(() => import("@/screens/cash-ladder-screen").then((module) => ({ default: module.CashLadderScreen })));
 const MarketDataScreen = lazy(() => import("@/screens/market-data-screen").then((module) => ({ default: module.MarketDataScreen })));
 const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: memo(module.OperatorReadinessConsole) })));
@@ -130,6 +131,7 @@ const CloseCalendarScreen = lazy(() => import("@/screens/finance-standard-pages-
 const LedgerExplorerScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.LedgerExplorerScreen })));
 const ReconciliationMatchWorkbenchScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReconciliationMatchWorkbenchScreen })));
 const StatementImportScreen = lazy(() => import("@/screens/statement-import-screen").then((module) => ({ default: module.StatementImportScreen })));
+const CapitalCallIssuanceScreen = lazy(() => import("@/screens/capital-call-issuance-screen").then((module) => ({ default: module.CapitalCallIssuanceScreen })));
 const MarginControlCenterScreen = lazy(() => import("@/screens/margin-control-center-screen").then((module) => ({ default: module.MarginControlCenterScreen })));
 const ReportPreviewValidationScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReportPreviewValidationScreen })));
 const ReportRunDetailScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReportRunDetailScreen })));
@@ -140,6 +142,7 @@ const EntitySetupWizard = lazy(() => import("@/features/fund-structure/entity-se
 const PortfolioScreen = lazy(() => import("@/screens/portfolio-screen").then((module) => ({ default: memo(module.PortfolioScreen) })));
 const CoveredCallScreen = lazy(() => import("@/screens/covered-call-screen").then((module) => ({ default: module.CoveredCallScreen })));
 const QuantLabScreen = lazy(() => import("@/screens/quant-lab-screen").then((module) => ({ default: module.QuantLabScreen })));
+const StrategyRunLedgerScreen = lazy(() => import("@/screens/strategy-run-ledger-screen").then((module) => ({ default: module.StrategyRunLedgerScreen })));
 const ReportingScreen = lazy(() => import("@/screens/reporting-screen").then((module) => ({ default: memo(module.ReportingScreen) })));
 const StrategyScreen = lazy(() => import("@/screens/strategy-screen").then((module) => ({ default: memo(module.StrategyScreen) })));
 const StrategyDesignerScreen = lazy(() => import("@/screens/strategy-designer-screen").then((module) => ({ default: module.StrategyDesignerScreen })));
@@ -611,6 +614,7 @@ function AppShell({
   const dataRouteElement = (
     <DataScreen
       data={data}
+      session={session}
       providerConnections={providerConnections}
       providerReadiness={providerReadiness}
       providerRoutingConnections={providerRoutingConnections}
@@ -805,6 +809,7 @@ function AppShell({
                   )} />
                   <Route path="/trading/*" element={<TradingScreen data={trading} fundAccountId={operatingScopeInput.fundAccountId} />} />
                   <Route path="/portfolio/family-office" element={<FamilyOfficeScreen />} />
+                  <Route path="/portfolio/loan-book" element={<LoanBookScreen />} />
                   <Route path="/portfolio/cash-ladder" element={<CashLadderScreen fundAccountId={operatingScopeInput.fundAccountId ?? undefined} />} />
                   <Route path="/portfolio/asset-detail" element={<AssetDetailScreen />} />
                   <Route path="/portfolio/*" element={(
@@ -827,13 +832,14 @@ function AppShell({
                   <Route path="/accounting/journal-entries/detail" element={<JournalEntryDetailScreen />} />
                   <Route path="/accounting/reconciliation/match" element={<ReconciliationMatchWorkbenchScreen data={accounting} />} />
                   <Route path="/accounting/statement-import" element={<StatementImportScreen />} />
+                  <Route path="/accounting/capital-calls" element={<CapitalCallIssuanceScreen />} />
                   <Route path="/accounting/margin-control" element={<MarginControlCenterScreen />} />
                   <Route path="/accounting/close-calendar" element={<CloseCalendarScreen data={accounting} />} />
                   <Route path="/accounting/approvals/inbox" element={<ApprovalInboxScreen data={accounting} />} />
                   <Route path="/accounting/security-master/detail" element={<AssetDetailScreen />} />
                   <Route path="/accounting/evidence/detail" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/accounting/evidence" element={<LegacyWorkspaceRedirect />} />
-                  <Route path="/accounting/*" element={<AccountingScreen data={accounting} multiAssetCoverage={portfolioMultiAssetCoverage} />} />
+                  <Route path="/accounting/*" element={<AccountingScreen data={accounting} multiAssetCoverage={portfolioMultiAssetCoverage} session={session} />} />
                   <Route path="/reporting/operations-record" element={<OperationsRecordReleaseScreen data={data} reporting={reporting} />} />
                   <Route path="/reporting/library" element={<ReportLibraryScreen data={reporting} />} />
                   <Route path="/reporting/run" element={<ReportRunParametersScreen data={reporting} accounting={accounting} />} />
@@ -845,6 +851,7 @@ function AppShell({
                   <Route path="/strategy/designer" element={<StrategyDesignerScreen />} />
                   <Route path="/strategy/formula-workbench" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
+                  <Route path="/strategy/run-ledger" element={<StrategyRunLedgerScreen />} />
                   <Route path="/strategy/*" element={<StrategyScreen data={strategy} />} />
                   <Route path="/data/quotes" element={<MarketDataScreen />} />
                   <Route path="/data/watchlist" element={<LegacyWorkspaceRedirect />} />

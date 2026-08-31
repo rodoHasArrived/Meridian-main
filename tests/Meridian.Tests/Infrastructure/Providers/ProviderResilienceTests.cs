@@ -34,7 +34,7 @@ public sealed class CompositeSinkCircuitBreakerTests
             Size: 100,
             Aggressor: AggressorSide.Buy,
             SequenceNumber: 1);
-        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade, seq: 1);
+        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade, seq: 1, source: "TEST");
     }
 
     private static Mock<IStorageSink> CreateFailingSink(int failAfterNth = 0)

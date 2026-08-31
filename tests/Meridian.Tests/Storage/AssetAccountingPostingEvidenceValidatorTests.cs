@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
@@ -102,6 +103,72 @@ public sealed class AssetAccountingPostingEvidenceValidatorTests
 
         act.Should().Throw<LedgerValidationException>()
             .WithMessage("*source content hash*");
+    }
+
+    [Theory]
+    [InlineData("source-reference")]
+    [InlineData("uri")]
+    [InlineData("evidence-id")]
+    public void NormalizeAndValidate_RealPostingWithSyntheticEvidenceSegment_FailsClosed(string field)
+    {
+        // A mark priced off a fabricated close retains structured evidence such as
+        // "daily-close:AAPL:2026-07-21:synthetic". Whichever field carries it, a posting
+        // still marked Real must be refused at the append boundary.
+        var write = BuildWrite();
+        var command = write.PostingCommand!;
+        var evidence = command.Evidence.Single();
+        var synthetic = field switch
+        {
+            "source-reference" => evidence with { SourceReference = "daily-close:AAPL:2026-07-21:synthetic" },
+            "uri" => evidence with { Uri = "workstation://valuation/daily-close:AAPL:2026-07-21:synthetic" },
+            "evidence-id" => evidence with { EvidenceId = "daily-close:AAPL:2026-07-21:synthetic" },
+            _ => throw new ArgumentOutOfRangeException(nameof(field))
+        };
+
+        var act = () => AccountingPostingCommandValidator.NormalizeAndValidate(write with
+        {
+            PostingCommand = command with { Evidence = [synthetic] }
+        });
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*simulated, seeded, or sample origin*");
+    }
+
+    [Fact]
+    public void NormalizeAndValidate_MarkedSimulatedPostingWithSyntheticEvidence_Posts()
+    {
+        var write = BuildWrite();
+        var command = write.PostingCommand!;
+        var evidence = command.Evidence.Single() with
+        {
+            SourceReference = "daily-close:AAPL:2026-07-21:synthetic"
+        };
+
+        var act = () => AccountingPostingCommandValidator.NormalizeAndValidate(write with
+        {
+            PostingCommand = command with
+            {
+                Evidence = [evidence],
+                Provenance = DataProvenance.Simulated
+            }
+        });
+
+        act.Should().NotThrow("a posting that carries its simulated mark retains the origin honestly");
+    }
+
+    [Fact]
+    public void NormalizeAndValidate_FreeTextSourceNames_AreNotMistakenForSimulatedOrigin()
+    {
+        var write = BuildWrite();
+        var command = write.PostingCommand!;
+        var evidence = command.Evidence.Single() with { SourceSystem = "Sample Custodian" };
+
+        var act = () => AccountingPostingCommandValidator.NormalizeAndValidate(write with
+        {
+            PostingCommand = command with { Evidence = [evidence] }
+        });
+
+        act.Should().NotThrow("whole free-text names are not structured origin segments");
     }
 
     private static LedgerJournalEntryWrite BuildWrite()

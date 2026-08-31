@@ -196,11 +196,32 @@
       "docLabel": "Portfolio \u2014 Family Office",
       "waitForText": "Family Office Portfolio",
       "requiredApiRoutes": [
-        "/api/workstation/portfolio"
+        "/api/workstation/portfolio",
+        "/api/workstation/family-office/overview"
       ],
       "waitForTexts": [
-        "Consolidated entity ownership",
-        "Family office data is not connected"
+        "Consolidated entity ownership"
+      ],
+      "waitForAbsentTexts": [
+        "Family office data is not connected",
+        "Family office data could not be loaded"
+      ]
+    },
+    {
+      "id": "W02F",
+      "name": "web-portfolio-loan-book",
+      "path": "/portfolio/loan-book",
+      "docLabel": "Portfolio \u2014 Loan Book",
+      "waitForText": "Loan book",
+      "requiredApiRoutes": [
+        "/api/loans/portfolio"
+      ],
+      "waitForTexts": [
+        "Senior Term Facility A"
+      ],
+      "waitForAbsentTexts": [
+        "Loan book could not be loaded",
+        "No direct-lending facilities are recorded"
       ]
     },
     {
@@ -316,11 +337,13 @@
       "docLabel": "Accounting \u2014 Trial Balance Detail",
       "waitForText": "Trial Balance",
       "requiredApiRoutes": [
-        "/api/workstation/accounting"
+        "/api/workstation/accounting",
+        "/api/ledger/books",
+        "/api/ledger/periods"
       ],
       "waitForTexts": [
-        "Pick a ledger run",
-        "basis-aware account balances"
+        "Account balances from the fund's posted journal, scoped by ledger period.",
+        "Trial balance scope"
       ]
     },
     {
@@ -399,11 +422,14 @@
       "waitForText": "Ledger Explorer",
       "requiredApiRoutes": [
         "/api/workstation/accounting",
-        "/api/workstation/runs/run-42/ledger/journal"
+        "/api/workstation/runs/run-42/ledger/journal",
+        "/api/ledger/books",
+        "/api/ledger/periods"
       ],
       "waitForTexts": [
         "Search by account, amount, journal ID, source, security, entity",
-        "Saved views",
+        "Ledger book",
+        "Ledger period",
         "Ledger search results"
       ]
     },
@@ -420,7 +446,7 @@
       "waitForTexts": [
         "Cash",
         "$120,500.00",
-        "Open ledger activity",
+        "Open run ledger activity",
         "Open source journal entry"
       ]
     },
@@ -574,7 +600,7 @@
     },
     {
       "id": "W03N",
-      "docLabel": "Accounting — Margin Control Center",
+      "docLabel": "Accounting \u2014 Margin Control Center",
       "name": "web-accounting-margin-control",
       "path": "/accounting/margin-control",
       "requiredApiRoutes": [
@@ -584,6 +610,21 @@
       "waitForTexts": [
         "Multi-prime rollup",
         "MARGIN_SHADOW_VARIANCE"
+      ]
+    },
+    {
+      "id": "W03O",
+      "docLabel": "Accounting \u2014 Capital Call Issuance",
+      "name": "web-accounting-capital-calls",
+      "path": "/accounting/capital-calls",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting"
+      ],
+      "waitForText": "Capital Call Issuance",
+      "waitForTexts": [
+        "How this run is governed",
+        "Capital-call id",
+        "This surface never posts."
       ]
     },
     {
@@ -894,6 +935,20 @@
       ]
     },
     {
+      "id": "W05G",
+      "name": "web-strategy-run-ledger",
+      "path": "/strategy/run-ledger",
+      "docLabel": "Strategy \u2014 Run Ledger Explorer",
+      "waitForText": "Strategy Run Ledger Explorer",
+      "requiredApiRoutes": [
+        "/api/workstation/financial-record-explorers/ledger"
+      ],
+      "waitForTexts": [
+        "Strategy Run Ledger Explorer",
+        "Strategy run (simulation) \u2014 not the posted journal"
+      ]
+    },
+    {
       "id": "W06",
       "name": "web-data-workspace",
       "path": "/data",
@@ -926,8 +981,8 @@
         "QUICK ADD"
       ],
       "waitForAbsentTexts": [
-        "Refreshing…",
-        "Loading symbols…"
+        "Refreshing\u2026",
+        "Loading symbols\u2026"
       ]
     },
     {

@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-19 (verification pass; prior passes 2026-08-14, 2026-08-12)
+**Reviewed:** 2026-08-26 (resolution pass; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -35,25 +35,33 @@ risks that compound as new asset classes land.
 > **Verification pass, 2026-08-14.** Re-read against current source at `4b39e9da8`. The findings
 > below stand as written except where a **Status (2026-08-14)** note says otherwise; four of the ten
 > risk items have since closed or materially narrowed. See
-> [Verification pass — 2026-08-14](#verification-pass--2026-08-14) for the open list and
-> re-ranked priorities as of that date.
+> [Verification pass — 2026-08-14](#verification-pass--2026-08-14) for the current open list and
+> re-ranked priorities.
+
+> **Resolution pass, 2026-08-24.** An implementation pass addressed the open findings from the
+> 2026-08-14 verification. See [Resolution pass — 2026-08-24](#resolution-pass--2026-08-24) for
+> what landed per finding; **Status (2026-08-24)** notes below mark items individually. The
+> remaining declared-and-deferred items are relational projections for the private/alternative
+> classes and valid-time term history.
 >
-> **Verification pass, 2026-08-19.** Re-read against current source at `7ed160dc`. Two authorization
-> changes landed since 2026-08-14, and they are different in kind: permission declarations added to 36
-> `SecurityMasterEndpoints.cs` endpoints (19 reads, 17 mutations), which harden the *declaration* over
-> a group filter that already enforced the same check; and **ten routes in
-> `EdgarReferenceDataEndpoints.cs` and `WorkstationEndpoints.SecurityMasterWorkbench.cs` that had no
-> group-level permission filter at all, which went from unenforced to enforced** — real runtime
-> hardening. *(Corrected 2026-08-21: this verdict said only the first, calling the pass's endpoint
-> improvement declarative. That was an over-correction generalised across two files I had not opened;
-> see the correction under **Summary** in the 2026-08-19 pass. It is listed here as well because this
-> paragraph is the first thing a reader sees, and it kept the withdrawn claim one round longer than
-> the section it summarises.)* One new observation was added (a tested calculation library with no
-> production caller). This pass also
-> attempted repairs: one finding was fixed, and **two were refuted and retracted** (the
-> `IOperatorOverridesStore` "dead dependency" in item 5, and the factor-schedule collapse
-> recommended by item 8). Every other structural finding stands as written. See
-> [Verification pass — 2026-08-19](#verification-pass--2026-08-19).
+> **Independent verification pass, 2026-08-24 (post-resolution).** A separately-run review of the
+> same subsystem, re-verified against `780aeb9e` after the resolution merged. Two findings survive
+> it: no catalog-to-validator parity guard, and a CSV import path that fails for **every** asset
+> class because the parser never populates the terms payloads the create path requires. See
+> [Independent verification pass](#independent-verification-pass--2026-08-24-post-resolution).
+>
+> **Scheduled institutional-requirements pass, 2026-08-26.** Re-read against `2917848a`. The verdict
+> stands; both surviving findings above are still open; six new items are filed. See
+> [Scheduled institutional-requirements pass — 2026-08-26](#scheduled-institutional-requirements-pass--2026-08-26).
+> Its highest-severity finding is new: `CashSweep` and `StructuredCredit` share the
+> `AssetFamily.StructuredCash` label and the accounting adapter reads that label as securitized, so
+> cash-sweep vehicles resolve to an asset-backed-security accounting class.
+>
+> **Resolution pass, 2026-08-26.** Four items from that pass are closed — the family split (N1), both
+> parity guards (V1 and N3), CSV import (V2), and the prose-sniffing classification it shared with
+> N2. N4, N5 and N6 stay open. See
+> [Resolution pass — 2026-08-26](#resolution-pass--2026-08-26), which also records the intended
+> behaviour deltas.
 
 ---
 
@@ -108,37 +116,6 @@ all derived economics so consumers cannot diverge.
 carries per-class identifier, term, evidence, and ledger-depth requirements with hard-blocker flags.
 Few systems at this stage know what "ready" means per asset class.
 
-**The read surface is authorization-gated at the group, and partly per route.** Every Security
-Master route has been behind `group.AddEndpointFilter(RequireViewSecurityMasterPermission)` since
-well before this review — one filter on the whole group, rejecting a caller without
-`ViewSecurityMaster` or `ModifySecurityMaster` and returning `Unauthorized` when no permissions
-resolve at all. That filter, not the per-route metadata, is what actually enforces read
-authorization today.
-
-*(Added 2026-08-19; counts corrected after review.)* Of 50 mapped endpoints, 36 now carry a fluent
-permission declaration: **19** reads declare
-`RequireAnyPermission(ViewSecurityMaster, ModifySecurityMaster)` and **17** mutations declare
-`RequirePermission(...)`. The record-mutating routes — the generic field edits and the equity
-amendments — also carry `RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)`, though that
-pairing is not universal; see item 11.
-
-> **Corrected 2026-08-19.** An earlier revision said "roughly 36 read endpoints" and claimed a
-> refactor dropping the group filter "cannot silently open 36 routes". Both halves were wrong. The
-> 36 is the count of *changed lines* in those three commits (36 insertions / 36 deletions), which is
-> every endpoint whose fluent metadata changed — reads and mutations together — not the read count.
-> The read count is 19. And **14 of the 50 endpoints carry no fluent permission declaration**, among
-> them the pricing hierarchy, price golden-copy and comparison, cash-flow source and projection,
-> vendor-entitlement, and latest-quality-report reads. The per-route metadata is therefore a partial
-> belt-and-braces over the group filter, not a replacement for it, and the review should not have
-> implied otherwise.
->
-> *Scope of what was checked:* the counts above come from the declarations in
-> `SecurityMasterEndpoints.cs`. This pass did **not** establish how the declaration ratchet treats
-> those 14 — none carries `EndpointOpenReadMetadata` and none appears in the read-declaration frozen
-> baseline, yet the ratchet passes, and that is unexplained here. An earlier revision asserted that
-> dropping the group filter "would silently open exactly those 14"; that consequence does not follow
-> from what was verified and has been withdrawn rather than restated a third time.
-
 **Auditability is durable.** Migration 025 moved the conflict store and revision-lifecycle store off
 process-local memory specifically so "a publish only ever runs against a revision that was durably
 approved". Conflict resolution commits winner + close atomically. Override approvals carry a
@@ -170,6 +147,19 @@ cannot act on.
 > remains three cases (`Fixed` / `Floating` / `ZeroCoupon`), so **step-rate and inflation-linked
 > bonds are still classifiable but not computable**. Multiple `BondSubclass` cases still have no
 > term data that distinguishes them economically.
+>
+> **Status (2026-08-24): closed.** `BondCouponStructure` gained `Step of StepCouponEntry list`
+> (a dated rate schedule with `couponRateAsOf` resolution) and `InflationLinked of realRate ×
+> indexName × baseIndexValue × indexRatio`, declared in the terms schema
+> (`stepSchedule`, `inflationIndex`, `inflationBaseIndexValue`, `inflationIndexRatio`), wired
+> through both codec sides, guarded by domain invariants (non-empty schedule, unique step dates
+> within maturity, positive index values), consumed by `StructuredCashFlowTermsResolver`
+> (`StepCouponSchedule` + `CouponRateAsOf`), and covered by round-trip variants. Fixing the codec
+> also surfaced and closed a live drift: six declared `BondSubclass` cases (`SinkingFund`,
+> `StepRate`, `FixedToFloat`, `Vrdn`, `AuctionRate`, `BankLoan`) were missing from the C#
+> deserializer and degraded to `Other`, and the `Other` case re-wrapped itself one level deeper on
+> every serialize pass. The securitized subclasses remain labels by design — ADR-022 rules
+> `StructuredCredit` their canonical home (see finding 2).
 
 ### 2. One concept, three or four modeling routes
 
@@ -182,6 +172,15 @@ instrument means reporting, risk, and reconciliation cannot assume a stable part
 Similarly, `MoneyMarketFund` and `InvestmentFund` overlap (both are funds; `InvestmentFundTerms`
 even carries `isStableNav` for "stable-NAV money market and government liquidity funds"), and
 `CashSweep` overlaps `MoneyMarketFund` for sweep vehicles.
+
+> **Status (2026-08-24): closed by ruling + enforcement.**
+> [ADR-022](../adr/022-canonical-asset-class-homes.md) rules one canonical home per instrument
+> family: securitized products belong in `StructuredCredit` (the Bond validator now raises
+> Error-severity `SM_BOND_SECURITIZED_SUBCLASS_NONCANONICAL` for the ten securitized subclasses;
+> `CustomAsset` records with securitized classification metadata raise a Warning), stable-NAV
+> vehicles belong in `MoneyMarketFund` (`SM_INVESTMENT_FUND_STABLE_NAV_NONCANONICAL`, Warning), and
+> `CashSweep` models sweep programs, not the fund vehicles they sweep into. The operational
+> readiness catalog no longer labels `CustomAsset` as "MBS / ABS / CLO / CMBS".
 
 ### 3. `CustomAsset` — the designated extension point — does not round-trip
 
@@ -252,16 +251,9 @@ Three consequences:
   (`security-passport-editor.tsx:332`). Nothing validates the path against
   `SecurityAssetTermsSchema` for that security's asset class, and `newValue` is stored as a string
   regardless of the field's declared type.
-- **No merge path.** No consumer applies an approved override's *value* to canonical terms. An
-  approved correction to a coupon rate has no effect on cashflow projection, amortization, pricing,
-  or NAV. *(Corrected 2026-08-21: this read "no consumer reads the override store except the
-  validation service", which the retraction further down disproves — `GetSecurityMasterOverrideHistoryAsync`
-  reads it to surface override audit history into reconciliation break context. The gap is that
-  nothing applies the value, not that nothing reads the store; a categorical claim here would have
-  the reader miss the reconciliation integration entirely.)* Two consumers exist and neither closes
-  the gap: the validation service only *flags* unapproved overrides
-  (`SecurityValidationService.cs:570-604`), and the reconciliation path only surfaces governance
-  history.
+- **No merge path.** No consumer reads the override store except the validation service, which only
+  *flags* unapproved overrides (`SecurityValidationService.cs:570-604`). An approved correction to a
+  coupon rate has no effect on cashflow projection, amortization, pricing, or NAV.
 - **The approval gate protects an annotation.** Draft → Submitted → Approved → Published with
   independent-reviewer requirements, restatement resolution, and affected-ledger-book scoping — all
   applied to a side table that by design never changes the record it annotates.
@@ -282,18 +274,23 @@ built alongside it, so the workbench remains an annotation surface rather than a
 > writes an approved override back into the canonical terms. An approved coupon correction still has
 > no effect on cash-flow projection, amortization, pricing, or NAV.
 >
-> ~~Related: `ProviderLedgerReconciliationService` injects `IOperatorOverridesStore` and never reads
-> it (`ProviderLedgerReconciliationService.cs:48,63,76`) — a dead dependency that reads as an
-> override-aware reconciliation path but is not one.~~
+> Related: `ProviderLedgerReconciliationService` injects `IOperatorOverridesStore` and never reads it
+> (`ProviderLedgerReconciliationService.cs:48,63,76`) — a dead dependency that reads as an
+> override-aware reconciliation path but is not one.
 >
-> **Retracted 2026-08-19.** This was wrong. The dependency is read — in a sibling partial, by
-> `GetSecurityMasterOverrideHistoryAsync`
-> (`ProviderLedgerReconciliationService.SecurityCoverage.cs:448-469`), which surfaces the ten most
-> recent override audit-trail entries (event type, approval status, actor, reviewer, reason,
-> comment) into reconciliation break context. `ProviderLedgerReconciliationService` is a `partial`
-> class across four files; the 2026-08-14 and 2026-08-19 passes both grepped only the file carrying
-> the constructor. Override *governance history* does reach reconciliation. What still does not
-> reach anything is an approved override's *value*, which is the substance of item 5 and stands.
+> **Status (2026-08-24): closed.** `ApprovedFieldEditCanonicalMergeHandler` (Order = 5, registered
+> ahead of the projection rebuild) merges an approved `assetSpecificTerms.*` field edit into the
+> canonical terms on publish by emitting a **complete** economic-definition amendment through
+> `ISecurityMasterAmender` — the current definition plus the one typed field change — so replay
+> stays correct and the correction reaches cash-flow projection, amortization, pricing, and NAV.
+> The handler is idempotent (a retried publish detects the already-merged document and skips),
+> fails the publish retryably on error, names `operator-workbench` as the amendment source (so
+> per-field `CanonicalWrite` attribution records the operator as the incumbent), and best-effort
+> auto-resolves the vendor-versus-operator conflict its own amendment opens — the maker-checker
+> approval already adjudicated that value. Annotation-surface paths and CLEARs stay overlay-only by
+> the documented D2 design. The `OperatorOverridesDto` docstring now states the two-surface
+> contract. The `ProviderLedgerReconciliationService` dependency was already live again by this
+> pass (it feeds override history into provider passports).
 
 ### 6. Provenance is record-level; field-level attribution is synthesized
 
@@ -319,36 +316,24 @@ event, but the resolved field's provenance is not written back onto the record.
 ### 7. Corporate actions use one wide table with per-event-type columns
 
 `corporate_actions` (migration 003, extended by 021) has `dividend_per_share`, `split_ratio`,
-`new_security_id`, `distribution_ratio`, `acquirer_security_id`, `exchange_ratio`,
-`subscription_price_per_share`, `rights_per_share`, `redemption_price_percent_of_par` — **nine**
-typed payload columns for eighteen declared event types (`CorporateActionEventTypes.cs`).
-*(Corrected 2026-08-19: earlier revisions said eight and omitted `new_security_id` (`003:14`), which
-carries the resulting security for **spin-offs**, is required by
-`CorporateActionTypeDescriptorCatalog`, and is read and written by `PostgresSecurityMasterEventStore`.
-Undercounting it made the wide-table problem look marginally smaller than it is. A first correction
-also said the column serves mergers; it does not. `SpinOff` requires `NewSecurityId` and
-`DistributionRatio` (`CorporateActionTypeDescriptorCatalog.cs:81`), while `MergerAbsorption`
-requires `AcquirerSecurityId` and `ExchangeRatio` (`:93`) — `NewSecurityId` appears in exactly one
-`RequiredFields` list. The two events use separate columns, which is itself the wide-table problem
-rather than an exception to it.)* `TenderOffer`, `CryptoFork`,
+`distribution_ratio`, `acquirer_security_id`, `exchange_ratio`, `subscription_price_per_share`,
+`rights_per_share`, `redemption_price_percent_of_par` — eight typed payload columns for eighteen
+declared event types (`CorporateActionEventTypes.cs`). `TenderOffer`, `CryptoFork`,
 `ReturnOfCapital`, `PrincipalPaydown`, `OptionContractAdjustment`, and `Delisting` have no columns
 of their own; `CorporateActionDto` mirrors the same shape as a 18-parameter positional record with
 nullable one-off fields.
-
-*Read "no columns of their own" strictly: it means no dedicated column, not no carrier.*
-`ReturnOfCapital` and `PrincipalPaydown` do carry their declared economics, by **reusing** columns
-that primarily serve other event types — `DividendPerShare` + `Currency` (`:45`) and
-`DistributionRatio` (`:129`) respectively, all persisted. `TenderOffer` (`:117`) and `CryptoFork`
-(`:225`) declare `RequiredFields: []`, as do five other types: those are the ones with nothing
-declared to carry. The distinction matters because the neighbouring blocker row conflated the two
-and listed two already-shipped flows as blocked; column reuse is evidence *for* the wide-table
-problem — the schema has no place to put an event's economics except a column named for a different
-event — but it is not the same as the economics being unrepresentable.
 
 The lifecycle design around it is good — append-only with `supersedes_corp_act_id` chains folded by
 `CorporateActionEffectiveStateProjector`, and a descriptor catalog with provider aliases and ISO
 15022 CAEV alignment. The *envelope* is what does not generalize: each new event type is another
 nullable column.
+
+> **Status (2026-08-24): closed.** Migration 029 adds a generic `payload jsonb` column keyed by
+> event type; `CorporateActionDto` carries it as `Payload`, the Postgres store round-trips it, and
+> `CorporateActionPayloads` documents the well-known keys per column-less event type (tender
+> offers, crypto forks, returns of capital, principal paydowns, option contract adjustments,
+> delistings) with tolerant typed readers. The eight typed columns stay authoritative for the
+> event types that declared them; a new event type never needs another nullable column.
 
 ### 8. Factor schedules exist twice, in incompatible shapes
 
@@ -363,36 +348,21 @@ The typed contract's own docstring says it "replaces the free-text 'factor sched
 free-text term is still what the domain model and terms schema declare, so the replacement is
 half-landed.
 
-> **Status (2026-08-19): closed; the recommendation below was withdrawn.** Attempting the
-> recommended collapse showed the three "shapes" are not three shapes of one concept. The F#
-> `FactorScheduleEntry { AsOfDate; Factor }` and the C# `StructuredFactorScheduleEntry(AsOfDate,
-> Factor)` are a dated factor *level*, mirrored across the interop boundary exactly as every other
-> terms type in this codebase is — the normal domain/DTO pattern, not drift.
-> `SecurityFactorScheduleEntry(SecurityId, AsOfDate, PriorFactor, CurrentFactor, Source,
-> EvidenceLink, SourceContentHash)` is a different thing: a factor *transition* carrying the
-> evidence lineage an accounting paydown event has to post
-> (`SecurityMasterAccountingEventSourceAdapter.cs:493-501`). Collapsing it onto the two-field type
-> would discard the prior/current pairing, the asserting source, and the content hash. Only the
-> legacy free-text `StructuredCreditTerms.FactorSchedule: string option` remains, and its own
-> docstring already scopes it to legacy rows.
->
 > **Status (2026-08-14): narrowed.** `StructuredCreditTerms` now carries
 > `FactorScheduleEntries: FactorScheduleEntry list` alongside the retained free-text
 > `FactorSchedule: string option`, declared as `factorScheduleEntries` in the terms schema and
 > consumed by `StructuredCashFlowTermsResolver`'s `FactorAsOf` lookup; a `Maturity` anchor was added
-> so the schedule has a production effect. ~~**Three shapes still coexist** — the free-text legacy
+> so the schedule has a production effect. **Three shapes still coexist** — the free-text legacy
 > term, the domain `FactorScheduleEntry`, and the separately-declared `SecurityFactorScheduleEntry`
 > in `Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:90`. The duplicate in
-> `Meridian.Strategies` is now the remaining half of this item.~~
+> `Meridian.Strategies` is now the remaining half of this item.
 >
-> **Retracted 2026-08-21.** `SecurityFactorScheduleEntry` is not a duplicate of the other two — see
-> the Status (2026-08-19) note directly above, which establishes it as a factor *transition* carrying
-> evidence lineage rather than a dated *level*. Two shapes coexist (the free-text legacy term and the
-> domain `FactorScheduleEntry`), and the remaining half of this item is the legacy free-text field
-> alone. *This is the seventh place this claim had to be struck.* In round 11 I reported having
-> grepped every occurrence and made them consistent; I had grepped the type name, and this block
-> states the claim as "three shapes" without repeating the phrasing I searched for. Grepping the
-> identifier is not the same as grepping the claim.
+> **Status (2026-08-24): closed.** The `Meridian.Strategies` type turned out not to be a third
+> schedule shape but a per-period factor *observation* (prior→current pair with source and evidence
+> lineage) that the source adapter derives FROM the canonical typed schedule. It is renamed to
+> `SecurityFactorObservation` with a docstring stating exactly that relationship, so the canonical
+> dated factor point exists in one shape (`FactorScheduleEntry` / `StructuredFactorScheduleEntry`)
+> and the observation type no longer reads as a competing schedule term.
 
 ### 9. Equity has bespoke amendment endpoints no other class has
 
@@ -403,13 +373,33 @@ half-landed.
 schedule or a swap leg. This is the clearest instance of the pattern the review was asked to look
 for: a per-asset workaround on a surface that is otherwise generic.
 
+> **Status (2026-08-24): governance closed; asymmetry accepted.**
+> `SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments` now gates all three direct
+> term-amendment routes uniformly — the generic amend endpoint and both bespoke equity `PATCH`es —
+> refusing them (HTTP 403 with workbench guidance) when a deployment requires maker-checker, so the
+> bespoke routes can no longer bypass a gate the generic route enforces. With the canonical-merge
+> publish handler landed (finding 5), the workbench field-edit path is a full typed alternative for
+> single-field corrections, so the direct routes are an ingest/ops surface, not the only correction
+> path. The bespoke endpoints themselves are retained: they are the whole-block replacement surface
+> for nested preferred/convertible structures the flat field-edit path does not model.
+
 ### 10. Smaller items
 
+> **Status (2026-08-24):** the cache's clear-then-fill window is closed (`ReplaceAll` now swaps a
+> fully-populated dictionary atomically; a `Remove` eviction and a deactivate-path cache upsert were
+> added, and `ProjectionCacheRefreshMinutes` gives multi-node deployments a bounded-staleness
+> periodic re-warm). `IUflProjectionRebuilder` now honors its `assetClass` argument
+> (`SecurityMasterRebuildOrchestrator.RebuildAssetClassAsync` re-folds only that class's
+> securities). Effective-interest amortization is implemented
+> (`FaceValueLot.ConstantYieldAmortizedBasisAsOf`, with method routing over
+> `BondAmortizationMethod`). `SecurityAssetPackRegistry` is now enforced: `ValidateAll()` and
+> full catalog-class coverage are test-locked (the lock immediately caught five catalog classes no
+> pack claimed). Valid-time term history remains reachable only by event replay — still declared
+> and deferred.
+
 - **`SecurityMasterProjectionCache` is a per-process `ConcurrentDictionary`** with no eviction and a
-  `Snapshot()` that materializes every record. Publishing on node A does not invalidate node B.
-  ~~`ReplaceAll` clears before repopulating (a reader between the two sees an empty master).~~
-  *(Fixed 2026-08-19: `ReplaceAll` now builds the replacement and installs it under a write gate, so
-  no reader observes an empty master. The per-process and eviction halves stand.)* Migration
+  `Snapshot()` that materializes every record. Publishing on node A does not invalidate node B, and
+  `ReplaceAll` clears before repopulating (a reader between the two sees an empty master). Migration
   025's own rationale cites "horizontal scale-out"; this cache has not followed.
 - **`IUflProjectionRebuilder` ignores its `assetClass` argument** and does a full shared replay
   (`UflProjectionRebuilder.cs:34`). Documented as Phase-0 and accepted in the plan, but the
@@ -421,96 +411,29 @@ for: a per-asset workaround on a surface that is otherwise generic.
 - **Amortization is straight-line only.** `FaceValueLot.AmortizedBasisAsOf` applies day-count-weighted
   straight-line premium/discount amortization, and its docstring notes the cost-basis relief and
   ledger amortization engines use the same method. `BondAmortizationMethod.ConstantYield` exists in
-  `Contracts/FixedIncome/BondReferenceDtos.cs:21` and `SecurityTermModules.fs:426`, but **nothing in
-  production consumes it**. *(Corrected 2026-08-21: this read "no effective-interest implementation
-  was found," which the 2026-08-19 pass disproved further down — `SecurityCalculations.fs:122,130`
-  holds `constantYieldIncome` and `amortizationAccretion`, implemented and unit-tested. The gap is a
-  missing production consumer, not missing math. The distinction decides the remedy: wiring, not
-  authoring.)* US GAAP (ASC 310-20) requires effective-interest for most premium amortization;
-  straight-line is an immaterial-difference accommodation.
+  `Contracts/FixedIncome/BondReferenceDtos.cs:21` and `SecurityTermModules.fs:426`, but no effective-
+  interest implementation was found. US GAAP (ASC 310-20) requires effective-interest for most
+  premium amortization; straight-line is an immaterial-difference accommodation.
 - **`securities` holds a single current row** per security. Valid-time term history — "what was this
   bond's coupon effective 2024-06-30", as opposed to "what did we believe on 2024-06-30" — is only
   reachable by replaying the event stream. Identifiers are properly effective-dated; terms are not.
 
 ---
 
-### 11. Four governance mutations sit outside the mutation controls
-
-*(Added 2026-08-19, from review of this document's own over-broad claim.)* The endpoint file applies
-`RequirePermission(ModifySecurityMaster)` plus `RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)`
-to the record-mutating routes, but four mutations do not carry that pairing:
-
-| Route | Permission | Rate-limited |
-| --- | --- | --- |
-| `DraftSecurityMasterAssetProfile` (`:157`) | `AdminMaintenance` | no |
-| `ApproveSecurityMasterAssetProfile` (`:198`) | `AdminMaintenance` | no |
-| `RollbackSecurityMasterAssetProfile` (`:239`) | `AdminMaintenance` | no |
-| `RunSecurityMasterQualityReport` (`:1558`) | `AdminMaintenance` (handler check only, no fluent declaration) | no |
-
-`AdminMaintenance` is a defensible — arguably stronger — permission for profile governance, so the
-gap is not that these are open. It is that they are the routes defining and approving the custom-asset
-profiles the extension point depends on (item 3), plus a report run that does real work. **All four
-sit outside the rate limit; only `RunSecurityMasterQualityReport` sits outside the declarative
-permission convention.** *(Corrected 2026-08-21: this sentence applied both gaps to all four, which
-contradicts both the table above it and the remedy below it — the three profile routes carry fluent
-`RequirePermission(UserPermission.AdminMaintenance)` at `:157`, `:198`, and `:239`. Left standing, it
-would prompt a redundant permission declaration on three routes that already have one.)* The risk is
-the one a reviewer would hit rather than an attacker: a blanket reading of "all mutations are
-permission-gated and rate-limited" treats the rate-limit gap as covered when it is not.
-
-Two separate remedies, which an earlier draft of this item wrongly merged into one. **All four**
-lack `RequireRateLimiting` — that is the four-route question. The three profile routes already declare
-`RequirePermission(UserPermission.AdminMaintenance)` at `:157`, `:198`, and `:239`, so telling an
-implementer to add one there would have them write a redundant declaration. Either apply the missing
-controls on that basis, or record the exemption where a reader will find it.
-
-> **Corrected 2026-08-21, after review.** This item said "**Only `RunSecurityMasterQualityReport`**
-> lacks a fluent `RequirePermission`". That is wrong, and it made the control inventory read as
-> narrower than it is. **Six** of the file's 23 record-mutating routes carry no fluent
-> `RequirePermission`. Five of them declare the permission through a filter instead —
-> `.AddEndpointFilter(RequireModifySecurityMasterPermission)`:
->
-> | Route | Line | Permission via | Rate-limited |
-> | --- | --- | --- | --- |
-> | `UpsertSecurityMasterPricingHierarchy` | `:1331` | endpoint filter | yes |
-> | `RecordSecurityMasterRawPrice` | `:1361` | endpoint filter | yes |
-> | `UpsertSecurityMasterCashFlowSource` | `:1433` | endpoint filter | yes |
-> | `CreateDataVendorEntitlement` | `:1506` | endpoint filter | yes |
-> | `DeactivateDataVendorEntitlement` | `:1534` | endpoint filter | yes |
-> | `RunSecurityMasterQualityReport` | `:1558` | **handler check only** | **no** |
->
-> The five filter-based routes are a weaker finding than the quality report, and the distinction is
-> the point: they *are* permission-enforced at runtime and they *are* rate-limited, so the only gap
-> is that the requirement is invisible to the declaration ratchet
-> (`EndpointAuthorizationDeclarationTests`) that reads fluent metadata. `RunSecurityMasterQualityReport`
-> has neither a filter nor a rate limit, which is why it remains the sharper of the two. The
-> declarative-metadata remedy therefore covers six routes, not one.
->
-> The four-route rate-limiting claim above is unaffected and re-verified: six routes in the file lack
-> `RequireRateLimiting`, but two of them — `ResolveSecurityMaster` (`:278`) and `SearchSecurityMaster`
-> (`:310`) — are POST-shaped *reads* carrying an explicit `DeclareNonMutating(...)`, so the
-> record-mutating count is four.
-
 ## Missing or Incomplete Subsystems Blocking New Asset Classes
-
-*State column refreshed 2026-08-19. Three rows had closed since this table was written and were
-still listed as absent; because the table reads as the live blocker list rather than as dated
-evidence, that would have sent roadmap work at implementation already done. Closed rows are kept
-with their outcome rather than deleted, so the table stays a record of what was raised.*
 
 | Subsystem | State | Blocks |
 | --- | --- | --- |
-| Codec generation from `SecurityAssetTermsSchema` | Open — table exists; both codec sides hand-written | Every new class needs two hand-edited codec arms that only tests can catch drifting |
-| `SecurityKind.CustomAsset` domain case | **Closed** — first-class DU case (`SecurityMaster.fs:566`); profile envelope round-trips | — |
-| Per-field provenance persistence | **Closed** — migration 027 creates `security_field_provenance`; 028 adds versioned attribution | — |
-| Typed amendment path from the workbench | Open — overlay only, by documented design | Operator corrections reaching pricing/ledger/NAV |
-| Generic corporate-action payload envelope | Open — wide table, 9 payload columns / 18 types; **7 of the 18 declare `RequiredFields: []`** | Tender offers (`:117`), crypto forks (`:225`) and the five other types with no declared payload carrying their own economics. *(Corrected 2026-08-21: this also listed returns of capital and paydowns, which are supported — `ReturnOfCapital` requires `DividendPerShare` + `Currency` (`:45`) and `PrincipalPaydown` requires `DistributionRatio` (`:129`), all persisted by `PostgresSecurityMasterEventStore`. Two of four examples were already-shipped flows.)* |
-| Effective-interest amortization | Open — enum only; the constant-yield primitives exist unwired in `SecurityCalculations.fs` | GAAP-compliant premium amortization for material portfolios |
-| Bond principal schedule | **Closed** — `BondTerms.PrincipalSchedule` (`SecurityMaster.fs:261`), read by `StructuredCashFlowTermsResolver` | — |
-| Bond step / inflation coupon structures | Open — `BondCouponStructure` is still `Fixed` / `Floating` / `ZeroCoupon` | Step-rate and TIPS — already classifiable, not computable |
-| Asset-class-scoped projection replay | Open — argument ignored | Bounded rebuild cost as class count grows |
-| Distributed projection cache invalidation | Open — per-process only | Multi-node deployment coherence |
-| Relational projections for 15 of 26 classes | Open — declared gap, test-guarded | Any query path that needs typed columns for private/alternative assets |
+| Codec generation from `SecurityAssetTermsSchema` | Table exists; both codec sides hand-written | Every new class needs two hand-edited codec arms that only tests can catch drifting |
+| `SecurityKind.CustomAsset` domain case | Absent — collapses to `OtherSecurity` | Profile-backed classes cannot be amended without losing the profile envelope |
+| Per-field provenance persistence | Type exists, no storage | Multi-vendor golden record, conflict-winner lineage, vendor scorecards |
+| Typed amendment path from the workbench | Overlay only, by documented design | Operator corrections reaching pricing/ledger/NAV |
+| Generic corporate-action payload envelope | Wide table, 8 columns / 18 types | Tender offers, forks, returns of capital, paydowns carrying their own economics |
+| Effective-interest amortization | Enum only | GAAP-compliant premium amortization for material portfolios |
+| Bond principal / step / inflation schedules | Absent | Sinking funds, step-rate, TIPS — already classifiable, not computable |
+| Asset-class-scoped projection replay | Argument ignored | Bounded rebuild cost as class count grows |
+| Distributed projection cache invalidation | Per-process only | Multi-node deployment coherence |
+| Relational projections for 15 of 26 classes | Declared gap, test-guarded | Any query path that needs typed columns for private/alternative assets |
 
 ---
 
@@ -566,10 +489,7 @@ instead of an annotation workflow.
 Extend `BondCouponStructure` with a step schedule and an inflation-linked case, and add a principal
 schedule to `BondTerms` (reuse `PrincipalPaymentEntry`, already proven on `DirectLoanTerms`).
 Promote `StructuredCreditTerms.FactorSchedule` from `string option` to
-`StructuredFactorScheduleEntry list`, ~~retiring the duplicate `SecurityFactorScheduleEntry`~~
-(**that half withdrawn 2026-08-19 — do not implement it**; `SecurityFactorScheduleEntry` is a factor
-*transition* carrying prior/current factors and evidence lineage that the two-field *level* type
-cannot hold. See the **Status (2026-08-19)** note on risk item 8). Then
+`StructuredFactorScheduleEntry list`, retiring the duplicate `SecurityFactorScheduleEntry`. Then
 document one canonical modeling route for MBS/ABS/CLO and make the validators reject the others, so
 the partition is enforced rather than conventional.
 
@@ -599,17 +519,17 @@ original assessment. No code was changed by this pass; no tests were run.
 | 1 | Taxonomy outruns term model | `BondTerms.PrincipalSchedule` landed; `BondCouponStructure` is still 3 cases — step-rate and inflation-linked remain classifiable but not computable |
 | 4 | ~7 registries per asset class | Drift is now test-caught, not prevented; both codec arms are still hand-written |
 | 5 | Governed edits do not reach the golden record | Field paths and types are now schema-validated; **no merge path exists** — no publish handler writes an approved override into canonical terms |
-| 8 | Factor schedules exist in incompatible shapes | Typed `FactorScheduleEntries` landed and is consumed; ~~the third shape (`SecurityFactorScheduleEntry` in `Meridian.Strategies`) is still duplicated~~ — **retracted 2026-08-19: that type is not a duplicate.** It models a factor *transition with provenance*, not the *level* the other two carry. Item 8 is closed; only the legacy free-text `StructuredCreditTerms.FactorSchedule` remains, already scoped to legacy rows. See the **Status (2026-08-19)** note on risk item 8 |
+| 8 | Factor schedules exist in incompatible shapes | Typed `FactorScheduleEntries` landed and is consumed; the third shape (`SecurityFactorScheduleEntry` in `Meridian.Strategies`) is still duplicated |
 
 ### Unchanged and open
 
 | # | Item | Current state |
 | --- | --- | --- |
 | 2 | Three modeling routes for MBS/ABS/CLO | No canonical-home ruling; `Bond` subclasses, `StructuredCredit`, and `CustomAsset` all remain legitimate |
-| 7 | Corporate actions: wide table, per-event-type columns | Migration 021 added four more nullable columns; 9 typed payload columns for 18 declared event types, no JSONB envelope |
+| 7 | Corporate actions: wide table, per-event-type columns | Migration 021 added four more nullable columns; 8 typed payload columns for 18 declared event types, no JSONB envelope |
 | 9 | Equity has bespoke amendment endpoints | `PATCH` on preferred/convertible equity terms routes straight to `ISecurityMasterService.Amend…`, bypassing the workbench Draft→Submitted→Approved→Published gate that every generic field edit goes through. Permission-gated and rate-limited, but no maker-checker. No equivalent exists for a bond call schedule or swap leg |
-| 10 | Straight-line amortization only | `BondAmortizationMethod.ConstantYield` remains an enum member with no ~~implementation~~ **production consumer**. *(Corrected 2026-08-21: "no implementation" was wrong — `SecurityCalculations.fs:122,130` implements and tests the effective-interest pair; it has no caller.)* |
-| 10 | Per-process projection cache | `SecurityMasterProjectionCache` is still a `ConcurrentDictionary` with no eviction. *(The clear-then-refill half was fixed 2026-08-19; the per-process and eviction halves stand.)* |
+| 10 | Straight-line amortization only | `BondAmortizationMethod.ConstantYield` remains an enum member with no implementation |
+| 10 | Per-process projection cache | `SecurityMasterProjectionCache` is still a `ConcurrentDictionary` with no eviction; `ReplaceAll` still clears before repopulating, so a reader between the two sees an empty master |
 | 10 | Valid-time term history | `securities` still holds one current row; term history is reachable only by event replay. Identifiers are effective-dated, terms are not |
 | — | Relational projections | 11 asset projection stores for 26 classes; the 15 uncovered are the private/alternative classes central to fund operations. Declared and test-guarded via `IntentionallyUnprojectedAssetClasses` |
 
@@ -636,23 +556,15 @@ other routes. *Cheapest to decide, compounding cost to defer.*
 Add step-schedule and inflation-linked cases. The principal-schedule slice proved the pattern and the
 round-trip guard now covers the codec cost. Ten `BondSubclass` members are still labels.
 
-**4. ~~Retire the third factor-schedule shape and~~ generalize the corporate-action envelope.**
-~~Collapse `SecurityFactorScheduleEntry` onto the domain `FactorScheduleEntry`.~~ **The collapse half
-of this priority was withdrawn on 2026-08-19 — do not implement it.** The two types model a factor
-*level* and a factor *transition with provenance*; collapsing them discards the prior/current
-pairing, the asserting source, the evidence link, and the content hash. See the
-**Status (2026-08-19)** note on risk item 8. What remains of this priority is the corporate-action
-envelope: move corporate-action economics to a JSONB payload keyed by event type — nine columns for
-eighteen types means every new type is another nullable column, and six declared types already have
-none.
+**4. Retire the third factor-schedule shape and generalize the corporate-action envelope.**
+Collapse `SecurityFactorScheduleEntry` onto the domain `FactorScheduleEntry`. Separately, move
+corporate-action economics to a JSONB payload keyed by event type — eight columns for eighteen types
+means every new type is another nullable column, and six declared types already have none.
 
 **5. Make the projection cache multi-node-safe.**
-~~Per-process with no invalidation, and a clear-then-fill `ReplaceAll` that exposes an empty master
-to concurrent readers.~~ *(Updated 2026-08-19: the clear-then-fill half was fixed on this branch —
-`ReplaceAll` now installs a whole map under a write gate. What remains of this priority is the
-multi-node half.)* The cache is still per-process, with no cross-node invalidation and no eviction.
-Migration 025 moved the conflict and revision stores off process-local memory specifically for
-scale-out; this cache did not follow.
+Per-process with no invalidation, and a clear-then-fill `ReplaceAll` that exposes an empty master to
+concurrent readers. Migration 025 moved the conflict and revision stores off process-local memory
+specifically for scale-out; this cache did not follow.
 
 *Deferred but worth tracking:* effective-interest amortization (GAAP materiality question, not an
 architecture question); relational projections for the private/alternative classes; valid-time term
@@ -660,278 +572,348 @@ history; asset-class-scoped projection replay.
 
 ---
 
-## Verification pass — 2026-08-19
+## Resolution pass — 2026-08-24
 
-Re-read against current source at `7ed160dc`, five days after the previous pass. Unlike the two
-prior passes this one also attempted repairs; see
-[Remediation attempted](#remediation-attempted--2026-08-19) for what was changed and what was
-refuted. No tests were run — this checkout has no .NET SDK.
+An implementation pass addressed the open findings from the 2026-08-14 verification. Per-finding
+**Status (2026-08-24)** notes above carry the detail; the summary:
 
-### Summary: one declarative change, ten routes actually hardened, otherwise cosmetic
+### Closed this pass
 
-*(Heading corrected 2026-08-21. It read "one real change, otherwise cosmetic", which survived three
-rounds of corrections to the passage beneath it — including the round that established the tenth
-route. A section heading is the one line a skim-reader takes away, and it was the last thing I
-updated rather than the first.)*
-
-440 commits (`git rev-list --count 4b39e9da8..7ed160dc`) landed repo-wide since `4b39e9da8`.
-Across the Security Master surface — the F# domain,
-interop, and calculations; `src/Meridian.Contracts/SecurityMaster/`;
-`src/Meridian.Application/SecurityMaster/`; `src/Meridian.Storage/SecurityMaster/`;
-`src/Meridian.ReferenceData/`; `src/Meridian.Instruments/`; the Security Master services in
-`src/Meridian.Strategies/`; the workstation endpoint and query surface; and the WPF edit view model
-— the diff is **79 insertions and 84 deletions across 15 files**.
-
-> **Corrected 2026-08-19, after review.** This first read "86 insertions and 86 deletions across 21
-> files", against which the "remaining 18 files are cosmetic" sentence below did not reconcile — 21
-> files minus the one non-cosmetic file leaves 20, not 18. Review caught the arithmetic; re-deriving
-> the diff showed the scope figure itself was unreproducible, so both numbers were wrong. The
-> corrected figure comes from an explicit pathspec, recorded here so it can be checked:
->
-> ```bash
-> git diff --numstat 4b39e9da8 7ed160dc -- \
->   'src/Meridian.Application/SecurityMaster/' 'src/Meridian.Instruments/' \
->   'src/Meridian.Strategies/Services/SecurityMaster*' \
->   'src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs' \
->   'src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterWorkbench.cs' \
->   'src/Meridian.Ui.Shared/Endpoints/EdgarReferenceDataEndpoints.cs' \
->   'src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs' \
->   'src/Meridian.Wpf/ViewModels/SecurityMasterEditViewModel.cs'
-> ```
->
-> The domain model, contracts, persistence layer and migrations are **unchanged across the entire
-> range** — stronger evidence for this pass's conclusion than the file count is. That claim needs its
-> own command, because the pathspec above does not list those paths and so would return nothing for
-> them whether or not they changed:
->
-> ```bash
-> git diff --numstat 4b39e9da8..7ed160dc -- \
->   'src/Meridian.FSharp/Domain/SecurityMaster.fs' 'src/Meridian.FSharp/Interop/' \
->   'src/Meridian.FSharp/Calculations/' 'src/Meridian.Contracts/SecurityMaster/' \
->   'src/Meridian.Storage/SecurityMaster/' 'src/Meridian.ReferenceData/'
-> ```
->
-> Empty output is the result, and here it is falsifiable: these paths are *in* the pathspec, so a
-> single changed line in any of them would print a row.
->
-> *(Corrected 2026-08-21, after review. This read "worth noting what that command returns nothing
-> for", pointing at the pathspec above — which cannot establish the claim, since pathspec filtering
-> guarantees absence for any path not listed. The conclusion was right and re-verified; the evidence
-> offered for it was circular. A correction that leaves an unfalsifiable proof in place has not
-> finished the job.)*
-
-**One of those changes is more than cosmetic, though less than it first appears.**
-`SecurityMasterEndpoints.cs` accounts for 72 of the 163 changed lines across three commits
-(`089aabee`, `95166888`, `862dc32a`) — 36 insertions and 36 deletions, each rewriting one endpoint's
-terminating line to append a fluent permission call. Those 36 split into **19** reads declaring
-`RequireAnyPermission(ViewSecurityMaster, ModifySecurityMaster)` and **17** mutations declaring
-`RequirePermission(...)`; 14 of the file's 50 endpoints were left without a fluent declaration.
-
-> **Corrected 2026-08-19, after review.** This pass first recorded that as authorization *hardening*
-> on endpoints "that previously carried no explicit permission" — which implied the reads had been
-> open. They had not. At the `4b39e9da8` baseline the file already carried
-> `group.AddEndpointFilter(RequireViewSecurityMasterPermission)` on the whole route group
-> (`:34`), and that filter runs the same `HasAnyPermission(ViewSecurityMaster,
-> ModifySecurityMaster)` check the fluent calls declare. Runtime authorization did not change. What
-> changed is that the requirement is now declared per endpoint rather than inherited from one
-> group-level line — worth having, because it feeds the authorization declaration ratchet
-> (`EndpointAuthorizationDeclarationTests`, `EndpointReadDeclarationTests`), which fails the build
-> when a mapped route carries neither a declared permission nor a documented open-read decision, and
-> because it removes a single point
-> whose deletion would quietly open every route in the group, but it is a hardening of the
-> *declaration*, not of the enforcement.
-
-> **Corrected 2026-08-21, after review — and this one reverses part of the correction above.** The
-> "runtime authorization did not change" finding is true of `SecurityMasterEndpoints.cs`, whose group
-> filter predated the baseline. I then let it stand as the characterization of the *whole pass*, and
-> that is wrong. Two other files in this range gained permission declarations where **no group-level
-> permission filter existed at all**:
->
-> | File | Baseline group | Declarations added | Effect |
-> | --- | --- | --- | --- |
-> | `EdgarReferenceDataEndpoints.cs` | `MapGroup(string.Empty).WithTags("EDGAR")` — no filter | 3 GET + 1 POST | open reads → enforced reads |
-> | `WorkstationEndpoints.SecurityMasterWorkbench.cs` | `MapGroup(...).RequireWorkstationTenantScope()` — tenant scope, not a permission gate | 6 | unenforced → enforced |
->
-> Verified with `git show 4b39e9da8:<path>`: the EDGAR file contains no `AddEndpointFilter` at
-> baseline and no handler permission check; the workbench file contains none either, and
-> `RequireWorkstationTenantScope()` scopes a tenant rather than checking a permission. At
-> `7ed160dc` all ten routes carry fluent `RequirePermission` / `RequireAnyPermission`.
->
-> So this range **does** contain real authorization hardening — ten routes' worth — and it is not in
-> the file the pass spent its attention on. The failure mode here is worth naming because it is the
-> inverse of my usual one: told that a claim overstated a security improvement, I corrected past the
-> evidence and understated it, then generalized the understatement across files I had not checked.
-> An over-correction propagates exactly like an overclaim.
-
-Excluding those two, the remaining **12** files are genuinely cosmetic, accounting for 33 insertions
-and 38 deletions — routing inline SHA-256 sites onto `Sha256Digest`, and replacing the last literal
-schema-version writes with named constants. The largest is
-`SecurityMasterWorkbenchQueryService.cs` at 11/13. The classification now closes in both directions:
-12 cosmetic + 2 authorization + `SecurityMasterEndpoints.cs` = the 15 files; insertions
-36 + 4 + 6 + 33 = **79**; deletions 36 + 4 + 6 + 38 = **84**; total changed lines
-72 + 8 + 12 + 71 = **163**.
-
-No change closes, narrows, or reopens any structural finding — but the EDGAR and workbench routes
-were open before this range and are not now, which is a change in posture even though it moves no
-structural item.
-
-**Every open item from the 2026-08-14 pass was re-verified against source and stands verbatim:**
-
-| # | Item | Re-verified evidence (2026-08-19) |
+| # | Item | Resolution |
 | --- | --- | --- |
-| 5 | Governed edits do not reach the golden record | The only two `ISecurityMasterRevisionPublishedHandler` registrations are still `SecurityProjectionRebuildHandler` (Order=10) and `CoverageInvalidationHandler` (Order=20) (`WorkstationServiceCollectionExtensions.cs:525-530`). `OperatorOverridesDto.Values` is still `IReadOnlyDictionary<string, string>` and its docstring still reads "*without amending the canonical security terms*" (`OperatorOverrides.cs:27-33`). The item's "dead dependency" rider is **retracted** — see the correction under risk item 5 |
-| 2 | Three modeling routes for MBS/ABS/CLO | No ruling landed. `SecurityMasterOperationalReadinessService.cs:157` still labels `CustomAsset` "MBS / ABS / CLO / CMBS / private assets"; no ADR exists |
-| 1 | Taxonomy outruns term model | `BondCouponStructure` is still exactly `Fixed` / `Floating` / `ZeroCoupon` (`SecurityMaster.fs:222-225`) |
-| 8 | Third factor-schedule shape | **Closed, and the recommendation withdrawn.** The types model a factor *level* and a factor *transition with provenance*, not one concept in three shapes — see the correction under risk item 8 |
-| 7 | Corporate actions: wide table | `corporate_actions` still carries per-event-type nullable columns and no JSONB payload. Migration `003` declares 8 typed payload columns (`:5-21`); `021` adds `record_date`, `lifecycle_state`, `supersedes_corp_act_id`, and one more payload column, `redemption_price_percent_of_par` (`:7-17`). Migrations still end at 028 |
-| 10 | Straight-line amortization only | `FaceValueLot.AmortizedBasisAsOf` is still day-count-weighted straight-line (`FaceValueLot.cs:94-113`); `BondAmortizationMethod.ConstantYield` still has no consumer |
-| 10 | Per-process projection cache | Still per-process with no eviction and no cross-node invalidation. The clear-then-refill half was **fixed on 2026-08-19** — `ReplaceAll` now builds the replacement map and installs it with a single `Volatile.Write`, so a concurrent reader never sees an empty or partly filled master |
-| 4 | ~7 registries per asset class | Class counts still agree at 26, name for name: the `SecurityKind` DU has 26 cases; `SecurityAssetClassCatalog.Descriptors` has 26 entries (27 `AssetClass:` literals, of which `Unknown` is the separate `DefaultDescriptor` excluded from `Descriptors`); `SecurityAssetTermsSchema.FieldsByAssetClass` has 26 keys. Both codec arms are still hand-written |
-| 9 | Equity has bespoke amendment endpoints | Still present, and there are **two** routes to `AmendPreferredEquityTermsAsync`, not one: `AmendSecurityMasterPreferredEquityTerms` (`SecurityMasterEndpoints.cs:524`) and `PatchSecurityPreferredTerms` (`:1125`), with the convertible pair alongside. Both are permission-gated and rate-limited; both bypass the workbench Draft→Submitted→Approved→Published gate |
-| — | Relational projections | Still 11 projection stores for 26 classes (11 + the 15 declared gaps = 26); `IntentionallyUnprojectedAssetClasses` still lists the same 15 private/alternative classes (`SecurityAssetTermsSchemaTests.cs:21-38`) |
+| 5 | Governed edits do not reach the golden record | `ApprovedFieldEditCanonicalMergeHandler` (publish fan-out Order = 5) merges approved `assetSpecificTerms.*` edits into canonical terms as a complete economic-definition amendment; idempotent, retry-safe, provenance-recorded, with best-effort auto-resolution of the merge's own operator-vs-vendor conflict |
+| 2 | Three modeling routes for MBS/ABS/CLO | [ADR-022](../adr/022-canonical-asset-class-homes.md): `StructuredCredit` is the canonical securitized home, enforced by `SM_BOND_SECURITIZED_SUBCLASS_NONCANONICAL` (Error) and `SM_CUSTOM_ASSET_SECURITIZED_NONCANONICAL` / `SM_INVESTMENT_FUND_STABLE_NAV_NONCANONICAL` (Warnings) |
+| 1 | Taxonomy outruns the term model | `BondCouponStructure.Step` (dated rate schedule + `couponRateAsOf`) and `BondCouponStructure.InflationLinked` (real rate, index, base index value, index ratio) landed through schema, both codecs, invariants, resolver, and round-trip guards; the fix also closed a live subclass-codec drift (six declared subclasses missing from the C# reader, `Other` re-wrapping per pass) |
+| 8 | Factor schedules exist in incompatible shapes | The `Meridian.Strategies` type renamed to `SecurityFactorObservation` and documented as a per-period observation derived FROM the canonical typed schedule — one canonical dated-factor shape remains |
+| 7 | Corporate actions: wide table, per-event-type columns | Migration 029 adds the generic `payload jsonb` envelope; `CorporateActionDto.Payload` round-trips it and `CorporateActionPayloads` documents well-known keys with tolerant readers |
+| 9 | Equity has bespoke amendment endpoints | `RequireGovernedTermAmendments` gates the generic and bespoke direct amendment routes uniformly behind the workbench maker-checker path; the bespoke endpoints stay as the whole-block replacement surface |
+| 10 | Per-process projection cache | Atomic-swap `ReplaceAll` (no empty-master window), eviction, deactivate-path coherence, and a `ProjectionCacheRefreshMinutes` bounded-staleness re-warm for multi-node deployments |
+| 10 | Straight-line amortization only | `FaceValueLot.ConstantYieldAmortizedBasisAsOf` implements the effective-interest method, with routing across `BondAmortizationMethod` (NoAmortization, AuctionRate, StraightLine fallbacks) |
+| — | Asset-class-scoped projection replay | `RebuildAssetClassAsync` re-folds only the requested class; `IUflProjectionRebuilder` now delivers what its signature promises |
+| — | `SecurityAssetPackRegistry` unenforced | `ValidateAll()` plus full catalog-class coverage are test-locked; five previously unclaimed catalog classes (`Commodity`, `CryptoCurrency`, `Cfd`, `Warrant`, `InvestmentFund`) are now claimed by packs |
+| — | Overlay contract docstring | `OperatorOverridesDto` now states the two-surface contract (annotations stay overlay-only; approved asset-terms corrections merge into canonical terms on publish) |
 
-### New observation: the missing calculation math already exists, unwired
+### Still declared and deferred
 
-`src/Meridian.FSharp/Calculations/SecurityCalculations.fs` (295 lines) is a documented,
-unit-tested formula library carrying exactly the math two open findings need:
-
-- `constantYieldIncome` and `amortizationAccretion` — the effective-interest pair item 10 needs —
-  plus `pciDailyAmortization` for purchased-credit-impaired instruments.
-- `inflationAdjustedPrincipal` and `inflationLinkedMarketValue` — the TIPS math item 1 needs for an
-  inflation-linked `BondCouponStructure` case.
-- `weightedAverageLife` — WAL for prepaying structured securities.
-- Newton-Raphson `purchaseYield` / `bookYield` solvers, `repoInterest`, `shortTermDailyAccretion`,
-  `fxRemeasurement`, `accruedInterest`, dirty/clean price conversion, and call/put
-  in-the-money predicates.
-
-**The module has no production caller.** It carries `[<RequireQualifiedAccess>]`
-(`SecurityCalculations.fs:51`), so no consumer can reach these functions unqualified through
-`open Meridian.FSharp.Calculations` — every call site must spell `SecurityCalculations.`. Grepping
-that token across `src/` returns only its own declaration and its `.fsproj` compile entry; the sole
-consumers are assertions in `tests/Meridian.FSharp.Tests/SecurityCalculationsTests.fs`, and the one
-other file that opens the namespace (`tests/.../CalculationTests.fs`) opens `Aggregations`. The
-attribute is what makes the grep conclusive rather than suggestive. The module predates both prior
-passes (added 2026-08-10) and neither caught it.
-
-This resembles the `SecurityAssetPackRegistry` pattern from item 10, but the two are not the same
-and the difference is worth stating. *(Corrected 2026-08-21: this read "the `SecurityAssetPackRegistry`
-pattern ... recurring in a second place — correct-looking capability that no production path reaches",
-which is false for the registry. `SecurityMasterOperationalReadinessService` projects
-`SecurityAssetPackRegistry.All` into `MultiAssetCoverageSummaryDto.AssetPacks` (`:295`) and validates
-descriptors through it (`:873`), and that service backs the workstation multi-asset coverage endpoint.
-The registry is reached; what it does not yet do is drive downstream accounting behaviour. Only
-`SecurityCalculations` is genuinely uncalled, so the comparison as written overstated one case by
-borrowing the other's severity.)* One further difference matters: the
-`DayCount` module in the same file *does* delegate to the canonical
-`Meridian.Contracts.SecurityMaster.DayCountConventions` engine so the C# and F# lanes cannot
-diverge. The calculation module below it has no such tie to a consumer.
-
-The practical consequence is favorable: it **lowers the cost** of two deferred priorities.
-Effective-interest amortization and inflation-linked bond support are not greenfield — the
-primitives are written and tested, and the remaining work is a term model to feed them and a
-wiring path from `FaceValueLot` / the ledger amortization engine. It also raises a risk the prior
-passes did not name: a tested-but-uncalled financial formula library invites a future contributor
-to assume the platform computes constant-yield amortization when it does not.
-
-### Remediation attempted — 2026-08-19
-
-Three findings were picked up for repair because they looked small, local, and safe. Attempting
-them refuted two of the three. That is recorded here rather than quietly dropped, because a review
-that cannot be wrong is not evidence.
-
-| Finding | Outcome |
+| Item | Posture |
 | --- | --- |
-| Clear-then-refill in `SecurityMasterProjectionCache.ReplaceAll` | **Fixed for readers and writers.** The replacement map is installed with one `Volatile.Write`; reads stay lock-free through `Volatile.Read`, so a concurrent reader sees either the whole previous master or the whole new one. Replacements serialize with one another and capture every accepted `Upsert` while their argument is copied and candidate map built outside the write gate. Captured writes are reconciled by `Version` before the swap; an upsert arriving during publication waits and then lands in the installed map. The pre-gate lost-update window is closed without enumerating a lazy source under the write gate |
-| `IOperatorOverridesStore` "dead dependency" | **Refuted, finding retracted.** It is read from a sibling partial file. See risk item 5 |
-| Third factor-schedule shape | **Refuted, recommendation withdrawn.** Two distinct concepts, not one in three shapes. See risk item 8 |
+| Relational projections for the private/alternative classes | Declared and test-guarded via `IntentionallyUnprojectedAssetClasses`; unchanged |
+| Valid-time term history (`securities` holds one current row) | Terms remain reachable as-of only via event replay; identifiers stay effective-dated; unchanged |
+| Codec generation from `SecurityAssetTermsSchema` | Both codec arms remain hand-written; the round-trip guard remains the commit-time drift eliminator (and caught this pass's subclass drift) |
 
-**Correction to the first cut of the cache fix.** The initial swap-only version traded one race for
-another, and automated review caught it. Under the old `Clear()`-then-refill, an `Upsert` that
-landed *after* the refill loop had already copied its key survived; a plain reference swap discards
-every upsert issued during the replacement, because they all write into the outgoing map. The first
-version's own `<remarks>` claimed the outcome was "the same a concurrent `Clear()` produced" — it
-was not, and the window was strictly wider. `Upsert` and `ReplaceAll` first serialized on a write
-gate, with `Upsert` resolving the live map inside it, so a record persisted by create, amend, or a
-published rebuild could not be dropped by a replacement that already held the gate. Reads remained
-lock-free. A later finding correctly showed that this did not cover the argument-copy phase; the
-final correction is described below.
+---
 
-The gate then created a third problem, also caught in review: because a caller can produce its
-projection and only reach `Upsert` after several awaits, a record that waits on the gate may be
-*older* than one a rebuild installed meanwhile, and an unconditional assignment downgraded that key.
-`Upsert` now compares `Version` and keeps the installed record when the incoming one is older.
-`ReplaceAll` deliberately does not merge the whole outgoing map by version: a rebuild replays the
-whole master, so its set is authoritative as of its snapshot — including about which securities are
-absent — and merging every straggler would resurrect records it legitimately dropped. It overlays
-only writes accepted after that replacement opened its capture, preserving the rebuild's absence
-semantics while closing the concurrent-write window.
+## Independent verification pass — 2026-08-24 (post-resolution)
 
-The regression tests were rewritten twice and then partly withdrawn, for one underlying reason. The
-first versions spun a reader thread and hoped it interleaved; the second forced the interleaving for
-the reader but not for the writer, which signalled *before* calling `Upsert` and so still passed
-when it was descheduled at that point. Both could pass against the implementations they existed to
-reject — the recurring error being to check that a test passes under the fix without checking that
-it fails under the bug.
+A second, independently-run review of the same subsystem landed the same day as the resolution pass
+above, reading `9ed072df` before the resolution merged. Most of what it found the resolution pass
+has since closed; this section records only the findings **re-verified against the post-resolution
+tree** (`780aeb9e`). No code was changed by this pass and no tests were run.
 
-The concurrent-upsert test was then removed because materializing outside the gate left no seam in
-the gated fill that could force its claimed interleaving. The final implementation makes the
-materialization phase itself observable in a safe way: a replacement-scoped capture is registered
-before enumeration, and a `PausingCollection` waits for a writer to complete while that enumeration
-is parked. The regression test fails against the unjournaled swap because the accepted new key is
-absent afterward, and passes only when the captured write is replayed. Companion cases prove that
-the newer replacement or captured version wins appropriately and that a failed enumeration clears
-its capture without losing already accepted writes.
+For the record, the pass independently reached the same verdict as the 2026-08-14 review — the
+identity, event-sourcing, codec, provenance, and governance layers hold up under an institutional
+read — and independently identified findings 5, 2, 8 and the pack-registry item that the resolution
+pass had already fixed. Two of its findings survive.
 
-**Resolved 2026-08-23: the pre-gate materialization window.** Review correctly pointed out that moving
-materialization outside the gate had reopened a narrower version of the lost-update problem — an
-`Upsert` completing while `ReplaceAll` copied its argument wrote into the outgoing map and was
-discarded by the swap. Enumerating inside the gate was not safe either, because a lazy source could
-wait on a writer that needed that gate.
+V2 below was materially sharpened by automated review on the pull request that recorded this
+section: the pass had originally described CSV import as *narrow* (eight of twenty-six classes
+accepted), and review correctly identified that it is in fact *entirely broken*, and that the
+remediation the pass proposed would have made things worse. Both corrections were verified against
+source before being adopted, and the finding is restated accordingly.
 
-> **Corrected 2026-08-19, after review.** This section first claimed the window was "near-zero in
-> practice: every production caller passes an already-materialized list, which the array fast path
-> takes without enumerating at all". That was wrong, and it understated the risk in the very note
-> written to hand the decision to a human. `BuildWarmSetAsync` returns a
-> `List<SecurityProjectionRecord>` (`SecurityMasterProjectionService.cs:29,43`), and the fast path
-> tests `records as SecurityProjectionRecord[]` — a `List<T>` is not an array, so the cast fails and
-> `ToArray()` runs. **Both production callers enumerate outside the gate**, so the window spans the
-> copy of the entire warm set rather than being near-zero. Being already materialized is not the
-> same as taking the fast path, and the claim conflated them.
+### V1 — There is still no catalog-to-validator coverage guard
 
-The final fix takes the third path. `ReplaceAll` serializes replacement operations, registers an
-accepted-upsert capture under the write gate, then releases that gate while it copies the source and
-builds the candidate. `Upsert` continues writing the live map and also records each accepted record
-in that capture. Publication takes the write gate, overlays only those captured records using the
-same version rule, swaps the reference, and clears the capture; failure clears the capture while
-leaving the live map and its accepted writes intact. This closes the production and general
-`IEnumerable` hazard without merging untouched outgoing entries or running lazy enumeration under
-the writer gate.
+The resolution pass gave `InvestmentFund` a validator (`AssetClassValidatorRegistry.cs:286`),
+closing the instance: before it, every mutual-fund/ETF/REIT record fell to the registry's
+else-branch and raised Error-severity `SM_ASSET_CLASS_UNSUPPORTED`
+(`SecurityValidationService.cs:116-129`), which governed run, ledger, and report-pack use gate on.
 
-The remaining open findings were deliberately not attempted. Items 1, 2, 7, and the top priority
-need a decision or a schema change rather than a repair: the canonical home for MBS/ABS/CLO is a
-product ruling, the corporate-action envelope is a migration, `BondCouponStructure` is a codec
-change across both hand-written arms, and the workbench merge path is a feature with replay
-semantics to design. None of them is a cleanup, and none should be slipped in as one.
+The **class of defect is still open**. `SecurityAssetClassCatalogTests` now locks the catalog to
+four separate surfaces — the F# `AssetClassRegistry`
+(`Catalog_StaysInLockstepWithTheFSharpAssetClassRegistry`), the pack registry
+(`AssetPackRegistry_ValidatesCleanly_AndCoversEveryCatalogAssetClass`), the terms schema
+(`SecurityAssetTermsSchemaTests.Schema_DeclaresEveryCatalogAssetClass`), and relational projections
+(`IntentionallyUnprojectedAssetClasses`) — but **not** the validator registry.
+`AssetClassValidatorRegistry` appears in the test suite only as a constructed dependency, never
+asserted for catalog parity; the sole reference to `SupportedAssetClasses` outside the registry is
+in `CorporateActionTypeDescriptorCatalogTests:113`, which is not a parity guard.
 
-The fix above was not compiled or tested locally — this checkout has no .NET SDK. `quality-gate`
-is the gate.
+So the next catalog class added without a validator fails the same way `InvestmentFund` did, and
+nothing fails at commit time to say so. The fix is a fifth guard mirroring the four that exist —
+the cheapest durable item in this document.
 
-### Priorities — unchanged
+### V2 — CSV import is broken for every asset class, not merely narrow
 
-The 2026-08-14 re-ranked list stands except for the factor-schedule collapse in its priority 4,
-which this pass refuted and which is struck there — a priority list is where a later implementer
-looks for work, so a recommendation this review has since concluded is destructive cannot be left
-standing in it. One further adjustment: effective-interest amortization
-moves from *deferred* to a credible near-term slice, on the strength of the primitives above. It
-remains below the top five, because the decision it waits on (GAAP materiality) is still a policy
-question and not an architecture one.
+**The parser discards the columns the create path requires.** `SecurityMasterCsvParser.ParseRow`
+constructs its `CreateSecurityRequest` with `CommonTerms` and `AssetSpecificTerms` both hardcoded to
+the empty document `{}` (`SecurityMasterCsvParser.cs:143-155`) — the `Name` and `Currency` columns it
+just parsed are never carried into the payload. `SecurityMasterImportService` then hands that request
+to `SecurityMasterService.CreateAsync` (`:164`), whose command mapping calls
+`ToCommonTerms(request.CommonTerms)`, and that requires both fields:
+`GetRequiredString(json, "displayName")` and `GetRequiredString(json, "currency")`
+(`SecurityMasterMapping.cs:214-217`), each throwing `Missing required string '<name>'` when absent
+(`:698-701`).
 
-The top priority is unchanged and now five days older: **the merge path from the governed
-workbench to the golden record.** Every part of that workflow is built except the publish handler
-that writes an approved correction into canonical terms. Until it lands, the durable revision
-lifecycle, the independent-reviewer gate, the schema-validated field paths, and the provenance
-lineage all govern a side table, and an approved coupon correction still cannot reach cash-flow
-projection, amortization, pricing, or NAV.
+So **every CSV row fails at create time, for every asset class** — including a well-formed Equity row
+naming one of the eight accepted spellings. The empty `assetSpecificTerms` compounds it: classes with
+required term fields (Option's `underlyingId` / `putCall` / `strike` / `expiry`, for instance) would
+still fail strict write-mode mapping even after the common-terms payload is fixed. CSV import is a
+dead path, not a narrow one.
+
+**The accepted-class table is a second, downstream gap.**
+`SecurityMasterCsvParser.AssetClassMapping` is a private dictionary of nine spellings resolving to
+eight distinct classes — Equity, Option, Future, Bond, CryptoCurrency, Commodity, Cfd, Warrant
+(`:13-24`) — not derived from `SecurityAssetClassCatalog` and bound by no test. Rows naming any other
+catalog class are rejected with "Unknown AssetClass" before the outage above is even reached. That
+is the same shape as V1 (a registry governing asset-class behavior with no catalog parity guard), and
+it is worth closing — but only after the payload path works, since widening the table alone changes
+nothing.
+
+Note for whoever picks this up: **do not derive the accepted set from
+`SecurityAssetClassCatalog.SupportsBasicCreateWorkflow`.** That flag describes the workstation's basic
+create flow and is true for exactly two classes, `Equity` and `CustomAsset`; deriving from it would
+drop the seven other spellings CSV accepts today and admit `CustomAsset`, whose required profile
+envelope an empty terms payload cannot satisfy. Closing this properly needs a CSV-specific capability
+on the catalog (or another invariant that actually models importability), plus a parser that
+populates the terms payloads it already parses.
+
+### Noted, not re-filed
+
+The application-layer compensating-override layer for profile-backed records
+(`IsProfileBackedCustomAsset`'s seven hard-coded asset-class strings, `KnownProfileAssetClasses`,
+`AssetClassMetadataKeywords`, and the post-hoc `assetClassOverride` / `assetSpecificTermsOverride`
+patching in `CreateProjectionFromResult`) remains as finding 4 describes it: the aggregate drops the
+profile envelope and the service patches it back afterwards. Its correctness has improved markedly —
+a non-envelope patch now refuses rather than silently discarding the requested values
+(`SecurityMasterService.cs:921-949`), and a repin resolves its class from the submitted envelope
+(`:88-107, 894-919`) — but the shape is unchanged and the hard-coded tables have grown. It stays
+part of the standing eleven-registry cost in finding 4 rather than a separate item.
+
+---
+
+## Scheduled institutional-requirements pass — 2026-08-26
+
+Re-read against `2917848a` (254 commits after `780aeb9e`, of which seven touch Security Master).
+The verdict above stands unchanged. The prior passes' two open verification findings were re-checked
+against current source and **both remain open**; five findings below are new to this document. No
+code was changed by this pass and no tests were run — every claim is a source read.
+
+### Re-verified as still open
+
+| # | Item | Evidence at `2917848a` |
+| --- | --- | --- |
+| V1 | No catalog-to-validator coverage guard | `AssetClassValidatorRegistry` still appears in `tests/Meridian.Tests/` only as a constructed dependency; no test asserts `SupportedAssetClasses` against `SecurityAssetClassCatalog`. Parity currently *holds* — all 26 catalog classes have a validator — which is exactly why the missing guard is invisible until the next class lands. |
+| V2 | CSV import is broken for every asset class | `SecurityMasterCsvParser.cs:146-147` still hardcodes `CommonTerms` and `AssetSpecificTerms` to `{}`, and `SecurityMasterMapping.cs:216-217` still requires `displayName` and `currency`. The path is live in **both** UI lanes — `SecurityMasterViewModel` (WPF) and `SecurityMasterEndpoints.cs:901` (HTTP) — so it is an operator-facing dead route, not a dormant one. |
+
+The three declared-and-deferred items are unchanged and remain governed rather than drifting: the
+15 unprojected classes are still enumerated in `SecurityAssetTermsSchemaTests.IntentionallyUnprojectedAssetClasses`
+and locked to "projected ∪ declared-gap = catalog", terms still have no valid-time history, and both
+codec arms remain hand-written behind the round-trip guard.
+
+### N1 — `CashSweep` and `StructuredCredit` share an asset family, and accounting reads the family as securitized
+
+The highest-severity item this pass. Three independently reasonable decisions compose into a
+cross-asset misclassification:
+
+1. `AssetClassRegistry` assigns `Family = AssetFamily.StructuredCash` to **both** `CashSweep`
+   (`SecurityMaster.fs:667`) and `StructuredCredit` (`:675`).
+2. `AssetFamily.StructuredCash` serializes to the literal string `"StructuredCash"`
+   (`SecurityClassification.fs:105`), which is what reaches `SecurityEconomicDefinitionRecord.AssetFamily`.
+3. `SecurityMasterAccountingEventSourceAdapter.IsStructuredCredit` matches that exact literal
+   (`:725-727`), and `ResolveAccountingAssetClass` (`:643`) tests it against `AssetFamily` among four
+   fields.
+
+So every `CashSweep` record resolves to accounting asset class `"AssetBackedSecurity"`. It then passes
+`SecurityMasterAccountingEventService.IsFixedIncome` (`:291-303`) and enters the fixed-income slice.
+Because `ToAccountingRule` returns null unless the record carries an `accountingClassification`
+(`:341-351`), the typical cash-sweep record raises `SECURITY_ACCOUNTING_RULE_MISSING` at
+**High** severity (`SecurityMasterAccountingEventService.cs:222-231`) — where correct classification
+would have produced the benign `SM_UNSUPPORTED_ACCOUNTING_INSTRUMENT` at **Info** (`:211-220`). A
+sweep vehicle carrying an `accountingClassification` is worse, not better: it proceeds into coupon and
+factor coverage validation it has no terms to satisfy.
+
+The mechanism is certain from source. What is not established without a test is how many cash-sweep
+positions reach the accounting event path in practice, and therefore how much spurious close-blocking
+break volume this produces today. That test is the cheapest way to size it.
+
+The root cause is the shared family label, not the predicate: `StructuredCash` is being asked to mean
+both "structured cash vehicle" and "securitized credit". Splitting the family (`StructuredCash` for
+sweep vehicles, a distinct `SecuritizedCredit` for tranches) fixes it at the source and removes the
+need for `IsStructuredCredit` to special-case a family name at all.
+
+### N2 — The coverage read model routes securitized evidence to `CustomAsset`, against ADR-022
+
+`MultiAssetCoverageReadService.CandidateAssetClass` (`:339`) and `ScheduleAssetClass` (`:357`) both
+return `"CustomAsset"` when `IsStructuredAssetEvidence` (`:386`) fires. ADR-022, accepted two days
+earlier, makes `StructuredCredit` the canonical home for MBS/ABS/CLO/CMBS and the validator now warns
+`SM_CUSTOM_ASSET_SECURITIZED_NONCANONICAL` for exactly that modeling
+(`AssetClassValidatorRegistry.cs:314`). The read model therefore steers operators toward the class the
+write model has just been taught to warn against.
+
+Both methods also classify by substring-sniffing a concatenation of five free-text fields
+(`CandidateType`, `RequiredFeed`, `Symbol`, `SecurityDisplayName`, `Reason`), so any security whose
+display name or reason text happens to contain "loan", "structured", "trustee", or "warehouse" is
+classified accordingly. This is the same shape as `ResolveAccountingAssetClass` in N1: asset class
+inferred from prose rather than read from the record.
+
+### N3 — `SecurityAssetPackRegistry` declares 18 asset classes the domain cannot represent
+
+The resolution pass closed the direction that was tested — every catalog class is now claimed by a
+pack. The reverse direction is unguarded, and diverges: the packs name
+
+`Art`, `BankAccount`, `Cash`, `CreditFacility`, `ExchangeTradedFund`, `Forward`, `Guarantee`,
+`InsurancePolicy`, `IntercompanyLoan`, `Mortgage`, `PartnershipInterest`, `PrivateCredit`,
+`PrivateFund`, `RealEstate`, `RealEstateInterest`, `SpecializedHolding`, `UnfundedCommitment`, `Vehicle`
+
+— none of which has a `SecurityKind` arm, a terms schema entry, or a validator. `Cash` and
+`BankAccount` are the ones that matter for fund operations: the registry advertises deep accounting
+automation for a cash-and-bank pack whose two headline classes do not exist as instruments.
+
+This surfaces to operators. `SecurityMasterOperationalReadinessService:295` projects
+`SecurityAssetPackRegistry.All` into the readiness report, so the readiness surface reports asset-pack
+coverage for instruments the system cannot hold. The fix is a second parity guard mirroring the first.
+
+### N4 — `ValidateAll()` cannot report the overlap rule it implements
+
+`ValidateCandidateSet` filters its asset-class-overlap check to groups containing at least one
+*candidate* pack (`SecurityAssetPackRegistry.cs:280`). `ValidateAll()` calls it with an empty candidate
+list (`:249-252`), so `candidateIds` is empty and the filter rejects every group: the built-in overlap
+rule can never fire. Two overlaps stand today — `DirectLoan` claimed by both `private-loan-credit` and
+`mortgage-facility-intercompany`, and `CreditFacility` by three packs — so `FindByAssetClass` returns
+an ambiguous set for them while an identical claim from a new pack would be rejected as Critical. The
+rule is asymmetric between incumbents and newcomers, which is the opposite of what a registry guard
+should be.
+
+### N5 — The pack registry's "contract schema" is one shared prose object, not a per-pack contract
+
+Every pack is constructed with the same three static instances — `ContractSchema` (`:37`),
+`StandardValidationRules` (`:117`), `StandardReportingTaxonomy` (`:153`) — whose members are English
+phrases (`"issuer"`, `"trade date"`, `"cash variance"`, `"market price without market identifier or
+retained price evidence"`). `ValidateDescriptor` checks them only for non-emptiness
+(`RequireNonEmpty`, `:508-521`), so the validation cannot fail for any pack and cannot distinguish
+one pack's contract from another's. `InferLifecycleEvent` (`:464-500`) then derives a pack's lifecycle
+mapping by substring-matching those English journal-template names, so a template renamed for clarity
+can silently re-route to a different lifecycle event.
+
+Read as documentation-as-code the registry is useful. Read as the extensibility seam its docstring
+claims — "introducing asset packs without changing core ledger contracts" — it enforces nothing an
+asset pack could get wrong. Worth either promoting the fields to structured, per-pack, checkable
+values, or restating the type as descriptive metadata so no future work mistakes it for a gate.
+
+### N6 — Projection fan-out writes to every asset class on every upsert
+
+`UpsertProjectionCoreAsync` runs all 11 registered writers for every record
+(`PostgresSecurityMasterStore.cs:386-389`), and each writer whose class does not match issues a
+delete instead of returning (`:392-402`). A single equity upsert therefore issues roughly seventeen
+`DELETE` statements — four for the bond tables, one per remaining projected class — against rows that
+by construction cannot exist. The registry design is right (adding a class is one additive line); the
+per-record cost is what bulk vendor ingest will feel. A `record.AssetClass`-keyed lookup plus a
+targeted cleanup on observed class *change* would keep the registry and drop the amplification.
+
+### Smaller notes, not filed as findings
+
+- **Derivative families are imprecise.** `Swap`, `Cfd`, and `Warrant` all carry
+  `AssetFamily.ListedDerivative` (`SecurityMaster.fs:671, 689, 691`); OTC swaps and CFDs are not
+  listed. `AssetFamily` is the grouping key for certified report packs
+  (`ReportGenerationService.cs:243`, `CertifiedReportingSnapshotBuilder.cs:141`), so the label is a
+  reporting rollup, not a cosmetic tag. `FxSpot` carries `AssetClass.Other` with no family at all
+  (`:653`), which lands FX under "Other" in the same rollups.
+- **Option projections are identifier-keyed while every other projection is security-keyed.**
+  `option_contract_projection` has `contract_symbol` as primary key with a nullable `security_id`
+  (migration 006); the child tables cascade from it correctly, so this is a shape inconsistency
+  rather than a leak.
+- **`AssetSpecificTermsSchema` skips version 2** (`Legacy = 1`, `CustomAssetProfile = 3`) because
+  version 2 belongs to the economic-terms family. The facade documents the split well; the numbering
+  gap is worth a one-line comment where the constants are declared so nobody reads it as a missing
+  migration.
+
+### Priorities from this pass
+
+Ordered by institutional risk per unit of work, and read as a delta on the standing Top 5 above:
+
+1. **Split the `StructuredCash` family (N1).** A correctness defect with a close-readiness blast
+   radius, fixed at the source in the one table that governs classification. Pair it with a test that
+   asserts a `CashSweep` record resolves to a cash-equivalent accounting class.
+2. **Add the two missing parity guards (V1, N3).** Validator-vs-catalog and packs-vs-catalog, both
+   mirroring four guards that already exist. Still the cheapest durable items in this document.
+3. **Fix or retire CSV import (V2).** It is wired into two operator surfaces and works in neither.
+   Whichever way it goes, it should stop being reachable in its current state.
+4. **Retire classification-by-prose (N1, N2).** `ResolveAccountingAssetClass` and the
+   `MultiAssetCoverage` routers should read a declared capability off `SecurityAssetClassCatalog`
+   rather than substring-matching four fields and five concatenated free-text values. This is the
+   generalization that makes the next asset class safe by default instead of safe by coincidence.
+5. **Relational projections — or one generic indexed seam — for the private/alternative classes.**
+   Unchanged from the standing list, and unchanged in importance: `DirectLoan`, `StructuredCredit`,
+   `PrivateFundInterest`, `RealEstateHolding`, and `CommitmentGuarantee` are precisely the classes
+   fund operations queries by issuer, maturity, and commitment, and precisely the ones with no
+   indexed path.
+
+---
+
+## Resolution pass — 2026-08-26
+
+An implementation pass on the four items prioritised out of the pass above.
+
+**Validation.** The authoring environment had no .NET SDK preinstalled; one was installed and the
+work was built and tested locally. `dotnet build Meridian.sln -c Release` succeeds with 0 errors, the
+full `Meridian.Tests` suite runs 13,806 passed / 226 skipped / 2 failed, and `Meridian.FSharp.Tests`
+passes 447/447. Both remaining failures are pre-existing and unrelated to this pass, each verified
+rather than assumed:
+
+- `StrategyDesignServiceTests.Scenario_MultiSymbolRebalance_…` reproduces identically on the base
+  commit `2917848a` in a clean worktree. The QuantScript worker is a separate process launched via
+  `dotnet exec`, and the locally installed SDK does not resolve its native dependencies — an
+  artefact of the authoring container, not of the tree. CI's own QuantScript project passes 166/166.
+- `LeanEndpointTests.StopBacktest_UnknownId_Returns404` expects 404 and gets 501, because
+  `f5f4b192` changed the Lean stop route to answer 501 without updating the test. It sits under
+  `Meridian.Tests.Integration`, which every CI `dotnet test` invocation excludes twice over, so CI
+  never runs it. Worth someone fixing — a test outside CI's reach rots silently — but it belongs to
+  the Lean surface, not here.
+
+### Closed this pass
+
+| # | Item | What landed |
+| --- | --- | --- |
+| N1 | `CashSweep` accounts as an asset-backed security | `AssetFamily.SecuritizedCredit` splits the securitized family out of `StructuredCash`; `StructuredCredit` moves to it and `CashSweep` keeps `StructuredCash`. The adapter no longer reads the family at all (see N2/N4 below), so the family is a reporting rollup again rather than an instrument identity. `SecurityAccountingInstrumentClassTests` locks the regression: a cash sweep resolves to no accounting class, which the event service reports at Info instead of raising a High-severity `SECURITY_ACCOUNTING_RULE_MISSING`. |
+| V1 | No catalog-to-validator parity guard | `SecurityAssetClassParityGuardTests.ValidatorRegistry_CoversExactlyTheCatalogAssetClasses` — the fifth guard mirroring the four that existed. |
+| N3 | Packs declare 18 classes the domain cannot represent | `SecurityAssetPackDescriptor.PlannedAssetClasses` carries anticipated coverage; `AssetClasses` now names only catalog classes. `ValidateDescriptor` enforces both directions at runtime (`asset-pack.asset-class-not-in-catalog`, `asset-pack.planned-asset-class-already-modeled`), and the parity tests guard them. The readiness DTO reports the planned set separately so a reader cannot mistake it for present coverage. |
+| V2 | CSV import broken for every asset class | The parser builds the `displayName`/`currency`/`exchange` common-terms payload it already parsed and stamps the asset-specific-terms schema version, so rows reach the create path intact. The accepted set derives from a new catalog capability, `SupportsIdentifierOnlyImport`, instead of a private table. |
+| — | Prose-sniffing classification | `ResolveAccountingAssetClass` is a lookup over `SecurityAssetClassCatalog.ResolveAccountingInstrumentClass`, not substring matching across four fields. `MultiAssetCoverageReadService` reads the class a referenced security DECLARES (via `ISecurityMasterQueryService`) and only falls back to inference for evidence naming no security — and that fallback now reads feed SHAPE fields only, never the security's symbol, display name, or reason text. |
+| N2 | Coverage read model contradicts ADR-022 | Structured evidence resolves to `StructuredCredit`; NAV/capital-call/distribution evidence resolves to `PrivateFundInterest` instead of being swept into `CustomAsset` alongside it. |
+
+### Behaviour deltas worth knowing
+
+These are intended and stated rather than incidental:
+
+- **Securitized vendor spellings collapse to one accounting class.** `MortgageBacked`,
+  `MortgageBackedSecurity` and `Mbs` previously resolved to a distinct `MortgageBackedSecurity`
+  accounting class; they now resolve to `AssetBackedSecurity` like every other securitized spelling.
+  Both pass the fixed-income gate identically and nothing downstream discriminates between them, so
+  the only difference is the string in an issue message. This follows ADR-022: the MBS-vs-ABS
+  distinction is a collateral fact, not a class name.
+- **Records admitted only because their class string read "Loan" no longer are.** Canonical
+  `DirectLoan` records were never admitted to this accounting slice; records whose class string
+  happened to be `Loan` or `AmortizingLoan` were. The canonical class now decides uniformly. This
+  removes an inconsistency rather than a capability — admitting direct loans to the slice is a
+  product decision, not a refactor, and is left unmade.
+- **CSV import accepts two asset classes, not nine.** `Equity` and `InvestmentFund` are the only
+  classes whose asset-specific terms are entirely optional, so they are the only ones a
+  ticker/name/currency row can create. The other seven the parser used to name were rejected at
+  create time anyway; they are now refused at parse time with a message that says why. A parity test
+  ties the capability to `SecurityAssetTermsSchema`, so the flag cannot drift from the contract it
+  describes.
+
+### Still open from the pass above
+
+- **N4 — `ValidateAll()` cannot fire its own overlap rule.** Untouched. `DirectLoan` remains claimed
+  by both `private-loan-credit` and `mortgage-facility-intercompany` (the latter's other three
+  claims are now planned coverage), and the candidate-only filter still means a built-in overlap
+  cannot be reported.
+- **N5 — the per-pack contract schema is one shared prose object.** Untouched.
+- **N6 — projection fan-out writes to every asset class on every upsert.** Untouched.
+- The three long-standing deferred items — relational projections for the private/alternative
+  classes, valid-time term history, and codec generation from `SecurityAssetTermsSchema` — are
+  unchanged.
 
 ---
 
@@ -949,18 +931,4 @@ Security Master contracts, the 58 `Meridian.Application` Security Master service
 `Meridian.Storage` stores and 28 migrations, the workstation endpoint surfaces, and the codec
 round-trip and asset-class-support test suites.
 
-The 2026-08-19 verification pass diffed the Security Master surface against `4b39e9da8` across the
-F# domain/interop/calculations, `Meridian.Contracts/SecurityMaster/`,
-`Meridian.Application/SecurityMaster/`, `Meridian.Storage/SecurityMaster/`,
-`Meridian.ReferenceData/`, `Meridian.Instruments/`, the Security Master services in
-`Meridian.Strategies/`, the execution gate, the reporting lookup, and
-`Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs`; re-verified each open finding against
-its cited source location; re-counted the asset-class surfaces and projection stores from their
-actual declarations; and swept `src/Meridian.FSharp/Calculations/` for calculation capability not
-reachable from a production path. The browser workstation screens and the
-`tests/Meridian.Tests/SecurityMaster/` suite were not re-diffed by this pass.
-
-The 2026-08-12 and 2026-08-14 passes changed no code. The 2026-08-19 pass changed one file
-(`SecurityMasterProjectionCache.ReplaceAll`) and added one test file; no tests were run locally,
-because this checkout has no .NET SDK. Every other claim in this review is a reading of source and
-makes no behavioral assertion requiring execution.
+No code was changed. No tests were run — this review makes no behavioral claims requiring execution.

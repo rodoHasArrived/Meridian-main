@@ -80,7 +80,9 @@ public sealed record PlaidClientCredentials(
     PlaidEnvironmentDto Environment);
 
 public sealed record PlaidLinkTokenRequest(
-    string UserId,
+    // Optional client hint only: the endpoint always rewrites this with the authenticated
+    // session actor (PlaidEndpoints.ResolveActor), so browsers may omit it entirely.
+    string? UserId = null,
     Guid? MeridianAccountId = null,
     IReadOnlyList<PlaidProductDto>? Products = null,
     string? WebhookUrl = null,
@@ -129,7 +131,9 @@ public sealed record PlaidPublicTokenExchangeRequest(
     string? InstitutionId,
     string? InstitutionName,
     IReadOnlyList<PlaidAccountLinkRequest> Accounts,
-    string RequestedBy);
+    // Optional client hint only: the endpoint always rewrites this with the authenticated
+    // session actor (PlaidEndpoints.ResolveActor), so browsers may omit it entirely.
+    string? RequestedBy = null);
 
 public sealed record PlaidPublicTokenExchangeResult(
     PlaidItemDto Item,

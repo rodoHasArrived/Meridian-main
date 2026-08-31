@@ -39,7 +39,7 @@ public sealed class SchemaValidationServiceTests : IAsyncDisposable
     public void Validate_WithValidEvent_ShouldNotThrow()
     {
         // Arrange
-        var evt = MarketEvent.Heartbeat(DateTimeOffset.UtcNow);
+        var evt = MarketEvent.Heartbeat(DateTimeOffset.UtcNow, "TEST");
 
         // Act
         var act = () => _service.Validate(evt);
@@ -106,7 +106,7 @@ public sealed class SchemaValidationServiceTests : IAsyncDisposable
     public void ValidateSafe_WithValidEvent_ShouldReturnSuccess()
     {
         // Arrange
-        var evt = MarketEvent.Heartbeat(DateTimeOffset.UtcNow);
+        var evt = MarketEvent.Heartbeat(DateTimeOffset.UtcNow, "TEST");
 
         // Act
         var result = _service.ValidateSafe(evt);

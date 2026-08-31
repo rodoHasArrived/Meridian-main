@@ -1,3 +1,5 @@
+using Meridian.Contracts.Text;
+
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -186,7 +188,7 @@ public static class LedgerAccounts
     public static LedgerAccount Securities(string symbol, string? financialAccountId = null)
     {
         var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Securities", LedgerAccountType.Asset, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+        return new("Securities", LedgerAccountType.Asset, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
     }
 
     /// <summary>
@@ -199,7 +201,7 @@ public static class LedgerAccounts
     public static LedgerAccount DividendReceivable(string symbol, string? financialAccountId = null)
     {
         var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Dividend Receivable", LedgerAccountType.Asset, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+        return new("Dividend Receivable", LedgerAccountType.Asset, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
     }
 
     /// <summary>
@@ -210,7 +212,7 @@ public static class LedgerAccounts
     public static LedgerAccount AccruedInterestReceivable(string symbol, string? financialAccountId = null)
     {
         var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Accrued Interest Receivable", LedgerAccountType.Asset, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+        return new("Accrued Interest Receivable", LedgerAccountType.Asset, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
     }
 
     /// <summary>
@@ -221,7 +223,7 @@ public static class LedgerAccounts
     public static LedgerAccount CorpActionDistribution(string symbol, string? financialAccountId = null)
     {
         var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Corporate Action Distribution", LedgerAccountType.Revenue, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+        return new("Corporate Action Distribution", LedgerAccountType.Revenue, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
     }
 
     /// <summary>
@@ -232,7 +234,7 @@ public static class LedgerAccounts
     public static LedgerAccount ShortSecuritiesPayable(string symbol, string? financialAccountId = null)
     {
         var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Short Securities Payable", LedgerAccountType.Liability, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+        return new("Short Securities Payable", LedgerAccountType.Liability, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
     }
 
     // -------------------------------------------------------------------------
@@ -271,7 +273,7 @@ public static class LedgerAccounts
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(currencyCode);
         var key = currencyCode.Trim().ToUpperInvariant();
-        return new($"Cash ({key})", LedgerAccountType.Asset, Symbol: key, NormalizeOptionalAccountId(financialAccountId));
+        return new($"Cash ({key})", LedgerAccountType.Asset, Symbol: key, TextPrimitives.NormalizeOptional(financialAccountId));
     }
 
     // -------------------------------------------------------------------------
@@ -309,7 +311,7 @@ public static class LedgerAccounts
     public static LedgerAccount OptionPremiumAsset(string symbol, string? financialAccountId = null)
     {
         var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Option Premium Asset", LedgerAccountType.Asset, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+        return new("Option Premium Asset", LedgerAccountType.Asset, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
     }
 
     /// <summary>
@@ -319,7 +321,7 @@ public static class LedgerAccounts
     public static LedgerAccount OptionPremiumLiability(string symbol, string? financialAccountId = null)
     {
         var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Option Premium Liability", LedgerAccountType.Liability, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+        return new("Option Premium Liability", LedgerAccountType.Liability, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
     }
 
     /// <summary>
@@ -329,7 +331,7 @@ public static class LedgerAccounts
     public static LedgerAccount FuturesMtmSettlement(string symbol, string? financialAccountId = null)
     {
         var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Futures MTM Settlement", LedgerAccountType.Asset, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+        return new("Futures MTM Settlement", LedgerAccountType.Asset, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
     }
 
     // -------------------------------------------------------------------------
@@ -428,7 +430,4 @@ public static class LedgerAccounts
         ArgumentException.ThrowIfNullOrWhiteSpace(financialAccountId);
         return financialAccountId.Trim();
     }
-
-    private static string? NormalizeOptionalAccountId(string? financialAccountId)
-        => string.IsNullOrWhiteSpace(financialAccountId) ? null : financialAccountId.Trim();
 }

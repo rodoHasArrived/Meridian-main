@@ -792,7 +792,7 @@ public class EventPipelineTests : IAsyncLifetime
             SequenceNumber: 1,
             Venue: "NYSE");
 
-        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade);
+        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade, source: "TEST");
     }
 
     private static MarketEvent CreateQuoteEvent(string symbol)
@@ -807,7 +807,7 @@ public class EventPipelineTests : IAsyncLifetime
                 AskSize: 200L),
             seq: 1);
 
-        return MarketEvent.BboQuote(DateTimeOffset.UtcNow, symbol, quote);
+        return MarketEvent.BboQuote(DateTimeOffset.UtcNow, symbol, quote, source: "TEST");
     }
 
     private async Task WaitForConsumption(int expectedCount, int timeoutMs = 2000)

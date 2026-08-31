@@ -1136,7 +1136,8 @@ describe("LiveQuotesScreen quick trade", () => {
       filesProcessed: 0,
       totalFiles: 0,
       queryTimeMs: 0,
-      bars: []
+      bars: [],
+      sources: []
     });
   });
 

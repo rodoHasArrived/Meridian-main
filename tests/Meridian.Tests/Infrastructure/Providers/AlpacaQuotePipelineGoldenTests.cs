@@ -48,7 +48,7 @@ public sealed class AlpacaQuotePipelineGoldenTests : IDisposable
                 AskPrice: 185.55m,
                 AskSize: 300,
                 StreamId: "ALPACA",
-                Venue: "ALPACA"));
+                Venue: "ALPACA", Source: "ALPACA"));
 
             await pipeline.FlushAsync();
         }

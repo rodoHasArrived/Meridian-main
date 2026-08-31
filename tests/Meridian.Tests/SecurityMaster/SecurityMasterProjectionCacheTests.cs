@@ -203,6 +203,42 @@ public sealed class SecurityMasterProjectionCacheTests
             "Upsert must write into the map the swap installed, not a stale reference");
     }
 
+    [Fact]
+    public void UpsertGetRemove_RoundTrip()
+    {
+        var cache = new SecurityMasterProjectionCache();
+        var record = Record("ROUND-TRIP-1");
+
+        cache.Get(record.SecurityId).Should().BeNull();
+        cache.Upsert(record);
+        cache.Get(record.SecurityId).Should().BeSameAs(record);
+        cache.Remove(record.SecurityId).Should().BeTrue();
+        cache.Get(record.SecurityId).Should().BeNull();
+        cache.Remove(record.SecurityId).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Remove_DuringReplaceAllMaterialization_DropsTheCapturedUpsert()
+    {
+        // Without the write-gated capture removal, the replay would resurrect a record the caller
+        // evicted between its upsert and the replacement's publication.
+        var cache = new SecurityMasterProjectionCache();
+        var record = Record("EVICTED-1");
+        var replacementSet = Build("REPLACEMENT");
+
+        var pausing = new PausingCollection(replacementSet, atMidpoint: () =>
+        {
+            cache.Upsert(record);
+            cache.Remove(record.SecurityId).Should().BeTrue();
+        });
+
+        cache.ReplaceAll(pausing);
+
+        cache.Get(record.SecurityId).Should().BeNull(
+            "a record evicted during the replacement build must not be resurrected by the capture replay");
+        cache.Count.Should().Be(RecordCount);
+    }
+
     /// <summary>
     /// A replacement set that runs <paramref name="atMidpoint"/> halfway through being enumerated,
     /// so the other thread's work is forced to interleave with the replacement instead of racing it.

@@ -83,6 +83,26 @@ public sealed class MarketDepthCollector : SymbolSubscriptionTracker
         if (!ShouldProcessUpdate(symbol))
             return;
 
+        // The collector is a shared singleton serving every active adapter, so provenance
+        // must arrive per event. Reject sourceless updates loudly instead of silently
+        // attributing them to a default vendor.
+        if (MarketDataSources.IsMissing(update.Source))
+        {
+            var missingSource = IntegrityEvent.MissingSource(
+                update.Timestamp,
+                symbol,
+                "depth",
+                update.SequenceNumber,
+                update.StreamId,
+                update.Venue);
+
+            _publisher.TryPublish(MarketEvent.Integrity(
+                update.Timestamp, symbol, missingSource, MarketDataSources.Unknown));
+            return;
+        }
+
+        var source = update.Source!;
+
         var book = _books.GetOrAdd(new SymbolId(symbol), _ => new SymbolOrderBookBuffer(MaxDepth));
 
         var result = book.Apply(update, out var snapshot);
@@ -103,12 +123,13 @@ public sealed class MarketDepthCollector : SymbolSubscriptionTracker
             );
 
             TrackIntegrity(evt);
-            _publisher.TryPublish(MarketEvent.DepthIntegrity(update.Timestamp, symbol, evt));
+            _publisher.TryPublish(MarketEvent.DepthIntegrity(update.Timestamp, symbol, evt, source));
 
             _publisher.TryPublish(MarketEvent.ResyncRequested(
                 update.Timestamp,
                 symbol,
                 evt.Description,
+                source,
                 update.StreamId,
                 update.Venue,
                 update.SequenceNumber));
@@ -119,7 +140,7 @@ public sealed class MarketDepthCollector : SymbolSubscriptionTracker
             return;
 
         // Emit snapshot. Support explicit payload wrapper too if you want to swap later.
-        _publisher.TryPublish(MarketEvent.L2Snapshot(snapshot.Timestamp, symbol, snapshot));
+        _publisher.TryPublish(MarketEvent.L2Snapshot(snapshot.Timestamp, symbol, snapshot, source));
     }
 
     private void TrackIntegrity(DepthIntegrityEvent evt)

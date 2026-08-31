@@ -114,7 +114,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
 
     private async Task<List<SecurityMasterAccountingPosition>> ResolveDurablePositionsAsync(
         IReadOnlyList<SecurityMasterAccountingPosition> positions,
-        IReadOnlyList<SecurityFactorScheduleEntry> factorSchedule,
+        IReadOnlyList<SecurityFactorObservation> factorSchedule,
         CancellationToken ct)
     {
         if (_assetOperationsQueryService is null)
@@ -351,17 +351,17 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         return new SecurityAccountingRule(classification.Trim(), "GAAP");
     }
 
-    private static IReadOnlyList<SecurityFactorScheduleEntry> BuildFactorSchedule(
+    private static IReadOnlyList<SecurityFactorObservation> BuildFactorSchedule(
         IEnumerable<SecurityEconomicDefinitionRecord> definitions,
         DateOnly periodStart,
         DateOnly periodEnd)
     {
-        var entries = new List<SecurityFactorScheduleEntry>();
+        var entries = new List<SecurityFactorObservation>();
         foreach (var definition in definitions)
         {
             var coveredDates = new HashSet<DateOnly>();
             var definitionStartCount = entries.Count;
-            SecurityFactorScheduleEntry? latestPrePeriod = null;
+            SecurityFactorObservation? latestPrePeriod = null;
             foreach (var schedule in EnumerateFactorScheduleArrays(definition))
             {
                 foreach (var item in schedule.EnumerateArray())
@@ -388,7 +388,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                         continue;
                     }
 
-                    var entry = new SecurityFactorScheduleEntry(
+                    var entry = new SecurityFactorObservation(
                         definition.SecurityId,
                         asOfDate.Value,
                         priorFactor.Value,
@@ -490,7 +490,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                     // the asserting provider under sourceSystem, so that vendor identity — not the
                     // generic security-master fallback — is the factor-source lineage the expected
                     // event must record.
-                    var typedEntry = new SecurityFactorScheduleEntry(
+                    var typedEntry = new SecurityFactorObservation(
                         definition.SecurityId,
                         row.AsOfDate,
                         priorFactor,
@@ -640,95 +640,34 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             : symbol.Trim().ToUpperInvariant();
     }
 
+    /// <summary>
+    /// Resolves the accounting-slice instrument class from the classification the record DECLARES,
+    /// via <see cref="SecurityAssetClassCatalog.ResolveAccountingInstrumentClass"/>. The declared
+    /// names are offered most-specific first — the legacy (canonical) asset class, then the type
+    /// name, then the sub-type — with the coarse taxonomy asset class last.
+    /// <para>
+    /// <see cref="SecurityEconomicDefinitionRecord.AssetFamily"/> is deliberately NOT consulted. It
+    /// is a reporting rollup label, not an instrument identity: <c>CashSweep</c> and
+    /// <c>StructuredCredit</c> shared the <c>StructuredCash</c> family, so matching on it classified
+    /// every cash-sweep vehicle as an asset-backed security, admitted it to the fixed-income slice,
+    /// and turned an Info-severity "not in this slice" note into a High-severity
+    /// SECURITY_ACCOUNTING_RULE_MISSING break. The families are split now; the classification still
+    /// reads only from what the record says it IS.
+    /// </para>
+    /// <para>
+    /// A record naming no covered class falls back to its sub-type (then its taxonomy asset class),
+    /// which the event service's own gate rejects as SM_UNSUPPORTED_ACCOUNTING_INSTRUMENT at Info —
+    /// the correct outcome for an instrument this first accounting slice does not cover.
+    /// </para>
+    /// </summary>
     private static string ResolveAccountingAssetClass(SecurityEconomicDefinitionRecord definition)
-    {
-        if (IsMortgageBacked(definition.AssetClass) ||
-            IsMortgageBacked(definition.AssetFamily) ||
-            IsMortgageBacked(definition.SubType) ||
-            IsMortgageBacked(definition.TypeName))
-        {
-            return "MortgageBackedSecurity";
-        }
-
-        if (IsAssetBacked(definition.AssetClass) ||
-            IsAssetBacked(definition.AssetFamily) ||
-            IsAssetBacked(definition.SubType) ||
-            IsAssetBacked(definition.TypeName))
-        {
-            return "AssetBackedSecurity";
-        }
-
-        if (IsAmortizingLoan(definition.AssetClass) ||
-            IsAmortizingLoan(definition.AssetFamily) ||
-            IsAmortizingLoan(definition.SubType) ||
-            IsAmortizingLoan(definition.TypeName))
-        {
-            return "AmortizingLoan";
-        }
-
-        // Canonical StructuredCredit records classify as class/subtype "StructuredCredit" and
-        // family "StructuredCash" — securitized tranches whose factor-driven paydown accounting
-        // this fixed-income slice exists to cover. Mortgage-collateral flavors already resolved
-        // above via the MortgageBacked tokens; the rest account as asset-backed securitizations.
-        // Without this mapping the raw class reaches the event service, fails its fixed-income
-        // gate as SM_UNSUPPORTED_ACCOUNTING_INSTRUMENT, and the typed-schedule coverage never runs
-        // for the very records that carry typed schedules.
-        if (IsStructuredCredit(definition.AssetClass) ||
-            IsStructuredCredit(definition.AssetFamily) ||
-            IsStructuredCredit(definition.SubType) ||
-            IsStructuredCredit(definition.TypeName))
-        {
-            return "AssetBackedSecurity";
-        }
-
-        if (IsFixedIncome(definition.AssetClass) ||
-            IsFixedIncome(definition.AssetFamily) ||
-            ContainsToken(definition.SubType, "Bond") ||
-            ContainsToken(definition.TypeName, "Bond"))
-        {
-            return "Bond";
-        }
-
-        return definition.SubType ?? definition.AssetClass;
-    }
-
-    private static bool IsFixedIncome(string? value) =>
-        string.Equals(value, "FixedIncome", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(value, "Bond", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(value, "CertificateOfDeposit", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(value, "CommercialPaper", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(value, "TreasuryBill", StringComparison.OrdinalIgnoreCase) ||
-        IsMortgageBacked(value) ||
-        IsAssetBacked(value) ||
-        IsAmortizingLoan(value);
-
-    private static bool IsMortgageBacked(string? value) =>
-        string.Equals(value, "MortgageBacked", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(value, "MortgageBackedSecurity", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(value, "Mbs", StringComparison.OrdinalIgnoreCase) ||
-        ContainsToken(value, "MortgageBacked") ||
-        ContainsToken(value, "Mortgage Backed");
-
-    private static bool IsAssetBacked(string? value) =>
-        string.Equals(value, "AssetBacked", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(value, "AssetBackedSecurity", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(value, "Abs", StringComparison.OrdinalIgnoreCase) ||
-        ContainsToken(value, "AssetBacked") ||
-        ContainsToken(value, "Asset Backed");
-
-    private static bool IsAmortizingLoan(string? value) =>
-        string.Equals(value, "Loan", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(value, "AmortizingLoan", StringComparison.OrdinalIgnoreCase) ||
-        ContainsToken(value, "AmortizingLoan") ||
-        ContainsToken(value, "Amortizing Loan");
-
-    private static bool IsStructuredCredit(string? value) =>
-        string.Equals(value, "StructuredCash", StringComparison.OrdinalIgnoreCase) ||
-        ContainsToken(value, "StructuredCredit");
-
-    private static bool ContainsToken(string? value, string token) =>
-        !string.IsNullOrWhiteSpace(value) &&
-        value.Contains(token, StringComparison.OrdinalIgnoreCase);
+        => SecurityAssetClassCatalog.ResolveAccountingInstrumentClass(
+               definition.LegacyAssetClass,
+               definition.TypeName,
+               definition.SubType,
+               definition.AssetClass)
+           ?? definition.SubType
+           ?? definition.AssetClass;
 
     private static string? NormalizeCouponType(string? couponType)
     {

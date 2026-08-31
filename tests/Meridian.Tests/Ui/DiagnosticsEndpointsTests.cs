@@ -439,7 +439,7 @@ public sealed class DiagnosticsEndpointsTests : IDisposable
             SequenceNumber: 1,
             Venue: "TEST");
 
-        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade);
+        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade, source: "TEST");
     }
 
     private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection> configureServices)

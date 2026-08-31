@@ -966,7 +966,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser, OverrideId = overrideId };
+            var trustedRequest = request with { Actor = currentUser, OverrideId = overrideId, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.ApproveSecurityMasterOverrideAsync(workflowId, overrideId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1067,7 +1067,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser };
+            var trustedRequest = request with { Actor = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.PostLedgerEntriesAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1145,7 +1145,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser };
+            var trustedRequest = request with { Actor = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.AssignBreakCaseAsync(workflowId, breakId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1181,7 +1181,10 @@ public static partial class WorkstationEndpoints
             var trustedRequest = request with
             {
                 Actor = currentUser,
-                ActionOrigin = OperationsActionOriginDto.HumanOperator,
+                // Narrower of the caller's declaration and the principal's standing: hardcoding
+                // HumanOperator stamped an API-key caller as a human, and discarded automation
+                // that declared itself (#2673).
+                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin),
                 ApprovalActor = NormalizeOptional(request.ApprovalActor),
                 ApprovalReference = NormalizeOptional(request.ApprovalReference)
             };
@@ -1216,7 +1219,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser };
+            var trustedRequest = request with { Actor = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.SubmitForApprovalAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1248,7 +1251,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser };
+            var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.ApproveWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1280,7 +1283,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser };
+            var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.RejectWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1317,7 +1320,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser };
+            var trustedRequest = request with { Actor = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.CloseWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1349,7 +1352,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser, IsGovernedAdmin = HasGovernedWorkflowReopenPermission(context) };
+            var trustedRequest = request with { Actor = currentUser, IsGovernedAdmin = HasGovernedWorkflowReopenPermission(context), ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.ReopenWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1900,9 +1903,15 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // Authentication proves the executing operator. Rewrite the client-supplied assignee the
+            // same way as the reviewer: the browser lane hardcodes a placeholder assignee, the queue's
+            // assignee filter must answer "my breaks", and the repository derives the audit actor from
+            // AssignedTo ?? ReviewedBy ?? ResolvedBy — so neither identity may pass through verbatim.
+            var reviewActor = ResolveCurrentActor(context);
             var transition = await ReviewBreakAsync(context.RequestServices, queueScope, request with
             {
-                ReviewedBy = ResolveCurrentActor(context)
+                AssignedTo = reviewActor,
+                ReviewedBy = reviewActor
             }, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(ToReconciliationCaseworkOperationResult(transition), jsonOptions);
         })
@@ -1951,7 +1960,12 @@ public static partial class WorkstationEndpoints
                     queueScope,
                     request with
                     {
-                        ResolvedBy = ResolveCurrentActor(context)
+                        ResolvedBy = ResolveCurrentActor(context),
+                        // Derived from the principal, discarding the body: this is the statement
+                        // legacy-resolve adapter, which is authoritative over the caller's identity
+                        // like the rest of the reconciliation casework routes. Before #2673 the
+                        // origin was left as the browser sent it. See DeriveActionOriginFromPrincipal.
+                        ActionOrigin = EndpointAuthorization.DeriveActionOriginFromPrincipal(context)
                     },
                     context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(ToReconciliationCaseworkOperationResult(transition), jsonOptions);

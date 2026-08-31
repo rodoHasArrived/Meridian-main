@@ -53,6 +53,14 @@ public sealed record HistoricalBar : MarketEventPayload
     public long SequenceNumber { get; }
 
     /// <summary>
+    /// Gets the price-adjustment regime of this bar: <see langword="true"/> when OHLCV values
+    /// are split/dividend adjusted, <see langword="false"/> when they are raw exchange prices,
+    /// and <see langword="null"/> when the regime is unknown (the honest default for sources
+    /// that do not declare it).
+    /// </summary>
+    public bool? IsAdjusted { get; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="HistoricalBar"/> record.
     /// </summary>
     /// <param name="Symbol">The ticker symbol.</param>
@@ -64,6 +72,7 @@ public sealed record HistoricalBar : MarketEventPayload
     /// <param name="Volume">The total volume.</param>
     /// <param name="Source">The data source identifier.</param>
     /// <param name="SequenceNumber">The sequence number for ordering.</param>
+    /// <param name="IsAdjusted">The adjustment regime; null when unknown.</param>
     public HistoricalBar(
         string Symbol,
         DateOnly SessionDate,
@@ -73,7 +82,8 @@ public sealed record HistoricalBar : MarketEventPayload
         decimal Close,
         long Volume,
         string Source = "stooq",
-        long SequenceNumber = 0)
+        long SequenceNumber = 0,
+        bool? IsAdjusted = null)
     {
         if (string.IsNullOrWhiteSpace(Symbol))
             throw new ArgumentException("Symbol is required", nameof(Symbol));
@@ -102,6 +112,7 @@ public sealed record HistoricalBar : MarketEventPayload
         this.Volume = Volume;
         this.Source = Source;
         this.SequenceNumber = SequenceNumber;
+        this.IsAdjusted = IsAdjusted;
     }
 
     /// <summary>

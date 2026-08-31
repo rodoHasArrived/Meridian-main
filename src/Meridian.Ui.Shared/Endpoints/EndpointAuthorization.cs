@@ -1,3 +1,4 @@
+using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Identity;
 using Microsoft.AspNetCore.Builder;
@@ -8,6 +9,7 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// <summary>
 /// Marker metadata recorded on endpoints that attach a permission gate through
 /// <see cref="EndpointAuthorization.RequirePermission{TBuilder}"/> or
+/// <see cref="EndpointAuthorization.RequireAllPermissions{TBuilder}"/> or
 /// <see cref="EndpointAuthorization.RequireAnyPermission{TBuilder}"/>. Coverage tests inspect this
 /// metadata to prove every mapped route declares an explicit authorization requirement.
 /// </summary>
@@ -100,6 +102,32 @@ public sealed class EndpointIndependentAuthenticationMetadata
     }
 
     /// <summary>How this route authenticates its caller, e.g. "provider HMAC signature headers".</summary>
+    public string Reason { get; }
+}
+
+/// <summary>
+/// Declares that a mutating route is deliberately callable without any permission: the
+/// authentication bootstrap itself (login, logout, the one-use first-account seam) and the
+/// 410 Gone tombstones for retired lifecycles, which perform no action. The pre-binding
+/// mutation guard (<see cref="MutationAuthorizationGuardMiddleware"/>) stands aside for it, and
+/// the coverage suite asserts its permissionless allowlist matches these declarations
+/// one-for-one, so the runtime exemption and the tested exemption cannot drift apart.
+/// <para>
+/// Applied per route after reading the handler, never by convention. A route that
+/// authenticates its caller by its own mechanism belongs under
+/// <see cref="EndpointIndependentAuthenticationMetadata"/> instead; this marker is only for
+/// routes whose permissionless reachability is itself the design.
+/// </para>
+/// </summary>
+public sealed class EndpointPermissionlessMutationMetadata
+{
+    public EndpointPermissionlessMutationMetadata(string reason)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        Reason = reason;
+    }
+
+    /// <summary>Why this mutation is safe without any permission, e.g. "login bootstrap".</summary>
     public string Reason { get; }
 }
 
@@ -255,6 +283,100 @@ public static class EndpointAuthorization
         return false;
     }
 
+    /// <summary>
+    /// Resolves the action origin the governance gate should judge, from the authenticated
+    /// principal and the caller's own declaration, taking whichever is narrower.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <see cref="OperationsActionOriginDto"/> decides whether the "reviewed automation may not
+    /// perform this action; a human operator is required" control applies. It arrives as an ordinary
+    /// bound member of the request DTOs and defaults to the permissive
+    /// <see cref="OperationsActionOriginDto.HumanOperator"/>, so a caller used to satisfy the gate
+    /// simply by omitting the field (#2673).
+    /// </para>
+    /// <para>
+    /// The declaration is not discarded, though — it is <b>binding when it narrows</b>. Automation
+    /// that declares itself honestly must still be refused, which is the capability the control was
+    /// written for; overwriting the body outright would make the gate unforgeable and, in the same
+    /// stroke, untriggerable for anything holding a session. So a declared non-human origin is
+    /// carried through as-is, keeping the specific kind for evidence, and only a declared
+    /// <see cref="OperationsActionOriginDto.HumanOperator"/> is re-derived.
+    /// </para>
+    /// <para>
+    /// Re-derivation goes through <see cref="DeriveActionOriginFromPrincipal"/>, which yields
+    /// <see cref="OperationsActionOriginDto.HumanOperator"/> only for a validated interactive
+    /// workstation session. An API key is a non-interactive credential by construction, which is
+    /// exactly the "service credential, scheduled job, or assistant acting with a delegated token"
+    /// case the control exists to stop.
+    /// </para>
+    /// <para>
+    /// The result is monotone: the caller's claim can only ever narrow its own privilege, never widen
+    /// it. Omitting the field no longer buys human standing that the principal does not have, and
+    /// claiming automation is still believed.
+    /// </para>
+    /// <para>
+    /// The reconciliation casework adapters are the deliberate exception and call
+    /// <see cref="DeriveActionOriginFromPrincipal"/> directly — see its remarks for why the body is
+    /// discarded outright there.
+    /// </para>
+    /// </remarks>
+    public static OperationsActionOriginDto ResolveTrustedActionOrigin(
+        HttpContext context,
+        OperationsActionOriginDto declaredOrigin)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        return declaredOrigin == OperationsActionOriginDto.HumanOperator
+            ? DeriveActionOriginFromPrincipal(context)
+            : declaredOrigin;
+    }
+
+    /// <summary>
+    /// Resolves the action origin from the authenticated principal alone, discarding whatever the
+    /// request body declared.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This is for the reconciliation break casework routes, whose bodies are legacy
+    /// browser-supplied input the server is authoritative over. Keeping a caller's declaration
+    /// there would let the browser label a casework decision, which is what those routes exist to
+    /// prevent, and two endpoint tests pin that the declared origin is discarded along with the
+    /// declared actor.
+    /// </para>
+    /// <para>
+    /// <b>Which family a route belongs to is a trust decision about that route, not something to
+    /// read off the handler.</b> Most governance-gated endpoints re-derive <c>Actor</c> as well, so
+    /// overwriting the actor does not make a route identity-authoritative in this sense. Default to
+    /// <see cref="ResolveTrustedActionOrigin"/> — the declaration is meaningful there, and
+    /// automation declaring itself honestly must still be refused.
+    /// </para>
+    /// <para>
+    /// The two differ only in whether a declared non-human origin is believed; both derive the same
+    /// way, so neither can let a non-interactive principal reach
+    /// <see cref="OperationsActionOriginDto.HumanOperator"/> and both close #2673.
+    /// </para>
+    /// </remarks>
+    public static OperationsActionOriginDto DeriveActionOriginFromPrincipal(HttpContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        return IsInteractiveOperatorSession(context)
+            ? OperationsActionOriginDto.HumanOperator
+            : OperationsActionOriginDto.AutomationAssistant;
+    }
+
+    /// <summary>
+    /// The four conditions <see cref="RequireAuthenticatedSession{TBuilder}"/> enforces, in one
+    /// place so the gate and the origin derivation cannot drift into disagreeing about what an
+    /// interactive session is.
+    /// </summary>
+    private static bool IsInteractiveOperatorSession(HttpContext context)
+        => TryResolveActor(context, out _) &&
+           TryGetPermissions(context, out _) &&
+           !context.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey) &&
+           !context.Items.ContainsKey(LoginSessionMiddleware.AnonymousPrincipalKey);
+
     public static IReadOnlyList<string> ResolveReportGroupPrincipalIds(HttpContext context)
     {
         var groups = new List<string>();
@@ -327,6 +449,28 @@ public static class EndpointAuthorization
                 EndpointHelpers.Forbidden(context.HttpContext));
         };
 
+    private static Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> RequireAll(
+        params UserPermission[] permissions)
+        => (context, next) =>
+        {
+            if (!TryGetPermissions(context.HttpContext, out _))
+            {
+                return ValueTask.FromResult<object?>(
+                    ApiProblemDetails.Unauthorized(context.HttpContext));
+            }
+
+            foreach (var permission in permissions)
+            {
+                if (!HasPermission(context.HttpContext, permission))
+                {
+                    return ValueTask.FromResult<object?>(
+                        EndpointHelpers.Forbidden(context.HttpContext));
+                }
+            }
+
+            return next(context);
+        };
+
     /// <summary>
     /// Attaches a single-permission authorization filter to the route (or group) and records
     /// <see cref="EndpointAuthorizationMetadata"/> so the requirement is discoverable in endpoint metadata.
@@ -337,6 +481,26 @@ public static class EndpointAuthorization
     {
         builder.AddEndpointFilter(Require(permission));
         builder.WithMetadata(new EndpointAuthorizationMetadata(new[] { permission }, requireAll: true));
+        return builder;
+    }
+
+    /// <summary>
+    /// Attaches one all-of authorization filter and one metadata declaration for routes that require
+    /// every listed permission. Keeping the complete requirement in a single declaration ensures
+    /// pre-binding authorization middleware evaluates the same policy as the endpoint filter.
+    /// </summary>
+    public static TBuilder RequireAllPermissions<TBuilder>(this TBuilder builder, params UserPermission[] permissions)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        ArgumentNullException.ThrowIfNull(permissions);
+        if (permissions.Length == 0)
+        {
+            throw new ArgumentException("At least one permission is required.", nameof(permissions));
+        }
+
+        var required = permissions.Distinct().ToArray();
+        builder.AddEndpointFilter(RequireAll(required));
+        builder.WithMetadata(new EndpointAuthorizationMetadata(required, requireAll: true));
         return builder;
     }
 
@@ -493,6 +657,18 @@ public static class EndpointAuthorization
         where TBuilder : IEndpointConventionBuilder
     {
         builder.WithMetadata(new EndpointIndependentAuthenticationMetadata(reason));
+        return builder;
+    }
+
+    /// <summary>
+    /// Records <see cref="EndpointPermissionlessMutationMetadata"/> on a mutating route that is
+    /// deliberately callable without any permission, so the pre-binding mutation guard stands
+    /// aside for it with the reason stated where reviewers and the coverage suite can see it.
+    /// </summary>
+    public static TBuilder DeclarePermissionlessMutation<TBuilder>(this TBuilder builder, string reason)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        builder.WithMetadata(new EndpointPermissionlessMutationMetadata(reason));
         return builder;
     }
 

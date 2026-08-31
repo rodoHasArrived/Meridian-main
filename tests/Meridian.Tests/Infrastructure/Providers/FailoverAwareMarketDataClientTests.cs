@@ -1,9 +1,12 @@
 using FluentAssertions;
+using Meridian.Contracts.Domain.Enums;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Config;
 using Meridian.DataIntegration.Monitoring;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Failover;
 using Meridian.Infrastructure.Resilience;
+using Meridian.Tests.TestHelpers;
 using Xunit;
 
 namespace Meridian.Tests.Providers;
@@ -633,6 +636,86 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
         _sut.GetConnectionDiagnosticsSnapshot().ActiveSubscriptions.Should().Be(0);
         _sut.ActiveProviderId.Should().Be("backup");
         _failoverService.GetActiveProviderId("test-rule").Should().Be("backup");
+    }
+
+    [Fact]
+    public async Task Scenario_ForcedFailover_DisclosesSwitchOnTapePerAffectedSymbol()
+    {
+        await _sut.DisposeAsync();
+        var publisher = new TestMarketEventPublisher();
+        _sut = new FailoverAwareMarketDataClient(
+            _providers, _failoverService, "test-rule", "primary", integrityPublisher: publisher);
+        _failoverService.Start(new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: [_rule]));
+        await _sut.ConnectAsync();
+        _sut.SubscribeTrades(new SymbolConfig("AAPL", SubscribeTrades: true)).Should().BePositive();
+        _sut.SubscribeMarketDepth(new SymbolConfig("SPY", SubscribeDepth: true)).Should().BePositive();
+        var switchStartedAfter = DateTimeOffset.UtcNow;
+
+        (await _failoverService.ForceFailoverAsync("test-rule", "backup")).Should().BeTrue();
+
+        // The markers publish just after the hand-off commits; the transition task may resolve first.
+        await WaitUntilAsync(() => publisher.PublishedEvents.Count >= 2);
+        var markers = publisher.PublishedEvents
+            .Where(e => e.Type == MarketEventType.Integrity)
+            .ToList();
+        markers.Select(e => e.Symbol).Should().BeEquivalentTo(["AAPL", "SPY"]);
+        markers.Should().OnlyContain(e => e.Source == "primary",
+            "the coverage-uncertain window belongs to the provider that lost the feed");
+        var integrity = markers[0].Payload.Should().BeOfType<IntegrityEvent>().Subject;
+        integrity.ErrorCode.Should().Be(1010);
+        integrity.Description.Should().Contain("'primary' -> 'backup'");
+        integrity.Description.Should().Contain("coverage uncertain");
+        integrity.Timestamp.Should().BeOnOrAfter(switchStartedAfter,
+            "the marker closes the window at resubscribe-complete time");
+    }
+
+    [Fact]
+    public async Task Scenario_ForcedFailover_NoSubscriptions_DisclosesSwitchWithSystemMarker()
+    {
+        await _sut.DisposeAsync();
+        var publisher = new TestMarketEventPublisher();
+        _sut = new FailoverAwareMarketDataClient(
+            _providers, _failoverService, "test-rule", "primary", integrityPublisher: publisher);
+        _failoverService.Start(new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: [_rule]));
+        await _sut.ConnectAsync();
+
+        (await _failoverService.ForceFailoverAsync("test-rule", "backup")).Should().BeTrue();
+
+        await WaitUntilAsync(() => publisher.PublishedEvents.Count >= 1);
+        var marker = publisher.PublishedEvents.Should().ContainSingle().Subject;
+        marker.Type.Should().Be(MarketEventType.Integrity);
+        marker.Symbol.Should().Be("SYSTEM");
+        marker.Source.Should().Be("primary");
+    }
+
+    [Fact]
+    public async Task Scenario_ForcedFailover_MarkerPublishFailure_DoesNotBreakSwitch()
+    {
+        await _sut.DisposeAsync();
+        var publisher = new ThrowingMarketEventPublisher();
+        _sut = new FailoverAwareMarketDataClient(
+            _providers, _failoverService, "test-rule", "primary", integrityPublisher: publisher);
+        _failoverService.Start(new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: [_rule]));
+        await _sut.ConnectAsync();
+        _sut.SubscribeTrades(new SymbolConfig("AAPL", SubscribeTrades: true)).Should().BePositive();
+
+        (await _failoverService.ForceFailoverAsync("test-rule", "backup")).Should().BeTrue();
+
+        _sut.ActiveProviderId.Should().Be("backup");
+        _failoverService.GetActiveProviderId("test-rule").Should().Be("backup");
+        // The hand-off must continue past the failed disclosure and release the old provider.
+        await WaitUntilAsync(() => _primaryClient.DisconnectCallCount == 1);
+        publisher.Attempts.Should().BeGreaterThan(0, "the publish must actually have been attempted");
+        _backupClient.TradeSubscriptions.Should().ContainKey("AAPL");
     }
 
     [Fact]

@@ -3,6 +3,26 @@ using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Per-process warm-read cache over the durable projection store. The durable store remains the
+/// authority — the cache is a latency optimisation, and consumers fall back to the database on a
+/// miss.
+///
+/// <para><see cref="ReplaceAll"/> swaps in a fully-populated replacement dictionary ATOMICALLY: the
+/// previous clear-then-fill implementation exposed an empty master to any reader that arrived
+/// between the clear and the repopulation, so a full re-warm looked like a mass delisting. An
+/// <see cref="Upsert"/> accepted while the replacement is being built is captured and replayed by
+/// version into the map the replacement installs, so a security persisted by create, amend, or a
+/// published rebuild cannot be discarded by a concurrent warm; and an upsert older than the record
+/// a rebuild installed does not downgrade it.</para>
+///
+/// <para>Multi-node deployments: publishes on one node do not invalidate another node's cache.
+/// Coherence is bounded by the periodic re-warm
+/// (<c>SecurityMasterOptions.ProjectionCacheRefreshMinutes</c>, run by
+/// <c>SecurityMasterProjectionWarmupService</c>) plus the per-security rebuild each node performs
+/// on its own writes; reads that must be authoritative (governed workflows) go to the durable
+/// store, not this cache.</para>
+/// </summary>
 public sealed class SecurityMasterProjectionCache
 {
     // Writes are serialized on this gate; reads are not. ReplaceAll installs a whole new map by
@@ -61,6 +81,23 @@ public sealed class SecurityMasterProjectionCache
             {
                 _upsertsDuringReplacement[record.SecurityId] = record;
             }
+        }
+    }
+
+    /// <summary>Evicts one security (e.g. after a purge); a no-op when it was not cached.</summary>
+    /// <remarks>
+    /// Write-gated so it also drops any upsert captured for the key while a replacement is being
+    /// built — without that, the replay would resurrect the record the caller just evicted. A
+    /// replacement whose source read preceded the underlying delete can still reinstall the record
+    /// until the next re-warm: the replacement set is authoritative about membership, and reads
+    /// that must be authoritative go to the durable store.
+    /// </remarks>
+    public bool Remove(Guid securityId)
+    {
+        lock (_writeGate)
+        {
+            _upsertsDuringReplacement?.Remove(securityId);
+            return Current.TryRemove(securityId, out _);
         }
     }
 

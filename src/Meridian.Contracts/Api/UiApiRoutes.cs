@@ -363,6 +363,18 @@ public static class UiApiRoutes
     public const string SecurityMasterCorporateActionsIngest = "/api/security-master/corporate-actions/ingest";
     public const string SecurityMasterCorporateActionsInbox = "/api/security-master/corporate-actions/inbox";
     public const string SecurityMasterCorporateActionsInboxApply = "/api/security-master/corporate-actions/inbox/apply";
+    public const string SecurityMasterCorporateActionSourceProposals = "/api/security-master/corporate-actions/source-proposals";
+    public const string SecurityMasterCorporateActionSourceProposal = "/api/security-master/corporate-actions/source-proposals/{proposalId:guid}";
+    public const string SecurityMasterCorporateActionSourceProposalAccept = "/api/security-master/corporate-actions/source-proposals/{proposalId:guid}/accept";
+    public const string SecurityMasterCorporateActionSourceProposalReject = "/api/security-master/corporate-actions/source-proposals/{proposalId:guid}/reject";
+    public const string SecurityMasterCorporateActionCases = "/api/security-master/corporate-actions/cases";
+    public const string SecurityMasterCorporateActionCase = "/api/security-master/corporate-actions/cases/{caseId:guid}";
+    public const string SecurityMasterCorporateActionCaseEvidence = "/api/security-master/corporate-actions/cases/{caseId:guid}/evidence";
+    public const string SecurityMasterCorporateActionCaseConflicts = "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts";
+    public const string SecurityMasterCorporateActionCaseConflict = "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}";
+    public const string SecurityMasterCorporateActionCaseConflictResolution = "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}/resolution";
+    public const string SecurityMasterCorporateActionCaseOptions = "/api/security-master/corporate-actions/cases/{caseId:guid}/options";
+    public const string SecurityMasterCorporateActionCaseTransition = "/api/security-master/corporate-actions/cases/{caseId:guid}/transition";
     public const string SecurityMasterCoverageDraft = "/api/security-master/coverage/draft/{symbol}";
     public const string SecurityMasterOperatorOverrides = "/api/security-master/{securityId:guid}/operator-overrides";
     public const string SecurityMasterFieldProvenance = "/api/security-master/{securityId:guid}/field-provenance";
@@ -771,6 +783,7 @@ public static class UiApiRoutes
     public const string ReconciliationMarginControl = "/api/workstation/reconciliation/margin-control";
     public const string ReconciliationMarginCertifications = "/api/workstation/reconciliation/margin-control/certifications";
     public const string ReconciliationOpenCases = "/api/workstation/reconciliation/cases";
+    public const string DirectLendingPortfolioSummary = "/api/loans/portfolio";
     public const string DirectLendingServicerStatementPreview = "/api/loans/servicer-statements/preview";
     public const string DirectLendingServicerStatementImport = "/api/loans/servicer-statements/import";
     public const string DirectLendingServicerStatementById = "/api/loans/servicer-statements/{batchId}";
@@ -836,6 +849,8 @@ public static class UiApiRoutes
     public const string LedgerManualJournalEntryLifecycleAction = "/api/ledger/journal-entry-workbench/lifecycle-action";
     public const string LedgerJournalAutomationDividendIntake = "/api/ledger/journal-automation/dividend-intake";
     public const string LedgerJournalAutomationFeeAccrualIntake = "/api/ledger/journal-automation/fee-accrual-intake";
+    public const string LedgerJournalAutomationCapitalCallIssuanceIntake = "/api/ledger/journal-automation/capital-call-issuance-intake";
+    public const string LedgerJournalAutomationCapitalCallFundingIntake = "/api/ledger/journal-automation/capital-call-funding-intake";
     public const string LedgerJournalAutomationPeriodCloseIntake = "/api/ledger/journal-automation/period-close-intake";
     public const string LedgerJournalAutomationDailyMarkToMarketIntake = "/api/ledger/journal-automation/daily-mark-to-market-intake";
     public const string LedgerJournalAutomationDailyMarkToMarketSchedules = "/api/ledger/journal-automation/daily-mark-to-market-schedules";

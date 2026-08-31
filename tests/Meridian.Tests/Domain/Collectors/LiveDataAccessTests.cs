@@ -204,7 +204,7 @@ public class LiveDataAccessTests
             AskPrice: 450.05m,
             AskSize: 300,
             StreamId: "TEST",
-            Venue: "ARCA");
+            Venue: "ARCA", Source: "TEST");
         _quoteCollector.OnQuote(update);
 
         // Act
@@ -223,8 +223,8 @@ public class LiveDataAccessTests
     public void QuoteCollector_Snapshot_ReturnsAllSymbols()
     {
         // Arrange
-        _quoteCollector.OnQuote(new MarketQuoteUpdate(DateTimeOffset.UtcNow, "SPY", 450m, 100, 450.05m, 100));
-        _quoteCollector.OnQuote(new MarketQuoteUpdate(DateTimeOffset.UtcNow, "AAPL", 150m, 100, 150.05m, 100));
+        _quoteCollector.OnQuote(new MarketQuoteUpdate(DateTimeOffset.UtcNow, "SPY", 450m, 100, 450.05m, 100, Source: "TEST"));
+        _quoteCollector.OnQuote(new MarketQuoteUpdate(DateTimeOffset.UtcNow, "AAPL", 150m, 100, 150.05m, 100, Source: "TEST"));
 
         // Act
         var snapshot = _quoteCollector.Snapshot();
@@ -270,7 +270,7 @@ public class LiveDataAccessTests
             Operation: DepthOperation.Insert,
             Side: OrderBookSide.Bid,
             Price: 450.00m,
-            Size: 100));
+            Size: 100, Source: "TEST"));
 
         _depthCollector.OnDepth(new MarketDepthUpdate(
             Timestamp: DateTimeOffset.UtcNow,
@@ -279,7 +279,7 @@ public class LiveDataAccessTests
             Operation: DepthOperation.Insert,
             Side: OrderBookSide.Ask,
             Price: 450.05m,
-            Size: 200));
+            Size: 200, Source: "TEST"));
 
         // Act
         var snapshot = _depthCollector.GetCurrentSnapshot("SPY");
@@ -298,10 +298,10 @@ public class LiveDataAccessTests
     public void GetCurrentSnapshot_WithMultipleLevels_ReturnsAllLevels()
     {
         // Arrange - Insert multiple bid levels
-        _depthCollector.OnDepth(new MarketDepthUpdate(DateTimeOffset.UtcNow, "SPY", 0, DepthOperation.Insert, OrderBookSide.Bid, 450.00m, 100));
-        _depthCollector.OnDepth(new MarketDepthUpdate(DateTimeOffset.UtcNow, "SPY", 1, DepthOperation.Insert, OrderBookSide.Bid, 449.95m, 200));
-        _depthCollector.OnDepth(new MarketDepthUpdate(DateTimeOffset.UtcNow, "SPY", 0, DepthOperation.Insert, OrderBookSide.Ask, 450.05m, 150));
-        _depthCollector.OnDepth(new MarketDepthUpdate(DateTimeOffset.UtcNow, "SPY", 1, DepthOperation.Insert, OrderBookSide.Ask, 450.10m, 250));
+        _depthCollector.OnDepth(new MarketDepthUpdate(DateTimeOffset.UtcNow, "SPY", 0, DepthOperation.Insert, OrderBookSide.Bid, 450.00m, 100, Source: "TEST"));
+        _depthCollector.OnDepth(new MarketDepthUpdate(DateTimeOffset.UtcNow, "SPY", 1, DepthOperation.Insert, OrderBookSide.Bid, 449.95m, 200, Source: "TEST"));
+        _depthCollector.OnDepth(new MarketDepthUpdate(DateTimeOffset.UtcNow, "SPY", 0, DepthOperation.Insert, OrderBookSide.Ask, 450.05m, 150, Source: "TEST"));
+        _depthCollector.OnDepth(new MarketDepthUpdate(DateTimeOffset.UtcNow, "SPY", 1, DepthOperation.Insert, OrderBookSide.Ask, 450.10m, 250, Source: "TEST"));
 
         // Act
         var snapshot = _depthCollector.GetCurrentSnapshot("SPY");
@@ -318,8 +318,8 @@ public class LiveDataAccessTests
     public void GetCurrentSnapshot_CalculatesImbalance()
     {
         // Arrange - Different bid/ask sizes to create imbalance
-        _depthCollector.OnDepth(new MarketDepthUpdate(DateTimeOffset.UtcNow, "SPY", 0, DepthOperation.Insert, OrderBookSide.Bid, 450.00m, 300));
-        _depthCollector.OnDepth(new MarketDepthUpdate(DateTimeOffset.UtcNow, "SPY", 0, DepthOperation.Insert, OrderBookSide.Ask, 450.05m, 100));
+        _depthCollector.OnDepth(new MarketDepthUpdate(DateTimeOffset.UtcNow, "SPY", 0, DepthOperation.Insert, OrderBookSide.Bid, 450.00m, 300, Source: "TEST"));
+        _depthCollector.OnDepth(new MarketDepthUpdate(DateTimeOffset.UtcNow, "SPY", 0, DepthOperation.Insert, OrderBookSide.Ask, 450.05m, 100, Source: "TEST"));
 
         // Act
         var snapshot = _depthCollector.GetCurrentSnapshot("SPY");
@@ -334,8 +334,8 @@ public class LiveDataAccessTests
     public void GetTrackedSymbols_ReturnsAllSymbolsWithDepth()
     {
         // Arrange
-        _depthCollector.OnDepth(new MarketDepthUpdate(DateTimeOffset.UtcNow, "SPY", 0, DepthOperation.Insert, OrderBookSide.Bid, 450m, 100));
-        _depthCollector.OnDepth(new MarketDepthUpdate(DateTimeOffset.UtcNow, "AAPL", 0, DepthOperation.Insert, OrderBookSide.Bid, 150m, 100));
+        _depthCollector.OnDepth(new MarketDepthUpdate(DateTimeOffset.UtcNow, "SPY", 0, DepthOperation.Insert, OrderBookSide.Bid, 450m, 100, Source: "TEST"));
+        _depthCollector.OnDepth(new MarketDepthUpdate(DateTimeOffset.UtcNow, "AAPL", 0, DepthOperation.Insert, OrderBookSide.Bid, 150m, 100, Source: "TEST"));
 
         // Act
         var symbols = _depthCollector.GetTrackedSymbols();
@@ -366,7 +366,7 @@ public class LiveDataAccessTests
             SequenceNumber: seqNum,
             StreamId: "TEST",
             Venue: "TEST"
-        );
+        , Source: "TEST");
     }
 
     #endregion

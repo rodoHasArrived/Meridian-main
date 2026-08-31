@@ -462,6 +462,39 @@ public sealed class LiveTradingEngineTests
     }
 
     [Fact]
+    public async Task TryLaunchAsync_UnknownStrategy_RecordsTheDeferralOnTheRunItself()
+    {
+        // #2726 requires catalog-resolution failure to be a visible workflow state, not only an
+        // audit row. The sibling test above proves the *caller* is told; this proves the operator
+        // is, which is the part that was missing: the deferral reached an execution-audit row that
+        // nothing reads and a log line, so a promoted run sat looking promoted and never ran.
+        //
+        // CreateEngine registers no ExecutionAuditTrailService, which is the point — RecordAuditAsync
+        // no-ops entirely without one, so before this change this scenario retained nothing at all.
+        var repository = new InMemoryRunRepository();
+        await using var engine = CreateEngine(repository, new LiveMarketEventHub(), new LiveMarketDataCache(), new RecordingOrderManager(10m));
+        var run = CreatePaperRun("no-such-strategy", new Dictionary<string, string> { ["symbols"] = "AAPL" });
+
+        var launch = await engine.TryLaunchAsync(run);
+
+        launch.Launched.Should().BeFalse();
+
+        var retained = await ((IStrategyRepository)repository).GetRunByIdAsync(run.RunId);
+        retained.Should().NotBeNull("a deferred activation must reach the run an operator reads");
+        retained!.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.ActivationDeferred);
+        retained.Reason.Should().Contain(
+            "No live strategy implementation is registered",
+            "the visible state must carry why it was deferred, not just that it was");
+
+        // Deferral is not failure: the run stays intact so a later attempt can activate it once a
+        // live strategy source resolves it. Pinning this keeps a future change from folding the
+        // state into StartFailed, which would read to an operator as work already lost.
+        retained.LastLifecycleEvent.Should().NotBe(StrategyRunLifecycleEventType.StartFailed);
+        retained.EndedAt.Should().BeNull();
+        retained.ExceptionType.Should().BeNull();
+    }
+
+    [Fact]
     public async Task TryLaunchAsync_LiveRun_IsDeferredUntilLiveExecutionIsEnabled()
     {
         var repository = new InMemoryRunRepository();

@@ -130,6 +130,11 @@ internal static class InstallationTransaction
                 throw new InvalidDataException($"Staged payload file '{entry.RelativePath}' has an invalid length.");
             }
 
+            // Not routed through Sha256Digest: Meridian.Setup deliberately carries no project
+            // references so the PublishSingleFile installer stays self-contained and small, and
+            // pulling in Meridian.Contracts for a hash helper would put the whole contracts
+            // assembly in the installer payload. The comparison below is OrdinalIgnoreCase, so
+            // the casing here is not load-bearing (#2691).
             using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
             var hash = Convert.ToHexString(SHA256.HashData(stream));
             if (!string.Equals(hash, entry.Sha256, StringComparison.OrdinalIgnoreCase))

@@ -15,14 +15,14 @@ Total items: **239**
 | `Meridian Design System/components/core/MultiSelect.jsx` | 23 | `NOTE` | ❌ | // Note: caller must provide all IDs; this component only tracks selection state. |
 | `Meridian Design System/tests/test_design_system_governance.py` | 28 | `NOTE` | ❌ | # NOTE: this exercises the real, current tree (ROOT), not a synthetic fixture. If this |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
-| `config/appsettings.sample.json` | 397 | `NOTE` | ❌ | // NOTE: This key is a duplicate of the one near the top of this file for documentation purposes. |
-| `config/appsettings.sample.json` | 406 | `NOTE` | ❌ | // NOTE: Credentials are resolved from environment variables - do NOT add them here. |
+| `config/appsettings.sample.json` | 406 | `NOTE` | ❌ | // NOTE: This key is a duplicate of the one near the top of this file for documentation purposes. |
+| `config/appsettings.sample.json` | 415 | `NOTE` | ❌ | // NOTE: Credentials are resolved from environment variables - do NOT add them here. |
 | `docs/architecture/deterministic-canonicalization.md` | 365 | `NOTE` | ❌ | Note: Polygon does not define buyer-initiated codes. Only ~5% of trades carry definitive aggressor inference. The canonicalization layer preserves `Unknown` as a valid canonical value rather than attempting inference. |
 | `docs/architecture/domains.md` | 111 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters, backfill paths, or the `L3OrderBookCollector`. |
 | `docs/operators/provider-backfill-operations.md` | 89 | `NOTE` | ❌ | > Note: in examples above, use lowercase `dotnet` command. |
 | `src/Meridian.Application/Commands/SecurityMasterCommands.cs` | 25 | `NOTE` | ❌ | // NOTE: _importService is null when the Security Master database is not configured at CLI |
 | `src/Meridian.Backtesting/Metrics/BacktestMetricsEngine.cs` | 314 | `NOTE` | ❌ | /// NOTE: This is an independent computation over fill events for metric attribution purposes. |
-| `src/Meridian.Backtesting/Portfolio/SimulatedPortfolio.cs` | 854 | `NOTE` | ❌ | /// NOTE: This must stay consistent with <c>BacktestMetricsEngine.ComputeRealisedPnl</c>, |
+| `src/Meridian.Backtesting/Portfolio/SimulatedPortfolio.cs` | 903 | `NOTE` | ❌ | /// NOTE: This must stay consistent with <c>BacktestMetricsEngine.ComputeRealisedPnl</c>, |
 | `src/Meridian.Core/Monitoring/MigrationDiagnostics.cs` | 17 | `NOTE` | ❌ | /// NOTE: This class lives in the Core project (not Application) so that |
 | `src/Meridian.Core/Serialization/MarketDataJsonContext.cs` | 176 | `NOTE` | ❌ | /// NOTE: Alpaca payloads use both "T" and "t" keys in the same object. |
 | `src/Meridian.Execution/BrokerageServiceRegistration.cs` | 283 | `NOTE` | ❌ | // NOTE: We intentionally use GetRequiredKeyedService here rather than |
@@ -57,18 +57,18 @@ Total items: **239**
 | `src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs` | 33 | `NOTE` | ❌ | // NOTE: GET /schedules, GET /schedules/{id}, POST /schedules, POST /schedules/{id}/enable, |
 | `src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs` | 116 | `NOTE` | ❌ | // NOTE: POST /schedules/{id}/enable and POST /schedules/{id}/disable are registered |
 | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataProviders.cs` | 136 | `NOTE` | ❌ | Note: note, |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementCaseworkAuthority.cs` | 110 | `NOTE` | ❌ | Note: request.ResolutionNote, |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementCaseworkAuthority.cs` | 113 | `NOTE` | ❌ | Note: request.ResolutionNote, |
 | `src/Meridian.Ui.Shared/Services/MarginControlCenterReadService.cs` | 103 | `NOTE` | ❌ | Note: request.Note.Trim(), |
 | `src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs` | 819 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note) ?? $"Scheduled delivery for {normalizedTemplateId}.", |
 | `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2044 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |
 | `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2098 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |
 | `src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs` | 144 | `NOTE` | ❌ | Note: request.Note, |
 | `src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs` | 299 | `NOTE` | ❌ | Note: "Clear the durable statement casework evidence-handoff obligation.", |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 387 | `NOTE` | ❌ | note: "Heartbeat delayed" |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 455 | `NOTE` | ❌ | note: "Credential verification failed." |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 852 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 927 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 1382 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 423 | `NOTE` | ❌ | note: "Heartbeat delayed" |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 491 | `NOTE` | ❌ | note: "Credential verification failed." |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 888 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 963 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 1418 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
 | `src/Meridian.Ui/dashboard/src/app.test.tsx` | 250 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
 | `src/Meridian.Ui/dashboard/src/app.test.tsx` | 583 | `NOTE` | ❌ | note: "Credential check failed" |
 | `src/Meridian.Ui/dashboard/src/app.test.tsx` | 844 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
@@ -98,8 +98,8 @@ Total items: **239**
 | `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1497 | `NOTE` | ❌ | note: "pricing-correction" |
 | `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 2201 | `NOTE` | ❌ | note: "Fixture handoff retained after identity review.", |
 | `src/Meridian.Ui/dashboard/src/lib/notification-center/merge.test.ts` | 47 | `NOTE` | ❌ | note: null, |
-| `src/Meridian.Ui/dashboard/src/lib/price-alerts/service.ts` | 147 | `NOTE` | ❌ | note: alert.note |
-| `src/Meridian.Ui/dashboard/src/lib/price-alerts/service.ts` | 249 | `NOTE` | ❌ | note: draft.note?.trim() ? draft.note.trim() : null, |
+| `src/Meridian.Ui/dashboard/src/lib/price-alerts/service.ts` | 160 | `NOTE` | ❌ | note: alert.note |
+| `src/Meridian.Ui/dashboard/src/lib/price-alerts/service.ts` | 278 | `NOTE` | ❌ | note: draft.note?.trim() ? draft.note.trim() : null, |
 | `src/Meridian.Ui/dashboard/src/lib/price-alerts/storage.test.ts` | 31 | `NOTE` | ❌ | note: null, |
 | `src/Meridian.Ui/dashboard/src/lib/price-alerts/storage.test.ts` | 50 | `NOTE` | ❌ | note: null |
 | `src/Meridian.Ui/dashboard/src/lib/price-alerts/storage.ts` | 119 | `NOTE` | ❌ | note: asString(raw.note) ?? null, |
@@ -112,11 +112,11 @@ Total items: **239**
 | `src/Meridian.Ui/dashboard/src/lib/security-schedule-dev-fixtures.ts` | 91 | `NOTE` | ❌ | note: "Validation coupon row used by browser workbench checks." |
 | `src/Meridian.Ui/dashboard/src/lib/security-schedule-dev-fixtures.ts` | 111 | `NOTE` | ❌ | note: "Validation amortization row keeps schedule selection consistent." |
 | `src/Meridian.Ui/dashboard/src/lib/view-state-envelope.test.ts` | 21 | `NOTE` | ❌ | note: "Fónd Δ — ünïcode" |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 516 | `NOTE` | ❌ | note: "Coupon posted." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 536 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 2103 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 916 | `NOTE` | ❌ | note: string \| null; |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 6059 | `NOTE` | ❌ | note: event.sourceReason ?? (event.isCurrentProjection ? "Current schedule projection." : null) |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 528 | `NOTE` | ❌ | note: "Coupon posted." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 548 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 2204 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 922 | `NOTE` | ❌ | note: string \| null; |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 6057 | `NOTE` | ❌ | note: event.sourceReason ?? (event.isCurrentProjection ? "Current schedule projection." : null) |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 304 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 1111 | `NOTE` | ❌ | note: "Covered-call net curve requires the underlying cost basis which is not yet threaded through the API. The chart shows the short-call leg only." |
 | `src/Meridian.Ui/dashboard/src/screens/daily-control-tower-screen.test.tsx` | 76 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
@@ -129,14 +129,14 @@ Total items: **239**
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 713 | `NOTE` | ❌ | note: "Matches paying agent notice and treasury schedule.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 736 | `NOTE` | ❌ | note: "Historical programme amendment retained for evidence.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 883 | `NOTE` | ❌ | note: seed.note, |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.test.tsx` | 41 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.test.tsx` | 541 | `NOTE` | ❌ | note: "Backfill pressure is elevated.", |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.test.tsx` | 42 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.test.tsx` | 542 | `NOTE` | ❌ | note: "Backfill pressure is elevated.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 125 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 141 | `NOTE` | ❌ | note: "Configured with paper API keys.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 1570 | `NOTE` | ❌ | note: "Backfill pressure is elevated.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 2080 | `NOTE` | ❌ | note: "Checkpoint delay exceeded the review threshold.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts` | 393 | `NOTE` | ❌ | note: string; |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts` | 2384 | `NOTE` | ❌ | note: recommendedActionText ?? providerRecord?.note ?? "No operator action reported", |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts` | 2385 | `NOTE` | ❌ | note: recommendedActionText ?? providerRecord?.note ?? "No operator action reported", |
 | `src/Meridian.Ui/dashboard/src/screens/margin-control-center-screen.test.tsx` | 109 | `NOTE` | ❌ | note: "Reviewed provider statement and position contributions.", |
 | `src/Meridian.Ui/dashboard/src/screens/margin-control-center-screen.test.tsx` | 135 | `NOTE` | ❌ | note: "Reviewed provider statement and position contributions." |
 | `src/Meridian.Ui/dashboard/src/screens/operations-record-release-screen.test.tsx` | 44 | `NOTE` | ❌ | note: "Ready" |
@@ -186,7 +186,7 @@ Total items: **239**
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 203 | `NOTE` | ❌ | note: "pricing-correction" |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 488 | `NOTE` | ❌ | note: "Starter target" |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 619 | `NOTE` | ❌ | note: "Board package." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.ts` | 524 | `NOTE` | ❌ | note: string \| null; |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.ts` | 530 | `NOTE` | ❌ | note: string \| null; |
 | `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1664 | `NOTE` | ❌ | note: "Reviewed from the Settings Provider Connection Center runtime evidence panel." |
 | `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1672 | `NOTE` | ❌ | note: "Marked from the Settings Provider Connection Center for replay after mapping changes." |
 | `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1682 | `NOTE` | ❌ | note: "Ignored from the Settings Provider Connection Center after operator review." |
@@ -235,7 +235,7 @@ Total items: **239**
 | `tests/Meridian.Tests/Ui/SecurityMasterWorkbenchEndpointsTests.cs` | 274 | `NOTE` | ❌ | Note: "ready", |
 | `tests/Meridian.Tests/Ui/StatementReconciliationCaseworkHandoffTests.cs` | 611 | `NOTE` | ❌ | Note: "Corrected statement row retained.", |
 | `tests/Meridian.Tests/Ui/StatementReconciliationCaseworkHandoffTests.cs` | 1059 | `NOTE` | ❌ | Note: "Statement variance reviewed.", |
-| `tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs` | 250 | `NOTE` | ❌ | Note: "Board pack delivered with retained evidence graph.", |
+| `tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs` | 447 | `NOTE` | ❌ | Note: "Board pack delivered with retained evidence graph.", |
 | `tests/Meridian.Tests/Ui/WorkstationStatementCaseworkAuthorityEndpointTests.cs` | 130 | `NOTE` | ❌ | Note: request.ResolutionNote, |
 | `tests/Meridian.Ui.Tests/Services/DiagnosticsServiceTests.cs` | 9 | `NOTE` | ❌ | /// Note: The service methods require a running backend (ApiClientService), |
 | `tests/Meridian.Ui.Tests/Services/ScheduledMaintenanceServiceTests.cs` | 110 | `NOTE` | ❌ | // NOTE: since this is a singleton shared across tests, if StartScheduler was |

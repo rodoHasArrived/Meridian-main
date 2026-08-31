@@ -4880,9 +4880,58 @@ public sealed partial class WorkstationEndpointsTests
         operation!.Outcome.State.Should().Be(OperationTerminalState.Succeeded);
         operation.Item!.RunId.Should().Be(runId);
         operation.Item.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
-        operation.Item.AssignedTo.Should().Be("ops-review");
+        // The server rewrites the client-supplied assignee ("ops-review") and reviewer ("qa-review")
+        // from the authenticated session, exactly like ResolvedBy on the resolve route.
+        operation.Item.AssignedTo.Should().Be("ops-user");
+        operation.Item.ReviewedBy.Should().Be("ops-user");
         operation.Item.SignoffStatus.Should().Be("in-review");
         operation.Item.RequiredSignoffRole.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_BreakQueueReviewRoute_ShouldRewriteSpoofedAssigneeFromSession()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-break-review-spoof-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+
+        var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
+        var reconciliation = await reconciliationService.RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+        await RetainScopedReconciliationBreaksAsync(app, runId, reconciliation!);
+
+        var breakId = $"{runId}:{reconciliation!.Breaks[0].CheckId}";
+        var client = app.GetTestClient();
+        var response = await client.PostAsJsonAsync(
+            $"/api/workstation/reconciliation/break-queue/{breakId}/review",
+            new ReviewReconciliationBreakRequest(
+                BreakId: breakId,
+                AssignedTo: "ops.gov",
+                ReviewedBy: "ops.gov",
+                ReviewNote: "Browser sends a hardcoded placeholder identity."));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var operation = await response.Content.ReadFromJsonAsync<ReconciliationCaseworkOperationResult>(ServerJsonOptions);
+        operation!.Outcome.State.Should().Be(OperationTerminalState.Succeeded);
+        // Neither the assignee nor the reviewer may pass through verbatim: the persisted identity is
+        // the authenticated session user, so the assignee filter can answer "my breaks" and the
+        // repository's AssignedTo ?? ReviewedBy ?? ResolvedBy audit-actor derivation names a real user.
+        operation.Item!.AssignedTo.Should().Be("ops-user");
+        operation.Item.ReviewedBy.Should().Be("ops-user");
+
+        var persisted = await client.GetFromJsonAsync<ReconciliationBreakQueueItem>(
+            $"/api/workstation/reconciliation/break-queue/{Uri.EscapeDataString(breakId)}",
+            ServerJsonOptions);
+        persisted!.AssignedTo.Should().Be("ops-user");
+        persisted.ReviewedBy.Should().Be("ops-user");
     }
 
     [Fact]
@@ -7333,7 +7382,7 @@ public sealed partial class WorkstationEndpointsTests
             AskPrice: 200.10m,
             AskSize: 100,
             StreamId: "TEST",
-            Venue: "TEST"));
+            Venue: "TEST", Source: "TEST"));
 
         var position = new Meridian.Execution.Models.ExecutionPosition(
             Symbol: "AAPL",
@@ -7394,7 +7443,7 @@ public sealed partial class WorkstationEndpointsTests
             Aggressor: Meridian.Contracts.Domain.Enums.AggressorSide.Buy,
             SequenceNumber: 1,
             StreamId: "TEST",
-            Venue: "TEST"));
+            Venue: "TEST", Source: "TEST"));
 
         var position = new Meridian.Execution.Models.ExecutionPosition(
             Symbol: "AAPL",
@@ -7459,7 +7508,7 @@ public sealed partial class WorkstationEndpointsTests
             AskPrice: 420.50m,
             AskSize: 200,
             StreamId: "TEST",
-            Venue: "TEST"));
+            Venue: "TEST", Source: "TEST"));
 
         var position = new Meridian.Execution.Models.ExecutionPosition(
             Symbol: "MSFT",

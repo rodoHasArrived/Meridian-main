@@ -38,7 +38,7 @@ public class AlpacaQuoteRoutingTests
             SequenceNumber: null,
             StreamId: "ALPACA",
             Venue: "ALPACA"
-        );
+        , Source: "ALPACA");
 
         // Act
         _quoteCollector.OnQuote(quoteUpdate);
@@ -146,7 +146,7 @@ public class AlpacaQuoteRoutingTests
             AskSize: 0,
             StreamId: "ALPACA",
             Venue: "ALPACA"
-        );
+        , Source: "ALPACA");
 
         // Act
         _quoteCollector.OnQuote(quote);
@@ -240,6 +240,6 @@ public class AlpacaQuoteRoutingTests
             AskSize: 100,
             StreamId: "ALPACA",
             Venue: "ALPACA"
-        );
+        , Source: "ALPACA");
     }
 }

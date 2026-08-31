@@ -448,7 +448,10 @@ internal sealed class LiveStrategyRunSession
                         OrderQuantity = state.Quantity,
                         FilledQuantity = state.FilledQuantity,
                         FillPrice = state.AverageFillPrice,
-                        Timestamp = state.LastUpdatedAt ?? DateTimeOffset.UtcNow
+                        Timestamp = state.LastUpdatedAt ?? DateTimeOffset.UtcNow,
+                        // Carried from the tracked state so this fallback path books the same
+                        // par-scaled cash flow the OMS-stamped report stream would deliver.
+                        UsesFaceValuePercentageOfPar = state.UsesFaceValuePercentageOfPar
                     };
                 }
             }
@@ -502,7 +505,10 @@ internal sealed class LiveStrategyRunSession
                 FilledAt: report.Timestamp,
                 AccountId: order.AccountId);
 
-            _metrics.RecordFill(fill, report.Timestamp);
+            // The report's OMS-stamped sizing classification rides along so a fixed-income
+            // fill (face value at percent-of-par) books its par-scaled cash flow instead of
+            // a 100x raw quantity-times-price movement.
+            _metrics.RecordFill(fill, report.Timestamp, report.UsesFaceValuePercentageOfPar);
             if (_strategy.Status != StrategyStatus.Stopped)
             {
                 _strategy.OnOrderFill(fill, _context);

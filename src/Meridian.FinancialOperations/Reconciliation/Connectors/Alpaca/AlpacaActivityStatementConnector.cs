@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Meridian.Contracts.Integrity;
 using Meridian.Execution.Sdk;
 
@@ -20,15 +21,48 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
     private const string ProviderId = "alpaca";
 
     private readonly StatementMappingProfileCatalog _catalog;
+    private readonly StatementIngressLimits _limits;
+    private readonly JsonTypeInfo<AlpacaStatementSnapshot> _snapshotTypeInfo;
+    private readonly int _jsonDepthCeiling;
     private readonly IBrokerageActivitySync? _activitySync;
     private readonly IBrokeragePortfolioSync? _portfolioSync;
 
     public AlpacaActivityStatementConnector(
         StatementMappingProfileCatalog catalog,
         IEnumerable<IBrokerageActivitySync> activitySyncs,
-        IEnumerable<IBrokeragePortfolioSync> portfolioSyncs)
+        IEnumerable<IBrokeragePortfolioSync> portfolioSyncs,
+        StatementIngressLimits? limits = null)
     {
         _catalog = catalog;
+        _limits = limits ?? StatementIngressLimits.Default;
+
+        // Both the pre-scan reader and the deserializer must be built from the configured depth, not from
+        // System.Text.Json's built-in 64-level default. Left at the default, a deployment that raises
+        // MaxNestingDepth above 64 cannot actually raise it here: the reader throws before the scan's own
+        // depth check can report STATEMENT_NESTING_TOO_DEEP, and the deserializer then fails at the same
+        // ceiling and reports INVALID_SNAPSHOT instead. One past the bound, so the named diagnostic wins.
+        //
+        // Saturating, for the reason CsvStatementConnector saturates its line allowance: int.MaxValue is
+        // the natural value for a deployment that wants this ceiling effectively off, and + 1 wraps it to
+        // int.MinValue. Both JsonSerializerOptions.MaxDepth and JsonReaderOptions.MaxDepth reject a
+        // negative, so the wrap threw out of this constructor - such a deployment could not compose the
+        // connector at all, let alone parse with it. A bound configured to permit everything must permit
+        // everything rather than fail closed on arithmetic.
+        //
+        // Computed once and shared with the pre-scan reader rather than written out at both sites: the
+        // reader and the deserializer disagreeing about the ceiling is precisely the divergence that
+        // building both from the configured depth exists to prevent.
+        _jsonDepthCeiling = _limits.MaxNestingDepth == int.MaxValue
+            ? int.MaxValue
+            : _limits.MaxNestingDepth + 1;
+
+        // Copied from the source-generated context's options so the generated resolver is preserved.
+        var snapshotOptions = new JsonSerializerOptions(AlpacaStatementSnapshotJsonContext.Default.Options)
+        {
+            MaxDepth = _jsonDepthCeiling
+        };
+        _snapshotTypeInfo = (JsonTypeInfo<AlpacaStatementSnapshot>)snapshotOptions.GetTypeInfo(
+            typeof(AlpacaStatementSnapshot));
         _activitySync = activitySyncs.FirstOrDefault(static sync =>
             string.Equals(sync.ProviderId, ProviderId, StringComparison.OrdinalIgnoreCase));
         _portfolioSync = portfolioSyncs.FirstOrDefault(static sync =>
@@ -125,12 +159,29 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
     public Task<StatementParseResult> ParseAsync(StatementSourceDocument document, CancellationToken ct = default)
     {
         var issues = new List<StatementParseIssue>();
+
+        // Refuse before deserializing, as every other statement connector does. This one carried no
+        // ingress limits at all: the Deserialize below builds the whole snapshot object graph from a
+        // caller-supplied document, so a direct in-process caller - one that never passes through
+        // StatementImportService, which does check the cap - could size the parse itself.
+        if (document.Content.Length > _limits.MaxDocumentBytes)
+        {
+            issues.Add(_limits.DocumentTooLarge(document.Content.Length));
+            return Task.FromResult(EmptyResult(document.MappingProfileId, issues));
+        }
+
+        // The byte cap bounds the document, not the object graph built from it.
+        var scanRefusal = ScanForBoundBreach(document.Content.Span);
+        if (scanRefusal is not null)
+        {
+            issues.Add(scanRefusal);
+            return Task.FromResult(EmptyResult(document.MappingProfileId, issues));
+        }
+
         AlpacaStatementSnapshot? snapshot = null;
         try
         {
-            snapshot = JsonSerializer.Deserialize(
-                document.Content.Span,
-                AlpacaStatementSnapshotJsonContext.Default.AlpacaStatementSnapshot);
+            snapshot = JsonSerializer.Deserialize(document.Content.Span, _snapshotTypeInfo);
         }
         catch (JsonException ex)
         {
@@ -192,12 +243,70 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
         var rowNumber = 0;
 
         var richActivities = snapshot.Activity?.Activities;
+
+        // The five evidence collections are hoisted here rather than composed at the return, because they
+        // count toward the same cap the canonical records do - StatementParseResult.TotalRetainedRows is
+        // records plus all five - and a bound has to see everything it bounds. Deserialize has already
+        // materialized them, so charging their real Count is charging what exists; nothing here predicts
+        // what an input will produce.
+        IReadOnlyList<BrokerageAccountSnapshotDto> accountSnapshots =
+            snapshot.Portfolio?.AccountSnapshot is { } accountSnapshot ? [accountSnapshot] : [];
+        IReadOnlyList<BrokerageActivityEventDto> activityEvents = richActivities ?? [];
+        IReadOnlyList<BrokerageActivityCursorDto> activityCursors =
+            snapshot.Activity?.Cursor is { } cursor ? [cursor] : [];
+        IReadOnlyList<BrokerageTaxLotSnapshotDto> taxLots = snapshot.Portfolio?.TaxLots ?? [];
+        IReadOnlyList<BrokerageBorrowPositionSnapshotDto> borrowPositions =
+            snapshot.Portfolio?.BorrowPositions ?? [];
+
+        // This connector had no record bound of its own. ScanForBoundBreach guards the token count and
+        // nesting depth, and the byte cap guards the payload, but neither is MaxRecords: a snapshot with
+        // a handful of rich activities sits far inside every one of those and still returns more retained
+        // rows than the configured limit, and only StatementImportService refused it - after the whole
+        // object graph was built, and not at all for a direct ParseAsync caller.
+        //
+        // The charge is taken on the append, never on a prediction of what the payload will yield. The
+        // review suggestion was to count collection elements and their output multiplicity during the
+        // pre-scan, and that cannot be made correct here: rich activities and fills are an either/or
+        // branch, a corporate action with no Amount is skipped entirely, and each rich activity is
+        // retained twice (once as a canonical record, once as an activity event). Any element count is
+        // therefore an estimate, and an estimate in a refusal bound refuses valid documents - which is
+        // how ten separate false refusals reached this branch already.
+        var retained = accountSnapshots.Count
+            + activityEvents.Count
+            + activityCursors.Count
+            + taxLots.Count
+            + borrowPositions.Count;
+
+        // One charge point for every canonical append. The alternative - a counter incremented at each of
+        // the six call sites - only ever bounds the row kinds someone remembered to add it to, which is
+        // the defect this same suite already corrected in IbFlexStatementConnector.
+        bool TryRetain(StatementCanonicalRecord record)
+        {
+            records.Add(record);
+            if (++retained > _limits.MaxRecords)
+            {
+                issues.Add(_limits.TooManyRecords());
+                return false;
+            }
+
+            return true;
+        }
+
+        if (retained > _limits.MaxRecords)
+        {
+            issues.Add(_limits.TooManyRecords());
+            return EmptyResult(profileId, issues);
+        }
+
         if (richActivities is not null)
         {
             foreach (var activity in richActivities)
             {
                 rowNumber++;
-                records.Add(MapRichActivity(account, activity));
+                if (!TryRetain(MapRichActivity(account, activity)))
+                {
+                    return EmptyResult(profileId, issues);
+                }
             }
         }
         else
@@ -206,7 +315,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             {
                 rowNumber++;
                 var signedQuantity = fill.Side == OrderSide.Sell ? -Math.Abs(fill.Quantity) : Math.Abs(fill.Quantity);
-                records.Add(new StatementCanonicalRecord(
+                if (!TryRetain(new StatementCanonicalRecord(
                     StatementRecordKind.Transaction,
                     account,
                     fill.Symbol,
@@ -220,14 +329,25 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                     ExternalTransactionId: fill.FillId,
                     ActivityCategory: BrokerageActivityCategory.Trade.ToString(),
                     ActivitySubtype: BrokerageActivitySubtype.TradeFill.ToString(),
-                    OrderId: fill.OrderId));
+                    OrderId: fill.OrderId)))
+                {
+                    return EmptyResult(profileId, issues);
+                }
             }
 
             foreach (var cash in snapshot.Activity?.CashTransactions ?? [])
             {
                 rowNumber++;
                 var canonicalActivity = ResolveActivity(cash.TransactionType, activityCodeMap, profile, rowNumber, issues, reportedUnknownCodes);
-                records.Add(new StatementCanonicalRecord(
+
+                // Checked after ResolveActivity, which is what appends the warning: checking before it
+                // would leave the last row's diagnostic uncounted, with no later iteration to catch it.
+                if (issues.Count > _limits.MaxDiagnostics)
+                {
+                    issues.Add(_limits.TooManyDiagnostics());
+                    return EmptyResult(document.MappingProfileId, issues);
+                }
+                if (!TryRetain(new StatementCanonicalRecord(
                     StatementRecordKindResolver.Resolve(canonicalActivity),
                     account,
                     cash.Symbol ?? string.Empty,
@@ -239,7 +359,10 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                     Currency: string.IsNullOrWhiteSpace(cash.Currency) ? null : cash.Currency.ToUpperInvariant(),
                     ExternalTransactionId: cash.TransactionId,
                     ProviderActivityCode: cash.TransactionType,
-                    Description: cash.Description));
+                    Description: cash.Description)))
+                {
+                    return EmptyResult(profileId, issues);
+                }
             }
 
             foreach (var corporateAction in snapshot.Activity?.CorporateActions ?? [])
@@ -251,8 +374,16 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
 
                 rowNumber++;
                 var canonicalActivity = ResolveActivity(corporateAction.EventType, activityCodeMap, profile, rowNumber, issues, reportedUnknownCodes);
+
+                // Checked after ResolveActivity, which is what appends the warning: checking before it
+                // would leave the last row's diagnostic uncounted, with no later iteration to catch it.
+                if (issues.Count > _limits.MaxDiagnostics)
+                {
+                    issues.Add(_limits.TooManyDiagnostics());
+                    return EmptyResult(document.MappingProfileId, issues);
+                }
                 var kind = StatementRecordKindResolver.Resolve(canonicalActivity);
-                records.Add(new StatementCanonicalRecord(
+                if (!TryRetain(new StatementCanonicalRecord(
                     kind,
                     account,
                     corporateAction.Symbol ?? string.Empty,
@@ -265,7 +396,10 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                     ExternalTransactionId: corporateAction.EventId,
                     ActivityCategory: BrokerageActivityCategory.CorporateAction.ToString(),
                     ProviderActivityCode: corporateAction.EventType,
-                    Description: corporateAction.Description));
+                    Description: corporateAction.Description)))
+                {
+                    return EmptyResult(profileId, issues);
+                }
             }
         }
 
@@ -273,7 +407,7 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
         foreach (var position in snapshot.Portfolio?.Positions ?? [])
         {
             rowNumber++;
-            records.Add(new StatementCanonicalRecord(
+            if (!TryRetain(new StatementCanonicalRecord(
                 StatementRecordKind.Position,
                 account,
                 position.Symbol,
@@ -283,12 +417,15 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                 "position",
                 snapshotDate,
                 Currency: string.IsNullOrWhiteSpace(position.Currency) ? null : position.Currency!.ToUpperInvariant(),
-                ExternalTransactionId: position.PositionId));
+                ExternalTransactionId: position.PositionId)))
+            {
+                return EmptyResult(profileId, issues);
+            }
         }
 
         if (snapshot.Portfolio?.Balance is { } balance)
         {
-            records.Add(new StatementCanonicalRecord(
+            if (!TryRetain(new StatementCanonicalRecord(
                 StatementRecordKind.CashBalance,
                 account,
                 string.Empty,
@@ -297,7 +434,10 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                 balance.Cash,
                 "cash",
                 snapshotDate,
-                Currency: string.IsNullOrWhiteSpace(balance.Currency) ? null : balance.Currency.ToUpperInvariant()));
+                Currency: string.IsNullOrWhiteSpace(balance.Currency) ? null : balance.Currency.ToUpperInvariant())))
+            {
+                return EmptyResult(profileId, issues);
+            }
         }
 
         if (records.Count == 0)
@@ -328,11 +468,11 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
                 Sha256Digest.Compute(document.Content.Span),
                 detectedColumns.Select(static column => column.ToLowerInvariant()).ToArray(),
                 "json"),
-            AccountSnapshots: snapshot.Portfolio?.AccountSnapshot is { } accountSnapshot ? [accountSnapshot] : [],
-            ActivityEvents: richActivities ?? [],
-            ActivityCursors: snapshot.Activity?.Cursor is { } cursor ? [cursor] : [],
-            TaxLots: snapshot.Portfolio?.TaxLots ?? [],
-            BorrowPositions: snapshot.Portfolio?.BorrowPositions ?? []);
+            AccountSnapshots: accountSnapshots,
+            ActivityEvents: activityEvents,
+            ActivityCursors: activityCursors,
+            TaxLots: taxLots,
+            BorrowPositions: borrowPositions);
     }
 
     private static StatementCanonicalRecord MapRichActivity(
@@ -438,6 +578,81 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
         }
 
         return builder.Length == 0 ? "account" : builder.ToString();
+    }
+
+    /// <summary>
+    /// Walks the snapshot's JSON tokens without materializing anything, returning the refusal when the
+    /// payload's member count or nesting exceeds the ingress bounds, and null when it is inside them.
+    /// </summary>
+    /// <remarks>
+    /// A BrokerageActivityEventDto carries an open-ended Metadata dictionary, so one activity - a single
+    /// retained row as far as MaxRecords is concerned - can hold any number of key/value pairs, and
+    /// Deserialize materializes every one of them before any row or diagnostic bound is consulted. The
+    /// byte cap does not help: hundreds of thousands of compact members fit comfortably inside it. This
+    /// is the JSON analogue of the streaming pre-scan IbFlexStatementConnector runs ahead of
+    /// XDocument.LoadAsync, and exists for the same reason - a bound has to be checked before the
+    /// allocation it exists to prevent, not after. Utf8JsonReader over a ReadOnlySpan&lt;byte&gt;
+    /// allocates nothing, so the scan cannot itself become the exhaustion vector it guards against.
+    /// </remarks>
+    private StatementParseIssue? ScanForBoundBreach(ReadOnlySpan<byte> content)
+    {
+        var reader = new Utf8JsonReader(
+            content,
+            new JsonReaderOptions { MaxDepth = _jsonDepthCeiling });
+        var tokens = 0;
+        var objects = 0;
+
+        try
+        {
+            while (reader.Read())
+            {
+                if (++tokens > _limits.MaxParseNodes)
+                {
+                    return _limits.TooManyNodes();
+                }
+
+                // An UPPER bound, not an exact count. One JSON object is at most one materialized
+                // object once Deserialize runs, but unknown properties are skipped by the deserializer,
+                // so objects underneath them are charged here and never allocated. The conservatism is
+                // structural rather than sloppy - a pre-scan must refuse before the allocation it
+                // prevents, so it can only bound what the payload contains, not what the deserializer
+                // decides to keep. It is still a prediction, and this comment used to claim it counted
+                // "exactly what the deserializer will allocate", which was not true.
+                //
+                // It also cannot fire at the default limits. Every object costs at least two tokens, so
+                // MaxParseNodes (500,000) is reached at roughly 250,000 objects, well before
+                // MaxDocumentEntries (500,000) - which means the compact-array case below is caught by
+                // the token budget, not by this one. This is an operator knob for deployments wanting a
+                // materialization ceiling stricter than the traversal budget, and only bites when set
+                // below about half of MaxParseNodes.
+                //
+                // Deliberately MaxDocumentEntries and not MaxRecords. MaxRecords bounds retained rows,
+                // and rows and materialized objects are different counts in both directions here: three
+                // rich activities retain six rows, while corporate actions with no Amount retain their
+                // events and no records at all. Deriving an allocation ceiling from the record allowance
+                // is the mistake that produced every false refusal on this branch. This is the same
+                // budget, and the same code, OfxDocumentParser uses for the identical shape - one
+                // materialized object per array element, built before anything is mapped.
+                if (reader.TokenType == JsonTokenType.StartObject && ++objects > _limits.MaxDocumentEntries)
+                {
+                    return _limits.TooManyEntries();
+                }
+
+                if (reader.CurrentDepth > _limits.MaxNestingDepth)
+                {
+                    return _limits.NestingTooDeep();
+                }
+            }
+        }
+        catch (JsonException)
+        {
+            // Malformed JSON is not this bound's business. Let the Deserialize below raise the
+            // INVALID_SNAPSHOT diagnostic the operator already understands, rather than reporting a
+            // scan failure that says nothing about what is wrong with the file.
+            return null;
+        }
+
+        return null;
     }
 
     private static StatementParseResult EmptyResult(string? profileId, IReadOnlyList<StatementParseIssue> issues)

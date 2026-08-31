@@ -11,34 +11,34 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 21.3% |
-| Endpoint coverage | 32.9% |
+| Weighted score | 20.9% |
+| Endpoint coverage | 32.2% |
 | Workstation contract coverage | 3.9% |
-| Endpoints documented | 206 / 626 |
+| Endpoints documented | 207 / 642 |
 | Workstation contracts documented | 36 / 917 |
 
 ## Endpoint Coverage
 
 | Method | Route | Status | Source |
 |---|---|---|---|
-| `GET` | `/api/accounting-system/export-packages` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:528` |
-| `POST` | `/api/accounting-system/export-packages` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:561` |
-| `POST` | `/api/accounting-system/export-packages/certification` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:647` |
-| `GET` | `/api/accounting-system/export-packages/{exportPackageId}/manifest` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:609` |
-| `GET` | `/api/accounting-system/import/latest` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:393` |
-| `POST` | `/api/accounting-system/import/preview` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:368` |
-| `GET` | `/api/accounting-system/mapping-profiles` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:451` |
-| `POST` | `/api/accounting-system/mapping-profiles` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:480` |
-| `GET` | `/api/accounting-system/migration-run-artifacts` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:231` |
-| `POST` | `/api/accounting-system/migration-run-artifacts` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:259` |
-| `POST` | `/api/accounting-system/migration-runs` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:194` |
-| `GET` | `/api/accounting-system/migration-worker-plans` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:300` |
-| `POST` | `/api/accounting-system/migration-worker-plans` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:330` |
-| `GET` | `/api/accounting-system/production-certification-profile` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:124` |
-| `POST` | `/api/accounting-system/production-certification-profile` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:151` |
+| `GET` | `/api/accounting-system/export-packages` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:537` |
+| `POST` | `/api/accounting-system/export-packages` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:570` |
+| `POST` | `/api/accounting-system/export-packages/certification` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:657` |
+| `GET` | `/api/accounting-system/export-packages/{exportPackageId}/manifest` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:619` |
+| `GET` | `/api/accounting-system/import/latest` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:401` |
+| `POST` | `/api/accounting-system/import/preview` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:376` |
+| `GET` | `/api/accounting-system/mapping-profiles` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:459` |
+| `POST` | `/api/accounting-system/mapping-profiles` | Documented | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:488` |
+| `GET` | `/api/accounting-system/migration-run-artifacts` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:234` |
+| `POST` | `/api/accounting-system/migration-run-artifacts` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:262` |
+| `POST` | `/api/accounting-system/migration-runs` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:196` |
+| `GET` | `/api/accounting-system/migration-worker-plans` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:304` |
+| `POST` | `/api/accounting-system/migration-worker-plans` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:334` |
+| `GET` | `/api/accounting-system/production-certification-profile` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:125` |
+| `POST` | `/api/accounting-system/production-certification-profile` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:152` |
 | `POST` | `/api/accounting-system/production-readiness` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:36` |
 | `GET` | `/api/accounting-system/providers` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:21` |
-| `GET` | `/api/accounting-system/reconciliation/latest` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:422` |
+| `GET` | `/api/accounting-system/reconciliation/latest` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:430` |
 | `GET` | `/api/accounting-system/tenant-administration-profile` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:59` |
 | `POST` | `/api/accounting-system/tenant-administration-profile` | Gap | `src/Meridian.Ui.Shared/Endpoints/AccountingSystemEndpoints.cs:83` |
 | `POST` | `/api/admin/cleanup/execute` | Gap | `src/Meridian.Ui.Shared/Endpoints/AdminEndpoints.cs:272` |
@@ -71,22 +71,22 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/analytics/quality-report` | Gap | `src/Meridian.Ui.Shared/Endpoints/AnalyticsEndpoints.cs:103` |
 | `GET` | `/api/analytics/rate-limits` | Gap | `src/Meridian.Ui.Shared/Endpoints/AnalyticsEndpoints.cs:145` |
 | `GET` | `/api/analytics/throughput` | Gap | `src/Meridian.Ui.Shared/Endpoints/AnalyticsEndpoints.cs:133` |
-| `GET` | `/api/auth/access-assignments` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:497` |
-| `POST` | `/api/auth/access-assignments` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:538` |
-| `POST` | `/api/auth/access-assignments/{assignmentId}/revoke` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:578` |
-| `GET` | `/api/auth/accounts` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:209` |
-| `PUT` | `/api/auth/accounts/{username}` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:232` |
-| `POST` | `/api/auth/accounts/{username}/disable` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:330` |
-| `POST` | `/api/auth/accounts/{username}/password-reset` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:270` |
-| `GET` | `/api/auth/audit` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:421` |
+| `GET` | `/api/auth/access-assignments` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:503` |
+| `POST` | `/api/auth/access-assignments` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:544` |
+| `POST` | `/api/auth/access-assignments/{assignmentId}/revoke` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:584` |
+| `GET` | `/api/auth/accounts` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:215` |
+| `PUT` | `/api/auth/accounts/{username}` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:238` |
+| `POST` | `/api/auth/accounts/{username}/disable` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:336` |
+| `POST` | `/api/auth/accounts/{username}/password-reset` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:276` |
+| `GET` | `/api/auth/audit` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:427` |
 | `POST` | `/api/auth/bootstrap` | Gap | `src/Meridian.Ui.Shared/Endpoints/InitialAccountBootstrapEndpoints.cs:19` |
 | `GET` | `/api/auth/desktop-launch/{ticket}` | Gap | `src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:53` |
 | `POST` | `/api/auth/login` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:39` |
-| `POST` | `/api/auth/logout` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:148` |
-| `GET` | `/api/auth/me` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:168` |
-| `POST` | `/api/auth/role-profiles` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:445` |
-| `GET` | `/api/auth/roles` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:194` |
-| `POST` | `/api/auth/sessions/revoke` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:390` |
+| `POST` | `/api/auth/logout` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:151` |
+| `GET` | `/api/auth/me` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:174` |
+| `POST` | `/api/auth/role-profiles` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:451` |
+| `GET` | `/api/auth/roles` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:200` |
+| `POST` | `/api/auth/sessions/revoke` | Gap | `src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs:396` |
 | `GET` | `/api/backfill/checkpoints` | Documented | `src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:26` |
 | `GET` | `/api/backfill/checkpoints/resumable` | Documented | `src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:92` |
 | `GET` | `/api/backfill/checkpoints/validation` | Gap | `src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:38` |
@@ -135,7 +135,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/catalog/search` | Gap | `src/Meridian.Ui.Shared/Endpoints/CatalogEndpoints.cs:25` |
 | `GET` | `/api/catalog/symbols` | Gap | `src/Meridian.Ui.Shared/Endpoints/CatalogEndpoints.cs:129` |
 | `GET` | `/api/catalog/timeline` | Gap | `src/Meridian.Ui.Shared/Endpoints/CatalogEndpoints.cs:161` |
-| `GET` | `/api/compliance/access-reviews` | Gap | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:117` |
+| `GET` | `/api/compliance/access-reviews` | Gap | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:123` |
 | `POST` | `/api/compliance/access-reviews/assess` | Gap | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:85` |
 | `POST` | `/api/compliance/access-reviews/run` | Gap | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:101` |
 | `POST` | `/api/compliance/actions/evaluate` | Gap | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:48` |
@@ -226,92 +226,94 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/ingestion/jobs/{jobId}` | Documented | `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:51` |
 | `POST` | `/api/ingestion/jobs/{jobId}/transition` | Documented | `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:66` |
 | `GET` | `/api/ingestion/summary` | Documented | `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs:171` |
-| `POST` | `/api/journals/{journalEntryId:guid}/post` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:945` |
-| `GET` | `/api/lean/algorithms` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:150` |
-| `GET` | `/api/lean/auto-export` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:394` |
-| `POST` | `/api/lean/auto-export/configure` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:425` |
-| `GET` | `/api/lean/backtest/history` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:339` |
-| `POST` | `/api/lean/backtest/start` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:252` |
-| `DELETE` | `/api/lean/backtest/{backtestId}/delete` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:380` |
-| `GET` | `/api/lean/backtest/{backtestId}/results` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:303` |
-| `GET` | `/api/lean/backtest/{backtestId}/status` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:285` |
-| `POST` | `/api/lean/backtest/{backtestId}/stop` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:323` |
-| `GET` | `/api/lean/config` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:60` |
-| `POST` | `/api/lean/results/ingest` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:461` |
-| `GET` | `/api/lean/status` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:32` |
-| `GET` | `/api/lean/symbol-map` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:555` |
-| `POST` | `/api/lean/sync` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:180` |
-| `GET` | `/api/lean/sync/status` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:232` |
-| `POST` | `/api/lean/verify` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:87` |
+| `POST` | `/api/journals/{journalEntryId:guid}/post` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:946` |
+| `GET` | `/api/lean/algorithms` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:156` |
+| `GET` | `/api/lean/auto-export` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:305` |
+| `POST` | `/api/lean/auto-export/configure` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:336` |
+| `GET` | `/api/lean/backtest/history` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:250` |
+| `POST` | `/api/lean/backtest/start` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:208` |
+| `DELETE` | `/api/lean/backtest/{backtestId}/delete` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:291` |
+| `GET` | `/api/lean/backtest/{backtestId}/results` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:226` |
+| `GET` | `/api/lean/backtest/{backtestId}/status` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:218` |
+| `POST` | `/api/lean/backtest/{backtestId}/stop` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:239` |
+| `GET` | `/api/lean/config` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:66` |
+| `POST` | `/api/lean/results/ingest` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:372` |
+| `GET` | `/api/lean/status` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:33` |
+| `GET` | `/api/lean/symbol-map` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:466` |
+| `POST` | `/api/lean/sync` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:191` |
+| `GET` | `/api/lean/sync/status` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:201` |
+| `POST` | `/api/lean/verify` | Gap | `src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs:93` |
 | `GET` | `/api/ledger/accounting-configuration` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:15` |
-| `POST` | `/api/ledger/accounting-configuration/activate` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:615` |
+| `POST` | `/api/ledger/accounting-configuration/activate` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:616` |
 | `POST` | `/api/ledger/accounting-configuration/asset-accounting/events/lifecycle` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:376` |
 | `POST` | `/api/ledger/accounting-configuration/asset-accounting/events/project` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:322` |
-| `GET` | `/api/ledger/accounting-configuration/audit` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:650` |
+| `GET` | `/api/ledger/accounting-configuration/audit` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:651` |
 | `POST` | `/api/ledger/accounting-configuration/chart` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:43` |
 | `POST` | `/api/ledger/accounting-configuration/posting-rules` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:105` |
 | `POST` | `/api/ledger/accounting-configuration/posting-rules/candidates` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:279` |
 | `POST` | `/api/ledger/accounting-configuration/posting-rules/candidates/asset-accounting` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:417` |
 | `POST` | `/api/ledger/accounting-configuration/posting-rules/candidates/post` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:474` |
 | `POST` | `/api/ledger/accounting-configuration/posting-rules/dry-run` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:238` |
-| `POST` | `/api/ledger/accounting-configuration/posting-rules/projection-sets` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:531` |
+| `POST` | `/api/ledger/accounting-configuration/posting-rules/projection-sets` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:532` |
 | `POST` | `/api/ledger/accounting-configuration/posting-rules/promotion-approvals` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:136` |
 | `POST` | `/api/ledger/accounting-configuration/posting-rules/test-cases` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:172` |
-| `POST` | `/api/ledger/accounting-configuration/posting-rules/tests` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:574` |
+| `POST` | `/api/ledger/accounting-configuration/posting-rules/tests` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:575` |
 | `POST` | `/api/ledger/accounting-configuration/preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:203` |
 | `POST` | `/api/ledger/accounting-configuration/templates` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:74` |
-| `GET` | `/api/ledger/aggregates/{aggregateId:guid}/journal-entries` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:318` |
+| `GET` | `/api/ledger/aggregates/{aggregateId:guid}/journal-entries` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:321` |
 | `GET` | `/api/ledger/books` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:30` |
-| `POST` | `/api/ledger/books` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:80` |
-| `POST` | `/api/ledger/books/rollout-assessment` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:111` |
-| `GET` | `/api/ledger/books/{ledgerBookId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:57` |
-| `POST` | `/api/ledger/close-management/evidence-review` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:841` |
-| `POST` | `/api/ledger/close-management/late-adjustments` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:655` |
-| `POST` | `/api/ledger/close-management/late-adjustments/review` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:717` |
-| `POST` | `/api/ledger/close-management/period-lock` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:903` |
-| `POST` | `/api/ledger/close-management/period-plan/configuration` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:593` |
-| `GET` | `/api/ledger/close-management/period-plan/{workflowId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:562` |
-| `POST` | `/api/ledger/close-management/period-reopen` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:977` |
-| `POST` | `/api/ledger/close-management/task-signoffs` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:779` |
-| `POST` | `/api/ledger/journal-automation/daily-mark-to-market-batch-lifecycle` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:386` |
-| `POST` | `/api/ledger/journal-automation/daily-mark-to-market-intake` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:435` |
-| `POST` | `/api/ledger/journal-automation/daily-mark-to-market-run-due` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:356` |
-| `GET` | `/api/ledger/journal-automation/daily-mark-to-market-schedules` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:235` |
-| `POST` | `/api/ledger/journal-automation/daily-mark-to-market-schedules` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:266` |
-| `POST` | `/api/ledger/journal-automation/dividend-intake` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:478` |
-| `POST` | `/api/ledger/journal-automation/fee-accrual-intake` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:521` |
-| `GET` | `/api/ledger/journal-automation/monthly-schedules` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:23` |
-| `POST` | `/api/ledger/journal-automation/monthly-schedules` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:59` |
-| `POST` | `/api/ledger/journal-automation/monthly-schedules/run-due` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:205` |
-| `POST` | `/api/ledger/journal-automation/period-close-intake` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:566` |
-| `GET` | `/api/ledger/journal-entry-workbench` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1250` |
-| `POST` | `/api/ledger/journal-entry-workbench/drafts` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1571` |
-| `POST` | `/api/ledger/journal-entry-workbench/evidence` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1721` |
-| `POST` | `/api/ledger/journal-entry-workbench/lifecycle-action` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1764` |
-| `POST` | `/api/ledger/journal-entry-workbench/submit-approval` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1676` |
-| `POST` | `/api/ledger/journal-entry-workbench/validate` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1630` |
-| `GET` | `/api/ledger/periods` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:152` |
-| `POST` | `/api/ledger/periods` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:190` |
-| `POST` | `/api/ledger/periods/{periodId:guid}/close` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:222` |
-| `GET` | `/api/ledger/periods/{periodId:guid}/journal-entries` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:274` |
-| `GET` | `/api/ledger/periods/{periodId:guid}/pnl-summary` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:417` |
-| `GET` | `/api/ledger/periods/{periodId:guid}/trial-balance` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:367` |
-| `GET` | `/api/ledger/periods/{periodId:guid}/trial-balance-report` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:392` |
-| `GET` | `/api/ledger/private-capital/activity` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1276` |
-| `GET` | `/api/ledger/private-capital/capital-account-subledger` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1392` |
-| `GET` | `/api/ledger/private-capital/capital-account-workbench` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1524` |
-| `GET` | `/api/ledger/private-capital/fund-event-command-center` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1351` |
-| `GET` | `/api/ledger/private-capital/fund-event-record` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1308` |
-| `GET` | `/api/ledger/private-capital/report-output` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1453` |
-| `POST` | `/api/ledger/reports/accounting-package` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1048` |
-| `POST` | `/api/ledger/reports/accounting-package/certification` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1099` |
-| `GET` | `/api/ledger/reports/accounting-packages` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1157` |
-| `GET` | `/api/ledger/reports/accounting-packages/{packageId}/exports/{artifactId}` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1199` |
-| `GET` | `/api/ledger/reports/pnl-summary` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:501` |
-| `GET` | `/api/ledger/reports/trial-balance` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:442` |
-| `GET` | `/api/loans/portfolio` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1102` |
-| `POST` | `/api/loans/rebuild-all` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1113` |
-| `GET` | `/api/loans/rebuild-checkpoints` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1093` |
+| `POST` | `/api/ledger/books` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:82` |
+| `POST` | `/api/ledger/books/rollout-assessment` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:113` |
+| `GET` | `/api/ledger/books/{ledgerBookId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:59` |
+| `POST` | `/api/ledger/close-management/evidence-review` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:844` |
+| `POST` | `/api/ledger/close-management/late-adjustments` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:658` |
+| `POST` | `/api/ledger/close-management/late-adjustments/review` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:720` |
+| `POST` | `/api/ledger/close-management/period-lock` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:906` |
+| `POST` | `/api/ledger/close-management/period-plan/configuration` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:596` |
+| `GET` | `/api/ledger/close-management/period-plan/{workflowId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:565` |
+| `POST` | `/api/ledger/close-management/period-reopen` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:981` |
+| `POST` | `/api/ledger/close-management/task-signoffs` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:782` |
+| `POST` | `/api/ledger/journal-automation/capital-call-funding-intake` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:615` |
+| `POST` | `/api/ledger/journal-automation/capital-call-issuance-intake` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:572` |
+| `POST` | `/api/ledger/journal-automation/daily-mark-to-market-batch-lifecycle` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:387` |
+| `POST` | `/api/ledger/journal-automation/daily-mark-to-market-intake` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:441` |
+| `POST` | `/api/ledger/journal-automation/daily-mark-to-market-run-due` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:357` |
+| `GET` | `/api/ledger/journal-automation/daily-mark-to-market-schedules` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:236` |
+| `POST` | `/api/ledger/journal-automation/daily-mark-to-market-schedules` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:267` |
+| `POST` | `/api/ledger/journal-automation/dividend-intake` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:484` |
+| `POST` | `/api/ledger/journal-automation/fee-accrual-intake` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:527` |
+| `GET` | `/api/ledger/journal-automation/monthly-schedules` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:24` |
+| `POST` | `/api/ledger/journal-automation/monthly-schedules` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:60` |
+| `POST` | `/api/ledger/journal-automation/monthly-schedules/run-due` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:206` |
+| `POST` | `/api/ledger/journal-automation/period-close-intake` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:658` |
+| `GET` | `/api/ledger/journal-entry-workbench` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1256` |
+| `POST` | `/api/ledger/journal-entry-workbench/drafts` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1577` |
+| `POST` | `/api/ledger/journal-entry-workbench/evidence` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1728` |
+| `POST` | `/api/ledger/journal-entry-workbench/lifecycle-action` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1772` |
+| `POST` | `/api/ledger/journal-entry-workbench/submit-approval` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1682` |
+| `POST` | `/api/ledger/journal-entry-workbench/validate` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1636` |
+| `GET` | `/api/ledger/periods` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:154` |
+| `POST` | `/api/ledger/periods` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:192` |
+| `POST` | `/api/ledger/periods/{periodId:guid}/close` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:224` |
+| `GET` | `/api/ledger/periods/{periodId:guid}/journal-entries` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:277` |
+| `GET` | `/api/ledger/periods/{periodId:guid}/pnl-summary` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:420` |
+| `GET` | `/api/ledger/periods/{periodId:guid}/trial-balance` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:370` |
+| `GET` | `/api/ledger/periods/{periodId:guid}/trial-balance-report` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:395` |
+| `GET` | `/api/ledger/private-capital/activity` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1282` |
+| `GET` | `/api/ledger/private-capital/capital-account-subledger` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1398` |
+| `GET` | `/api/ledger/private-capital/capital-account-workbench` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1530` |
+| `GET` | `/api/ledger/private-capital/fund-event-command-center` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1357` |
+| `GET` | `/api/ledger/private-capital/fund-event-record` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1314` |
+| `GET` | `/api/ledger/private-capital/report-output` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1459` |
+| `POST` | `/api/ledger/reports/accounting-package` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1053` |
+| `POST` | `/api/ledger/reports/accounting-package/certification` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1104` |
+| `GET` | `/api/ledger/reports/accounting-packages` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1163` |
+| `GET` | `/api/ledger/reports/accounting-packages/{packageId}/exports/{artifactId}` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1205` |
+| `GET` | `/api/ledger/reports/pnl-summary` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:504` |
+| `GET` | `/api/ledger/reports/trial-balance` | Gap | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:445` |
+| `GET` | `/api/loans/portfolio` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1103` |
+| `POST` | `/api/loans/rebuild-all` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1114` |
+| `GET` | `/api/loans/rebuild-checkpoints` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1094` |
 | `POST` | `/api/maintenance/execute` | Documented | `src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs:142` |
 | `GET` | `/api/maintenance/executions` | Documented | `src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs:183` |
 | `POST` | `/api/maintenance/executions/cleanup` | Documented | `src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs:432` |
@@ -368,10 +370,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/plaid/items/{itemId}/sync` | Gap | `src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:125` |
 | `POST` | `/api/plaid/link-token` | Gap | `src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:75` |
 | `POST` | `/api/plaid/public-token/exchange` | Gap | `src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:100` |
-| `POST` | `/api/plaid/transfers/sandbox` | Gap | `src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:207` |
+| `POST` | `/api/plaid/transfers/sandbox` | Gap | `src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:211` |
 | `POST` | `/api/plaid/webhook` | Gap | `src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:155` |
 | `GET` | `/api/portfolio/household` | Gap | `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:273` |
-| `GET` | `/api/projections/{projectionRunId:guid}/flows` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:928` |
+| `GET` | `/api/projections/{projectionRunId:guid}/flows` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:929` |
 | `GET` | `/api/provider-routing/bindings` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:36` |
 | `GET` | `/api/provider-routing/connections` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:20` |
 | `POST` | `/api/provider-routing/preview` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:68` |
@@ -415,15 +417,15 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/providers/{providerName}/test` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:193` |
 | `POST` | `/api/providers/{provider}/test-connection` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderCredentialEndpoints.cs:69` |
 | `POST` | `/api/providers/{provider}/validate-credentials` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderCredentialEndpoints.cs:26` |
-| `GET` | `/api/quality/anomalies` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:243` |
-| `GET` | `/api/quality/anomalies/stale` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:287` |
-| `GET` | `/api/quality/anomalies/statistics` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:284` |
-| `GET` | `/api/quality/anomalies/unacknowledged` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:272` |
-| `POST` | `/api/quality/anomalies/{anomalyId}/acknowledge` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:275` |
-| `GET` | `/api/quality/anomalies/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:269` |
-| `GET` | `/api/quality/comparison/discrepancies` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:322` |
-| `GET` | `/api/quality/comparison/statistics` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:334` |
-| `GET` | `/api/quality/comparison/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:315` |
+| `GET` | `/api/quality/anomalies` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:246` |
+| `GET` | `/api/quality/anomalies/stale` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:290` |
+| `GET` | `/api/quality/anomalies/statistics` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:287` |
+| `GET` | `/api/quality/anomalies/unacknowledged` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:275` |
+| `POST` | `/api/quality/anomalies/{anomalyId}/acknowledge` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:278` |
+| `GET` | `/api/quality/anomalies/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:272` |
+| `GET` | `/api/quality/comparison/discrepancies` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:328` |
+| `GET` | `/api/quality/comparison/statistics` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:340` |
+| `GET` | `/api/quality/comparison/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:321` |
 | `GET` | `/api/quality/completeness` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:85` |
 | `GET` | `/api/quality/completeness/low` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:110` |
 | `GET` | `/api/quality/completeness/summary` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:107` |
@@ -440,24 +442,24 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/quality/gaps/timeline/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:199` |
 | `GET` | `/api/quality/gaps/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:131` |
 | `POST` | `/api/quality/gaps/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:138` |
-| `GET` | `/api/quality/health` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:381` |
-| `GET` | `/api/quality/health/unhealthy` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:414` |
-| `GET` | `/api/quality/health/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:405` |
-| `GET` | `/api/quality/latency` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:292` |
-| `GET` | `/api/quality/latency/high` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:310` |
-| `GET` | `/api/quality/latency/statistics` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:307` |
-| `GET` | `/api/quality/latency/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:295` |
-| `GET` | `/api/quality/latency/{symbol}/histogram` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:304` |
+| `GET` | `/api/quality/health` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:387` |
+| `GET` | `/api/quality/health/unhealthy` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:420` |
+| `GET` | `/api/quality/health/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:411` |
+| `GET` | `/api/quality/latency` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:295` |
+| `GET` | `/api/quality/latency/high` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:313` |
+| `GET` | `/api/quality/latency/statistics` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:310` |
+| `GET` | `/api/quality/latency/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:298` |
+| `GET` | `/api/quality/latency/{symbol}/histogram` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:307` |
 | `GET` | `/api/quality/metrics` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:80` |
-| `GET` | `/api/quality/reports/daily` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:339` |
-| `POST` | `/api/quality/reports/export` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:366` |
-| `GET` | `/api/quality/reports/weekly` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:347` |
-| `POST` | `/api/quant/parameters` | Gap | `src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:89` |
-| `POST` | `/api/quant/run` | Gap | `src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:37` |
-| `GET` | `/api/quant/templates` | Gap | `src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:126` |
-| `GET` | `/api/reconciliation/exceptions` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1007` |
-| `POST` | `/api/reconciliation/exceptions/{exceptionId:guid}/resolve` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1016` |
-| `GET` | `/api/reconciliation/{runId:guid}/results` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:998` |
+| `GET` | `/api/quality/reports/daily` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:345` |
+| `POST` | `/api/quality/reports/export` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:372` |
+| `GET` | `/api/quality/reports/weekly` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:353` |
+| `POST` | `/api/quant/parameters` | Gap | `src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:92` |
+| `POST` | `/api/quant/run` | Gap | `src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:39` |
+| `GET` | `/api/quant/templates` | Gap | `src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:129` |
+| `GET` | `/api/reconciliation/exceptions` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1008` |
+| `POST` | `/api/reconciliation/exceptions/{exceptionId:guid}/resolve` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1017` |
+| `GET` | `/api/reconciliation/{runId:guid}/results` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:999` |
 | `GET` | `/api/reference-data/bonds/issuer-ladder` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:63` |
 | `GET` | `/api/reference-data/bonds/maturity-ladder` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:87` |
 | `GET` | `/api/reference-data/bonds/{securityId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:24` |
@@ -517,65 +519,79 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/sampling/{sampleId}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:178` |
 | `POST` | `/api/schedules/cron/next-runs` | Gap | `src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs:43` |
 | `POST` | `/api/schedules/cron/validate` | Gap | `src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs:21` |
-| `POST` | `/api/security-master` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:348` |
-| `POST` | `/api/security-master/aliases/upsert` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:432` |
-| `POST` | `/api/security-master/amend` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:376` |
-| `GET` | `/api/security-master/asset-profiles` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:79` |
-| `POST` | `/api/security-master/asset-profiles/approve` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:166` |
-| `POST` | `/api/security-master/asset-profiles/drafts` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:125` |
-| `GET` | `/api/security-master/asset-profiles/promotion-candidates` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:97` |
-| `POST` | `/api/security-master/asset-profiles/rollback` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:207` |
-| `GET` | `/api/security-master/asset-profiles/{profileId}/lineage` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:109` |
-| `GET` | `/api/security-master/conflicts` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:762` |
-| `POST` | `/api/security-master/conflicts/{conflictId:guid}/resolve` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:775` |
-| `GET` | `/api/security-master/corporate-actions/inbox` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:687` |
-| `POST` | `/api/security-master/corporate-actions/inbox/apply` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:697` |
-| `POST` | `/api/security-master/corporate-actions/ingest` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:658` |
-| `GET` | `/api/security-master/coverage/draft/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:746` |
-| `GET` | `/api/security-master/data-entitlements` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1465` |
-| `POST` | `/api/security-master/data-entitlements` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1487` |
-| `GET` | `/api/security-master/data-entitlements/expiring` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1475` |
-| `DELETE` | `/api/security-master/data-entitlements/{entitlementId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1515` |
-| `POST` | `/api/security-master/deactivate` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:404` |
-| `GET` | `/api/security-master/exceptions/aging` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1578` |
-| `POST` | `/api/security-master/import` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:886` |
+| `POST` | `/api/security-master` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:351` |
+| `POST` | `/api/security-master/aliases/upsert` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:445` |
+| `POST` | `/api/security-master/amend` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:381` |
+| `GET` | `/api/security-master/asset-profiles` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:82` |
+| `POST` | `/api/security-master/asset-profiles/approve` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:169` |
+| `POST` | `/api/security-master/asset-profiles/drafts` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:128` |
+| `GET` | `/api/security-master/asset-profiles/promotion-candidates` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:100` |
+| `POST` | `/api/security-master/asset-profiles/rollback` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:210` |
+| `GET` | `/api/security-master/asset-profiles/{profileId}/lineage` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:112` |
+| `GET` | `/api/security-master/conflicts` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:703` |
+| `POST` | `/api/security-master/conflicts/{conflictId:guid}/resolve` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:716` |
+| `GET` | `/api/security-master/corporate-actions/cases` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:331` |
+| `GET` | `/api/security-master/corporate-actions/cases/{caseId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:364` |
+| `GET` | `/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:402` |
+| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:533` |
+| `GET` | `/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:455` |
+| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}/resolution` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:152` |
+| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/evidence` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:508` |
+| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/options` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:555` |
+| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/transition` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:577` |
+| `GET` | `/api/security-master/corporate-actions/inbox` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:72` |
+| `POST` | `/api/security-master/corporate-actions/inbox/apply` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:104` |
+| `POST` | `/api/security-master/corporate-actions/ingest` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:38` |
+| `GET` | `/api/security-master/corporate-actions/source-proposals` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:188` |
+| `POST` | `/api/security-master/corporate-actions/source-proposals` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:117` |
+| `GET` | `/api/security-master/corporate-actions/source-proposals/{proposalId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:213` |
+| `POST` | `/api/security-master/corporate-actions/source-proposals/{proposalId:guid}/accept` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:238` |
+| `POST` | `/api/security-master/corporate-actions/source-proposals/{proposalId:guid}/reject` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:256` |
+| `GET` | `/api/security-master/coverage/draft/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:687` |
+| `GET` | `/api/security-master/data-entitlements` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1455` |
+| `POST` | `/api/security-master/data-entitlements` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1477` |
+| `GET` | `/api/security-master/data-entitlements/expiring` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1465` |
+| `DELETE` | `/api/security-master/data-entitlements/{entitlementId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1505` |
+| `POST` | `/api/security-master/deactivate` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:415` |
+| `GET` | `/api/security-master/exceptions/aging` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1568` |
+| `POST` | `/api/security-master/import` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:827` |
 | `POST` | `/api/security-master/ingest/edgar` | Documented | `src/Meridian.Ui.Shared/Endpoints/EdgarReferenceDataEndpoints.cs:24` |
-| `GET` | `/api/security-master/ingest/status` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:917` |
-| `GET` | `/api/security-master/quality-report/latest` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1562` |
-| `POST` | `/api/security-master/quality-report/run` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1547` |
-| `POST` | `/api/security-master/resolve` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:253` |
-| `POST` | `/api/security-master/search` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:290` |
-| `GET` | `/api/security-master/{securityId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:42` |
-| `GET` | `/api/security-master/{securityId:guid}/cashflow-projections` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1442` |
-| `GET` | `/api/security-master/{securityId:guid}/cashflow-source` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1401` |
-| `PUT` | `/api/security-master/{securityId:guid}/cashflow-source` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1414` |
-| `GET` | `/api/security-master/{securityId:guid}/convertible-equity-terms` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:540` |
-| `PATCH` | `/api/security-master/{securityId:guid}/convertible-equity-terms` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:561` |
-| `GET` | `/api/security-master/{securityId:guid}/corporate-actions` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:598` |
-| `POST` | `/api/security-master/{securityId:guid}/corporate-actions` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:619` |
-| `GET` | `/api/security-master/{securityId:guid}/field-provenance` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:960` |
-| `GET` | `/api/security-master/{securityId:guid}/history` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:321` |
-| `GET` | `/api/security-master/{securityId:guid}/operator-overrides` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:938` |
-| `PATCH` | `/api/security-master/{securityId:guid}/operator-overrides` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:979` |
-| `POST` | `/api/security-master/{securityId:guid}/operator-overrides/decision` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1051` |
-| `GET` | `/api/security-master/{securityId:guid}/preferred-equity-terms` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:483` |
-| `PATCH` | `/api/security-master/{securityId:guid}/preferred-equity-terms` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:504` |
-| `GET` | `/api/security-master/{securityId:guid}/price-comparison` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1384` |
-| `GET` | `/api/security-master/{securityId:guid}/price-golden-copy` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1370` |
-| `GET` | `/api/security-master/{securityId:guid}/pricing-hierarchy` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1296` |
-| `PUT` | `/api/security-master/{securityId:guid}/pricing-hierarchy` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1310` |
-| `POST` | `/api/security-master/{securityId:guid}/raw-price` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1340` |
-| `GET` | `/api/security-master/{securityId:guid}/trading-parameters` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:460` |
-| `GET` | `/api/security-master/{securityId:guid}/validation` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:63` |
-| `POST` | `/api/servicer-reports` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1039` |
-| `GET` | `/api/servicer-reports/{batchId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1067` |
-| `GET` | `/api/servicer-reports/{batchId:guid}/position-lines` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1075` |
-| `GET` | `/api/servicer-reports/{batchId:guid}/transaction-lines` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1084` |
-| `GET` | `/api/sla/health` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:641` |
-| `GET` | `/api/sla/metrics` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:668` |
-| `GET` | `/api/sla/status` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:610` |
-| `GET` | `/api/sla/status/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:614` |
-| `GET` | `/api/sla/violations` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:624` |
+| `GET` | `/api/security-master/ingest/status` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:859` |
+| `GET` | `/api/security-master/quality-report/latest` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1552` |
+| `POST` | `/api/security-master/quality-report/run` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1537` |
+| `POST` | `/api/security-master/resolve` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:256` |
+| `POST` | `/api/security-master/search` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:293` |
+| `GET` | `/api/security-master/{securityId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:45` |
+| `GET` | `/api/security-master/{securityId:guid}/cashflow-projections` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1432` |
+| `GET` | `/api/security-master/{securityId:guid}/cashflow-source` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1391` |
+| `PUT` | `/api/security-master/{securityId:guid}/cashflow-source` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1404` |
+| `GET` | `/api/security-master/{securityId:guid}/convertible-equity-terms` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:559` |
+| `PATCH` | `/api/security-master/{securityId:guid}/convertible-equity-terms` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:580` |
+| `GET` | `/api/security-master/{securityId:guid}/corporate-actions` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:621` |
+| `POST` | `/api/security-master/{securityId:guid}/corporate-actions` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:642` |
+| `GET` | `/api/security-master/{securityId:guid}/field-provenance` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:902` |
+| `GET` | `/api/security-master/{securityId:guid}/history` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:324` |
+| `GET` | `/api/security-master/{securityId:guid}/operator-overrides` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:880` |
+| `PATCH` | `/api/security-master/{securityId:guid}/operator-overrides` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:921` |
+| `POST` | `/api/security-master/{securityId:guid}/operator-overrides/decision` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:993` |
+| `GET` | `/api/security-master/{securityId:guid}/preferred-equity-terms` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:498` |
+| `PATCH` | `/api/security-master/{securityId:guid}/preferred-equity-terms` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:519` |
+| `GET` | `/api/security-master/{securityId:guid}/price-comparison` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1374` |
+| `GET` | `/api/security-master/{securityId:guid}/price-golden-copy` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1360` |
+| `GET` | `/api/security-master/{securityId:guid}/pricing-hierarchy` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1286` |
+| `PUT` | `/api/security-master/{securityId:guid}/pricing-hierarchy` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1300` |
+| `POST` | `/api/security-master/{securityId:guid}/raw-price` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1330` |
+| `GET` | `/api/security-master/{securityId:guid}/trading-parameters` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:475` |
+| `GET` | `/api/security-master/{securityId:guid}/validation` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:66` |
+| `POST` | `/api/servicer-reports` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1040` |
+| `GET` | `/api/servicer-reports/{batchId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1068` |
+| `GET` | `/api/servicer-reports/{batchId:guid}/position-lines` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1076` |
+| `GET` | `/api/servicer-reports/{batchId:guid}/transaction-lines` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1085` |
+| `GET` | `/api/sla/health` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:647` |
+| `GET` | `/api/sla/metrics` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:674` |
+| `GET` | `/api/sla/status` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:616` |
+| `GET` | `/api/sla/status/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:620` |
+| `GET` | `/api/sla/violations` | Gap | `src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs:630` |
 | `GET` | `/api/status` | Documented | `src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:116` |
 | `GET` | `/api/storage/archive/stats` | Documented | `src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs:311` |
 | `GET` | `/api/storage/breakdown` | Documented | `src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs:80` |
@@ -613,8 +629,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/strategies/covered-call/runs/{runId}/cancel` | Gap | `src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:167` |
 | `GET` | `/api/strategies/covered-call/runs/{runId}/result` | Gap | `src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:118` |
 | `GET` | `/api/strategies/covered-call/runs/{runId}/status` | Gap | `src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:88` |
-| `GET` | `/api/strategies/runs/compare` | Gap | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2896` |
-| `GET` | `/api/strategies/{strategyId}/runs` | Gap | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2755` |
+| `GET` | `/api/strategies/runs/compare` | Gap | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2910` |
+| `GET` | `/api/strategies/{strategyId}/runs` | Gap | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2769` |
 | `GET` | `/api/subscriptions/active` | Gap | `src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:22` |
 | `POST` | `/api/subscriptions/subscribe` | Gap | `src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:44` |
 | `POST` | `/api/subscriptions/unsubscribe/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:73` |
@@ -639,10 +655,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/symbols/{symbol}/status` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:99` |
 | `GET` | `/api/symbols/{symbol}/trades` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:200` |
 | `POST` | `/api/symbols/{symbol}/update` | Gap | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:499` |
-| `GET` | `/api/system/lifecycle` | Documented | `src/Meridian/UiServer.cs:643` |
-| `POST` | `/api/system/shutdown` | Documented | `src/Meridian/UiServer.cs:677` |
-| `GET` | `/api/system/shutdown/receipts/latest` | Documented | `src/Meridian/UiServer.cs:748` |
-| `GET` | `/api/system/shutdown/{operationId}` | Documented | `src/Meridian/UiServer.cs:727` |
+| `GET` | `/api/system/lifecycle` | Documented | `src/Meridian/UiServer.cs:669` |
+| `POST` | `/api/system/shutdown` | Documented | `src/Meridian/UiServer.cs:703` |
+| `GET` | `/api/system/shutdown/receipts/latest` | Documented | `src/Meridian/UiServer.cs:778` |
+| `GET` | `/api/system/shutdown/{operationId}` | Documented | `src/Meridian/UiServer.cs:757` |
 | `POST` | `/api/workstation/desktop/launch` | Gap | `src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:30` |
 | `GET` | `/health` | Documented | `src/Meridian.Application/Composition/HostAdapters.cs:60` |
 | `GET` | `/live` | Documented | `src/Meridian.Application/Composition/HostAdapters.cs:73` |
@@ -709,7 +725,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `CrossFundReportingConsolidationDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:323` |
 | `CrossFundReportingConsolidationScopeDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:313` |
 | `DailyValuationBatchLifecycleRequestDto` | Gap | `src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:54` |
-| `DailyValuationBatchLifecycleResultDto` | Gap | `src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:67` |
+| `DailyValuationBatchLifecycleResultDto` | Gap | `src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:73` |
 | `DailyValuationScheduleStateDto` | Gap | `src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:7` |
 | `DailyValuationScheduleStatusDto` | Gap | `src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:22` |
 | `DataUploadPreviewResultDto` | Gap | `src/Meridian.Contracts/Workstation/DataUploadDtos.cs:53` |
@@ -804,17 +820,17 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `FinancialRecordExplorerColumnDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:64` |
 | `FinancialRecordExplorerDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:14` |
 | `FinancialRecordExplorerFilterDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:57` |
-| `FinancialRecordExplorerGraphEdgeDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:121` |
-| `FinancialRecordExplorerGraphNodeDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:114` |
-| `FinancialRecordExplorerProofActionDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:101` |
+| `FinancialRecordExplorerGraphEdgeDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:130` |
+| `FinancialRecordExplorerGraphNodeDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:123` |
+| `FinancialRecordExplorerProofActionDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:110` |
 | `FinancialRecordExplorerQueryDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:31` |
-| `FinancialRecordExplorerRecordGraphDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:110` |
-| `FinancialRecordExplorerRelationshipDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:127` |
-| `FinancialRecordExplorerRowDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:78` |
+| `FinancialRecordExplorerRecordGraphDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:119` |
+| `FinancialRecordExplorerRelationshipDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:136` |
+| `FinancialRecordExplorerRowDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:87` |
 | `FinancialRecordExplorerSavedViewDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:41` |
-| `FinancialRecordExplorerSavedViewSaveRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:134` |
+| `FinancialRecordExplorerSavedViewSaveRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:143` |
 | `FinancialRecordExplorerScopeItemDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:36` |
-| `FinancialRecordExplorerSelectedRecordDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:88` |
+| `FinancialRecordExplorerSelectedRecordDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:97` |
 | `FinancialRecordExplorerSummaryItemDto` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:51` |
 | `FinancialRecordExplorerTone` | Gap | `src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:6` |
 | `FirstRunStatusDto` | Gap | `src/Meridian.Contracts/Workstation/FirstRunDtos.cs:2` |
@@ -936,7 +952,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `MeridianAssuranceScoreDto` | Gap | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:350` |
 | `MetricsDiff` | Gap | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:846` |
 | `MultiAssetClassCoverageDto` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1004` |
-| `MultiAssetCoverageSummaryDto` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1043` |
+| `MultiAssetCoverageSummaryDto` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1048` |
 | `MultiAssetDrillThroughTargetDto` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:991` |
 | `MultiAssetEvidenceRequirementDto` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:970` |
 | `MultiAssetPackCoverageDto` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1019` |
@@ -1327,25 +1343,25 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `StatementNormalizedTransactionDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:138` |
 | `StatementProfileSuggestionDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:139` |
 | `StatementReconciliationAccountingScopeDto` | Documented | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:249` |
-| `StatementReconciliationBreakExplanationDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:249` |
-| `StatementReconciliationCaseAttachmentDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:240` |
-| `StatementReconciliationCaseAuditEventDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:258` |
-| `StatementReconciliationCaseCommentDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:233` |
-| `StatementReconciliationCaseCommentThreadDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:228` |
-| `StatementReconciliationCaseDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:205` |
+| `StatementReconciliationBreakExplanationDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:250` |
+| `StatementReconciliationCaseAttachmentDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:241` |
+| `StatementReconciliationCaseAuditEventDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:259` |
+| `StatementReconciliationCaseCommentDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:234` |
+| `StatementReconciliationCaseCommentThreadDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:229` |
+| `StatementReconciliationCaseDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:206` |
 | `StatementReconciliationReportArtifactDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:220` |
 | `StatementReconciliationReportArtifactGenerationDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:235` |
 | `StatementReconciliationReportWorkflowDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:259` |
 | `StatementReconciliationReportWorkflowStatusDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:209` |
 | `StatementRecordPreviewDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:73` |
-| `StatementRunBreakDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:346` |
-| `StatementRunCreateDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:298` |
-| `StatementRunDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:269` |
-| `StatementRunExceptionDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:361` |
-| `StatementRunReconcileRequestDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:316` |
+| `StatementRunBreakDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:347` |
+| `StatementRunCreateDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:299` |
+| `StatementRunDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:270` |
+| `StatementRunExceptionDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:362` |
+| `StatementRunReconcileRequestDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:317` |
 | `StatementRunStatus` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:9` |
-| `StatementRunSummaryDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:324` |
-| `StatementRunValidationDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:338` |
+| `StatementRunSummaryDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:325` |
+| `StatementRunValidationDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:339` |
 | `StatementSourceDto` | Gap | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:76` |
 | `StatementToReportArtifactDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:328` |
 | `StatementToReportWorkflowDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:343` |
@@ -1494,12 +1510,12 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `WorkstationBrokerageSyncHealth` | Gap | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:8` |
 | `WorkstationBrokerageSyncRunRequestDto` | Gap | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:36` |
 | `WorkstationBrokerageSyncStatusDto` | Gap | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:68` |
-| `WorkstationDataBackfillRecord` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1106` |
-| `WorkstationDataExportRecord` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1117` |
-| `WorkstationDataPayload` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1129` |
-| `WorkstationDataProviderDiagnostic` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1062` |
-| `WorkstationDataProviderRecord` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1084` |
-| `WorkstationDataProviderRoutingSummary` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1072` |
+| `WorkstationDataBackfillRecord` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1111` |
+| `WorkstationDataExportRecord` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1122` |
+| `WorkstationDataPayload` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1134` |
+| `WorkstationDataProviderDiagnostic` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1067` |
+| `WorkstationDataProviderRecord` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1089` |
+| `WorkstationDataProviderRoutingSummary` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1077` |
 | `WorkstationGeneratedReportWriterGridPayload` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:572` |
 | `WorkstationKernelAlertThresholdsPayload` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:862` |
 | `WorkstationKernelCriticalSeverityRatePayload` | Gap | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:869` |
@@ -1572,7 +1588,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-- Document or intentionally suppress 420 mapped endpoint gap(s).
+- Document or intentionally suppress 435 mapped endpoint gap(s).
 - Document or intentionally suppress 881 workstation contract gap(s).
 
 ---

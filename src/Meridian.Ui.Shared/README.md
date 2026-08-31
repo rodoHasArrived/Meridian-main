@@ -17,6 +17,13 @@ clients consume these endpoints instead of defining client-only setup policy. In
 local-account creation reuses the governed identity store through a loopback-only,
 one-use bootstrap token.
 
+The first-run recommendations returned to clients are derived from the starting-data choice the
+user made during setup: `provider` leads with provider setup, `upload` leads with statement
+import, and `sample`/`skip` lead with the starter kit's desk. Activation outcomes beyond
+`workspace-opened` (and `data-imported` for sample workspaces) are only recorded when a client
+reports the completed work to `POST /api/workstation/first-run/outcomes/complete`, so the
+checklist reflects finished work rather than page visits.
+
 ## Purpose
 
 UI shared contains shared UI read models, endpoint adapters, and compatibility shims for browser
@@ -195,6 +202,20 @@ derived cache rebuilt from persisted workflow records and carries no source-of-t
 Corporate-action mutations posted through shared Security Master endpoints delegate validation and
 append auditing to the application-owned
 `ISecurityMasterCorporateActionCommandService`.
+Corporate-action *source decisions* (accepting or rejecting a globally observed provider proposal)
+are gated on the authoritative scope fan-out authority rather than on a constant. The read-side
+posture reports decisions unavailable whenever `ICorporateActionScopeFanOutGate` is not composed,
+which is a composition fact and not an operator-configurable toggle; that posture is advisory by
+construction, since only the decision path can know whether a particular proposal passes. Both
+decision routes resolve workstation tenant/company scope first. Acceptance asks the authority
+inside the atomic command, after the idempotency receipt replay, so a committed retry still returns
+its original receipt when holdings have since moved; rejection resolves nothing and so is gated at
+the endpoint. Narrow scope fields (fund, account, portfolio, custody, ledger book, basis, currency,
+jurisdiction) remain caller-forbidden and are now server-resolved from the assignment authority and
+stamped by the acceptance command. A decision is applied only when the affected set is exactly one
+scope owned by the caller; a fan-out that is incomplete, empty, reaches another tenant, or spans
+several scopes is refused with its own problem code, because the durable acceptance path opens one
+case in one transaction and applying to part of the affected set is not atomic.
 The ledger explorer carries canonical `LedgerDimensionSetDto` scope into row cells, drill-in fields,
 and dimension filter chips so browser and WPF users can inspect fund, entity, sleeve, strategy,
 portfolio, book, account, investor, capital-account, instrument, position, tax-lot, cost-center,
@@ -761,6 +782,26 @@ intake and is exposed at `/api/ledger/journal-automation/dividend-intake` and
 `/api/ledger/journal-automation/fee-accrual-intake` (ledger-mutation permission, fund-scoped
 write tenant, mutation rate limit); the dividend lane returns a conflict when the Security Master
 query service is not configured rather than silently producing nothing.
+`/api/ledger/journal-automation/capital-call-issuance-intake` (same permission, tenant, and
+rate-limit posture) activates the fund-economics capital-call kernel: the request carries the
+operator-attested commitment register (each line must cite retained register evidence), the
+runner recomputes each commitment's called-to-date basis from posted private-capital fund events
+via `IManualJournalEntryWorkbenchService.GetPrivateCapitalActivityAsync` — never from the caller
+— and `CapitalCallPlanBuilder`/`CapitalCallScheduleDraftBuilder` turn the fund-level amount into
+balanced per-LP `CapitalCallIssued` drafts that land in the same approval queue. Runs whose
+evidence or uncalled capacity cannot be corroborated return `Blocked` with reasons instead of
+drafts, and intake stamps the drafts' fund-event identity into their treasury context so posting
+feeds the roll-forward that corroborates the next call.
+`/api/ledger/journal-automation/capital-call-funding-intake` (same declaration) records LP cash
+receipts against an issued call as governed `CapitalCallFunded` drafts (Dr Cash / Cr Capital Call
+Receivable, entry type General so the roll-forward never counts funding as a second call). The
+fundable ceiling is recomputed server-side from the call's posted ledger activity — issuance
+debits minus funding credits on the LP's receivable — so funding an unissued call, exceeding the
+open receivable, or omitting retained remittance evidence returns `Blocked` with reasons instead
+of drafts; partial funding drafts the funded portion and leaves the receivable balance open.
+Default-interest accrual for late LPs is not wired yet: the kernel exists
+(`DefaultInterestCalculator`, `BuildDefaultInterestDraft`), but its rate/convention/grace terms
+and the installment due date have no durable server-side policy source to corroborate against.
 Close-management endpoints under `/api/ledger/close-management/*`
 adapt Financial Operations close-plan behavior for browser and WPF consumers: the period-plan route
 projects checklist dependencies, approval sign-offs, materiality policy, late adjustments, period

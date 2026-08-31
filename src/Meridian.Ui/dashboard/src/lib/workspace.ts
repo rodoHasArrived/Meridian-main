@@ -27,6 +27,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   portfolioBrokerageSync: "/portfolio/brokerage-sync",
   portfolioCashLadder: "/portfolio/cash-ladder",
   portfolioFamilyOffice: "/portfolio/family-office",
+  portfolioLoanBook: "/portfolio/loan-book",
   accounting: "/accounting",
   accountingConfigure: "/accounting/configure",
   accountingOperationsContinuity: "/accounting/operations-continuity",
@@ -37,6 +38,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   accountingJournalEntries: "/accounting/journal-entries",
   accountingJournalEntryDetail: "/accounting/journal-entries/detail",
   accountingCapitalAccounts: "/accounting/capital-accounts",
+  accountingCapitalCalls: "/accounting/capital-calls",
   accountingReconciliation: "/accounting/reconciliation",
   accountingExternalGlReconciliation: "/accounting/reconciliation/external-gl",
   accountingReconciliationMatch: "/accounting/reconciliation/match",
@@ -70,6 +72,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   strategyPromotions: "/strategy/promotions",
   strategyLab: "/strategy/lab",
   strategyQuantLab: "/strategy/quant-lab",
+  strategyRunLedger: "/strategy/run-ledger",
   data: "/data",
   dataImport: "/data/import",
   dataProviders: "/data/providers",
@@ -140,16 +143,12 @@ export const SETTINGS_PROVIDER_SCREEN_ROUTE_PATTERNS = [
 
 /**
  * Routes whose screens have no data source wired yet — they render a permanent
- * "not connected" empty state (Family Office is mounted without an
- * entityStructure; the Formula Workbench has no formula catalog endpoint).
- * They stay routable for deep links and legacy bookmarks, but are kept out of
- * primary navigation and the command palette so operators are not steered into
- * dead ends. Remove a route from this set when its read model lands.
+ * "not connected" empty state (the Formula Workbench has no formula catalog
+ * endpoint). They stay routable for deep links and legacy bookmarks, but are kept
+ * out of primary navigation and the command palette so operators are not steered
+ * into dead ends. Remove a route from this set when its read model lands.
  */
 export const UNWIRED_WORKSTATION_ROUTES: ReadonlySet<string> = new Set<string>([
-  // FamilyOfficeScreen is mounted without an entityStructure prop, so it defaults to null and
-  // always renders the "Family office data is not connected" empty state.
-  WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice,
   // The Quant Lab formulas tab renders a hardcoded "not connected" card; the built
   // strategy-formula-workbench component has no formula-catalog endpoint behind it. Only the
   // formulas deep link is unwired — the Quant Lab route itself stays navigable.
@@ -188,6 +187,7 @@ export const WORKSTATION_PAGE_TAG_ROUTES: Record<string, WorkstationRoutePath> =
   CapitalAccountWorkbench: WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts,
   GovernanceShell: WORKSTATION_ROUTE_CATALOG.accounting,
   PortfolioFamilyOffice: WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice,
+  PortfolioLoanBook: WORKSTATION_ROUTE_CATALOG.portfolioLoanBook,
   PortfolioShell: WORKSTATION_ROUTE_CATALOG.portfolio,
   ProviderHealth: WORKSTATION_ROUTE_CATALOG.dataProviders,
   ProviderTrust: WORKSTATION_ROUTE_CATALOG.dataProviders,
@@ -389,6 +389,7 @@ export const WORKSTATION_ROUTE_SEGMENT_LABELS: Readonly<Record<string, string>> 
   "family-office": "Family Office",
   "journal-entries": "Journal Entries",
   ledger: "Ledger Explorer",
+  "run-ledger": "Run Ledger Explorer",
   "operations-continuity": "Operations Continuity",
   "operations-record": "Operations Record",
   exports: "Exports",

@@ -20,21 +20,31 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
     public const string ConnectorId = "ib-flex";
 
     private const string FlexRootElement = "FlexQueryResponse";
-    private const int MaximumStatementBytes = 32 * 1024 * 1024;
-    private const int MaximumStatementRows = 100_000;
 
     private readonly StatementMappingProfileCatalog _catalog;
     private readonly IProviderCredentialStore? _credentialStore;
     private readonly IIbFlexWebServiceClient? _webServiceClient;
+    private readonly StatementIngressLimits _limits;
 
+    /// <param name="limits">
+    /// The shared ingress bound. This connector previously carried its own private 100,000-row
+    /// ceiling while every sibling connector took these limits, so a deployment that raised
+    /// <see cref="StatementIngressLimits.MaxRecords"/> - which the module README documents as the one
+    /// place a cap is raised - still had a legitimate Flex report refused at row 100,001 by a number
+    /// it could not configure. Both bounds count the same thing, retained rows, so they are now one
+    /// bound. Note this raises the default Flex ceiling from 100,000 to the shared 250,000; a
+    /// deployment that wants the old ceiling sets MaxRecords to 100,000.
+    /// </param>
     public IbFlexStatementConnector(
         StatementMappingProfileCatalog catalog,
         IProviderCredentialStore? credentialStore = null,
-        IIbFlexWebServiceClient? webServiceClient = null)
+        IIbFlexWebServiceClient? webServiceClient = null,
+        StatementIngressLimits? limits = null)
     {
         _catalog = catalog;
         _credentialStore = credentialStore;
         _webServiceClient = webServiceClient;
+        _limits = limits ?? StatementIngressLimits.Default;
         Descriptor = new StatementConnectorDescriptor(
             ConnectorId,
             "Interactive Brokers Flex Report (XML)",
@@ -96,26 +106,72 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             return EmptyResult(profileId, issues);
         }
 
-        if (document.Content.Length > MaximumStatementBytes)
+        if (document.Content.Length > _limits.MaxDocumentBytes)
         {
-            issues.Add(StatementParseIssue.Error(
-                "STATEMENT_TOO_LARGE",
-                $"The Flex report exceeds the {MaximumStatementBytes}-byte limit."));
+            // The shared code, not the private STATEMENT_TOO_LARGE this connector carried before it read
+            // the shared limits. The module README documents STATEMENT_DOCUMENT_TOO_LARGE as the byte-cap
+            // refusal for every connector, and a caller routing on that code missed Flex refusals alone.
+            issues.Add(_limits.DocumentTooLarge(document.Content.Length));
             return EmptyResult(profileId, issues);
         }
+
+        // Bound the document before materializing it. MaxCharactersInDocument limits the characters read,
+        // not the object graph built from them, and an XElement/XAttribute per node costs far more than
+        // its textual form - so a permitted sub-20 MiB payload of many tiny elements expanded into a much
+        // larger tree with nothing to stop it: `retained` is not initialized until after the load, and
+        // MaxParseNodes was never charged on this path.
+        //
+        // This is the original PRD-010 complaint - "builds a whole XDocument" - which was fixed for
+        // camt.053 and left standing here. A streaming rewrite is the thorough answer, but every section
+        // below navigates via Descendants/Attribute/Section, so that is a large refactor out of
+        // proportion to the bound. A pre-scan buys the property that matters: refuse before allocating.
+        // Two passes over an in-memory buffer are cheap, and the first pass builds no objects.
+        var payload = document.Content.ToArray();
+        var settings = new XmlReaderSettings
+        {
+            DtdProcessing = DtdProcessing.Prohibit,
+            XmlResolver = null,
+            Async = true,
+            MaxCharactersInDocument = _limits.MaxDocumentBytes,
+            MaxCharactersFromEntities = 0
+        };
 
         XDocument xml;
         try
         {
-            var settings = new XmlReaderSettings
+            await using (var scanStream = new MemoryStream(payload, writable: false))
+            using (var scanReader = XmlReader.Create(scanStream, settings))
             {
-                DtdProcessing = DtdProcessing.Prohibit,
-                XmlResolver = null,
-                Async = true,
-                MaxCharactersInDocument = MaximumStatementBytes,
-                MaxCharactersFromEntities = 0
-            };
-            await using var stream = new MemoryStream(document.Content.ToArray(), writable: false);
+                var nodes = 0;
+                while (await scanReader.ReadAsync().ConfigureAwait(false))
+                {
+                    ct.ThrowIfCancellationRequested();
+
+                    // The element AND its attributes. ReadAsync visits the element node only, so a
+                    // document putting hundreds of thousands of attributes on one valid element stayed far
+                    // below this budget while XDocument.LoadAsync still materialized an XAttribute plus a
+                    // name and value string for every one. Camt053StatementConnector.TryReadBoundedSubtree
+                    // has charged AttributeCount since it was written; this pre-scan is newer and did not
+                    // reuse that accounting.
+                    // Depth as well as count. camt's scan loops have always checked reader.Depth; this
+                    // pre-scan was written without it, so a compact but extremely deep document passed the
+                    // node budget and was still materialized past the configured nesting ceiling.
+                    if (scanReader.Depth > _limits.MaxNestingDepth)
+                    {
+                        issues.Add(_limits.NestingTooDeep());
+                        return EmptyResult(profileId, issues);
+                    }
+
+                    nodes += 1 + scanReader.AttributeCount;
+                    if (nodes > _limits.MaxParseNodes)
+                    {
+                        issues.Add(_limits.TooManyNodes());
+                        return EmptyResult(profileId, issues);
+                    }
+                }
+            }
+
+            await using var stream = new MemoryStream(payload, writable: false);
             using var reader = XmlReader.Create(stream, settings);
             xml = await XDocument.LoadAsync(reader, LoadOptions.None, ct).ConfigureAwait(false);
         }
@@ -149,6 +205,14 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
         var taxLots = new List<BrokerageTaxLotSnapshotDto>();
         var borrowPositions = new List<BrokerageBorrowPositionSnapshotDto>();
         var rowNumber = 0;
+        // Every object this parse retains, charged before it is materialized. rowNumber stays as the row
+        // ordinal AddRecord needs, but it cannot be the bound: seven of these loops append BOTH a
+        // canonical record and an activity event per iteration while charging one, so the in-parser guard
+        // passed at roughly half the real retention and left the service's TotalRetainedRows to catch it -
+        // after every object had already been allocated, which is exactly what an in-parser guard exists
+        // to prevent. One counter charged per append replaces the earlier two-counter split, which could
+        // only ever bound the row kinds someone remembered to add to it.
+        var retained = 0;
         var sectionCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var statement in statements)
@@ -159,11 +223,6 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var trade in Section(statement, "Trades", "Trade"))
             {
                 rowNumber++;
-                if (rowNumber > MaximumStatementRows)
-                {
-                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {MaximumStatementRows}-row limit."));
-                    return EmptyResult(profileId, issues);
-                }
                 CountSection(sectionCounts, "Trades");
                 CollectAttributeNames(trade, detectedColumns);
                 var values = new Dictionary<StatementCanonicalField, string>
@@ -180,18 +239,29 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                     [StatementCanonicalField.FeesCommission] = Attribute(trade, "ibCommission") ?? string.Empty,
                     [StatementCanonicalField.ExternalTransactionId] = Attribute(trade, "tradeID") ?? Attribute(trade, "transactionID") ?? string.Empty
                 };
-                AddRecord(records, values, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes);
+                var recordsBefore = records.Count;
+                if (!AddRecord(records, values, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes, _limits))
+                {
+                    return EmptyResult(profileId, issues);
+                }
                 activities.Add(BuildTradeActivity(trade, statementAccountId, profile));
+
+                // Charged after the appends, on what the row actually produced. MapRecord returns null for
+                // a row it rejects, so predicting "one record plus one activity" over-charges every
+                // rejected row by one: a report of rows with unparseable dates retains only its activity
+                // DTOs but was billed for records that were never added, and documents inside the cap were
+                // refused as ROW_LIMIT_EXCEEDED.
+                retained += records.Count - recordsBefore + 1;
+                if (retained > _limits.MaxRecords)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
             }
 
             foreach (var cash in Section(statement, "CashTransactions", "CashTransaction"))
             {
                 rowNumber++;
-                if (rowNumber > MaximumStatementRows)
-                {
-                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {MaximumStatementRows}-row limit."));
-                    return EmptyResult(profileId, issues);
-                }
                 CountSection(sectionCounts, "CashTransactions");
                 CollectAttributeNames(cash, detectedColumns);
                 var values = new Dictionary<StatementCanonicalField, string>
@@ -204,18 +274,29 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                     [StatementCanonicalField.Currency] = Attribute(cash, "currency") ?? string.Empty,
                     [StatementCanonicalField.ExternalTransactionId] = Attribute(cash, "transactionID") ?? string.Empty
                 };
-                AddRecord(records, values, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes);
+                var recordsBefore = records.Count;
+                if (!AddRecord(records, values, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes, _limits))
+                {
+                    return EmptyResult(profileId, issues);
+                }
                 activities.Add(BuildCashActivity(cash, statementAccountId, profile, activityCodeMap));
+
+                // Charged after the appends, on what the row actually produced. MapRecord returns null for
+                // a row it rejects, so predicting "one record plus one activity" over-charges every
+                // rejected row by one: a report of rows with unparseable dates retains only its activity
+                // DTOs but was billed for records that were never added, and documents inside the cap were
+                // refused as ROW_LIMIT_EXCEEDED.
+                retained += records.Count - recordsBefore + 1;
+                if (retained > _limits.MaxRecords)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
             }
 
             foreach (var position in Section(statement, "OpenPositions", "OpenPosition"))
             {
                 rowNumber++;
-                if (rowNumber > MaximumStatementRows)
-                {
-                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {MaximumStatementRows}-row limit."));
-                    return EmptyResult(profileId, issues);
-                }
                 CountSection(sectionCounts, "OpenPositions");
                 CollectAttributeNames(position, detectedColumns);
                 var values = new Dictionary<StatementCanonicalField, string>
@@ -229,7 +310,22 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                     [StatementCanonicalField.TradeDate] = Attribute(position, "reportDate") ?? string.Empty,
                     [StatementCanonicalField.Currency] = Attribute(position, "currency") ?? string.Empty
                 };
-                AddRecord(records, values, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes);
+                var recordsBefore = records.Count;
+                if (!AddRecord(records, values, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes, _limits))
+                {
+                    return EmptyResult(profileId, issues);
+                }
+
+                // Charged after the appends, on what the row actually produced. MapRecord returns null for
+                // a row it rejects, so predicting one record per position over-charges every
+                // rejected row by one: a report of rows with unparseable dates retains nothing but was billed for records that were never added, and documents inside the cap were
+                // refused as ROW_LIMIT_EXCEEDED.
+                retained += records.Count - recordsBefore;
+                if (retained > _limits.MaxRecords)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
             }
 
             var accountInformationElements = Descendants(statement, "AccountInformation").ToArray();
@@ -244,6 +340,12 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                 .Where(IsMarginEvidenceElement)
                 .ToArray();
 
+            // Built once, ahead of the anchor loop. BuildAccountSnapshot used to re-walk the whole
+            // statement for cash and margin evidence on every anchor, so N anchors cost N full-document
+            // descendant walks - work the row cap bounds the count of but not the cost of.
+            var cashEvidence = new AccountEvidenceIndex(cashReportElements);
+            var marginEvidence = new AccountEvidenceIndex(marginReportElements);
+
             var accountSnapshotAnchors = accountInformationElements.Length > 0
                 ? accountInformationElements
                 : marginReportElements.Length > 0
@@ -253,9 +355,21 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                         : [];
             foreach (var accountInformation in accountSnapshotAnchors)
             {
+                // Snapshots are retained evidence too, and BuildAccountSnapshot rescans the statement's
+                // descendants for cash and margin evidence on every call - so an unbounded snapshot count
+                // is quadratic in CPU as well as linear in retained DTOs. Charging them before the call
+                // bounds both.
+                retained += 1;
+                if (retained > _limits.MaxRecords)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
+
                 CountSection(sectionCounts, "AccountInformation");
                 CollectAttributeNames(accountInformation, detectedColumns);
-                accountSnapshots.Add(BuildAccountSnapshot(statement, accountInformation, statementAccountId, profile));
+                accountSnapshots.Add(BuildAccountSnapshot(
+                    statement, accountInformation, statementAccountId, profile, cashEvidence, marginEvidence));
             }
 
             foreach (var marginReport in marginReportElements)
@@ -269,13 +383,30 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                 rowNumber++;
                 CountSection(sectionCounts, "CashReport");
                 CollectAttributeNames(cashReport, detectedColumns);
+                // Charged on the append; a cash-report row that builds nothing retains nothing.
                 if (BuildCashReportRecord(statement, cashReport, statementAccountId, profile) is { } record)
+                {
+                    retained += 1;
+                    if (retained > _limits.MaxRecords)
+                    {
+                        issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
+                        return EmptyResult(profileId, issues);
+                    }
+
                     records.Add(record);
+                }
             }
 
             foreach (var interest in Descendants(statement, "InterestDetail", "InterestAccrual"))
             {
                 rowNumber++;
+                retained += 2;
+                if (retained > _limits.MaxRecords)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
+
                 CountSection(sectionCounts, interest.Name.LocalName.EndsWith("Detail", StringComparison.OrdinalIgnoreCase)
                     ? "InterestDetails"
                     : "InterestAccruals");
@@ -288,6 +419,13 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var borrowFee in Descendants(statement, "BorrowFeeDetail"))
             {
                 rowNumber++;
+                retained += 2;
+                if (retained > _limits.MaxRecords)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
+
                 CountSection(sectionCounts, "BorrowFeeDetails");
                 CollectAttributeNames(borrowFee, detectedColumns);
                 var activity = BuildBorrowFeeActivity(borrowFee, statementAccountId, profile);
@@ -297,6 +435,16 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
 
             foreach (var commission in Descendants(statement, "CommissionDetail"))
             {
+                // Commission, open-lot and securities-borrow rows retain an activity or position DTO each
+                // and are serialized into canonical-evidence.json regardless of never producing a
+                // canonical record.
+                retained += 1;
+                if (retained > _limits.MaxRecords)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
+
                 CountSection(sectionCounts, "CommissionDetails");
                 CollectAttributeNames(commission, detectedColumns);
                 activities.Add(BuildCommissionActivity(commission, statementAccountId, profile));
@@ -305,6 +453,13 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var corporateAction in Descendants(statement, "CorporateAction"))
             {
                 rowNumber++;
+                retained += 2;
+                if (retained > _limits.MaxRecords)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
+
                 CountSection(sectionCounts, "CorporateActions");
                 CollectAttributeNames(corporateAction, detectedColumns);
                 var activity = BuildCorporateActionActivity(corporateAction, statementAccountId, profile);
@@ -315,6 +470,13 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             foreach (var transfer in Descendants(statement, "Transfer"))
             {
                 rowNumber++;
+                retained += 2;
+                if (retained > _limits.MaxRecords)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
+
                 CountSection(sectionCounts, "Transfers");
                 CollectAttributeNames(transfer, detectedColumns);
                 var activity = BuildTransferActivity(transfer, statementAccountId, profile);
@@ -327,6 +489,13 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                 if (!optionEae.HasAttributes)
                     continue;
                 rowNumber++;
+                retained += 2;
+                if (retained > _limits.MaxRecords)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
+
                 CountSection(sectionCounts, "OptionEAE");
                 CollectAttributeNames(optionEae, detectedColumns);
                 var activity = BuildOptionLifecycleActivity(optionEae, statementAccountId, profile);
@@ -338,18 +507,41 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             {
                 CountSection(sectionCounts, "OpenLots");
                 CollectAttributeNames(openLot, detectedColumns);
+                // Charged on the append, not on the candidate. An OpenLot that BuildTaxLot rejects retains
+                // nothing, and billing it let a document of empty elements consume the whole allowance and
+                // then be refused for rows it never kept.
                 if (BuildTaxLot(openLot, statementAccountId, profile) is { } taxLot)
+                {
+                    retained += 1;
+                    if (retained > _limits.MaxRecords)
+                    {
+                        issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
+                        return EmptyResult(profileId, issues);
+                    }
+
                     taxLots.Add(taxLot);
+                }
             }
 
             foreach (var borrowed in Descendants(statement, "SecurityBorrowed", "SecuritiesBorrowed", "SecurityLent", "SecuritiesLent"))
             {
                 if (!borrowed.HasAttributes)
                     continue;
+
                 CountSection(sectionCounts, "SecuritiesBorrowedLent");
                 CollectAttributeNames(borrowed, detectedColumns);
+                // Charged on the append; a borrow element that builds no position retains nothing.
                 if (BuildBorrowPosition(borrowed, statementAccountId, profile) is { } borrowPosition)
+                {
+                    retained += 1;
+                    if (retained > _limits.MaxRecords)
+                    {
+                        issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
+                        return EmptyResult(profileId, issues);
+                    }
+
                     borrowPositions.Add(borrowPosition);
+                }
             }
         }
 
@@ -391,6 +583,19 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
                 .Where(static value => value != DateTimeOffset.UnixEpoch))
             .DefaultIfEmpty()
             .Max();
+        // The cursor is retained evidence like everything else and was appended after the loops without
+        // ever being charged. It is exactly one row when any statement parsed, so reserve it here rather
+        // than let the budget be off by one at the boundary.
+        if (statements.Length > 0)
+        {
+            retained += 1;
+            if (retained > _limits.MaxRecords)
+            {
+                issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {_limits.MaxRecords}-row limit."));
+                return EmptyResult(profileId, issues);
+            }
+        }
+
         var activityCursors = statements.Length == 0
             ? []
             : new[]
@@ -460,8 +665,10 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
         {
             "fee" => (BrokerageActivityCategory.Fee, BrokerageActivitySubtype.Fee),
             "dividend" or "div" => (BrokerageActivityCategory.Dividend, BrokerageActivitySubtype.CashDividend),
-            "cash" or "cashbalance" when amount < 0m => (BrokerageActivityCategory.Cash, BrokerageActivitySubtype.CashWithdrawal),
-            "cash" or "cashbalance" => (BrokerageActivityCategory.Cash, BrokerageActivitySubtype.CashDeposit),
+            // The profile maps cash movements to the canonical "transaction" activity (so reconciliation
+            // routes them to the ledger-transaction lane); they remain deposits/withdrawals here.
+            "cash" or "cashbalance" or "transaction" when amount < 0m => (BrokerageActivityCategory.Cash, BrokerageActivitySubtype.CashWithdrawal),
+            "cash" or "cashbalance" or "transaction" => (BrokerageActivityCategory.Cash, BrokerageActivitySubtype.CashDeposit),
             _ => (BrokerageActivityCategory.Cash, BrokerageActivitySubtype.Other)
         };
         return BuildActivity(
@@ -482,22 +689,19 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
         XElement statement,
         XElement account,
         string? statementAccountId,
-        StatementMappingProfileDocument profile)
+        StatementMappingProfileDocument profile,
+        AccountEvidenceIndex cashEvidence,
+        AccountEvidenceIndex marginEvidence)
     {
         var accountId = Attribute(account, "accountId") ?? statementAccountId ?? string.Empty;
         var baseCurrency = AttributeAny(account, "baseCurrency", "currency") ?? "USD";
-        var cashReport = Descendants(statement, "CashReportCurrency")
-            .Where(element => MatchesAccount(element, accountId))
+        // Both sections come from the index rather than a fresh walk of the statement. Same elements,
+        // same document order, same MatchesAccount semantics. The IsMarginEvidenceElement conjunct still
+        // applies because the margin index is built from the array that was already filtered by it.
+        var cashReport = cashEvidence.Matching(accountId)
             .OrderByDescending(element => string.Equals(Attribute(element, "currency"), baseCurrency, StringComparison.OrdinalIgnoreCase))
             .FirstOrDefault();
-        var marginReport = Descendants(
-                statement,
-                "MarginReport",
-                "MarginReportCurrency",
-                "MarginReportData",
-                "MarginSummary",
-                "MarginRequirement")
-            .Where(element => MatchesAccount(element, accountId) && IsMarginEvidenceElement(element))
+        var marginReport = marginEvidence.Matching(accountId)
             .FirstOrDefault();
         var accountType = AttributeAny(account, "accountType", "type")
             ?? (marginReport is null ? null : AttributeAny(marginReport, "accountType", "type"))
@@ -884,6 +1088,95 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
         params string[] names)
         => StatementValueParser.TryParseDate(AttributeAny(element, names), profile, out value);
 
+    /// <summary>
+    /// Account-keyed index over one evidence section, built once per statement so snapshot construction
+    /// does not re-walk the document for every account anchor.
+    /// </summary>
+    /// <remarks>
+    /// This cannot be a plain dictionary keyed by account id, because <see cref="MatchesAccount"/> is not
+    /// equality. An element carrying no accountId matches every anchor, and an anchor carrying no
+    /// accountId matches every element. Both wildcards are preserved exactly: unkeyed elements are held
+    /// aside and merged back into each lookup, and a blank anchor id returns the whole section.
+    ///
+    /// The merge restores document order, which is load-bearing rather than cosmetic - both callers take
+    /// FirstOrDefault, one of them after a stable OrderByDescending, so relative order decides which
+    /// element is selected. Keying alone would silently change which evidence a snapshot reports.
+    /// </remarks>
+    private sealed class AccountEvidenceIndex
+    {
+        private static readonly List<(int Index, XElement Element)> NoEntries = [];
+
+        private readonly List<(int Index, XElement Element)> _all = [];
+        private readonly List<(int Index, XElement Element)> _unkeyed = [];
+        private readonly Dictionary<string, List<(int Index, XElement Element)>> _byAccount =
+            new(StringComparer.OrdinalIgnoreCase);
+
+        public AccountEvidenceIndex(IReadOnlyList<XElement> elements)
+        {
+            for (var i = 0; i < elements.Count; i++)
+            {
+                var entry = (i, elements[i]);
+                _all.Add(entry);
+
+                // Attribute() returns null rather than a blank string, so this is exactly the
+                // IsNullOrWhiteSpace(candidate) arm of MatchesAccount.
+                var accountId = Attribute(elements[i], "accountId");
+                if (accountId is null)
+                {
+                    _unkeyed.Add(entry);
+                    continue;
+                }
+
+                if (!_byAccount.TryGetValue(accountId, out var bucket))
+                {
+                    bucket = [];
+                    _byAccount[accountId] = bucket;
+                }
+
+                bucket.Add(entry);
+            }
+        }
+
+        /// <summary>
+        /// The elements <see cref="MatchesAccount"/> accepts for this account, in document order.
+        /// </summary>
+        public IEnumerable<XElement> Matching(string accountId)
+        {
+            if (string.IsNullOrWhiteSpace(accountId))
+            {
+                return _all.Select(static entry => entry.Element);
+            }
+
+            var keyed = _byAccount.TryGetValue(accountId, out var bucket) ? bucket : NoEntries;
+            return _unkeyed.Count == 0
+                ? keyed.Select(static entry => entry.Element)
+                : Merge(keyed, _unkeyed);
+        }
+
+        private static IEnumerable<XElement> Merge(
+            List<(int Index, XElement Element)> keyed,
+            List<(int Index, XElement Element)> unkeyed)
+        {
+            int i = 0, j = 0;
+            while (i < keyed.Count && j < unkeyed.Count)
+            {
+                yield return keyed[i].Index < unkeyed[j].Index
+                    ? keyed[i++].Element
+                    : unkeyed[j++].Element;
+            }
+
+            while (i < keyed.Count)
+            {
+                yield return keyed[i++].Element;
+            }
+
+            while (j < unkeyed.Count)
+            {
+                yield return unkeyed[j++].Element;
+            }
+        }
+    }
+
     private static bool MatchesAccount(XElement element, string accountId)
     {
         var candidate = Attribute(element, "accountId");
@@ -924,20 +1217,47 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
         return statement.Descendants().Where(element => names.Contains(element.Name.LocalName));
     }
 
-    private static void AddRecord(
+    /// <summary>
+    /// Maps one row and reports whether the diagnostic budget survives it.
+    /// </summary>
+    /// <remarks>
+    /// MapRecord is the only per-row issue emitter in this connector - every other issues.Add here is a
+    /// one-shot structural refusal that returns immediately - so this is the single place a diagnostic
+    /// population can grow with the document. A row rejected for an unparseable date retains its
+    /// ROW_INVALID_DATE error and no record at all, and a row carrying an unmapped activity code retains
+    /// an UNKNOWN_ACTIVITY_CODE warning alongside its record. Issues are retained evidence, held in the
+    /// parse result and projected into the preview exactly like records, so they are charged against a
+    /// bound of their own rather than against the row allowance - refusing here rather than truncating,
+    /// because dropping a later error would flip HasErrors from true to false and let a malformed file
+    /// import.
+    ///
+    /// The callers charge the row allowance <i>after</i> this returns, from the records it actually
+    /// appended, precisely because it can append nothing: predicting the record made the bound refuse
+    /// documents that were inside it.
+    /// </remarks>
+    private static bool AddRecord(
         List<StatementCanonicalRecord> records,
         Dictionary<StatementCanonicalField, string> values,
         StatementMappingProfileDocument profile,
         IReadOnlyDictionary<string, string> activityCodeMap,
         int rowNumber,
         List<StatementParseIssue> issues,
-        HashSet<string> reportedUnknownCodes)
+        HashSet<string> reportedUnknownCodes,
+        StatementIngressLimits limits)
     {
         var record = StatementRecordMapper.MapRecord(values, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes);
         if (record is not null)
         {
             records.Add(record);
         }
+
+        if (issues.Count <= limits.MaxDiagnostics)
+        {
+            return true;
+        }
+
+        issues.Add(limits.TooManyDiagnostics());
+        return false;
     }
 
     private static IEnumerable<XElement> Section(XElement statement, string sectionName, string elementName)

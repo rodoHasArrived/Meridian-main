@@ -153,6 +153,11 @@ public sealed partial class SettingsViewModel : BindableBase
     // ── Collections ───────────────────────────────────────────────────────────
 
     public ObservableCollection<CredentialDisplayInfo> StoredCredentials { get; }
+
+    /// <summary>
+    /// Operator-visible activity feed. Intentionally empty until a real activity source is
+    /// wired up — never populate this with fabricated entries.
+    /// </summary>
     public ObservableCollection<SettingsActivityItem> RecentActivity { get; }
     public ObservableCollection<SettingsAssetProfileRow> AssetProfileRows { get; }
     public ObservableCollection<SettingsAssetProfileFieldInput> AssetProfileFieldInputs { get; }
@@ -163,6 +168,12 @@ public sealed partial class SettingsViewModel : BindableBase
     public IReadOnlyList<ShellDensityMode> ShellDensityModes { get; }
 
     public IRelayCommand StartDemoTourCommand { get; }
+
+    /// <summary>
+    /// Displayed application version, sourced from the shared assembly-derived
+    /// <see cref="DiagnosticsPageViewModel.AppVersion"/> so every surface shows the same value.
+    /// </summary>
+    public string AppVersionText => $"Version {DiagnosticsPageViewModel.AppVersion}";
 
     public string DemoModeStatusText => FixtureModeDetector.Instance.IsFixtureMode
         ? "Demo/sample mode is active. All tour records are sample data and remain separate from provider-backed operational data."
@@ -414,7 +425,6 @@ public sealed partial class SettingsViewModel : BindableBase
         RefreshProfiles();
         _ = RefreshAssetProfilesAsync();
         _ = RefreshOperationsControlAsync();
-        LoadRecentActivity();
         UpdateSystemStatus();
     }
 
@@ -859,33 +869,11 @@ public sealed partial class SettingsViewModel : BindableBase
 
     private void CheckForUpdates()
     {
-        MessageBox.Show("You are running the latest version (1.6.1).", "Check for Updates", MessageBoxButton.OK, MessageBoxImage.Information);
-    }
-
-    private void LoadRecentActivity()
-    {
-        RecentActivity.Clear();
-        RecentActivity.Add(new SettingsActivityItem
-        {
-            Icon = "\uE73E",
-            IconColor = new SolidColorBrush(Color.FromRgb(63, 185, 80)),
-            Message = "Configuration saved",
-            Time = "2 min ago",
-        });
-        RecentActivity.Add(new SettingsActivityItem
-        {
-            Icon = "\uE753",
-            IconColor = new SolidColorBrush(Color.FromRgb(88, 166, 255)),
-            Message = "Cloud sync completed",
-            Time = "15 min ago",
-        });
-        RecentActivity.Add(new SettingsActivityItem
-        {
-            Icon = "\uE787",
-            IconColor = new SolidColorBrush(Color.FromRgb(210, 153, 34)),
-            Message = "Backfill started",
-            Time = "1 hour ago",
-        });
+        // No update service exists in this build - state that honestly instead of claiming
+        // the installed version is current.
+        MessageBox.Show(
+            $"Version {DiagnosticsPageViewModel.AppVersion} - automatic update checking is not available in this build.",
+            "Check for Updates", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private static void OpenUrl(string url)

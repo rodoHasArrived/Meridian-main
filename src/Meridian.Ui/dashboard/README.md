@@ -17,6 +17,12 @@ recommendations, and completed activation outcomes. Sample mode stays offline-ca
 and visibly labelled `SAMPLE · PAPER` throughout the shell. Until activation status is known, the
 normal shell stays closed and a failed status read exposes a retry instead of assuming setup is complete.
 
+After setup the masthead `Getting started n/m` chip opens the activation checklist, which lists
+every outcome the host tracks and routes to the surface that completes the next one. Completion is
+reported by the surface that did the work -- statement import commit, reconciliation break
+resolution, report run, and analysis export each call `recordActivationOutcome` in
+`src/lib/first-run/activation.ts` -- so the count never advances on a page visit alone.
+
 ## Purpose
 
 Browser workstation dashboard is the active browser operator workstation.
@@ -113,6 +119,19 @@ browser renders retained documents with classification, source hash, typed chann
 tenant/scope, extraction status, reviewer state, linked operational objects, open support-request
 count, support-only authority posture, and manifest links, while keeping intake and readiness policy
 in shared contracts/endpoints.
+When the statement-run service returns nothing, the reconciliation desk derives run rows from the
+reconciliation queue. The queue carries break and case counts but no match totals, so derived rows
+report match counts as not reported (`—`, with the reason on the row) rather than printing the
+placeholder zeros, and the Positions, Cash, and Transactions detail tabs drop their badge and say
+the totals were not reported instead of crediting the reconciliation service for them. A
+service-reported run that genuinely matched nothing still reads `0`: zero and unknown are different
+facts in a reconciliation.
+Statement import previews an uploaded file against the fund account and reporting period from the
+Commit import form, so the panel cannot parse anything until those fields are complete. That
+dependency is stated on the panel: selecting a file with the form still blank names the outstanding
+fields instead of silently doing nothing, and the commit control reports the same fields rather than
+asking for a preview it is holding back. Picking a connector fills Source institution from that
+connector's display name when the field is still blank; fund account and period are never guessed.
 Statement import accepts either a bounded file upload or a remote fetch through a fetch-capable
 provider connection. The scheduled-fetch tab previews remote activity with the same canonical
 column-confidence and per-kind breakdown as file import, then lets operators create, edit, pause,
@@ -522,6 +541,13 @@ export manifest from the close cockpit; the browser displays artifact id, format
 generation time, content hash, route, evidence count, certification state, and disabled external
 posting posture while Financial Operations remains responsible for artifact generation and
 certification mutation.
+An empty holdings table on the Portfolio desk offers the step that actually fills it rather than
+only stating that it is empty: a loaded workspace with no holdings routes to statement import, and
+an empty paper session routes to the trading desk. The offered step follows the same branch as the
+sentence printed beside it, so the two can never disagree, and a workspace that failed to load gets
+no button — that is a load failure, not an empty desk, and routing elsewhere would hide it. The
+multi-asset coverage presenters live in `portfolio-screen.multi-asset-coverage.ts`; the row and
+group types stay owned by the view model and are imported type-only.
 `FinancialRecordExplorerShell` is the browser presentation for the shared Financial Record Explorer
 DTO. Accounting loads the `ledger` and Accounting-hosted `security-instrument` explorers from
 `/api/workstation/financial-record-explorers/{explorerId}`, Portfolio loads `portfolio`, Reporting

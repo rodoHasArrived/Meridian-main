@@ -110,6 +110,150 @@ erDiagram
         text primary_identifier_value
         bigint version
     }
+    security_master_corporate_action_canonical_sources {
+        uuid corp_act_id PK,FK
+        uuid proposal_id PK,FK
+        text provider_id
+        text source_event_id
+        text source_event_version
+        timestamp_with_time_zone linked_at
+    }
+    security_master_corporate_action_case_conflicts {
+        uuid conflict_id PK
+        uuid case_id FK
+        text field_name
+        text description
+        jsonb candidates
+        text state
+        text resolution
+        bigint case_version
+        text recorded_by
+        timestamp_with_time_zone recorded_at
+        text resolved_by
+        timestamp_with_time_zone resolved_at
+        text resolution_evidence_reference
+        text resolution_evidence_hash
+    }
+    security_master_corporate_action_case_evidence {
+        uuid evidence_id PK
+        uuid case_id FK
+        text evidence_kind
+        text evidence_reference
+        text evidence_hash
+        text description
+        jsonb metadata
+        bigint case_version
+        text recorded_by
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_corporate_action_case_transitions {
+        uuid transition_id PK
+        uuid case_id FK
+        text operation_kind
+        text from_state
+        text to_state
+        bigint expected_version
+        bigint resulting_version
+        text actor
+        text reason
+        text idempotency_key
+        timestamp_with_time_zone occurred_at
+        text correlation_id
+        boolean policy_override_applied
+    }
+    security_master_corporate_action_command_receipts {
+        uuid receipt_id PK
+        text operation_kind
+        uuid aggregate_id
+        text idempotency_key
+        character_64_ request_fingerprint
+        jsonb result_payload
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_corporate_action_processing_cases {
+        uuid case_id PK
+        uuid proposal_id FK
+        uuid corp_act_id FK
+        uuid security_id FK
+        text tenant_id
+        text company_id
+        text structure_node_id
+        text fund_profile_id
+        text financial_account_id
+        text portfolio_id
+        text custody_account_id
+        text ledger_book_id
+        text period_id
+        text accounting_basis
+        text functional_currency
+        text jurisdiction
+        text state
+        bigint version
+        text methodology_profile_id
+        text assigned_to
+        text blocked_reason
+        text created_by
+        timestamp_with_time_zone created_at
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
+    security_master_corporate_action_processing_options {
+        uuid option_id PK
+        uuid case_id FK
+        text option_code
+        text label
+        text description
+        text state
+        text source_methodology
+        jsonb blockers
+        jsonb parameters
+        bigint case_version
+        text recorded_by
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_corporate_action_restatement_obligations {
+        uuid obligation_id PK
+        uuid case_id FK
+        uuid corp_act_id FK
+        text tenant_id
+        text company_id
+        jsonb scope
+        boolean restatement_required
+        jsonb candidates
+        text status
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_corporate_action_source_proposals {
+        uuid proposal_id PK
+        uuid security_id FK
+        text provider_id
+        text source_event_id
+        text source_event_version
+        timestamp_with_time_zone observed_at
+        text evidence_hash
+        text evidence_reference
+        text provider_release_status
+        integer payload_schema_version
+        character_64_ economic_fingerprint
+        jsonb proposed_action
+        text display_ticker
+        text winning_source
+        jsonb agreeing_sources
+        jsonb dissenting_sources
+        jsonb dissent_fields
+        text state
+        bigint version
+        uuid supersedes_proposal_id FK
+        uuid accepted_corp_act_id FK
+        uuid initial_case_id FK
+        text recorded_by
+        timestamp_with_time_zone recorded_at
+        timestamp_with_time_zone updated_at
+        text decision_by
+        timestamp_with_time_zone decision_at
+        text decision_reason
+        text correlation_id
+    }
     security_master_corporate_actions {
         uuid corp_act_id PK
         uuid security_id FK
@@ -128,8 +272,11 @@ erDiagram
         timestamp_with_time_zone recorded_at
         date record_date
         text lifecycle_state
-        uuid supersedes_corp_act_id
+        uuid supersedes_corp_act_id FK
         numeric redemption_price_percent_of_par
+        jsonb payload
+        integer payload_schema_version
+        character_64_ economic_fingerprint
     }
     security_master_crypto_projection {
         uuid security_id PK
@@ -886,6 +1033,20 @@ erDiagram
     }
     security_master_cash_transaction ||--o{ security_master_payment_allocation : "payment_allocation_cash_transaction_id_fkey"
     security_master_cash_transaction ||--o{ security_master_reconciliation_result : "reconciliation_result_cash_transaction_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_conflicts : "corporate_action_case_conflicts_case_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_evidence : "corporate_action_case_evidence_case_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_transitions : "corporate_action_case_transitions_case_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_processing_options : "corporate_action_processing_options_case_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_restatement_obligations : "corporate_action_restatement_obligations_case_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_source_proposals : "fk_corporate_action_source_initial_case"
+    security_master_corporate_action_source_proposals ||--o{ security_master_corporate_action_canonical_sources : "corporate_action_canonical_sources_proposal_id_fkey"
+    security_master_corporate_action_source_proposals ||--o{ security_master_corporate_action_processing_cases : "corporate_action_processing_cases_proposal_id_fkey"
+    security_master_corporate_action_source_proposals ||--o{ security_master_corporate_action_source_proposals : "corporate_action_source_proposals_supersedes_proposal_id_fkey"
+    security_master_corporate_actions ||--o{ security_master_corporate_action_canonical_sources : "corporate_action_canonical_sources_corp_act_id_fkey"
+    security_master_corporate_actions ||--o{ security_master_corporate_action_processing_cases : "corporate_action_processing_cases_corp_act_id_fkey"
+    security_master_corporate_actions ||--o{ security_master_corporate_action_restatement_obligations : "corporate_action_restatement_obligations_corp_act_id_fkey"
+    security_master_corporate_actions ||--o{ security_master_corporate_action_source_proposals : "corporate_action_source_proposals_accepted_corp_act_id_fkey"
+    security_master_corporate_actions ||--o{ security_master_corporate_actions : "fk_corporate_actions_superseded_action"
     security_master_journal_entry ||--o{ security_master_journal_line : "journal_line_journal_entry_id_fkey"
     security_master_loan_contract ||--o{ security_master_cash_transaction : "cash_transaction_loan_id_fkey"
     security_master_loan_contract ||--o{ security_master_fee_balance : "fee_balance_loan_id_fkey"
@@ -915,6 +1076,8 @@ erDiagram
     security_master_securities ||--o{ security_master_bond_issuer_projection : "bond_issuer_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_bond_lifecycle_projection : "bond_lifecycle_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_bond_projection : "bond_projection_security_id_fkey"
+    security_master_securities ||--o{ security_master_corporate_action_processing_cases : "corporate_action_processing_cases_security_id_fkey"
+    security_master_securities ||--o{ security_master_corporate_action_source_proposals : "corporate_action_source_proposals_security_id_fkey"
     security_master_securities ||--o{ security_master_corporate_actions : "corporate_actions_security_id_fkey"
     security_master_securities ||--o{ security_master_equity_projection : "equity_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_future_projection : "future_projection_security_id_fkey"

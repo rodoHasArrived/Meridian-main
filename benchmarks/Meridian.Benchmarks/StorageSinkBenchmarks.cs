@@ -76,7 +76,7 @@ public class EventBufferBenchmarks
                         SequenceNumber: i,
                         StreamId: "BENCH",
                         Venue: "TEST"
-                    ));
+                    ), source: "BENCH");
             })
             .ToArray();
     }
@@ -115,7 +115,7 @@ public class EventBufferIngestionBenchmarks
                         SequenceNumber: i,
                         StreamId: "BENCH",
                         Venue: "TEST"
-                    ));
+                    ), source: "BENCH");
             })
             .ToArray();
     }
@@ -193,7 +193,7 @@ public class BatchSerializationBenchmarks
                         SequenceNumber: i,
                         StreamId: "BENCH",
                         Venue: "TEST"
-                    ));
+                    ), source: "BENCH");
             })
             .ToArray();
     }

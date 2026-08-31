@@ -456,6 +456,7 @@ import {
   securityMasterAmendEndpoint,
   securityMasterConflictsEndpoint,
   securityMasterConflictResolveEndpoint,
+  securityMasterCorporateActionSourceProposalAcceptEndpoint,
   securityMasterCorporateActionsEndpoint,
   securityMasterEntryEndpoint,
   securityMasterOperatorOverridesEndpoint,
@@ -475,6 +476,7 @@ import {
   workstationExtensibilityTenantTemplateReadinessEndpoint,
   workstationAssetOperationsEndpoint,
   workstationFinancialRecordExplorerEndpoint,
+  type ExplorerFilterSelection,
   workstationFinancialRecordExplorerRecordEndpoint,
   workstationFinancialRecordExplorerSavedViewsEndpoint,
   workstationFinancialOperationsCommandCenterEndpoint,
@@ -1892,19 +1894,16 @@ export function previewDataUploadWorkbook(
   );
 }
 
-export function getDataOperationsWorkspace(options: ApiRequestOptions = {}) {
-  return getDataWorkspace(options);
-}
-
 export function getAccountingWorkspace(options: ApiRequestOptions = {}) {
   return getJson<AccountingWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.accounting, options);
 }
 
 export function getFinancialRecordExplorer(
   explorerId: FinancialRecordExplorerId,
-  options: ApiRequestOptions = {}
+  options: ApiRequestOptions = {},
+  filters: readonly ExplorerFilterSelection[] = []
 ) {
-  return getJson<FinancialRecordExplorerDto>(workstationFinancialRecordExplorerEndpoint(explorerId), options);
+  return getJson<FinancialRecordExplorerDto>(workstationFinancialRecordExplorerEndpoint(explorerId, filters), options);
 }
 
 export function getFinancialRecordExplorerRecord(
@@ -3732,8 +3731,9 @@ export function getSecurityMasterQualityReport() {
   return getJson<import("@/types").SecurityMasterQualityReport>(SECURITY_MASTER_API_ENDPOINTS.qualityReportLatest);
 }
 
-export function applyCorporateActionInboxProposal(request: import("@/types").CorporateActionInboxApplyRequest) {
-  return postJson<unknown>(SECURITY_MASTER_API_ENDPOINTS.corporateActionInboxApply, request);
+export function acceptCorporateActionInboxProposal(request: import("@/types").CorporateActionInboxAcceptRequest) {
+  const endpoint = securityMasterCorporateActionSourceProposalAcceptEndpoint(request.proposalId);
+  return postJson<import("@/types").CorporateActionInboxAcceptResult>(endpoint, request);
 }
 
 export function getQualityAnomalies() {

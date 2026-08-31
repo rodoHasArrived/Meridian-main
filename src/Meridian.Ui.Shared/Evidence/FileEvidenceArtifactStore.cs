@@ -294,10 +294,10 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
     {
         ArgumentNullException.ThrowIfNull(request);
         var (tenantId, scope) = RequireWriteScope(request.TenantId, request.Scope);
-        var subjectKind = RequireTrimmed(request.SubjectKind, nameof(request.SubjectKind));
-        var subjectId = RequireTrimmed(request.SubjectId, nameof(request.SubjectId));
-        var intakeChannel = RequireTrimmed(request.IntakeChannel, nameof(request.IntakeChannel));
-        var fileName = RequireTrimmed(request.FileName, nameof(request.FileName));
+        var subjectKind = RequireText(request.SubjectKind, nameof(request.SubjectKind));
+        var subjectId = RequireText(request.SubjectId, nameof(request.SubjectId));
+        var intakeChannel = RequireText(request.IntakeChannel, nameof(request.IntakeChannel));
+        var fileName = RequireText(request.FileName, nameof(request.FileName));
         var channelKind = ResolveIntakeChannelKind(request, intakeChannel);
 
         if (!SupportedCanonicalSubjectKinds.Contains(subjectKind))
@@ -1454,16 +1454,6 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
             EvidenceValidationSeverityDto.Warning => 1,
             _ => 2
         };
-
-    private static string RequireTrimmed(string value, string parameterName)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new ArgumentException("Evidence vault intake requires non-empty subject, channel, file, and content fields.", parameterName);
-        }
-
-        return value.Trim();
-    }
 
     private static string? FirstNonEmpty(params string?[] values)
         => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();

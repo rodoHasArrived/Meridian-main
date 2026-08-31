@@ -5,6 +5,7 @@ using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System.Net;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -13,7 +14,7 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// <summary>
 /// Middleware that enforces session-based authentication.
 /// <list type="bullet">
-///   <item>Health probes (/healthz, /readyz, /livez) are always exempt.</item>
+///   <item>Health probes (/health, /healthz, /readyz, /livez) and the Prometheus scrape path (/metrics) are always exempt.</item>
 ///   <item>The initial-account bootstrap surface (/setup/account, /api/auth/bootstrap) is exempt
 ///     while no account exists; those endpoints gate themselves on the loopback-only, one-use
 ///     MDC_BOOTSTRAP_TOKEN.</item>
@@ -45,6 +46,12 @@ public sealed class LoginSessionMiddleware
     internal const string DemoLocalOperatorPrincipalKey = "CurrentUserIsDemoLocalOperator";
 
     private const string LocalShutdownTokenHeader = "X-Meridian-Shutdown-Token";
+
+    /// <summary>
+    /// Authentication type stamped on <see cref="HttpContext.User"/> for validated login sessions,
+    /// so <c>Identity.IsAuthenticated</c> is true for exactly the principals a session established.
+    /// </summary>
+    public const string SessionAuthenticationType = "MeridianLoginSession";
 
     /// <summary>Name of the HTTP-only session cookie set after successful login.</summary>
     public const string SessionCookieName = "mdc-session";
@@ -87,7 +94,13 @@ public sealed class LoginSessionMiddleware
 
     private static readonly HashSet<string> ExemptPaths = new(StringComparer.OrdinalIgnoreCase)
     {
+        // "/health" is what the shipped docker-compose healthcheck curls and "/metrics" is what
+        // the shipped Prometheus scrape config targets; without both here every authenticated
+        // deployment reports its container unhealthy and scrapes nothing. The detailed probe
+        // ("/health/detailed") stays authenticated — only the exact liveness/scrape paths open.
+        "/health",
         "/healthz",
+        "/metrics",
         "/ready",
         "/readyz",
         "/live",
@@ -258,6 +271,22 @@ public sealed class LoginSessionMiddleware
                 }
 
                 context.Items[CurrentUserPermissionsKey] = profile.Permissions;
+
+                // Framework components see only the standard principal, never the session items:
+                // the ASP.NET rate limiter partitions the direct-lending policy by
+                // HttpContext.User.Identity?.Name, and with User left anonymous every session fell
+                // into the shared per-IP bucket. Stamp a minimal authenticated principal for
+                // validated login sessions only — API-key and optional-mode anonymous callers are
+                // not sessions and deliberately keep the default anonymous User, so nothing
+                // downstream can mistake them for a signed-in operator.
+                context.User = new ClaimsPrincipal(new ClaimsIdentity(
+                    new[]
+                    {
+                        new Claim(ClaimTypes.Name, profile.Username),
+                        new Claim(ClaimTypes.Role, profile.Role.ToString())
+                    },
+                    authenticationType: SessionAuthenticationType));
+
                 CookieCsrfProtection.EnsureCsrfCookie(
                     context,
                     CookieCsrfProtection.ShouldUseSecureCookies(context),

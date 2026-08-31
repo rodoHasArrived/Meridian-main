@@ -418,8 +418,12 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     /// attribution lets a shared execution book be read per fund and keeps a derivative
     /// position's exposure from being measured as if each contract were one share.
     /// </summary>
-    public void ApplyFill(ExecutionReport report, string? ownerAccountId, decimal contractMultiplier = 1m)
-        => ApplyFill(DefaultAccountId, report, ownerAccountId, contractMultiplier);
+    public void ApplyFill(
+        ExecutionReport report,
+        string? ownerAccountId,
+        decimal contractMultiplier = 1m,
+        bool usesFaceValuePercentageOfPar = false)
+        => ApplyFill(DefaultAccountId, report, ownerAccountId, contractMultiplier, usesFaceValuePercentageOfPar);
 
     /// <summary>
     /// Applies a fill to a specific <paramref name="accountId"/>.
@@ -429,11 +433,19 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         => ApplyFill(accountId, report, ownerAccountId: null);
 
     /// <inheritdoc cref="ApplyFill(string, ExecutionReport)"/>
+    /// <remarks>
+    /// When <paramref name="usesFaceValuePercentageOfPar"/> is set, the report's quantity is
+    /// face value and its clean price is quoted as a percentage of par. The price is converted
+    /// to dollars per unit of face before any cash, cost-basis, or ledger math runs — 100,000
+    /// face at 101.25 moves $101,250, not $10,125,000 — so the position's stored cost basis and
+    /// market price are held in per-unit dollar terms for these instruments.
+    /// </remarks>
     public void ApplyFill(
         string accountId,
         ExecutionReport report,
         string? ownerAccountId,
-        decimal contractMultiplier = 1m)
+        decimal contractMultiplier = 1m,
+        bool usesFaceValuePercentageOfPar = false)
     {
         ArgumentNullException.ThrowIfNull(report);
 
@@ -451,18 +463,35 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         // all charge cash and book to commission expense so paper economics reflect them.
         var explicitCosts = (report.Commission ?? 0m) + (report.Fees ?? 0m) + (report.SlippageCost ?? 0m);
 
+        // The report's own stamp is authoritative alongside the caller's parameter: the OMS
+        // stamps live increments, and durable session records replay those same reports after
+        // a restart, when no caller is left to supply the classification.
+        var faceValueSizing = usesFaceValuePercentageOfPar || report.UsesFaceValuePercentageOfPar;
+
+        // A percentage of par is a fraction of par: convert once here so every downstream
+        // lot, cost-basis, cash, and ledger computation shares one per-unit dollar price.
+        var fillPrice = faceValueSizing
+            ? report.FillPrice.Value / 100m
+            : report.FillPrice.Value;
+
         lock (_lock)
         {
             if (!_accounts.TryGetValue(accountId, out var account))
                 return;
 
-            ApplyFillToAccount(account, report.Symbol, signedQty, report.FillPrice.Value,
+            ApplyFillToAccount(account, report.Symbol, signedQty, fillPrice,
                 explicitCosts, report.Timestamp, report.OrderId,
-                ownerAccountId, contractMultiplier);
+                ownerAccountId, contractMultiplier, faceValueSizing);
         }
     }
 
-    /// <summary>Updates the last-known market price for <paramref name="symbol"/> across all accounts.</summary>
+    /// <summary>
+    /// Updates the last-known market price for <paramref name="symbol"/> across all accounts.
+    /// A position opened by face-value fills stores its cost basis and market price in dollars
+    /// per unit of face, so a quote still arriving as a percentage of par is normalized the
+    /// same way the fill price was — otherwise a 100,000-face position marked at 102.25 would
+    /// report ~$10.2M of market value instead of ~$102K.
+    /// </summary>
     public void UpdateMarketPrice(string symbol, decimal price)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
@@ -472,7 +501,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             foreach (var account in _accounts.Values)
             {
                 if (account.Positions.TryGetValue(symbol, out var pos))
-                    pos.MarketPrice = price;
+                    pos.MarketPrice = pos.UsesFaceValuePricing ? price / 100m : price;
             }
         }
     }
@@ -487,7 +516,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             if (_accounts.TryGetValue(accountId, out var account)
                 && account.Positions.TryGetValue(symbol, out var pos))
             {
-                pos.MarketPrice = price;
+                pos.MarketPrice = pos.UsesFaceValuePricing ? price / 100m : price;
             }
         }
     }
@@ -588,12 +617,21 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         DateTimeOffset ts,
         string orderId,
         string? ownerAccountId = null,
-        decimal contractMultiplier = 1m)
+        decimal contractMultiplier = 1m,
+        bool usesFaceValuePricing = false)
     {
         if (!account.Positions.TryGetValue(symbol, out var pos))
         {
             pos = new PaperPosition(symbol, price);
             account.Positions[symbol] = pos;
+        }
+
+        // Once a face-value fill touches the position, its cost basis and market price are
+        // held in dollars per unit of face — so later market quotes, still arriving as a
+        // percentage of par, must be normalized the same way (see UpdateMarketPrice).
+        if (usesFaceValuePricing)
+        {
+            pos.UsesFaceValuePricing = true;
         }
 
         // Attribution runs before the position math so it records the fill regardless of
@@ -1067,6 +1105,14 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     /// Non-zero only for margin accounts; zero for cash accounts and short positions.
     /// </summary>
     public decimal MarginBorrowed { get; set; }
+
+    /// <summary>
+    /// The position was opened by face-value fills whose clean prices are quoted as a
+    /// percentage of par, so <see cref="CostBasis"/> and <see cref="MarketPrice"/> are held
+    /// in dollars per unit of face and incoming market quotes must be normalized by 100
+    /// before being stored (see <c>PaperTradingPortfolio.UpdateMarketPrice</c>).
+    /// </summary>
+    public bool UsesFaceValuePricing { get; set; }
 
     /// <summary>Unsigned exposure magnitude (|qty| × price); use <see cref="SignedMarketValue"/> for equity math.</summary>
     public decimal MarketValue => Math.Abs(Quantity) * MarketPrice;

@@ -7,8 +7,10 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
 using Meridian.Strategies.Services;
+using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 
@@ -101,6 +103,94 @@ public sealed class BrokeragePortfolioSyncServiceTests
                 Arg.Any<FundAccountBrokerageSyncActivityDto>(),
                 Arg.Any<DateTimeOffset>(),
                 Arg.Any<CancellationToken>());
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task RunSyncAsync_ProviderFailureLogsDoNotContainExternalAccountIdentifier()
+    {
+        const string sensitiveIban = "GB82WEST12345698765432";
+        var root = CreateTempRoot();
+        try
+        {
+            var logger = new RecordingLogger<BrokeragePortfolioSyncService>();
+            var (service, serviceProvider) = CreateService(
+                root,
+                new EchoingAccountPortfolioAdapter("alpaca"),
+                new EchoingAccountActivityAdapter("alpaca"),
+                includeSecurityLookup: false,
+                logger: logger);
+
+            var fundAccountId = Guid.NewGuid();
+            await serviceProvider.GetRequiredService<IFundAccountService>().CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    "BRK-SENSITIVE-LOG",
+                    "Sensitive log regression",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-10),
+                    "tests"));
+
+            var status = await service.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto("alpaca", sensitiveIban, "ops-review"));
+
+            status.Warnings.Should().OnlyContain(warning =>
+                !warning.Contains(sensitiveIban, StringComparison.Ordinal));
+            logger.Entries.Should().HaveCount(2);
+            logger.Entries.Should().OnlyContain(entry =>
+                !entry.Message.Contains(sensitiveIban, StringComparison.Ordinal) &&
+                (entry.Exception == null || !entry.Exception.ToString().Contains(sensitiveIban, StringComparison.Ordinal)));
+            logger.Entries.Should().OnlyContain(entry => entry.Exception == null,
+                "provider exceptions may echo sensitive account identifiers and must not be attached to logs");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task RunSyncAsync_AccountingCaptureFailureLogDoesNotContainExternalAccountIdentifier()
+    {
+        const string sensitiveIban = "GB82WEST12345698765432";
+        var root = CreateTempRoot();
+        try
+        {
+            var logger = new RecordingLogger<BrokeragePortfolioSyncService>();
+            var capture = new EchoingAccountCaptureService(sensitiveIban);
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter("alpaca"),
+                new FixedActivityAdapter("alpaca"),
+                includeSecurityLookup: true,
+                accountingSnapshotCapture: capture,
+                logger: logger);
+            var fundAccountId = Guid.NewGuid();
+            await serviceProvider.GetRequiredService<IFundAccountService>().CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    "BRK-REDACT",
+                    "Redaction test brokerage",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-1),
+                    "tests"));
+
+            await service.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto("alpaca", sensitiveIban, "ops-review"));
+
+            var entry = logger.Entries.Should().ContainSingle().Subject;
+            entry.Message.Should().NotContain(sensitiveIban);
+            (entry.Exception?.ToString() ?? string.Empty).Should().NotContain(sensitiveIban);
+            entry.Exception.Should().BeNull(
+                "capture exceptions may echo sensitive account identifiers and must not be attached to logs");
         }
         finally
         {
@@ -1278,7 +1368,8 @@ public sealed class BrokeragePortfolioSyncServiceTests
         TimeSpan? staleAfter = null,
         IReadOnlyList<IBrokerageAccountCatalog>? catalogs = null,
         IAccountingPositionSnapshotCaptureService? accountingSnapshotCapture = null,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        ILogger<BrokeragePortfolioSyncService>? logger = null)
     {
         var services = new ServiceCollection();
         services.AddSingleton<IFundAccountService, InMemoryFundAccountService>();
@@ -1302,7 +1393,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
             portfolioAdapters: [portfolioAdapter],
             activityAdapters: [activityAdapter],
             services: serviceProvider,
-            logger: NullLogger<BrokeragePortfolioSyncService>.Instance);
+            logger: logger ?? NullLogger<BrokeragePortfolioSyncService>.Instance);
         return (syncService, serviceProvider);
     }
 
@@ -1510,6 +1601,46 @@ public sealed class BrokeragePortfolioSyncServiceTests
         {
             ct.ThrowIfCancellationRequested();
             throw new InvalidOperationException(message);
+        }
+    }
+
+    private sealed class EchoingAccountPortfolioAdapter(string providerId) : IBrokeragePortfolioSync
+    {
+        public string ProviderId { get; } = providerId;
+
+        public Task<BrokeragePortfolioSnapshotDto> GetPortfolioSnapshotAsync(
+            string externalAccountId,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            throw new InvalidOperationException($"Portfolio request for account {externalAccountId} failed.");
+        }
+    }
+
+    private sealed class EchoingAccountActivityAdapter(string providerId) : IBrokerageActivitySync
+    {
+        public string ProviderId { get; } = providerId;
+
+        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            throw new InvalidOperationException($"Activity request for account {externalAccountId} failed.");
+        }
+    }
+
+    private sealed class EchoingAccountCaptureService(string externalAccountId)
+        : IAccountingPositionSnapshotCaptureService
+    {
+        public Task<int> CaptureBrokerageSyncAsync(
+            FundAccountBrokerageSyncActivityDto projection,
+            DateTimeOffset sourceAsOfUtc,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            throw new InvalidOperationException($"Capture for account {externalAccountId} failed.");
         }
     }
 

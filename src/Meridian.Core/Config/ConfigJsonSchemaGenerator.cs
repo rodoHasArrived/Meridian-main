@@ -118,7 +118,8 @@ public sealed class ConfigJsonSchemaGenerator
                 },
                 ["GoldenCopySource"] = AllowNull(CreateTypedSchema("string")),
                 ["RequireIndependentReviewer"] = CreateTypedSchema("boolean"),
-                ["MaxBulkResolveBatch"] = CreateTypedSchema("integer")
+                ["MaxBulkResolveBatch"] = CreateTypedSchema("integer"),
+                ["RequireGovernedTermAmendments"] = CreateTypedSchema("boolean")
             }
         };
 

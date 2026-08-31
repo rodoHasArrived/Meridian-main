@@ -226,22 +226,31 @@ public sealed partial class FinancialRecordExplorerReadService
         {
             return CreateBlockedExplorer(
                 LedgerExplorerId,
-                "Ledger Explorer",
-                "Explore retained trial-balance records and their proof links.",
+                "Strategy Run Ledger Explorer",
+                "Explore the selected strategy run's simulated trial-balance records and their proof links. This is a run artifact, not the posted journal.",
                 "Strategy run read service is not registered.");
         }
 
-        var source = await TryLoadLatestRunDetailAsync(
+        // The run the caller asked for, carried on the explorer's own filter channel. Without it
+        // this surface answered for the newest run whatever the screen was showing, so an operator
+        // reading an older run's trial balance saw that run's rows under the newest run's header,
+        // proof links and scope.
+        var requestedRunId = ReadRequestedRunId(query);
+        var candidateSet = await LoadLedgerRunCandidatesAsync(readService, fundScope, requestedRunId, ct)
+            .ConfigureAwait(false);
+        var candidates = candidateSet.Candidates;
+        var source = await TryLoadLedgerRunDetailAsync(
             readService,
             fundScope,
-            detail => detail.Ledger?.TrialBalance.Count > 0,
+            candidates,
+            candidateSet.Requested,
             ct).ConfigureAwait(false);
         if (source is null)
         {
             return await CreateEmptyExplorerAsync(
                 LedgerExplorerId,
-                "Ledger Explorer",
-                "Explore retained trial-balance records and their proof links.",
+                "Strategy Run Ledger Explorer",
+                "Explore the selected strategy run's simulated trial-balance records and their proof links. This is a run artifact, not the posted journal.",
                 "No source-backed ledger projection is available.",
                 tenantId,
                 ct).ConfigureAwait(false);
@@ -255,12 +264,15 @@ public sealed partial class FinancialRecordExplorerReadService
 
         return await CreateExplorerAsync(
             LedgerExplorerId,
-            "Ledger Explorer",
-            "Explore retained trial-balance records and their proof links.",
+            "Strategy Run Ledger Explorer",
+            "Explore the selected strategy run's simulated trial-balance records and their proof links. This is a run artifact, not the posted journal.",
             $"Source-backed ledger projection from run {run.RunId}.",
-            BuildScope(run, ledger.AsOf, ledger.LedgerReference),
+            [
+                new("Ledger source", "Strategy run (simulation) — not the posted journal"),
+                .. BuildScope(run, ledger.AsOf, ledger.LedgerReference)
+            ],
             BuildLedgerSummary(run, ledger, rows.Length),
-            BuildSystemViews(LedgerExplorerId, "Trial balance", "Accounts with retained ledger balances."),
+            BuildLedgerRunViews(IncludeResolvedRun(candidates, run), run.RunId),
             BuildLedgerFilters(run, ledger),
             [
                 new("accountName", "Account", Width: 220),
@@ -628,6 +640,199 @@ public sealed partial class FinancialRecordExplorerReadService
     /// there is no tenancy to enforce and every run qualifies, which is the single-company deployment.
     /// </para>
     /// </summary>
+    /// <summary>How many runs the ledger explorer's run picker will offer. A picker, not a report.</summary>
+    private const int LedgerRunCandidateLimit = 50;
+
+    /// <summary>
+    /// The run the caller asked the ledger explorer to answer for, read from the explorer's own
+    /// <c>run</c> filter. Null when the caller named none, which means "whichever run is newest".
+    /// </summary>
+    private static string? ReadRequestedRunId(FinancialRecordExplorerQueryDto? query)
+    {
+        var requested = query?.Filters?
+            .FirstOrDefault(filter =>
+                string.Equals(filter?.FilterId, "run", StringComparison.OrdinalIgnoreCase))?
+            .Value?
+            .Trim();
+
+        return string.IsNullOrEmpty(requested) ? null : requested;
+    }
+
+    /// <summary>
+    /// One pass over the tenant's run history: the bounded picker list, and the run the caller
+    /// named when it is one they may read. <see cref="Requested"/> may also appear in
+    /// <see cref="Candidates"/> — it is only absent from the list when it sits past the bound.
+    /// </summary>
+    private readonly record struct LedgerRunCandidateSet(
+        IReadOnlyList<StrategyRunSummary> Candidates,
+        StrategyRunSummary? Requested);
+
+    /// <summary>
+    /// The runs this caller may pick between, newest first.
+    /// <para>
+    /// Read from the run summaries alone: a run that retained a ledger names it in
+    /// <see cref="StrategyRunSummary.LedgerReference"/>, so the list costs no detail reads. A run
+    /// whose ledger turns out to hold no lines still selects — the explorer's empty state says so,
+    /// which is honest, where omitting it would silently deny an operator a run they own.
+    /// </para>
+    /// <para>
+    /// A run named explicitly is carried out of this same pass even when it sits past the bound.
+    /// Resolving it separately meant reading the tenant's entire run history a second time — and
+    /// reloading the promotion lookup with it — so an older deep link grew more expensive the more
+    /// run history the tenant retained.
+    /// </para>
+    /// </summary>
+    private async Task<LedgerRunCandidateSet> LoadLedgerRunCandidatesAsync(
+        StrategyRunReadService readService,
+        FundOwnershipScope fundScope,
+        string? requestedRunId,
+        CancellationToken ct)
+    {
+        var readScope = new StrategyRunReadScope(fundScope.TenantId, fundScope.CompanyId);
+        var runs = await readService
+            .GetRunsAsync(strategyId: null, runType: null, readScope, ct)
+            .ConfigureAwait(false);
+
+        var candidates = new List<StrategyRunSummary>();
+        StrategyRunSummary? requested = null;
+        foreach (var run in runs)
+        {
+            if (string.IsNullOrWhiteSpace(run.LedgerReference))
+            {
+                continue;
+            }
+
+            var isRequested = requestedRunId is not null
+                && string.Equals(run.RunId, requestedRunId, StringComparison.OrdinalIgnoreCase);
+
+            // Past the bound only the run the caller named is still worth an ownership check.
+            // Nothing else can enter the picker, and each check is its own read.
+            if (candidates.Count >= LedgerRunCandidateLimit && !isRequested)
+            {
+                continue;
+            }
+
+            if (!await IsRunOwnedByScopeAsync(run, fundScope, ct).ConfigureAwait(false))
+            {
+                continue;
+            }
+
+            if (isRequested)
+            {
+                requested = run;
+            }
+
+            if (candidates.Count < LedgerRunCandidateLimit)
+            {
+                candidates.Add(run);
+            }
+
+            if (candidates.Count >= LedgerRunCandidateLimit && (requestedRunId is null || requested is not null))
+            {
+                break;
+            }
+        }
+
+        return new LedgerRunCandidateSet(candidates, requested);
+    }
+
+    /// <summary>
+    /// The run detail the ledger explorer renders: the requested run when it is one this caller may
+    /// read and it carries lines, and otherwise the newest run that does.
+    /// <para>
+    /// The fallback is deliberate rather than an error. A run id can arrive from a bookmarked URL
+    /// long after the run was pruned, and the alternative — refusing outright — leaves the screen
+    /// with nothing at all where a usable ledger exists. The explorer names the run it resolved in
+    /// its scope, source state and proof links, so the substitution is visible.
+    /// </para>
+    /// </summary>
+    private async Task<StrategyRunDetail?> TryLoadLedgerRunDetailAsync(
+        StrategyRunReadService readService,
+        FundOwnershipScope fundScope,
+        IReadOnlyList<StrategyRunSummary> candidates,
+        StrategyRunSummary? requestedRun,
+        CancellationToken ct)
+    {
+        var readScope = new StrategyRunReadScope(fundScope.TenantId, fundScope.CompanyId);
+        // Resolved by its own ownership check rather than by membership of the candidate list. The
+        // list is bounded so the picker stays a picker, and a tenant with more retained runs than
+        // that bound would otherwise have a perfectly valid deep link fall through to a newer run
+        // -- while the screen's own trial-balance and journal requests still used the run the URL
+        // asked for, recombining evidence from two different runs.
+        if (requestedRun is not null)
+        {
+            var detail = await readService.GetRunDetailAsync(requestedRun.RunId, readScope, ct).ConfigureAwait(false);
+            if (detail?.Ledger?.TrialBalance.Count > 0)
+            {
+                return detail;
+            }
+        }
+
+        foreach (var run in candidates)
+        {
+            var detail = await readService.GetRunDetailAsync(run.RunId, readScope, ct).ConfigureAwait(false);
+            if (detail?.Ledger?.TrialBalance.Count > 0)
+            {
+                return detail;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// The picker list, guaranteed to contain the run actually being displayed.
+    /// <para>
+    /// A run resolved from outside the bound is not in the candidate list, so no view carried its
+    /// filter and none was marked active. The client then fell back to the first candidate — a
+    /// newer run — and used that run's filter for the picker and for any link copied from it, so
+    /// an older run's rows were shown under a different run's identity. The requested run takes
+    /// the last slot rather than extending the list, keeping the picker bounded.
+    /// </para>
+    /// </summary>
+    private static IReadOnlyList<StrategyRunSummary> IncludeResolvedRun(
+        IReadOnlyList<StrategyRunSummary> candidates,
+        StrategyRunSummary resolved)
+    {
+        if (candidates.Any(run => string.Equals(run.RunId, resolved.RunId, StringComparison.OrdinalIgnoreCase)))
+        {
+            return candidates;
+        }
+
+        var bounded = candidates.Take(Math.Max(0, LedgerRunCandidateLimit - 1)).ToList();
+        bounded.Add(resolved);
+        return bounded;
+    }
+
+    /// <summary>
+    /// One system view per run the caller may pick, so the client has the actual list of runs
+    /// rather than having to infer it from the rows of whichever single run it was handed.
+    /// </summary>
+    private static IReadOnlyList<FinancialRecordExplorerSavedViewDto> BuildLedgerRunViews(
+        IReadOnlyList<StrategyRunSummary> candidates,
+        string activeRunId)
+        => candidates
+            .Select(run => new FinancialRecordExplorerSavedViewDto(
+                $"system-{LedgerExplorerId}-run-{run.RunId}",
+                DescribeLedgerRun(run),
+                $"Simulated trial balance retained by run {run.RunId}.",
+                IsSystem: true,
+                IsActive: string.Equals(run.RunId, activeRunId, StringComparison.OrdinalIgnoreCase),
+                Filters: [new("run", "Run", run.RunId, Tone: FinancialRecordExplorerTone.Info)],
+                SearchText: string.Empty,
+                ColumnIds: []))
+            .ToArray();
+
+    /// <summary>Names a run the way an operator picking between them needs to read it.</summary>
+    private static string DescribeLedgerRun(StrategyRunSummary run)
+    {
+        var name = string.IsNullOrWhiteSpace(run.StrategyName) ? run.StrategyId : run.StrategyName;
+        var started = run.StartedAt.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+        return string.IsNullOrWhiteSpace(name)
+            ? $"{run.RunId} · {started}"
+            : $"{name} · {run.Mode} · {started}";
+    }
+
     private async Task<StrategyRunDetail?> TryLoadLatestRunDetailAsync(
         StrategyRunReadService readService,
         FundOwnershipScope fundScope,
@@ -1205,7 +1410,8 @@ public sealed partial class FinancialRecordExplorerReadService
                 new("accountId", DisplayDimension(line.Dimensions?.AccountId), line.Dimensions?.AccountId ?? string.Empty),
                 new("source", ledger.LedgerReference)
             ],
-            detail);
+            detail,
+            SourceRunId: run.RunId);
     }
 
     private static void AddDimensionFilters(
@@ -1227,9 +1433,14 @@ public sealed partial class FinancialRecordExplorerReadService
         AddDimensionFilter(filters, "investor", "Investor", dimensions.Select(static value => value.InvestorId));
         AddDimensionFilter(filters, "capital-account", "Capital Account", dimensions.Select(static value => value.CapitalAccountId));
         AddDimensionFilter(filters, "instrument", "Instrument", dimensions.Select(static value => value.InstrumentId?.ToString("D")));
+        AddDimensionFilter(filters, "position", "Position", dimensions.Select(static value => value.PositionId?.ToString("D")));
         AddDimensionFilter(filters, "tax-lot", "Tax Lot", dimensions.Select(static value => value.TaxLotId));
         AddDimensionFilter(filters, "cost-center", "Cost Center", dimensions.Select(static value => value.CostCenterId));
         AddDimensionFilter(filters, "counterparty", "Counterparty", dimensions.Select(static value => value.CounterpartyId));
+        AddDimensionFilter(filters, "organization", "Organization", dimensions.Select(static value => value.OrganizationId));
+        AddDimensionFilter(filters, "customer", "Customer", dimensions.Select(static value => value.CustomerId));
+        AddDimensionFilter(filters, "vendor", "Vendor", dimensions.Select(static value => value.VendorId));
+        AddDimensionFilter(filters, "project", "Project", dimensions.Select(static value => value.ProjectId));
 
         var externalGlDimensions = dimensions
             .SelectMany(static value => value.ExternalGlDimensions)
@@ -1284,6 +1495,10 @@ public sealed partial class FinancialRecordExplorerReadService
         AddDimensionField(fields, "Tax Lot", dimensions.TaxLotId);
         AddDimensionField(fields, "Cost Center", dimensions.CostCenterId);
         AddDimensionField(fields, "Counterparty", dimensions.CounterpartyId);
+        AddDimensionField(fields, "Organization", dimensions.OrganizationId);
+        AddDimensionField(fields, "Customer", dimensions.CustomerId);
+        AddDimensionField(fields, "Vendor", dimensions.VendorId);
+        AddDimensionField(fields, "Project", dimensions.ProjectId);
 
         foreach (var pair in dimensions.ExternalGlDimensions
             .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
