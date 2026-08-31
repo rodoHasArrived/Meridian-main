@@ -8157,6 +8157,7 @@ Meridian-main
 │   │   │   │   ├── ActivityLogGridControl.xaml.cs
 │   │   │   │   ├── DenseDataGridControl.xaml
 │   │   │   │   ├── DenseDataGridControl.xaml.cs
+│   │   │   │   ├── DenseGridKeyboardCommands.cs
 │   │   │   │   ├── DiagnosticsChecklistControl.xaml
 │   │   │   │   ├── DiagnosticsChecklistControl.xaml.cs
 │   │   │   │   ├── HealthBadgeControl.xaml
