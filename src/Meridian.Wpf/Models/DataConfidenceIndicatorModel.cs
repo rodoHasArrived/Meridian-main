@@ -11,7 +11,8 @@ public enum DataConfidenceLevel
     Partial,
     Estimated,
     ProviderDegraded,
-    Missing
+    Missing,
+    Blocked
 }
 
 public enum DataConfidenceReconciliationStatus
@@ -32,6 +33,7 @@ public static class DataConfidenceLabels
     public const string Estimated = "Estimated";
     public const string ProviderDegraded = "Provider Degraded";
     public const string Missing = "Missing";
+    public const string Blocked = "Blocked";
     public const string Unknown = "Unknown";
 }
 
@@ -68,7 +70,9 @@ public sealed record DataConfidenceIndicatorModel(
         {
             EvidenceStatusDto.Stale => DataConfidenceLevel.Stale,
             EvidenceStatusDto.Missing => DataConfidenceLevel.Missing,
-            EvidenceStatusDto.Blocked => DataConfidenceLevel.Partial,
+            // Blocked evidence is a hard failure (rejected approval, failed delivery) that the
+            // workstation presents as a danger state, distinct from routine review.
+            EvidenceStatusDto.Blocked => DataConfidenceLevel.Blocked,
             EvidenceStatusDto.ReviewRequired => DataConfidenceLevel.Partial,
             _ when freshness.IsStale => DataConfidenceLevel.Stale,
             // Current is asserted only when the evidence carries an as-of instant; the DTO
@@ -205,6 +209,7 @@ public sealed record DataConfidenceIndicatorModel(
         DataConfidenceLevel.Estimated => DataConfidenceLabels.Estimated,
         DataConfidenceLevel.ProviderDegraded => DataConfidenceLabels.ProviderDegraded,
         DataConfidenceLevel.Missing => DataConfidenceLabels.Missing,
+        DataConfidenceLevel.Blocked => DataConfidenceLabels.Blocked,
         _ => DataConfidenceLabels.Unknown
     };
 
@@ -226,10 +231,11 @@ public sealed record DataConfidenceIndicatorModel(
 
     public string Tone => this switch
     {
-        // A missing value is the strongest signal; an unreconciled posture outranks any
-        // reassuring confidence level so a reconciliation exception is never visually
-        // suppressed by a "Current" badge; estimated reconciliation reads as informational.
-        { ConfidenceLevel: DataConfidenceLevel.Missing } => WorkspaceTone.Danger,
+        // Missing and blocked values are the strongest signals; an unreconciled posture
+        // outranks any reassuring confidence level so a reconciliation exception is never
+        // visually suppressed by a "Current" badge; estimated reconciliation reads as
+        // informational.
+        { ConfidenceLevel: DataConfidenceLevel.Missing or DataConfidenceLevel.Blocked } => WorkspaceTone.Danger,
         { ReconciliationStatus: DataConfidenceReconciliationStatus.Unreconciled } => WorkspaceTone.Warning,
         { ConfidenceLevel: DataConfidenceLevel.ProviderDegraded or DataConfidenceLevel.Stale or DataConfidenceLevel.Partial } => WorkspaceTone.Warning,
         { ConfidenceLevel: DataConfidenceLevel.Estimated } => WorkspaceTone.Info,
@@ -246,6 +252,7 @@ public sealed record DataConfidenceIndicatorModel(
         DataConfidenceLevel.Partial => "\uE9D5",
         DataConfidenceLevel.Estimated => "\uE9D2",
         DataConfidenceLevel.Missing => "\uE783",
+        DataConfidenceLevel.Blocked => "\uE733",
         _ => "\uE946"
     };
 
@@ -277,6 +284,7 @@ public sealed record DataConfidenceIndicatorModel(
         DataConfidenceLevel.Estimated => DataConfidenceLabels.Estimated,
         DataConfidenceLevel.ProviderDegraded => DataConfidenceLabels.ProviderDegraded,
         DataConfidenceLevel.Missing => DataConfidenceLabels.Missing,
+        DataConfidenceLevel.Blocked => DataConfidenceLabels.Blocked,
         _ => DataConfidenceLabels.Unknown
     };
 

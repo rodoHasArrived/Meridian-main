@@ -70,6 +70,23 @@ public sealed class DataConfidenceIndicatorModelTests
     }
 
     [Fact]
+    public void FromEvidence_BlockedEvidence_ReadsAsBlockedWithDangerTone()
+    {
+        // Blocked evidence is a hard failure (rejected approval, failed delivery); the badge
+        // must present it as a danger state distinct from routine review, matching the
+        // workstation's existing evidence presentation.
+        var model = DataConfidenceIndicatorModel.FromEvidence(
+            EvidenceStatusDto.Blocked,
+            new EvidenceFreshnessDto(new DateTimeOffset(2026, 6, 15, 12, 30, 0, TimeSpan.Zero), IsStale: false, Reason: null),
+            "Report delivery",
+            notes: "Delivery to the administrator failed.");
+
+        model.ConfidenceLabel.Should().Be(DataConfidenceLabels.Blocked);
+        model.Tone.Should().Be(WorkspaceTone.Danger);
+        model.AccessibleExplanation.Should().Contain(DataConfidenceLabels.Blocked);
+    }
+
+    [Fact]
     public void FromProviderStatus_WithDegradedProvider_UsesProviderDegradedLabelAndStatus()
     {
         var model = DataConfidenceIndicatorModel.FromProviderStatus(new ProviderStatusInfo
