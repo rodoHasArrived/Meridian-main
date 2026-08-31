@@ -1043,6 +1043,23 @@ differences are caught, punctuation and embedded whitespace are not. Since
 calls (`PostgresSecurityMasterStore.cs:463`), the fix is to key detection through it rather than
 through `id.Value`.
 
+**Normalizing the key is necessary and not sufficient, because detection never sees aliases at all.**
+`DetectAll` iterates `record.Identifiers` (`:31`) and `DetectForProjection` iterates
+`existing.Identifiers` / `projection.Identifiers` (`:105, :114`); the word *alias* does not appear
+anywhere in `SecurityMasterConflictDetection.cs` in this sense. Aliases live in a separate
+collection, written by `UpsertAliasAsync`, and `ResolveSecurityIdAsync` searches them as its second
+lookup (`PostgresSecurityMasterStore.cs:652-663`). So when two securities claim one value *through
+aliases* rather than canonical identifiers, resolution still returns one of them and no conflict is
+ever raised — a gap the normalization fix above does not touch.
+
+Worth stating precisely, because it is worse than the identifier case: the identifier query orders
+its result (`order by i.is_primary desc limit 1`, `:645-646`), so it is at least deterministic. The
+alias query is `limit 1` with **no `order by` whatsoever** (`:663`), so which security an ambiguous
+alias resolves to is decided by row order. The alias query does honour `is_enabled` and the
+`valid_from`/`valid_to` window, so the remediation is to bring aliases into detection on the same
+terms resolution already applies to them — enabled state and validity window included — not to
+invent new predicates.
+
 ### P2 — Identifier-ambiguity detection ignores `ValidFrom` / `ValidTo`
 
 Neither `DetectAll` nor `DetectForProjection` reads an identifier's validity window — `ValidFrom`
@@ -1051,12 +1068,23 @@ windows deliberately (`SecurityIdentifierDto.ValidFrom/ValidTo`, `SecurityIdenti
 `IHistoricalSymbolTimelineResolver`, and the `asOfUtc` parameter every resolution entry point
 carries), so this is an inconsistency inside the layer, not an absent capability.
 
-The consequence is a class of permanent false positives that operators cannot clear: a recycled
-exchange ticker — the delisted issuer's symbol reassigned to a new listing — is two securities
-claiming one `Ticker` value, and detection reports it as an open `IdentifierAmbiguity` conflict
-forever, because the fact that resolves it (non-overlapping validity windows) is never consulted.
-An institutional master accumulates these continuously. A conflict queue that cannot be driven to
-zero stops being read.
+The consequence is a class of false positives: a recycled exchange ticker — the delisted issuer's
+symbol reassigned to a new listing — is two securities claiming one `Ticker` value, and detection
+raises an `IdentifierAmbiguity` conflict, because the fact that settles it (non-overlapping validity
+windows) is never consulted. An institutional master accumulates these continuously.
+
+**These are dismissible, and an earlier draft of this item was wrong to call them permanent.** An
+operator can clear each one: `ResolveAsync` writes `Dismissed` on the deterministic conflict id, the
+open-queue read filters `where status = 'Open'` (`PostgresSecurityMasterConflictService.cs:70`), and
+re-detection inserts with `ON CONFLICT DO NOTHING` — whose comment states the intent outright, that
+it "preserves any existing resolution state so a re-detected, already-resolved conflict is never
+re-opened" (`:46-47`). So the queue *can* be driven to zero and stays there.
+
+The defect is therefore unnecessary manual adjudication, not an unclearable queue: every recycled
+ticker costs an operator a dismissal that the system already holds the facts to decide, and that
+cost recurs for every reassignment the market makes. That is a weaker claim than the draft made and
+still worth fixing — but it is a workload argument, not a correctness one, and it should be ranked
+as such.
 
 Detection should compare only identifiers whose windows overlap, at the same `asOf` the resolution
 path already takes.
@@ -1070,6 +1098,22 @@ conflict and leaves the remaining ambiguity unrecorded — the queue reads clean
 is still ambiguous. The `ConflictId` is derived from the two security ids
 (`DeterministicConflictId(kind, value, a.SecurityId, b.SecurityId)`), so the shape already supports
 emitting a conflict per claimant pair, or per claimant against a designated incumbent.
+
+**Emitting every pair is still not enough, because resolving a pair does not govern the identifier.**
+`IdentifierAmbiguity` is not field-level — `IsFieldLevelConflict` admits only `EconomicTermMismatch`
+and `CommonTermMismatch` (`PostgresSecurityMasterConflictService.cs:299-301`) — so it takes the
+non-field path, whose update writes `status`, `resolved_winner_source`, `resolved_by`,
+`resolved_reason` and `resolved_at` and nothing else (`:215-224`). Nothing expires the loser's
+identifier, reassigns it, or records an owner the read path is bound by. And `ResolveSecurityIdAsync`
+never consults the conflicts table at all: it goes to `security_identifiers`, then `security_aliases`,
+then `securities.primary_identifier_*`, each `limit 1`.
+
+So an operator can resolve every emitted pair, obtain a clean queue, and lookup still returns
+whichever row the database happens to order first — the decision they recorded has no effect on the
+thing it was recorded about. Completing this item therefore means defining how a chosen `SecurityId`
+becomes authoritative: either the resolution expires or demotes the losing claim through a governed
+amendment, or the read path consults the recorded decision. Fanning out more conflicts without that
+step multiplies the adjudication and changes nothing about what a lookup returns.
 
 ### P4 — Conflict detection loads the whole universe on every publish, and quadratically on rebuild
 
@@ -1116,37 +1160,63 @@ layer holds the invariant.
 The fix is a unique index on `(primary_identifier_kind, normalized_primary_identifier_value)`,
 which needs a dedup pass over existing rows first.
 
-### P6 — Two disjoint open-lot models, neither of which is Security-Master-keyed and par-aware
+### P6 — Three open-lot models, a partial convergence seam, and no acquisition-currency anywhere
 
 Open-lot modeling was assessed above as careful for par instruments, and `FaceValueLot` is. What
-the earlier passes did not compare is the *other* open-lot type the platform also runs:
+the earlier passes did not compare is the *other* open-lot types the platform also runs — **three,
+not two**, and an earlier draft of this item compared only two of them and drew a conclusion that
+does not survive the third:
 
-| | `FaceValueLot` (`Contracts/SecurityMaster/FaceValueLot.cs:14`) | `TaxLot` (`Meridian.Execution.Sdk/TaxLot.cs:16`) |
-| --- | --- | --- |
-| Instrument key | `Guid SecurityId` | `string Symbol` |
-| Quantity | `decimal OriginalFace` + `BookedFactor` + `ParBasis` | `long Quantity` |
-| Currency / FX at acquisition | absent | absent |
-| Amortization | straight-line and constant-yield | none |
-| Relief / depletion | none | `ITaxLotSelector` (FIFO/LIFO/HIFO/SpecificId) |
+| | `FaceValueLot` (`Contracts/SecurityMaster/FaceValueLot.cs:14`) | `LedgerTaxLot` (`Meridian.Ledger/LedgerTaxLot.cs:6`) | `TaxLot` (`Meridian.Execution.Sdk/TaxLot.cs:16`) |
+| --- | --- | --- | --- |
+| Instrument key | `Guid SecurityId` | `Guid? SecurityId` | `string Symbol` |
+| Quantity | `decimal OriginalFace` + `BookedFactor` + `ParBasis` | `decimal Quantity` + `decimal UnitCost` | `long Quantity` |
+| Currency / FX at acquisition | absent | absent | absent |
+| Amortization | straight-line and constant-yield | none | none |
+| Relief / depletion | none | `LedgerTaxLotReliefProjector` (FIFO/LIFO/HIFO/SpecificId) | `ITaxLotSelector` (FIFO/LIFO/HIFO/SpecificId) |
 
-Neither type is a superset. `FaceValueLot` carries the economics — Security Master identity, par
-basis, pool factor, ASC 310-20 constant-yield amortization — but has no relief or depletion, so a
-partial sale of a bond position has no modeled path through the tax-lot selectors. `TaxLot` has the
-relief machinery but is keyed by a **symbol string** rather than a `SecurityId`, so it cannot join
-to the Security Master at all, and its `long Quantity` cannot express fractional shares or a
-par-denominated face. Neither carries an acquisition-currency or an acquisition FX rate, so a
-multi-currency cost basis has nowhere to live in either.
+**The convergence seam already exists.** `FaceValueLotExtensions.ToLedgerTaxLot`
+(`Meridian.Application/SecurityMaster/FaceValueLotExtensions.cs:19-31`) adapts a `FaceValueLot` into
+a `LedgerTaxLot`, and does so preserving the par economics — its own comment records that
+`quantity × unitCost` reproduces `CostBasis` and `quantity × (unitCost − 100)` reproduces
+`PremiumDiscount` for any source `ParBasis`. `ToLedgerTaxLots` maps a sequence. So a partial sale of
+a bond position **does** have a modeled path to relief: `FaceValueLot` → `ToLedgerTaxLot` →
+`LedgerTaxLotReliefProjector`. An earlier draft of this item claimed no such path existed; that was
+wrong, and the error came from comparing `FaceValueLot` against Execution's `TaxLot` and stopping.
 
-For an institutional book this is the most consequential structural gap in this pass. Symbol-keyed
-lots are the specific thing corporate actions break — the subsystem models ticker changes
-(`SecurityMasterTickerChangeService`, `PermTicker`, the historical symbol timeline) precisely
-because symbols are not stable identity, and then the lot model keys on them anyway.
+The Execution model is also more contained than the draft implied. `TaxLot` and its selectors are
+referenced only within `src/Meridian.Execution.Sdk` and `src/Meridian.Execution/TaxLotAccounting` —
+a repository-wide search returns no consumer in Ledger, Reporting or Backtesting. Its symbol keying
+and `long Quantity` are real constraints on an execution-side type, not a platform-wide lot model.
 
-The shape to converge on is one lot aggregate keyed by `SecurityId`, with `decimal` quantity, an
-explicit quantity basis (units vs. face) and an acquisition currency/FX pair, over which the
-existing selectors and the existing amortization methods both operate. That is a cross-subsystem
-change (Execution, Ledger, Reporting, Backtesting all consume `TaxLot`) and belongs on a plan, not
-in a refactor.
+What survives, and is worth the item, is narrower and now applies to **all three**: none carries an
+acquisition currency or an acquisition FX rate, so a multi-currency cost basis has nowhere to live
+in any of them — including the `LedgerTaxLot` the other two would converge on. And the convergence is
+partial rather than done: the adapter runs one way, `LedgerTaxLot` has no amortization, and nothing
+requires new lot-bearing surfaces to adopt it. The question this item should put is whether to
+finish converging on the ledger seam and give it an acquisition currency, not whether to design a
+new target aggregate.
+
+Symbol-keyed lots remain the specific thing corporate actions break — the subsystem models ticker
+changes (`SecurityMasterTickerChangeService`, `PermTicker`, the historical symbol timeline)
+precisely because symbols are not stable identity. That argument holds for Execution's `TaxLot`,
+and it is the reason not to widen that type's reach; it is not an argument about the platform's
+lot modeling as a whole, because the ledger model is already `SecurityId`-keyed.
+
+An earlier draft called this "the most consequential structural gap in this pass" and proposed
+converging on a **new** lot aggregate keyed by `SecurityId` with decimal quantity, an explicit
+quantity basis and an acquisition currency/FX pair — describing that as cross-subsystem because
+"Execution, Ledger, Reporting, Backtesting all consume `TaxLot`". Both halves were wrong.
+`LedgerTaxLot` is already `SecurityId`-keyed with decimal quantity and relief, `ToLedgerTaxLot`
+already bridges the par model into it, and no consumer of Execution's `TaxLot` exists outside
+Execution. Ranking it first over-stated it, and the target it named would have rebuilt a seam that
+exists.
+
+Restated: the work is to **finish the existing convergence**, not to design a replacement — give
+`LedgerTaxLot` an acquisition currency and FX rate, decide whether an explicit quantity basis
+(units vs. face) belongs on it or stays encoded in the adapter, settle where amortization lives now
+that the par economics survive the adaptation, and make the ledger seam the one new lot-bearing
+surfaces adopt. That is a real plan item and a smaller one than the draft implied.
 
 ### Smaller notes, not filed as findings
 
