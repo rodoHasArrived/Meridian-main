@@ -442,7 +442,7 @@ public partial class DenseDataGridControl : UserControl
         {
             lines.Add(columns.Count == 0
                 ? EscapeTsvCell(Convert.ToString(selectedItem, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty)
-                : string.Join("\t", columns.Select(column => EscapeTsvCell(FormatCellValue(selectedItem, column.BindingPath)))));
+                : string.Join("\t", columns.Select(column => EscapeTsvCell(FormatCellForClipboard(selectedItem, column)))));
         }
 
         return string.Join("\n", lines);
@@ -465,32 +465,100 @@ public partial class DenseDataGridControl : UserControl
         return "\"" + value.Replace("\"", "\"\"") + "\"";
     }
 
-    private static string FormatCellValue(object row, string bindingPath)
+    private static string FormatCellForClipboard(object row, WorkstationTableColumnModel column)
+    {
+        var value = ResolveCellValue(row, column.BindingPath);
+        if (value is null)
+        {
+            return string.Empty;
+        }
+
+        if (!string.IsNullOrWhiteSpace(column.StringFormat))
+        {
+            // Match WPF Binding.StringFormat semantics: a format without a placeholder is applied
+            // as "{0:format}", so copied cells carry the same currency/percentage/date text the
+            // grid displays instead of the raw property value.
+            var format = column.StringFormat.Contains('{')
+                ? column.StringFormat
+                : "{0:" + column.StringFormat + "}";
+            return string.Format(System.Globalization.CultureInfo.CurrentCulture, format, value);
+        }
+
+        return Convert.ToString(value, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty;
+    }
+
+    private static object? ResolveCellValue(object row, string bindingPath)
     {
         if (string.IsNullOrWhiteSpace(bindingPath))
         {
-            return string.Empty;
+            return null;
         }
 
         var current = row;
         foreach (var segment in bindingPath.Split('.'))
         {
-            var property = current.GetType().GetProperty(segment, BindingFlags.Instance | BindingFlags.Public);
-            if (property is null)
+            current = ResolvePathSegment(current, segment);
+            if (current is null)
             {
-                return string.Empty;
+                return null;
             }
-
-            var value = property.GetValue(current);
-            if (value is null)
-            {
-                return string.Empty;
-            }
-
-            current = value;
         }
 
-        return Convert.ToString(current, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty;
+        return current;
+    }
+
+    /// <summary>
+    /// Resolves one binding-path segment reflectively, including WPF indexer segments such as
+    /// <c>Cells[columnId]</c> that dynamic-column tables (e.g. the Financial Record Explorer)
+    /// emit as their column binding paths.
+    /// </summary>
+    private static object? ResolvePathSegment(object current, string segment)
+    {
+        var name = segment;
+        string? indexKey = null;
+        var bracket = segment.IndexOf('[');
+        if (bracket >= 0 && segment.EndsWith("]", StringComparison.Ordinal))
+        {
+            name = segment[..bracket];
+            indexKey = segment[(bracket + 1)..^1].Trim().Trim('"', '\'');
+        }
+
+        var value = current;
+        if (name.Length > 0)
+        {
+            var property = value.GetType().GetProperty(name, BindingFlags.Instance | BindingFlags.Public);
+            if (property is null)
+            {
+                return null;
+            }
+
+            value = property.GetValue(value);
+            if (value is null)
+            {
+                return null;
+            }
+        }
+
+        return indexKey is null ? value : ResolveIndexedValue(value, indexKey);
+    }
+
+    private static object? ResolveIndexedValue(object value, string key)
+    {
+        if (value is IDictionary dictionary)
+        {
+            return dictionary.Contains(key) ? dictionary[key] : null;
+        }
+
+        if (value is IList list)
+        {
+            return int.TryParse(key, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var index)
+                && index >= 0
+                && index < list.Count
+                ? list[index]
+                : null;
+        }
+
+        return null;
     }
 
     private static bool CanExecute(ICommand? command, object? parameter)

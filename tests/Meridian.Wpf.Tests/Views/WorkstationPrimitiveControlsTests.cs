@@ -411,6 +411,41 @@ public sealed class WorkstationPrimitiveControlsTests
     }
 
     [Fact]
+    public void DenseDataGridControl_ShouldCopyFormattedAndIndexedCellValues()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var tableRows = new ObservableCollection<IndexedRowFixture>
+            {
+                new(1234.5m, new Dictionary<string, string> { ["fund"] = "Fund A" })
+            };
+            var denseGrid = new DenseDataGridControl
+            {
+                Table = new WorkstationTableModel<IndexedRowFixture>(
+                    tableRows,
+                    [new("Notional", nameof(IndexedRowFixture.Notional), 120, "N2"), new("Fund", "Cells[fund]", 100)],
+                    "Indexed table")
+            };
+
+            var window = Show(denseGrid);
+            try
+            {
+                var rowsList = denseGrid.FindName("RowsList").Should().BeOfType<ListView>().Subject;
+                rowsList.SelectedItem = tableRows[0];
+
+                var expectedNotional = string.Format(System.Globalization.CultureInfo.CurrentCulture, "{0:N2}", 1234.5m);
+                denseGrid.FormatSelectedRowsForClipboard().Should().Be($"Notional\tFund\n{expectedNotional}\tFund A");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
     public void DenseDataGridSource_ShouldUseCompactInstitutionalTableChrome()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
@@ -507,4 +542,6 @@ public sealed class WorkstationPrimitiveControlsTests
     }
 
     private sealed record RowFixture(string Name, string Status);
+
+    private sealed record IndexedRowFixture(decimal Notional, IReadOnlyDictionary<string, string> Cells);
 }
