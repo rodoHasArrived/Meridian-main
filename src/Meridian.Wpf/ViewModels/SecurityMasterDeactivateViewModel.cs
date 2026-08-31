@@ -16,6 +16,7 @@ public sealed partial class SecurityMasterDeactivateViewModel : BindableBase
     private readonly WpfServices.LoggingService _loggingService;
     private readonly WpfServices.NotificationService _notificationService;
     private readonly ISecurityMasterService _service;
+    private readonly WpfServices.IDesktopMutationAuthorization? _mutationAuthorization;
 
     // ── Bindable properties ─────────────────────────────────────────────────
     [ObservableProperty] private string _securityName = string.Empty;
@@ -38,11 +39,13 @@ public sealed partial class SecurityMasterDeactivateViewModel : BindableBase
     public SecurityMasterDeactivateViewModel(
         WpfServices.LoggingService loggingService,
         WpfServices.NotificationService notificationService,
-        ISecurityMasterService service)
+        ISecurityMasterService service,
+        WpfServices.IDesktopMutationAuthorization? mutationAuthorization = null)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
         _service = service;
+        _mutationAuthorization = mutationAuthorization;
 
         CancelCommand = new RelayCommand(() => CancelRequested?.Invoke());
     }
@@ -51,6 +54,19 @@ public sealed partial class SecurityMasterDeactivateViewModel : BindableBase
     [RelayCommand]
     private async Task ConfirmAsync(CancellationToken ct)
     {
+        // Deactivation reaches ISecurityMasterService in-process; the HTTP deactivate route requires
+        // ModifySecurityMaster, so this dialog is held to the same grant and fails closed when
+        // composed without an authorization seam.
+        if (_mutationAuthorization is null ||
+            !_mutationAuthorization.IsGranted(Meridian.Identity.Auth.UserPermission.ModifySecurityMaster))
+        {
+            const string refusal = "This operator is not permitted to modify the Security Master.";
+            StatusText = refusal;
+            _notificationService.ShowNotification("Security Master", refusal, NotificationType.Error);
+            _loggingService.LogWarning("Security Master deactivation refused: this desktop session does not hold the ModifySecurityMaster permission.");
+            return;
+        }
+
         IsBusy = true;
         StatusText = "Deactivating…";
 
