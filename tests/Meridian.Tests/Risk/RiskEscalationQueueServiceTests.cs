@@ -1,5 +1,7 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Serialization;
 using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -622,59 +624,127 @@ public sealed class RiskEscalationQueueServiceTests
         queue.TryConsumeApproval(original).Should().NotBeNull("the release under the parked id still works");
     }
 
+    private static void WriteSnapshot(RiskEscalationQueueOptions options, params RiskEscalationEntry[] entries)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(options.SnapshotPath)!);
+        File.WriteAllText(
+            options.SnapshotPath,
+            JsonSerializer.Serialize(
+                new RiskEscalationSnapshot(entries),
+                ExecutionJsonContext.Default.RiskEscalationSnapshot));
+    }
+
+    // An entry shaped like the pre-retained-submitter release code persisted it: the
+    // current Park can no longer produce this shape, so restart tests write it directly.
+    private static RiskEscalationEntry LegacyEntry(
+        string escalationId,
+        OrderRequest request,
+        string? actor,
+        RiskEscalationStatus status = RiskEscalationStatus.PendingApproval) => new(
+        escalationId,
+        request,
+        "escalated",
+        RuleName: null,
+        Actor: actor,
+        RunId: null,
+        CorrelationId: null,
+        ParkedAt: DateTimeOffset.UtcNow.AddMinutes(-5),
+        Status: status);
+
+    private static OrderRequest LegacyChainedRequest(string originEscalationId) => CreateOrder() with
+    {
+        Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            [RiskEscalationQueueService.ApprovalMetadataKey] = originEscalationId,
+            ["actor"] = "risk-officer-bob"
+        }
+    };
+
     [Fact]
     public void Restart_RebindsLegacyChainedEntriesToTheOriginalSubmitter()
     {
         var options = CreateOptions();
-        var first = CreateQueue(options);
-        var original = first.Park(CreateOrder(), "first rule", ruleName: "OrderNotional", actor: "trader-alice");
-
-        // A chained re-park persisted by the pre-retained-submitter release code: the
-        // carried token names the original park, no riskSubmitter was stamped, and the
-        // approver who released stage one was recorded as the entry's actor.
-        var legacyChained = CreateOrder(quantity: 20m) with
-        {
-            ClientOrderId = "CLIENT-CHAINED",
-            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                [RiskEscalationQueueService.ApprovalMetadataKey] = original.EscalationId,
-                ["actor"] = "risk-officer-bob"
-            }
-        };
-        var chained = first.Park(legacyChained, "second rule", ruleName: "PortfolioNotional", actor: "risk-officer-bob");
-        chained.Actor.Should().Be("risk-officer-bob", "this park reproduces the legacy mis-binding");
+        // A snapshot written by the pre-retained-submitter release code: the chained
+        // re-park carries the origin's token, no riskSubmitter, and the releasing
+        // approver recorded as the entry's actor.
+        WriteSnapshot(
+            options,
+            LegacyEntry("origin-1", CreateOrder(), actor: "trader-alice", RiskEscalationStatus.Released),
+            LegacyEntry("chained-1", LegacyChainedRequest("origin-1"), actor: "risk-officer-bob"));
 
         var restarted = CreateQueue(options);
 
-        // The reload recovers the submitter from the chain's first linked approval, so the
-        // original submitter can no longer approve or release a later stage of their own order.
-        restarted.TryGet(chained.EscalationId)!.Actor.Should().Be("trader-alice");
-        restarted.TryGet(original.EscalationId)!.Actor.Should().Be("trader-alice");
+        // The reload recovers the submitter from the chain's fingerprint-verified first
+        // linked approval, so the original submitter can no longer approve or release a
+        // later stage of their own order — and the repair is persisted into the trusted
+        // submitter channel so it survives origin trimming and later restarts.
+        var repaired = restarted.TryGet("chained-1")!;
+        repaired.Actor.Should().Be("trader-alice");
+        repaired.Request.Metadata.Should().Contain(RiskEscalationQueueService.SubmitterMetadataKey, "trader-alice");
     }
 
     [Fact]
     public void Restart_DeniesLegacyChainedEntriesWhoseOriginalParkIsGone()
     {
         var options = CreateOptions();
-        var first = CreateQueue(options);
-        var legacyChained = CreateOrder() with
-        {
-            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                [RiskEscalationQueueService.ApprovalMetadataKey] = "trimmed-original-id",
-                ["actor"] = "risk-officer-bob"
-            }
-        };
-        var chained = first.Park(legacyChained, "second rule", ruleName: "PortfolioNotional", actor: "risk-officer-bob");
+        WriteSnapshot(options, LegacyEntry("chained-1", LegacyChainedRequest("trimmed-origin"), actor: "risk-officer-bob"));
 
         var restarted = CreateQueue(options);
 
         // With the chain's original park no longer retained, the submitter identity the
         // segregation-of-duties checks must bind to cannot be recovered — fail closed with
         // an audited denial rather than leave an entry the submitter could self-release.
-        var reloaded = restarted.TryGet(chained.EscalationId)!;
+        var reloaded = restarted.TryGet("chained-1")!;
         reloaded.Status.Should().Be(RiskEscalationStatus.Denied);
         reloaded.ResolvedBy.Should().Be("system");
         restarted.GetPending().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Restart_DeniesLegacyChainedEntriesWhoseLinkedOriginDoesNotMatchTheOrder()
+    {
+        var options = CreateOptions();
+        // Clients could attach arbitrary riskEscalationId values before the migration, so
+        // a legacy order can reference someone else's first-stage escalation. The rebind
+        // must verify the link against the order fingerprint, not trust the token.
+        WriteSnapshot(
+            options,
+            LegacyEntry("origin-1", CreateOrder(quantity: 999m), actor: "trader-carol", RiskEscalationStatus.Released),
+            LegacyEntry("chained-1", LegacyChainedRequest("origin-1"), actor: "risk-officer-bob"));
+
+        var restarted = CreateQueue(options);
+
+        var reloaded = restarted.TryGet("chained-1")!;
+        reloaded.Status.Should().Be(RiskEscalationStatus.Denied,
+            "an unverifiable chain link must fail closed instead of rebinding to another submitter's identity");
+        reloaded.Actor.Should().Be("risk-officer-bob", "the unproven origin's actor must not be adopted");
+    }
+
+    [Fact]
+    public void Park_TokenCarryingResubmissionWithoutSubmitterMetadata_BindsToTheChainOrigin()
+    {
+        var queue = CreateQueue();
+        var original = queue.Park(CreateOrder(), "first rule", ruleName: "OrderNotional", actor: "trader-alice");
+        queue.Approve(original.EscalationId, actor: "risk-officer-bob", reason: "cleared");
+
+        // The approver releases by resubmitting the approved order directly through the
+        // submit path, which stamps the approver as the actor and strips any
+        // client-supplied riskSubmitter.
+        var resubmission = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = original.EscalationId,
+                ["actor"] = "risk-officer-bob"
+            }
+        };
+        queue.TryConsumeApproval(resubmission).Should().NotBeNull("the approver may release by direct resubmission");
+
+        // A later rule escalates the same in-flight submission: the new entry must bind to
+        // the original submitter recovered from the consumed approval, not the approver.
+        var second = queue.Park(resubmission, "second rule", ruleName: "PortfolioNotional", actor: "risk-officer-bob");
+
+        second.Actor.Should().Be("trader-alice");
+        second.Request.Metadata.Should().Contain(RiskEscalationQueueService.SubmitterMetadataKey, "trader-alice");
     }
 }

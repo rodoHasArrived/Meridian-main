@@ -149,19 +149,29 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        // Freeze the request: Metadata and Legs are read-only interfaces, not immutable
+        // values, so retaining the caller's references would let an in-process caller
+        // mutate the parked order after approval and have the release fingerprint —
+        // which compares against these same objects — accept the altered order.
+        var frozen = FreezeRequest(request);
+        // A chained release re-parks with metadata["actor"] naming the releasing
+        // approver; the retained submitter — stamped by the release endpoint, or
+        // recovered from the fingerprint-verified chain origin when a direct
+        // token-carrying resubmission escalated again — is the identity the
+        // segregation-of-duties checks must bind to. Persisting it on the frozen
+        // request makes the entry self-describing across restarts and origin trimming.
+        var submitter = ResolveSubmitter(frozen, actor);
+        if (!string.IsNullOrWhiteSpace(submitter) && ReadLinkedApprovalIds(frozen).Count > 0)
+        {
+            frozen = StampRetainedSubmitter(frozen, submitter);
+        }
+
         var entry = new RiskEscalationEntry(
             EscalationId: Guid.NewGuid().ToString("N"),
-            // Freeze the request: Metadata and Legs are read-only interfaces, not immutable
-            // values, so retaining the caller's references would let an in-process caller
-            // mutate the parked order after approval and have the release fingerprint —
-            // which compares against these same objects — accept the altered order.
-            Request: FreezeRequest(request),
+            Request: frozen,
             Reason: string.IsNullOrWhiteSpace(reason) ? "Escalated for governed approval." : reason,
             RuleName: ruleName,
-            // A chained release re-parks with metadata["actor"] naming the releasing
-            // approver; the retained submitter, when stamped, is the identity the
-            // segregation-of-duties checks must bind to.
-            Actor: ResolveSubmitter(request, actor),
+            Actor: submitter,
             RunId: runId,
             CorrelationId: correlationId,
             ParkedAt: DateTimeOffset.UtcNow,
@@ -640,10 +650,13 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
 
     /// <summary>
     /// The escalation's bound submitter: the retained <see cref="SubmitterMetadataKey"/>
-    /// when a chained release stamped one, otherwise the caller-supplied actor (on a
-    /// first park that is the submitting operator read from the order's own metadata).
+    /// when a chained release stamped one; otherwise, for a token-carrying request (an
+    /// approver may resubmit an approved order directly through the submit endpoint,
+    /// which stamps the approver as the actor and strips any client-supplied submitter),
+    /// the fingerprint-verified chain origin's actor; otherwise the caller-supplied
+    /// actor (on a first park that is the submitting operator).
     /// </summary>
-    private static string? ResolveSubmitter(OrderRequest request, string? actor)
+    private string? ResolveSubmitter(OrderRequest request, string? actor)
     {
         if (request.Metadata is not null &&
             request.Metadata.TryGetValue(SubmitterMetadataKey, out var submitter) &&
@@ -652,7 +665,63 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
             return submitter;
         }
 
+        if (TryRecoverChainSubmitter(request, out var chainSubmitter) &&
+            !string.IsNullOrWhiteSpace(chainSubmitter))
+        {
+            return chainSubmitter;
+        }
+
         return actor;
+    }
+
+    /// <summary>
+    /// Recovers the chain's original submitter for a request carrying approval tokens:
+    /// the first linked token names the original park, whose actor is the true
+    /// submitter. The link is trusted only when that entry is a chain root and its
+    /// order matches this request's non-release fingerprint — clients could attach
+    /// arbitrary token values to an order, so an unverified reference must never
+    /// rebind identity. Returns true when the chain is verified; <paramref name="submitter"/>
+    /// may still be blank for a chain whose original park was anonymous.
+    /// </summary>
+    private bool TryRecoverChainSubmitter(OrderRequest request, out string? submitter)
+    {
+        submitter = null;
+        var linkedApprovals = ReadLinkedApprovalIds(request);
+        if (linkedApprovals.Count == 0)
+        {
+            return false;
+        }
+
+        if (!_entries.TryGetValue(linkedApprovals[0], out var origin) ||
+            ReadLinkedApprovalIds(origin.Request).Count != 0 ||
+            !FingerprintMatches(origin.Request, request))
+        {
+            return false;
+        }
+
+        submitter = origin.Actor;
+        return true;
+    }
+
+    /// <summary>
+    /// Writes the resolved submitter into the request's trusted submitter channel so a
+    /// chained entry stays self-describing after the chain's origin is trimmed or the
+    /// process restarts. The key is release-exempt, so stamping never perturbs the
+    /// consume-time fingerprint.
+    /// </summary>
+    private static OrderRequest StampRetainedSubmitter(OrderRequest request, string submitter)
+    {
+        var stamped = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (request.Metadata is not null)
+        {
+            foreach (var (key, value) in request.Metadata)
+            {
+                stamped.TryAdd(key, value);
+            }
+        }
+
+        stamped[SubmitterMetadataKey] = submitter;
+        return request with { Metadata = stamped };
     }
 
     /// <summary>
@@ -901,15 +970,17 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
                 entry.Request.Metadata.TryGetValue(SubmitterMetadataKey, out var submitter) &&
                 !string.IsNullOrWhiteSpace(submitter))
             {
-                // Written by the current release path; Actor already holds the retained
-                // submitter.
+                // Written by the current release path (or an earlier repair); Actor
+                // already holds the retained submitter.
                 continue;
             }
 
-            if (_entries.TryGetValue(linkedApprovals[0], out var origin) &&
-                ReadLinkedApprovalIds(origin.Request).Count == 0)
+            // The link is trusted only when the referenced origin matches this order's
+            // non-release fingerprint: clients could attach arbitrary token values, so an
+            // unverified reference to someone else's escalation must never rebind identity.
+            if (TryRecoverChainSubmitter(entry.Request, out var chainSubmitter))
             {
-                if (string.IsNullOrWhiteSpace(origin.Actor))
+                if (string.IsNullOrWhiteSpace(chainSubmitter))
                 {
                     // The chain began with an anonymous submitter: there is no identity
                     // to segregate, and the retained approver-as-Actor matches what the
@@ -917,13 +988,20 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
                     continue;
                 }
 
-                _entries[escalationId] = entry with { Actor = origin.Actor };
+                // Stamp the recovered identity into the trusted submitter channel so the
+                // repair survives later origin trimming and restarts instead of decaying
+                // into an unverifiable entry that the next load would deny.
+                _entries[escalationId] = entry with
+                {
+                    Actor = chainSubmitter,
+                    Request = StampRetainedSubmitter(entry.Request, chainSubmitter)
+                };
                 repaired++;
                 _logger.LogWarning(
                     "Risk escalation {EscalationId} rebound to its original submitter from linked approval {OriginEscalationId}: "
                     + "the entry predates the retained-submitter channel and had the approving operator recorded as its actor",
                     escalationId,
-                    origin.EscalationId);
+                    linkedApprovals[0]);
                 continue;
             }
 
@@ -933,8 +1011,9 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
                 ResolvedBy = "system",
                 ResolutionReason =
                     "Denied at startup: this chained escalation predates the retained-submitter channel and its "
-                    + "original park is no longer retained, so the submitter identity the segregation-of-duties "
-                    + "checks must bind to cannot be recovered. Re-submit the order to obtain a fresh governed approval.",
+                    + "linked original park is either no longer retained or does not match this order's fingerprint, "
+                    + "so the submitter identity the segregation-of-duties checks must bind to cannot be recovered. "
+                    + "Re-submit the order to obtain a fresh governed approval.",
                 ResolvedAt = DateTimeOffset.UtcNow
             };
             _entries[escalationId] = deniedEntry;
