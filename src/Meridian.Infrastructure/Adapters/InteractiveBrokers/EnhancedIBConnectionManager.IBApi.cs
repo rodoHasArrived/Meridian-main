@@ -49,6 +49,14 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     private readonly ConcurrentDictionary<int, int> _marketRuleRequests = new();
     private readonly ConcurrentQueue<int> _depthExchangeRequests = new();
 
+    // Ids submitted through the IIBDataServiceTransport surface. IB's error() callback is one
+    // funnel for every id domain on this client -- order ids included -- so RequestRejected must
+    // forward only ids this transport actually issued for the data services, or a numeric
+    // collision with an unrelated domain would reject a live data request.
+    private readonly ConcurrentDictionary<int, byte> _dataServiceRequestIds = new();
+
+    private void TrackDataServiceRequest(int requestId) => _dataServiceRequestIds[requestId] = 0;
+
     // Performance monitoring
     private readonly ConnectionWarmUp _warmUp;
     private HeartbeatMonitor? _heartbeatMonitor;
@@ -795,6 +803,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     // -----------------------
     public void RequestScanner(int requestId, IBScannerRequest request)
     {
+        TrackDataServiceRequest(requestId);
         ThrowIfNotConnected();
         var subscription = new ScannerSubscription
         {
@@ -810,12 +819,14 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
 
     public void RequestContractDetails(int requestId, SymbolConfig contract)
     {
+        TrackDataServiceRequest(requestId);
         ThrowIfNotConnected();
         _clientSocket.reqContractDetails(requestId, ContractFactory.Create(contract));
     }
 
     public void RequestOptionChain(int requestId, SymbolConfig underlying)
     {
+        TrackDataServiceRequest(requestId);
         ThrowIfNotConnected();
         if (underlying.ConId is not int conId || conId <= 0)
             throw new ArgumentException("IB option-chain requests require the resolved underlying ConId.", nameof(underlying));
@@ -824,6 +835,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
 
     public void RequestHistoricalNews(int requestId, int conId, string providerCodes, DateTimeOffset start, DateTimeOffset end, int maximumResults)
     {
+        TrackDataServiceRequest(requestId);
         ThrowIfNotConnected();
         _clientSocket.reqHistoricalNews(requestId, conId, providerCodes,
             start.UtcDateTime.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture),
@@ -832,36 +844,42 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
 
     public void RequestNewsArticle(int requestId, string providerCode, string articleId)
     {
+        TrackDataServiceRequest(requestId);
         ThrowIfNotConnected();
         _clientSocket.reqNewsArticle(requestId, providerCode, articleId, []);
     }
 
     public void RequestFundamentals(int requestId, SymbolConfig contract, string reportType)
     {
+        TrackDataServiceRequest(requestId);
         ThrowIfNotConnected();
         _clientSocket.reqFundamentalData(requestId, ContractFactory.Create(contract), reportType, []);
     }
 
     public void RequestDividendEarnings(int requestId, SymbolConfig contract)
     {
+        TrackDataServiceRequest(requestId);
         ThrowIfNotConnected();
         _clientSocket.reqMktData(requestId, ContractFactory.Create(contract), "456,258", false, false, []);
     }
 
     public void RequestTickByTick(int requestId, SymbolConfig contract, string tickType, int numberOfTicks, bool ignoreSize)
     {
+        TrackDataServiceRequest(requestId);
         ThrowIfNotConnected();
         _clientSocket.reqTickByTickData(requestId, ContractFactory.Create(contract), tickType, numberOfTicks, ignoreSize);
     }
 
     public void RequestPnl(int requestId, string account, string? modelCode)
     {
+        TrackDataServiceRequest(requestId);
         ThrowIfNotConnected();
         _clientSocket.reqPnL(requestId, account, modelCode ?? string.Empty);
     }
 
     public void RequestMarketRule(int requestId, int marketRuleId)
     {
+        TrackDataServiceRequest(requestId);
         ThrowIfNotConnected();
         _marketRuleRequests[marketRuleId] = requestId;
         _clientSocket.reqMarketRule(marketRuleId);
@@ -869,6 +887,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
 
     public void RequestDepthExchanges(int requestId)
     {
+        TrackDataServiceRequest(requestId);
         ThrowIfNotConnected();
         _depthExchangeRequests.Enqueue(requestId);
         _clientSocket.reqMktDepthExchanges();
@@ -877,6 +896,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     /// <summary>Starts a correlated, five-second real-time bar stream.</summary>
     public void RequestRealTimeBars(int requestId, IBRealTimeBarRequest request)
     {
+        TrackDataServiceRequest(requestId);
         ThrowIfNotConnected();
 #if IBAPI_VENDOR
         _clientSocket.reqRealTimeBars(requestId, ContractFactory.Create(request.Contract), 5, request.WhatToShow, request.UseRegularTradingHours, []);
@@ -888,6 +908,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     /// <summary>Requests a bounded historical-tick page with explicit time bounds.</summary>
     public void RequestHistoricalTicks(int requestId, IBHistoricalTickRequest request)
     {
+        TrackDataServiceRequest(requestId);
         ThrowIfNotConnected();
 #if IBAPI_VENDOR
         _clientSocket.reqHistoricalTicks(requestId, ContractFactory.Create(request.Contract),
@@ -902,6 +923,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     /// <summary>Cancels the associated vendor stream when its request lifetime ends.</summary>
     public void CancelDataRequest(int requestId, string capability)
     {
+        _dataServiceRequestIds.TryRemove(requestId, out _);
         if (!IsConnected) return;
         switch (capability)
         {
@@ -1018,7 +1040,11 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         }
 
         ErrorOccurred?.Invoke(this, new IBApiError(id, errorCode, errorMsg, advancedOrderRejectJson));
-        if (id > 0)
+        // Forward a rejection only for ids the data-service transport issued: error() also carries
+        // order and other non-data-service ids, and a colliding id must not reject an unrelated
+        // data request. Membership is tested without removal because IB routes non-terminal
+        // per-request notices through error() as well.
+        if (id > 0 && _dataServiceRequestIds.ContainsKey(id))
             RequestRejected?.Invoke(this, (id, errorCode.ToString(CultureInfo.InvariantCulture), errorMsg));
     }
 
@@ -1154,6 +1180,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public void contractDetailsEnd(int reqId)
     {
         RecordMessageReceived();
+        _dataServiceRequestIds.TryRemove(reqId, out _);
         RequestCompleted?.Invoke(this, reqId);
     }
 
@@ -1170,6 +1197,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public void securityDefinitionOptionParameterEnd(int reqId)
     {
         RecordMessageReceived();
+        _dataServiceRequestIds.TryRemove(reqId, out _);
         RequestCompleted?.Invoke(this, reqId);
     }
 
@@ -1185,6 +1213,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public void scannerDataEnd(int reqId)
     {
         RecordMessageReceived();
+        _dataServiceRequestIds.TryRemove(reqId, out _);
         RequestCompleted?.Invoke(this, reqId);
     }
 
@@ -1219,6 +1248,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public void historicalNewsEnd(int requestId, bool hasMore)
     {
         RecordMessageReceived();
+        _dataServiceRequestIds.TryRemove(requestId, out _);
         RequestCompleted?.Invoke(this, requestId);
     }
 
