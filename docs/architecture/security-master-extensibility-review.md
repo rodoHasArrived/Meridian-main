@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-28 (scheduled institutional-requirements pass; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
+**Reviewed:** 2026-08-28 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -71,6 +71,14 @@ risks that compound as new asset classes land.
 > N2. N4, N5 and N6 stay open. See
 > [Resolution pass — 2026-08-26](#resolution-pass--2026-08-26), which also records the intended
 > behaviour deltas.
+>
+> **Scheduled institutional-requirements pass, 2026-08-27.** Re-read against `d3793290`. The verdict
+> stands. This pass concentrated on the identity/resolution layer previously assessed as "the
+> strongest part of the subsystem" and found that its *detection* half does not hold the guarantees
+> its *resolution* half does: the identifier-ambiguity detector compares raw values and ignores
+> validity windows, and primary-identifier uniqueness is enforced on the un-normalized column. Five
+> items are filed. See
+> [Scheduled institutional-requirements pass — 2026-08-27](#scheduled-institutional-requirements-pass--2026-08-27).
 >
 > **Scheduled institutional-requirements pass, 2026-08-28.** Re-read against `d3793290`, then
 > extended under review.
@@ -997,6 +1005,194 @@ These are intended and stated rather than incidental:
 - The three long-standing deferred items — relational projections for the private/alternative
   classes, valid-time term history, and codec generation from `SecurityAssetTermsSchema` — are
   unchanged.
+
+---
+
+## Scheduled institutional-requirements pass — 2026-08-27
+
+Re-read against `d3793290`. No code changed; no tests run. Every claim cites the file and line it
+was read from.
+
+### Re-verified as still open
+
+N4 (`ValidateAll()` cannot fire its own overlap rule), N5 (the per-pack contract schema is one
+shared prose object), and N6 (projection fan-out) are unchanged. The three long-standing deferred
+items — relational projections for the private/alternative classes, valid-time term history, and
+codec generation from `SecurityAssetTermsSchema` — are unchanged.
+
+The catalog-vs-projection gap remains a *declared* gap rather than drift: 11 classes are projected
+and 15 are named in `IntentionallyUnprojectedAssetClasses`, and
+`ProjectionCoverage_PartitionsTheCatalogIntoProjectedAndDeclaredGaps`
+(`SecurityAssetTermsSchemaTests.cs:107-119`) fails if a new catalog class appears in neither set.
+That guard is working as designed and this pass does not re-file it.
+
+### P1 — Identifier-ambiguity detection compares raw values; resolution compares normalized ones
+
+`SecurityMasterConflictDetection` keys every identifier on the **raw** stored value —
+`var key = $"{id.Kind}|{id.Value}"` at `SecurityMasterConflictDetection.cs:33` (`DetectAll`) and
+`:107, :116` (`DetectForProjection`) — under an `OrdinalIgnoreCase` comparer. The store's
+resolution path does the opposite: `PostgresSecurityMasterStore.GetByIdentifierAsync` matches on
+`normalized_identifier_value` / `normalized_alias_value` / `normalized_primary_identifier_value`
+(`PostgresSecurityMasterStore.cs:738, :751, :763, :770`), the columns migration 016 exists to
+populate.
+
+The two halves therefore disagree on what "the same identifier" means. `US0378331005` and
+`US-0378331005` resolve to the same security on lookup and are never flagged as a conflict; case
+differences are caught, punctuation and embedded whitespace are not. Since
+`SecurityIdentifierNormalizer.GetOrComputeNormalizedValue` is already the function the write path
+calls (`PostgresSecurityMasterStore.cs:463`), the fix is to key detection through it rather than
+through `id.Value`.
+
+### P2 — Identifier-ambiguity detection ignores `ValidFrom` / `ValidTo`
+
+Neither `DetectAll` nor `DetectForProjection` reads an identifier's validity window — `ValidFrom`
+and `ValidTo` appear nowhere in `SecurityMasterConflictDetection.cs`. The subsystem models those
+windows deliberately (`SecurityIdentifierDto.ValidFrom/ValidTo`, `SecurityIdentifier.isActiveAt`,
+`IHistoricalSymbolTimelineResolver`, and the `asOfUtc` parameter every resolution entry point
+carries), so this is an inconsistency inside the layer, not an absent capability.
+
+The consequence is a class of permanent false positives that operators cannot clear: a recycled
+exchange ticker — the delisted issuer's symbol reassigned to a new listing — is two securities
+claiming one `Ticker` value, and detection reports it as an open `IdentifierAmbiguity` conflict
+forever, because the fact that resolves it (non-overlapping validity windows) is never consulted.
+An institutional master accumulates these continuously. A conflict queue that cannot be driven to
+zero stops being read.
+
+Detection should compare only identifiers whose windows overlap, at the same `asOf` the resolution
+path already takes.
+
+### P3 — With three or more claimants, only the first pair is reported
+
+`DetectAll` collects every security claiming an identifier, then emits one conflict from
+`distinctSecurities[0]` and `distinctSecurities[1]` (`SecurityMasterConflictDetection.cs:66-67`).
+A third and subsequent claimant is silently dropped. Resolving the reported pair closes the
+conflict and leaves the remaining ambiguity unrecorded — the queue reads clean while the identifier
+is still ambiguous. The `ConflictId` is derived from the two security ids
+(`DeterministicConflictId(kind, value, a.SecurityId, b.SecurityId)`), so the shape already supports
+emitting a conflict per claimant pair, or per claimant against a designated incumbent.
+
+### P4 — Conflict detection loads the whole universe on every publish, and quadratically on rebuild
+
+`PostgresSecurityMasterConflictService.RecordConflictsForProjectionAsync` opens with
+`await _store.LoadAllAsync(ct)` (`PostgresSecurityMasterConflictService.cs:491`; the in-memory
+service does the same at `SecurityMasterConflictService.cs:142`) and hands the full projection list
+to `DetectForProjection`. That method needs exactly one question answered — *does any other
+security already claim one of these identifiers* — which
+`ix_security_identifiers_normalized_lookup` (migration 016) indexes precisely.
+
+Two paths reach it:
+
+- **Per publish.** `SecurityMasterService.TryRecordConflictsAsync`
+  (`SecurityMasterService.cs:392`) calls it on every create and amend, so each governed write
+  materializes every security row, its `jsonb` terms, its identifiers and its aliases.
+- **Per record during rebuild.** `SecurityMasterRebuildOrchestrator.TryRecordConflictsAsync`
+  loops the rebuilt set and calls it once per record
+  (`Rebuild/SecurityMasterRebuildOrchestrator.cs:154-162`), so a full projection rebuild is
+  **O(N²)** full-table loads.
+
+At the few-thousand-instrument scale this is invisible. At the 10⁵–10⁶ instruments an institutional
+master carries, the per-publish cost makes governed writes scale with the size of the book, and the
+rebuild path — the operation you reach for precisely when the master is large and something has
+gone wrong — becomes the slowest thing in the system. Replacing the universe scan with an indexed
+`by-normalized-identifier` store query closes P1 and P4 together, since the index is on the
+normalized column P1 asks detection to use.
+
+### P5 — Primary-identifier uniqueness is enforced on the un-normalized column
+
+`ux_securities_primary_identifier` is unique on `(primary_identifier_kind,
+primary_identifier_value)` — the raw value (`Migrations/001_security_master.sql:42`). Migration 016
+added `normalized_primary_identifier_value`, made it `not null`, and indexed it — but
+**non-uniquely** (`Migrations/016_security_master_normalized_identifier_lookup.sql`, the
+`ix_securities_normalized_primary_identifier` index). No later migration adds a unique index on the
+normalized column; `grep -n unique Migrations/*.sql` returns only the raw-value index.
+
+So the one database-level uniqueness guarantee the identity layer has is stated over the form the
+system does *not* resolve on. Two securities whose primary ISINs differ only in punctuation or case
+both insert, and both then resolve from the same normalized lookup — with the second row's
+`GetByIdentifierAsync` result decided by row order rather than by a constraint. This is the
+structural counterpart of P1: raw uniqueness plus normalized resolution plus raw detection means no
+layer holds the invariant.
+
+The fix is a unique index on `(primary_identifier_kind, normalized_primary_identifier_value)`,
+which needs a dedup pass over existing rows first.
+
+### P6 — Two disjoint open-lot models, neither of which is Security-Master-keyed and par-aware
+
+Open-lot modeling was assessed above as careful for par instruments, and `FaceValueLot` is. What
+the earlier passes did not compare is the *other* open-lot type the platform also runs:
+
+| | `FaceValueLot` (`Contracts/SecurityMaster/FaceValueLot.cs:14`) | `TaxLot` (`Meridian.Execution.Sdk/TaxLot.cs:16`) |
+| --- | --- | --- |
+| Instrument key | `Guid SecurityId` | `string Symbol` |
+| Quantity | `decimal OriginalFace` + `BookedFactor` + `ParBasis` | `long Quantity` |
+| Currency / FX at acquisition | absent | absent |
+| Amortization | straight-line and constant-yield | none |
+| Relief / depletion | none | `ITaxLotSelector` (FIFO/LIFO/HIFO/SpecificId) |
+
+Neither type is a superset. `FaceValueLot` carries the economics — Security Master identity, par
+basis, pool factor, ASC 310-20 constant-yield amortization — but has no relief or depletion, so a
+partial sale of a bond position has no modeled path through the tax-lot selectors. `TaxLot` has the
+relief machinery but is keyed by a **symbol string** rather than a `SecurityId`, so it cannot join
+to the Security Master at all, and its `long Quantity` cannot express fractional shares or a
+par-denominated face. Neither carries an acquisition-currency or an acquisition FX rate, so a
+multi-currency cost basis has nowhere to live in either.
+
+For an institutional book this is the most consequential structural gap in this pass. Symbol-keyed
+lots are the specific thing corporate actions break — the subsystem models ticker changes
+(`SecurityMasterTickerChangeService`, `PermTicker`, the historical symbol timeline) precisely
+because symbols are not stable identity, and then the lot model keys on them anyway.
+
+The shape to converge on is one lot aggregate keyed by `SecurityId`, with `decimal` quantity, an
+explicit quantity basis (units vs. face) and an acquisition currency/FX pair, over which the
+existing selectors and the existing amortization methods both operate. That is a cross-subsystem
+change (Execution, Ledger, Reporting, Backtesting all consume `TaxLot`) and belongs on a plan, not
+in a refactor.
+
+### Smaller notes, not filed as findings
+
+- **The profile-backed asset-class list now has three copies.** The catalog's
+  `SupportsProfileBackedTerms` flag is authoritative and pinned by
+  `SecurityAssetClassCatalogTests.SupportsProfileBackedTerms_CoversExactlyTheProfileBackedClasses`.
+  `SecurityMasterMapping.cs:654` and `SecurityAssetTermsFieldEditValidator.cs:106` read it
+  correctly. Two do not: `JsonValidationReader.SupportsProfileBackedTerms`
+  (`Validation/AssetClassValidatorRegistry.cs:1028-1035`) and
+  `SecurityMasterService.IsProfileBackedCustomAsset` (`SecurityMasterService.cs:961-970`) each
+  hard-code the same seven strings. The 2026-08-24 pass noted the second under
+  ["Noted, not re-filed"](#noted-not-re-filed); the first is new. The
+  `SecurityAssetClassParityGuardTests` added in the 2026-08-26 resolution guard the validator
+  registry's *asset-class coverage* but not this flag, and
+  `SupportsIdentifierOnlyImport_MatchesExactlyTheClassesWithNoRequiredTerms` in that same file is a
+  ready-made template for the guard this needs. Cheap to close; kept inside finding 4's registry
+  cost rather than filed separately.
+- **The reciprocal principal-schedule guard triggers on `par` by literal name.**
+  `EnsurePrincipalScheduleFitsEffectiveTermsAsync` resolves the effective face through
+  `StructuredCashFlowTermsResolver`, which aliases the face across
+  `["par", "originalFace", "notional", "principal", "principalAmount"]` — but the *reciprocal
+  trigger* set is the three literal paths `assetSpecificTerms.par`, `.issueDate` and `.maturity`
+  (`SecurityMasterWorkbenchCommandService.cs:1115-1118`). Editing a `StructuredCredit` record's
+  `originalFace` therefore does not revalidate its effective principal schedule against the new
+  face, though editing a `Bond`'s `par` does. Deriving the trigger set from the resolver's alias
+  arrays would make the guard as class-agnostic as the check it performs already is.
+- **Term-key aliases are declared twice.** `SecurityAssetTermField.Aliases` carries per-field
+  legacy spellings (`SecurityAssetTermsSchema.cs:40-53`) and `StructuredCashFlowTermsResolver`
+  keeps its own private alias arrays (`:14-60`). They already differ — the schema declares
+  `dayCount` with alias `dayCountConvention`; the resolver additionally accepts `dayCountBasis`.
+  Neither is wrong today, but two alias tables for one vocabulary is the same drift shape the terms
+  schema was introduced to end.
+
+### Priorities from this pass
+
+1. **P1 + P4 together** — key identifier-ambiguity detection through
+   `SecurityIdentifierNormalizer` and serve it from an indexed store query instead of
+   `LoadAllAsync`. One change closes a correctness gap and an O(N²) rebuild path, and the index it
+   needs already exists.
+2. **P2** — window-filter detection so recycled tickers stop generating unclearable conflicts. The
+   conflict queue is only useful if it can reach zero.
+3. **P5** — unique index on the normalized primary identifier, after a dedup pass. This is what
+   makes P1's guarantee hold at the database rather than by convention.
+4. **P6** — plan (do not refactor) the convergence of `TaxLot` and `FaceValueLot` onto one
+   `SecurityId`-keyed, `decimal`-quantity, currency-aware lot aggregate.
+5. **P3** and the profile-backed parity guard — both small, both mechanical.
 
 ---
 
