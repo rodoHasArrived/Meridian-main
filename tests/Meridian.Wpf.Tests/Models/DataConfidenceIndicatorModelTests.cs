@@ -169,6 +169,30 @@ public sealed class DataConfidenceIndicatorModelTests
     }
 
     [Fact]
+    public void FromProviderStatus_RecoveringSubscriptionsWithoutFailures_ReadAsDegraded()
+    {
+        // The contract reports Recovering separately from Failed: a connected provider with
+        // recent traffic but a stream mid-recovery must not present its data as Current.
+        var model = DataConfidenceIndicatorModel.FromProviderStatus(
+            new Meridian.Contracts.Api.ProviderStatusResponse(
+                ProviderId: "polygon",
+                Name: "Polygon.io",
+                ProviderType: "MarketData",
+                IsConnected: true,
+                IsEnabled: true,
+                Priority: 1,
+                ActiveSubscriptions: 3,
+                LastHeartbeat: null,
+                ConnectionState: "Streaming",
+                LastMessageReceivedAt: DateTimeOffset.UtcNow,
+                FailedSubscriptions: 0,
+                RecoveringSubscriptions: 1));
+
+        model.ConfidenceLabel.Should().Be(DataConfidenceLabels.ProviderDegraded);
+        model.Tone.Should().Be(WorkspaceTone.Warning);
+    }
+
+    [Fact]
     public void FromEvidence_BlankSource_UsesTheSameFallbackInLabelAndExplanation()
     {
         var model = DataConfidenceIndicatorModel.FromEvidence(

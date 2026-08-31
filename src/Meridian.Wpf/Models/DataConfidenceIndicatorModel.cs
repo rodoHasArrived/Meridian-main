@@ -144,11 +144,14 @@ public sealed record DataConfidenceIndicatorModel(
         // The route deliberately emits IsConnected = null with ConnectionState "unknown"
         // when it has neither runtime diagnostics nor stored metrics — health that is
         // merely unavailable must not read as a degradation verdict.
+        // The contract reports Recovering separately from Failed: a stream mid-recovery is
+        // not yet delivering trustworthy data, so it degrades the badge the same way.
         var degraded = provider.IsConnected is false
             || !provider.IsEnabled
             || ContainsAny(status, "degraded", "unhealthy", "error", "failed", "blocked", "disconnected")
             || !string.IsNullOrWhiteSpace(provider.LastFailureKind)
-            || provider.FailedSubscriptions is > 0;
+            || provider.FailedSubscriptions is > 0
+            || provider.RecoveringSubscriptions is > 0;
         // Only genuine received-at fields feed the freshness instant: the route populates
         // LastHeartbeat from a stored metrics-snapshot timestamp when it has no live
         // diagnostics, and a snapshot time is not evidence that data arrived.
