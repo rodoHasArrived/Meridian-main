@@ -137,7 +137,10 @@ public sealed record DataConfidenceIndicatorModel(
         var status = Normalize(
             provider.ConnectionState,
             provider.IsConnected switch { true => "Connected", false => "Disconnected", null => null });
-        var degraded = provider.IsConnected is not true
+        // The route deliberately emits IsConnected = null with ConnectionState "unknown"
+        // when it has neither runtime diagnostics nor stored metrics — health that is
+        // merely unavailable must not read as a degradation verdict.
+        var degraded = provider.IsConnected is false
             || !provider.IsEnabled
             || ContainsAny(status, "degraded", "unhealthy", "error", "failed", "blocked", "disconnected")
             || !string.IsNullOrWhiteSpace(provider.LastFailureKind)

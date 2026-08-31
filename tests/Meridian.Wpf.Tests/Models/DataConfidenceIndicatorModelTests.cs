@@ -169,6 +169,28 @@ public sealed class DataConfidenceIndicatorModelTests
     }
 
     [Fact]
+    public void FromProviderStatus_UnknownConnectivityFromTheSharedContract_IsNotDegraded()
+    {
+        // The route deliberately emits IsConnected = null with ConnectionState "unknown"
+        // when it has neither runtime diagnostics nor stored metrics; unavailable health
+        // must stay Unknown rather than read as Provider Degraded.
+        var model = DataConfidenceIndicatorModel.FromProviderStatus(
+            new Meridian.Contracts.Api.ProviderStatusResponse(
+                ProviderId: "polygon",
+                Name: "Polygon.io",
+                ProviderType: "MarketData",
+                IsConnected: null,
+                IsEnabled: true,
+                Priority: 1,
+                ActiveSubscriptions: 0,
+                LastHeartbeat: null,
+                ConnectionState: "unknown"));
+
+        model.ConfidenceLabel.Should().Be(DataConfidenceLabels.Unknown);
+        model.ProviderLabel.Should().Be("Polygon.io · unknown");
+    }
+
+    [Fact]
     public void FromProviderStatus_ExplanationUsesTheNameFallbackWhenDisplayNameIsBlank()
     {
         var model = DataConfidenceIndicatorModel.FromProviderStatus(new ProviderStatusInfo
