@@ -2,11 +2,114 @@
 
 # `security-master-contracts` data objects - page 3 of 4
 
-Objects 161-240 of 244. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 257. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityAssetPackDescriptor["SecurityAssetPackDescriptor"] {
+        +AssetPackAccountingRules AccountingRules
+        +AssetPackAdmissionPolicy AdmissionPolicy
+        +IReadOnlyList~string~ AssetClasses
+        +AssetPackAutomationDepth AutomationDepth
+        +AssetPackContractSchema ContractSchema
+        +string DisplayName
+        +string LedgerExtensionPolicy
+        +IReadOnlyList~AssetPackLifecycleCoverage~ LifecycleCoverage
+        +IReadOnlyList~string~ LifecycleEvents
+        +string PackId
+        +IReadOnlyList~string~ PlannedAssetClasses
+        +AssetPackReportingTaxonomy ReportingTaxonomy
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetPackRegistry["SecurityAssetPackRegistry"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileAccountingImpactHintDto["SecurityAssetProfileAccountingImpactHintDto"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileApprovalMetadataDto["SecurityAssetProfileApprovalMetadataDto"] {
+        +string ApprovalReference
+        +DateTimeOffset ApprovedAtUtc
+        +string ApprovedBy
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileApprovalRequestDto["SecurityAssetProfileApprovalRequestDto"] {
+        +string ApprovalReference
+        +string? CorrelationId
+        +DateOnly EffectiveFrom
+        +string ProfileId
+        +string Rationale
+        +string? RequestedBy
+        +int Version
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileDateOrderRuleDto["SecurityAssetProfileDateOrderRuleDto"] {
+        +string Code
+        +string EndFieldKey
+        +string Message
+        +string StartFieldKey
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto["SecurityAssetProfileDefinitionDto"] {
+        +IReadOnlyList~SecurityAssetProfileAccountingImpactHintDto~ AccountingImpactHints
+        +string? ApprovalReference
+        +DateTimeOffset ApprovedAtUtc
+        +string ApprovedBy
+        +string Category
+        +string ChangeReason
+        +IReadOnlyList~SecurityAssetProfileDateOrderRuleDto~ DateOrderRules
+        +DateOnly EffectiveFrom
+        +DateOnly? EffectiveTo
+        +IReadOnlyList~SecurityAssetProfileFieldDefinitionDto~ Fields
+        +IReadOnlyList~SecurityAssetProfileIdentifierPreferenceDto~ IdentifierPreferences
+        +IReadOnlyList~string~ LifecycleStates
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileDraftRequestDto["SecurityAssetProfileDraftRequestDto"] {
+        +IReadOnlyList~SecurityAssetProfileAccountingImpactHintDto~ AccountingImpactHints
+        +string Category
+        +string? CorrelationId
+        +IReadOnlyList~SecurityAssetProfileDateOrderRuleDto~ DateOrderRules
+        +IReadOnlyList~SecurityAssetProfileFieldDefinitionDto~ Fields
+        +IReadOnlyList~SecurityAssetProfileIdentifierPreferenceDto~ IdentifierPreferences
+        +IReadOnlyList~string~ LifecycleStates
+        +string Name
+        +string ProfileId
+        +string Rationale
+        +string? RequestedBy
+        +string? SubType
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileFieldDefinitionDto["SecurityAssetProfileFieldDefinitionDto"] {
+        +IReadOnlyList~string~ AllowedValues
+        +string? Description
+        +SecurityAssetProfileFieldTypeDto FieldType
+        +bool IsProjected
+        +bool IsRequired
+        +bool IsSearchable
+        +string Key
+        +string Label
+        +decimal? MaxValue
+        +decimal? MinValue
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileFieldTypeDto["SecurityAssetProfileFieldTypeDto"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceAuditEventDto["SecurityAssetProfileGovernanceAuditEventDto"] {
+        +string Actor
+        +string? ApprovalReference
+        +string AuditId
+        +string CorrelationId
+        +string EventType
+        +DateTimeOffset OccurredAtUtc
+        +int? PreviousVersion
+        +string ProfileId
+        +string Rationale
+        +SecurityAssetProfileStatusDto Status
+        +int Version
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceResultDto["SecurityAssetProfileGovernanceResultDto"] {
+        +SecurityAssetProfileGovernanceAuditEventDto AuditEvent
+        +SecurityAssetProfileLineageDto Lineage
+        +SecurityAssetProfileDefinitionDto Profile
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileIdentifierPreferenceDto["SecurityAssetProfileIdentifierPreferenceDto"] {
+        +bool IsRequiredForClose
+        +SecurityIdentifierKind Kind
+        +string Reason
+    }
     class Meridian_Contracts_SecurityMaster_SecurityAssetProfileLineageDto["SecurityAssetProfileLineageDto"] {
         +IReadOnlyList~SecurityAssetProfileGovernanceAuditEventDto~ AuditEvents
         +string ProfileId
@@ -432,100 +535,31 @@ classDiagram
         +CashFlowLegRateKind RateKind
         +decimal? SpreadBps
     }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule["StructuredCashFlowLegSchedule"] {
-        +CashFlowLegDirection? Direction
-        +string LegId
-        +CashFlowLegRateKind RateKind
-        +IReadOnlyList~StructuredCashFlowScheduleEntry~ Schedule
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto["StructuredCashFlowProjectionDto"] {
-        +DateTimeOffset AsOf
-        +IReadOnlyList~StructuredFactorScheduleEntry~? FactorSchedule
-        +IReadOnlyList~StructuredCashFlowLegSchedule~? LegSchedules
-        +StructuredCashFlowScenario Scenario
-        +IReadOnlyList~StructuredCashFlowScheduleEntry~ Schedule
-        +Guid SecurityId
-        +StructuredCashFlowSourceKind SourceKind
-        +DateTimeOffset? SourceLastUpdatedUtc
-        +StructuredCashFlowStaleness Staleness
-        +StructuredCashFlowTerms? TermsUsed
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowScenario["StructuredCashFlowScenario"] {
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry["StructuredCashFlowScheduleEntry"] {
-        +decimal Factor
-        +decimal InterestAmount
-        +DateTimeOffset PeriodDate
-        +decimal PrincipalAmount
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowSourceKind["StructuredCashFlowSourceKind"] {
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowStaleness["StructuredCashFlowStaleness"] {
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms["StructuredCashFlowTerms"] {
-        +decimal? CouponRate
-        +decimal? CurrentFactor
-        +string? DayCountConvention
-        +StructuredCashFlowTerms Empty
-        +IReadOnlyList~StructuredFactorScheduleEntry~ FactorSchedule
-        +decimal? InflationBaseIndexValue
-        +string? InflationIndex
-        +decimal? InflationIndexRatio
-        +DateOnly? IssueDate
-        +IReadOnlyList~StructuredCashFlowLeg~? Legs
-        +DateOnly? MaturityDate
-        +string? PaymentFrequency
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowTermsResolver["StructuredCashFlowTermsResolver"] {
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry["StructuredFactorScheduleEntry"] {
-        +DateOnly AsOfDate
-        +decimal Factor
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredPrincipalScheduleEntry["StructuredPrincipalScheduleEntry"] {
-        +decimal Amount
-        +DateOnly PaymentDate
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredStepCouponEntry["StructuredStepCouponEntry"] {
-        +DateOnly EffectiveDate
-        +decimal Rate
-    }
-    class Meridian_Contracts_SecurityMaster_TradingParametersDto["TradingParametersDto"] {
-        +DateTimeOffset AsOf
-        +decimal? CircuitBreakerThresholdPct
-        +decimal? ContractMultiplier
-        +bool? IsEasyToBorrow
-        +bool? IsFractionable
-        +bool? IsMarginable
-        +bool? IsShortable
-        +decimal? LotSize
-        +decimal? MarginRequirementPct
-        +decimal? MinimumOrderSize
-        +decimal? MinimumTradeIncrement
-        +decimal? PriceIncrement
-    }
-    class Meridian_Contracts_SecurityMaster_TransitionCorporateActionCaseRequestDto["TransitionCorporateActionCaseRequestDto"] {
-        +string Actor
-        +string? AssignedTo
-        +CorporateActionCaseTransitionAuthorityDto? Authority
-        +string? BlockedReason
-        +Guid CaseId
-        +string CompanyId
-        +string? CorrelationId
-        +long ExpectedVersion
-        +string IdempotencyKey
-        +bool PolicyOverride
-        +string Reason
-        +string TenantId
-    }
+    Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileAccountingImpactHintDto
+    Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileDateOrderRuleDto
+    Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileFieldDefinitionDto
+    Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileIdentifierPreferenceDto
+    Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileStatusDto
+    Meridian_Contracts_SecurityMaster_SecurityAssetProfileDraftRequestDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileAccountingImpactHintDto
+    Meridian_Contracts_SecurityMaster_SecurityAssetProfileDraftRequestDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileDateOrderRuleDto
+    Meridian_Contracts_SecurityMaster_SecurityAssetProfileDraftRequestDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileFieldDefinitionDto
+    Meridian_Contracts_SecurityMaster_SecurityAssetProfileDraftRequestDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileIdentifierPreferenceDto
+    Meridian_Contracts_SecurityMaster_SecurityAssetProfileFieldDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileFieldTypeDto
+    Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceAuditEventDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileStatusDto
+    Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceResultDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto
+    Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceResultDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceAuditEventDto
+    Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceResultDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileLineageDto
+    Meridian_Contracts_SecurityMaster_SecurityAssetProfileIdentifierPreferenceDto --> Meridian_Contracts_SecurityMaster_SecurityIdentifierKind
+    Meridian_Contracts_SecurityMaster_SecurityAssetProfileLineageDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto
+    Meridian_Contracts_SecurityMaster_SecurityAssetProfileLineageDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceAuditEventDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionCandidateDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionReadinessDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionCandidateDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalSeverityDto
+    Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileApprovalMetadataDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto --> Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsUpcasterPipeline --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsV0ToCurrentUpcaster --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
     Meridian_Contracts_SecurityMaster_SecurityAssetTermField --> Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldType
-    Meridian_Contracts_SecurityMaster_SecurityCashFlowSourceDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowSourceKind
     Meridian_Contracts_SecurityMaster_SecurityDetailDto --> Meridian_Contracts_SecurityMaster_SecurityIdentifierDto
     Meridian_Contracts_SecurityMaster_SecurityDetailDto --> Meridian_Contracts_SecurityMaster_SecurityStatusDto
     Meridian_Contracts_SecurityMaster_SecurityEconomicDefinitionRecord --> Meridian_Contracts_SecurityMaster_SecurityIdentifierDto
@@ -556,16 +590,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotRequestDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerLine
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPostingResult --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScenario
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowSourceKind
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowStaleness
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredPrincipalScheduleEntry
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredStepCouponEntry
 ```

@@ -206,6 +206,23 @@ public sealed class NullCorporateActionOperationsService : ICorporateActionOpera
         NotConfigured<CorporateActionCaseTransitionResultDto>();
 }
 
+public sealed class NullCorporateActionCaseAccountingService : ICorporateActionCaseAccountingService
+{
+    private static Task<T> NotConfigured<T>() =>
+        Task.FromException<T>(new CorporateActionOperationException(
+            CorporateActionProblemCodes.PersistenceUnavailable,
+            "Security Master corporate-action persistence is not configured."));
+
+    public Task<CorporateActionAccountingProjectionMutationResultDto> AttachProjectionAsync(AttachCorporateActionAccountingProjectionRequestDto request, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionAccountingProjectionMutationResultDto>();
+
+    public Task<CorporateActionAccountingApprovalResultDto> ApproveAsync(ApproveCorporateActionCaseAccountingRequestDto request, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionAccountingApprovalResultDto>();
+
+    public Task<CorporateActionAccountingPostingResultDto> PostAsync(PostCorporateActionCaseAccountingRequestDto request, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionAccountingPostingResultDto>();
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Conflict service — returns empty lists (no conflicts to show when not configured)
 // ──────────────────────────────────────────────────────────────────────────────

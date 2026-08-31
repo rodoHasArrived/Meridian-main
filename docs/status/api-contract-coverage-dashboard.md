@@ -11,10 +11,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 20.9% |
-| Endpoint coverage | 32.2% |
+| Weighted score | 20.8% |
+| Endpoint coverage | 32.1% |
 | Workstation contract coverage | 3.9% |
-| Endpoints documented | 207 / 642 |
+| Endpoints documented | 207 / 645 |
 | Workstation contracts documented | 36 / 917 |
 
 ## Endpoint Coverage
@@ -531,7 +531,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/security-master/conflicts` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:712` |
 | `POST` | `/api/security-master/conflicts/{conflictId:guid}/resolve` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:725` |
 | `GET` | `/api/security-master/corporate-actions/cases` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:331` |
-| `GET` | `/api/security-master/corporate-actions/cases/{caseId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:364` |
+| `GET` | `/api/security-master/corporate-actions/cases/{caseId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:366` |
+| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-approval` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:630` |
+| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-posting` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:654` |
+| `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-projection` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:606` |
 | `GET` | `/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:402` |
 | `POST` | `/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:533` |
 | `GET` | `/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:455` |
@@ -1588,7 +1591,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-- Document or intentionally suppress 435 mapped endpoint gap(s).
+- Document or intentionally suppress 438 mapped endpoint gap(s).
 - Document or intentionally suppress 881 workstation contract gap(s).
 
 ---
