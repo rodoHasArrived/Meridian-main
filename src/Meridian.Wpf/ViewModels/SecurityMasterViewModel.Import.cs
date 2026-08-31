@@ -17,6 +17,9 @@ public sealed partial class SecurityMasterViewModel
     // ── Bulk Import ──────────────────────────────────────────────────────────
     private async Task OnImportFromFile(CancellationToken ct = default)
     {
+        if (!EnsureCanModifySecurityMaster())
+            return;
+
         if (!TryAuthorizeSecurityMasterMutation("import securities", out _))
             return;
 

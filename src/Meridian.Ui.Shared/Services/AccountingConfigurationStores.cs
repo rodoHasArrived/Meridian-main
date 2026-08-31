@@ -58,6 +58,29 @@ public sealed class InMemoryAccountingActionAuditStore :
     public Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(auditEvent);
+
+        // Idempotent on the id and content-validating, as IAccountingActionAuditStore requires and
+        // as the file and PostgreSQL stores already were. This one appended unconditionally, so
+        // recovery -- which replays the append to establish whether the declared event is the one
+        // already retained -- duplicated it instead, and then cleared the marker over a history
+        // carrying the same event twice (Codex review finding on PR #2871).
+        var retained = _events.FirstOrDefault(item => item.AuditEventId == auditEvent.AuditEventId);
+        if (retained is not null)
+        {
+            if (!string.Equals(
+                    AccountingAuditChain.ComputePayloadHash(retained),
+                    AccountingAuditChain.ComputePayloadHash(auditEvent),
+                    StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    $"Audit event '{auditEvent.AuditEventId.ToString("D", CultureInfo.InvariantCulture)}' "
+                    + "is already retained with different content.");
+            }
+
+            return Task.CompletedTask;
+        }
+
         _events.Add(auditEvent);
         return Task.CompletedTask;
     }
@@ -196,6 +219,13 @@ public sealed class FileAccountingConfigurationStore :
     /// held outside the snapshot, because this store replaces the whole document on every write: a
     /// head stored inside it would be removed by the same replacement that removed the events, and
     /// what remained would verify perfectly. See <see cref="FileAccountingAuditChainAnchor"/>.</para>
+    /// <para>Idempotent on <see cref="AccountingActionAuditEventDto.AuditEventId"/>: an append whose
+    /// event is already retained does nothing. This is not a convenience. The chain requires each
+    /// link to claim a distinct event, so a second append of one id produces a history that can
+    /// never verify again — and a retry is not hypothetical, it is what
+    /// <c>RecoverPendingAuditAsync</c> does after a crash between the mutation and its audit. That
+    /// recovery has a pre-check of its own, but it asks a filtered read, so a normalization or scope
+    /// difference makes it miss; only the store sees the whole history.</para>
     /// </remarks>
     /// <exception cref="AccountingAuditChainIntegrityException">The retained chain does not verify.</exception>
     public async Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default)
@@ -204,7 +234,7 @@ public sealed class FileAccountingConfigurationStore :
 
         var normalized = auditEvent with { FundProfileId = NormalizeOptional(auditEvent.FundProfileId) };
 
-        await UpdateSnapshotAsync<AccountingAuditChainLink>(
+        await UpdateSnapshotAsync<AccountingAuditChainLink?>(
             async (snapshot, token) =>
             {
                 // Read the head under the store gate: reading it beforehand would race this store's
@@ -235,6 +265,34 @@ public sealed class FileAccountingConfigurationStore :
                     throw new AccountingAuditChainIntegrityException(verification);
                 }
 
+                // Deliberately after the verification above, matching the PostgreSQL posture. A
+                // repeat is a no-op, but reporting success for one on a chain that does not verify
+                // would answer "appended" about a store whose history is broken -- and this method
+                // fails closed, which has to mean before every outcome, not just the writing ones.
+                var retained = snapshot.AuditEvents
+                    .FirstOrDefault(item => item.AuditEventId == normalized.AuditEventId);
+                if (retained is not null)
+                {
+                    // Same id, same content: a repeat of an append that already landed. Returning
+                    // the snapshot unchanged leaves the chain exactly as it was, which is what a
+                    // retry of a completed operation should do.
+                    if (string.Equals(
+                            AccountingAuditChain.ComputePayloadHash(retained),
+                            AccountingAuditChain.ComputePayloadHash(normalized),
+                            StringComparison.Ordinal))
+                    {
+                        return (snapshot, null);
+                    }
+
+                    // Same id, different content: two distinct events claiming one identity. Both
+                    // available answers are bad -- appending breaks verification permanently, and
+                    // dropping it loses an audit record -- so neither is taken silently.
+                    throw new InvalidOperationException(
+                        $"Audit event '{normalized.AuditEventId.ToString("D", CultureInfo.InvariantCulture)}' "
+                        + "is already retained with different content. Appending it would leave two links "
+                        + "claiming one event and the chain could never verify again.");
+                }
+
                 // First chained append on a history that predates chaining: record how many events
                 // are outside the chain rather than letting them look protected by it.
                 var chain = snapshot.AuditChain
@@ -256,10 +314,30 @@ public sealed class FileAccountingConfigurationStore :
                     },
                     link);
             },
-            beforeWrite: async (_, link, token) =>
-                await _auditChainAnchor.DeclareAsync(link.Sequence, link.EntryHash, token).ConfigureAwait(false),
-            afterWrite: async (_, link, token) =>
-                await _auditChainAnchor.CommitAsync(link.Sequence, link.EntryHash, token).ConfigureAwait(false),
+            // The genesis boundary rides both anchor writes. It is snapshot-resident everywhere
+            // else, and the retained-event count is checked against it, so without a copy outside
+            // the snapshot an actor could raise it to cover an injected unlinked event.
+            beforeWrite: async (written, link, token) =>
+                await _auditChainAnchor.DeclareAsync(
+                    link!.Sequence,
+                    link.EntryHash,
+                    written.AuditChain!.GenesisSequence,
+                    written.AuditChain.PreChainEventCount,
+                    token).ConfigureAwait(false),
+            afterWrite: async (written, link, token) =>
+                await _auditChainAnchor.CommitAsync(
+                    link!.Sequence,
+                    link.EntryHash,
+                    written.AuditChain!.GenesisSequence,
+                    written.AuditChain.PreChainEventCount,
+                    token).ConfigureAwait(false),
+            // A repeat produces no link, and must therefore write nothing at all. Returning the
+            // unchanged snapshot through the write path would replace the retained file with this
+            // cycle's copy of it -- losing any event another process appended in between, while the
+            // external anchor stayed ahead of the chain. Skipping the write also skips the anchor
+            // hooks, which is right on its own terms: there is no sequence to declare or commit, and
+            // declaring one would advance the journal past a slot no event occupies.
+            shouldWrite: link => link is not null,
             ct).ConfigureAwait(false);
     }
 

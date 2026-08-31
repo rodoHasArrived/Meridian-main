@@ -1,5 +1,7 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Serialization;
 using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -620,5 +622,323 @@ public sealed class RiskEscalationQueueServiceTests
 
         var original = WithApprovalToken(CreateOrder() with { ClientOrderId = "CLIENT-PARKED" }, parked.EscalationId);
         queue.TryConsumeApproval(original).Should().NotBeNull("the release under the parked id still works");
+    }
+
+    private static void WriteSnapshot(RiskEscalationQueueOptions options, params RiskEscalationEntry[] entries)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(options.SnapshotPath)!);
+        File.WriteAllText(
+            options.SnapshotPath,
+            JsonSerializer.Serialize(
+                new RiskEscalationSnapshot(entries),
+                ExecutionJsonContext.Default.RiskEscalationSnapshot));
+    }
+
+    // An entry shaped like the pre-retained-submitter release code persisted it: the
+    // current Park can no longer produce this shape, so restart tests write it directly.
+    private static RiskEscalationEntry LegacyEntry(
+        string escalationId,
+        OrderRequest request,
+        string? actor,
+        RiskEscalationStatus status = RiskEscalationStatus.PendingApproval,
+        double ageMinutes = 5) => new(
+        escalationId,
+        request,
+        "escalated",
+        RuleName: null,
+        Actor: actor,
+        RunId: null,
+        CorrelationId: null,
+        ParkedAt: DateTimeOffset.UtcNow.AddMinutes(-ageMinutes),
+        Status: status);
+
+    private static OrderRequest LegacyChainedRequest(string originEscalationId) => CreateOrder() with
+    {
+        Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            [RiskEscalationQueueService.ApprovalMetadataKey] = originEscalationId,
+            ["actor"] = "risk-officer-bob"
+        }
+    };
+
+    [Fact]
+    public void Restart_DeniesProvenancelessLegacyChainedEntries()
+    {
+        var options = CreateOptions();
+        // A pre-migration chained entry cannot prove its identity binding: metadata was
+        // unreserved and token lists caller-supplied, so structural inference over them
+        // is forgeable. Fail closed; the desk re-submits for a cleanly bound chain.
+        WriteSnapshot(
+            options,
+            LegacyEntry("origin-1", CreateOrder(), actor: "trader-alice", RiskEscalationStatus.Released, ageMinutes: 30),
+            LegacyEntry("chained-1", LegacyChainedRequest("origin-1"), actor: "risk-officer-bob", ageMinutes: 20));
+
+        var restarted = CreateQueue(options);
+
+        var reloaded = restarted.TryGet("chained-1")!;
+        reloaded.Status.Should().Be(RiskEscalationStatus.Denied);
+        reloaded.ResolvedBy.Should().Be("system");
+    }
+
+    [Fact]
+    public void Restart_DeniesLegacyChainedEntriesWhoseOriginalParkIsGone()
+    {
+        var options = CreateOptions();
+        WriteSnapshot(options, LegacyEntry("chained-1", LegacyChainedRequest("trimmed-origin"), actor: "risk-officer-bob"));
+
+        var restarted = CreateQueue(options);
+
+        // With the chain's original park no longer retained, the submitter identity the
+        // segregation-of-duties checks must bind to cannot be recovered — fail closed with
+        // an audited denial rather than leave an entry the submitter could self-release.
+        var reloaded = restarted.TryGet("chained-1")!;
+        reloaded.Status.Should().Be(RiskEscalationStatus.Denied);
+        reloaded.ResolvedBy.Should().Be("system");
+        restarted.GetPending().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Restart_DeniesLegacyChainedEntriesWhoseLinkedOriginDoesNotMatchTheOrder()
+    {
+        var options = CreateOptions();
+        // Clients could attach arbitrary riskEscalationId values before the migration, so
+        // a legacy order can reference someone else's first-stage escalation. The rebind
+        // must verify the link against the order fingerprint, not trust the token.
+        WriteSnapshot(
+            options,
+            LegacyEntry("origin-1", CreateOrder(quantity: 999m), actor: "trader-carol", RiskEscalationStatus.Released),
+            LegacyEntry("chained-1", LegacyChainedRequest("origin-1"), actor: "risk-officer-bob"));
+
+        var restarted = CreateQueue(options);
+
+        var reloaded = restarted.TryGet("chained-1")!;
+        reloaded.Status.Should().Be(RiskEscalationStatus.Denied,
+            "an unverifiable chain link must fail closed instead of rebinding to another submitter's identity");
+        reloaded.Actor.Should().Be("risk-officer-bob", "the unproven origin's actor must not be adopted");
+    }
+
+    [Fact]
+    public void Restart_KeepsProvenanceMarkedChainedEntriesWhoseOriginWasTrimmed()
+    {
+        var options = CreateOptions();
+        var chained = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = "trimmed-origin",
+                [RiskEscalationQueueService.SubmitterMetadataKey] = "trader-alice",
+                ["actor"] = "risk-officer-bob"
+            }
+        };
+        WriteSnapshot(
+            options,
+            LegacyEntry("chained-1", chained, actor: "trader-alice") with { SubmitterProvenance = "parked" });
+
+        var restarted = CreateQueue(options);
+
+        // The provenance marker is a server-written record field a client could never
+        // plant, so the binding survives origin trimming across restarts.
+        var reloaded = restarted.TryGet("chained-1")!;
+        reloaded.Status.Should().Be(RiskEscalationStatus.PendingApproval);
+        reloaded.Actor.Should().Be("trader-alice");
+    }
+
+    [Fact]
+    public void Restart_DeniesOriginlessLegacyEntriesEvenWhenTheirSubmitterClaimMatchesTheActor()
+    {
+        var options = CreateOptions();
+        // A pre-migration client could plant riskSubmitter naming the operator expected to
+        // approve stage one; the old release path would then record that same approver as
+        // the chained entry's actor. Two mutually untrusted legacy values agreeing is not
+        // corroboration — without server-written provenance or a verifiable chain, deny.
+        var chained = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = "trimmed-origin",
+                [RiskEscalationQueueService.SubmitterMetadataKey] = "risk-officer-bob",
+                ["actor"] = "risk-officer-bob"
+            }
+        };
+        WriteSnapshot(options, LegacyEntry("chained-1", chained, actor: "risk-officer-bob"));
+
+        var restarted = CreateQueue(options);
+
+        restarted.TryGet("chained-1")!.Status.Should().Be(RiskEscalationStatus.Denied);
+    }
+
+    [Fact]
+    public void Restart_DeniesLegacyChainedEntriesWhoseStampedSubmitterContradictsTheActor()
+    {
+        var options = CreateOptions();
+        // riskSubmitter was not a reserved key before the migration, so a legacy client
+        // could have planted one; a value that does not corroborate the recorded actor is
+        // an unverifiable identity claim, not evidence of the trusted release path.
+        var chained = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = "trimmed-origin",
+                [RiskEscalationQueueService.SubmitterMetadataKey] = "someone-else",
+                ["actor"] = "risk-officer-bob"
+            }
+        };
+        WriteSnapshot(options, LegacyEntry("chained-1", chained, actor: "risk-officer-bob"));
+
+        var restarted = CreateQueue(options);
+
+        restarted.TryGet("chained-1")!.Status.Should().Be(RiskEscalationStatus.Denied);
+    }
+
+    [Fact]
+    public void Park_TokenCarryingResubmissionWithoutSubmitterMetadata_BindsToTheChainOrigin()
+    {
+        var queue = CreateQueue();
+        var original = queue.Park(CreateOrder(), "first rule", ruleName: "OrderNotional", actor: "trader-alice");
+        queue.Approve(original.EscalationId, actor: "risk-officer-bob", reason: "cleared");
+
+        // The approver releases by resubmitting the approved order directly through the
+        // submit path, which stamps the approver as the actor and strips any
+        // client-supplied riskSubmitter.
+        var resubmission = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = original.EscalationId,
+                ["actor"] = "risk-officer-bob"
+            }
+        };
+        var consumed = queue.TryConsumeApproval(resubmission);
+        consumed.Should().NotBeNull("the approver may release by direct resubmission");
+
+        // A later rule escalates the same in-flight submission: the new entry must bind to
+        // the original submitter taken from the consumed approval, not the approver.
+        var second = queue.Park(
+            resubmission,
+            "second rule",
+            ruleName: "PortfolioNotional",
+            actor: "risk-officer-bob",
+            consumedApprovals: [consumed!]);
+
+        second.Actor.Should().Be("trader-alice");
+        second.Request.Metadata.Should().Contain(RiskEscalationQueueService.SubmitterMetadataKey, "trader-alice");
+    }
+
+    [Fact]
+    public void Park_DoesNotAdoptASubmitterFromAnUnconsumedHistoricalToken()
+    {
+        var queue = CreateQueue();
+        // Alice's order was parked, approved, and released by Bob long ago; terminal
+        // client order ids are reusable, so its entry stays retained.
+        var historical = queue.Park(CreateOrder(), "first rule", ruleName: "OrderNotional", actor: "trader-alice");
+        queue.Approve(historical.EscalationId, actor: "risk-officer-bob", reason: "cleared");
+        var historicalRelease = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = historical.EscalationId,
+                ["actor"] = "risk-officer-bob"
+            }
+        };
+        queue.TryConsumeApproval(historicalRelease).Should().NotBeNull();
+
+        // Carol now submits an identical order carrying the retained historical token.
+        // Nothing is consumed (the approval is already spent), so the escalation must
+        // bind to Carol — adopting the historical submitter would let Carol approve her
+        // own escalation.
+        var replay = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = historical.EscalationId,
+                ["actor"] = "trader-carol"
+            }
+        };
+        queue.TryConsumeApproval(replay).Should().BeNull("the approval was already consumed");
+
+        var parked = queue.Park(replay, "first rule", ruleName: "OrderNotional", actor: "trader-carol");
+
+        parked.Actor.Should().Be("trader-carol");
+    }
+
+    [Fact]
+    public void Park_RecoversTheSubmitterFromAnyValidTokenAmongBogusOnes()
+    {
+        var queue = CreateQueue();
+        var original = queue.Park(CreateOrder(), "first rule", ruleName: "OrderNotional", actor: "trader-alice");
+        queue.Approve(original.EscalationId, actor: "risk-officer-bob", reason: "cleared");
+
+        // Token order is caller-supplied: a bogus value ahead of the real consumed token
+        // must not defeat recovery when consumption itself scans every token.
+        var resubmission = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = "bogus-token," + original.EscalationId,
+                ["actor"] = "risk-officer-bob"
+            }
+        };
+        var consumed = queue.TryConsumeApproval(resubmission);
+        consumed.Should().NotBeNull();
+
+        var second = queue.Park(
+            resubmission,
+            "second rule",
+            ruleName: "PortfolioNotional",
+            actor: "risk-officer-bob",
+            consumedApprovals: [consumed!]);
+
+        second.Actor.Should().Be("trader-alice");
+        second.Request.Metadata.Should().Contain(RiskEscalationQueueService.SubmitterMetadataKey, "trader-alice");
+    }
+
+    [Fact]
+    public void Park_LaterStageResubmissionWithOnlyThatStagesToken_StillBindsToTheOriginalSubmitter()
+    {
+        var queue = CreateQueue();
+        var first = queue.Park(CreateOrder(), "first rule", ruleName: "OrderNotional", actor: "trader-alice");
+        queue.Approve(first.EscalationId, actor: "risk-officer-bob", reason: "cleared");
+
+        var stageOneRelease = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = first.EscalationId,
+                ["actor"] = "risk-officer-bob"
+            }
+        };
+        var stageOneConsumed = queue.TryConsumeApproval(stageOneRelease);
+        stageOneConsumed.Should().NotBeNull();
+        var second = queue.Park(
+            stageOneRelease,
+            "second rule",
+            ruleName: "PortfolioNotional",
+            actor: "risk-officer-bob",
+            consumedApprovals: [stageOneConsumed!]);
+        second.Actor.Should().Be("trader-alice");
+
+        queue.Approve(second.EscalationId, actor: "risk-officer-carol", reason: "cleared");
+
+        // The stage-two approver resubmits directly carrying only that stage's token, so
+        // the chain link points at an intermediate entry, not the root.
+        var stageTwoRelease = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = second.EscalationId,
+                ["actor"] = "risk-officer-carol"
+            }
+        };
+        var stageTwoConsumed = queue.TryConsumeApproval(stageTwoRelease);
+        stageTwoConsumed.Should().NotBeNull();
+        var third = queue.Park(
+            stageTwoRelease,
+            "third rule",
+            ruleName: "DeskReview",
+            actor: "risk-officer-carol",
+            consumedApprovals: [stageTwoConsumed!]);
+
+        third.Actor.Should().Be("trader-alice");
+        third.Request.Metadata.Should().Contain(RiskEscalationQueueService.SubmitterMetadataKey, "trader-alice");
     }
 }

@@ -18,6 +18,7 @@ public sealed partial class SecurityMasterDeactivateViewModel : BindableBase
     private readonly WpfServices.NotificationService _notificationService;
     private readonly ISecurityMasterService _service;
     private readonly WpfServices.IDesktopAuthorizationSource? _operatorContext;
+    private readonly WpfServices.IDesktopMutationAuthorization? _mutationAuthorization;
 
     // ── Bindable properties ─────────────────────────────────────────────────
     [ObservableProperty] private string _securityName = string.Empty;
@@ -41,23 +42,34 @@ public sealed partial class SecurityMasterDeactivateViewModel : BindableBase
         WpfServices.LoggingService loggingService,
         WpfServices.NotificationService notificationService,
         ISecurityMasterService service,
-        WpfServices.IDesktopAuthorizationSource? operatorContext = null)
+        WpfServices.IDesktopAuthorizationSource? operatorContext = null,
+        WpfServices.IDesktopMutationAuthorization? mutationAuthorization = null)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
         _service = service;
         _operatorContext = operatorContext;
+        _mutationAuthorization = mutationAuthorization;
 
         CancelCommand = new RelayCommand(() => CancelRequested?.Invoke());
     }
 
     // ── Deactivation logic ──────────────────────────────────────────────────
     private bool CanConfirm()
-        => !IsBusy && TryAuthorizeMutation(out _);
+        => !IsBusy && IsMutationPermitted() && TryAuthorizeMutation(out _);
 
     [RelayCommand(CanExecute = nameof(CanConfirm))]
     private async Task ConfirmAsync(CancellationToken ct)
     {
+        // Deactivation reaches ISecurityMasterService in-process; the HTTP deactivate route requires
+        // ModifySecurityMaster, so this dialog is held to the same grant and fails closed when
+        // composed without any authorization seam.
+        if (!IsMutationPermitted())
+        {
+            ReportForbiddenMutation();
+            return;
+        }
+
         if (!TryAuthorizeMutation(out var actor))
         {
             ReportUnauthorizedWrite();
@@ -102,16 +114,57 @@ public sealed partial class SecurityMasterDeactivateViewModel : BindableBase
         }
     }
 
+    /// <summary>
+    /// Whether the host posture permits a Security Master write at all. When the mutation seam is
+    /// composed it decides (so a credential-free host whose MDC_ANONYMOUS_ROLE names a read-only
+    /// role refuses); when only the operator seam is composed, <see cref="TryAuthorizeMutation"/>
+    /// carries the whole decision; with neither seam nobody checked the write is allowed, so it
+    /// refuses rather than defaulting open.
+    /// </summary>
+    private bool IsMutationPermitted()
+    {
+        if (_mutationAuthorization is not null)
+        {
+            return _mutationAuthorization.IsGranted(UserPermission.ModifySecurityMaster);
+        }
+
+        return _operatorContext is not null;
+    }
+
+    /// <summary>
+    /// Resolves the operator to record the deactivation against. When an operator seam is composed
+    /// the write must be attributable to an authorized operator; a dialog composed with only the
+    /// posture seam keeps the pre-existing shell attribution for that composition.
+    /// </summary>
     private bool TryAuthorizeMutation(out string actor)
     {
-        if (_operatorContext is not null &&
-            _operatorContext.TryAuthorize(UserPermission.ModifySecurityMaster, out actor))
+        if (_operatorContext is not null)
         {
+            if (_operatorContext.TryAuthorize(UserPermission.ModifySecurityMaster, out actor))
+            {
+                return true;
+            }
+
+            actor = string.Empty;
+            return false;
+        }
+
+        if (_mutationAuthorization is not null)
+        {
+            actor = "User";
             return true;
         }
 
         actor = string.Empty;
         return false;
+    }
+
+    private void ReportForbiddenMutation()
+    {
+        const string refusal = "This operator is not permitted to modify the Security Master.";
+        StatusText = refusal;
+        _notificationService.ShowNotification("Security Master", refusal, NotificationType.Error);
+        _loggingService.LogWarning("Security Master deactivation refused: this desktop session does not hold the ModifySecurityMaster permission.");
     }
 
     private void ReportUnauthorizedWrite()

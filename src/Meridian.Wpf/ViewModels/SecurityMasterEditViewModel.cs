@@ -23,6 +23,7 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
     private readonly WpfServices.NotificationService _notificationService;
     private readonly ISecurityMasterService _service;
     private readonly WpfServices.IDesktopAuthorizationSource? _operatorContext;
+    private readonly WpfServices.IDesktopMutationAuthorization? _mutationAuthorization;
     private JsonElement _assetSpecificTerms;
 
     private static readonly IReadOnlyList<string> AssetClassesList = SecurityAssetClassCatalog.AssetClasses;
@@ -93,12 +94,14 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
         WpfServices.LoggingService loggingService,
         WpfServices.NotificationService notificationService,
         ISecurityMasterService service,
-        WpfServices.IDesktopAuthorizationSource? operatorContext = null)
+        WpfServices.IDesktopAuthorizationSource? operatorContext = null,
+        WpfServices.IDesktopMutationAuthorization? mutationAuthorization = null)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
         _service = service;
         _operatorContext = operatorContext;
+        _mutationAuthorization = mutationAuthorization;
         _assetSpecificTerms = CreateAssetSpecificTermsTemplate("Equity");
 
         CancelCommand = new RelayCommand(() => CancelRequested?.Invoke());
@@ -121,14 +124,45 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
         return false;
     }
 
+    /// <summary>
+    /// Whether the host posture permits a Security Master write at all. Every HTTP route that
+    /// mutates the golden record requires
+    /// <see cref="Meridian.Identity.Auth.UserPermission.ModifySecurityMaster"/>; the save is held
+    /// to the same grant. When the mutation seam is composed it decides (so a credential-free host
+    /// whose MDC_ANONYMOUS_ROLE names a read-only role refuses); when only the operator seam is
+    /// composed, <see cref="TryAuthorizeMutation"/> carries the whole decision; with neither seam
+    /// nobody checked the write is allowed, so it refuses rather than defaulting open. Checked
+    /// before the actor is resolved — attribution and authorization are separate properties, and
+    /// recording a named operator on a write the operator had no right to make would be worse than
+    /// refusing.
+    /// </summary>
+    private bool IsMutationPermitted()
+    {
+        if (_mutationAuthorization is not null)
+        {
+            return _mutationAuthorization.IsGranted(UserPermission.ModifySecurityMaster);
+        }
+
+        return _operatorContext is not null;
+    }
+
+    private void ReportForbiddenMutation()
+    {
+        const string message = "This operator is not permitted to modify the Security Master.";
+        StatusText = message;
+        _notificationService.ShowNotification("Security Master", message, NotificationType.Error);
+        _loggingService.LogWarning("Security Master save refused: this desktop session does not hold the ModifySecurityMaster permission.");
+    }
+
     // ── Initialization ──────────────────────────────────────────────────────
     public static SecurityMasterEditViewModel CreateNew(
         WpfServices.LoggingService loggingService,
         WpfServices.NotificationService notificationService,
         ISecurityMasterService service,
-        WpfServices.IDesktopAuthorizationSource? operatorContext = null)
+        WpfServices.IDesktopAuthorizationSource? operatorContext = null,
+        WpfServices.IDesktopMutationAuthorization? mutationAuthorization = null)
     {
-        return new SecurityMasterEditViewModel(loggingService, notificationService, service, operatorContext)
+        return new SecurityMasterEditViewModel(loggingService, notificationService, service, operatorContext, mutationAuthorization)
         {
             IsEditMode = false,
             Currency = "USD",
@@ -164,11 +198,17 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
 
     // ── Save logic ──────────────────────────────────────────────────────────
     private bool CanSave()
-        => !IsBusy && TryAuthorizeMutation(out _);
+        => !IsBusy && IsMutationPermitted() && TryAuthorizeMutation(out _);
 
     [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task SaveAsync(CancellationToken ct)
     {
+        if (!IsMutationPermitted())
+        {
+            ReportForbiddenMutation();
+            return;
+        }
+
         if (!TryAuthorizeMutation(out _))
         {
             ReportUnauthorizedWrite();
