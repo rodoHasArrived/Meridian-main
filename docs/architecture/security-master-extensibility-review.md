@@ -2467,7 +2467,24 @@ the interest gap sits directly underneath a passing test that names the class.
 are a second one, hand-maintained, covering vendor spellings the schema does not know and *missing*
 canonical keys the schema does. Nothing locks them together, and the round-trip guard cannot see the
 gap because the resolver is not a codec surface. The immediate fix is adding `currentCouponRate`
-resolution — which closes the **fixed-rate** case and only that case.
+resolution — and that alone does not close even the fixed-rate case, though an earlier version of
+this item said it did.
+
+**`DirectLoan` has no resolvable principal basis, so the rate is applied to a synthetic balance.**
+`PrincipalFaceAliases` is `["par", "originalFace", "notional", "principal", "principalAmount"]`
+(`StructuredCashFlowTermsResolver.cs:17`), and `DirectLoan`'s schema declares none of them — its
+keys are `borrower`, `maturity`, `referenceIndex`, `spreadBps`, `currentCouponRate`,
+`resetFrequency`, `pricingSource`, `covenants` and `principalSchedule`
+(`SecurityAssetTermsSchema.cs:243-253`). `principalSchedule` is required but is an array and is not
+an alias for the scalar. So `PrincipalFace` resolves null for *every* `DirectLoan`, and
+`var principalBasis = terms.PrincipalFace is > 0m ? terms.PrincipalFace.Value : 100m`
+(`SecurityMasterCashFlowService.cs:240`) falls back to **100**, with `outstanding` computed from it
+(`:286`). A million-dollar loan given a correct coupon would then project — and, through
+`BuildLedgerPostingsAsync`, post — interest and maturity principal as a $100 loan. Fixing the rate
+without fixing the basis produces a plausible number on the wrong notional, which is worse than the
+zero it replaces. A1's immediate fix therefore has two halves: resolve the coupon **and** define a
+resolvable outstanding-principal basis for `DirectLoan` — whether by adding a scalar term, by
+deriving the basis from the required `principalSchedule`, or both.
 
 **It does not close the floating case, and an earlier version of this item implied it did by
 prescribing "top-level index/spread resolution".** There is nowhere for a resolved index and spread
@@ -2674,8 +2691,12 @@ item needs projections that cover every record shape.
 
 Ordered by institutional risk per unit of work, read as a delta on the standing lists above:
 
-1. **Teach the cash-flow resolver `DirectLoan`'s coupon, then guard the alias vocabularies (A1).**
-   Adding `currentCouponRate` to the resolver is a few lines and closes the **fixed-rate** case.
+1. **Teach the cash-flow resolver `DirectLoan`'s coupon and its principal basis, then guard the alias
+   vocabularies (A1).** Adding `currentCouponRate` is a few lines but does **not** on its own close
+   even the fixed-rate case: no `PrincipalFaceAliases` key appears in `DirectLoan`'s schema, so
+   `principalBasis` falls back to `100m` (`SecurityMasterCashFlowService.cs:240`) and a
+   million-dollar loan projects and posts as a $100 one. Define a resolvable outstanding-principal
+   basis alongside the coupon.
    The **floating** case is not a resolver change: `StructuredCashFlowTerms` has no top-level
    `referenceIndex`/`spreadBps` members and the single-stream path takes its rate solely from
    `terms.CouponRate`, defaulting to zero (`SecurityMasterCashFlowService.cs:314`), so resolving
@@ -2697,8 +2718,15 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    unordered `limit 1` (`PostgresSecurityMasterStore.cs:655-663`). Normalizing the detection keys
    alone would therefore declare detection reconciled with resolution while leaving ambiguous aliases
    entirely undetected — P1's alias gap, reappearing as a false closure. Carry alias values,
-   providers, enabled state and overlapping validity windows into this remediation. Meanwhile the
-   unique normalized index inherits P5's
+   providers, enabled state and overlapping validity windows into this remediation.
+   **The identifier half needs a kind-specific provider rule too**, not just the alias half: detection
+   keys on `$"{id.Kind}|{id.Value}"` with no provider (`:33`), while the identifier resolution query
+   filters `normalized_provider` (`PostgresSecurityMasterStore.cs:629-650`) and
+   `ValidateCrossRecordDuplicates` includes provider **only** for `ProviderSymbol` (`:441-449`). So
+   two securities sharing `ProviderSymbol` text under different providers would be reported as
+   ambiguous by detection and correctly separated by resolution — a *false* ambiguity, the mirror of
+   the alias gap above. Normalizing values and fixing aliases without that rule leaves A2 unreconciled
+   in the opposite direction. Meanwhile the unique normalized index inherits P5's
    precondition — `ExecuteCreateAsync` appends the stream before the projection upsert
    (`SecurityMasterService.cs:323-324`), so the index must land together with atomic
    append-plus-projection creation or it converts normalized collisions into orphaned event streams.
