@@ -518,6 +518,77 @@ public sealed class FundStructureTenantScopeTests
     }
 
     [Fact]
+    public async Task FailClosed_DoesNotServeAForeignAccountThroughAnUnscopedAccountService()
+    {
+        // Twelfth Codex review round. The write path stopped trusting the account service, and the
+        // read path did not: GetVisibleAccountsAsync filtered only on the effective window, so an
+        // account carrying a foreign fund alongside a caller-visible entity -- refused by
+        // MaterializeLinkedAccount -- still reached the organization view. A write gate that a read
+        // walks around is not a gate.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var accountService = new InMemoryFundAccountService();
+
+        var beta = await SeedOrganizationAsync(store, TenantBeta, "BETA");
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+
+        var alphaService = CreateService(
+            store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed, accountService);
+        var alphaEntity = await alphaService.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            Guid.NewGuid(), LegalEntityTypeDto.LimitedPartner, "LP-ALPHA-READ", "Alpha Limited Partner",
+            "US", "USD", EffectiveFrom, "tenant-scope-test"));
+
+        var straddling = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(), AccountTypeDto.Custody, "ACC-READ-STRADDLE", "Straddling Account",
+            "USD", EffectiveFrom, "tenant-scope-test",
+            FundId: beta.FundId, EntityId: alphaEntity.EntityId));
+
+        var alphaOwn = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(), AccountTypeDto.Custody, "ACC-READ-ALPHA", "Alpha Account",
+            "USD", EffectiveFrom, "tenant-scope-test", FundId: alpha.FundId));
+
+        var view = await alphaService.GetOrganizationStructureAsync(new OrganizationStructureQuery());
+
+        Assert.DoesNotContain(view.Accounts, a => a.AccountId == straddling.AccountId);
+        Assert.Contains(view.Accounts, a => a.AccountId == alphaOwn.AccountId);
+    }
+
+    [Fact]
+    public async Task FailClosed_LinksAnAlreadyVisibleAccountThatHasNoStructuralParent()
+    {
+        // Twelfth Codex review round. An account can be a fund-structure node stamped to the caller
+        // and still carry no GUID parent on its DTO -- a migrated account, or one whose only
+        // reference is a free-text PortfolioId. Deriving ownership from parents alone scored those
+        // zero and refused them, so the caller could not link or assign against an account the very
+        // same snapshot was already showing them. The tenant stamp is the stronger proof.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var accountService = new InMemoryFundAccountService();
+
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+        var alphaService = CreateService(
+            store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed, accountService);
+
+        var parentless = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(), AccountTypeDto.Custody, "ACC-MIGRATED", "Migrated Account",
+            "USD", EffectiveFrom, "tenant-scope-test", PortfolioId: "legacy-book-7"));
+
+        // Materialized and stamped by a boundary-posture caller, the way a migration would leave it.
+        await CreateService(
+                store, TenantAlpha, TenantScopeEnforcementOptions.DeploymentBoundary, accountService)
+            .LinkNodesAsync(new LinkFundStructureNodesRequest(
+                Guid.NewGuid(), alpha.FundId, parentless.AccountId,
+                OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
+        store.SeedNodeTenant(parentless.AccountId, TenantAlpha);
+
+        // Fail-closed, the same caller must still be able to act on their own account.
+        var assignment = await alphaService.AssignNodeAsync(new AssignFundStructureNodeRequest(
+            Guid.NewGuid(), parentless.AccountId, LedgerGroupingRules.LedgerGroupAssignmentType,
+            "ALPHA.OPS:MIGRATED", EffectiveFrom, "tenant-scope-test"));
+
+        Assert.Equal(parentless.AccountId, assignment.NodeId);
+        Assert.Equal(TenantAlpha, store.TenantOf(parentless.AccountId));
+    }
+
+    [Fact]
     public async Task AssignNodeAsync_StampsAnAccountItMaterializes()
     {
         // Fifth Codex review round, catching a regression I introduced in the fourth: I reordered

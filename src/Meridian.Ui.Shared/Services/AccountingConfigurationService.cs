@@ -129,6 +129,28 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
             // append writes nothing when the payloads match and names the collision when they do
             // not, which is exactly the check this branch was missing.
             await _auditStore.AppendAsync(auditEvent, ct).ConfigureAwait(false);
+
+            // The audit landing does not prove the state it describes is still there. This branch
+            // returned before the workspace was ever loaded, so every Saved-phase check below was
+            // skipped whenever the event happened to be retained: a mutation whose save and append
+            // both landed, and whose workspace was then lost or rolled back, cleared the only
+            // pending evidence and reported success (Codex review finding on PR #2871). A retained
+            // audit event is stronger proof than the Saved phase, not weaker, so the state it names
+            // has to be there.
+            var auditedWorkspace = await TryLoadRetainedWorkspaceAsync(
+                    fundProfileId, auditEvent.LedgerBookId, ct, auditEvent.TenantId, auditEvent.CompanyId)
+                .ConfigureAwait(false);
+            if (auditedWorkspace is null
+                || !string.Equals(Hash(auditedWorkspace), auditEvent.AfterHash, StringComparison.Ordinal))
+            {
+                throw new AccountingAuditRecoveryException(
+                    auditEvent.AuditEventId,
+                    "An interrupted accounting mutation cannot be reconciled: its audit event is "
+                    + "retained, so the mutation completed, but the workspace it wrote is "
+                    + (auditedWorkspace is null ? "no longer retained" : "no longer what it recorded")
+                    + ". The pending marker is kept so the unaudited loss stays visible.");
+            }
+
             await _pendingAuditMarkers.ClearAsync(auditEvent.AuditEventId, ct).ConfigureAwait(false);
             return new AccountingAuditRecoveryResult(
                 AccountingAuditRecoveryOutcome.AlreadyAudited, auditEvent.AuditEventId);

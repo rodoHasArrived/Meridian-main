@@ -708,11 +708,12 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
         ArgumentNullException.ThrowIfNull(query);
         ct.ThrowIfCancellationRequested();
 
-        var snap = (await LoadSnapshotAsync(ct).ConfigureAwait(false)).ToStructureSnapshot();
+        var tenantScoped = await LoadSnapshotAsync(ct).ConfigureAwait(false);
+        var snap = tenantScoped.ToStructureSnapshot();
         var asOf = query.AsOf ?? DateTimeOffset.UtcNow;
         var sharedDataAccess = await GetSharedDataAccessAsync(ct).ConfigureAwait(false);
         var visibleAccounts = AttachSharedDataAccess(
-            await GetVisibleAccountsAsync(query.ActiveOnly, asOf, ct).ConfigureAwait(false), sharedDataAccess);
+            await GetVisibleAccountsAsync(query.ActiveOnly, asOf, tenantScoped, ct).ConfigureAwait(false), sharedDataAccess);
         var filtered = FilterForOrganizationScope(snap, visibleAccounts, query.OrganizationId, query.BusinessId, query.ActiveOnly, asOf);
         var enrichedPortfolios = AttachSharedDataAccess(filtered.InvestmentPortfolios, sharedDataAccess);
 
@@ -738,9 +739,10 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
         ArgumentNullException.ThrowIfNull(query);
         ct.ThrowIfCancellationRequested();
 
-        var snap = (await LoadSnapshotAsync(ct).ConfigureAwait(false)).ToStructureSnapshot();
+        var tenantScoped = await LoadSnapshotAsync(ct).ConfigureAwait(false);
+        var snap = tenantScoped.ToStructureSnapshot();
         var asOf = query.AsOf ?? DateTimeOffset.UtcNow;
-        var visibleAccounts = await GetVisibleAccountsAsync(query.ActiveOnly, asOf, ct).ConfigureAwait(false);
+        var visibleAccounts = await GetVisibleAccountsAsync(query.ActiveOnly, asOf, tenantScoped, ct).ConfigureAwait(false);
         var activeLinks = FilterVisible(snap.OwnershipLinks, query.ActiveOnly, asOf, static l => (l.EffectiveFrom, l.EffectiveTo));
         var activeAssignments = FilterVisible(snap.Assignments, query.ActiveOnly, asOf, static a => (a.EffectiveFrom, a.EffectiveTo));
         var funds = FilterVisible(snap.Funds, query.ActiveOnly, asOf, static f => (f.EffectiveFrom, f.EffectiveTo));
@@ -795,11 +797,12 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
         ArgumentNullException.ThrowIfNull(query);
         ct.ThrowIfCancellationRequested();
 
-        var snap = (await LoadSnapshotAsync(ct).ConfigureAwait(false)).ToStructureSnapshot();
+        var tenantScoped = await LoadSnapshotAsync(ct).ConfigureAwait(false);
+        var snap = tenantScoped.ToStructureSnapshot();
         var asOf = query.AsOf ?? DateTimeOffset.UtcNow;
         var sharedDataAccess = await GetSharedDataAccessAsync(ct).ConfigureAwait(false);
         var accounts = AttachSharedDataAccess(
-            await GetVisibleAccountsAsync(query.ActiveOnly, asOf, ct).ConfigureAwait(false), sharedDataAccess);
+            await GetVisibleAccountsAsync(query.ActiveOnly, asOf, tenantScoped, ct).ConfigureAwait(false), sharedDataAccess);
         var activeLinks = FilterVisible(snap.OwnershipLinks, query.ActiveOnly, asOf, static l => (l.EffectiveFrom, l.EffectiveTo));
 
         var business = FilterVisible(snap.Businesses, query.ActiveOnly, asOf, static b => (b.EffectiveFrom, b.EffectiveTo))
@@ -848,11 +851,12 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
         ArgumentNullException.ThrowIfNull(query);
         ct.ThrowIfCancellationRequested();
 
-        var snap = (await LoadSnapshotAsync(ct).ConfigureAwait(false)).ToStructureSnapshot();
+        var tenantScoped = await LoadSnapshotAsync(ct).ConfigureAwait(false);
+        var snap = tenantScoped.ToStructureSnapshot();
         var asOf = query.AsOf ?? DateTimeOffset.UtcNow;
         var sharedDataAccess = await GetSharedDataAccessAsync(ct).ConfigureAwait(false);
         var accounts = AttachSharedDataAccess(
-            await GetVisibleAccountsAsync(query.ActiveOnly, asOf, ct).ConfigureAwait(false), sharedDataAccess);
+            await GetVisibleAccountsAsync(query.ActiveOnly, asOf, tenantScoped, ct).ConfigureAwait(false), sharedDataAccess);
         var activeLinks = FilterVisible(snap.OwnershipLinks, query.ActiveOnly, asOf, static l => (l.EffectiveFrom, l.EffectiveTo));
 
         var business = FilterVisible(snap.Businesses, query.ActiveOnly, asOf, static b => (b.EffectiveFrom, b.EffectiveTo))
@@ -942,11 +946,12 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
         ArgumentNullException.ThrowIfNull(query);
         ct.ThrowIfCancellationRequested();
 
-        var snap = (await LoadSnapshotAsync(ct).ConfigureAwait(false)).ToStructureSnapshot();
+        var tenantScoped = await LoadSnapshotAsync(ct).ConfigureAwait(false);
+        var snap = tenantScoped.ToStructureSnapshot();
         var asOf = query.AsOf ?? DateTimeOffset.UtcNow;
         var sharedDataAccess = await GetSharedDataAccessAsync(ct).ConfigureAwait(false);
         var visibleAccounts = AttachSharedDataAccess(
-            await GetVisibleAccountsAsync(query.ActiveOnly, asOf, ct).ConfigureAwait(false), sharedDataAccess);
+            await GetVisibleAccountsAsync(query.ActiveOnly, asOf, tenantScoped, ct).ConfigureAwait(false), sharedDataAccess);
         var scoped = FilterForOrganizationScope(snap, visibleAccounts, query.OrganizationId, query.BusinessId, query.ActiveOnly, asOf);
 
         var portfolios = scoped.InvestmentPortfolios
@@ -1568,12 +1573,46 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
         return p;
     }
 
-    private async Task<IReadOnlyList<AccountSummaryDto>> GetVisibleAccountsAsync(bool activeOnly, DateTimeOffset asOf, CancellationToken ct)
+    /// <summary>
+    /// The accounts this caller may see, narrowed by effective window and — under the fail-closed
+    /// posture — by the same ownership rule the write path applies.
+    /// </summary>
+    /// <remarks>
+    /// <para>The account service is a separate composition seam and does not necessarily scope what
+    /// it returns: <c>PostgresFundAccountStore</c> applies the SEC-005 caller-tenant read predicate,
+    /// <c>InMemoryFundAccountService</c> applies nothing, and <c>IFundAccountService</c> promises
+    /// neither — the same reason <see cref="MaterializeLinkedAccountAsync"/> refuses to treat a
+    /// returned account as proof of anything. Filtering only by effective window therefore left the
+    /// read views trusting a seam the write path had stopped trusting: a foreign account carrying a
+    /// caller-visible entity alongside its foreign fund reached the organization and accounting
+    /// views even though linking it was refused (Codex review finding on PR #2871).</para>
+    ///
+    /// <para>Gated on <c>FailClosed</c> for the same reason the claim is: under the deployment
+    /// boundary an unattributed account is deliberately visible to everyone, and hiding it here
+    /// would empty the views of the very deployments that posture exists to serve. Where the
+    /// account store does scope its own reads this filter is a no-op, which is what it should be.</para>
+    /// </remarks>
+    private async Task<IReadOnlyList<AccountSummaryDto>> GetVisibleAccountsAsync(
+        bool activeOnly, DateTimeOffset asOf, MutableSnapshot tenantScoped, CancellationToken ct)
     {
         var accounts = await _fundAccountService
             .QueryAccountsAsync(new AccountStructureQuery(ActiveOnly: false), ct)
             .ConfigureAwait(false);
-        return accounts.Where(a => IsVisible(a.IsActive, a.EffectiveFrom, a.EffectiveTo, activeOnly, asOf)).ToList();
+        var withinWindow = accounts
+            .Where(a => IsVisible(a.IsActive, a.EffectiveFrom, a.EffectiveTo, activeOnly, asOf));
+
+        if (_tenantScope.Mode != TenantScopeEnforcementMode.FailClosed)
+        {
+            return withinWindow.ToList();
+        }
+
+        // Already a node in the scoped snapshot means its own tenant stamp is visible, which is
+        // stronger proof than anything derivable from the DTO; otherwise every populated parent has
+        // to resolve, exactly as MaterializeLinkedAccountAsync requires before claiming one.
+        return withinWindow
+            .Where(a => tenantScoped.LinkedAccountIds.Contains(a.AccountId)
+                        || IsAccountParentVisible(a, tenantScoped))
+            .ToList();
     }
 
     private async Task<FundStructureSharedDataAccessDto?> GetSharedDataAccessAsync(CancellationToken ct) =>

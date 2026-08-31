@@ -195,6 +195,19 @@ public sealed partial class PostgresFundStructureService
         MutableSnapshot snap,
         CancellationToken ct)
     {
+        // An account already standing in the caller's scoped snapshot needs no further proof: it is
+        // a fund-structure node, and ScopeToCallerTenantAsync retained it in LinkedAccountIds only
+        // because its own tenant stamp is visible to this caller. Re-deriving ownership from the
+        // account DTO's parents would be strictly weaker than the stamp, and wrong for the shapes
+        // that carry no GUID parent at all -- a migrated account, or one whose only reference is a
+        // free-text PortfolioId, both of which CreateAccountRequest permits. Those would score no
+        // populated parent and be refused, so a caller could not link, replace or assign against an
+        // account the same snapshot is already showing them (Codex review finding on PR #2871).
+        if (snap.LinkedAccountIds.Contains(accountId))
+        {
+            return;
+        }
+
         if (_tenantScope.Mode == TenantScopeEnforcementMode.FailClosed)
         {
             // Ownership is established from the account's own parents against this caller's already

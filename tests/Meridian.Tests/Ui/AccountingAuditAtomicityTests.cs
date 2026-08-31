@@ -357,9 +357,11 @@ public sealed class AccountingAuditAtomicityTests : IDisposable
         var markers = new FileAccountingAuditPendingMarkerStore(
             FileAccountingAuditPendingMarkerStore.MarkerPathFor(SnapshotPath));
 
-        // Both sides landed and only the clear was lost: the retained event is the declared one.
-        var declared = AuditEvent();
-        await store.AppendAsync(declared);
+        // Both sides landed and only the clear was lost. Driven through a real mutation rather
+        // than by appending a synthetic event: the retained workspace has to be the one the event's
+        // AfterHash names, which is the whole thing recovery now confirms before clearing.
+        await CreateService(store, store, markers).UpsertChartNodeAsync(ChartRequest());
+        var declared = (await store.ListAsync("fund-alpha")).Should().ContainSingle().Subject;
         await markers.WriteAsync(new AccountingAuditPendingMarker(declared, DateTimeOffset.UtcNow));
 
         var recovery = await CreateService(store, store, markers).RecoverPendingAuditAsync();
@@ -370,6 +372,32 @@ public sealed class AccountingAuditAtomicityTests : IDisposable
         (await store.ListAsync("fund-alpha")).Should().ContainSingle(
             "replaying an event that is already retained must not duplicate it");
         (await store.VerifyAuditChainAsync()).IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task AWorkspaceLostAfterItsAuditLanded_IsAnIncidentRatherThanAClearedMarker()
+    {
+        // Twelfth Codex review round. The already-audited branch returned before the workspace was
+        // ever loaded, so every Saved-phase check below it was skipped whenever the event happened
+        // to be retained. A mutation whose save and append both landed, and whose workspace was
+        // then lost, cleared the only pending evidence and reported success. A retained audit event
+        // is stronger proof the mutation completed than the Saved phase is, not weaker.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var markers = new FileAccountingAuditPendingMarkerStore(
+            FileAccountingAuditPendingMarkerStore.MarkerPathFor(SnapshotPath));
+
+        // Audited, but nothing retained for the scope the event names.
+        var audited = AuditEvent(afterHash: new string('c', 64));
+        await store.AppendAsync(audited);
+        await markers.WriteAsync(new AccountingAuditPendingMarker(
+            audited, DateTimeOffset.UtcNow, BeforeStateRetained: true,
+            AccountingAuditPendingMarkerPhase.Saved));
+
+        var recover = async () => await CreateService(store, store, markers).RecoverPendingAuditAsync();
+
+        await recover.Should().ThrowAsync<AccountingAuditRecoveryException>();
+        (await markers.ReadAsync()).Should().NotBeNull(
+            "the marker is the only record that an audited mutation's state went missing");
     }
 
     [Fact]
