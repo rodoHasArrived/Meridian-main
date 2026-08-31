@@ -84,8 +84,8 @@ public sealed record DataConfidenceIndicatorModel(
             freshness.AsOf,
             Normalize(sourceSystem, "Evidence"),
             reconciliation,
-            FirstNonBlank(notes, freshness.Reason),
-            BuildExplanation(confidence, reconciliation, sourceSystem, freshness.AsOf, FirstNonBlank(notes, freshness.Reason)),
+            Normalize(notes, freshness.Reason),
+            BuildExplanation(confidence, reconciliation, sourceSystem, freshness.AsOf, Normalize(notes, freshness.Reason)),
             explanationRoute);
     }
 
@@ -107,7 +107,7 @@ public sealed record DataConfidenceIndicatorModel(
             ?? provider.LastHeartbeatReceivedAt
             ?? (provider.LastConnectedAt.HasValue ? new DateTimeOffset(DateTime.SpecifyKind(provider.LastConnectedAt.Value, DateTimeKind.Utc)) : null);
         var confidence = degraded ? DataConfidenceLevel.ProviderDegraded : DataConfidenceLevel.Current;
-        var providerNotes = FirstNonBlank(notes, provider.LastError, provider.LastFailureKind, provider.LifecycleState, provider.WebSocketState);
+        var providerNotes = Normalize(notes, provider.LastError, provider.LastFailureKind, provider.LifecycleState, provider.WebSocketState);
 
         return new DataConfidenceIndicatorModel(
             confidence,
@@ -204,9 +204,6 @@ public sealed record DataConfidenceIndicatorModel(
 
     private static string Normalize(params string?[] candidates)
         => candidates.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim() ?? string.Empty;
-
-    private static string FirstNonBlank(params string?[] candidates)
-        => Normalize(candidates);
 
     private static bool ContainsAny(string value, params string[] needles)
         => needles.Any(needle => value.Contains(needle, StringComparison.OrdinalIgnoreCase));
