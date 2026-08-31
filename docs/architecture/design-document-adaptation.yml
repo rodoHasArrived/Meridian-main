@@ -5,20 +5,20 @@ schema:
 
 design_source:
   path: docs/product/meridian-design-document.md
-  version: "0.15"
+  version: "1.0"
   sections:
-    - "6. Bounded Context Map"
-    - "7. Context Ownership Matrix"
-    - "8. Recommended MVP Contexts"
-    - "15. Recommended Architecture Style"
-    - "16. Tenancy Strategy"
-    - "17. Permission Strategy"
-    - "18. Workflow Strategy"
-    - "20. Integration Strategy"
-    - "21. Reporting Strategy"
-    - "22. Document Strategy"
-    - "25. Product Alignment Addendum"
-    - "26. Foundational Product Slice"
+    - "7. Bounded Context Map"
+    - "8. Context Ownership Matrix"
+    - "9. Recommended MVP Contexts"
+    - "12. Recommended Architecture Style"
+    - "13. Tenancy Strategy"
+    - "14. Permission Strategy"
+    - "15. Workflow Strategy"
+    - "17. Integration Strategy"
+    - "18. Reporting Strategy"
+    - "19. Document and Evidence Strategy"
+    - "23. Foundational Product Slice"
+    - "24. Roadmap Alignment, Scope Gates, and Claim Rules"
 
 adaptation_status: active
 adaptation_mode: executable-design-contract

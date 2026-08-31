@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Reporting;
 
@@ -28,8 +28,7 @@ public static class ReportingArtifactPackageIdentity
         }
 
         var canonical = $"{tenantId.Trim()}\n{runId.Trim()}\n{revision.ToString(CultureInfo.InvariantCulture)}";
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)))
-            .ToLowerInvariant();
+        var hash = Sha256Digest.ComputeUtf8(canonical);
         return $"report-package-{hash}";
     }
 }

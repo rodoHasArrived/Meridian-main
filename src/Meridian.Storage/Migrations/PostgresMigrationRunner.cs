@@ -1,6 +1,6 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Npgsql;
 
 namespace Meridian.Storage.Migrations;
@@ -49,9 +49,7 @@ public sealed class PostgresMigrationRunner
         foreach (var script in scripts)
         {
             var sql = await File.ReadAllTextAsync(script.Path, ct).ConfigureAwait(false);
-            var checksum = Convert.ToHexString(
-                    SHA256.HashData(Encoding.UTF8.GetBytes(sql)))
-                .ToLowerInvariant();
+            var checksum = Sha256Digest.ComputeUtf8(sql);
 
             var applied = await GetAppliedChecksumAsync(connection, transaction, script.FileName, ct)
                 .ConfigureAwait(false);

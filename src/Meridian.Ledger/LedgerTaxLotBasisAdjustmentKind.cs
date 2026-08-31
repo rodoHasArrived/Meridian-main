@@ -39,4 +39,15 @@ public enum LedgerTaxLotBasisAdjustmentKind
     /// toward par (floored at zero).
     /// </summary>
     Amortization,
+
+    /// <summary>
+    /// A wash-sale loss deferred from an earlier disposal and capitalized into this replacement lot
+    /// under IRC §1091(d). <see cref="LedgerTaxLotBasisAdjustment.Value"/> is the total (not
+    /// per-unit) disallowed amount added to the lot's basis, spread across the lot's quantity, and
+    /// <see cref="LedgerTaxLotBasisAdjustment.HoldingPeriodCarryDate"/> carries the disallowed
+    /// sale's holding-period start onto the replacement under §1223(3). Unlike the reference-data
+    /// kinds this adjustment targets one named lot and applies whether the replacement was acquired
+    /// before or after the sale, because the §1091 window is symmetric.
+    /// </summary>
+    WashSale,
 }

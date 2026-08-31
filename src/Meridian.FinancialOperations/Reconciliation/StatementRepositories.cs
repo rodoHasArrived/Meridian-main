@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Workstation;
@@ -31,6 +33,61 @@ public interface IStatementMatchResultRepository
     Task<StatementMatchResultArtifact?> GetAsync(string runId, CancellationToken ct = default);
 }
 
+public interface IStatementRunRecoveryRepository
+{
+    Task<StatementRunRecoveryCheckpoint?> GetAsync(string runId, CancellationToken ct = default);
+    Task<bool> TryCreateAsync(StatementRunRecoveryCheckpoint checkpoint, CancellationToken ct = default);
+    Task SaveAsync(StatementRunRecoveryCheckpoint checkpoint, CancellationToken ct = default);
+}
+
+public enum StatementRunRecoveryStage
+{
+    Imported = 1,
+    Matched = 2,
+    BreaksMaterialized = 3,
+    CasesMaterialized = 4,
+    Completed = 5
+}
+
+public enum StatementRunRecoveryStatus
+{
+    Running,
+    Failed,
+    Completed
+}
+
+public sealed record StatementRunStageArtifact(string Sha256, int Count);
+
+/// <summary>
+/// Versioned, monotonic recovery authority for the canonical statement-run workflow. Artifact
+/// hashes bind every completed stage to the exact retained bytes that a retry may adopt.
+/// </summary>
+public sealed record StatementRunRecoveryCheckpoint(
+    int SchemaVersion,
+    string RunId,
+    string ImportId,
+    string RequestFingerprintSha256,
+    string InputFingerprintSha256,
+    StatementRunRecoveryStage Stage,
+    StatementRunRecoveryStatus Status,
+    StatementRunStageArtifact ImportArtifact,
+    StatementRunStageArtifact? MatchArtifact,
+    StatementRunStageArtifact? BreakArtifact,
+    StatementRunStageArtifact? CaseArtifact,
+    int MatchCount,
+    string? FailedStage,
+    string? ErrorType,
+    string? ErrorMessage,
+    DateTimeOffset CreatedAtUtc,
+    DateTimeOffset UpdatedAtUtc)
+{
+    public const int CurrentSchemaVersion = 1;
+}
+
+public sealed class StatementRunRecoveryConflictException(string message) : InvalidOperationException(message)
+{
+}
+
 public sealed record StatementRunManifest(
     string RunId,
     string ImportId,
@@ -49,6 +106,8 @@ public sealed record StatementRunManifest(
     int RawRowCount = 0,
     int NormalizedRowCount = 0)
 {
+    public StatementAccountingScope? AccountingScope { get; init; }
+
     public static StatementRunManifest FromRequest(
         string runId,
         string importId,
@@ -81,7 +140,10 @@ public sealed record StatementRunManifest(
             new StatementProfileVersion(request.ToleranceProfileId, toleranceProfileVersion),
             request.DuplicateKey,
             rawRowCount,
-            normalizedRowCount);
+            normalizedRowCount)
+        {
+            AccountingScope = request.AccountingScope
+        };
     }
 }
 
@@ -373,6 +435,171 @@ public sealed class FileStatementMatchResultRepository : IStatementMatchResultRe
     }
 }
 
+public sealed class InMemoryStatementRunRecoveryRepository : IStatementRunRecoveryRepository
+{
+    private readonly ConcurrentDictionary<string, StatementRunRecoveryCheckpoint> _checkpoints =
+        new(StringComparer.OrdinalIgnoreCase);
+
+    public Task<StatementRunRecoveryCheckpoint?> GetAsync(string runId, CancellationToken ct = default)
+    {
+        StatementRepositoryGuard.ValidateRunId(runId);
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(_checkpoints.TryGetValue(runId.Trim(), out var checkpoint) ? checkpoint : null);
+    }
+
+    public Task<bool> TryCreateAsync(StatementRunRecoveryCheckpoint checkpoint, CancellationToken ct = default)
+    {
+        ValidateCheckpoint(checkpoint);
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(_checkpoints.TryAdd(checkpoint.RunId, checkpoint));
+    }
+
+    public Task SaveAsync(StatementRunRecoveryCheckpoint checkpoint, CancellationToken ct = default)
+    {
+        ValidateCheckpoint(checkpoint);
+        ct.ThrowIfCancellationRequested();
+        _checkpoints.AddOrUpdate(
+            checkpoint.RunId,
+            _ => throw new StatementRunRecoveryConflictException(
+                $"Statement run '{checkpoint.RunId}' has no retained recovery checkpoint to update."),
+            (_, retained) => ValidateTransition(retained, checkpoint));
+        return Task.CompletedTask;
+    }
+
+    internal static void ValidateCheckpoint(StatementRunRecoveryCheckpoint checkpoint)
+    {
+        ArgumentNullException.ThrowIfNull(checkpoint);
+        StatementRepositoryGuard.ValidateRunId(checkpoint.RunId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(checkpoint.ImportId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(checkpoint.RequestFingerprintSha256);
+        ArgumentException.ThrowIfNullOrWhiteSpace(checkpoint.InputFingerprintSha256);
+        if (checkpoint.SchemaVersion != StatementRunRecoveryCheckpoint.CurrentSchemaVersion)
+        {
+            throw new InvalidDataException(
+                $"Unsupported statement-run recovery schema version '{checkpoint.SchemaVersion}'.");
+        }
+    }
+
+    internal static StatementRunRecoveryCheckpoint ValidateTransition(
+        StatementRunRecoveryCheckpoint retained,
+        StatementRunRecoveryCheckpoint next)
+    {
+        if (!string.Equals(retained.RunId, next.RunId, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(retained.ImportId, next.ImportId, StringComparison.OrdinalIgnoreCase) ||
+            !StatementRunRecoveryHashing.FixedTimeEquals(
+                retained.RequestFingerprintSha256,
+                next.RequestFingerprintSha256) ||
+            !StatementRunRecoveryHashing.FixedTimeEquals(
+                retained.InputFingerprintSha256,
+                next.InputFingerprintSha256))
+        {
+            throw new StatementRunRecoveryConflictException(
+                $"Statement run '{next.RunId}' is already bound to a different import or fingerprint.");
+        }
+
+        if (next.Stage < retained.Stage)
+        {
+            throw new StatementRunRecoveryConflictException(
+                $"Statement run '{next.RunId}' cannot move backward from '{retained.Stage}' to '{next.Stage}'.");
+        }
+
+        if (retained.Status == StatementRunRecoveryStatus.Completed && next != retained)
+        {
+            throw new StatementRunRecoveryConflictException(
+                $"Statement run '{next.RunId}' is already completed and its checkpoint is immutable.");
+        }
+
+        return next;
+    }
+}
+
+public sealed class FileStatementRunRecoveryRepository : IStatementRunRecoveryRepository
+{
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> Gates =
+        new(StringComparer.OrdinalIgnoreCase);
+    private readonly StatementRepositoryPaths _paths;
+
+    public FileStatementRunRecoveryRepository(string dataDirectory)
+    {
+        _paths = new StatementRepositoryPaths(dataDirectory);
+    }
+
+    public Task<StatementRunRecoveryCheckpoint?> GetAsync(string runId, CancellationToken ct = default)
+    {
+        StatementRepositoryGuard.ValidateRunId(runId);
+        return StatementRunRecoveryJson.ReadOrDefaultAsync(
+            _paths.RecoveryCheckpointPath(runId),
+            ct);
+    }
+
+    public async Task<bool> TryCreateAsync(
+        StatementRunRecoveryCheckpoint checkpoint,
+        CancellationToken ct = default)
+    {
+        InMemoryStatementRunRecoveryRepository.ValidateCheckpoint(checkpoint);
+        var path = _paths.RecoveryCheckpointPath(checkpoint.RunId);
+        var gate = Gates.GetOrAdd(path, static _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (File.Exists(path))
+            {
+                return false;
+            }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+            try
+            {
+                var json = StatementRunRecoveryJson.Serialize(checkpoint);
+                await AtomicFileWriter.WriteAsync(temporaryPath, json, ct).ConfigureAwait(false);
+                File.Move(temporaryPath, path, overwrite: false);
+                await AtomicFileWriter
+                    .SyncDirectoryAsync(Path.GetDirectoryName(path)!, CancellationToken.None)
+                    .ConfigureAwait(false);
+                return true;
+            }
+            catch (IOException) when (File.Exists(path))
+            {
+                return false;
+            }
+            finally
+            {
+                if (File.Exists(temporaryPath))
+                {
+                    File.Delete(temporaryPath);
+                }
+            }
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    public async Task SaveAsync(StatementRunRecoveryCheckpoint checkpoint, CancellationToken ct = default)
+    {
+        InMemoryStatementRunRecoveryRepository.ValidateCheckpoint(checkpoint);
+        var path = _paths.RecoveryCheckpointPath(checkpoint.RunId);
+        var gate = Gates.GetOrAdd(path, static _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var retained = await StatementRunRecoveryJson
+                .ReadOrDefaultAsync(path, ct)
+                .ConfigureAwait(false)
+                ?? throw new StatementRunRecoveryConflictException(
+                    $"Statement run '{checkpoint.RunId}' has no retained recovery checkpoint to update.");
+            InMemoryStatementRunRecoveryRepository.ValidateTransition(retained, checkpoint);
+            await StatementRunRecoveryJson.WriteAsync(path, checkpoint, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+}
+
 internal sealed class StatementRepositoryPaths
 {
     public const string ManifestFileName = "manifest.json";
@@ -392,6 +619,7 @@ internal sealed class StatementRepositoryPaths
     public string MatchResultsPath(string runId) => Path.Combine(RunDirectory(runId), "match-results.json");
     public string BreaksPath(string runId) => Path.Combine(RunDirectory(runId), "breaks.json");
     public string CaseLinksPath(string runId) => Path.Combine(RunDirectory(runId), "case-links.json");
+    public string RecoveryCheckpointPath(string runId) => Path.Combine(RunDirectory(runId), "workflow-checkpoint.json");
 
     private string RunDirectory(string runId) => Path.Combine(RootDirectory, SafeRunId(runId));
 
@@ -399,6 +627,69 @@ internal sealed class StatementRepositoryPaths
     {
         StatementRepositoryGuard.ValidateRunId(runId);
         return string.Concat(runId.Trim().Select(static ch => char.IsLetterOrDigit(ch) || ch is '-' or '_' ? ch : '_'));
+    }
+}
+
+internal static class StatementRunRecoveryHashing
+{
+    public static bool FixedTimeEquals(string left, string right)
+    {
+        if (!TryParseSha256(left, out var leftBytes) || !TryParseSha256(right, out var rightBytes))
+        {
+            return false;
+        }
+
+        return CryptographicOperations.FixedTimeEquals(leftBytes, rightBytes);
+    }
+
+    private static bool TryParseSha256(string value, out byte[] bytes)
+    {
+        bytes = [];
+        if (string.IsNullOrWhiteSpace(value) || value.Trim().Length != 64)
+        {
+            return false;
+        }
+
+        try
+        {
+            bytes = Convert.FromHexString(value.Trim());
+            return bytes.Length == 32;
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+    }
+}
+
+internal static class StatementRunRecoveryJson
+{
+    public static string Serialize(StatementRunRecoveryCheckpoint checkpoint)
+        => JsonSerializer.Serialize(
+            checkpoint,
+            StatementRunRecoveryJsonContext.Default.StatementRunRecoveryCheckpoint);
+
+    public static async Task WriteAsync(
+        string path,
+        StatementRunRecoveryCheckpoint checkpoint,
+        CancellationToken ct)
+        => await AtomicFileWriter.WriteAsync(path, Serialize(checkpoint), ct).ConfigureAwait(false);
+
+    public static async Task<StatementRunRecoveryCheckpoint?> ReadOrDefaultAsync(
+        string path,
+        CancellationToken ct)
+    {
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        await using var stream = File.OpenRead(path);
+        return await JsonSerializer.DeserializeAsync(
+                stream,
+                StatementRunRecoveryJsonContext.Default.StatementRunRecoveryCheckpoint,
+                ct)
+            .ConfigureAwait(false);
     }
 }
 
@@ -435,4 +726,3 @@ internal static class StatementRepositoryGuard
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
     }
 }
-

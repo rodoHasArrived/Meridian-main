@@ -2,7 +2,7 @@
 
 **Status:** active  
 **Owner:** core-team  
-**Reviewed:** 2026-07-19
+**Reviewed:** 2026-08-03
 
 This is the canonical stakeholder-facing entrypoint for Meridian product direction, capability posture, and roadmap interpretation.
 It routes non-technical audiences to verified evidence and prevents duplicate claims that compete with roadmap/source registries.
@@ -10,14 +10,95 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
 ## What a Stakeholder Should Read Here
 
 - If you need the current product framing, start with:
-  - [Meridian Design Document (Version 0.25)](meridian-design-document.md) — design baseline extended with current implementation posture, the v0.15 accounting records package, the v0.16 private-capital operations and treasury-ledger addendum, the v0.17 shared Financial Record Explorer productization target, the W5X Financial Operations control target, and the v0.18 operational proof layer market-gap update, the v0.19 no-code provider integration manifest, the v0.20 customer-neutral operational-finance architecture clarification, the v0.21 LedgerGraph OS / Close, Data and Evidence Control Tower positioning addendum, the v0.23 bounded W7 live-readiness gate, the v0.24 WPF deferral policy, and the v0.25 WPF desktop workstation reactivation and web-UI parity policy
+  - [Meridian Design Document (Version 1.0)](meridian-design-document.md) — ground-up rewrite of
+    the design charter: the proven-numbers value proposition, activation-over-expansion and
+    proven-slice delivery doctrines, truth discipline, current wave posture through the ranked W9
+    slate, and all retained normative invariants (customer-neutral core model, ledger truth and
+    treasury-ledger principles, fail-closed authority, governed-autonomy AI boundary, seven-root
+    navigation, no mobile lane). The superseded 0.15–0.25 lineage is summarized in its Section 25
+    and archived in full at `archive/docs/design/meridian-design-document-v0.25.md`
   - [Implementation and Readiness Tracker](implementation-todo-list.md) — current execution, evidence, and readiness follow-up
   - [Roadmap Registry](../roadmap/README.md)
   - [Roadmap Generated Summary](../roadmap/generated/ROADMAP_SUMMARY.md)
   - [2026-07 First-Order Improvement Slate](product-roadmap-priorities-2026-07.md) — ranked W9
     priority rationale (`W9-TRUTH-001` through `W9-INGEST-009`, decision `DEC-PRIORITY-SLATE-001`);
     live status stays in the roadmap registry
+  - [2026-08 W9 Close-Out Delivery Plan](w9-close-out-delivery-plan-2026-08.md) — adopted sequence
+    for the three original W9 close-out rows (`W9-SAFETY-007`, `W9-GOV-008`, `W9-INGEST-009`, decision
+    `DEC-W9-CLOSEOUT-001`), with the source constraints found while checking each row against
+    current code; live status stays in the roadmap registry
+  - [2026-08-29 W9 Operator Acceptance Record](w9-operator-acceptance-2026-08-29.md) — the operator
+    chronology for the original six-row acceptance and `W9-ALPACA-004` hold, followed by the
+    corrected-evidence reassessment that leaves five rows accepted and reopens `W9-CORPACT-011`
+    (decisions `DEC-W9-ACCEPTANCE-001` and `DEC-W9-ACCEPTANCE-002`); live status stays in the roadmap
+    registry
+  - [2026-07 Depth Slate](w10-depth-slate-2026-07.md) — W10 rationale for deepening existing
+    functionality (`W10-MARK-001` through `W10-CONSOL-001`, decision `DEC-DEPTH-SLATE-001`);
+    live status stays in the roadmap registry. `W10-MARK-001` and `W10-SEAM-001` are pulled forward
+    ahead of the W9 close-out because they serve the release gate
 - Treat the following as dated working design inputs, not canonical status sources:
+  - [Adversarial Program Review (2026-08-25)](adversarial-program-review-2026-08-25.md) — latest
+    independent whole-program adverse review; re-tests the 2026-08-24 open items against the 39
+    commits landed since, then extends into cross-catalog consistency between the authorization
+    model, the shared API surface, and the client surface. Findings are anchored at `e232ece1`;
+    the document's addendum records that PR #2824 has since wired the posted-journal trial balance
+    and P&L into `AccountingPostedLedgerSection`, so **that half is no longer current state**. A
+    third addendum records `main` at `3eb6961a` (PR #2828) and rechecks five open items that remain
+    unchanged; the second addendum's citations stay in the `bb43e0e6` frame its heading declares.
+    That second addendum records `main` at `bb43e0e6`: the `ViewLedgerReports`/`ManageLedgerReports` split
+    landed and the posted-ledger panel no longer depends on `ManageDirectLending`, and the run-scoped
+    explorer was retired from Accounting to `/strategy/run-ledger`. What remains open is
+    assigned-fund scoping (the new tenant filter is cross-tenant and fail-open, and the client sends
+    no fund id), one run-scoped binding under `/accounting/accounts/detail`, the missing
+    `ViewCompliance` read grant (which must also be subtracted from the `Developer` role, defined as
+    `Admin` minus a list), the compliance read surfaces that need server work beyond that grant —
+    `controls/attestation` evaluates none of the four controls it names, neither read route is
+    tenant-scoped, and the chain records policy evaluations rather than actions (the evaluate route
+    never dispatches, and the caller supplies the object identity and both state snapshots) — the option contract multiplier that reaches the two aggregate
+    exposure projections but none of the paper transaction, valuation, persistence or margin paths
+    — nor the Trading screen's own exposure and P&L arithmetic, which the book-side fix does not
+    reach — and an estimated 29%
+    of route constants (250 of 862) referenced by no client layer — a reference-based measure the
+    review itself qualifies as an estimate with error in both directions, not a settled count. The
+    denominator is itself imperfect: at least two catalog constants are registered by no server
+    route and reach the browser through the generated mirror, and the review states plainly that
+    the scale of that class is unmeasured. A fourth addendum records `main` at `7d675f40`
+    (PR #2831) and rechecks no claims at all: it measures which of the 79 files the review cites are
+    byte-identical between the anchor and that tree — **59 are**, including all three carrying the
+    headline finding — so those citations resolve in both frames unchanged, and the same four counts
+    held one merge earlier at `8c0c6e36`. `main` has advanced nine times since the anchor and all
+    nine are merged in here, but **only three of the nine have a claim-level addendum**; the fourth
+    states that limit rather than covering it over.
+    **Completeness caveat:** the 41-round adversarial loop
+    behind this document stopped when the reviewer hit a usage limit, not on convergence — the last
+    three rounds produced two new codebase defects and two self-inflicted contradictions — so every
+    claim in it has been checked but the set of claims is not exhausted
+  - [Adversarial Program Review (2026-08-24)](adversarial-program-review-2026-08-24.md) —
+    independent whole-program adverse review; re-tests every headline finding of the 2026-08-18
+    pass against the 218 commits landed since, verifies the three built-but-dead flagship fixes
+    and the authorization burn-down as genuinely wired, documents the instance-vs-class
+    remediation pattern with `file:line` evidence, and re-ranks improvement areas by end-user
+    value uplift
+  - [Adversarial Program Review (2026-08-18)](adversarial-program-review-2026-08-18.md) — follow-up
+    independent whole-program adverse review that re-tests all 25 headline findings of the
+    2026-08-10 pass against the ~321 commits landed since, documents the built-but-unwired
+    remediation pattern with `file:line` evidence, and re-ranks improvement areas by end-user
+    value uplift
+  - [Adversarial Program Review (2026-08)](adversarial-program-review-2026-08.md) — independent
+    whole-program adverse review of end-user functionality with `file:line` evidence; re-tests the
+    2026-07 review's headline, documents acceptance-vs-wired drift, and ranks improvement areas by
+    end-user value uplift
+  - [Adversarial Review 2026-08 Remediation Plan](adversarial-review-2026-08-remediation-plan.md) —
+    every finding from that review as a tracked todo with a code-ready implementation plan
+    (evidence, change, verification, effort, dependencies) across thirteen sequenced workstreams;
+    a working plan, not a status source
+  - [Production-Readiness Backlog (2026-08)](production-readiness-backlog-2026-08.md) — the
+    ten-item production-readiness ordering of that estate, re-verified against source on
+    2026-08-18 with corrections for stale claims and one new blocker finding (fixed-income
+    booking); records the three built-but-dead fixes landed on the same branch
+  - [Adversarial Program Review (2026-07)](adversarial-program-review-2026-07.md) — prior
+    independent review pass that motivated the activation-over-expansion and truth-discipline
+    doctrines; see its 2026-07-26 follow-up in `archive/docs/assessments/`
   - [High-Value Code Brainstorm (2026-07)](high-value-code-brainstorm-2026-07.md) — market-researched
     prioritization snapshot; use the roadmap registry, not this dated sequencing, for live status
   - [Data Provider & Accounting Code Brainstorm (2026-07)](data-provider-accounting-brainstorm-2026-07.md) —
@@ -25,7 +106,17 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     table tracking which lanes have since shipped
   - [Portfolio Cash Ladder Blueprint (2026-07)](portfolio-cash-ladder-blueprint-2026-07.md) —
     code-ready design for the wave-8 portfolio cash-flow forecasting and liquidity ladder engine,
-    aggregating per-security projection runs into scenario-aware, per-currency cash ladders
+    aggregating per-security projection runs into scenario-aware, per-currency cash ladders; the
+    first vertical slice has landed and the persisted-run phases remain open
+  - [Quote-stream Fan-out Blueprint (2026-07)](web-ui-stream-fan-out-blueprint-2026-07.md) —
+    delivered design for event-driven SSE fan-out, per-session stream caps, and companion-pane
+    stream sharing (PRs A–C shipped)
+  - [Report-run Status Stream Blueprint (2026-07)](web-ui-report-run-stream-blueprint-2026-07.md) —
+    delivered design for the `report-run:<id>` stream and the generic `StreamBroadcaster<TPayload>`;
+    supersedes the fan-out blueprint's `workspace` / `inbox` topic proposal
+  - All blueprints across every lane are catalogued in the canonical
+    [blueprint register](../engineering/blueprints/README.md), which also records the shared
+    migration-ordinal, precision, route-prefix, and cross-blueprint contracts
   - [Browser Workstation UI Improvements Brainstorm (2026-07)](web-ui-improvements-brainstorm-2026-07.md) —
     nine grounded browser-workstation UX ideas with effort/impact triage, platform-bet analysis,
     and sequencing
@@ -36,16 +127,34 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     five grounded ideas for populating security-master, entity, ledger, and account data via a
     prepared Excel workbook (download → fill → upload → review → governed commit) and tying
     provider connection setup to the imported instrument universe
+  - [Functionality Deepening Brainstorm (2026-07)](functionality-deepening-brainstorm-2026-07.md) —
+    eleven code-grounded ideas for deepening existing subsystems (risk, alerting, promotion
+    governance, reconciliation matching, approvals, close evidence, backfill, marks, order
+    lifecycle), anchored to a depth survey of declared-but-dead seams and sequenced around the
+    W9 slate
 - If you need evidence-backed examples of current operations, check:
   - [generated roadmap outputs](../roadmap/generated/)
   - Current project source-of-truth references listed below.
 
 ## Current Project Snapshot
 
-The registry snapshot dated 2026-07-18 records Evidence Vault productization, statement
-reconciliation onboarding, and WPF parity as the active productization targets. The accepted
-W1-W5, FREX, FINOPS, connector-library, and bounded W7 milestones remain bounded completion claims,
-not blanket production certification.
+The registry records Evidence Vault productization, statement reconciliation onboarding, and the
+bounded W6 Covered Call evidence loop as complete; WPF parity (`W8-WPF-PARITY-001`) and browser
+screen consolidation (`W8-UX-CONSOL-001`) remain active. The accepted W1-W7 bounded milestones are
+capability claims, not blanket production certification.
+
+As of 2026-08-30 the W9 slate is mostly closed: `W9-ASSET-010` is `done`; `W9-TRUTH-001`,
+`W9-DEMO-002`, `W9-PAPER-003`, `W9-REPORT-005`, and `W9-NAV-006` remain `accepted` on operator
+decision `DEC-W9-ACCEPTANCE-001`; and `W9-CORPACT-011` is reopened as `in_progress` with
+`evidence_posture: in_progress` and `health: red` under `DEC-W9-ACCEPTANCE-002` pending unchanged
+exit criterion four. Both decisions and their chronology are recorded in the
+[2026-08-29 W9 Operator Acceptance Record](w9-operator-acceptance-2026-08-29.md).
+`W9-ALPACA-004` was deliberately held and stays `ready_for_acceptance` pending its three recorded
+fill-path caveats; `W9-SAFETY-007`, `W9-GOV-008`, and `W9-INGEST-009` also remain `in_progress`.
+Those latter three open rows are sequenced by the
+[2026-08 W9 Close-Out Delivery Plan](w9-close-out-delivery-plan-2026-08.md). Acceptance of a bounded
+row is not a release certification and does not move a row to `done`. Every W10 row still carries
+planned-evidence posture. The registry remains live truth for all of this.
 
 Production readiness is currently **blocked**. The release posture changes only when the
 [Implementation and Readiness Tracker](implementation-todo-list.md), roadmap evidence, packaging,
@@ -101,10 +210,10 @@ closing web-UI parity gaps for screens that shipped browser-first while it was d
 
 ## Design Charter Integration
 
-- The [Meridian Design Document (Version 0.25)](meridian-design-document.md) is the active stakeholder-facing product framing source.
+- The [Meridian Design Document (Version 1.0)](meridian-design-document.md) is the active stakeholder-facing product framing source.
 - It is treated as the canonical product design charter and should be updated as the first step before changing stakeholder capability narrative.
 - Current roadmap-facing status claims must point to registry-backed outputs (`docs/roadmap/data/*.yml`, `docs/roadmap/generated/*`) and reference this design charter for scope.
-- Design Baseline: `Meridian Design Document (Version 0.25)` is the canonical product thesis for this rebuild phase, extended from the imported design draft with current roadmap, source-module evidence, private-capital operating patterns, treasury-ledger controls, shared explorer UX direction, bounded W7 live-readiness governance, the WPF deferral and subsequent v0.25 WPF reactivation/web-UI parity policy, and the operational proof layer thesis.
+- Design Baseline: `Meridian Design Document (Version 1.0)` is the canonical product thesis. It centers the proven-numbers value proposition and Verified Coverage north star, encodes activation-over-expansion and truth-discipline doctrines from the 2026-07 adversarial program review, and preserves the charter invariants (customer-neutral operational-finance core, treasury-ledger controls, shared explorer UX direction, bounded W7 live-readiness governance, the active WPF co-equal lane and web-UI parity policy, and the operational proof layer thesis).
 
 ## Stakeholder Narrative
 
@@ -115,7 +224,7 @@ closing web-UI parity gaps for screens that shipped browser-first while it was d
   - governed reporting and evidence retention,
   - capital-account, fund-event, and treasury-ledger records.
 - Product wedge: Meridian should make the operational proof chain the product, linking source evidence through validation, reconciliation, ledger impact, capital-account impact, close state, report line, delivery evidence, and audit history.
-- Operator UX direction: Accounting, Portfolio, Data, and Reporting share completed Financial Record Explorer patterns, while Accounting/Reporting expose the completed W5X-FINOPS control-center boundary for close and reconciliation state, priority-ranked exception queues, report-package release safety, and proof drill-through. Evidence Vault, statement onboarding, and WPF workstation parity are the active productization lanes.
+- Operator UX direction: Accounting, Portfolio, Data, and Reporting share completed Financial Record Explorer patterns, while Accounting/Reporting expose the completed W5X-FINOPS control-center boundary for close and reconciliation state, priority-ranked exception queues, report-package release safety, and proof drill-through. Evidence Vault, statement onboarding, and the bounded W6 Covered Call evidence loop are completed capability slices; WPF parity and browser screen consolidation are the active productization lanes.
 - Operating model: configurable tenant-aware system, not separate apps per organization type.
 - Extensibility model: stable financial operations core objects stay consistent across tenants; workflows, rules, data mappings, reports, permissions, domain extensions, and tenant templates are governed configuration layers. See the [Core Extensibility Model](../architecture/core-extensibility-model.md).
 - Shared operator root model remains: `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, `Settings`.
@@ -159,13 +268,13 @@ and required GitHub Actions evidence.
 - W1-W5 are closed baselines in the registry and form the coherent accepted operational-record baseline unless a later registry change says otherwise.
 - W5 is the v0.15 accounting records, operational evidence, and multi-asset coverage package.
 - W5X-FREX-001 is complete. Ledger, Portfolio, Security & Instrument, and Report-Line Provenance explorers share contracts, saved views, proof state, evidence links, and audit routing across the accepted browser and WPF scope.
-- W5X-FINOPS-001 is a completed evidence-backed productization milestone that turns Financial Operations into the shared Accounting/Reporting control center for current close/reconciliation state, exception queues, approval/workflow controls, close-readiness blockers, retained evidence, governed reopen posture, and direct-lending operating controls. The accepted boundary is the shared Operations Continuity and Fund Ledger read-model surface consumed by browser Operations Continuity; WPF surfaces this through Fund Ledger today, with remaining Operations Continuity parity tracked as `W8-WPF-PARITY-001`. Evidence Vault and statement onboarding proceed through their own active rows. The bounded Asset Accounting Event Spine is now active under `W9-ASSET-010`; additional fund-event command-center specializations remain separate roadmap decisions.
+- W5X-FINOPS-001 is a completed evidence-backed productization milestone that turns Financial Operations into the shared Accounting/Reporting control center for current close/reconciliation state, exception queues, approval/workflow controls, close-readiness blockers, retained evidence, governed reopen posture, and direct-lending operating controls. The accepted boundary is the shared Operations Continuity and Fund Ledger read-model surface consumed by browser Operations Continuity; WPF surfaces this through Fund Ledger today, with remaining Operations Continuity parity tracked as `W8-WPF-PARITY-001`. The bounded Asset Accounting Event Spine completed under `W9-ASSET-010`; additional fund-event command-center specializations remain separate roadmap decisions.
 - W5X-CONNECT-001 is complete. Declarative CSV/OFX profiles, IB Flex XML, OFX bank/investment, and Alpaca statement connectors normalize into the shared reconciliation workflow with preview, drift, confidence, and retained-source evidence.
-- W5X-EVIDENCE-001 and W5X-STMT-ONBOARD-001 are in progress. The current acceptance path is browser-first statement reconciliation onboarding into retained Evidence Vault proof; broader document-portal and collaboration scope remains separate.
-- W6-BTSTUDIO-001 remains planned rather than active.
+- W5X-EVIDENCE-001 and W5X-STMT-ONBOARD-001 are complete as the bounded browser-first Evidence Vault and statement-reconciliation onboarding baseline, including production-authority projection into queryable Statement proof; broader document-portal, collaboration, and WPF presentation scope remains separate.
+- W6-BTSTUDIO-001 is complete only as a bounded governed evidence loop on the host-composed browser Covered Call path: a budget-bounded canonical Evidence Vault manifest must resolve inside the authenticated tenant/company scope before queueing; the native backtest retains exact strategy-run lineage; and the four Backtest-to-Paper checklist items become ready only from a durable operator/audit approval with keyed source-run evidence and an exact same-scope Paper child. Strategy uses the governed promotion endpoint and Trading consumes the same scoped lineage. `BacktestStudioRunOrchestrator` is not host-composed, the Strategy Designer fails closed without one captured result, and neither is W6 closure evidence. Broader Backtesting Studio UX remains deferred.
 - W7-LIVE-001 is complete as a bounded governance milestone. Broader live execution productization and live portfolio operations are not part of that completion claim.
 - W8-WPF-PARITY-001 is in progress, closing browser-first screen gaps while preserving one shared contract/read-model seam.
-- `W9-ASSET-010` is in progress. It establishes the evidence-backed Acquisition, Capitalization, Valuation, Income, Corporate Action, Impairment, Depreciation/Amortization, and Disposal spine, preserves Expected/Projected/Drafted/Approved/Posted/Reconciled/Reported as distinct states, and joins acquisition or selected-lot disposal consequences to the immutable journal transaction. Completion remains gated on repository CI and authoritative GitHub Actions evidence.
+- `W9-ASSET-010` is complete. It established the evidence-backed Acquisition, Capitalization, Valuation, Income, Corporate Action, Impairment, Depreciation/Amortization, and Disposal spine, preserves Expected/Projected/Drafted/Approved/Posted/Reconciled/Reported as distinct states, and joins acquisition or selected-lot disposal consequences to the immutable journal transaction, with focused contract, spine, storage, endpoint, shared-read-model, and readiness suites as evidence.
 - The remaining proof-layer targets, including the broader Operational Evidence Graph, fund-event command-center specializations, Capital Account Workbench, and Private-Capital Close Cockpit, remain design priorities until roadmap rows and acceptance evidence move them into delivery status.
 - `Paper-first`, `read-only where uncertain`, and `governance-first` defaults remain active by policy.
 
@@ -192,7 +301,7 @@ Use this matrix to avoid source-of-truth drift:
 
 | Topic | Canonical home | Why |
 | --- | --- | --- |
-| Product design and assumptions | [Meridian Design Document (Version 0.25)](meridian-design-document.md) | Core design source for stakeholder framing |
+| Product design and assumptions | [Meridian Design Document (Version 1.0)](meridian-design-document.md) | Core design source for stakeholder framing |
 | Extensibility engineering boundaries | [Core Extensibility Model](../architecture/core-extensibility-model.md) and `src/Meridian.Contracts/Extensibility/` | Stable-core and governed-configuration rules for implementation |
 | Wave sequencing and acceptance | [Roadmap Registry](../roadmap/README.md) | Durable sequence and acceptance control |
 | Current capability status | Generated roadmap artifacts + source registries | Verifiable and machine-checkable status posture |
@@ -217,7 +326,7 @@ If a legacy page is still actively needed for non-stakeholder operations, keep a
 
 ## High-Value Input Files for Stakeholder Questions
 
-- [Meridian Design Document (Version 0.25)](meridian-design-document.md)
+- [Meridian Design Document (Version 1.0)](meridian-design-document.md)
 - [Roadmap README](../roadmap/README.md)
 - [Roadmap item register](../roadmap/generated/roadmap-register.md)
 - [Generated roadmap summary](../roadmap/generated/ROADMAP_SUMMARY.md)

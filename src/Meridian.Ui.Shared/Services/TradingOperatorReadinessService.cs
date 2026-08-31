@@ -16,7 +16,7 @@ namespace Meridian.Ui.Shared.Services;
 /// <summary>
 /// Builds the shared operator-readiness model consumed by the Trading cockpit.
 /// </summary>
-public sealed class TradingOperatorReadinessService : ITradingOperatorReadinessProvider
+public sealed partial class TradingOperatorReadinessService : ITradingOperatorReadinessProvider
 {
     private static readonly string[] RequiredLivePromotionEvidenceTokens =
         PromotionApprovalChecklist.CreateRequiredFor(RunType.Live);
@@ -52,7 +52,24 @@ public sealed class TradingOperatorReadinessService : ITradingOperatorReadinessP
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<TradingOperatorReadinessDto> GetAsync(Guid? fundAccountId = null, CancellationToken ct = default)
+    public Task<TradingOperatorReadinessDto> GetAsync(
+        Guid? fundAccountId = null,
+        CancellationToken ct = default) =>
+        GetCoreAsync(fundAccountId, scope: null, ct);
+
+    public Task<TradingOperatorReadinessDto> GetAsync(
+        Guid? fundAccountId,
+        StrategyRunReadScope scope,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return GetCoreAsync(fundAccountId, scope, ct);
+    }
+
+    private async Task<TradingOperatorReadinessDto> GetCoreAsync(
+        Guid? fundAccountId,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         var asOf = DateTimeOffset.UtcNow;
@@ -65,8 +82,8 @@ public sealed class TradingOperatorReadinessService : ITradingOperatorReadinessP
         }
 
         var auditEntries = await ResolveAuditEntriesAsync(ct).ConfigureAwait(false);
-        var latestRun = await ResolveLatestRunAsync(ct).ConfigureAwait(false);
-        var promotionRecords = await ResolvePromotionRecordsAsync(ct).ConfigureAwait(false);
+        var latestRun = await ResolveLatestRunAsync(scope, ct).ConfigureAwait(false);
+        var promotionRecords = await ResolvePromotionRecordsAsync(scope, ct).ConfigureAwait(false);
         var promotion = BuildPromotion(latestRun, promotionRecords);
         var paperReadiness = BuildPaperSessionReadiness(paperService, latestRun, auditEntries, workItems);
         var sessions = paperReadiness.Sessions;
@@ -531,12 +548,12 @@ public sealed class TradingOperatorReadinessService : ITradingOperatorReadinessP
                 HasReference: false,
                 HasRetainedEvidence: false,
                 MatchesActiveOverride: !IsLiveOverrideChecklistItem(checklistItem),
-                RequiredManualOverrideId: NormalizeEvidenceReferenceToken(manualOverrideId));
+                RequiredManualOverrideId: Meridian.Contracts.Text.TextPrimitives.NormalizeOptional(manualOverrideId));
         }
 
         var value = GetPromotionEvidenceReferenceValue(reference);
         var hasRetainedEvidence = value.Length > 0;
-        var requiredManualOverrideId = NormalizeEvidenceReferenceToken(manualOverrideId);
+        var requiredManualOverrideId = Meridian.Contracts.Text.TextPrimitives.NormalizeOptional(manualOverrideId);
         var matchesActiveOverride = !IsLiveOverrideChecklistItem(checklistItem) ||
             (!string.IsNullOrWhiteSpace(requiredManualOverrideId) &&
              ContainsPromotionEvidenceReferenceToken(value, requiredManualOverrideId));
@@ -857,7 +874,9 @@ public sealed class TradingOperatorReadinessService : ITradingOperatorReadinessP
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-    private async Task<StrategyRunDetail?> ResolveLatestRunAsync(CancellationToken ct)
+    private async Task<StrategyRunDetail?> ResolveLatestRunAsync(
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
     {
         var readService = Resolve<StrategyRunReadService>();
         if (readService is null)
@@ -865,11 +884,25 @@ public sealed class TradingOperatorReadinessService : ITradingOperatorReadinessP
             return null;
         }
 
-        var runs = await readService.GetRunsAsync(ct: ct).ConfigureAwait(false);
-        var latest = runs.FirstOrDefault();
-        return latest is null
-            ? null
-            : await readService.GetRunDetailAsync(latest.RunId, ct).ConfigureAwait(false);
+        var runs = scope is null
+            ? await readService.GetRunsAsync(ct: ct).ConfigureAwait(false)
+            : await readService.GetRunsAsync(
+                    strategyId: null,
+                    runType: null,
+                    scope: scope,
+                    ct: ct)
+                .ConfigureAwait(false);
+        var latest = scope is null
+            ? runs.FirstOrDefault()
+            : FindScopedCoveredCallPaperTarget(runs) ?? runs.FirstOrDefault();
+        if (latest is null)
+        {
+            return null;
+        }
+
+        return scope is null
+            ? await readService.GetRunDetailAsync(latest.RunId, ct).ConfigureAwait(false)
+            : await readService.GetRunDetailAsync(latest.RunId, scope, ct).ConfigureAwait(false);
     }
 
     private async Task<WorkstationBrokerageSyncStatusDto?> ResolveBrokerageStatusAsync(
@@ -1035,12 +1068,19 @@ public sealed class TradingOperatorReadinessService : ITradingOperatorReadinessP
         return await runtime.GetAllStatusesAsync(ct).ConfigureAwait(false);
     }
 
-    private async Task<IReadOnlyList<StrategyPromotionRecord>> ResolvePromotionRecordsAsync(CancellationToken ct)
+    private async Task<IReadOnlyList<StrategyPromotionRecord>> ResolvePromotionRecordsAsync(
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
     {
         var promotionService = Resolve<PromotionService>();
-        return promotionService is null
-            ? Array.Empty<StrategyPromotionRecord>()
-            : await promotionService.GetPromotionHistoryAsync(ct).ConfigureAwait(false);
+        if (promotionService is null)
+        {
+            return [];
+        }
+
+        return scope is null
+            ? await promotionService.GetPromotionHistoryAsync(ct).ConfigureAwait(false)
+            : await promotionService.GetPromotionHistoryAsync(scope, ct).ConfigureAwait(false);
     }
 
     private async Task<TradingTrustGateReadinessDto> ResolveTrustGateReadinessAsync(CancellationToken ct)
@@ -1449,226 +1489,6 @@ public sealed class TradingOperatorReadinessService : ITradingOperatorReadinessP
             ? null
             : $"{entry.Action} for {kind}.";
     }
-
-    private static TradingPromotionReadinessDto? BuildPromotion(
-        StrategyRunDetail? latestRun,
-        IReadOnlyList<StrategyPromotionRecord> promotionRecords)
-    {
-        var record = latestRun is null
-            ? promotionRecords.FirstOrDefault()
-            : promotionRecords.FirstOrDefault(candidate =>
-                IsPromotionRecordLinkedToRun(candidate, latestRun.Summary.RunId));
-
-        if (record is not null)
-        {
-            return new TradingPromotionReadinessDto(
-                State: record.Decision,
-                Reason: record.ApprovalReason ?? record.ReviewNotes ?? "Promotion decision recorded.",
-                RequiresReview: !IsPromotionRecordTraceComplete(record),
-                SourceRunId: record.SourceRunId,
-                TargetRunId: record.TargetRunId,
-                SuggestedNextMode: record.TargetRunType.ToString(),
-                AuditReference: record.AuditReference,
-                ApprovalStatus: record.Decision,
-                ManualOverrideId: record.ManualOverrideId,
-                ApprovedBy: record.ApprovedBy,
-                ApprovalChecklist: record.ApprovalChecklist ?? [],
-                EvidenceReferences: record.EvidenceReferences ?? []);
-        }
-
-        var promotion = latestRun?.Promotion ?? latestRun?.Summary.Promotion;
-        return promotion is null
-            ? null
-            : new TradingPromotionReadinessDto(
-                State: promotion.State.ToString(),
-                Reason: promotion.Reason,
-                RequiresReview: promotion.RequiresReview,
-                SourceRunId: promotion.SourceRunId ?? latestRun?.Summary.RunId,
-                TargetRunId: promotion.TargetRunId,
-                SuggestedNextMode: promotion.SuggestedNextMode?.ToString(),
-                AuditReference: promotion.AuditReference,
-                ApprovalStatus: promotion.ApprovalStatus,
-                ManualOverrideId: promotion.ManualOverrideId,
-                ApprovedBy: promotion.ApprovedBy,
-                ApprovalChecklist: promotion.ApprovalChecklist ?? [],
-                EvidenceReferences: promotion.EvidenceReferences ?? []);
-    }
-
-    private static bool IsPromotionRecordLinkedToRun(StrategyPromotionRecord record, string runId) =>
-        string.Equals(record.SourceRunId, runId, StringComparison.Ordinal) ||
-        string.Equals(record.TargetRunId, runId, StringComparison.Ordinal);
-
-    private static bool IsPromotionRecordTraceComplete(StrategyPromotionRecord record) =>
-        !string.IsNullOrWhiteSpace(record.Decision) &&
-        !string.IsNullOrWhiteSpace(record.ApprovedBy) &&
-        !string.IsNullOrWhiteSpace(record.ApprovalReason) &&
-        HasApprovalChecklist(record.ApprovalChecklist) &&
-        (record.TargetRunType != RunType.Live ||
-         (GetMissingLivePromotionChecklistItems(record.ApprovalChecklist).Count == 0 &&
-          GetMissingLivePromotionEvidenceReferences(record.EvidenceReferences).Count == 0 &&
-          GetInvalidLivePromotionEvidenceReferenceFields(record.EvidenceReferences, record.ManualOverrideId).Count == 0)) &&
-        !string.IsNullOrWhiteSpace(record.SourceRunId) &&
-        !string.IsNullOrWhiteSpace(record.AuditReference);
-
-    private static bool IsPromotionTraceComplete(TradingPromotionReadinessDto? promotion) =>
-        GetMissingPromotionTraceFields(promotion).Count == 0;
-
-    private static IReadOnlyList<string> GetMissingPromotionTraceFields(TradingPromotionReadinessDto? promotion)
-    {
-        if (promotion is null)
-        {
-            return ["promotion"];
-        }
-
-        var missing = new List<string>();
-        if (string.IsNullOrWhiteSpace(promotion.ApprovalStatus))
-        {
-            missing.Add("decision");
-        }
-
-        if (string.IsNullOrWhiteSpace(promotion.ApprovedBy))
-        {
-            missing.Add("operator");
-        }
-
-        if (string.IsNullOrWhiteSpace(promotion.Reason))
-        {
-            missing.Add("rationale");
-        }
-
-        if (!HasApprovalChecklist(promotion.ApprovalChecklist))
-        {
-            missing.Add("checklist");
-        }
-        else if (IsLivePromotionTrace(promotion))
-        {
-            missing.AddRange(GetMissingLivePromotionChecklistItems(promotion.ApprovalChecklist)
-                .Select(static item => $"approvalChecklist:{item}"));
-        }
-
-        if (IsLivePromotionTrace(promotion) &&
-            !HasEvidenceReferences(promotion.EvidenceReferences))
-        {
-            missing.Add("evidenceReferences");
-        }
-        else if (IsLivePromotionTrace(promotion))
-        {
-            missing.AddRange(GetMissingLivePromotionEvidenceReferences(promotion.EvidenceReferences)
-                .Select(static item => $"evidenceReferences:{item}"));
-            missing.AddRange(GetInvalidLivePromotionEvidenceReferenceFields(
-                promotion.EvidenceReferences,
-                promotion.ManualOverrideId));
-        }
-
-        if (string.IsNullOrWhiteSpace(promotion.SourceRunId))
-        {
-            missing.Add("sourceRunId");
-        }
-
-        if (string.Equals(promotion.ApprovalStatus, PromotionDecisionKinds.Approved, StringComparison.OrdinalIgnoreCase) &&
-            string.IsNullOrWhiteSpace(promotion.TargetRunId))
-        {
-            missing.Add("targetRunId");
-        }
-
-        if (string.Equals(promotion.ApprovalStatus, PromotionDecisionKinds.Rejected, StringComparison.OrdinalIgnoreCase) &&
-            !string.IsNullOrWhiteSpace(promotion.TargetRunId))
-        {
-            missing.Add("targetRunId must be empty for rejected decisions");
-        }
-
-        if (string.IsNullOrWhiteSpace(promotion.AuditReference))
-        {
-            missing.Add("auditReference");
-        }
-
-        return missing;
-    }
-
-    private static bool HasApprovalChecklist(IReadOnlyList<string>? approvalChecklist)
-        => approvalChecklist is { Count: > 0 } &&
-           approvalChecklist.All(static item => !string.IsNullOrWhiteSpace(item));
-
-    private static bool HasEvidenceReferences(IReadOnlyList<string>? evidenceReferences)
-        => evidenceReferences is { Count: > 0 } &&
-           evidenceReferences.All(static item => !string.IsNullOrWhiteSpace(item));
-
-    private static bool IsLivePromotionTrace(TradingPromotionReadinessDto promotion)
-        => string.Equals(promotion.SuggestedNextMode, RunType.Live.ToString(), StringComparison.OrdinalIgnoreCase);
-
-    private static IReadOnlyList<string> GetMissingLivePromotionChecklistItems(IReadOnlyList<string>? approvalChecklist)
-    {
-        var provided = PromotionApprovalChecklist.Normalize(approvalChecklist).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        return RequiredLivePromotionEvidenceTokens
-            .Where(required => !provided.Contains(required))
-            .ToArray();
-    }
-
-    private static IReadOnlyList<string> GetMissingLivePromotionEvidenceReferences(IReadOnlyList<string>? evidenceReferences)
-    {
-        var provided = evidenceReferences?
-            .Select(GetPromotionEvidenceReferenceKey)
-            .Where(static item => item.Length > 0)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase)
-            ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        return RequiredLivePromotionEvidenceTokens
-            .Where(required => !provided.Contains(required))
-            .ToArray();
-    }
-
-    private static IReadOnlyList<string> GetInvalidLivePromotionEvidenceReferenceFields(
-        IReadOnlyList<string>? evidenceReferences,
-        string? manualOverrideId)
-        => RequiredLivePromotionEvidenceTokens
-            .Select(token => EvaluatePromotionEvidenceReference(evidenceReferences, token, manualOverrideId))
-            .Where(static status => status.HasReference && !status.IsSatisfied)
-            .Select(static status => status.MissingOrInvalidField!)
-            .ToArray();
-
-    private static string GetPromotionEvidenceReferenceKey(string? evidenceReference)
-    {
-        if (string.IsNullOrWhiteSpace(evidenceReference))
-        {
-            return string.Empty;
-        }
-
-        var separatorIndex = evidenceReference.IndexOf(':', StringComparison.Ordinal);
-        var key = separatorIndex >= 0 ? evidenceReference[..separatorIndex] : evidenceReference;
-        return key.Trim().Replace(' ', '_').Replace('-', '_').ToUpperInvariant();
-    }
-
-    private static string GetPromotionEvidenceReferenceValue(string? evidenceReference)
-    {
-        if (string.IsNullOrWhiteSpace(evidenceReference))
-        {
-            return string.Empty;
-        }
-
-        var separatorIndex = evidenceReference.IndexOf(':', StringComparison.Ordinal);
-        return separatorIndex < 0 || separatorIndex == evidenceReference.Length - 1
-            ? string.Empty
-            : evidenceReference[(separatorIndex + 1)..].Trim();
-    }
-
-    private static bool ContainsPromotionEvidenceReferenceToken(string referenceValue, string token)
-    {
-        if (string.Equals(referenceValue, token, StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        var segments = referenceValue.Split(
-            ['/', '\\', '#', '?', '&', '=', ',', ';', ' ', '\t', '\r', '\n'],
-            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        return segments.Any(segment => string.Equals(segment, token, StringComparison.OrdinalIgnoreCase));
-    }
-
-    private static string? NormalizeEvidenceReferenceToken(string? token) =>
-        string.IsNullOrWhiteSpace(token) ? null : token.Trim();
-
-    private static bool IsLiveOverrideChecklistItem(string checklistItem) =>
-        string.Equals(checklistItem, PromotionApprovalChecklist.LiveOverrideReviewed, StringComparison.OrdinalIgnoreCase);
 
     private static TradingPaperSessionReadinessDto? SelectActiveSession(
         IReadOnlyList<TradingPaperSessionReadinessDto> sessions,

@@ -199,6 +199,9 @@ internal static class LifecycleStartupOutcome
             CompletedAtUtc: now,
             AttemptNumber: 1,
             CorrelationId: request.RequestId,
+            // Deliberately NOT routed through Sha256Digest (which lowercases): receipt hashes
+            // cross the launcher/supervisor process boundary and persist across restarts, so a
+            // casing change must be coordinated on both sides at once (#2691).
             InputHashSha256: Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
                 $"{manifestPath}\n{exception.GetType().FullName}\n{exception.Message}"))),
             Postconditions:
@@ -509,6 +512,9 @@ internal static class LifecycleStartupOutcome
         {
             material += $"\nmanifest-unreadable:{ex.GetType().Name}";
         }
+        // Deliberately NOT routed through Sha256Digest (which lowercases): receipt input hashes
+        // cross the launcher/supervisor process boundary and persist across restarts, so a
+        // casing change must be coordinated on both sides at once (#2691).
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(material)));
     }
 

@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Workstation;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -87,7 +88,7 @@ public sealed partial class ReportPackRunReadService
             return false;
         }
 
-        var computedHash = SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(record.AccessPolicy)));
+        var computedHash = Sha256Digest.ComputeBytesUtf8(JsonSerializer.Serialize(record.AccessPolicy));
         return retainedHash.Length == computedHash.Length
             && CryptographicOperations.FixedTimeEquals(retainedHash, computedHash);
     }

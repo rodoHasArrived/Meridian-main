@@ -1,5 +1,6 @@
 using System.Globalization;
 using Meridian.Domain.Reconciliation;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
@@ -63,7 +64,7 @@ public static class StatementRunMatchingService
                         reference,
                         ExternalTransactionId: null,
                         row.Account,
-                        NormalizeSecurityId(row.Symbol),
+                        NormalizeOptional(row.Symbol),
                         Currency: null,
                         row.TradeDate,
                         row.TradeDate,
@@ -193,9 +194,6 @@ public static class StatementRunMatchingService
 
     private static decimal PositionMarketValue(CanonicalStatementRow row)
         => row.Price != 0m ? row.Quantity * row.Price : row.CashAmount;
-
-    private static string? NormalizeSecurityId(string symbol)
-        => string.IsNullOrWhiteSpace(symbol) ? null : symbol.Trim();
 
     private static StatementMatchingToleranceProfile ToEngineTolerance(StatementToleranceProfile profile)
     {

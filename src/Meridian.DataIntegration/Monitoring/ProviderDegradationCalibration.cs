@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using Meridian.Core.IO;
 
 namespace Meridian.DataIntegration.Monitoring;
 
@@ -270,18 +271,36 @@ public sealed class ProviderDegradationCalibrationRunner
 
 public sealed class ProviderKernelCalibrationSnapshotStore
 {
-    private readonly string _rootPath;
+    private const string CalibrationDirectoryName = "calibration";
+    private const string ProviderDegradationDirectoryName = "provider-degradation";
+    private const int SnapshotTimestampLength = 14;
+    private readonly RootedPathGuard _pathGuard;
 
     public ProviderKernelCalibrationSnapshotStore(string rootPath)
     {
-        _rootPath = rootPath;
+        _pathGuard = new RootedPathGuard(rootPath);
     }
 
     public async Task<string> SaveAsync(ProviderKernelCalibrationSnapshot snapshot, CancellationToken ct = default)
     {
-        var dir = Path.Combine(_rootPath, "calibration", "provider-degradation");
+        ArgumentNullException.ThrowIfNull(snapshot);
+        RootedPathGuard.ValidatePathSegment(
+            snapshot.CandidateKernelVersion,
+            nameof(snapshot.CandidateKernelVersion));
+        RootedPathGuard.ValidatePathSegment(snapshot.SnapshotId, nameof(snapshot.SnapshotId));
+
+        var dir = _pathGuard.ResolvePath(
+            CalibrationDirectoryName,
+            ProviderDegradationDirectoryName);
         Directory.CreateDirectory(dir);
-        var path = Path.Combine(dir, $"{snapshot.CreatedAt:yyyyMMddHHmmss}_{snapshot.CandidateKernelVersion}_{snapshot.SnapshotId}.json");
+        _pathGuard.EnsurePath(dir);
+
+        var fileName =
+            $"{snapshot.CreatedAt:yyyyMMddHHmmss}_{snapshot.CandidateKernelVersion}_{snapshot.SnapshotId}.json";
+        var path = _pathGuard.ResolvePath(
+            CalibrationDirectoryName,
+            ProviderDegradationDirectoryName,
+            fileName);
 
         await using var stream = File.Create(path);
         await JsonSerializer.SerializeAsync(stream, snapshot, cancellationToken: ct).ConfigureAwait(false);
@@ -290,7 +309,9 @@ public sealed class ProviderKernelCalibrationSnapshotStore
 
     public async Task<ProviderKernelCalibrationSnapshot?> GetLatestAsync(CancellationToken ct = default)
     {
-        var dir = Path.Combine(_rootPath, "calibration", "provider-degradation");
+        var dir = _pathGuard.ResolvePath(
+            CalibrationDirectoryName,
+            ProviderDegradationDirectoryName);
         if (!Directory.Exists(dir))
         {
             return null;
@@ -298,6 +319,7 @@ public sealed class ProviderKernelCalibrationSnapshotStore
 
         var latestFile = new DirectoryInfo(dir)
             .GetFiles("*.json")
+            .Where(IsSnapshotArtifact)
             .OrderByDescending(f => f.CreationTimeUtc)
             .FirstOrDefault();
 
@@ -306,9 +328,30 @@ public sealed class ProviderKernelCalibrationSnapshotStore
             return null;
         }
 
+        _pathGuard.EnsurePath(latestFile.FullName);
         await using var stream = latestFile.OpenRead();
         return await JsonSerializer.DeserializeAsync<ProviderKernelCalibrationSnapshot>(stream, cancellationToken: ct)
             .ConfigureAwait(false);
+    }
+
+    private static bool IsSnapshotArtifact(FileInfo file)
+    {
+        var fileName = file.Name;
+        if (!fileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ||
+            fileName.Length <= SnapshotTimestampLength + ".json".Length + 2 ||
+            fileName[SnapshotTimestampLength] != '_' ||
+            fileName.LastIndexOf('_') <= SnapshotTimestampLength + 1)
+        {
+            return false;
+        }
+
+        for (var index = 0; index < SnapshotTimestampLength; index++)
+        {
+            if (!char.IsAsciiDigit(fileName[index]))
+                return false;
+        }
+
+        return true;
     }
 }
 

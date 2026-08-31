@@ -41,6 +41,91 @@ public sealed class StructuredCashFlowTermsResolverTests
     }
 
     [Fact]
+    public void Resolve_EmptyGovernedFactorSchedule_IsAuthoritativeOverOuterRows()
+    {
+        // The governed nested schedule's PRESENCE claims ownership: profileFields carrying an
+        // EMPTY factorScheduleEntries deliberately asserts "no factor history", so the resolver
+        // must not fall through to the ungoverned outer pass-through rows.
+        var security = Build(JsonSerializer.SerializeToElement(new
+        {
+            customProfileId = "structured-credit-io-po",
+            profileVersion = 1,
+            profileFields = new
+            {
+                factorScheduleEntries = Array.Empty<object>()
+            },
+            factorScheduleEntries = new object[]
+            {
+                new { asOfDate = "2021-01-01", factor = 0.8m }
+            }
+        }));
+
+        var terms = StructuredCashFlowTermsResolver.Resolve(security);
+
+        terms.HasFactorSchedule.Should().BeFalse(
+            "governance explicitly left the nested schedule empty, so the outer rows must not supply pass-through economics");
+    }
+
+    [Fact]
+    public void Resolve_ShouldReadAndAggregateContractualPrincipalSchedule()
+    {
+        var security = Build(JsonSerializer.SerializeToElement(new
+        {
+            principalSchedule = new object[]
+            {
+                new { paymentDate = "2028-06-30", amount = 25m },
+                new { paymentDate = "2027-06-30", amount = 30m },
+                new { paymentDate = "2027-06-30", amount = 10m },
+                new { paymentDate = "2029-06-30", amount = -1m }
+            }
+        }));
+
+        var terms = StructuredCashFlowTermsResolver.Resolve(security);
+
+        terms.HasPrincipalSchedule.Should().BeTrue();
+        terms.PrincipalSchedule.Should().SatisfyRespectively(
+            first =>
+            {
+                first.PaymentDate.Should().Be(new DateOnly(2027, 6, 30));
+                first.Amount.Should().Be(40m);
+            },
+            second =>
+            {
+                second.PaymentDate.Should().Be(new DateOnly(2028, 6, 30));
+                second.Amount.Should().Be(25m);
+            });
+    }
+
+    [Fact]
+    public void Resolve_ShouldPreferTypedFactorScheduleEntriesOverFreeTextFactorSchedule()
+    {
+        // The canonical F# StructuredCredit serializer emits a free-text factorSchedule (legacy
+        // trustee-report pointer) alongside the typed factorScheduleEntries array. The resolver
+        // must skip the non-array string and seed FactorAsOf from the typed entries.
+        var security = Build(JsonSerializer.SerializeToElement(new
+        {
+            tranche = "B",
+            originalFace = 10_000_000m,
+            currentFactor = 0.8235m,
+            factorSchedule = "See trustee report 2026-07",
+            factorScheduleEntries = new object[]
+            {
+                new { asOfDate = "2026-06-01", factor = 0.8412m },
+                new { asOfDate = "2026-07-01", factor = 0.8235m }
+            }
+        }));
+
+        var terms = StructuredCashFlowTermsResolver.Resolve(security);
+
+        terms.HasFactorSchedule.Should().BeTrue(
+            "the typed factorScheduleEntries array must resolve even when the legacy free-text factorSchedule is present");
+        terms.FactorAsOf(new DateOnly(2026, 6, 15)).Should().Be(0.8412m);
+        terms.FactorAsOf(new DateOnly(2026, 7, 15)).Should().Be(0.8235m);
+        terms.FactorAsOf(new DateOnly(2026, 5, 1)).Should().Be(0.8235m,
+            "before the first scheduled point the scalar currentFactor is the fallback");
+    }
+
+    [Fact]
     public void Resolve_ShouldReadTypedCashFlowLegs()
     {
         var security = Build(JsonSerializer.SerializeToElement(new
@@ -149,6 +234,32 @@ public sealed class StructuredCashFlowTermsResolverTests
     }
 
     [Fact]
+    public void Resolve_ShouldPreferGovernedProfileFieldsOverOuterDuplicates()
+    {
+        // profileFields values are schema- and profile-validated on write; extra outer keys on an
+        // envelope are ungoverned pass-through. An unvalidated outer maturity must not shadow the
+        // governed one in projections and conflict comparisons.
+        var security = Build(JsonSerializer.SerializeToElement(new
+        {
+            customProfileId = "structured-credit-io-po",
+            profileVersion = 1,
+            maturity = "2040-01-01",
+            couponRate = 9.99m,
+            profileFields = new
+            {
+                maturity = "2030-01-01",
+                couponRate = 4.5m
+            }
+        }));
+
+        var terms = StructuredCashFlowTermsResolver.Resolve(security);
+
+        terms.MaturityDate.Should().Be(new DateOnly(2030, 1, 1),
+            "the governed profile field outranks the ungoverned outer duplicate");
+        terms.CouponRate.Should().Be(4.5m);
+    }
+
+    [Fact]
     public void Resolve_WithNoStructuredTerms_ShouldReturnNullsAndEmptySchedule()
     {
         var security = Build(JsonSerializer.SerializeToElement(new { }));
@@ -160,6 +271,47 @@ public sealed class StructuredCashFlowTermsResolverTests
         terms.MaturityDate.Should().BeNull();
         terms.HasFactorSchedule.Should().BeFalse();
         terms.FactorSchedule.Should().BeEmpty();
+        terms.HasPrincipalSchedule.Should().BeFalse();
+        terms.PrincipalSchedule.Should().BeNull(
+            "no source asserted a schedule property — absence must stay distinct from an asserted-empty bullet");
+    }
+
+    [Fact]
+    public void Resolve_EmptyPrincipalSchedule_IsAuthoritativeOverLowerPrioritySources()
+    {
+        // A bullet bond's canonical serializer emits principalSchedule: [] - an explicit "no
+        // contractual instalments". The array's PRESENCE claims ownership, so a stale
+        // pass-through schedule on a lower-priority source (commonTerms) must not resurrect
+        // instalments and turn the bullet into a sinker.
+        var security = new SecurityDetailDto(
+            Guid.NewGuid(),
+            "Bond",
+            SecurityStatusDto.Active,
+            "Bullet bond",
+            "USD",
+            JsonSerializer.SerializeToElement(new
+            {
+                principalSchedule = new object[]
+                {
+                    new { paymentDate = "2027-06-30", amount = 25m }
+                }
+            }),
+            JsonSerializer.SerializeToElement(new
+            {
+                maturity = "2030-06-30",
+                par = 100m,
+                principalSchedule = Array.Empty<object>()
+            }),
+            [new SecurityIdentifierDto(SecurityIdentifierKind.Cusip, "123456789", true, DateTimeOffset.UtcNow)],
+            [],
+            1,
+            DateTimeOffset.UtcNow,
+            null);
+
+        var terms = StructuredCashFlowTermsResolver.Resolve(security);
+
+        terms.HasPrincipalSchedule.Should().BeFalse(
+            "the asset terms explicitly assert an empty contractual schedule, and the commonTerms pass-through must not fill it");
     }
 
     private static SecurityDetailDto Build(JsonElement assetSpecificTerms)

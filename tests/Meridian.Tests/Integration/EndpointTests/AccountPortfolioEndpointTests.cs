@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Net;
 using System.Text.Json;
 using FluentAssertions;
@@ -177,6 +178,14 @@ public sealed class AccountPortfolioEndpointTests
         }
 
         var app = builder.Build();
+        // Execution reads expose account balances and positions, so they require ViewTrades
+        // (W9-GOV-008). This host composes the endpoints without the session middleware, so
+        // stamp the permissions snapshot the authorization filter reads.
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ViewTrades;
+            await next();
+        });
         app.MapExecutionEndpoints(JsonOpts);
 
         await app.StartAsync();

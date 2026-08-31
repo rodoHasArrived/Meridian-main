@@ -26,6 +26,11 @@ namespace Meridian.Execution.Events;
 ///     Optional brokerage account ID. <c>null</c> when the portfolio operates on a single
 ///     default account.
 /// </param>
+/// <param name="UsesFaceValuePercentageOfPar">
+///     The gateway routed <paramref name="FilledQuantity"/> as face value and quoted
+///     <paramref name="FillPrice"/> as a percentage of par (fixed income). Booking consumers
+///     must not multiply the two raw: 100,000 face at 101.25 is $101,250, not $10,125,000.
+/// </param>
 public sealed record TradeExecutedEvent(
     Guid FillId,
     string OrderId,
@@ -37,8 +42,15 @@ public sealed record TradeExecutedEvent(
     decimal RealizedPnl,
     decimal NewCash,
     DateTimeOffset OccurredAt,
-    string? FinancialAccountId = null)
+    string? FinancialAccountId = null,
+    bool UsesFaceValuePercentageOfPar = false)
 {
-    /// <summary>Gross trade value (fill quantity × fill price, always positive).</summary>
-    public decimal GrossValue => FilledQuantity * FillPrice;
+    /// <summary>
+    /// Gross trade value, always positive. For a face-value fill the clean price is a
+    /// percentage of par, so the price is scaled to a fraction of par before multiplying —
+    /// the same convention pre-trade risk uses to measure the order — keeping the booked
+    /// cash movement equal to the notional the risk gate approved.
+    /// </summary>
+    public decimal GrossValue =>
+        FilledQuantity * (UsesFaceValuePercentageOfPar ? FillPrice / 100m : FillPrice);
 }

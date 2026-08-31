@@ -224,8 +224,7 @@ public sealed class IBSimulationClient : IMarketDataClient
                         SequenceNumber: 0,
                         StreamId: "IB-SIM",
                         Venue: null),
-                    0,
-                    "ib-sim");
+                    source: "ib-sim");
 
                 _publisher.TryPublish(evt);
             }

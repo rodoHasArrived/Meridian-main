@@ -1,0 +1,850 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Meridian.Reporting</name>
+    </assembly>
+    <members>
+        <member name="T:Meridian.Reporting.ReportingSnapshotCertificationStatus">
+            <summary>Whether a sealed snapshot has enough authoritative inputs to be certified.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingSnapshotSourceContext">
+            <summary>
+            Identifies the ledger source used to build a reporting snapshot. Existing callers that pass
+            only an in-memory ledger remain supported and are labeled as a legacy, non-authoritative source.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingSnapshotSourceContext.#ctor(System.String,System.String,System.Boolean)">
+            <summary>
+            Identifies the ledger source used to build a reporting snapshot. Existing callers that pass
+            only an in-memory ledger remain supported and are labeled as a legacy, non-authoritative source.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingSnapshotReceipt">
+            <summary>
+            Deterministic receipt for the exact ledger and Security Master inputs frozen into a report.
+            The receipt hash deliberately excludes report id and generation time so identical inputs yield
+            the same snapshot identity.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingSnapshotReceipt.#ctor(System.String,System.String,System.String,System.String,Meridian.Reporting.ReportingSnapshotCertificationStatus,System.String,System.String,System.Int32,System.Int32,System.Int32,System.Collections.Generic.IReadOnlyList{System.String})">
+            <summary>
+            Deterministic receipt for the exact ledger and Security Master inputs frozen into a report.
+            The receipt hash deliberately excludes report id and generation time so identical inputs yield
+            the same snapshot identity.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.CertifiedReportingSnapshot">
+            <summary>
+            Immutable report-ready rows and their deterministic source receipt. All external lookups are
+            completed before this object is created; rendering must consume only these frozen values.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.CertifiedReportingSnapshot.#ctor(System.String,System.DateTimeOffset,Meridian.Reporting.ReportKind,System.Collections.Generic.IReadOnlyList{Meridian.Reporting.EnrichedLedgerRow},Meridian.Reporting.ReportingSnapshotReceipt)">
+            <summary>
+            Immutable report-ready rows and their deterministic source receipt. All external lookups are
+            completed before this object is created; rendering must consume only these frozen values.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.DesignModule">
+            <summary>Physical module marker for the Reporting bounded context.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.NavAttributionService">
+            <summary>
+            Calculates and attributes Net Asset Value across a fund structure by combining ledger balances
+            with Security Master instrument definitions.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.NavAttributionRequest">
+            <summary>Request payload for <see cref="M:Meridian.Reporting.NavAttributionService.AttributeAsync(Meridian.Reporting.NavAttributionRequest,System.Threading.CancellationToken)"/>.</summary>
+        </member>
+        <member name="M:Meridian.Reporting.NavAttributionRequest.#ctor(System.String,System.DateTimeOffset,Meridian.Ledger.FundLedgerBook,System.String)">
+            <summary>Request payload for <see cref="M:Meridian.Reporting.NavAttributionService.AttributeAsync(Meridian.Reporting.NavAttributionRequest,System.Threading.CancellationToken)"/>.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.NavComponent">
+            <summary>NAV contribution from a single ledger account.</summary>
+        </member>
+        <member name="M:Meridian.Reporting.NavComponent.#ctor(System.String,System.String,System.String,System.String,System.String,System.Decimal)">
+            <summary>NAV contribution from a single ledger account.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.NavBreakdown">
+            <summary>NAV summary for one dimension (consolidated, entity, sleeve, or vehicle).</summary>
+        </member>
+        <member name="M:Meridian.Reporting.NavBreakdown.#ctor(System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Reporting.NavComponent},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})">
+            <summary>NAV summary for one dimension (consolidated, entity, sleeve, or vehicle).</summary>
+        </member>
+        <member name="T:Meridian.Reporting.NavAttributionResult">
+            <summary>Full NAV attribution result across all fund dimensions.</summary>
+        </member>
+        <member name="M:Meridian.Reporting.NavAttributionResult.#ctor(System.String,System.DateTimeOffset,System.String,System.DateTimeOffset,Meridian.Reporting.NavBreakdown,System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Reporting.NavBreakdown},System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Reporting.NavBreakdown},System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Reporting.NavBreakdown})">
+            <summary>Full NAV attribution result across all fund dimensions.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.CertifiedPartnersCapitalAccount">
+            <summary>
+            One partner / capital-account row of a certified partners-capital roll-forward. All figures are
+            derived from the same certified ledger scope as the run and are carried on the reporting manifest
+            for the client-grade Capital Account Statement.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.CertifiedPartnersCapitalAccount.#ctor(System.String,System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal)">
+            <summary>
+            One partner / capital-account row of a certified partners-capital roll-forward. All figures are
+            derived from the same certified ledger scope as the run and are carried on the reporting manifest
+            for the client-grade Capital Account Statement.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.CertifiedPartnersCapitalProjection">
+            <summary>
+            Certified partners-capital roll-forward projection
+            (opening → contributions → distributions → allocated result → other movements → ending) for the
+            Capital Account Statement template: per-account rows plus the fund total and a reconciliation
+            variance. Produced deterministically from the run's authoritative ledger scope and rendered into
+            the governed report-pack artifacts (whose bytes are hash-retained), so the numbers stay provable.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.CertifiedPartnersCapitalProjection.#ctor(System.DateTimeOffset,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Boolean,System.Collections.Generic.IReadOnlyList{Meridian.Reporting.CertifiedPartnersCapitalAccount})">
+            <summary>
+            Certified partners-capital roll-forward projection
+            (opening → contributions → distributions → allocated result → other movements → ending) for the
+            Capital Account Statement template: per-account rows plus the fund total and a reconciliation
+            variance. Produced deterministically from the run's authoritative ledger scope and rendered into
+            the governed report-pack artifacts (whose bytes are hash-retained), so the numbers stay provable.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.IReportingPartnersCapitalSource">
+            <summary>
+            Sources the certified partners-capital roll-forward for a governed reporting run from the same
+            authoritative ledger scope the run certifies. Returns <c>null</c> when the run scope cannot
+            produce a roll-forward (e.g. no ledger book selected, unresolved period, or no partners' capital),
+            in which case a report may use a generic certified-dataset presentation only when its certified
+            template/output contract does not require the signed canonical ledger presentation.
+            Implementations must be deterministic for a given scope + as-of.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportGenerationService">
+            <summary>
+            Generates report packs that combine Security Master instrument definitions,
+            ledger snapshots, and portfolio data into structured governance reports.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportKind">
+            <summary>Type of governance report to generate.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportRequest">
+            <summary>Request payload for <see cref="M:Meridian.Reporting.ReportGenerationService.GenerateAsync(Meridian.Reporting.ReportRequest,System.Threading.CancellationToken)"/>.</summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportRequest.#ctor(System.String,System.DateTimeOffset,Meridian.Ledger.FundLedgerBook,Meridian.Reporting.ReportKind,Meridian.Reporting.ReportingSnapshotSourceContext)">
+            <summary>Request payload for <see cref="M:Meridian.Reporting.ReportGenerationService.GenerateAsync(Meridian.Reporting.ReportRequest,System.Threading.CancellationToken)"/>.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.EnrichedLedgerRow">
+            <summary>A single ledger row enriched with Security Master classification data.</summary>
+        </member>
+        <member name="M:Meridian.Reporting.EnrichedLedgerRow.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Decimal,Meridian.Contracts.Ledger.LedgerDimensionSetDto)">
+            <summary>A single ledger row enriched with Security Master classification data.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.AssetClassSection">
+            <summary>A section of a report grouped by asset class.</summary>
+        </member>
+        <member name="M:Meridian.Reporting.AssetClassSection.#ctor(System.String,System.Collections.Generic.IReadOnlyList{Meridian.Reporting.EnrichedLedgerRow},System.Decimal)">
+            <summary>A section of a report grouped by asset class.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportPack">
+            <summary>A complete report pack ready for distribution or storage.</summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportPack.#ctor(System.Guid,System.String,Meridian.Reporting.ReportKind,System.DateTimeOffset,System.DateTimeOffset,System.Collections.Generic.IReadOnlyList{Meridian.Reporting.EnrichedLedgerRow},System.Collections.Generic.IReadOnlyList{Meridian.Reporting.AssetClassSection},System.Decimal,Meridian.Reporting.ReportingSnapshotReceipt)">
+            <summary>A complete report pack ready for distribution or storage.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingArtifactPackageIdentity">
+            <summary>
+            Produces the immutable tenant/run/revision package identity shared by artifact retention,
+            governance release receipts, grants, and delivery jobs. A run id is an aggregate identity; it
+            must never be used as a substitute for the retained package identity.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingArtifactIdentity">
+            <summary>
+            Tenant-scoped content address for an immutable reporting artifact.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingArtifactIdentity.#ctor(System.String,System.String)">
+            <summary>
+            Tenant-scoped content address for an immutable reporting artifact.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingArtifactWriteRequest">
+            <summary>
+            Bytes to retain in the reporting artifact store. The store computes the content address;
+            callers cannot supply or override it.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingArtifactWriteRequest.#ctor(System.String,System.ReadOnlyMemory{System.Byte})">
+            <summary>
+            Bytes to retain in the reporting artifact store. The store computes the content address;
+            callers cannot supply or override it.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingArtifactWriteResult">
+            <summary>
+            Result of retaining artifact bytes. Repeated writes of the same bytes for the same tenant are
+            idempotent and return the existing content address.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingArtifactWriteResult.#ctor(Meridian.Reporting.ReportingArtifactIdentity,System.Int64,System.DateTimeOffset,System.Boolean)">
+            <summary>
+            Result of retaining artifact bytes. Repeated writes of the same bytes for the same tenant are
+            idempotent and return the existing content address.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingArtifactReadResult">
+            <summary>
+            Verified immutable reporting artifact bytes.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingArtifactReadResult.#ctor(Meridian.Reporting.ReportingArtifactIdentity,System.Int64,System.DateTimeOffset,System.Byte[])">
+            <summary>
+            Verified immutable reporting artifact bytes.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.IReportingArtifactStore">
+            <summary>
+            Content-addressed persistence port for immutable reporting artifact bytes.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingArtifactNotFoundException">
+            <summary>
+            Raised when a requested tenant-scoped reporting artifact does not exist. Callers must not
+            regenerate released content as a fallback.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingArtifactIntegrityException">
+            <summary>
+            Raised when retained artifact bytes no longer match their immutable content address or size.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingRetainedArtifactRecord">
+            <summary>An immutable catalog record that binds one artifact identity to its governed scope.</summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingRetainedArtifactRecord.#ctor(System.String,System.String,System.String,System.Int32,Meridian.Reporting.ReportingOperationalScope,Meridian.Reporting.ReportingAccessScope,Meridian.Reporting.ReportingCertifiedSnapshotScope,System.String,System.String,System.String,System.String,System.String,Meridian.Reporting.ReportingArtifactIdentity,System.Int64,System.DateTimeOffset)">
+            <summary>An immutable catalog record that binds one artifact identity to its governed scope.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingRetainedArtifactPackage">
+            <summary>All immutable catalog records retained for one tenant-bound report package.</summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingRetainedArtifactPackage.#ctor(System.String,System.Collections.Immutable.ImmutableArray{Meridian.Reporting.ReportingRetainedArtifactRecord})">
+            <summary>All immutable catalog records retained for one tenant-bound report package.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.IReportingArtifactCatalog">
+            <summary>
+            Immutable catalog boundary. Implementations must add an entire package atomically, treat an
+            exact retry as idempotent, and reject any attempt to replace existing package metadata.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.IReportingArtifactCatalog.GetPackageAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Reads the complete immutable package through an exact tenant/package key. Release callers
+            use this record—not mutable orchestration state—to discover the complete artifact set.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.IReportingArtifactCatalog.GetArtifactAsync(System.String,System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Reads one artifact through its complete tenant/package/artifact key. Production callers
+            must use this overload so package identifiers cannot cross tenant boundaries.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.IReportingArtifactCatalog.GetArtifactAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Compatibility-only overload retained for source stability. It fails closed because an
+            unscoped lookup cannot prove tenant authority.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingArtifactAuditReceipt">
+            <summary>Receipt from an append-only, hash-chained audit implementation.</summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingArtifactAuditReceipt.#ctor(System.String,System.Int64,System.String,System.String)">
+            <summary>Receipt from an append-only, hash-chained audit implementation.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.IReportingArtifactAuditStore">
+            <summary>
+            Mandatory immutable audit boundary. Implementations append and hash-chain events; they must
+            never update or delete an existing receipt.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingDeclaredArtifact">
+            <summary>One exact byte-producing artifact declared by the orchestration manifest.</summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingDeclaredArtifact.#ctor(System.String,System.String,System.String,Meridian.Reporting.ReportingDeclaredArtifactKind,System.String)">
+            <summary>One exact byte-producing artifact declared by the orchestration manifest.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingArtifactDeclaration">
+            <summary>
+            Single source of truth for orchestration declarations and certified artifact production. A
+            manifest may only name artifacts this catalog can deterministically produce.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingArtifactDeclaration.Build(Meridian.Reporting.ReportingOutputManifest)">
+            <summary>
+            Reconstructs the same declaration set from a completed manifest. This is the producer/release
+            path and deliberately avoids a mutable template-catalog lookup after orchestration.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingCanonicalParameterSerializer">
+            <summary>
+            Canonical wire representation used by certification, persistence validation, release
+            revalidation, and audit hashing. A reporting parameter snapshot has one byte representation
+            regardless of the persistence adapter.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingCertifiedManifestValidation">
+            <summary>
+            One persistence-boundary validator for certified reporting manifests. File and PostgreSQL run
+            stores must invoke this same validator so changing the storage adapter cannot weaken the
+            immutable scope, source, readiness, dataset, or snapshot-hash guarantees.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingOrchestrationRetentionOptions">
+            <summary>
+            Bounds only terminal run snapshots whose durable reload has been revision-verified. Active,
+            in-flight, unsaved, and compatibility-store snapshots without verifiable reload are never
+            eviction candidates.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingOrchestrationRetentionSnapshot">
+            <summary>
+            Point-in-time diagnostics for reporting orchestration retention and keyed lifecycle locks.
+            The retained count may exceed the configured terminal cap when active or unsaved runs exist.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingOrchestrationRetentionSnapshot.#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            Point-in-time diagnostics for reporting orchestration retention and keyed lifecycle locks.
+            The retained count may exceed the configured terminal cap when active or unsaved runs exist.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingAuthoritativeSourceCheckpoint">
+            <summary>
+            Immutable receipt for the durable server-owned source queried before rendering. The source
+            checkpoint is deliberately distinct from the reconciliation/readiness checkpoint: one proves
+            the exact ledger bytes and sequence boundary, while the other proves that those bytes were
+            eligible for final reporting.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingAuthoritativeSourceCheckpoint.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.DateOnly,System.DateTimeOffset,System.Int64,System.Int32,System.Int32,System.String,System.String,System.DateTimeOffset,System.Collections.Immutable.ImmutableArray{System.String})">
+            <summary>
+            Immutable receipt for the durable server-owned source queried before rendering. The source
+            checkpoint is deliberately distinct from the reconciliation/readiness checkpoint: one proves
+            the exact ledger bytes and sequence boundary, while the other proves that those bytes were
+            eligible for final reporting.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingDistributionValueLimits">
+            <summary>Shared durable boundaries for secure reporting distribution identifiers.</summary>
+        </member>
+        <member name="F:Meridian.Reporting.ReportingDistributionValueLimits.ProviderMessageIdLength">
+            <summary>
+            Maximum provider-owned message identifier length accepted from a relay, retained by a
+            delivery job, or echoed by an authenticated provider receipt.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingAccessGrantRecord">
+            <summary>
+            Durable recipient-access authority. <see cref="P:Meridian.Reporting.ReportingAccessGrantRecord.ConsumedArtifactIds"/> is null only for retained
+            grants created before distinct-artifact tracking existed; newly issued grants start with an
+            empty tracked set and append exact artifact ids as their first successful reads are committed.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingAccessGrantRecord.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},System.DateTimeOffset,System.DateTimeOffset,System.Int32,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.String,System.String,System.Int64,Meridian.Reporting.ReportingAccessPrincipalKind,System.Collections.Generic.IReadOnlyList{System.String})">
+            <summary>
+            Durable recipient-access authority. <see cref="P:Meridian.Reporting.ReportingAccessGrantRecord.ConsumedArtifactIds"/> is null only for retained
+            grants created before distinct-artifact tracking existed; newly issued grants start with an
+            empty tracked set and append exact artifact ids as their first successful reads are committed.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingAccessGrantSecret">
+            <summary>
+            Contains the one-time plaintext bearer returned at issuance. Only the corresponding
+            <see cref="P:Meridian.Reporting.ReportingAccessGrantRecord.TokenHashSha256"/> may be retained by a store.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingAccessGrantSecret.#ctor(System.String,System.String,System.DateTimeOffset)">
+            <summary>
+            Contains the one-time plaintext bearer returned at issuance. Only the corresponding
+            <see cref="P:Meridian.Reporting.ReportingAccessGrantRecord.TokenHashSha256"/> may be retained by a store.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.IReportingAccessGrantStore.ListByPackageAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>Lists durable grant metadata through the complete tenant/package key.</summary>
+        </member>
+        <member name="F:Meridian.Reporting.ReportingDeliveryReceiptKind.Failed">
+            <summary>A durable dispatcher-attempt failure, including release-gate rejection.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingDeliveryReleaseAuthorization">
+            <summary>
+            Server-issued authorization binding a delivery to one released, immutable package version.
+            The authorization proof is verified through <see cref="T:Meridian.Reporting.IReportingReleaseAuthorizationVerifier"/>
+            before a delivery job can be created.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingDeliveryReleaseAuthorization.#ctor(System.String,Meridian.Reporting.ReportingReleaseState,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Reporting.ReportingReleasedArtifactReference},System.Collections.Generic.IReadOnlyList{System.String},System.DateTimeOffset,System.String,System.String)">
+            <summary>
+            Server-issued authorization binding a delivery to one released, immutable package version.
+            The authorization proof is verified through <see cref="T:Meridian.Reporting.IReportingReleaseAuthorizationVerifier"/>
+            before a delivery job can be created.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingDeliveryDownloadReceiptIdentity">
+            <summary>
+            Canonical identity for a delivery-linked exact-byte download receipt. The retained artifact
+            audit event is part of the identity so a replay can prove which audited read consumed the grant.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingDeliveryPayload">
+            <summary>
+            Durable, non-secret delivery content. Recipient access bearers are issued by a transport at
+            dispatch time and must never be added to this payload.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingDeliveryPayload.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,Meridian.Reporting.ReportingDeliveryAccessPolicy,Meridian.Reporting.ReportingAccessPrincipalKind)">
+            <summary>
+            Durable, non-secret delivery content. Recipient access bearers are issued by a transport at
+            dispatch time and must never be added to this payload.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.IReportingDeliveryAttemptBindingProvider">
+            <summary>
+            Optional two-phase transport contract for a deterministic recipient credential. The dispatcher
+            durably binds the returned non-secret grant id to its leased job before the transport can expose
+            the corresponding link to a provider.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.IReportingDeliveryStore.ListByPackageAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>Lists durable receipt-bearing jobs through the complete tenant/package key.</summary>
+        </member>
+        <member name="M:Meridian.Reporting.IReportingDeliveryStore.ListByRunAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Lists durable receipt-bearing jobs through the exact tenant/run key retained in the
+            server-issued release authorization. Implementations should preserve package-list semantics;
+            this read exists for canonical run-history projections that do not know a package revision.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.IReportingDeliveryStore.ListPendingAccessGrantRevocationsAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Lists durable failed-provider outcomes whose linked grant still requires revocation. Stores
+            that share persistence with grants should filter already-revoked grants so reconciliation
+            cannot starve behind completed rows.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.IReportingDeliveryStore.ClaimDueAsync(System.DateTimeOffset,System.String,System.TimeSpan,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Atomically claims due queued, retry-scheduled, or lease-expired dispatching jobs. Returned
+            rows must be in <see cref="F:Meridian.Reporting.ReportingDeliveryState.Dispatching"/> with an incremented version.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingDeliveryGrantDownloadCommit">
+            <summary>
+            Prepared, non-secret state transition for one delivery-linked exact-byte download. The
+            implementation must commit the one-use grant advance and the appended Downloaded receipt in one
+            transaction. Plaintext bearers never cross this persistence boundary.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingDeliveryGrantDownloadCommit.#ctor(System.String,System.Int64,Meridian.Reporting.ReportingAccessGrantRecord,System.Int64,Meridian.Reporting.ReportingDeliveryJobRecord)">
+            <summary>
+            Prepared, non-secret state transition for one delivery-linked exact-byte download. The
+            implementation must commit the one-use grant advance and the appended Downloaded receipt in one
+            transaction. Plaintext bearers never cross this persistence boundary.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.IReportingDeliveryGrantDownloadCommitter">
+            <summary>
+            Narrow composite boundary for the two reporting-distribution aggregates that must move
+            atomically when a recipient exchanges a delivery-linked grant.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingGovernanceCanonicalValidation">
+            <summary>
+            Canonical semantic validation shared by the reporting domain and every persistence boundary.
+            A valid checksum proves only that bytes were retained unchanged; these checks prove that the
+            retained bytes still describe a valid, tenant-bound reporting lifecycle.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingGovernanceCanonicalValidation.ValidateGovernedRun(Meridian.Reporting.GovernedReportingRun,System.Boolean)">
+            <summary>
+            Validates the complete current aggregate, including receipt bindings and the exact audit
+            transition sequence. Persistence implementations call this after hydrating audit history.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingGovernanceCanonicalValidation.ValidateRestatementRequest(Meridian.Reporting.ReportingRestatementRequest,System.Boolean)">
+            <summary>Validates request-local state before any predecessor/draft lookup.</summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingGovernanceCanonicalValidation.ValidateRestatementBinding(Meridian.Reporting.ReportingRestatementRequest,Meridian.Reporting.GovernedReportingRun,Meridian.Reporting.GovernedReportingRun)">
+            <summary>
+            Validates the durable relationship between a request, its immutable Released predecessor,
+            and (after approval) the new revision created in the same transaction.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.GovernedReportingExecutionState">
+            <summary>
+            Execution is deliberately independent from report governance. A successfully rendered report is
+            still a draft until it passes the governed validation, review, approval, and release lifecycle.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingGovernancePermission">
+            <summary>
+            Explicit capabilities consumed by the Reporting domain. Identity adapters resolve these from
+            the authenticated session; the domain never authorizes a transition from caller-supplied roles.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingAccessPrincipalKindJsonConverter">
+            <summary>
+            Strict wire converter for the immutable access-principal namespace. Numeric enum payloads are
+            rejected so browser, desktop, audit JSON, and persisted policy snapshots share one unambiguous
+            User/Group/Company representation.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingOperationalScope">
+            <summary>Customer-neutral operational scope retained immutably on every run revision.</summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingOperationalScope.#ctor(System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>Customer-neutral operational scope retained immutably on every run revision.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingAccessScope">
+            <summary>The exact access policy version captured when the run revision was created.</summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingAccessScope.#ctor(System.String,System.String,Meridian.Reporting.ReportingGovernanceAccessMode,System.String,System.Boolean,System.Collections.Immutable.ImmutableArray{Meridian.Reporting.ReportingAccessPrincipalScope},System.String)">
+            <summary>The exact access policy version captured when the run revision was created.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingCertifiedSnapshotScope">
+            <summary>
+            Certified input snapshot. Scope identity is repeated intentionally so a snapshot from another
+            tenant, organization, fund, book, or period cannot be attached to a governed run accidentally.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingCertifiedSnapshotScope.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Certified input snapshot. Scope identity is repeated intentionally so a snapshot from another
+            tenant, organization, fund, book, or period cannot be attached to a governed run accidentally.
+            </summary>
+        </member>
+        <member name="P:Meridian.Reporting.ReportingCertifiedSnapshotScope.RequiresCertifiedLedgerPresentation">
+            <summary>
+            True when final client artifacts must be rendered from the checkpoint-bound canonical
+            ledger presentation. Init-only preserves the established constructor and deconstruction ABI.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingAuthorityScope">
+            <summary>Server-resolved authority snapshot used for one governed command.</summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingAuthorityScope.#ctor(System.String,System.String,System.String,System.String,System.Collections.Immutable.ImmutableArray{Meridian.Reporting.ReportingGovernancePermission},Meridian.Reporting.ReportingCommandOrigin,System.String,System.Collections.Immutable.ImmutableArray{System.String})">
+            <summary>Server-resolved authority snapshot used for one governed command.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingRunCreationRequest">
+            <summary>
+            Ordinary creation intentionally has no restatement switch or predecessor field. Once a series
+            has a Released revision, only the independently approved restatement workflow can add a revision.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingRunCreationRequest.#ctor(System.String,System.String,System.String,System.String,Meridian.Reporting.ReportingOperationalScope,Meridian.Reporting.ReportingAccessScope,Meridian.Reporting.ReportingCertifiedSnapshotScope)">
+            <summary>
+            Ordinary creation intentionally has no restatement switch or predecessor field. Once a series
+            has a Released revision, only the independently approved restatement workflow can add a revision.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingGovernancePersistenceFormat">
+            <summary>
+            Durable governance formats are explicit so already-retained evidence is never interpreted with
+            a newer contract or hash algorithm by accident.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingGovernancePersistenceStatus">
+            <summary>
+            Tenant-scoped storage status. Legacy records expose only indexed identity and verified storage
+            facts; their untyped access and incomplete certification claims are deliberately not promoted
+            into the current governed-run model.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingGovernancePersistenceStatus.#ctor(System.String,Meridian.Reporting.ReportingGovernanceAuditAggregateKind,System.String,System.Int64,Meridian.Reporting.ReportingGovernancePersistenceFormat,System.String,System.Boolean,System.Int32,System.Collections.Immutable.ImmutableArray{Meridian.Reporting.ReportingGovernancePersistenceFormat},System.Boolean,Meridian.Reporting.ReportingGovernancePersistenceDisposition,System.String)">
+            <summary>
+            Tenant-scoped storage status. Legacy records expose only indexed identity and verified storage
+            facts; their untyped access and incomplete certification claims are deliberately not promoted
+            into the current governed-run model.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingGovernancePersistenceExport">
+            <summary>
+            Exact retained bytes for operator-controlled archival or remediation. Implementations return an
+            export only after the state checksum, indexed identity, audit payload checksums, and audit chain
+            have all been verified with their declared historical formats.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingGovernancePersistenceExport.#ctor(Meridian.Reporting.ReportingGovernancePersistenceStatus,System.String,System.Collections.Immutable.ImmutableArray{Meridian.Reporting.ReportingGovernanceRawAuditEnvelope})">
+            <summary>
+            Exact retained bytes for operator-controlled archival or remediation. Implementations return an
+            export only after the state checksum, indexed identity, audit payload checksums, and audit chain
+            have all been verified with their declared historical formats.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.IReportingGovernanceRepository">
+            <summary>
+            Repository boundary for a storage implementation that can atomically compare versions, append
+            lifecycle state, and create a restatement revision in one transaction.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingGovernanceService">
+            <summary>
+            Owns the canonical reporting lifecycle. Rendering/execution and governance are intentionally
+            separate state machines, and every governed change is optimistic, transactional, and audited.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingGovernanceAuditChain">
+            <summary>Deterministic SHA-256 chaining for reporting lifecycle audit evidence.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingNumberFormat">
+            <summary>
+            Shared numeric formatting for reporting surfaces. Centralizes the canonical
+            six-decimal, invariant-culture rendering used by rendered grids and snapshot diffs so the
+            format is defined once rather than duplicated per engine.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingNumberFormat.FormatDecimal(System.Decimal)">
+            <summary>
+            Renders a decimal with up to six fractional digits using the invariant culture,
+            trimming trailing zeros (e.g. <c>1.5</c> rather than <c>1.500000</c>).
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.IReportingScheduleStore">
+            <summary>
+            Durable schedule snapshot boundary shared by reporting orchestration and storage adapters.
+            </summary>
+        </member>
+        <member name="P:Meridian.Reporting.IReportingScheduleStore.IsDurableAuthority">
+            <summary>
+            True only for a shared, restart-safe schedule authority. Durable implementations require
+            the reporting deployment gate before any schedule mutation or execution.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingOrchestrationService.GetRetentionSnapshot">
+            <summary>
+            Returns retention diagnostics without exposing mutable cache state.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingOrchestrationService.GuardReleasedRestatementAsync(Meridian.Reporting.ReportingJobContract,Meridian.Reporting.ReportingOrchestrationService.ReportingRunVersionPlan,System.Threading.CancellationToken)">
+            <summary>
+            Prevents a Released manifest at the head of a run series from being silently superseded by a
+            freshly generated run. Regenerating a released report is a governed restatement: the caller
+            must opt in via <see cref="P:Meridian.Reporting.ReportingJobContract.AllowRestatement"/> and supply a
+            <see cref="P:Meridian.Reporting.ReportingJobContract.RetryReason"/>. Both the blocked and the authorized paths are
+            written to the released run's audit trail so the action is never silent.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingOrchestrationService.ResolveSeriesManifests(System.String,System.String)">
+            <summary>
+            Resolves every run in a series exhaustively. The durable store is probed by the series'
+            deterministic run ids (<c>runSeriesId</c>, <c>runSeriesId-v2</c>, …) via <c>GetManifest</c>
+            rather than the globally capped <c>ListRuns</c>, so an older released head is never missed
+            when the store holds many newer runs in other series — which would otherwise let a
+            regeneration silently overwrite a released manifest instead of tripping the restatement guard.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingOrchestrationService.TrimRetainedRuns(System.String)">
+            <summary>
+            Trims only terminal snapshots whose durable reload is revision-verified. When no run store
+            is configured, or a compatibility store cannot verify a retained revision, memory is the
+            authority and that run state is intentionally never evicted. The keyed lifecycle-lock
+            manager remains bounded independently in all modes.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingReconciliationBreakEvidence">
+            <summary>
+            Exact break evidence retained at the reconciliation/reporting boundary. Missing source measures
+            remain explicit through <see cref="P:Meridian.Contracts.Workstation.ReconciliationBreakMeasureDto.UnavailableReason"/>.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingReconciliationBreakEvidence.#ctor(System.String,System.Collections.Immutable.ImmutableArray{Meridian.Contracts.Workstation.ReconciliationBreakMeasureDto},System.Collections.Immutable.ImmutableArray{System.String},System.Collections.Immutable.ImmutableArray{System.String},System.String,System.Nullable{Meridian.Contracts.Workstation.ReconciliationBreakDispositionDto},System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Exact break evidence retained at the reconciliation/reporting boundary. Missing source measures
+            remain explicit through <see cref="P:Meridian.Contracts.Workstation.ReconciliationBreakMeasureDto.UnavailableReason"/>.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingCloseWorkflowCompletionEvidence">
+            <summary>
+            Immutable proof that the accounting-close workflow committed after the ledger hard close.
+            Final reporting must not treat a hard-close-only receipt as completed close authority.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingCloseWorkflowCompletionEvidence.#ctor(System.String,System.Int64,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Immutable proof that the accounting-close workflow committed after the ledger hard close.
+            Final reporting must not treat a hard-close-only receipt as completed close authority.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingReconciliationEvidenceReceipt">
+            <summary>
+            Durable result of a reconciliation/close process. Reporting can consume only an exact retained
+            receipt bound to the same authoritative source checkpoint; it must never synthesize one.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingReconciliationEvidenceReceipt.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.DateOnly,System.String,System.String,System.String,System.String,System.DateTimeOffset,System.Boolean,System.Collections.Immutable.ImmutableArray{System.String},System.String,System.String,System.Collections.Immutable.ImmutableArray{Meridian.Reporting.ReportingReconciliationBreakEvidence},Meridian.Reporting.ReportingCloseWorkflowCompletionEvidence)">
+            <summary>
+            Durable result of a reconciliation/close process. Reporting can consume only an exact retained
+            receipt bound to the same authoritative source checkpoint; it must never synthesize one.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingReconciliationEvidenceReceipt.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.DateOnly,System.String,System.String,System.String,System.String,System.DateTimeOffset,System.Boolean,System.Collections.Immutable.ImmutableArray{System.String},System.String,System.String,System.Collections.Immutable.ImmutableArray{Meridian.Reporting.ReportingReconciliationBreakEvidence})">
+            <summary>
+            Binary-compatibility constructor for consumers compiled before committed-close evidence
+            became part of the retained receipt.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingReconciliationCompletionEvidence">
+            <summary>
+            Immutable result emitted by a server-owned close/reconciliation workflow. The reporting
+            retention command binds this result to a fresh authoritative source checkpoint.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingReconciliationCompletionEvidence.#ctor(System.String,System.String,System.DateTimeOffset,System.Boolean,System.Collections.Immutable.ImmutableArray{System.String},System.Collections.Immutable.ImmutableArray{Meridian.Reporting.ReportingReconciliationBreakEvidence},Meridian.Reporting.ReportingCloseWorkflowCompletionEvidence)">
+            <summary>
+            Immutable result emitted by a server-owned close/reconciliation workflow. The reporting
+            retention command binds this result to a fresh authoritative source checkpoint.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingReconciliationCompletionEvidence.#ctor(System.String,System.String,System.DateTimeOffset,System.Boolean,System.Collections.Immutable.ImmutableArray{System.String},System.Collections.Immutable.ImmutableArray{Meridian.Reporting.ReportingReconciliationBreakEvidence})">
+            <summary>
+            Binary-compatibility constructor for consumers compiled before committed-close evidence
+            became part of reconciliation completion.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.IReportingReconciliationEvidenceStore">
+            <summary>
+            Durable evidence read boundary. Implementations must return only an exact retained receipt for
+            the complete scope and source key.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingReconciliationEvidenceRecoveryRequiredException">
+            <summary>
+            The retained evidence is authentic legacy data but cannot certify current reporting without a
+            new governed reconciliation/close receipt. Adapters throw this instead of misclassifying a
+            verified upgrade condition as corruption or silently synthesizing missing item evidence.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.IReportingReconciliationEvidenceRetentionStore">
+            <summary>Append-only retention boundary used by the governed reconciliation completion path.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportingReconciliationEvidenceValidation">
+            <summary>
+            Canonical receipt construction and validation shared by application, development, and durable
+            storage adapters. Validation fails closed on malformed scope, hashes, timestamps, or evidence.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportingReconciliationEvidenceValidation.RequireCommittedCloseWorkflow(Meridian.Reporting.ReportingReconciliationEvidenceReceipt)">
+            <summary>
+            Requires the retained close receipt to prove that the exact scoped Operations Continuity
+            workflow committed its approval, checklist, close package, and hash-chained close audit.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.IReportingReleaseConsistencyGate">
+            <summary>
+            Serializes final reporting release and governed accounting-period reopen for the same
+            authoritative ledger period. Production implementations must coordinate across host processes;
+            an in-process mutex alone is not sufficient for a durable reporting authority.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.ReportSnapshotDiffEngine">
+            <summary>
+            Produces a deterministic period-over-period comparison between two rendered report-writer grids.
+            Rows are matched by <see cref="P:Meridian.Contracts.Workstation.ReportWriterGridRowDto.RowKey"/>; numeric cells carry a signed delta and
+            direction so the UI can present "prior / current / Δ" columns without re-querying the source data.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.ReportWriterGridEngine.DetectCircularFormulas(Meridian.Contracts.Workstation.ReportWriterGridDefinitionDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReportWriterFormulaDefinitionDto},System.Collections.Generic.ISet{System.String})">
+            <summary>
+            Determines which formulas participate in (or transitively depend on) a circular reference
+            among the grid's own formulas, so those formulas are skipped instead of resolving to
+            misleading empty/partial values or masking the cycle as a generic "field not found" warning.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.SecurityMasterReportingLookup">
+            <summary>
+            Shared, best-effort Security Master enrichment for reporting surfaces. Report generation and
+            NAV attribution both enrich ledger accounts by ticker and must degrade gracefully when the
+            Security Master is unavailable or has no match. This centralizes the "look up, swallow failure
+            into a debug log, continue" pattern so it is defined once instead of duplicated per service.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.SecurityMasterReportingLookup.TryGetByTickerAsync(Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,Microsoft.Extensions.Logging.ILogger,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Resolves a security detail by ticker, returning <c>null</c> when the symbol is blank, no
+            match exists, or the lookup fails (failures are logged at debug and swallowed).
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.SecurityMasterReportingLookup.TryGetByTickerAsync(Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,Microsoft.Extensions.Logging.ILogger,System.String,System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)">
+            <summary>
+            Resolves a security detail by ticker at the requested transaction-time boundary.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.SecurityMasterReportingLookup.TryGetReportingReferenceByTickerAsync(Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,Microsoft.Extensions.Logging.ILogger,System.String,System.DateTimeOffset,System.Threading.CancellationToken)">
+            <summary>
+            Captures detail and economic terms from one point-in-time Security Master reference when
+            the implementation supports governed reporting. Older implementations remain usable, but
+            their current economic-definition lookup is explicitly marked as a legacy fallback.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.SecurityMasterReportingLookup.TryGetEconomicDefinitionAsync(Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,Microsoft.Extensions.Logging.ILogger,System.Guid,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Resolves a security's economic definition by id, swallowing failures into a debug log the
+            same way the ticker lookup helper does.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.StatementReconciliationReportAuthorityScope">
+            <summary>
+            Exact durable authority scope for one statement-reconciliation report workflow.
+            Company identity is part of the key so a tenant-scoped artifact address cannot be
+            mistaken for workflow authorization.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.StatementReconciliationReportAuthorityScope.#ctor(System.String,System.String,System.String)">
+            <summary>
+            Exact durable authority scope for one statement-reconciliation report workflow.
+            Company identity is part of the key so a tenant-scoped artifact address cannot be
+            mistaken for workflow authorization.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.StatementReconciliationReportAuthorityDocument">
+            <summary>
+            One logical workflow document mapped to immutable, content-addressed reporting bytes.
+            Mutable documents replace only this mapping; retained blob bytes remain immutable.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.StatementReconciliationReportAuthorityDocument.#ctor(Meridian.Reporting.StatementReconciliationReportAuthorityScope,System.String,Meridian.Reporting.ReportingArtifactIdentity,System.Int64,System.Boolean,System.Int64,System.DateTimeOffset,System.DateTimeOffset)">
+            <summary>
+            One logical workflow document mapped to immutable, content-addressed reporting bytes.
+            Mutable documents replace only this mapping; retained blob bytes remain immutable.
+            </summary>
+        </member>
+        <member name="T:Meridian.Reporting.IStatementReconciliationReportAuthorityStore">
+            <summary>
+            Persistence boundary for statement-reconciliation intake, workflow snapshots, evidence,
+            and generated artifacts. Production implementations must survive process restart and enforce
+            the complete tenant/company/workflow key on every operation.
+            </summary>
+        </member>
+        <member name="P:Meridian.Reporting.IStatementReconciliationReportAuthorityStore.IsDurableAuthority">
+            <summary>
+            True only when this implementation is a shared, restart-safe production authority.
+            File-backed compatibility implementations must return false.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.IStatementReconciliationReportAuthorityStore.WriteDocumentAsync(Meridian.Reporting.StatementReconciliationReportAuthorityScope,System.String,System.ReadOnlyMemory{System.Byte},System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Retains bytes and writes their logical mapping. Immutable documents allow exact retries
+            and reject replacement; mutable documents advance their mapping version.
+            </summary>
+        </member>
+        <member name="M:Meridian.Reporting.IStatementReconciliationReportAuthorityStore.ProbeAsync(System.Threading.CancellationToken)">
+            <summary>Proves that the configured persistence authority is reachable and initialized.</summary>
+        </member>
+        <member name="T:Meridian.Reporting.StatementReconciliationReportAuthorityUnavailableException">
+            <summary>
+            Raised when the configured statement authority cannot prove durable availability. API callers
+            should fail closed and may retry after operators restore the authority.
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.IO.Compression;
 using System.Text.Json;
+using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
@@ -235,10 +236,20 @@ public sealed class HistoricalDataQueryService
 
         stopwatch.Stop();
 
-        var orderedBars = bars
+        var takenAccumulators = bars
             .Take(maxBars)
-            .Select(kvp => kvp.Value.ToPoint())
+            .Select(kvp => kvp.Value)
             .ToList();
+
+        var orderedBars = takenAccumulators
+            .Select(accumulator => accumulator.ToPoint())
+            .ToList();
+
+        var distinctSources = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var accumulator in takenAccumulators)
+        {
+            distinctSources.UnionWith(accumulator.Sources);
+        }
 
         return new HistoricalBarsResult
         {
@@ -252,6 +263,7 @@ public sealed class HistoricalDataQueryService
             FilesProcessed = filesProcessed,
             TotalFiles = files.Count,
             QueryTimeMs = stopwatch.ElapsedMilliseconds,
+            Sources = distinctSources.ToList(),
             Message = $"Aggregated {orderedBars.Count} bars from {filesProcessed} file(s)"
         };
     }
@@ -283,7 +295,7 @@ public sealed class HistoricalDataQueryService
                     continue;
                 }
 
-                if (!TryExtractTrade(line, symbol, out var ts, out var price, out var size))
+                if (!TryExtractTrade(line, symbol, out var ts, out var price, out var size, out var source, out var isAdjusted))
                 {
                     continue;
                 }
@@ -302,7 +314,7 @@ public sealed class HistoricalDataQueryService
                     bars[bucketStart] = accumulator;
                 }
 
-                accumulator.Add(price, size);
+                accumulator.Add(price, size, source, isAdjusted);
             }
         }
         finally
@@ -316,11 +328,15 @@ public sealed class HistoricalDataQueryService
         string symbol,
         out DateTimeOffset timestamp,
         out decimal price,
-        out long size)
+        out long size,
+        out string? source,
+        out bool? isAdjusted)
     {
         timestamp = default;
         price = 0m;
         size = 0L;
+        source = null;
+        isAdjusted = null;
 
         try
         {
@@ -357,6 +373,9 @@ public sealed class HistoricalDataQueryService
             {
                 return false;
             }
+
+            source = ReadEventSource(root);
+            isAdjusted = ReadAdjustmentRegime(payload);
 
             // Prefer payload timestamp (event time) if present; fall back to top-level timestamp.
             if (payload.TryGetProperty("timestamp", out var payloadTs) && TryReadTimestamp(payloadTs, out timestamp))
@@ -403,6 +422,51 @@ public sealed class HistoricalDataQueryService
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Reads the stored provenance label from the event envelope's top-level <c>source</c>
+    /// property. Missing, blank, and the at-rest <see cref="MarketDataSources.Unknown"/>
+    /// sentinel all collapse to <see langword="null"/>: the read model has exactly one
+    /// representation of "provenance unknown".
+    /// </summary>
+    private static string? ReadEventSource(JsonElement root)
+    {
+        if (!root.TryGetProperty("source", out var sourceEl) || sourceEl.ValueKind != JsonValueKind.String)
+        {
+            return null;
+        }
+
+        var source = sourceEl.GetString();
+        if (string.IsNullOrWhiteSpace(source) ||
+            string.Equals(source, MarketDataSources.Unknown, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return source;
+    }
+
+    /// <summary>
+    /// Reads the price-adjustment regime declared by the stored payload's <c>isAdjusted</c>
+    /// property when one is present (<see cref="HistoricalBar.IsAdjusted"/> semantics: true =
+    /// split/dividend adjusted, false = raw exchange prices). Payloads that do not declare a
+    /// regime — including every plain trade print today — propagate the honest
+    /// <see langword="null"/> (unknown).
+    /// </summary>
+    private static bool? ReadAdjustmentRegime(JsonElement payload)
+    {
+        if (!payload.TryGetProperty("isAdjusted", out var adjustedEl))
+        {
+            return null;
+        }
+
+        return adjustedEl.ValueKind switch
+        {
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            _ => null
+        };
     }
 
     private static bool TryReadDecimal(JsonElement element, out decimal value)
@@ -455,6 +519,7 @@ public sealed class HistoricalDataQueryService
 
     private sealed class BarAccumulator
     {
+        private readonly HashSet<string> _sources = new(StringComparer.OrdinalIgnoreCase);
         private decimal _open;
         private decimal _high;
         private decimal _low;
@@ -463,6 +528,9 @@ public sealed class HistoricalDataQueryService
         private decimal _pxVolume;
         private int _tradeCount;
         private bool _initialized;
+        private bool _hasUnattributedEvents;
+        private bool _adjustmentInitialized;
+        private bool? _isAdjusted;
 
         public BarAccumulator(DateTimeOffset start)
         {
@@ -471,7 +539,10 @@ public sealed class HistoricalDataQueryService
 
         public DateTimeOffset Start { get; }
 
-        public void Add(decimal price, long size)
+        /// <summary>Distinct non-null provenance labels of the events folded into this bucket.</summary>
+        public IReadOnlyCollection<string> Sources => _sources;
+
+        public void Add(decimal price, long size, string? source, bool? isAdjusted)
         {
             if (!_initialized)
             {
@@ -495,12 +566,39 @@ public sealed class HistoricalDataQueryService
                 _pxVolume += price * size;
             }
             _tradeCount++;
+
+            if (source is null)
+            {
+                _hasUnattributedEvents = true;
+            }
+            else
+            {
+                _sources.Add(source);
+            }
+
+            // Regime folding: the bucket keeps a regime only while every contributing event
+            // agrees on one; any disagreement or undeclared regime collapses to null (unknown).
+            if (!_adjustmentInitialized)
+            {
+                _isAdjusted = isAdjusted;
+                _adjustmentInitialized = true;
+            }
+            else if (_isAdjusted != isAdjusted)
+            {
+                _isAdjusted = null;
+            }
         }
 
         public HistoricalBarPoint ToPoint()
         {
             var vwap = _volume > 0 ? _pxVolume / _volume : _close;
-            return new HistoricalBarPoint(Start, _open, _high, _low, _close, _volume, vwap, _tradeCount);
+            var source = _sources.Count switch
+            {
+                0 => null,
+                1 when !_hasUnattributedEvents => _sources.First(),
+                _ => HistoricalBarPoint.MixedSources
+            };
+            return new HistoricalBarPoint(Start, _open, _high, _low, _close, _volume, vwap, _tradeCount, source, _isAdjusted);
         }
     }
 
@@ -858,6 +956,20 @@ public sealed record HistoricalBarsQuery(
 
 /// <summary>
 /// A single OHLCV bar.
+/// <para>
+/// <c>Source</c> is the provenance label of the stored events aggregated into the bucket:
+/// the vendor label when every contributing event carries the same one, the documented
+/// <see cref="MixedSources"/> sentinel when the bucket folds together more than one
+/// provenance state (two different vendors, or labeled plus unlabeled events), and
+/// <see langword="null"/> when no contributing event was labeled — provenance unknown.
+/// </para>
+/// <para>
+/// <c>IsAdjusted</c> is the price-adjustment regime (<see cref="HistoricalBar.IsAdjusted"/>
+/// semantics): <see langword="true"/>/<see langword="false"/> only when every contributing
+/// event declares that same regime; any mixing or undeclared regime collapses to the honest
+/// <see langword="null"/> (unknown). There is deliberately no "mixed" sentinel for the
+/// regime — a bool? cannot express one honestly, so unknown and mixed share null.
+/// </para>
 /// </summary>
 public sealed record HistoricalBarPoint(
     DateTimeOffset Start,
@@ -867,8 +979,18 @@ public sealed record HistoricalBarPoint(
     decimal Close,
     long Volume,
     decimal Vwap,
-    int TradeCount
-);
+    int TradeCount,
+    string? Source = null,
+    bool? IsAdjusted = null
+)
+{
+    /// <summary>
+    /// Sentinel <see cref="Source"/> value for a bucket whose contributing events do not share
+    /// a single provenance state (multiple vendors, or labeled mixed with unlabeled events).
+    /// Distinct from <see langword="null"/>, which means no contributing event was labeled.
+    /// </summary>
+    public const string MixedSources = "mixed";
+}
 
 /// <summary>
 /// Result of a historical bars aggregation query.
@@ -886,4 +1008,12 @@ public sealed class HistoricalBarsResult
     public int TotalFiles { get; set; }
     public long QueryTimeMs { get; set; }
     public List<HistoricalBarPoint> Bars { get; set; } = new();
+
+    /// <summary>
+    /// Distinct provenance labels observed across the returned bars' contributing events,
+    /// sorted case-insensitively. Unlabeled events contribute nothing here — the per-bar
+    /// <see cref="HistoricalBarPoint.Source"/> nulls already disclose them — so an empty
+    /// list with non-empty <see cref="Bars"/> means the series is entirely unattributed.
+    /// </summary>
+    public List<string> Sources { get; set; } = new();
 }

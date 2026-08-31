@@ -73,4 +73,30 @@ describe("precomputed indicators are behaviorally identical to inline computatio
     expect(offThread?.bollingerOverlay).not.toBeNull();
     expect(offThread?.rsiPanel).not.toBeNull();
   });
+
+  it("ignores stale precomputed series when the current bar set is shorter", () => {
+    const priorBars = syntheticBars(80);
+    const currentBars = syntheticBars(5);
+    const stats = computeChartStats(currentBars);
+    const indicators = { sma: true, bollinger: true, rsi: true };
+    const staleIndicators = computeCandlestickIndicators(toChronologicalCloses(priorBars));
+
+    const inline = buildCandlestickChartViewModel({
+      bars: currentBars,
+      stats,
+      symbol: "AAPL",
+      timeframe: "1m",
+      indicators
+    });
+    const withStaleIndicators = buildCandlestickChartViewModel({
+      bars: currentBars,
+      stats,
+      symbol: "AAPL",
+      timeframe: "1m",
+      indicators,
+      precomputedIndicators: staleIndicators
+    });
+
+    expect(withStaleIndicators).toEqual(inline);
+  });
 });

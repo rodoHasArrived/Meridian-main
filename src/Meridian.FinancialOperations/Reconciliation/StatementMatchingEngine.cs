@@ -120,7 +120,7 @@ public sealed class StatementMatchingEngine
                 1.00m,
                 [CashExactRuleId],
                 CashVariance(statement, internalCash),
-                new StatementMatchTolerance(tolerance.CashBalance),
+                new StatementMatchTolerance(Amount: tolerance.CashBalance),
                 "Exact cash match on account, currency, statement ending balance, and internal cash balance."),
             results);
 
@@ -138,7 +138,7 @@ public sealed class StatementMatchingEngine
                 ConfidenceFromVariance(Abs(statement.EndingBalance - internalCash.Balance), tolerance.CashBalance),
                 [CashToleranceRuleId],
                 CashVariance(statement, internalCash),
-                new StatementMatchTolerance(tolerance.CashBalance),
+                new StatementMatchTolerance(Amount: tolerance.CashBalance),
                 "Cash balance matched inside configured balance tolerance."),
             results);
 
@@ -156,7 +156,7 @@ public sealed class StatementMatchingEngine
                 0.60m,
                 [CashCandidateRuleId],
                 CashVariance(statement, internalCash),
-                new StatementMatchTolerance(tolerance.CashBalance),
+                new StatementMatchTolerance(Amount: tolerance.CashBalance),
                 "Cash candidate shares account and currency but exceeds configured balance tolerance."),
             results);
 
@@ -377,7 +377,7 @@ public sealed class StatementMatchingEngine
                 statement.EvidenceReference,
                 null,
                 new StatementMatchVariance(Amount: statement.EndingBalance),
-                new StatementMatchTolerance(tolerance.CashBalance),
+                new StatementMatchTolerance(Amount: tolerance.CashBalance),
                 "Broker statement cash balance did not match any internal cash balance."));
         }
 
@@ -391,7 +391,7 @@ public sealed class StatementMatchingEngine
                 null,
                 internalItem.EvidenceReference,
                 new StatementMatchVariance(Amount: -internalItem.Balance),
-                new StatementMatchTolerance(tolerance.CashBalance),
+                new StatementMatchTolerance(Amount: tolerance.CashBalance),
                 "Internal cash balance did not match any broker statement cash balance."));
         }
     }
@@ -496,7 +496,8 @@ public sealed class StatementMatchingEngine
         && statement.AsOfDate == internalPosition.AsOfDate;
 
     private static bool SameCashIdentity(NormalizedStatementCashBalance statement, InternalCashBalance internalCash) =>
-        SameText(statement.Account, internalCash.Account)
+        statement.IsForStatementPeriodEnd
+        && SameText(statement.Account, internalCash.Account)
         && SameText(statement.Currency, internalCash.Currency)
         && statement.AsOfDate == internalCash.AsOfDate;
 
@@ -617,7 +618,8 @@ public sealed record NormalizedStatementCashBalance(
     string Currency,
     decimal EndingBalance,
     string EvidenceReference,
-    DateOnly AsOfDate) : IStatementMatchItem
+    DateOnly AsOfDate,
+    bool IsForStatementPeriodEnd = true) : IStatementMatchItem
 {
     string IStatementMatchItem.MatchId => CashBalanceId;
 }

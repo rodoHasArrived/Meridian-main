@@ -79,6 +79,7 @@ public static class UiApiRoutes
     public const string BackfillProviderConfigAudit = "/api/backfill/providers/audit";
 
     // Provider endpoints
+    public const string ProviderDataProjection = "/api/providers/data-projection";
     public const string ProviderComparison = "/api/providers/comparison";
     public const string ProviderStatus = "/api/providers/status";
     public const string ProviderMetrics = "/api/providers/metrics";
@@ -144,6 +145,7 @@ public static class UiApiRoutes
     public const string IBStatus = "/api/providers/ib/status";
     public const string IBErrorCodes = "/api/providers/ib/error-codes";
     public const string IBLimits = "/api/providers/ib/limits";
+    public const string IBResults = "/api/workstation/ib/results";
 
     // Failover endpoints
     public const string FailoverConfig = "/api/failover/config";
@@ -361,8 +363,21 @@ public static class UiApiRoutes
     public const string SecurityMasterCorporateActionsIngest = "/api/security-master/corporate-actions/ingest";
     public const string SecurityMasterCorporateActionsInbox = "/api/security-master/corporate-actions/inbox";
     public const string SecurityMasterCorporateActionsInboxApply = "/api/security-master/corporate-actions/inbox/apply";
+    public const string SecurityMasterCorporateActionSourceProposals = "/api/security-master/corporate-actions/source-proposals";
+    public const string SecurityMasterCorporateActionSourceProposal = "/api/security-master/corporate-actions/source-proposals/{proposalId:guid}";
+    public const string SecurityMasterCorporateActionSourceProposalAccept = "/api/security-master/corporate-actions/source-proposals/{proposalId:guid}/accept";
+    public const string SecurityMasterCorporateActionSourceProposalReject = "/api/security-master/corporate-actions/source-proposals/{proposalId:guid}/reject";
+    public const string SecurityMasterCorporateActionCases = "/api/security-master/corporate-actions/cases";
+    public const string SecurityMasterCorporateActionCase = "/api/security-master/corporate-actions/cases/{caseId:guid}";
+    public const string SecurityMasterCorporateActionCaseEvidence = "/api/security-master/corporate-actions/cases/{caseId:guid}/evidence";
+    public const string SecurityMasterCorporateActionCaseConflicts = "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts";
+    public const string SecurityMasterCorporateActionCaseConflict = "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}";
+    public const string SecurityMasterCorporateActionCaseConflictResolution = "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}/resolution";
+    public const string SecurityMasterCorporateActionCaseOptions = "/api/security-master/corporate-actions/cases/{caseId:guid}/options";
+    public const string SecurityMasterCorporateActionCaseTransition = "/api/security-master/corporate-actions/cases/{caseId:guid}/transition";
     public const string SecurityMasterCoverageDraft = "/api/security-master/coverage/draft/{symbol}";
     public const string SecurityMasterOperatorOverrides = "/api/security-master/{securityId:guid}/operator-overrides";
+    public const string SecurityMasterFieldProvenance = "/api/security-master/{securityId:guid}/field-provenance";
     public const string SecurityMasterOperatorOverrideDecision = "/api/security-master/{securityId:guid}/operator-overrides/decision";
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
@@ -372,6 +387,7 @@ public static class UiApiRoutes
     public const string SecurityMasterWorkbenchResolveConflict = "/api/security-master/{securityId:guid}/workbench/resolve-conflict";
     public const string SecurityMasterWorkbenchSubmit = "/api/security-master/{securityId:guid}/workbench/submit";
     public const string SecurityMasterWorkbenchApprove = "/api/security-master/{securityId:guid}/workbench/approve";
+    public const string SecurityMasterWorkbenchDiscard = "/api/security-master/{securityId:guid}/workbench/discard";
     public const string SecurityMasterWorkbenchPublish = "/api/security-master/{securityId:guid}/workbench/publish";
     public const string SecurityMasterImport = "/api/security-master/import";
     public const string SecurityMasterIngestStatus = "/api/security-master/ingest/status";
@@ -575,6 +591,10 @@ public static class UiApiRoutes
     public const string ExecutionOrderById = "/api/execution/orders/{orderId}";
     public const string ExecutionOrderSubmit = "/api/execution/orders/submit";
     public const string ExecutionOrderCancel = "/api/execution/orders/{orderId}/cancel";
+    // Mapped on the execution group but absent from this catalogue until now, so a
+    // route-constant search for the kill switch's cancel-all found nothing and every
+    // client following the house pattern had nothing to reference.
+    public const string ExecutionOrdersCancelAll = "/api/execution/orders/cancel-all";
     public const string ExecutionPositionActionClose = "/api/execution/positions/actions/close";
     public const string ExecutionPositionActionUpsize = "/api/execution/positions/actions/upsize";
     public const string ExecutionPortfolio = "/api/execution/portfolio";
@@ -746,6 +766,12 @@ public static class UiApiRoutes
     public const string ReconciliationStatementMappingProfileById = "/api/workstation/reconciliation/statement-mapping-profiles/{profileId}";
     public const string ReconciliationStatementImportPreview = "/api/workstation/reconciliation/statement-imports/preview";
     public const string ReconciliationStatementImportCommit = "/api/workstation/reconciliation/statement-imports/commit";
+    public const string ReconciliationStatementReconciliationReport = "/api/workstation/reconciliation/statement-reconciliation-report";
+    public const string ReconciliationStatementReconciliationReportById = "/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}";
+    public const string ReconciliationStatementReconciliationReportResume = "/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}/resume";
+    public const string ReconciliationStatementReconciliationReportArtifact = "/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}/artifacts/{artifactId}";
+    // Compatibility aliases keep retained pre-rename status/resume/download links recoverable.
+    // New clients and all newly persisted workflow projections use the truthful reconciliation-report name.
     public const string ReconciliationStatementToReport = "/api/workstation/reconciliation/statement-to-report";
     public const string ReconciliationStatementToReportById = "/api/workstation/reconciliation/statement-to-report/{workflowId}";
     public const string ReconciliationStatementToReportResume = "/api/workstation/reconciliation/statement-to-report/{workflowId}/resume";
@@ -754,7 +780,10 @@ public static class UiApiRoutes
     public const string ReconciliationStatementFetchSchedules = "/api/workstation/reconciliation/statement-fetch-schedules";
     public const string ReconciliationStatementFetchScheduleById = "/api/workstation/reconciliation/statement-fetch-schedules/{scheduleId}";
     public const string ReconciliationStatementFetchScheduleRun = "/api/workstation/reconciliation/statement-fetch-schedules/{scheduleId}/run";
+    public const string ReconciliationMarginControl = "/api/workstation/reconciliation/margin-control";
+    public const string ReconciliationMarginCertifications = "/api/workstation/reconciliation/margin-control/certifications";
     public const string ReconciliationOpenCases = "/api/workstation/reconciliation/cases";
+    public const string DirectLendingPortfolioSummary = "/api/loans/portfolio";
     public const string DirectLendingServicerStatementPreview = "/api/loans/servicer-statements/preview";
     public const string DirectLendingServicerStatementImport = "/api/loans/servicer-statements/import";
     public const string DirectLendingServicerStatementById = "/api/loans/servicer-statements/{batchId}";
@@ -820,6 +849,8 @@ public static class UiApiRoutes
     public const string LedgerManualJournalEntryLifecycleAction = "/api/ledger/journal-entry-workbench/lifecycle-action";
     public const string LedgerJournalAutomationDividendIntake = "/api/ledger/journal-automation/dividend-intake";
     public const string LedgerJournalAutomationFeeAccrualIntake = "/api/ledger/journal-automation/fee-accrual-intake";
+    public const string LedgerJournalAutomationCapitalCallIssuanceIntake = "/api/ledger/journal-automation/capital-call-issuance-intake";
+    public const string LedgerJournalAutomationCapitalCallFundingIntake = "/api/ledger/journal-automation/capital-call-funding-intake";
     public const string LedgerJournalAutomationPeriodCloseIntake = "/api/ledger/journal-automation/period-close-intake";
     public const string LedgerJournalAutomationDailyMarkToMarketIntake = "/api/ledger/journal-automation/daily-mark-to-market-intake";
     public const string LedgerJournalAutomationDailyMarkToMarketSchedules = "/api/ledger/journal-automation/daily-mark-to-market-schedules";

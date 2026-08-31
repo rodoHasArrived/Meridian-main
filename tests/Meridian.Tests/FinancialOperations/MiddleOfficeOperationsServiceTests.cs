@@ -276,6 +276,22 @@ public sealed class MiddleOfficeOperationsServiceTests
     }
 
     [Fact]
+    public void RaiseTrueBreak_ConflictingActiveBreak_IsRejectedWithoutSuppressingItsDetails()
+    {
+        var service = NewService(out var log);
+        var first = service.RaiseTrueBreak(new TrueBreakEscalationRequest(
+            "brk-1", BreakClassification.PotentialBreak, ReconciliationBreakSeverity.Low, "Initial review", "ops", RaisedAtUtc: At));
+
+        var act = () => service.RaiseTrueBreak(new TrueBreakEscalationRequest(
+            "brk-1", BreakClassification.TrueBreak, ReconciliationBreakSeverity.Critical, "Cash out of balance", "supervisor", RaisedAtUtc: At.AddMinutes(1)));
+
+        act.Should().Throw<InvalidOperationException>("a conflicting escalation requires an explicit resolution before re-raising");
+        service.OpenEscalations.Should().ContainSingle().Which.EscalationId.Should().Be(first.EscalationId);
+        log.EventsOfKind(FundAdministrationEventKind.ReconciliationBreakEscalated)
+            .Should().ContainSingle("the rejected request must not create a partial governance event");
+    }
+
+    [Fact]
     public void RaiseTrueBreak_ResolvedBreak_CanBeRaisedAgain()
     {
         var service = NewService(out _);

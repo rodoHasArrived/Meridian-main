@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Meridian.PortfolioRecords</name>
+    </assembly>
+    <members>
+        <member name="T:Meridian.PortfolioRecords.DesignModule">
+            <summary>Physical module marker for the Portfolio Records bounded context.</summary>
+        </member>
+        <member name="T:Meridian.PortfolioRecords.FundAccounts.AccountReconciliationChecks">
+            <summary>
+            Shared reconciliation-check builders for <see cref="T:Meridian.PortfolioRecords.FundAccounts.InMemoryFundAccountService"/> and
+            <see cref="T:Meridian.PortfolioRecords.FundAccounts.PostgresFundAccountService"/>. Every check compares two genuinely independent
+            sources; when no independent counterpart exists for a value, the check is reported as
+            <see cref="F:Meridian.PortfolioRecords.FundAccounts.AccountReconciliationChecks.StatusUnverified"/> instead of fabricating agreement. "Matched" only ever
+            appears when two independently sourced values were actually compared and agreed.
+            </summary>
+        </member>
+        <member name="M:Meridian.PortfolioRecords.FundAccounts.AccountReconciliationChecks.IsUnverified(Meridian.Contracts.FundStructure.AccountReconciliationResultDto)">
+            <summary>An unverified check is not a break: no independent counterpart was available to compare.</summary>
+        </member>
+        <member name="M:Meridian.PortfolioRecords.FundAccounts.AccountReconciliationChecks.IsBreak(Meridian.Contracts.FundStructure.AccountReconciliationResultDto)">
+            <summary>A break is a check where two independently sourced values were compared and disagreed.</summary>
+        </member>
+        <member name="M:Meridian.PortfolioRecords.FundAccounts.AccountReconciliationChecks.BuildCashBalanceCheck(System.Guid,Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.BankStatementLineDto})">
+            <summary>
+            Compares the internally recorded balance-snapshot cash balance (source A) against the
+            external bank-statement closing balance ingested for the same as-of date and the same
+            currency (source B) — a USD snapshot must never match or break against, say, an EUR
+            closing balance. When either side is missing (including when only foreign-currency
+            closing balances exist), the check reports <see cref="F:Meridian.PortfolioRecords.FundAccounts.AccountReconciliationChecks.StatusUnverified"/> because no
+            independent comparison was possible. Returns <c>null</c> when neither side has any data.
+            </summary>
+        </member>
+        <member name="M:Meridian.PortfolioRecords.FundAccounts.AccountReconciliationChecks.BuildPositionCountCheck(System.Guid,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.CustodianPositionLineDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.CustodianStatementBatchDto})">
+            <summary>
+            Compares the custodian statement's declared line count (source A, batch header metadata
+            captured at ingestion) against the count of persisted custodian position records for the
+            as-of date (source B). When no batch metadata exists to declare an expected count, the
+            check reports <see cref="F:Meridian.PortfolioRecords.FundAccounts.AccountReconciliationChecks.StatusUnverified"/>. Returns <c>null</c> when neither positions
+            nor batch metadata exist for the date.
+            </summary>
+        </member>
+        <member name="M:Meridian.PortfolioRecords.FundAccounts.AccountReconciliationChecks.BuildRunSummary(System.Guid,System.Guid,System.DateOnly,System.String,System.DateTimeOffset,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountReconciliationResultDto})">
+            <summary>
+            Builds the run summary. A run is only "Matched" when at least one check ran and every
+            check compared two independent values that agreed. Unverified checks demote the run to
+            "Unverified" without counting as breaks; an empty run is likewise "Unverified" because
+            nothing was compared.
+            </summary>
+        </member>
+        <member name="T:Meridian.PortfolioRecords.FundAccounts.IFundAccountService">
+            <summary>
+            Manages fund accounts (custodian and bank) including CRUD, balance snapshots,
+            statement ingestion, and account-level reconciliation.
+            Every fund may hold multiple accounts of each type.
+            </summary>
+        </member>
+        <member name="M:Meridian.PortfolioRecords.FundAccounts.IFundAccountService.GetFundAccountsAsync(System.Guid,System.Threading.CancellationToken)">
+            Returns all accounts for a fund, grouped by type.
+        </member>
+        <member name="T:Meridian.PortfolioRecords.FundAccounts.InMemoryFundAccountService">
+            <summary>
+            Thread-safe fund-account service backed by an in-memory working set with optional
+            durable JSON snapshot persistence for local-first workflows.
+            </summary>
+        </member>
+        <member name="T:Meridian.PortfolioRecords.FundAccounts.PostgresFundAccountService">
+            <summary>
+            PostgreSQL-backed fund account service.
+            Delegates all persistence to <see cref="T:Meridian.Storage.FundAccounts.IFundAccountStore"/> and preserves the
+            business-logic rules from <see cref="T:Meridian.PortfolioRecords.FundAccounts.InMemoryFundAccountService"/>.
+            </summary>
+        </member>
+    </members>
+</doc>

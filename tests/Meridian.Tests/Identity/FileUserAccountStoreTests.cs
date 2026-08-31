@@ -4,6 +4,8 @@ using Meridian.Identity.Auth;
 using Meridian.Storage;
 using Meridian.Testing;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Xunit;
 
 namespace Meridian.Tests.Identity;
@@ -16,6 +18,11 @@ namespace Meridian.Tests.Identity;
 /// </summary>
 public sealed class FileUserAccountStoreTests
 {
+    private static readonly JsonSerializerOptions WebJson = new(JsonSerializerDefaults.Web)
+    {
+        WriteIndented = true
+    };
+
     [Fact]
     public void LoadAccounts_WithCorruptFile_ReturnsEmptyAndLogsDataIntegrityError()
     {
@@ -100,6 +107,128 @@ public sealed class FileUserAccountStoreTests
 
         await act.Should().ThrowAsync<ArgumentException>();
     }
+
+    [Theory]
+    [InlineData("intent-only")]
+    [InlineData("audit-written")]
+    [InlineData("state-written")]
+    public async Task CommittedMutationIntent_RestartRecoversEveryAuditAndStateBoundary(string boundary)
+    {
+        using var artifacts = TestArtifactDirectory.Create(
+            $"{nameof(CommittedMutationIntent_RestartRecoversEveryAuditAndStateBoundary)}-{boundary}");
+        var store = new FileUserAccountStore(new StorageOptions { RootPath = artifacts.RootPath });
+        var created = await store.UpsertAsync(
+            new UserAccountUpsertRequestDto(
+                Username: "recovery-user",
+                Role: nameof(UserRole.Accounting),
+                RoleProfileName: null,
+                PermissionNames: null,
+                NewPassword: "initial-pw",
+                PasswordHash: null,
+                IsDisabled: false,
+                PasswordResetRequired: false,
+                RequestedBy: "identity-admin",
+                Rationale: "Seed recovery boundary."),
+            actor: "identity-admin");
+        var pending = WritePendingDisableIntent(artifacts.RootPath, created.Account);
+
+        if (boundary is "audit-written" or "state-written")
+        {
+            File.AppendAllText(pending.AuditPath, pending.AuditLine + Environment.NewLine);
+        }
+
+        if (boundary == "state-written")
+        {
+            File.WriteAllText(pending.AccountPath, pending.TargetSnapshotJson);
+        }
+
+        var restarted = new FileUserAccountStore(new StorageOptions { RootPath = artifacts.RootPath });
+
+        var accounts = await restarted.GetAccountsAsync();
+        var account = accounts.Should().ContainSingle().Which;
+        account.IsDisabled.Should().BeTrue();
+        account.LastAuditId.Should().Be(pending.AuditId);
+        var audits = await restarted.GetAuditEventsAsync(limit: 100);
+        audits.Count(item => item.AuditId == pending.AuditId).Should().Be(1);
+        File.Exists(pending.IntentPath).Should().BeFalse();
+    }
+
+    [Fact]
+    public void CorruptCommittedMutationIntent_BlocksIdentityStoreStartup()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(CorruptCommittedMutationIntent_BlocksIdentityStoreStartup));
+        var governance = Path.Combine(artifacts.RootPath, "governance");
+        Directory.CreateDirectory(governance);
+        File.WriteAllText(Path.Combine(governance, "user-account-mutation-intent.json"), "{ not-json ]");
+
+        var act = () => new FileUserAccountStore(new StorageOptions { RootPath = artifacts.RootPath });
+
+        act.Should().Throw<InvalidDataException>()
+            .WithMessage("*mutation intent*corrupt*");
+    }
+
+    private static PendingMutationFixture WritePendingDisableIntent(
+        string rootPath,
+        UserAccountDto account)
+    {
+        var governance = Path.Combine(rootPath, "governance");
+        var accountPath = Path.Combine(governance, "user-accounts.json");
+        var auditPath = Path.Combine(governance, "user-account-audit.jsonl");
+        var intentPath = Path.Combine(governance, "user-account-mutation-intent.json");
+        var snapshot = JsonNode.Parse(File.ReadAllText(accountPath))!.AsObject();
+        var persistedAccount = snapshot["accounts"]!.AsArray().Single()!.AsObject();
+        var now = DateTimeOffset.UtcNow;
+        var auditId = "audit-recovery-" + Guid.NewGuid().ToString("N");
+        persistedAccount["isDisabled"] = true;
+        persistedAccount["updatedAtUtc"] = now;
+        persistedAccount["updatedBy"] = "identity-reviewer";
+        persistedAccount["disabledAtUtc"] = now;
+        persistedAccount["disabledBy"] = "identity-reviewer";
+        persistedAccount["lastAuditId"] = auditId;
+
+        var audit = new UserAccountAuditEventDto(
+            AuditId: auditId,
+            EventType: "user-account-disabled",
+            OccurredAtUtc: now,
+            Actor: "identity-reviewer",
+            Username: account.Username,
+            Rationale: "Recover a committed disable operation.",
+            CorrelationId: "identity-recovery-test",
+            Role: account.Role,
+            PermissionNames: account.PermissionNames,
+            PermissionMask: account.PermissionMask,
+            IsDisabled: true,
+            PasswordResetRequired: account.PasswordResetRequired,
+            CompanyId: account.CompanyId);
+        var intent = new JsonObject
+        {
+            ["version"] = 1,
+            ["mutationId"] = auditId,
+            ["createdAtUtc"] = now,
+            ["snapshot"] = snapshot.DeepClone(),
+            ["auditEvent"] = JsonSerializer.SerializeToNode(audit, WebJson)
+        };
+        var targetSnapshotJson = snapshot.ToJsonString(WebJson);
+        var auditLine = JsonSerializer.Serialize(
+            audit,
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        File.WriteAllText(intentPath, intent.ToJsonString(WebJson));
+        return new PendingMutationFixture(
+            auditId,
+            intentPath,
+            accountPath,
+            auditPath,
+            targetSnapshotJson,
+            auditLine);
+    }
+
+    private sealed record PendingMutationFixture(
+        string AuditId,
+        string IntentPath,
+        string AccountPath,
+        string AuditPath,
+        string TargetSnapshotJson,
+        string AuditLine);
 
     private static void WriteGovernanceFile(string rootPath, string fileName, string content)
     {

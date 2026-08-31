@@ -71,7 +71,8 @@ public sealed class BackfillFeatureRegistrationTests
             SymbolCooldownSeconds: 90,
             ProviderCooldownSeconds: 15,
             MaxConcurrentRemediations: 3,
-            DefaultProvider: " polygon ");
+            DefaultProvider: " polygon ",
+            Enabled: true);
 
         var policy = BackfillFeatureRegistration.CreateAutoGapRemediationPolicy(config);
 
@@ -81,6 +82,7 @@ public sealed class BackfillFeatureRegistrationTests
         policy.ProviderCooldown.Should().Be(TimeSpan.FromSeconds(15));
         policy.MaxConcurrentRemediations.Should().Be(3);
         policy.DefaultProvider.Should().Be("polygon");
+        policy.Enabled.Should().BeTrue();
     }
 
     [Fact]
@@ -102,6 +104,7 @@ public sealed class BackfillFeatureRegistrationTests
         policy.ProviderCooldown.Should().Be(TimeSpan.Zero);
         policy.MaxConcurrentRemediations.Should().Be(1);
         policy.DefaultProvider.Should().Be(AutoGapRemediationPolicy.Default.DefaultProvider);
+        policy.Enabled.Should().BeFalse();
     }
 
     private sealed class RecordingSymbolResolver(string provider, string providerSymbol) : ISymbolResolver

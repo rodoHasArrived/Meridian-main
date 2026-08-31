@@ -241,9 +241,10 @@ public sealed class WriteAheadLogFuzzTests : TempDirectoryAsyncTestBase
     [Fact]
     public async Task Truncate_InvalidHeaderWalFile_IsNeverDeleted()
     {
-        // A corrupt-header file enumerates as zero records, which looks "fully committed"
-        // to TruncateAsync. The truncate path must refuse to delete it.
-        var corruptPath = Path.Combine(TestDataRoot, "20200101T000000Z_000.wal");
+        // This follows the generated segment-name convention, so truncation uses the metadata
+        // fast path rather than the record-scan fallback. The corrupt header must still prevent
+        // deletion.
+        var corruptPath = Path.Combine(TestDataRoot, "wal_20200101_000000_000000000000.wal");
         await File.WriteAllTextAsync(
             corruptPath,
             "NOTAWAL|garbage\n1|2026-01-01T00:00:00Z|trade|deadbeef|{\"p\":1}\n");

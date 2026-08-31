@@ -43,6 +43,12 @@ class RunDotnetCiTestsTests(unittest.TestCase):
         self.assertTrue(projects[0].filter_expression)
         self.assertTrue(projects[-1].filter_expression, "core-remainder must carry the catch-all filter")
 
+    def test_core_reporting_shard_includes_all_reporting_governance_tests(self):
+        projects = MODULE.parse_project_entries([])
+        reporting = next(project for project in projects if project.name == "core-reporting")
+
+        self.assertEqual(reporting.filter_expression, "FullyQualifiedName~Meridian.Tests.Reporting")
+
     def test_core_remainder_filter_excludes_every_explicit_core_prefix(self):
         remainder = MODULE.build_core_remainder_filter(MODULE.DEFAULT_TEST_PROJECTS[:-1])
 
@@ -80,6 +86,12 @@ class RunDotnetCiTestsTests(unittest.TestCase):
         missing = MODULE.verify_test_project_coverage(repo_root, projects)
 
         self.assertEqual(missing, [], "every tests/ project must be wired to the ubuntu or windows lane")
+
+    def test_process_helper_is_classified_as_support_instead_of_a_test_project(self):
+        helper_path = "tests/Meridian.ProcessTestHelper/Meridian.ProcessTestHelper.csproj"
+
+        self.assertIn(helper_path, MODULE.SUPPORT_TEST_PROJECTS)
+        self.assertNotIn(helper_path, {project[1] for project in MODULE.DEFAULT_TEST_PROJECTS})
 
     def test_build_dotnet_test_command_uses_ci_filter_and_trx_prefix(self):
         project = MODULE.TestProject("core", "tests/Meridian.Tests/Meridian.Tests.csproj")

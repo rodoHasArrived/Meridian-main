@@ -7,7 +7,7 @@ using NpgsqlTypes;
 
 namespace Meridian.Storage.SecurityMaster;
 
-public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
+public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
 {
     private const string BondProjectionTable = "bond_projection";
     private const string BondLifecycleProjectionTable = "bond_lifecycle_projection";
@@ -95,52 +95,6 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
 
         await SaveCheckpointCoreAsync(connection, transaction, projectionName, lastGlobalSequence, ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
-    }
-
-    public async Task UpsertAliasAsync(SecurityAliasDto alias, CancellationToken ct = default)
-    {
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        await using var command = connection.CreateCommand();
-        command.CommandText =
-            $"""
-            insert into {Qualified("security_aliases")} (
-                alias_id, security_id, alias_kind, alias_value, normalized_alias_value, provider, normalized_provider, scope, reason,
-                created_by, created_at, valid_from, valid_to, is_enabled)
-            values (
-                @alias_id, @security_id, @alias_kind, @alias_value, @normalized_alias_value, @provider, @normalized_provider, @scope, @reason,
-                @created_by, @created_at, @valid_from, @valid_to, @is_enabled)
-            on conflict (alias_id) do update set
-                security_id = excluded.security_id,
-                alias_kind = excluded.alias_kind,
-                alias_value = excluded.alias_value,
-                normalized_alias_value = excluded.normalized_alias_value,
-                provider = excluded.provider,
-                normalized_provider = excluded.normalized_provider,
-                scope = excluded.scope,
-                reason = excluded.reason,
-                created_by = excluded.created_by,
-                created_at = excluded.created_at,
-                valid_from = excluded.valid_from,
-                valid_to = excluded.valid_to,
-                is_enabled = excluded.is_enabled;
-            """;
-
-        command.Parameters.AddWithValue("alias_id", alias.AliasId);
-        command.Parameters.AddWithValue("security_id", alias.SecurityId);
-        command.Parameters.AddWithValue("alias_kind", alias.AliasKind);
-        command.Parameters.AddWithValue("alias_value", alias.AliasValue);
-        command.Parameters.AddWithValue("normalized_alias_value", SecurityIdentifierNormalizer.NormalizeAliasValue(alias.AliasKind, alias.AliasValue));
-        command.Parameters.AddWithValue("provider", (object?)alias.Provider ?? DBNull.Value);
-        command.Parameters.AddWithValue("normalized_provider", ToDbNullable(SecurityIdentifierNormalizer.NormalizeProvider(alias.Provider)));
-        command.Parameters.AddWithValue("scope", alias.Scope.ToString());
-        command.Parameters.AddWithValue("reason", (object?)alias.Reason ?? DBNull.Value);
-        command.Parameters.AddWithValue("created_by", alias.CreatedBy);
-        command.Parameters.AddWithValue("created_at", alias.CreatedAt.UtcDateTime);
-        command.Parameters.AddWithValue("valid_from", alias.ValidFrom.UtcDateTime);
-        command.Parameters.AddWithValue("valid_to", (object?)alias.ValidTo?.UtcDateTime ?? DBNull.Value);
-        command.Parameters.AddWithValue("is_enabled", alias.IsEnabled);
-
-        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
     public async Task DeactivateProjectionAsync(Guid securityId, DateTimeOffset effectiveTo, long version, CancellationToken ct = default)
@@ -473,54 +427,6 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         }
     }
 
-    private async Task ReplaceAliasesAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        Guid securityId,
-        IReadOnlyList<SecurityAliasDto> aliases,
-        CancellationToken ct)
-    {
-        await using (var delete = connection.CreateCommand())
-        {
-            delete.Transaction = transaction;
-            delete.CommandText = $"delete from {Qualified("security_aliases")} where security_id = @security_id;";
-            delete.Parameters.AddWithValue("security_id", securityId);
-            await delete.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-        }
-
-        foreach (var alias in aliases)
-        {
-            await using var insert = connection.CreateCommand();
-            insert.Transaction = transaction;
-            insert.CommandText =
-                $"""
-                insert into {Qualified("security_aliases")} (
-                    alias_id, security_id, alias_kind, alias_value, normalized_alias_value,
-                    provider, normalized_provider, scope, reason,
-                    created_by, created_at, valid_from, valid_to, is_enabled)
-                values (
-                    @alias_id, @security_id, @alias_kind, @alias_value, @normalized_alias_value,
-                    @provider, @normalized_provider, @scope, @reason,
-                    @created_by, @created_at, @valid_from, @valid_to, @is_enabled);
-                """;
-            insert.Parameters.AddWithValue("alias_id", alias.AliasId);
-            insert.Parameters.AddWithValue("security_id", securityId);
-            insert.Parameters.AddWithValue("alias_kind", alias.AliasKind);
-            insert.Parameters.AddWithValue("alias_value", alias.AliasValue);
-            insert.Parameters.AddWithValue("normalized_alias_value", SecurityIdentifierNormalizer.NormalizeAliasValue(alias.AliasKind, alias.AliasValue));
-            insert.Parameters.AddWithValue("provider", (object?)alias.Provider ?? DBNull.Value);
-            insert.Parameters.AddWithValue("normalized_provider", ToDbNullable(SecurityIdentifierNormalizer.NormalizeProvider(alias.Provider)));
-            insert.Parameters.AddWithValue("scope", alias.Scope.ToString());
-            insert.Parameters.AddWithValue("reason", (object?)alias.Reason ?? DBNull.Value);
-            insert.Parameters.AddWithValue("created_by", alias.CreatedBy);
-            insert.Parameters.AddWithValue("created_at", alias.CreatedAt.UtcDateTime);
-            insert.Parameters.AddWithValue("valid_from", alias.ValidFrom.UtcDateTime);
-            insert.Parameters.AddWithValue("valid_to", (object?)alias.ValidTo?.UtcDateTime ?? DBNull.Value);
-            insert.Parameters.AddWithValue("is_enabled", alias.IsEnabled);
-            await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-        }
-    }
-
     private async Task SaveCheckpointCoreAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction? transaction,
@@ -757,11 +663,18 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             limit 1;
             """,
             $"""
-            select security_id
-            from {Qualified("securities")}
-            where primary_identifier_kind = @identifier_kind
-              and normalized_primary_identifier_value = @normalized_identifier_value
-              and (@include_inactive = true or status = 'Active')
+            select s.security_id
+            from {Qualified("securities")} s
+            where s.primary_identifier_kind = @identifier_kind
+              and s.normalized_primary_identifier_value = @normalized_identifier_value
+              and @normalized_provider is null
+              and not exists (
+                  select 1
+                  from {Qualified("security_identifiers")} i
+                  where i.security_id = s.security_id
+                    and i.identifier_kind = @identifier_kind
+                    and i.normalized_identifier_value = @normalized_identifier_value)
+              and (@include_inactive = true or s.status = 'Active')
             limit 1;
             """
         })
@@ -1293,7 +1206,9 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         command.Parameters.AddWithValue("currency", record.Currency ?? string.Empty);
         command.Parameters.AddWithValue("share_class", (object?)GetOptionalString(record.AssetSpecificTerms, "shareClass") ?? DBNull.Value);
         command.Parameters.AddWithValue("voting_rights_cat", (object?)GetOptionalString(record.AssetSpecificTerms, "votingRightsCat") ?? DBNull.Value);
-        command.Parameters.AddWithValue("classification", (object?)GetOptionalString(record.AssetSpecificTerms, "classification") ?? DBNull.Value);
+        command.Parameters.AddWithValue(
+            "classification",
+            (object?)SecurityTermReader.ReadEquityClassification(record.AssetSpecificTerms) ?? DBNull.Value);
         command.Parameters.AddWithValue("exchange_code", (object?)GetOptionalString(record.CommonTerms, "exchange") ?? DBNull.Value);
         command.Parameters.AddWithValue("country_of_risk", (object?)GetOptionalString(record.CommonTerms, "countryOfRisk") ?? DBNull.Value);
         command.Parameters.AddWithValue("issuer_name", (object?)GetOptionalString(record.CommonTerms, "issuerName") ?? DBNull.Value);

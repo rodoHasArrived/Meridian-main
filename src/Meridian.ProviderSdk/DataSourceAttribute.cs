@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Meridian.Infrastructure.Contracts;
 
 namespace Meridian.Infrastructure.DataSources;
@@ -25,7 +26,8 @@ namespace Meridian.Infrastructure.DataSources;
 public sealed class DataSourceAttribute : Attribute
 {
     /// <summary>
-    /// Unique identifier for this data source (e.g., "alpaca", "yahoo", "ib").
+    /// Stable provider-family identifier (e.g., "alpaca", "yahoo", "ibkr"). Implementations may
+    /// share it only when their recognized service-contract capabilities are disjoint.
     /// </summary>
     public string Id { get; }
 
@@ -69,7 +71,7 @@ public sealed class DataSourceAttribute : Attribute
     /// <summary>
     /// Creates a new DataSourceAttribute.
     /// </summary>
-    /// <param name="id">Unique identifier for this data source.</param>
+    /// <param name="id">Stable provider-family identifier for this data source.</param>
     /// <param name="displayName">Human-readable display name.</param>
     /// <param name="type">Type of data provided.</param>
     /// <param name="category">Category of the data source.</param>
@@ -102,6 +104,13 @@ public sealed record DataSourceMetadata(
 )
 {
     /// <summary>
+    /// Stable service-contract identities used to distinguish capabilities within one provider
+    /// family ID. A provider may publish multiple implementations under the same ID when their
+    /// capability keys are disjoint.
+    /// </summary>
+    public ImmutableArray<string> CapabilityKeys { get; init; } = [];
+
+    /// <summary>
     /// Creates metadata from a DataSourceAttribute and its implementation type.
     /// </summary>
     public static DataSourceMetadata FromAttribute(DataSourceAttribute attr, Type implementationType)
@@ -115,8 +124,10 @@ public sealed record DataSourceMetadata(
             attr.Priority,
             attr.EnabledByDefault,
             attr.ConfigSection ?? attr.Id,
-            implementationType
-        );
+            implementationType)
+        {
+            CapabilityKeys = DataSourceCapabilityContracts.Resolve(implementationType)
+        };
     }
 
     /// <summary>
@@ -162,14 +173,71 @@ public static class DataSourceAttributeExtensions
         if (type.GetDataSourceAttribute() == null || type.IsAbstract || type.IsInterface)
             return false;
 
-        if (typeof(IDataSource).IsAssignableFrom(type))
-            return true;
+        return DataSourceCapabilityContracts.Resolve(type).Length > 0;
+    }
+}
 
-        // Also accept legacy provider interfaces decorated with [DataSource] for ADR-005 discovery
-        return type.GetInterfaces().Any(i =>
-            i.FullName == "Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider" ||
-            i.FullName == "Meridian.ProviderSdk.IMarketDataClient" ||
-            i.FullName == "Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider" ||
-            i.FullName == "Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider");
+/// <summary>
+/// Resolves the service contracts that form a provider registration identity. Full names are used
+/// for contracts owned by downstream modules so ProviderSdk does not reverse its dependency
+/// direction merely to discover them.
+/// </summary>
+public static class DataSourceCapabilityContracts
+{
+    public const string RealtimeDataSource =
+        "Meridian.Infrastructure.DataSources.IRealtimeDataSource";
+    public const string HistoricalDataSource =
+        "Meridian.Infrastructure.DataSources.IHistoricalDataSource";
+    public const string MarketDataClient =
+        "Meridian.Infrastructure.IMarketDataClient";
+    public const string HistoricalDataProvider =
+        "Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider";
+    public const string SymbolSearchProvider =
+        "Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider";
+    public const string CorporateActionProvider =
+        "Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider";
+    public const string OptionsChainProvider =
+        "Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider";
+    public const string BrokerageGateway =
+        "Meridian.Execution.Sdk.IBrokerageGateway";
+    public const string GenericDataSource =
+        "Meridian.Infrastructure.DataSources.IDataSource";
+
+    private static readonly ImmutableHashSet<string> SpecificContracts =
+        ImmutableHashSet.Create(
+            StringComparer.Ordinal,
+            RealtimeDataSource,
+            HistoricalDataSource,
+            MarketDataClient,
+            HistoricalDataProvider,
+            SymbolSearchProvider,
+            CorporateActionProvider,
+            OptionsChainProvider,
+            BrokerageGateway);
+
+    /// <summary>
+    /// Returns a deterministic set of recognized service-contract identities for a provider type.
+    /// Generic <see cref="IDataSource"/> is used only when the implementation exposes no more
+    /// specific recognized contract.
+    /// </summary>
+    public static ImmutableArray<string> Resolve(Type implementationType)
+    {
+        ArgumentNullException.ThrowIfNull(implementationType);
+        var interfaces = implementationType.GetInterfaces();
+        var specific = interfaces
+            .Select(static contract => contract.FullName)
+            .Where(static name => name is not null && SpecificContracts.Contains(name))
+            .Cast<string>()
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static name => name, StringComparer.Ordinal)
+            .ToImmutableArray();
+        if (!specific.IsEmpty)
+        {
+            return specific;
+        }
+
+        return typeof(IDataSource).IsAssignableFrom(implementationType)
+            ? [GenericDataSource]
+            : [];
     }
 }

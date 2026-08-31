@@ -20,9 +20,8 @@ import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
  * The rail intentionally avoids repeating the masthead brand or workspace header context. It keeps
  * one scannable list of the seven root workspaces, with the active item carrying `aria-current`.
  *
- * **Status tones** for nav items are one of:
- * `"live"`, `"review"`, `"paper"`, `"preview"`, `"setup"`, or `"muted"` — each has a
- * matching `.operator-nav-status-*` CSS modifier.
+ * Product maturity uses the canonical `Available`, `Preview`, and `Setup`
+ * taxonomy, with matching `.operator-nav-status-*` visual modifiers.
  */
 interface WorkspaceNavProps {
   className?: string;
@@ -40,7 +39,7 @@ export function WorkspaceNav({
   const location = useLocation();
   const viewModel = buildWorkspaceNavViewModel(location.pathname, undefined, location.search, operatingContextScope);
   const compact = density === "compact";
-  const activeWorkspaceKey = viewModel.items.find((item) => item.active)?.key ?? viewModel.items[0]?.key;
+  const activeWorkspaceKey = viewModel.activeWorkspaceKey ?? undefined;
   const { expandedWorkspaces, toggleWorkspace } = useWorkspaceExpansion(activeWorkspaceKey);
 
   return (
@@ -61,6 +60,22 @@ export function WorkspaceNav({
         const iconSrc = meridianWorkspaceIconAssets[item.key];
         const expanded = expandedWorkspaces.has(item.key);
         const subMenuId = `workspace-nav-${density}-${item.key}-sections`;
+        const renderSubItem = (sub: (typeof item.subItems)[number]) => (
+          <Link
+            key={sub.route}
+            to={sub.route}
+            aria-current={sub.ariaCurrent}
+            aria-label={sub.ariaLabel}
+            className={cn(
+              designSystemNavRailClasses.subItem,
+              FOCUS_VISIBLE_RING_CLASS,
+              sub.active && designSystemNavRailClasses.itemActive
+            )}
+            onClick={onNavigate}
+          >
+            <span className="truncate">{sub.label}</span>
+          </Link>
+        );
         return (
           <React.Fragment key={item.key}>
             <div className={designSystemNavRailClasses.group}>
@@ -79,9 +94,9 @@ export function WorkspaceNav({
                   <img className={designSystemNavRailClasses.itemIcon} src={iconSrc} width="16" height="16" alt="" aria-hidden="true" />
                   <span className="truncate font-medium">{item.label}</span>
                   {!compact ? (
-                    <span className={cn(designSystemNavRailClasses.status, designSystemNavRailClasses.statusTone(item.statusTone))}>
+                    <span className={cn(designSystemNavRailClasses.status, designSystemNavRailClasses.statusTone(item.maturityTone))}>
                       <span className={designSystemNavRailClasses.statusDot} aria-hidden="true" />
-                      {item.statusLabel}
+                      {item.maturityLabel}
                     </span>
                   ) : null}
                 </Link>
@@ -111,22 +126,26 @@ export function WorkspaceNav({
                 aria-label={`${item.label} pages`}
                 aria-hidden={!expanded}
               >
-                {expanded ? item.subItems.map((sub) => (
-                  <Link
-                    key={sub.route}
-                    to={sub.route}
-                    aria-current={sub.ariaCurrent}
-                    aria-label={sub.ariaLabel}
-                    className={cn(
-                      designSystemNavRailClasses.subItem,
-                      FOCUS_VISIBLE_RING_CLASS,
-                      sub.active && designSystemNavRailClasses.itemActive
-                    )}
-                    onClick={onNavigate}
-                  >
-                    <span className="truncate">{sub.label}</span>
-                  </Link>
-                )) : null}
+                {expanded ? (
+                  item.subItemGroups.length > 0
+                    ? item.subItemGroups.map((group) => {
+                      const groupLabelId = `${subMenuId}-${group.id}-label`;
+                      return (
+                        <div
+                          key={group.id}
+                          className="operator-nav-subgroup"
+                          role="group"
+                          aria-labelledby={groupLabelId}
+                        >
+                          <div id={groupLabelId} className="operator-nav-subgroup-label">
+                            {group.label}
+                          </div>
+                          {group.items.map(renderSubItem)}
+                        </div>
+                      );
+                    })
+                    : item.subItems.map(renderSubItem)
+                ) : null}
               </div>
             )}
           </React.Fragment>

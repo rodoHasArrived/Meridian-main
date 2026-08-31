@@ -2,7 +2,7 @@
 
 **Owner:** Accounting and Ledger
 **Scope:** Event-backed accounting postings, durable journal writes, and audit evidence
-**Last updated:** 2026-07-21
+**Last updated:** 2026-07-28
 
 ## Purpose
 
@@ -135,9 +135,11 @@ adjusters may call projection calculators, but they do not establish production 
 Consistent with that boundary, the shared instrument-to-journal proof
 (`FinancialRecordExplorerReadService.InstrumentJournalProof.cs`) reconstructs the source-event ->
 role/position -> projection -> posting-candidate -> approval -> immutable-journal chain for any
-position whose projection lineage is authoritative and self-consistent, regardless of model key. It
-no longer special-cases the factor-paydown model, so "prove the number" is demonstrable on any
-security and any of the eight canonical asset accounting event kinds; the source-evidence label is
+position whose projection lineage is authoritative, self-consistent, and triggered by one of the
+eight canonical asset-accounting event kinds, regardless of model key. It no longer special-cases
+the factor-paydown model, so "prove the number" is demonstrable on any security and any canonical
+asset accounting event kind; non-canonical projection producers require a validated typed spine
+before they can establish accounting proof material. The source-evidence label is
 derived from the triggering event kind (for example "Corporate Action Evidence" or "Income
 Evidence") rather than fixed to factor-paydown wording.
 
@@ -199,9 +201,19 @@ Focused coverage lives in:
 - `LedgerIntegrationTests.AutomatedJournalDraftProjector_PreservesEventAccountingMetadataAndTypedEvidence`
 - `FactorPaydownProjectionServiceTests.Project_ShouldCalculateGoldenMbsPrincipalAndTypedLineage`
 - `AccountingPostingCandidateServiceTests.BuildCandidateAsync_MbsFactorPaydown_RecalculatesPersistedProjectionBeforeDrafting`
-- `AssetAccountingEventSpineServiceTests`
+- `AssetAccountingEventSpineServiceTests` (projection across all eight kinds, drafting authority
+  resolution, evidence-only lifecycle-stage restrictions, positive-event-amount gates)
+- `AssetAccountingEventSpineContractTests` (lifecycle contract plus acquisition, disposal, and
+  correction lot-instruction branches)
+- `AssetAccountingLifecycleSeparationTests`
+- `AssetAccountingEvidenceSubjectContractTests`
+- `InMemoryAssetAccountingEventProjectionStoreTests` (append-only store CAS, replay, fingerprint
+  conflict, continuity, and posted-impact journal-authority fail-closed behavior)
 - `AssetAccountingPostingEvidenceValidatorTests`
 - `AtomicTaxLotJournalStoreTests`
+- `WorkstationEndpointsTests` asset-accounting endpoint suite (projection, lifecycle, and posting
+  candidate routes: trusted actor/tenant stamping, permission denial, and 501 when the spine
+  service is absent)
 - `WorkstationEndpointsTests.MapWorkstationEndpoints_SecurityInstrumentExplorer_ShouldExposePassportOperationsAndReportUsage`
 
 Use the narrow test filter for this slice before broader ledger or Financial Operations validation.

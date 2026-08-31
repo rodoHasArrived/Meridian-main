@@ -46,7 +46,7 @@ public sealed class OptionReferenceEndpointsRoundtripTests
 
 
     [Fact]
-    public async Task ChainImport_WithoutPermissions_ReturnsForbidden()
+    public async Task ChainImport_WithoutPermissions_ReturnsUnauthorized()
     {
         var projectionStore = new InMemoryProjectionStore();
         var optionService = new OptionProjectionService(projectionStore);
@@ -55,7 +55,11 @@ public sealed class OptionReferenceEndpointsRoundtripTests
         var client = app.GetTestClient();
 
         using var response = await client.PostAsJsonAsync("/api/reference-data/options/chains/import", CreateSnapshot("TST", new DateOnly(2026, 12, 19)));
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // The route declares ModifySecurityMaster since W9-GOV-008. A declared route separates the
+        // two refusals the handler collapsed into one: no permissions snapshot at all is
+        // unauthenticated, a snapshot without the permission is forbidden. The view-only test
+        // below still asserts 403, which is exactly what distinguishes the two.
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]

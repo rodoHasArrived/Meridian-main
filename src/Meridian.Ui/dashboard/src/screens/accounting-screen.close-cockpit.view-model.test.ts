@@ -1032,7 +1032,8 @@ describe("accounting-screen close-cockpit view model", () => {
         evidenceLabel: "1 evidence link",
         blockerLabel: "0 blocking issues",
         requiredAction: "Review the retained close-plan configuration before period lock.",
-        issueLabels: []
+        issueLabels: [],
+        evidenceReferences: ["evidence/close-plan-configuration"]
       }),
       expect.objectContaining({
         controlId: "dependency-graph",
@@ -1042,7 +1043,10 @@ describe("accounting-screen close-cockpit view model", () => {
         evidenceLabel: "2 evidence links",
         blockerLabel: "1 blocking issue",
         requiredAction: "Complete predecessor close tasks before dependent close work advances.",
-        issueLabels: ["Warning | CloseTaskWaitingOnDependency | task-nav"]
+        issueLabels: ["Warning | CloseTaskWaitingOnDependency | task-nav"],
+        // The shared close plan carries these per control; the row used to surface only the count,
+        // so an operator could see evidence existed and had no way to reach it (ACCT-CHECKLIST-07).
+        evidenceReferences: ["evidence/nav-package", "evidence/nav-signoff"]
       }),
       expect.objectContaining({
         controlId: "blocker-evidence-review",
@@ -1352,6 +1356,16 @@ describe("accounting-screen close-cockpit view model", () => {
       await result.current.lockClosePeriod();
     });
 
+    expect(lockClosePeriod).not.toHaveBeenCalled();
+    expect(result.current.lockClosePeriodArmed).toBe(true);
+    expect(result.current.lockClosePeriodButtonLabel).toBe("Confirm lock period");
+    expect(result.current.lockClosePeriodStatusText).toContain("Select Confirm lock period to proceed.");
+    expect(result.current.lockClosePeriodStatusTone).toBe("neutral");
+
+    await act(async () => {
+      await result.current.lockClosePeriod();
+    });
+
     expect(lockClosePeriod).toHaveBeenCalledWith(expect.objectContaining({
       workflowId: "workflow-close-1",
       expectedWorkflowVersion: closePeriodPlan.workflowVersion,
@@ -1381,6 +1395,7 @@ describe("accounting-screen close-cockpit view model", () => {
     }));
     expect(result.current.lockClosePeriodStatusText).toBe("Locked close period 2026-05.");
     expect(result.current.lockClosePeriodStatusTone).toBe("success");
+    expect(result.current.lockClosePeriodArmed).toBe(false);
     expect(result.current.lockLabel).toBe("Period locked");
 
     await act(async () => {

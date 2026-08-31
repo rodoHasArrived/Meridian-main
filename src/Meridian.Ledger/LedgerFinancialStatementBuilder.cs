@@ -373,8 +373,8 @@ public static class LedgerFinancialStatementBuilder
     /// Sums current-period net income from revenue/expense journal activity in
     /// (<paramref name="periodStart"/>, <paramref name="asOf"/>], excluding closing entries that move
     /// accumulated P&amp;L into Retained Earnings. For both revenue and expense accounts the net-income
-    /// contribution of a leg is (credit − debit), so a single term covers both. Closing transfers are a
-    /// reclassification within equity, not a current-period result, so they are not allocated here.
+    /// contribution of a leg is (credit − debit), so a single term covers both. Pure closing transfers
+    /// are a reclassification within equity, not a current-period result, so they are not allocated here.
     /// </summary>
     private static decimal PeriodNetIncomeFromActivity(
         IReadOnlyLedger ledger,
@@ -386,11 +386,7 @@ public static class LedgerFinancialStatementBuilder
         var total = 0m;
         foreach (var entry in PeriodEntries(ledger, periodStart, asOf))
         {
-            var closesToRetainedEarnings = entry.Lines.Any(line =>
-                MatchesScope(line, financialAccountId, lineDimensions)
-                && line.Account.AccountType == LedgerAccountType.Equity
-                && line.Account.Name.Equals("Retained Earnings", StringComparison.Ordinal));
-            if (closesToRetainedEarnings)
+            if (IsPureRetainedEarningsClosingEntry(entry, financialAccountId, lineDimensions))
                 continue;
 
             foreach (var line in entry.Lines)
@@ -407,7 +403,7 @@ public static class LedgerFinancialStatementBuilder
     }
 
     /// <summary>
-    /// Decomposes current-period net income (excluding Retained-Earnings closing transfers, matching
+    /// Decomposes current-period net income (excluding pure Retained-Earnings closing transfers, matching
     /// <see cref="PeriodNetIncomeFromActivity"/>) into its income/gain, (non-fee) expense, and fund-fee
     /// drivers. Revenue legs contribute (credit − debit) to income; expense legs contribute
     /// (debit − credit) to either the fee or the expense bucket. By construction
@@ -425,11 +421,7 @@ public static class LedgerFinancialStatementBuilder
         var fee = 0m;
         foreach (var entry in PeriodEntries(ledger, periodStart, asOf))
         {
-            var closesToRetainedEarnings = entry.Lines.Any(line =>
-                MatchesScope(line, financialAccountId, lineDimensions)
-                && line.Account.AccountType == LedgerAccountType.Equity
-                && line.Account.Name.Equals("Retained Earnings", StringComparison.Ordinal));
-            if (closesToRetainedEarnings)
+            if (IsPureRetainedEarningsClosingEntry(entry, financialAccountId, lineDimensions))
                 continue;
 
             foreach (var line in entry.Lines)
@@ -453,6 +445,33 @@ public static class LedgerFinancialStatementBuilder
         }
 
         return (income, expense, fee);
+    }
+
+    private static bool IsPureRetainedEarningsClosingEntry(
+        JournalEntry entry,
+        string? financialAccountId,
+        LedgerLineDimensionSet? lineDimensions)
+    {
+        var hasRetainedEarnings = false;
+        foreach (var line in entry.Lines)
+        {
+            if (!MatchesScope(line, financialAccountId, lineDimensions))
+                continue;
+
+            if (line.Account.AccountType is LedgerAccountType.Revenue or LedgerAccountType.Expense)
+                continue;
+
+            if (line.Account.AccountType == LedgerAccountType.Equity
+                && line.Account.Name.Equals("Retained Earnings", StringComparison.Ordinal))
+            {
+                hasRetainedEarnings = true;
+                continue;
+            }
+
+            return false;
+        }
+
+        return hasRetainedEarnings;
     }
 
     /// <summary>

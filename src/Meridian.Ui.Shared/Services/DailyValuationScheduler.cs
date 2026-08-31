@@ -9,6 +9,8 @@ using Meridian.Storage.Store;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -694,7 +696,7 @@ public sealed class DailyValuationScheduledWorker
     {
         var seed = FormattableString.Invariant(
             $"daily-valuation-batch|{item.ScheduleId.Trim().ToLowerInvariant()}|{item.FundProfileId.Trim().ToLowerInvariant()}|{item.LedgerBookId:N}|{item.PeriodId:N}|{scheduledForUtc:O}");
-        return new Guid(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(seed)).AsSpan(0, 16))
+        return new Guid(Sha256Digest.ComputeBytesUtf8(seed).AsSpan(0, 16))
             .ToString("D");
     }
 
@@ -704,7 +706,7 @@ public sealed class DailyValuationScheduledWorker
     {
         var seed = FormattableString.Invariant(
             $"daily-valuation-recovered-batch|{item.ScheduleId.Trim().ToLowerInvariant()}|{string.Join('|', journalEntryIds.Order())}");
-        return new Guid(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(seed)).AsSpan(0, 16))
+        return new Guid(Sha256Digest.ComputeBytesUtf8(seed).AsSpan(0, 16))
             .ToString("D");
     }
 }
@@ -985,9 +987,6 @@ internal static class DailyValuationScheduleProjection
             normalized,
             StringComparison.OrdinalIgnoreCase);
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string RequireText(string? value, string label)
         => string.IsNullOrWhiteSpace(value)

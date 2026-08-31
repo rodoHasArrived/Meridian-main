@@ -1,6 +1,7 @@
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Wpf.ViewModels.Accounting;
 
@@ -69,7 +70,9 @@ public sealed partial class AccountingCloseViewModel
         Guid workflowId,
         long workflowVersion,
         ClosePeriodPlanDto closePlan,
-        bool prepareClosingEntriesOnly)
+        string actor,
+        bool prepareClosingEntriesOnly,
+        string? controllerRole = null)
     {
         var reportPackId = BuildCloseReportPackId(closePlan);
         var closePackageId = $"close-package-{closePlan.FundProfileId}-{closePlan.PeriodId}";
@@ -77,7 +80,7 @@ public sealed partial class AccountingCloseViewModel
         return new LockClosePeriodRequestDto(
             workflowId,
             ExpectedWorkflowVersion: workflowVersion,
-            Actor: "wpf-accounting-controller",
+            Actor: actor,
             Rationale: prepareClosingEntriesOnly
                 ? "Queue closing entries from WPF Accounting Close without hard-locking the accounting period."
                 : "Lock close period from WPF Accounting Close after checklist, sign-off, reconciliation, report certification, and closing-entry posting review.",
@@ -91,7 +94,8 @@ public sealed partial class AccountingCloseViewModel
             ClosePackageManifestId: manifestId,
             ClosePackageRetainedManifestRoute: $"/workstation/reporting/packages/{manifestId}",
             ActionOrigin: OperationsActionOriginDto.HumanOperator,
-            PrepareClosingEntriesOnly: prepareClosingEntriesOnly);
+            PrepareClosingEntriesOnly: prepareClosingEntriesOnly,
+            ControllerRole: controllerRole);
     }
 
     private SignOffCloseTaskRequestDto BuildCloseTaskSignOffRequest(
@@ -100,7 +104,8 @@ public sealed partial class AccountingCloseViewModel
         CloseTaskDto task,
         string roleText,
         string decisionText,
-        string notesText)
+        string notesText,
+        string actor)
     {
         var role = NormalizeRequired(roleText, task.SignOffRequirements.FirstOrDefault()?.Role ?? task.Owner);
         var decision = ParseCloseTaskSignOffDecision(decisionText);
@@ -114,7 +119,7 @@ public sealed partial class AccountingCloseViewModel
             task.TaskId,
             role,
             decision,
-            Actor: "wpf-accounting-controller",
+            Actor: actor,
             Notes: notes,
             EvidenceLinks: BuildCloseTaskSignOffEvidence(workflowId, closePlan, task, role),
             CorrelationId: $"wpf-close-task-signoff-{workflowId:D}-{SanitizeForCorrelation(task.TaskId)}-{SanitizeForCorrelation(role)}",
@@ -124,7 +129,8 @@ public sealed partial class AccountingCloseViewModel
     private ReviewLateAdjustmentRequestDto BuildReviewLateAdjustmentRequest(
         Guid workflowId,
         ClosePeriodPlanDto closePlan,
-        LateAdjustmentRequestDto adjustment)
+        LateAdjustmentRequestDto adjustment,
+        string actor)
     {
         var decision = ParseCloseReviewDecision(LateAdjustmentReviewDecision);
         var decisionText = decision.ToString();
@@ -135,7 +141,7 @@ public sealed partial class AccountingCloseViewModel
             workflowId,
             adjustment.RequestId,
             decision,
-            Actor: "wpf-accounting-controller",
+            Actor: actor,
             Notes: notes,
             EvidenceLinks: BuildLateAdjustmentReviewEvidence(workflowId, closePlan, adjustment, decision),
             CorrelationId: $"wpf-late-adjustment-review-{workflowId:D}-{SanitizeForCorrelation(adjustment.RequestId)}-{SanitizeForCorrelation(decisionText)}",
@@ -174,14 +180,15 @@ public sealed partial class AccountingCloseViewModel
     private ReviewCloseEvidenceRequestDto BuildReviewCloseEvidenceRequest(
         Guid workflowId,
         ClosePeriodPlanDto closePlan,
-        AccountingConfigurationValidationIssueDto issue)
+        AccountingConfigurationValidationIssueDto issue,
+        string actor)
     {
         var targetId = NormalizeOptional(issue.TargetId) ?? closePlan.ClosePlanId;
         return new ReviewCloseEvidenceRequestDto(
             workflowId,
             issue.Code,
             issue.TargetId,
-            Actor: "wpf-accounting-controller",
+            Actor: actor,
             Notes: NormalizeRequired(
                 CloseEvidenceReviewNotes,
                 $"WPF Accounting Close reviewed blocker {issue.Code} for {targetId}. {issue.Message}"),

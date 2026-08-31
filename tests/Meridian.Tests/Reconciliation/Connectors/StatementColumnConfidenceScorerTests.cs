@@ -49,6 +49,69 @@ public sealed class StatementColumnConfidenceScorerTests
     }
 
     [Fact]
+    public void MapColumns_ExplicitRemappingWinsOverImplicitCanonicalAliases()
+    {
+        var swappedProfile = CanonicalProfile with
+        {
+            Fields = CanonicalProfile.Fields.Select(field => field.CanonicalField switch
+            {
+                "Quantity" => field with { SourceColumn = "price" },
+                "Price" => field with { SourceColumn = "quantity" },
+                _ => field
+            }).ToArray()
+        };
+
+        var mappings = StatementColumnConfidenceScorer.MapColumns(["quantity", "price"], swappedProfile);
+
+        mappings[0].CanonicalField.Should().Be(StatementCanonicalField.Price);
+        mappings[0].Confidence.Should().Be(StatementMappingConfidence.Exact);
+        mappings[1].CanonicalField.Should().Be(StatementCanonicalField.Quantity);
+        mappings[1].Confidence.Should().Be(StatementMappingConfidence.Exact);
+    }
+
+    [Fact]
+    public void MapColumns_NormalizedExplicitRemappingWinsOverImplicitCanonicalAliases()
+    {
+        var swappedProfile = CanonicalProfile with
+        {
+            Fields = CanonicalProfile.Fields.Select(field => field.CanonicalField switch
+            {
+                "Quantity" => field with { SourceColumn = "unit_price" },
+                "Price" => field with { SourceColumn = "quan_tity" },
+                _ => field
+            }).ToArray()
+        };
+
+        var mappings = StatementColumnConfidenceScorer.MapColumns(["quan-tity", "unit-price"], swappedProfile);
+
+        mappings[0].CanonicalField.Should().Be(StatementCanonicalField.Price);
+        mappings[0].Confidence.Should().Be(StatementMappingConfidence.Fuzzy);
+        mappings[1].CanonicalField.Should().Be(StatementCanonicalField.Quantity);
+        mappings[1].Confidence.Should().Be(StatementMappingConfidence.Fuzzy);
+    }
+
+    [Theory]
+    [InlineData("unrte", StatementCanonicalField.Quantity)]
+    [InlineData("unita", StatementCanonicalField.Price)]
+    public void MapColumns_EditDistanceRanksClosenessBeforeExplicitSourceTieBreaker(
+        string remappedPriceSource,
+        StatementCanonicalField expectedField)
+    {
+        var remappedProfile = CanonicalProfile with
+        {
+            Fields = CanonicalProfile.Fields.Select(field =>
+                field.CanonicalField == "Price"
+                    ? field with { SourceColumn = remappedPriceSource }
+                    : field).ToArray()
+        };
+
+        var mapping = StatementColumnConfidenceScorer.MapColumns(["unitz"], remappedProfile).Single();
+
+        mapping.CanonicalField.Should().Be(expectedField);
+        mapping.Confidence.Should().Be(StatementMappingConfidence.Fuzzy);
+    }
+
+    [Fact]
     public void ScoreProfile_CanonicalHeaderRanksCanonicalProfileHighest()
     {
         string[] canonicalHeader =

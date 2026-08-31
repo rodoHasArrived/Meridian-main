@@ -52,7 +52,7 @@ public sealed class AccountingProjectionQueryServiceTests
     }
 
     [Fact]
-    public void GetCloseProjection_WithDimensionScope_UsesScopedTrialBalanceAndRollForward()
+    public void GetCloseProjection_WithDimensionScope_UsesOnlyScopedCloseData()
     {
         var service = CreateServiceWithDimensionedLedger();
 
@@ -67,6 +67,9 @@ public sealed class AccountingProjectionQueryServiceTests
         projection.RollForward.Should().HaveCount(2);
         projection.TrialBalance.Select(static line => line.Dimensions?.EntityId).Should().OnlyContain(entityId => entityId == "entity-alpha");
         projection.RollForward.Select(static line => line.Dimensions?.EntityId).Should().OnlyContain(entityId => entityId == "entity-alpha");
+        projection.AuditTrail.Select(static line => line.SourceEventId).Should().BeEquivalentTo(["evt-alpha"]);
+        projection.EvidencePackage.SourceEventIds.Should().BeEquivalentTo(["evt-alpha"]);
+        projection.ClosePeriod.Dimensions.Should().BeEquivalentTo(new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-alpha"));
         projection.ClosePeriod.State.Should().Be(ClosePeriodState.Closed);
     }
 

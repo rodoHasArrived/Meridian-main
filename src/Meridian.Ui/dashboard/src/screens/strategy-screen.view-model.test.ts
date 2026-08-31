@@ -11,7 +11,8 @@ import {
   buildPlotStudyRows,
   buildPlotToolState,
   buildPlotToolTabs,
-  buildPromotionCashForm,
+  buildPaperPromotionApprovalRequest,
+  buildPromotionApprovalForm,
   buildPromotionHistoryDetail,
   buildPromotionPanelState,
   buildPromotionHistoryTable,
@@ -22,13 +23,12 @@ import {
   buildRunTable,
   nextPlotToolViewForKey,
   plotToolTabIdForView,
-  parsePromotionInitialCashInput,
   shouldCloseRunDetailForKey,
   toggleRunSelection,
   useStrategyRunLibraryViewModel,
   type StrategyRunLibraryServices
 } from "@/screens/strategy-screen.view-model";
-import type { MetricSnapshot, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, StrategyPlotToolPayload, StrategyRunRecord, RunDiff, RunComparisonRow } from "@/types";
+import type { MetricSnapshot, PromotionDecisionResult, PromotionEvaluationResult, PromotionRecord, StrategyPlotToolPayload, StrategyRunRecord, StrategyRunReviewPacket, RunDiff, RunComparisonRow } from "@/types";
 
 const runs: StrategyRunRecord[] = [
   {
@@ -183,6 +183,54 @@ const promotionEvaluation: PromotionEvaluationResult = {
   ready: false,
   blockingReasons: ["Sharpe ratio below promotion threshold.", "Drawdown exceeds paper gate."]
 };
+
+function buildPromotionReviewPacket(
+  retainedEvidenceReferences: string[] = ["evidence://evidence-vault/ev-0123456789abcdef01234567"]
+): StrategyRunReviewPacket {
+  return {
+    runId: "run-2",
+    generatedAt: "2026-08-03T12:00:00Z",
+    run: {
+      summary: {
+        runId: "run-2",
+        strategyId: "strat-2",
+        strategyName: "Index Momentum",
+        mode: "Backtest",
+        engine: "QuantConnect",
+        status: "Completed",
+        startedAt: "2026-08-01T12:00:00Z",
+        completedAt: "2026-08-02T12:00:00Z",
+        datasetReference: "US Equities",
+        feedReference: null,
+        portfolioId: "portfolio-run-2",
+        ledgerReference: "ledger-run-2",
+        netPnl: 1900,
+        totalReturn: 0.019,
+        finalEquity: 101900,
+        fillCount: 8,
+        lastUpdatedAt: "2026-08-02T12:00:00Z",
+        auditReference: "audit-run-2"
+      },
+      parameters: {},
+      portfolio: null,
+      ledger: null,
+      evidenceLoop: {
+        operatorAcceptanceCriteria: ["Review the retained Backtest-to-Paper source."],
+        retainedEvidenceReferences,
+        accountingRecordReferences: [],
+        approvalReferences: [],
+        paperValidationReferences: [],
+        governedReportReferences: []
+      }
+    },
+    continuity: null,
+    fills: null,
+    attribution: null,
+    brokerageSync: null,
+    workItems: [],
+    warnings: []
+  };
+}
 
 const metrics: MetricSnapshot[] = [
   { id: "runs", label: "Runs", value: "24", delta: "+8%", tone: "success" },
@@ -843,14 +891,8 @@ describe("strategy-screen view model", () => {
     expect(shouldCloseRunDetailForKey("Enter")).toBe(false);
   });
 
-  it("derives paper-promotion cash validation and disabled command state", () => {
-    expect(parsePromotionInitialCashInput("100000")).toBe(100000);
-    expect(parsePromotionInitialCashInput("999")).toBeNull();
-    expect(parsePromotionInitialCashInput("1000.50")).toBeNull();
-    expect(parsePromotionInitialCashInput("")).toBeNull();
-
-    const valid = buildPromotionCashForm({
-      input: "100000",
+  it("derives governed paper-promotion acknowledgement and disabled command state", () => {
+    const valid = buildPromotionApprovalForm({
       eligible: true,
       promoteState: "evaluated",
       acknowledged: true
@@ -858,18 +900,14 @@ describe("strategy-screen view model", () => {
 
     expect(valid.canSubmit).toBe(true);
     expect(valid.disabledReason).toBeNull();
-    expect(valid.errorText).toBeNull();
-    expect(valid.helpText).toBe("Minimum $1,000. Use whole-dollar paper capital.");
-    expect(valid.inputHelpId).toBe("promote-initial-cash-help");
-    expect(valid.inputDescribedBy).toBe("promote-initial-cash-help");
-    expect(valid.inputDisabledReasonId).toBeNull();
-    expect(valid.describedBy).toBe("promote-initial-cash-help");
     expect(valid.acknowledgementChecked).toBe(true);
-    expect(valid.acknowledgementLabel).toBe("I reviewed the promotion gates and paper-capital impact.");
+    expect(valid.acknowledgementLabel).toBe(
+      "I reviewed the four canonical promotion checks and the exact retained Evidence Vault source."
+    );
     expect(valid.acknowledgementDescribedBy).toBeUndefined();
+    expect(valid.submitLabel).toBe("Approve Paper promotion");
 
-    const unacknowledged = buildPromotionCashForm({
-      input: "100000",
+    const unacknowledged = buildPromotionApprovalForm({
       eligible: true,
       promoteState: "evaluated",
       acknowledged: false
@@ -877,65 +915,76 @@ describe("strategy-screen view model", () => {
 
     expect(unacknowledged.canSubmit).toBe(false);
     expect(unacknowledged.disabledReason).toBe(
-      "Acknowledge the evaluated gates and paper-capital impact before starting a paper session."
+      "Acknowledge the canonical checklist and retained source evidence before approving Paper promotion."
     );
     expect(unacknowledged.submitAriaLabel).toContain("unavailable");
 
-    const invalid = buildPromotionCashForm({
-      input: "500",
+    const approving = buildPromotionApprovalForm({
       eligible: true,
-      promoteState: "evaluated",
+      promoteState: "approving",
       acknowledged: true
     });
 
-    expect(invalid.canSubmit).toBe(false);
-    expect(invalid.disabledReason).toBe("Enter at least $1,000 in whole-dollar paper capital.");
-    expect(invalid.errorText).toBe("Enter at least $1,000 in whole dollars.");
-    expect(invalid.helpText).toBe("Enter at least $1,000 in whole dollars.");
+    expect(approving.canSubmit).toBe(false);
+    expect(approving.disabledReason).toBe("Governed promotion approval is already running.");
+    expect(approving.submitLabel).toBe("Approving Paper promotion...");
+    expect(approving.acknowledgementDisabled).toBe(true);
+    expect(approving.acknowledgementDisabledReason).toBe(
+      "Governed promotion approval is already running; wait before changing acknowledgement."
+    );
+    expect(approving.acknowledgementDisabledReasonId).toBe(
+      "promote-paper-approval-acknowledgement-disabled-reason"
+    );
+    expect(approving.acknowledgementDescribedBy).toBe(
+      "promote-paper-approval-acknowledgement-disabled-reason"
+    );
+    expect(approving.cancelDisabled).toBe(true);
+    expect(approving.cancelDisabledReason).toBe(
+      "Governed promotion approval is already running; wait for the durable decision before closing review."
+    );
+    expect(approving.cancelAriaLabel).toBe(
+      "Governed promotion approval is already running; wait for the durable decision before closing review."
+    );
+  });
 
-    const empty = buildPromotionCashForm({
-      input: "",
-      eligible: true,
-      promoteState: "evaluated",
-      acknowledged: true
+  it("builds the governed approval request from the exact source-retained Evidence Vault reference", () => {
+    const request = buildPaperPromotionApprovalRequest("run-2", buildPromotionReviewPacket());
+
+    expect(request).toEqual({
+      runId: "run-2",
+      approvalReason: "Operator reviewed the canonical Backtest-to-Paper controls and retained source evidence.",
+      reviewNotes: "Strategy review used exact source-retained Evidence Vault reference evidence://evidence-vault/ev-0123456789abcdef01234567.",
+      approvalChecklist: [
+        "DK1_TRUST_PACKET_REVIEWED",
+        "RUN_LINEAGE_REVIEWED",
+        "PORTFOLIO_LEDGER_CONTINUITY_REVIEWED",
+        "RISK_CONTROLS_REVIEWED"
+      ],
+      evidenceReferences: [
+        "DK1_TRUST_PACKET_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567",
+        "RUN_LINEAGE_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567",
+        "PORTFOLIO_LEDGER_CONTINUITY_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567",
+        "RISK_CONTROLS_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567"
+      ]
     });
+  });
 
-    expect(empty.canSubmit).toBe(false);
-    expect(empty.disabledReason).toBe("Enter initial paper capital of at least $1,000.");
-    expect(empty.helpText).toBe("Enter initial paper capital of at least $1,000.");
-
-    const creating = buildPromotionCashForm({
-      input: "100000",
-      eligible: true,
-      promoteState: "creating",
-      acknowledged: true
-    });
-
-    expect(creating.canSubmit).toBe(false);
-    expect(creating.disabledReason).toBe("Paper-session creation is already running.");
-    expect(creating.helpText).toBe("Paper-session creation is already running.");
-    expect(creating.submitLabel).toBe("Starting paper session...");
-    expect(creating.inputDisabled).toBe(true);
-    expect(creating.inputDisabledReason).toBe("Paper-session creation is already running; wait before changing capital.");
-    expect(creating.inputDisabledReasonId).toBe("promote-initial-cash-disabled-reason");
-    expect(creating.inputDescribedBy).toBe("promote-initial-cash-help promote-initial-cash-disabled-reason");
-    expect(creating.acknowledgementDisabled).toBe(true);
-    expect(creating.acknowledgementDisabledReason).toBe(
-      "Paper-session creation is already running; wait before changing acknowledgement."
-    );
-    expect(creating.acknowledgementDisabledReasonId).toBe(
-      "promote-paper-session-acknowledgement-disabled-reason"
-    );
-    expect(creating.acknowledgementDescribedBy).toBe(
-      "promote-paper-session-acknowledgement-disabled-reason"
-    );
-    expect(creating.cancelDisabled).toBe(true);
-    expect(creating.cancelDisabledReason).toBe(
-      "Paper-session creation is already running; wait for the session result before closing setup."
-    );
-    expect(creating.cancelAriaLabel).toBe(
-      "Paper-session creation is already running; wait for the session result before closing setup."
-    );
+  it.each([
+    "evidence://strategy-runs/run-2",
+    "evidence://evidence-vault/parent%2Fchild",
+    "evidence://evidence-vault/vault-covered-call",
+    "evidence://evidence-vault/ev-0123456789abcdef0123456",
+    "evidence://evidence-vault/ev-0123456789abcdef0123456g",
+    "evidence://evidence-vault:443/ev-0123456789abcdef01234567",
+    "evidence://operator@evidence-vault/ev-0123456789abcdef01234567",
+    "evidence://evidence-vault/%65v-0123456789abcdef01234567",
+    "evidence://evidence-vault/ev-0123456789abcdef01234567?download=true",
+    "evidence://evidence-vault/ev-0123456789abcdef01234567#review"
+  ])("fails closed when the review packet lacks an exact retained Evidence Vault source (%s)", (reference) => {
+    expect(() => buildPaperPromotionApprovalRequest(
+      "run-2",
+      buildPromotionReviewPacket([reference])
+    )).toThrow(/requires an exact evidence:\/\/evidence-vault/);
   });
 
   it("derives disabled command reasons for incomplete selections", () => {
@@ -980,7 +1029,7 @@ describe("strategy-screen view model", () => {
     const blocked = buildPromotionPanelState({
       promoteState: "evaluated",
       promotionEval: promotionEvaluation,
-      promotionSession: null
+      promotionDecision: null
     });
 
     expect(blocked.statusRole).toBe("alert");
@@ -1001,49 +1050,48 @@ describe("strategy-screen view model", () => {
       id: "run-2-blocker-0",
       text: "Sharpe ratio below promotion threshold."
     });
-    expect(blocked.showCashForm).toBe(false);
+    expect(blocked.showApprovalForm).toBe(false);
     expect(blocked.showIneligibleDismiss).toBe(true);
 
     const eligible = buildPromotionPanelState({
       promoteState: "evaluated",
       promotionEval: { ...promotionEvaluation, isEligible: true, reason: "", blockingReasons: [] },
-      promotionSession: null
+      promotionDecision: null
     });
 
     expect(eligible.statusRole).toBe("status");
     expect(eligible.evaluation?.title).toBe("Eligible for paper trading");
     expect(eligible.evaluation?.reason).toBe("Promotion evaluation returned no reason.");
-    expect(eligible.showCashForm).toBe(true);
+    expect(eligible.showApprovalForm).toBe(true);
     expect(eligible.showIneligibleDismiss).toBe(false);
 
-    const creating = buildPromotionPanelState({
-      promoteState: "creating",
+    const approving = buildPromotionPanelState({
+      promoteState: "approving",
       promotionEval: { ...promotionEvaluation, isEligible: true, reason: "", blockingReasons: [] },
-      promotionSession: null
+      promotionDecision: null
     });
 
-    expect(creating.showCashForm).toBe(true);
-    expect(creating.sessionCreated).toBeNull();
+    expect(approving.showApprovalForm).toBe(true);
+    expect(approving.approval).toBeNull();
 
     const done = buildPromotionPanelState({
       promoteState: "done",
       promotionEval: eligible.evaluation ? { ...promotionEvaluation, isEligible: true } : null,
-      promotionSession: {
-        sessionId: "sess-123",
-        strategyId: "strat-2",
-        strategyName: "Index Momentum",
-        initialCash: 100000,
-        createdAt: "2026-05-09T00:00:00Z",
-        closedAt: null,
-        isActive: true
+      promotionDecision: {
+        success: true,
+        promotionId: "promotion-123",
+        newRunId: "paper-run-123",
+        reason: "Strategy promoted from Backtest to Paper.",
+        auditReference: "audit-123",
+        approvedBy: "portfolio-manager"
       }
     });
 
-    expect(done.sessionCreated).toMatchObject({
-      title: "Paper session created - session sess-123",
-      detail: "Index Momentum is active with $100,000 paper capital.",
-      actionAriaLabel: "Go to Trading cockpit for paper session sess-123",
-      actionHref: "/trading"
+    expect(done.approval).toMatchObject({
+      title: "Paper promotion approved - target run paper-run-123",
+      detail: "Strategy promoted from Backtest to Paper. Durable promotion promotion-123 is retained with audit audit-123.",
+      actionAriaLabel: "Open governed Trading promotion record for target run paper-run-123",
+      actionHref: "/trading?runId=paper-run-123#promotion-gate-panel"
     });
   });
 
@@ -1210,8 +1258,8 @@ describe("strategy-screen view model", () => {
     expect(state.plotTool.statistics.sampleTable.rows).toEqual([]);
   });
 
-  it("ignores duplicate paper-session submit attempts while creation is unresolved", async () => {
-    const pendingSession = createDeferred<PaperSessionSummary>();
+  it("ignores duplicate governed approval attempts while the durable decision is unresolved", async () => {
+    const pendingDecision = createDeferred<PromotionDecisionResult>();
     const services: StrategyRunLibraryServices = {
       compareRuns: vi.fn(),
       diffRuns: vi.fn(),
@@ -1223,7 +1271,8 @@ describe("strategy-screen view model", () => {
         reason: "Promotion gates passed.",
         blockingReasons: []
       }),
-      createPaperSession: vi.fn().mockReturnValue(pendingSession.promise)
+      approvePromotion: vi.fn().mockReturnValue(pendingDecision.promise),
+      getRunReviewPacket: vi.fn().mockResolvedValue(buildPromotionReviewPacket())
     };
 
     const { result } = renderHook(() =>
@@ -1239,10 +1288,6 @@ describe("strategy-screen view model", () => {
     });
 
     act(() => {
-      result.current.setPromotionInitialCash("150000");
-    });
-
-    act(() => {
       result.current.setPromotionAcknowledgement(true);
     });
 
@@ -1252,40 +1297,44 @@ describe("strategy-screen view model", () => {
     });
 
     await waitFor(() => {
-      expect(services.createPaperSession).toHaveBeenCalledTimes(1);
+      expect(services.approvePromotion).toHaveBeenCalledTimes(1);
     });
-    expect(services.createPaperSession).toHaveBeenCalledWith("run-2", "Index Momentum", 150000);
+    expect(services.approvePromotion).toHaveBeenCalledWith(expect.objectContaining({
+      runId: "run-2",
+      approvalChecklist: [
+        "DK1_TRUST_PACKET_REVIEWED",
+        "RUN_LINEAGE_REVIEWED",
+        "PORTFOLIO_LEDGER_CONTINUITY_REVIEWED",
+        "RISK_CONTROLS_REVIEWED"
+      ]
+    }));
 
     act(() => {
-      result.current.setPromotionInitialCash("900000");
       result.current.setPromotionAcknowledgement(false);
       result.current.cancelPromotion();
     });
 
     expect(result.current.showPromotePanel).toBe(true);
-    expect(result.current.promoteState).toBe("creating");
-    expect(result.current.promotionCashForm.value).toBe("150000");
-    expect(result.current.promotionCashForm.acknowledgementChecked).toBe(true);
-    expect(result.current.promotionCashForm.submitLabel).toBe("Starting paper session...");
-    expect(result.current.promotionCashForm.inputDisabled).toBe(true);
-    expect(result.current.promotionCashForm.acknowledgementDisabled).toBe(true);
-    expect(result.current.promotionCashForm.cancelDisabled).toBe(true);
+    expect(result.current.promoteState).toBe("approving");
+    expect(result.current.promotionApprovalForm.acknowledgementChecked).toBe(true);
+    expect(result.current.promotionApprovalForm.submitLabel).toBe("Approving Paper promotion...");
+    expect(result.current.promotionApprovalForm.acknowledgementDisabled).toBe(true);
+    expect(result.current.promotionApprovalForm.cancelDisabled).toBe(true);
 
     await act(async () => {
-      pendingSession.resolve({
-        sessionId: "session-dup-guard",
-        strategyId: "run-2",
-        strategyName: "Index Momentum",
-        initialCash: 100000,
-        createdAt: "2026-05-14T00:00:00Z",
-        closedAt: null,
-        isActive: true
+      pendingDecision.resolve({
+        success: true,
+        promotionId: "promotion-dup-guard",
+        newRunId: "paper-run-dup-guard",
+        reason: "Strategy promoted from Backtest to Paper.",
+        auditReference: "audit-dup-guard",
+        approvedBy: "portfolio-manager"
       });
-      await pendingSession.promise;
+      await pendingDecision.promise;
     });
 
     expect(result.current.promoteState).toBe("done");
-    expect(result.current.promotionSession?.sessionId).toBe("session-dup-guard");
+    expect(result.current.promotionDecision?.newRunId).toBe("paper-run-dup-guard");
   });
 });
 

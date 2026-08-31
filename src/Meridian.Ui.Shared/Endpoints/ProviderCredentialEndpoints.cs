@@ -61,7 +61,7 @@ public static class ProviderCredentialEndpoints
                     ["canonicalRoute"] = $"/api/providers/{descriptor.ProviderId}/credentials"
                 }), jsonOptions);
         })
-        .WithName("ValidateProviderCredentials")
+        .WithName("ValidateProviderCredentials").RequirePermission(UserPermission.ManageCredentials)
         .WithDescription("Validates provider credential completeness without returning secrets.")
         .Produces<ProviderCredentialValidationResult>(StatusCodes.Status200OK)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -108,7 +108,7 @@ public static class ProviderCredentialEndpoints
                 ErrorMessage: verification.Success ? null : verification.LastError,
                 TestedAt: DateTime.UtcNow), jsonOptions);
         })
-        .WithName("TestProviderConnection")
+        .WithName("TestProviderConnection").RequirePermission(UserPermission.ManageCredentials)
         .WithDescription("Compatibility wrapper around the canonical provider verification route.")
         .Produces<ProviderConnectionTest>(StatusCodes.Status200OK)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);

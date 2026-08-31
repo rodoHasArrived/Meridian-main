@@ -47,7 +47,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   merged from the dedicated projection store without replacing existing security-scoped detail.
 - `AssetOperations/AssetObligationProjectionService.cs` - retained-term projection service for
   Security Master-keyed assets that emits V1 expected cash flows, non-cash obligations, formula
-  traces, ledger-support references, and timeline variances without writing ledger facts.
+  traces, ledger-support references, and timeline variances without writing ledger facts, including
+  contractual bond principal schedules mapped into sinking-fund repayment projections.
 - `AssetOperations/FactorPaydownProjectionService.cs` - deterministic MBS factor-paydown projector
   that validates retained evidence, held face, factor bounds, currency rounding, and optimistic
   position version before producing typed event, economic-state, and projection-lineage records.

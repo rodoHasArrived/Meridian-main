@@ -10,6 +10,7 @@ using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Ledger;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -20,15 +21,135 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
     private readonly IAccountingConfigurationStore _store;
     private readonly IAccountingActionAuditStore _auditStore;
     private readonly ILedgerBookService? _ledgerBookService;
+    private readonly IAccountingAuditPendingMarkerStore? _pendingAuditMarkers;
 
+    /// <summary>
+    /// Serializes a whole audited mutation: recover, declare the marker, save, append, clear.
+    /// </summary>
+    /// <remarks>
+    /// The pending marker is a single slot, so concurrent mutations do not merely race — they
+    /// destroy each other's evidence. Two callers can both finish recovery before either declares,
+    /// and the second declaration then overwrites the first; if the first mutation's save lands but
+    /// its append fails, the second clears the surviving marker and the first is left permanently
+    /// unaudited with nothing recording that it was interrupted. That is precisely the silent gap
+    /// the marker exists to close, so the marker's whole lifecycle has to be one critical section
+    /// rather than five independent steps.
+    ///
+    /// <para>Both shipping compositions register this service as a singleton, so an instance lock
+    /// covers every mutation in the process. Cross-process serialization is the stores' own concern
+    /// and they carry it: the file audit chain takes a cross-process lock file around its head, and
+    /// the PostgreSQL posture locks the chain head row FOR UPDATE inside the append transaction.</para>
+    /// </remarks>
+    private readonly SemaphoreSlim _auditCycleLock = new(1, 1);
+
+    /// <param name="pendingAuditMarkers">
+    /// Makes the mutation and its audit append recoverable as a pair (W9-GOV-008 criterion 3). When
+    /// absent, the historical save-then-audit ordering applies and an append that fails after the
+    /// mutation commits leaves the chain silently short of that mutation.
+    /// </param>
     public AccountingConfigurationService(
         IAccountingConfigurationStore store,
         IAccountingActionAuditStore auditStore,
-        ILedgerBookService? ledgerBookService = null)
+        ILedgerBookService? ledgerBookService = null,
+        IAccountingAuditPendingMarkerStore? pendingAuditMarkers = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _auditStore = auditStore ?? throw new ArgumentNullException(nameof(auditStore));
         _ledgerBookService = ledgerBookService;
+        _pendingAuditMarkers = pendingAuditMarkers;
+    }
+
+    /// <summary>
+    /// Resolves an audit append that was declared but never confirmed, and reports what it found.
+    /// </summary>
+    /// <remarks>
+    /// <para>Runs before every audited mutation, and is worth calling at startup so an interrupted
+    /// pair is surfaced before an operator's next action rather than attributed to it.</para>
+    ///
+    /// <para>The retained hashes are what make this decidable. An interrupted pair leaves the
+    /// workspace at either the mutation's before-state or its after-state, and the marker carries
+    /// both, so recovery can tell "the mutation landed and its audit did not" from "the mutation
+    /// never landed" instead of guessing — and can refuse to guess when the state matches neither.</para>
+    /// </remarks>
+    /// <exception cref="AccountingAuditRecoveryException">
+    /// The retained workspace matches neither hash, so no honest resolution exists.
+    /// </exception>
+    public async Task<AccountingAuditRecoveryResult> RecoverPendingAuditAsync(CancellationToken ct = default)
+    {
+        await _auditCycleLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            return await RecoverPendingAuditCoreAsync(ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _auditCycleLock.Release();
+        }
+    }
+
+    /// <summary>
+    /// The recovery itself, assuming <see cref="_auditCycleLock"/> is already held.
+    /// </summary>
+    /// <remarks>
+    /// Split from the public entry point because <see cref="SaveWithAuditAsync"/> holds the lock for
+    /// its whole cycle and calls this directly; routing it back through the public method would
+    /// deadlock on the non-reentrant semaphore.
+    /// </remarks>
+    private async Task<AccountingAuditRecoveryResult> RecoverPendingAuditCoreAsync(CancellationToken ct)
+    {
+        if (_pendingAuditMarkers is null)
+        {
+            return new AccountingAuditRecoveryResult(AccountingAuditRecoveryOutcome.Nothing);
+        }
+
+        var marker = await _pendingAuditMarkers.ReadAsync(ct).ConfigureAwait(false);
+        if (marker is null)
+        {
+            return new AccountingAuditRecoveryResult(AccountingAuditRecoveryOutcome.Nothing);
+        }
+
+        var auditEvent = marker.AuditEvent;
+        var fundProfileId = NormalizeFundProfileId(auditEvent.FundProfileId);
+
+        var retainedAudit = await _auditStore
+            .ListAsync(fundProfileId, auditEvent.LedgerBookId, ct, auditEvent.TenantId, auditEvent.CompanyId)
+            .ConfigureAwait(false);
+        if (retainedAudit.Any(item => item.AuditEventId == auditEvent.AuditEventId))
+        {
+            // Both sides landed; only the clear was lost.
+            await _pendingAuditMarkers.ClearAsync(auditEvent.AuditEventId, ct).ConfigureAwait(false);
+            return new AccountingAuditRecoveryResult(
+                AccountingAuditRecoveryOutcome.AlreadyAudited, auditEvent.AuditEventId);
+        }
+
+        var workspace = await LoadWorkspaceAsync(
+                fundProfileId, auditEvent.LedgerBookId, ct, auditEvent.TenantId, auditEvent.CompanyId)
+            .ConfigureAwait(false);
+        var currentHash = Hash(workspace);
+
+        if (string.Equals(currentHash, auditEvent.AfterHash, StringComparison.Ordinal))
+        {
+            // The mutation is retained but unaudited — exactly the gap a chain cannot see, because a
+            // chain proves nobody edited what is there and says nothing about what is missing.
+            await _auditStore.AppendAsync(auditEvent, ct).ConfigureAwait(false);
+            await _pendingAuditMarkers.ClearAsync(auditEvent.AuditEventId, ct).ConfigureAwait(false);
+            return new AccountingAuditRecoveryResult(
+                AccountingAuditRecoveryOutcome.AuditReplayed, auditEvent.AuditEventId);
+        }
+
+        if (string.Equals(currentHash, auditEvent.BeforeHash, StringComparison.Ordinal))
+        {
+            // The mutation never landed, so auditing it would record something that did not happen.
+            await _pendingAuditMarkers.ClearAsync(auditEvent.AuditEventId, ct).ConfigureAwait(false);
+            return new AccountingAuditRecoveryResult(
+                AccountingAuditRecoveryOutcome.MutationDiscarded, auditEvent.AuditEventId);
+        }
+
+        throw new AccountingAuditRecoveryException(
+            auditEvent.AuditEventId,
+            "An interrupted accounting mutation cannot be reconciled: the retained workspace matches "
+            + "neither the recorded before-state nor the after-state, so the pending audit event can "
+            + "be neither replayed nor discarded truthfully.");
     }
 
     public async Task<AccountingConfigurationWorkspaceDto> GetWorkspaceAsync(
@@ -657,9 +778,18 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
             RulesStudio = BuildRulesStudio(workspace, validation)
         };
         var afterHash = Hash(finalWorkspace);
-        await _store.SaveAsync(finalWorkspace, ct).ConfigureAwait(false);
-        await _auditStore.AppendAsync(
-            new AccountingActionAuditEventDto(
+
+        // One critical section for the whole cycle. See _auditCycleLock: the marker is a single
+        // slot, so overlapping mutations overwrite each other's declarations and a crash in the
+        // loser becomes undetectable.
+        await _auditCycleLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            // Resolve any interrupted pair before starting another, so an outstanding marker is
+            // attributed to the mutation that actually caused it rather than to this one.
+            await RecoverPendingAuditCoreAsync(ct).ConfigureAwait(false);
+
+            var auditEvent = new AccountingActionAuditEventDto(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 RequireText(actor, nameof(actor)),
@@ -673,8 +803,30 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
                 evidenceLinks ?? [],
                 NormalizeOptional(companyId),
                 NormalizePrincipalIds(reportGroupPrincipalIds),
-                NormalizeOptional(tenantId)),
-            ct).ConfigureAwait(false);
+                NormalizeOptional(tenantId));
+
+            // Declared before the mutation, cleared after the append. The two stores are separate
+            // interfaces over separate artifacts, so there is no transaction to share; this is what turns
+            // "the append silently didn't happen" into a recorded, decidable incident.
+            if (_pendingAuditMarkers is not null)
+            {
+                await _pendingAuditMarkers
+                    .WriteAsync(new AccountingAuditPendingMarker(auditEvent, DateTimeOffset.UtcNow), ct)
+                    .ConfigureAwait(false);
+            }
+
+            await _store.SaveAsync(finalWorkspace, ct).ConfigureAwait(false);
+            await _auditStore.AppendAsync(auditEvent, ct).ConfigureAwait(false);
+
+            if (_pendingAuditMarkers is not null)
+            {
+                await _pendingAuditMarkers.ClearAsync(auditEvent.AuditEventId, ct).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            _auditCycleLock.Release();
+        }
 
         return await GetWorkspaceAsync(finalWorkspace.FundProfileId, ledgerBookId ?? finalWorkspace.LedgerBookId, ct, finalWorkspace.TenantId, finalWorkspace.CompanyId).ConfigureAwait(false);
     }

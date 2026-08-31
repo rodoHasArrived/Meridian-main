@@ -60,10 +60,13 @@ public sealed class StatementMatchingEngineTests
             && match.Variance.MarketValue == 0.50m
             && match.Tolerance.Quantity == 0.05m
             && match.Tolerance.Amount == 1.00m);
+        // A cash balance carries no quantity, so the engine reports the configured CashBalance
+        // tolerance in Amount — the field the cash variance is measured against.
         result.Results.Should().Contain(match => match.Kind == StatementMatchKind.Cash
             && match.RuleIds.Contains("statement-cash-tolerance-v1")
             && match.Variance.Amount == 0.05m
-            && match.Tolerance.Quantity == 0.10m);
+            && match.Tolerance.Amount == 0.10m
+            && match.Tolerance.Quantity == null);
         result.Results.Should().Contain(match => match.Kind == StatementMatchKind.Transaction
             && match.RuleIds.Contains("statement-transaction-tolerance-v1")
             && match.Variance.Quantity == 0.01m

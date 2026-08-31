@@ -1,4 +1,5 @@
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Text;
 
 namespace Meridian.Ledger;
 
@@ -275,13 +276,13 @@ public static class PrivateCapitalFundEventLedgerProjector
         string? fallbackCapitalAccountId,
         string? fallbackInvestorId)
     {
-        var resolvedCapitalAccountId = NormalizeText(metadata.CapitalAccountId) ?? NormalizeText(fallbackCapitalAccountId);
+        var resolvedCapitalAccountId = TextPrimitives.NormalizeOptional(metadata.CapitalAccountId) ?? TextPrimitives.NormalizeOptional(fallbackCapitalAccountId);
         if (resolvedCapitalAccountId is null)
         {
             return null;
         }
 
-        var resolvedInvestorId = NormalizeText(metadata.InvestorId) ?? NormalizeText(fallbackInvestorId);
+        var resolvedInvestorId = TextPrimitives.NormalizeOptional(metadata.InvestorId) ?? TextPrimitives.NormalizeOptional(fallbackInvestorId);
         return new CapitalAccountImpactLine(resolvedCapitalAccountId, resolvedInvestorId, line);
     }
 
@@ -538,9 +539,6 @@ public static class PrivateCapitalFundEventLedgerProjector
             .Select(entry => selector(entry.Metadata))
             .FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))
             ?.Trim();
-
-    private static string? NormalizeText(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string? FirstTagText(IReadOnlyList<JournalEntry> entries, string key)
     {

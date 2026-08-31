@@ -27,6 +27,12 @@ export interface CoveredCallBacktestRequest {
   initialCash: number;
   initialUnderlyingShares: number;
   label?: string | null;
+  operatorAcceptanceCriteria: string[];
+  retainedEvidenceReferences: string[];
+  accountingRecordReferences: string[];
+  approvalReferences: string[];
+  paperValidationReferences: string[];
+  governedReportReferences: string[];
 }
 
 export interface CoveredCallRunHandle {
@@ -40,7 +46,8 @@ export type CoveredCallRunPhase =
   | "Running"
   | "Completed"
   | "Failed"
-  | "Cancelled";
+  | "Cancelled"
+  | "PersistenceDegraded";
 
 export interface CoveredCallRunStatus {
   runId: string;

@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Net;
 using FluentAssertions;
 using Xunit;
@@ -10,13 +11,14 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class OptionsEndpointTests
+public sealed class OptionsEndpointTests : IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;
 
     public OptionsEndpointTests(EndpointTestFixture fixture)
     {
-        _client = fixture.Client;
+        // Options refresh pulls an option-chain snapshot through to the caller and requires ViewMarketData (W9-GOV-008).
+        _client = fixture.CreatePermittedClient(UserPermission.ViewMarketData);
     }
 
     [Theory]

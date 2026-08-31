@@ -1,6 +1,6 @@
-using System.Security.Cryptography;
 using System.Text.Json;
 using Meridian.Contracts.Etl;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
@@ -196,8 +196,7 @@ public sealed partial class EtlJobOrchestrator
             FileShare.Read,
             bufferSize: 81920,
             FileOptions.Asynchronous | FileOptions.SequentialScan);
-        return Convert.ToHexStringLower(
-            await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false));
+        return await Sha256Digest.ComputeAsync(stream, ct).ConfigureAwait(false);
     }
 
     private static void ValidatePackageReadback(
@@ -249,7 +248,7 @@ public sealed partial class EtlJobOrchestrator
         var canonicalBytes = JsonSerializer.SerializeToUtf8Bytes(
             prepared,
             OperationsContractsJsonContext.Default.VerifiedOperationOutcome);
-        var outcomeHash = Convert.ToHexStringLower(SHA256.HashData(canonicalBytes));
+        var outcomeHash = Sha256Digest.Compute(canonicalBytes);
 
         try
         {
@@ -257,7 +256,7 @@ public sealed partial class EtlJobOrchestrator
                 .WriteWithChecksumAsync(receiptPath, canonicalBytes, ct)
                 .ConfigureAwait(false);
             var retainedBytes = await File.ReadAllBytesAsync(receiptPath, ct).ConfigureAwait(false);
-            var readbackHash = Convert.ToHexStringLower(SHA256.HashData(retainedBytes));
+            var readbackHash = Sha256Digest.Compute(retainedBytes);
             if (!canonicalBytes.AsSpan().SequenceEqual(retainedBytes) ||
                 !string.Equals(writtenHash, outcomeHash, StringComparison.OrdinalIgnoreCase) ||
                 !string.Equals(readbackHash, outcomeHash, StringComparison.OrdinalIgnoreCase))
@@ -337,7 +336,7 @@ public sealed partial class EtlJobOrchestrator
                 var replayedBytes = JsonSerializer.SerializeToUtf8Bytes(
                     replayedRecord.TerminalOutcome,
                     OperationsContractsJsonContext.Default.VerifiedOperationOutcome);
-                var replayedHash = Convert.ToHexStringLower(SHA256.HashData(replayedBytes));
+                var replayedHash = Sha256Digest.Compute(replayedBytes);
                 if (!canonicalBytes.AsSpan().SequenceEqual(replayedBytes) ||
                     !string.Equals(replayedHash, outcomeHash, StringComparison.OrdinalIgnoreCase) ||
                     !replayedRecord.Data.TryGetValue("terminalOutcomeHashSha256", out var retainedHash) ||

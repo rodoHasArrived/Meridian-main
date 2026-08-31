@@ -6,6 +6,7 @@ import {
   buildCommandPaletteTriggerState,
   buildDevelopmentFixtureNoticeViewModel,
   normalizeWorkspace,
+  resolveAppShellLocation,
   resolveAppShellCommandPaletteShortcut,
   type AppShellWorkspacePayload
 } from "@/app-shell.view-model";
@@ -44,6 +45,42 @@ describe("app shell view model", () => {
     expect(skipLinkRule).toContain("left: -100vw");
     expect(skipLinkRule).not.toContain("transform:");
     expect(focusedSkipLinkRule).toContain("left: 0.75rem");
+  });
+
+  it("lets every masthead track shrink rather than spill past the viewport", () => {
+    const shellStyles = readFileSync(resolve(process.cwd(), "src/styles/app-shell.css"), "utf8");
+    const mastheadRule = shellStyles.match(/\.workstation-masthead\s*\{(?<rule>[\s\S]*?)\}/)?.groups?.rule ?? "";
+    const columns = mastheadRule.match(/grid-template-columns:(?<value>[^;]*);/)?.groups?.value ?? "";
+
+    expect(columns).not.toBe("");
+    // A track floor beats the child's own `min-width: 0`, so any non-zero minimum here
+    // adds to a row minimum that the 980px stack does not rescue in between.
+    expect(columns).not.toMatch(/minmax\(\s*(?!0[,)])[^,]+,/);
+    expect(columns.match(/minmax\(/g) ?? []).toHaveLength(3);
+  });
+
+  it("ellipsizes the session identity instead of pushing it off the masthead", () => {
+    const shellStyles = readFileSync(resolve(process.cwd(), "src/styles/app-shell.css"), "utf8");
+    const nameRule = shellStyles.match(/\.workstation-session-name\s*\{(?<rule>[\s\S]*?)\}/)?.groups?.rule ?? "";
+    const roleRule = shellStyles.match(/\.workstation-session-role\s*\{(?<rule>[\s\S]*?)\}/)?.groups?.rule ?? "";
+
+    for (const rule of [nameRule, roleRule]) {
+      expect(rule).toContain("white-space: nowrap");
+      // Flex items default to `min-width: auto` and refuse to shrink below their text,
+      // which would leave the overflow rules dead and the card spilling.
+      expect(rule).toContain("min-width: 0");
+      expect(rule).toContain("overflow: hidden");
+      expect(rule).toContain("text-overflow: ellipsis");
+    }
+  });
+
+  it("holds the environment badge at full width while the rest of the session card gives way", () => {
+    const shellStyles = readFileSync(resolve(process.cwd(), "src/styles/app-shell.css"), "utf8");
+    const badgeRule =
+      shellStyles.match(/\.workstation-session-card\s*>\s*:first-child\s*\{(?<rule>[\s\S]*?)\}/)?.groups?.rule ?? "";
+
+    // PAPER vs LIVE is the one thing in this card an operator cannot afford to lose.
+    expect(badgeRule).toContain("flex: none");
   });
 
   it("keeps route-owned continuity builders outside shell internals", () => {
@@ -112,9 +149,8 @@ describe("app shell view model", () => {
     expect(statusPanelSource).toContain('title: "Workspace data unavailable"');
     expect(trustStripSource).toContain("export function buildTrustStripState");
     expect(trustStripSource).toContain("function buildProviderTrustStripItem");
-    expect(trustStripSource).toContain("function titleCase");
     expect(trustStripSource).toContain("function formatCount");
-    expect(trustStripSource).toContain("packageJson.version");
+    expect(trustStripSource).toContain("__APP_VERSION__");
     expect(trustStripSource).toContain("Provider posture has not loaded yet.");
     expect(commandPaletteSource).toContain("export function buildCommandPaletteTriggerState");
     expect(commandPaletteSource).toContain("export function resolveAppShellCommandPaletteShortcut");
@@ -216,7 +252,7 @@ describe("app shell view model", () => {
     expect(source).not.toContain("function buildProviderTrustStripItem");
     expect(source).not.toContain("function titleCase");
     expect(source).not.toContain("function formatCount");
-    expect(source).not.toContain("packageJson.version");
+    expect(source).not.toContain("__APP_VERSION__");
     expect(source).not.toContain("Provider posture has not loaded yet.");
     expect(source).not.toContain("export function buildCommandPaletteTriggerState");
     expect(source).not.toContain("export function resolveAppShellCommandPaletteShortcut");
@@ -245,6 +281,14 @@ describe("app shell view model", () => {
     expect(normalizeWorkspace("/unknown")).toBe("trading");
   });
 
+  it("models the root as shell home without adding an eighth workspace", () => {
+    expect(resolveAppShellLocation("/")).toEqual({ kind: "home" });
+    expect(resolveAppShellLocation("/accounting/reconciliation")).toEqual({
+      kind: "workspace",
+      workspaceKey: "accounting"
+    });
+  });
+
   it("treats the root route as the Daily Control Tower shell focus", () => {
     const state = buildAppShellViewState({
       pathname: "/",
@@ -259,6 +303,8 @@ describe("app shell view model", () => {
       documentTitle: "Daily Control Tower - Meridian",
       fallbackElementId: "workbench-content"
     });
+    expect(state.location).toEqual({ kind: "home" });
+    expect(state.workflowContinuity.contextValue).toBe("Daily Control Tower / Today");
     expect(state.workflowContinuity.title).toBe("Daily Control Tower");
     expect(state.workflowContinuity.steps.map((step) => step.label)).toEqual([
       "Today",
@@ -384,7 +430,7 @@ describe("app shell view model", () => {
     });
 
     expect(state.trustStrip).toMatchObject({
-      ariaLabel: "Workstation build, mode, data source, and provider posture",
+      ariaLabel: "Workstation build, environment, provenance, and provider posture",
       items: [
         {
           id: "build",
@@ -394,18 +440,18 @@ describe("app shell view model", () => {
         },
         {
           id: "mode",
-          label: "Mode",
+          label: "Environment",
           value: "Paper",
           tone: "ready"
         },
         {
           id: "source",
-          label: "Source",
-          value: "Demo data",
-          tone: "pending",
-          detail: "Demo data is visible; confirm live source status before making operating decisions.",
-          href: "/settings#backend-capability-coverage",
-          actionLabel: "Open diagnostics"
+          label: "Provenance",
+          value: "SEEDED",
+          tone: "review",
+          detail: "Seeded demo data. This is seeded demo data shipped without live credentials. It is not real market or account data.",
+          href: "/data/providers",
+          actionLabel: "Connect live source"
         },
         {
           id: "providers",
@@ -417,6 +463,93 @@ describe("app shell view model", () => {
           actionLabel: "Open provider posture"
         }
       ]
+    });
+  });
+
+  it("keeps environment, provenance, and provider operator state independent", () => {
+    const liveSimulatedState = buildAppShellViewState({
+      pathname: "/data/providers",
+      operatingContextSymbol: "MSFT",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      dataProvenance: "simulated",
+      payload: {
+        ...sessionPayload,
+        session: {
+          ...sessionPayload.session!,
+          environment: "live"
+        },
+        data: {
+          metrics: [],
+          providers: [
+            {
+              provider: "Databento",
+              status: "Blocked",
+              capability: "market-data",
+              latency: "timeout",
+              note: "Credential verification failed."
+            }
+          ],
+          backfills: [],
+          exports: []
+        }
+      }
+    });
+
+    expect(liveSimulatedState.trustStrip.items.find((item) => item.id === "mode")).toMatchObject({
+      value: "Live",
+      tone: "review",
+      href: "/trading/readiness"
+    });
+    expect(liveSimulatedState.trustStrip.items.find((item) => item.id === "source")).toMatchObject({
+      value: "SIMULATED",
+      tone: "review",
+      href: "/data/providers"
+    });
+    expect(liveSimulatedState.trustStrip.items.find((item) => item.id === "providers")).toMatchObject({
+      value: "1 blocked",
+      tone: "blocked",
+      href: "/data/providers",
+      actionLabel: "Open provider posture"
+    });
+    expect(liveSimulatedState.workflowContinuity.operatorFocusItems).toContainEqual(
+      expect.objectContaining({
+        label: "Databento provider blocked",
+        tone: "blocked"
+      })
+    );
+    expect(liveSimulatedState.workflowContinuity.linkedContextItems).toContainEqual(
+      expect.objectContaining({
+        statusLabel: "Provider blocked",
+        tone: "blocked"
+      })
+    );
+
+    const researchRealState = buildAppShellViewState({
+      pathname: "/strategy",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      dataProvenance: "real",
+      payload: {
+        ...sessionPayload,
+        session: {
+          ...sessionPayload.session!,
+          environment: "research"
+        }
+      }
+    });
+
+    expect(researchRealState.trustStrip.items.find((item) => item.id === "mode")).toMatchObject({
+      value: "Demo",
+      detail: "Session Ops is operating in research mode, shown as Demo."
+    });
+    expect(researchRealState.trustStrip.items.find((item) => item.id === "source")).toMatchObject({
+      value: "REAL",
+      tone: "ready",
+      href: null,
+      actionLabel: null
     });
   });
 
@@ -476,6 +609,7 @@ describe("app shell view model", () => {
       workspaceErrors: {
         data: "Provider posture timed out."
       },
+      dataProvenance: "real",
       payload: {
         ...emptyPayload,
         session: {
@@ -490,20 +624,22 @@ describe("app shell view model", () => {
 
     expect(state.trustStrip.items.find((item) => item.id === "mode")).toMatchObject({
       value: "Live",
-      tone: "blocked",
+      tone: "review",
       href: "/trading/readiness",
       actionLabel: "Review readiness"
     });
     expect(state.trustStrip.items.find((item) => item.id === "source")).toMatchObject({
-      value: "Limited data",
-      tone: "review",
-      href: "/settings#backend-capability-coverage",
-      actionLabel: "Open diagnostics"
+      value: "REAL",
+      tone: "ready",
+      href: null,
+      actionLabel: null
     });
     expect(state.trustStrip.items.find((item) => item.id === "providers")).toMatchObject({
-      value: "Pending",
-      href: "/data/providers",
-      actionLabel: "Open provider posture"
+      value: "Unavailable",
+      tone: "blocked",
+      detail: "Data workspace failed: Provider posture timed out.",
+      href: "/settings#backend-capability-coverage",
+      actionLabel: "Open diagnostics"
     });
   });
 

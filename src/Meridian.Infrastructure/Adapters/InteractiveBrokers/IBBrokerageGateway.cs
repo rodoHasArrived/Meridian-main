@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using Meridian.Core.Pipeline;
@@ -20,7 +21,7 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 /// Interactive Brokers brokerage gateway for live or paper order execution via the TWS/Gateway API.
 /// Uses the native IB socket path when the official vendor SDK is available.
 /// </summary>
-[DataSource("ib-brokerage", "Interactive Brokers Brokerage", DataSourceType.Realtime, DataSourceCategory.Broker,
+[DataSource("ibkr", "Interactive Brokers Brokerage", DataSourceType.Realtime, DataSourceCategory.Broker,
     Priority = 5, Description = "Interactive Brokers TWS/Gateway order execution")]
 [ImplementsAdr("ADR-001", "IB brokerage provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
@@ -41,6 +42,7 @@ public sealed class IBBrokerageGateway :
     private readonly ConcurrentDictionary<int, SubmittedOrderContext> _submittedOrders = new();
     private readonly ConcurrentDictionary<string, int> _gatewayOrderIdsByExternalId = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<int, BrokerOrder> _openOrders = new();
+    private readonly ConcurrentDictionary<int, string> _openOrderAccounts = new();
     private readonly ConcurrentDictionary<string, IBExecutionUpdate> _executions = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<int, PendingOrderOperation> _pendingOrderOperations = new();
     private readonly ConcurrentDictionary<int, AccountSummaryCollector> _accountSummaryRequests = new();
@@ -53,8 +55,8 @@ public sealed class IBBrokerageGateway :
     private TaskCompletionSource<int>? _nextValidIdWaiter;
     private TaskCompletionSource<IReadOnlyList<BrokerOrder>>? _openOrdersSnapshotWaiter;
     private ConcurrentDictionary<int, BrokerOrder>? _openOrdersSnapshotBuffer;
-    private TaskCompletionSource<IReadOnlyList<BrokerPosition>>? _positionsSnapshotWaiter;
-    private ConcurrentDictionary<string, BrokerPosition>? _positionsSnapshotBuffer;
+    private TaskCompletionSource<IReadOnlyList<AccountScopedBrokerPosition>>? _positionsSnapshotWaiter;
+    private ConcurrentDictionary<AccountPositionKey, AccountScopedBrokerPosition>? _positionsSnapshotBuffer;
 
     public IBBrokerageGateway(
         IBOptions options,
@@ -79,7 +81,7 @@ public sealed class IBBrokerageGateway :
     }
 
     /// <inheritdoc />
-    public string GatewayId => "ib";
+    public string GatewayId => "ibkr";
 
     /// <inheritdoc />
     public bool IsConnected => _connected && _client.IsConnected;
@@ -267,15 +269,30 @@ public sealed class IBBrokerageGateway :
     /// <inheritdoc />
     public async Task<AccountInfo> GetAccountInfoAsync(CancellationToken ct = default)
     {
+        var accounts = await GetAccountSummariesAsync(ct).ConfigureAwait(false);
+        return accounts.Count switch
+        {
+            1 => accounts[0],
+            0 => throw new InvalidOperationException("IB returned no account summaries."),
+            _ => throw new InvalidOperationException(
+                "IB returned multiple accounts for an unscoped account-info request. Use the account catalog and account-scoped portfolio sync.")
+        };
+    }
+
+    private async Task<IReadOnlyList<AccountInfo>> GetAccountSummariesAsync(CancellationToken ct)
+    {
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
+        ct.ThrowIfCancellationRequested();
 
-        var requestId = _client.RequestAccountSummary();
         var collector = new AccountSummaryCollector(_options.UsePaperTrading);
+        var requestId = _client.ReserveAccountSummaryRequestId();
         _accountSummaryRequests[requestId] = collector;
 
         try
         {
+            ct.ThrowIfCancellationRequested();
+            _client.RequestAccountSummary(requestId);
             return await collector.Completion.Task.WaitAsync(CallbackTimeout, ct).ConfigureAwait(false);
         }
         finally
@@ -287,6 +304,12 @@ public sealed class IBBrokerageGateway :
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<BrokerPosition>> GetPositionsAsync(CancellationToken ct = default)
+        => (await GetAccountPositionsAsync(ct).ConfigureAwait(false))
+            .Select(static position => position.Position)
+            .ToArray();
+
+    private async Task<IReadOnlyList<AccountScopedBrokerPosition>> GetAccountPositionsAsync(
+        CancellationToken ct)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
@@ -294,8 +317,8 @@ public sealed class IBBrokerageGateway :
         await _positionsGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            _positionsSnapshotBuffer = new ConcurrentDictionary<string, BrokerPosition>(StringComparer.OrdinalIgnoreCase);
-            _positionsSnapshotWaiter = new TaskCompletionSource<IReadOnlyList<BrokerPosition>>(
+            _positionsSnapshotBuffer = new ConcurrentDictionary<AccountPositionKey, AccountScopedBrokerPosition>();
+            _positionsSnapshotWaiter = new TaskCompletionSource<IReadOnlyList<AccountScopedBrokerPosition>>(
                 TaskCreationOptions.RunContinuationsAsynchronously);
 
             _client.RequestPositions();
@@ -337,9 +360,48 @@ public sealed class IBBrokerageGateway :
     /// <inheritdoc />
     public async Task<IReadOnlyList<BrokerageExternalAccountDto>> GetAccountsAsync(CancellationToken ct = default)
     {
-        var account = await GetAccountInfoAsync(ct).ConfigureAwait(false);
-        return
-        [
+        var accounts = await GetAccountSummariesAsync(ct).ConfigureAwait(false);
+        return accounts
+            .Select(account => new BrokerageExternalAccountDto(
+                ProviderId,
+                account.AccountId,
+                string.IsNullOrWhiteSpace(account.AccountId) ? BrokerDisplayName : $"{BrokerDisplayName} {account.AccountId}",
+                account.Status,
+                account.Currency,
+                account.RetrievedAt,
+                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["gatewayId"] = GatewayId,
+                    ["executionMode"] = ExecutionMode.ToString()
+                }))
+            .ToArray();
+    }
+
+    /// <inheritdoc />
+    public async Task<BrokeragePortfolioSnapshotDto> GetPortfolioSnapshotAsync(
+        string externalAccountId,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(externalAccountId);
+
+        var accountsTask = GetAccountSummariesAsync(ct);
+        var positionsTask = GetAccountPositionsAsync(ct);
+        await Task.WhenAll(accountsTask, positionsTask).ConfigureAwait(false);
+
+        var accounts = await accountsTask.ConfigureAwait(false);
+        var account = accounts.FirstOrDefault(candidate =>
+            string.Equals(candidate.AccountId, externalAccountId, StringComparison.OrdinalIgnoreCase));
+        if (account is null)
+        {
+            throw new InvalidOperationException(
+                $"IB account '{externalAccountId}' was not present in the account-summary response.");
+        }
+
+        var positions = (await positionsTask.ConfigureAwait(false))
+            .Where(position =>
+                string.Equals(position.AccountId, externalAccountId, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        return new BrokeragePortfolioSnapshotDto(
             new BrokerageExternalAccountDto(
                 ProviderId,
                 account.AccountId,
@@ -351,50 +413,20 @@ public sealed class IBBrokerageGateway :
                 {
                     ["gatewayId"] = GatewayId,
                     ["executionMode"] = ExecutionMode.ToString()
-                })
-        ];
-    }
-
-    /// <inheritdoc />
-    public async Task<BrokeragePortfolioSnapshotDto> GetPortfolioSnapshotAsync(
-        string externalAccountId,
-        CancellationToken ct = default)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(externalAccountId);
-
-        var accountTask = GetAccountInfoAsync(ct);
-        var positionsTask = GetPositionsAsync(ct);
-        await Task.WhenAll(accountTask, positionsTask).ConfigureAwait(false);
-
-        var account = await accountTask.ConfigureAwait(false);
-        var positions = await positionsTask.ConfigureAwait(false);
-        var accountId = string.IsNullOrWhiteSpace(externalAccountId) ? account.AccountId : externalAccountId;
-        return new BrokeragePortfolioSnapshotDto(
-            new BrokerageExternalAccountDto(
-                ProviderId,
-                accountId,
-                string.IsNullOrWhiteSpace(account.AccountId) ? BrokerDisplayName : $"{BrokerDisplayName} {account.AccountId}",
-                account.Status,
-                account.Currency,
-                account.RetrievedAt,
-                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["gatewayId"] = GatewayId,
-                    ["executionMode"] = ExecutionMode.ToString()
                 }),
             new BrokerageBalanceSnapshotDto(account.Cash, account.Equity, account.BuyingPower, account.Currency),
             positions.Select(position => new BrokeragePositionSnapshotDto(
-                position.Symbol,
-                position.Quantity,
-                position.AverageEntryPrice,
-                position.MarketPrice,
-                position.MarketValue,
-                position.UnrealizedPnl,
-                position.AssetClass,
-                position.Description,
-                position.PositionId,
-                account.Currency,
-                position.Metadata)).ToArray(),
+                position.Position.Symbol,
+                position.Position.Quantity,
+                position.Position.AverageEntryPrice,
+                position.Position.MarketPrice,
+                position.Position.MarketValue,
+                position.Position.UnrealizedPnl,
+                position.Position.AssetClass,
+                position.Position.Description,
+                position.Position.PositionId,
+                position.Currency ?? account.Currency,
+                position.Position.Metadata)).ToArray(),
             DateTimeOffset.UtcNow);
     }
 
@@ -431,7 +463,12 @@ public sealed class IBBrokerageGateway :
             ProviderId,
             externalAccountId,
             DateTimeOffset.UtcNow,
-            orders.Select(order => new BrokerageOrderSnapshotDto(
+            orders
+                .Where(order =>
+                    int.TryParse(order.OrderId, out var orderId) &&
+                    _openOrderAccounts.TryGetValue(orderId, out var accountId) &&
+                    string.Equals(accountId, externalAccountId, StringComparison.OrdinalIgnoreCase))
+                .Select(order => new BrokerageOrderSnapshotDto(
                 order.OrderId, order.ClientOrderId, order.Symbol, order.Side, order.Type, order.Status,
                 order.Quantity, order.FilledQuantity, order.LimitPrice, order.StopPrice, order.CreatedAt)).ToArray(),
             fills,
@@ -631,38 +668,57 @@ public sealed class IBBrokerageGateway :
         if (buffer is null || string.IsNullOrWhiteSpace(update.Symbol))
             return;
 
+        if (string.IsNullOrWhiteSpace(update.Account))
+        {
+            _logger.LogWarning(
+                "IB position callback for {Symbol} did not include an account identifier and was ignored",
+                update.Symbol);
+            return;
+        }
+
+        var accountId = update.Account.Trim();
         var symbol = update.Symbol.Trim();
         var averageCost = (decimal)update.AverageCost;
         var marketValue = Math.Abs(update.Quantity) * averageCost;
         var accruedInterest = TryGetDecimal(update.Metadata, "accrued_interest");
 
-        buffer[symbol] = new BrokerPosition
-        {
-            PositionId = $"{update.Account}:{symbol}",
-            Symbol = symbol,
-            Quantity = update.Quantity,
-            AverageEntryPrice = averageCost,
-            MarketPrice = averageCost,
-            MarketValue = marketValue,
-            UnrealizedPnl = 0m,
-            AssetClass = IBCanonicalPayloadMapper.MapAssetClass(update.SecurityType, update.Metadata),
-            Metadata = update.Metadata,
-            AccruedInterest = accruedInterest
-        };
+        var key = new AccountPositionKey(accountId.ToUpperInvariant(), symbol.ToUpperInvariant());
+        buffer[key] = new AccountScopedBrokerPosition(
+            accountId,
+            string.IsNullOrWhiteSpace(update.Currency) ? null : update.Currency.Trim(),
+            new BrokerPosition
+            {
+                PositionId = $"{accountId}:{symbol}",
+                Symbol = symbol,
+                Quantity = update.Quantity,
+                AverageEntryPrice = averageCost,
+                MarketPrice = averageCost,
+                MarketValue = marketValue,
+                UnrealizedPnl = 0m,
+                AssetClass = IBCanonicalPayloadMapper.MapAssetClass(update.SecurityType, update.Metadata),
+                Metadata = update.Metadata,
+                AccruedInterest = accruedInterest
+            });
     }
 
     private void OnPositionsCompleted(object? sender, EventArgs e)
     {
         _positionsSnapshotWaiter?.TrySetResult(
             _positionsSnapshotBuffer?.Values
-                .OrderBy(p => p.Symbol, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(p => p.AccountId, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(p => p.Position.Symbol, StringComparer.OrdinalIgnoreCase)
                 .ToArray()
-            ?? Array.Empty<BrokerPosition>());
+            ?? Array.Empty<AccountScopedBrokerPosition>());
     }
 
     private void OnOpenOrderReceived(object? sender, IBOpenOrderUpdate update)
     {
         var gatewayOrderId = update.OrderId;
+        if (string.IsNullOrWhiteSpace(update.Account))
+            _openOrderAccounts.TryRemove(gatewayOrderId, out _);
+        else
+            _openOrderAccounts[gatewayOrderId] = update.Account.Trim();
+
         var context = _submittedOrders.TryGetValue(gatewayOrderId, out var tracked) ? tracked : null;
         var brokerOrder = new BrokerOrder
         {
@@ -1061,58 +1117,116 @@ public sealed class IBBrokerageGateway :
         Cancel
     }
 
+    private readonly record struct AccountPositionKey(string AccountId, string Symbol);
+
+    private sealed record AccountScopedBrokerPosition(
+        string AccountId,
+        string? Currency,
+        BrokerPosition Position);
+
     private sealed class AccountSummaryCollector
     {
-        private string? _accountId;
-        private decimal? _equity;
-        private decimal? _cash;
-        private decimal? _buyingPower;
-        private string? _currency;
+        private readonly ConcurrentDictionary<string, AccountSummaryState> _accounts =
+            new(StringComparer.OrdinalIgnoreCase);
         private readonly bool _paper;
 
         public AccountSummaryCollector(bool paper)
         {
             _paper = paper;
-            Completion = new TaskCompletionSource<AccountInfo>(TaskCreationOptions.RunContinuationsAsynchronously);
+            Completion = new TaskCompletionSource<IReadOnlyList<AccountInfo>>(
+                TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
-        public TaskCompletionSource<AccountInfo> Completion { get; }
+        public TaskCompletionSource<IReadOnlyList<AccountInfo>> Completion { get; }
 
         public void Apply(IBAccountSummaryUpdate update)
         {
-            _accountId ??= update.Account;
-            _currency ??= string.Equals(update.Tag, "Currency", StringComparison.OrdinalIgnoreCase)
-                ? update.Value
-                : update.Currency;
-
-            if (!decimal.TryParse(update.Value, out var numericValue))
+            if (string.IsNullOrWhiteSpace(update.Account))
                 return;
 
-            switch (update.Tag)
-            {
-                case "NetLiquidation":
-                    _equity = numericValue;
-                    break;
-                case "TotalCashValue":
-                    _cash = numericValue;
-                    break;
-                case "BuyingPower":
-                    _buyingPower = numericValue;
-                    break;
-            }
+            var accountId = update.Account.Trim();
+            _accounts
+                .GetOrAdd(accountId, id => new AccountSummaryState(id, _paper))
+                .Apply(update);
         }
 
         public void TryComplete()
         {
-            Completion.TrySetResult(new AccountInfo
+            Completion.TrySetResult(
+                _accounts.Values
+                    .Select(static account => account.ToAccountInfo())
+                    .OrderBy(static account => account.AccountId, StringComparer.OrdinalIgnoreCase)
+                    .ToArray());
+        }
+    }
+
+    private sealed class AccountSummaryState
+    {
+        private readonly object _sync = new();
+        private readonly string _accountId;
+        private readonly bool _paper;
+        private decimal? _equity;
+        private decimal? _cash;
+        private decimal? _buyingPower;
+        private string? _currency;
+        private DateTimeOffset _retrievedAt;
+
+        public AccountSummaryState(string accountId, bool paper)
+        {
+            _accountId = accountId;
+            _paper = paper;
+        }
+
+        public void Apply(IBAccountSummaryUpdate update)
+        {
+            lock (_sync)
             {
-                AccountId = _accountId ?? "IB",
-                Equity = _equity ?? 0m,
-                Cash = _cash ?? 0m,
-                BuyingPower = _buyingPower ?? 0m,
-                Currency = _currency ?? "USD",
-                Status = _paper ? "paper" : "active",
-            });
+                if (update.ReceivedAt > _retrievedAt)
+                    _retrievedAt = update.ReceivedAt;
+
+                if (string.Equals(update.Tag, "Currency", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!string.IsNullOrWhiteSpace(update.Value))
+                        _currency = update.Value.Trim();
+                    return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(update.Currency))
+                    _currency = update.Currency.Trim();
+
+                if (!decimal.TryParse(
+                        update.Value,
+                        NumberStyles.Number | NumberStyles.AllowExponent,
+                        CultureInfo.InvariantCulture,
+                        out var numericValue))
+                {
+                    return;
+                }
+
+                if (string.Equals(update.Tag, "NetLiquidation", StringComparison.OrdinalIgnoreCase))
+                    _equity = numericValue;
+                else if (string.Equals(update.Tag, "TotalCashValue", StringComparison.OrdinalIgnoreCase))
+                    _cash = numericValue;
+                else if (string.Equals(update.Tag, "BuyingPower", StringComparison.OrdinalIgnoreCase))
+                    _buyingPower = numericValue;
+            }
+        }
+
+        public AccountInfo ToAccountInfo()
+        {
+            lock (_sync)
+            {
+                return new AccountInfo
+                {
+                    AccountId = _accountId,
+                    Equity = _equity ?? 0m,
+                    Cash = _cash ?? 0m,
+                    BuyingPower = _buyingPower ?? 0m,
+                    Currency = _currency ?? "USD",
+                    Status = _paper ? "paper" : "active",
+                    RetrievedAt = _retrievedAt == default ? DateTimeOffset.UtcNow : _retrievedAt
+                };
+            }
         }
     }
 
@@ -1161,7 +1275,9 @@ public sealed class IBBrokerageGateway :
         public Task CancelOrderAsync(int orderId, CancellationToken ct = default)
             => Task.FromException(CreateException());
 
-        public int RequestAccountSummary() => throw CreateException();
+        public int ReserveAccountSummaryRequestId() => throw CreateException();
+
+        public void RequestAccountSummary(int requestId) => throw CreateException();
 
         public void CancelAccountSummary(int requestId) { }
 

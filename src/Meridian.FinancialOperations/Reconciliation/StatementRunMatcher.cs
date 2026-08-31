@@ -1,4 +1,6 @@
 using Meridian.Domain.Reconciliation;
+using System.Globalization;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
@@ -37,17 +39,19 @@ internal static class StatementRunMatcher
         var statementCash = new List<NormalizedStatementCashBalance>();
         var statementTransactions = new List<NormalizedStatementTransaction>();
         var rowByEvidence = new Dictionary<string, CanonicalStatementRow>(StringComparer.OrdinalIgnoreCase);
+        var statementPeriodEnd = import.StatementPeriodEnd == default
+            ? import.StatementDate
+            : import.StatementPeriodEnd;
 
-        ValidateRowAccounts(rows, import.ExternalAccountId);
-
-        // A statement run reconciles a single custodian account, so the account dimension is a
-        // run-level constant. Normalize the statement side to the run's external (custodian) account
-        // key — the same key the internal populations use — so institutional statements whose per-row
-        // account column carries an IBAN or bank id (camt.053, BAI2) still reconcile instead of
-        // breaking on an account-string mismatch.
+        // A statement run reconciles a single custodian account. Before replacing the source-row
+        // account with the run-level key, reject any populated source account that names a different
+        // custodian account. Otherwise a statement for account B could be normalized to account A and
+        // falsely reconcile against A's internal book. Account aliases must be resolved before this
+        // boundary; this matcher never silently treats distinct account identifiers as equivalent.
         var canonicalAccount = string.IsNullOrWhiteSpace(import.ExternalAccountId)
-            ? import.FundAccountId
+            ? import.FundAccountId.Trim()
             : import.ExternalAccountId.Trim();
+        ValidateStatementAccounts(rows, canonicalAccount);
 
         foreach (var row in rows)
         {
@@ -59,7 +63,7 @@ internal static class StatementRunMatcher
                     statementPositions.Add(MapPosition(row, canonicalAccount, evidence, fxRateProvider, normalizedBase));
                     break;
                 case StatementRowKind.CashBalance:
-                    statementCash.Add(MapCash(row, canonicalAccount, evidence, fxRateProvider, normalizedBase));
+                    statementCash.Add(MapCash(row, canonicalAccount, evidence, statementPeriodEnd, fxRateProvider, normalizedBase));
                     break;
                 default:
                     statementTransactions.Add(MapTransaction(row, canonicalAccount, evidence, fxRateProvider, normalizedBase));
@@ -67,9 +71,8 @@ internal static class StatementRunMatcher
             }
         }
 
-        var asOf = import.StatementPeriodEnd == default ? import.StatementDate : import.StatementPeriodEnd;
         var internalCash = populations.CashBalances
-            .Select(cash => NormalizeInternalCash(cash, fxRateProvider, normalizedBase, asOf))
+            .Select(cash => NormalizeInternalCash(cash, fxRateProvider, normalizedBase, statementPeriodEnd))
             .ToArray();
         var internalTransactions = populations.LedgerTransactions
             .Select(transaction => NormalizeInternalTransaction(transaction, fxRateProvider, normalizedBase))
@@ -86,6 +89,11 @@ internal static class StatementRunMatcher
 
         var breaks = new List<StatementRunBreak>();
         var matchCount = 0;
+        var breakOrdinal = 0;
+        // With no retained internal ledger transactions, every statement movement is structurally
+        // unmatched — the breaks are real evidence but carry no comparison. Classify them so the
+        // governed queue publishes them as informational instead of close blockers.
+        var internalTransactionsUnavailable = populations.LedgerTransactions.Count == 0;
         foreach (var result in engineResult.Results)
         {
             if (result.MatchTier is StatementMatchTier.Exact or StatementMatchTier.Tolerance)
@@ -103,20 +111,26 @@ internal static class StatementRunMatcher
             var sourceReference = result.BrokerEvidenceReference
                 ?? result.InternalEvidenceReference
                 ?? $"{import.ImportId}:unmatched";
-            var toleranceBreached = result.MatchTier == StatementMatchTier.Unmatched;
+            var toleranceBreached = IsToleranceBreached(result);
+            var breakCode = BuildBreakCode(result);
 
             var record = new ReconciliationBreakRecord(
-                BreakId: Guid.NewGuid().ToString("N"),
+                BreakId: BuildBreakId(import.ImportId, breakOrdinal++, sourceReference, breakCode),
                 RunId: import.ImportId,
                 ImportId: import.ImportId,
                 SourceReference: sourceReference,
-                BreakCode: BuildBreakCode(result),
+                BreakCode: breakCode,
                 Category: statementRow?.ActivityType ?? result.Kind.ToString().ToLowerInvariant(),
                 Delta: result.Variance.LargestAbsoluteAmount,
                 Tolerance: ResolveToleranceAmount(result.Tolerance),
                 ToleranceBreached: toleranceBreached,
                 CreatedAtUtc: createdAtUtc,
-                Status: "Open");
+                Status: "Open")
+            {
+                Classification = internalTransactionsUnavailable && result.Kind == StatementMatchKind.Transaction
+                    ? ReconciliationBreakClassifications.InternalTransactionPopulationUnavailable
+                    : null
+            };
 
             breaks.Add(new StatementRunBreak(record, result, statementRow));
         }
@@ -124,18 +138,48 @@ internal static class StatementRunMatcher
         return new StatementRunMatchResult(breaks, matchCount);
     }
 
-    // Imported rows are retained evidence. Do not erase their recorded account identity by mapping
-    // them to a caller-supplied run account unless the two agree; otherwise a statement for a
-    // different account could be reconciled against this run's internal population.
-    private static void ValidateRowAccounts(
-        IReadOnlyList<CanonicalStatementRow> rows,
-        string externalAccountId)
+    /// <summary>
+    /// Derives a break identity from the break's own material instead of minting a random one. The
+    /// statement run's recovery design rebuilds the match artifact when a replay resumes an
+    /// interrupted run and refuses to adopt an artifact that differs from the retained one, so a
+    /// random id would make every replay conflict with the evidence it is trying to recover. The
+    /// enumeration ordinal is part of the material because two unmatched results can legitimately
+    /// share a source reference; the engine's result order is deterministic for a given input.
+    /// </summary>
+    private static string BuildBreakId(
+        string importId,
+        int ordinal,
+        string sourceReference,
+        string breakCode)
     {
-        var expectedAccount = externalAccountId.Trim();
-        if (rows.Any(row => !string.Equals(row.Account.Trim(), expectedAccount, StringComparison.OrdinalIgnoreCase)))
+        var material = string.Join(
+            '|',
+            importId,
+            ordinal.ToString(CultureInfo.InvariantCulture),
+            sourceReference,
+            breakCode);
+        // 32 hex characters keeps the shape callers already store and index on.
+        return Sha256Digest.ComputeUtf8(material)[..32];
+    }
+
+    private static void ValidateStatementAccounts(
+        IReadOnlyList<CanonicalStatementRow> rows,
+        string canonicalAccount)
+    {
+        foreach (var row in rows)
         {
-            throw new InvalidDataException(
-                "Statement rows must all identify the statement run's external account.");
+            if (string.IsNullOrWhiteSpace(row.Account))
+            {
+                continue;
+            }
+
+            var sourceAccount = row.Account.Trim();
+            if (!string.Equals(sourceAccount, canonicalAccount, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidDataException(
+                    $"Statement row {row.SourceRowNumber} identifies account '{sourceAccount}', " +
+                    $"which does not match the requested external account '{canonicalAccount}'.");
+            }
         }
     }
 
@@ -173,14 +217,24 @@ internal static class StatementRunMatcher
         CanonicalStatementRow row,
         string account,
         string evidence,
+        DateOnly statementPeriodEnd,
         IReconciliationFxRateProvider fxRateProvider,
         string baseCurrency)
     {
-        var (currency, amount) = ToBaseCurrency(row.CashAmount, row.Currency, baseCurrency, row.TradeDate, fxRateProvider);
-        // Carry the statement balance's as-of date into the cash identity. The internal cash is the book's
-        // balance as of its own recorded date, and the engine now requires the two dates to agree, so a
-        // closing balance from the wrong period cannot exact-match a period-appropriate internal balance.
-        return new NormalizedStatementCashBalance(evidence, account, currency, amount, evidence, row.TradeDate);
+        var sourceCurrency = NormalizeCurrency(row.Currency, baseCurrency);
+        var (_, amount) = ToBaseCurrency(row.CashAmount, sourceCurrency, baseCurrency, row.TradeDate, fxRateProvider);
+        // A cash balance is a closing balance only when it is dated at the run's closing period. Keep the
+        // source as-of date for evidence and mark an out-of-period row ineligible for matching. This
+        // prevents a stale cash row from reconciling if a faulty internal source happens to return the
+        // same stale snapshot instead of the requested period-end snapshot.
+        return new NormalizedStatementCashBalance(
+            evidence,
+            account,
+            sourceCurrency,
+            amount,
+            evidence,
+            row.TradeDate,
+            IsForStatementPeriodEnd: row.TradeDate == statementPeriodEnd);
     }
 
     private static NormalizedStatementTransaction MapTransaction(
@@ -212,8 +266,9 @@ internal static class StatementRunMatcher
         string baseCurrency,
         DateOnly asOf)
     {
-        var (currency, amount) = ToBaseCurrency(cash.Balance, cash.Currency, baseCurrency, asOf, fxRateProvider);
-        return cash with { Currency = currency, Balance = amount };
+        var sourceCurrency = NormalizeCurrency(cash.Currency, baseCurrency);
+        var (_, amount) = ToBaseCurrency(cash.Balance, sourceCurrency, baseCurrency, asOf, fxRateProvider);
+        return cash with { Currency = sourceCurrency, Balance = amount };
     }
 
     private static InternalLedgerTransaction NormalizeInternalTransaction(
@@ -244,6 +299,9 @@ internal static class StatementRunMatcher
             : (from, amount);
     }
 
+    private static string NormalizeCurrency(string? currency, string baseCurrency) =>
+        string.IsNullOrWhiteSpace(currency) ? baseCurrency : currency.Trim().ToUpperInvariant();
+
     private static StatementMatchingToleranceProfile ToEngineTolerance(StatementToleranceProfile profile)
     {
         var position = profile.PositionRules.Count > 0 ? profile.PositionRules[0] : null;
@@ -259,6 +317,21 @@ internal static class StatementRunMatcher
 
     private static decimal ResolveToleranceAmount(StatementMatchTolerance tolerance) =>
         Math.Max(tolerance.Quantity ?? 0m, tolerance.Amount ?? 0m);
+
+    private static bool IsToleranceBreached(StatementMatchResult result)
+    {
+        if (result.Variance.Quantity is { } quantityVariance
+            && Math.Abs(quantityVariance) > (result.Tolerance.Quantity ?? 0m))
+        {
+            return true;
+        }
+
+        var amountTolerance = result.Tolerance.Amount ?? 0m;
+        return (result.Variance.MarketValue is { } marketValueVariance
+                && Math.Abs(marketValueVariance) > amountTolerance)
+            || (result.Variance.Amount is { } amountVariance
+                && Math.Abs(amountVariance) > amountTolerance);
+    }
 
     private static string BuildBreakCode(StatementMatchResult result)
     {

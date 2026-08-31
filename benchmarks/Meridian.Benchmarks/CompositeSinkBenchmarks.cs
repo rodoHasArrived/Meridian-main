@@ -81,7 +81,7 @@ public class CompositeSinkBenchmarks
                 SequenceNumber: 12345,
                 StreamId: "BENCH",
                 Venue: "TEST"
-            ));
+            ), source: "BENCH");
     }
 
     /// <summary>

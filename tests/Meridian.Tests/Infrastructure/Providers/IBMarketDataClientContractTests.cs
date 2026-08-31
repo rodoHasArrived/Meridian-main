@@ -37,6 +37,17 @@ public sealed class IBMarketDataClientContractTests : MarketDataClientContractTe
 public sealed class IBMarketDataClientDiagnosticsTests
 {
     [Fact]
+    public void NonVendorBuild_DoesNotClaimLiveInteractiveBrokersCapability()
+    {
+#if !IBAPI_VENDOR
+        IBMarketDataClient.IsSimulationBuild.Should().BeTrue();
+        var descriptor = Meridian.Infrastructure.Adapters.Core.ProviderCapabilityDescriptorCatalog.Descriptors
+            .Single(static value => value.ProviderId == "ibkr");
+        descriptor.ExecutionMode.Should().Be(Meridian.Infrastructure.Adapters.Core.IBProviderCapabilityExecutionMode.SimulationWhenVendorSdkUnavailable);
+#endif
+    }
+
+    [Fact]
     public async Task Diagnostics_TrackConnectAndDisconnectHonestly()
     {
         var publisher = new TestMarketEventPublisher();

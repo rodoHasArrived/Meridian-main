@@ -1,144 +1,146 @@
 using System.Security.Cryptography;
 using System.Text;
-using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Contracts.Workstation;
-using Meridian.Strategies.Services;
+using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Services;
 
 /// <summary>
-/// Builds Accounting reconciliation posture across all accounts linked to a fund profile.
+/// Builds the Accounting reconciliation workbench summary for a fund profile.
+/// Reconciliation posture is read exclusively from the server workstation API — the same
+/// <see cref="IWorkstationReconciliationApiClient"/> the workbench break queue already uses —
+/// so the summary tiles and the break queue on the same screen share one source of truth
+/// (co-equal-lanes contract: neither client forks product state). When the API is
+/// unavailable the result preserves that failure separately from a confirmed missing
+/// reconciliation record; it never falls back to the desktop-local fund-account JSON stores.
 /// </summary>
 public sealed class ReconciliationReadService
 {
-    private readonly IFundAccountService _fundAccountService;
-    private readonly FundAccountReadService _fundAccountReadService;
     private readonly StrategyRunWorkspaceService _runWorkspaceService;
-    private readonly IReconciliationRunService? _strategyReconciliationService;
+    private readonly IWorkstationReconciliationApiClient _reconciliationApiClient;
 
     public ReconciliationReadService(
-        IFundAccountService fundAccountService,
-        FundAccountReadService fundAccountReadService,
         StrategyRunWorkspaceService runWorkspaceService,
-        IReconciliationRunService? strategyReconciliationService = null)
+        IWorkstationReconciliationApiClient reconciliationApiClient)
     {
-        _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
-        _fundAccountReadService = fundAccountReadService ?? throw new ArgumentNullException(nameof(fundAccountReadService));
         _runWorkspaceService = runWorkspaceService ?? throw new ArgumentNullException(nameof(runWorkspaceService));
-        _strategyReconciliationService = strategyReconciliationService;
+        _reconciliationApiClient = reconciliationApiClient ?? throw new ArgumentNullException(nameof(reconciliationApiClient));
     }
 
-    public async Task<ReconciliationSummary> GetAsync(
+    public async Task<FundReconciliationReadResult> GetAsync(
         string fundProfileId,
         CancellationToken ct = default)
     {
-        var accounts = await _fundAccountReadService.GetAccountsAsync(fundProfileId, ct).ConfigureAwait(false);
+        var runs = await _runWorkspaceService.GetRecordedRunsAsync(ct).ConfigureAwait(false);
+        var relevantRuns = runs
+            .Where(run => string.Equals(run.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
         var items = new List<FundReconciliationItem>();
         var openBreaks = 0;
         decimal breakAmountTotal = 0m;
         var securityCoverageIssues = 0;
+        var missingRunCount = 0;
+        var unavailableRunCount = 0;
 
-        foreach (var account in accounts)
+        foreach (var run in relevantRuns)
         {
-            var runs = await _fundAccountService
-                .GetReconciliationRunsAsync(account.AccountId, ct)
-                .ConfigureAwait(false);
-
-            foreach (var run in runs)
+            var detailRead = await ReadLatestRunDetailAsync(run.RunId, ct).ConfigureAwait(false);
+            if (detailRead.State == ReconciliationDetailReadState.Missing)
             {
-                items.Add(new FundReconciliationItem(
-                    ReconciliationRunId: run.ReconciliationRunId,
-                    AccountId: run.AccountId,
-                    AccountDisplayName: account.DisplayName,
-                    AsOfDate: run.AsOfDate,
-                    Status: run.Status,
-                    TotalChecks: run.TotalChecks,
-                    TotalMatched: run.TotalMatched,
-                    TotalBreaks: run.TotalBreaks,
-                    BreakAmountTotal: run.BreakAmountTotal,
-                    RequestedAt: run.RequestedAt,
-                    CompletedAt: run.CompletedAt,
-                    ScopeLabel: "Account",
-                    CoverageLabel: "Account-level reconciliation"));
-
-                if (!string.Equals(run.Status, "Matched", StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals(run.Status, "Resolved", StringComparison.OrdinalIgnoreCase))
-                {
-                    openBreaks += run.TotalBreaks;
-                    breakAmountTotal += run.BreakAmountTotal;
-                }
+                missingRunCount++;
+                continue;
             }
-        }
 
-        if (_strategyReconciliationService is not null)
-        {
-            var runs = await _runWorkspaceService.GetRecordedRunsAsync(ct).ConfigureAwait(false);
-            var relevantRuns = runs
-                .Where(run => string.Equals(run.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
-                .ToArray();
-
-            foreach (var run in relevantRuns)
+            if (detailRead.State == ReconciliationDetailReadState.Unavailable)
             {
-                var detail = await _strategyReconciliationService
-                    .GetLatestForRunAsync(run.RunId, ct)
-                    .ConfigureAwait(false)
-                    ?? await _strategyReconciliationService
-                        .RunAsync(new ReconciliationRunRequest(run.RunId), ct)
-                        .ConfigureAwait(false);
-
-                if (detail is null)
-                {
-                    continue;
-                }
-
-                var asOf = detail.Summary.PortfolioAsOf
-                    ?? detail.Summary.LedgerAsOf
-                    ?? detail.Summary.CreatedAt;
-                var strategyBreakAmount = detail.Breaks.Sum(result => Math.Abs(result.Variance));
-                var status = MapStrategyStatus(detail.Summary);
-
-                items.Add(new FundReconciliationItem(
-                    ReconciliationRunId: ParseGuid(detail.Summary.ReconciliationRunId),
-                    AccountId: Guid.Empty,
-                    AccountDisplayName: run.StrategyName,
-                    AsOfDate: DateOnly.FromDateTime(asOf.UtcDateTime),
-                    Status: status,
-                    TotalChecks: detail.Summary.MatchCount + detail.Summary.BreakCount,
-                    TotalMatched: detail.Summary.MatchCount,
-                    TotalBreaks: detail.Summary.BreakCount,
-                    BreakAmountTotal: strategyBreakAmount,
-                    RequestedAt: detail.Summary.CreatedAt,
-                    CompletedAt: detail.Summary.CreatedAt,
-                    ScopeLabel: "Strategy Run",
-                    StrategyName: run.StrategyName,
-                    RunId: run.RunId,
-                    SecurityIssueCount: detail.Summary.SecurityIssueCount,
-                    HasSecurityCoverageIssues: detail.Summary.HasSecurityCoverageIssues,
-                    CoverageLabel: detail.Summary.HasSecurityCoverageIssues
-                        ? $"{detail.Summary.SecurityIssueCount} security issue(s)"
-                        : "Security Master aligned"));
-
-                if (detail.Summary.BreakCount > 0)
-                {
-                    openBreaks += detail.Summary.BreakCount;
-                    breakAmountTotal += strategyBreakAmount;
-                }
-
-                securityCoverageIssues += detail.Summary.SecurityIssueCount;
+                unavailableRunCount++;
+                continue;
             }
+
+            var detail = detailRead.Detail!;
+
+            var asOf = detail.Summary.PortfolioAsOf
+                ?? detail.Summary.LedgerAsOf
+                ?? detail.Summary.CreatedAt;
+            var strategyBreakAmount = detail.Breaks.Sum(result => Math.Abs(result.Variance));
+            var status = MapStrategyStatus(detail.Summary);
+
+            items.Add(new FundReconciliationItem(
+                ReconciliationRunId: ParseGuid(detail.Summary.ReconciliationRunId),
+                AccountId: Guid.Empty,
+                AccountDisplayName: run.StrategyName,
+                AsOfDate: DateOnly.FromDateTime(asOf.UtcDateTime),
+                Status: status,
+                TotalChecks: detail.Summary.MatchCount + detail.Summary.BreakCount,
+                TotalMatched: detail.Summary.MatchCount,
+                TotalBreaks: detail.Summary.BreakCount,
+                BreakAmountTotal: strategyBreakAmount,
+                RequestedAt: detail.Summary.CreatedAt,
+                CompletedAt: detail.Summary.CreatedAt,
+                ScopeLabel: "Strategy Run",
+                StrategyName: run.StrategyName,
+                RunId: run.RunId,
+                SecurityIssueCount: detail.Summary.SecurityIssueCount,
+                HasSecurityCoverageIssues: detail.Summary.HasSecurityCoverageIssues,
+                CoverageLabel: detail.Summary.HasSecurityCoverageIssues
+                    ? $"{detail.Summary.SecurityIssueCount} security issue(s)"
+                    : "Security Master aligned"));
+
+            if (detail.Summary.BreakCount > 0)
+            {
+                openBreaks += detail.Summary.BreakCount;
+                breakAmountTotal += strategyBreakAmount;
+            }
+
+            securityCoverageIssues += detail.Summary.SecurityIssueCount;
         }
 
         var ordered = items
             .OrderByDescending(item => item.RequestedAt)
             .ToArray();
 
-        return new ReconciliationSummary(
-            RunCount: ordered.Length,
-            OpenBreakCount: openBreaks,
-            BreakAmountTotal: breakAmountTotal,
-            RecentRuns: ordered,
-            SecurityCoverageIssueCount: securityCoverageIssues);
+        return new FundReconciliationReadResult(
+            Summary: new ReconciliationSummary(
+                RunCount: ordered.Length,
+                OpenBreakCount: openBreaks,
+                BreakAmountTotal: breakAmountTotal,
+                RecentRuns: ordered,
+                SecurityCoverageIssueCount: securityCoverageIssues),
+            KnownRunCount: relevantRuns.Length,
+            MissingRunCount: missingRunCount,
+            UnavailableRunCount: unavailableRunCount);
     }
+
+    private async Task<ReconciliationDetailRead> ReadLatestRunDetailAsync(string runId, CancellationToken ct)
+    {
+        try
+        {
+            var detail = await _reconciliationApiClient.GetLatestRunDetailAsync(runId, ct).ConfigureAwait(false);
+            return detail is null
+                ? new ReconciliationDetailRead(ReconciliationDetailReadState.Missing, null)
+                : new ReconciliationDetailRead(ReconciliationDetailReadState.Available, detail);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            return new ReconciliationDetailRead(ReconciliationDetailReadState.Unavailable, null);
+        }
+    }
+
+    private enum ReconciliationDetailReadState : byte
+    {
+        Available = 0,
+        Missing = 1,
+        Unavailable = 2
+    }
+
+    private readonly record struct ReconciliationDetailRead(
+        ReconciliationDetailReadState State,
+        ReconciliationRunDetail? Detail);
 
     private static string MapStrategyStatus(ReconciliationRunSummary summary)
     {

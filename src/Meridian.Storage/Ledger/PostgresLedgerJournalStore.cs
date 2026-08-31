@@ -1,10 +1,12 @@
 using System.Data;
+using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Tenancy;
 using Meridian.Ledger;
 using Npgsql;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Storage.Ledger;
 
@@ -22,13 +24,19 @@ public sealed partial class PostgresLedgerJournalStore :
     // background/worker caller, or the single-company runtime) reads are not tenant-scoped.
     private readonly IFundScopeTenantAccessor? _tenantAccessor;
 
+    // W9-GOV-008 criterion 2: how strictly to enforce that scope. Defaults to the deployment-boundary
+    // posture so existing construction sites keep their behaviour; the host injects the configured one.
+    private readonly TenantScopeEnforcementOptions _tenantScope;
+
     public PostgresLedgerJournalStore(
         LedgerJournalStoreOptions options,
-        IFundScopeTenantAccessor? tenantAccessor = null)
+        IFundScopeTenantAccessor? tenantAccessor = null,
+        TenantScopeEnforcementOptions? tenantScope = null)
     {
         ArgumentNullException.ThrowIfNull(options);
         _options = options;
         _tenantAccessor = tenantAccessor;
+        _tenantScope = tenantScope ?? TenantScopeEnforcementOptions.DeploymentBoundary;
     }
 
     // SEC-005 slice 4c-ii: the caller's tenant for the current ambient scope, or null (fail-open).
@@ -133,6 +141,8 @@ public sealed partial class PostgresLedgerJournalStore :
             && string.IsNullOrWhiteSpace(query.AccountName)
             && !query.OccurredFrom.HasValue
             && !query.OccurredTo.HasValue
+            && !query.EffectiveFrom.HasValue
+            && !query.EffectiveTo.HasValue
             && lineDimensionsJson is null)
         {
             throw new ArgumentException("At least one journal query filter is required.", nameof(query));
@@ -149,6 +159,20 @@ public sealed partial class PostgresLedgerJournalStore :
         if (query.SourceEventId.HasValue)
         {
             command.Parameters.AddWithValue("source_event_id", query.SourceEventId.Value);
+        }
+
+        if (query.EffectiveFrom.HasValue)
+        {
+            command.Parameters.AddWithValue(
+                "effective_from",
+                query.EffectiveFrom.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        }
+
+        if (query.EffectiveTo.HasValue)
+        {
+            command.Parameters.AddWithValue(
+                "effective_to",
+                query.EffectiveTo.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         }
 
         // SEC-005 slice 4c-ii: scope the entry filter to the caller's tenant via the period's stamped
@@ -702,7 +726,11 @@ public sealed partial class PostgresLedgerJournalStore :
                 effective_date,
                 rationale,
                 created_at,
-                updated_at)
+                updated_at,
+                wash_sale_enabled,
+                wash_sale_window_days,
+                wash_sale_scope,
+                wash_sale_effective_date)
             values (
                 @policy_record_id,
                 @ledger_book_id,
@@ -715,7 +743,11 @@ public sealed partial class PostgresLedgerJournalStore :
                 @effective_date,
                 @rationale,
                 @created_at,
-                @updated_at)
+                @updated_at,
+                @wash_sale_enabled,
+                @wash_sale_window_days,
+                @wash_sale_scope,
+                @wash_sale_effective_date)
             on conflict (policy_record_id) do update
             set ledger_book_id = excluded.ledger_book_id,
                 account_name = excluded.account_name,
@@ -726,7 +758,11 @@ public sealed partial class PostgresLedgerJournalStore :
                 policy_id = excluded.policy_id,
                 effective_date = excluded.effective_date,
                 rationale = excluded.rationale,
-                updated_at = excluded.updated_at
+                updated_at = excluded.updated_at,
+                wash_sale_enabled = excluded.wash_sale_enabled,
+                wash_sale_window_days = excluded.wash_sale_window_days,
+                wash_sale_scope = excluded.wash_sale_scope,
+                wash_sale_effective_date = excluded.wash_sale_effective_date
             returning policy_record_id,
                       ledger_book_id,
                       account_name,
@@ -738,7 +774,11 @@ public sealed partial class PostgresLedgerJournalStore :
                       effective_date,
                       rationale,
                       created_at,
-                      updated_at;
+                      updated_at,
+                      wash_sale_enabled,
+                      wash_sale_window_days,
+                      wash_sale_scope,
+                      wash_sale_effective_date;
             """;
         command.Parameters.AddWithValue("policy_record_id", policy.PolicyRecordId);
         command.Parameters.AddWithValue("ledger_book_id", policy.LedgerBookId);
@@ -749,6 +789,7 @@ public sealed partial class PostgresLedgerJournalStore :
         command.Parameters.AddWithValue("rationale", (object?)NormalizeOptional(policy.Rationale) ?? DBNull.Value);
         command.Parameters.AddWithValue("created_at", policy.CreatedAt.UtcDateTime);
         command.Parameters.AddWithValue("updated_at", policy.UpdatedAt.UtcDateTime);
+        AddWashSalePolicyParameters(command, policy.EffectiveWashSalePolicy);
 
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
@@ -783,7 +824,11 @@ public sealed partial class PostgresLedgerJournalStore :
                    effective_date,
                    rationale,
                    created_at,
-                   updated_at
+                   updated_at,
+                   wash_sale_enabled,
+                   wash_sale_window_days,
+                   wash_sale_scope,
+                   wash_sale_effective_date
             from {Qualified("tax_lot_policies")}
             where ledger_book_id = @ledger_book_id
             order by account_name, effective_date desc, policy_id;
@@ -1766,6 +1811,17 @@ public sealed partial class PostgresLedgerJournalStore :
         command.Parameters.AddWithValue("financial_account_id", (object?)NormalizeOptional(account.FinancialAccountId) ?? DBNull.Value);
     }
 
+    private static void AddWashSalePolicyParameters(NpgsqlCommand command, WashSalePolicy policy)
+    {
+        policy.EnsureValid();
+        command.Parameters.AddWithValue("wash_sale_enabled", policy.Enabled);
+        command.Parameters.AddWithValue("wash_sale_window_days", policy.WindowDays);
+        command.Parameters.AddWithValue("wash_sale_scope", policy.Scope.ToString());
+        command.Parameters.AddWithValue(
+            "wash_sale_effective_date",
+            policy.EffectiveDate is { } effectiveDate ? effectiveDate : (object)DBNull.Value);
+    }
+
     private static LedgerAccount ReadLedgerAccount(NpgsqlDataReader reader, int nameOrdinal)
         => new(
             reader.GetString(nameOrdinal),
@@ -1773,6 +1829,9 @@ public sealed partial class PostgresLedgerJournalStore :
             reader.IsDBNull(nameOrdinal + 2) ? null : reader.GetString(nameOrdinal + 2),
             reader.IsDBNull(nameOrdinal + 3) ? null : reader.GetString(nameOrdinal + 3));
 
+    // Wash-sale columns are appended after the original twelve so every existing ordinal keeps its
+    // meaning; callers that do not select them pass a reader with only 12 fields, which
+    // TryReadWashSalePolicy detects and treats as an unconfigured (disabled) policy.
     private static LedgerAccountTaxLotPolicyRecord ReadTaxLotPolicy(NpgsqlDataReader reader)
         => new(
             reader.GetGuid(0),
@@ -1783,7 +1842,26 @@ public sealed partial class PostgresLedgerJournalStore :
             DateOnly.FromDateTime(reader.GetDateTime(8)),
             ReadUtcDateTimeOffset(reader, 10),
             ReadUtcDateTimeOffset(reader, 11),
-            reader.IsDBNull(9) ? null : reader.GetString(9));
+            reader.IsDBNull(9) ? null : reader.GetString(9),
+            TryReadWashSalePolicy(reader));
+
+    private static WashSalePolicy? TryReadWashSalePolicy(NpgsqlDataReader reader)
+    {
+        const int enabledOrdinal = 12;
+        if (reader.FieldCount <= enabledOrdinal || reader.IsDBNull(enabledOrdinal))
+        {
+            return null;
+        }
+
+        return new WashSalePolicy(
+            reader.GetBoolean(enabledOrdinal),
+            reader.GetInt32(enabledOrdinal + 1),
+            Enum.Parse<WashSaleReplacementScope>(reader.GetString(enabledOrdinal + 2), ignoreCase: true),
+            reader.IsDBNull(enabledOrdinal + 3)
+                ? null
+                : DateOnly.FromDateTime(reader.GetDateTime(enabledOrdinal + 3)))
+            .EnsureValid();
+    }
 
     private static LedgerTaxLotRecord ReadTaxLot(NpgsqlDataReader reader)
         => new(
@@ -1822,36 +1900,53 @@ public sealed partial class PostgresLedgerJournalStore :
 
     private static string ForUpdateClause(bool enabled) => enabled ? "for update" : string.Empty;
 
-    // SEC-005 slice 4c-ii: append the fail-open tenant predicate (and bind its parameter) to a read
-    // command, but only when the caller has a resolved tenant. A tenantless caller adds nothing, so
-    // every row passes — identical behavior under one-company-per-deployment. The column expression is
-    // table-qualified by the caller (e.g. "tenant_id" or "p.tenant_id").
-    private static void ApplyTenantReadFilter(NpgsqlCommand command, string tenantColumnExpression, string? callerTenantId)
+    // SEC-005 slice 4c-ii, tightened for W9-GOV-008 criterion 2: append the tenant predicate (and bind
+    // its parameter) to a read command. Under the deployment-boundary posture a tenantless caller adds
+    // nothing, so every row passes — identical behavior under one-company-per-deployment. Under the
+    // fail-closed posture that caller is refused instead, and the clause itself no longer serves
+    // unattributed rows. The column expression is table-qualified by the caller.
+    private void ApplyTenantReadFilter(NpgsqlCommand command, string tenantColumnExpression, string? callerTenantId)
     {
+        RejectUnscopedRead(callerTenantId, "ledger records");
+
         if (!TenantReadPredicate.ShouldFilter(callerTenantId))
         {
             return;
         }
 
-        command.CommandText += TenantReadPredicate.FilterClause(tenantColumnExpression);
+        command.CommandText += TenantReadPredicate.FilterClause(tenantColumnExpression, _tenantScope.Mode);
         command.Parameters.AddWithValue(
             TenantReadPredicate.ParameterName,
             TenantReadPredicate.NormalizeParameter(callerTenantId!));
     }
 
     // SEC-005 slice 4c-ii: scope a journal-entry read (which has no period join in its main query) by
-    // the tenant stamped on the entry's accounting period, via an EXISTS subquery. Fail-open otherwise.
+    // the tenant stamped on the entry's accounting period, via an EXISTS subquery.
     private void ApplyTenantPeriodReadFilter(NpgsqlCommand command, string periodIdColumnExpression, string? callerTenantId)
     {
+        RejectUnscopedRead(callerTenantId, "ledger journal entries");
+
         if (!TenantReadPredicate.ShouldFilter(callerTenantId))
         {
             return;
         }
 
-        command.CommandText += TenantReadPredicate.PeriodExistsClause(Qualified("accounting_periods"), periodIdColumnExpression);
+        command.CommandText += TenantReadPredicate.PeriodExistsClause(
+            Qualified("accounting_periods"), periodIdColumnExpression, _tenantScope.Mode);
         command.Parameters.AddWithValue(
             TenantReadPredicate.ParameterName,
             TenantReadPredicate.NormalizeParameter(callerTenantId!));
+    }
+
+    // Rejected, not emptied: an empty result set is indistinguishable from a genuinely empty ledger,
+    // both to the caller and to whoever reads the support ticket it produces. A background job that
+    // holds retained authority declares it through FundScopeTenantAuthority rather than being exempt.
+    private void RejectUnscopedRead(string? callerTenantId, string readDescription)
+    {
+        if (TenantReadPredicate.ShouldRejectRead(callerTenantId, _tenantScope.Mode))
+        {
+            throw new TenantScopeRejectedException(readDescription);
+        }
     }
 
     private static InvalidOperationException PeriodVersionConflict(Guid periodId, long expectedVersion, long actualVersion)

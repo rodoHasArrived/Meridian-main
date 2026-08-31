@@ -6,6 +6,7 @@ using Meridian.Storage.Interfaces;
 using Meridian.Storage.Maintenance;
 using Meridian.Storage.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.Composition.Features;
@@ -45,6 +46,8 @@ internal sealed class MaintenanceFeatureRegistration : IServiceFeatureRegistrati
             var storageOpts = sp.GetRequiredService<StorageOptions>();
             return new ScheduledArchiveMaintenanceService(logger, schedManager, fileMaint, tierMigration, storageOpts);
         });
+        services.AddSingleton<IHostedService>(sp =>
+            sp.GetRequiredService<ScheduledArchiveMaintenanceService>());
 
         return services;
     }

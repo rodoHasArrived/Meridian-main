@@ -104,8 +104,8 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
             hardBlocker: true),
         Listed(
             "StructuredCredit",
-            "Structured credit",
-            "Structured-credit readiness requires tranche and pool identity, trustee or servicer reporting, factor schedules, collateral tape support, valuation evidence, and cash remittance reconciliation.",
+            "Structured credit (MBS / ABS / CLO / CMBS)",
+            "The canonical home for securitized products (ADR-022). Structured-credit readiness requires tranche and pool identity, trustee or servicer reporting, factor schedules, collateral tape support, valuation evidence, and cash remittance reconciliation.",
             ["Internal code", "CUSIP/ISIN/FIGI when available", "Provider symbol"],
             ["tranche", "pool/collateral type", "original/current factor", "coupon/index", "factor schedule"],
             ["Trustee report", "Servicer report", "Factor schedule", "Collateral tape", "Dealer pricing", "Valuation source", "Cash remittance"],
@@ -154,8 +154,8 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
             hardBlocker: true),
         Listed(
             "CustomAsset",
-            "MBS / ABS / CLO / CMBS / private assets",
-            "Structured and private assets require governed custom profiles, servicer/trustee reports, factor or NAV evidence, obligation events, valuation approval, and profile-aware ledger classification.",
+            "Profile-backed private / other assets",
+            "The home for private and other assets with no first-class kind; securitized products (MBS/ABS/CLO/CMBS) belong in StructuredCredit — via a reclassifying profile where profile-backed (ADR-022). Requires governed custom profiles, servicer/trustee reports, factor or NAV evidence, obligation events, valuation approval, and profile-aware ledger classification.",
             ["Internal code", "CUSIP/ISIN/FIGI when available", "Provider symbol"],
             ["approved profile", "profile version", "required profile fields", "valuation date", "servicer/trustee cut-off date", "obligation event"],
             ["Custom profile", "Servicer report", "Trustee report", "Warehouse tape", "Factor schedule", "Dealer pricing", "NAV", "Capital call", "Distribution notice", "Cash", "Collateral", "Obligation schedule"],
@@ -301,12 +301,16 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
     {
         var hasValidator = _assetClassValidators.TryGetValidator(spec.AssetClass, out _);
         var hasCatalogDescriptor = SecurityAssetClassCatalog.GetOrDefault(spec.AssetClass).AssetClass != "Unknown";
+        // GetProfiles() already applies write-time governance: Approved OR Superseded versions
+        // whose effective window covers today. A Superseded predecessor stays THE selectable
+        // version while its future-dated replacement waits to activate, so re-filtering to
+        // Approved here would raise a false profile-missing Blocker for every covered asset class
+        // during that transition gap.
         var hasProfileCoverage = !RequiresGovernedProfile(spec.AssetClass)
             || _assetProfileCatalog.GetProfiles().Any(profile =>
-                profile.Status == SecurityAssetProfileStatusDto.Approved &&
-                (string.Equals(profile.ProfileId, "structured-credit-io-po", StringComparison.OrdinalIgnoreCase)
+                string.Equals(profile.ProfileId, "structured-credit-io-po", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(profile.Category, "PrivateFunds", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(profile.Category, "PrivateEquity", StringComparison.OrdinalIgnoreCase)));
+                    || string.Equals(profile.Category, "PrivateEquity", StringComparison.OrdinalIgnoreCase));
 
         var evidence = SelectEvidence(spec, evidenceSnapshot);
         var requirements = BuildRequirements(spec, hasValidator, hasCatalogDescriptor, hasProfileCoverage, evidenceSnapshot, evidence);
@@ -882,7 +886,8 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
             AdmissionPolicy: pack.AdmissionPolicy,
             LedgerExtensionPolicy: pack.LedgerExtensionPolicy,
             RegistryValidationStatus: validation.IsValid ? "Valid" : "Invalid",
-            RegistryValidationIssues: validation.Issues);
+            RegistryValidationIssues: validation.Issues,
+            PlannedAssetClasses: pack.PlannedAssetClasses);
     }
 
     private static MultiAssetCoverageSpecification Listed(

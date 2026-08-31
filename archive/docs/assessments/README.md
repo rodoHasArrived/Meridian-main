@@ -47,6 +47,7 @@ for prioritization only; revalidate against the current checkout and roadmap reg
 | Assessment | Date | Scope |
 | --- | --- | --- |
 | [Adversarial Program Review](adversarial-program-review-2026-07-21.md) | 2026-07-21 | High-level program functionality and end-user value across onboarding, browser workstation, ingestion/providers/reconciliation, accounting/ledger/reporting, and trading/execution/backtesting. |
+| [Adversarial Program Review (Follow-up)](adversarial-program-review-2026-07-26.md) | 2026-07-26 | Follow-up whole-program review: re-tests the 2026-07-21 findings (crediting remediated items), then adds first-mile/onboarding breakage, deployment-envelope and observability gaps, trust-chain enforcement gaps, and a refreshed prioritized improvement list. |
 
 ## Use Current Guidance Instead
 

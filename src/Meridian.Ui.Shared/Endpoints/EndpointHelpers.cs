@@ -1,14 +1,12 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Meridian.Platform.Results;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
 /// <summary>
 /// Shared helpers to reduce boilerplate in endpoint handlers.
-/// Provides consistent null-check, try/catch, and JSON response patterns.
-/// Uses FriendlyErrorFormatter for user-friendly error responses.
+/// Provides consistent fail-closed service checks, safe error handling, and JSON response patterns.
 /// </summary>
 internal static class EndpointHelpers
 {
@@ -18,8 +16,8 @@ internal static class EndpointHelpers
     /// <see cref="HttpContext.Items"/>, so endpoint-level authorization failures should not
     /// depend on registered authentication services.
     /// </summary>
-    internal static IResult Forbidden()
-        => Results.StatusCode(StatusCodes.Status403Forbidden);
+    internal static IResult Forbidden(HttpContext? context = null)
+        => ApiProblemDetails.Forbidden(context);
 
     /// <summary>
     /// Handles a synchronous endpoint handler with service null-check and error handling.
@@ -27,18 +25,23 @@ internal static class EndpointHelpers
     internal static IResult HandleSync<TService>(
         TService? service,
         Func<TService, object> handler,
-        JsonSerializerOptions opts) where TService : class
+        JsonSerializerOptions opts,
+        HttpContext? context = null) where TService : class
     {
         if (service is null)
-            return Results.Json(new { error = "Service unavailable" }, opts);
+            return ApiProblemDetails.ServiceUnavailable(context, typeof(TService).Name);
 
         try
         {
             return Results.Json(handler(service), opts);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            return FormatErrorResult(ex, opts);
+            return FormatErrorResult(ex, context);
         }
     }
 
@@ -48,19 +51,24 @@ internal static class EndpointHelpers
     internal static async Task<IResult> HandleAsync<TService>(
         TService? service,
         Func<TService, Task<object>> handler,
-        JsonSerializerOptions opts) where TService : class
+        JsonSerializerOptions opts,
+        HttpContext? context = null) where TService : class
     {
         if (service is null)
-            return Results.Json(new { error = "Service unavailable" }, opts);
+            return ApiProblemDetails.ServiceUnavailable(context, typeof(TService).Name);
 
         try
         {
             var result = await handler(service);
             return Results.Json(result, opts);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            return FormatErrorResult(ex, opts);
+            return FormatErrorResult(ex, context);
         }
     }
 
@@ -71,10 +79,11 @@ internal static class EndpointHelpers
         TService? service,
         Func<TService, CancellationToken, Task<object>> handler,
         JsonSerializerOptions opts,
-        CancellationToken ct) where TService : class
+        CancellationToken ct,
+        HttpContext? context = null) where TService : class
     {
         if (service is null)
-            return Results.Json(new { error = "Service unavailable" }, opts);
+            return ApiProblemDetails.ServiceUnavailable(context, typeof(TService).Name);
 
         try
         {
@@ -89,7 +98,7 @@ internal static class EndpointHelpers
         }
         catch (Exception ex)
         {
-            return FormatErrorResult(ex, opts);
+            return FormatErrorResult(ex, context);
         }
     }
 
@@ -108,15 +117,18 @@ internal static class EndpointHelpers
     /// Return null to fall through to the generic Problem response.
     /// </param>
     /// <param name="includeExceptionMessage">
-    /// When true the Problem detail is "{errorMessage}: {ex.Message}" — used by endpoints whose
-    /// clients historically surfaced the exception text to operators.
+    /// Retained temporarily for source compatibility with older endpoint call sites. Arbitrary
+    /// exception messages are never copied into a 500 response; the stable
+    /// <paramref name="errorMessage"/> is always returned.
     /// </param>
+    /// <param name="context">Optional request context used to populate Problem Details metadata.</param>
     internal static async Task<IResult> GuardAsync(
         Func<Task<IResult>> handler,
         string errorMessage,
         ILogger? logger = null,
         Func<Exception, IResult?>? mapException = null,
-        bool includeExceptionMessage = false)
+        bool includeExceptionMessage = false,
+        HttpContext? context = null)
     {
         try
         {
@@ -132,7 +144,8 @@ internal static class EndpointHelpers
                 return mapped;
 
             logger?.LogError(ex, "{EndpointFailure}", errorMessage);
-            return Results.Problem(includeExceptionMessage ? $"{errorMessage}: {ex.Message}" : errorMessage);
+            _ = includeExceptionMessage;
+            return ApiProblemDetails.Internal(context, errorMessage);
         }
     }
 
@@ -148,37 +161,17 @@ internal static class EndpointHelpers
     }
 
     /// <summary>
-    /// Formats an exception into a structured JSON error response using FriendlyErrorFormatter.
-    /// Returns a consistent error envelope with error code, message, and actionable suggestion.
+    /// Converts only well-understood client and upstream failures to their HTTP equivalents.
+    /// Ambiguous exceptions fail closed as a safe internal-error Problem response.
     /// </summary>
-    private static IResult FormatErrorResult(Exception ex, JsonSerializerOptions opts)
+    private static IResult FormatErrorResult(Exception ex, HttpContext? context) => ex switch
     {
-        var formatted = FriendlyErrorFormatter.Format(ex);
-        var statusCode = GetHttpStatusCode(ex);
-
-        return Results.Json(new
-        {
-            error = formatted.Title,
-            code = formatted.Code,
-            message = formatted.Message,
-            suggestion = formatted.Suggestion,
-            docsLink = formatted.DocsLink,
-            timestamp = DateTimeOffset.UtcNow
-        }, opts, statusCode: statusCode);
-    }
-
-    /// <summary>
-    /// Maps exception types to appropriate HTTP status codes.
-    /// </summary>
-    private static int GetHttpStatusCode(Exception ex) => ex switch
-    {
-        ArgumentException or ArgumentNullException => 400,
-        UnauthorizedAccessException => 403,
-        FileNotFoundException or DirectoryNotFoundException => 404,
-        InvalidOperationException => 409,
-        NotSupportedException or NotImplementedException => 501,
-        TimeoutException => 504,
-        OperationCanceledException => 408,
-        _ => 500
+        ArgumentException => ApiProblemDetails.Validation(
+            context,
+            "request",
+            "The request is invalid."),
+        UnauthorizedAccessException => ApiProblemDetails.Forbidden(context),
+        TimeoutException => ApiProblemDetails.Timeout(context),
+        _ => ApiProblemDetails.Internal(context)
     };
 }

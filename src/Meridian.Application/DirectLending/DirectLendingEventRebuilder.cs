@@ -1,9 +1,9 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.DirectLending;
 using Meridian.FSharp.DirectLendingInterop;
 using Meridian.Storage.DirectLending;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.DirectLending;
 
@@ -361,7 +361,7 @@ public sealed class DirectLendingEventRebuilder
     private static string ComputeTermsHash(DirectLendingTermsDto terms)
     {
         var json = JsonSerializer.Serialize(terms, HashJsonOptions);
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(json));
+        var bytes = Sha256Digest.ComputeBytesUtf8(json);
         return Convert.ToHexString(bytes);
     }
 

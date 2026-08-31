@@ -1,12 +1,13 @@
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.DataIntegration.Canonicalization;
 using Meridian.Storage;
 using Meridian.Storage.Services;
 using Meridian.Ui.Shared.Evidence;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -121,8 +122,14 @@ public sealed class StorageAssuranceService
     public async Task<StorageMaintenanceResultDto> ExecuteAsync(
         StorageMaintenanceCommandRequestDto request,
         string actor,
+        string tenantId,
+        string companyId,
         CancellationToken ct)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(companyId);
+        tenantId = tenantId.Trim();
+        companyId = companyId.Trim();
         var idempotencyKey = $"{request.PreviewId}:{request.IdempotencyKey.Trim()}";
         if (_idempotency.TryGetValue(idempotencyKey, out var prior))
             return prior;
@@ -148,7 +155,15 @@ public sealed class StorageAssuranceService
         var affectedBytes = items.Where(static item => item.Status == "Completed").Sum(item => preview.Candidates.First(candidate => candidate.CandidateId == item.CandidateId).SizeBytes);
         var provisional = new StorageMaintenanceResultDto(
             Guid.NewGuid().ToString("N"), preview.Action, started, completed, status, affectedBytes, items, [], null, null);
-        var intake = await RetainEvidenceAsync(preview, provisional, request.Rationale.Trim(), actor, ct).ConfigureAwait(false);
+        var intake = await RetainEvidenceAsync(
+                preview,
+                provisional,
+                request.Rationale.Trim(),
+                actor,
+                tenantId,
+                companyId,
+                ct)
+            .ConfigureAwait(false);
         var result = provisional with
         {
             EvidenceVaultId = intake.VaultIdentity.VaultId,
@@ -159,8 +174,14 @@ public sealed class StorageAssuranceService
         return result;
     }
 
-    public StorageMaintenanceActionDto? GetPreviewAction(string previewId) =>
-        _previews.TryGetValue(previewId, out var preview) ? preview.Action : null;
+    public StorageMaintenanceActionDto? GetExecuteAction(string previewId, string idempotencyKey)
+    {
+        if (_previews.TryGetValue(previewId, out var preview))
+            return preview.Action;
+
+        var key = $"{previewId}:{idempotencyKey.Trim()}";
+        return _idempotency.TryGetValue(key, out var result) ? result.Action : null;
+    }
 
     private IReadOnlyList<StorageMaintenanceCandidateDto> BuildCleanupCandidates()
     {
@@ -296,6 +317,8 @@ public sealed class StorageAssuranceService
         StorageMaintenanceResultDto result,
         string rationale,
         string actor,
+        string tenantId,
+        string companyId,
         CancellationToken ct)
     {
         var receipt = JsonSerializer.Serialize(new { preview, result, rationale, actor });
@@ -312,7 +335,8 @@ public sealed class StorageAssuranceService
         {
             Classification = EvidenceDocumentClassificationDto.AuditRequestSupport,
             Actor = actor,
-            Scope = "Data"
+            TenantId = tenantId,
+            Scope = companyId
         }, ct).ConfigureAwait(false);
     }
 
@@ -381,8 +405,7 @@ public sealed class StorageAssuranceService
         Fingerprint(file));
 
     private static string Fingerprint(FileInfo file) => ComputeDigest($"{file.FullName}|{file.Length}|{file.LastWriteTimeUtc.Ticks}");
-    private static string ComputeDigest(string value) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
-    private static string? NormalizeOptional(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    private static string ComputeDigest(string value) => Sha256Digest.ComputeUtf8(value);
 
     private static bool CanWrite(string root)
     {

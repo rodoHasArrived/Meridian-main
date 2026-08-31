@@ -69,7 +69,7 @@ REQUIRED_FILES=(
     "docs/getting-started/README.md"
     "docs/HELP.md"
     "docs/providers/alpaca-setup.md"
-    "docs/providers/interactive-brokers-setup.md"
+    "docs/operators/provider-onboarding-interactive-brokers.md"
     "docs/providers/provider-comparison.md"
     "docs/providers/data-sources.md"
     "docs/reference/environment-variables.md"

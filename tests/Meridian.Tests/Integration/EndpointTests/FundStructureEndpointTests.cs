@@ -9,6 +9,7 @@ using Meridian.Application.FundStructure;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
+using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
@@ -26,19 +27,18 @@ namespace Meridian.Tests.Integration.EndpointTests;
 
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class FundStructureEndpointTests
+public sealed class FundStructureEndpointTests : IClassFixture<FundStructureEndpointTestFixture>
 {
     private const string TestPassHash = "pbkdf2-sha256$210000$DdocJLRlUqhBZlBR8YAatA==$MpNJJHhFb6+it6jMKuIzwHtg9Lq/WehIjKrC1m6TRQU=";
 
-    private readonly EndpointTestFixture _fixture;
+    private readonly FundStructureEndpointTestFixture _fixture;
     private readonly HttpClient _client;
 
-    public FundStructureEndpointTests(EndpointTestFixture fixture)
+    public FundStructureEndpointTests(FundStructureEndpointTestFixture fixture)
     {
         _fixture = fixture;
         _client = fixture.Client;
     }
-
 
     [Fact]
     public async Task SetupDraftValidate_WithMissingFields_ReturnsSharedValidationSummary()
@@ -48,7 +48,10 @@ public sealed class FundStructureEndpointTests
             AccountHandoff = new FundStructureSetupAccountHandoffDraftDto(string.Empty, string.Empty, AccountTypeDto.Brokerage, "US")
         };
 
-        var response = await _client.PostAsJsonAsync("/api/fund-structure/setup-drafts/validate", draft);
+        // Draft validation now declares the same permission set as draft creation, so the
+        // validation behaviour under test sits behind an authorized client.
+        using var client = _fixture.CreatePermittedClient(UserPermission.ManageDirectLending);
+        var response = await client.PostAsJsonAsync("/api/fund-structure/setup-drafts/validate", draft);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var payload = await response.Content.ReadFromJsonAsync<FundStructureSetupPreviewDto>();
@@ -67,13 +70,16 @@ public sealed class FundStructureEndpointTests
 
         try
         {
+            var session = await LoginAndGetAuthenticatedSessionAsync("fund-ops", "test-pass");
+            session.Role.Should().Be(nameof(UserRole.Accounting));
+            session.PermissionNames.Should().Contain(nameof(UserPermission.ManageDirectLending));
             var draft = CreateSetupDraft();
-            var sessionCookie = await LoginAndGetSessionCookieAsync("fund-ops", "test-pass");
             using var request = new HttpRequestMessage(HttpMethod.Post, "/api/fund-structure/setup-drafts/create")
             {
                 Content = JsonContent.Create(draft)
             };
-            request.Headers.Add("Cookie", sessionCookie);
+            request.Headers.Add("Cookie", session.CookieHeader);
+            request.Headers.Add("X-CSRF-Token", session.CsrfToken);
 
             var response = await _client.SendAsync(request);
 
@@ -83,8 +89,9 @@ public sealed class FundStructureEndpointTests
             payload!.Organization.Code.Should().Be("ORG-SETUP");
             payload.BusinessLane.Code.Should().Be("BUS-SETUP");
             payload.Fund.Should().NotBeNull();
+            payload.InvestmentPortfolio.Code.Should().Be("PORT-SETUP");
             payload.AccountHandoffAssignment.AssignmentType.Should().Be(FundStructureSetupWorkflowService.AccountHandoffAssignmentType);
-            payload.Graph.Nodes.Should().Contain(node => node.Kind == FundStructureNodeKindDto.InvestmentPortfolio && node.Code == "PORT-SETUP");
+            payload.AccountHandoffAssignment.NodeId.Should().Be(payload.InvestmentPortfolio.InvestmentPortfolioId);
         }
         finally
         {
@@ -102,13 +109,16 @@ public sealed class FundStructureEndpointTests
 
         try
         {
+            var session = await LoginAndGetAuthenticatedSessionAsync("read-only", "test-pass");
+            session.Role.Should().Be(nameof(UserRole.ReadOnly));
+            session.PermissionNames.Should().NotContain(nameof(UserPermission.ManageDirectLending));
             var draft = CreateSetupDraft() with { RequestedBy = "spoofed-admin" };
-            var sessionCookie = await LoginAndGetSessionCookieAsync("read-only", "test-pass");
             using var request = new HttpRequestMessage(HttpMethod.Post, "/api/fund-structure/setup-drafts/create")
             {
                 Content = JsonContent.Create(draft)
             };
-            request.Headers.Add("Cookie", sessionCookie);
+            request.Headers.Add("Cookie", session.CookieHeader);
+            request.Headers.Add("X-CSRF-Token", session.CsrfToken);
 
             var response = await _client.SendAsync(request);
 
@@ -216,7 +226,7 @@ public sealed class FundStructureEndpointTests
         var organizationId = Guid.NewGuid();
         var businessId = Guid.NewGuid();
         var fundId = Guid.NewGuid();
-        var portfolioId = Guid.NewGuid();
+        var entityId = Guid.NewGuid();
         var linkId = Guid.NewGuid();
         var now = new DateTimeOffset(2026, 04, 12, 0, 0, 0, TimeSpan.Zero);
 
@@ -244,22 +254,25 @@ public sealed class FundStructureEndpointTests
             now,
             "endpoint-test",
             BusinessId: businessId));
-        await structureService.CreateInvestmentPortfolioAsync(new CreateInvestmentPortfolioRequest(
-            portfolioId,
-            businessId,
-            $"PRT-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
-            "Ownership Endpoint Portfolio",
+        await structureService.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            entityId,
+            LegalEntityTypeDto.Fund,
+            $"ENT-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
+            "Ownership Endpoint Entity",
+            "US-DE",
             "USD",
             now,
-            "endpoint-test",
-            FundId: fundId));
+            "endpoint-test"));
         await structureService.LinkNodesAsync(new LinkFundStructureNodesRequest(
             linkId,
             fundId,
-            portfolioId,
-            OwnershipRelationshipTypeDto.AllocatesTo,
+            entityId,
+            OwnershipRelationshipTypeDto.Owns,
             now,
-            "endpoint-test"));
+            "endpoint-test",
+            OwnershipPercent: 100m,
+            IsPrimary: true,
+            Notes: "endpoint-test"));
 
         var updateResponse = await client.PutAsJsonAsync(
             $"/api/fund-structure/links/{linkId}",
@@ -333,7 +346,7 @@ public sealed class FundStructureEndpointTests
                 Guid.Empty,
                 Guid.NewGuid(),
                 seed.FundId,
-                seed.PortfolioId,
+                seed.ChildNodeId,
                 OwnershipRelationshipTypeDto.Owns,
                 seed.EffectiveFrom.AddDays(2),
                 "readonly-operator",
@@ -349,9 +362,9 @@ public sealed class FundStructureEndpointTests
             new FundStructureQuery(AsOf: seed.EffectiveFrom.AddDays(3)));
         graph.OwnershipLinks.Should().HaveCount(1);
         var unchanged = graph.OwnershipLinks.Single(link => link.OwnershipLinkId == seed.LinkId);
-        unchanged.RelationshipType.Should().Be(OwnershipRelationshipTypeDto.AllocatesTo);
-        unchanged.OwnershipPercent.Should().BeNull();
-        unchanged.IsPrimary.Should().BeFalse();
+        unchanged.RelationshipType.Should().Be(OwnershipRelationshipTypeDto.Owns);
+        unchanged.OwnershipPercent.Should().Be(100m);
+        unchanged.IsPrimary.Should().BeTrue();
         unchanged.EffectiveTo.Should().BeNull();
         unchanged.Notes.Should().Be("endpoint-test");
     }
@@ -361,7 +374,8 @@ public sealed class FundStructureEndpointTests
     {
         var seed = await SeedFundWorkspaceAsync();
 
-        var response = await _client.GetAsync(
+        using var client = _fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
+        var response = await client.GetAsync(
             $"/api/fund-structure/workspace-view?fundProfileId={Uri.EscapeDataString(seed.FundProfileId)}&currency=USD");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -383,7 +397,8 @@ public sealed class FundStructureEndpointTests
     {
         var seed = await SeedFundWorkspaceAsync();
 
-        var response = await _client.GetAsync(
+        using var client = _fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
+        var response = await client.GetAsync(
             $"/api/fund-structure/workspace-view?fundProfileId={Uri.EscapeDataString(seed.FundProfileId)}&scopeKind=Entity&scopeId=entity-alpha");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -401,7 +416,8 @@ public sealed class FundStructureEndpointTests
     {
         var seed = await SeedFundWorkspaceAsync();
 
-        var response = await _client.GetAsync(
+        using var client = _fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
+        var response = await client.GetAsync(
             $"/api/fund-structure/workspace-view?fundProfileId={Uri.EscapeDataString(seed.FundProfileId)}&scopeKind=invalid-value&scopeId=entity-alpha");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -415,7 +431,8 @@ public sealed class FundStructureEndpointTests
     [Fact]
     public async Task GetWorkspaceView_WithoutFundProfileId_ReturnsBadRequest()
     {
-        var response = await _client.GetAsync("/api/fund-structure/workspace-view");
+        using var client = _fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
+        var response = await client.GetAsync("/api/fund-structure/workspace-view");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -425,7 +442,8 @@ public sealed class FundStructureEndpointTests
     {
         var seed = await SeedFundWorkspaceAsync(["run-selected-001", "run-selected-002", "run-selected-003"]);
 
-        var response = await _client.GetAsync(
+        using var client = _fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
+        var response = await client.GetAsync(
             $"/api/fund-structure/workspace-view?fundProfileId={Uri.EscapeDataString(seed.FundProfileId)}&selectedLedgerIds=run-selected-001&selectedLedgerIds=run-selected-003");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -480,9 +498,10 @@ public sealed class FundStructureEndpointTests
     public async Task GetReportPacks_WithSeededFundProfile_ReturnsHistory()
     {
         var seed = await SeedFundWorkspaceAsync();
-        var generated = await GenerateReportPackAsync(seed);
+        var generated = await SeedLegacyReportPackAsync(seed);
+        using var client = _fixture.CreatePermittedClient(UserPermission.ViewReporting);
 
-        var response = await _client.GetAsync(
+        var response = await client.GetAsync(
             $"/api/fund-structure/report-packs?fundProfileId={Uri.EscapeDataString(seed.FundProfileId)}&limit=5");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -501,16 +520,17 @@ public sealed class FundStructureEndpointTests
     public async Task GetReportPack_ReturnsDetailOrNotFound()
     {
         var seed = await SeedFundWorkspaceAsync();
-        var generated = await GenerateReportPackAsync(seed);
+        var generated = await SeedLegacyReportPackAsync(seed);
+        using var client = _fixture.CreatePermittedClient(UserPermission.ViewReporting);
 
-        var detailResponse = await _client.GetAsync($"/api/fund-structure/report-packs/{generated.ReportId}");
+        var detailResponse = await client.GetAsync($"/api/fund-structure/report-packs/{generated.ReportId}");
         detailResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var detail = await detailResponse.Content.ReadFromJsonAsync<FundReportPackSnapshotDto>();
         detail.Should().NotBeNull();
         detail!.ReportId.Should().Be(generated.ReportId);
         detail.SchemaVersion.Should().Be(GovernanceReportPackContract.CurrentSchemaVersion);
 
-        var missingResponse = await _client.GetAsync($"/api/fund-structure/report-packs/{Guid.NewGuid()}");
+        var missingResponse = await client.GetAsync($"/api/fund-structure/report-packs/{Guid.NewGuid()}");
         missingResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -564,7 +584,8 @@ public sealed class FundStructureEndpointTests
     [Fact]
     public async Task GetCashFlowView_WithBlankLedgerGroupId_ReturnsBadRequest()
     {
-        var response = await _client.GetAsync("/api/fund-structure/cash-flow-view?scopeKind=LedgerGroup&ledgerGroupId=%20%20%20");
+        using var client = _fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
+        var response = await client.GetAsync("/api/fund-structure/cash-flow-view?scopeKind=LedgerGroup&ledgerGroupId=%20%20%20");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -572,7 +593,8 @@ public sealed class FundStructureEndpointTests
     [Fact]
     public async Task GetCashFlowView_WithInvalidLedgerGroupId_ReturnsBadRequest()
     {
-        var response = await _client.GetAsync("/api/fund-structure/cash-flow-view?scopeKind=LedgerGroup&ledgerGroupId=BAD/GROUP");
+        using var client = _fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
+        var response = await client.GetAsync("/api/fund-structure/cash-flow-view?scopeKind=LedgerGroup&ledgerGroupId=BAD/GROUP");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -580,7 +602,8 @@ public sealed class FundStructureEndpointTests
     [Fact]
     public async Task GetCashFlowView_WithCanonicalizedUnassignedLedgerGroupId_ReturnsNormalizedScope()
     {
-        var response = await _client.GetAsync("/api/fund-structure/cash-flow-view?scopeKind=LedgerGroup&ledgerGroupId=%20UNASSIGNED%20");
+        using var client = _fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
+        var response = await client.GetAsync("/api/fund-structure/cash-flow-view?scopeKind=LedgerGroup&ledgerGroupId=%20UNASSIGNED%20");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var payload = await response.Content.ReadFromJsonAsync<GovernanceCashFlowViewDto>();
@@ -594,7 +617,8 @@ public sealed class FundStructureEndpointTests
     [Fact]
     public async Task GetCashFlowView_WithUnassignedLedgerGroupAndNoScope_ReturnsEmptyWindowedView()
     {
-        var response = await _client.GetAsync(
+        using var client = _fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
+        var response = await client.GetAsync(
             "/api/fund-structure/cash-flow-view?scopeKind=LedgerGroup&ledgerGroupId=unassigned&asOf=2026-04-12T15%3A45%3A00Z&currency=EUR&historicalDays=3&forecastDays=5&bucketDays=2");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -630,9 +654,11 @@ public sealed class FundStructureEndpointTests
     }
 
     [Fact]
-    public async Task AssignLedgerMapping_WithAccountingSession_UpdatesWorkbenchMappingAndUsesAuthenticatedActor()
+    public async Task AssignLedgerMapping_WithSyntheticAccountingPermissionContext_UpdatesWorkbenchMappingAndUsesInjectedActor()
     {
         var seed = await SeedFundWorkspaceAsync();
+        using var client = _fixture.CreatePermittedClient(UserPermission.ManageFundStructure);
+        client.DefaultRequestHeaders.Add("X-Test-Auth", "fund-accounting");
         var request = new LedgerMappingAssignmentRequestDto(
             AccountId: seed.BankAccountId,
             LedgerGroupId: "ENDPOINT-ALT",
@@ -646,9 +672,7 @@ public sealed class FundStructureEndpointTests
         {
             Content = JsonContent.Create(request)
         };
-        httpRequest.Headers.Add("X-Test-Auth", "fund-accounting");
-
-        var response = await _client.SendAsync(httpRequest);
+        var response = await client.SendAsync(httpRequest);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         var result = await response.Content.ReadFromJsonAsync<LedgerMappingAssignmentResultDto>();
@@ -672,40 +696,25 @@ public sealed class FundStructureEndpointTests
     }
 
     [Fact]
-    public async Task AssignLedgerMapping_WithReadOnlySession_ReturnsForbidden()
+    public async Task AssignLedgerMapping_WithSyntheticReadOnlyPermissionContext_ReturnsForbidden()
     {
-        var originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
-        Environment.SetEnvironmentVariable(
-            "MDC_USERS",
-            $$"""[{"username":"read-only","passwordHash":"{{TestPassHash}}","role":"ReadOnly"}]""");
+        var seed = await SeedFundWorkspaceAsync();
+        using var client = _fixture.CreatePermittedClient(UserPermission.ViewAnalytics);
+        client.DefaultRequestHeaders.Add("X-Test-Auth", "fund-accounting");
+        var request = new LedgerMappingAssignmentRequestDto(
+            AccountId: seed.BankAccountId,
+            LedgerGroupId: "ENDPOINT-ALT",
+            RequestedBy: "read-only",
+            Rationale: "Attempt to alter ledger mapping without fund accounting authority.",
+            EffectiveFrom: new DateTimeOffset(2026, 4, 11, 0, 0, 0, TimeSpan.Zero),
+            CorrelationId: "ledger-map-readonly-test",
+            AssignmentId: Guid.NewGuid());
 
-        try
-        {
-            var seed = await SeedFundWorkspaceAsync();
-            var sessionCookie = await LoginAndGetSessionCookieAsync("read-only", "test-pass");
-            var request = new LedgerMappingAssignmentRequestDto(
-                AccountId: seed.BankAccountId,
-                LedgerGroupId: "ENDPOINT-ALT",
-                RequestedBy: "read-only",
-                Rationale: "Attempt to alter ledger mapping without fund accounting authority.",
-                EffectiveFrom: new DateTimeOffset(2026, 4, 11, 0, 0, 0, TimeSpan.Zero),
-                CorrelationId: "ledger-map-readonly-test",
-                AssignmentId: Guid.NewGuid());
+        var response = await client.PostAsJsonAsync(
+            "/api/fund-structure/ledger-mapping-assignments",
+            request);
 
-            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/api/fund-structure/ledger-mapping-assignments")
-            {
-                Content = JsonContent.Create(request)
-            };
-            httpRequest.Headers.Add("Cookie", sessionCookie);
-
-            var response = await _client.SendAsync(httpRequest);
-
-            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("MDC_USERS", originalUsers);
-        }
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -731,7 +740,10 @@ public sealed class FundStructureEndpointTests
     [Fact]
     public async Task AssignLedgerMapping_WithoutRationale_ReturnsBadRequest()
     {
-        var response = await _client.PostAsJsonAsync(
+        // The declarative guard now rejects before the handler, so the rationale validation under
+        // test needs an authorized caller; the 401/403 contracts are pinned by the two tests above.
+        using var client = _fixture.CreatePermittedClient(UserPermission.ManageFundStructure);
+        var response = await client.PostAsJsonAsync(
             "/api/fund-structure/ledger-mapping-assignments",
             new LedgerMappingAssignmentRequestDto(
                 AccountId: Guid.NewGuid(),
@@ -743,28 +755,12 @@ public sealed class FundStructureEndpointTests
     }
 
     [Fact]
-    public async Task AccountReadinessAndSyncHistoryEndpoints_ReturnSharedAccountSyncState()
+    public async Task AccountReadinessAndSyncHistoryEndpoints_WithScopedAccountingAccess_ReturnSharedAccountSyncState()
     {
-        var originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
-        Environment.SetEnvironmentVariable(
-            "MDC_USERS",
-            $$"""[{"username":"fund-ops","passwordHash":"{{TestPassHash}}","role":"Accounting"}]""");
-
-        try
-        {
-            var loginResponse = await _client.PostAsJsonAsync(
-                "/api/auth/login",
-                new { Username = "fund-ops", Password = "test-pass" });
-            var sessionCookie = loginResponse.Headers
-                .Where(header => header.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
-                .SelectMany(header => header.Value)
-                .FirstOrDefault(value => value.Contains("mdc-session", StringComparison.OrdinalIgnoreCase));
-
-            loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-            sessionCookie.Should().NotBeNullOrWhiteSpace("fund account endpoints require an authenticated accounting role");
-
-            var accountService = _fixture.Services.GetRequiredService<IFundAccountService>();
-            var account = await accountService.CreateAccountAsync(new CreateAccountRequest(
+        using var client = _fixture.CreatePermittedClient(UserPermission.ManageDirectLending);
+        client.DefaultRequestHeaders.Add("X-Test-Auth", "fund-accounting");
+        var accountService = _fixture.Services.GetRequiredService<IFundAccountService>();
+        var account = await accountService.CreateAccountAsync(new CreateAccountRequest(
                 AccountId: Guid.NewGuid(),
                 AccountType: AccountTypeDto.Bank,
                 AccountCode: $"BANK-{Guid.NewGuid():N}"[..13].ToUpperInvariant(),
@@ -785,7 +781,7 @@ public sealed class FundStructureEndpointTests
                     IntermediaryBankName: null,
                     BeneficiaryName: null,
                     BeneficiaryAddress: null)));
-            await accountService.RecordSyncHistoryAsync(new RecordAccountSyncHistoryRequest(
+        await accountService.RecordSyncHistoryAsync(new RecordAccountSyncHistoryRequest(
                 AccountId: account.AccountId,
                 Capability: "bank-balances",
                 Status: AccountSyncStatusDto.Succeeded,
@@ -795,38 +791,48 @@ public sealed class FundStructureEndpointTests
                 FreshUntil: DateTimeOffset.UtcNow.AddHours(1),
                 RawEvidencePath: "artifacts/account-sync/bank/raw.json",
                 CorrelationId: "endpoint-sync-history"));
+        var scopedAccess = _fixture.Services.GetRequiredService<IScopedAccessAssignmentService>();
+        var accessGrant = await scopedAccess.CreateAsync(
+            new UserAccessAssignmentCreateRequestDto(
+                PrincipalId: "fund-ops",
+                PrincipalKind: AccessPrincipalKindDto.User,
+                ScopeKind: AccessScopeKindDto.Account,
+                ScopeId: account.AccountId,
+                Role: nameof(UserRole.Accounting),
+                RoleProfileName: null,
+                PermissionNames: [nameof(UserPermission.ManageDirectLending)],
+                EffectiveFrom: DateTimeOffset.UtcNow.AddMinutes(-1),
+                EffectiveTo: null,
+                RequestedBy: "endpoint-test",
+                Rationale: "Exercise account readiness through the least-privilege accounting scope.",
+                CorrelationId: $"endpoint-account-access-{account.AccountId:N}"),
+            actor: "endpoint-test");
 
-            using var historyRequest = new HttpRequestMessage(
-                HttpMethod.Get,
-                $"/api/fund-accounts/{account.AccountId}/sync-history?capability=bank-balances");
-            using var readinessRequest = new HttpRequestMessage(
-                HttpMethod.Get,
-                $"/api/fund-accounts/{account.AccountId}/readiness");
-            historyRequest.Headers.Add("Cookie", sessionCookie!);
-            readinessRequest.Headers.Add("Cookie", sessionCookie!);
+        accessGrant.Assignment.PrincipalId.Should().Be("fund-ops");
+        accessGrant.Assignment.ScopeKind.Should().Be(AccessScopeKindDto.Account);
+        accessGrant.Assignment.ScopeId.Should().Be(account.AccountId);
+        accessGrant.Assignment.PermissionNames.Should().ContainSingle()
+            .Which.Should().Be(nameof(UserPermission.ManageDirectLending));
 
-            var historyResponse = await _client.SendAsync(historyRequest);
-            var readinessResponse = await _client.SendAsync(readinessRequest);
+        var historyResponse = await client.GetAsync(
+            $"/api/fund-accounts/{account.AccountId}/sync-history?capability=bank-balances");
+        var readinessResponse = await client.GetAsync(
+            $"/api/fund-accounts/{account.AccountId}/readiness");
 
-            historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-            readinessResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-            var history = await historyResponse.Content.ReadFromJsonAsync<AccountSyncHistoryEntryDto[]>();
-            var readiness = await readinessResponse.Content.ReadFromJsonAsync<AccountReadinessSnapshotDto>();
+        historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        readinessResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var history = await historyResponse.Content.ReadFromJsonAsync<AccountSyncHistoryEntryDto[]>();
+        var readiness = await readinessResponse.Content.ReadFromJsonAsync<AccountReadinessSnapshotDto>();
 
-            history.Should().NotBeNull();
-            history!.Should().ContainSingle(entry =>
-                entry.AccountId == account.AccountId
-                && entry.Status == AccountSyncStatusDto.Succeeded
-                && entry.ProviderId == "meridian-bank");
-            readiness.Should().NotBeNull();
-            readiness!.IsReady.Should().BeTrue();
-            readiness.ProviderLinkStatus.Should().Be(AccountProviderLinkStatusDto.Verified);
-            readiness.Issues.Should().BeEmpty();
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("MDC_USERS", originalUsers);
-        }
+        history.Should().NotBeNull();
+        history!.Should().ContainSingle(entry =>
+            entry.AccountId == account.AccountId
+            && entry.Status == AccountSyncStatusDto.Succeeded
+            && entry.ProviderId == "meridian-bank");
+        readiness.Should().NotBeNull();
+        readiness!.IsReady.Should().BeTrue();
+        readiness.ProviderLinkStatus.Should().Be(AccountProviderLinkStatusDto.Verified);
+        readiness.Issues.Should().BeEmpty();
     }
 
 
@@ -917,8 +923,9 @@ public sealed class FundStructureEndpointTests
             PendingSettlement: 125m))
             ;
 
+        var bankStatementBatchId = Guid.NewGuid();
         await accountService.IngestBankStatementAsync(new IngestBankStatementRequest(
-            BatchId: Guid.NewGuid(),
+            BatchId: bankStatementBatchId,
             AccountId: bankAccount.AccountId,
             StatementDate: new DateOnly(2026, 4, 11),
             BankName: "Meridian Bank",
@@ -927,7 +934,7 @@ public sealed class FundStructureEndpointTests
             [
                 new BankStatementLineDto(
                     LineId: Guid.NewGuid(),
-                    BatchId: Guid.NewGuid(),
+                    BatchId: bankStatementBatchId,
                     AccountId: bankAccount.AccountId,
                     TransactionDate: new DateOnly(2026, 4, 11),
                     ValueDate: new DateOnly(2026, 4, 11),
@@ -953,15 +960,75 @@ public sealed class FundStructureEndpointTests
         return new SeededFundWorkspace(fundProfileId, displayName, bankAccount.AccountId);
     }
 
-    private async Task<FundReportPackSnapshotDto> GenerateReportPackAsync(SeededFundWorkspace seed)
+    private async Task<FundReportPackSnapshotDto> SeedLegacyReportPackAsync(SeededFundWorkspace seed)
     {
-        var service = _fixture.Services.GetRequiredService<FundOperationsWorkspaceReadService>();
-        return await service.GenerateReportPackAsync(
-            new FundReportPackGenerateRequestDto(
-                FundProfileId: seed.FundProfileId,
-                AuditActor: "integration-seed",
-                AsOf: new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero),
-                Formats: [GovernanceReportArtifactFormatDto.Json]));
+        var repository = _fixture.Services.GetRequiredService<IGovernanceReportPackRepository>();
+        var reportId = Guid.NewGuid();
+        var generatedAt = new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero);
+        var snapshot = new FundReportPackSnapshotDto(
+            ReportId: reportId,
+            FundProfileId: seed.FundProfileId,
+            DisplayName: seed.DisplayName,
+            ReportKind: GovernanceReportKindDto.TrialBalance,
+            Currency: "USD",
+            AsOf: generatedAt,
+            GeneratedAt: generatedAt,
+            TotalNetAssets: 2_500m,
+            AuditActor: "integration-seed",
+            CorrelationId: $"endpoint-report-pack-{reportId:N}",
+            DecisionRationale: "Seeded legacy compatibility-read evidence.",
+            Provenance: new FundReportPackProvenanceDto(
+                RelatedRunIds: [],
+                JournalEntryCount: 0,
+                LedgerEntryCount: 0,
+                TrialBalanceLineCount: 1,
+                ReconciliationRunCount: 0,
+                OpenReconciliationBreakCount: 0,
+                SecurityResolvedCount: 0,
+                SecurityMissingCount: 1,
+                LineagePointers: [],
+                SourceSnapshotHash: new string('a', 64)),
+            Artifacts: [],
+            Warnings: ["Security Master coverage requires review."])
+        {
+            Status = GovernanceReportPackStatusDto.ReviewRequired,
+            ValidationIssues =
+            [
+                new FundReportPackValidationIssueDto(
+                    Code: "security-coverage",
+                    Severity: GovernanceReportValidationSeverityDto.Warning,
+                    Title: "Security Master coverage requires review",
+                    Message: "The compatibility fixture retains one unresolved security line.",
+                    AffectedReportId: reportId)
+            ],
+            LifecycleEvents =
+            [
+                new FundReportPackLifecycleEventDto(
+                    FromStatus: GovernanceReportPackStatusDto.Draft,
+                    ToStatus: GovernanceReportPackStatusDto.Generated,
+                    ChangedAt: generatedAt,
+                    Actor: "integration-seed",
+                    Reason: "Compatibility report pack seeded.",
+                    CorrelationId: $"endpoint-report-pack-{reportId:N}"),
+                new FundReportPackLifecycleEventDto(
+                    FromStatus: GovernanceReportPackStatusDto.Generated,
+                    ToStatus: GovernanceReportPackStatusDto.ReviewRequired,
+                    ChangedAt: generatedAt,
+                    Actor: "integration-seed",
+                    Reason: "Validation requires operator review.",
+                    CorrelationId: $"endpoint-report-pack-{reportId:N}")
+            ]
+        };
+
+        return await repository.SaveAsync(
+            snapshot,
+            [
+                new GovernanceReportPackArtifactContent(
+                    "trial-balance",
+                    GovernanceReportArtifactFormatDto.Json,
+                    "trial-balance.json",
+                    Encoding.UTF8.GetBytes("""{"status":"review-required"}"""))
+            ]);
     }
 
     private static StrategyRunEntry BuildRun(
@@ -1059,7 +1126,8 @@ public sealed class FundStructureEndpointTests
             LedgerReference = $"{strategyId}-paper-ledger",
             AuditReference = $"audit-{runId}",
             FundProfileId = fundProfileId,
-            FundDisplayName = fundDisplayName
+            FundDisplayName = fundDisplayName,
+            InputHashSha256 = null
         };
     }
 
@@ -1127,7 +1195,7 @@ public sealed class FundStructureEndpointTests
         var organizationId = Guid.NewGuid();
         var businessId = Guid.NewGuid();
         var fundId = Guid.NewGuid();
-        var portfolioId = Guid.NewGuid();
+        var entityId = Guid.NewGuid();
         var linkId = Guid.NewGuid();
         var now = new DateTimeOffset(2026, 04, 12, 0, 0, 0, TimeSpan.Zero);
 
@@ -1155,44 +1223,87 @@ public sealed class FundStructureEndpointTests
             now,
             "endpoint-test",
             BusinessId: businessId));
-        await structureService.CreateInvestmentPortfolioAsync(new CreateInvestmentPortfolioRequest(
-            portfolioId,
-            businessId,
-            $"PRT-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
-            "Ownership Endpoint Portfolio",
+        await structureService.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            entityId,
+            LegalEntityTypeDto.Fund,
+            $"ENT-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
+            "Ownership Endpoint Entity",
+            "US-DE",
             "USD",
             now,
-            "endpoint-test",
-            FundId: fundId));
+            "endpoint-test"));
         await structureService.LinkNodesAsync(new LinkFundStructureNodesRequest(
             linkId,
             fundId,
-            portfolioId,
-            OwnershipRelationshipTypeDto.AllocatesTo,
+            entityId,
+            OwnershipRelationshipTypeDto.Owns,
             now,
-            "endpoint-test"));
+            "endpoint-test",
+            OwnershipPercent: 100m,
+            IsPrimary: true,
+            Notes: "endpoint-test"));
 
-        return new SeededOwnershipLink(fundId, portfolioId, linkId, now);
+        return new SeededOwnershipLink(fundId, entityId, linkId, now);
     }
 
-    private async Task<string> LoginAndGetSessionCookieAsync(string username, string password)
+    private async Task<AuthenticatedSession> LoginAndGetAuthenticatedSessionAsync(string username, string password)
     {
-        var loginResponse = await _client.PostAsJsonAsync(
+        using var loginResponse = await _client.PostAsJsonAsync(
             "/api/auth/login",
             new { Username = username, Password = password });
 
         loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var sessionCookie = loginResponse.Headers
+        var payload = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var role = payload.GetProperty("role").GetString();
+        var permissionNames = payload.GetProperty("permissionNames")
+            .EnumerateArray()
+            .Select(permission => permission.GetString())
+            .Where(permission => !string.IsNullOrWhiteSpace(permission))
+            .Select(permission => permission!)
+            .ToArray();
+        var setCookies = loginResponse.Headers
             .Where(header => header.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
             .SelectMany(header => header.Value)
-            .FirstOrDefault(value => value.Contains("mdc-session", StringComparison.OrdinalIgnoreCase));
+            .ToArray();
+        var sessionCookie = ExtractCookieValue(setCookies, "mdc-session");
+        var csrfCookie = ExtractCookieValue(setCookies, "mdc-csrf");
 
-        sessionCookie.Should().NotBeNullOrWhiteSpace("ledger mapping assignments require an authenticated fund-accounting session");
-        return sessionCookie!;
+        role.Should().NotBeNullOrWhiteSpace("the login response must expose the built-in role mapping");
+        sessionCookie.Should().NotBeNullOrWhiteSpace("authenticated endpoint requests require a session cookie");
+        csrfCookie.Should().NotBeNullOrWhiteSpace("cookie-authenticated writes require a CSRF cookie");
+
+        return new AuthenticatedSession(
+            $"mdc-session={sessionCookie}; mdc-csrf={csrfCookie}",
+            csrfCookie!,
+            role!,
+            permissionNames);
+    }
+
+    private static string? ExtractCookieValue(IEnumerable<string> setCookies, string cookieName)
+    {
+        var prefix = cookieName + "=";
+        foreach (var setCookie in setCookies)
+        {
+            var segment = setCookie
+                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .FirstOrDefault(part => part.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+            if (segment is not null)
+            {
+                return segment[prefix.Length..];
+            }
+        }
+
+        return null;
     }
 
     private static Guid TranslateFundProfileId(string fundProfileId)
         => new(MD5.HashData(Encoding.UTF8.GetBytes(fundProfileId.Trim())));
+
+    private sealed record AuthenticatedSession(
+        string CookieHeader,
+        string CsrfToken,
+        string Role,
+        IReadOnlyList<string> PermissionNames);
 
     private sealed record SeededFundWorkspace(
         string FundProfileId,
@@ -1201,7 +1312,7 @@ public sealed class FundStructureEndpointTests
 
     private sealed record SeededOwnershipLink(
         Guid FundId,
-        Guid PortfolioId,
+        Guid ChildNodeId,
         Guid LinkId,
         DateTimeOffset EffectiveFrom);
 }

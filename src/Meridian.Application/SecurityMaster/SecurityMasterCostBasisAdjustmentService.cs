@@ -100,6 +100,10 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
         // ahead of the ones sourced from the Security Master.
         var combined = baseInput.BasisAdjustments.Concat(adjustments).ToArray();
 
+        // Every field of the base input has to be carried forward, not just the adjustments: the
+        // wash-sale policy and replacement acquisitions were previously dropped here, so a caller
+        // that resolved replacements lost them the moment it routed through Security Master
+        // enrichment and silently recognized a loss the policy meant to defer.
         var enrichedInput = new LedgerTaxLotReliefInput(
             baseInput.Account,
             baseInput.SaleDate,
@@ -109,7 +113,9 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
             baseInput.OpenLots,
             baseInput.FinancialAccountId,
             baseInput.SpecificLotIds,
-            combined);
+            combined,
+            baseInput.WashSalePolicy,
+            baseInput.ReplacementAcquisitions);
 
         return LedgerTaxLotReliefProjector.Project(enrichedInput);
     }

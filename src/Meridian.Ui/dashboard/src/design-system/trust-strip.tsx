@@ -26,12 +26,14 @@ export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrust
   const summaryValue = provider && provider.tone !== "ready"
     ? `${mode} · ${source} · ${provider.value}`
     : `${mode} · ${source}`;
-  const summaryAriaLabel = `Environment and sources. ${viewModel.items.map((item) => item.ariaLabel).join(" ")}`;
+  const summaryAriaLabel = `Environment, provenance, and provider posture. ${viewModel.items.map((item) => item.ariaLabel).join(" ")}`;
 
   return (
     <section
       className="workstation-trust-strip mds-trust-strip"
       aria-label={viewModel.ariaLabel}
+      aria-live="polite"
+      aria-atomic="true"
       data-design-system-component="Status"
     >
       <details className="workstation-trust-details">
@@ -43,11 +45,15 @@ export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrust
           )}
           aria-label={summaryAriaLabel}
         >
-          <span className="workstation-trust-label">Environment</span>
+          <span className="workstation-trust-label">Trust</span>
           <span className="workstation-trust-value">{summaryValue}</span>
           <ChevronDown className="workstation-trust-chevron h-3.5 w-3.5" aria-hidden="true" />
         </summary>
-        <div className="workstation-trust-menu" role="group" aria-label="Environment and source details">
+        <div
+          className="workstation-trust-menu"
+          role="group"
+          aria-label="Environment, provenance, and provider details"
+        >
           {viewModel.items.map((item) => {
             const content = (
               <>

@@ -3,6 +3,7 @@ using Meridian.Contracts.Api;
 using Meridian.DataIntegration.Canonicalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Meridian.Identity.Auth;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -40,7 +41,7 @@ public static class CanonicalizationEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetCanonicalizationStatus")
+        .WithName("GetCanonicalizationStatus").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageProviders)
         .Produces(200);
 
         // Per-provider parity breakdown
@@ -68,7 +69,7 @@ public static class CanonicalizationEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetCanonicalizationParity")
+        .WithName("GetCanonicalizationParity").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageProviders)
         .Produces(200);
 
         // Single provider detail
@@ -105,7 +106,7 @@ public static class CanonicalizationEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetCanonicalizationParityByProvider")
+        .WithName("GetCanonicalizationParityByProvider").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageProviders)
         .Produces(200);
 
         // Current canonicalization config (read-only view)
@@ -120,7 +121,7 @@ public static class CanonicalizationEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetCanonicalizationConfig")
+        .WithName("GetCanonicalizationConfig").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageProviders)
         .Produces(200);
     }
 }

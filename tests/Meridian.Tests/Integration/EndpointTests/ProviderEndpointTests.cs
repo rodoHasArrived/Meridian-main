@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Identity.Auth;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -12,13 +13,34 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class ProviderEndpointTests
+public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
-    private readonly HttpClient _client;
+    private readonly HttpClient _dataSourceReadClient;
+    private readonly HttpClient _providerReadClient;
+    private readonly HttpClient _providerMutationClient;
+    private readonly HttpClient _credentialMutationClient;
 
     public ProviderEndpointTests(EndpointTestFixture fixture)
     {
-        _client = fixture.Client;
+        // The data-source reads declare ViewConfig or ManageProviders. This client holds only the
+        // former, so the read stays proven for a caller who can look at configuration but not change it.
+        _dataSourceReadClient = fixture.CreatePermittedClient(UserPermission.ViewConfig);
+
+        // Deliberately holds neither ManageProviders nor AdminMaintenance: the provider reads
+        // declare an any-of set, so a platform operator who can only look must still get through.
+        _providerReadClient = fixture.CreatePermittedClient(UserPermission.ViewDiagnostics);
+        _providerMutationClient = fixture.CreatePermittedClient(UserPermission.ManageProviders);
+        _credentialMutationClient = fixture.CreatePermittedClient(
+            UserPermission.ManageProviders,
+            UserPermission.ManageCredentials);
+    }
+
+    public void Dispose()
+    {
+        _dataSourceReadClient.Dispose();
+        _providerReadClient.Dispose();
+        _providerMutationClient.Dispose();
+        _credentialMutationClient.Dispose();
     }
 
     #region GET /api/providers/catalog
@@ -26,7 +48,7 @@ public sealed class ProviderEndpointTests
     [Fact]
     public async Task GetCatalog_ReturnsJsonWithProviders()
     {
-        var response = await _client.GetAsync("/api/providers/catalog");
+        var response = await _providerReadClient.GetAsync("/api/providers/catalog");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -45,7 +67,7 @@ public sealed class ProviderEndpointTests
     [Fact]
     public async Task GetCatalog_FilterByStreaming_ReturnsSubset()
     {
-        var response = await _client.GetAsync("/api/providers/catalog?type=streaming");
+        var response = await _providerReadClient.GetAsync("/api/providers/catalog?type=streaming");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await DeserializeAsync(response);
@@ -55,7 +77,7 @@ public sealed class ProviderEndpointTests
     [Fact]
     public async Task GetCatalog_FilterByBackfill_ReturnsSubset()
     {
-        var response = await _client.GetAsync("/api/providers/catalog?type=backfill");
+        var response = await _providerReadClient.GetAsync("/api/providers/catalog?type=backfill");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await DeserializeAsync(response);
@@ -69,7 +91,7 @@ public sealed class ProviderEndpointTests
     [Fact]
     public async Task GetRateLimits_ReturnsTypedProviderSnapshots()
     {
-        var response = await _client.GetAsync("/api/providers/rate-limits");
+        var response = await _providerReadClient.GetAsync("/api/providers/rate-limits");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await DeserializeAsync(response);
@@ -89,7 +111,7 @@ public sealed class ProviderEndpointTests
     [Fact]
     public async Task GetRateLimitHistory_StatesThatHistoryIsNotRetained()
     {
-        var response = await _client.GetAsync("/api/providers/synthetic/rate-limit-history?hours=12");
+        var response = await _providerReadClient.GetAsync("/api/providers/synthetic/rate-limit-history?hours=12");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await DeserializeAsync(response);
@@ -107,7 +129,7 @@ public sealed class ProviderEndpointTests
     [Fact]
     public async Task GetCatalogById_WithInvalidId_ReturnsNotFound()
     {
-        var response = await _client.GetAsync("/api/providers/catalog/nonexistent-provider");
+        var response = await _providerReadClient.GetAsync("/api/providers/catalog/nonexistent-provider");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -119,7 +141,7 @@ public sealed class ProviderEndpointTests
     [Fact]
     public async Task GetProviderStatus_ReturnsJsonArray()
     {
-        var response = await _client.GetAsync("/api/providers/status");
+        var response = await _providerReadClient.GetAsync("/api/providers/status");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -136,7 +158,7 @@ public sealed class ProviderEndpointTests
     [Fact]
     public async Task GetProviderMetrics_ReturnsJsonArray()
     {
-        var response = await _client.GetAsync("/api/providers/metrics");
+        var response = await _providerReadClient.GetAsync("/api/providers/metrics");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -149,7 +171,7 @@ public sealed class ProviderEndpointTests
     [Fact]
     public async Task GetProviderMetricsById_WithInvalidId_ReturnsNotFound()
     {
-        var response = await _client.GetAsync("/api/providers/metrics/nonexistent-id");
+        var response = await _providerReadClient.GetAsync("/api/providers/metrics/nonexistent-id");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -161,7 +183,7 @@ public sealed class ProviderEndpointTests
     [Fact]
     public async Task GetProviderComparison_ReturnsJsonWithExpectedShape()
     {
-        var response = await _client.GetAsync("/api/providers/comparison");
+        var response = await _providerReadClient.GetAsync("/api/providers/comparison");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -190,7 +212,7 @@ public sealed class ProviderEndpointTests
         };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/providers/configure", content);
+        var response = await _credentialMutationClient.PostAsync("/api/providers/configure", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await DeserializeAsync(response);
@@ -215,16 +237,19 @@ public sealed class ProviderEndpointTests
         };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/providers/configure", content);
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var response = await _providerMutationClient.PostAsync("/api/providers/configure", content);
         var result = await DeserializeAsync(response);
+
+        response.StatusCode.Should().Be(
+            HttpStatusCode.OK,
+            "Yahoo is a credential-free historical provider supported by the setup registry: {0}",
+            result["error"].GetString());
         result["success"].GetBoolean().Should().BeTrue();
         result["providerId"].GetString().Should().StartWith("yahoo");
         result["providerName"].GetString().Should().Be(displayName);
         result["error"].ValueKind.Should().Be(JsonValueKind.Null);
 
-        var dataSourcesResponse = await _client.GetAsync("/api/config/datasources");
+        var dataSourcesResponse = await _dataSourceReadClient.GetAsync("/api/config/datasources");
         dataSourcesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var dataSources = await DeserializeAsync(dataSourcesResponse);
         var source = dataSources["sources"].EnumerateArray().FirstOrDefault(s =>
@@ -249,7 +274,7 @@ public sealed class ProviderEndpointTests
         };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/providers/configure", content);
+        var response = await _credentialMutationClient.PostAsync("/api/providers/configure", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         var json = await DeserializeAsync(response);
@@ -278,10 +303,10 @@ public sealed class ProviderEndpointTests
         };
 
         var configureContent = new StringContent(JsonSerializer.Serialize(configurePayload), Encoding.UTF8, "application/json");
-        var configureResponse = await _client.PostAsync("/api/providers/configure", configureContent);
+        var configureResponse = await _credentialMutationClient.PostAsync("/api/providers/configure", configureContent);
         configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var response = await _client.GetAsync("/api/config/datasources");
+        var response = await _dataSourceReadClient.GetAsync("/api/config/datasources");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await DeserializeAsync(response);
@@ -310,10 +335,10 @@ public sealed class ProviderEndpointTests
         };
 
         var configureContent = new StringContent(JsonSerializer.Serialize(configurePayload), Encoding.UTF8, "application/json");
-        var configureResponse = await _client.PostAsync("/api/providers/configure", configureContent);
+        var configureResponse = await _credentialMutationClient.PostAsync("/api/providers/configure", configureContent);
         configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var response = await _client.GetAsync("/api/config/datasources");
+        var response = await _dataSourceReadClient.GetAsync("/api/config/datasources");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await DeserializeAsync(response);
@@ -344,10 +369,10 @@ public sealed class ProviderEndpointTests
         };
 
         var configureContent = new StringContent(JsonSerializer.Serialize(configurePayload), Encoding.UTF8, "application/json");
-        var configureResponse = await _client.PostAsync("/api/providers/configure", configureContent);
+        var configureResponse = await _credentialMutationClient.PostAsync("/api/providers/configure", configureContent);
         configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var response = await _client.GetAsync("/api/config/data-sources");
+        var response = await _dataSourceReadClient.GetAsync("/api/config/data-sources");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await DeserializeAsync(response);
@@ -375,10 +400,10 @@ public sealed class ProviderEndpointTests
         };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var setupResponse = await _client.PostAsync("/api/providers/configure", content);
+        var setupResponse = await _credentialMutationClient.PostAsync("/api/providers/configure", content);
         setupResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var response = await _client.GetAsync("/api/config/datasources");
+        var response = await _dataSourceReadClient.GetAsync("/api/config/datasources");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await DeserializeAsync(response);
@@ -397,7 +422,7 @@ public sealed class ProviderEndpointTests
     [Fact]
     public async Task GetDataSources_ReturnsJsonWithSources()
     {
-        var response = await _client.GetAsync("/api/config/datasources");
+        var response = await _dataSourceReadClient.GetAsync("/api/config/datasources");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
@@ -421,7 +446,7 @@ public sealed class ProviderEndpointTests
         };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/config/datasources", content);
+        var response = await _providerMutationClient.PostAsync("/api/config/datasources", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await DeserializeAsync(response);
@@ -434,7 +459,7 @@ public sealed class ProviderEndpointTests
         var payload = new { Name = "", Provider = "IB", Enabled = true };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/config/datasources", content);
+        var response = await _providerMutationClient.PostAsync("/api/config/datasources", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -445,7 +470,7 @@ public sealed class ProviderEndpointTests
         var payload = new { Enabled = false };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/config/datasources/nonexistent/toggle", content);
+        var response = await _providerMutationClient.PostAsync("/api/config/datasources/nonexistent/toggle", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }

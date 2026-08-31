@@ -1,6 +1,7 @@
 using Meridian.Contracts.Configuration;
 using Meridian.Core.Config;
 using Meridian.ProviderSdk;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.DataIntegration.Credentials;
 
@@ -135,11 +136,9 @@ public abstract class ProviderSetupHandlerBase : IProviderSetupHandler
 
     protected ProviderCredentialCatalogEntry CatalogEntry => _catalogEntry;
 
-    protected static string? NullIfBlank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
     protected void AddIfPresent(IDictionary<string, string?> values, int fieldIndex, string? value)
     {
-        var trimmed = NullIfBlank(value);
+        var trimmed = NormalizeOptional(value);
         if (trimmed is not null && CatalogEntry.RequiredFields.Count > fieldIndex)
         {
             values[CatalogEntry.RequiredFields[fieldIndex].Name] = trimmed;
@@ -181,8 +180,8 @@ public sealed class AlpacaProviderSetupHandler : ProviderSetupHandlerBase
     protected override IReadOnlyDictionary<string, string?> BuildCredentialMap(ProviderSetupContext context)
     {
         var values = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
-        var apiKey = NullIfBlank(context.ApiKey);
-        var apiSecret = NullIfBlank(context.ApiSecret);
+        var apiKey = NormalizeOptional(context.ApiKey);
+        var apiSecret = NormalizeOptional(context.ApiSecret);
         if (apiKey is not null)
             values["KeyId"] = apiKey;
         if (apiSecret is not null)
@@ -244,6 +243,7 @@ public static class DefaultProviderSetupHandlers
             new PolygonProviderSetupHandler(),
             new PlaidProviderSetupHandler(),
             new QuickBooksProviderSetupHandler(),
+            new GenericReadOnlyDataProviderSetupHandler("ib-flex", aliases: ["ibflex", "ib-flex-web-service"]),
             new GenericReadOnlyDataProviderSetupHandler("finnhub"),
             new GenericReadOnlyDataProviderSetupHandler("tiingo"),
             new GenericReadOnlyDataProviderSetupHandler("alphavantage", aliases: ["alpha-vantage", "alphaVantage"]),

@@ -1,14 +1,26 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import * as familyOfficeApi from "@/lib/api/family-office.api";
 import { FamilyOfficeScreen } from "@/screens/family-office-screen";
 import { FAMILY_OFFICE_DEMO_ENTITY_STRUCTURE } from "@/screens/family-office-screen.view-model";
 import { renderWithRouter } from "@/test/render";
+import { buildFamilyOfficeOverviewFixture } from "@/screens/family-office-screen.mapper.test-fixture";
+
+vi.mock("@/lib/api/family-office.api", () => ({
+  getFamilyOfficeOverview: vi.fn()
+}));
+
+const getFamilyOfficeOverview = vi.mocked(familyOfficeApi.getFamilyOfficeOverview);
+
+afterEach(() => {
+  vi.resetAllMocks();
+});
 
 describe("FamilyOfficeScreen", () => {
-  it("renders an honest not-connected state by default", () => {
-    renderWithRouter(<FamilyOfficeScreen />, { initialEntries: ["/portfolio/family-office"] });
+  it("renders an honest not-connected state when no structure is supplied", () => {
+    renderWithRouter(<FamilyOfficeScreen entityStructure={null} />, { initialEntries: ["/portfolio/family-office"] });
 
     expect(screen.getByRole("heading", { name: "Family Office Portfolio" })).toBeInTheDocument();
     expect(screen.getByText("Family office data is not connected")).toBeInTheDocument();
@@ -16,6 +28,35 @@ describe("FamilyOfficeScreen", () => {
     expect(screen.getByLabelText("Family office data confidence")).toHaveTextContent("Entity setup required");
     expect(screen.getAllByText("Set up family entities and connect portfolio, accounting, and private-asset sources to begin consolidated review.")).toHaveLength(1);
     expect(screen.queryByLabelText("Family office summary panels")).not.toBeInTheDocument();
+    expect(getFamilyOfficeOverview).not.toHaveBeenCalled();
+  });
+
+  it("loads the consolidated household from the family-office overview endpoint", async () => {
+    getFamilyOfficeOverview.mockResolvedValue(buildFamilyOfficeOverviewFixture());
+
+    renderWithRouter(<FamilyOfficeScreen />, { initialEntries: ["/portfolio/family-office"] });
+
+    expect(screen.getByText("Loading family office data")).toBeInTheDocument();
+
+    await waitFor(() => expect(screen.getByLabelText("Family office summary panels")).toBeInTheDocument());
+    expect(screen.getByLabelText("Family office data confidence")).toHaveTextContent("Ridgeline Family Office");
+    expect(getFamilyOfficeOverview).toHaveBeenCalledTimes(1);
+  });
+
+  it("separates a failed read from an unconfigured family office and offers a retry", async () => {
+    getFamilyOfficeOverview.mockRejectedValueOnce(new Error("host unreachable"));
+    getFamilyOfficeOverview.mockResolvedValueOnce(buildFamilyOfficeOverviewFixture());
+    const user = userEvent.setup();
+
+    renderWithRouter(<FamilyOfficeScreen />, { initialEntries: ["/portfolio/family-office"] });
+
+    await waitFor(() => expect(screen.getByText("Family office data could not be loaded")).toBeInTheDocument());
+    expect(screen.queryByText("Family office data is not connected")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Retry loading family office data" }));
+
+    await waitFor(() => expect(screen.getByLabelText("Family office summary panels")).toBeInTheDocument());
+    expect(getFamilyOfficeOverview).toHaveBeenCalledTimes(2);
   });
 
   it("renders family-office panels and accessible ownership graph controls", async () => {
@@ -49,7 +90,10 @@ describe("FamilyOfficeScreen", () => {
   });
 
   it("has no basic accessibility violations", async () => {
+    getFamilyOfficeOverview.mockResolvedValue(buildFamilyOfficeOverviewFixture());
     const { container } = renderWithRouter(<FamilyOfficeScreen />, { initialEntries: ["/portfolio/family-office"] });
+
+    await waitFor(() => expect(screen.getByLabelText("Family office summary panels")).toBeInTheDocument());
 
     const results = await axe(container);
     expect(results.violations).toHaveLength(0);

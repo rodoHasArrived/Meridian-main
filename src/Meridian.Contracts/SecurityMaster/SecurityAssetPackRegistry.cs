@@ -164,17 +164,19 @@ public static class SecurityAssetPackRegistry
         DeepAutomation(
             "cash-bank",
             "Cash and bank accounts",
-            ["Cash", "BankAccount", "Deposit", "CashSweep", "MoneyMarketFund"],
+            ["Deposit", "CashSweep", "MoneyMarketFund"],
             ["Purchase", "Sale", "Draw", "Repayment", "Maturity", "Default", "Amendment"],
             ["MarketPrice", "AmortizedCost", "UserEstimate"],
-            ["cash movement", "bank fee", "interest income", "FX remeasurement"]),
+            ["cash movement", "bank fee", "interest income", "FX remeasurement"],
+            plannedAssetClasses: ["Cash", "BankAccount"]),
         DeepAutomation(
             "public-equity-etf",
             "Public equities and exchange-traded funds",
-            ["Equity", "ExchangeTradedFund"],
+            ["Equity", "InvestmentFund"],
             ["Purchase", "Sale", "Dividend", "CorporateAction", "Impairment", "Amendment"],
             ["MarketPrice", "UserEstimate", "ExternalModel"],
-            ["trade", "dividend", "corporate action", "realized gain/loss", "unrealized gain/loss"]),
+            ["trade", "dividend", "corporate action", "realized gain/loss", "unrealized gain/loss"],
+            plannedAssetClasses: ["ExchangeTradedFund"]),
         DeepAutomation(
             "fixed-income",
             "Fixed income",
@@ -185,52 +187,59 @@ public static class SecurityAssetPackRegistry
         DeepAutomation(
             "private-fund-partnership",
             "Private funds and partnerships",
-            ["PrivateFund", "PartnershipInterest", "PrivateFundInterest", "PrivateCompanyEquity"],
+            ["PrivateFundInterest", "PrivateCompanyEquity"],
             ["Purchase", "Sale", "CapitalCall", "Distribution", "Appraisal", "Impairment", "Amendment", "Maturity"],
             ["ManagerReportedNav", "Appraisal", "DiscountedCashFlow", "UserEstimate", "ExternalModel"],
-            ["capital call", "distribution", "NAV adjustment", "management fee", "performance allocation"]),
+            ["capital call", "distribution", "NAV adjustment", "management fee", "performance allocation"],
+            plannedAssetClasses: ["PrivateFund", "PartnershipInterest"]),
         DeepAutomation(
             "private-loan-credit",
             "Private loans and credit",
-            ["DirectLoan", "PrivateCredit", "CreditFacility"],
+            ["DirectLoan"],
             ["Purchase", "Sale", "Coupon", "Draw", "Repayment", "Default", "Amendment", "Impairment", "Maturity"],
             ["DiscountedCashFlow", "AmortizedCost", "Appraisal", "UserEstimate", "ExternalModel"],
-            ["interest accrual", "principal draw", "principal repayment", "fee income", "impairment", "default"]),
+            ["interest accrual", "principal draw", "principal repayment", "fee income", "impairment", "default"],
+            plannedAssetClasses: ["PrivateCredit", "CreditFacility"]),
         DeepAutomation(
             "real-estate",
             "Real estate",
-            ["RealEstate", "RealEstateInterest", "RealEstateHolding"],
+            ["RealEstateHolding"],
             ["Purchase", "Sale", "Distribution", "Appraisal", "Impairment", "Amendment", "Maturity"],
             ["Appraisal", "DiscountedCashFlow", "ManagerReportedNav", "UserEstimate", "ExternalModel"],
-            ["property acquisition", "rental income", "expense allocation", "appraisal adjustment", "impairment"]),
+            ["property acquisition", "rental income", "expense allocation", "appraisal adjustment", "impairment"],
+            plannedAssetClasses: ["RealEstate", "RealEstateInterest"]),
         DeepAutomation(
             "derivatives-fx",
             "Basic derivatives and FX",
-            ["Option", "Future", "Swap", "FxSpot", "Forward"],
+            ["Option", "Future", "Swap", "FxSpot", "Cfd", "Warrant"],
             ["Purchase", "Sale", "Draw", "Repayment", "Maturity", "Default", "Amendment", "CorporateAction"],
             ["MarketPrice", "DiscountedCashFlow", "ExternalModel", "UserEstimate"],
-            ["premium", "variation margin", "settlement", "FX remeasurement", "realized gain/loss"]),
+            ["premium", "variation margin", "settlement", "FX remeasurement", "realized gain/loss"],
+            plannedAssetClasses: ["Forward"]),
         DeepAutomation(
             "mortgage-facility-intercompany",
             "Mortgages, credit facilities and intercompany loans",
-            ["Mortgage", "CreditFacility", "IntercompanyLoan", "DirectLoan"],
+            ["DirectLoan"],
             ["Purchase", "Sale", "Coupon", "Draw", "Repayment", "Default", "Amendment", "Maturity", "Impairment"],
             ["DiscountedCashFlow", "AmortizedCost", "Appraisal", "UserEstimate", "ExternalModel"],
-            ["interest accrual", "principal draw", "principal repayment", "intercompany elimination", "impairment"]),
+            ["interest accrual", "principal draw", "principal repayment", "intercompany elimination", "impairment"],
+            plannedAssetClasses: ["Mortgage", "CreditFacility", "IntercompanyLoan"]),
         DeepAutomation(
             "commitment-guarantee",
             "Unfunded commitments and guarantees",
-            ["UnfundedCommitment", "Guarantee", "CreditFacility", "CommitmentGuarantee"],
+            ["CommitmentGuarantee"],
             ["Purchase", "Sale", "Draw", "Repayment", "CapitalCall", "Distribution", "Default", "Amendment", "Maturity"],
             ["UserEstimate", "ExternalModel", "DiscountedCashFlow"],
-            ["commitment recognition", "guarantee exposure", "drawdown", "fee accrual", "release"]),
+            ["commitment recognition", "guarantee exposure", "drawdown", "fee accrual", "release"],
+            plannedAssetClasses: ["UnfundedCommitment", "Guarantee", "CreditFacility"]),
         WideCapture(
             "controlled-other-asset",
             "Controlled other asset",
-            ["Art", "InsurancePolicy", "Vehicle", "SpecializedHolding", "OtherSecurity", "CustomAsset"],
+            ["OtherSecurity", "CustomAsset", "Commodity", "CryptoCurrency"],
             ["Purchase", "Sale", "Appraisal", "Impairment", "Amendment", "Maturity"],
             ["Appraisal", "UserEstimate", "ExternalModel", "ManagerReportedNav"],
-            ["acquisition", "appraisal adjustment", "impairment", "disposal"])
+            ["acquisition", "appraisal adjustment", "impairment", "disposal"],
+            plannedAssetClasses: ["Art", "InsurancePolicy", "Vehicle", "SpecializedHolding"])
     ];
 
     private static readonly IReadOnlyDictionary<string, SecurityAssetPackDescriptor> ByPackId =
@@ -294,7 +303,8 @@ public static class SecurityAssetPackRegistry
         IReadOnlyList<string> lifecycleEvents,
         IReadOnlyList<string> valuationMethods,
         IReadOnlyList<string> journalTemplateEvents,
-        AssetPackAutomationDepth automationDepth)
+        AssetPackAutomationDepth automationDepth,
+        IReadOnlyList<string>? plannedAssetClasses = null)
     {
         return Pack(
             packId,
@@ -303,7 +313,8 @@ public static class SecurityAssetPackRegistry
             lifecycleEvents,
             valuationMethods,
             journalTemplateEvents,
-            automationDepth);
+            automationDepth,
+            plannedAssetClasses);
     }
 
     public static AssetPackRegistryValidationResult ValidateDescriptor(SecurityAssetPackDescriptor pack)
@@ -313,7 +324,8 @@ public static class SecurityAssetPackRegistry
         var issues = new List<AssetPackRegistryValidationIssue>();
         RequireText(pack.PackId, "PackId", "asset-pack.pack-id-required", issues);
         RequireText(pack.DisplayName, "DisplayName", "asset-pack.display-name-required", issues);
-        RequireNonEmpty(pack.AssetClasses, "AssetClasses", "asset-pack.asset-class-required", issues);
+        RequireClaimedOrPlannedAssetClasses(pack, issues);
+        RequireCatalogAssetClasses(pack, issues);
         RequireSchema(pack.ContractSchema, issues);
         RequireSupportedValues(pack.LifecycleEvents, pack.SupportedLifecycleEvents, "LifecycleEvents", "asset-pack.unsupported-lifecycle-event", issues);
         RequireLifecycleCoverage(pack, issues);
@@ -342,7 +354,8 @@ public static class SecurityAssetPackRegistry
         IReadOnlyList<string> assetClasses,
         IReadOnlyList<string> lifecycleEvents,
         IReadOnlyList<string> valuationMethods,
-        IReadOnlyList<string> journalTemplateEvents)
+        IReadOnlyList<string> journalTemplateEvents,
+        IReadOnlyList<string>? plannedAssetClasses = null)
         => Pack(
             packId,
             displayName,
@@ -350,7 +363,8 @@ public static class SecurityAssetPackRegistry
             lifecycleEvents,
             valuationMethods,
             journalTemplateEvents,
-            AssetPackAutomationDepth.DeepAccountingAutomation);
+            AssetPackAutomationDepth.DeepAccountingAutomation,
+            plannedAssetClasses);
 
     private static SecurityAssetPackDescriptor WideCapture(
         string packId,
@@ -358,7 +372,8 @@ public static class SecurityAssetPackRegistry
         IReadOnlyList<string> assetClasses,
         IReadOnlyList<string> lifecycleEvents,
         IReadOnlyList<string> valuationMethods,
-        IReadOnlyList<string> journalTemplateEvents)
+        IReadOnlyList<string> journalTemplateEvents,
+        IReadOnlyList<string>? plannedAssetClasses = null)
         => Pack(
             packId,
             displayName,
@@ -366,7 +381,8 @@ public static class SecurityAssetPackRegistry
             lifecycleEvents,
             valuationMethods,
             journalTemplateEvents,
-            AssetPackAutomationDepth.WideCapture);
+            AssetPackAutomationDepth.WideCapture,
+            plannedAssetClasses);
 
     private static SecurityAssetPackDescriptor Pack(
         string packId,
@@ -375,11 +391,13 @@ public static class SecurityAssetPackRegistry
         IReadOnlyList<string> lifecycleEvents,
         IReadOnlyList<string> valuationMethods,
         IReadOnlyList<string> journalTemplateEvents,
-        AssetPackAutomationDepth automationDepth)
+        AssetPackAutomationDepth automationDepth,
+        IReadOnlyList<string>? plannedAssetClasses = null)
         => new(
             PackId: packId,
             DisplayName: displayName,
             AssetClasses: assetClasses,
+            PlannedAssetClasses: plannedAssetClasses ?? [],
             ContractSchema: ContractSchema,
             LifecycleEvents: lifecycleEvents.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
             SupportedLifecycleEvents: StandardLifecycleEvents,
@@ -504,6 +522,67 @@ public static class SecurityAssetPackRegistry
             "-",
             value.Split([' ', '/', '_'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             .ToLowerInvariant();
+
+    /// <summary>
+    /// A pack must name at least one asset class SOMEWHERE. Present coverage and planned coverage are
+    /// both admissible: a pack drafted ahead of the domain work — the extension path this registry
+    /// exists to support — legitimately covers nothing yet and declares only planned classes.
+    /// </summary>
+    private static void RequireClaimedOrPlannedAssetClasses(
+        SecurityAssetPackDescriptor pack,
+        List<AssetPackRegistryValidationIssue> issues)
+    {
+        if (pack.AssetClasses.Count == 0 && pack.PlannedAssetClasses.Count == 0)
+        {
+            issues.Add(Issue(
+                "asset-pack.asset-class-required",
+                "Critical",
+                "AssetClasses",
+                "A pack must name at least one asset class under AssetClasses (covered today) or "
+                + "PlannedAssetClasses (anticipated)."));
+        }
+    }
+
+    /// <summary>
+    /// Holds the pack registry to the asset-class catalog in BOTH directions. The claimed set must
+    /// name only classes the domain can represent, and the planned set must name only classes it
+    /// cannot — otherwise a pack can advertise coverage for an instrument that has no
+    /// <c>SecurityKind</c> arm, terms schema, or validator, and the operational readiness report
+    /// republishes that claim.
+    /// </summary>
+    private static void RequireCatalogAssetClasses(
+        SecurityAssetPackDescriptor pack,
+        List<AssetPackRegistryValidationIssue> issues)
+    {
+        foreach (var assetClass in pack.AssetClasses)
+        {
+            if (!IsCatalogAssetClass(assetClass))
+            {
+                issues.Add(Issue(
+                    "asset-pack.asset-class-not-in-catalog",
+                    "Critical",
+                    "AssetClasses",
+                    $"Asset class '{assetClass}' is not a Security Master catalog asset class. " +
+                    "Name a catalog class, or declare it under PlannedAssetClasses."));
+            }
+        }
+
+        foreach (var plannedAssetClass in pack.PlannedAssetClasses)
+        {
+            if (IsCatalogAssetClass(plannedAssetClass))
+            {
+                issues.Add(Issue(
+                    "asset-pack.planned-asset-class-already-modeled",
+                    "Critical",
+                    "PlannedAssetClasses",
+                    $"Asset class '{plannedAssetClass}' is already a Security Master catalog asset " +
+                    "class and must move into AssetClasses."));
+            }
+        }
+    }
+
+    private static bool IsCatalogAssetClass(string assetClass)
+        => SecurityAssetClassCatalog.AssetClasses.Contains(assetClass, StringComparer.OrdinalIgnoreCase);
 
     private static void RequireSchema(
         AssetPackContractSchema schema,
@@ -723,7 +802,16 @@ public enum AssetPackAutomationDepth
 public sealed record SecurityAssetPackDescriptor(
     string PackId,
     string DisplayName,
+    // The Security Master asset classes this pack covers TODAY. Every entry must name a class in
+    // SecurityAssetClassCatalog: a pack that claims a class the domain cannot represent reports
+    // coverage the system does not have, and the operational readiness surface republishes that
+    // claim to operators.
     IReadOnlyList<string> AssetClasses,
+    // Coverage this pack anticipates but the domain does not model yet — no SecurityKind arm, no
+    // terms schema, no validator. Kept separate from AssetClasses so the roadmap information
+    // survives without being read as present capability. Entries must NOT name a catalog class;
+    // once one lands, it moves into AssetClasses.
+    IReadOnlyList<string> PlannedAssetClasses,
     AssetPackContractSchema ContractSchema,
     IReadOnlyList<string> LifecycleEvents,
     IReadOnlyList<string> SupportedLifecycleEvents,

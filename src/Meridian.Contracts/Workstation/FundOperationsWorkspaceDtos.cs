@@ -570,7 +570,8 @@ public sealed record FundReportPackProvenanceDto(
     int SecurityMissingCount,
     IReadOnlyList<FundReportPackLineagePointerDto> LineagePointers,
     string SourceSnapshotHash,
-    int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion);
+    int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion,
+    string? DataProvenanceToken = null);
 
 public sealed record FundReportPackLineagePointerDto(
     string ScopeType,
@@ -1229,7 +1230,8 @@ public enum ReportingOutputFormatDto
     Pdf = 0,
     Xlsx = 1,
     Csv = 2,
-    EvidenceVault = 3
+    EvidenceVault = 3,
+    ClientPackage = 4
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<ReportingFinalityDto>))]

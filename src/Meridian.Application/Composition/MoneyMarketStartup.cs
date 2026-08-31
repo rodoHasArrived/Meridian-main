@@ -19,8 +19,12 @@ internal static class MoneyMarketStartup
             Environment.SetEnvironmentVariable(SchemaVariable, DefaultSchema);
     }
 
-    public static void EnsureDatabaseReady(IServiceProvider serviceProvider, ILogger? logger = null)
+    public static async Task EnsureDatabaseReadyAsync(
+        IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default,
+        ILogger? logger = null)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         EnsureEnvironmentDefaults();
         if (!IsConfigured())
         {
@@ -32,7 +36,7 @@ internal static class MoneyMarketStartup
 
         var options = serviceProvider.GetRequiredService<MoneyMarketStoreOptions>();
         var runner = new MoneyMarketMigrationRunner(options);
-        runner.EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
+        await runner.EnsureMigratedAsync(cancellationToken).ConfigureAwait(false);
         logger?.LogInformation("Money market schema '{Schema}' is ready.", options.Schema);
     }
 }

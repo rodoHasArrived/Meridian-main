@@ -24,14 +24,23 @@ public sealed class FundAccountDatabaseFixture : IAsyncLifetime
     public async Task InitializeAsync()
     {
         _server = await PostgresTestServer.CreateAsync(EnvVar).ConfigureAwait(false);
-        Options = new FundAccountStoreOptions
+        try
         {
-            ConnectionString = _server.ConnectionString,
-            Schema = PostgresTestSchema.NewSchemaName("fa")
-        };
+            Options = new FundAccountStoreOptions
+            {
+                ConnectionString = _server.ConnectionString,
+                Schema = _server.CreateSchemaName("fa")
+            };
 
-        var runner = new FundAccountMigrationRunner(Options);
-        await runner.EnsureMigratedAsync().ConfigureAwait(false);
+            var runner = new FundAccountMigrationRunner(Options);
+            await runner.EnsureMigratedAsync().ConfigureAwait(false);
+        }
+        catch
+        {
+            await _server.DisposeAsync().ConfigureAwait(false);
+            _server = null;
+            throw;
+        }
     }
 
     public async Task DisposeAsync()
@@ -39,13 +48,6 @@ public sealed class FundAccountDatabaseFixture : IAsyncLifetime
         if (_server is null)
         {
             return;
-        }
-
-        // FundAccountMigrationRunner has no schema reset; external databases persist across
-        // runs so the run-scoped schema is dropped directly. Containers are discarded whole.
-        if (_server.UsesExternalConnection)
-        {
-            await DropSchemaAsync(Options.ConnectionString, Options.Schema).ConfigureAwait(false);
         }
 
         await _server.DisposeAsync().ConfigureAwait(false);
@@ -64,14 +66,12 @@ public sealed class FundAccountDatabaseFixture : IAsyncLifetime
     private static void ValidateIdentifier(string identifier)
     {
         if (identifier.Length == 0 ||
-            !identifier.All(c => char.IsAsciiLetterLower(c) || char.IsAsciiDigit(c) || c == '_'))
+            !identifier.All(static c =>
+                char.IsAsciiLetterLower(c) || char.IsAsciiDigit(c) || c == '_'))
         {
-            throw new ArgumentException($"Unsafe schema identifier: '{identifier}'", nameof(identifier));
+            throw new ArgumentException(
+                $"Unsafe schema identifier: '{identifier}'",
+                nameof(identifier));
         }
     }
-}
-
-[CollectionDefinition(nameof(FundAccountDatabaseCollection), DisableParallelization = true)]
-public sealed class FundAccountDatabaseCollection : ICollectionFixture<FundAccountDatabaseFixture>
-{
 }

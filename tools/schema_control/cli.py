@@ -54,6 +54,32 @@ def _resolve(root: Path, value: str | Path) -> Path:
     return path.resolve() if path.is_absolute() else (root / path).resolve()
 
 
+def _resolve_output_path(root: Path, value: str | Path) -> Path:
+    """Resolve a configured artifact output without leaving the repository."""
+
+    resolved_root = root.resolve()
+    path = _resolve(resolved_root, value)
+    if path == resolved_root or not path.is_relative_to(resolved_root):
+        raise ValueError(
+            f"Schema-control output path must be inside the repository: {value}"
+        )
+    return path
+
+
+def _configured_output_paths(root: Path, config: Mapping[str, Any]) -> tuple[Path, Path]:
+    outputs = config.get("outputs", {})
+    if not isinstance(outputs, Mapping):
+        raise ValueError("schema-control outputs must be a JSON object.")
+    return (
+        _resolve_output_path(
+            root, str(outputs.get("manifest") or "database/manifest")
+        ),
+        _resolve_output_path(
+            root, str(outputs.get("docs") or "docs/generated/database")
+        ),
+    )
+
+
 def _finding_sort_key(item: Mapping[str, Any]) -> tuple[str, str, str, str]:
     return (
         str(item.get("severity") or ""),
@@ -564,17 +590,15 @@ def _merge_drift(
 
 
 def _promote(root: Path, config: Mapping[str, Any], candidate_root: Path) -> None:
-    outputs = config.get("outputs", {})
-    if not isinstance(outputs, Mapping):
-        raise ValueError("schema-control outputs must be a JSON object.")
+    manifest_destination, docs_destination = _configured_output_paths(root, config)
     pairs = [
         (
             (candidate_root / "manifest").resolve(),
-            _resolve(root, str(outputs.get("manifest") or "database/manifest")),
+            manifest_destination,
         ),
         (
             (candidate_root / "docs").resolve(),
-            _resolve(root, str(outputs.get("docs") or "docs/generated/database")),
+            docs_destination,
         ),
     ]
     resolved_root = root.resolve()
@@ -735,13 +759,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"Schema-control candidate written to {candidate_root}.")
             return 1 if failed else 0
 
-        outputs = config.get("outputs", {})
-        expected_manifest = _resolve(
-            root, str(outputs.get("manifest") or "database/manifest")
-        )
-        expected_docs = _resolve(
-            root, str(outputs.get("docs") or "docs/generated/database")
-        )
+        expected_manifest, expected_docs = _configured_output_paths(root, config)
         manifest_drift = compare_artifact_trees(
             expected_manifest, candidate_root / "manifest"
         )

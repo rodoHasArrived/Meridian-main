@@ -985,19 +985,25 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
             || row.SourceKind.Contains("nav-support", StringComparison.OrdinalIgnoreCase)
             || string.Equals(row.SourceKind, "close-checklist", StringComparison.OrdinalIgnoreCase));
         var decisionRows = BuildCloseSupportDecisionRows(workflow, closeCalendar, cockpit, rows).ToArray();
+        var hasBlockingDecision = rows.Any(static row => row.IsBlocked)
+            || decisionRows.Any(static row => row.IsBlocking);
+        var blockingDecisionCount = rows.Count(static row => row.IsBlocked)
+            + decisionRows.Count(decision =>
+                decision.IsBlocking
+                && !rows.Any(row => string.Equals(row.QueueId, decision.DecisionId, StringComparison.OrdinalIgnoreCase)));
         var isReady = workflow is not null
             && (workflow.CloseReadiness?.IsReadyToClose == true || workflow.Status is OperationsWorkflowStatusDto.ReadyForClose or OperationsWorkflowStatusDto.Closed)
-            && decisionRows.All(static row => !row.IsBlocking)
+            && !hasBlockingDecision
             && (cockpit?.IsReadyToClose ?? true);
         var status = isReady
             ? "Ready"
-            : decisionRows.Any(static row => row.IsBlocking)
+            : hasBlockingDecision
                 ? "Blocked"
                 : "Review";
         var summary = status switch
         {
             "Ready" => "Close support is ready: period posture, NAV/report dependencies, exceptions, approvals, and retained evidence gaps are clear.",
-            "Blocked" => $"{decisionRows.Count(static row => row.IsBlocking).ToString("N0", CultureInfo.InvariantCulture)} close-support decision(s) block completion.",
+            "Blocked" => $"{blockingDecisionCount.ToString("N0", CultureInfo.InvariantCulture)} close-support decision(s) block completion.",
             _ => "Close support requires controller review before completion."
         };
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
+import { ACTIVATION_OUTCOME_KEYS, recordActivationOutcome } from "@/lib/first-run/activation";
 import {
   getCorporateActions,
   getReferenceDataWorkbenchCoverage,
@@ -37,7 +38,12 @@ import {
   requireSuccessfulReconciliationCasework,
   type AccountingReconciliationServices
 } from "./reconciliation-casework-outcome";
-import { formatBytes, formatCount, formatCurrency, formatDateTimeLabel, formatSignedCurrency, toDomId } from "./accounting-screen.formatting";
+import { formatBytes, formatCount, formatCurrency, formatCurrencyForCode, formatDateTimeLabel, formatSignedCurrency, toDomId } from "./accounting-screen.formatting";
+import { formatCorporateActionPayload } from "./accounting-screen.corporate-action-formatting";
+import {
+  accountingBasisDisplayName,
+  buildBasisBridgeViewState
+} from "./accounting-screen.basis-bridge.view-model";
 import {
   buildSecurityConflictAction, buildSecurityIdentityAliasRow, buildSecurityIdentityIdentifierRow,
   formatConflictDate, formatFinanceFacingSourceSummary, formatSecurityConflictField, formatSecurityDate,
@@ -70,6 +76,7 @@ import {
   buildReconciliationQueuePanelViewState,
   buildReconciliationResolveDialogState,
   buildReconciliationStatementRunsViewState,
+  sortStatementRunsNewestFirst,
   resolveSelectedReconciliation,
 } from "./accounting-screen.reconciliation.view-model";
 export {
@@ -159,6 +166,7 @@ import type {
   JournalEntryLifecycleActionRequest,
   JournalEntryLifecycleActionResult,
   LockClosePeriodRequest,
+  LedgerDimensionSet,
   ManualJournalEntryDraft,
   ManualJournalEntryLine,
   ManualJournalEntryWorkbench,
@@ -346,6 +354,7 @@ export interface AccountingConfigurationIssueViewModel {
   message: string;
   detail: string;
   tone: "default" | "warning" | "danger";
+  targetId?: string | null; severity?: "Critical" | "Warning" | "Info";
 }
 
 export interface AccountingConfigurationAuditViewModel {
@@ -1895,9 +1904,7 @@ export type CapitalAccountWorkbenchFundEventCommandRowViewModel =
 export interface CapitalAccountWorkbenchViewModel {
   title: string;
   description: string;
-  available: boolean;
-  loading: boolean;
-  errorText: string | null;
+  available: boolean; loading: boolean; errorText: string | null;
   statusLabel: string;
   statusTone: AccountingToolingTone;
   statusReason: string;
@@ -1927,13 +1934,10 @@ export interface ManualJournalEntryWorkbenchViewModel {
   drafts: ManualJournalEntryDraft[];
   accountOptions: { value: string; label: string }[];
   selectedLineId: string;
-  securitySearchQuery: string;
-  securitySearchResults: SecurityMasterEntry[];
-  securitySearchBusy: boolean;
-  securitySearchErrorText: string | null;
+  securitySearchQuery: string; securitySearchResults: SecurityMasterEntry[];
+  securitySearchBusy: boolean; securitySearchErrorText: string | null;
   securitySearchStatusText: string;
-  attachmentDraft: ManualJournalEvidenceAttachmentDraft;
-  totalsLabel: string;
+  attachmentDraft: ManualJournalEvidenceAttachmentDraft; totalsLabel: string;
   totalDebitsLabel: string;
   totalCreditsLabel: string;
   imbalanceLabel: string;
@@ -1943,15 +1947,16 @@ export interface ManualJournalEntryWorkbenchViewModel {
   treasuryContextLabel: string;
   privateCapitalActivity: ManualJournalPrivateCapitalActivityViewModel;
   validationIssues: AccountingConfigurationIssueViewModel[];
+  blockingIssueCount: number; warningIssueCount: number;
+  saveState: "saved" | "unsaved" | "saving" | "error" | "recovered"; saveStatusLabel: string;
+  validationStatusLabel: string; recoveryStatusText: string | null;
   lifecycleCommands: ManualJournalLifecycleCommandViewModel[];
   lifecycleChecklist: ManualJournalLifecycleChecklistItemViewModel[];
   lifecycleTransitions: ManualJournalLifecycleTransitionViewModel[];
   lifecycleCorrectionRows: ManualJournalLifecycleCorrectionViewModel[];
   lifecycleStatusText: string | null;
   lifecycleBusyAction: JournalEntryLifecycleAction | null;
-  saveBusy: boolean;
-  validateBusy: boolean;
-  submitBusy: boolean;
+  saveBusy: boolean; validateBusy: boolean; submitBusy: boolean;
   attachEvidenceBusy: boolean;
   attachEvidenceStatusText: string | null;
   validationIsCurrent: boolean;
@@ -1961,14 +1966,16 @@ export interface ManualJournalEntryWorkbenchViewModel {
   updateHeader: (field: keyof Pick<ManualJournalEntryDraft, "memo" | "currency" | "fundProfileId" | "entityId" | "fundNodeId" | "periodId" | "accountingDate">, value: string) => void;
   selectDraft: (journalEntryId: string) => void;
   selectLine: (lineId: string) => void;
-  updateLine: (lineId: string, patch: Partial<ManualJournalEntryLine>) => void;
+  updateLine: (lineId: string, patch: Partial<ManualJournalEntryLine>) => void; updateDraftDimensions: (patch: Partial<LedgerDimensionSet>) => void;
   getLineBadges: (lineId: string) => ManualJournalLineValidationBadge[];
   updateSecuritySearchQuery: (query: string) => void;
   searchSecurityMaster: () => Promise<void>;
   selectSecurity: (lineId: string, security: SecurityMasterEntry) => void;
   clearSecurity: (lineId: string) => void;
   addLine: (side: AccountingTemplateLineSide) => void;
+  insertLineAfter: (lineId: string, side?: AccountingTemplateLineSide) => string; duplicateLine: (lineId: string) => string | null;
   removeLine: (lineId: string) => void;
+  discardRecoveredDraft: () => void;
   updateAttachmentDraft: (patch: Partial<ManualJournalEvidenceAttachmentDraft>) => void;
   addAttachment: () => Promise<void>;
   removeAttachment: (attachmentId: string) => void;
@@ -2373,6 +2380,16 @@ export interface AccountingTrialBalanceViewState {
   state: AccountingTrialBalanceState;
   rows: AccountingTrialBalanceRowViewModel[];
   hasRows: boolean;
+  /**
+   * Signed sum of the whole selected basis, independent of the account filter.
+   *
+   * The balance control answers "does this book tie", which is a property of the book, not of
+   * whatever subset an operator has searched for. Summing the filtered rows instead declared the
+   * book out of balance by the value of everything filtered out, and told the operator to resolve
+   * a variance that does not exist before approving or reporting.
+   */
+  basisVariance: number;
+  isBasisOutOfBalance: boolean;
   selectedRowId: string | null;
   detailPanelId: string;
   selectedDetail: AccountingTrialBalanceDetailViewState | null;
@@ -2589,6 +2606,12 @@ export interface AccountingCloseOperatingCoverageRowViewModel {
   blockerLabel: string;
   requiredAction: string;
   issueLabels: string[];
+  /**
+   * The retained evidence references themselves, not just the count in `evidenceLabel`. The shared
+   * close plan carries these per control; showing only the count told an operator reviewing a
+   * blocked control that evidence exists while giving them no way to reach it (ACCT-CHECKLIST-07).
+   */
+  evidenceReferences: string[];
 }
 
 export interface AccountingClosePostingBalanceRowViewModel {
@@ -2773,6 +2796,7 @@ export interface AccountingCloseReportPackageViewModel {
   lockClosePeriodBusy: boolean;
   lockClosePeriodStatusText: string | null;
   lockClosePeriodStatusTone: "neutral" | "success" | "danger";
+  lockClosePeriodArmed: boolean;
   queueClosingEntriesBusy: boolean;
   queueClosingEntriesStatusText: string | null;
   queueClosingEntriesStatusTone: "neutral" | "success" | "danger";
@@ -3532,7 +3556,7 @@ export function useSecurityMasterViewModel(
     setConflictActionError(null);
 
     try {
-      const updated = await services.resolveConflict({ conflictId, resolution, resolvedBy: "operator" });
+      const updated = await services.resolveConflict({ conflictId, resolution, resolvedBy: "operator", reason: `${resolution} action from the shared conflict queue.` });
       setConflicts((current) => current?.map((conflict) => (
         conflict.conflictId === conflictId ? updated : conflict
       )) ?? current);
@@ -3841,7 +3865,8 @@ export function useAccountingReconciliationViewModel(
   data: AccountingWorkspaceResponse | null,
   workstream: AccountingWorkstream,
   services: AccountingReconciliationServices = defaultAccountingReconciliationServices,
-  systemReconciliation: AccountingSystemReconciliationSummary | null = null
+  systemReconciliation: AccountingSystemReconciliationSummary | null = null,
+  operatorIdentity: string | null = null
 ) {
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [breakQueue, setBreakQueue] = useState<ReconciliationBreakQueueItem[]>(data?.breakQueue ?? []);
@@ -3867,6 +3892,7 @@ export function useAccountingReconciliationViewModel(
   const [transactionLabPreview, setTransactionLabPreview] = useState<InvestmentAccountingTransactionLabPreview | null>(null);
   const [transactionLabError, setTransactionLabError] = useState<ApiErrorDisplay | null>(null);
   const calibrationRequestRevisionRef = useRef(0);
+  const statementRunsRequestRevisionRef = useRef(0);
 
   const reconciliationQueue = data?.reconciliationQueue ?? [];
   const selectedReconciliation = useMemo(
@@ -3964,54 +3990,41 @@ export function useAccountingReconciliationViewModel(
     };
   }, [refreshCalibrationSummary, workstream]);
 
-  const refreshStatementRuns = useCallback(() => {
+  const refreshStatementRuns = useCallback(async () => {
+    const revision = statementRunsRequestRevisionRef.current + 1;
+    statementRunsRequestRevisionRef.current = revision;
     setStatementRunsLoading(true);
     setStatementRunsError(null);
 
-    services.getStatementRuns()
-      .then((runs) => {
-        setStatementRuns(runs);
-      })
-      .catch((err) => {
-        setStatementRuns([]);
+    try {
+      const runs = await services.getStatementRuns();
+      if (statementRunsRequestRevisionRef.current === revision) {
+        setStatementRuns(sortStatementRunsNewestFirst(runs));
+      }
+    } catch (err) {
+      if (statementRunsRequestRevisionRef.current === revision) {
         setStatementRunsError(describeApiError(err, "Statement runs failed to load."));
-      })
-      .finally(() => {
+      }
+    } finally {
+      if (statementRunsRequestRevisionRef.current === revision) {
         setStatementRunsLoading(false);
-      });
+      }
+    }
   }, [services]);
 
   useEffect(() => {
     if (workstream !== "reconciliation" && workstream !== "exceptions") {
+      statementRunsRequestRevisionRef.current += 1;
+      setStatementRunsLoading(false);
       return;
     }
 
-    let cancelled = false;
-    setStatementRunsLoading(true);
-    setStatementRunsError(null);
-
-    services.getStatementRuns()
-      .then((runs) => {
-        if (!cancelled) {
-          setStatementRuns(runs);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setStatementRuns([]);
-          setStatementRunsError(describeApiError(err, "Statement runs failed to load."));
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setStatementRunsLoading(false);
-        }
-      });
+    void refreshStatementRuns();
 
     return () => {
-      cancelled = true;
+      statementRunsRequestRevisionRef.current += 1;
     };
-  }, [services, workstream]);
+  }, [refreshStatementRuns, workstream]);
 
   useEffect(() => {
     if (!selectedReconciliation || workstream !== "ledger") {
@@ -4059,7 +4072,10 @@ export function useAccountingReconciliationViewModel(
     setBreakActionError(null);
 
     try {
-      const operation = await services.reviewBreak({ breakId, assignedTo: "ops.gov", reviewedBy: "ops.gov" });
+      const operation = await services.reviewBreak({
+        breakId,
+        ...(operatorIdentity ? { assignedTo: operatorIdentity, reviewedBy: operatorIdentity } : {})
+      });
       const updated = requireSuccessfulReconciliationCasework(operation);
       setBreakQueue((current) => replaceBreakQueueItem(current, updated));
     } catch (err) {
@@ -4067,7 +4083,7 @@ export function useAccountingReconciliationViewModel(
     } finally {
       setBreakAction(null);
     }
-  }, [services]);
+  }, [operatorIdentity, services]);
 
   const resolveBreak = useCallback(async (
     breakId: string,
@@ -4091,18 +4107,19 @@ export function useAccountingReconciliationViewModel(
       const operation = await services.resolveBreak({
         breakId,
         status,
-        resolvedBy: "ops.gov",
-        resolutionNote: "Reviewed in accounting panel.",
+        ...(operatorIdentity ? { resolvedBy: operatorIdentity } : {}),
+        resolutionNote: trimmedRationale,
         operatorRationale: trimmedRationale
       });
       const updated = requireSuccessfulReconciliationCasework(operation);
       setBreakQueue((current) => replaceBreakQueueItem(current, updated));
+      void recordActivationOutcome(ACTIVATION_OUTCOME_KEYS.validationResolved);
     } catch (err) {
       setBreakActionError(describeApiError(err, "Break resolution failed."));
     } finally {
       setBreakAction(null);
     }
-  }, [services]);
+  }, [operatorIdentity, services]);
 
   const breakQueueState = useMemo(
     () => buildReconciliationBreakQueueState({
@@ -5141,7 +5158,10 @@ export function buildAccountingTrialBalanceViewState({
   selectedBasis = DEFAULT_ACCOUNTING_BASIS,
   accountFilter = "",
   loading,
-  error
+  error,
+  scopeLabel = null,
+  currency = null,
+  periodId = null
 }: {
   runId: string | null;
   rows: LedgerTrialBalanceLine[];
@@ -5150,9 +5170,19 @@ export function buildAccountingTrialBalanceViewState({
   accountFilter?: string | null;
   loading: boolean;
   error: string | ApiErrorDisplay | null;
+  /** Overrides the scope wording in labels; defaults to the strategy-run phrasing. */
+  scopeLabel?: string | null;
+  /** The book's base currency, when these rows come from a posted book rather than a run. */
+  currency?: string | null;
+  /**
+   * The ledger period these rows were posted in, when they come from a posted book. Journal
+   * drill-through needs it: the detail screen resolves a posted entry by period, and a link
+   * without one cannot reach the entry it names.
+   */
+  periodId?: string | null;
 }): AccountingTrialBalanceViewState {
   const detailPanelId = "trial-balance-account-detail";
-  const runLabel = runId ? "the selected ledger run" : "the current ledger selection";
+  const runLabel = scopeLabel?.trim() || (runId ? "the selected ledger run" : "the current ledger selection");
   const resolvedBasis = normalizeAccountingBasis(selectedBasis);
   const normalizedAccountFilter = normalizeLedgerAccountFilter(accountFilter);
   const normalizedRows = rows.map(normalizeTrialBalanceLine);
@@ -5160,8 +5190,9 @@ export function buildAccountingTrialBalanceViewState({
   const bridge = buildBasisBridgeViewState(normalizedRows, resolvedBasis, runLabel);
   const basisRows = normalizedRows
     .filter((line) => line.accountingBasis === resolvedBasis)
-    .map((line) => buildTrialBalanceRow(line, detailPanelId));
+    .map((line) => buildTrialBalanceRow(line, detailPanelId, currency));
   const accountFilterOptions = buildLedgerAccountFilterOptions(basisRows, normalizedAccountFilter);
+  const basisVariance = basisRows.reduce((total, row) => total + row.balance, 0);
   const rawRows = basisRows.filter((row) => ledgerAccountRowMatchesFilter(row, normalizedAccountFilter));
   const hasRows = rawRows.length > 0;
   const resolvedSelectedRowId = rawRows.some((row) => row.rowId === selectedRowId)
@@ -5203,9 +5234,11 @@ export function buildAccountingTrialBalanceViewState({
     state,
     rows: viewRows,
     hasRows,
+    basisVariance,
+    isBasisOutOfBalance: Math.abs(basisVariance) > 0.005,
     selectedRowId: resolvedSelectedRowId,
     detailPanelId,
-    selectedDetail: selectedRow ? buildTrialBalanceDetail(selectedRow, runLabel, runId) : null,
+    selectedDetail: selectedRow ? buildTrialBalanceDetail(selectedRow, runLabel, runId, periodId) : null,
     detailEmptyTitle: "No account selected",
     detailEmptyText: hasRows
       ? "Select an account line to inspect balance evidence for report handoff."
@@ -5217,7 +5250,7 @@ export function buildAccountingTrialBalanceViewState({
     emptyTitle: "No trial balance lines",
     emptyDetail: normalizedAccountFilter && basisRows.length > 0
       ? `No ${accountingBasisDisplayName(resolvedBasis)} ledger accounts match "${accountFilter ?? ""}". Clear the GL account filter or search another account.`
-      : `Meridian did not return account-balance rows for ${runLabel}. Select another reconciliation run or refresh ledger evidence before report handoff.`,
+      : `Meridian did not return account-balance rows for ${runLabel}. ${scopeLabel ? "Select another ledger period" : "Select another reconciliation run"} or refresh ledger evidence before report handoff.`,
     errorText,
     errorDetails: normalizedError?.details ?? [],
     statusAnnouncement: buildTrialBalanceAnnouncement({ runLabel, state, rowCount: viewRows.length, loading, errorText })
@@ -5227,16 +5260,23 @@ export function buildAccountingTrialBalanceViewState({
 export function buildAccountingLedgerJournalEvidenceViewState({
   runId,
   rows,
-  dimensionFilter = ""
+  dimensionFilter = "", scopeLabel = null, currency = null
 }: {
   runId: string | null;
   rows: LedgerJournalLine[];
   dimensionFilter?: string | null;
+  scopeLabel?: string | null; // overrides the run phrasing: the posted journal is period-scoped
+  /**
+   * The ledger book's base currency, when these rows are a posted book's. Without it the debits
+   * and credits below were labelled in dollars beside a trial balance on the same page labelled
+   * in the book's own currency — the same governed figures, in two currencies.
+   */
+  currency?: string | null;
 }): AccountingLedgerJournalEvidenceViewState {
-  const runLabel = runId ? "the selected ledger run" : "the current ledger selection";
+  const runLabel = scopeLabel?.trim() || (runId ? "the selected ledger run" : "the current ledger selection");
   const normalizedFilter = normalizeLedgerAccountFilter(dimensionFilter);
   const journalRows = rows
-    .map(buildLedgerJournalEvidenceRow)
+    .map((row) => buildLedgerJournalEvidenceRow(row, currency))
     .filter((row) => ledgerJournalRowMatchesDimensionFilter(row, normalizedFilter));
 
   return {
@@ -5251,9 +5291,13 @@ export function buildAccountingLedgerJournalEvidenceViewState({
   };
 }
 
-function buildLedgerJournalEvidenceRow(line: LedgerJournalLine): AccountingLedgerJournalEvidenceRowViewModel {
+function buildLedgerJournalEvidenceRow(
+  line: LedgerJournalLine,
+  currency: string | null = null
+): AccountingLedgerJournalEvidenceRowViewModel {
   const dimensionLabels = buildLedgerDimensionLabels(line);
-  const amountLabel = `${formatCurrency(line.totalDebits)} debit / ${formatCurrency(line.totalCredits)} credit`;
+  const money = (value: number) => (currency ? formatCurrencyForCode(value, currency) : formatCurrency(value));
+  const amountLabel = `${money(line.totalDebits)} debit / ${money(line.totalCredits)} credit`;
   const lineCountLabel = line.lineCount === 1 ? "1 line" : `${line.lineCount.toLocaleString()} lines`;
 
   return {
@@ -5294,7 +5338,7 @@ function ledgerJournalRowMatchesDimensionFilter(
     .includes(normalizedFilter);
 }
 
-type BasisAwareLedgerTrialBalanceLine = LedgerTrialBalanceLine & {
+export type BasisAwareLedgerTrialBalanceLine = LedgerTrialBalanceLine & {
   accountingBasis: AccountingBasisKind;
   accountingPolicyId: string;
   accountingPolicyVersion: string;
@@ -5302,26 +5346,33 @@ type BasisAwareLedgerTrialBalanceLine = LedgerTrialBalanceLine & {
 
 function buildTrialBalanceRow(
   line: BasisAwareLedgerTrialBalanceLine,
-  detailPanelId: string
+  detailPanelId: string,
+  currency: string | null = null
 ): AccountingTrialBalanceRowViewModel {
   const accountLabel = line.accountName.trim() || "Unnamed account";
   const accountTypeLabel = line.accountType.trim() || "Unclassified";
   const basisName = accountingBasisDisplayName(line.accountingBasis);
   const basisLabel = `${basisName} basis`;
   const policyLabel = `${line.accountingPolicyId}/${line.accountingPolicyVersion}`;
-  const balanceLabel = formatCurrency(line.balance);
+  // Posted balances are in the book's base currency; the bare formatter prefixes a dollar sign.
+  const balanceLabel = currency ? formatCurrencyForCode(line.balance, currency) : formatCurrency(line.balance);
   const entryCountLabel = line.entryCount.toLocaleString();
   const securityLabel = line.security?.primaryIdentifier?.trim() || line.symbol?.trim() || line.security?.displayName.trim() || null;
   const dimensionLabels = buildLedgerDimensionLabels(line);
   const dimensionLabel = dimensionLabels.summary;
   const dimensionDetailLabel = dimensionLabels.detail;
+  // Identity from the full dimension set, not the summary. The summary shows the first three
+  // dimensions and a "+N" count, so two rows differing only in a later one produced the same
+  // string -- duplicate React keys, and selecting the second row resolving the first row's detail
+  // and evidence. Widening the enumeration to every declared dimension made that collision far
+  // easier to hit. The summary is still what the operator reads; it is just not the identity.
   const rowId = [
     line.accountingBasis,
     accountLabel,
     accountTypeLabel,
     line.financialAccountId,
     securityLabel,
-    dimensionLabel === "No dimensions" ? null : dimensionLabel
+    dimensionDetailLabel === "No ledger dimensions are attached to this row." ? null : dimensionDetailLabel
   ].filter(Boolean).join("-");
 
   return {
@@ -5356,13 +5407,25 @@ function buildLedgerDimensionLabels(line: Pick<LedgerTrialBalanceLine, "dimensio
   const dimensions = line.dimensions ?? null;
   const labels: string[] = [];
 
+  // Every dimension LedgerDimensionSet declares, in the canonical order the desktop workstation's
+  // PostedLedgerProjection.DescribeDimensionScope also uses. Enumerating a subset meant two rows
+  // differing only by an omitted dimension rendered an identical scope, and the two lanes omitted
+  // different ones — so the same balance was distinguishable on one workstation and not the other.
+  appendDimensionLabel(labels, "Organization", dimensions?.organizationId);
   appendDimensionLabel(labels, "Fund", dimensions?.fundId);
   appendDimensionLabel(labels, "Entity", dimensions?.entityId ?? line.entityScopeDisplayName ?? line.entityScopeId);
+  appendDimensionLabel(labels, "Portfolio", dimensions?.portfolioId);
+  appendDimensionLabel(labels, "Book", dimensions?.bookId);
   appendDimensionLabel(labels, "Sleeve", dimensions?.sleeveId ?? line.sleeveScopeDisplayName ?? line.sleeveScopeId);
   appendDimensionLabel(labels, "Strategy", dimensions?.strategyId);
   appendDimensionLabel(labels, "Investor", dimensions?.investorId);
   appendDimensionLabel(labels, "Capital account", dimensions?.capitalAccountId ?? line.accountScopeDisplayName ?? line.accountScopeId);
+  appendDimensionLabel(labels, "Customer", dimensions?.customerId);
+  appendDimensionLabel(labels, "Vendor", dimensions?.vendorId);
+  appendDimensionLabel(labels, "Project", dimensions?.projectId);
+  appendDimensionLabel(labels, "Account", dimensions?.accountId);
   appendDimensionLabel(labels, "Instrument", dimensions?.instrumentId);
+  appendDimensionLabel(labels, "Position", dimensions?.positionId);
   appendDimensionLabel(labels, "Tax lot", dimensions?.taxLotId);
   appendDimensionLabel(labels, "Cost center", dimensions?.costCenterId);
   appendDimensionLabel(labels, "Counterparty", dimensions?.counterpartyId);
@@ -5374,7 +5437,7 @@ function buildLedgerDimensionLabels(line: Pick<LedgerTrialBalanceLine, "dimensio
   if (labels.length === 0) {
     return {
       summary: "No dimensions",
-      detail: "No fund, entity, sleeve, strategy, investor, capital-account, instrument, tax-lot, cost-center, counterparty, or external GL dimensions are attached."
+      detail: "No ledger dimensions are attached to this row."
     };
   }
 
@@ -5476,7 +5539,8 @@ function buildLedgerAccountFilteredCountLabel(
 function buildTrialBalanceDetail(
   line: AccountingTrialBalanceRowViewModel,
   runLabel: string,
-  runId: string | null
+  runId: string | null,
+  periodId: string | null = null
 ): AccountingTrialBalanceDetailViewState {
   const securityLabel = line.security?.displayName?.trim()
     || line.security?.primaryIdentifier?.trim()
@@ -5536,7 +5600,8 @@ function buildTrialBalanceDetail(
       runId,
       sourceEventIds,
       approvalIds,
-      sourceJournalEntryIds
+      sourceJournalEntryIds,
+      periodId
     }),
     supportingDocumentsEmptyText: "No source documents, approvals, or review packet links are attached to this GL account yet."
   };
@@ -5580,13 +5645,15 @@ function buildSupportingDocumentRows({
   runId,
   sourceEventIds,
   approvalIds,
-  sourceJournalEntryIds
+  sourceJournalEntryIds,
+  periodId
 }: {
   line: AccountingTrialBalanceRowViewModel;
   runId: string | null;
   sourceEventIds: string[];
   approvalIds: string[];
   sourceJournalEntryIds: string[];
+  periodId?: string | null;
 }): AccountingSupportingDocumentViewModel[] {
   const rows: AccountingSupportingDocumentViewModel[] = [];
 
@@ -5615,7 +5682,11 @@ function buildSupportingDocumentRows({
       id: `${line.rowId}-journal-${journalEntryId}`,
       label: "Journal entry evidence",
       detail: "Posting support and ledger entry lineage.",
-      href: `/accounting/ledger?journalEntryId=${encodeURIComponent(journalEntryId)}`,
+      // The journal-entry detail screen, not the ledger explorer: the explorer reads `view` and
+      // its book and period, never a journalEntryId, so this used to land on whatever period the
+      // explorer defaulted to with the entry silently dropped. The period is carried because that
+      // is how the detail screen resolves a posted entry.
+      href: buildJournalEntryEvidenceHref(journalEntryId, periodId, runId),
       ariaLabel: `Open journal entry ${journalEntryId} for ${line.accountLabel}`
     });
   }
@@ -5633,6 +5704,25 @@ function buildSupportingDocumentRows({
   return rows;
 }
 
+/**
+ * Where a journal-entry evidence link goes. The detail screen resolves a posted entry from its
+ * period and a run-scoped one from its run, so whichever scope these rows came from is carried.
+ */
+function buildJournalEntryEvidenceHref(
+  journalEntryId: string,
+  periodId: string | null | undefined,
+  runId: string | null
+): string {
+  const params = new URLSearchParams({ journalEntryId });
+  if (periodId) {
+    params.set("periodId", periodId);
+  } else if (runId) {
+    params.set("runId", runId);
+  }
+
+  return `/accounting/journal-entries/detail?${params.toString()}`;
+}
+
 function readStringArrayField(value: unknown, fieldName: string): string[] {
   if (!value || typeof value !== "object" || !(fieldName in value)) {
     return [];
@@ -5648,7 +5738,7 @@ function readStringArrayField(value: unknown, fieldName: string): string[] {
     .filter((item) => item.length > 0);
 }
 
-function readSourceEventIds(value: unknown): string[] {
+export function readSourceEventIds(value: unknown): string[] {
   return uniqueStrings([
     ...readStringArrayField(value, "sourceEventIds"),
     ...readStringScalarField(value, "sourceEventId")
@@ -5728,11 +5818,7 @@ function normalizeTrialBalanceLine(line: LedgerTrialBalanceLine): BasisAwareLedg
   };
 }
 
-export function buildGovernanceTrialBalanceViewState(
-  options: Parameters<typeof buildAccountingTrialBalanceViewState>[0]
-): AccountingTrialBalanceViewState {
-  return buildAccountingTrialBalanceViewState(options);
-}
+export const buildGovernanceTrialBalanceViewState = buildAccountingTrialBalanceViewState;
 
 function normalizeAccountingBasis(value: AccountingBasisKind | null | undefined): AccountingBasisKind {
   return ACCOUNTING_BASIS_OPTIONS.some((option) => option.id === value)
@@ -5761,105 +5847,6 @@ function buildTrialBalanceBasisOptions(
     rowCountLabel: rowCounts[option.id] === 1 ? "1 row" : `${rowCounts[option.id]} rows`,
     isSelected: option.id === selectedBasis
   }));
-}
-
-function buildBasisBridgeViewState(
-  rows: BasisAwareLedgerTrialBalanceLine[],
-  selectedBasis: AccountingBasisKind,
-  runLabel: string
-): AccountingBasisBridgeViewState {
-  const comparisonBasis = selectedBasis === "Primary"
-    ? rows.find((row) => row.accountingBasis !== "Primary")?.accountingBasis ?? "Gaap"
-    : selectedBasis;
-  const primaryRows = rows.filter((row) => row.accountingBasis === "Primary");
-  const comparisonRows = rows.filter((row) => row.accountingBasis === comparisonBasis);
-  const tableLabel = `${accountingBasisDisplayName(comparisonBasis)} to Primary basis bridge for ${runLabel}`;
-
-  if (comparisonBasis === "Primary" || primaryRows.length === 0 || comparisonRows.length === 0) {
-    return {
-      title: "Basis bridge",
-      description: `${accountingBasisDisplayName(comparisonBasis)} to Primary comparison grouped by source/rule/account where lineage is available.`,
-      tableLabel,
-      fromBasis: "Primary",
-      toBasis: comparisonBasis,
-      rows: [],
-      hasRows: false,
-      emptyText: "No non-primary basis rows are available for this run yet. The bridge will populate after GAAP, Cash, Tax, or Statutory projection posts journal lines."
-    };
-  }
-
-  const primaryByKey = new Map(primaryRows.map((row) => [basisBridgeKey(row), row]));
-  const comparisonByKey = new Map(comparisonRows.map((row) => [basisBridgeKey(row), row]));
-  const keys = [...new Set([...primaryByKey.keys(), ...comparisonByKey.keys()])].sort((left, right) => left.localeCompare(right));
-  const bridgeRows = keys.map((key) => {
-    const primary = primaryByKey.get(key) ?? null;
-    const comparison = comparisonByKey.get(key) ?? null;
-    const source = comparison ?? primary;
-    const primaryBalance = primary?.balance ?? 0;
-    const comparisonBalance = comparison?.balance ?? 0;
-    const variance = comparisonBalance - primaryBalance;
-    const sourceLabel = buildBasisBridgeSourceLabel(source);
-    const accountLabel = source?.accountName.trim() || "Unnamed account";
-    const accountTypeLabel = source?.accountType.trim() || "Unclassified";
-    const varianceLabel = formatCurrency(variance);
-
-    return {
-      rowId: `${comparisonBasis}-${key}`,
-      accountLabel,
-      accountTypeLabel,
-      primaryBalanceLabel: formatCurrency(primaryBalance),
-      comparisonBalanceLabel: formatCurrency(comparisonBalance),
-      varianceLabel,
-      varianceTone: variance < 0 ? "danger" : variance > 0 ? "success" : "default",
-      sourceLabel,
-      ariaLabel: `${accountLabel} ${accountTypeLabel}. Primary ${formatCurrency(primaryBalance)}. ${accountingBasisDisplayName(comparisonBasis)} ${formatCurrency(comparisonBalance)}. Variance ${varianceLabel}.`
-    } satisfies AccountingBasisBridgeRowViewModel;
-  });
-
-  return {
-    title: "Basis bridge",
-    description: `${accountingBasisDisplayName(comparisonBasis)} compared with Primary for ${runLabel}, grouped by source/rule/account where lineage is available.`,
-    tableLabel,
-    fromBasis: "Primary",
-    toBasis: comparisonBasis,
-    rows: bridgeRows,
-    hasRows: bridgeRows.length > 0,
-    emptyText: "No bridge rows matched the selected basis pair."
-  };
-}
-
-function basisBridgeKey(line: BasisAwareLedgerTrialBalanceLine): string {
-  const sourceEventId = readSourceEventIds(line).join(",");
-  const ruleId = "ruleId" in line ? String(line.ruleId ?? "") : "";
-  return [
-    sourceEventId,
-    ruleId,
-    line.accountName,
-    line.accountType,
-    line.symbol ?? "",
-    line.financialAccountId ?? ""
-  ].join("|");
-}
-
-function buildBasisBridgeSourceLabel(line: BasisAwareLedgerTrialBalanceLine | null): string {
-  if (!line) {
-    return "Missing source group";
-  }
-
-  const sourceEventIds = readSourceEventIds(line);
-  const ruleId = "ruleId" in line ? String(line.ruleId ?? "").trim() : "";
-  if (sourceEventIds.length > 0 || ruleId) {
-    return [
-      sourceEventIds.length > 0 ? `Source ${sourceEventIds.join(", ")}` : null,
-      ruleId ? `Rule ${ruleId}` : null
-    ].filter(Boolean).join(" / ");
-  }
-
-  return line.symbol?.trim() || line.financialAccountId?.trim() || "Account group";
-}
-
-function accountingBasisDisplayName(basis: AccountingBasisKind): string {
-  return basis === "Gaap" ? "GAAP" : basis;
 }
 
 function trialBalanceBasisTone(basis: AccountingBasisKind): AccountingTrialBalanceRowViewModel["basisTone"] {
@@ -6298,16 +6285,22 @@ function buildCorporateActionDetailViewState(
     subtitle: `${row.securityId} · ${row.corpActId}`,
     description: `${row.eventTypeLabel} event with ex-date ${row.exDateLabel} and recorded amount ${row.amountLabel}.`,
     ariaLabel: `Corporate action detail for ${row.eventTypeLabel} on ${row.securityId}`,
-    statusLabel: row.payDate ? "Pay date scheduled" : "Pay date unavailable",
+    statusLabel: row.lifecycleState ?? (row.payDate ? "Pay date scheduled" : "Pay date unavailable"),
     fields: [
       { label: "Corporate action ID", value: row.corpActId },
       { label: "Event type", value: row.eventTypeLabel },
       { label: "Ex-date", value: row.exDateLabel },
+      { label: "Record date", value: row.recordDate ? formatSecurityDate(row.recordDate) : "—", tone: row.recordDate ? "default" : "warning" },
       { label: "Pay date", value: row.payDateLabel, tone: row.payDate ? "default" : "warning" },
+      { label: "Lifecycle", value: row.lifecycleState ?? "—", tone: row.lifecycleState ? "default" : "warning" },
+      { label: "Supersedes", value: row.supersedesCorpActId ?? "—" },
       { label: "Amount or ratio", value: row.amountLabel, tone: row.amountLabel === "—" ? "warning" : "default" },
       { label: "Currency", value: row.currency ?? "—", tone: row.currency ? "default" : "warning" },
+      { label: "Redemption price (% par)", value: row.redemptionPricePercentOfPar?.toString() ?? "—" },
       { label: "New security", value: row.newSecurityId ?? "—" },
-      { label: "Acquirer security", value: row.acquirerSecurityId ?? "—" }
+      { label: "Acquirer security", value: row.acquirerSecurityId ?? "—" },
+      { label: "Payload schema", value: row.payloadSchemaVersion?.toString() ?? "—", tone: row.payloadSchemaVersion === undefined || row.payloadSchemaVersion === null ? "warning" : "default" },
+      { label: "Typed payload", value: formatCorporateActionPayload(row.payload), tone: row.payload ? "default" : "warning" }
     ]
   };
 }

@@ -1,7 +1,7 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Storage.Archival;
 
 namespace Meridian.Storage.Services;
@@ -374,7 +374,7 @@ public sealed partial class FileQualityTrendStore
         var canonical = string.Create(
             CultureInfo.InvariantCulture,
             $"meridian.quality-trend-record.v2\n{sequence}\n{previousHash ?? string.Empty}\n{pointJson.Length}:{pointJson}");
-        return Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)));
+        return Sha256Digest.ComputeUtf8(canonical);
     }
 
     private static string ComputeHeadHash(long sequence, string recordHash)
@@ -382,7 +382,7 @@ public sealed partial class FileQualityTrendStore
         var canonical = string.Create(
             CultureInfo.InvariantCulture,
             $"{ChainHeadSchema}\n{sequence}\n{recordHash.ToLowerInvariant()}");
-        return Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)));
+        return Sha256Digest.ComputeUtf8(canonical);
     }
 
     private static string SerializePoint(QualityTrendPoint point) =>

@@ -3,7 +3,7 @@
 **Owner:** Accounting / Fund Operations
 **Scope:** Certified reporting runs, immutable artifacts, lifecycle governance, scheduling, and distribution
 **Status:** Canonical production contract
-**Reviewed:** 2026-07-15
+**Reviewed:** 2026-07-26
 
 ---
 
@@ -34,7 +34,8 @@ rewritten.
 - ledger book id or code
 - accounting basis and presentation currency
 - consolidation level
-- PDF, XLSX, CSV, or Evidence Vault output
+- PDF, XLSX, CSV, Evidence Vault, or `ClientPackage` output; `ClientPackage` means one PDF plus one
+  XLSX primary document from the same certified manifest
 - Draft or Final finality
 - supporting-schedule and evidence-appendix selections
 - approved template parameters and dimensional filters
@@ -75,6 +76,17 @@ If the ledger period commits as `HardClosed` but receipt retention fails, Final 
 the same hard-close finalization must be retried idempotently. The period must not be reopened and a
 receipt must not be fabricated. See [Governed Reporting Operations](../operators/governed-reporting-operations.md#recover-a-pending-hard-close-evidence-handoff).
 
+Before ledger hard close, the close bridge acquires the exact fund, ledger-book, accounting-period,
+and as-of scope from the canonical reconciliation queue. The queue freezes the scoped casework head,
+including terminal dispositions, into a SHA-256-bound durable checkpoint before the ledger can
+commit. Casework mutations for that scope are blocked while the checkpoint is `Closing` and after it
+is sealed `HardClosed`. Dispose or process death never deletes an ambiguous retained `Closing`
+freeze. Recovery first takes the exclusive file fence, rotates lease ownership without changing the
+frozen items or hash, and rereads the authoritative ledger: `HardClosed` seals/reuses the exact
+checkpoint; a confirmed non-hard-closed postcondition may explicitly abandon the pre-commit freeze;
+an unreadable or ambiguous ledger leaves it retained. Recovery must never reconstruct close evidence
+from the later mutable queue.
+
 ## Governance and maker-checker
 
 The server maps authenticated permissions to narrow reporting capabilities:
@@ -107,7 +119,8 @@ inferring authorization from lifecycle labels.
 After a certified manifest succeeds, Meridian deterministically renders and retains:
 
 - the canonical retained manifest
-- one primary PDF, XLSX, CSV, or Evidence Vault artifact
+- one primary PDF, XLSX, CSV, or Evidence Vault artifact, or the complete PDF/XLSX primary pair for
+  `ClientPackage`
 - an exact certified-source CSV schedule
 - optional supporting schedules and evidence appendix
 - declared report-writer grid artifacts
@@ -124,6 +137,15 @@ retained canonical manifest and every declared artifact, requires their descript
 hashes, and byte lengths to agree exactly, and verifies exact bytes before writing the release receipt.
 Downloads and distribution repeat the integrity check and fail closed if catalog state, hashes,
 sizes, scope, or bytes disagree.
+
+For `ClientPackage`, release requires exactly one declared PDF and one declared XLSX primary
+artifact, both bound to the same run, certified snapshot, and manifest. Distribution must select
+that complete released pair. A missing, duplicate, PDF-only, or XLSX-only subset is not a
+releasable or deliverable client package. A capital-account package renders that pair from the
+exact checkpoint-bound `LedgerFinancialReportPack` through
+`LedgerClientReportExportService` and `FinancialReportDocumentRenderer`; the certified-artifact
+producer supplies declarations and retained hashes but does not own a second partners-capital
+renderer.
 
 ## Secure distribution
 
@@ -243,6 +265,12 @@ due work from continuing. Public `POST /schedules/run-due` is retired; due execu
 
 ## Canonical routes
 
+### Workspace capability
+
+| Method | Route | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/workstation/reporting` | Return the direct `WorkstationReportingPayload` only when the independent durable Reporting deployment capability is ready; otherwise return `503 Service Unavailable`. |
+
 ### Runs and governance
 
 | Method | Route | Purpose |
@@ -288,16 +316,25 @@ due work from continuing. Public `POST /schedules/run-due` is retired; due execu
 
 ## Persistence and configuration
 
-Production reporting spans PostgreSQL authority and two integrity-validated files under the
-resolved `DataRoot`. The state owners are:
+Production reporting uses PostgreSQL as the run, governance, artifact, scheduling, and distribution
+authority. Integrity-validated files under the resolved `DataRoot` remain auxiliary configuration,
+statement-workflow, reconciliation-casework, or historical compatibility state. The state owners
+are:
 
 | State | Authoritative location |
 | --- | --- |
 | Immutable bytes/catalog, artifact audit, governance/restatements/audit, close/reconciliation receipts, grants, delivery jobs, and provider receipts | PostgreSQL reporting schema. |
-| Certified orchestration manifests and their run audit snapshot | `<DataRoot>/workstation/reporting/runs/reporting-runs.json` (`FileReportingRunStore`, schema `meridian.reporting.run-store.v2`). |
-| Schedules and restart-safe release/delivery handoffs | `<DataRoot>/workstation/reporting/reporting-schedules.json` (`FileReportingScheduleStore`). |
-| Custom template and starter-kit state | `<DataRoot>/workstation/reporting/report-templates.json` and `reporting-starter-kit.json`. |
-| Legacy report-pack workflow and delivery records | `<DataRoot>/workstation/reporting/report-pack-workflows.json` and `report-pack-deliveries.json`; historical compatibility only, never release or delivery authority. |
+| Certified orchestration manifests, run audit snapshots, and create-claim leases | PostgreSQL `reporting_run_snapshots` and reporting run-claim state. |
+| Schedules, execution leases, and restart-safe release/delivery handoffs | PostgreSQL `reporting_schedule_snapshots` and schedule-lease state. |
+| Canonical reconciliation queue, retained casework audit/receipts, and durable close-scope checkpoints | `<DataRoot>/workstation/reconciliation-break-queue.json`. The adjacent `reconciliation-break-queue-audit.jsonl` is legacy migration input after a verified current snapshot exists; `reconciliation-break-queue.lock` is service-owned mutation coordination. |
+| Custom template and starter-kit state | Local/development only: `<DataRoot>/workstation/reporting/report-templates.json` and `reporting-starter-kit.json`. Production exposes the immutable built-in template/starter catalogs but returns `503` for custom-template mutation or starter-kit provisioning until those features have a durable authority. |
+| Legacy report-pack workflow and delivery records | Local/development historical compatibility only: `<DataRoot>/workstation/reporting/report-pack-workflows.json` and `report-pack-deliveries.json`; production does not register these repositories and returns `410` for their remaining read routes. They are never release or delivery authority. |
+
+All file-backed reporting run, schedule, custom-template, starter-kit, legacy workflow, and legacy
+delivery repositories remain local/development compatibility implementations. Production
+composition does not silently select them when the reporting database is absent: service
+registration fails unless `MERIDIAN_REPORTING_CONNECTION_STRING` or its documented ledger fallback
+is configured. Their presence never satisfies deployment readiness.
 
 PostgreSQL reporting authority uses:
 
@@ -309,11 +346,31 @@ services. In normal production composition the ledger is enabled by
 `MERIDIAN_LEDGER_CONNECTION_STRING`; configuring a separate reporting database does not replace
 that source dependency.
 
-PostgreSQL migrations retain immutable artifact blobs/catalogs, governance aggregates and hash-chain
-audit, close/reconciliation evidence, access grants, delivery jobs, and receipts. If production
-reporting persistence or authoritative ledger dependencies are absent, material certification,
-governance, release, and distribution operations return unavailable or blocked; they do not fall
-back to fixtures or caller rows.
+PostgreSQL migrations retain immutable artifact blobs/catalogs, governance aggregates and
+hash-chain audit, close/reconciliation evidence, certified run snapshots and claims, schedule
+snapshots and leases, access grants, delivery jobs, and receipts. The live probe also verifies the
+checksummed migration-ledger key, required non-null ledger fields, immediate non-expression unique
+keys used for idempotency and `ON CONFLICT`, and the predicate-bound one-job-per-access-grant
+control. If production reporting persistence or authoritative ledger dependencies are absent,
+material certification, governance, scheduling, release, and distribution operations return
+unavailable or blocked; they do not fall back to files, fixtures, or caller rows.
+
+When a reporting database is configured, the host completes the checksummed Reporting migrations
+before it starts the HTTP listener or hosted workers. An unreachable database, checksum mismatch, or
+migration failure therefore fails startup. After migration, an incomplete recipient directory,
+client-document dependency, schema probe, or other canonical authority leaves the production
+lifecycle `Required/NotReady` and reporting reads and mutations return `503`; it does not reactivate
+file authority. Local/development composition may start with file compatibility stores and reports a
+degraded lifecycle, but authoritative reporting routes remain blocked until the complete durable
+capability is ready.
+
+`GET /api/workstation/reporting` is the deployment health gate for this authority. It returns a
+direct `WorkstationReportingPayload` only when the live schema probe, current-process migration
+receipt, PostgreSQL governance/artifact/evidence/run/schedule/delivery stores, exact recipient
+directory, deterministic certified-artifact producer, canonical client-document renderer, and
+checkpoint-bound ledger presentation source are ready together. It returns `503 Service
+Unavailable` when any component is absent or fails verification; Accounting workspace health and
+embedded fallback payloads do not make Reporting available.
 
 Governance persistence uses explicit format versions. PostgreSQL migration `008` and the file-store
 v2 envelopes keep structurally valid pre-hardening v1 state as verified, immutable legacy evidence.
@@ -335,9 +392,10 @@ Optional relay configuration:
 - `MERIDIAN_REPORTING_DELIVERY_WORKER_ID`
 - `MERIDIAN_REPORTING_DELIVERY_POLL_SECONDS`
 
-The resolved reporting files and PostgreSQL schema must be backed up and recovered as one reporting
-state set. Both file stores fail closed on unreadable or invalid state; there is no supported
-hand-edit or repair endpoint. The supported operator procedure is
+The PostgreSQL schema, auxiliary reporting files, statement workflow state, and canonical
+reconciliation queue must be backed up and recovered as one coordinated evidence set. Current
+PostgreSQL stores and integrity-validated file repositories fail closed on unreadable or invalid
+state; there is no supported hand-edit or repair endpoint. The supported operator procedure is
 [Governed Reporting Operations](../operators/governed-reporting-operations.md).
 
 ## Operator surfaces
@@ -349,8 +407,9 @@ grant state. The WPF Reporting governance workbench consumes the same shared con
 availability.
 
 Legacy report-pack mutation, publication, restatement, synthetic delivery, query-token package,
-and public due-schedule routes return `410 Gone`. Selected legacy report-pack reads remain only for
-historical compatibility and are tenant-filtered; they are not an authoritative mutation path.
+and public due-schedule routes return `410 Gone`. Selected legacy report-pack reads remain only in
+local/development historical-compatibility composition and are tenant-filtered; production returns
+`410` because the file repository is not registered.
 
 ## Implementation anchors
 

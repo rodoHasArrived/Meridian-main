@@ -93,7 +93,11 @@ internal sealed class BackfillFeatureRegistration : IServiceFeatureRegistration
             var history = sp.GetRequiredService<BackfillExecutionHistory>();
             var quality = sp.GetService<DataQualityMonitoringService>();
             var policy = sp.GetRequiredService<IOptions<AutoGapRemediationPolicy>>().Value;
-            return new AutoGapRemediationService(gateway, history, quality, policy);
+            // Optional: sub-threshold reconnect gaps that are skipped without remediation are
+            // disclosed on the market-event tape when the pipeline publisher is registered.
+            var integrityPublisher = sp.GetService<Meridian.Domain.Events.IMarketEventPublisher>();
+            return new AutoGapRemediationService(
+                gateway, history, quality, policy, integrityPublisher: integrityPublisher);
         });
         services.AddSingleton<IDataQualityGapRemediationService>(sp =>
             sp.GetRequiredService<AutoGapRemediationService>());
@@ -115,6 +119,7 @@ internal sealed class BackfillFeatureRegistration : IServiceFeatureRegistration
             maxConcurrentRemediations: Math.Max(1, config.MaxConcurrentRemediations),
             defaultProvider: string.IsNullOrWhiteSpace(config.DefaultProvider)
                 ? AutoGapRemediationPolicy.Default.DefaultProvider
-                : config.DefaultProvider.Trim());
+                : config.DefaultProvider.Trim(),
+            enabled: config.Enabled);
     }
 }

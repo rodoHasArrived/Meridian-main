@@ -44,11 +44,16 @@ internal sealed class CoordinationFeatureRegistration : IServiceFeatureRegistrat
         services.AddSingleton<ClusterCoordinatorService>();
         services.AddSingleton<IClusterCoordinator>(sp =>
             sp.GetRequiredService<ClusterCoordinatorService>());
-        services.AddSingleton<IHostedService>(sp =>
-            sp.GetRequiredService<ClusterCoordinatorService>());
 
-        // Split-brain detection runs as a background service on every cluster member.
-        services.AddHostedService<SplitBrainDetector>();
+        if (options.EnableProcessWideHostedServices)
+        {
+            services.AddSingleton<IHostedService>(sp =>
+                sp.GetRequiredService<ClusterCoordinatorService>());
+
+            // Split-brain detection runs as a background service on every independently hosted
+            // cluster member. Desktop child graphs share the parent member and must not duplicate it.
+            services.AddHostedService<SplitBrainDetector>();
+        }
 
         return services;
     }

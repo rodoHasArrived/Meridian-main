@@ -9,6 +9,7 @@ using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Execution.Events;
 
@@ -28,6 +29,14 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
 {
     private static readonly TimeSpan DefaultDrainTimeout = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan DefaultCancellationTimeout = TimeSpan.FromSeconds(1);
+
+    private const string TradeFillActivityType = "trade-fill";
+
+    // Opt-in trade-identity tags the statement-reconciliation projection
+    // (LedgerJournalInternalTransactionSource) reads to exact-match a posted trade journal
+    // against a custodian statement row through the matcher's FITID rule.
+    private const string ReconciliationQuantityTag = "quantity";
+    private const string ReconciliationExternalTransactionIdTag = "externalTransactionId";
 
     private readonly ITradeFillLedgerPostingTarget _postingTarget;
     private readonly Ledger.Ledger? _projectionLedger;
@@ -50,6 +59,12 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
     private bool _postingDisabled;
     private int _disposeStarted;
     private int _cancellationSourceDisposed;
+
+    // Set when the posting loop stops for any reason other than shutdown. Nothing drains the
+    // channel after that, so acceptance must fail closed instead of waiting on capacity that
+    // will never free — a blocked publisher is silent: the ledger simply stops receiving
+    // postings while trading continues.
+    private Exception? _processingFailure;
 
     internal Task ProcessingCompletion => _processingTask;
 
@@ -192,6 +207,10 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
                 $"LedgerPostingConsumer is disposed; fill {tradeEvent.FillId} for {tradeEvent.Symbol} was not accepted.");
         }
 
+        // A stopped posting loop means nothing will drain what is accepted here, so refuse
+        // before taking the fill rather than stranding it behind a reader that is gone.
+        ThrowIfProcessingFailed(tradeEvent);
+
         // The publisher contract intentionally applies storage backpressure here: returning
         // means the executed fill is durably replayable even if this process stops.
         var acceptance = await _postingStore
@@ -215,6 +234,11 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
 
         while (!_channel.Writer.TryWrite(posting))
         {
+            // Re-checked every iteration: the reader can stop while this publisher is already
+            // waiting, and capacity would then never free. The fill is durable either way, so
+            // surfacing the stall beats blocking here indefinitely.
+            ThrowIfProcessingFailed(tradeEvent);
+
             var channelOpen = await _channel.Writer.WaitToWriteAsync().ConfigureAwait(false);
             if (!channelOpen)
             {
@@ -389,9 +413,45 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         }
         catch (Exception ex)
         {
+            // Publish the fault before completing the recovery gate: a publisher released by
+            // that gate must observe the failure rather than proceed into a channel that no
+            // longer has a reader.
+            if (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+            {
+                Volatile.Write(ref _processingFailure, ex);
+
+                // Completing the writer wakes publishers already parked in WaitToWriteAsync;
+                // setting the field alone would leave them waiting on capacity that no reader
+                // will ever free.
+                _channel.Writer.TryComplete(ex);
+
+                _logger.LogCritical(
+                    ex,
+                    "Ledger posting consumer stopped for scope {PostingScope}; accepted fills remain durable and " +
+                    "replay on restart, but no further fills can be accepted until it is restarted",
+                    _postingScope);
+            }
+
             _recoveryLoaded.TrySetException(ex);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Throws when the posting loop has stopped outside shutdown. Acceptance must fail closed
+    /// there: the channel has no reader, so waiting on capacity would block the caller forever
+    /// and hide the fact that the ledger is no longer being posted to.
+    /// </summary>
+    private void ThrowIfProcessingFailed(TradeExecutedEvent tradeEvent)
+    {
+        var failure = Volatile.Read(ref _processingFailure);
+        if (failure is null)
+            return;
+
+        throw new ChannelClosedException(
+            $"LedgerPostingConsumer for scope '{_postingScope}' stopped processing; fill {tradeEvent.FillId} " +
+            $"for {tradeEvent.Symbol} was not accepted.",
+            failure);
     }
 
     private async Task ProcessPostingAsync(PendingTradeFillPosting posting, CancellationToken ct)
@@ -525,7 +585,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         TradeExecutedEvent evt,
         LedgerPostingSecurityGateResult securityGate)
     {
-        const string activityType = "trade-fill";
+        const string activityType = TradeFillActivityType;
         var journalId = CreateDeterministicGuid(evt.FillId, activityType, "journal");
         var description = evt.Side switch
         {
@@ -746,6 +806,22 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
                 lines)
         };
 
+        if (string.Equals(activityType, TradeFillActivityType, StringComparison.Ordinal))
+        {
+            // Trade-identity tags for statement reconciliation: the journal→custodian-transaction
+            // projection reads these opt-in tags so the posted trade exact-matches a statement row
+            // instead of degrading to the candidate stage. The canonical fill id is the only
+            // transaction-granular identity the execution report carries (order ids repeat across
+            // partial fills) and it is content-derived, so replay stamps the same value. No
+            // `settlementDate` is stamped — the execution report carries no settlement date, and
+            // estimating T+n conventions is a policy decision this consumer must not make; the
+            // projection then defaults settlement to the trade date. The commission journal is
+            // deliberately left untagged: a share quantity does not apply to a fee movement, and a
+            // fabricated fee FITID could never equal a custodian's.
+            tags[ReconciliationQuantityTag] = FormatDecimal(evt.FilledQuantity);
+            tags[ReconciliationExternalTransactionIdTag] = evt.FillId.ToString("D");
+        }
+
         return new JournalEntryMetadata(
             ActivityType: activityType,
             Symbol: evt.Symbol,
@@ -794,6 +870,9 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
             AppendCanonical(canonical, FormatDecimal(line.Credit));
         }
 
+        // Deliberately NOT routed through Sha256Digest (which lowercases): this canonical fill
+        // hash participates in posting dedupe/verification against retained records, so changing
+        // its casing would break recognition of previously posted fills (#2691).
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())));
     }
 
@@ -928,9 +1007,6 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
 
     private static string FormatDecimal(decimal value)
         => value.ToString("G29", CultureInfo.InvariantCulture);
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private sealed record LedgerPostingSecurityGateResult(
         bool CanPost,

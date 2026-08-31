@@ -268,7 +268,7 @@ public sealed class ProviderRoutingEndpointsTests
     }
 
     [Fact]
-    public async Task ConfigureProvider_WithNoPermissionContext_ReturnsForbidden()
+    public async Task ConfigureProvider_WithNoPermissionContext_ReturnsUnauthorized()
     {
         await using var app = await CreateAppAsync(permissions: null);
 
@@ -280,7 +280,11 @@ public sealed class ProviderRoutingEndpointsTests
             capabilities = new[] { "backfill" }
         }));
 
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // The route now declares ManageProviders, and a declared route distinguishes the two
+        // refusals the handler collapsed into one: no permissions snapshot at all is
+        // unauthenticated (401), a snapshot without the permission is forbidden (403). A caller
+        // with no permission context is the former. The request is refused either way.
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]

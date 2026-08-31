@@ -244,7 +244,7 @@ public sealed class StageTelemetryTests : IDisposable
                 SequenceNumber: sequence);
 
             var ts = bar.ToTimestampUtc();
-            var evt = MarketEvent.HistoricalBar(ts, symbol, bar, bar.SequenceNumber, "test");
+            var evt = MarketEvent.HistoricalBar(ts, symbol, bar, "test", bar.SequenceNumber);
 
             writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
             date = date.AddDays(1);

@@ -78,7 +78,8 @@ internal static class LiveTradingEngineHostServiceCollectionExtensions
             sp.GetRequiredService<ILoggerFactory>(),
             sp.GetService<StrategyLifecycleManager>(),
             sp.GetService<ExecutionAuditTrailService>(),
-            sp.GetService<BrokerageConfiguration>()));
+            sp.GetService<BrokerageConfiguration>(),
+            sp.GetService<Meridian.Execution.Services.PortfolioRegistry>()));
         services.TryAddSingleton<IPromotedRunLauncher>(static sp => sp.GetRequiredService<LiveTradingEngine>());
         services.AddHostedService<LiveTradingEngineHostedService>();
 
@@ -107,7 +108,10 @@ internal static class LiveTradingEngineHostServiceCollectionExtensions
             var inner = CreatePublisher(sp, existing);
             var tap = new LiveTradingMarketEventTap(
                 sp.GetRequiredService<LiveMarketDataCache>(),
-                sp.GetRequiredService<LiveMarketEventHub>());
+                sp.GetRequiredService<LiveMarketEventHub>(),
+                // Resolved lazily: paper gateways register as evaluation triggers so resting
+                // limit/stop orders re-evaluate as market data arrives (W9-PAPER-003).
+                () => sp.GetServices<IPaperFillEvaluationTrigger>());
             return new CompositePublisher(sp.GetService<ILogger<CompositePublisher>>(), inner, tap);
         });
     }
@@ -136,11 +140,17 @@ internal sealed class LiveTradingMarketEventTap : IMarketEventPublisher
 {
     private readonly LiveMarketDataCache _cache;
     private readonly LiveMarketEventHub _hub;
+    private readonly Func<IEnumerable<IPaperFillEvaluationTrigger>>? _evaluationTriggers;
+    private IPaperFillEvaluationTrigger[]? _resolvedTriggers;
 
-    public LiveTradingMarketEventTap(LiveMarketDataCache cache, LiveMarketEventHub hub)
+    public LiveTradingMarketEventTap(
+        LiveMarketDataCache cache,
+        LiveMarketEventHub hub,
+        Func<IEnumerable<IPaperFillEvaluationTrigger>>? evaluationTriggers = null)
     {
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         _hub = hub ?? throw new ArgumentNullException(nameof(hub));
+        _evaluationTriggers = evaluationTriggers;
     }
 
     public bool TryPublish(in MarketEvent evt)
@@ -162,15 +172,47 @@ internal sealed class LiveTradingMarketEventTap : IMarketEventPublisher
             case LOBSnapshot orderBook:
                 _cache.RecordOrderBook(symbol, orderBook);
                 break;
-            case HistoricalBar:
-                break;
+            case HistoricalBar bar:
+                // Bars feed the observed price envelope used by paper matching; they are
+                // not published to the strategy hub, which consumes tick-level events.
+                _cache.RecordBar(symbol, bar);
+                PokeEvaluationTriggers(symbol);
+                return true;
             default:
                 // Heartbeats, integrity events, and other payloads carry no strategy signal.
                 return true;
         }
 
+        PokeEvaluationTriggers(symbol);
         _hub.Publish(new LiveMarketEvent(evt.Timestamp, symbol, evt.Payload));
         return true;
+    }
+
+    /// <summary>
+    /// Notifies paper gateways holding resting orders that fresh market data arrived for
+    /// <paramref name="symbol"/>. Trigger implementations only schedule work, so this stays
+    /// non-blocking on the market data path.
+    /// </summary>
+    private void PokeEvaluationTriggers(string symbol)
+    {
+        if (_evaluationTriggers is null)
+        {
+            return;
+        }
+
+        var triggers = _resolvedTriggers ??= _evaluationTriggers().ToArray();
+        foreach (var trigger in triggers)
+        {
+            try
+            {
+                trigger.EvaluateSymbol(symbol);
+            }
+            catch
+            {
+                // A failing evaluation trigger must never stall the market data pipeline;
+                // gateway-side logging owns the failure detail.
+            }
+        }
     }
 }
 
@@ -183,7 +225,10 @@ internal sealed class LiveTradingEngineHostedService : IHostedService
     private readonly LiveTradingEngine _engine;
     private readonly ILogger<LiveTradingEngineHostedService> _logger;
     private readonly CancellationTokenSource _stopping = new();
+    private readonly object _stopSync = new();
     private Task? _resumeTask;
+    private Task? _stopTask;
+    private int _backgroundObservationStarted;
 
     public LiveTradingEngineHostedService(
         LiveTradingEngine engine,
@@ -217,20 +262,74 @@ internal sealed class LiveTradingEngineHostedService : IHostedService
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        _stopping.Cancel();
-        if (_resumeTask is { } resume)
+        Task stopTask;
+        lock (_stopSync)
         {
-            try
-            {
-                await resume.ConfigureAwait(false);
-            }
-            catch
-            {
-                // Resume failures were already logged by the sweep task.
-            }
+            // Start cleanup independently of the host deadline. If the deadline expires, the
+            // same owned task continues draining OMS fills and sessions and is explicitly observed.
+            _stopTask ??= StopCoreAsync();
+            stopTask = _stopTask;
         }
 
-        await _engine.DisposeAsync().ConfigureAwait(false);
-        _stopping.Dispose();
+        try
+        {
+            await stopTask.WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            ObserveBackgroundCleanup(stopTask);
+            throw;
+        }
+    }
+
+    private async Task StopCoreAsync()
+    {
+        try
+        {
+            await _stopping.CancelAsync().ConfigureAwait(false);
+            if (_resumeTask is { } resume)
+            {
+                try
+                {
+                    await resume.ConfigureAwait(false);
+                }
+                catch
+                {
+                    // Resume failures were already logged by the sweep task.
+                }
+            }
+
+            await _engine.DisposeAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            _stopping.Dispose();
+        }
+    }
+
+    private void ObserveBackgroundCleanup(Task stopTask)
+    {
+        if (Interlocked.Exchange(ref _backgroundObservationStarted, 1) != 0)
+        {
+            return;
+        }
+
+        _ = ObserveBackgroundCleanupAsync(stopTask);
+    }
+
+    private async Task ObserveBackgroundCleanupAsync(Task stopTask)
+    {
+        try
+        {
+            await stopTask.ConfigureAwait(false);
+            _logger.LogInformation(
+                "Live trading engine cleanup completed after the host shutdown deadline elapsed.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogCritical(
+                ex,
+                "Live trading engine cleanup failed after the host shutdown deadline elapsed.");
+        }
     }
 }

@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Domain;
+using Meridian.Core.IO;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
@@ -30,7 +31,7 @@ namespace Meridian.Storage.Services;
 [ImplementsAdr("ADR-014", "Serialisation via ExecutionSnapshotJsonContext — no reflection")]
 public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
 {
-    private readonly string _rootPath;
+    private readonly RootedPathGuard _pathGuard;
     private readonly ILogger<JsonlPositionSnapshotStore> _logger;
 
     // Per-instance locks avoid spinning multiple local callers on the cross-process lock file.
@@ -40,7 +41,7 @@ public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
     public JsonlPositionSnapshotStore(StorageOptions options, ILogger<JsonlPositionSnapshotStore> logger)
     {
         ArgumentNullException.ThrowIfNull(options);
-        _rootPath = options.RootPath;
+        _pathGuard = new RootedPathGuard(options.RootPath);
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -88,6 +89,7 @@ public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
                 return existingOutcome.Value;
             }
 
+            _pathGuard.EnsurePath(path);
             await AtomicFileWriter.AppendLinesAsync(path, [json], ct).ConfigureAwait(false);
 
             _logger.LogDebug("Saved position snapshot for run={RunId} account={AccountId} to {Path}",
@@ -289,7 +291,7 @@ public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
         return latest;
     }
 
-    private static async Task<FileStream> AcquirePartitionLockAsync(
+    private async Task<FileStream> AcquirePartitionLockAsync(
         string snapshotPath,
         CancellationToken ct)
     {
@@ -298,6 +300,7 @@ public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
         while (true)
         {
             ct.ThrowIfCancellationRequested();
+            _pathGuard.EnsurePath(lockPath);
             try
             {
                 return new FileStream(
@@ -318,37 +321,27 @@ public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
     }
 
     private string GetSnapshotPath(string runId, string accountId)
-    {
-        var safeRunId = SanitisePathSegment(runId);
-        var safeAccountId = SanitisePathSegment(accountId);
-        return Path.Combine(_rootPath, "portfolios", safeRunId, safeAccountId, "snapshots.jsonl");
-    }
+        => _pathGuard.ResolvePath(
+            "portfolios",
+            runId,
+            accountId,
+            "snapshots.jsonl");
 
     private string GetSnapshotPath(
         string runId,
         string accountId,
         PositionSnapshotOwnerScope ownerScope)
-    {
-        var safeTenantId = SanitisePathSegment(ownerScope.TenantId.Trim());
-        var safeCompanyId = SanitisePathSegment(ownerScope.CompanyId.Trim());
-        var safeFundProfileId = SanitisePathSegment(ownerScope.FundProfileId.Trim());
-        var safeLedgerBookId = ownerScope.LedgerBookId.ToString("N");
-        var safeEntityId = SanitisePathSegment(ownerScope.EntityId.Trim());
-        var safeRunId = SanitisePathSegment(runId);
-        var safeAccountId = SanitisePathSegment(accountId);
-        return Path.Combine(
-            _rootPath,
+        => _pathGuard.ResolvePath(
             "portfolios",
             "owned",
-            safeTenantId,
-            safeCompanyId,
-            safeFundProfileId,
-            safeLedgerBookId,
-            safeEntityId,
-            safeRunId,
-            safeAccountId,
+            ownerScope.TenantId,
+            ownerScope.CompanyId,
+            ownerScope.FundProfileId,
+            ownerScope.LedgerBookId.ToString("N"),
+            ownerScope.EntityId,
+            runId,
+            accountId,
             "snapshots.jsonl");
-    }
 
     private static PositionSnapshotOwnerScope? GetOwnerScope(AccountSnapshotRecord snapshot)
     {
@@ -371,11 +364,11 @@ public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
         }
 
         var ownerScope = new PositionSnapshotOwnerScope(
-            snapshot.TenantId!.Trim(),
-            snapshot.CompanyId!.Trim(),
-            snapshot.FundProfileId!.Trim(),
+            snapshot.TenantId!,
+            snapshot.CompanyId!,
+            snapshot.FundProfileId!,
             snapshot.LedgerBookId.Value,
-            snapshot.EntityId!.Trim());
+            snapshot.EntityId!);
         ValidateOwnerScope(ownerScope);
         return ownerScope;
     }
@@ -415,19 +408,15 @@ public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
            string.Equals(snapshot.AccountId?.Trim(), accountId.Trim(), StringComparison.OrdinalIgnoreCase) &&
            IsOwnedBy(snapshot, ownerScope);
 
-    private static void EnsureDirectory(string filePath)
+    private void EnsureDirectory(string filePath)
     {
+        _pathGuard.EnsurePath(filePath);
         var dir = Path.GetDirectoryName(filePath);
         if (!string.IsNullOrEmpty(dir))
+        {
             Directory.CreateDirectory(dir);
-    }
-
-    private static string SanitisePathSegment(string segment)
-    {
-        // Replace path separators and other invalid characters.
-        foreach (var c in Path.GetInvalidFileNameChars())
-            segment = segment.Replace(c, '_');
-        return segment;
+            _pathGuard.EnsurePath(filePath);
+        }
     }
 
     private AccountSnapshotRecord? TryDeserialize(string json)
@@ -446,10 +435,11 @@ public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
     /// <summary>
     /// Streams lines from a file in forward (oldest-first) order.
     /// </summary>
-    private static async IAsyncEnumerable<string> ReadLinesForwardAsync(
+    private async IAsyncEnumerable<string> ReadLinesForwardAsync(
         string path,
         [EnumeratorCancellation] CancellationToken ct)
     {
+        _pathGuard.EnsurePath(path);
         using var stream = new FileStream(
             path,
             FileMode.Open,

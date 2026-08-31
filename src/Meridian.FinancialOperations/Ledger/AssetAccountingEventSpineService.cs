@@ -1,10 +1,11 @@
-using System.Security.Cryptography;
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.Ledger;
 
@@ -589,6 +590,8 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
     {
         if (!Enum.IsDefined(request.EventKind))
             throw new ArgumentOutOfRangeException(nameof(request.EventKind), "A supported asset accounting event kind is required.");
+        if (request.EventAmount <= 0m)
+            throw new ArgumentOutOfRangeException(nameof(request.EventAmount), "A positive asset accounting event amount is required.");
         if (request.EconomicEvent.EventId == Guid.Empty || request.EconomicEvent.EventVersion <= 0)
             throw new ArgumentException("A positive source economic-event identity and version are required.", nameof(request.EconomicEvent));
         if (request.Scope.ExpectedBookPositionVersion <= 0)
@@ -699,6 +702,8 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
     {
         if (!Enum.IsDefined(request.EventKind))
             throw new ArgumentOutOfRangeException(nameof(request.EventKind), "A supported asset accounting event kind is required.");
+        if (request.EventAmount <= 0m)
+            throw new ArgumentOutOfRangeException(nameof(request.EventAmount), "A positive asset accounting event amount is required.");
         if (request.ExpectedSpineVersion <= 0)
             throw new ArgumentOutOfRangeException(nameof(request.ExpectedSpineVersion), "Expected spine version must be positive.");
         if (request.ExpectedPeriodVersion <= 0)
@@ -885,9 +890,12 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
         {
             var acquisition = requested?.Acquisition
                 ?? throw new InvalidOperationException("Acquisition requires a retained lot instruction.");
-            RequireAssertion(source.ProjectedEffect!.Lines.Count(line =>
-                    string.Equals(line.AccountId, acquisition.AccountId, StringComparison.Ordinal) &&
-                    line.Debit == source.EventAmount && line.Credit == 0m) == 1,
+            var acquisitionAssetLines = source.ProjectedEffect!.Lines
+                .Where(line => string.Equals(line.AccountId, acquisition.AccountId, StringComparison.Ordinal))
+                .ToArray();
+            RequireAssertion(acquisitionAssetLines.Length == 1 &&
+                             acquisitionAssetLines[0].Debit == source.EventAmount &&
+                             acquisitionAssetLines[0].Credit == 0m,
                 "Acquisition projected accounting must contain exactly one authorized asset-account debit for the lot cost.");
             return requested;
         }
@@ -950,9 +958,12 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
         }
 
         var aggregateCostBasis = canonicalSelections.Sum(static selection => selection.ExpectedCostBasis);
-        RequireAssertion(source.ProjectedEffect!.Lines.Count(line =>
-                string.Equals(line.AccountId, instruction.AssetAccountId, StringComparison.Ordinal) &&
-                line.Credit == aggregateCostBasis && line.Debit == 0m) == 1,
+        var disposalAssetLines = source.ProjectedEffect!.Lines
+            .Where(line => string.Equals(line.AccountId, instruction.AssetAccountId, StringComparison.Ordinal))
+            .ToArray();
+        RequireAssertion(disposalAssetLines.Length == 1 &&
+                         disposalAssetLines[0].Credit == aggregateCostBasis &&
+                         disposalAssetLines[0].Debit == 0m,
             "Disposal projected accounting must contain exactly one authoritative asset-relief credit for selected-lot cost basis.");
         RequireAssertion(position.SecurityId == source.Scope.SecurityId &&
                          position.PositionId == source.Scope.BookPositionId,
@@ -1222,7 +1233,7 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
     private static string Fingerprint(AssetAccountingEventSpineDto projection)
     {
         var payload = JsonSerializer.SerializeToUtf8Bytes(projection, CanonicalJsonOptions);
-        return Convert.ToHexString(SHA256.HashData(payload)).ToLowerInvariant();
+        return Sha256Digest.Compute(payload);
     }
 
     private static bool PayloadEquals<T>(T left, T right)
@@ -1230,13 +1241,11 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             JsonSerializer.SerializeToElement(left, CanonicalJsonOptions),
             JsonSerializer.SerializeToElement(right, CanonicalJsonOptions));
 
+    // An all-zero digest is a placeholder sentinel rather than a real fingerprint, so it is
+    // rejected on top of the shared digest contract.
     private static bool IsSha256(string? value)
-        => !string.IsNullOrWhiteSpace(value) &&
-           value.Length == 64 &&
-           value.All(static character => Uri.IsHexDigit(character));
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        => Sha256Digest.IsWellFormed(value)
+           && value!.Any(static character => character != '0');
 
     private static void RequireAssertion(bool condition, string message)
     {

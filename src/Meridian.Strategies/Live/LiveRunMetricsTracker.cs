@@ -22,7 +22,8 @@ internal sealed class LiveRunMetricsTracker
     private decimal _previousEquity;
     private decimal _peakEquity;
     private decimal _maxDrawdown;
-    private decimal _maxDrawdownPercent;
+    /// <summary>Fraction of peak equity (0.15 = a 15% drawdown), matching <see cref="BacktestMetrics.MaxDrawdownPercent"/>.</summary>
+    private decimal _maxDrawdownFraction;
     private double _sumReturns;
     private double _sumSquaredReturns;
     private double _sumSquaredDownsideReturns;
@@ -39,12 +40,20 @@ internal sealed class LiveRunMetricsTracker
 
     public long EventsProcessed { get; set; }
 
-    public void RecordFill(FillEvent fill, DateTimeOffset timestamp)
+    public void RecordFill(FillEvent fill, DateTimeOffset timestamp, bool usesFaceValuePercentageOfPar = false)
     {
         _fills.Add(fill);
+
+        // A face-value fill routes its quantity as face value and quotes its price as a
+        // percentage of par (fixed income), so the booked cash movement scales the price to a
+        // fraction of par before multiplying — the same convention TradeExecutedEvent.GrossValue
+        // and the pre-trade risk gate use. Multiplying the two raw books 100,000 face at 101.25
+        // as a $10,125,000 cash flow instead of $101,250. Quantity and Price stay as quoted;
+        // Amount alone carries the economic cash impact, matching SimulatedPortfolio.
+        var effectivePrice = usesFaceValuePercentageOfPar ? fill.FillPrice / 100m : fill.FillPrice;
         var tradeCashFlow = new TradeCashFlow(
             Timestamp: timestamp,
-            Amount: -(fill.FilledQuantity * fill.FillPrice),
+            Amount: -(fill.FilledQuantity * effectivePrice),
             Symbol: fill.Symbol,
             Quantity: fill.FilledQuantity,
             Price: fill.FillPrice,
@@ -93,7 +102,7 @@ internal sealed class LiveRunMetricsTracker
         if (drawdown > _maxDrawdown)
         {
             _maxDrawdown = drawdown;
-            _maxDrawdownPercent = _peakEquity > 0m ? drawdown / _peakEquity * 100m : 0m;
+            _maxDrawdownFraction = _peakEquity > 0m ? drawdown / _peakEquity : 0m;
         }
 
         _snapshots.Add(new PortfolioSnapshot(
@@ -136,7 +145,7 @@ internal sealed class LiveRunMetricsTracker
             sortino = downsideDev > 0 ? mean / downsideDev * Math.Sqrt(252) : 0;
         }
 
-        var calmar = _maxDrawdownPercent > 0m ? (double)(annualizedReturn / (_maxDrawdownPercent / 100m)) : 0;
+        var calmar = _maxDrawdownFraction > 0m ? (double)(annualizedReturn / _maxDrawdownFraction) : 0;
 
         var metrics = new BacktestMetrics(
             InitialCapital: _initialEquity,
@@ -149,7 +158,7 @@ internal sealed class LiveRunMetricsTracker
             SortinoRatio: sortino,
             CalmarRatio: calmar,
             MaxDrawdown: _maxDrawdown,
-            MaxDrawdownPercent: _maxDrawdownPercent,
+            MaxDrawdownPercent: _maxDrawdownFraction,
             MaxDrawdownRecoveryDays: 0,
             ProfitFactor: 0,
             WinRate: 0,

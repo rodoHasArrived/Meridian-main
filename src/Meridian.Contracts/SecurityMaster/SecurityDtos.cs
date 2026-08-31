@@ -156,6 +156,14 @@ public sealed record TradingParametersDto(
 /// <see cref="RedemptionPricePercentOfPar"/> carries BondCall/BondMaturityRedemption
 /// pricing as a percent of par.</para>
 /// </summary>
+/// <summary>
+/// One corporate-action event. The typed columns carry the economics of the historically declared
+/// event types; <paramref name="Payload"/> is the generic per-event-type envelope (a JSON object)
+/// for event types with no dedicated columns — tender offers, crypto forks, returns of capital,
+/// principal paydowns, option contract adjustments, delistings, and any future type — so a new
+/// event type never needs another nullable column. Well-known payload keys are documented in
+/// <see cref="CorporateActionPayloads"/>.
+/// </summary>
 public sealed record CorporateActionDto(
     Guid CorpActId,
     Guid SecurityId,
@@ -174,7 +182,9 @@ public sealed record CorporateActionDto(
     DateOnly? RecordDate = null,
     string? LifecycleState = null,
     Guid? SupersedesCorpActId = null,
-    decimal? RedemptionPricePercentOfPar = null);
+    decimal? RedemptionPricePercentOfPar = null,
+    JsonElement? Payload = null,
+    int PayloadSchemaVersion = CorporateActionPayloads.CurrentSchemaVersion);
 
 /// <summary>
 /// Preferred-equity-specific terms returned by the preferred-terms query.

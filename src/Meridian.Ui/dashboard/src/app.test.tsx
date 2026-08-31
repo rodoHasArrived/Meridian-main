@@ -4,8 +4,11 @@ import { axe } from "jest-axe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "@/app";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
+import { apiGetJson } from "@/lib/api";
+import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import { renderWithRouter } from "@/test/render";
 import { useNavigate } from "react-router-dom";
+import type { FirstRunStatus } from "@/features/first-run/types";
 import type {
   DataWorkspaceResponse,
   PortfolioWorkspaceResponse,
@@ -21,12 +24,19 @@ vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
   return {
     ...actual,
+    apiGetJson: vi.fn(),
     markWorkflowPresetUsed: vi.fn().mockResolvedValue(undefined)
   };
 });
 
 const mockedUseWorkstationData = vi.mocked(useWorkstationData);
 type WorkstationDataSnapshot = ReturnType<typeof useWorkstationData>;
+
+function resolveSynchronously<T>(value: T): Promise<T> {
+  return {
+    then: (onFulfilled: (resolved: T) => unknown) => Promise.resolve(onFulfilled(value))
+  } as unknown as Promise<T>;
+}
 
 function idleRequestStatus(operation: string) {
   return {
@@ -146,6 +156,25 @@ const overview: SystemOverviewResponse = {
   recentEvents: []
 };
 
+const completedFirstRunStatus: FirstRunStatus = {
+  isComplete: true,
+  goal: "operate-fund",
+  starterKitId: "fund-operations",
+  dataChoice: "sample",
+  workspace: {
+    id: "ops-workspace",
+    name: "Operations workspace",
+    isSample: false,
+    badge: "PAPER",
+    safetyMessage: "Paper operation only.",
+    samplePackVersion: ""
+  },
+  starterKits: [],
+  outcomes: [],
+  recommendedActions: [],
+  sampleWorkspace: null
+};
+
 function mockDailyControlTowerData() {
   mockWorkstationData({
     session: {
@@ -235,6 +264,19 @@ describe("App", () => {
   beforeEach(() => {
     document.title = "Meridian";
     window.localStorage.clear();
+    mockedUseWorkstationData.mockClear();
+    vi.mocked(apiGetJson).mockReset();
+    vi.mocked(apiGetJson).mockImplementation((path) => {
+      if (path === WORKSTATION_API_ENDPOINTS.firstRunStatus) {
+        return resolveSynchronously(completedFirstRunStatus) as ReturnType<typeof apiGetJson>;
+      }
+
+      if (path === WORKSTATION_API_ENDPOINTS.demoMode) {
+        return Promise.resolve({ enabled: false, provenance: "real" }) as ReturnType<typeof apiGetJson>;
+      }
+
+      return Promise.reject(new Error(`No test response configured for ${path}`));
+    });
     mockWorkstationData({
       session: {
         displayName: "Ops Desk",
@@ -266,6 +308,130 @@ describe("App", () => {
       refreshPortfolio: vi.fn(),
       upsertWorkflowPreset: vi.fn()
     });
+  });
+
+  it("keeps the workstation closed while activation status is loading", () => {
+    vi.mocked(apiGetJson).mockImplementation((path) => {
+      if (path === WORKSTATION_API_ENDPOINTS.firstRunStatus) {
+        return new Promise(() => {}) as ReturnType<typeof apiGetJson>;
+      }
+
+      if (path === WORKSTATION_API_ENDPOINTS.demoMode) {
+        return Promise.resolve({ enabled: false, provenance: "real" }) as ReturnType<typeof apiGetJson>;
+      }
+
+      return Promise.reject(new Error(`No test response configured for ${path}`));
+    });
+
+    renderWithRouter(<App />, { initialEntries: ["/trading"] });
+
+    expect(screen.getByRole("status", { name: "Activation status check" })).toHaveTextContent(
+      "Checking activation status"
+    );
+    expect(screen.queryByRole("button", { name: "Open workstation command palette (Ctrl K)" }))
+      .not.toBeInTheDocument();
+    expect(mockedUseWorkstationData).not.toHaveBeenCalled();
+  });
+
+  it("fails closed on an unknown activation state and recovers after retry", async () => {
+    let firstRunRequests = 0;
+    vi.mocked(apiGetJson).mockImplementation((path) => {
+      if (path === WORKSTATION_API_ENDPOINTS.firstRunStatus) {
+        firstRunRequests += 1;
+        return firstRunRequests === 1
+          ? Promise.reject(new Error("Activation endpoint unavailable."))
+          : Promise.resolve(completedFirstRunStatus) as ReturnType<typeof apiGetJson>;
+      }
+
+      if (path === WORKSTATION_API_ENDPOINTS.demoMode) {
+        return Promise.resolve({ enabled: false, provenance: "real" }) as ReturnType<typeof apiGetJson>;
+      }
+
+      return Promise.reject(new Error(`No test response configured for ${path}`));
+    });
+
+    renderWithRouter(<App />, { initialEntries: ["/trading"] });
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Activation status unavailable");
+    expect(alert).toHaveTextContent("Activation state is unknown");
+    expect(mockedUseWorkstationData).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole("button", { name: "Retry activation check" }));
+
+    expect(await screen.findByRole("button", { name: "Open workstation command palette (Ctrl K)" }))
+      .toBeInTheDocument();
+    expect(firstRunRequests).toBe(2);
+    expect(mockedUseWorkstationData).toHaveBeenCalled();
+  });
+
+  it("keeps a failed provenance probe as UNKNOWN with a retry control, never a SIMULATED brand", async () => {
+    let allowDemoMode = false;
+    let demoModeRequests = 0;
+    vi.mocked(apiGetJson).mockImplementation((path) => {
+      if (path === WORKSTATION_API_ENDPOINTS.firstRunStatus) {
+        return resolveSynchronously(completedFirstRunStatus) as ReturnType<typeof apiGetJson>;
+      }
+
+      if (path === WORKSTATION_API_ENDPOINTS.demoMode) {
+        demoModeRequests += 1;
+        return allowDemoMode
+          ? Promise.resolve({ enabled: false, provenance: "real" }) as ReturnType<typeof apiGetJson>
+          : Promise.reject(new Error("Demo-mode endpoint unavailable."));
+      }
+
+      return Promise.reject(new Error(`No test response configured for ${path}`));
+    });
+    mockWorkstationData({ loading: false, usingDevelopmentFixtures: false });
+
+    renderWithRouter(<App />, { initialEntries: ["/trading"] });
+
+    const provenanceBanner = await screen.findByRole("region", { name: "Data provenance" });
+    expect(within(provenanceBanner).getByTestId("data-provenance-unknown")).toBeInTheDocument();
+    expect(within(provenanceBanner).queryByTestId("data-provenance-simulated")).toBeNull();
+
+    const retry = await within(provenanceBanner).findByRole("button", {
+      name: "Retry live Meridian workspace data"
+    });
+    allowDemoMode = true;
+    await userEvent.click(retry);
+
+    await waitFor(() => {
+      expect(screen.queryByRole("region", { name: "Data provenance" })).not.toBeInTheDocument();
+    });
+    expect(demoModeRequests).toBeGreaterThanOrEqual(2);
+  });
+
+  it("surfaces successful seeded demo JSON even without a development-fixture response header", async () => {
+    vi.mocked(apiGetJson).mockImplementation((path) => {
+      if (path === WORKSTATION_API_ENDPOINTS.firstRunStatus) {
+        return resolveSynchronously(completedFirstRunStatus) as ReturnType<typeof apiGetJson>;
+      }
+
+      if (path === WORKSTATION_API_ENDPOINTS.demoMode) {
+        return Promise.resolve({ enabled: true, provenance: "seeded" }) as ReturnType<typeof apiGetJson>;
+      }
+
+      return Promise.reject(new Error(`No test response configured for ${path}`));
+    });
+    mockWorkstationData({ loading: false, usingDevelopmentFixtures: false });
+
+    renderWithRouter(<App />, { initialEntries: ["/trading"] });
+
+    const strip = await screen.findByRole("region", {
+      name: "Workstation build, environment, provenance, and provider posture"
+    });
+    expect(strip).toHaveAttribute("aria-live", "polite");
+    await userEvent.click(within(strip).getByText("Trust"));
+    const trustDetails = within(strip).getByRole("group", {
+      name: "Environment, provenance, and provider details"
+    });
+    expect(within(trustDetails).getByRole("link", { name: /Data provenance SEEDED/ }))
+      .toHaveTextContent("ProvenanceSEEDED");
+    // W9-TRUTH-001: seeded data keeps the persistent, non-dismissable provenance banner
+    // on screen above every workspace, alongside the trust-strip cell.
+    const provenanceBanner = await screen.findByRole("region", { name: "Data provenance" });
+    expect(within(provenanceBanner).getByTestId("data-provenance-seeded")).toBeInTheDocument();
   });
 
   it("opens and closes the command palette with Control+K", async () => {
@@ -324,17 +490,19 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: "Daily Control Tower Workstation" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Daily Control Tower continuity" })).toBeInTheDocument();
     const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
-    ["Source", "Scope", "Freshness", "Completeness", "Blocker"].forEach((label) => {
+    ["Connectivity", "Scope", "Freshness", "Completeness", "Blocker"].forEach((label) => {
       expect(within(confidence).getByText(label)).toBeInTheDocument();
     });
     expect(confidence).toHaveTextContent("4 ranked items");
     expect(screen.queryByRole("region", { name: "Daily control tower decision drivers" })).not.toBeInTheDocument();
-    expect(screen.getByRole("table", { name: "Daily control tower finance queue" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Choose Control Tower scope" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Review all scopes" }));
+    expect(screen.getByRole("treegrid", { name: "Daily control tower finance queue" })).toBeInTheDocument();
     expect(screen.getAllByRole("link", {
       name: "Reporting: Report pack approval waiting. Monthly board pack still needs an operator sign-off. Open report packs."
     }).some((link) => link.getAttribute("href") === "/reporting/report-packs")).toBe(true);
 
-    const evidenceSummary = screen.getByRole("region", { name: "Report pack approval waiting Evidence summary" });
+    const evidenceSummary = screen.getByRole("region", { name: /Report pack approval waiting evidence summary/i });
     const moreEvidence = within(evidenceSummary).getByText("More evidence").closest("details");
     expect(moreEvidence).not.toHaveAttribute("open");
     await user.click(within(evidenceSummary).getByText("More evidence"));
@@ -364,6 +532,35 @@ describe("App", () => {
 
     await waitFor(() => expect(screen.getByRole("heading", { name: "What needs an operator decision now" })).toBeInTheDocument());
     await waitFor(() => expect(document.title).toBe("Daily Control Tower - Meridian"));
+  });
+
+  it("hides workflow continuity on an unrecognized route", async () => {
+    mockDailyControlTowerData();
+
+    const { container } = renderWithRouter(<App />, { initialEntries: ["/not-a-workstation-route"] });
+
+    expect(await screen.findByRole(
+      "alert",
+      { name: "Workbench route not found" },
+      { timeout: 10_000 }
+    )).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Daily Control Tower" })).toHaveAttribute("href", "/");
+    expect(container.querySelector(".workflow-continuity-dock")).not.toBeInTheDocument();
+  });
+
+  it.each([
+    "/data/not-a-real-workstream",
+    "/settings/not-a-real-task"
+  ])("rejects unknown workspace child route %s instead of rendering a root fallback", async (route) => {
+    mockDailyControlTowerData();
+
+    renderWithRouter(<App />, { initialEntries: [route] });
+
+    expect(await screen.findByRole(
+      "alert",
+      { name: "Workbench route not found" },
+      { timeout: 10_000 }
+    )).toBeInTheDocument();
   });
 
   it("renders build, environment, data-source, and provider trust in the masthead", async () => {
@@ -397,12 +594,17 @@ describe("App", () => {
 
     expect(document.querySelector('[data-design-system-component="Masthead"]')).toHaveClass("mds-masthead");
     expect(screen.getByText("Data", { selector: ".sub" })).toBeInTheDocument();
-    const strip = screen.getByRole("region", { name: "Workstation build, mode, data source, and provider posture" });
-    await userEvent.click(within(strip).getByText("Environment"));
-    expect(within(strip).getByLabelText("Build 0.1.0. Current Meridian web release.")).toHaveTextContent("Buildv0.1.0");
-    expect(within(strip).getByLabelText("Mode Paper. Session Ops Desk is operating in paper mode.")).toHaveTextContent("ModePaper");
-    expect(within(strip).getByLabelText("Data source Demo data. Demo data is visible; confirm live source status before making operating decisions.")).toHaveTextContent("SourceDemo data");
-    expect(within(strip).getByRole("link", {
+    const strip = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider posture" });
+    await userEvent.click(within(strip).getByText("Trust"));
+    const trustDetails = within(strip).getByRole("group", {
+      name: "Environment, provenance, and provider details"
+    });
+    expect(within(trustDetails).getByLabelText("Build 0.1.0. Current Meridian web release."))
+      .toHaveTextContent("Buildv0.1.0");
+    expect(within(trustDetails).getByLabelText(/^Environment Paper\./)).toHaveTextContent("EnvironmentPaper");
+    expect(within(trustDetails).getByRole("link", { name: /Data provenance SEEDED/ }))
+      .toHaveTextContent("ProvenanceSEEDED");
+    expect(within(trustDetails).getByRole("link", {
       name: "Providers 1 degraded. 1 provider degraded; open Data provider posture before trading decisions. Open provider posture."
     })).toHaveAttribute("href", "/data/providers");
   });
@@ -783,7 +985,7 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/data/security-master"] });
 
     await waitFor(() => expect(document.title).toBe("Accounting Workstation - Meridian"));
-    expect(screen.getByLabelText("Accounting workspace, active section, Review")).toBeInTheDocument();
+    expect(screen.getByLabelText("Accounting workspace, active section, Available product maturity")).toBeInTheDocument();
   });
 
   it("redirects legacy Research and Governance wildcard routes to canonical workspaces", async () => {
@@ -803,13 +1005,13 @@ describe("App", () => {
     renderWithRouter(<Harness />, { initialEntries: ["/research/run-library"] });
 
     await waitFor(() => expect(document.title).toBe("Strategy Workstation - Meridian"));
-    expect(screen.getByLabelText("Strategy workspace, active section, Paper")).toBeInTheDocument();
+    expect(screen.getByLabelText("Strategy workspace, active section, Available product maturity")).toBeInTheDocument();
 
     document.title = "Meridian";
     await user.click(screen.getByRole("button", { name: "Open legacy governance" }));
 
     await waitFor(() => expect(document.title).toBe("Accounting Workstation - Meridian"));
-    expect(screen.getByLabelText("Accounting workspace, active section, Review")).toBeInTheDocument();
+    expect(screen.getByLabelText("Accounting workspace, active section, Available product maturity")).toBeInTheDocument();
   });
 
   it("announces route changes and moves focus to the workbench", async () => {
@@ -908,7 +1110,7 @@ describe("App", () => {
     const navigationDialog = screen.getByRole("dialog", { name: "Workspace navigation" });
     expect(navigationDialog).toBeInTheDocument();
     expect(within(navigationDialog).getByLabelText("Meridian navigation")).toHaveAttribute("data-design-system-component", "NavRail");
-    expect(within(navigationDialog).getByLabelText("Trading workspace, current route, Review")).toBeInTheDocument();
+    expect(within(navigationDialog).getByLabelText("Trading workspace, current route, Available product maturity")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Close workspace navigation" }));
     expect(screen.queryByRole("dialog", { name: "Workspace navigation" })).not.toBeInTheDocument();

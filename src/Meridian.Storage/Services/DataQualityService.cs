@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Domain.Events;
 using Meridian.Storage.Archival;
@@ -241,8 +241,7 @@ public sealed class DataQualityService : IDataQualityService
         bool blocked)
     {
         var completedAtUtc = DateTimeOffset.UtcNow;
-        var inputHash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(
-            $"meridian.data-quality-request.v1\n{sourcePath.Length}:{sourcePath}")));
+        var inputHash = Sha256Digest.ComputeUtf8($"meridian.data-quality-request.v1\n{sourcePath.Length}:{sourcePath}");
         const string sourceEvidenceId = "quality-source-request";
         var evidence = new OperationEvidenceReference(
             sourceEvidenceId,
@@ -367,8 +366,7 @@ public sealed class DataQualityService : IDataQualityService
                 FileShare.Read,
                 bufferSize: 81920,
                 FileOptions.Asynchronous | FileOptions.SequentialScan);
-            var inputHash = Convert.ToHexStringLower(
-                await SHA256.HashDataAsync(snapshot, ct).ConfigureAwait(false));
+            var inputHash = await Sha256Digest.ComputeAsync(snapshot, ct).ConfigureAwait(false);
             snapshot.Close();
             File.Move(temporaryPath, snapshotPath);
             File.SetLastWriteTimeUtc(snapshotPath, sourceLastWriteUtc);

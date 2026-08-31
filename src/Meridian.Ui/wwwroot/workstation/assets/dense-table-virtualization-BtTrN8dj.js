@@ -1,0 +1,1 @@
+function e(e,t={}){return e<=(t.threshold??40)?null:{rowHeight:t.rowHeight??36,viewportRowCount:t.viewportRowCount??14,overscan:t.overscan}}export{e as t};

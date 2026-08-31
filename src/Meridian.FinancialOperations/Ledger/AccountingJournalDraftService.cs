@@ -1,8 +1,8 @@
 using Meridian.Contracts.Ledger;
-using System.Security.Cryptography;
-using System.Text;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Ledger;
 
@@ -600,7 +600,7 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
             NormalizeOptional(ruleId),
             effectiveDate.ToString("yyyy-MM-dd"),
             NormalizeOptional(idempotencyKey));
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        var hash = Sha256Digest.ComputeBytesUtf8(input);
         return new Guid(hash[..16]);
     }
 
@@ -755,9 +755,6 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
             .Order(StringComparer.OrdinalIgnoreCase)
             .ToList();
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static void AddLineIssue(
         List<AccountingConfigurationValidationIssueDto> issues,

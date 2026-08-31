@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Instruments.Options;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Options;
+using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,7 @@ public static class OptionReferenceEndpoints
             var contract = await service.GetContractAsync(contractSymbol, ct).ConfigureAwait(false);
             return contract is null ? Results.NotFound() : Results.Json(contract, jsonOptions);
         })
-        .WithName("GetOptionContractReference")
+        .WithName("GetOptionContractReference").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<OptionContractReferenceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -35,7 +36,7 @@ public static class OptionReferenceEndpoints
             var series = await service.GetSeriesAsync(optionChainId, expiryDate, ct).ConfigureAwait(false);
             return series is null ? Results.NotFound() : Results.Json(series, jsonOptions);
         })
-        .WithName("GetOptionSeriesReference")
+        .WithName("GetOptionSeriesReference").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<OptionSeriesDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -47,7 +48,7 @@ public static class OptionReferenceEndpoints
             var linkage = await service.GetUnderlyingLinkageAsync(contractSymbol, ct).ConfigureAwait(false);
             return linkage is null ? Results.NotFound() : Results.Json(linkage, jsonOptions);
         })
-        .WithName("GetOptionUnderlyingLinkage")
+        .WithName("GetOptionUnderlyingLinkage").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<OptionContractReferenceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -59,7 +60,7 @@ public static class OptionReferenceEndpoints
             var ladder = await service.GetExpiryLadderAsync(underlyingSymbol, ct).ConfigureAwait(false);
             return Results.Json(ladder, jsonOptions);
         })
-        .WithName("GetOptionExpiryLadder")
+        .WithName("GetOptionExpiryLadder").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<DateOnly>>(StatusCodes.Status200OK);
     }
 }

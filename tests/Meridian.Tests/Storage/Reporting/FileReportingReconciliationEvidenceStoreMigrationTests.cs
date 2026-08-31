@@ -194,9 +194,11 @@ public sealed class FileReportingReconciliationEvidenceStoreMigrationTests
 
         alreadyExisted.Should().BeFalse();
         retained.Should().BeEquivalentTo(receipt, options => options.WithStrictOrdering());
+        retained!.CloseWorkflowCompletion.Should().BeEquivalentTo(receipt.CloseWorkflowCompletion);
         (await File.ReadAllTextAsync(fixtureFile.Path)).Should()
             .Contain("meridian.reporting.reconciliation-evidence.v2")
-            .And.Contain("breakEvidence");
+            .And.Contain("breakEvidence")
+            .And.Contain("closeWorkflowCompletion");
     }
 
     private static string SerializeLegacySnapshot(LegacyReceipt receipt)
@@ -265,6 +267,8 @@ public sealed class FileReportingReconciliationEvidenceStoreMigrationTests
 
     private static ReportingReconciliationEvidenceReceipt NewCurrentReceipt()
     {
+        const string ledgerBookId = "2f0a909f-0d18-4b0a-8070-a239451de115";
+        const string accountingPeriodId = "94a253d0-a892-40fd-a419-15051be09125";
         var completedAt = new DateTimeOffset(2026, 7, 15, 12, 0, 0, TimeSpan.Zero);
         var source = new ReportingAuthoritativeSourceCheckpoint(
             "ledger-journal",
@@ -273,8 +277,8 @@ public sealed class FileReportingReconciliationEvidenceStoreMigrationTests
             "organization-v2",
             "company-v2",
             "fund-v2",
-            "book-v2",
-            "period-v2",
+            ledgerBookId,
+            accountingPeriodId,
             "Gaap",
             new DateOnly(2026, 6, 30),
             completedAt,
@@ -291,7 +295,20 @@ public sealed class FileReportingReconciliationEvidenceStoreMigrationTests
             completedAt,
             HasOpenBreaks: false,
             ImmutableArray.Create("period-close:v2:hard-closed"),
-            ImmutableArray<ReportingReconciliationBreakEvidence>.Empty);
+            ImmutableArray<ReportingReconciliationBreakEvidence>.Empty,
+            new ReportingCloseWorkflowCompletionEvidence(
+                "0acdf53a-6311-4448-9691-d10a1676c089",
+                WorkflowVersion: 7,
+                "ea4be56c-a534-458b-bb32-c92fb55e2d03",
+                ledgerBookId,
+                accountingPeriodId,
+                "approval-v2",
+                new string('c', 64),
+                new string('d', 64),
+                "close-package-v2",
+                new string('e', 64),
+                "b93d4291-ea1e-4cb5-865a-4f039a92f8ca",
+                new string('f', 64)));
         return ReportingReconciliationEvidenceValidation.CreateReceipt(source, completion);
     }
 

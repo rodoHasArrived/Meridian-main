@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Contracts;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.TestHost;
@@ -17,7 +18,7 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton(new FamilyOfficeReadService(
                 fundStructureService: null,
                 fundAccountService: null));
-        });
+        }, currentUserPermissions: UserPermission.ViewDirectLending);
 
         var client = app.GetTestClient();
         var overview = await client.GetFromJsonAsync<FamilyOfficeOverviewDto>(

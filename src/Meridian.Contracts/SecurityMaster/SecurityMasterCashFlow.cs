@@ -39,12 +39,16 @@ public enum StructuredCashFlowScenario
 
 /// <summary>
 /// Freshness classification for the cash flow source backing a projection. Consumers that post to
-/// the ledger MUST treat <see cref="Stale"/> as a hard gate rather than an advisory log line.
+/// the ledger MUST treat every state other than <see cref="Fresh"/> as a hard gate rather than an
+/// advisory log line.
 /// </summary>
 [JsonConverter(typeof(JsonStringEnumConverter<StructuredCashFlowStaleness>))]
 public enum StructuredCashFlowStaleness
 {
-    /// <summary>The source has no last-updated timestamp, so freshness cannot be evaluated.</summary>
+    /// <summary>
+    /// The source has no last-updated timestamp, so freshness cannot be evaluated and must not drive
+    /// ledger postings.
+    /// </summary>
     Unknown,
 
     /// <summary>The source was refreshed within the staleness threshold.</summary>
@@ -63,6 +67,11 @@ public enum StructuredCashFlowStaleness
 public sealed record StructuredFactorScheduleEntry(
     DateOnly AsOfDate,
     decimal Factor);
+
+/// <summary>A contractual principal payment retained from the security's economic terms.</summary>
+public sealed record StructuredPrincipalScheduleEntry(
+    DateOnly PaymentDate,
+    decimal Amount);
 
 /// <summary>
 /// Per-security assignment of the authoritative cash flow source.

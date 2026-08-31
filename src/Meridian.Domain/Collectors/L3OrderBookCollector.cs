@@ -29,22 +29,25 @@ public sealed class L3OrderBookCollector : SymbolSubscriptionTracker
     private const ushort MaxDepth = 50;
 
     /// <param name="publisher">Publisher to receive both L3 and derived L2 events.</param>
+    /// <param name="source">
+    /// Real provider identity stamped on every published <see cref="MarketEvent"/>, e.g.
+    /// <c>"NYSE"</c>. Required: this collector is constructed per provider, and there is
+    /// deliberately no default so order-level events can never be misattributed.
+    /// </param>
     /// <param name="requireExplicitSubscription">
     /// When <see langword="true"/>, symbols must be registered via
     /// <see cref="SymbolSubscriptionTracker.RegisterSubscription"/> before events are processed.
     /// </param>
-    /// <param name="defaultSource">
-    /// Source identifier stamped on published <see cref="MarketEvent"/>s, e.g. <c>"NYSE-ITCH"</c>.
-    /// Defaults to <c>"IB"</c> for backward-compatibility with the rest of the Domain layer.
-    /// </param>
     public L3OrderBookCollector(
         IMarketEventPublisher publisher,
-        bool requireExplicitSubscription = true,
-        string defaultSource = "IB")
+        string source,
+        bool requireExplicitSubscription = true)
         : base(requireExplicitSubscription)
     {
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
-        _defaultSource = string.IsNullOrWhiteSpace(defaultSource) ? "IB" : defaultSource;
+        if (MarketDataSources.IsMissing(source))
+            throw new ArgumentException("A real provider source is required.", nameof(source));
+        _defaultSource = source;
     }
 
     /// <summary>
@@ -184,9 +187,10 @@ public sealed class L3OrderBookCollector : SymbolSubscriptionTracker
     {
         // Always publish an L2 snapshot — even an empty one — so downstream consumers
         // learn that the book has been cleared (e.g. after a full cancel/execute).
+        // The derived L2 carries the same provider identity as the L3 events it came from.
         var snapshot = book.BuildSnapshot(symbol, ts, seq, streamId, venue, MaxDepth)
             ?? new LOBSnapshot(ts, symbol, [], [], SequenceNumber: seq, StreamId: streamId, Venue: venue);
-        _publisher.TryPublish(MarketEvent.L2Snapshot(ts, symbol, snapshot));
+        _publisher.TryPublish(MarketEvent.L2Snapshot(ts, symbol, snapshot, _defaultSource));
     }
 
     /// <summary>

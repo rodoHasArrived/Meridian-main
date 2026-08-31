@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.SecurityMaster;
@@ -26,7 +27,7 @@ namespace Meridian.Ui.Shared.Services;
 /// Builds the shared Accounting and fund-operations workspace projection used by
 /// the local API and future cross-workspace surfaces.
 /// </summary>
-public sealed class FundOperationsWorkspaceReadService
+public sealed partial class FundOperationsWorkspaceReadService
 {
     private static readonly JsonSerializerOptions ReportArtifactJsonOptions = new()
     {
@@ -318,6 +319,7 @@ public sealed class FundOperationsWorkspaceReadService
         ArgumentException.ThrowIfNullOrWhiteSpace(query.FundProfileId);
         ct.ThrowIfCancellationRequested();
 
+        var reconciliationQueueScope = ResolveReconciliationQueueScope(accessContext);
         var normalizedFundProfileId = query.FundProfileId.Trim();
         var fundId = TranslateFundProfileId(normalizedFundProfileId);
 
@@ -365,6 +367,7 @@ public sealed class FundOperationsWorkspaceReadService
             normalizedFundProfileId,
             accountSummaries,
             runs,
+            reconciliationQueueScope,
             ct);
         var navTask = BuildNavSummaryAsync(
             normalizedFundProfileId,
@@ -574,6 +577,7 @@ public sealed class FundOperationsWorkspaceReadService
             normalizedFundProfileId,
             accountSummaries,
             runs,
+            accessScope: null,
             ct);
         var navTask = BuildNavSummaryAsync(normalizedFundProfileId, currency, ledgerBook, asOf, ct);
 
@@ -596,6 +600,7 @@ public sealed class FundOperationsWorkspaceReadService
             report,
             auditActor,
             ct).ConfigureAwait(false);
+        var derivedProvenanceToken = ReportPackProvenanceResolver.ResolveDerivedToken(runs, ledgerBook.ConsolidatedJournalEntries());
         var validationIssues = _reportPackValidationService.Validate(new ReportPackValidationContext(
             ReportId: report.ReportId,
             AsOf: asOf,
@@ -608,7 +613,8 @@ public sealed class FundOperationsWorkspaceReadService
             StaleReplayCount: 0,
             UnresolvedSecurityMasterConflictCount: securityValidationResults.Count(result =>
                 result.Report.Issues.Any(issue => issue.Severity is SecurityValidationSeverityDto.Critical or SecurityValidationSeverityDto.Error)),
-            SecurityValidationResults: securityValidationResults));
+            SecurityValidationResults: securityValidationResults,
+            DataProvenanceToken: derivedProvenanceToken));
         var status = _reportPackValidationService.ResolveStatus(validationIssues);
         var lifecycleEvents = _reportPackValidationService.BuildGenerationLifecycle(
             auditActor,
@@ -634,7 +640,8 @@ public sealed class FundOperationsWorkspaceReadService
                 reconciliation,
                 nav,
                 runs),
-            SchemaVersion: schemaVersion);
+            SchemaVersion: schemaVersion,
+            DataProvenanceToken: derivedProvenanceToken);
         var artifactContents = BuildReportPackArtifacts(report, formats, brandingTheme, ct);
         generationStopwatch.Stop();
         var warnings = BuildReportPackWarnings(report, reconciliation, runs.Count, securityMissingCount);
@@ -1027,6 +1034,7 @@ public sealed class FundOperationsWorkspaceReadService
         string fundProfileId,
         IReadOnlyList<FundAccountSummary> accounts,
         IReadOnlyList<StrategyRunEntry> runs,
+        ReconciliationBreakQueueScope? accessScope,
         CancellationToken ct)
     {
         var items = new List<FundReconciliationItem>();
@@ -1076,10 +1084,7 @@ public sealed class FundOperationsWorkspaceReadService
 
                 var detail = await _strategyReconciliationService
                     .GetLatestForRunAsync(run.RunId, ct)
-                    .ConfigureAwait(false)
-                    ?? await _strategyReconciliationService
-                        .RunAsync(new ReconciliationRunRequest(run.RunId), ct)
-                        .ConfigureAwait(false);
+                    .ConfigureAwait(false);
 
                 if (detail is null)
                 {
@@ -1126,6 +1131,8 @@ public sealed class FundOperationsWorkspaceReadService
         var ordered = items
             .OrderByDescending(static item => item.RequestedAt)
             .ToArray();
+        var breakQueue = await BuildBreakQueueProjectionAsync(fundProfileId, accessScope, ct)
+            .ConfigureAwait(false);
 
         return new ReconciliationSummary(
             RunCount: ordered.Length,
@@ -1133,14 +1140,14 @@ public sealed class FundOperationsWorkspaceReadService
             BreakAmountTotal: breakAmountTotal,
             RecentRuns: ordered,
             SecurityCoverageIssueCount: securityCoverageIssues,
-            BreakQueue: await BuildBreakQueueProjectionAsync(fundProfileId, runs, ct).ConfigureAwait(false),
+            BreakQueue: breakQueue,
             LedgerImpactPreview: BuildLedgerImpactPreview(ordered),
-            HasCriticalBreakOpen: await HasCriticalBreakOpenAsync(fundProfileId, runs, ct).ConfigureAwait(false));
+            HasCriticalBreakOpen: breakQueue?.CriticalOpenCount > 0);
     }
 
     private async Task<ReconciliationBreakQueueProjectionDto?> BuildBreakQueueProjectionAsync(
         string fundProfileId,
-        IReadOnlyList<StrategyRunEntry> runs,
+        ReconciliationBreakQueueScope? accessScope,
         CancellationToken ct)
     {
         if (_breakQueueRepository is null)
@@ -1148,14 +1155,16 @@ public sealed class FundOperationsWorkspaceReadService
             return null;
         }
 
-        var scopedRunIds = runs
-            .Select(static run => run.RunId)
-            .Where(static runId => !string.IsNullOrWhiteSpace(runId))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var items = (await _breakQueueRepository.GetAllAsync(null, ct).ConfigureAwait(false))
-            .Where(item =>
-                string.Equals(item.FundAccountId, fundProfileId, StringComparison.OrdinalIgnoreCase) &&
-                scopedRunIds.Contains(item.RunId))
+        var requiredScope = accessScope
+            ?? throw new InvalidOperationException(
+                "A tenant- and company-scoped request context is required to read reconciliation casework.");
+        var items = (await _breakQueueRepository
+                .GetAllAsync(requiredScope, status: null, ct)
+                .ConfigureAwait(false))
+            .Where(item => string.Equals(
+                item.FundProfileId,
+                fundProfileId,
+                StringComparison.OrdinalIgnoreCase))
             .ToArray();
         var projected = items
             .OrderByDescending(static item => item.LastUpdatedAt)
@@ -1258,25 +1267,22 @@ public sealed class FundOperationsWorkspaceReadService
             ValidationFlags: flags);
     }
 
-    private async Task<bool> HasCriticalBreakOpenAsync(
-        string fundProfileId,
-        IReadOnlyList<StrategyRunEntry> runs,
-        CancellationToken ct)
+    private ReconciliationBreakQueueScope? ResolveReconciliationQueueScope(
+        ReportAccessQueryContext? accessContext)
     {
         if (_breakQueueRepository is null)
         {
-            return false;
+            return null;
         }
 
-        var scopedRunIds = runs
-            .Select(static run => run.RunId)
-            .Where(static runId => !string.IsNullOrWhiteSpace(runId))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var items = await _breakQueueRepository.GetAllAsync(ReconciliationBreakQueueStatus.Open, ct).ConfigureAwait(false);
-        return items.Any(item =>
-            item.Severity == ReconciliationBreakSeverity.Critical &&
-            string.Equals(item.FundAccountId, fundProfileId, StringComparison.OrdinalIgnoreCase) &&
-            scopedRunIds.Contains(item.RunId));
+        if (string.IsNullOrWhiteSpace(accessContext?.TenantId) ||
+            string.IsNullOrWhiteSpace(accessContext.CompanyId))
+        {
+            throw new InvalidOperationException(
+                "A tenant- and company-scoped request context is required to read reconciliation casework.");
+        }
+
+        return new ReconciliationBreakQueueScope(accessContext.TenantId, accessContext.CompanyId);
     }
 
     private async Task<FundNavAttributionSummaryDto> BuildNavSummaryAsync(
@@ -2329,7 +2335,7 @@ public sealed class FundOperationsWorkspaceReadService
         };
 
         var json = JsonSerializer.SerializeToUtf8Bytes(source, ReportArtifactJsonOptions);
-        return Convert.ToHexString(SHA256.HashData(json)).ToLowerInvariant();
+        return Sha256Digest.Compute(json);
     }
 
     private static IReadOnlyList<FundReportPackLineagePointerDto> BuildLineagePointers(
@@ -4330,7 +4336,7 @@ public sealed class FundOperationsWorkspaceReadService
             builder.Append(row.TryGetValue(column.Name, out var value) ? value : string.Empty);
         }
 
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     private static string BuildStructuredExportRoute(
@@ -4411,7 +4417,7 @@ public sealed class FundOperationsWorkspaceReadService
             retainedPath,
             retainedManifestPath,
             versionStamp);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(input))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(input);
     }
 
     private static string BuildStructuredExportIntegritySummary(
@@ -4637,8 +4643,4 @@ public sealed class FundOperationsWorkspaceReadService
             _ => ReportKind.TrialBalance
         };
 
-    private sealed record AccountWorkspaceProjection(
-        FundAccountSummary Summary,
-        AccountBalanceSnapshotDto? LatestSnapshot,
-        Guid? FundId);
 }
