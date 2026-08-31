@@ -966,18 +966,12 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
                 continue;
             }
 
-            if (entry.Request.Metadata is not null &&
-                entry.Request.Metadata.TryGetValue(SubmitterMetadataKey, out var submitter) &&
-                !string.IsNullOrWhiteSpace(submitter))
-            {
-                // Written by the current release path (or an earlier repair); Actor
-                // already holds the retained submitter.
-                continue;
-            }
-
             // The link is trusted only when the referenced origin matches this order's
             // non-release fingerprint: clients could attach arbitrary token values, so an
             // unverified reference to someone else's escalation must never rebind identity.
+            // Verification runs before any riskSubmitter short-circuit because the key was
+            // not reserved before this migration — a legacy client could have supplied it,
+            // so its bare presence cannot prove the entry was written by the trusted path.
             if (TryRecoverChainSubmitter(entry.Request, out var chainSubmitter))
             {
                 if (string.IsNullOrWhiteSpace(chainSubmitter))
@@ -1005,14 +999,30 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
                 continue;
             }
 
+            // Unverifiable chain (origin trimmed or mismatched): accept the entry only when
+            // it is self-consistent with the invariant the trusted path always writes —
+            // Actor equal to the stamped riskSubmitter, both set from the same resolved
+            // value at park time. A legacy forgery would need the pre-migration client to
+            // have predicted the eventual approver's name to satisfy this; that residual is
+            // accepted because the metadata policy now rejects client-supplied riskSubmitter,
+            // so the shape cannot be forged going forward.
+            if (entry.Request.Metadata is not null &&
+                entry.Request.Metadata.TryGetValue(SubmitterMetadataKey, out var stampedSubmitter) &&
+                !string.IsNullOrWhiteSpace(stampedSubmitter) &&
+                !string.IsNullOrWhiteSpace(entry.Actor) &&
+                string.Equals(stampedSubmitter.Trim(), entry.Actor.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
             var deniedEntry = entry with
             {
                 Status = RiskEscalationStatus.Denied,
                 ResolvedBy = "system",
                 ResolutionReason =
-                    "Denied at startup: this chained escalation predates the retained-submitter channel and its "
-                    + "linked original park is either no longer retained or does not match this order's fingerprint, "
-                    + "so the submitter identity the segregation-of-duties checks must bind to cannot be recovered. "
+                    "Denied at startup: this chained escalation's linked original park cannot be verified (missing "
+                    + "or fingerprint-mismatched) and its metadata carries no self-consistent retained submitter, so "
+                    + "the identity the segregation-of-duties checks must bind to cannot be trusted. "
                     + "Re-submit the order to obtain a fresh governed approval.",
                 ResolvedAt = DateTimeOffset.UtcNow
             };

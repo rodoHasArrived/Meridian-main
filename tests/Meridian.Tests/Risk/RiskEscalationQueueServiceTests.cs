@@ -721,6 +721,53 @@ public sealed class RiskEscalationQueueServiceTests
     }
 
     [Fact]
+    public void Restart_KeepsSelfConsistentChainedEntriesWhoseOriginWasTrimmed()
+    {
+        var options = CreateOptions();
+        var chained = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = "trimmed-origin",
+                [RiskEscalationQueueService.SubmitterMetadataKey] = "trader-alice",
+                ["actor"] = "risk-officer-bob"
+            }
+        };
+        WriteSnapshot(options, LegacyEntry("chained-1", chained, actor: "trader-alice"));
+
+        var restarted = CreateQueue(options);
+
+        // The trusted path always writes Actor and riskSubmitter from the same resolved
+        // value; a self-consistent entry survives origin trimming instead of being denied.
+        var reloaded = restarted.TryGet("chained-1")!;
+        reloaded.Status.Should().Be(RiskEscalationStatus.PendingApproval);
+        reloaded.Actor.Should().Be("trader-alice");
+    }
+
+    [Fact]
+    public void Restart_DeniesLegacyChainedEntriesWhoseStampedSubmitterContradictsTheActor()
+    {
+        var options = CreateOptions();
+        // riskSubmitter was not a reserved key before the migration, so a legacy client
+        // could have planted one; a value that does not corroborate the recorded actor is
+        // an unverifiable identity claim, not evidence of the trusted release path.
+        var chained = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = "trimmed-origin",
+                [RiskEscalationQueueService.SubmitterMetadataKey] = "someone-else",
+                ["actor"] = "risk-officer-bob"
+            }
+        };
+        WriteSnapshot(options, LegacyEntry("chained-1", chained, actor: "risk-officer-bob"));
+
+        var restarted = CreateQueue(options);
+
+        restarted.TryGet("chained-1")!.Status.Should().Be(RiskEscalationStatus.Denied);
+    }
+
+    [Fact]
     public void Park_TokenCarryingResubmissionWithoutSubmitterMetadata_BindsToTheChainOrigin()
     {
         var queue = CreateQueue();
