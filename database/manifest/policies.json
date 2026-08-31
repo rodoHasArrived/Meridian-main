@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 226,
-    "warning": 226
+    "total": 231,
+    "warning": 231
   },
   "failed": false,
   "findings": [
@@ -950,6 +950,36 @@
     {
       "details": {
         "schema": "security_master",
+        "table": "corporate_action_case_accounting_approvals"
+      },
+      "message": "Business table security_master.corporate_action_case_accounting_approvals does not have a table comment.",
+      "object": "security_master.corporate_action_case_accounting_approvals",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_action_case_accounting_postings"
+      },
+      "message": "Business table security_master.corporate_action_case_accounting_postings does not have a table comment.",
+      "object": "security_master.corporate_action_case_accounting_postings",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_action_case_accounting_projections"
+      },
+      "message": "Business table security_master.corporate_action_case_accounting_projections does not have a table comment.",
+      "object": "security_master.corporate_action_case_accounting_projections",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
         "table": "corporate_action_case_conflicts"
       },
       "message": "Business table security_master.corporate_action_case_conflicts does not have a table comment.",
@@ -1853,6 +1883,34 @@
     {
       "details": {
         "columns": [
+          "case_id"
+        ],
+        "constraint": "corporate_action_case_accounting_approvals_case_id_fkey",
+        "schema": "security_master",
+        "table": "corporate_action_case_accounting_approvals"
+      },
+      "message": "Foreign key security_master.corporate_action_case_accounting_approvals.corporate_action_case_accounting_approvals_case_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.corporate_action_case_accounting_approvals.corporate_action_case_accounting_approvals_case_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "approval_id"
+        ],
+        "constraint": "corporate_action_case_accounting_postings_approval_id_fkey",
+        "schema": "security_master",
+        "table": "corporate_action_case_accounting_postings"
+      },
+      "message": "Foreign key security_master.corporate_action_case_accounting_postings.corporate_action_case_accounting_postings_approval_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.corporate_action_case_accounting_postings.corporate_action_case_accounting_postings_approval_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
           "accepted_corp_act_id"
         ],
         "constraint": "corporate_action_source_proposals_accepted_corp_act_id_fkey",
@@ -2457,5 +2515,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "ce3a5ae6ddd68e1a96a87b77697b0e2add3a06d787beec723711f0f7323bed05"
+  "fingerprint": "c79fb25586edf54bedce79d7c7a439cd4720b141301bd38311339f95e5c124b5"
 }

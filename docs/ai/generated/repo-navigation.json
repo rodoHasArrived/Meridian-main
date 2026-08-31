@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-24T06:17:53Z",
+  "generatedAt": "2026-08-31T06:37:41Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -2225,324 +2225,324 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Execution/OrderManagementSystem.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-08-24T04:06:54Z",
-      "lastCommit": "0854e607d",
-      "lastSummary": "Carry face-value sizing through replay, marks, and the paper gateway",
+      "path": "src/Meridian.FinancialOperations/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-30T04:02:38Z",
+      "lastCommit": "7a40e6970",
+      "lastSummary": "Index Flex account evidence instead of rescanning per anchor",
+      "touches": 16
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-30T04:02:38Z",
+      "lastCommit": "7a40e6970",
+      "lastSummary": "Index Flex account evidence instead of rescanning per anchor",
+      "touches": 13
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaActivityStatementConnector.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-30T04:02:38Z",
+      "lastCommit": "7a40e6970",
+      "lastSummary": "Index Flex account evidence instead of rescanning per anchor",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvStatementConnector.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-30T03:37:39Z",
+      "lastCommit": "b47f9df7a",
+      "lastSummary": "Saturate the CSV discovery allowance, and depth-check OFX leaves",
       "touches": 10
     },
     {
-      "path": "src/Meridian.Execution.Sdk/Models.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-08-24T04:06:54Z",
-      "lastCommit": "0854e607d",
-      "lastSummary": "Carry face-value sizing through replay, marks, and the paper gateway",
-      "touches": 2
+      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-30T03:37:39Z",
+      "lastCommit": "b47f9df7a",
+      "lastSummary": "Saturate the CSV discovery allowance, and depth-check OFX leaves",
+      "touches": 8
     },
     {
-      "path": "src/Meridian.Execution/Services/PaperTradingPortfolio.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-08-24T04:06:54Z",
-      "lastCommit": "0854e607d",
-      "lastSummary": "Carry face-value sizing through replay, marks, and the paper gateway",
-      "touches": 2
+      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-30T03:17:20Z",
+      "lastCommit": "4eac56733",
+      "lastSummary": "Charge BAI2 newline padding to the line budget",
+      "touches": 11
     },
     {
-      "path": "src/Meridian.Execution/PaperTradingGateway.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-08-24T04:06:54Z",
-      "lastCommit": "0854e607d",
-      "lastSummary": "Carry face-value sizing through replay, marks, and the paper gateway",
+      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-30T03:05:30Z",
+      "lastCommit": "03a29b7f1",
+      "lastSummary": "Bound the objects Alpaca materializes before deserializing",
+      "touches": 11
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-29T23:33:52Z",
+      "lastCommit": "73dd54ea9",
+      "lastSummary": "Carry ingress codes through validate as well as commit",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-29T23:24:41Z",
+      "lastCommit": "b37e3cea5",
+      "lastSummary": "Charge the record cap on the append in camt, BAI2 and OFX",
+      "touches": 18
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-29T23:24:41Z",
+      "lastCommit": "b37e3cea5",
+      "lastSummary": "Charge the record cap on the append in camt, BAI2 and OFX",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-29T17:23:14Z",
+      "lastCommit": "2f72a8f3a",
+      "lastSummary": "Address the fourteenth Codex round: bound retained evidence rows at the seam",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs",
+      "path": "src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-24T00:54:53Z",
-      "lastCommit": "d60d4100d",
-      "lastSummary": "Close the release-readiness alpha blockers",
-      "touches": 13
+      "lastModified": "2026-08-29T15:33:55Z",
+      "lastCommit": "291695dcf",
+      "lastSummary": "fix(wpf): register the tenancy guard in the composition root, not the feature module",
+      "touches": 5
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs",
+      "path": "src/Meridian.Wpf/App.xaml.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-24T00:54:53Z",
-      "lastCommit": "d60d4100d",
-      "lastSummary": "Close the release-readiness alpha blockers",
-      "touches": 13
+      "lastModified": "2026-08-29T15:33:55Z",
+      "lastCommit": "291695dcf",
+      "lastSummary": "fix(wpf): register the tenancy guard in the composition root, not the feature module",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/ApiKeyMiddleware.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-24T00:54:53Z",
-      "lastCommit": "d60d4100d",
-      "lastSummary": "Close the release-readiness alpha blockers",
-      "touches": 10
+      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-29T15:32:03Z",
+      "lastCommit": "8d2484482",
+      "lastSummary": "Address the seventh Codex round: measure and report the bounds honestly",
+      "touches": 3
     },
     {
-      "path": "src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs",
+      "path": "src/Meridian.Storage/Ledger/PostgresAccountingConfigurationStore.cs",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-24T00:54:53Z",
-      "lastCommit": "d60d4100d",
-      "lastSummary": "Close the release-readiness alpha blockers",
-      "touches": 6
+      "lastModified": "2026-08-29T15:25:46Z",
+      "lastCommit": "22e39ea6d",
+      "lastSummary": "fix(ledger): reuse the shared text primitive instead of a fourth copy of it",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-29T15:16:36Z",
+      "lastCommit": "3753c6235",
+      "lastSummary": "fix(governance): close three more review findings, one a regression from the last round",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/FundProfileScopeEndpointFilters.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-29T15:16:36Z",
+      "lastCommit": "3753c6235",
+      "lastSummary": "fix(governance): close three more review findings, one a regression from the last round",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Application/FundStructure/PostgresFundStructureService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-29T14:46:04Z",
+      "lastCommit": "af474b581",
+      "lastSummary": "fix(governance): close six defects the Codex review found in this PR",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-29T14:46:04Z",
+      "lastCommit": "af474b581",
+      "lastSummary": "fix(governance): close six defects the Codex review found in this PR",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-29T14:46:04Z",
+      "lastCommit": "af474b581",
+      "lastSummary": "fix(governance): close six defects the Codex review found in this PR",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-29T14:46:04Z",
+      "lastCommit": "af474b581",
+      "lastSummary": "fix(governance): close six defects the Codex review found in this PR",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-29T14:46:04Z",
+      "lastCommit": "af474b581",
+      "lastSummary": "fix(governance): close six defects the Codex review found in this PR",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Storage/FundStructure/Migrations/004_fund_structure_tenant_columns.sql",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-08-29T09:17:06Z",
+      "lastCommit": "b5959430f",
+      "lastSummary": "chore(schema-control): refresh the schema snapshot for the new migrations",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_032__accounting_audit_chain.sql",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-08-29T09:17:06Z",
+      "lastCommit": "b5959430f",
+      "lastSummary": "chore(schema-control): refresh the schema snapshot for the new migrations",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiExceptionHandler.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-29T09:07:11Z",
+      "lastCommit": "87a19b955",
+      "lastSummary": "fix(tenancy): report a refused tenant scope as 403 rather than a server error",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-29T09:00:33Z",
+      "lastCommit": "08d2fc28f",
+      "lastSummary": "docs(roadmap): map SRC-APP to W9-GOV-008 and regenerate the traced docs",
+      "touches": 4
     },
     {
       "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-24T00:54:53Z",
-      "lastCommit": "d60d4100d",
-      "lastSummary": "Close the release-readiness alpha blockers",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.Contracts/Operations/DataProvenance.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-24T00:54:53Z",
-      "lastCommit": "d60d4100d",
-      "lastSummary": "Close the release-readiness alpha blockers",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian/UiServer.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-08-24T00:54:53Z",
-      "lastCommit": "d60d4100d",
-      "lastSummary": "Close the release-readiness alpha blockers",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Execution/Events/TradeExecutedEvent.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-08-24T00:54:53Z",
-      "lastCommit": "d60d4100d",
-      "lastSummary": "Close the release-readiness alpha blockers",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Execution/OrderManagementSystem.FillIdentity.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-08-24T00:54:53Z",
-      "lastCommit": "d60d4100d",
-      "lastSummary": "Close the release-readiness alpha blockers",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Wpf/ViewModels/DataBrowserViewModel.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-24T00:54:53Z",
-      "lastCommit": "d60d4100d",
-      "lastSummary": "Close the release-readiness alpha blockers",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Wpf/Views/DataBrowserPage.xaml",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-24T00:54:53Z",
-      "lastCommit": "d60d4100d",
-      "lastSummary": "Close the release-readiness alpha blockers",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-22T00:58:53Z",
-      "lastCommit": "d319d33b1",
-      "lastSummary": "Settle the line pairing by counting instead of searching",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/LedgerRetainedValueComparison.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-22T00:58:53Z",
-      "lastCommit": "d319d33b1",
-      "lastSummary": "Settle the line pairing by counting instead of searching",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-21T00:43:27Z",
-      "lastCommit": "422678bba",
-      "lastSummary": "Use the tenant-filtered runs, and authorize report records before capping",
-      "touches": 13
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-21T00:43:27Z",
-      "lastCommit": "422678bba",
-      "lastSummary": "Use the tenant-filtered runs, and authorize report records before capping",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Collateral.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-21T00:43:27Z",
-      "lastCommit": "422678bba",
-      "lastSummary": "Use the tenant-filtered runs, and authorize report records before capping",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-21T00:43:27Z",
-      "lastCommit": "422678bba",
-      "lastSummary": "Use the tenant-filtered runs, and authorize report records before capping",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Identity/Application/ScopedAccessServices.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-21T00:43:27Z",
-      "lastCommit": "422678bba",
-      "lastSummary": "Use the tenant-filtered runs, and authorize report records before capping",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ReportingWorkflowService.AccessibleRecords.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-21T00:43:27Z",
-      "lastCommit": "422678bba",
-      "lastSummary": "Use the tenant-filtered runs, and authorize report records before capping",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-21T00:20:11Z",
-      "lastCommit": "118164551",
-      "lastSummary": "Bound the report explorers and the workflow summary to the request tenant",
-      "touches": 36
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FinancialRecordExplorers.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-21T00:20:11Z",
-      "lastCommit": "118164551",
-      "lastSummary": "Bound the report explorers and the workflow summary to the request tenant",
-      "touches": 11
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-21T00:20:11Z",
-      "lastCommit": "118164551",
-      "lastSummary": "Bound the report explorers and the workflow summary to the request tenant",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-21T00:20:11Z",
-      "lastCommit": "118164551",
-      "lastSummary": "Bound the report explorers and the workflow summary to the request tenant",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AccountingWorkspace.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-21T00:20:11Z",
-      "lastCommit": "118164551",
-      "lastSummary": "Bound the report explorers and the workflow summary to the request tenant",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/AccountingWorkspaceReadScope.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-21T00:20:11Z",
-      "lastCommit": "118164551",
-      "lastSummary": "Bound the report explorers and the workflow summary to the request tenant",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/CollateralExposureService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-20T23:26:19Z",
-      "lastCommit": "b166ebbd8",
-      "lastSummary": "Refuse an unbufferable observation, and let a read-only role render a template",
-      "touches": 14
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/RetainedPostingEquivalence.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-08-20T21:31:05Z",
-      "lastCommit": "e30ca8a13",
-      "lastSummary": "Mirror the store's own timestamp encoding, and treat an identity translation as no claim",
+      "lastModified": "2026-08-29T08:59:30Z",
+      "lastCommit": "5ffeef44d",
+      "lastSummary": "feat(governance): make the accounting mutation and its audit append recoverable as a pair",
       "touches": 9
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorInbox.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-20T12:27:20Z",
-      "lastCommit": "7b0958b86",
-      "lastSummary": "Scope run cards, keep the blocker, and fold padding out of exposure identities",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Wpf/Services/DesktopWorkflowReadScopeResolver.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-20T11:31:44Z",
-      "lastCommit": "2ccf0921a",
-      "lastSummary": "Refuse unattributed runs under tenancy, and fail closed on a bad role",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Identity/Contracts/Auth/RolePermissions.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-08-20T11:31:44Z",
-      "lastCommit": "2ccf0921a",
-      "lastSummary": "Refuse unattributed runs under tenancy, and fail closed on a bad role",
+      "path": "src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-29T08:59:30Z",
+      "lastCommit": "5ffeef44d",
+      "lastSummary": "feat(governance): make the accounting mutation and its audit append recoverable as a pair",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs",
+      "path": "src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-20T10:54:12Z",
-      "lastCommit": "0440cad06",
-      "lastSummary": "Admit established principals to host status, and close three residuals",
-      "touches": 14
+      "lastModified": "2026-08-29T08:59:30Z",
+      "lastCommit": "5ffeef44d",
+      "lastSummary": "feat(governance): make the accounting mutation and its audit append recoverable as a pair",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-20T10:54:12Z",
-      "lastCommit": "0440cad06",
-      "lastSummary": "Admit established principals to host status, and close three residuals",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-20T10:54:12Z",
-      "lastCommit": "0440cad06",
-      "lastSummary": "Admit established principals to host status, and close three residuals",
+      "path": "src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-29T08:38:05Z",
+      "lastCommit": "c70a68e47",
+      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-20T10:29:54Z",
-      "lastCommit": "fc771b89d",
-      "lastSummary": "Scope explorer sources by tenant, and stop capping self-authenticating routes",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/SecureReportingDistributionEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-20T10:29:54Z",
-      "lastCommit": "fc771b89d",
-      "lastSummary": "Scope explorer sources by tenant, and stop capping self-authenticating routes",
+      "path": "src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-08-29T08:38:05Z",
+      "lastCommit": "c70a68e47",
+      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs",
+      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-08-29T08:38:05Z",
+      "lastCommit": "c70a68e47",
+      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-29T08:38:05Z",
+      "lastCommit": "c70a68e47",
+      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-29T08:38:05Z",
+      "lastCommit": "c70a68e47",
+      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-08-29T08:38:05Z",
+      "lastCommit": "c70a68e47",
+      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-08-20T08:56:18Z",
-      "lastCommit": "c7de32903",
-      "lastSummary": "Project symbol status by authority, and free the brokerage reads",
-      "touches": 8
+      "lastModified": "2026-08-29T08:38:05Z",
+      "lastCommit": "c70a68e47",
+      "lastSummary": "feat(tenancy): make fund-scoped reads fail closed, with an authority for background readers",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/FundStructure/FundStructureTenantScope.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-08-29T08:14:33Z",
+      "lastCommit": "e3a7378ac",
+      "lastSummary": "feat(fund-structure): scope reads and writes by tenant, and decide the in-memory posture",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/FundStructure/IFundStructureStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-08-29T08:14:33Z",
+      "lastCommit": "e3a7378ac",
+      "lastSummary": "feat(fund-structure): scope reads and writes by tenant, and decide the in-memory posture",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-08-29T08:14:33Z",
+      "lastCommit": "e3a7378ac",
+      "lastSummary": "feat(fund-structure): scope reads and writes by tenant, and decide the in-memory posture",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-08-29T08:14:33Z",
+      "lastCommit": "e3a7378ac",
+      "lastSummary": "feat(fund-structure): scope reads and writes by tenant, and decide the in-memory posture",
+      "touches": 1
     }
   ],
   "recentChangesWindowDays": 14,

@@ -41,6 +41,9 @@ public sealed class CorporateActionOperationsAuthorizationTests
             "RecordCorporateActionCaseConflict",
             "UpsertCorporateActionCaseOption",
             "TransitionCorporateActionCase",
+            "AttachCorporateActionCaseAccountingProjection",
+            "ApproveCorporateActionCaseAccounting",
+            "PostCorporateActionCaseAccounting",
         ];
 
         foreach (var endpointName in scopedEndpointNames)
@@ -73,6 +76,23 @@ public sealed class CorporateActionOperationsAuthorizationTests
                 UserPermission.ModifySecurityMaster,
                 UserPermission.ResolveCorporateActionTerms);
         }
+    }
+
+    [Theory]
+    [InlineData("AttachCorporateActionCaseAccountingProjection", UserPermission.PrepareCorporateActionAccounting)]
+    [InlineData("ApproveCorporateActionCaseAccounting", UserPermission.ApproveCorporateActionAccounting)]
+    [InlineData("PostCorporateActionCaseAccounting", UserPermission.PostCorporateActionAccounting)]
+    public async Task AccountingLaneRoutes_RequireTheirDedicatedGovernedPermission(
+        string endpointName,
+        UserPermission requiredPermission)
+    {
+        var service = Substitute.For<ICorporateActionOperationsService>();
+        await using var app = await CreateAppAsync(service, UserPermission.ViewCorporateActions);
+
+        var declarations = GetEndpoint(app, endpointName).Metadata
+            .GetOrderedMetadata<EndpointAuthorizationMetadata>();
+        var declaration = declarations.Should().ContainSingle().Subject;
+        declaration.Permissions.Should().Equal(requiredPermission);
     }
 
     [Fact]
