@@ -584,7 +584,9 @@ classDiagram
     class Meridian_Contracts_Ledger_AccountingAuditChainAnchorRecord["AccountingAuditChainAnchorRecord"] {
         +string AnchorHash
         +string EntryHash
+        +long GenesisSequence
         +AccountingAuditChainAnchorPhase Phase
+        +int PreChainEventCount
         +string? PreviousAnchorHash
         +DateTimeOffset RecordedAtUtc
         +int SchemaVersion
