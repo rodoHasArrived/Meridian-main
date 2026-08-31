@@ -250,7 +250,7 @@ public sealed class FileAccountingAuditChainTests : IDisposable
 
         // Simulate a crash after the head was declared but before the snapshot write landed.
         var anchor = new FileAccountingAuditChainAnchor(store.AuditChainAnchorPath);
-        await anchor.DeclareAsync(2, new string('a', 64));
+        await anchor.DeclareAsync(2, new string('a', 64), AccountingAuditChainState.FirstSequence, preChainEventCount: 0);
 
         var verification = await store.VerifyAuditChainAsync();
         verification.Status.Should().Be(AccountingAuditChainStatus.InterruptedAppend);
@@ -301,11 +301,11 @@ public sealed class FileAccountingAuditChainTests : IDisposable
     public async Task Anchor_RefusesAHeadThatDoesNotAdvance()
     {
         var anchor = new FileAccountingAuditChainAnchor(Path.Combine(_root, "head.log"));
-        await anchor.DeclareAsync(1, new string('a', 64));
-        await anchor.CommitAsync(1, new string('a', 64));
-        await anchor.DeclareAsync(2, new string('b', 64));
+        await anchor.DeclareAsync(1, new string('a', 64), AccountingAuditChainState.FirstSequence, preChainEventCount: 0);
+        await anchor.CommitAsync(1, new string('a', 64), AccountingAuditChainState.FirstSequence, preChainEventCount: 0);
+        await anchor.DeclareAsync(2, new string('b', 64), AccountingAuditChainState.FirstSequence, preChainEventCount: 0);
 
-        var rewind = async () => await anchor.DeclareAsync(1, new string('c', 64));
+        var rewind = async () => await anchor.DeclareAsync(1, new string('c', 64), AccountingAuditChainState.FirstSequence, preChainEventCount: 0);
 
         await rewind.Should().ThrowAsync<AccountingAuditChainAnchorException>();
     }
@@ -315,10 +315,10 @@ public sealed class FileAccountingAuditChainTests : IDisposable
     {
         var anchorPath = Path.Combine(_root, "head.log");
         var anchor = new FileAccountingAuditChainAnchor(anchorPath);
-        await anchor.DeclareAsync(1, new string('a', 64));
-        await anchor.CommitAsync(1, new string('a', 64));
-        await anchor.DeclareAsync(2, new string('b', 64));
-        await anchor.CommitAsync(2, new string('b', 64));
+        await anchor.DeclareAsync(1, new string('a', 64), AccountingAuditChainState.FirstSequence, preChainEventCount: 0);
+        await anchor.CommitAsync(1, new string('a', 64), AccountingAuditChainState.FirstSequence, preChainEventCount: 0);
+        await anchor.DeclareAsync(2, new string('b', 64), AccountingAuditChainState.FirstSequence, preChainEventCount: 0);
+        await anchor.CommitAsync(2, new string('b', 64), AccountingAuditChainState.FirstSequence, preChainEventCount: 0);
 
         var lines = await File.ReadAllLinesAsync(anchorPath);
         var forged = JsonNode.Parse(lines[^1])!.AsObject();
@@ -383,7 +383,7 @@ public sealed class FileAccountingAuditChainTests : IDisposable
         await store.AppendAsync(AuditEvent("post-journal"));
 
         var anchor = new FileAccountingAuditChainAnchor(store.AuditChainAnchorPath);
-        await anchor.DeclareAsync(2, new string('a', 64));
+        await anchor.DeclareAsync(2, new string('a', 64), AccountingAuditChainState.FirstSequence, preChainEventCount: 0);
 
         (await store.VerifyAuditChainAsync()).Status
             .Should().Be(AccountingAuditChainStatus.InterruptedAppend, "the declared write never landed");
@@ -460,6 +460,231 @@ public sealed class FileAccountingAuditChainTests : IDisposable
         var nulled = blank with { CorrelationId = null };
         AccountingAuditChain.ComputePayloadHash(blank).Should()
             .NotBe(AccountingAuditChain.ComputePayloadHash(nulled));
+    }
+
+    [Fact]
+    public async Task AppendAsync_IsIdempotentOnTheEventIdSoARetryDoesNotBreakTheChain()
+    {
+        // The chain requires each link to claim a distinct event, so a second append of one id
+        // leaves a history that can never verify again -- and every append after it throws. A retry
+        // is not hypothetical: it is exactly what RecoverPendingAuditAsync does after a crash
+        // between a mutation and its audit.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var auditEvent = AuditEvent("post-journal");
+
+        await store.AppendAsync(auditEvent);
+        await store.AppendAsync(auditEvent);
+
+        var verification = await store.VerifyAuditChainAsync();
+        verification.IsValid.Should().BeTrue();
+        verification.LinksChecked.Should().Be(1);
+
+        (await store.ListAsync("fund-alpha", null)).Should().ContainSingle();
+
+        // And the chain keeps growing afterwards, which is the part a broken chain would deny.
+        await store.AppendAsync(AuditEvent("close-period"));
+        (await store.VerifyAuditChainAsync()).LinksChecked.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task AppendAsync_LeavesTheAnchorOnTheLandedSequenceWhenARepeatIsIgnored()
+    {
+        // The write-ahead anchor must not be advanced for an append that produced no link: a
+        // declared sequence no event occupies is what InterruptedAppend means, and manufacturing
+        // one out of a retry would report a crash that never happened.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var auditEvent = AuditEvent("post-journal");
+
+        await store.AppendAsync(auditEvent);
+        await store.AppendAsync(auditEvent);
+
+        var head = await new FileAccountingAuditChainAnchor(store.AuditChainAnchorPath).ReadHeadAsync();
+        head!.Sequence.Should().Be(1);
+        head.Phase.Should().Be(AccountingAuditChainAnchorPhase.Committed);
+    }
+
+    [Fact]
+    public async Task AppendAsync_StillRefusesARepeatWhenTheRetainedChainDoesNotVerify()
+    {
+        // The idempotency check sits after verification on purpose. A repeat writes nothing, but
+        // answering "appended" for one on a history that no longer verifies would report success
+        // about a broken store -- and this method fails closed, which has to hold for every outcome
+        // rather than only the writing ones.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var auditEvent = AuditEvent("post-journal");
+        await store.AppendAsync(auditEvent);
+        await store.AppendAsync(AuditEvent("close-period"));
+
+        MutateSnapshot(snapshot => snapshot["auditEvents"]!.AsArray()[0]!["actor"] = "someone-else");
+
+        var repeat = async () => await store.AppendAsync(auditEvent);
+
+        await repeat.Should().ThrowAsync<AccountingAuditChainIntegrityException>();
+    }
+
+    [Fact]
+    public async Task AppendAsync_WritesNothingAtAllWhenTheEventIsAlreadyRetained()
+    {
+        // Second Codex review finding on PR #2871. The repeat returned the snapshot unchanged, but
+        // it still went through the write path -- and this store replaces the whole document, while
+        // its gate is a per-instance semaphore that two stores on one path do not share. Rewriting
+        // an unchanged snapshot is therefore a chance to lose data rather than a no-op: a record
+        // another writer appended between this cycle's read and its write would be replaced by this
+        // cycle's stale copy, while the external anchor stayed ahead of the chain.
+        //
+        // Asserted as "no write happened" rather than by reconstructing the race, which is not
+        // deterministic in-process: the retained bytes would be identical either way, so only the
+        // absence of the write itself distinguishes the two.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var auditEvent = AuditEvent("post-journal");
+        await store.AppendAsync(auditEvent);
+
+        var untouched = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        File.SetLastWriteTimeUtc(SnapshotPath, untouched);
+
+        await store.AppendAsync(auditEvent);
+
+        File.GetLastWriteTimeUtc(SnapshotPath).Should().Be(untouched,
+            "a repeat has nothing to say and must not replace the retained document");
+
+        // And a genuine append still does write, so the skip is narrow.
+        await store.AppendAsync(AuditEvent("close-period"));
+        File.GetLastWriteTimeUtc(SnapshotPath).Should().NotBe(untouched);
+    }
+
+    [Fact]
+    public async Task AppendAsync_RefusesTwoDifferentEventsSharingOneId()
+    {
+        // Not a retry. Appending would break verification permanently and dropping it would lose an
+        // audit record, so neither is done silently.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var first = AuditEvent("post-journal");
+        await store.AppendAsync(first);
+
+        var collision = async () => await store.AppendAsync(first with { Action = "close-period" });
+
+        (await collision.Should().ThrowAsync<InvalidOperationException>())
+            .Which.Message.Should().Contain("different content");
+
+        (await store.VerifyAuditChainAsync()).IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task VerifyAuditChainAsync_DetectsAnInjectedEventCoveredByARaisedPreChainCount()
+    {
+        // Nineteenth Codex review round. The unlinked-event check bounds the retained count by
+        // PreChainEventCount + Links.Count -- and BOTH of those live in the snapshot being
+        // protected. So the check could be satisfied by the same edit that defeats it: add an
+        // unlinked event, raise the pre-chain count by one, and every link still verifies while the
+        // anchor still passes, because the anchor hash bound only the chain head. The injected
+        // record was then served by ListAsync as ordinary audit history.
+        //
+        // A count checked against a number the attacker also controls is not a check. The boundary
+        // now rides the anchor, inside the anchor's own hash, so the snapshot cannot restate it.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        await store.AppendAsync(AuditEvent("post-journal"));
+        await store.AppendAsync(AuditEvent("close-period"));
+
+        MutateSnapshot(snapshot =>
+        {
+            var events = snapshot["auditEvents"]!.AsArray();
+            var injected = events[0]!.DeepClone()!.AsObject();
+            injected["auditEventId"] = Guid.NewGuid().ToString("D");
+            injected["actor"] = "intruder@example.test";
+            events.Add(injected);
+
+            // The cover-up: one more event, one higher boundary, so the arithmetic still balances.
+            var chain = snapshot["auditChain"]!.AsObject();
+            chain["preChainEventCount"] = chain["preChainEventCount"]!.GetValue<int>() + 1;
+        });
+
+        var verification = await store.VerifyAuditChainAsync();
+
+        verification.Status.Should().Be(AccountingAuditChainStatus.AnchorMismatch);
+        verification.IsValid.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task VerifyAuditChainAsync_RefusesToResumeAFirstAppendOverAChangedHistory()
+    {
+        // Twenty-first Codex review round. The genesis comparison added last round is guarded on
+        // `state is not null` -- and state is null for exactly the append that ESTABLISHES the
+        // genesis. So a crash between the pending anchor line and the snapshot left the one case
+        // the boundary exists to protect unchecked: if the unchained history then changed, the
+        // retry redeclared the same sequence over it and founded the chain on events nobody had
+        // verified, while verification still reported a benign InterruptedAppend.
+        var (store, anchor) = await SeedUnchainedHistoryAsync();
+        await anchor.DeclareAsync(
+            AccountingAuditChainState.FirstSequence,
+            new string('a', 64),
+            AccountingAuditChainState.FirstSequence,
+            preChainEventCount: ReadEvents().Count);
+
+        // The unchained history moves before the retry.
+        MutateSnapshot(snapshot => snapshot["auditEvents"]!.AsArray().RemoveAt(0));
+
+        var verification = await store.VerifyAuditChainAsync();
+
+        verification.Status.Should().Be(AccountingAuditChainStatus.AnchorMismatch);
+        verification.IsValid.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task VerifyAuditChainAsync_StillResumesAFirstAppendOverAnUnchangedHistory()
+    {
+        // The control: checking the boundary must not turn an ordinary interrupted first append
+        // into a tamper report. Same setup, nothing touched in between.
+        var (store, anchor) = await SeedUnchainedHistoryAsync();
+        await anchor.DeclareAsync(
+            AccountingAuditChainState.FirstSequence,
+            new string('a', 64),
+            AccountingAuditChainState.FirstSequence,
+            preChainEventCount: ReadEvents().Count);
+
+        var verification = await store.VerifyAuditChainAsync();
+
+        verification.Status.Should().Be(AccountingAuditChainStatus.InterruptedAppend);
+    }
+
+    /// <summary>
+    /// A snapshot holding two audit events that no chain covers and no anchor records — the state a
+    /// store is in immediately before its very first chained append.
+    /// </summary>
+    /// <remarks>
+    /// Built by appending through the store and then stripping what that added, rather than by
+    /// hand-writing a snapshot: it keeps the event shape whatever the DTO currently is. The anchor
+    /// journal is deleted outright because <c>EnsureAdvances</c> refuses to move a head backwards,
+    /// so a journal left over from the seeding appends would reject the declaration under test.
+    /// </remarks>
+    private async Task<(FileAccountingConfigurationStore Store, FileAccountingAuditChainAnchor Anchor)>
+        SeedUnchainedHistoryAsync()
+    {
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        await store.AppendAsync(AuditEvent("post-journal"));
+        await store.AppendAsync(AuditEvent("close-period"));
+
+        var anchor = new FileAccountingAuditChainAnchor(
+            FileAccountingAuditChainAnchor.AnchorPathFor(SnapshotPath));
+        File.Delete(anchor.AnchorPath);
+        MutateSnapshot(snapshot => snapshot.Remove("auditChain"));
+
+        ReadChain().Should().BeNull("the scenario under test is a store that has never chained");
+        ReadEvents().Should().HaveCount(2);
+        return (store, anchor);
+    }
+
+    [Fact]
+    public async Task VerifyAuditChainAsync_AcceptsAChainWhoseGenesisMatchesItsAnchor()
+    {
+        // The control the test above needs: binding the boundary must not make an untouched store
+        // report tampering, including across several appends where the anchor is rewritten each
+        // time and the boundary has to stay consistent between them.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        await store.AppendAsync(AuditEvent("post-journal"));
+        await store.AppendAsync(AuditEvent("close-period"));
+        await store.AppendAsync(AuditEvent("approve-pack"));
+
+        (await store.VerifyAuditChainAsync()).IsValid.Should().BeTrue();
     }
 
     private static AccountingActionAuditEventDto AuditEvent(string action)

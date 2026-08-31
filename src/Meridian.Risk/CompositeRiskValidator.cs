@@ -301,7 +301,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
                     }
 
                     return Block(RestoreOnFailure(
-                        Escalate(rule, request, reason, warnings),
+                        Escalate(rule, request, reason, warnings, releasedEntries),
                         releasedEntries));
                 }
 
@@ -717,7 +717,8 @@ public sealed class CompositeRiskValidator : IRiskValidator
         IRiskRule rule,
         OrderRequest request,
         string reason,
-        List<string>? warnings)
+        List<string>? warnings,
+        IReadOnlyList<RiskEscalationEntry> releasedEntries)
     {
         if (IsEvaluationOnly(request))
         {
@@ -760,7 +761,11 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 ruleName: rule.RuleName,
                 actor: actor,
                 runId: string.IsNullOrWhiteSpace(runId) ? request.StrategyId : runId,
-                correlationId: correlationId);
+                correlationId: correlationId,
+                // The approvals this very validation consumed are the only trusted carrier
+                // of the original submitter across a chained release: request tokens can
+                // reference retained historical entries and must not rebind identity.
+                consumedApprovals: releasedEntries);
         }
         catch (Exception exception)
         {
