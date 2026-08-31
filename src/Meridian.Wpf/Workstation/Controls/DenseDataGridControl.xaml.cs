@@ -536,25 +536,30 @@ public partial class DenseDataGridControl : UserControl
     /// </summary>
     internal bool TrySetClipboardText(string text, Action<string>? setClipboardText = null)
     {
-        try
+        // WPF's Clipboard has no retrying SetDataObject overload (that is the WinForms API), so
+        // the brief retry is explicit here.
+        setClipboardText ??= static value => Clipboard.SetDataObject(value, true);
+        const int attempts = 4;
+        for (var attempt = 1; ; attempt++)
         {
-            if (setClipboardText is not null)
+            try
             {
                 setClipboardText(text);
+                return true;
             }
-            else
+            catch (ExternalException ex)
             {
-                Clipboard.SetDataObject(text, copy: true, retryTimes: 3, retryDelay: 40);
-            }
+                if (attempt < attempts)
+                {
+                    System.Threading.Thread.Sleep(40);
+                    continue;
+                }
 
-            return true;
-        }
-        catch (ExternalException ex)
-        {
-            LoggingService.Instance.LogWarning(
-                "Dense grid copy failed: the system clipboard is held by another process.",
-                ("error", ex.Message));
-            return false;
+                LoggingService.Instance.LogWarning(
+                    "Dense grid copy failed: the system clipboard is held by another process.",
+                    ("error", ex.Message));
+                return false;
+            }
         }
     }
 
