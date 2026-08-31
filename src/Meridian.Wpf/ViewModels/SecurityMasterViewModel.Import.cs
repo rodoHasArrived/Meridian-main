@@ -17,6 +17,9 @@ public sealed partial class SecurityMasterViewModel
     // ── Bulk Import ──────────────────────────────────────────────────────────
     private async Task OnImportFromFile(CancellationToken ct = default)
     {
+        if (!EnsureCanModifySecurityMaster())
+            return;
+
         var openDialog = new Microsoft.Win32.OpenFileDialog
         {
             Filter = "CSV/JSON Files|*.csv;*.json",

@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-08-04
+last_reviewed: 2026-08-30
 ---
 
 # src/Meridian.Application
@@ -468,7 +468,35 @@ Core workstation host. Do not introduce a second listener or independent monitor
   generation. ASP.NET endpoint adapter extensions for packaging, archive maintenance, and
   data-quality monitoring live in `Meridian.Ui.Shared.Endpoints`. `BackfillCoordinator` lives
   in `Backfill/` alongside the rest of the backfill pipeline.
-- `Composition/` - application feature registration and service wiring.
+- `Composition/` - application feature registration and service wiring. `StartupRefusedException`
+  is the shared contract for a guard that has decided a composition must not run at all, as distinct
+  from a component that failed to start. Hosts routinely tolerate the latter -- a projection or
+  outbox pump that cannot reach its database is a degraded feature, not a reason to take the
+  application down -- so a governance refusal raised as a bare `InvalidOperationException` is
+  indistinguishable from it and gets swallowed by the same tolerance. `ProductionRegistrationGuardService`
+  and `ProductionServiceRegistrationPolicy` raise this type for every ADR-019 refusal, including the
+  unconstructible-singleton case found during final-graph validation. It derives from
+  `InvalidOperationException`, so existing catches and assertions naming that type keep matching; the
+  added type only lets a host that wants to escalate do so. Hosts decide through
+  `Meridian.Ui.Shared.Services.HostStartupEscalation.IsRefusal`.
+  `IStartupRefusalGuard` marks the hosted services that can raise such a refusal cheaply, so a host
+  with a UI can decide those refusals before it shows anything without also waiting on the ordinary
+  hosted services registered beside them -- `IHost.StartAsync` returns only when all of them have
+  started, and one reading a slow data root would otherwise gate the shell. Implementations must be
+  safe to run twice, because such a host still starts them again as ordinary hosted services, and
+  must answer without unbounded work, because they run with nothing on screen.
+  `ProductionRegistrationGuardService` is deliberately **not** marked: in a production composition it
+  resolves every factory-registered singleton to prove the graph is constructible, and eager
+  validation of that size belongs behind a visible shell, so it stays an ordinary hosted service
+  running first in the chain. Its descriptor-only half is marked, as
+  `StaticProductionRegistrationGuardService`, which `AddProductionRegistrationGuard` registers
+  alongside it: `ProductionServiceRegistrationPolicy` performs no resolution at all, so that half
+  satisfies the "answer without unbounded work" requirement, and leaving it behind the shell meant a
+  statically prohibited production graph stayed interactive until hosted-service startup refused it.
+  The two overlap on purpose, so a host that does not pre-run the guards is covered by the same rules. `Meridian.Ui.Shared.Services.StartupRefusalPreflight` runs the marked
+  ones, and reports a guard that *fails* as a refusal as well: a guard that cannot determine whether
+  the composition is safe has not said that it is, and the ordinary hosted-service tolerance would
+  otherwise let the rejected posture serve.
   Headless collector, backfill, ETL, and utility profiles build and start a Generic Host so the
   final production-registration guard, database initialization, coordination, and other registered
   hosted services enter the normal start/stop lifecycle. The guard starts first, database
