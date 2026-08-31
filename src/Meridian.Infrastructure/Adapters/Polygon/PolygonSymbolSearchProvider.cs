@@ -1,10 +1,9 @@
-using System.Text.Json;
 using System.Text.Json.Serialization;
-using Meridian.Core.Logging;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Contracts.Domain;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Http;
+using Meridian.Infrastructure.Utilities;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Polygon;
@@ -14,26 +13,28 @@ namespace Meridian.Infrastructure.Adapters.Polygon;
 /// Provides comprehensive ticker search with market data.
 /// Free tier: 5 calls/minute for basic endpoints.
 /// </summary>
-public sealed class PolygonSymbolSearchProvider : IFilterableSymbolSearchProvider, IDisposable
+public sealed class PolygonSymbolSearchProvider : BaseSymbolSearchProvider
 {
-    private const string BaseUrl = "https://api.polygon.io";
+    public override string Name => "polygon";
+    public override string DisplayName => "Polygon.io";
+    public override int Priority => 15;
 
-    private readonly HttpClient _http;
-    private readonly RateLimiter _rateLimiter;
-    private readonly ILogger _log;
-    private readonly string? _apiKey;
-    private bool _disposed;
+    protected override string HttpClientName => HttpClientNames.PolygonSymbolSearch;
+    protected override string BaseUrl => PolygonEndpoints.RestBase;
+    protected override string ApiKeyEnvVar => "POLYGON_API_KEY";
+    protected override IReadOnlyList<string> AlternateApiKeyEnvVars => new[] { "POLYGON__APIKEY" };
 
-    public string Name => "polygon";
-    public string DisplayName => "Polygon.io";
-    public int Priority => 15;
+    // Free tier: 5/min, paid tiers are higher.
+    protected override int MaxRequestsPerWindow => PolygonRateLimits.MaxRequestsPerWindowFree;
+    protected override TimeSpan RateLimitWindow => PolygonRateLimits.Window;
+    protected override TimeSpan MinRequestDelay => TimeSpan.FromSeconds(12);
 
-    public IReadOnlyList<string> SupportedAssetTypes => new[]
+    public override IReadOnlyList<string> SupportedAssetTypes => new[]
     {
         "CS", "ETF", "ETN", "ETV", "UNIT", "RIGHT", "SP", "WARRANT", "INDEX", "ADRC", "FUND", "OS", "PFD"
     };
 
-    public IReadOnlyList<string> SupportedExchanges => new[]
+    public override IReadOnlyList<string> SupportedExchanges => new[]
     {
         "XNYS", "XNAS", "XASE", "ARCX", "BATS", "XCHI", "XCBO", "XPHL", "XBOS", "IEXG", "EDGA", "EDGX"
     };
@@ -59,65 +60,13 @@ public sealed class PolygonSymbolSearchProvider : IFilterableSymbolSearchProvide
     };
 
     public PolygonSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null)
+        : base(apiKey, httpClient, log)
     {
-        _log = log ?? LoggingSetup.ForContext<PolygonSymbolSearchProvider>();
-        _apiKey = apiKey ?? Environment.GetEnvironmentVariable("POLYGON_API_KEY")
-                         ?? Environment.GetEnvironmentVariable("POLYGON__APIKEY");
-
-        // TD-10: Use HttpClientFactory instead of creating new HttpClient instances
-        _http = httpClient ?? HttpClientFactoryProvider.CreateClient(HttpClientNames.PolygonSymbolSearch);
-        _http.DefaultRequestHeaders.Add("User-Agent", "Meridian/1.0");
-
-        // Free tier: 5/min, paid tiers are higher
-        _rateLimiter = new RateLimiter(5, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(12), _log);
     }
 
-    public async Task<bool> IsAvailableAsync(CancellationToken ct = default)
+    protected override string BuildSearchUrl(string query, string? assetType, string? exchange)
     {
-        if (string.IsNullOrEmpty(_apiKey))
-        {
-            _log.Debug("Polygon API key not configured");
-            return false;
-        }
-
-        try
-        {
-            var results = await SearchAsync("AAPL", 1, ct).ConfigureAwait(false);
-            return results.Count > 0;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    public Task<IReadOnlyList<SymbolSearchResult>> SearchAsync(
-        string query,
-        int limit = 10,
-        CancellationToken ct = default)
-    {
-        return SearchAsync(query, limit, null, null, ct);
-    }
-
-    public async Task<IReadOnlyList<SymbolSearchResult>> SearchAsync(
-        string query,
-        int limit = 10,
-        string? assetType = null,
-        string? exchange = null,
-        CancellationToken ct = default)
-    {
-        ObjectDisposedException.ThrowIf(_disposed, this);
-
-        if (string.IsNullOrWhiteSpace(query))
-            return Array.Empty<SymbolSearchResult>();
-
-        if (string.IsNullOrEmpty(_apiKey))
-            return Array.Empty<SymbolSearchResult>();
-
-        await _rateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
-
-        // Build URL with filters
-        var url = $"{BaseUrl}/v3/reference/tickers?search={Uri.EscapeDataString(query)}&active=true&limit={Math.Min(limit * 2, 100)}&apiKey={_apiKey}";
+        var url = $"{BaseUrl}/v3/reference/tickers?search={Uri.EscapeDataString(query)}&active=true&limit=100&apiKey={ApiKey}";
 
         if (!string.IsNullOrEmpty(assetType))
         {
@@ -129,116 +78,83 @@ public sealed class PolygonSymbolSearchProvider : IFilterableSymbolSearchProvide
             url += $"&exchange={Uri.EscapeDataString(exchange)}";
         }
 
-        try
-        {
-            using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var error = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-                _log.Warning("Polygon search returned {Status} for query {Query}: {Error}",
-                    response.StatusCode, query, error);
-                return Array.Empty<SymbolSearchResult>();
-            }
-
-            var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            var data = JsonSerializer.Deserialize<PolygonTickersResponse>(json);
-
-            if (data?.Results is null || data.Results.Count == 0)
-                return Array.Empty<SymbolSearchResult>();
-
-            return data.Results
-                .Where(r => !string.IsNullOrEmpty(r.Ticker))
-                .Select((r, i) => new SymbolSearchResult(
-                    Symbol: r.Ticker!,
-                    Name: r.Name ?? r.Ticker!,
-                    Exchange: r.PrimaryExchange,
-                    AssetType: MapAssetType(r.Type),
-                    Country: r.Locale?.ToUpperInvariant(),
-                    Currency: r.CurrencyName,
-                    Source: Name,
-                    MatchScore: CalculateMatchScore(query, r.Ticker!, r.Name, i)
-                ))
-                .OrderByDescending(r => r.MatchScore)
-                .Take(limit)
-                .ToList();
-        }
-        catch (Exception ex)
-        {
-            _log.Error(ex, "Polygon search failed for query {Query}", query);
-            return Array.Empty<SymbolSearchResult>();
-        }
+        return url;
     }
 
-    public async Task<SymbolDetails?> GetDetailsAsync(SymbolId symbol, CancellationToken ct = default)
+    protected override string BuildDetailsUrl(string symbol)
+        => $"{BaseUrl}/v3/reference/tickers/{symbol}?apiKey={ApiKey}";
+
+    protected override IEnumerable<SymbolSearchResult> DeserializeSearchResults(string json, string query)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        var data = DeserializeJson<PolygonTickersResponse>(json);
 
-        if (string.IsNullOrWhiteSpace(symbol.Value))
-            return null;
+        if (data?.Results is null || data.Results.Count == 0)
+            return Enumerable.Empty<SymbolSearchResult>();
 
-        if (string.IsNullOrEmpty(_apiKey))
-            return null;
-
-        await _rateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
-
-        var normalizedSymbol = symbol.Value;
-        var url = $"{BaseUrl}/v3/reference/tickers/{normalizedSymbol}?apiKey={_apiKey}";
-
-        try
-        {
-            using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                _log.Debug("Polygon ticker details returned {Status} for {Symbol}", response.StatusCode, symbol);
-                return null;
-            }
-
-            var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            var data = JsonSerializer.Deserialize<PolygonTickerDetailsResponse>(json);
-
-            if (data?.Results is null)
-                return null;
-
-            var ticker = data.Results;
-
-            return new SymbolDetails(
-                Symbol: normalizedSymbol,
-                Name: ticker.Name ?? normalizedSymbol,
-                Description: ticker.Description,
-                Exchange: ticker.PrimaryExchange,
-                AssetType: MapAssetType(ticker.Type),
-                Sector: ticker.SicDescription,
-                Industry: null,
-                Country: ticker.Locale?.ToUpperInvariant(),
-                Currency: ticker.CurrencyName,
-                MarketCap: ticker.MarketCap,
-                AverageVolume: null,
-                Week52High: ticker.Branding?.Week52High,
-                Week52Low: ticker.Branding?.Week52Low,
-                LastPrice: null,
-                WebUrl: ticker.HomepageUrl,
-                LogoUrl: ticker.Branding?.LogoUrl,
-                IpoDate: ParseDate(ticker.ListDate),
-                PaysDividend: null,
-                DividendYield: null,
-                PeRatio: null,
-                SharesOutstanding: ticker.ShareClassSharesOutstanding ?? ticker.WeightedSharesOutstanding,
-                Figi: ticker.CompositeFigi,
-                CompositeFigi: ticker.CompositeFigi,
-                Isin: null,
-                Cusip: ticker.Cik,
+        return data.Results
+            .Where(r => !string.IsNullOrEmpty(r.Ticker))
+            .Select((r, i) => new SymbolSearchResult(
+                Symbol: r.Ticker!,
+                Name: r.Name ?? r.Ticker!,
+                Exchange: r.PrimaryExchange,
+                AssetType: MapAssetType(r.Type),
+                Country: r.Locale?.ToUpperInvariant(),
+                Currency: r.CurrencyName,
                 Source: Name,
-                LastUpdated: DateTimeOffset.UtcNow
-            );
-        }
-        catch (Exception ex)
-        {
-            _log.Error(ex, "Polygon ticker details lookup failed for {Symbol}", symbol);
-            return null;
-        }
+                MatchScore: CalculateMatchScore(query, r.Ticker!, r.Name, i)));
     }
+
+    protected override Task<SymbolDetails?> DeserializeDetailsAsync(string json, string symbol, CancellationToken ct)
+    {
+        var data = DeserializeJson<PolygonTickerDetailsResponse>(json);
+
+        if (data?.Results is null)
+            return Task.FromResult<SymbolDetails?>(null);
+
+        var ticker = data.Results;
+
+        var details = new SymbolDetails(
+            Symbol: symbol,
+            Name: ticker.Name ?? symbol,
+            Description: ticker.Description,
+            Exchange: ticker.PrimaryExchange,
+            AssetType: MapAssetType(ticker.Type),
+            Sector: ticker.SicDescription,
+            Industry: null,
+            Country: ticker.Locale?.ToUpperInvariant(),
+            Currency: ticker.CurrencyName,
+            MarketCap: ticker.MarketCap,
+            AverageVolume: null,
+            Week52High: ticker.Branding?.Week52High,
+            Week52Low: ticker.Branding?.Week52Low,
+            LastPrice: null,
+            WebUrl: ticker.HomepageUrl,
+            LogoUrl: ticker.Branding?.LogoUrl,
+            IpoDate: ParseDate(ticker.ListDate),
+            PaysDividend: null,
+            DividendYield: null,
+            PeRatio: null,
+            SharesOutstanding: ticker.ShareClassSharesOutstanding ?? ticker.WeightedSharesOutstanding,
+            Figi: ticker.CompositeFigi,
+            CompositeFigi: ticker.CompositeFigi,
+            Isin: null,
+            Cusip: ticker.Cik,
+            Source: Name,
+            LastUpdated: DateTimeOffset.UtcNow);
+
+        return Task.FromResult<SymbolDetails?>(details);
+    }
+
+    /// <summary>
+    /// Polygon filters asset type and exchange natively via query parameters in
+    /// <see cref="BuildSearchUrl"/>, so no additional post-filtering is applied here.
+    /// (The base filter would compare the raw filter codes against mapped display names.)
+    /// </summary>
+    protected override IEnumerable<SymbolSearchResult> ApplyFilters(
+        IEnumerable<SymbolSearchResult> results,
+        string? assetType,
+        string? exchange)
+        => results;
 
     private static string? MapAssetType(string? type)
     {
@@ -250,28 +166,8 @@ public sealed class PolygonSymbolSearchProvider : IFilterableSymbolSearchProvide
             : type;
     }
 
-    private static int CalculateMatchScore(string query, string symbol, string? name, int position)
-        => SymbolSearchUtility.CalculateMatchScore(query, symbol, name, position);
-
     private static DateOnly? ParseDate(string? dateStr)
-    {
-        if (string.IsNullOrEmpty(dateStr))
-            return null;
-
-        if (DateOnly.TryParse(dateStr, out var date))
-            return date;
-
-        return null;
-    }
-
-    public void Dispose()
-    {
-        if (_disposed)
-            return;
-        _disposed = true;
-        _rateLimiter.Dispose();
-        _http.Dispose();
-    }
+        => ProviderDateParsing.ParseProviderDateOrNull(dateStr);
 
 
     private sealed class PolygonTickersResponse

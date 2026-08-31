@@ -25,8 +25,15 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 
 - `Compliance/ComplianceModels.cs` - sensitive-action, actor, compliance request, audit-event,
   access-review, and audit-hash records.
-- `Compliance/ComplianceServices.cs` - compliance policy engine, immutable audit-log service, and
-  access-review service.
+- `Compliance/ComplianceServices.cs` - compliance policy engine and immutable audit-log service.
+  The policy engine gates sensitive actions on `Meridian.Identity`
+  role/permission mappings (`UserRole` + `RolePermissions`) — the same mapping used by
+  `Meridian.FSharp.Operations.SensitiveActionPolicy` — rather than a module-private role table.
+- `Compliance/ComplianceApprovalStore.cs` - durable authoritative approval requests and
+  authenticated approval decisions. Policy treats the request identifier only as a lookup key and
+  verifies the retained action, object, entity, requester, expiry, and independent approvers.
+- `Compliance/AccessReviewService.cs` - separate assessment and remediation paths. Remediation
+  mutates the canonical identity account store and records only role removals proven by readback.
 
 ## Important workflows
 
@@ -34,6 +41,12 @@ Use this module when changing compliance policy checks, step-up/dual-approval re
 segregation-of-duties enforcement, immutable audit hash-chain behavior, or access-review record
 ownership. UI endpoints and host composition should register these services, but should not own the
 audit/compliance state.
+
+Caller-authored requester or approver IDs are not approval evidence. Step-up evaluation requires a
+durable approval-request record created and decided by authenticated actors, bound to the exact
+governed object. Dormant-access assessment never claims a mutation; the applied-remediation path
+reports `Applied`, `PartiallyApplied`, `Failed`, or `VerificationFailed` from authoritative before
+and after role state.
 
 ## Diagrams
 
@@ -58,7 +71,7 @@ audit/compliance state.
 
 ```bash
 dotnet build src/Meridian.Audit/Meridian.Audit.csproj /p:EnableWindowsTargeting=true
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CompliancePolicyEngineTests" /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CompliancePolicyEngineTests|FullyQualifiedName~AccessReviewServiceTests" /p:EnableWindowsTargeting=true
 ```
 
 ## Optional conditional sections

@@ -19,7 +19,7 @@ namespace Meridian.Tests.DataIntegration.Canonicalization;
 /// canonicalized output fields, making regressions immediately visible when
 /// condition-codes.json or venue-mapping.json mappings change.
 ///
-/// Related: J8 — Golden Fixture Test Suite (docs/status/IMPROVEMENTS.md).
+/// Related: J8 — Golden Fixture Test Suite (archive/docs/status/IMPROVEMENTS.md).
 /// </summary>
 public sealed class CanonicalizationGoldenFixtureTests
 {

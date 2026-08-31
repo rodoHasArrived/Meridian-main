@@ -407,9 +407,15 @@ public sealed class SchedulingService : IAsyncDisposable
                 _schedules[schedule.Id] = schedule;
             }
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            _log.Warning(ex, "Failed to load schedules from {Path}", _schedulesPath);
+            var quarantinePath = CorruptStoreQuarantine.PreserveOrThrow(_schedulesPath, ex);
+            _log.Error(ex, "Failed to load schedules from {Path}; unreadable file preserved at {QuarantinePath}",
+                _schedulesPath, quarantinePath);
         }
     }
 
@@ -423,6 +429,10 @@ public sealed class SchedulingService : IAsyncDisposable
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
             await AtomicFileWriter.WriteAsync(_schedulesPath, json, ct);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

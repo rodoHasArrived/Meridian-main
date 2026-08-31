@@ -47,6 +47,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
     private Frame? _frame;
     private IServiceProvider? _serviceProvider;
+    private WorkspaceChromePresentationMode _presentationMode = WorkspaceChromePresentationMode.Standalone;
     private readonly AsyncLocal<IServiceProvider?> _navigationScopeProvider = new();
 
     /// <summary>
@@ -77,8 +78,12 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     /// Initializes the navigation service with the main frame.
     /// </summary>
     public void Initialize(Frame frame)
+        => Initialize(frame, WorkspaceChromePresentationMode.Standalone);
+
+    public void Initialize(Frame frame, WorkspaceChromePresentationMode presentationMode)
     {
         _frame = frame ?? throw new ArgumentNullException(nameof(frame));
+        _presentationMode = presentationMode;
     }
 
     /// <summary>
@@ -89,6 +94,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         _frame = null;
         _serviceProvider = null;
         _navigationScopeProvider.Value = null;
+        _presentationMode = WorkspaceChromePresentationMode.Standalone;
         ClearHistory();
     }
 
@@ -168,7 +174,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
                 pageTag,
                 pageType,
                 parameter,
-                WorkspaceChromePresentationMode.Standalone,
+                _presentationMode,
                 _navigationScopeProvider.Value);
             var result = _frame.Navigate(content);
             if (!result && _serviceProvider is null)
@@ -197,8 +203,13 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
                 {
                     _frame.Navigate(new Page());
                 }
-                catch
+                catch (Exception blankNavEx)
                 {
+                    // Last-resort blank navigation failed too; nothing more we can do here.
+                    LoggingService.Instance.LogDebug(
+                        "Fallback blank-page navigation failed.",
+                        ("exception", blankNavEx.GetType().Name),
+                        ("message", blankNavEx.Message));
                 }
 
                 return true;
@@ -214,9 +225,13 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
-            catch
+            catch (Exception dialogEx)
             {
                 // Last-resort path: keep the error page visible even if the dialog fails.
+                LoggingService.Instance.LogDebug(
+                    "Navigation error dialog failed to display.",
+                    ("exception", dialogEx.GetType().Name),
+                    ("message", dialogEx.Message));
             }
 
             return false;
@@ -241,8 +256,14 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
                 tourService.StartTour(tour.Id);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // Onboarding tours are optional UX; a failure here must not block navigation.
+            LoggingService.Instance.LogDebug(
+                "Failed to evaluate onboarding tour for page.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message),
+                ("page", pageTag));
         }
     }
 
@@ -286,10 +307,8 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         var evidenceSubject = TryResolveEvidenceWorkbenchSubject(pageTag);
         if (evidenceSubject is not null)
         {
-            return new FundOperationsNavigationContext(
-                Tab: FundOperationsTab.AuditTrail,
-                EvidenceSubject: evidenceSubject,
-                EvidenceSubjectTarget: pageTag.Trim());
+            // The Evidence Workbench page parses "{subjectKind}/{subjectId}" via its Parameter.
+            return evidenceSubject;
         }
 
         return pageTag switch
@@ -298,7 +317,6 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
             "FundPortfolio" => new FundOperationsNavigationContext(Tab: FundOperationsTab.Portfolio),
             "FundCashFinancing" => new FundOperationsNavigationContext(Tab: FundOperationsTab.CashFinancing),
             "FundLedger" => new FundOperationsNavigationContext(Tab: FundOperationsTab.Journal),
-            "OperationsContinuity" => new FundOperationsNavigationContext(Tab: FundOperationsTab.Overview),
             "OperationsClose" => new FundOperationsNavigationContext(Tab: FundOperationsTab.ReportPack),
             "FundTrialBalance" => new FundOperationsNavigationContext(Tab: FundOperationsTab.TrialBalance),
             "FundReconciliation" => new FundOperationsNavigationContext(Tab: FundOperationsTab.Reconciliation),

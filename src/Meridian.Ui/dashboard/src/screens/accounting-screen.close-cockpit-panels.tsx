@@ -1,11 +1,13 @@
 import { AlertCircle, BookCheck, CheckCircle2, Landmark, LockKeyhole, Network, Paperclip, RefreshCcw, ShieldCheck, Table2, UserCheck, WalletCards, X } from "lucide-react";
 import { Link } from "react-router-dom";
+import { AsyncRegion } from "@/components/ui/async-region";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FreshnessChip } from "@/components/ui/freshness-chip";
 import { Input } from "@/components/ui/input";
+import { SkeletonCardRow, SkeletonGrid, SkeletonTimeline } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { accountingToolingBadgeVariant, accountingToolingBorderClass } from "@/screens/accounting-screen.styles";
 import { AccountingChip } from "@/screens/accounting-screen.workbench-context";
@@ -24,6 +26,7 @@ const accountingWorkflowStepIcons: Record<AccountingWorkflowLaunchViewState["ste
   "journal-entries": BookCheck,
   "capital-accounts": WalletCards,
   reconciliation: Network,
+  "external-gl": Network,
   exceptions: AlertCircle,
   "security-master": ShieldCheck,
   approvals: UserCheck,
@@ -114,10 +117,16 @@ export function AccountingWorkflowLaunchPanel({ view }: { view: AccountingWorkfl
 
 export function CloseCommandCenterPanel({
   view,
-  onRefresh
+  onRefresh,
+  onCommand,
+  activeCommand = null,
+  commandStatusText = null
 }: {
   view: CloseCommandCenterViewState;
   onRefresh: () => void;
+  onCommand?: (command: NonNullable<CloseCommandCenterViewState["actionRows"][number]["command"]>) => void;
+  activeCommand?: NonNullable<CloseCommandCenterViewState["actionRows"][number]["command"]> | null;
+  commandStatusText?: string | null;
 }) {
   return (
     <section id="close-command-center" className="workspace-section-band" aria-labelledby="close-command-center-heading">
@@ -227,17 +236,62 @@ export function CloseCommandCenterPanel({
             <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3">
               <div className="text-xs font-semibold uppercase text-muted-foreground">Close actions</div>
               <div className="mt-3 grid gap-2">
-                {view.actionRows.map((action) => (
+                {view.actionRows.map((action) => action.command && onCommand ? (
+                  <Button
+                    key={action.id}
+                    type="button"
+                    variant={action.tone === "success" ? "outline" : "default"}
+                    size="sm"
+                    disabled={Boolean(activeCommand) || Boolean(action.disabledReason)}
+                    disabledReason={action.disabledReason ?? undefined}
+                    busy={activeCommand === action.command}
+                    busyLabel={action.busyLabel ?? "Running close command"}
+                    aria-label={action.ariaLabel}
+                    onClick={() => onCommand(action.command!)}
+                  >
+                    {action.label}
+                  </Button>
+                ) : (
                   <Button key={action.id} asChild variant={action.tone === "success" ? "outline" : "default"} size="sm">
                     <Link to={action.href} aria-label={action.ariaLabel}>{action.label}</Link>
                   </Button>
                 ))}
+                {commandStatusText ? <p role="status" className="text-xs leading-5 text-muted-foreground">{commandStatusText}</p> : null}
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
     </section>
+  );
+}
+
+/**
+ * First-load placeholder for the close cockpit body. The grey shape matches the
+ * real layout — metric row, journal/package grid, then the evidence timeline —
+ * so the pane keeps its spatial hierarchy while each region's view-model settles
+ * instead of erasing it behind a spinner.
+ */
+function CloseCockpitSkeleton() {
+  return (
+    <div className="space-y-4">
+      <SkeletonCardRow cards={4} />
+      <SkeletonGrid rows={6} columns={4} />
+      <SkeletonTimeline items={4} />
+    </div>
+  );
+}
+
+/**
+ * True once any part of the close plan has resolved. Keeps a background refresh
+ * from blanking a pane that already has data to show.
+ */
+function closeCockpitHasData(view: AccountingCloseReportPackageViewModel): boolean {
+  return (
+    view.tasks.length > 0 ||
+    view.closeCalendar.length > 0 ||
+    view.packageRows.length > 0 ||
+    view.selectedPackage !== null
   );
 }
 
@@ -348,7 +402,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
           <Button
             type="button"
             size="sm"
-            variant="outline"
+            variant={view.lockClosePeriodArmed ? "destructive" : "outline"}
             disabled={Boolean(view.lockClosePeriodDisabledReason)}
             disabledReason={view.lockClosePeriodDisabledReason ?? undefined}
             busy={view.lockClosePeriodBusy}
@@ -391,6 +445,14 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          <AsyncRegion
+            loading={view.loading}
+            hasData={closeCockpitHasData(view)}
+            label="close package detail"
+            className="space-y-4"
+            onRetry={() => void view.refresh()}
+            skeleton={<CloseCockpitSkeleton />}
+          >
           {view.loadingText ? <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p> : null}
           {view.errorText ? (
             <div role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
@@ -447,6 +509,19 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
               )}
             >
               {view.configureClosePlanStatusText}
+            </div>
+          ) : null}
+          {view.queueClosingEntriesStatusText ? (
+            <div
+              role={view.queueClosingEntriesStatusTone === "danger" ? "alert" : "status"}
+              className={cn(
+                "rounded-md border px-3 py-2 text-sm",
+                view.queueClosingEntriesStatusTone === "success" && "border-success/30 bg-success/10 text-success",
+                view.queueClosingEntriesStatusTone === "danger" && "border-danger/30 bg-danger/10 text-danger",
+                view.queueClosingEntriesStatusTone === "neutral" && "border-border/70 bg-secondary/20 text-muted-foreground"
+              )}
+            >
+              {view.queueClosingEntriesStatusText}
             </div>
           ) : null}
           {view.lockClosePeriodStatusText ? (
@@ -565,6 +640,95 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
             ))}
           </div>
 
+          <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3" role="region" aria-label="Post closing entries gate">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <div className="text-xs font-semibold uppercase text-muted-foreground">Post closing entries</div>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Shared close-service projection of the scoped temporary-account roll before period lock.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={view.closingEntriesGate ? accountingToolingBadgeVariant(view.closingEntriesGate.statusTone) : "warning"}>
+                  {view.closingEntriesGate?.statusLabel ?? "Not supplied"}
+                </Badge>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={Boolean(view.queueClosingEntriesDisabledReason)}
+                  disabledReason={view.queueClosingEntriesDisabledReason ?? undefined}
+                  busy={view.queueClosingEntriesBusy}
+                  busyLabel="Queueing closing entries"
+                  onClick={() => void view.queueClosingEntries()}
+                >
+                  <BookCheck className="h-4 w-4" />
+                  {view.queueClosingEntriesButtonLabel}
+                </Button>
+              </div>
+            </div>
+            {view.closingEntriesGate ? (
+              <div className="mt-3 space-y-3">
+                <div className="grid gap-2 sm:grid-cols-3">
+                  <div className="rounded-md border border-border/70 bg-background/45 px-3 py-2">
+                    <div className="text-xs uppercase text-muted-foreground">Net-income roll</div>
+                    <div className="mt-1 font-mono text-sm font-semibold text-foreground">{view.closingEntriesGate.netIncomeRollLabel}</div>
+                  </div>
+                  <div className="rounded-md border border-border/70 bg-background/45 px-3 py-2">
+                    <div className="text-xs uppercase text-muted-foreground">Scoped balances</div>
+                    <div className="mt-1 text-sm font-semibold text-foreground">{view.closingEntriesGate.temporaryAccountBalanceLabel}</div>
+                  </div>
+                  <div className="rounded-md border border-border/70 bg-background/45 px-3 py-2">
+                    <div className="text-xs uppercase text-muted-foreground">Lock posture</div>
+                    <div className="mt-1 text-sm font-semibold text-foreground">
+                      {view.closingEntriesGate.isReadyForLock ? "Ready for lock" : "Posting required before lock"}
+                    </div>
+                  </div>
+                </div>
+                <div className="grid gap-1 text-xs text-muted-foreground">
+                  <span>{view.closingEntriesGate.detail}</span>
+                  <span className="font-mono text-foreground">{view.closingEntriesGate.draftLabel}</span>
+                  <span className="font-mono text-foreground">{view.closingEntriesGate.idempotencyLabel}</span>
+                  <span className="font-mono text-foreground">{view.closingEntriesGate.closingBatchLabel}</span>
+                  <span className="font-mono text-foreground">{view.closingEntriesGate.reversalDraftLabel}</span>
+                  <span>{view.closingEntriesGate.evidenceLabel}</span>
+                </div>
+                {view.closingEntriesGate.balances.length > 0 ? (
+                  <div className="overflow-x-auto rounded-md border border-border/70">
+                    <table className="w-full text-left text-xs" aria-label="Scoped temporary-account balances">
+                      <thead className="bg-secondary/35 text-muted-foreground">
+                        <tr>
+                          <th scope="col" className="px-3 py-2 font-semibold">Account</th>
+                          <th scope="col" className="px-3 py-2 font-semibold">Type</th>
+                          <th scope="col" className="px-3 py-2 font-semibold">Balance</th>
+                          <th scope="col" className="px-3 py-2 font-semibold">Scope</th>
+                          <th scope="col" className="px-3 py-2 font-semibold">Financial account</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {view.closingEntriesGate.balances.map((balance) => (
+                          <tr key={balance.rowId} className="border-t border-border/60">
+                            <td className="px-3 py-2 font-semibold text-foreground">{balance.accountLabel}</td>
+                            <td className="px-3 py-2 text-muted-foreground">{balance.accountTypeLabel}</td>
+                            <td className="px-3 py-2 font-mono text-foreground">{balance.balanceLabel}</td>
+                            <td className="px-3 py-2 text-muted-foreground">{balance.scopeLabel}</td>
+                            <td className="px-3 py-2 font-mono text-muted-foreground">{balance.financialAccountLabel}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No non-zero scoped temporary-account balances were returned.</p>
+                )}
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-muted-foreground">
+                The shared close plan did not return the typed closing-entry posting gate.
+              </p>
+            )}
+          </div>
+
           <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3" aria-label="Close operating coverage">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="text-xs font-semibold uppercase text-muted-foreground">Operating coverage</div>
@@ -588,6 +752,13 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                       <ul className="mt-2 space-y-1 text-xs text-warning">
                         {row.issueLabels.map((issue) => (
                           <li key={`${row.controlId}-${issue}`}>{issue}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    {row.evidenceReferences.length > 0 ? (
+                      <ul className="mt-2 space-y-1" aria-label={`Evidence references for ${row.label}`}>
+                        {row.evidenceReferences.map((reference) => (
+                          <li key={`${row.controlId}-${reference}`} className="break-all font-mono text-xs text-muted-foreground">{reference}</li>
                         ))}
                       </ul>
                     ) : null}
@@ -1295,6 +1466,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
               )}
             </div>
           </div>
+          </AsyncRegion>
         </CardContent>
       </Card>
     </section>

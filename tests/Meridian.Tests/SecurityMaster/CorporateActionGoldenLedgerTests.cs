@@ -116,6 +116,18 @@ public sealed class CorporateActionGoldenLedgerTests
             "cancellation after posting defers to the governed restatement path");
     }
 
+    [Fact]
+    public async Task PostCorporateActionsAsync_MbsFactorPaydown_ScalesDeltaByHeldFace()
+    {
+        var (_, _, ledger) = await PostScenarioAsync("mbs-factor-paydown");
+
+        var entry = ledger.Journal.Should().ContainSingle().Subject;
+        entry.Lines.Single(static line => line.Account == LedgerAccounts.Cash)
+            .Debit.Should().Be(712.50m);
+        entry.Lines.Single(line => line.Account == LedgerAccounts.Securities("FNPOOL1"))
+            .Credit.Should().Be(712.50m);
+    }
+
     // ── Wiring ────────────────────────────────────────────────────────────────
 
     private static async Task<(GoldenCorporateActionScenario Scenario, SecurityMasterLedgerBridge Bridge, DomainLedger Ledger)>

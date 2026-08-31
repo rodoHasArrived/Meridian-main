@@ -28,13 +28,13 @@
   architecture-sensitive refactors: load the MDIF framework, vision, domain model, relevant domain
   dictionary pages, and context packs before implementation.
 - The authoritative local checkout path for this workspace is `D:\Meridian-main`.
-- Active operator UI work spans `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/`.
-- `src/Meridian.Wpf/` is again a first-class Windows desktop operator surface for workstation
-  workflows, launch automation, and desktop validation.
+- Operator UI work runs across two active co-equal lanes: the browser workstation in `src/Meridian.Ui/dashboard/` and the reactivated WPF desktop workstation in `src/Meridian.Wpf/`.
+- `src/Meridian.Wpf/` is an active product/UI lane; its immediate focus is web-UI parity (`W8-WPF-PARITY-001`, see `docs/development/wpf-web-ui-alignment-plan.md`) over the existing Windows desktop shell, compatibility, tests, launch automation, and desktop validation.
 - `src/Meridian.Ui/dashboard/` remains an active browser-based workstation lane, with production
   assets built into `src/Meridian.Ui/wwwroot/workstation/`.
 - `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` provide shared API/read-model layers
-  that should support both desktop and browser surfaces without duplicating business logic.
+  that should support the browser workstation and retained WPF compatibility without duplicating
+  business logic.
 - **No mobile development lane:** do not create mobile applications, mobile-specific product
   surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
   mobile-first workflows. Responsive browser validation is allowed only to keep the browser
@@ -120,13 +120,18 @@ validation.
 - `src/Meridian.Risk/`: pre-trade risk validation
 - `src/Meridian.Strategies/`: strategy lifecycle, run storage, shared read models
 - `src/Meridian.QuantScript/`: scripting and charting-oriented tooling
-- `src/Meridian.Mcp/`, `src/Meridian.McpServer/`: MCP hosts, tools, and resources
+- `src/Meridian.Mcp/`: active MCP host, tools, and resources
 - `src/Meridian.Ui/dashboard/`: browser-based operator workstation
 - `src/Meridian.Ui/wwwroot/workstation/`: built web workstation assets served by `Meridian.Ui`
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Wpf/`: shared UI
-  services, workstation endpoints, and the WPF desktop shell
+  services, workstation endpoints, and the active WPF desktop shell
 - `tests/`: cross-platform, F#, UI-service, and WPF test projects
 - `benchmarks/`: performance suites
+
+Archived compatibility artifacts for the retired Chief of Staff runtime and
+`Meridian.McpServer` live under `archive/code/tools/chief-of-staff-runtime/`,
+`archive/code/.codex/skills/cos-runtime-development/`, and
+`archive/code/src/Meridian.McpServer/`. Do not route new implementation work to them.
 
 ---
 
@@ -164,7 +169,7 @@ validation.
 - `src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs`: strategy lifecycle contract
 - `src/Meridian.Strategies/Services/StrategyRunReadService.cs`: shared run read-model seam
 - `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`: shared workstation surface
-- `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs`: current shell orchestration anchor
+- `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs`: retained shell orchestration anchor
 
 ---
 

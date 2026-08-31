@@ -168,6 +168,14 @@ public sealed class ExternalStatementReconciliationSourceAdapter : IExternalStat
         _externalStatementSource.GetStatementRowsAsync(request, ct);
 }
 
+[AttributeUsage(AttributeTargets.Class, Inherited = false)]
+internal sealed class ProductionSafeImplementationAttribute(string justification) : Attribute
+{
+    public string Justification { get; } = justification;
+}
+
+[ProductionSafeImplementation(
+    "External statement input is optional; an absent provider contributes no statement rows and does not replace durable run storage.")]
 public sealed class NullExternalStatementSource : IExternalStatementSource
 {
     public Task<IReadOnlyList<ReconciliationExternalStatementInput>> GetStatementRowsAsync(

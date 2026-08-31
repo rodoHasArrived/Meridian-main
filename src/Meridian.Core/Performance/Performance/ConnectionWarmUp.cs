@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Meridian.Core.Resilience;
 
 namespace Meridian.Core.Performance;
 
@@ -185,10 +186,8 @@ public sealed class ExponentialBackoffRetry
     private readonly int _maxRetries;
     private readonly double _multiplier;
     private readonly double _jitterFactor;
-    private readonly Random _random = new();
 
     private int _currentRetryCount;
-    private TimeSpan _currentDelay;
 
     public int CurrentRetryCount => _currentRetryCount;
     public bool CanRetry => _maxRetries < 0 || _currentRetryCount < _maxRetries;
@@ -205,7 +204,6 @@ public sealed class ExponentialBackoffRetry
         _maxRetries = maxRetries;
         _multiplier = Math.Max(1.0, multiplier);
         _jitterFactor = Math.Clamp(jitterFactor, 0.0, 0.5);
-        _currentDelay = _initialDelay;
     }
 
     /// <summary>
@@ -213,20 +211,14 @@ public sealed class ExponentialBackoffRetry
     /// </summary>
     public TimeSpan GetNextDelay()
     {
-        var delay = _currentDelay;
+        var delay = Backoff.ExponentialDelay(
+            _currentRetryCount + 1,
+            _initialDelay,
+            _maxDelay,
+            _jitterFactor,
+            _multiplier);
 
-        // Add jitter to prevent thundering herd
-        if (_jitterFactor > 0)
-        {
-            var jitter = delay.TotalMilliseconds * _jitterFactor * (_random.NextDouble() * 2 - 1);
-            delay = TimeSpan.FromMilliseconds(delay.TotalMilliseconds + jitter);
-        }
-
-        // Update for next retry
         _currentRetryCount++;
-        _currentDelay = TimeSpan.FromMilliseconds(
-            Math.Min(_currentDelay.TotalMilliseconds * _multiplier, _maxDelay.TotalMilliseconds));
-
         return delay;
     }
 
@@ -245,7 +237,6 @@ public sealed class ExponentialBackoffRetry
     public void Reset()
     {
         _currentRetryCount = 0;
-        _currentDelay = _initialDelay;
     }
 }
 

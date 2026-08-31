@@ -3,6 +3,8 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Ui.Shared.Endpoints;
+using Microsoft.AspNetCore.Http;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -140,7 +142,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
     }
 
     [Fact]
-    public async Task LoginJson_WithValidCredentials_IssuesSessionAndCsrfCookies_WithDevCookiePolicy()
+    public async Task LoginJson_WithValidCredentials_UsesSecureCookiesWhenLocalTransportIsUnproven()
     {
         var originalUsername = Environment.GetEnvironmentVariable("MDC_USERNAME");
         var originalPasswordHash = Environment.GetEnvironmentVariable("MDC_PASSWORD_HASH");
@@ -159,10 +161,16 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
                 .SelectMany(h => h.Value)
                 .ToList();
 
-            setCookies.Should().Contain(cookie => cookie.Contains("mdc-session=", StringComparison.OrdinalIgnoreCase));
-            setCookies.Should().Contain(cookie => cookie.Contains("mdc-csrf=", StringComparison.OrdinalIgnoreCase));
+            var sessionCookie = setCookies.Single(
+                cookie => cookie.Contains("mdc-session=", StringComparison.OrdinalIgnoreCase));
+            var csrfCookie = setCookies.Single(
+                cookie => cookie.Contains("mdc-csrf=", StringComparison.OrdinalIgnoreCase));
+
+            sessionCookie.Split(';').Should().Contain(
+                attribute => attribute.Trim().Equals("Secure", StringComparison.OrdinalIgnoreCase));
+            csrfCookie.Split(';').Should().Contain(
+                attribute => attribute.Trim().Equals("Secure", StringComparison.OrdinalIgnoreCase));
             setCookies.Should().Contain(cookie => cookie.Contains("SameSite=Strict", StringComparison.OrdinalIgnoreCase));
-            setCookies.Should().NotContain(cookie => cookie.Contains("Secure", StringComparison.OrdinalIgnoreCase));
         }
         finally
         {
@@ -253,7 +261,11 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
     [Fact]
     public async Task ProtectedEndpoint_WhenNoCredentialsConfigured_PassesThrough()
     {
-        var response = await GetAsync("/api/status");
+        // Probes an open read rather than /api/status, which now declares the operational permissions.
+        // What this asserts is that the middleware lets an unauthenticated request through when no
+        // credentials are configured; a permissioned route would answer 403 from its own filter and
+        // conflate the two. /api/health is not in ExemptPaths, so the middleware still runs.
+        var response = await GetAsync("/api/health");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
@@ -275,7 +287,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
 
             response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
             var body = await response.Content.ReadAsStringAsync();
-            body.Should().Contain("Authentication is required but not configured");
+            body.Should().Contain("Authentication is required but is not configured");
         }
         finally
         {
@@ -297,7 +309,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
 
             response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
             var body = await response.Content.ReadAsStringAsync();
-            body.Should().Contain("Authentication is required but not configured");
+            body.Should().Contain("Authentication is required but is not configured");
         }
         finally
         {
@@ -308,6 +320,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
     [Fact]
     public async Task ApiKeyMiddleware_DoesNotAcceptQueryStringApiKey()
     {
+        var originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
         Environment.SetEnvironmentVariable("MDC_API_KEY", "integration-test-key");
         try
         {
@@ -319,17 +332,20 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", null);
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalApiKey);
         }
     }
 
     [Fact]
     public async Task ApiKeyMiddleware_AcceptsHeaderApiKey()
     {
+        var originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
         Environment.SetEnvironmentVariable("MDC_API_KEY", "integration-test-key");
         try
         {
-            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/status");
+            // Open read for the same reason: this asserts the key is accepted, and the default key role
+            // is ReadOnly, which holds none of the permissions /api/status declares.
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/health");
             request.Headers.Add("X-Api-Key", "integration-test-key");
 
             var response = await Client.SendAsync(request);
@@ -338,7 +354,94 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_API_KEY", null);
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalApiKey);
+        }
+    }
+
+    [Fact]
+    public async Task ApiKeyMiddleware_MissingHeader_ReturnsUnauthorized()
+    {
+        var originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "integration-test-key");
+        try
+        {
+            var response = await GetAsync("/api/status");
+
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            var body = await response.Content.ReadAsStringAsync();
+            body.Should().Contain("X-Api-Key");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalApiKey);
+        }
+    }
+
+    [Fact]
+    public async Task ApiKeyMiddleware_WrongKey_ReturnsUnauthorized()
+    {
+        var originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "integration-test-key");
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/status");
+            request.Headers.Add("X-Api-Key", "not-the-key");
+
+            var response = await Client.SendAsync(request);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalApiKey);
+        }
+    }
+
+    [Theory]
+    [InlineData("/api/status", true)]
+    [InlineData("/apiary/status", false)]
+    [InlineData("/workstation/evidence/vault/example", false)]
+    public void ApiKeyMiddleware_IsApiKeyCandidate_DefersOnlyApiRequests(
+        string path,
+        bool expectedCandidate)
+    {
+        var originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "integration-test-key");
+        try
+        {
+            var context = new DefaultHttpContext();
+            context.Request.Path = path;
+            context.Request.Headers["X-Api-Key"] = "attacker-controlled-value";
+
+            ApiKeyMiddleware.IsApiKeyCandidate(context).Should().Be(expectedCandidate);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalApiKey);
+        }
+    }
+
+    [Fact]
+    public async Task ApiKeyMiddleware_SessionAuthenticatedRequest_PassesWithoutApiKey()
+    {
+        // The browser workstation authenticates with a login session, not an API key.
+        // A session-authenticated request (emulated via the fixture's X-Test-Auth marker,
+        // which sets the same context items LoginSessionMiddleware sets) must pass the
+        // API-key gate even when MDC_API_KEY is configured.
+        var originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
+        Environment.SetEnvironmentVariable("MDC_API_KEY", "integration-test-key");
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/status");
+            request.Headers.Add("X-Test-Auth", "directlending-admin");
+
+            var response = await Client.SendAsync(request);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_API_KEY", originalApiKey);
         }
     }
 }

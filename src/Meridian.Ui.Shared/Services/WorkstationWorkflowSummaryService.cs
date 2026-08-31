@@ -1,3 +1,4 @@
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Strategies.Services;
@@ -16,6 +17,7 @@ public sealed class WorkstationWorkflowSummaryService
     private readonly Meridian.Application.UI.ConfigStore? _configStore;
     private readonly IWorkflowActionCatalog? _actionCatalog;
     private readonly IOperationsContinuityWorkflowService? _operationsContinuityWorkflowService;
+    private readonly IFundProfileTenancyRegistry? _tenancyRegistry;
 
     public WorkstationWorkflowSummaryService(
         StrategyRunReadService runReadService,
@@ -23,7 +25,8 @@ public sealed class WorkstationWorkflowSummaryService
         IReconciliationRunService? reconciliationRunService = null,
         Meridian.Application.UI.ConfigStore? configStore = null,
         IWorkflowActionCatalog? actionCatalog = null,
-        IOperationsContinuityWorkflowService? operationsContinuityWorkflowService = null)
+        IOperationsContinuityWorkflowService? operationsContinuityWorkflowService = null,
+        IFundProfileTenancyRegistry? tenancyRegistry = null)
     {
         _runReadService = runReadService ?? throw new ArgumentNullException(nameof(runReadService));
         _continuityService = continuityService;
@@ -31,27 +34,51 @@ public sealed class WorkstationWorkflowSummaryService
         _configStore = configStore;
         _actionCatalog = actionCatalog;
         _operationsContinuityWorkflowService = operationsContinuityWorkflowService;
+        _tenancyRegistry = tenancyRegistry;
     }
 
+    // readScope names which workspace families the calling operator may read. It is required and
+    // first rather than an optional trailing argument: a default here is a grant, and the caller that
+    // forgets it is exactly the caller that hands a restricted operator another family's records.
     public async Task<OperatorWorkflowHomeSummary> GetAsync(
+        WorkstationWorkflowReadScope readScope,
         bool hasOperatingContext = false,
         string? operatingContextDisplayName = null,
         string? fundProfileId = null,
         string? fundAccountId = null,
         string? fundDisplayName = null,
+        string? tenantId = null,
+        string? companyId = null,
         CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(readScope);
+        var scope = readScope;
         var contextSelected = hasOperatingContext
             || !string.IsNullOrWhiteSpace(operatingContextDisplayName)
             || !string.IsNullOrWhiteSpace(fundProfileId)
             || !string.IsNullOrWhiteSpace(fundDisplayName);
 
-        var runs = await _runReadService.GetRunsAsync(ct: ct).ConfigureAwait(false);
-        var scopedRuns = string.IsNullOrWhiteSpace(fundProfileId)
+        // Not loaded at all for a caller who reads none of the run-backed families: the projection
+        // below would drop every card built from them, and a read refused is not a read to perform.
+        var runs = scope.NeedsStrategyRuns
+            ? await _runReadService.GetRunsAsync(ct: ct).ConfigureAwait(false)
+            : Array.Empty<StrategyRunSummary>();
+        // Narrowed by fund profile when the caller named one, and by tenant ownership always. The
+        // two are not the same filter and neither substitutes for the other: the browser sends only a
+        // fund account, so the fund-profile clause does nothing on the ordinary request, and the run
+        // reader returns every run the host retains -- including legacy rows carrying no tenant stamp
+        // at all, which is precisely what one shell would surface from another tenant's book.
+        var fundScopedRuns = string.IsNullOrWhiteSpace(fundProfileId)
             ? runs
             : runs.Where(run => string.Equals(run.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase)).ToArray();
+        var scopedRuns = await FilterRunsByTenantAsync(fundScopedRuns, tenantId, companyId, ct).ConfigureAwait(false);
 
-        var relevantRuns = string.IsNullOrWhiteSpace(fundProfileId) ? runs : scopedRuns;
+        // Always the scoped set, never the raw one. This was a ternary falling back to `runs` when no
+        // fund profile was named, which was a no-op while scoping meant fund-profile narrowing alone
+        // -- and became a hole the moment it also meant tenant ownership, because the ordinary browser
+        // request names a fund account and no fund profile. Every card below is built from this, so
+        // there is no path here that should see a run the scope refused.
+        var relevantRuns = scopedRuns;
         var strategyRuns = relevantRuns;
         var governedRuns = relevantRuns
             .Where(static run => run.Mode is StrategyRunMode.Paper or StrategyRunMode.Live)
@@ -69,10 +96,24 @@ public sealed class WorkstationWorkflowSummaryService
             run.Promotion?.State == StrategyRunPromotionState.CandidateForLive);
         var latestGovernedRun = governedRuns.FirstOrDefault();
 
-        var strategyCandidateSnapshotTask = LoadRunSnapshotAsync(candidateForPaper, ct);
-        var tradingActiveSnapshotTask = LoadRunSnapshotAsync(activeTradingRun, ct);
-        var accountingCandidateSnapshotTask = LoadRunSnapshotAsync(candidateForLive ?? activeTradingRun ?? latestGovernedRun, ct);
-        var financialOperationsSnapshotTask = LoadFinancialOperationsSnapshotAsync(contextSelected, fundAccountId, fundProfileId, ct);
+        // Each snapshot is loaded only for the families whose card consumes it. A card that is not
+        // emitted should not put its store in the request's failure or latency path: an authorized
+        // Strategy summary must not slow down or fail on the reconciliation and continuity stores it
+        // is never going to report. The candidate snapshot feeds both the strategy and trading cards.
+        var strategyCandidateSnapshotTask = scope.Strategy || scope.Trading
+            ? LoadRunSnapshotAsync(candidateForPaper, ct)
+            : Task.FromResult<WorkflowRunSnapshot?>(null);
+        var tradingActiveSnapshotTask = scope.Trading
+            ? LoadRunSnapshotAsync(activeTradingRun, ct)
+            : Task.FromResult<WorkflowRunSnapshot?>(null);
+        var accountingCandidateSnapshotTask = scope.Accounting
+            ? LoadRunSnapshotAsync(candidateForLive ?? activeTradingRun ?? latestGovernedRun, ct)
+            : Task.FromResult<WorkflowRunSnapshot?>(null);
+        var financialOperationsSnapshotTask = LoadFinancialOperationsSnapshotAsync(
+            contextSelected && scope.Accounting,
+            fundAccountId,
+            fundProfileId,
+            ct);
 
         await Task.WhenAll(strategyCandidateSnapshotTask, tradingActiveSnapshotTask, accountingCandidateSnapshotTask, financialOperationsSnapshotTask)
             .ConfigureAwait(false);
@@ -82,23 +123,43 @@ public sealed class WorkstationWorkflowSummaryService
         var accountingSnapshot = await accountingCandidateSnapshotTask.ConfigureAwait(false);
         var financialOperationsSnapshot = await financialOperationsSnapshotTask.ConfigureAwait(false);
 
-        var workspaces = new WorkspaceWorkflowSummary[]
+        // One card per readable family. The unreadable ones are omitted rather than neutralised: both
+        // shells look their card up by workspace id and already render the absent case (the browser
+        // screens coalesce to null, WPF's section builder shows "no source summary"), whereas a
+        // placeholder card would assert a posture the caller was never shown the evidence for.
+        var workspaces = new List<WorkspaceWorkflowSummary>(7);
+        if (scope.Trading)
         {
-            BuildTradingSummary(
+            workspaces.Add(BuildTradingSummary(
                 contextSelected,
                 candidateForPaper,
                 activeTradingRun,
                 candidateForLive,
                 tradingActiveSnapshot,
                 strategyCandidateSnapshot,
-                relevantRuns),
-            BuildPortfolioSummary(contextSelected),
-            BuildAccountingSummary(contextSelected, candidateForLive, latestGovernedRun, accountingSnapshot, governedRuns, financialOperationsSnapshot),
-            BuildReportingSummary(contextSelected),
-            BuildStrategySummary(candidateForPaper, activeStrategyRun, strategyCandidateSnapshot, strategyRuns),
-            BuildDataSummary(),
-            BuildSettingsSummary()
-        };
+                relevantRuns));
+        }
+
+        workspaces.Add(BuildPortfolioSummary(contextSelected));
+
+        if (scope.Accounting)
+        {
+            workspaces.Add(BuildAccountingSummary(contextSelected, candidateForLive, latestGovernedRun, accountingSnapshot, governedRuns, financialOperationsSnapshot));
+        }
+
+        workspaces.Add(BuildReportingSummary(contextSelected));
+
+        if (scope.Strategy)
+        {
+            workspaces.Add(BuildStrategySummary(candidateForPaper, activeStrategyRun, strategyCandidateSnapshot, strategyRuns));
+        }
+
+        if (scope.Data)
+        {
+            workspaces.Add(BuildDataSummary());
+        }
+
+        workspaces.Add(BuildSettingsSummary());
 
         return new OperatorWorkflowHomeSummary(
             GeneratedAt: DateTimeOffset.UtcNow,
@@ -1323,4 +1384,71 @@ public sealed class WorkstationWorkflowSummaryService
         Guid FundAccountId,
         int WorkflowCount,
         OperationsContinuityWorkflowDto? ActiveWorkflow);
+
+    /// <summary>
+    /// The runs a tenant may be shown, by their fund profile's registered owner.
+    /// <para>
+    /// The rule is the one the registry itself defines and the financial-record explorers already
+    /// apply: refuse what is proven foreign rather than admit only what is proven owned. Ownership is
+    /// established on first authoritative use, so a fund nobody has claimed yet still qualifies, while
+    /// a run carrying no fund profile is not attributable to any tenant and is refused -- otherwise a
+    /// legacy row becomes readable by every tenant on the host simply by predating the stamp.
+    /// </para>
+    /// <para>
+    /// With no registry there is no tenancy to enforce and every run qualifies, which is the
+    /// single-tenant and in-process posture; the desktop shell reaches this service directly and
+    /// resolves a fund context rather than a request tenant. A registry with no tenant supplied is the
+    /// same case.
+    /// </para>
+    /// </summary>
+    private async Task<IReadOnlyList<StrategyRunSummary>> FilterRunsByTenantAsync(
+        IReadOnlyList<StrategyRunSummary> runs,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct)
+    {
+        if (_tenancyRegistry is null || string.IsNullOrWhiteSpace(tenantId) || runs.Count == 0)
+        {
+            return runs;
+        }
+
+        var ownershipByFund = new Dictionary<string, FundProfileOwnership?>(StringComparer.OrdinalIgnoreCase);
+        foreach (var fundProfileId in runs
+                     .Select(static run => run.FundProfileId)
+                     .Where(static fundProfileId => !string.IsNullOrWhiteSpace(fundProfileId))
+                     .Select(static fundProfileId => fundProfileId!.Trim())
+                     .Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            ct.ThrowIfCancellationRequested();
+            ownershipByFund[fundProfileId] = await _tenancyRegistry
+                .ResolveAsync(fundProfileId, ct)
+                .ConfigureAwait(false);
+        }
+
+        return runs
+            .Where(run =>
+            {
+                if (string.IsNullOrWhiteSpace(run.FundProfileId))
+                {
+                    return false;
+                }
+
+                if (!ownershipByFund.TryGetValue(run.FundProfileId.Trim(), out var ownership) || ownership is null)
+                {
+                    // Unbound: nobody has claimed this fund yet, so it is not another tenant's.
+                    return true;
+                }
+
+                if (!ownership.IsHeldBy(tenantId))
+                {
+                    return false;
+                }
+
+                return string.IsNullOrWhiteSpace(companyId)
+                    || string.IsNullOrWhiteSpace(ownership.CompanyId)
+                    || string.Equals(ownership.CompanyId.Trim(), companyId.Trim(), StringComparison.OrdinalIgnoreCase);
+            })
+            .ToArray();
+    }
+
 }

@@ -37,7 +37,7 @@ from typing import Optional
 # ---------------------------------------------------------------------------
 
 EXCLUDE_DIRS: frozenset[str] = frozenset({
-    '.git', 'archive', 'node_modules', 'bin', 'obj', '__pycache__', '.vs', 'packages', 'TestResults'
+    '.git', 'archive', 'node_modules', 'bin', 'obj', '__pycache__', '.pytest_cache', '.vs', 'packages', 'TestResults'
 })
 PROJECT_EXTENSIONS: frozenset[str] = frozenset({'.csproj', '.fsproj'})
 IGNORED_PROJECT_NAME_MARKERS: tuple[str, ...] = ('_wpftmp',)

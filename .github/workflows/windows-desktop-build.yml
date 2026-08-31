@@ -5,6 +5,8 @@ on:
     paths:
       - "src/Meridian.Wpf/**"
       - "tests/Meridian.Wpf.Tests/**"
+      - "src/Meridian.LifecycleSupervisor/**"
+      - "tests/Meridian.LifecycleSupervisor.Tests/**"
       - "src/Meridian.Application/**"
       - "src/Meridian.Audit/**"
       - "src/Meridian.Backtesting/**"
@@ -43,6 +45,8 @@ on:
     paths:
       - "src/Meridian.Wpf/**"
       - "tests/Meridian.Wpf.Tests/**"
+      - "src/Meridian.LifecycleSupervisor/**"
+      - "tests/Meridian.LifecycleSupervisor.Tests/**"
       - "src/Meridian.Application/**"
       - "src/Meridian.Audit/**"
       - "src/Meridian.Backtesting/**"
@@ -112,12 +116,12 @@ jobs:
           fetch-depth: 2
 
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v5.2.0
+        uses: actions/setup-dotnet@v5.4.0
         with:
           global-json-file: global.json
 
       - name: Cache NuGet packages
-        uses: actions/cache@v5.0.5
+        uses: actions/cache@v6.1.0
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-wpf-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
@@ -131,7 +135,8 @@ jobs:
           pwsh ./scripts/dev/validate-wpf-dev.ps1 `
             -Restore `
             -Filter "Category!=Integration&FullyQualifiedName!~Integration" `
-            -OutputRoot "artifacts/wpf-validation/windows-desktop-build"
+            -OutputRoot "artifacts/wpf-validation/windows-desktop-build" `
+            -IncludeSupervisorTests
 
       - name: Decide desktop smoke publish
         id: desktop-smoke

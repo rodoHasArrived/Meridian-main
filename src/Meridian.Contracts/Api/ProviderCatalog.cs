@@ -766,6 +766,9 @@ public sealed class RateLimitInfo
 /// </summary>
 public sealed class CapabilityInfo
 {
+    /// <summary>Granular, entitlement-aware market-data product declarations.</summary>
+    [JsonPropertyName("marketDataCapabilities")]
+    public IReadOnlyList<MarketDataCapabilityInfo> MarketDataCapabilities { get; init; } = Array.Empty<MarketDataCapabilityInfo>();
     /// <summary>
     /// Gets a value indicating whether streaming is supported.
     /// </summary>
@@ -873,3 +876,53 @@ public sealed class CapabilityInfo
         return dict;
     }
 }
+
+/// <summary>Wire-safe granular market-data capability declaration for catalog consumers.</summary>
+public sealed record MarketDataCapabilityInfo(
+    [property: JsonPropertyName("capability")] string Capability,
+    [property: JsonPropertyName("assetClasses")] IReadOnlyList<string> AssetClasses,
+    [property: JsonPropertyName("geographies")] IReadOnlyList<string> Geographies,
+    [property: JsonPropertyName("venues")] IReadOnlyList<string> Venues,
+    [property: JsonPropertyName("feed")] string Feed,
+    [property: JsonPropertyName("delivery")] string Delivery,
+    [property: JsonPropertyName("entitlementState")] string EntitlementState,
+    [property: JsonPropertyName("maxRequestsPerWindow")] int? MaxRequestsPerWindow,
+    [property: JsonPropertyName("pacingWindowSeconds")] double? PacingWindowSeconds,
+    [property: JsonPropertyName("minimumRequestDelayMs")] double? MinimumRequestDelayMs,
+    [property: JsonPropertyName("sourceTimestamp")] string SourceTimestamp,
+    [property: JsonPropertyName("qualityPosture")] string QualityPosture);
+
+/// <summary>
+/// Typed, wire-compatible response envelope for <c>GET /api/providers/catalog</c>.
+/// </summary>
+public sealed record ProviderCatalogResponse(
+    [property: JsonPropertyName("providers")] IReadOnlyList<ProviderCatalogEntry> Providers,
+    [property: JsonPropertyName("totalCount")] int TotalCount,
+    [property: JsonPropertyName("timestamp")] DateTimeOffset Timestamp,
+    [property: JsonPropertyName("source")] string Source,
+    [property: JsonPropertyName("registrationReport")] ProviderRegistrationReportDto? RegistrationReport = null);
+
+/// <summary>
+/// Public, sanitized provider-registration report attached to the catalog response.
+/// </summary>
+public sealed record ProviderRegistrationReportDto(
+    [property: JsonPropertyName("generatedAt")] DateTimeOffset GeneratedAt,
+    [property: JsonPropertyName("discoveredSourceCount")] int DiscoveredSourceCount,
+    [property: JsonPropertyName("moduleCandidateCount")] int ModuleCandidateCount,
+    [property: JsonPropertyName("moduleActivationAttemptCount")] int ModuleActivationAttemptCount,
+    [property: JsonPropertyName("moduleRegistrationAttemptCount")] int ModuleRegistrationAttemptCount,
+    [property: JsonPropertyName("registeredModuleCount")] int RegisteredModuleCount,
+    [property: JsonPropertyName("skippedModuleCount")] int SkippedModuleCount,
+    [property: JsonPropertyName("failedModuleCount")] int FailedModuleCount,
+    [property: JsonPropertyName("isHealthy")] bool IsHealthy,
+    [property: JsonPropertyName("failures")] IReadOnlyList<ProviderRegistrationFailureDto> Failures);
+
+/// <summary>
+/// Sanitized provider-registration failure safe for operator-facing APIs.
+/// </summary>
+public sealed record ProviderRegistrationFailureDto(
+    [property: JsonPropertyName("stage")] string Stage,
+    [property: JsonPropertyName("subject")] string Subject,
+    [property: JsonPropertyName("moduleId")] string? ModuleId,
+    [property: JsonPropertyName("errorType")] string ErrorType,
+    [property: JsonPropertyName("errorMessage")] string ErrorMessage);

@@ -1,12 +1,12 @@
 import type { KeyboardEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BriefcaseBusiness, FileCheck2, LineChart, Network, Settings, ShieldCheck, Wallet } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FreshnessChip } from "@/components/ui/freshness-chip";
-import { freshnessInputFromLifecycle } from "@/components/ui/freshness-chip.view-model";
+import { TechnicalDetails } from "@/components/ui/technical-details";
+import { buildFreshnessChipViewModel, freshnessInputFromLifecycle } from "@/components/ui/freshness-chip.view-model";
 import type { RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import {
   FinancialRecordExplorerShell,
@@ -15,11 +15,15 @@ import {
   type FinancialRecordExplorerScopeItem,
   type FinancialRecordExplorerSummaryItem
 } from "@/components/meridian/financial-record-explorer";
+import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { MetricCard, type MetricCardTone, EmptyState } from "@/components/data/concrete";
+import { StatStrip } from "@/components/meridian/stat-strip";
+import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
+import { EmptyState } from "@/components/data/concrete";
 import { SeverityBadge, TrustStrip, type TrustStripItem } from "@/components/operations";
 import {
   EquityCurve,
+  Histogram,
   ChartCard,
   ChartSyncProvider,
   useChartSync,
@@ -35,8 +39,10 @@ import {
   saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { workstationRouteWithQuery } from "@/lib/workspace";
+import { readinessToneToSeverityStatus } from "@/lib/shared-tone-mappings";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import {
+  buildPortfolioExplorerPresentation,
   resolveBrokerageAccountFilterKeyCommand,
   type PortfolioBrokerageAccountRow,
   type PortfolioBrokeragePositionRow,
@@ -53,7 +59,6 @@ import type {
   FinancialRecordExplorerDto,
   EquityCurveSummary,
   FinancialRecordExplorerSavedViewSaveRequestDto,
-  MetricSnapshot,
   MultiAssetCoverageSummary,
   PortfolioWorkspaceResponse,
   StrategyWorkspaceResponse,
@@ -280,6 +285,42 @@ const brokeragePositionColumns: DenseDataTableColumn<PortfolioBrokeragePositionR
   }
 ];
 
+type PortfolioRouteViewId = "overview" | "attribution" | "brokerage-sync";
+
+const portfolioRouteTabs: { id: PortfolioRouteViewId; label: string; route: string }[] = [
+  { id: "overview", label: "Overview", route: WORKSTATION_ROUTE_CATALOG.portfolio },
+  { id: "attribution", label: "Attribution", route: WORKSTATION_ROUTE_CATALOG.portfolioAttribution },
+  { id: "brokerage-sync", label: "Brokerage sync", route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync }
+];
+
+export function resolvePortfolioRouteView(pathname: string): PortfolioRouteViewId {
+  // Match the segment right after /portfolio so a dynamic parameter deeper in
+  // the path can never collide with a view keyword.
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments[1] === "attribution") {
+    return "attribution";
+  }
+  if (segments[1] === "brokerage-sync") {
+    return "brokerage-sync";
+  }
+  return "overview";
+}
+
+const portfolioRouteViewCopy: Record<PortfolioRouteViewId, { title: string; description: string }> = {
+  overview: {
+    title: "Execution-linked holdings",
+    description: "Open holdings, cash posture, and the record explorer stay aligned with the active paper workflow."
+  },
+  attribution: {
+    title: "Attribution",
+    description: "Run-linked equity evidence: comparison signals, drill-ins, and per-run attribution detail."
+  },
+  "brokerage-sync": {
+    title: "Brokerage sync",
+    description: "Live brokerage portfolio, connection trust, and multi-asset coverage posture."
+  }
+};
+
 export function PortfolioScreen({
   portfolio,
   trading,
@@ -291,6 +332,17 @@ export function PortfolioScreen({
   refreshStatus
 }: PortfolioScreenProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const routeView = resolvePortfolioRouteView(location.pathname);
+  const routeCopy = portfolioRouteViewCopy[routeView];
+  const showOverview = routeView === "overview";
+  const showAttribution = routeView === "attribution";
+  const showBrokerageSync = routeView === "brokerage-sync";
+  const routeTabs = portfolioRouteTabs.map((tab) => ({
+    id: tab.id,
+    label: tab.label,
+    selected: tab.id === routeView
+  }));
   const brokerageAccountButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const shouldFocusBrokerageAccount = useRef(false);
   const drillInRequestId = useRef(0);
@@ -307,6 +359,13 @@ export function PortfolioScreen({
     selectedRunDrillIn,
     pathname: location.pathname
   });
+  const portfolioExplorerPresentation = useMemo(
+    () => buildPortfolioExplorerPresentation(portfolioExplorer, {
+      sourceLabel: vm.positionSourceLabel,
+      runLabel: vm.selectedRun?.title ?? "Linked strategy run"
+    }),
+    [portfolioExplorer, vm.positionSourceLabel, vm.selectedRun?.title]
+  );
 
   useEffect(() => {
     if (!shouldFocusBrokerageAccount.current) {
@@ -486,41 +545,128 @@ export function PortfolioScreen({
           id: "portfolio-coverage-evidence",
           label: "Coverage proof",
           href: vm.multiAssetCoveragePanel.evidenceRoute,
-          ariaLabel: `Open coverage endpoint ${vm.multiAssetCoveragePanel.evidenceRouteLabel}`
+          ariaLabel: "Open portfolio coverage proof"
         }
       : {
           id: "portfolio-coverage-evidence-empty",
           label: "Coverage proof unavailable"
         }
   ];
+  const hasRefreshEvidence = Boolean(
+    refreshStatus && (refreshStatus.lastSucceededAt || refreshStatus.inFlight || refreshStatus.phase === "failed")
+  );
+  const freshnessVm = hasRefreshEvidence && refreshStatus
+    ? buildFreshnessChipViewModel({
+        ...freshnessInputFromLifecycle(refreshStatus, PORTFOLIO_FRESHNESS_BUDGET_MS, "Portfolio workspace"),
+        now: Date.now()
+      })
+    : brokeragePortfolio?.asOf
+      ? buildFreshnessChipViewModel({
+          timestamp: brokeragePortfolio.asOf,
+          staleBudgetMs: PORTFOLIO_FRESHNESS_BUDGET_MS,
+          now: Date.now(),
+          label: "Brokerage portfolio snapshot",
+          detail: "Latest brokerage portfolio snapshot"
+        })
+      : null;
+  const heartbeat = portfolio?.brokerage.lastHeartbeat ?? trading?.brokerage.lastHeartbeat ?? null;
+  const freshnessTone: OperationalTrustTone = freshnessVm?.state === "failing"
+    ? "blocked"
+    : freshnessVm?.state === "aging"
+      ? "review"
+      : freshnessVm?.state === "fresh" || freshnessVm?.state === "live"
+        ? "ready"
+        : heartbeat
+          ? "ready"
+          : "unknown";
+  const completenessTone: OperationalTrustTone = vm.hasPositions && vm.hasRuns
+    ? "ready"
+    : vm.hasPositions || vm.hasRuns
+      ? "review"
+      : "blocked";
+  const workflowBlocker = vm.workflowTaskPanel && vm.workflowTaskPanel.statusTone !== "success"
+    ? {
+        value: vm.workflowTaskPanel.statusLabel,
+        detail: vm.workflowTaskPanel.selectedSummary,
+        tone: vm.workflowTaskPanel.statusTone === "danger" ? "blocked" as const : "review" as const
+      }
+    : undefined;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
+      <StatStrip
+        metrics={vm.metricsFromTrading ? vm.metricCards : vm.fallbackStats}
+        label="Portfolio headline metrics"
+      />
+
       <section
         role="region"
         aria-label="Portfolio workbench context"
-        className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
+        className="flex flex-wrap items-end justify-between gap-3"
       >
         <div className="min-w-0">
-          <div className="eyebrow-label">Portfolio lane</div>
-          <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
-            Execution-linked holdings
+          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
+            {routeCopy.title}
           </h2>
-          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
-            Holdings, run evidence, and cash posture stay aligned with the active paper workflow.
+          <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
+            {routeCopy.description}
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          {refreshStatus ? (
-            <FreshnessChip
-              {...freshnessInputFromLifecycle(refreshStatus, PORTFOLIO_FRESHNESS_BUDGET_MS, "Portfolio workspace")}
-            />
-          ) : null}
-          {vm.headerChips.map((chip) => (
-            <PortfolioChip key={chip.label} label={chip.label} value={chip.value} />
-          ))}
+          <Button asChild variant="outline" size="sm">
+            <Link
+              to={WORKSTATION_ROUTE_CATALOG.portfolioCashLadder}
+              aria-label="Open the portfolio cash ladder: projected inflows and outflows with liquidity scenarios"
+            >
+              <Wallet className="size-4" aria-hidden />
+              Cash Ladder
+            </Link>
+          </Button>
+          <WorkspaceTabStrip
+            label="Portfolio routes"
+            tabs={routeTabs}
+            onSelect={(id) => {
+              const tab = portfolioRouteTabs.find((candidate) => candidate.id === id);
+              if (tab) {
+                // Preserve the querystring: the operating scope is threaded
+                // through search params across the shell.
+                navigate({ pathname: tab.route, search: location.search });
+              }
+            }}
+          />
         </div>
       </section>
+
+      <OperationalTrustSummary
+        label="Portfolio data confidence"
+        source={{
+          value: vm.positionSourceLabel,
+          detail: "Holdings source used by this route",
+          tone: vm.positionSourceLabel === "Unavailable" ? "blocked" : "ready"
+        }}
+        scope={{
+          value: vm.selectedBrokerageAccount.title,
+          detail: routeView === "brokerage-sync" ? "Selected brokerage account" : "Current portfolio account scope",
+          tone: vm.selectedBrokerageAccount.statusTone === "danger"
+            ? "blocked"
+            : vm.selectedBrokerageAccount.statusTone === "warning"
+              ? "review"
+              : vm.selectedBrokerageAccount.statusTone === "success"
+                ? "ready"
+                : "unknown"
+        }}
+        freshness={{
+          value: freshnessVm?.text ?? heartbeat ?? "Unavailable",
+          detail: freshnessVm?.title ?? (heartbeat ? "Latest brokerage heartbeat" : "Latest loaded portfolio evidence"),
+          tone: freshnessTone
+        }}
+        completeness={{
+          value: `${vm.positionCountLabel} · ${vm.runCountLabel}`,
+          detail: "Holdings and run evidence loaded",
+          tone: completenessTone
+        }}
+        blocker={workflowBlocker}
+      />
 
       {vm.workflowTaskPanel ? (
         <section
@@ -574,9 +720,12 @@ export function PortfolioScreen({
                 </div>
               ))}
             </dl>
-            <div className="rounded-lg border border-border/70 bg-background/20 p-3">
-              <div className="eyebrow-label">Backend sources</div>
-              <div className="mt-3 grid gap-2">
+            <TechnicalDetails
+              label="Technical source health"
+              description="Endpoint contracts supporting this workflow."
+              className="h-fit"
+            >
+              <div className="grid gap-2">
                 {vm.workflowTaskPanel.backendLinks.map((link) => (
                   <a
                     key={link.id}
@@ -591,12 +740,12 @@ export function PortfolioScreen({
                   </a>
                 ))}
               </div>
-            </div>
+            </TechnicalDetails>
           </div>
         </section>
       ) : null}
 
-      {vm.multiAssetCoveragePanel ? (
+      {showBrokerageSync && vm.multiAssetCoveragePanel ? (
         <Card className={cn("panel-surface border", cashFlowBorderClass[vm.multiAssetCoveragePanel.statusTone])}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -740,13 +889,19 @@ export function PortfolioScreen({
                 ))}
               </div>
             ) : null}
-            <a href={vm.multiAssetCoveragePanel.evidenceRoute} className="text-xs font-medium text-primary hover:underline">
-              Open coverage endpoint: {vm.multiAssetCoveragePanel.evidenceRouteLabel}
-            </a>
+            <TechnicalDetails
+              label="Coverage source details"
+              description="Technical route for the retained multi-asset coverage evidence."
+            >
+              <a href={vm.multiAssetCoveragePanel.evidenceRoute} className="text-xs font-medium text-primary hover:underline">
+                Open coverage endpoint: {vm.multiAssetCoveragePanel.evidenceRouteLabel}
+              </a>
+            </TechnicalDetails>
           </CardContent>
         </Card>
       ) : null}
 
+      {showBrokerageSync ? (
       <Card className={cn("panel-surface border", cashFlowBorderClass[vm.brokerageConnectionTone])}>
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -775,7 +930,7 @@ export function PortfolioScreen({
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <h3 className="text-base font-semibold text-foreground">{vm.brokerageTrustSnapshot.title}</h3>
                   <SeverityBadge
-                    status={severityStatusFromTone(vm.brokerageTrustSnapshot.statusTone)}
+                    status={readinessToneToSeverityStatus(vm.brokerageTrustSnapshot.statusTone)}
                     label={vm.brokerageTrustSnapshot.statusLabel}
                   />
                 </div>
@@ -963,6 +1118,27 @@ export function PortfolioScreen({
                         </div>
                       ))}
                     </dl>
+                    {vm.selectedBrokeragePosition.technicalFields.length > 0 ? (
+                      <TechnicalDetails
+                        label="Technical position identity"
+                        description="Stable provider identifiers used for audit and support workflows."
+                        className="mt-4"
+                      >
+                        <dl className="grid gap-2">
+                          {vm.selectedBrokeragePosition.technicalFields.map((field) => (
+                            <div
+                              key={field.label}
+                              className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
+                            >
+                              <dt className="text-xs text-muted-foreground">{field.label}</dt>
+                              <dd className={cn("text-right font-mono text-xs", detailFieldToneClass[field.tone])}>
+                                {field.value}
+                              </dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </TechnicalDetails>
+                    ) : null}
                   </>
                 ) : (
                   <div role="status" className="text-sm leading-6 text-muted-foreground">
@@ -990,16 +1166,9 @@ export function PortfolioScreen({
           )}
         </CardContent>
       </Card>
+      ) : null}
 
-      <section
-        className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"
-        aria-label="Portfolio headline metrics"
-      >
-        {(vm.metricsFromTrading ? vm.metricCards : vm.fallbackStats).map((metric) => (
-          <PortfolioMetricCard key={metric.id} metric={metric} />
-        ))}
-      </section>
-
+      {showOverview || showAttribution ? (
       <FinancialRecordExplorerShell
         explorerLabel="Financial Record Explorer"
         title="Portfolio Explorer"
@@ -1010,13 +1179,13 @@ export function PortfolioScreen({
         summaryItems={financialRecordExplorerSummaryItems}
         appliedFilters={financialRecordExplorerAppliedFilters}
         actions={financialRecordExplorerActions}
-        explorer={portfolioExplorer}
+        explorer={portfolioExplorerPresentation}
         onSaveView={savePortfolioExplorerView}
       >
+        {showOverview ? (
         <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
           <Card className="panel-surface">
             <CardHeader>
-              <div className="eyebrow-label">Portfolio Lane</div>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2">
@@ -1055,7 +1224,18 @@ export function PortfolioScreen({
                 />
               ) : (
                 <div role="status" className="rounded-sm border border-border/70 bg-background/40">
-                  <EmptyState icon="table" title="No open holdings" detail={vm.positionEmptyText} compact />
+                  <EmptyState
+                    icon="table"
+                    title="No open holdings"
+                    detail={vm.positionEmptyText}
+                    action={vm.positionEmptyAction?.label}
+                    onAction={
+                      vm.positionEmptyAction
+                        ? () => navigate({ pathname: vm.positionEmptyAction!.route, search: location.search })
+                        : undefined
+                    }
+                    compact
+                  />
                 </div>
               )}
             </CardContent>
@@ -1121,7 +1301,9 @@ export function PortfolioScreen({
             )}
           </aside>
         </section>
+        ) : null}
 
+        {showAttribution ? (
         <Card className="panel-surface">
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1279,13 +1461,28 @@ export function PortfolioScreen({
                         <div className="min-w-0">
                           <div className="eyebrow-label">{vm.selectedRun.statusTitle}</div>
                           <h3 className="mt-2 text-base font-semibold text-foreground">{vm.selectedRun.title}</h3>
-                          <p className="mt-1 break-words font-mono text-xs text-muted-foreground">
-                            {vm.selectedRun.subtitle}
-                          </p>
                         </div>
                         <Badge variant={vm.selectedRun.statusBadgeVariant}>{vm.selectedRun.statusBadgeLabel}</Badge>
                       </div>
                       <p className="mt-3 text-sm leading-6 text-muted-foreground">{vm.selectedRun.statusDetail}</p>
+                      <TechnicalDetails label="Audit details" className="mt-4">
+                        <p className="break-words font-mono text-xs text-muted-foreground">
+                          {vm.selectedRun.subtitle}
+                        </p>
+                        <dl className="mt-3 grid gap-2">
+                          {vm.selectedRun.fields.map((field) => (
+                            <div
+                              key={field.label}
+                              className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
+                            >
+                              <dt className="text-xs text-muted-foreground">{field.label}</dt>
+                              <dd className={cn("text-right font-mono text-xs", detailFieldToneClass[field.tone])}>
+                                {field.value}
+                              </dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </TechnicalDetails>
                       <div className="mt-4">
                         <Button asChild size="sm" variant="outline">
                           <Link to={vm.selectedRun.evidenceAction.href} aria-label={vm.selectedRun.evidenceAction.ariaLabel}>
@@ -1294,19 +1491,6 @@ export function PortfolioScreen({
                           </Link>
                         </Button>
                       </div>
-                      <dl className="mt-4 grid gap-2">
-                        {vm.selectedRun.fields.map((field) => (
-                          <div
-                            key={field.label}
-                            className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
-                          >
-                            <dt className="text-xs text-muted-foreground">{field.label}</dt>
-                            <dd className={cn("text-right font-mono text-xs", detailFieldToneClass[field.tone])}>
-                              {field.value}
-                            </dd>
-                          </div>
-                        ))}
-                      </dl>
                     </>
                   ) : (
                     <div role="status" className="text-sm leading-6 text-muted-foreground">
@@ -1324,9 +1508,11 @@ export function PortfolioScreen({
             )}
           </CardContent>
         </Card>
+        ) : null}
       </FinancialRecordExplorerShell>
+      ) : null}
 
-      {vm.cashFlowSummary ? (
+      {showOverview && vm.cashFlowSummary ? (
         <Card className={cn("panel-surface border", cashFlowBorderClass[vm.cashFlowTone])}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1363,16 +1549,8 @@ function PortfolioChip({ label, value }: { label: string; value: string }) {
   );
 }
 
-/** Concrete KPI tile fed from a read-model `MetricSnapshot`. The snapshot's `"default"`
- * tone maps to the Concrete `"neutral"` left-accent; other tones pass through 1:1. */
-const metricSnapshotToneClass: Record<MetricSnapshot["tone"], MetricCardTone> = {
-  default: "neutral",
-  success: "success",
-  warning: "warning",
-  danger: "danger"
-};
-
 const drillInCurrency = (value: number) => `$${Math.round(value).toLocaleString("en-US")}`;
+const drillInSignedPercent = (value: number) => `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
 
 /** Concrete equity + underwater drawdown view for a loaded run drill-in profile. Additive
  * evidence only — rendered when the selected run has a fetched equity/drawdown series. The
@@ -1401,31 +1579,93 @@ function PortfolioDrillInChartInner({
   const sync = useChartCrosshairSync(timestamps);
 
   return (
+    <div className="space-y-3">
+      <ChartCard
+        title="Run equity and drawdown"
+        subtitle={`Source-backed equity curve and underwater drawdown for ${runTitle}.`}
+        readout={[
+          { label: "Final equity", value: drillInCurrency(profile.finalEquity) },
+          {
+            label: "Max drawdown",
+            value: `-${(profile.maxDrawdownPercent * 100).toFixed(2)}%`,
+            color: "var(--chart-drawdown, #BA3F55)"
+          },
+          { label: "Sharpe", value: profile.sharpeRatio.toFixed(2) }
+        ]}
+        height={280}
+        style={{ flexShrink: 0 }}
+      >
+        <EquityCurve
+          series={[{ label: "Equity", color: "var(--chart-equity, #2F6F8F)", points: equity }]}
+          drawdown={drawdown}
+          labels={labels}
+          valueFmt={drillInCurrency}
+          crosshairIndex={sync.crosshairIndex}
+          onCrosshairChange={sync.onCrosshairChange}
+          onPointActivate={sync.onPointActivate}
+        />
+        <PortfolioDrillInPointEvidence profile={profile} timestamps={timestamps} />
+      </ChartCard>
+      <PortfolioDrillInReturnDistribution profile={profile} runTitle={runTitle} />
+    </div>
+  );
+}
+
+/** Daily-return distribution for a loaded run drill-in profile. Reuses the already-fetched
+ * equity-curve points (no extra request) so the same drill-in that draws the equity/drawdown
+ * curve also shows the shape of its returns — a signed histogram with a mean rule. Rendered only
+ * when at least two return observations exist so a single-day profile stays a curve-only view. */
+function PortfolioDrillInReturnDistribution({
+  profile,
+  runTitle
+}: {
+  profile: EquityCurveSummary;
+  runTitle: string;
+}) {
+  // Memoize the returns series and its summary stats on the fetched points so they are not
+  // recomputed on every crosshair move — the parent re-renders on each hover, but these O(n)
+  // reductions only depend on profile.points.
+  const stats = useMemo(() => {
+    const returns = profile.points.map((point) => point.dailyReturn * 100);
+    if (returns.length < 2) {
+      return null;
+    }
+    const mean = returns.reduce((sum, value) => sum + value, 0) / returns.length;
+    const best = Math.max(...returns);
+    const worst = Math.min(...returns);
+    const positiveShare = (returns.filter((value) => value > 0).length / returns.length) * 100;
+    return { returns, mean, best, worst, positiveShare };
+  }, [profile.points]);
+
+  if (!stats) {
+    return null;
+  }
+
+  const { returns, mean, best, worst, positiveShare } = stats;
+
+  return (
     <ChartCard
-      title="Run equity and drawdown"
-      subtitle={`Source-backed equity curve and underwater drawdown for ${runTitle}.`}
+      title="Daily return distribution"
+      subtitle={`Shape of the ${runTitle} daily returns behind the equity curve above.`}
       readout={[
-        { label: "Final equity", value: drillInCurrency(profile.finalEquity) },
         {
-          label: "Max drawdown",
-          value: `-${(profile.maxDrawdownPercent * 100).toFixed(2)}%`,
-          color: "var(--chart-drawdown, #BA3F55)"
+          label: "Mean / day",
+          value: drillInSignedPercent(mean),
+          color: mean >= 0 ? "var(--chart-equity, #16885F)" : "var(--chart-drawdown, #BA3F55)"
         },
-        { label: "Sharpe", value: profile.sharpeRatio.toFixed(2) }
+        { label: "Best day", value: drillInSignedPercent(best), color: "var(--chart-equity, #16885F)" },
+        { label: "Worst day", value: drillInSignedPercent(worst), color: "var(--chart-drawdown, #BA3F55)" },
+        { label: "Positive days", value: `${positiveShare.toFixed(0)}%` }
       ]}
-      height={280}
+      height={220}
       style={{ flexShrink: 0 }}
     >
-      <EquityCurve
-        series={[{ label: "Equity", color: "var(--chart-equity, #2F6F8F)", points: equity }]}
-        drawdown={drawdown}
-        labels={labels}
-        valueFmt={drillInCurrency}
-        crosshairIndex={sync.crosshairIndex}
-        onCrosshairChange={sync.onCrosshairChange}
-        onPointActivate={sync.onPointActivate}
+      <Histogram
+        values={returns}
+        signed
+        showMean
+        valueFmt={(value) => `${value.toFixed(1)}%`}
       />
-      <PortfolioDrillInPointEvidence profile={profile} timestamps={timestamps} />
     </ChartCard>
   );
 }
@@ -1465,17 +1705,6 @@ function PortfolioDrillInPointEvidence({
   );
 }
 
-function PortfolioMetricCard({ metric }: { metric: MetricSnapshot }) {
-  return (
-    <MetricCard
-      label={metric.label}
-      value={metric.value}
-      delta={metric.delta ?? undefined}
-      tone={metricSnapshotToneClass[metric.tone]}
-    />
-  );
-}
-
 function PortfolioWorkflowTaskActionIcon({ actionId }: { actionId: PortfolioWorkflowTaskAction["id"] }) {
   const Icon =
     actionId === "provider-setup"
@@ -1496,20 +1725,6 @@ function workflowStatusVariant(statusTone: "default" | "success" | "warning" | "
 }
 
 type PortfolioTone = "default" | "success" | "warning" | "danger";
-
-/** Map a read-model status tone to a canonical severity string for {@link SeverityBadge}. */
-function severityStatusFromTone(tone: PortfolioTone): string {
-  switch (tone) {
-    case "success":
-      return "Ready";
-    case "warning":
-      return "ReviewRequired";
-    case "danger":
-      return "Blocked";
-    default:
-      return "Info";
-  }
-}
 
 /** Map a read-model status tone to a {@link TrustStrip} state token. */
 function trustStateFromTone(tone: PortfolioTone): TrustStripItem["state"] {

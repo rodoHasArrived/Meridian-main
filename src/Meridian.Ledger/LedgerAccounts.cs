@@ -1,3 +1,5 @@
+using Meridian.Contracts.Text;
+
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -107,6 +109,21 @@ public static class LedgerAccounts
     public static LedgerAccount InvestorCapitalFor(string investorId) =>
         CreateScoped("Investor Capital", LedgerAccountType.Equity, investorId);
 
+    public static LedgerAccount CapitalCallReceivableFor(string investorId) =>
+        CreateScoped("Capital Call Receivable", LedgerAccountType.Asset, investorId);
+
+    public static LedgerAccount CapitalCallDefaultInterestReceivableFor(string investorId) =>
+        CreateScoped("Capital Call Default Interest Receivable", LedgerAccountType.Asset, investorId);
+
+    public static LedgerAccount CapitalCallDefaultInterestIncomeFor(string fundId) =>
+        CreateScoped("Capital Call Default Interest Income", LedgerAccountType.Revenue, fundId);
+
+    public static LedgerAccount CarriedInterestAllocationFor(string investorId) =>
+        CreateScoped("Carried Interest Allocation", LedgerAccountType.Equity, investorId);
+
+    public static LedgerAccount GpClawbackReceivableFor(string fundId) =>
+        CreateScoped("GP Clawback Receivable", LedgerAccountType.Asset, fundId);
+
     public static LedgerAccount ManagementFeeExpenseFor(string fundId) =>
         CreateScoped("Management Fee Expense", LedgerAccountType.Expense, fundId);
 
@@ -118,6 +135,15 @@ public static class LedgerAccounts
 
     public static LedgerAccount PerformanceFeePayableFor(string fundId) =>
         CreateScoped("Performance Fee Payable", LedgerAccountType.Liability, fundId);
+
+    public static LedgerAccount FundOperatingExpenseFor(string fundId) =>
+        CreateScoped("Fund Operating Expense", LedgerAccountType.Expense, fundId);
+
+    public static LedgerAccount AccruedExpensesPayableFor(string fundId) =>
+        CreateScoped("Accrued Expenses Payable", LedgerAccountType.Liability, fundId);
+
+    public static LedgerAccount FundDistributionPayableFor(string investorId) =>
+        CreateScoped("Fund Distribution Payable", LedgerAccountType.Liability, investorId);
 
     public static LedgerAccount CommissionPayableFor(string financialAccountId) =>
         CreateScoped("Commission Payable", LedgerAccountType.Liability, financialAccountId);
@@ -162,7 +188,7 @@ public static class LedgerAccounts
     public static LedgerAccount Securities(string symbol, string? financialAccountId = null)
     {
         var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Securities", LedgerAccountType.Asset, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+        return new("Securities", LedgerAccountType.Asset, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
     }
 
     /// <summary>
@@ -175,7 +201,7 @@ public static class LedgerAccounts
     public static LedgerAccount DividendReceivable(string symbol, string? financialAccountId = null)
     {
         var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Dividend Receivable", LedgerAccountType.Asset, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+        return new("Dividend Receivable", LedgerAccountType.Asset, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
     }
 
     /// <summary>
@@ -186,7 +212,7 @@ public static class LedgerAccounts
     public static LedgerAccount AccruedInterestReceivable(string symbol, string? financialAccountId = null)
     {
         var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Accrued Interest Receivable", LedgerAccountType.Asset, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+        return new("Accrued Interest Receivable", LedgerAccountType.Asset, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
     }
 
     /// <summary>
@@ -197,7 +223,7 @@ public static class LedgerAccounts
     public static LedgerAccount CorpActionDistribution(string symbol, string? financialAccountId = null)
     {
         var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Corporate Action Distribution", LedgerAccountType.Revenue, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+        return new("Corporate Action Distribution", LedgerAccountType.Revenue, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
     }
 
     /// <summary>
@@ -208,7 +234,7 @@ public static class LedgerAccounts
     public static LedgerAccount ShortSecuritiesPayable(string symbol, string? financialAccountId = null)
     {
         var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Short Securities Payable", LedgerAccountType.Liability, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+        return new("Short Securities Payable", LedgerAccountType.Liability, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
     }
 
     // -------------------------------------------------------------------------
@@ -247,7 +273,7 @@ public static class LedgerAccounts
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(currencyCode);
         var key = currencyCode.Trim().ToUpperInvariant();
-        return new($"Cash ({key})", LedgerAccountType.Asset, Symbol: key, NormalizeOptionalAccountId(financialAccountId));
+        return new($"Cash ({key})", LedgerAccountType.Asset, Symbol: key, TextPrimitives.NormalizeOptional(financialAccountId));
     }
 
     // -------------------------------------------------------------------------
@@ -285,7 +311,7 @@ public static class LedgerAccounts
     public static LedgerAccount OptionPremiumAsset(string symbol, string? financialAccountId = null)
     {
         var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Option Premium Asset", LedgerAccountType.Asset, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+        return new("Option Premium Asset", LedgerAccountType.Asset, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
     }
 
     /// <summary>
@@ -295,7 +321,7 @@ public static class LedgerAccounts
     public static LedgerAccount OptionPremiumLiability(string symbol, string? financialAccountId = null)
     {
         var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Option Premium Liability", LedgerAccountType.Liability, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+        return new("Option Premium Liability", LedgerAccountType.Liability, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
     }
 
     /// <summary>
@@ -305,7 +331,7 @@ public static class LedgerAccounts
     public static LedgerAccount FuturesMtmSettlement(string symbol, string? financialAccountId = null)
     {
         var normalizedSymbol = NormalizeSymbol(symbol);
-        return new("Futures MTM Settlement", LedgerAccountType.Asset, normalizedSymbol, NormalizeOptionalAccountId(financialAccountId));
+        return new("Futures MTM Settlement", LedgerAccountType.Asset, normalizedSymbol, TextPrimitives.NormalizeOptional(financialAccountId));
     }
 
     // -------------------------------------------------------------------------
@@ -319,6 +345,76 @@ public static class LedgerAccounts
     /// </summary>
     public static readonly LedgerAccount AllocationControl =
         new("Allocation Control", LedgerAccountType.Asset);
+
+    // -------------------------------------------------------------------------
+    // Fixed-asset / depreciation accounts
+    // -------------------------------------------------------------------------
+
+    /// <summary>Gross capitalized cost of a fixed asset, scoped by asset identity.</summary>
+    public static LedgerAccount FixedAssetCostFor(string assetId) =>
+        CreateScoped("Fixed Asset Cost", LedgerAccountType.Asset, assetId);
+
+    /// <summary>
+    /// Accumulated depreciation for a fixed asset — a contra-asset that carries a credit balance and
+    /// nets against <see cref="FixedAssetCostFor"/> to yield net book value.
+    /// </summary>
+    public static LedgerAccount AccumulatedDepreciationFor(string assetId) =>
+        CreateScoped("Accumulated Depreciation", LedgerAccountType.Asset, assetId);
+
+    /// <summary>Periodic depreciation expense charged on a fixed asset.</summary>
+    public static LedgerAccount DepreciationExpenseFor(string assetId) =>
+        CreateScoped("Depreciation Expense", LedgerAccountType.Expense, assetId);
+
+    /// <summary>
+    /// Account names produced by the per-symbol factories in this class, where
+    /// <see cref="LedgerAccount.Symbol"/> identifies a traded instrument (ticker) rather than a
+    /// currency denomination. Keep in sync with those factory methods.
+    /// </summary>
+    private static readonly HashSet<string> InstrumentSymbolAccountNames = new(StringComparer.Ordinal)
+    {
+        "Securities",
+        "Dividend Receivable",
+        "Accrued Interest Receivable",
+        "Corporate Action Distribution",
+        "Short Securities Payable",
+        "Option Premium Asset",
+        "Option Premium Liability",
+        "Futures MTM Settlement",
+    };
+
+    /// <summary>
+    /// Returns <see langword="true"/> when <paramref name="account"/> is one of the per-symbol
+    /// instrument accounts (e.g. <see cref="Securities"/>) whose <see cref="LedgerAccount.Symbol"/>
+    /// is a ticker rather than a currency code, so currency inference must not read the symbol as
+    /// a denomination.
+    /// </summary>
+    internal static bool UsesInstrumentSymbol(LedgerAccount account)
+        => account.Symbol is not null && InstrumentSymbolAccountNames.Contains(account.Name);
+
+    /// <summary>
+    /// Fund-level fee expense account names posted by the automated fee-accrual path
+    /// (<c>ManagementFeeExpenseFor</c>, <c>PerformanceFeeExpenseFor</c>). These are the fees a
+    /// partners' capital statement reports separately from other operating expenses; keep in sync
+    /// with the fee accrual producers. Trading costs such as commissions and borrow fees are
+    /// deliberately excluded — they are operating expenses, not fund management/incentive fees.
+    /// </summary>
+    private static readonly HashSet<string> FundFeeExpenseAccountNames = new(StringComparer.Ordinal)
+    {
+        "Management Fee Expense",
+        "Performance Fee Expense",
+    };
+
+    /// <summary>
+    /// Returns <see langword="true"/> when <paramref name="account"/> is a fund-level management or
+    /// performance/incentive fee expense account, so a partners' capital statement can present fee
+    /// allocations separately from other operating-expense allocations.
+    /// </summary>
+    public static bool IsFundFeeExpenseAccount(LedgerAccount account)
+    {
+        ArgumentNullException.ThrowIfNull(account);
+        return account.AccountType == LedgerAccountType.Expense
+            && FundFeeExpenseAccountNames.Contains(account.Name);
+    }
 
     private static LedgerAccount CreateScoped(string name, LedgerAccountType accountType, string financialAccountId)
         => new(name, accountType, FinancialAccountId: NormalizeAccountId(financialAccountId));
@@ -334,7 +430,4 @@ public static class LedgerAccounts
         ArgumentException.ThrowIfNullOrWhiteSpace(financialAccountId);
         return financialAccountId.Trim();
     }
-
-    private static string? NormalizeOptionalAccountId(string? financialAccountId)
-        => string.IsNullOrWhiteSpace(financialAccountId) ? null : financialAccountId.Trim();
 }

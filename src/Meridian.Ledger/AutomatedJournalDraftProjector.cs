@@ -1,3 +1,4 @@
+using static Meridian.Contracts.Text.TextPrimitives;
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -18,7 +19,11 @@ public static class AutomatedJournalDraftProjector
         var description = string.IsNullOrWhiteSpace(journalEvent.Description)
             ? DefaultDescription(journalEvent.Kind, symbol)
             : journalEvent.Description.Trim();
-        var lines = ProjectLines(journalEvent.Kind, symbol, journalEvent.Amount, financialAccountId);
+        // Automated economic events (dividends, fees, ...) are scoped by financial account on the
+        // ledger account itself, not by a dimensional line scope, so their draft lines carry none.
+        var lines = ProjectLines(journalEvent.Kind, symbol, journalEvent.Amount, financialAccountId)
+            .Select(static line => (line.account, line.debit, line.credit, (LedgerLineDimensionSet?)null))
+            .ToArray();
         var metadata = new JournalEntryMetadata(
             ActivityType: journalEvent.Kind.ToString(),
             Symbol: symbol,
@@ -151,7 +156,4 @@ public static class AutomatedJournalDraftProjector
         ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
         return symbol.Trim().ToUpperInvariant();
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

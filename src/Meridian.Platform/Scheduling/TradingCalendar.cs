@@ -9,11 +9,19 @@ namespace Meridian.Platform.Scheduling;
 /// - Regular, pre-market, and after-hours session times
 /// - Timezone-aware market status queries
 /// </summary>
-public sealed class TradingCalendar : ITradingCalendarProvider
+public sealed class TradingCalendar : IOperationalTradingCalendar
 {
     private readonly TimeZoneInfo _easternTimeZone;
+
+    // Guards every read and write of the lazily extended calendar sets. A concurrent
+    // reader calling Contains/Any while another thread mutates a HashSet would corrupt it
+    // or throw.
+    private readonly Lock _holidaysLock = new();
+    private readonly Lock _halfDaysLock = new();
     private readonly HashSet<DateOnly> _holidays;
+    private readonly HashSet<int> _generatedHolidayYears;
     private readonly HashSet<DateOnly> _halfDays;
+    private readonly HashSet<int> _generatedHalfDayYears;
 
     /// <summary>
     /// Pre-market session start time (4:00 AM ET).
@@ -46,8 +54,12 @@ public sealed class TradingCalendar : ITradingCalendarProvider
     public TradingCalendar()
     {
         _easternTimeZone = TimeZoneInfo.FindSystemTimeZoneById(GetEasternTimeZoneId());
-        _holidays = GenerateHolidays(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Year + 2);
-        _halfDays = GenerateHalfDays(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Year + 2);
+        var firstSeedYear = DateTime.UtcNow.Year - 1;
+        var lastSeedYear = DateTime.UtcNow.Year + 2;
+        _holidays = GenerateHolidays(firstSeedYear, lastSeedYear);
+        _generatedHolidayYears = Enumerable.Range(firstSeedYear, lastSeedYear - firstSeedYear + 1).ToHashSet();
+        _halfDays = GenerateHalfDays(firstSeedYear, lastSeedYear);
+        _generatedHalfDayYears = Enumerable.Range(firstSeedYear, lastSeedYear - firstSeedYear + 1).ToHashSet();
     }
 
     /// <summary>
@@ -82,7 +94,7 @@ public sealed class TradingCalendar : ITradingCalendarProvider
         }
 
         // Check if it's a holiday
-        if (_holidays.Contains(date))
+        if (ContainsHoliday(date))
         {
             return new MarketStatus(
                 State: MarketState.Closed,
@@ -95,7 +107,7 @@ public sealed class TradingCalendar : ITradingCalendarProvider
             );
         }
 
-        var isHalfDay = _halfDays.Contains(date);
+        var isHalfDay = IsHalfDay(date);
         var closeTime = isHalfDay ? HalfDayClose : RegularMarketClose;
 
         // Determine session
@@ -187,13 +199,20 @@ public sealed class TradingCalendar : ITradingCalendarProvider
         if (dayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
             return false;
 
-        return !_holidays.Contains(date);
+        return !ContainsHoliday(date);
     }
 
     /// <summary>
     /// Checks if a specific date is a half trading day.
     /// </summary>
-    public bool IsHalfDay(DateOnly date) => _halfDays.Contains(date);
+    public bool IsHalfDay(DateOnly date)
+    {
+        lock (_halfDaysLock)
+        {
+            EnsureHalfDayCoverage(date.Year);
+            return _halfDays.Contains(date);
+        }
+    }
 
     /// <summary>
     /// Checks if today is a trading day.
@@ -291,21 +310,18 @@ public sealed class TradingCalendar : ITradingCalendarProvider
     /// </summary>
     public IReadOnlyList<MarketHoliday> GetHolidays(int year)
     {
-        // Check if we have holidays for this year, if not, generate them
-        if (!_holidays.Any(d => d.Year == year))
+        // The lazy add and the enumeration below must share one lock so a concurrent
+        // reader never observes a partially mutated set.
+        lock (_holidaysLock)
         {
-            var yearHolidays = GenerateHolidays(year, year);
-            foreach (var h in yearHolidays)
-            {
-                _holidays.Add(h);
-            }
-        }
+            EnsureHolidayCoverage(year);
 
-        return _holidays
-            .Where(d => d.Year == year)
-            .Select(d => new MarketHoliday(d, GetHolidayName(d)))
-            .OrderBy(h => h.Date)
-            .ToList();
+            return _holidays
+                .Where(d => d.Year == year)
+                .Select(d => new MarketHoliday(d, GetHolidayName(d)))
+                .OrderBy(h => h.Date)
+                .ToList();
+        }
     }
 
     /// <summary>
@@ -313,12 +329,16 @@ public sealed class TradingCalendar : ITradingCalendarProvider
     /// </summary>
     public IReadOnlyList<DateOnly> GetHalfDays(int year)
     {
-        return _halfDays.Where(d => d.Year == year).OrderBy(d => d).ToList();
+        lock (_halfDaysLock)
+        {
+            EnsureHalfDayCoverage(year);
+            return _halfDays.Where(d => d.Year == year).OrderBy(d => d).ToList();
+        }
     }
 
-    bool ITradingCalendarProvider.IsTradingDay(DateOnly date, string market) => IsTradingDay(date);
+    bool IOperationalTradingCalendar.IsTradingDay(DateOnly date, string market) => IsTradingDay(date);
 
-    IReadOnlyList<TradingSession> ITradingCalendarProvider.GetTradingSessions(DateOnly date, string market)
+    IReadOnlyList<TradingSession> IOperationalTradingCalendar.GetTradingSessions(DateOnly date, string market)
     {
         if (!IsTradingDay(date))
             return [];
@@ -353,10 +373,44 @@ public sealed class TradingCalendar : ITradingCalendarProvider
         return sessions;
     }
 
-    DateOnly ITradingCalendarProvider.GetNextTradingDay(DateOnly after, string market) => GetNextTradingDay(after);
+    DateOnly IOperationalTradingCalendar.GetNextTradingDay(DateOnly after, string market) => GetNextTradingDay(after);
 
-    IReadOnlyList<DateOnly> ITradingCalendarProvider.GetHolidays(int year, string market)
+    IReadOnlyList<DateOnly> IOperationalTradingCalendar.GetHolidays(int year, string market)
         => GetHolidays(year).Select(holiday => holiday.Date).ToList();
+
+    private bool ContainsHoliday(DateOnly date)
+    {
+        lock (_holidaysLock)
+        {
+            EnsureHolidayCoverage(date.Year);
+            return _holidays.Contains(date);
+        }
+    }
+
+    private void EnsureHolidayCoverage(int calendarYear)
+    {
+        AddHolidaySourceYear(calendarYear);
+    }
+
+    private void AddHolidaySourceYear(int holidayYear)
+    {
+        if (!_generatedHolidayYears.Add(holidayYear))
+        {
+            return;
+        }
+
+        _holidays.UnionWith(GenerateHolidays(holidayYear, holidayYear));
+    }
+
+    private void EnsureHalfDayCoverage(int year)
+    {
+        if (!_generatedHalfDayYears.Add(year))
+        {
+            return;
+        }
+
+        _halfDays.UnionWith(GenerateHalfDays(year, year));
+    }
 
     private DateTimeOffset GetNextTradingDayOpen(DateOnly currentDate)
     {
@@ -393,8 +447,13 @@ public sealed class TradingCalendar : ITradingCalendarProvider
 
         for (var year = startYear; year <= endYear; year++)
         {
-            // New Year's Day (Jan 1, observed)
-            holidays.Add(GetObservedHoliday(new DateOnly(year, 1, 1)));
+            // New Year's Day (Jan 1). Unlike other fixed-date NYSE holidays,
+            // a Saturday New Year's Day does not create a Friday observance.
+            var newYearsDay = new DateOnly(year, 1, 1);
+            if (newYearsDay.DayOfWeek != DayOfWeek.Saturday)
+            {
+                holidays.Add(GetObservedHoliday(newYearsDay));
+            }
 
             // Martin Luther King Jr. Day (3rd Monday of January)
             holidays.Add(GetNthWeekdayOfMonth(year, 1, DayOfWeek.Monday, 3));
@@ -437,29 +496,36 @@ public sealed class TradingCalendar : ITradingCalendarProvider
     private static HashSet<DateOnly> GenerateHalfDays(int startYear, int endYear)
     {
         var halfDays = new HashSet<DateOnly>();
+        var holidays = GenerateHolidays(startYear, endYear);
 
         for (var year = startYear; year <= endYear; year++)
         {
             // Day after Thanksgiving (Black Friday) - early close at 1 PM
             var thanksgiving = GetNthWeekdayOfMonth(year, 11, DayOfWeek.Thursday, 4);
-            halfDays.Add(thanksgiving.AddDays(1));
+            AddHalfDayIfOpen(thanksgiving.AddDays(1));
 
-            // Christmas Eve (Dec 24) - if it falls on a weekday
+            // Christmas Eve (Dec 24) - if it falls on an open weekday
             var christmasEve = new DateOnly(year, 12, 24);
-            if (christmasEve.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday))
-            {
-                halfDays.Add(christmasEve);
-            }
+            AddHalfDayIfOpen(christmasEve);
 
             // July 3rd - if July 4th falls on a weekday (excluding Monday)
             var july4 = new DateOnly(year, 7, 4);
             if (july4.DayOfWeek is DayOfWeek.Tuesday or DayOfWeek.Wednesday or DayOfWeek.Thursday or DayOfWeek.Friday)
             {
-                halfDays.Add(new DateOnly(year, 7, 3));
+                AddHalfDayIfOpen(new DateOnly(year, 7, 3));
             }
         }
 
         return halfDays;
+
+        void AddHalfDayIfOpen(DateOnly date)
+        {
+            if (date.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday)
+                && !holidays.Contains(date))
+            {
+                halfDays.Add(date);
+            }
+        }
     }
 
     /// <summary>

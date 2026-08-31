@@ -5,14 +5,18 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { EmptyState } from "@/components/data/empty-state";
+import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   MetricCard,
-  type MetricCardTone,
   KeyValueGrid
 } from "@/components/data/concrete";
-import { SeverityBadge, TrustStrip, type TrustStripItem } from "@/components/operations";
+import { ScreenLayout } from "@/components/ui/screen-layout";
+import { SeverityBadge } from "@/components/operations";
+import { getFamilyOfficeOverview } from "@/lib/api/family-office.api";
+import { mapFamilyOfficeOverview } from "@/screens/family-office-screen.mapper";
 import { cn } from "@/lib/utils";
+import { readinessToneToSeverityStatus, semanticToneToMetricCardTone } from "@/lib/shared-tone-mappings";
 import {
   buildFamilyOfficeScreenViewModel,
   selectAdjacentFamilyOfficeNode,
@@ -75,10 +79,83 @@ const ownershipColumns: DenseDataTableColumn<FamilyOfficeOwnershipNode>[] = [
   }
 ];
 
-export function FamilyOfficeScreen({ entityStructure = null }: { entityStructure?: FamilyOfficeEntityStructure | null }) {
+type FamilyOfficeLoadState = "idle" | "loading" | "ready" | "error";
+
+/** Source chip copy while no structure has resolved yet, so "Not connected" is never claimed mid-load. */
+function loadStateSourceLabel(loadState: FamilyOfficeLoadState): string {
+  switch (loadState) {
+    case "loading":
+      return "Loading";
+    case "error":
+      return "Unavailable";
+    default:
+      return "Not connected";
+  }
+}
+
+/**
+ * Distinguishes "still loading", "the read failed", and "the household really is
+ * unconfigured". Collapsing them would report a transport failure as an empty
+ * family office.
+ */
+function emptyStateCopy(loadState: FamilyOfficeLoadState): { title: string; detail: string | null } {
+  switch (loadState) {
+    case "loading":
+      return { title: "Loading family office data", detail: "Reading the consolidated household projection." };
+    case "error":
+      return {
+        title: "Family office data could not be loaded",
+        detail: "The consolidated household read failed. Retry, or confirm the workstation host is reachable."
+      };
+    default:
+      return { title: "Family office data is not connected", detail: null };
+  }
+}
+
+/**
+ * `entityStructure` is an explicit override used by tests and demo surfaces. When it
+ * is omitted the screen loads the consolidated household from
+ * `/api/workstation/family-office/overview`; passing `null` keeps the
+ * not-connected state without issuing a request.
+ */
+export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: FamilyOfficeEntityStructure | null } = {}) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [showTableFallback, setShowTableFallback] = useState(false);
-  const vm = buildFamilyOfficeScreenViewModel(selectedNodeId, entityStructure);
+  const [loadedStructure, setLoadedStructure] = useState<FamilyOfficeEntityStructure | null>(null);
+  const [loadState, setLoadState] = useState<FamilyOfficeLoadState>(
+    entityStructure === undefined ? "loading" : "idle"
+  );
+  const [reloadToken, setReloadToken] = useState(0);
+
+  useEffect(() => {
+    if (entityStructure !== undefined) {
+      return;
+    }
+
+    let active = true;
+    setLoadState("loading");
+    getFamilyOfficeOverview()
+      .then((overview) => {
+        if (!active) {
+          return;
+        }
+
+        setLoadedStructure(mapFamilyOfficeOverview(overview));
+        setLoadState("ready");
+      })
+      .catch(() => {
+        if (active) {
+          setLoadState("error");
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [entityStructure, reloadToken]);
+
+  const resolvedStructure = entityStructure ?? loadedStructure;
+  const vm = buildFamilyOfficeScreenViewModel(selectedNodeId, resolvedStructure);
   const graphNodeRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const shouldFocusGraphNode = useRef(false);
 
@@ -96,7 +173,7 @@ export function FamilyOfficeScreen({ entityStructure = null }: { entityStructure
   };
 
   const moveGraphSelection = (direction: "next" | "previous" | "first" | "last") => {
-    const nextNodeId = selectAdjacentFamilyOfficeNode(vm.ownershipGraph.selectedNodeId, direction, entityStructure);
+    const nextNodeId = selectAdjacentFamilyOfficeNode(vm.ownershipGraph.selectedNodeId, direction, resolvedStructure);
     if (nextNodeId) {
       shouldFocusGraphNode.current = true;
       setSelectedNodeId(nextNodeId);
@@ -129,36 +206,63 @@ export function FamilyOfficeScreen({ entityStructure = null }: { entityStructure
   };
 
   return (
-    <section className="space-y-6" aria-label={vm.route.ariaLabel}>
-      <header className="space-y-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <div className="eyebrow-label">{vm.route.workspaceLabel} / {vm.route.label}</div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">{vm.route.title}</h1>
-            <p className="mt-2 max-w-4xl text-sm leading-6 text-muted-foreground">{vm.route.description}</p>
-            {vm.route.disabledReason ? (
-              <p className="mt-2 text-sm text-warning">{vm.route.disabledReason}</p>
-            ) : null}
-          </div>
-          <div className="lg:justify-end">
-            <TrustStrip items={vm.statusChips.map((chip): TrustStripItem => ({ label: chip.label, value: chip.value, state: "muted" }))} />
-          </div>
-        </div>
-      </header>
+    <ScreenLayout
+      title={vm.route.title}
+      scope={`${vm.route.workspaceLabel} / ${vm.route.label}`}
+      description={vm.route.description}
+    >
+      <OperationalTrustSummary
+        label="Family office data confidence"
+        source={{
+          value: resolvedStructure?.displayName ?? loadStateSourceLabel(loadState),
+          detail: "Entity, portfolio, accounting, and private-asset sources",
+          tone: resolvedStructure ? "ready" : "blocked"
+        }}
+        scope={{
+          value: resolvedStructure ? `${resolvedStructure.entities.length} entities` : "No family entities",
+          detail: resolvedStructure ? `${resolvedStructure.baseCurrency} consolidated scope` : "Complete entity setup to establish scope",
+          tone: resolvedStructure?.entities.length ? "ready" : "blocked"
+        }}
+        freshness={{
+          value: resolvedStructure?.asOfDate ?? "Unavailable",
+          detail: "Latest consolidated family-office evidence",
+          tone: resolvedStructure?.asOfDate ? "ready" : "unknown"
+        }}
+        completeness={{
+          value: resolvedStructure
+            ? `${resolvedStructure.privateAssets.length} private assets · ${resolvedStructure.commitments.length} commitments`
+            : "No records loaded",
+          detail: "Private-asset and commitment coverage",
+          tone: resolvedStructure ? "ready" : "blocked"
+        }}
+        blocker={vm.notConnected ? {
+          value: "Entity setup required",
+          detail: "Connect governed sources before using consolidated values for decisions",
+          tone: "blocked"
+        } : undefined}
+      />
 
       {vm.notConnected ? (
       <Card className="panel-surface border-border/80">
         <CardContent className="space-y-4">
           <EmptyState
             icon="inbox"
-            title="Family office data is not connected"
-            detail={vm.route.emptyState}
+            title={emptyStateCopy(loadState).title}
+            detail={emptyStateCopy(loadState).detail ?? vm.route.emptyState}
           />
+          {loadState === "loading" ? null : (
           <div className="flex justify-center">
-            <Button asChild>
-              <Link to={vm.emptyActionHref}>{vm.emptyActionLabel}</Link>
-            </Button>
+            {loadState === "error" ? (
+              <Button type="button" onClick={() => setReloadToken((token) => token + 1)}>
+                Retry loading family office data
+              </Button>
+            ) : (
+              <Button asChild>
+                <Link to={vm.emptyActionHref}>{vm.emptyActionLabel}</Link>
+              </Button>
+            )}
           </div>
+          )}
         </CardContent>
       </Card>
       ) : null}
@@ -275,7 +379,7 @@ export function FamilyOfficeScreen({ entityStructure = null }: { entityStructure
                   <div className="flex flex-wrap items-center gap-2">
                     <div className="eyebrow-label">{vm.ownershipGraph.selectedNode.type}</div>
                     {vm.ownershipGraph.selectedNode.tone !== "default" ? (
-                      <SeverityBadge status={severityStatusFromTone(vm.ownershipGraph.selectedNode.tone)} />
+                      <SeverityBadge status={readinessToneToSeverityStatus(vm.ownershipGraph.selectedNode.tone)} />
                     ) : null}
                   </div>
                   <h2 className="mt-2 text-lg font-semibold text-foreground">{vm.ownershipGraph.selectedNode.label}</h2>
@@ -301,29 +405,8 @@ export function FamilyOfficeScreen({ entityStructure = null }: { entityStructure
         </CardContent>
       </Card>
       ) : null}
-    </section>
+    </ScreenLayout>
   );
-}
-
-const panelMetricTone: Record<FamilyOfficeTone, MetricCardTone> = {
-  default: "neutral",
-  success: "success",
-  warning: "warning",
-  danger: "danger"
-};
-
-/** Map a family-office tone to a canonical severity string for {@link SeverityBadge}. */
-function severityStatusFromTone(tone: FamilyOfficeTone): string {
-  switch (tone) {
-    case "success":
-      return "Ready";
-    case "warning":
-      return "ReviewRequired";
-    case "danger":
-      return "Blocked";
-    default:
-      return "Info";
-  }
 }
 
 function FamilyOfficePanel({ panel }: { panel: FamilyOfficePanelViewModel }) {
@@ -331,7 +414,7 @@ function FamilyOfficePanel({ panel }: { panel: FamilyOfficePanelViewModel }) {
 
   return (
     <div className="grid gap-2" aria-label={panel.ariaLabel} role="group">
-      <MetricCard label={panel.label} value={panel.value} tone={panelMetricTone[panel.tone]} />
+      <MetricCard label={panel.label} value={panel.value} tone={semanticToneToMetricCardTone(panel.tone)} />
       <p className="flex items-start gap-2 px-1 text-xs leading-5 text-muted-foreground">
         <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
         <span>{panel.detail}</span>

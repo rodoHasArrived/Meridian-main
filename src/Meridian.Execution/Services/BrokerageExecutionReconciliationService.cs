@@ -1,6 +1,7 @@
 using System.Globalization;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Execution.Services;
 
@@ -50,15 +51,14 @@ public sealed class BrokerageExecutionReconciliationService
             return BuildReport(gateway, health, [], breaks, reconciledAt);
         }
 
-        var localOrders = orderManager.GetOpenOrders()
-            .ToDictionary(static order => order.OrderId, StringComparer.OrdinalIgnoreCase);
-        var matchedLocalIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var localOrders = orderManager.GetOpenOrders();
+        var traceableBrokerOrders = new List<TraceableBrokerOrder>(brokerOrders.Count);
         var matches = new List<BrokerageExecutionOrderMatch>();
 
         foreach (var brokerOrder in brokerOrders)
         {
             ct.ThrowIfCancellationRequested();
-            var clientOrderId = NormalizeId(brokerOrder.ClientOrderId);
+            var clientOrderId = NormalizeOptional(brokerOrder.ClientOrderId);
             if (clientOrderId is null)
             {
                 breaks.Add(CreateBreak(
@@ -69,17 +69,29 @@ public sealed class BrokerageExecutionReconciliationService
                 continue;
             }
 
-            if (!localOrders.TryGetValue(clientOrderId, out var localOrder))
-            {
-                breaks.Add(CreateBreak(
-                    BrokerageExecutionReconciliationBreakKind.MissingInOrderManager,
-                    null,
-                    brokerOrder,
-                    "Broker reports an open order that the OMS is not tracking."));
-                continue;
-            }
+            traceableBrokerOrders.Add(new TraceableBrokerOrder(clientOrderId, brokerOrder));
+        }
 
-            matchedLocalIds.Add(localOrder.OrderId);
+        var comparison = ReconciliationSetComparer.Compare(
+            localOrders,
+            traceableBrokerOrders,
+            static order => order.OrderId,
+            static brokerOrder => brokerOrder.ClientOrderId,
+            StringComparer.OrdinalIgnoreCase);
+
+        foreach (var brokerOrder in comparison.MissingLocal)
+        {
+            breaks.Add(CreateBreak(
+                BrokerageExecutionReconciliationBreakKind.MissingInOrderManager,
+                null,
+                brokerOrder.Order,
+                "Broker reports an open order that the OMS is not tracking."));
+        }
+
+        foreach (var match in comparison.Matches)
+        {
+            var localOrder = match.Local;
+            var brokerOrder = match.External.Order;
             var beforeCount = breaks.Count;
             CompareOrder(localOrder, brokerOrder, breaks);
 
@@ -93,20 +105,17 @@ public sealed class BrokerageExecutionReconciliationService
             }
         }
 
-        foreach (var localOrder in localOrders.Values)
+        foreach (var localOrder in comparison.MissingExternal)
         {
-            if (!matchedLocalIds.Contains(localOrder.OrderId))
-            {
-                breaks.Add(new BrokerageExecutionReconciliationBreak(
-                    BrokerageExecutionReconciliationBreakKind.MissingInBrokerage,
-                    LocalOrderId: localOrder.OrderId,
-                    BrokerOrderId: null,
-                    ClientOrderId: localOrder.OrderId,
-                    Symbol: localOrder.Symbol,
-                    Description: "OMS tracks an open order that the broker did not report.",
-                    LocalValue: DescribeOrder(localOrder),
-                    BrokerValue: null));
-            }
+            breaks.Add(new BrokerageExecutionReconciliationBreak(
+                BrokerageExecutionReconciliationBreakKind.MissingInBrokerage,
+                LocalOrderId: localOrder.OrderId,
+                BrokerOrderId: null,
+                ClientOrderId: localOrder.OrderId,
+                Symbol: localOrder.Symbol,
+                Description: "OMS tracks an open order that the broker did not report.",
+                LocalValue: DescribeOrder(localOrder),
+                BrokerValue: null));
         }
 
         if (breaks.Count > 0)
@@ -248,9 +257,6 @@ public sealed class BrokerageExecutionReconciliationService
             LocalValue: localOrder is null ? null : DescribeOrder(localOrder),
             BrokerValue: DescribeOrder(brokerOrder));
 
-    private static string? NormalizeId(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
     private static string DescribeOrder(OrderState order) =>
         $"{order.Status} {order.Side} {FormatDecimal(order.Quantity)} {order.Symbol}";
 
@@ -259,6 +265,8 @@ public sealed class BrokerageExecutionReconciliationService
 
     private static string FormatDecimal(decimal value) =>
         value.ToString("G29", CultureInfo.InvariantCulture);
+
+    private sealed record TraceableBrokerOrder(string ClientOrderId, BrokerOrder Order);
 }
 
 public sealed record BrokerageExecutionReconciliationReport(

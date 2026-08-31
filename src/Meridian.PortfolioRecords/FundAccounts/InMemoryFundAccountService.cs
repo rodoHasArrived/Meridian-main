@@ -5,6 +5,7 @@ using Meridian.Storage.Archival;
 namespace Meridian.PortfolioRecords.FundAccounts;
 
 using Meridian.PortfolioRecords.Accounts;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 public sealed class AccountStatusPolicyException : InvalidOperationException
 {
@@ -282,12 +283,10 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         (long Version, string Json)? snapshot = null;
         lock (_gate)
         {
-            if (_accounts.TryGetValue(request.AccountId, out var stored))
-            {
-                EnsureAllowed(stored.Summary, "record-balance-snapshot");
-                stored.Snapshots.Add(dto);
-                snapshot = CaptureSnapshotLocked();
-            }
+            var stored = RequireAccountLocked(request.AccountId);
+            EnsureAllowed(stored.Summary, "record-balance-snapshot");
+            stored.Snapshots.Add(dto);
+            snapshot = CaptureSnapshotLocked();
         }
 
         await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
@@ -352,13 +351,11 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         (long Version, string Json)? snapshot = null;
         lock (_gate)
         {
-            if (_accounts.TryGetValue(request.AccountId, out var stored))
-            {
-                EnsureAllowed(stored.Summary, "ingest-custodian-statement", allowSuspended: true);
-                stored.CustodianBatches.Add(batch);
-                UpsertCustodianPositions(stored.CustodianPositions, request.Lines);
-                snapshot = CaptureSnapshotLocked();
-            }
+            var stored = RequireAccountLocked(request.AccountId);
+            EnsureAllowed(stored.Summary, "ingest-custodian-statement", allowSuspended: true);
+            stored.CustodianBatches.Add(batch);
+            UpsertCustodianPositions(stored.CustodianPositions, request.Lines);
+            snapshot = CaptureSnapshotLocked();
         }
 
         await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
@@ -382,13 +379,11 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         (long Version, string Json)? snapshot = null;
         lock (_gate)
         {
-            if (_accounts.TryGetValue(request.AccountId, out var stored))
-            {
-                EnsureAllowed(stored.Summary, "ingest-bank-statement", allowSuspended: true);
-                stored.BankBatches.Add(batch);
-                UpsertBankStatementLines(stored.BankLines, request.Lines);
-                snapshot = CaptureSnapshotLocked();
-            }
+            var stored = RequireAccountLocked(request.AccountId);
+            EnsureAllowed(stored.Summary, "ingest-bank-statement", allowSuspended: true);
+            stored.BankBatches.Add(batch);
+            UpsertBankStatementLines(stored.BankLines, request.Lines);
+            snapshot = CaptureSnapshotLocked();
         }
 
         await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
@@ -406,6 +401,16 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         {
             throw new AccountStatusPolicyException(summary.OperationalStatus, operation, isBackfill);
         }
+    }
+
+    private StoredAccount RequireAccountLocked(Guid accountId)
+    {
+        if (!_accounts.TryGetValue(accountId, out var stored))
+        {
+            throw new InvalidOperationException($"Account {accountId} not found.");
+        }
+
+        return stored;
     }
 
     public Task<IReadOnlyList<CustodianPositionLineDto>> GetCustodianPositionsAsync(
@@ -454,13 +459,12 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
 
         AccountBalanceSnapshotDto? snapshot;
         List<CustodianPositionLineDto> positions;
+        List<CustodianStatementBatchDto> custodianBatches;
+        List<BankStatementLineDto> bankLines;
 
         lock (_gate)
         {
-            if (!_accounts.TryGetValue(request.AccountId, out var stored))
-            {
-                throw new InvalidOperationException($"Account {request.AccountId} not found.");
-            }
+            var stored = RequireAccountLocked(request.AccountId);
 
             snapshot = stored.Snapshots
                 .Where(s => s.AsOfDate == request.AsOfDate)
@@ -470,69 +474,44 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             positions = stored.CustodianPositions
                 .Where(p => p.AsOfDate == request.AsOfDate)
                 .ToList();
+
+            custodianBatches = stored.CustodianBatches
+                .Where(b => b.AsOfDate == request.AsOfDate)
+                .ToList();
+
+            bankLines = stored.BankLines
+                .Where(l => l.TransactionDate == request.AsOfDate)
+                .ToList();
         }
 
         var runId = Guid.NewGuid();
         var results = new List<AccountReconciliationResultDto>();
         var now = DateTimeOffset.UtcNow;
 
-        if (snapshot is not null)
+        var cashCheck = AccountReconciliationChecks.BuildCashBalanceCheck(runId, snapshot, bankLines);
+        if (cashCheck is not null)
         {
-            results.Add(new AccountReconciliationResultDto(
-                Guid.NewGuid(),
-                runId,
-                CheckLabel: "CashBalance",
-                IsMatch: true,
-                Category: "Cash",
-                Status: "Matched",
-                ExpectedAmount: snapshot.CashBalance,
-                ActualAmount: snapshot.CashBalance,
-                Variance: 0m,
-                Reason: "Cash balance matches internal ledger"));
+            results.Add(cashCheck);
         }
 
         AddContinuityCheckResults(runId, request.AsOfDate, results, request.AccountId);
 
-        if (positions.Count > 0)
+        var positionCheck = AccountReconciliationChecks.BuildPositionCountCheck(runId, positions, custodianBatches);
+        if (positionCheck is not null)
         {
-            results.Add(new AccountReconciliationResultDto(
-                Guid.NewGuid(),
-                runId,
-                CheckLabel: $"PositionCount ({positions.Count} lines)",
-                IsMatch: true,
-                Category: "Positions",
-                Status: "Matched",
-                ExpectedAmount: positions.Count,
-                ActualAmount: positions.Count,
-                Variance: 0m,
-                Reason: "Custodian position lines ingested successfully"));
+            results.Add(positionCheck);
         }
 
-        var breaks = results.Count(r => !r.IsMatch);
-        var run = new AccountReconciliationRunDto(
-            runId,
-            request.AccountId,
-            request.AsOfDate,
-            Status: breaks == 0 ? "Matched" : "Breaks",
-            TotalChecks: results.Count,
-            TotalMatched: results.Count - breaks,
-            TotalBreaks: breaks,
-            BreakAmountTotal: results
-                .Where(r => !r.IsMatch && r.Variance.HasValue)
-                .Sum(r => Math.Abs(r.Variance!.Value)),
-            RequestedAt: now,
-            CompletedAt: now,
-            request.RequestedBy);
+        var run = AccountReconciliationChecks.BuildRunSummary(
+            runId, request.AccountId, request.AsOfDate, request.RequestedBy, now, results);
 
         (long Version, string Json)? snapshotToPersist = null;
         lock (_gate)
         {
-            if (_accounts.TryGetValue(request.AccountId, out var stored))
-            {
-                stored.ReconciliationRuns.Add(run);
-                stored.ReconciliationResults.AddRange(results);
-                snapshotToPersist = CaptureSnapshotLocked();
-            }
+            var stored = RequireAccountLocked(request.AccountId);
+            stored.ReconciliationRuns.Add(run);
+            stored.ReconciliationResults.AddRange(results);
+            snapshotToPersist = CaptureSnapshotLocked();
         }
 
         await PersistSnapshotAsync(snapshotToPersist, ct).ConfigureAwait(false);
@@ -669,7 +648,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             }
 
             var breaks = stored.ReconciliationResults
-                .Where(r => !r.IsMatch
+                .Where(r => AccountReconciliationChecks.IsBreak(r)
                     && (string.Equals(r.Category, "Position", StringComparison.OrdinalIgnoreCase)
                         || string.Equals(r.Category, "Positions", StringComparison.OrdinalIgnoreCase)))
                 .Select(r => new PositionReconciliationBreakDto(
@@ -699,7 +678,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             }
 
             var breaks = stored.ReconciliationResults
-                .Where(r => !r.IsMatch && string.Equals(r.Category, "Cash", StringComparison.OrdinalIgnoreCase))
+                .Where(r => AccountReconciliationChecks.IsBreak(r) && string.Equals(r.Category, "Cash", StringComparison.OrdinalIgnoreCase))
                 .Select(r => new CashReconciliationBreakDto(
                     r.ResultId,
                     accountId,
@@ -755,10 +734,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         (long Version, string Json)? snapshot = null;
         lock (_gate)
         {
-            if (!_accounts.TryGetValue(request.AccountId, out var stored))
-            {
-                throw new InvalidOperationException($"Account {request.AccountId} not found.");
-            }
+            var stored = RequireAccountLocked(request.AccountId);
 
             var existingIndex = string.IsNullOrWhiteSpace(correlationId)
                 ? -1
@@ -892,10 +868,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         (long Version, string Json)? persistedSnapshot;
         lock (_gate)
         {
-            if (!_accounts.TryGetValue(request.AccountId, out var stored))
-            {
-                throw new InvalidOperationException($"Account {request.AccountId} not found.");
-            }
+            var stored = RequireAccountLocked(request.AccountId);
 
             var existingIndex = string.IsNullOrWhiteSpace(correlationId)
                 ? -1
@@ -1117,7 +1090,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
                 "Map the account to a ledger reference before posting account activity."));
         }
 
-        var openBreakCount = stored.ReconciliationResults.Count(static result => !result.IsMatch);
+        var openBreakCount = stored.ReconciliationResults.Count(AccountReconciliationChecks.IsBreak);
         if (openBreakCount > 0)
         {
             issues.Add(new AccountReadinessIssueDto(
@@ -1353,9 +1326,6 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         return value.Trim();
     }
 
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
     private (long Version, string Json)? CaptureSnapshotLocked()
     {
         if (_persistencePath is null)
@@ -1484,7 +1454,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             var results = _accounts.Values
                 .Where(a => accountId is null || a.Summary.AccountId == accountId)
                 .SelectMany(a => a.ReconciliationResults
-                    .Where(static r => !r.IsMatch)
+                    .Where(static r => AccountReconciliationChecks.IsBreak(r))
                     .Select(r => new AccountOpenBreakView(a.Summary.AccountId, r.ReconciliationRunId, r.ResultId, r.CheckLabel, r.Category, r.Variance, r.Reason)))
                 .OrderByDescending(static r => r.Variance ?? 0m)
                 .ThenBy(static r => r.CheckLabel, StringComparer.OrdinalIgnoreCase)
@@ -1492,5 +1462,4 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             return Task.FromResult<IReadOnlyList<AccountOpenBreakView>>(results);
         }
     }
-
 }

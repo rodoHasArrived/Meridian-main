@@ -4,18 +4,18 @@ doc_schema: meridian.product-boundary
 doc_schema_version: "1.0.0"
 owner: core-team
 status: active
-last_reviewed: 2026-06-23
+last_reviewed: 2026-08-03
 ---
 
 # Deferred Expansion Boundaries
 
-This document records the narrow acceptance boundaries for product areas that remain deferred beyond the W1-W7 operational-record baseline. These boundaries are not implementation claims; they define the minimum evidence that must exist before a future roadmap row can move one of these areas into active build scope.
+This document records the narrow acceptance boundaries for product areas that remain deferred beyond the operational-record baseline. These boundaries are not implementation claims; they define the minimum evidence that must exist before a future roadmap row can move one of these areas into active build scope. A completed boundary item in the implementation tracker means the scope decision and reopening gate are explicit, not that the deferred product has shipped.
 
 ## Treasury Payments
 
 Native live payment execution remains deferred. A future roadmap row must define payment request records, approval separation, bank release automation, payment-processor orchestration, expected cash movement, bank confirmation, return and reversal evidence, reconciliation linkage, and audit retention before any live payment release surface is implemented.
 
-Minimum tests: payment request creation, independent approval, expected cash movement projection, bank confirmation capture, return or reversal evidence, reconciliation handoff, and audit linkage.
+The existing non-executing evidence seam must retain regression tests for payment request creation, approval recording, expected cash movement projection, bank confirmation capture, return or reversal evidence, reconciliation handoff, and audit linkage. A future live-execution implementation must additionally introduce requester identity and prove requester/approver separation; the current pending-payment contract does not claim maker-checker enforcement.
 
 ## Alternative Asset Operations
 
@@ -33,6 +33,14 @@ Forecasting remains deferred until a roadmap row defines the engine boundary, sc
 
 Capital-structure modeling must define debt and equity waterfalls, commitments, obligations, covenants, financing events, approval requirements, evidence retention, and downstream ledger/reporting handoff before it can be marked as implemented.
 
+## Administration Dashboards
+
+Broad fund, book, period, report, and delivery administration dashboards remain deferred beyond the existing Settings, policy, provider, approval, tenant-readiness, and audit surfaces. A future roadmap row must first establish durable tenant-scoped managed state, separation-of-duties and approval gates, effective-dated change history, rollback or correction behavior, operator recovery, and focused acceptance evidence over shared services and read models. In-memory control prototypes are not production administration authority.
+
+## Reporting and Analytics Platform
+
+The bounded reporting platform baseline is implemented through governed report-pack runs, certified datasets, line provenance, scheduling, approval, immutable artifacts, distribution evidence, amendments, and restatements. This does not close broader analytics-product expansion. Client-grade PDF/XLSX rendering and the partners-capital statement are delivered and accepted under `W9-REPORT-005` (operator decision `DEC-W9-ACCEPTANCE-001`, 2026-08-29), so that work is no longer deferred; what remains outside the boundary is self-service analytics beyond the governed reporting baseline. Any additional analytics workspace, dataset, semantic-model, or self-service distribution surface must reuse the canonical reporting run and evidence chain and receive its own roadmap acceptance criteria before implementation.
+
 ## Client Portal
 
 Broad self-service client portal work remains deferred. The first acceptable slice must define entitlement checks, recipient approval, delivery evidence, request history, amendment and restatement handling, access revocation, and audit retention before exposing portal-style self-service workflows.
@@ -43,10 +51,11 @@ No-code workflow design remains deferred until policy-safe configuration boundar
 
 ## Document Vault
 
-Evidence Vault productization has moved into active scope through `W5X-EVIDENCE-001` with the
-browser-first statement reconciliation onboarding wedge in `W5X-STMT-ONBOARD-001`. That v1 slice
+Evidence Vault productization is complete as the bounded browser-first `W5X-EVIDENCE-001` baseline,
+with the statement reconciliation onboarding wedge completed in `W5X-STMT-ONBOARD-001`. That v1 slice
 uses existing request-list, immutable-manifest, extracted-field review, document-to-object link,
-retention, access-control, and audit-evidence primitives, and intentionally omits WPF UI parity.
+retention, access-control, and audit-evidence primitives; its WPF UI parity is now tracked as
+`W8-WPF-PARITY-001` (the Evidence Workbench is a Wave P1 parity item).
 Broader document-portal, collaboration, and self-service document management expansion remains
 deferred until a later roadmap row defines entitlement, assignment, request history, and audit
 retention gates.

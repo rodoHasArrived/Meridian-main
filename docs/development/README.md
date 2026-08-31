@@ -1,11 +1,15 @@
 # Development Guides
 
-**Owner:** Core Team
+**Status:** supporting
+**Owner:** core-team
+**Reviewed:** 2026-07-19
 **Scope:** Engineering and contributor-facing guidance
-**Last Reviewed:** 2026-04-16
 **Review Cadence:** As tooling, workflows, or implementation conventions evolve
 
-This directory is the working index for Meridian developer guidance. Use it when you need to understand how the repository is organized, how to extend or test the platform, how desktop development works, or which automation and CI documents are authoritative.
+This supporting directory contains detailed implementation guides reached through the canonical
+[Engineering](../engineering/README.md) lane. Use it for repository organization, extension and
+test patterns, desktop development, and automation detail; keep the shortest current command path
+in Engineering and Start.
 
 ## Start Here
 
@@ -40,9 +44,10 @@ For a broader docs map, return to the main [docs index](../README.md).
 ## What Does Not Belong Here
 
 - Architecture narratives and rationale belong in [architecture/](../architecture/README.md)
-- Operational runbooks and deployment steps belong in [operations/](../operations/README.md)
+- Operational runbooks and deployment steps belong in [Operators](../operators/README.md)
 - Historical evaluations, proposals, and option analysis belong in the [assessment archive](../../archive/docs/assessments/README.md); active findings belong in the owning canonical lane.
-- Active roadmap and delivery tracking belong in [status/](../status/README.md)
+- Active roadmap and delivery tracking belong in the [Roadmap Registry](../roadmap/README.md);
+  automation-owned reports remain under [Status](../status/README.md)
 
 ## Guide Map
 
@@ -50,7 +55,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 
 | Document | Use it when you need to... |
 | --- | --- |
-| [Start](../start/README.md) | bootstrap the local checkout at `D:\Meridian-main` |
+| [Start](../start/README.md) | bootstrap a fresh checkout from the repository root |
 | [Engineering](../engineering/README.md) | choose a narrow build, test, or local run command |
 | [Tooling Architecture](tooling-architecture.md) | understand tooling layers, ownership, and local-to-CI command mapping |
 | [Publish Standalone EXE archive](../../archive/docs/developer/publish-standalone-exe.md) | review historical standalone publish guidance |
@@ -83,6 +88,14 @@ For a broader docs map, return to the main [docs index](../README.md).
 | [Shared Workstation Components](shared-workstation-components.md) | inventory and extract reusable desktop workstation controls and view-model patterns |
 | [Process Lifecycle Diagnostics](process-lifecycle-diagnostics.md) | check startup/shutdown ownership and safely report leftover Meridian/dotnet processes |
 | [Desktop Support Policy](policies/desktop-support-policy.md) | confirm expected validation and support obligations for desktop-facing changes |
+| [WPF ↔ Web-UI Alignment Plan](wpf-web-ui-alignment-plan.md) | close desktop parity gaps against the browser workstation over shared contracts |
+
+### Browser Workstation UI
+
+| Document | Use it when you need to... |
+| --- | --- |
+| [Web UI Structural Improvement Proposal](web-ui-structural-improvement-proposal.md) | review the browser workstation's screenshot-evidenced UX findings and the proposed structural changes (route-scoped views, master–detail cockpit, shell de-noising) |
+| [Web UI Structural Mockups](mockups/web-ui/README.md) | view static HTML mockups of the proposed workspace layouts before implementation |
 
 ### CI, Build, And Observability
 
@@ -94,6 +107,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 | [Runtime Observability And Diagnostics](runtime-observability.md) | apply runtime logging, redaction, correlation, provider-health, and diagnostic-bundle standards |
 | [OTLP Trace Visualization](otlp-trace-visualization.md) | inspect Meridian traces and metrics in a local telemetry UI |
 | [Git Hooks](git-hooks.md) | install the repo-managed local quality gate before committing |
+| [God-File Burn-Down Plan](god-file-burn-down-plan.md) | understand the file-size ratchet baseline, its burn-down targets, and decomposition sequencing |
 
 ### Documentation Tooling And Automation
 

@@ -153,11 +153,103 @@ public sealed class SecurityMasterEditViewModelTests
         });
     }
 
-    private static SecurityMasterEditViewModel CreateViewModel(Mock<ISecurityMasterService>? service = null)
+    /// <summary>
+    /// The audit field records the signed-in operator. It previously carried the constant "User",
+    /// which named nobody.
+    /// </summary>
+    [Fact]
+    public void SaveAsync_WhenEditing_RecordsTheSignedInOperatorAsTheAuthor()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            AmendSecurityTermsRequest? capturedRequest = null;
+            var detail = CreateEquityDetail();
+            var service = new Mock<ISecurityMasterService>(MockBehavior.Strict);
+            service
+                .Setup(mock => mock.AmendTermsAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<AmendSecurityTermsRequest, CancellationToken>((request, _) => capturedRequest = request)
+                .ReturnsAsync(detail);
+
+            var viewModel = CreateViewModel(service, new StubActorSource("jordan.rivera"));
+            viewModel.LoadForEdit(detail);
+            viewModel.DisplayName = "Apple Inc. Class A";
+
+            await viewModel.SaveCommand.ExecuteAsync(null);
+
+            capturedRequest.Should().NotBeNull();
+            capturedRequest!.UpdatedBy.Should().Be("jordan.rivera");
+
+            // SourceSystem names the originating system for conflict precedence, not the actor.
+            capturedRequest.SourceSystem.Should().Be("WPF-UI");
+        });
+    }
+
+    /// <summary>
+    /// With nobody signed in there is no honest author for the write, so the save is refused rather
+    /// than recorded against a placeholder.
+    /// </summary>
+    [Fact]
+    public void SaveAsync_WhenNoOperatorIsSignedIn_RefusesTheWrite()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var detail = CreateEquityDetail();
+
+            // Strict with no setup: any call to the service fails the test.
+            var service = new Mock<ISecurityMasterService>(MockBehavior.Strict);
+
+            var viewModel = CreateViewModel(service, new StubActorSource(actor: null));
+            viewModel.LoadForEdit(detail);
+            viewModel.DisplayName = "Apple Inc. Class A";
+
+            await viewModel.SaveCommand.ExecuteAsync(null);
+
+            viewModel.StatusText.Should().Contain("Sign in");
+            service.Verify(
+                mock => mock.AmendTermsAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()),
+                Times.Never);
+        });
+    }
+
+    private static SecurityDetailDto CreateEquityDetail()
+        => CreateSecurityDetail(
+            assetClass: "Equity",
+            identifierKind: SecurityIdentifierKind.Ticker,
+            identifierValue: "AAPL",
+            commonTerms: new
+            {
+                displayName = "Apple Inc.",
+                currency = "USD",
+                exchange = "NASDAQ",
+                issuerName = "Apple Inc."
+            },
+            assetSpecificTerms: new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                classification = "Common"
+            });
+
+    private static SecurityMasterEditViewModel CreateViewModel(
+        Mock<ISecurityMasterService>? service = null,
+        WpfServices.IDesktopActorSource? actorSource = null)
         => SecurityMasterEditViewModel.CreateNew(
             WpfServices.LoggingService.Instance,
             NotificationService.Instance,
-            (service ?? new Mock<ISecurityMasterService>(MockBehavior.Strict)).Object);
+            (service ?? new Mock<ISecurityMasterService>(MockBehavior.Strict)).Object,
+            actorSource ?? new StubActorSource("desktop.operator"));
+
+    /// <summary>
+    /// Stands in for the desktop session. <c>actor</c> of <c>null</c> models a process with nobody
+    /// signed in, which governed writes must refuse rather than attribute to a placeholder.
+    /// </summary>
+    private sealed class StubActorSource(string? actor) : WpfServices.IDesktopActorSource
+    {
+        public bool TryGetAuthenticatedActor(out string resolved)
+        {
+            resolved = actor ?? string.Empty;
+            return actor is { Length: > 0 };
+        }
+    }
 
     private static SecurityDetailDto CreateSecurityDetail(
         string assetClass,

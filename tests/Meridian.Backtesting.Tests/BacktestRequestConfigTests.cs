@@ -172,7 +172,7 @@ public sealed class BacktestRequestConfigTests
 
         var bar = new Meridian.Contracts.Domain.Models.HistoricalBar(
             "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 390m, 405m, 100_000L, "test");
-        var evt = MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, "SPY", bar);
+        var evt = MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, "SPY", bar, source: "TEST");
 
         var result = model.TryFill(order, evt);
 
@@ -191,7 +191,7 @@ public sealed class BacktestRequestConfigTests
         var order = new Order(Guid.NewGuid(), "SPY", OrderType.Market, 10L, null, null, DateTimeOffset.UtcNow);
         var bar = new Meridian.Contracts.Domain.Models.HistoricalBar(
             "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 390m, 405m, 100_000L, "test");
-        var evt = MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, "SPY", bar);
+        var evt = MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, "SPY", bar, source: "TEST");
 
         var lowResult = modelLow.TryFill(order, evt);
         var highResult = modelHigh.TryFill(order, evt);
@@ -216,7 +216,7 @@ public sealed class BacktestRequestConfigTests
             AllowPartialFills: true);
         var bar = new Meridian.Contracts.Domain.Models.HistoricalBar(
             "SPY", DateOnly.FromDateTime(DateTime.Today), 400m, 410m, 390m, 405m, 50_000L, "test");
-        var evt = MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, "SPY", bar);
+        var evt = MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, "SPY", bar, source: "TEST");
 
         var lowResult = modelLow.TryFill(order, evt);
         var highResult = modelHigh.TryFill(order, evt);

@@ -88,6 +88,10 @@ const livePromotionEvidenceReferences = [
   "LIVE_OVERRIDE_REVIEWED:manual-override/override-9"
 ];
 
+const paperPromotionEvidenceReferences = paperPromotionApprovalChecklist.map(
+  (checklistId) => `${checklistId}:evidence://evidence-vault/ev-0123456789abcdef01234567`
+);
+
 function createDeferred<T>() {
   let resolve!: (value: T) => void;
   let reject!: (reason?: unknown) => void;
@@ -501,10 +505,11 @@ describe("execution evidence view model", () => {
     expect(state.controlsPanel?.rows).toContainEqual({ id: "active-overrides", label: "Active overrides", value: "BypassOrderControls (AAPL)" });
     expect(state.auditRows[0]).toMatchObject({
       id: "audit-1",
-      action: "ReplayPaperSession",
+      action: "Paper session replay",
       outcome: "Completed",
       outcomeTone: "success",
-      metadataText: "2026-01-01T00:20:00Z · session sess-1"
+      metadataText: "Recorded Jan 1, 2026, 00:20 UTC",
+      technicalMetadataText: "2026-01-01T00:20:00Z · session sess-1"
     });
     expect(state.auditRows[0].ariaLabel).toContain("Replay matched current state");
     expect(state.statusAnnouncement).toBe("Breaker Closed. 1 audit entry loaded.");
@@ -1096,6 +1101,7 @@ describe("trading confirmation view model", () => {
     expect(state.dialogTitleId).toBe("trading-confirm-cancel-order-po-1-title");
     expect(state.dialogDescriptionId).toBe("trading-confirm-cancel-order-po-1-description");
     expect(state.confirmButtonLabel).toBe("Confirm");
+    expect(state.confirmButtonVariant).toBe("destructive");
     expect(state.confirmAriaLabel).toBe("Confirm cancel order po-1");
     expect(state.canClose).toBe(true);
     expect(state.canConfirm).toBe(false);
@@ -1113,6 +1119,9 @@ describe("trading confirmation view model", () => {
     const acknowledged = buildTradingConfirmDialogState(createTradingConfirmState({ kind: "cancel-order", orderId: "PO-1" }, true));
     expect(acknowledged.canConfirm).toBe(true);
     expect(acknowledged.confirmDisabledReason).toBeNull();
+
+    const pause = buildTradingConfirmDialogState(createTradingConfirmState({ kind: "pause-strategy", strategyId: "strat-1" }));
+    expect(pause.confirmButtonVariant).toBe("default");
   });
 
   it("derives busy and completed states for assistive feedback", () => {
@@ -1449,6 +1458,107 @@ describe("trading order ticket view model", () => {
     });
     expect(result.current.successText).toBe("Order submitted - ord-42.");
   });
+
+  it("reports a governed-approval park as parked rather than as a submission failure", async () => {
+    const services: OrderTicketServices = {
+      submitOrder: vi.fn().mockResolvedValue({
+        success: false,
+        orderId: "ord-77",
+        reason: null,
+        errorMessage: "Order notional is inside the governed-approval band.",
+        requiresApproval: true,
+        escalationId: "esc-9001"
+      })
+    };
+    const { result } = renderHook(() => useOrderTicketViewModel({
+      services,
+      fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749"
+    }));
+
+    act(() => {
+      result.current.openTicket();
+      result.current.updateField("symbol", "MSFT");
+      result.current.updateField("quantity", "2");
+      result.current.setAcknowledged(true);
+    });
+
+    await act(async () => {
+      await result.current.submitOrder();
+    });
+
+    // Nothing routed, but a live queue entry can still execute this order: showing a
+    // generic submission failure would tell the operator the opposite of what happened.
+    expect(result.current.phase).toBe("parked");
+    expect(result.current.errorText).toBeNull();
+    expect(result.current.escalationId).toBe("esc-9001");
+    expect(result.current.parkedText).toContain("parked for governed risk approval");
+    expect(result.current.parkedText).toContain("esc-9001");
+    expect(result.current.statusAnnouncement).toContain("parked for governed risk approval");
+  });
+
+  it("keeps non-blocking risk warnings visible on an approved order", async () => {
+    const services: OrderTicketServices = {
+      submitOrder: vi.fn().mockResolvedValue({
+        success: true,
+        orderId: "ord-90",
+        reason: null,
+        riskWarnings: ["SymbolConcentration is approaching its cap (21% of 25%)."]
+      })
+    };
+    const { result } = renderHook(() => useOrderTicketViewModel({
+      services,
+      fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749"
+    }));
+
+    act(() => {
+      result.current.openTicket();
+      result.current.updateField("symbol", "MSFT");
+      result.current.updateField("quantity", "2");
+      result.current.setAcknowledged(true);
+    });
+
+    await act(async () => {
+      await result.current.submitOrder();
+    });
+
+    // The order routed, so this is a success — but the warning describes exposure the
+    // operator now holds and must not be swallowed by an unqualified success banner.
+    expect(result.current.phase).toBe("submitted");
+    expect(result.current.riskWarnings).toHaveLength(1);
+    expect(result.current.riskWarnings[0]).toContain("approaching its cap");
+    expect(result.current.statusAnnouncement).toContain("1 risk warning");
+  });
+
+  it("still reports an ordinary refusal as an error", async () => {
+    const services: OrderTicketServices = {
+      submitOrder: vi.fn().mockResolvedValue({
+        success: false,
+        orderId: "ord-78",
+        reason: null,
+        errorMessage: "Gross exposure limit exceeded.",
+        requiresApproval: false
+      })
+    };
+    const { result } = renderHook(() => useOrderTicketViewModel({
+      services,
+      fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749"
+    }));
+
+    act(() => {
+      result.current.openTicket();
+      result.current.updateField("symbol", "MSFT");
+      result.current.updateField("quantity", "2");
+      result.current.setAcknowledged(true);
+    });
+
+    await act(async () => {
+      await result.current.submitOrder();
+    });
+
+    expect(result.current.phase).toBe("error");
+    expect(result.current.parkedText).toBeNull();
+    expect(result.current.errorText).toBe("Gross exposure limit exceeded.");
+  });
 });
 
 describe("buildOrderPreview", () => {
@@ -1589,6 +1699,7 @@ describe("trading promotion gate view model", () => {
         runId: " run-1 ",
         approvedBy: " operator-7 ",
         approvalReason: " Meets risk constraints ",
+        evidenceReferences: paperPromotionEvidenceReferences.join("\n"),
         approvalChecklist: paperPromotionApprovalChecklist
       },
       busy: false,
@@ -1630,7 +1741,7 @@ describe("trading promotion gate view model", () => {
       label: "Evidence references",
       placeholder: "TOKEN:evidence-path, one per line",
       describedBy: "promotion-evidence-references-help",
-      helpText: "Live approvals require retained evidence references for every live checklist item."
+      helpText: "Paper and live approvals require one CHECKLIST_ID:<retained-reference> entry for every canonical checklist item. Gate eligibility does not record acceptance."
     });
     expect(validatePromotionApproval(ready.form, eligibleEvaluation)).toBeNull();
   });
@@ -1878,6 +1989,7 @@ describe("trading promotion gate view model", () => {
           runId: "run-from-session-001",
           approvedBy: "operator-qa",
           approvalReason: "Session replay verified and portfolio consistent",
+          evidenceReferences: paperPromotionEvidenceReferences.join("\n"),
           approvalChecklist: paperPromotionApprovalChecklist
         },
         busy: false,
@@ -2003,7 +2115,8 @@ describe("trading promotion gate view model", () => {
       expect(checklist[2].label).toBe("Risk metrics");
       expect(checklist[3].label).toBe("Portfolio/Ledger continuity");
 
-      // Verify status based on evaluation
+      // Eligibility is informative; it does not record an acceptance decision.
+      expect(checklist.every((item) => item.status === "review")).toBe(true);
       expect(checklist[1].description).toContain("S1"); // strategyName
       expect(checklist[2].description).toContain("1.20"); // Sharpe ratio formatted
     });
@@ -2030,7 +2143,7 @@ describe("trading promotion gate view model", () => {
       ]);
       expect(checklist.find((item) => item.id === "broker-execution-reconciliation")).toMatchObject({
         label: "Broker order parity",
-        status: "ready",
+        status: "review",
         description: "Broker and OMS open-order reconciliation evidence reviewed"
       });
     });
@@ -2528,7 +2641,7 @@ describe("trading readiness work-item action routing", () => {
 // ─── Milestone 4: Approval checklist field + validation ──────────────────────
 
 describe("promotion approval checklist", () => {
-  it("validates that an empty checklist blocks the approval", () => {
+  it("validates that missing paper evidence blocks approval even after eligibility", () => {
     const formWithChecklist = {
       ...emptyPromotionGateForm,
       runId: "run-1",
@@ -2538,7 +2651,8 @@ describe("promotion approval checklist", () => {
     };
 
     const error = validatePromotionApproval(formWithChecklist, eligibleEvaluation);
-    expect(error).toContain("checklist");
+    expect(error).toContain("Paper promotion evidence references are incomplete");
+    expect(error).toContain("DK1_TRUST_PACKET_REVIEWED");
   });
 
   it("allows promotion when the checklist is fully populated", () => {
@@ -2547,6 +2661,7 @@ describe("promotion approval checklist", () => {
       runId: "run-1",
       approvedBy: "operator-1",
       approvalReason: "Meets risk criteria",
+      evidenceReferences: paperPromotionEvidenceReferences.join("\n"),
       approvalChecklist: paperPromotionApprovalChecklist
     };
 
@@ -2664,7 +2779,7 @@ describe("promotion approval checklist", () => {
     expect(request.approvalChecklist).toBeUndefined();
   });
 
-  it("auto-populates the checklist from the evaluation result when gate is eligible", async () => {
+  it("does not auto-populate checklist decisions from an eligible evaluation", async () => {
     const deferred = createDeferred<PromotionEvaluationResult>();
     const services: PromotionGateServices = {
       evaluatePromotion: () => deferred.promise,
@@ -2690,14 +2805,11 @@ describe("promotion approval checklist", () => {
       await deferred.promise;
     });
 
-    await waitFor(() => {
-      expect(result.current.form.approvalChecklist).toHaveLength(4);
-    });
-    expect(result.current.form.approvalChecklist).toContain("DK1_TRUST_PACKET_REVIEWED");
-    expect(result.current.form.approvalChecklist).toContain("RISK_CONTROLS_REVIEWED");
+    await waitFor(() => expect(result.current.evaluation?.isEligible).toBe(true));
+    expect(result.current.form.approvalChecklist).toHaveLength(0);
   });
 
-  it("auto-populates the live checklist from an eligible live evaluation result", async () => {
+  it("does not auto-populate live checklist decisions from an eligible evaluation", async () => {
     const deferred = createDeferred<PromotionEvaluationResult>();
     const services: PromotionGateServices = {
       evaluatePromotion: () => deferred.promise,
@@ -2720,10 +2832,8 @@ describe("promotion approval checklist", () => {
       await deferred.promise;
     });
 
-    await waitFor(() => {
-      expect(result.current.form.approvalChecklist).toEqual(livePromotionApprovalChecklist);
-    });
-    expect(result.current.form.approvalChecklist).toContain("BROKER_EXECUTION_RECONCILIATION_REVIEWED");
+    await waitFor(() => expect(result.current.evaluation?.isEligible).toBe(true));
+    expect(result.current.form.approvalChecklist).toHaveLength(0);
   });
 
   it("clears the approval checklist when the runId field changes", async () => {
@@ -2747,7 +2857,8 @@ describe("promotion approval checklist", () => {
       deferred.resolve(eligibleEvaluation);
       await deferred.promise;
     });
-    await waitFor(() => expect(result.current.form.approvalChecklist.length).toBeGreaterThan(0));
+    await waitFor(() => expect(result.current.evaluation?.isEligible).toBe(true));
+    expect(result.current.form.approvalChecklist).toHaveLength(0);
 
     act(() => {
       result.current.updateField("runId", "run-2");

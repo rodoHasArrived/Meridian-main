@@ -29,18 +29,43 @@ public sealed class StrategyRunReviewPacketService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<StrategyRunReviewPacketDto?> GetAsync(
+    public Task<StrategyRunReviewPacketDto?> GetAsync(
         string runId,
         Guid? fundAccountId = null,
+        CancellationToken ct = default) =>
+        GetCoreAsync(runId, scope: null, fundAccountId, ct);
+
+    public Task<StrategyRunReviewPacketDto?> GetAsync(
+        string runId,
+        StrategyRunReadScope scope,
+        Guid? fundAccountId = null,
         CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return GetCoreAsync(runId, scope, fundAccountId, ct);
+    }
+
+    private async Task<StrategyRunReviewPacketDto?> GetCoreAsync(
+        string runId,
+        StrategyRunReadScope? scope,
+        Guid? fundAccountId,
+        CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
         ct.ThrowIfCancellationRequested();
 
-        var runTask = _runReadService.GetRunDetailAsync(runId, ct);
-        var continuityTask = _continuityService.GetRunContinuityAsync(runId, ct);
-        var fillsTask = _runReadService.GetFillsAsync(runId, ct);
-        var attributionTask = _runReadService.GetAttributionAsync(runId, ct);
+        var runTask = scope is null
+            ? _runReadService.GetRunDetailAsync(runId, ct)
+            : _runReadService.GetRunDetailAsync(runId, scope, ct);
+        var continuityTask = scope is null
+            ? _continuityService.GetRunContinuityAsync(runId, ct)
+            : _continuityService.GetRunContinuityAsync(runId, scope, ct);
+        var fillsTask = scope is null
+            ? _runReadService.GetFillsAsync(runId, ct)
+            : _runReadService.GetFillsAsync(runId, scope, ct);
+        var attributionTask = scope is null
+            ? _runReadService.GetAttributionAsync(runId, ct)
+            : _runReadService.GetAttributionAsync(runId, scope, ct);
         var brokerageTask = ResolveBrokerageStatusAsync(fundAccountId, ct);
 
         await Task.WhenAll(runTask, continuityTask, fillsTask, attributionTask, brokerageTask).ConfigureAwait(false);

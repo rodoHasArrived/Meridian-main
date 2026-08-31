@@ -9,11 +9,13 @@ using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Meridian.Core.Monitoring;
 
 namespace Meridian.Application.Composition.Features;
@@ -27,7 +29,7 @@ internal sealed partial class ProviderFeatureRegistration
         IServiceProvider sp,
         Serilog.ILogger log)
     {
-        registry.RegisterStreamingFactory("ib", () =>
+        IMarketDataClient CreateInteractiveBrokersClient()
         {
             var publisher = sp.GetRequiredService<IMarketEventPublisher>();
             var tradeCollector = sp.GetRequiredService<TradeDataCollector>();
@@ -41,7 +43,11 @@ internal sealed partial class ProviderFeatureRegistration
                 quoteCollector,
                 optionCollector,
                 config.IB ?? new IBOptions());
-        });
+        }
+
+        // Retain the short legacy route while also registering the canonical [DataSource] id.
+        registry.RegisterStreamingFactory("ib", CreateInteractiveBrokersClient);
+        registry.RegisterStreamingFactory("ibkr", CreateInteractiveBrokersClient);
 
         registry.RegisterStreamingFactory("alpaca", () =>
         {
@@ -75,7 +81,7 @@ internal sealed partial class ProviderFeatureRegistration
                 reconnectionMetrics: reconnMetrics);
         });
 
-        registry.RegisterStreamingFactory("nyse", () =>
+        IMarketDataClient CreateNyseClient()
         {
             var tradeCollector = sp.GetRequiredService<TradeDataCollector>();
             var depthCollector = sp.GetRequiredService<MarketDepthCollector>();
@@ -86,7 +92,17 @@ internal sealed partial class ProviderFeatureRegistration
                 depthCollector,
                 quoteCollector,
                 httpClientFactory);
-        });
+        }
+
+        // Retain the short legacy route while also registering the canonical [DataSource] id.
+        registry.RegisterStreamingFactory("nyse", CreateNyseClient);
+        registry.RegisterStreamingFactory("nyse-streaming", CreateNyseClient);
+
+        registry.RegisterStreamingFactory("robinhood-live", () =>
+            new RobinhoodMarketDataClient(
+                sp.GetRequiredService<IHttpClientFactory>(),
+                sp.GetRequiredService<QuoteCollector>(),
+                sp.GetRequiredService<ILogger<RobinhoodMarketDataClient>>()));
 
         registry.RegisterStreamingFactory("synthetic", () =>
         {
@@ -131,9 +147,10 @@ internal sealed partial class ProviderFeatureRegistration
         ProviderRegistry registry,
         AppConfig config,
         IProviderCredentialResolver credentialResolver,
+        Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver? symbolResolver,
         Serilog.ILogger log)
     {
-        var factory = new ProviderFactory(config, credentialResolver, log);
+        var factory = new ProviderFactory(config, credentialResolver, log, symbolResolver);
         var providers = factory.CreateBackfillProviders();
         foreach (var provider in providers)
         {

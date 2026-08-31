@@ -59,7 +59,12 @@ public sealed class DiagnosticsPageViewModel : BindableBase, IDisposable
     private RelayCommand? _runFullDiagnosticsCommand;
     private RelayCommand? _openLogsFolderCommand;
 
-    private const string AppVersion = "1.6.1";
+    /// <summary>
+    /// Single source of truth for the application version shown in the UI — read from the
+    /// real assembly metadata so displayed versions can never drift from the build.
+    /// </summary>
+    internal static string AppVersion { get; } =
+        typeof(DiagnosticsPageViewModel).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
     private const string ConfigFileName = "appsettings.json";
     private const string DefaultStoragePath = "data";
     private const string DefaultLogsPath = "logs";
@@ -491,7 +496,14 @@ public sealed class DiagnosticsPageViewModel : BindableBase, IDisposable
                     var fileCount = new DirectoryInfo(fullPath).GetFiles("*", SearchOption.TopDirectoryOnly).Length;
                     output.Append($" ({fileCount} files)");
                 }
-                catch { /* ignore */ }
+                catch (Exception ex)
+                {
+                    // ignore
+                    global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                        "Diagnostics directory file count failed.",
+                        ("exception", ex.GetType().Name),
+                        ("message", ex.Message));
+                }
             }
             output.AppendLine();
         }

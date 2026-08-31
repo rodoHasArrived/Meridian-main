@@ -70,9 +70,13 @@ public sealed class ArchiveHealthService
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
             // Fall through to calculate locally
+            LoggingService.Instance.LogDebug(
+                "Archive health API call failed; calculating status locally.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
 
         var localStatus = await CalculateHealthStatusAsync();

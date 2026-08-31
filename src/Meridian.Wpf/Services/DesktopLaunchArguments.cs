@@ -1,4 +1,5 @@
 using Meridian.Wpf.Models;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Wpf.Services;
 
@@ -53,7 +54,7 @@ internal static class DesktopLaunchArguments
 
             if (arg.StartsWith("--screenshot=", StringComparison.OrdinalIgnoreCase))
             {
-                screenshotPath = NormalizeScreenshotPath(arg["--screenshot=".Length..]);
+                screenshotPath = NormalizeOptional(arg["--screenshot=".Length..]);
                 continue;
             }
 
@@ -62,7 +63,7 @@ internal static class DesktopLaunchArguments
             {
                 if (i + 1 < args.Count)
                 {
-                    screenshotPath = NormalizeScreenshotPath(args[++i]);
+                    screenshotPath = NormalizeOptional(args[++i]);
                 }
 
                 continue;
@@ -85,10 +86,5 @@ internal static class DesktopLaunchArguments
         }
 
         return ShellNavigationCatalog.GetCanonicalPageTag(pageTag);
-    }
-
-    private static string? NormalizeScreenshotPath(string? path)
-    {
-        return string.IsNullOrWhiteSpace(path) ? null : path.Trim();
     }
 }

@@ -1,3 +1,6 @@
+using System.Collections.ObjectModel;
+using Meridian.Ledger;
+
 namespace Meridian.Backtesting.Portfolio;
 
 /// <summary>
@@ -12,6 +15,21 @@ internal sealed class SimulatedPortfolio
     private readonly Dictionary<string, decimal> _lastPrices = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<CashFlowEntry> _cashFlows = [];
     private decimal _prevEquity;
+
+    // Rebuilding the aggregate views walks every account, every position, and every lot. The
+    // engine reads them through IBacktestContext.PortfolioValue / .Positions, so a strategy that
+    // checks its own equity once per bar previously paid a full rebuild per bar.
+    //
+    // Correctness rests on the mutating surface being closed: UpdateLastPrice, ProcessFill,
+    // ApplyAssetEvent, and AccrueDailyInterest are the only members that change the state these
+    // views derive from, and _lastPrices is handed out as IReadOnlyDictionary so callers cannot
+    // mutate it behind the cache. Each of those four bumps _stateVersion; a missed bump would
+    // serve a stale equity, so any new mutating member must bump it too.
+    private int _stateVersion;
+    private IReadOnlyDictionary<string, Position>? _cachedPositions;
+    private int _cachedPositionsVersion = -1;
+    private IReadOnlyDictionary<string, FinancialAccountSnapshot>? _cachedAccountSnapshots;
+    private int _cachedAccountSnapshotsVersion = -1;
 
     public decimal Cash => _accounts.Values.Sum(static account => account.Cash);
     public decimal MarginBalance => _accounts.Values.Sum(static account => account.MarginBalance);
@@ -79,12 +97,17 @@ internal sealed class SimulatedPortfolio
 
     // ── Price updates ────────────────────────────────────────────────────────
 
-    public void UpdateLastPrice(string symbol, decimal price) => _lastPrices[symbol] = price;
+    public void UpdateLastPrice(string symbol, decimal price)
+    {
+        _lastPrices[symbol] = price;
+        _stateVersion++;
+    }
 
     // ── Order fill processing ────────────────────────────────────────────────
 
     public void ProcessFill(FillEvent fill)
     {
+        _stateVersion++;
         var account = ResolveBrokerageAccount(fill.AccountId);
         var accountId = account.Account.AccountId;
         var symbol = fill.Symbol;
@@ -183,6 +206,7 @@ internal sealed class SimulatedPortfolio
 
     public void ApplyAssetEvent(AssetEvent assetEvent)
     {
+        _stateVersion++;
         ArgumentNullException.ThrowIfNull(assetEvent);
 
         var account = ResolveBrokerageAccount(null);
@@ -221,6 +245,7 @@ internal sealed class SimulatedPortfolio
 
     public void AccrueDailyInterest(DateOnly date)
     {
+        _stateVersion++;
         var ts = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
 
         foreach (var account in _accounts.Values)
@@ -731,6 +756,21 @@ internal sealed class SimulatedPortfolio
 
     private IReadOnlyDictionary<string, Position> BuildAggregatePositions()
     {
+        if (_cachedPositions is not null && _cachedPositionsVersion == _stateVersion)
+            return _cachedPositions;
+
+        // Wrapped before caching: the cached instance is handed to every later reader and to
+        // TakeSnapshot, so a caller that casts the returned view to IDictionary and mutates it
+        // would otherwise corrupt subsequent reads. Rebuilding per call used to make that
+        // harmless; caching does not, so the immutability has to be real.
+        var built = new ReadOnlyDictionary<string, Position>(BuildAggregatePositionsCore());
+        _cachedPositions = built;
+        _cachedPositionsVersion = _stateVersion;
+        return built;
+    }
+
+    private Dictionary<string, Position> BuildAggregatePositionsCore()
+    {
         var grouped = new Dictionary<string, List<Position>>(StringComparer.OrdinalIgnoreCase);
         foreach (var account in _accounts.Values)
         {
@@ -768,6 +808,17 @@ internal sealed class SimulatedPortfolio
     }
 
     private IReadOnlyDictionary<string, FinancialAccountSnapshot> BuildAccountSnapshots()
+    {
+        if (_cachedAccountSnapshots is not null && _cachedAccountSnapshotsVersion == _stateVersion)
+            return _cachedAccountSnapshots;
+
+        var built = new ReadOnlyDictionary<string, FinancialAccountSnapshot>(BuildAccountSnapshotsCore());
+        _cachedAccountSnapshots = built;
+        _cachedAccountSnapshotsVersion = _stateVersion;
+        return built;
+    }
+
+    private Dictionary<string, FinancialAccountSnapshot> BuildAccountSnapshotsCore()
     {
         return _accounts.Values.ToDictionary(
             account => account.Account.AccountId,
@@ -821,9 +872,20 @@ internal sealed class SimulatedPortfolio
 
     private static decimal ComputeAvgCost(AccountState account, string symbol)
     {
-        if (!account.Lots.TryGetValue(symbol, out var lots) || lots.Count == 0)
-            return 0m;
+        // Long and short lots never coexist for a symbol (covers consume short lots
+        // before a residual buy opens long lots), so a net-short position's average
+        // cost is the weighted average short entry price — not zero.
+        if (account.Lots.TryGetValue(symbol, out var lots) && lots.Count > 0)
+            return WeightedAverageEntryPrice(lots);
 
+        if (account.ShortLots.TryGetValue(symbol, out var shortLots) && shortLots.Count > 0)
+            return WeightedAverageEntryPrice(shortLots);
+
+        return 0m;
+    }
+
+    private static decimal WeightedAverageEntryPrice(LinkedList<OpenLot> lots)
+    {
         var totalQty = 0L;
         var totalCost = 0m;
         foreach (var lot in lots)
@@ -839,8 +901,9 @@ internal sealed class SimulatedPortfolio
     /// Realizes P&amp;L for a long position close using the account's configured lot selection method.
     /// <para>
     /// NOTE: This must stay consistent with <c>BacktestMetricsEngine.ComputeRealisedPnl</c>,
-    /// which re-implements the same FIFO lot logic for attribution. If you change this method,
-    /// update the metrics counterpart in parallel.
+    /// which re-derives realized P&amp;L from the fill stream (honoring the same lot-selection
+    /// method) for attribution. If you change this method, update the metrics counterpart in
+    /// parallel.
     /// </para>
     /// </summary>
     private static decimal RealiseLots(
@@ -857,35 +920,30 @@ internal sealed class SimulatedPortfolio
 
         // Build an ordered sequence of lot nodes according to the selection method.
         var ordered = OrderLots(lots, account.Rules.LotSelection, targetLotId);
+        var consumption = LotConsumption.Consume(ordered, closeQty, static node => node.Value.Quantity);
 
         var realised = 0m;
-        var remaining = closeQty;
 
-        foreach (var node in ordered)
+        foreach (var slice in consumption.Slices)
         {
-            if (remaining <= 0)
-                break;
-
+            var node = slice.Lot;
             var lot = node.Value;
-            if (lot.Quantity <= remaining)
+            var quantity = (long)slice.Quantity;
+
+            realised += quantity * (sellPrice - lot.EntryPrice);
+            account.ClosedLots.Add(new ClosedLot(
+                lot.LotId, symbol, quantity, lot.EntryPrice, lot.OpenedAt,
+                lot.OpenFillId, sellPrice, closedAt, closeFillId, account.Account.AccountId));
+
+            if (slice.ClosesLot)
             {
-                realised += lot.Quantity * (sellPrice - lot.EntryPrice);
-                remaining -= lot.Quantity;
-                account.ClosedLots.Add(new ClosedLot(
-                    lot.LotId, symbol, lot.Quantity, lot.EntryPrice, lot.OpenedAt,
-                    lot.OpenFillId, sellPrice, closedAt, closeFillId, account.Account.AccountId));
                 lots.Remove(node);
             }
             else
             {
-                realised += remaining * (sellPrice - lot.EntryPrice);
-                account.ClosedLots.Add(new ClosedLot(
-                    lot.LotId, symbol, remaining, lot.EntryPrice, lot.OpenedAt,
-                    lot.OpenFillId, sellPrice, closedAt, closeFillId, account.Account.AccountId));
                 // Replace lot with reduced quantity, preserve original LotId.
-                lots.AddBefore(node, lot with { Quantity = lot.Quantity - remaining });
+                lots.AddBefore(node, lot with { Quantity = lot.Quantity - quantity });
                 lots.Remove(node);
-                remaining = 0;
             }
         }
 
@@ -906,18 +964,16 @@ internal sealed class SimulatedPortfolio
             return (0m, coverQty * coverPrice);
 
         var ordered = OrderLots(lots, account.Rules.LotSelection, targetLotId);
+        var consumption = LotConsumption.Consume(ordered, coverQty, static node => node.Value.Quantity);
 
         var realised = 0m;
         var shortSaleProceeds = 0m;
-        var remaining = coverQty;
 
-        foreach (var node in ordered)
+        foreach (var slice in consumption.Slices)
         {
-            if (remaining <= 0)
-                break;
-
+            var node = slice.Lot;
             var lot = node.Value;
-            var lotClose = Math.Min(lot.Quantity, remaining);
+            var lotClose = (long)slice.Quantity;
             var lotProceeds = lotClose * lot.EntryPrice;
             realised += lotProceeds - lotClose * coverPrice;
             shortSaleProceeds += lotProceeds;
@@ -926,16 +982,14 @@ internal sealed class SimulatedPortfolio
                 lot.LotId, symbol, lotClose, lot.EntryPrice, lot.OpenedAt,
                 lot.OpenFillId, coverPrice, closedAt, closeFillId, account.Account.AccountId, IsShort: true));
 
-            if (lot.Quantity <= remaining)
+            if (slice.ClosesLot)
             {
-                remaining -= lot.Quantity;
                 lots.Remove(node);
             }
             else
             {
-                lots.AddBefore(node, lot with { Quantity = lot.Quantity - remaining });
+                lots.AddBefore(node, lot with { Quantity = lot.Quantity - lotClose });
                 lots.Remove(node);
-                remaining = 0;
             }
         }
 

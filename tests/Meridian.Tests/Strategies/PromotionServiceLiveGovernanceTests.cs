@@ -34,7 +34,8 @@ public sealed class PromotionServiceLiveGovernanceTests
         var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
         {
             EndedAt = DateTimeOffset.UtcNow,
-            Metrics = BuildPassingResult()
+            Metrics = BuildPassingResult(),
+            WalkForwardEvidence = PassingWalkForwardEvidence()
         };
         await store.RecordRunAsync(run);
 
@@ -62,7 +63,8 @@ public sealed class PromotionServiceLiveGovernanceTests
         var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
         {
             EndedAt = DateTimeOffset.UtcNow,
-            Metrics = BuildPassingResult()
+            Metrics = BuildPassingResult(),
+            WalkForwardEvidence = PassingWalkForwardEvidence()
         };
         await store.RecordRunAsync(run);
 
@@ -108,7 +110,8 @@ public sealed class PromotionServiceLiveGovernanceTests
         var run = StrategyRunEntry.Start("s-edge", "Strategy Edge", RunType.Paper) with
         {
             EndedAt = DateTimeOffset.UtcNow,
-            Metrics = BuildPassingResult()
+            Metrics = BuildPassingResult(),
+            WalkForwardEvidence = PassingWalkForwardEvidence()
         };
         await store.RecordRunAsync(run);
 
@@ -176,7 +179,8 @@ public sealed class PromotionServiceLiveGovernanceTests
         var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
         {
             EndedAt = DateTimeOffset.UtcNow,
-            Metrics = BuildPassingResult()
+            Metrics = BuildPassingResult(),
+            WalkForwardEvidence = PassingWalkForwardEvidence()
         };
         await store.RecordRunAsync(run);
 
@@ -264,7 +268,8 @@ public sealed class PromotionServiceLiveGovernanceTests
         var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
         {
             EndedAt = DateTimeOffset.UtcNow,
-            Metrics = BuildPassingResult()
+            Metrics = BuildPassingResult(),
+            WalkForwardEvidence = PassingWalkForwardEvidence()
         };
         await store.RecordRunAsync(run);
 
@@ -333,7 +338,8 @@ public sealed class PromotionServiceLiveGovernanceTests
         var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
         {
             EndedAt = DateTimeOffset.UtcNow,
-            Metrics = BuildPassingResult()
+            Metrics = BuildPassingResult(),
+            WalkForwardEvidence = PassingWalkForwardEvidence()
         };
         await store.RecordRunAsync(run);
 
@@ -407,7 +413,8 @@ public sealed class PromotionServiceLiveGovernanceTests
         var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
         {
             EndedAt = DateTimeOffset.UtcNow,
-            Metrics = BuildPassingResult()
+            Metrics = BuildPassingResult(),
+            WalkForwardEvidence = PassingWalkForwardEvidence()
         };
         await store.RecordRunAsync(run);
 
@@ -480,7 +487,8 @@ public sealed class PromotionServiceLiveGovernanceTests
         var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
         {
             EndedAt = DateTimeOffset.UtcNow,
-            Metrics = BuildPassingResult()
+            Metrics = BuildPassingResult(),
+            WalkForwardEvidence = PassingWalkForwardEvidence()
         };
         await store.RecordRunAsync(run);
 
@@ -555,7 +563,8 @@ public sealed class PromotionServiceLiveGovernanceTests
         var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
         {
             EndedAt = DateTimeOffset.UtcNow,
-            Metrics = BuildPassingResult()
+            Metrics = BuildPassingResult(),
+            WalkForwardEvidence = PassingWalkForwardEvidence()
         };
         await store.RecordRunAsync(run);
 
@@ -626,7 +635,8 @@ public sealed class PromotionServiceLiveGovernanceTests
         var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
         {
             EndedAt = DateTimeOffset.UtcNow,
-            Metrics = BuildPassingResult()
+            Metrics = BuildPassingResult(),
+            WalkForwardEvidence = PassingWalkForwardEvidence()
         };
         await store.RecordRunAsync(run);
 
@@ -685,7 +695,8 @@ public sealed class PromotionServiceLiveGovernanceTests
         var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
         {
             EndedAt = DateTimeOffset.UtcNow,
-            Metrics = BuildPassingResult()
+            Metrics = BuildPassingResult(),
+            WalkForwardEvidence = PassingWalkForwardEvidence()
         };
         await store.RecordRunAsync(run);
 
@@ -718,8 +729,12 @@ public sealed class PromotionServiceLiveGovernanceTests
             durableStore);
 
         var history = await restarted.GetPromotionHistoryAsync();
+        var scopedHistoryWithoutRetainedSource = await restarted.GetPromotionHistoryAsync(
+            new StrategyRunReadScope("tenant-a", "company-a"));
 
         history.Should().ContainSingle();
+        scopedHistoryWithoutRetainedSource.Should().BeEmpty(
+            "scoped history must fail closed when the restarted run store cannot prove source ownership");
         history[0].SourceRunId.Should().Be(run.RunId);
         history[0].TargetRunId.Should().NotBeNullOrWhiteSpace();
         history[0].AuditReference.Should().NotBeNullOrWhiteSpace();
@@ -776,7 +791,8 @@ public sealed class PromotionServiceLiveGovernanceTests
             $"{PromotionApprovalChecklist.ExceptionHandlingReviewed}:exceptions/live-readiness",
             $"{PromotionApprovalChecklist.RollbackKillSwitchReviewed}:controls/kill-switch/live-readiness",
             $"{PromotionApprovalChecklist.AuditRetentionReviewed}:audit-retention/live-readiness",
-            $"{PromotionApprovalChecklist.LiveOverrideReviewed}:manual-override/{manualOverrideId}"
+            $"{PromotionApprovalChecklist.LiveOverrideReviewed}:manual-override/{manualOverrideId}",
+            $"{PromotionApprovalChecklist.PaperExecutionModelReviewed}:paper-match/1+paper-cost/1"
         ];
 
     private static string CreateTempRoot()
@@ -785,6 +801,17 @@ public sealed class PromotionServiceLiveGovernanceTests
         Directory.CreateDirectory(path);
         return path;
     }
+
+    /// <summary>
+    /// Walk-forward evidence that clears the out-of-sample promotion gates, so live-governance
+    /// scenarios keep exercising their original concern (trust, overrides, brokerage, breaker).
+    /// </summary>
+    private static StrategyRunWalkForwardEvidence PassingWalkForwardEvidence() => new(
+        OutOfSampleSharpeRatio: 1.1,
+        OutOfSampleMaxDrawdownPercent: 0.08m,
+        DegradationRatio: 0.85,
+        WindowCount: 6,
+        RecordedAt: DateTimeOffset.UtcNow);
 
     private static BacktestResult BuildPassingResult()
     {

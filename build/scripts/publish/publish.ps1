@@ -286,6 +286,32 @@ function Publish-WebWorkstationHost {
 
     $outputPath = Join-Path (Join-Path $ResolvedOutputDir $RuntimeId) "web-workstation"
 
+    # The workstation bundle is generated (gitignored) vite output, and no MSBuild item
+    # carries it into the host publish. The published artifact must serve /workstation/
+    # from wwwroot/workstation beside the executable, so build the bundle when the tree
+    # is absent (clean checkout) and always include and verify it in the output.
+    $dashboardRoot = Join-Path $RepoRoot "src/Meridian.Ui/dashboard"
+    $bundleRoot = Join-Path $RepoRoot "src/Meridian.Ui/wwwroot/workstation"
+    $bundleIndex = Join-Path $bundleRoot "index.html"
+    if (-not (Test-Path -LiteralPath $bundleIndex)) {
+        Write-Info "Workstation bundle is missing; building the dashboard..."
+        Push-Location $dashboardRoot
+        try {
+            if (-not (Test-Path -LiteralPath (Join-Path $dashboardRoot "node_modules"))) {
+                & npm ci
+                if ($LASTEXITCODE -ne 0) { throw "npm ci failed with exit code $LASTEXITCODE" }
+            }
+            & npm run build
+            if ($LASTEXITCODE -ne 0) { throw "npm run build failed with exit code $LASTEXITCODE" }
+        }
+        finally {
+            Pop-Location
+        }
+    }
+    if (-not (Test-Path -LiteralPath $bundleIndex)) {
+        throw "Workstation bundle was not produced at $bundleIndex; the web-workstation artifact cannot serve /workstation/."
+    }
+
     Write-Info "Publishing Meridian Web Workstation host for $RuntimeId..."
     $sizeOptimizedArgs = Get-SizeOptimizedPublishArguments
 
@@ -305,6 +331,13 @@ function Publish-WebWorkstationHost {
 
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to publish Meridian Web Workstation host for $RuntimeId"
+    }
+
+    $outputBundle = Join-Path (Join-Path $outputPath "wwwroot") "workstation"
+    New-Item -ItemType Directory -Path $outputBundle -Force | Out-Null
+    Copy-Item -Path (Join-Path $bundleRoot "*") -Destination $outputBundle -Recurse -Force
+    if (-not (Test-Path -LiteralPath (Join-Path $outputBundle "index.html"))) {
+        throw "Published web-workstation output is missing wwwroot/workstation/index.html."
     }
 
     Write-Success "Published Meridian Web Workstation host for $RuntimeId -> $outputPath"

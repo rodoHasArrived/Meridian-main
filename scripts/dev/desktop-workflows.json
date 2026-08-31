@@ -127,6 +127,18 @@
           "notes": "Capture the Fund operations screen from the registered WPF shell catalog."
         },
         {
+          "title": "Operations continuity",
+          "pageTag": "OperationsContinuity",
+          "captureName": "wpf-operations-continuity",
+          "notes": "Capture the Operations continuity screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Posted ledger",
+          "pageTag": "PostedLedger",
+          "captureName": "wpf-posted-ledger",
+          "notes": "Capture the Posted ledger screen (posted-journal trial balance and P&L) from the registered WPF shell catalog."
+        },
+        {
           "title": "Run ledger",
           "pageTag": "RunLedger",
           "captureName": "wpf-run-ledger",
@@ -211,6 +223,18 @@
           "notes": "Capture the Report run status screen from the registered WPF shell catalog."
         },
         {
+          "title": "Evidence packets",
+          "pageTag": "EvidenceWorkbench",
+          "captureName": "wpf-evidence-workbench",
+          "notes": "Capture the Evidence packets screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Operations record release",
+          "pageTag": "OperationsRecordRelease",
+          "captureName": "wpf-operations-record-release",
+          "notes": "Capture the Operations record release screen from the registered WPF shell catalog."
+        },
+        {
           "title": "Reporting dashboard",
           "pageTag": "Dashboard",
           "captureName": "wpf-dashboard",
@@ -245,6 +269,12 @@
           "pageTag": "HomeWorkspace",
           "captureName": "wpf-home-workspace",
           "notes": "Capture the Home screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Operator readiness",
+          "pageTag": "OperatorReadinessConsole",
+          "captureName": "wpf-operator-readiness-console",
+          "notes": "Capture the Operator readiness screen from the registered WPF shell catalog."
         },
         {
           "title": "Strategy Workspace",
@@ -491,6 +521,12 @@
           "pageTag": "SystemHealth",
           "captureName": "wpf-system-health",
           "notes": "Capture the System health screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Lifecycle control",
+          "pageTag": "LifecycleControl",
+          "captureName": "wpf-lifecycle-control",
+          "notes": "Capture the Lifecycle control screen from the registered WPF shell catalog."
         },
         {
           "title": "Diagnostics",

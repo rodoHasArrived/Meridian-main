@@ -95,27 +95,30 @@
                             </StackPanel>
                         </Border>
 
-                        <Frame x:Name="ContentFrame"
-                               Visibility="Collapsed"
-                               NavigationUIVisibility="Hidden"
-                               Background="Transparent"
-                               AutomationProperties.AutomationId="ContentFrame"
-                               AutomationProperties.Name="Main Content Frame"
-                               Navigated="OnContentFrameNavigated" />
-
                         <Grid>
-                            <views:SplitPaneHostControl x:Name="SplitPaneHost"
-                                                       Layout="{Binding SplitPane.SelectedLayout}"
-                                                       Loaded="OnSplitPaneHostLoaded" />
-                            <views:WorkspaceInspectorHostControl x:Name="WorkspaceInspectorHost"
-                                                                 HorizontalAlignment="Right"
-                                                                 VerticalAlignment="Stretch"
-                                                                 Margin="0,8,8,8"
-                                                                 Width="300"
-                                                                 Visibility="Collapsed"
-                                                                 HostAutomationId="{Binding WorkspaceInspectorHostAutomationId}"
-                                                                 AutomationProperties.AutomationId="{Binding WorkspaceInspectorHostAutomationId}"
-                                                                 InspectorState="Empty" />
+                            <Frame x:Name="ContentFrame"
+                                   Visibility="Collapsed"
+                                   NavigationUIVisibility="Hidden"
+                                   Background="Transparent"
+                                   AutomationProperties.AutomationId="ContentFrame"
+                                   AutomationProperties.Name="Main Content Frame"
+                                   Navigated="OnContentFrameNavigated" />
+
+                            <Grid x:Name="WorkspaceHomeSurface"
+                                  Visibility="Visible">
+                                <views:SplitPaneHostControl x:Name="SplitPaneHost"
+                                                           Layout="{Binding SplitPane.SelectedLayout}"
+                                                           Loaded="OnSplitPaneHostLoaded" />
+                                <views:WorkspaceInspectorHostControl x:Name="WorkspaceInspectorHost"
+                                                                     HorizontalAlignment="Right"
+                                                                     VerticalAlignment="Stretch"
+                                                                     Margin="0,8,8,8"
+                                                                     Width="300"
+                                                                     Visibility="Collapsed"
+                                                                     HostAutomationId="{Binding WorkspaceInspectorHostAutomationId}"
+                                                                     AutomationProperties.AutomationId="{Binding WorkspaceInspectorHostAutomationId}"
+                                                                     InspectorState="Empty" />
+                            </Grid>
                         </Grid>
                     </DockPanel>
                 </Grid>

@@ -1,5 +1,6 @@
 import { act, cleanup, render, renderHook, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "jest-axe";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { ApiError } from "@/lib/api-errors";
@@ -632,7 +633,7 @@ describe("Evidence Workbench view model", () => {
     expect(vm.requestListPanel).toMatchObject({
       title: "Evidence Vault request lists",
       summaryLabel: "1 open request list",
-      scopeLabel: "Strategy Run run-1",
+      scopeLabel: "Momentum strategy run",
       hasRows: true
     });
     expect(vm.requestListPanel.rows[0]).toMatchObject({
@@ -677,7 +678,7 @@ describe("Evidence Workbench view model", () => {
       freshnessLabel: "Fresh as of May 9, 12:00 UTC",
       artifactCountLabel: "1 artifact",
       workItemCountLabel: "0 work items",
-      selectAriaLabel: "Inspect evidence node Strategy Run Detail strategy-run:run-1:detail"
+      selectAriaLabel: "Inspect Strategy Run Detail evidence for Momentum strategy run"
     });
     expect(vm.sourceWorkflowHref).toBe("/strategy?runId=run-1");
     expect(vm.packetActionsSummaryLabel).toBe("3 workflow actions");
@@ -714,8 +715,10 @@ describe("Evidence Workbench view model", () => {
     });
     expect(vm.lineagePanel.rows[0]).toMatchObject({
       relationshipLabel: "Requires",
-      ariaLabel: "Requires from strategy-run:run-1:detail to strategy-run:run-1:replay. Replay evidence supports the run.",
-      selectAriaLabel: "Inspect lineage edge: Requires from strategy-run:run-1:detail to strategy-run:run-1:replay"
+      fromLabel: "Strategy Run Detail",
+      toLabel: "Strategy Run Replay",
+      ariaLabel: "Requires from Strategy Run Detail to Strategy Run Replay. Replay evidence supports the run.",
+      selectAriaLabel: "Inspect lineage edge: Requires from Strategy Run Detail to Strategy Run Replay"
     });
   });
 
@@ -1056,7 +1059,11 @@ describe("Evidence Workbench view model", () => {
     expect(buildEvidenceNodeDetail(groups[0].rows[0])).toMatchObject({
       eyebrow: "Selected evidence node",
       title: "Strategy Run Detail",
-      subtitle: readyNode.evidenceId,
+      subtitle: "Momentum strategy run",
+      technicalFields: [
+        { label: "Evidence ID", value: readyNode.evidenceId },
+        { label: "Subject identifier", value: "strategy-run/run-1" }
+      ],
       artifactRows: [
         expect.objectContaining({
           kind: "Json",
@@ -1096,16 +1103,17 @@ describe("Evidence Workbench view model", () => {
     expect(populatedPanel.hasRows).toBe(true);
     expect(populatedPanel.rows[0]).toMatchObject({
       relationshipLabel: "Blocks Readiness",
+      fromLabel: "Provider Trust Sample Review",
+      toLabel: "Strategy Run Promotion",
       reason: "Provider evidence must be reviewed first."
     });
     expect(buildEvidenceLineageDetail(populatedPanel.rows[0])).toMatchObject({
       eyebrow: "Selected lineage edge",
       title: "Blocks Readiness",
-      subtitle: "provider-trust:sample-review to strategy-run:run-1:promotion",
+      subtitle: "Provider Trust Sample Review to Strategy Run Promotion",
       description: "Provider evidence must be reviewed first.",
-      fields: [
+      technicalFields: [
         { label: "From node", value: "provider-trust:sample-review" },
-        { label: "Relationship", value: "Blocks Readiness" },
         { label: "To node", value: "strategy-run:run-1:promotion" },
         {
           label: "Edge ID",
@@ -1262,6 +1270,46 @@ describe("Evidence Workbench view model", () => {
       },
       expect.objectContaining({ signal: expect.any(Object) })
     );
+  });
+
+  it("keeps subject and queue evidence usable when only the packet request fails", async () => {
+    const services = {
+      getSubjects: vi.fn().mockResolvedValue([subject]),
+      getPacket: vi.fn().mockRejectedValue(new ApiError({
+        path: "/api/workstation/evidence/strategy-run/run-1",
+        status: 503,
+        detail: "Evidence packet unavailable",
+        responseBody: "Evidence packet unavailable"
+      })),
+      listRequestLists: vi.fn().mockResolvedValue([vaultRequestListEntry]),
+      listDocuments: vi.fn().mockResolvedValue([vaultDocumentEntry]),
+      validatePacket: vi.fn(),
+      exportManifest: vi.fn()
+    };
+    const { result } = renderHook(() => useEvidenceWorkbenchViewModel("", services));
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.error).toBeNull();
+    expect(result.current.packetError).toMatchObject({
+      summary: "Evidence packet unavailable"
+    });
+    expect(result.current).toMatchObject({
+      selectedSubjectKind: "strategy-run",
+      selectedSubjectId: "run-1",
+      selectedSubjectLabel: "Momentum strategy run",
+      title: "Momentum strategy run",
+      hasSelection: true,
+      hasPacket: false,
+      hasSubjects: true,
+      showSubjectPicker: true,
+      sourceWorkflowHref: "/strategy?runId=run-1"
+    });
+    expect(result.current.subjects).toEqual([subject]);
+    expect(result.current.requestListPanel.rows).toHaveLength(1);
+    expect(result.current.documentPanel.rows).toHaveLength(1);
+    expect(result.current.requestListPanel.scopeLabel).toBe("Momentum strategy run");
+    expect(result.current.documentPanel.scopeLabel).toBe("Momentum strategy run");
   });
 
   it("keeps only the newest same-subject validation and export command results", async () => {
@@ -1455,7 +1503,7 @@ describe("Evidence Workbench view model", () => {
       summaryLabel: "3 nodes, 1 warning, Audit Packet, 1 retained artifact, 1 request list, 2 support requests",
       routeHref: "/workstation/evidence/fresh-manifest.json",
       routeLabel: "Open manifest",
-      routeAriaLabel: "Open retained evidence manifest at fresh-manifest.json",
+      routeAriaLabel: "Open retained evidence manifest",
       vaultIdLabel: "ev-1234567890abcdef12345678",
       storageKindLabel: "File Bundle",
       manifestPackageFamilyLabel: "Audit Packet",
@@ -1626,7 +1674,8 @@ describe("EvidenceWorkbenchScreen", () => {
 
     renderEvidenceRoute("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1");
 
-    expect(await screen.findByText("Momentum strategy run")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Momentum strategy run", level: 2 }))
+      .toBeInTheDocument();
     expect(listEvidenceVaultRequestLists).toHaveBeenCalledWith(
       {
         subjectKind: "strategy-run",
@@ -1657,7 +1706,9 @@ describe("EvidenceWorkbenchScreen", () => {
     expect(requestListPanel).toHaveTextContent("2 open requests");
     expect(requestListPanel).toHaveTextContent("ev-request-list-demo");
     expect(requestListPanel).toHaveTextContent("Audit support package is missing.");
-    expect(screen.getByRole("link", { name: /open retained manifest for request list/i })).toHaveAttribute(
+    expect(within(requestListPanel).getAllByText("Technical details")[0]?.closest("details"))
+      .not.toHaveAttribute("open");
+    expect(screen.getByRole("link", { name: /open retained manifest for momentum strategy run request list/i })).toHaveAttribute(
       "href",
       "/workstation/evidence/strategy-run/run-1/manifest.json"
     );
@@ -1665,9 +1716,10 @@ describe("EvidenceWorkbenchScreen", () => {
     expect(documentPanel).toHaveTextContent("1 need review");
     expect(documentPanel).toHaveTextContent("operating-bank-statement.csv");
     expect(documentPanel).toHaveTextContent("Bank Evidence");
-    expect(documentPanel).toHaveTextContent("Close Task close-task:cash-support");
-    expect(documentPanel).toHaveTextContent("fund-controller");
-    expect(documentPanel).toHaveTextContent("tenant-alpha / fund-alpha");
+    const documentQueueItem = within(screen.getByRole("list", { name: "Evidence Vault document queue" }))
+      .getByRole("listitem", { name: /operating-bank-statement.csv/i });
+    expect(documentQueueItem).not.toHaveTextContent("fund-controller");
+    expect(documentQueueItem).not.toHaveTextContent("tenant-alpha / fund-alpha");
     expect(screen.getByRole("link", { name: /open retained manifest for document operating-bank-statement.csv/i })).toHaveAttribute(
       "href",
       "/workstation/evidence/strategy-run/run-1/manifest.json"
@@ -1675,6 +1727,14 @@ describe("EvidenceWorkbenchScreen", () => {
     const selectedDocument = screen.getByRole("region", {
       name: "Selected Evidence Vault document: operating-bank-statement.csv"
     });
+    const technicalMetadata = within(selectedDocument).getByText("Technical metadata").closest("details");
+    const auditTrail = within(selectedDocument).getByText("Audit trail and support requests").closest("details");
+    expect(technicalMetadata).not.toHaveAttribute("open");
+    expect(auditTrail).not.toHaveAttribute("open");
+    await user.click(within(selectedDocument).getByText("Technical metadata"));
+    expect(technicalMetadata).toHaveAttribute("open");
+    await user.click(within(selectedDocument).getByText("Audit trail and support requests"));
+    expect(auditTrail).toHaveAttribute("open");
     expect(selectedDocument).toHaveTextContent("Statement amount needs review.");
     expect(selectedDocument).toHaveTextContent("Document Intake Retained");
     expect(selectedDocument).toHaveTextContent("manual-metadata-v1");
@@ -1719,27 +1779,31 @@ describe("EvidenceWorkbenchScreen", () => {
     await waitFor(() => expect(screen.getByRole("region", {
       name: "Selected Evidence Vault document: operating-bank-statement.csv"
     })).toHaveTextContent("Document Review Recorded"));
-    expect(screen.getByRole("region", { name: "Evidence document intake" })).toHaveTextContent("strategy-run/run-1");
+    expect(screen.getByRole("region", { name: "Evidence document intake" })).toHaveTextContent("Momentum strategy run");
     const file = new File(["cash"], "close-bank-evidence.csv", { type: "text/csv" });
     await user.upload(screen.getByLabelText("Document file"), file);
     const classificationSelect = screen.getByRole("combobox", { name: /^Document classification$/ });
     expect(within(classificationSelect).getByRole("option", { name: "Bank Statement" })).toBeInTheDocument();
     expect(within(classificationSelect).getByRole("option", { name: "Admin Package" })).toBeInTheDocument();
     expect(within(classificationSelect).getByRole("option", { name: "Tax Audit Support" })).toBeInTheDocument();
-    const extractionStatusSelect = screen.getByRole("combobox", { name: "Extraction status" });
-    expect(within(extractionStatusSelect).getByRole("option", { name: "Pending" })).toBeInTheDocument();
-    expect(within(extractionStatusSelect).queryByRole("option", { name: "Accepted" })).not.toBeInTheDocument();
+    const sourceKindSelect = screen.getByRole("combobox", { name: "Document source kind" });
     expect(screen.getByRole("option", { name: "Email" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Sftp" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Api" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Portal Download" })).toBeInTheDocument();
+    expect(within(sourceKindSelect).queryByRole("option", { name: "Local File" })).not.toBeInTheDocument();
+    expect(within(sourceKindSelect).queryByRole("option", { name: "Imported File Reference" })).not.toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Fund" })).toBeInTheDocument();
     await user.selectOptions(classificationSelect, "BankStatement");
-    await user.selectOptions(screen.getByLabelText("Extraction status"), "Pending");
-    await user.selectOptions(screen.getByLabelText("Reviewer state"), "NeedsReview");
-    await user.type(screen.getByLabelText("Actor"), "fund-controller");
-    await user.type(screen.getByLabelText("Tenant"), "tenant-alpha");
-    await user.type(screen.getByLabelText("Scope"), "fund-alpha");
+    expect(screen.queryByLabelText("Extraction status")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Reviewer state")).not.toBeInTheDocument();
+    expect(screen.getByText(/Extraction and initial review posture are assigned by the server/)).toBeInTheDocument();
+    expect(screen.getByText(
+      "Actor, tenant, and company scope are derived from the authenticated workstation session."
+    )).toBeInTheDocument();
+    expect(screen.queryByLabelText("Actor")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Tenant")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Scope")).not.toBeInTheDocument();
     await user.type(screen.getByLabelText("Source system"), "operator-upload");
     await user.type(screen.getByLabelText("Source reference"), "close-bank-evidence.csv");
     await user.selectOptions(screen.getByLabelText("Linked object kind"), "Fund");
@@ -1756,17 +1820,8 @@ describe("EvidenceWorkbenchScreen", () => {
         contentType: "text/csv",
         sourceSystem: "operator-upload",
         sourceReference: "close-bank-evidence.csv",
-        receivedBy: "fund-controller",
         classification: "BankStatement",
-        actor: "fund-controller",
-        tenantId: "tenant-alpha",
-        scope: "fund-alpha",
-        extractionStatus: "Pending",
         intakeChannelKind: "Upload",
-        reviewerState: expect.objectContaining({
-          status: "NeedsReview",
-          reviewer: "fund-controller"
-        }),
         objectLinks: [
           expect.objectContaining({
             linkKind: "Fund",
@@ -1781,6 +1836,13 @@ describe("EvidenceWorkbenchScreen", () => {
       }),
       expect.objectContaining({ signal: expect.any(Object) })
     );
+    const submittedRequest = vi.mocked(intakeEvidenceVaultDocument).mock.calls[0]?.[0];
+    expect(submittedRequest).not.toHaveProperty("actor");
+    expect(submittedRequest).not.toHaveProperty("receivedBy");
+    expect(submittedRequest).not.toHaveProperty("tenantId");
+    expect(submittedRequest).not.toHaveProperty("scope");
+    expect(submittedRequest).not.toHaveProperty("extractionStatus");
+    expect(submittedRequest).not.toHaveProperty("reviewerState");
     expect(await screen.findByText(/Retained close-bank-evidence.csv as intake:ev-uploaded-close-document/i)).toBeInTheDocument();
     await waitFor(() => expect(listEvidenceVaultDocuments).toHaveBeenCalledTimes(3));
     expect(screen.getByText("Missing evidence")).toBeInTheDocument();
@@ -1800,7 +1862,12 @@ describe("EvidenceWorkbenchScreen", () => {
       "Replay evidence is outside the replay freshness window."
     );
     expect(screen.getByText("Orphan evidence")).toBeInTheDocument();
-    expect(screen.getByText("strategy-run:run-1:unlinked-approval")).toBeInTheDocument();
+    const orphanEvidenceCard = screen.getByText("Orphan evidence").closest<HTMLElement>(".panel-surface");
+    expect(orphanEvidenceCard).not.toBeNull();
+    const orphanEvidenceId = within(orphanEvidenceCard!).getByText("strategy-run:run-1:unlinked-approval");
+    expect(orphanEvidenceId).not.toBeVisible();
+    await user.click(within(orphanEvidenceCard!).getByText("Technical details"));
+    expect(orphanEvidenceId).toBeVisible();
     expect(screen.getByText("SLA breaches")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /open source workflow for momentum strategy run/i })).toHaveAttribute(
       "href",
@@ -1808,10 +1875,16 @@ describe("EvidenceWorkbenchScreen", () => {
     );
     expect(screen.getByRole("region", { name: "Evidence packet actions" })).toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Run Lifecycle evidence nodes" })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Selected evidence node: Strategy Run Detail" })).toHaveTextContent(
-      "Run detail is available."
-    );
-    expect(screen.getByText("artifacts/evidence/strategy-run/run-1/detail.json")).toBeInTheDocument();
+    const selectedNodeDetail = screen.getByRole("region", { name: "Selected evidence node: Strategy Run Detail" });
+    expect(selectedNodeDetail).toHaveTextContent("Run detail is available.");
+    expect(selectedNodeDetail).toHaveTextContent("Momentum strategy run");
+    const selectedArtifactPanel = within(selectedNodeDetail).getByRole("region", {
+      name: "Strategy Run Detail selected evidence artifacts"
+    });
+    const selectedArtifactPath = within(selectedArtifactPanel).getByText("artifacts/evidence/strategy-run/run-1/detail.json");
+    expect(selectedArtifactPath).not.toBeVisible();
+    await user.click(within(selectedArtifactPanel).getByText("Technical details"));
+    expect(selectedArtifactPath).toBeVisible();
     expect(screen.getByRole("treegrid", { name: /evidence lineage edges for momentum strategy run/i })).toBeInTheDocument();
     expect(screen.getAllByText("Requires").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("region", { name: "Selected lineage edge: Requires" })).toHaveTextContent(
@@ -1826,17 +1899,27 @@ describe("EvidenceWorkbenchScreen", () => {
     expect(await screen.findByText(/Validation returned 50% completeness/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /export selected evidence manifest for momentum strategy run/i }));
-    expect(await screen.findByText("Manifest retained")).toBeInTheDocument();
-    expect(screen.getByText("workstation/evidence/strategy-run/run-1/manifest.json")).toBeInTheDocument();
+    const manifestTitle = await screen.findByText("Manifest retained");
+    const exportStatus = manifestTitle.closest<HTMLElement>("[role='status']");
+    expect(exportStatus).not.toBeNull();
+    const manifestPath = within(exportStatus!).getByText("workstation/evidence/strategy-run/run-1/manifest.json");
+    expect(manifestPath).not.toBeVisible();
     expect(screen.getByText("3 nodes, 1 warning, Audit Packet, 1 retained artifact, 1 request list, 1 support request")).toBeInTheDocument();
-    expect(screen.getByText("ev-abcdefabcdefabcdefabcdef")).toBeInTheDocument();
+    const vaultId = within(exportStatus!).getByText("ev-abcdefabcdefabcdefabcdef");
+    expect(vaultId).not.toBeVisible();
+    await user.click(within(exportStatus!).getAllByText("Technical details")[0]);
+    expect(manifestPath).toBeVisible();
+    expect(vaultId).toBeVisible();
     expect(screen.getAllByText("File Bundle").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Audit Packet").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByRole("list", { name: "Retained vault artifacts" })).toBeInTheDocument();
+    const retainedArtifactList = screen.getByRole("list", { name: "Retained vault artifacts" });
     expect(screen.getByText("Broker Statement")).toBeInTheDocument();
-    expect(screen.getByText("workstation/evidence/_vault/ev-abcdefabcdefabcdefabcdef/artifacts/broker-statement.csv")).toBeInTheDocument();
-    expect(screen.getByText("Report report-pack-1")).toBeInTheDocument();
-    expect(screen.getByText("Upload via Evidence Vault upload; received May 9, 12:30 UTC; reference portal-upload:broker-statement")).toBeInTheDocument();
+    const retainedArtifactPath = within(retainedArtifactList).getByText("workstation/evidence/_vault/ev-abcdefabcdefabcdefabcdef/artifacts/broker-statement.csv");
+    expect(retainedArtifactPath).not.toBeVisible();
+    await user.click(within(retainedArtifactList).getByText("Technical details"));
+    expect(retainedArtifactPath).toBeVisible();
+    expect(within(retainedArtifactList).getByText("Report report-pack-1")).toBeVisible();
+    expect(within(retainedArtifactList).getByText("Upload via Evidence Vault upload; received May 9, 12:30 UTC; reference portal-upload:broker-statement")).toBeVisible();
     expect(screen.getByText("1 extracted field; 1 validated; 1 reviewed")).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Evidence vault request lists" })).toBeInTheDocument();
     expect(screen.getAllByText("Audit Request List").length).toBeGreaterThanOrEqual(2);
@@ -1844,64 +1927,34 @@ describe("EvidenceWorkbenchScreen", () => {
     expect(screen.getAllByText("Audit family").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("audit/close-2026-05 has 1 frozen request; 1 open request remains.")).toBeInTheDocument();
     expect(screen.getAllByText("Audit History").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByRole("list", { name: "Evidence vault support requests" })).toBeInTheDocument();
+    const supportRequestList = screen.getByRole("list", { name: "Evidence vault support requests" });
     expect(screen.getAllByText("Missing Evidence").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("audit-support").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Audit support package is missing.").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("audit-request:close-2026-05").length).toBeGreaterThanOrEqual(1);
+    const supportEvidenceId = within(supportRequestList).getByText("audit-support");
+    const supportWorkItemId = within(supportRequestList).getByText("audit-request:close-2026-05");
+    expect(supportEvidenceId).not.toBeVisible();
+    expect(supportWorkItemId).not.toBeVisible();
+    await user.click(within(supportRequestList).getByText("Technical details"));
+    expect(supportEvidenceId).toBeVisible();
+    expect(supportWorkItemId).toBeVisible();
     expect(screen.getByRole("link", { name: /open retained evidence manifest/i })).toHaveAttribute(
       "href",
       "/workstation/evidence/strategy-run/run-1/manifest.json"
     );
   });
 
-  it.each([
-    ["LocalFile", "local-file", "LocalFile", "D:\\imports\\custodian-statement.csv", "CustodianFile"],
-    ["ImportedFileReference", "imported-file-reference", "ImportedFileReference", "D:\\imports\\portal\\capital-notice.pdf", "CapitalNotice"]
-  ] as const)("submits %s document references through the shared intake contract", async (sourceKind, intakeChannel, intakeChannelKind, sourcePath, classification) => {
+  it("does not offer server-local filesystem intake through the browser", async () => {
     vi.mocked(getEvidenceSubjects).mockResolvedValue([subject]);
     vi.mocked(getEvidencePacket).mockResolvedValue(packet);
-    const user = userEvent.setup();
 
     renderEvidenceRoute("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1");
 
-    expect(await screen.findByText("Momentum strategy run")).toBeInTheDocument();
-    await user.selectOptions(screen.getByLabelText("Document source kind"), sourceKind);
-    await user.type(screen.getByLabelText("Source file path"), sourcePath);
-    await user.selectOptions(screen.getByRole("combobox", { name: /^Document classification$/ }), classification);
-    await user.type(screen.getByLabelText("Actor"), "fund-controller");
-    await user.type(screen.getByLabelText("Linked object id"), "close-task:cash-support");
-    await user.click(screen.getByRole("button", { name: /retain document for momentum strategy run/i }));
-
-    const fileName = sourcePath.split("\\").at(-1);
-    await waitFor(() => expect(intakeEvidenceVaultDocument).toHaveBeenCalledTimes(1));
-    expect(intakeEvidenceVaultDocument).toHaveBeenCalledWith(
-      expect.objectContaining({
-        subjectKind: "strategy-run",
-        subjectId: "run-1",
-        intakeChannel,
-        fileName,
-        contentBase64: null,
-        contentType: null,
-        sourceReference: sourcePath,
-        receivedBy: "fund-controller",
-        classification,
-        actor: "fund-controller",
-        intakeChannelKind,
-        intakeSource: expect.objectContaining({
-          sourceKind,
-          path: sourcePath,
-          displayName: fileName
-        }),
-        objectLinks: [
-          expect.objectContaining({
-            linkKind: "CloseTask",
-            objectId: "close-task:cash-support"
-          })
-        ]
-      }),
-      expect.objectContaining({ signal: expect.any(Object) })
-    );
+    expect(await screen.findByRole("heading", { name: "Momentum strategy run", level: 2 }))
+      .toBeInTheDocument();
+    const sourceKindSelect = screen.getByRole("combobox", { name: "Document source kind" });
+    expect(within(sourceKindSelect).queryByRole("option", { name: "Local File" })).not.toBeInTheDocument();
+    expect(within(sourceKindSelect).queryByRole("option", { name: "Imported File Reference" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Source file path")).not.toBeInTheDocument();
   });
 
   it("submits adapter-seam source metadata with uploaded bytes instead of fetching the remote source", async () => {
@@ -1911,14 +1964,14 @@ describe("EvidenceWorkbenchScreen", () => {
 
     renderEvidenceRoute("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1");
 
-    expect(await screen.findByText("Momentum strategy run")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Momentum strategy run", level: 2 }))
+      .toBeInTheDocument();
     await user.selectOptions(screen.getByLabelText("Document source kind"), "PortalDownload");
     const file = new File(["portal"], "admin-package.csv", { type: "text/csv" });
     await user.upload(screen.getByLabelText("Document file"), file);
     await user.selectOptions(screen.getByRole("combobox", { name: /^Document classification$/ }), "AdminPackage");
     await user.type(screen.getByLabelText("Source system"), "fund-admin-portal");
     await user.type(screen.getByLabelText("Source reference"), "portal://fund-admin/fund-alpha/admin-package-202606");
-    await user.type(screen.getByLabelText("Actor"), "fund-admin-operator");
     await user.type(screen.getByLabelText("Linked object id"), "fund-alpha");
     await user.selectOptions(screen.getByLabelText("Linked object kind"), "Fund");
     await user.click(screen.getByRole("button", { name: /retain document for momentum strategy run/i }));
@@ -1934,9 +1987,7 @@ describe("EvidenceWorkbenchScreen", () => {
         contentType: "text/csv",
         sourceSystem: "fund-admin-portal",
         sourceReference: "portal://fund-admin/fund-alpha/admin-package-202606",
-        receivedBy: "fund-admin-operator",
         classification: "AdminPackage",
-        actor: "fund-admin-operator",
         intakeChannelKind: "PortalDownload",
         intakeSource: expect.objectContaining({
           sourceKind: "PortalDownload",
@@ -1975,7 +2026,7 @@ describe("EvidenceWorkbenchScreen", () => {
     renderEvidenceRoute("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1");
 
     const secondEdge = await screen.findByRole("row", {
-      name: /inspect lineage edge: blocks readiness from strategy-run:run-1:provider-trust/i
+      name: /inspect lineage edge: blocks readiness from strategy run provider trust to strategy run promotion/i
     });
     expect(secondEdge).toHaveAttribute("aria-controls", "evidence-lineage-selected-edge-detail");
     expect(secondEdge).toHaveAttribute("aria-expanded", "false");
@@ -1986,7 +2037,11 @@ describe("EvidenceWorkbenchScreen", () => {
     expect(secondEdge).toHaveAttribute("aria-expanded", "true");
     const detail = screen.getByRole("region", { name: "Selected lineage edge: Blocks Readiness" });
     expect(detail).toHaveTextContent("Provider evidence must be reviewed first.");
-    expect(detail).toHaveTextContent("strategy-run:run-1:provider-trust");
+    expect(detail).toHaveTextContent("Strategy Run Provider Trust to Strategy Run Promotion");
+    const fromNodeId = within(detail).getByText("strategy-run:run-1:provider-trust");
+    expect(fromNodeId).not.toBeVisible();
+    await user.click(within(detail).getByText("Technical details"));
+    expect(fromNodeId).toBeVisible();
   });
 
   it("lets keyboard and pointer users inspect evidence node detail", async () => {
@@ -2010,7 +2065,7 @@ describe("EvidenceWorkbenchScreen", () => {
     renderEvidenceRoute("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1");
 
     const promotionRow = await screen.findByRole("row", {
-      name: /inspect evidence node promotion review strategy-run:run-1:promotion/i
+      name: /inspect promotion review evidence for momentum strategy run/i
     });
     expect(promotionRow).toHaveAttribute("aria-controls", "evidence-node-run-lifecycle-selected-detail");
     expect(promotionRow).toHaveAttribute("aria-expanded", "false");
@@ -2022,30 +2077,58 @@ describe("EvidenceWorkbenchScreen", () => {
     expect(promotionRow).toHaveAttribute("aria-expanded", "true");
     const promotionDetail = screen.getByRole("region", { name: "Selected evidence node: Promotion Review" });
     expect(promotionDetail).toHaveTextContent("Promotion review is waiting on provider trust evidence.");
-    expect(promotionDetail).toHaveTextContent("promotion:review");
+    const promotionWorkItem = within(promotionDetail).getByText("promotion:review");
+    expect(promotionWorkItem).not.toBeVisible();
+    await user.click(within(promotionDetail).getByText("Technical details (1)"));
+    expect(promotionWorkItem).toBeVisible();
 
     const readyRow = screen.getByRole("row", {
-      name: /inspect evidence node strategy run detail strategy-run:run-1:detail/i
+      name: /inspect strategy run detail evidence for momentum strategy run/i
     });
     await user.click(readyRow);
 
     expect(readyRow).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByRole("region", { name: "Selected evidence node: Strategy Run Detail" })).toHaveTextContent(
-      "artifacts/evidence/strategy-run/run-1/detail.json"
-    );
+    const readyDetail = screen.getByRole("region", { name: "Selected evidence node: Strategy Run Detail" });
+    const readyArtifactPanel = within(readyDetail).getByRole("region", {
+      name: "Strategy Run Detail selected evidence artifacts"
+    });
+    const readyArtifactPath = within(readyArtifactPanel).getByText("artifacts/evidence/strategy-run/run-1/detail.json");
+    expect(readyArtifactPath).not.toBeVisible();
+    await user.click(within(readyArtifactPanel).getByText("Technical details"));
+    expect(readyArtifactPath).toBeVisible();
   });
 
-  it("renders broad subject selection route without loading a packet", async () => {
+  it("selects the first broad-route subject and keeps packet, intake, and queue scope coherent", async () => {
     vi.mocked(getEvidenceSubjects).mockResolvedValue([subject]);
     vi.mocked(getEvidencePacket).mockResolvedValue(packet);
 
     renderEvidenceRoute("/reporting/evidence");
 
-    expect(await screen.findByRole("link", { name: /Momentum strategy run/i })).toHaveAttribute(
+    const subjectLink = await screen.findByRole("link", { name: "Select evidence subject Momentum strategy run (selected)" });
+    expect(subjectLink).toHaveAttribute(
       "href",
       "/reporting/evidence?subjectKind=strategy-run&subjectId=run-1"
     );
-    await waitFor(() => expect(getEvidencePacket).not.toHaveBeenCalled());
+    expect(subjectLink).toHaveAttribute("aria-current", "page");
+    await waitFor(() => expect(getEvidencePacket).toHaveBeenCalledWith(
+      "strategy-run",
+      "run-1",
+      expect.objectContaining({ signal: expect.any(Object) })
+    ));
+    expect(listEvidenceVaultRequestLists).toHaveBeenCalledWith(
+      { subjectKind: "strategy-run", subjectId: "run-1", status: "Open", maxResults: 25 },
+      expect.objectContaining({ signal: expect.any(Object) })
+    );
+    expect(listEvidenceVaultDocuments).toHaveBeenCalledWith(
+      { subjectKind: "strategy-run", subjectId: "run-1", maxResults: 25 },
+      expect.objectContaining({ signal: expect.any(Object) })
+    );
+    expect(screen.getByRole("region", { name: "Evidence workbench context" })).toHaveTextContent("33% complete");
+    expect(screen.getByRole("region", { name: "Evidence document intake" })).toHaveTextContent("Momentum strategy run");
+    expect(screen.queryByText("No subject selected")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Momentum strategy run").length).toBeGreaterThanOrEqual(2);
+    const technicalDetails = subjectLink.closest("[role='listitem']")?.querySelector("details");
+    expect(technicalDetails).not.toHaveAttribute("open");
   });
 
   it("renders recoverable empty subject guidance when no subjects are available", async () => {
@@ -2060,6 +2143,26 @@ describe("EvidenceWorkbenchScreen", () => {
       "/trading/readiness"
     );
     await waitFor(() => expect(getEvidencePacket).not.toHaveBeenCalled());
+  });
+
+  it("has no basic accessibility violations in the loaded evidence workbench", async () => {
+    vi.mocked(getEvidenceSubjects).mockResolvedValue([subject]);
+    vi.mocked(getEvidencePacket).mockResolvedValue(packet);
+    vi.mocked(listEvidenceVaultRequestLists).mockResolvedValue([vaultRequestListEntry]);
+    vi.mocked(listEvidenceVaultDocuments).mockResolvedValue([vaultDocumentEntry]);
+
+    const { container } = renderEvidenceRoute("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1");
+
+    expect(await screen.findByRole("heading", { name: "Momentum strategy run", level: 2 }))
+      .toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Selected Evidence Vault document: operating-bank-statement.csv" }))
+      .toBeInTheDocument();
+    const results = await axe(container);
+    expect(results.violations.map((violation) => ({
+      id: violation.id,
+      targets: violation.nodes.map((node) => node.target),
+      summaries: violation.nodes.map((node) => node.failureSummary)
+    }))).toEqual([]);
   });
 
   it("lets operators retry a failed subject load without showing empty evidence copy", async () => {
@@ -2082,12 +2185,12 @@ describe("EvidenceWorkbenchScreen", () => {
 
     await user.click(screen.getByRole("button", { name: /retry loading evidence subjects/i }));
 
-    expect(await screen.findByRole("link", { name: /Momentum strategy run/i })).toHaveAttribute(
+    expect(await screen.findByRole("link", { name: "Select evidence subject Momentum strategy run (selected)" })).toHaveAttribute(
       "href",
       "/reporting/evidence?subjectKind=strategy-run&subjectId=run-1"
     );
     await waitFor(() => expect(getEvidenceSubjects).toHaveBeenCalledTimes(2));
-    await waitFor(() => expect(getEvidencePacket).not.toHaveBeenCalled());
+    await waitFor(() => expect(getEvidencePacket).toHaveBeenCalledTimes(1));
   });
 
   it("keeps operating scope in evidence workbench links rendered from the route", async () => {
@@ -2096,7 +2199,8 @@ describe("EvidenceWorkbenchScreen", () => {
 
     renderEvidenceRoute("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1&symbol=MSFT&fundAccountId=fund-1&runId=run-1&provider=Alpaca&from=2026-05-01&to=2026-05-15");
 
-    expect(await screen.findByText("Momentum strategy run")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Momentum strategy run", level: 2 }))
+      .toBeInTheDocument();
     expect(screen.getByRole("link", { name: /open source workflow for momentum strategy run/i })).toHaveAttribute(
       "href",
       "/strategy?runId=run-1&symbol=MSFT&provider=Alpaca&from=2026-05-01&to=2026-05-15"
@@ -2129,7 +2233,8 @@ describe("EvidenceWorkbenchScreen", () => {
 
     renderEvidenceRoute("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1");
 
-    expect(await screen.findByText("Momentum strategy run")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Momentum strategy run", level: 2 }))
+      .toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /export selected evidence manifest for momentum strategy run/i }));
 
@@ -2140,7 +2245,7 @@ describe("EvidenceWorkbenchScreen", () => {
 });
 
 function renderEvidenceRoute(initialEntry: string) {
-  render(
+  return render(
     <MemoryRouter initialEntries={[initialEntry]}>
       <Routes>
         <Route path="/reporting/evidence" element={<EvidenceWorkbenchScreen />} />

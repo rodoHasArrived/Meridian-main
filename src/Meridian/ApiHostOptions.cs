@@ -1,3 +1,4 @@
+using Meridian.Application.Composition;
 using Microsoft.Extensions.Configuration;
 
 namespace Meridian;
@@ -17,6 +18,20 @@ public sealed record ApiHostOptions
     public bool ServeWorkstationAssets { get; init; } = true;
 
     public bool IsProductionApi => DeploymentMode == MeridianApiDeploymentMode.ProductionApi;
+
+    /// <summary>
+    /// Maps the host deployment mode onto the shared typed posture (ADR-019) so the production
+    /// registration policy resolves the same production answer as the host configuration.
+    /// </summary>
+    public MeridianDeploymentPosture ToDeploymentPosture()
+        => DeploymentMode switch
+        {
+            MeridianApiDeploymentMode.LocalWorkstation => MeridianDeploymentPosture.LocalWorkstation,
+            MeridianApiDeploymentMode.ProductionApi => MeridianDeploymentPosture.ProductionApi,
+            MeridianApiDeploymentMode.Worker => MeridianDeploymentPosture.Worker,
+            MeridianApiDeploymentMode.Migration => MeridianDeploymentPosture.Migration,
+            _ => MeridianDeploymentPosture.Unspecified
+        };
 
     public static ApiHostOptions FromConfiguration(IConfiguration configuration, int port)
     {
@@ -57,10 +72,24 @@ public sealed record ApiHostOptions
     {
         foreach (var value in values)
         {
-            if (Enum.TryParse<MeridianApiDeploymentMode>(value, ignoreCase: true, out var mode))
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                continue;
+            }
+
+            // ADR-019 fail-closed parsing: an unrecognized deployment mode must stop the host
+            // rather than silently demote it to the local-workstation posture. Numeric values
+            // are rejected so an out-of-range integer cannot bypass the defined set.
+            if (Enum.TryParse<MeridianApiDeploymentMode>(value, ignoreCase: true, out var mode)
+                && Enum.IsDefined(mode)
+                && !char.IsAsciiDigit(value.Trim()[0]))
             {
                 return mode;
             }
+
+            throw new InvalidOperationException(
+                $"Unrecognized ApiHost deployment mode '{value}'. Supported values: " +
+                $"{string.Join(", ", Enum.GetNames<MeridianApiDeploymentMode>())}.");
         }
 
         return MeridianApiDeploymentMode.LocalWorkstation;

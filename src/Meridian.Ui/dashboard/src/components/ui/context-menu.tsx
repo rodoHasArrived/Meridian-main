@@ -133,6 +133,8 @@ export function useContextMenu() {
     setPosition({ x: event.clientX, y: event.clientY });
   }, []);
 
+  const openAt = useCallback((next: ContextMenuPosition) => setPosition(next), []);
+
   const onKeyDown = useCallback((event: React.KeyboardEvent<HTMLElement>) => {
     if (event.key !== "ContextMenu" && !(event.shiftKey && event.key === "F10")) {
       return;
@@ -149,6 +151,7 @@ export function useContextMenu() {
     closeMenu,
     onContextMenu,
     onKeyDown,
+    openAt,
     open: position !== null,
     position
   };

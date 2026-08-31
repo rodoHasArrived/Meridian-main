@@ -1,10 +1,13 @@
 # Status And Reporting Source-Material Index
 
-**Status:** controlled-migration
+**Status:** automation-owned-support
 **Owner:** core-team
-**Reviewed:** 2026-05-31
+**Reviewed:** 2026-07-19
 
-This folder remains a migration source for status snapshots and generated reports. In the rebuilt model, stakeholder interpretation starts at [`docs/product/README.md`](../product/README.md) and roadmap truth in [`docs/roadmap/README.md`](../roadmap/README.md).
+This supporting folder contains automation-owned reports and compatibility artifacts still consumed
+by documentation, readiness, and workflow tooling. It is not the durable roadmap source.
+Stakeholder interpretation starts at [Product](../product/README.md), and roadmap truth lives in
+the [Roadmap Registry](../roadmap/README.md).
 
 ## Canonical Interpretation Paths
 
@@ -18,8 +21,8 @@ This folder remains a migration source for status snapshots and generated report
 
 | Source item | Migration target |
 | --- | --- |
-| `ROADMAP.md`, `ROADMAP_COMBINED.md`, `FEATURE_INVENTORY.md`, `TARGET_END_PRODUCT.md`, `IMPROVEMENTS.md`, `FULL_IMPLEMENTATION_TODO.md`, `OPPORTUNITY_SCAN.md`, `PROGRAM_STATE.md`, `production-status.md`, `BROKER_PHASE_*`, `provider-*`, `workstation-*` status snapshots | All migrated to `archive/docs/status/*` with archive-stub replacements in `docs/status/*` |
-| Additional status source files with historical copies (e.g., `contract-compatibility-matrix`, `provider-capability-matrix`, etc.) | Same-named files under `archive/docs/status` |
+| `ROADMAP_COMBINED.md`, `TARGET_END_PRODUCT.md`, `IMPROVEMENTS.md`, `FULL_IMPLEMENTATION_TODO.md`, `OPPORTUNITY_SCAN.md`, `PROGRAM_STATE.md`, `production-status.md`, `BROKER_PHASE_*`, most `provider-*` and `workstation-*` status snapshots | Migrated to `archive/docs/status/*`; the archive-stub replacements formerly kept in `docs/status/*` have been removed |
+| `ROADMAP.md`, `FEATURE_INVENTORY.md`, `provider-validation-matrix.md`, `contract-compatibility-matrix.md`, `kernel-readiness-dashboard.md` | Migrated to `archive/docs/status/*`; stubs retained at these paths because dashboard generators, checklist tooling, skill manifests, or installer validation still consume them |
 | `evidence/` | Current evidence packets continue in `status/evidence/` until replaced by canonical workflows |
 
 ## Generated Outputs
@@ -37,6 +40,7 @@ This folder remains a migration source for status snapshots and generated report
   - `metrics-dashboard.md`
   - `rules-report.md`
   - `TODO.md`
+  - `ui-route-wiring-report.md`
   - `wpf-screen-development-tracker.md`
 - Include generated JSON artifacts as read-only outputs unless generator contracts change:
   - `workflow-validation-summary.json`
@@ -46,6 +50,7 @@ This folder remains a migration source for status snapshots and generated report
   - `wpf-screen-development-tracker.json`
   - `workflow-manifest.json`
   - `todo-scan-results.json`
+  - `ui-route-wiring-report.json`
   - `workstation-cockpit-acceptance-matrix.json`
   - `run-contract.schema.json`
 
@@ -66,4 +71,3 @@ See the full migration index in [`../../archive/docs/status/README.md`](../../ar
 ## Migration Rule
 
 Do not place durable roadmap truth in hand-authored status pages. Update `docs/roadmap/data/*.yml` and regenerated roadmap views when status state changes.
-

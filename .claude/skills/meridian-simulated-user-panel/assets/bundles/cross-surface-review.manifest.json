@@ -1,0 +1,49 @@
+{
+  "schema_version": "2026-07-19",
+  "mode": "usability_lab",
+  "artifact_type": "cross-surface-review",
+  "artifact_paths": [
+    "docs/screenshots/web/example-workflow.png",
+    "docs/screenshots/desktop/example-workflow.png",
+    "src/Meridian.Ui.Shared/Services/ExampleReadService.cs"
+  ],
+  "artifact_evidence": [
+    {
+      "path": "docs/screenshots/web/example-workflow.png",
+      "kind": "screenshot",
+      "status": "supplied"
+    },
+    {
+      "path": "docs/screenshots/desktop/example-workflow.png",
+      "kind": "screenshot",
+      "status": "supplied"
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ExampleReadService.cs",
+      "kind": "source",
+      "status": "supplied"
+    }
+  ],
+  "artifact_freshness": "unknown",
+  "artifact_summary": "Compare one shared operator workflow across browser and WPF surfaces.",
+  "persona_set": {
+    "panel": "core-finance",
+    "required_roles": [
+      "Financial Operations Professional",
+      "Operations Manager"
+    ]
+  },
+  "focus_areas": [
+    "cross_surface_parity",
+    "workflow_fit",
+    "supportability"
+  ],
+  "constraints": [
+    "Compare task coverage and state semantics rather than pixel identity."
+  ],
+  "success_criteria": [
+    "Both surfaces expose the same product state and core task outcome.",
+    "Any intentional difference is explained and supportable."
+  ],
+  "decision_deadline": "before parity sign-off"
+}

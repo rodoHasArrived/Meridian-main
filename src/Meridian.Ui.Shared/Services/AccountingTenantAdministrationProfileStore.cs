@@ -1,7 +1,9 @@
 using System.Text.Json;
 using Meridian.Contracts.AccountingSystem;
+using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
-using Meridian.Storage.Archival;
+using Meridian.Storage.Store;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
@@ -46,7 +48,9 @@ public sealed class InMemoryAccountingTenantAdministrationProfileStore : IAccoun
         => FileAccountingTenantAdministrationProfileStore.BuildKey(tenantId, companyId);
 }
 
-public sealed class FileAccountingTenantAdministrationProfileStore : IAccountingTenantAdministrationProfileStore
+public sealed class FileAccountingTenantAdministrationProfileStore :
+    JsonFileSnapshotStore<FileAccountingTenantAdministrationProfileStore.AccountingTenantAdministrationProfileSnapshot>,
+    IAccountingTenantAdministrationProfileStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -78,18 +82,26 @@ public sealed class FileAccountingTenantAdministrationProfileStore : IAccounting
         new("implementation sandbox", profile => profile.ImplementationSandboxConfigured, "implementation-sandbox", "sandbox-validation", "fixture-validation", "implementation-fixture")
     ];
 
-    private readonly string _snapshotPath;
     private readonly ILogger<FileAccountingTenantAdministrationProfileStore> _logger;
-    private readonly SemaphoreSlim _gate = new(1, 1);
 
     public FileAccountingTenantAdministrationProfileStore(
         string snapshotPath,
         ILogger<FileAccountingTenantAdministrationProfileStore> logger)
+        : base(
+            string.IsNullOrWhiteSpace(snapshotPath)
+                ? throw new ArgumentException("Accounting tenant administration profile snapshot path is required.", nameof(snapshotPath))
+                : snapshotPath,
+            JsonOptions)
     {
-        _snapshotPath = string.IsNullOrWhiteSpace(snapshotPath)
-            ? throw new ArgumentException("Accounting tenant administration profile snapshot path is required.", nameof(snapshotPath))
-            : snapshotPath;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    protected override AccountingTenantAdministrationProfileSnapshot CreateEmptySnapshot() => new([]);
+
+    protected override AccountingTenantAdministrationProfileSnapshot HandleCorruptSnapshot(JsonException exception)
+    {
+        _logger.LogWarning(exception, "Failed to read accounting tenant administration profile snapshot {SnapshotPath}", SnapshotPath);
+        return new AccountingTenantAdministrationProfileSnapshot([]);
     }
 
     public async Task<AccountingTenantAdministrationProfileDto?> GetAsync(
@@ -103,9 +115,10 @@ public sealed class FileAccountingTenantAdministrationProfileStore : IAccounting
             return null;
         }
 
-        var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
-        return snapshot.Profiles.FirstOrDefault(profile =>
-            string.Equals(BuildKey(profile.TenantId, profile.CompanyId), key, StringComparison.OrdinalIgnoreCase));
+        return await ReadSnapshotAsync(
+            snapshot => snapshot.Profiles.FirstOrDefault(profile =>
+                string.Equals(BuildKey(profile.TenantId, profile.CompanyId), key, StringComparison.OrdinalIgnoreCase)),
+            ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingTenantAdministrationProfileDto> UpsertAsync(
@@ -113,31 +126,19 @@ public sealed class FileAccountingTenantAdministrationProfileStore : IAccounting
         CancellationToken ct = default)
     {
         var profile = NormalizeProfile(request);
-        await _gate.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            var snapshot = await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
-            var key = BuildKey(profile.TenantId, profile.CompanyId);
-            var profiles = snapshot.Profiles
-                .Where(item => !string.Equals(BuildKey(item.TenantId, item.CompanyId), key, StringComparison.OrdinalIgnoreCase))
-                .Append(profile)
-                .OrderBy(static item => item.TenantId, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(static item => item.CompanyId, StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-            var json = JsonSerializer.Serialize(new AccountingTenantAdministrationProfileSnapshot(profiles), JsonOptions);
-            var directory = Path.GetDirectoryName(_snapshotPath);
-            if (!string.IsNullOrWhiteSpace(directory))
+        return await UpdateSnapshotAsync(
+            snapshot =>
             {
-                Directory.CreateDirectory(directory);
-            }
-
-            await AtomicFileWriter.WriteAsync(_snapshotPath, json, ct).ConfigureAwait(false);
-            return profile;
-        }
-        finally
-        {
-            _gate.Release();
-        }
+                var key = BuildKey(profile.TenantId, profile.CompanyId);
+                var profiles = snapshot.Profiles
+                    .Where(item => !string.Equals(BuildKey(item.TenantId, item.CompanyId), key, StringComparison.OrdinalIgnoreCase))
+                    .Append(profile)
+                    .OrderBy(static item => item.TenantId, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(static item => item.CompanyId, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+                return (new AccountingTenantAdministrationProfileSnapshot(profiles), profile);
+            },
+            ct).ConfigureAwait(false);
     }
 
     internal static AccountingTenantAdministrationProfileDto NormalizeProfile(
@@ -158,6 +159,13 @@ public sealed class FileAccountingTenantAdministrationProfileStore : IAccounting
             .Select(static item => item!.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        var retainedEvidence = NormalizeRetainedEvidence(
+            request.Profile.RetainedEvidence.Concat(request.RetainedEvidence));
+        EnsureCertificationArtifacts(
+            request.Profile,
+            tenantId,
+            companyId,
+            retainedEvidence);
         EnsureTenantCompanyScopedEvidence(request.Profile, tenantId, companyId, evidence);
         var approvalQueueConfigurations = NormalizeApprovalQueueConfigurations(request.Profile.ApprovalQueueConfigurations);
         var dimensionMappingConfigurations = NormalizeDimensionMappingConfigurations(request.Profile.DimensionMappingConfigurations);
@@ -170,12 +178,109 @@ public sealed class FileAccountingTenantAdministrationProfileStore : IAccounting
             UpdatedAtUtc = request.Profile.UpdatedAtUtc == default ? DateTimeOffset.UtcNow : request.Profile.UpdatedAtUtc,
             UpdatedBy = actor,
             EvidenceReferences = evidence,
+            FundProfileId = TrimOrNull(request.Profile.FundProfileId),
+            RetainedEvidence = retainedEvidence,
             CorrelationId = string.IsNullOrWhiteSpace(request.CorrelationId)
                 ? request.Profile.CorrelationId
                 : request.CorrelationId.Trim(),
             ApprovalQueueConfigurations = approvalQueueConfigurations,
             DimensionMappingConfigurations = dimensionMappingConfigurations
         };
+    }
+
+    private static void EnsureCertificationArtifacts(
+        AccountingTenantAdministrationProfileDto profile,
+        string tenantId,
+        string companyId,
+        IReadOnlyList<RetainedEvidenceIdentityDto> retainedEvidence)
+    {
+        foreach (var artifact in profile.CertificationArtifacts.Where(static item =>
+                     item.Status == AccountingCertificationArtifactStatusDto.Certified))
+        {
+            var fundProfileId = RequireText(profile.FundProfileId, "certification fund profile id");
+            if (!profile.LedgerBookId.HasValue || profile.LedgerBookId == Guid.Empty)
+            {
+                throw new ArgumentException(
+                    "Accounting tenant administration certification requires a ledger book id.");
+            }
+
+            if (string.IsNullOrWhiteSpace(artifact.CertificationId) ||
+                string.IsNullOrWhiteSpace(artifact.CertifiedBy) ||
+                string.IsNullOrWhiteSpace(artifact.SourceService) ||
+                artifact.CertifiedAtUtc == default ||
+                artifact.CertifiedAtUtc.Offset != TimeSpan.Zero)
+            {
+                throw new ArgumentException(
+                    "Accounting tenant administration certification metadata must be complete and UTC.");
+            }
+
+            if (artifact.LedgerBookId != profile.LedgerBookId ||
+                !string.Equals(artifact.TenantId.Trim(), tenantId, StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(artifact.CompanyId.Trim(), companyId, StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(artifact.FundProfileId.Trim(), fundProfileId, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException(
+                    "Accounting tenant administration certification artifact scope must match the selected tenant, company, fund profile, and ledger book.");
+            }
+
+            if (artifact.Lanes.Count == 0 ||
+                artifact.Lanes.Any(static lane =>
+                    lane.Status != AccountingCertificationArtifactLaneStatusDto.Passed))
+            {
+                throw new ArgumentException(
+                    "Certified accounting tenant administration artifacts must include passed lane results.");
+            }
+
+            if (!retainedEvidence.Any(evidence =>
+                    AccountingProductionCertificationEvidenceValidator.BindsTo(
+                        evidence,
+                        AccountingProductionCertificationEvidenceSubjectTypes.TenantAdministrationArtifact,
+                        artifact.CertificationId)))
+            {
+                throw new ArgumentException(
+                    "Accounting tenant administration certification requires retained evidence bound to its certification id.");
+            }
+        }
+    }
+
+    private static IReadOnlyList<RetainedEvidenceIdentityDto> NormalizeRetainedEvidence(
+        IEnumerable<RetainedEvidenceIdentityDto> retainedEvidence)
+    {
+        var normalized = new List<RetainedEvidenceIdentityDto>();
+        foreach (var evidence in retainedEvidence.Where(static item => item is not null))
+        {
+            var issues = RetainedEvidenceIdentityValidator.Validate(evidence);
+            if (issues.Count > 0 ||
+                !AccountingProductionCertificationEvidenceValidator.IsEligible(evidence))
+            {
+                throw new ArgumentException(
+                    $"Accounting tenant administration retained evidence is invalid: {string.Join(" ", issues)}");
+            }
+
+            normalized.Add(evidence with
+            {
+                EvidenceId = evidence.EvidenceId.Trim(),
+                EvidenceUri = evidence.EvidenceUri.Trim(),
+                ContentHashSha256 = evidence.ContentHashSha256.Trim().ToLowerInvariant(),
+                SourceSystem = evidence.SourceSystem.Trim(),
+                SourceReference = evidence.SourceReference.Trim(),
+                ReviewStatus = evidence.ReviewStatus.Trim(),
+                ReviewedBy = evidence.ReviewedBy.Trim(),
+                RetainedBy = evidence.RetainedBy.Trim(),
+                SubjectType = evidence.SubjectType.Trim(),
+                SubjectId = evidence.SubjectId.Trim()
+            });
+        }
+
+        return normalized
+            .GroupBy(static item =>
+                $"{item.EvidenceId}|{item.SubjectType}|{item.SubjectId}",
+                StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .OrderBy(static item => item.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static item => item.SubjectType, StringComparer.Ordinal)
+            .ThenBy(static item => item.SubjectId, StringComparer.Ordinal)
+            .ToArray();
     }
 
     private static void EnsureStudioConfigurations(
@@ -255,41 +360,6 @@ public sealed class FileAccountingTenantAdministrationProfileStore : IAccounting
         return tenant is null || company is null ? string.Empty : $"{tenant}|{company}";
     }
 
-    private async Task<AccountingTenantAdministrationProfileSnapshot> ReadSnapshotAsync(CancellationToken ct)
-    {
-        await _gate.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            return await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
-        }
-        finally
-        {
-            _gate.Release();
-        }
-    }
-
-    private async Task<AccountingTenantAdministrationProfileSnapshot> ReadSnapshotWithoutLockAsync(CancellationToken ct)
-    {
-        ct.ThrowIfCancellationRequested();
-        if (!File.Exists(_snapshotPath))
-        {
-            return new AccountingTenantAdministrationProfileSnapshot([]);
-        }
-
-        try
-        {
-            await using var stream = File.OpenRead(_snapshotPath);
-            return await JsonSerializer
-                .DeserializeAsync<AccountingTenantAdministrationProfileSnapshot>(stream, JsonOptions, ct)
-                .ConfigureAwait(false) ?? new AccountingTenantAdministrationProfileSnapshot([]);
-        }
-        catch (JsonException ex)
-        {
-            _logger.LogWarning(ex, "Failed to read accounting tenant administration profile snapshot {SnapshotPath}", _snapshotPath);
-            return new AccountingTenantAdministrationProfileSnapshot([]);
-        }
-    }
-
     private static string RequireText(string? value, string label)
         => string.IsNullOrWhiteSpace(value)
             ? throw new ArgumentException($"Accounting tenant administration profile {label} is required.")
@@ -300,9 +370,12 @@ public sealed class FileAccountingTenantAdministrationProfileStore : IAccounting
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin)
     {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        if (!OperationsOriginGuard.IsHumanOperator(actionOrigin))
         {
-            throw new ArgumentException("Only a human operator can certify accounting tenant administration profiles.", nameof(actionOrigin));
+            throw new ArgumentException(
+                "Only a human operator can certify accounting tenant administration profiles.",
+                nameof(actionOrigin),
+                OperationsOriginGuard.Refusal("certify accounting tenant administration profiles"));
         }
     }
 
@@ -400,6 +473,6 @@ public sealed class FileAccountingTenantAdministrationProfileStore : IAccounting
         Func<AccountingTenantAdministrationProfileDto, bool> IsConfigured,
         params string[] Aliases);
 
-    private sealed record AccountingTenantAdministrationProfileSnapshot(
+    public sealed record AccountingTenantAdministrationProfileSnapshot(
         IReadOnlyList<AccountingTenantAdministrationProfileDto> Profiles);
 }

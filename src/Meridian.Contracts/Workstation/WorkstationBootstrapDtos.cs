@@ -88,7 +88,8 @@ public sealed record WorkstationStrategyRunCard(
     decimal? TotalReturn,
     decimal? FinalEquity,
     WorkstationSecurityCoveragePayload SecurityCoverage,
-    WorkstationRunDrillInLinks DrillIn);
+    WorkstationRunDrillInLinks DrillIn,
+    BiasDisclosureDto? BiasDisclosure = null);
 
 public sealed record WorkstationModeComparisonRun(
     string RunId,
@@ -360,7 +361,27 @@ public sealed record WorkstationTradingFillRow(
     string Timestamp);
 
 /// <summary>
-/// Risk state block embedded inside the trading payload.
+/// One live guardrail from the enforced risk-rule registry, rendered as a utilization bar:
+/// how much of the rule's configured headroom the current portfolio consumes.
+/// </summary>
+/// <param name="RuleName">Registry rule name (e.g. "GrossExposure").</param>
+/// <param name="State">Healthy | Observe | Constrained.</param>
+/// <param name="CurrentValue">Display-formatted current measurement.</param>
+/// <param name="Threshold">Display-formatted configured threshold, or "unconfigured".</param>
+/// <param name="UtilizationPercent">Current/threshold percent; null when the rule has no measurable utilization.</param>
+/// <param name="Severity">Enforced outcome tier: Warning flags, Error rejects, Escalate parks for approval, Critical trips the circuit breaker.</param>
+public sealed record WorkstationRiskGuardrail(
+    string RuleName,
+    string State,
+    string CurrentValue,
+    string Threshold,
+    decimal? UtilizationPercent,
+    string Severity);
+
+/// <summary>
+/// Risk state block embedded inside the trading payload. <c>Guardrails</c> carries the
+/// live rule-registry utilization bars; <c>ActiveGuardrails</c> keeps the flat string
+/// rendering of the same registry entries for text-only consumers.
 /// </summary>
 public sealed record WorkstationTradingRiskState(
     string State,
@@ -370,7 +391,8 @@ public sealed record WorkstationTradingRiskState(
     string Var95,
     string MaxDrawdown,
     string BuyingPowerUsed,
-    IReadOnlyList<string> ActiveGuardrails);
+    IReadOnlyList<string> ActiveGuardrails,
+    IReadOnlyList<WorkstationRiskGuardrail>? Guardrails = null);
 
 /// <summary>
 /// Brokerage connection summary embedded inside the trading payload.
@@ -523,7 +545,8 @@ public sealed record WorkstationReportingTemplatePayload(
     string? ApprovalReference = null,
     VersionedReportTemplateIdDto? BasedOnTemplateId = null,
     IReadOnlyList<ReportTemplateAuditEventDto>? AuditTrail = null,
-    IReadOnlyList<string>? ValidationIssues = null);
+    IReadOnlyList<string>? ValidationIssues = null,
+    IReadOnlyList<ReportTemplateParameterDefinitionDto>? Parameters = null);
 
 /// <summary>
 /// Lightweight reporting run status with lineage and approval posture for operator surfaces.
@@ -590,7 +613,10 @@ public sealed record WorkstationReportingRunPayload(
     string? ComparisonSummary = null,
     int? ChangedLineCount = null,
     int? AddedLineCount = null,
-    int? RemovedLineCount = null);
+    int? RemovedLineCount = null,
+    VersionedReportTemplateIdDto? ResolvedTemplate = null,
+    ReportingRunParametersDto? ResolvedParameters = null,
+    ReportingRunReadinessDto? Readiness = null);
 
 /// <summary>
 /// Daily reporting-work item surfaced in the workstation cockpit for operator triage.
@@ -647,7 +673,48 @@ public sealed record WorkstationReportAccessAuditSummaryDto(
     IReadOnlyList<string> DenialReasons);
 
 /// <summary>
-/// Typed reporting summary embedded inside <see cref="WorkstationAccountingPayload"/>.
+/// Immutable provider or portal evidence retained against a canonical reporting delivery job.
+/// </summary>
+public sealed record WorkstationReportingDeliveryReceiptPayload(
+    string ReceiptId,
+    string Kind,
+    DateTimeOffset OccurredAtUtc,
+    string TransportId,
+    string? ProviderReference = null,
+    string? EvidenceReference = null,
+    string? Detail = null);
+
+/// <summary>
+/// Tenant-scoped projection of one durable canonical reporting delivery job.
+/// </summary>
+public sealed record WorkstationReportingDeliveryPayload(
+    string JobId,
+    string RunId,
+    string PackageId,
+    string ReleaseReceiptId,
+    string ReleaseVersion,
+    string ArtifactManifestHashSha256,
+    string DistributionId,
+    string TransportId,
+    string Recipient,
+    string RecipientRole,
+    string Destination,
+    string State,
+    int AttemptCount,
+    int MaxAttempts,
+    DateTimeOffset CreatedAtUtc,
+    DateTimeOffset UpdatedAtUtc,
+    DateTimeOffset? NextAttemptAtUtc,
+    string RequestedBy,
+    string? LastErrorCode,
+    string? LastError,
+    string? ProviderMessageId,
+    string? AccessGrantId,
+    IReadOnlyList<WorkstationReportingDeliveryReceiptPayload> Receipts);
+
+/// <summary>
+/// Typed reporting payload returned directly by <c>GET /api/workstation/reporting</c> and also
+/// embedded as the Reporting summary inside <see cref="WorkstationAccountingPayload"/>.
 /// </summary>
 public sealed record WorkstationReportingPayload(
     int ProfileCount,
@@ -671,7 +738,20 @@ public sealed record WorkstationReportingPayload(
     IReadOnlyList<ReportBrandingThemeDto>? BrandingThemes = null,
     IReadOnlyList<WorkstationReportWriterDatasetSourcePayload>? ReportWriterDatasetSources = null,
     WorkstationReportAccessAuditSummaryDto? AccessAudit = null,
-    IReadOnlyList<WorkstationReportingDailyWorkItemDto>? DailyWork = null);
+    IReadOnlyList<WorkstationReportingDailyWorkItemDto>? DailyWork = null,
+    IReadOnlyList<ReportingStarterKitDto>? StarterKits = null,
+    ReportingStarterKitStateDto? StarterKitState = null,
+    ReportingDeploymentCapabilityDto? DeploymentCapability = null,
+    IReadOnlyList<WorkstationReportingDeliveryPayload>? CanonicalDeliveries = null);
+
+/// <summary>
+/// Canonical tenant/company reporting history over durable run and delivery authorities.
+/// </summary>
+public sealed record WorkstationReportingHistoryPayload(
+    IReadOnlyList<WorkstationReportingRunPayload> Runs,
+    IReadOnlyList<WorkstationReportingDeliveryPayload> Deliveries,
+    int Limit,
+    DateTimeOffset GeneratedAtUtc);
 
 /// <summary>
 /// Accounting run-card governance details linked to strategy evidence.
@@ -816,8 +896,8 @@ public sealed record WorkstationKernelObservabilityPayload(
     IReadOnlyList<WorkstationKernelDomainPayload> Domains);
 
 /// <summary>
-/// Typed payload returned by <c>GET /api/workstation/accounting</c> and
-/// <c>GET /api/workstation/reporting</c>.
+/// Typed payload returned by <c>GET /api/workstation/accounting</c>.
+/// The independent reporting route returns the nested <see cref="WorkstationReportingPayload"/> directly.
 /// </summary>
 public sealed record WorkstationAccountingPayload(
     IReadOnlyList<WorkstationMetricCard> Metrics,
@@ -951,9 +1031,14 @@ public sealed record MultiAssetPackCoverageDto(
     AssetPackAdmissionPolicy AdmissionPolicy,
     string LedgerExtensionPolicy,
     string RegistryValidationStatus = "Unknown",
-    IReadOnlyList<AssetPackRegistryValidationIssue>? RegistryValidationIssues = null)
+    IReadOnlyList<AssetPackRegistryValidationIssue>? RegistryValidationIssues = null,
+    // Coverage the pack anticipates but the Security Master cannot represent yet. Reported apart
+    // from AssetClasses so a readiness reader never mistakes planned coverage for present coverage.
+    IReadOnlyList<string>? PlannedAssetClasses = null)
 {
     public IReadOnlyList<AssetPackRegistryValidationIssue> RegistryValidationIssues { get; init; } = RegistryValidationIssues ?? [];
+
+    public IReadOnlyList<string> PlannedAssetClasses { get; init; } = PlannedAssetClasses ?? [];
 }
 
 /// <summary>

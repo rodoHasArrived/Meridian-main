@@ -18,6 +18,7 @@ using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Reconciliation;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Storage.DirectLending;
+using Meridian.Storage.AssetOperations;
 using Meridian.Storage.FundAccounts;
 using Meridian.Storage.FundStructure;
 using Meridian.Storage.Interfaces;
@@ -37,6 +38,8 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
     private readonly string? _originalSecurityMasterSchema;
     private readonly string? _originalDirectLendingConnectionString;
     private readonly string? _originalDirectLendingSchema;
+    private readonly string? _originalAssetOperationsConnectionString;
+    private readonly string? _originalAssetOperationsSchema;
     private readonly string? _originalLedgerConnectionString;
     private readonly string? _originalLedgerSchema;
     private readonly string? _originalFundAccountsConnectionString;
@@ -47,6 +50,7 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
     private readonly string? _originalBankingSchema;
     private readonly string? _originalMoneyMarketConnectionString;
     private readonly string? _originalMoneyMarketSchema;
+    private readonly string? _originalUnifiedDatabaseUrl;
     private readonly string? _originalScopedAccessConnectionString;
     private readonly string? _originalScopedAccessSchema;
     private readonly string? _originalUseInMemoryGovernance;
@@ -59,6 +63,8 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         _originalSecurityMasterSchema = Environment.GetEnvironmentVariable(SecurityMasterStartup.SchemaVariable);
         _originalDirectLendingConnectionString = Environment.GetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable);
         _originalDirectLendingSchema = Environment.GetEnvironmentVariable(DirectLendingStartup.SchemaVariable);
+        _originalAssetOperationsConnectionString = Environment.GetEnvironmentVariable(AssetOperationsStartup.ConnectionStringVariable);
+        _originalAssetOperationsSchema = Environment.GetEnvironmentVariable(AssetOperationsStartup.SchemaVariable);
         _originalLedgerConnectionString = Environment.GetEnvironmentVariable(LedgerStartup.ConnectionStringVariable);
         _originalLedgerSchema = Environment.GetEnvironmentVariable(LedgerStartup.SchemaVariable);
         _originalFundAccountsConnectionString = Environment.GetEnvironmentVariable(FundAccountsStartup.ConnectionStringVariable);
@@ -69,6 +75,7 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         _originalBankingSchema = Environment.GetEnvironmentVariable(BankingStartup.SchemaVariable);
         _originalMoneyMarketConnectionString = Environment.GetEnvironmentVariable(MoneyMarketStartup.ConnectionStringVariable);
         _originalMoneyMarketSchema = Environment.GetEnvironmentVariable(MoneyMarketStartup.SchemaVariable);
+        _originalUnifiedDatabaseUrl = Environment.GetEnvironmentVariable(Meridian.Storage.MeridianDatabaseEnvironment.UnifiedVariable);
         _originalScopedAccessConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING");
         _originalScopedAccessSchema = Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_SCHEMA");
         _originalUseInMemoryGovernance = Environment.GetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE");
@@ -122,6 +129,45 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
 
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(StorageCatalogService));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IStorageCatalogService));
+    }
+
+    [Fact]
+    public void Register_AliasesAssetOperationsInterfacesToSameInMemoryStore_WhenDatabaseIsNotConfigured()
+    {
+        ConfigureInMemoryGovernanceFixture();
+        ClearPostgresBackedStorageEnvironment();
+        var services = new ServiceCollection();
+
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+
+        using var provider = services.BuildServiceProvider();
+        var legacyStore = provider.GetRequiredService<IAssetOperationsProjectionStore>();
+        legacyStore.Should().BeOfType<InMemoryAssetOperationsProjectionStore>();
+        provider.GetRequiredService<IInstrumentPositionProjectionStore>()
+            .Should()
+            .BeSameAs(legacyStore);
+    }
+
+    [Fact]
+    public void Register_AliasesAssetOperationsInterfacesToSamePostgresStore_WhenDatabaseIsConfigured()
+    {
+        ConfigureInMemoryGovernanceFixture();
+        ClearPostgresBackedStorageEnvironment();
+        Environment.SetEnvironmentVariable(
+            AssetOperationsStartup.ConnectionStringVariable,
+            "Host=asset-operations-db;Port=5432;Database=asset_operations;Username=postgres;Password=secret");
+        var services = new ServiceCollection();
+
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+
+        using var provider = services.BuildServiceProvider();
+        var legacyStore = provider.GetRequiredService<IAssetOperationsProjectionStore>();
+        legacyStore.Should().BeOfType<PostgresAssetOperationsProjectionStore>();
+        services.Should().NotContain(descriptor =>
+            descriptor.ServiceType == typeof(InMemoryAssetOperationsProjectionStore));
+        provider.GetRequiredService<IInstrumentPositionProjectionStore>()
+            .Should()
+            .BeSameAs(legacyStore);
     }
 
     [Fact]
@@ -234,6 +280,9 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
             sd.ImplementationType == typeof(PostgresFundStructureStore));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(PostgresFundStructureService));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IFundStructureService));
+        services.Should().NotContain(sd => sd.ServiceType == typeof(IDomainProjectionReconciliationJob));
+        services.Should().NotContain(sd => sd.ServiceType == typeof(IHostedService) &&
+            sd.ImplementationType == typeof(ProjectionReconciliationHostedService));
     }
 
     [Fact]
@@ -317,10 +366,13 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
 
     private static void ClearPostgresBackedStorageEnvironment()
     {
+        Environment.SetEnvironmentVariable(Meridian.Storage.MeridianDatabaseEnvironment.UnifiedVariable, null);
         Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, null);
         Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, null);
         Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, null);
         Environment.SetEnvironmentVariable(DirectLendingStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(AssetOperationsStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(AssetOperationsStartup.SchemaVariable, null);
         Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, null);
         Environment.SetEnvironmentVariable(LedgerStartup.SchemaVariable, null);
         ClearGovernancePersistenceEnvironment();
@@ -346,6 +398,8 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, _originalSecurityMasterSchema);
         Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, _originalDirectLendingConnectionString);
         Environment.SetEnvironmentVariable(DirectLendingStartup.SchemaVariable, _originalDirectLendingSchema);
+        Environment.SetEnvironmentVariable(AssetOperationsStartup.ConnectionStringVariable, _originalAssetOperationsConnectionString);
+        Environment.SetEnvironmentVariable(AssetOperationsStartup.SchemaVariable, _originalAssetOperationsSchema);
         Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, _originalLedgerConnectionString);
         Environment.SetEnvironmentVariable(LedgerStartup.SchemaVariable, _originalLedgerSchema);
         Environment.SetEnvironmentVariable(FundAccountsStartup.ConnectionStringVariable, _originalFundAccountsConnectionString);
@@ -356,6 +410,7 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         Environment.SetEnvironmentVariable(BankingStartup.SchemaVariable, _originalBankingSchema);
         Environment.SetEnvironmentVariable(MoneyMarketStartup.ConnectionStringVariable, _originalMoneyMarketConnectionString);
         Environment.SetEnvironmentVariable(MoneyMarketStartup.SchemaVariable, _originalMoneyMarketSchema);
+        Environment.SetEnvironmentVariable(Meridian.Storage.MeridianDatabaseEnvironment.UnifiedVariable, _originalUnifiedDatabaseUrl);
         Environment.SetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING", _originalScopedAccessConnectionString);
         Environment.SetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_SCHEMA", _originalScopedAccessSchema);
         Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", _originalUseInMemoryGovernance);

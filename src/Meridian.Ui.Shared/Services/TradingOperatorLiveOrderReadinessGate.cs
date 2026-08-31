@@ -1,5 +1,8 @@
+using Meridian.Contracts.Text;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
+using Meridian.Strategies.Models;
+using Meridian.Strategies.Promotions;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
@@ -31,7 +34,7 @@ public sealed class TradingOperatorLiveOrderReadinessGate : ILiveOrderReadinessG
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var requestedRunId = Normalize(request.RunId);
+        var requestedRunId = TextPrimitives.NormalizeOptional(request.RunId);
 
         if (!request.FundAccountId.HasValue)
         {
@@ -41,7 +44,7 @@ public sealed class TradingOperatorLiveOrderReadinessGate : ILiveOrderReadinessG
 
         var readiness = await _readinessProvider.GetAsync(request.FundAccountId.Value, ct).ConfigureAwait(false);
         var promotion = readiness.Promotion;
-        var targetRunId = Normalize(promotion?.TargetRunId);
+        var targetRunId = TextPrimitives.NormalizeOptional(promotion?.TargetRunId);
 
         if (targetRunId is null || !string.Equals(targetRunId, requestedRunId, StringComparison.Ordinal))
         {
@@ -85,17 +88,60 @@ public sealed class TradingOperatorLiveOrderReadinessGate : ILiveOrderReadinessG
             blockers.AddRange(readiness.LiveOperationBlockers.Where(static blocker => !string.IsNullOrWhiteSpace(blocker)));
         }
 
+        var liveOperationRequirements = readiness.LiveOperationRequirements
+            ?? Array.Empty<TradingLiveOperationRequirementDto>();
+
         blockers.AddRange(
-            readiness.LiveOperationRequirements
+            liveOperationRequirements
                 .Where(static requirement => requirement.Status != TradingAcceptanceGateStatusDto.Ready)
                 .Select(static requirement =>
                     !string.IsNullOrWhiteSpace(requirement.BlockerCode)
                         ? requirement.BlockerCode!
                         : requirement.RequirementId));
 
+        blockers.AddRange(
+            PromotionApprovalChecklist
+                .GetMissingRequiredItems(
+                    RunType.Live,
+                    liveOperationRequirements.Select(static requirement => requirement.ChecklistItem))
+                .Select(static checklistItem => $"liveOperationRequirements:missing:{checklistItem}"));
+
+        blockers.AddRange(BuildRetainedEvidenceBlockers(liveOperationRequirements));
+
         return blockers
             .Distinct(StringComparer.Ordinal)
             .ToList();
+    }
+
+    private static IEnumerable<string> BuildRetainedEvidenceBlockers(
+        IReadOnlyList<TradingLiveOperationRequirementDto> requirements)
+    {
+        var requirementsByChecklistItem = requirements
+            .Select(static requirement => (Requirement: requirement, ChecklistItem: NormalizeChecklistItem(requirement.ChecklistItem)))
+            .Where(static item => item.ChecklistItem.Length > 0)
+            .GroupBy(static item => item.ChecklistItem, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.First().Requirement,
+                StringComparer.OrdinalIgnoreCase);
+
+        foreach (var checklistItem in PromotionApprovalChecklist.CreateRequiredFor(RunType.Live))
+        {
+            if (!requirementsByChecklistItem.TryGetValue(checklistItem, out var requirement))
+            {
+                continue;
+            }
+
+            if (!requirement.ChecklistSatisfied)
+            {
+                yield return $"liveOperationRequirements:checklist-unsatisfied:{checklistItem}";
+            }
+
+            if (!requirement.EvidenceSatisfied || string.IsNullOrWhiteSpace(requirement.EvidenceReference))
+            {
+                yield return $"liveOperationRequirements:evidence-unsatisfied:{checklistItem}";
+            }
+        }
     }
 
     private static string BuildBlockerSummary(IReadOnlyList<string> blockers)
@@ -108,6 +154,6 @@ public sealed class TradingOperatorLiveOrderReadinessGate : ILiveOrderReadinessG
             : $"{summary}, and {blockers.Count - maxBlockers} more";
     }
 
-    private static string? Normalize(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    private static string NormalizeChecklistItem(string? checklistItem) =>
+        PromotionApprovalChecklist.Normalize([checklistItem ?? string.Empty]).FirstOrDefault() ?? string.Empty;
 }

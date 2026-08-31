@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using FluentAssertions;
 using Meridian.Contracts.Domain;
+using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Tests.TestHelpers;
 
@@ -133,7 +134,7 @@ public sealed class NasdaqDataLinkSymbolSearchProviderTests
     }
 
     [Fact]
-    public async Task SearchAsync_WithNasdaqErrorBody_ReturnsEmptyList()
+    public async Task SearchAsync_WithNasdaqQuotaBody_ThrowsProviderAttributedFailure()
     {
         using var handler = new StubHttpMessageHandler(_ => JsonResponse("""
             {
@@ -146,9 +147,11 @@ public sealed class NasdaqDataLinkSymbolSearchProviderTests
         using var httpClient = new HttpClient(handler);
         using var provider = new NasdaqDataLinkSymbolSearchProvider(ApiKey, httpClient);
 
-        var results = await provider.SearchAsync("AAPL", 10, CancellationToken.None);
+        var act = () => provider.SearchAsync("AAPL", 10, CancellationToken.None);
 
-        results.Should().BeEmpty();
+        var exception = await act.Should().ThrowAsync<RateLimitException>();
+        exception.Which.Provider.Should().Be("nasdaq");
+        exception.Which.Symbol.Should().Be("AAPL");
     }
 
     [Fact]

@@ -3,7 +3,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Core.Logging;
+using Meridian.Storage.Archival;
 using Serilog;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.Services;
 
@@ -62,6 +64,15 @@ public sealed class AuditChainService : IAuditChainService
 {
     private readonly ILogger _log;
 
+    // The append sequence (read tail hash → compute chained hash → append line) must be atomic.
+    // Without this, two concurrent appends read the same predecessor hash and chain off it,
+    // silently forking the tamper-evident chain so VerifyChainAsync later reports tampering.
+    // ImmutableAuditLogService guards the same race with a lock; this async path needs a
+    // SemaphoreSlim because the sequence spans awaits (file hashing and chain I/O).
+    //
+    private readonly SemaphoreSlim _appendLock = new(1, 1);
+    private static readonly TimeSpan CrossProcessLockTimeout = TimeSpan.FromSeconds(30);
+
     public AuditChainService(ILogger? log = null)
     {
         _log = log ?? LoggingSetup.ForContext<AuditChainService>();
@@ -83,60 +94,116 @@ public sealed class AuditChainService : IAuditChainService
 
         _log.Debug("Appending audit entry for {FilePath}", filePath);
 
-        // Compute SHA256 hash of the file
-        using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-        var fileHashBytes = await SHA256.HashDataAsync(fileStream, ct).ConfigureAwait(false);
-        var fileHash = Convert.ToHexString(fileHashBytes).ToLowerInvariant();
-
-        // Read the previous hash from the last entry in the chain
-        var previousHash = "";
-        if (File.Exists(chainLogPath))
+        // Compute SHA256 hash of the file. This is independent of chain state, so it is done
+        // before taking the append lock to keep the serialized critical section short.
+        string fileHash;
+        using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
         {
-            try
+            var fileHashBytes = await Sha256Digest.ComputeBytesAsync(fileStream, ct).ConfigureAwait(false);
+            fileHash = Convert.ToHexString(fileHashBytes).ToLowerInvariant();
+        }
+
+        // Serialize the read-tail-hash → compute-chained-hash → append sequence. Two concurrent
+        // callers would otherwise read the same predecessor hash and both chain off it, silently
+        // forking the tamper-evident chain.
+        await _appendLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await using var crossProcessLock = await AcquireCrossProcessLockAsync(chainLogPath, ct).ConfigureAwait(false);
+            // Read the previous hash from the last entry in the chain
+            var previousHash = "";
+            if (File.Exists(chainLogPath))
             {
-                var lines = await File.ReadAllLinesAsync(chainLogPath, ct).ConfigureAwait(false);
-                if (lines.Length > 0)
+                try
                 {
-                    var lastLine = lines[^1];
-                    using var doc = JsonDocument.Parse(lastLine);
-                    if (doc.RootElement.TryGetProperty("hash"u8, out var hashElement))
+                    // Only the last entry's hash is needed to chain the next one; stream the file
+                    // and keep just the final non-empty line so memory stays bounded as the log grows.
+                    string? lastLine = null;
+                    using (var reader = new StreamReader(chainLogPath))
                     {
-                        previousHash = hashElement.GetString() ?? "";
+                        string? line;
+                        while ((line = await reader.ReadLineAsync(ct).ConfigureAwait(false)) is not null)
+                        {
+                            if (!string.IsNullOrWhiteSpace(line))
+                            {
+                                lastLine = line;
+                            }
+                        }
+                    }
+
+                    if (lastLine is not null)
+                    {
+                        using var doc = JsonDocument.Parse(lastLine);
+                        if (doc.RootElement.TryGetProperty("hash"u8, out var hashElement))
+                        {
+                            previousHash = hashElement.GetString() ?? "";
+                        }
                     }
                 }
+                catch (Exception ex)
+                {
+                    _log.Warning(ex, "Failed to read previous hash from chain log at {ChainLogPath}", chainLogPath);
+                }
+            }
+
+            // Create the chain entry: hash(filePath || fileHash || previousHash)
+            var entryData = $"{filePath}{fileHash}{previousHash}";
+            var entryHash = Sha256Digest.ComputeUtf8(entryData);
+
+            var entry = new
+            {
+                path = filePath,
+                fileHash,
+                hash = entryHash,
+                prev = previousHash,
+                ts = DateTimeOffset.UtcNow.ToString("O")
+            };
+
+            var json = JsonSerializer.Serialize(entry);
+
+            try
+            {
+                // Copy-on-write append (write temp → fsync → atomic rename → dir fsync) so a crash
+                // mid-write can never leave a torn line that VerifyChainAsync misreads as tampering.
+                await AtomicFileWriter.AppendLinesAsync(chainLogPath, [json], ct).ConfigureAwait(false);
+                _log.Debug("Audit entry appended for {FilePath}", filePath);
             }
             catch (Exception ex)
             {
-                _log.Warning(ex, "Failed to read previous hash from chain log at {ChainLogPath}", chainLogPath);
+                _log.Error(ex, "Failed to append audit entry for {FilePath}", filePath);
+                throw;
             }
         }
-
-        // Create the chain entry: hash(filePath || fileHash || previousHash)
-        var entryData = $"{filePath}{fileHash}{previousHash}";
-        var entryHashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(entryData));
-        var entryHash = Convert.ToHexString(entryHashBytes).ToLowerInvariant();
-
-        var entry = new
+        finally
         {
-            path = filePath,
-            fileHash,
-            hash = entryHash,
-            prev = previousHash,
-            ts = DateTimeOffset.UtcNow.ToString("O")
-        };
-
-        var json = JsonSerializer.Serialize(entry);
-
-        try
-        {
-            await File.AppendAllTextAsync(chainLogPath, json + Environment.NewLine, Encoding.UTF8, ct)
-                .ConfigureAwait(false);
-            _log.Debug("Audit entry appended for {FilePath}", filePath);
+            _appendLock.Release();
         }
-        catch (Exception ex)
+    }
+
+    private static async Task<FileStream> AcquireCrossProcessLockAsync(
+        string chainLogPath,
+        CancellationToken ct)
+    {
+        var lockPath = $"{chainLogPath}.lock";
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(CrossProcessLockTimeout);
+        while (true)
         {
-            _log.Error(ex, "Failed to append audit entry for {FilePath}", filePath);
-            throw;
+            timeout.Token.ThrowIfCancellationRequested();
+            try
+            {
+                return new FileStream(
+                    lockPath,
+                    FileMode.OpenOrCreate,
+                    FileAccess.ReadWrite,
+                    FileShare.None,
+                    bufferSize: 1,
+                    options: FileOptions.Asynchronous | FileOptions.WriteThrough);
+            }
+            catch (IOException)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(25), timeout.Token).ConfigureAwait(false);
+            }
         }
     }
 
@@ -229,7 +296,7 @@ public sealed class AuditChainService : IAuditChainService
                     }
 
                     await using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    var currentFileHashBytes = await SHA256.HashDataAsync(fileStream, ct).ConfigureAwait(false);
+                    var currentFileHashBytes = await Sha256Digest.ComputeBytesAsync(fileStream, ct).ConfigureAwait(false);
                     var currentFileHash = Convert.ToHexString(currentFileHashBytes).ToLowerInvariant();
 
                     if (!string.Equals(currentFileHash, fileHash, StringComparison.OrdinalIgnoreCase))
@@ -246,8 +313,7 @@ public sealed class AuditChainService : IAuditChainService
                     }
 
                     var expectedEntryData = $"{path}{fileHash}{recordedPreviousHash}";
-                    var expectedEntryHashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(expectedEntryData));
-                    var expectedEntryHash = Convert.ToHexString(expectedEntryHashBytes).ToLowerInvariant();
+                    var expectedEntryHash = Sha256Digest.ComputeUtf8(expectedEntryData);
 
                     if (!string.Equals(expectedEntryHash, currentHash, StringComparison.OrdinalIgnoreCase))
                     {

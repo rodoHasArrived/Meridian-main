@@ -92,6 +92,7 @@ function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | n
     return {
       title: "Capital Account Workbench",
       description: "Investor-level capital account evidence, allocation rules, statement lineage, and audit drill-throughs load from Meridian private-capital workbench data.",
+      available: false,
       statusLabel: "Not loaded",
       statusTone: "default",
       statusReason: "Capital-account workbench data has not loaded yet.",
@@ -115,15 +116,35 @@ function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | n
     };
   }
 
+  const hasOperatorRows = workbench.investorAccounts.length > 0
+    || workbench.allocationRules.length > 0
+    || workbench.statementLineage.length > 0
+    || workbench.auditDrillThroughs.length > 0;
+  const hasInvestorAccounts = workbench.investorAccounts.length > 0;
+  const investorAccounts = workbench.investorAccounts.map(buildCapitalAccountInvestorAccountRow);
+  const cashSupportReviewCount = investorAccounts.filter((row) => row.paymentEvidenceTone !== "success").length;
+  const requiresCashSupportReview = cashSupportReviewCount > 0;
+
   return {
     title: "Capital Account Workbench",
     description: "Investor-level capital account evidence, allocation rules, statement and restatement lineage, and audit drill-throughs from Meridian private-capital workbench data.",
-    statusLabel: workbench.statusLabel,
-    statusTone: capitalAccountWorkbenchStatusTone(workbench.statusLabel),
-    statusReason: workbench.statusReason,
+    available: true,
+    statusLabel: hasOperatorRows
+      ? !hasInvestorAccounts || requiresCashSupportReview ? "Review required" : workbench.statusLabel
+      : "No activity loaded",
+    statusTone: hasOperatorRows
+      ? !hasInvestorAccounts || requiresCashSupportReview ? "warning" : capitalAccountWorkbenchStatusTone(workbench.statusLabel)
+      : "warning",
+    statusReason: hasOperatorRows
+      ? !hasInvestorAccounts
+        ? "Supporting workbench rows loaded, but no investor capital accounts matched this scope. Select or create an investor capital account before treating the workbench as ready."
+        : requiresCashSupportReview
+        ? `${cashSupportReviewCount} investor capital account${cashSupportReviewCount === 1 ? " requires" : "s require"} cash-support evidence review before the workbench is ready.`
+        : workbench.statusReason
+      : "The workbench request succeeded, but no investor accounts, allocation evidence, statement lineage, or audit routes matched this scope.",
     projectedAtLabel: `${formatDateTimeLabel(workbench.projectedAtUtc)} / ${workbench.currency}`,
     workbenchRouteLabel: workbench.workbenchRoute,
-    emptyText: "No investor-level capital accounts matched the selected private-capital filters.",
+    emptyText: "No investor-level capital activity matched this scope. Create or select a private-capital journal event, or adjust the fund and investor scope.",
     summaryCards: [
       {
         id: "investor-accounts",
@@ -137,7 +158,7 @@ function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | n
         label: "Allocation rules",
         value: workbench.allocationRules.length.toLocaleString(),
         detail: `${workbench.allocationRules.filter((item) => item.isSatisfied).length.toLocaleString()} satisfied`,
-        tone: workbench.allocationRules.every((item) => item.isSatisfied) ? "success" : "warning"
+        tone: workbench.allocationRules.length > 0 && workbench.allocationRules.every((item) => item.isSatisfied) ? "success" : "warning"
       },
       {
         id: "statements",
@@ -151,10 +172,10 @@ function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | n
         label: "Audit drill-throughs",
         value: workbench.auditDrillThroughCount.toLocaleString(),
         detail: `${workbench.auditDrillThroughs.filter((item) => item.isAvailable).length.toLocaleString()} available`,
-        tone: workbench.auditDrillThroughs.every((item) => item.isAvailable) ? "success" : "warning"
+        tone: workbench.auditDrillThroughs.length > 0 && workbench.auditDrillThroughs.every((item) => item.isAvailable) ? "success" : "warning"
       }
     ],
-    investorAccounts: workbench.investorAccounts.map(buildCapitalAccountInvestorAccountRow),
+    investorAccounts,
     allocationRules: workbench.allocationRules.map(buildCapitalAccountAllocationRuleRow),
     statementLineage: workbench.statementLineage.map(buildCapitalAccountStatementLineageRow),
     auditDrillThroughs: workbench.auditDrillThroughs.map(buildCapitalAccountAuditDrillThroughRow),
@@ -208,10 +229,10 @@ function buildCapitalAccountInvestorAccountRow(
 
   return {
     id: account.accountKey,
-    title: account.capitalAccountId,
-    subtitle: `${account.investorId ?? "Unassigned investor"} / ${account.currency}`,
-    statusLabel: account.readinessLabel || account.readiness,
-    statusTone: capitalAccountReadinessTone(account.readiness),
+    title: `${formatCapitalAccountPartyLabel(account.investorId)} capital account`,
+    subtitle: `${formatCapitalAccountPartyLabel(account.investorId)} / ${account.currency}`,
+    statusLabel: paymentEvidence.tone === "success" ? account.readinessLabel || account.readiness : "Cash support review",
+    statusTone: paymentEvidence.tone === "success" ? capitalAccountReadinessTone(account.readiness) : "warning",
     netActivityLabel: formatCurrencyWithCode(account.netCapitalActivity, account.currency, true),
     rollForwardLabel: `${formatCurrencyWithCode(account.openingNetActivity, account.currency, true)} opening -> ${formatCurrencyWithCode(account.endingNetActivity, account.currency, true)} ending`,
     activityMixLabel: [
@@ -238,7 +259,7 @@ function buildCapitalAccountAllocationRuleRow(
   const relatedFundEventIds = rule.relatedFundEventIds ?? [];
   return {
     id: rule.ruleId,
-    accountLabel: `${rule.capitalAccountId} / ${rule.investorId ?? "Unassigned investor"}`,
+    accountLabel: `${formatCapitalAccountPartyLabel(rule.investorId)} capital account`,
     label: rule.label,
     statusLabel: rule.isSatisfied ? "Satisfied" : "Needs evidence",
     statusTone: rule.isSatisfied ? "success" : "warning",
@@ -267,7 +288,7 @@ function buildCapitalAccountStatementLineageRow(
   return {
     id: lineage.lineageId,
     title: lineage.displayName,
-    subtitle: `${lineage.reportOutputType} / ${lineage.capitalAccountId} / ${lineage.investorId ?? "Unassigned investor"}`,
+    subtitle: `${formatCapitalAccountPartyLabel(lineage.investorId)} capital account statement`,
     statusLabel: lineage.hasRestatementLineage ? "Restated" : lineage.isPublished ? "Published" : lineage.isReportReady ? "Ready" : "Review",
     statusTone: lineage.hasRestatementLineage ? "warning" : lineage.isPublished || lineage.isReportReady ? "success" : "warning",
     publicationLabel: [
@@ -343,8 +364,23 @@ function buildCapitalAccountAuditDrillThroughRow(
     statusTone: drill.isAvailable ? "success" : "warning",
     evidenceLabel: `${drill.evidenceLinkCount.toLocaleString()} evidence`,
     routeLabel: drill.route ?? "No route",
-    relatedLabel: drill.relatedIds.length > 0 ? drill.relatedIds.join(" / ") : "No related ids"
+    relatedLabel: drill.relatedIds.length > 0
+      ? `${drill.relatedIds.length} related record${drill.relatedIds.length === 1 ? "" : "s"}`
+      : "No related records"
   };
+}
+
+function formatCapitalAccountPartyLabel(value: string | null | undefined): string {
+  const token = value?.trim().split(/[:/]/).filter(Boolean).pop();
+  if (!token) {
+    return "Unassigned investor";
+  }
+
+  return token
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((part) => part.toLowerCase() === "lp" ? "LP" : part.replace(/^\w/, (character) => character.toUpperCase()))
+    .join(" ");
 }
 
 function capitalAccountWorkbenchStatusTone(statusLabel: string): AccountingToolingTone {

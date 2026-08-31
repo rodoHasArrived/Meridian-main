@@ -23,7 +23,6 @@ namespace Meridian.Wpf.ViewModels;
 /// </summary>
 public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, IDisposable
 {
-    private static readonly Random _random = new();
     private static readonly SolidColorBrush BidBrush = ToBrush(Palette.ChartPositive);
     private static readonly SolidColorBrush AskBrush = ToBrush(Palette.ChartNegative);
     private static readonly SolidColorBrush ReconnectingBrush = ToBrush(Palette.Warning);
@@ -150,6 +149,7 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
     private int _depthLevels = 10;
     private decimal? _spreadValue;
     private decimal? _imbalancePercent;
+    private bool _depthServiceUnavailable;
 
     public string SelectedSymbol
     {
@@ -243,6 +243,7 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
         NoTradesVisible = true;
         _spreadValue = null;
         _imbalancePercent = null;
+        _depthServiceUnavailable = false;
         UpdateOrderFlowPosture();
     }
 
@@ -292,6 +293,8 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
             var status = await _statusService.GetStatusAsync(refreshCts.Token);
             if (status != null)
             {
+                // Static default watchlist: the status endpoint does not expose a symbol
+                // universe today, so this list only seeds the selector when the API is up.
                 AvailableSymbols.Clear();
                 foreach (var sym in new[] { "SPY", "AAPL", "MSFT", "GOOGL", "AMZN", "QQQ", "IWM", "DIA" })
                     AvailableSymbols.Add(sym);
@@ -335,12 +338,17 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
             {
                 var json = await response.Content.ReadAsStringAsync(refreshCts.Token);
                 var data = JsonSerializer.Deserialize<JsonElement>(json);
+                _depthServiceUnavailable = false;
                 ProcessOrderBookData(data);
                 NoDataVisible = false;
             }
-            else if (Bids.Count == 0 && Asks.Count == 0)
+            else
             {
-                LoadDemoOrderBook();
+                _loggingService.LogDebug(
+                    "Order book depth request failed; clearing ladder instead of fabricating depth.",
+                    ("symbol", _selectedSymbol),
+                    ("statusCode", ((int)response.StatusCode).ToString()));
+                ClearBookForUnavailableDepthService();
             }
 
             await RefreshRecentTradesAsync(refreshCts.Token);
@@ -349,10 +357,14 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
         {
             // Cancelled — ignore
         }
-        catch (HttpRequestException)
+        catch (HttpRequestException ex)
         {
-            if (Bids.Count == 0 && Asks.Count == 0)
-                LoadDemoOrderBook();
+            _loggingService.LogDebug(
+                "Order book depth request failed; clearing ladder instead of fabricating depth.",
+                ("symbol", _selectedSymbol),
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
+            ClearBookForUnavailableDepthService();
         }
         catch (Exception ex)
         {
@@ -427,95 +439,19 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
         UpdateStatistics(newBids, newAsks);
     }
 
-    private void LoadDemoOrderBook()
+    /// <summary>
+    /// Clears the ladder, tape, and statistics when the depth service fails so the page shows
+    /// the honest empty state. This screen must never synthesize book or trade rows.
+    /// </summary>
+    private void ClearBookForUnavailableDepthService()
     {
-        var basePrice = _selectedSymbol switch
-        {
-            "SPY" => 485.50m,
-            "AAPL" => 178.25m,
-            "MSFT" => 405.75m,
-            "GOOGL" => 142.30m,
-            "AMZN" => 175.80m,
-            _ => 100.00m
-        };
-
-        var random = _random;
-        var bidList = new List<OrderBookDisplayLevel>();
-        var askList = new List<OrderBookDisplayLevel>();
-        decimal bidTotal = 0, askTotal = 0, maxSize = 0;
-
-        for (int i = 0; i < _depthLevels; i++)
-        {
-            var bidSize = random.Next(100, 5000);
-            var askSize = random.Next(100, 5000);
-            bidTotal += bidSize;
-            askTotal += askSize;
-            if (bidSize > maxSize)
-                maxSize = bidSize;
-            if (askSize > maxSize)
-                maxSize = askSize;
-
-            bidList.Add(new OrderBookDisplayLevel
-            {
-                RawPrice = basePrice - (i * 0.01m),
-                Price = (basePrice - (i * 0.01m)).ToString("F2"),
-                RawSize = bidSize,
-                Size = FormatSize(bidSize),
-                RawTotal = bidTotal,
-                Total = FormatSize((int)bidTotal)
-            });
-
-            askList.Add(new OrderBookDisplayLevel
-            {
-                RawPrice = basePrice + 0.01m + (i * 0.01m),
-                Price = (basePrice + 0.01m + (i * 0.01m)).ToString("F2"),
-                RawSize = askSize,
-                Size = FormatSize(askSize),
-                RawTotal = askTotal,
-                Total = FormatSize((int)askTotal)
-            });
-        }
-
-        var maxWidth = 200.0;
-        ApplyHighlighting(bidList);
-        ApplyHighlighting(askList);
-        foreach (var level in bidList.Concat(askList))
-            level.DepthWidth = maxSize > 0 ? (double)level.RawSize / (double)maxSize * maxWidth : 0;
-
+        _depthServiceUnavailable = true;
         Bids.Clear();
-        foreach (var bid in bidList)
-            Bids.Add(bid);
-
         Asks.Clear();
-        foreach (var ask in askList.OrderByDescending(a => a.RawPrice))
-            Asks.Add(ask);
-
-        UpdateStatistics(bidList, askList);
-        NoDataVisible = false;
-        LoadDemoTrades(basePrice);
-    }
-
-    private void LoadDemoTrades(decimal basePrice)
-    {
         RecentTrades.Clear();
-
-        for (int i = 0; i < 15; i++)
-        {
-            var isBuy = _random.Next(2) == 0;
-            var price = basePrice + (_random.Next(-10, 11) * 0.01m);
-            RecentTrades.Add(new RecentTradeModel
-            {
-                Time = DateTime.Now.AddSeconds(-i * _random.Next(1, 5)).ToString("HH:mm:ss"),
-                Price = price.ToString("F2"),
-                Size = FormatSize(_random.Next(10, 1000)),
-                PriceColor = isBuy ? BidBrush : AskBrush
-            });
-        }
-
-        CumulativeDeltaPositive = true;
-        CumulativeDeltaText = "--";
-
-        NoTradesVisible = false;
+        NoDataVisible = true;
+        NoTradesVisible = true;
+        UpdateStatistics([], []);
     }
 
     private void UpdateStatistics(List<OrderBookDisplayLevel> bids, List<OrderBookDisplayLevel> asks)
@@ -580,7 +516,8 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
             RecentTrades.Count,
             _spreadValue,
             _imbalancePercent,
-            CumulativeDeltaText);
+            CumulativeDeltaText,
+            _depthServiceUnavailable);
 
         OrderFlowPostureTitle = state.Title;
         OrderFlowPostureDetail = state.Detail;
@@ -597,7 +534,8 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
         int recentTradeCount,
         decimal? spread,
         decimal? imbalancePercent,
-        string? cumulativeDeltaText)
+        string? cumulativeDeltaText,
+        bool depthServiceUnavailable = false)
     {
         var symbol = selectedSymbol?.Trim() ?? string.Empty;
         var normalizedLevels = Math.Max(1, depthLevels);
@@ -618,6 +556,15 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
         var scope = $"{symbol} - {normalizedLevels} levels - {normalizedBidCount} bid / {normalizedAskCount} ask rows";
         if (normalizedBidCount == 0 || normalizedAskCount == 0)
         {
+            if (depthServiceUnavailable)
+            {
+                return new OrderBookPosture(
+                    "Depth service unavailable",
+                    $"The order book service is not returning depth for {symbol}. The ladder and trade tape stay empty until real data arrives.",
+                    scope,
+                    "Check depth service");
+            }
+
             var connected = string.Equals(connection, "Connected", StringComparison.OrdinalIgnoreCase);
             return new OrderBookPosture(
                 "Waiting for full depth",
@@ -725,9 +672,13 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
             // Ignore trade fetch errors — non-critical
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Order book trade fetch failed; non-critical.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
         finally
         {
@@ -769,6 +720,10 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
         }
         catch (ObjectDisposedException)
         {
+            // The token source was already disposed; nothing to cancel.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Ignored cancel on already-disposed token source.",
+                ("view", nameof(OrderBookViewModel)));
         }
 
         cts.Dispose();

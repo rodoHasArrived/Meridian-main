@@ -113,29 +113,113 @@ Use this map as a starting point before diving into generated type/member pages.
 
 ## REST API Endpoints
 
-The application exposes a REST API when running with `--mode desktop`. All `/api/*` endpoints require an API key when `MDC_API_KEY` is set. Swagger UI is available at `/swagger` in development mode.
+The application exposes a REST API when running with `--mode desktop`. All `/api/*` endpoints require an API key when `MDC_API_KEY` is set, except requests already authenticated by a browser login session (the workstation UI authenticates with the session cookie + CSRF token instead of an API key). Swagger UI is available at `/swagger` in development mode.
 
 ### Authentication
 
-Set the `MDC_API_KEY` environment variable to enable authentication. Pass the key via:
-- `X-Api-Key` header (recommended)
+Set the `MDC_API_KEY` environment variable to enable API-key authentication for out-of-band clients (scripts, service-to-service calls). Pass the key via:
+- `X-Api-Key` header (the only accepted transport — query-string keys are rejected to avoid leakage via URLs, logs, and browser history)
 
 Health probes (`/healthz`, `/readyz`, `/livez`) are always exempt.
+
+#### What a key is allowed to do
+
+Authenticating a key is not the same as authorizing it. Most `/api/*` routes declare a permission, and
+a caller that carries no permissions is refused by those routes even with a valid key. A validated key
+therefore carries a role, named by `MDC_API_KEY_ROLE`:
+
+| Value | Effect |
+| --- | --- |
+| unset or `ReadOnly` | The key carries `ReadOnly`, which holds `ViewMarketData`, `ViewHistoricalData`, `ViewAnalytics` and `ViewStrategies`. An unscoped key can read live and historical market data and analytics, but cannot reach ledger, reporting, fund or security-master surfaces. It is also method-capped — see below. Note that `ViewHistoricalData` is accepted by the `/api/storage/*` reads, so a `ReadOnly` key can see storage statistics and on-disk layout, including absolute host paths from `GET /api/storage/symbol/path`; give a key `ReadOnly` only where that is acceptable. `ViewStrategies` reaches the `/api/lean/*` reads, which are not tenant-scoped and disclose the deployment's Lean installation path and data directory, its algorithm source listing, auto-export destination and last error, and backtest history, status and results. Strategy-run reads themselves sit under the tenant-scoped `/api/workstation` surface described below and stay out of a key's reach, but the Lean integration surface does not — weigh that before giving a key `ReadOnly`. |
+| `Analysis` or `Executive` | Both hold `ReadOnly`'s four permissions plus `ExportData`, `ViewSecurityMaster`, `ViewDirectLending` and `ViewReporting`; `Executive` adds `ViewTrades`. Neither holds any `Manage`, `Modify`, `Execute` or `Admin` permission, so both are method-capped alongside `ReadOnly` — see below. |
+| another role name (`Admin`, `TradeDesk`, `Accounting`, …) | The key carries that role's permissions, with no method cap. Match it to what the calling script actually needs. |
+| anything else | Requests are refused with `503` rather than quietly falling back, so a typo surfaces instead of applying a permission set nobody chose. Only role **names** are accepted — a numeric value is rejected, because `Admin` is the zero value and `0` would otherwise resolve to full administrator. |
+
+##### The method cap on read-only roles
+
+`ReadOnly`, `Analysis` and `Executive` are the built-in roles whose permission sets carry no `Manage`,
+`Modify`, `Execute` or `Admin` permission at all. A principal carrying any of them — an API key or an
+optional-mode anonymous caller — is restricted to `GET`, `HEAD` and `OPTIONS`, with two exceptions.
+Anything else outside the safe methods is refused with `403` before the route's own permission check
+runs, and the message names the variable to change.
+
+The first exception is a route that declares `ExportData`, because `Analysis` and `Executive` are
+granted that permission outright and the export routes are `POST` only because they accept a request
+body.
+
+The second is a route that carries an explicit **non-mutating declaration**. Some reads cannot fit
+their query in a URL, so they are `POST` while changing nothing. Each such route states why, per
+route, after its handler was read — the declaration is a claim about that handler, never a
+convention applied to a path prefix. These routes carry one today:
+
+| Route | Why it is a read | Permission it still enforces |
+| --- | --- | --- |
+| `POST /api/workstation/data/query` | `SqlStatementGuard` admits one `SELECT`-family statement with no embedded semicolon and a blocked-keyword list. | `ViewHistoricalData` |
+| `POST /api/workstation/evidence/vault/search` | Evidence-vault lookup by linkage criteria; the handler only reads, through `IEvidenceArtifactStore.FindByLinkageAsync`. | `ViewReporting`, plus workstation tenant scope |
+| `POST /api/alignment/preview` | Computes and returns an alignment preview from the request body; the sibling `POST /api/alignment/create` route is what persists one. | `ViewHistoricalData` |
+| `POST /api/workstation/runs/compare` | Compares retained strategy runs through `StrategyRunComparisonService`, which holds only the run read service. | `ViewStrategies` or `ManageStrategies` |
+| `POST /api/workstation/runs/diff` | Diffs two retained runs by the same read path. | `ViewStrategies` or `ManageStrategies` |
+| `POST /api/security-master/resolve` | Resolves one record through `ISecurityMasterQueryService.GetByIdentifierAsync`; the body carries the identifier kind, value, provider and as-of. | `ViewSecurityMaster` or `ModifySecurityMaster` |
+| `POST /api/security-master/search` | Search through `ISecurityMasterQueryService.SearchAsync`; the body carries the query because it has several optional filters. | `ViewSecurityMaster` or `ModifySecurityMaster` |
+| `POST /api/workstation/strategy/designer/validate` | Normalizes and validates the posted document in memory; `StrategyDesignService` holds only a field catalog and templates. | `ViewStrategies` or `ManageStrategies` |
+| `POST /api/workstation/strategy/designer/preview` | Previews the posted document in memory. Saving a design is a separate route. | `ViewStrategies` or `ManageStrategies` |
+| `POST /api/workstation/strategy/engine/validate-run` | Validates a posted run request against the engine registry; it does not start or record a run. | `ViewStrategies` or `ManageStrategies` |
+| `POST /api/strategies/covered-call/chain-preview` | Fetches the option chain, filters in memory and returns a projection, never touching the run channel. | `ViewStrategies` or `ManageStrategies` |
+| `POST /api/fund-structure/reporting/templates/render` | Resolves the template, evaluates the grids through `ReportWriterGridEngine` in memory and returns a DTO; `ReportingWorkflowService.Render` persists nothing. The body carries the template id, parameters, grid definitions and dataset rows. | `ViewReporting`, `ManageReporting`, `ApproveReporting`, `DeliverReporting` or `AdminMaintenance` |
+
+The declaration only lifts the method cap; it grants nothing, as the last column shows. A capped
+principal reaches one of these routes only when it also holds that route's permission, so `ReadOnly`
+can run the data query but not the evidence-vault search. An undeclared non-safe route stays refused,
+so the failure mode of a forgotten declaration is a lost capability rather than a reopened mutation.
+
+Query-style `POST` routes whose permission no capped role holds — the `Validate` and `Preview` routes
+declaring `ManageStorage`, `ManageCredentials`, `ModifyConfig`, `AdminMaintenance` or a `Manage`
+permission — deliberately carry no declaration. The cap never reaches them, so declaring one would add
+the risk of a mis-read handler for no capability gained.
+
+The cap exists because a handful of legacy routes mutate process-local state while declaring only a
+view permission — `POST /api/replay/start` and `POST /api/sampling/create` both declare
+`ViewHistoricalData`, which all three roles hold. Without the cap, naming one of these
+roles would hand an unauthenticated or out-of-band caller those commands. It applies to the
+**resolved role**, not to the posture that resolved it, so both non-session principals behave
+identically.
+
+The cap does not apply to a logged-in operator session: a signed-in `Analysis` user is governed by
+route permissions alone.
+
+Scripts that mutate configuration or read governed data need a role that holds the relevant
+permission — for example `POST /api/symbols/add` requires `ModifyConfig` and `POST /api/backfill/run`
+requires `TriggerBackfill`, so a `ReadOnly` key is refused by both. A method-capped role is refused
+those regardless of permission.
+
+Two families stay out of reach of a key, because a role is not an operator and a key carries no
+tenant:
+
+- **Routes declaring an operator session** — workflow presets, saved explorer views, first-run
+  acknowledgements (`GET /api/workstation/first-run`, `POST /api/workstation/first-run/outcomes/complete`)
+  and the desktop launcher. These identify their data by the calling operator, and a key is one
+  shared credential with no operator behind it.
+- **The tenant-scoped `/api/workstation` route group** — those routes require a tenant scope, which a
+  validated key is never given. Strategy-run reads live here, so a key holding `ViewStrategies` still
+  cannot reach them; read governed data through the API routes outside this surface instead.
+
+Neither is a blanket rule about the `/api/workstation` path prefix, and one route in particular is an
+exception worth knowing: **`POST /api/workstation/first-run/complete` is gated by `AdminMaintenance`
+rather than by session or tenant**, so a key configured with a role holding that permission can
+complete first-run setup and provision sample data, recorded against the `api-key` actor. Give a key
+`Admin` only where that is intended. The first-run and desktop-launcher routes are mapped outside the
+tenant-scoped group, so tenant scope does not stand in front of them.
 
 **Example:**
 
 ```bash
-# With header (recommended)
 curl -H "X-Api-Key: your-api-key" http://localhost:8080/api/status
-
-# With query parameter
-curl http://localhost:8080/api/status?api_key=your-api-key
 ```
 
 When authentication fails, the API returns `401 Unauthorized`:
 
 ```json
-{ "error": "Unauthorized", "message": "Missing or invalid API key" }
+{ "error": "Unauthorized. Provide a valid API key via the X-Api-Key header." }
 ```
 
 ### Rate Limiting
@@ -245,7 +329,7 @@ All endpoints return errors in a consistent format:
 | Historical Data | 2 | Stored historical data query and date-range lookup |
 | Ingestion Jobs | 2 | Resumable ingestion job listing and summary |
 | Packaging | 6 | Portable data package creation, import, validation, listing |
-| Maintenance | 18 | Archive maintenance schedules, executions, status, presets |
+| Maintenance | 19 | Archive maintenance schedules, executions, status, presets |
 | Providers | 8 | Provider status, metrics, catalog, comparison, latency |
 | Options | 7 | Options chains, expirations, strikes, quotes, refresh, provider status |
 | Execution | 21 | Execution blotter, keyed position actions, session continuity, orders, health, audit, controls |
@@ -454,6 +538,40 @@ Provider catalog responses expose capability flags such as `supportsOptionsChain
 
 `/api/execution/sessions/{sessionId}/replay` is the Wave 2 operator continuity check for paper trading: it replays the durable fill log, compares the replayed portfolio to the current session snapshot, and records the verification step in the execution audit trail.
 
+`/api/execution/orders/submit` and the two position actions answer `202 Accepted` with a
+`PendingApproval` outcome when a risk rule parks the order for governed approval. That is not a
+failure: nothing routed, but a durable queue entry can still execute the order once an approver
+releases it. Clients must not resubmit — each attempt mints a new client order id, and several
+parked orders for one intent can all release.
+
+### Risk (`/api/risk/*`)
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/api/risk/rules` | Live status for every registered risk rule; requires `ViewTrades` |
+| GET | `/api/risk/rules/{ruleName}/status` | Live status for one rule; requires `ViewTrades` |
+| GET | `/api/risk/rules/{ruleName}/config` | Operator-managed thresholds for one rule |
+| PUT | `/api/risk/rules/{ruleName}/config` | Update thresholds; requires risk-configuration permission |
+| GET | `/api/risk/escalations` | Governed-approval queue: orders parked by an `Escalate`-severity rule |
+| POST | `/api/risk/escalations/{escalationId}/approve` | Approve a parked order, optionally releasing it |
+| POST | `/api/risk/escalations/{escalationId}/deny` | Deny a parked order and withdraw its escalation |
+
+Rule status is a trade read, not a configuration read: it carries aggregate gross exposure across
+every registered portfolio and violation reasons that can name traded symbols, so both status
+routes require `ViewTrades`.
+
+The escalation queue is the governed-approval surface for orders a risk rule parked rather than
+rejected. `GET /api/risk/escalations` returns only entries the caller is authorized to see —
+fund-scoped entries require scoped `ManageOrders` authority over the owning account, and
+administrators see all. Approve and deny each require a written rationale, which is retained with
+the decision and surfaced in the audit trail; a request without one is rejected. Segregation of
+duties is enforced against the retained submitter: the operator who submitted an order cannot
+approve it. Approving with release re-checks the approver's scoped authority, because the release
+bypasses `/api/execution/orders/submit` and its gates. Approvals are one-shot tokens matched
+against a full fingerprint of the retained request including its client order id; a release the
+gateway refuses re-arms the approval so a transient failure never retires an operator's decision,
+and denying or withdrawing an entry also retires any approvals linked through its token chain.
+
 ### Failover (`/api/failover/*`)
 
 | Method | Route | Description |
@@ -534,11 +652,12 @@ Provider catalog responses expose capability flags such as `supportsOptionsChain
 | GET | `/api/maintenance/schedules` | List all maintenance schedules |
 | POST | `/api/maintenance/schedules` | Create a maintenance schedule |
 | GET | `/api/maintenance/schedules/{scheduleId}` | Get a specific schedule |
-| PUT | `/api/maintenance/schedules/{scheduleId}` | Update a schedule |
+| PUT | `/api/maintenance/schedules/{scheduleId}` | Update a schedule; returns `409 Conflict` for a stale retained revision |
 | DELETE | `/api/maintenance/schedules/{scheduleId}` | Delete a schedule |
 | POST | `/api/maintenance/schedules/{scheduleId}/enable` | Enable a schedule |
 | POST | `/api/maintenance/schedules/{scheduleId}/disable` | Disable a schedule |
-| POST | `/api/maintenance/schedules/{scheduleId}/trigger` | Trigger a schedule immediately |
+| POST | `/api/maintenance/schedules/{scheduleId}/trigger` | Trigger a schedule immediately; returns `409 Conflict` while that schedule already has queued or running work |
+| POST | `/api/maintenance/schedules/{scheduleId}/run` | Compatibility alias for immediate schedule execution with the same `409 Conflict` behavior |
 | GET | `/api/maintenance/schedules/{scheduleId}/executions` | Execution history for a schedule |
 | GET | `/api/maintenance/schedules/{scheduleId}/summary` | Summary for a specific schedule |
 | GET | `/api/maintenance/schedules/summary` | Summary across all schedules |
@@ -554,12 +673,21 @@ Provider catalog responses expose capability flags such as `supportsOptionsChain
 | GET | `/api/maintenance/presets` | List available maintenance task presets |
 | GET | `/api/maintenance/task-types` | List available task type identifiers |
 
+Maintenance cron validation accepts five-field expressions plus Meridian's ordinal-weekday
+extension `d#n` in the day-of-week field (for example, `0#1` means the first Sunday). When both
+day-of-month and day-of-week are restricted, standard day-field OR semantics apply.
+
 ### Quality Drops (`/api/quality/drops/*`)
 
 | Method | Route | Description |
 |--------|-------|-------------|
 | GET | `/api/quality/drops` | Dropped event statistics |
 | GET | `/api/quality/drops/{symbol}` | Drops for specific symbol |
+
+`GET /api/quality/errors/statistics` retains the existing `totalErrors` and `errorRate` meanings:
+both describe the bounded records currently retained. The additive `retainedTotalErrors` and
+`retainedErrorRate` fields make that scope explicit, while `lifetimeTotalErrors` and
+`lifetimeErrorRate` report detections over the current tracker generation.
 
 ### Environment Designer (`/api/environment-designer/*`)
 
@@ -594,6 +722,12 @@ flows. Legacy governance/data-operations aliases remain compatibility routes for
 |--------|-------|-------------|
 | GET | `/api/workstation/accounting` | Accounting workspace payload for ledger, reconciliation, approvals, and accounting-control posture. |
 | GET | `/api/workstation/data` | Data workspace payload for provider posture, backfill, storage, and quality handoffs. |
+| GET | `/api/workstation/data/ingestion-operations` | Filterable durable ingestion-job summary with checkpoint, retry, failure, action, and evidence posture. |
+| GET | `/api/workstation/data/ingestion-operations/{jobId}` | Ingestion job detail with checkpoint and per-symbol progress. |
+| POST | `/api/workstation/data/ingestion-operations/{jobId}/actions/{action}` | Apply a permitted pause, resume, retry, or cancel transition with rationale, idempotency, and retained evidence. |
+| GET | `/api/workstation/data/storage-assurance` | Consolidated storage health, quality, canonicalization, capacity, tier, alert, and permission posture. |
+| POST | `/api/workstation/data/storage-assurance/actions/preview` | Preview a quality check, temporary-file cleanup, or copy-only tier migration. |
+| POST | `/api/workstation/data/storage-assurance/actions/execute` | Execute an unexpired preview after permission, rationale, typed-confirmation, and candidate revalidation checks. |
 | GET | `/api/workstation/trading/readiness` | Trading readiness projection with operator sign-off and accounting-control work-item posture. |
 | GET | `/api/workstation/operator/inbox` | Account-scoped operator queue for readiness + reconciliation work. |
 | GET | `/api/workstation/trading` | Trading shell payload that embeds readiness state. |

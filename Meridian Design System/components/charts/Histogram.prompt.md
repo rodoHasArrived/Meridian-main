@@ -1,0 +1,1 @@
+Histogram — distribution of a sample (daily returns, slippage, fill latency). Pass raw `values` (auto-binned into `binCount`) or precomputed `bins`. When `signed`, bars left of zero tint red and right of zero green so a returns distribution reads instantly; an optional dashed mean rule overlays. Flat, token-driven.

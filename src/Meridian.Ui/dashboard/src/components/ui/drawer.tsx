@@ -1,4 +1,4 @@
-import { type HTMLAttributes, type ReactNode, useCallback, useEffect, useRef } from "react";
+import { type HTMLAttributes, type ReactNode, useCallback, useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 import { resolveDialogTabTarget, resolveInitialDialogFocus } from "@/components/ui/dialog.view-model";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,8 @@ export interface DrawerProps {
   onClose?: () => void;
   side?: DrawerSide;
   title?: ReactNode;
+  /** Accessible name when the drawer composes its own header instead of using `title`. */
+  ariaLabel?: string;
   closeOnEsc?: boolean;
   closeOnBackdrop?: boolean;
   children?: ReactNode;
@@ -36,6 +38,7 @@ export function Drawer({
   onClose,
   side = "right",
   title,
+  ariaLabel,
   closeOnEsc = true,
   closeOnBackdrop = true,
   children,
@@ -44,6 +47,7 @@ export function Drawer({
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
+  const generatedTitleId = useId();
 
   const requestClose = useCallback(() => onClose?.(), [onClose]);
 
@@ -108,6 +112,8 @@ export function Drawer({
         ref={panelRef}
         role="dialog"
         aria-modal="true"
+        aria-label={title ? undefined : ariaLabel ?? "Drawer"}
+        aria-labelledby={title ? generatedTitleId : undefined}
         tabIndex={-1}
         className={cn(
           "flex h-full w-full max-w-[360px] flex-col bg-card shadow-[0_2px_6px_rgba(0,0,0,0.18)] focus:outline-none",
@@ -115,7 +121,7 @@ export function Drawer({
           className
         )}
       >
-        {title ? <DrawerHeader title={title} onClose={onClose} /> : null}
+        {title ? <DrawerHeader title={title} titleId={generatedTitleId} onClose={onClose} /> : null}
         {children}
       </div>
     </div>
@@ -124,10 +130,11 @@ export function Drawer({
 
 export interface DrawerHeaderProps extends Omit<HTMLAttributes<HTMLDivElement>, "title"> {
   title?: ReactNode;
+  titleId?: string;
   onClose?: () => void;
 }
 
-export function DrawerHeader({ title, onClose, className, children, ...props }: DrawerHeaderProps) {
+export function DrawerHeader({ title, titleId, onClose, className, children, ...props }: DrawerHeaderProps) {
   return (
     <div
       className={cn(
@@ -136,7 +143,7 @@ export function DrawerHeader({ title, onClose, className, children, ...props }: 
       )}
       {...props}
     >
-      {title ? <h2 className="text-sm font-semibold text-foreground">{title}</h2> : null}
+      {title ? <h2 id={titleId} className="text-sm font-semibold text-foreground">{title}</h2> : null}
       {children}
       {onClose ? (
         <button

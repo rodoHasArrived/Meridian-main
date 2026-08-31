@@ -1,8 +1,14 @@
-import { formatCompactCurrency as formatCurrency } from "@/lib/format";
+import { formatCompactCurrency as formatCurrency, pluralizeCount } from "@/lib/format";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 
 export type FamilyOfficeTone = "default" | "success" | "warning" | "danger";
-export type FamilyOfficeEntityType = "family-office" | "trust" | "llc" | "foundation" | "direct-accounts";
+/**
+ * Entity taxonomy exactly as the fund-structure graph reports it (`Trust`, `Fund`,
+ * `Account:Custody`, and so on). The value is only grouped and counted, never
+ * matched against a fixed set, so the backend vocabulary passes through unmapped
+ * rather than being flattened into a client-side approximation.
+ */
+export type FamilyOfficeEntityType = string;
 
 export interface FamilyOfficeRouteMetadata {
   path: string;
@@ -30,7 +36,8 @@ export interface FamilyOfficeEntityNode {
   displayName: string;
   entityType: FamilyOfficeEntityType;
   parentEntityId: string | null;
-  ownershipPercent: number;
+  /** Null when the ownership link carries no percentage; rendered as "Unmapped", never as 0%. */
+  ownershipPercent: number | null;
   netWorth: number;
   cash: number;
   liabilities: number;
@@ -129,9 +136,9 @@ const FAMILY_OFFICE_ROUTE_METADATA: FamilyOfficeRouteMetadata = {
   workspaceLabel: "Portfolio",
   label: "Family office",
   title: "Family Office Portfolio",
-  description: "Household-level net worth, entity ownership, private holdings, commitments, and reconciliation exceptions.",
+  description: "Consolidated entity ownership, liquidity, private assets, commitments, and reconciliation exceptions.",
   ariaLabel: "Family office portfolio route",
-  emptyState: "Family office data is not connected yet. Link portfolio, accounting, and private-asset feeds before using this lane for operator decisions.",
+  emptyState: "Set up family entities and connect portfolio, accounting, and private-asset sources to begin consolidated review.",
   disabledReason: null
 };
 
@@ -271,12 +278,10 @@ export function buildFamilyOfficeScreenViewModel(
     route: FAMILY_OFFICE_ROUTE_METADATA,
     notConnected: false,
     emptyActionHref: "/accounting/entity-setup",
-    emptyActionLabel: "Connect entity setup",
+    emptyActionLabel: "Set up family entities",
     statusChips: [
-      { label: "Workspace", value: FAMILY_OFFICE_ROUTE_METADATA.workspaceLabel },
-      { label: "Route", value: FAMILY_OFFICE_ROUTE_METADATA.path },
-      { label: "Entity source", value: entityStructure.displayName },
-      { label: "Graph mode", value: "Keyboard accessible" }
+      { label: "Source", value: entityStructure.displayName },
+      { label: "As of", value: entityStructure.asOfDate }
     ],
     panels: buildFamilyOfficePanels(entityStructure),
     ownershipGraph: {
@@ -335,12 +340,10 @@ function buildNotConnectedFamilyOfficeScreenViewModel(): FamilyOfficeScreenViewM
     },
     notConnected: true,
     emptyActionHref: "/accounting/entity-setup",
-    emptyActionLabel: "Connect entity setup",
+    emptyActionLabel: "Set up family entities",
     statusChips: [
-      { label: "Workspace", value: FAMILY_OFFICE_ROUTE_METADATA.workspaceLabel },
-      { label: "Route", value: FAMILY_OFFICE_ROUTE_METADATA.path },
-      { label: "Entity source", value: "Not connected" },
-      { label: "Graph mode", value: "Unavailable" }
+      { label: "Source", value: "Not connected" },
+      { label: "As of", value: "Unavailable" }
     ],
     panels: [],
     ownershipGraph: {
@@ -526,12 +529,17 @@ function entityDisplayName(entityStructure: FamilyOfficeEntityStructure, entityI
   return entityStructure.entities.find((entity) => entity.entityId === entityId)?.displayName ?? "Unmapped entity";
 }
 
-function formatPercent(value: number): string {
+/** Input is already in percent units (42.5 -> "42.5%"). For fractions use `formatRatioAsPercent`. */
+function formatPercent(value: number | null): string {
+  if (value === null) {
+    return "Unmapped";
+  }
+
   return Number.isInteger(value) ? `${value}%` : `${value.toFixed(1)}%`;
 }
 
 function formatCountLabel(count: number, singular: string, plural = `${singular}s`): string {
-  return `${count} ${count === 1 ? singular : plural}`;
+  return pluralizeCount(count, singular, { plural });
 }
 
 function uniqueCount(values: string[]): number {

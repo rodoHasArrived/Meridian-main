@@ -40,7 +40,7 @@ public static class EdgarReferenceDataEndpoints
             var result = await orchestrator.IngestAsync(normalizedRequest, ct).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("IngestEdgarSecurityMaster")
+        .WithName("IngestEdgarSecurityMaster").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<EdgarIngestRequest>("application/json")
         .Produces<EdgarIngestResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
@@ -56,7 +56,7 @@ public static class EdgarReferenceDataEndpoints
                 ? Results.NotFound()
                 : Results.Json(record, jsonOptions);
         })
-        .WithName("GetEdgarFiler")
+        .WithName("GetEdgarFiler").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<EdgarFilerRecord>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -70,7 +70,7 @@ public static class EdgarReferenceDataEndpoints
                 ? Results.NotFound()
                 : Results.Json(record, jsonOptions);
         })
-        .WithName("GetEdgarFacts")
+        .WithName("GetEdgarFacts").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<EdgarFactsRecord>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -84,7 +84,7 @@ public static class EdgarReferenceDataEndpoints
                 ? Results.NotFound()
                 : Results.Json(record, jsonOptions);
         })
-        .WithName("GetEdgarSecurityData")
+        .WithName("GetEdgarSecurityData").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<EdgarSecurityDataRecord>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
     }

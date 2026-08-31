@@ -26,7 +26,7 @@ public static class ReconciliationSlaCalculator
                 item.BusinessAgeHours);
         }
 
-        if ((policy.StopOnResolved && item.LifecycleState == ReconciliationCaseLifecycleState.Resolved) ||
+        if ((policy.StopOnResolved && item.LifecycleState is ReconciliationCaseLifecycleState.Resolved or ReconciliationCaseLifecycleState.Superseded) ||
             (policy.StopOnSignedOff && item.LifecycleState == ReconciliationCaseLifecycleState.SignedOff))
         {
             var due = item.SlaDueAt ?? AddBusinessHours(item.DetectedAt, policy, policy.DueBusinessHours);

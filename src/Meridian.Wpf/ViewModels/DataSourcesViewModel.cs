@@ -19,6 +19,7 @@ namespace Meridian.Wpf.ViewModels;
 public sealed class DataSourcesViewModel : BindableBase
 {
     private readonly WpfServices.ConfigService _configService;
+    private readonly WpfServices.FirstRunService _firstRunService;
     private bool _isLoading;
 
     // ── Failover ────────────────────────────────────────────────────────
@@ -77,6 +78,9 @@ public sealed class DataSourcesViewModel : BindableBase
     private string _statusMessage = string.Empty;
     private bool _isStatusError;
     private bool _isStatusVisible;
+    private bool _isConfigurationRecoveryVisible;
+    private string _configurationRecoveryTitle = string.Empty;
+    private string _configurationRecoveryDetail = string.Empty;
 
     // ── Default sources ──────────────────────────────────────────────────
     private DataSourceConfigDto? _selectedDefaultRealTimeSource;
@@ -92,12 +96,16 @@ public sealed class DataSourcesViewModel : BindableBase
     /// <summary>Polygon API key read from the shared secret input by code-behind before Save.</summary>
     internal string PolygonApiKey { get; set; } = string.Empty;
 
-    public DataSourcesViewModel(WpfServices.ConfigService configService)
+    public DataSourcesViewModel(
+        WpfServices.ConfigService configService,
+        WpfServices.FirstRunService firstRunService)
     {
         _configService = configService;
+        _firstRunService = firstRunService;
 
         // Load
         LoadCommand = new AsyncRelayCommand(LoadAsync);
+        RetryConfigurationCommand = new AsyncRelayCommand(LoadAsync);
 
         // Source list
         AddSourceCommand = new RelayCommand(BeginAddSource);
@@ -119,6 +127,7 @@ public sealed class DataSourcesViewModel : BindableBase
     // ── Commands ─────────────────────────────────────────────────────────
 
     public IAsyncRelayCommand LoadCommand { get; }
+    public IAsyncRelayCommand RetryConfigurationCommand { get; }
     public IRelayCommand AddSourceCommand { get; }
     public IRelayCommand<string> EditSourceCommand { get; }
     public IAsyncRelayCommand<string> DeleteSourceCommand { get; }
@@ -423,6 +432,21 @@ public sealed class DataSourcesViewModel : BindableBase
     public string StatusMessage { get => _statusMessage; private set => SetProperty(ref _statusMessage, value); }
     public bool IsStatusError { get => _isStatusError; private set => SetProperty(ref _isStatusError, value); }
     public bool IsStatusVisible { get => _isStatusVisible; private set => SetProperty(ref _isStatusVisible, value); }
+    public bool IsConfigurationRecoveryVisible
+    {
+        get => _isConfigurationRecoveryVisible;
+        private set => SetProperty(ref _isConfigurationRecoveryVisible, value);
+    }
+    public string ConfigurationRecoveryTitle
+    {
+        get => _configurationRecoveryTitle;
+        private set => SetProperty(ref _configurationRecoveryTitle, value);
+    }
+    public string ConfigurationRecoveryDetail
+    {
+        get => _configurationRecoveryDetail;
+        private set => SetProperty(ref _configurationRecoveryDetail, value);
+    }
 
     // ── Internal access for code-behind ───────────────────────────────────
 
@@ -451,15 +475,48 @@ public sealed class DataSourcesViewModel : BindableBase
             IsNoSourcesVisible = DataSources.Count == 0;
 
             UpdateDefaultSourceCollections(config);
+            ApplyConfigurationRecoveryState();
         }
         catch (Exception ex)
         {
             ShowStatus($"Failed to load data sources: {ex.Message}", isError: true);
+            IsConfigurationRecoveryVisible = true;
+            ConfigurationRecoveryTitle = "Configuration needs attention";
+            ConfigurationRecoveryDetail =
+                "Data Sources remained available with safe defaults. Correct file access or syntax, then retry the load.";
         }
         finally
         {
             _isLoading = false;
         }
+    }
+
+    private void ApplyConfigurationRecoveryState()
+    {
+        if (_configService.LastLoadError is { } loadError)
+        {
+            IsConfigurationRecoveryVisible = true;
+            ConfigurationRecoveryTitle = "Configuration needs attention";
+            ConfigurationRecoveryDetail =
+                $"The desktop configuration could not be loaded ({loadError.Message}). Safe defaults are active; retry after correcting access.";
+            return;
+        }
+
+        var recovery = _firstRunService.LastConfigurationRecoveryResult;
+        IsConfigurationRecoveryVisible = recovery is { Outcome: not WpfServices.ConfigurationProvisioningResult.AlreadyValid };
+        if (!IsConfigurationRecoveryVisible || recovery is null)
+            return;
+
+        ConfigurationRecoveryTitle = recovery.Outcome switch
+        {
+            WpfServices.ConfigurationProvisioningResult.CreatedDefault => "Configuration initialized",
+            WpfServices.ConfigurationProvisioningResult.RestoredLastKnownGood => "Configuration recovered",
+            _ => "Configuration repaired"
+        };
+        ConfigurationRecoveryDetail = recovery.OperatorMessage +
+            (string.IsNullOrWhiteSpace(recovery.InvalidConfigurationPath)
+                ? string.Empty
+                : $" Retained invalid file: {recovery.InvalidConfigurationPath}");
     }
 
     // ── Private helpers ───────────────────────────────────────────────────

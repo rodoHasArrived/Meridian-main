@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Meridian.Identity.Auth;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Identity;
 
@@ -29,11 +30,13 @@ public sealed class FileRolePermissionProfileStore : IRolePermissionProfileStore
     private readonly object _gate = new();
     private readonly SemaphoreSlim _writeGate = new(1, 1);
     private readonly string _path;
+    private readonly ILogger<FileRolePermissionProfileStore>? _logger;
 
-    public FileRolePermissionProfileStore(StorageOptions storageOptions)
+    public FileRolePermissionProfileStore(StorageOptions storageOptions, ILogger<FileRolePermissionProfileStore>? logger = null)
     {
         ArgumentNullException.ThrowIfNull(storageOptions);
         _path = Path.Combine(storageOptions.RootPath, "governance", "role-permission-profiles.json");
+        _logger = logger;
     }
 
     public Task<RolePermissionCatalogDto> GetCatalogAsync(CancellationToken ct = default)
@@ -65,10 +68,8 @@ public sealed class FileRolePermissionProfileStore : IRolePermissionProfileStore
         ArgumentNullException.ThrowIfNull(request);
         var validated = Validate(request, actor);
         var now = DateTimeOffset.UtcNow;
-        var auditId = $"role-profile-{now:yyyyMMddHHmmssfff}-{Guid.NewGuid():N}"[..46];
-        var correlationId = string.IsNullOrWhiteSpace(request.CorrelationId)
-            ? $"settings-role-profile-{Guid.NewGuid():N}"
-            : request.CorrelationId.Trim();
+        var auditId = IdentityGovernanceNormalization.NewAuditId("role-profile", now, maxLength: 46);
+        var correlationId = IdentityGovernanceNormalization.NormalizeCorrelationId(request.CorrelationId, "settings-role-profile");
 
         await _writeGate.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -142,8 +143,14 @@ public sealed class FileRolePermissionProfileStore : IRolePermissionProfileStore
                     JsonOptions);
                 return snapshot ?? new RolePermissionProfileSnapshot([]);
             }
-            catch (JsonException)
+            catch (JsonException ex)
             {
+                // Fail safe (no custom profiles) so built-in roles still resolve, but surface the
+                // data-integrity problem instead of silently masking a corrupt governance file.
+                _logger?.LogError(
+                    ex,
+                    "Corrupt role-permission-profile governance file at {Path}; treating as no custom profiles. Manual data-integrity review required.",
+                    _path);
                 return new RolePermissionProfileSnapshot([]);
             }
         }
@@ -177,7 +184,7 @@ public sealed class FileRolePermissionProfileStore : IRolePermissionProfileStore
         RolePermissionProfileUpsertRequestDto request,
         string actor)
     {
-        var profileName = NormalizeDisplayValue(request.ProfileName, nameof(request.ProfileName));
+        var profileName = IdentityGovernanceNormalization.NormalizeRequired(request.ProfileName, nameof(request.ProfileName));
         var profileKey = ProfileKey(profileName);
         if (profileKey.Length == 0)
         {
@@ -189,7 +196,7 @@ public sealed class FileRolePermissionProfileStore : IRolePermissionProfileStore
             throw new ArgumentException("Custom role profile names cannot replace a built-in role.", nameof(request));
         }
 
-        var displayName = NormalizeDisplayValue(request.DisplayName, nameof(request.DisplayName));
+        var displayName = IdentityGovernanceNormalization.NormalizeRequired(request.DisplayName, nameof(request.DisplayName));
         var description = string.IsNullOrWhiteSpace(request.Description)
             ? $"Custom authority profile based on {request.BaseRole}."
             : request.Description.Trim();
@@ -209,10 +216,8 @@ public sealed class FileRolePermissionProfileStore : IRolePermissionProfileStore
             throw new ArgumentException("At least one permission is required.", nameof(request));
         }
 
-        var rationale = NormalizeDisplayValue(request.Rationale, nameof(request.Rationale));
-        var resolvedActor = string.IsNullOrWhiteSpace(actor)
-            ? NormalizeDisplayValue(request.RequestedBy, nameof(request.RequestedBy))
-            : actor.Trim();
+        var rationale = IdentityGovernanceNormalization.NormalizeRequired(request.Rationale, nameof(request.Rationale));
+        var resolvedActor = IdentityGovernanceNormalization.ResolveActor(actor, request.RequestedBy);
 
         return new ValidatedRolePermissionProfile(
             ProfileName: profileName,
@@ -224,17 +229,6 @@ public sealed class FileRolePermissionProfileStore : IRolePermissionProfileStore
             Permissions: permissions,
             Actor: resolvedActor,
             Rationale: rationale);
-    }
-
-    private static string NormalizeDisplayValue(string? value, string parameterName)
-    {
-        var normalized = value?.Trim();
-        if (string.IsNullOrWhiteSpace(normalized))
-        {
-            throw new ArgumentException($"{parameterName} is required.", parameterName);
-        }
-
-        return normalized;
     }
 
     private static string NormalizeProfileName(string? value) => ProfileKey(value ?? string.Empty);

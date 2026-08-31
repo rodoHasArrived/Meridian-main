@@ -1,10 +1,73 @@
 # Portfolio Cash Ladder — Blueprint (2026-07)
 
-> **Status:** Proposed (wave-8 candidate)
+**Status:** Partially implemented — first vertical slice landed 2026-07-05 (see "Delivered Slice"
+below); the persisted-run / per-currency / structured-sourcing phases remain open (wave-8 candidate)
+**Owner:** Portfolio forecasting lane
+**Reviewed:** 2026-08-01
+
 > **Source:** 2026-07-05 brainstorm session — "Portfolio Cash-Flow Forecasting & Liquidity Engine",
 > selected as the recommended next large-scale update.
 > **Depth mode:** full
 > **Prepared for:** implementation following completion of the `codex/instrument-type-depth` branch.
+> **Registered in:** [`docs/engineering/blueprints/README.md`](../engineering/blueprints/README.md).
+
+The `/api/portfolio/cash-ladder` routes below sit under the existing, shipped `/api/portfolio/...`
+prefix (`UiApiRoutes.PortfolioCashLadder`), so the remaining `runs` surface is additive — no new
+top-level prefix is introduced. See the
+[register's route-prefix convention](../engineering/blueprints/README.md#api-route-prefixes).
+
+---
+
+## Delivered Slice (2026-07-05)
+
+A goal-directed vertical slice of this lane is on `main`. It implements the operator moment
+(portfolio-wide dated cash ladder with scenarios and drill-down) as a compute-on-request read
+model; it does not yet implement the persisted-run, per-currency, or structured-sourcing phases
+of this blueprint.
+
+**What landed:**
+
+- `Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs` — ladder/bucket/contribution/
+  scenario DTOs, `IPortfolioCashLadderQueryService`, and provider seams
+  `IPortfolioCashBalanceProvider` / `IPortfolioCapitalScheduleProvider`.
+- `Meridian.Instruments/AssetOperations/PortfolioCashLadderEngine.cs` — pure aggregation +
+  scenario engine (`portfolio-cash-ladder-v1`): terms-driven flows across positions, capital
+  activity join, weekly-bucketed ladder, cumulative cash, minimum-balance breach flags, and five
+  built-in scenarios (rates ±100bp floating-only, early call, redemption wave 20%, FX adverse
+  10%) each carrying explicit `ModeledEffects` / `Assumptions`.
+- `Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs` — enumerates active Security
+  Master subjects through `IAssetOperationsQueryService` and assembles engine inputs.
+- `GET /api/portfolio/cash-ladder` (+ `/scenarios`) in
+  `Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs`; constants in `UiApiRoutes`.
+- Browser workstation: `/portfolio/cash-ladder` screen (stacked source bars, cumulative line,
+  threshold band, scenario dropdown, bucket drill-down with projection-run and terms-version
+  traceability), linked from the Portfolio workspace header.
+- Tests: `tests/Meridian.Tests/AssetOperations/PortfolioCashLadderEngineTests.cs` (10) and
+  `src/Meridian.Ui/dashboard/src/screens/cash-ladder-screen.view-model.test.ts` (8).
+
+**Known deviations from this blueprint (deliberate, slice-scoped):**
+
+- Engine lives in `Meridian.Instruments.AssetOperations` (pure, contracts-only inputs) rather
+  than `Meridian.Application.PortfolioForecasting`; lifting it later is mechanical.
+- No persisted ladder runs yet — compute-on-request `GET`, so the blueprint's
+  `POST /api/portfolio/cash-ladder/runs` surface remains unclaimed and additive.
+- Single blended ladder with explicit 1:1 non-base-currency warnings instead of per-currency
+  views; the warning text makes the blend honest until the per-currency phase lands.
+- Terms-driven sourcing only (no `ISecurityMasterCashFlowService` tier yet); unprojected
+  positions surface as a count warning rather than per-security exclusion rows.
+- Holdings are sourced through an optional `IPortfolioHoldingsSource` seam (held security IDs +
+  real quantities); a ledger/custodian adapter is not wired yet. When the seam is absent the read
+  service **fails closed**: `PortfolioCashLadderReadService.LoadPositionsAsync` returns an empty
+  position set with the notice *"No authoritative holdings source is registered; Security Master
+  subjects cannot substitute for held quantities"*, which is also raised as a **decision blocker**.
+  Operators in such a deployment see no projected security flows at all — not an overstated ladder.
+  (An earlier draft of this note described a unit-quantity fallback over active Security Master
+  subjects. That was rejected in implementation — the comment in source reads "Active Security
+  Master subjects at unit quantity are not a financial fact and are never used as a fallback" — and
+  the note is corrected here to match.)
+- Capital activity and an FX shock scenario shipped in the slice (the driving goal required
+  them) even though this blueprint deferred both; the provider seam keeps investor-schedule
+  data optional until the capital activity engine exists.
 
 ---
 
@@ -576,6 +639,24 @@ unmastered position).
 **Suggested branch name:** `codex/portfolio-cash-ladder`
 **Suggested PR sequence:** PR1 contracts + engine + stores + unit tests · PR2 endpoints +
 registration + endpoint tests · PR3 dashboard screen + tests + doc index updates.
+
+> **A compute-on-request slice already shipped — under different names than this checklist uses.**
+> Every box below is unticked, but the delivered code covers much of Phases 1–5. Read the checklist
+> as *target state*, and check each item against these before building anything:
+>
+> | This blueprint proposes | Shipped as |
+> |---|---|
+> | `PortfolioForecastingDtos` / `IPortfolioCashLadderService` | `PortfolioCashLadderReadService` (`src/Meridian.Ui.Shared/Services/`) + its DTOs |
+> | `CashLadderShockEngine` | `PortfolioCashLadderEngine` |
+> | `PortfolioForecastingEndpoints` (5 routes) | `PortfolioCashLadderEndpoints`; `UiApiRoutes.PortfolioCashLadder` and `…Scenarios` |
+> | `portfolio-cash-ladder-screen.tsx` / `.view-model.ts` | `cash-ladder-screen.tsx` / `.view-model.ts` (+ `.view-model.test.ts`), with `portfolio-cash-ladder.types.ts` and `.api.ts` |
+> | Phase 5 tests | `PortfolioCashLadderEngineTests`, `PortfolioCashLadderReadServiceTests` (`tests/Meridian.Tests/AssetOperations/`) |
+>
+> **Genuinely remaining:** persisted runs (`PortfolioCashLadderRunStore`, `CashLadderScenarioFileStore`),
+> per-currency views, structured sourcing (`LedgerPortfolioHoldingsSource` and Open Questions 1–2),
+> and the fund-account scope the read service currently reports as a decision blocker. The boxes are
+> left unticked rather than guessed at, because the shipped surface is a rename *and* a rescope of
+> what is written below — someone should tick them against the code, not against this table.
 
 ### Phase 1: Contracts (1d)
 - [ ] Add `Meridian.Contracts/PortfolioForecasting/PortfolioForecastingDtos.cs` (all DTOs + enums above)

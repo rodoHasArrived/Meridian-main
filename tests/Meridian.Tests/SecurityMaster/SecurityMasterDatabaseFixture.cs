@@ -1,6 +1,6 @@
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
-using Testcontainers.PostgreSql;
+using Meridian.TestSupport;
 
 namespace Meridian.Tests.SecurityMaster;
 
@@ -8,73 +8,43 @@ public sealed class SecurityMasterDatabaseFixture : IAsyncLifetime
 {
     private const string EnvVar = "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING";
 
-    // Non-null only when no external connection string is supplied.
-    private readonly PostgreSqlContainer? _container;
+    // Resolved in InitializeAsync; null only before that runs or if it failed to start.
+    private PostgresTestServer? _server;
 
-    // Stable once InitializeAsync completes. Initialised with a placeholder when using a
-    // container so that the property is never null at runtime (xUnit calls InitializeAsync
-    // before any test method executes).
-    public SecurityMasterOptions Options { get; private set; }
-
-    public SecurityMasterDatabaseFixture()
-    {
-        var externalConnectionString = Environment.GetEnvironmentVariable(EnvVar);
-
-        if (!string.IsNullOrWhiteSpace(externalConnectionString))
-        {
-            Options = new SecurityMasterOptions
-            {
-                ConnectionString = externalConnectionString,
-                Schema = $"sm_test_{Guid.NewGuid():N}",
-                PreloadProjectionCache = false
-            };
-        }
-        else
-        {
-            _container = new PostgreSqlBuilder("postgres:16-alpine")
-                .WithDatabase("meridian_test")
-                .WithUsername("testuser")
-                .WithPassword("testpass")
-                .Build();
-
-            // Placeholder — overwritten in InitializeAsync once the container is running.
-            Options = new SecurityMasterOptions { PreloadProjectionCache = false };
-        }
-    }
+    // Stable once InitializeAsync completes. Initialised with a placeholder so the property
+    // is never null at runtime (xUnit calls InitializeAsync before any test method executes).
+    public SecurityMasterOptions Options { get; private set; } = new() { PreloadProjectionCache = false };
 
     public async Task InitializeAsync()
     {
-        if (_container is not null)
+        _server = await PostgresTestServer.CreateAsync(EnvVar).ConfigureAwait(false);
+        try
         {
-            await _container.StartAsync().ConfigureAwait(false);
-
             Options = new SecurityMasterOptions
             {
-                ConnectionString = _container.GetConnectionString(),
-                Schema = $"sm_test_{Guid.NewGuid():N}",
+                ConnectionString = _server.ConnectionString,
+                Schema = _server.CreateSchemaName("sm"),
                 PreloadProjectionCache = false
             };
-        }
 
-        var runner = new SecurityMasterMigrationRunner(Options);
-        await runner.EnsureMigratedAsync().ConfigureAwait(false);
+            var runner = new SecurityMasterMigrationRunner(Options);
+            await runner.EnsureMigratedAsync().ConfigureAwait(false);
+        }
+        catch
+        {
+            await _server.DisposeAsync().ConfigureAwait(false);
+            _server = null;
+            throw;
+        }
     }
 
     public async Task DisposeAsync()
     {
-        if (_container is not null)
+        if (_server is null)
         {
-            await _container.DisposeAsync().ConfigureAwait(false);
+            return;
         }
-        else
-        {
-            var runner = new SecurityMasterMigrationRunner(Options);
-            await runner.ResetSchemaAsync().ConfigureAwait(false);
-        }
-    }
-}
 
-[CollectionDefinition(nameof(SecurityMasterDatabaseCollection), DisableParallelization = true)]
-public sealed class SecurityMasterDatabaseCollection : ICollectionFixture<SecurityMasterDatabaseFixture>
-{
+        await _server.DisposeAsync().ConfigureAwait(false);
+    }
 }

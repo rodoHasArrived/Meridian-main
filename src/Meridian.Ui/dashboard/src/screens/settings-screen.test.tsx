@@ -122,6 +122,8 @@ const session: SessionInfo = {
   commandCount: 42
 };
 
+const recentProviderTimestamp = new Date(Date.now() - 10 * 60 * 1_000).toISOString();
+
 const overview: SystemOverviewResponse = {
   systemStatus: "Degraded",
   providersOnline: 2,
@@ -151,14 +153,14 @@ const alpacaConnection: BrokerageConnectionStatus = {
   isConfigured: true,
   isConnected: true,
   authorizationUrl: null,
-  connectedAt: "2026-05-07T11:50:00Z",
+  connectedAt: recentProviderTimestamp,
   expiresAt: null,
   lastError: null,
   warnings: [],
   scopes: ["trading:account", "brokerage-sync:read"],
   environment: "paper",
   externalAccountId: "PA123",
-  verifiedAt: "2026-05-07T11:50:00Z",
+  verifiedAt: recentProviderTimestamp,
   maskedKeyId: "********1234"
 };
 
@@ -190,8 +192,8 @@ const providerConnections: ProviderConnectionRow[] = [
     verificationState: "Verified",
     health: "Healthy",
     fallbackActive: false,
-    lastVerifiedAt: "2026-05-07T11:50:00Z",
-    lastSuccessfulAt: "2026-05-07T11:50:00Z",
+    lastVerifiedAt: recentProviderTimestamp,
+    lastSuccessfulAt: recentProviderTimestamp,
     lastFailureAt: null,
     lastError: null,
     maskedKeyPreview: "********1234",
@@ -486,6 +488,18 @@ const securityAssetProfiles: SecurityAssetProfileDefinition[] = [
         maxValue: null,
         isProjected: true,
         isSearchable: false
+      },
+      {
+        key: "vintageYear",
+        label: "Vintage year",
+        fieldType: "Integer",
+        isRequired: false,
+        allowedValues: [],
+        description: null,
+        minValue: null,
+        maxValue: null,
+        isProjected: false,
+        isSearchable: false
       }
     ],
     identifierPreferences: [
@@ -498,7 +512,8 @@ const securityAssetProfiles: SecurityAssetProfileDefinition[] = [
     effectiveTo: null,
     approvedBy: "Security Master Council",
     approvedAtUtc: "2026-05-01T00:00:00Z",
-    changeReason: "Seed template"
+    changeReason: "Seed template",
+    approvalReference: "MERIDIAN-SEED-APPROVAL"
   }
 ];
 
@@ -536,6 +551,68 @@ describe("SettingsScreen", () => {
     apiMocks.getProviderIntegrationQuarantineReview.mockReset();
     apiMocks.getProviderIntegrationReconciliationHandoffHistory.mockReset();
     apiMocks.getProviderIntegrationStagingReview.mockReset();
+    apiMocks.getProviderIntegrationTemplates.mockReset();
+    apiMocks.getProviderIntegrationTemplate.mockReset();
+    apiMocks.saveProviderIntegrationSetup.mockReset();
+    apiMocks.getProviderIntegrationReadiness.mockReset();
+    apiMocks.runManualCsvProviderIntegrationDryRun.mockReset();
+    apiMocks.runRestProviderIntegrationDryRun.mockReset();
+    apiMocks.checkProviderIntegrationSchemaDrift.mockReset();
+    apiMocks.activateProviderIntegration.mockReset();
+  });
+
+  it("lands the bare /settings route on the focused task chooser", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        providerConnections={providerConnections}
+      />,
+      { initialEntries: ["/settings"] }
+    );
+
+    expect(screen.getByRole("region", { name: "Settings workbench context" })).toHaveTextContent(
+      "Settings"
+    );
+    expect(screen.queryByRole("tablist", { name: "Settings routes" })).not.toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Settings tasks" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Open Preferences:/ })).toHaveAttribute("href", "/settings/preferences");
+    expect(screen.queryByRole("region", { name: "Profile and authentication posture" })).not.toBeInTheDocument();
+  });
+
+  it("keeps legacy hash deep links winning over the bare-route chooser", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        providerConnections={providerConnections}
+      />,
+      { initialEntries: ["/settings#alpaca-provider-setup"] }
+    );
+
+    expect(screen.getByRole("region", { name: "Settings workbench context" })).toHaveTextContent(
+      "Guided provider setup"
+    );
+    expect(screen.queryByRole("tablist", { name: "Settings routes" })).not.toBeInTheDocument();
+    const providerCenter = document.querySelector("#provider-connection-center");
+    expect(providerCenter).toBeInTheDocument();
+    const focusedGroup = within(providerCenter as HTMLElement).getByRole("region", { name: "Brokerage capable" });
+    expect(within(providerCenter as HTMLElement).queryByRole("region", { name: "Data capable" })).not.toBeInTheDocument();
+    expect(focusedGroup.parentElement).not.toHaveClass("xl:grid-cols-2");
+  });
+
+  it("shows the provider display name in focused provider routes", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        providerConnections={providerConnections}
+      />,
+      { initialEntries: ["/settings/providers/polygon/advanced"] }
+    );
+
+    expect(screen.getByText("Focused provider: Polygon.io")).toBeInTheDocument();
+    expect(screen.queryByText("Focused provider: polygon")).not.toBeInTheDocument();
   });
 
   it("renders recent events as accessible status evidence rows", () => {
@@ -543,15 +620,21 @@ describe("SettingsScreen", () => {
       initialEntries: ["/settings#diagnostic-endpoints"]
     });
 
+    // The endpoint-inventory hash is preserved as an advanced-diagnostics alias.
     expect(screen.getByRole("region", { name: "Settings workbench context" })).toHaveTextContent(
-      "Operator control posture"
+      "Advanced diagnostics"
     );
     const eventTable = screen.getByRole("treegrid", { name: "1 recent system event" });
     const eventRow = within(eventTable).getByRole("row", {
       name: /Select event evt-1\. OBS event from Provider health at May 1, 00:00 UTC\. Brokerage sync delayed\./i
     });
     const eventDetail = screen.getByRole("complementary", { name: "Selected recent event detail" });
+    const diagnosticsCard = document.querySelector("#diagnostic-endpoints");
 
+    expect(diagnosticsCard).toBeInTheDocument();
+    expect(within(diagnosticsCard as HTMLElement).getByLabelText(/Heartbeat Stale · May 1, 00:00 UTC/)).toBeInTheDocument();
+    expect(within(diagnosticsCard as HTMLElement).getByText("Heartbeat details").closest("details")).not.toHaveAttribute("open");
+    expect(within(diagnosticsCard as HTMLElement).getByText("2026-05-01T00:00:00Z")).not.toBeVisible();
     expect(eventRow).toHaveAttribute("aria-selected", "true");
     expect(eventRow).toHaveAttribute("aria-controls", "settings-recent-event-detail");
     expect(eventRow).toHaveAttribute("aria-expanded", "true");
@@ -563,12 +646,14 @@ describe("SettingsScreen", () => {
   });
 
   it("renders profile authentication posture with authority handoffs", () => {
+    // The profile/system row is scoped to the Access view.
     renderWithRouter(
       <SettingsScreen
         session={session}
         overview={overview}
         brokerageConnection={alpacaConnection}
-      />
+      />,
+      { initialEntries: ["/settings/access"] }
     );
 
     const profileRegion = screen.getByRole("region", { name: "Profile and authentication posture" });
@@ -578,6 +663,7 @@ describe("SettingsScreen", () => {
     expect(profileRegion).toHaveTextContent("Fund Manager");
     expect(profileRegion).toHaveTextContent("42 commands issued");
     expect(profileRegion).toHaveTextContent("Brokerage verified");
+    expect(within(profileRegion).getByLabelText("Profile authentication facts")).not.toHaveClass("sm:grid-cols-2");
     expect(within(profileRegion).getByRole("list", {
       name: "Profile authentication and authorization readiness steps"
     })).toBeInTheDocument();
@@ -586,18 +672,42 @@ describe("SettingsScreen", () => {
     })).toHaveAttribute("href", "/trading/readiness");
     expect(within(profileRegion).getByRole("link", {
       name: "Open Settings diagnostic services from profile authentication posture"
-    })).toHaveAttribute("href", "/settings#diagnostic-endpoints");
+    })).toHaveAttribute("href", "/settings/diagnostics");
     expect(document.querySelector("#diagnostic-endpoints")).not.toBeInTheDocument();
   });
 
-  it("routes Settings preferences to provider connection tasks before hash inference", () => {
+  it("routes delayed brokerage evidence back to provider setup instead of Trading readiness", () => {
+    const delayedTimestamp = new Date(Date.now() - 2 * 60 * 60 * 1_000).toISOString();
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        brokerageConnection={{ ...alpacaConnection, verifiedAt: delayedTimestamp }}
+      />,
+      { initialEntries: ["/settings/access"] }
+    );
+
+    const profileRegion = screen.getByRole("region", { name: "Profile and authentication posture" });
+    expect(profileRegion).toHaveTextContent("Access review");
+    expect(profileRegion).toHaveTextContent("Brokerage evidence delayed");
+    expect(within(profileRegion).queryByText("Access ready")).not.toBeInTheDocument();
+    expect(within(profileRegion).queryByRole("link", {
+      name: "Open Trading readiness from verified profile authentication posture"
+    })).not.toBeInTheDocument();
+    expect(within(profileRegion).getByRole("link", {
+      name: "Review Alpaca provider setup from profile authentication posture"
+    })).toHaveAttribute("href", "/settings#alpaca-provider-setup");
+  });
+
+  it("routes Settings preferences to personal controls before stale hash inference", () => {
     renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
       initialEntries: ["/settings/preferences#settings-overview"]
     });
 
-    expect(document.querySelector("#provider-connection-center")).toBeInTheDocument();
+    expect(document.querySelector("#provider-connection-center")).not.toBeInTheDocument();
     expect(document.querySelector("#fund-operations-control-center")).not.toBeInTheDocument();
-    expect(document.querySelector("#settings-appearance")).not.toBeInTheDocument();
+    expect(document.querySelector("#settings-appearance")).toBeInTheDocument();
+    expect(document.querySelector("#scoped-access-control")).not.toBeInTheDocument();
   });
 
   it("routes Settings integrations to operations tasks before hash inference", () => {
@@ -609,9 +719,67 @@ describe("SettingsScreen", () => {
     expect(document.querySelector("#provider-connection-center")).not.toBeInTheDocument();
   });
 
-  it("renders appearance controls in the profile task view", () => {
+  it("routes the canonical Accounting Systems path to the operations task", () => {
     renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
-      initialEntries: ["/settings#settings-overview"]
+      initialEntries: ["/settings/accounting-systems"]
+    });
+
+    expect(document.querySelector("#fund-operations-control-center")).toBeInTheDocument();
+    expect(screen.queryByRole("tablist", { name: "Settings routes" })).not.toBeInTheDocument();
+  });
+
+  it("resolves object-centric Settings routes before stale hashes", () => {
+    const accessRender = renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
+      initialEntries: ["/settings/access#provider-connection-center"]
+    });
+    expect(document.querySelector("#settings-overview")).toBeInTheDocument();
+    expect(document.querySelector("#provider-connection-center")).not.toBeInTheDocument();
+    accessRender.unmount();
+
+    const providerRender = renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
+      initialEntries: ["/settings/providers#settings-overview"]
+    });
+    expect(document.querySelector("#provider-connection-center")).toBeInTheDocument();
+    expect(document.querySelector("#data-provider-modules")).not.toBeInTheDocument();
+    expect(document.querySelector("#diagnostic-endpoints")).not.toBeInTheDocument();
+    providerRender.unmount();
+
+    const diagnosticsRender = renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
+      initialEntries: ["/settings/diagnostics#runtime-feature-capabilities"]
+    });
+    expect(document.querySelector("#diagnostic-endpoints")).toBeInTheDocument();
+    expect(document.querySelector("#runtime-feature-capabilities")).not.toBeInTheDocument();
+    diagnosticsRender.unmount();
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        featureCapabilities={{
+          capabilities: [
+            {
+              capabilityKey: "desktop.settings.workspace",
+              displayName: "Settings workspace",
+              description: "Preferences and diagnostics.",
+              isEnabled: true,
+              defaultEnabled: true,
+              isPermanent: true,
+              isOverridden: false,
+              canToggle: false,
+              disabledReason: "Required for workstation navigation."
+            }
+          ]
+        }}
+      />,
+      { initialEntries: ["/settings/feature-coverage#diagnostic-endpoints"] }
+    );
+    expect(document.querySelector("#runtime-feature-capabilities")).toBeInTheDocument();
+    expect(document.querySelector("#diagnostic-endpoints")).toBeInTheDocument();
+  });
+
+  it("renders appearance controls only in Preferences", () => {
+    renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
+      initialEntries: ["/settings/preferences"]
     });
 
     const appearanceRegion = screen.getByRole("region", { name: "Appearance preferences" });
@@ -640,11 +808,22 @@ describe("SettingsScreen", () => {
     expect(within(controlCenter).getByText("Accounting active")).toBeInTheDocument();
     expect(within(controlCenter).getByText("1 rules")).toBeInTheDocument();
     expect(within(controlCenter).getByText("1 blocked")).toBeInTheDocument();
-    expect(within(controlCenter).getByRole("link", { name: "Open role and permission catalog service" })).toHaveAttribute(
+    const roleCard = within(controlCenter).getByText("Role and Permission Studio").closest('[role="listitem"]');
+    const closeCard = within(controlCenter).getByText("Account Close Calendar").closest('[role="listitem"]');
+    expect(roleCard).not.toBeNull();
+    expect(closeCard).not.toBeNull();
+
+    const roleDetails = within(roleCard as HTMLElement).getByText("Service details").closest("details");
+    const closeDetails = within(closeCard as HTMLElement).getByText("Service details").closest("details");
+    expect(roleDetails).not.toHaveAttribute("open");
+    expect(closeDetails).not.toHaveAttribute("open");
+    fireEvent.click(within(roleCard as HTMLElement).getByText("Service details"));
+    fireEvent.click(within(closeCard as HTMLElement).getByText("Service details"));
+    expect(within(roleCard as HTMLElement).getByRole("link", { name: "Open service details for Role and Permission Studio" })).toHaveAttribute(
       "href",
       "/api/auth/roles"
     );
-    expect(within(controlCenter).getByRole("link", { name: "Open service details for Account Close Calendar" })).toHaveAttribute(
+    expect(within(closeCard as HTMLElement).getByRole("link", { name: "Open service details for Account Close Calendar" })).toHaveAttribute(
       "href",
       "/api/workstation/operations/continuity/close-calendar"
     );
@@ -668,6 +847,23 @@ describe("SettingsScreen", () => {
     expect(within(createForm).getByLabelText("Profile-backed security display name")).toBeInTheDocument();
     expect(within(createForm).getByLabelText("Profile field Sponsor")).toBeInTheDocument();
     expect(within(createForm).getByLabelText("Profile field NAV date")).toBeInTheDocument();
+  });
+
+  it("requires destructive confirmation before rolling back an asset profile", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        securityAssetProfiles={securityAssetProfiles}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Rollback" }));
+
+    expect(apiMocks.rollbackSecurityAssetProfile).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog", { name: "Confirm asset profile rollback" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Confirm asset profile rollback to version 1" })).toBeInTheDocument();
   });
 
   it("creates profile-backed securities pinned to the approved profile version", async () => {
@@ -727,7 +923,9 @@ describe("SettingsScreen", () => {
           navDate: "2026-04-30"
         }),
         profileApproval: expect.objectContaining({
-          approvalReference: "profile:private-fund-interest:v1"
+          // The catalog's governed approval reference is copied verbatim; the write seam rejects
+          // a fabricated reference when the catalog records one.
+          approvalReference: "MERIDIAN-SEED-APPROVAL"
         })
       }),
       identifiers: [
@@ -740,6 +938,101 @@ describe("SettingsScreen", () => {
     }));
     expect(onRefresh).toHaveBeenCalledOnce();
     expect(await within(form).findByText("Security created for Meridian Private Fund I.")).toBeInTheDocument();
+  });
+
+  it("collects and submits every identifier kind the profile requires", async () => {
+    // The write seam enforces the profile's required identifier preferences at creation: a
+    // profile requiring CUSIP coverage must surface a CUSIP input and submit that identifier,
+    // or every creation fails with SM_CUSTOM_PROFILE_IDENTIFIER_COVERAGE_MISSING.
+    const user = userEvent.setup();
+    const profilesRequiringCusip: SecurityAssetProfileDefinition[] = [
+      {
+        ...securityAssetProfiles[0],
+        identifierPreferences: [
+          ...securityAssetProfiles[0].identifierPreferences,
+          { kind: "Cusip", isRequiredForClose: true, reason: "Structured strips need CUSIP coverage." }
+        ]
+      }
+    ];
+    apiMocks.createSecurityMasterEntry.mockResolvedValue({
+      securityId: "sec-private-fund-cusip",
+      displayName: "Meridian Private Fund II",
+      status: "Active",
+      classification: {
+        assetClass: "CustomAsset",
+        subType: "PrivateFundInterest",
+        primaryIdentifierKind: "InternalCode",
+        primaryIdentifierValue: "PF-II",
+        matchedIdentifierKind: null,
+        matchedIdentifierValue: null,
+        matchedProvider: null
+      },
+      economicDefinition: {
+        currency: "USD",
+        version: 1,
+        effectiveFrom: "2026-05-29T00:00:00Z",
+        effectiveTo: null,
+        subType: "PrivateFundInterest",
+        assetFamily: "AlternativeAsset",
+        issuerType: null
+      }
+    });
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        securityAssetProfiles={profilesRequiringCusip}
+      />
+    );
+
+    const form = screen.getByRole("form", { name: "Create profile-backed security" });
+    await user.type(within(form).getByLabelText("Profile-backed security display name"), "Meridian Private Fund II");
+    await user.type(within(form).getByLabelText("Profile-backed security internal code"), "PF-II");
+    await user.type(within(form).getByLabelText("Profile field Sponsor"), "Meridian GP");
+    await user.type(within(form).getByLabelText("Profile field NAV date"), "2026-04-30");
+
+    // Leaving the required CUSIP blank blocks creation before the API is called.
+    await user.click(within(form).getByRole("button", { name: /Create security/i }));
+    expect(apiMocks.createSecurityMasterEntry).not.toHaveBeenCalled();
+    expect(within(form).getByLabelText("Profile-backed security Cusip identifier")).toBeInTheDocument();
+
+    await user.type(within(form).getByLabelText("Profile-backed security Cusip identifier"), "023135106");
+    await user.click(within(form).getByRole("button", { name: /Create security/i }));
+
+    expect(apiMocks.createSecurityMasterEntry).toHaveBeenCalledWith(expect.objectContaining({
+      identifiers: [
+        expect.objectContaining({ kind: "InternalCode", value: "PF-II", isPrimary: true }),
+        expect.objectContaining({ kind: "Cusip", value: "023135106", isPrimary: false })
+      ]
+    }));
+  });
+
+  it("blocks profile-backed security creation when a numeric profile field does not parse", async () => {
+    const user = userEvent.setup();
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        securityAssetProfiles={securityAssetProfiles}
+      />
+    );
+
+    const form = screen.getByRole("form", { name: "Create profile-backed security" });
+    await user.type(within(form).getByLabelText("Profile-backed security display name"), "Meridian Private Fund I");
+    await user.type(within(form).getByLabelText("Profile-backed security internal code"), "PF-I");
+    await user.type(within(form).getByLabelText("Profile field Sponsor"), "Meridian GP");
+    await user.type(within(form).getByLabelText("Profile field NAV date"), "2026-04-30");
+    // "3.7" survives the number input's value sanitization but is not a whole number - previously
+    // Number.parseInt silently truncated it to 3 and posted that to the Security Master API. A
+    // single change event avoids per-keystroke sanitization of intermediate states.
+    fireEvent.change(within(form).getByLabelText("Profile field Vintage year"), { target: { value: "3.7" } });
+    await user.click(within(form).getByRole("button", { name: /Create security/i }));
+
+    expect(apiMocks.createSecurityMasterEntry).not.toHaveBeenCalled();
+    expect(await within(form).findByText("Correct the profile field values before creating the security.")).toBeInTheDocument();
+    expect(within(form).getByText("Vintage year: enter a whole number.")).toBeInTheDocument();
   });
 
   it("submits ledger mapping assignments with audit rationale", async () => {
@@ -848,6 +1141,9 @@ describe("SettingsScreen", () => {
     );
 
     const form = screen.getByRole("form", { name: "Create role profile" });
+    expect(within(form).getByText("Manage Direct Lending")).toBeInTheDocument();
+    expect(within(form).getByRole("option", { name: "Accounting" })).toBeInTheDocument();
+    expect(within(form).queryByText("ManageDirectLending")).not.toBeInTheDocument();
     await user.type(within(form).getByLabelText("Role profile name"), "Close Reviewer");
     await user.clear(within(form).getByLabelText("Role profile rationale"));
     await user.type(within(form).getByLabelText("Role profile rationale"), "Scoped close reviewer");
@@ -980,6 +1276,7 @@ describe("SettingsScreen", () => {
     expect(within(consoleRegion).getByText("access-audit-1")).toBeInTheDocument();
     expect(within(consoleRegion).getByText("USD 100,000")).toBeInTheDocument();
     expect(within(consoleRegion).getByText("Requester cannot approve own payment request.")).toBeInTheDocument();
+    expect(within(consoleRegion).getAllByText("Manage Direct Lending").length).toBeGreaterThan(0);
 
     const form = screen.getByRole("form", { name: "Grant scoped access assignment" });
     await waitFor(() => expect(within(form).getByLabelText("Role")).toHaveValue("Accounting"));
@@ -992,6 +1289,9 @@ describe("SettingsScreen", () => {
     });
     fireEvent.change(within(form).getByLabelText("Scoped access rationale"), { target: { value: "Grant fund close authority" } });
     await user.click(within(form).getByRole("button", { name: /Grant access/i }));
+    expect(apiMocks.createScopedAccessAssignment).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog", { name: "Confirm scoped access grant" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Confirm scoped access grant for fund-reviewer" }));
 
     expect(apiMocks.createScopedAccessAssignment).toHaveBeenCalledWith(expect.objectContaining({
       principalId: "fund-reviewer",
@@ -1011,6 +1311,9 @@ describe("SettingsScreen", () => {
     expect(within(form).getByText("Audit access-audit-2")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Revoke scoped access for fund-controller" }));
+    expect(apiMocks.revokeScopedAccessAssignment).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog", { name: "Confirm scoped access revocation" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Confirm scoped access revocation for fund-controller" }));
 
     expect(apiMocks.revokeScopedAccessAssignment).toHaveBeenCalledWith(expect.objectContaining({
       assignmentId: "access-assignment-1",
@@ -1061,6 +1364,8 @@ describe("SettingsScreen", () => {
     );
 
     const form = screen.getByRole("form", { name: "Configure approval policy rule" });
+    expect(within(form).getByLabelText("Approval policy required permission")).toHaveValue("AdminMaintenance");
+    expect(within(form).getByLabelText("Approval policy required permission")).toHaveDisplayValue("Admin Maintenance");
     fireEvent.change(within(form).getByLabelText("Approval policy reviewer role"), { target: { value: "Controller" } });
     fireEvent.change(within(form).getByLabelText("Approval policy required distinct approvals"), { target: { value: "3" } });
     fireEvent.change(within(form).getByLabelText("Approval policy evidence requirement"), {
@@ -1071,6 +1376,7 @@ describe("SettingsScreen", () => {
 
     expect(apiMocks.upsertOperationsApprovalPolicyRule).toHaveBeenCalledWith(expect.objectContaining({
       policyKey: "ready-for-close",
+      requiredPermission: "AdminMaintenance",
       reviewerRole: "Controller",
       requiredDistinctApprovals: 3,
       evidenceRequirement: "Controller packet and checklist control evidence.",
@@ -1080,6 +1386,33 @@ describe("SettingsScreen", () => {
     expect(onRefresh).toHaveBeenCalledOnce();
     expect(await within(form).findByText("Approval policy saved for Approve close.")).toBeInTheDocument();
     expect(within(form).getByText("Audit approval-policy-audit-1")).toBeInTheDocument();
+  });
+
+  it("classifies delayed Alpaca verification consistently in guided setup", () => {
+    const delayedTimestamp = new Date(Date.now() - 2 * 60 * 60 * 1_000).toISOString();
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        brokerageConnection={{ ...alpacaConnection, verifiedAt: delayedTimestamp }}
+        providerConnections={[
+          {
+            ...providerConnections[0],
+            lastVerifiedAt: delayedTimestamp,
+            lastSuccessfulAt: delayedTimestamp
+          }
+        ]}
+      />,
+      { initialEntries: ["/settings/providers/alpaca/setup"] }
+    );
+
+    const readinessChecks = screen.getByLabelText("Alpaca readiness checks");
+    expect(within(readinessChecks).getByText("Verification freshness: Delayed")).toBeInTheDocument();
+    expect(within(readinessChecks).queryByText("Verified recently: Ready")).not.toBeInTheDocument();
+    expect(screen.getByText(
+      "The last successful Alpaca verification is delayed. Re-verify before relying on readiness evidence."
+    )).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Open Trading readiness after Alpaca account verification" })).not.toBeInTheDocument();
   });
 
   it("configures account close calendar ownership with audit rationale", async () => {
@@ -1150,7 +1483,8 @@ describe("SettingsScreen", () => {
         providerRoutingBindings={providerRoutingBindings}
         providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
         onProviderRoutingRefresh={vi.fn()}
-      />
+      />,
+      { initialEntries: ["/settings/providers"] }
     );
 
     const center = screen.getByText("Provider Connection Center").closest("div");
@@ -1161,14 +1495,15 @@ describe("SettingsScreen", () => {
     expect(screen.getByRole("button", { name: "Refresh Provider Connection Center routing data" })).toBeInTheDocument();
     expect(screen.getByText("Reference data")).toBeInTheDocument();
     expect(screen.getByText("97% · Healthy")).toBeInTheDocument();
-    expect(screen.getByText("Production ready")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Open Alpaca provider connection row" })).toHaveAttribute(
+    expect(screen.getByText("Routing evidence missing")).toBeInTheDocument();
+    expect(screen.getByText("Verification required")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open guided setup for Alpaca" })).toHaveAttribute(
       "href",
-      "/settings#alpaca-provider-setup"
+      "/settings/providers/alpaca/setup"
     );
-    expect(screen.getByRole("link", { name: "Open Polygon.io provider connection row" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Open advanced controls for Polygon.io" })).toHaveAttribute(
       "href",
-      "/settings#provider-polygon-connection"
+      "/settings/providers/polygon/advanced"
     );
     expect(center).not.toHaveTextContent("endpoint-secret");
     expect(center).not.toHaveTextContent("vault:polygon/default");
@@ -1580,7 +1915,8 @@ describe("SettingsScreen", () => {
         providerRoutingConnections={providerRoutingConnections}
         providerRoutingBindings={providerRoutingBindings}
         providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
-      />
+      />,
+      { initialEntries: ["/settings/providers/polygon/advanced"] }
     );
 
     const panel = screen.getByRole("region", { name: "Polygon.io provider integration runtime evidence" });
@@ -1640,6 +1976,8 @@ describe("SettingsScreen", () => {
     await user.click(within(panel).getByRole("button", {
       name: "Create reconciliation handoff for 1 provider integration staging rows for Polygon.io"
     }));
+    expect(apiMocks.createProviderIntegrationReconciliationHandoff).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Confirm reconciliation handoff for Polygon.io" }));
 
     await waitFor(() => {
       expect(apiMocks.createProviderIntegrationReconciliationHandoff).toHaveBeenCalledWith(expect.objectContaining({
@@ -1656,6 +1994,7 @@ describe("SettingsScreen", () => {
     await user.click(within(panel).getByRole("button", {
       name: "Review quarantine record quarantine-position-1 for Polygon.io"
     }));
+    await user.click(screen.getByRole("button", { name: "Confirm ReviewOnly for quarantine record quarantine-position-1" }));
 
     await waitFor(() => {
       expect(apiMocks.resolveProviderIntegrationQuarantineRecord).toHaveBeenCalledWith(expect.objectContaining({
@@ -1686,6 +2025,8 @@ describe("SettingsScreen", () => {
     await user.click(within(panel).getByRole("button", {
       name: "Replay 2 quarantined provider integration records for Polygon.io"
     }));
+    expect(apiMocks.replayProviderIntegrationQuarantineRecords).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Confirm quarantine replay for Polygon.io" }));
 
     await waitFor(() => {
       expect(apiMocks.replayProviderIntegrationQuarantineRecords).toHaveBeenCalledWith(expect.objectContaining({
@@ -1703,6 +2044,7 @@ describe("SettingsScreen", () => {
     await user.click(within(panel).getByRole("button", {
       name: "Mark quarantine record quarantine-position-2 for replay after mapping change for Polygon.io"
     }));
+    await user.click(screen.getByRole("button", { name: "Confirm ReplayAfterMappingChange for quarantine record quarantine-position-2" }));
 
     await waitFor(() => {
       expect(apiMocks.resolveProviderIntegrationQuarantineRecord).toHaveBeenCalledWith(expect.objectContaining({
@@ -1723,6 +2065,7 @@ describe("SettingsScreen", () => {
     await user.click(within(panel).getByRole("button", {
       name: "Ignore quarantine record quarantine-position-3 for Polygon.io"
     }));
+    await user.click(screen.getByRole("button", { name: "Confirm IgnoreProviderRecord for quarantine record quarantine-position-3" }));
 
     await waitFor(() => {
       expect(apiMocks.resolveProviderIntegrationQuarantineRecord).toHaveBeenCalledWith(expect.objectContaining({
@@ -1738,6 +2081,8 @@ describe("SettingsScreen", () => {
     expect(await within(panel).findByText("Decision: Ignore provider record by Andrew Rowden · Jun 16, 12:44 UTC")).toBeInTheDocument();
 
     await user.click(within(panel).getByRole("button", { name: "Run due provider integration sync for Polygon.io" }));
+    expect(apiMocks.runDueProviderIntegrationSync).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Confirm due provider integration sync for Polygon.io" }));
 
     await waitFor(() => {
       expect(apiMocks.runDueProviderIntegrationSync).toHaveBeenCalledWith("provider-reference", expect.objectContaining({
@@ -1885,7 +2230,8 @@ describe("SettingsScreen", () => {
         providerRoutingConnections={providerRoutingConnections}
         providerRoutingBindings={providerRoutingBindings}
         providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
-      />
+      />,
+      { initialEntries: ["/settings/providers/polygon/advanced"] }
     );
 
     const workbench = screen.getByRole("region", { name: "Polygon.io guided provider integration workbench" });
@@ -1947,6 +2293,8 @@ describe("SettingsScreen", () => {
     expect(await within(workbench).findByText("Schema drift check passed.")).toBeInTheDocument();
 
     await user.click(within(workbench).getByRole("button", { name: "Activate provider integration setup for Polygon.io" }));
+    expect(apiMocks.activateProviderIntegration).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Confirm provider integration activation for Polygon.io" }));
     await waitFor(() => {
       expect(apiMocks.activateProviderIntegration).toHaveBeenCalledWith(expect.objectContaining({
         manifestId: manifest.manifestId,
@@ -1956,6 +2304,105 @@ describe("SettingsScreen", () => {
       }));
     });
     expect(await within(workbench).findByText("Provider integration activated.")).toBeInTheDocument();
+  });
+  it("blocks provider integration setup drafts with field-level issues before calling the API", async () => {
+    const user = userEvent.setup();
+    const manifest = {
+      manifestId: "template-polygon-data-v1",
+      manifestVersion: 1,
+      providerId: "polygon",
+      displayName: "Polygon positions REST",
+      integrationType: "OpenApiRest" as const,
+      environment: "paper",
+      auth: { type: "ApiKey" as const, tokenUrl: null, scopes: [], metadata: {} },
+      capabilities: [
+        {
+          capability: "Positions" as const,
+          enabled: true,
+          requiresCertifiedAdapter: false,
+          requiredCanonicalFields: []
+        }
+      ],
+      endpoints: [],
+      fieldMappings: [],
+      sync: { mode: "incremental", frequency: "daily", time: null, timezone: "America/New_York", cursorType: "Timestamp" as const, cursorField: "updatedAt", fullRefreshFrequency: null },
+      validationRules: [],
+      activation: {
+        requiresAuthenticationTest: true,
+        requiresEndpointTest: true,
+        requiresDryRun: true,
+        requiresApproval: true,
+        productionWriteCapabilitiesAllowed: false,
+        requiredIssueCodes: []
+      },
+      state: "Draft" as const,
+      createdBy: "operations",
+      createdAt: "2026-06-16T12:00:00Z",
+      approvedBy: null,
+      approvedAt: null,
+      changeReason: "Seed Polygon provider integration."
+    };
+    apiMocks.getProviderIntegrationTemplates.mockResolvedValue([
+      {
+        manifestId: manifest.manifestId,
+        providerId: "polygon",
+        displayName: "Polygon positions REST",
+        integrationType: "OpenApiRest",
+        capabilities: ["Positions"],
+        summary: "Read-only position import for reconciliation staging.",
+        requiresCredentials: true
+      }
+    ]);
+    apiMocks.getProviderIntegrationTemplate.mockResolvedValue(manifest);
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        providerConnections={providerConnections}
+        providerRoutingConnections={providerRoutingConnections}
+        providerRoutingBindings={providerRoutingBindings}
+        providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
+      />,
+      { initialEntries: ["/settings/providers/polygon/advanced"] }
+    );
+
+    const workbench = screen.getByRole("region", { name: "Polygon.io guided provider integration workbench" });
+    await user.click(within(workbench).getByRole("button", { name: "Load provider integration templates for Polygon.io" }));
+    expect(await within(workbench).findByText("1 provider integration templates loaded.")).toBeInTheDocument();
+    await user.click(within(workbench).getByRole("button", { name: "Use selected provider integration template for Polygon.io" }));
+    expect(await within(workbench).findByText("Template template-polygon-data-v1 loaded into draft setup editor.")).toBeInTheDocument();
+
+    const invalidConnection = {
+      connectionId: "provider-reference",
+      providerId: "polygon",
+      manifestId: "manifest-other",
+      connectionName: "Polygon.io reference",
+      environment: "paper",
+      state: "Draft",
+      credentialSecretRef: "",
+      enabledCapabilities: ["Positions"],
+      ownerUserId: "operations",
+      createdAt: "2026-06-16T12:00:00Z",
+      updatedAt: "2026-06-16T12:00:00Z",
+      approvalEvidenceId: null
+    };
+    fireEvent.change(within(workbench).getByLabelText("Polygon.io provider integration connection draft JSON"), {
+      target: { value: JSON.stringify(invalidConnection, null, 2) }
+    });
+
+    await user.click(within(workbench).getByRole("button", { name: "Save provider integration setup draft for Polygon.io" }));
+
+    expect(await within(workbench).findByText(
+      "Provider integration setup draft failed validation. Fix the reported fields and save again."
+    )).toBeInTheDocument();
+    expect(within(workbench).getByText(
+      "Connection credential secret reference: Connection credential secret reference is required."
+    )).toBeInTheDocument();
+    expect(within(workbench).getByText(
+      "Connection manifest id: Provider connection manifest id must match the manifest being saved."
+    )).toBeInTheDocument();
+    expect(apiMocks.saveProviderIntegrationSetup).not.toHaveBeenCalled();
   });
   it("supports inline provider edit, test, save, verify, and clear actions", async () => {
     const user = userEvent.setup();
@@ -1973,7 +2420,8 @@ describe("SettingsScreen", () => {
         providerConnections={providerConnections}
         onRefresh={onRefresh}
         onProviderRoutingRefresh={onProviderRoutingRefresh}
-      />
+      />,
+      { initialEntries: ["/settings/providers/alpaca/setup"] }
     );
 
     await user.click(screen.getByRole("button", { name: "Edit Alpaca credentials" }));
@@ -1983,6 +2431,10 @@ describe("SettingsScreen", () => {
     await user.click(screen.getByRole("button", { name: "Save Alpaca credentials" }));
     await user.click(screen.getByRole("button", { name: "Re-verify Alpaca connection" }));
     await user.click(screen.getByRole("button", { name: "Clear Alpaca credentials" }));
+
+    expect(apiMocks.deleteProviderCredentials).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog", { name: "Clear Alpaca credentials?" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Confirm credential clear for Alpaca" }));
 
     expect(apiMocks.testProviderConnection).toHaveBeenCalledWith("alpaca");
     expect(apiMocks.putProviderCredentials).toHaveBeenCalledWith(
@@ -2080,7 +2532,8 @@ describe("SettingsScreen", () => {
         session={session}
         overview={overview}
         providerConnections={quickBooksConnections}
-      />
+      />,
+      { initialEntries: ["/settings/providers/quickbooks/setup"] }
     );
 
     await user.click(screen.getByRole("button", { name: "Edit QuickBooks Online credentials" }));
@@ -2139,7 +2592,8 @@ describe("SettingsScreen", () => {
         session={session}
         overview={overview}
         providerConnections={fixtureConnections}
-      />
+      />,
+      { initialEntries: ["/settings/providers/quickbooks-fixture/setup"] }
     );
 
     await user.click(screen.getByRole("button", { name: "Edit QuickBooks Fixture credentials" }));
@@ -2156,7 +2610,8 @@ describe("SettingsScreen", () => {
         session={session}
         overview={overview}
         providerConnections={providerConnections}
-      />
+      />,
+      { initialEntries: ["/settings/providers"] }
     );
 
     fireEvent.change(screen.getByLabelText("Search providers in connection center"), { target: { value: "polygon" } });
@@ -2264,7 +2719,8 @@ describe("SettingsScreen", () => {
       />
     );
 
-    expect(screen.getByText("Alpaca paper API keys").closest("#alpaca-provider-setup")).toBeInTheDocument();
+    const alpacaPanel = screen.getByText("Alpaca paper API keys").closest("#alpaca-provider-setup");
+    expect(alpacaPanel).toBeInTheDocument();
     expect(screen.getByRole("radiogroup", { name: "Alpaca trading environment" })).toBeInTheDocument();
     const paperEndpoint = screen.getByRole("radio", { name: "Use Alpaca paper endpoint for workstation validation" });
     const liveEndpoint = screen.getByRole("radio", { name: "Use Alpaca live endpoint for production brokerage verification" });
@@ -2272,25 +2728,28 @@ describe("SettingsScreen", () => {
     expect(liveEndpoint).not.toBeChecked();
     expect(paperEndpoint).toHaveAccessibleDescription(/Paper endpoint for workstation validation.*Paper endpoint selected/s);
     expect(liveEndpoint).toHaveAccessibleDescription(/Live endpoint for production brokerage verification.*Paper endpoint selected/s);
-    expect(screen.getByText("Enter Alpaca credentials")).toBeInTheDocument();
+    expect(screen.getByText("Stored credentials active")).toBeInTheDocument();
     expect(screen.getAllByText("Key ID").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Needed").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Stored").length).toBeGreaterThan(0);
     expect(screen.getByText("********1234")).toBeInTheDocument();
     expect(screen.getByText("PA123")).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Alpaca provider setup checklist" })).toBeInTheDocument();
-    expect(screen.getByText("Move from demo data to a verified paper connection before relying on readiness evidence.")).toBeInTheDocument();
+    expect(screen.getByText("Stored paper credentials and current account verification support the readiness handoff.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open Trading readiness after Alpaca account verification" })).toHaveAttribute(
       "href",
       "/trading/readiness"
     );
     expect(screen.getByRole("button", { name: /connect and test/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /clear/i })).toBeEnabled();
-    expect(screen.getByLabelText(/Key ID/)).toHaveAccessibleDescription(/Stored values remain masked after refresh\..*Enter Alpaca credentials/s);
-    expect(screen.getByLabelText(/Secret key/)).toHaveAccessibleDescription(/Secret key is never displayed after submit\..*Enter Alpaca credentials/s);
+    expect(screen.getByLabelText(/Key ID/)).toHaveAccessibleDescription(/Stored values remain masked after refresh\..*Stored credentials active/s);
+    expect(screen.getByLabelText(/Secret key/)).toHaveAccessibleDescription(/Secret key is never displayed after submit\..*Stored credentials active/s);
     expect(screen.getByRole("button", { name: /connect and test/i })).toHaveAttribute(
       "title",
-      "Enter an Alpaca key ID before testing the connection."
+      "Enter both Alpaca credential values to replace and test the stored connection."
     );
+    const endpointDetails = within(alpacaPanel as HTMLElement).getByText("Service details").closest("details");
+    expect(endpointDetails).not.toHaveAttribute("open");
+    expect(within(alpacaPanel as HTMLElement).getByText("https://paper-api.alpaca.markets/v2")).not.toBeVisible();
   });
 
   it("renders the Robinhood read-only connection card with a connect button", () => {
@@ -2570,8 +3029,10 @@ describe("SettingsScreen", () => {
     );
   });
 
-  it("renders runtime capability toggles and sends toggle requests", async () => {
-    const onFeatureCapabilityToggle = vi.fn();
+  it("renders runtime capability toggles, confirms requests, and reports failures", async () => {
+    const onFeatureCapabilityToggle = vi.fn()
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValueOnce(new Error("Capability update failed."));
     const user = userEvent.setup();
 
     renderWithRouter(
@@ -2614,7 +3075,20 @@ describe("SettingsScreen", () => {
 
     await user.click(securityMasterToggle);
 
+    expect(onFeatureCapabilityToggle).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog", { name: "Enable Security master?" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Confirm enable Security master" }));
     expect(onFeatureCapabilityToggle).toHaveBeenCalledWith("desktop.data.security-master", true);
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Enable Security master?" })).not.toBeInTheDocument());
+
+    await user.click(securityMasterToggle);
+    const failedDialog = screen.getByRole("dialog", { name: "Enable Security master?" });
+    await user.click(within(failedDialog).getByRole("button", { name: "Confirm enable Security master" }));
+
+    expect(await within(failedDialog).findByRole("alert")).toHaveTextContent("Capability update failed.");
+    expect(failedDialog).toBeInTheDocument();
+    await waitFor(() => expect(within(failedDialog).getByRole("button", { name: "Confirm enable Security master" })).toBeEnabled());
+    expect(onFeatureCapabilityToggle).toHaveBeenCalledTimes(2);
     expect(screen.getByRole("switch", { name: "Disable Settings workspace" })).toBeDisabled();
   });
 

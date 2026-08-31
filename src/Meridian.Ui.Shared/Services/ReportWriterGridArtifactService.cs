@@ -38,8 +38,8 @@ public sealed class ReportWriterGridArtifactService
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
         ArgumentException.ThrowIfNullOrWhiteSpace(gridId);
 
-        var manifest = GetManifest(runId);
-        EnsureTemplateAccess(manifest.TemplateId, accessContext);
+        var manifest = GetManifest(runId, accessContext);
+        EnsureRunAccess(manifest, accessContext);
 
         return GetGrid(manifest, runId, gridId);
     }
@@ -55,8 +55,8 @@ public sealed class ReportWriterGridArtifactService
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
         ArgumentException.ThrowIfNullOrWhiteSpace(gridId);
 
-        var manifest = GetManifest(runId);
-        EnsureTemplateAccess(manifest.TemplateId, accessContext);
+        var manifest = GetManifest(runId, accessContext);
+        EnsureRunAccess(manifest, accessContext);
         var grid = GetGrid(manifest, runId, gridId);
         var normalizedFormat = NormalizeFormat(format);
         var safeRunId = SanitizeFileName(runId);
@@ -82,9 +82,25 @@ public sealed class ReportWriterGridArtifactService
         };
     }
 
-    private ReportingOutputManifest GetManifest(string runId) =>
-        _orchestrationService.GetManifest(runId.Trim())
-        ?? throw new KeyNotFoundException($"Reporting run '{runId}' was not found.");
+    private ReportingOutputManifest GetManifest(
+        string runId,
+        ReportAccessQueryContext? accessContext)
+    {
+        var normalizedRunId = runId.Trim();
+        var tenantId = string.IsNullOrWhiteSpace(accessContext?.TenantId)
+            ? null
+            : accessContext.TenantId.Trim();
+        if (accessContext?.RequireBoundScope == true && tenantId is null)
+        {
+            throw new UnauthorizedAccessException(
+                "Report access requires authenticated actor, tenant, and company scope.");
+        }
+
+        return (tenantId is null
+                ? _orchestrationService.GetManifest(normalizedRunId)
+                : _orchestrationService.GetManifest(tenantId, normalizedRunId))
+            ?? throw new KeyNotFoundException($"Reporting run '{runId}' was not found.");
+    }
 
     private static ReportWriterGridRenderDto GetGrid(
         ReportingOutputManifest manifest,
@@ -102,14 +118,9 @@ public sealed class ReportWriterGridArtifactService
         return EnrichGridArtifact(grid);
     }
 
-    private void EnsureTemplateAccess(string templateId, ReportAccessQueryContext? accessContext)
+    private void EnsureRunAccess(ReportingOutputManifest manifest, ReportAccessQueryContext? accessContext)
     {
-        if (_governedTemplateCatalog is null)
-        {
-            return;
-        }
-
-        var evaluation = _governedTemplateCatalog.EvaluateAccess(templateId, accessContext);
+        var evaluation = ReportAccessPolicyEvaluator.Evaluate(manifest, accessContext);
         if (!evaluation.IsAccessible)
         {
             throw new UnauthorizedAccessException(evaluation.Reason);

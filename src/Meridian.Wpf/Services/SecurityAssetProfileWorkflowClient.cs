@@ -36,18 +36,18 @@ public sealed class SecurityAssetProfileWorkflowClient : ISecurityAssetProfileWo
 
     public async Task<IReadOnlyList<SecurityAssetProfileDefinitionDto>> GetProfilesAsync(CancellationToken ct = default)
     {
-        var profiles = await _apiClient.GetAsync<SecurityAssetProfileDefinitionDto[]>(
+        var profiles = (await _apiClient.GetWithResponseAsync<SecurityAssetProfileDefinitionDto[]>(
             UiApiRoutes.SecurityMasterAssetProfiles,
-            ct).ConfigureAwait(false);
+            ct).ConfigureAwait(false)).DataOrLoggedNull("Get security asset profiles");
 
         return profiles ?? [];
     }
 
-    public Task<SecurityAssetProfileLineageDto?> GetLineageAsync(string profileId, CancellationToken ct = default)
+    public async Task<SecurityAssetProfileLineageDto?> GetLineageAsync(string profileId, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(profileId))
         {
-            return Task.FromResult<SecurityAssetProfileLineageDto?>(null);
+            return null;
         }
 
         var endpoint = UiApiRoutes.SecurityMasterAssetProfileLineage.Replace(
@@ -55,7 +55,7 @@ public sealed class SecurityAssetProfileWorkflowClient : ISecurityAssetProfileWo
             Uri.EscapeDataString(profileId.Trim()),
             StringComparison.Ordinal);
 
-        return _apiClient.GetAsync<SecurityAssetProfileLineageDto>(endpoint, ct);
+        return (await _apiClient.GetWithResponseAsync<SecurityAssetProfileLineageDto>(endpoint, ct).ConfigureAwait(false)).DataOrLoggedNull("Get asset profile lineage");
     }
 
     public Task<ApiResponse<SecurityAssetProfileGovernanceResultDto>> DraftProfileAsync(

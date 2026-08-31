@@ -28,6 +28,69 @@ This layer should support strategy research workflows without bypassing strategy
 
 Use this module for QuantScript execution, strategy scripting, and strategy analysis support.
 
+### Isolated execution boundary
+
+`ScriptRunner` never executes Roslyn or user source in the workstation/server process. Each run
+starts the dedicated `Meridian.QuantScript.Worker` sidecar under `Meridian.ProcessIsolation`
+containment. Normal build and publish targets place a complete worker artifact under
+`workers/quant-script`; missing worker/runtime artifacts or failed containment cause the run to
+fail closed.
+
+The parent and worker communicate over inherited anonymous pipes with a length-prefixed,
+versioned, bounded JSON protocol. Standard output and error are separate bounded streams and are
+not protocol channels. Host market-data access crosses only a typed `IQuantDataContext` RPC seam.
+Run parameters are restricted to null, scalar numeric/Boolean/string/character values, dates,
+timestamps, and GUIDs; arbitrary host objects and delegates fail closed at the boundary.
+Notebook continuations replay prior successful source cells in a fresh worker, so a timeout,
+cancellation, or worker crash cannot leave a live Roslyn session in the host. Replay can repeat
+external side effects from earlier cells; notebook authors should keep setup cells deterministic.
+
+The host admits at most two concurrent workers and eight queued requests by default. It kills the
+complete child tree on cancellation, timeout, protocol/output violation, aggregate memory/CPU/process
+breach, or host-data RPC quota violation. Windows Job Objects apply kill-on-close plus hard aggregate
+memory, CPU-time, and active-process limits; Linux uses aggregate `/proc` tree observation and
+recursive termination as a portable fallback. `RequireHardResourceLimits=true` fails worker startup
+outside the current Windows Job Object implementation. A deliberately escaping descendant can still
+race the short interval between process creation and containment assignment.
+
+Host-data RPC is preflighted before provider access for total calls, distinct symbols, and date
+range. Returned records are counted before JSON serialization, and source-generated JSON writes into
+a bounded stream so an oversized response is stopped before the configured aggregate response-byte
+budget can be materialized. These controls do not remove the launching user's file/network
+permissions. `EnableUnsafeScripts` remains a trust decision, and production/customer composition
+continues to reject Quant Lab pending certification of a hardened deployment profile.
+
+### Configuration
+
+`QuantLab:Enabled` controls route registration and defaults off. Runtime controls bind from the
+`QuantScript` section; invalid bounds fail options resolution. The defaults below are representative
+of the active contract (byte values are decimal JSON numbers):
+
+```json
+{
+  "QuantLab": { "Enabled": false },
+  "QuantScript": {
+    "RunTimeoutSeconds": 300,
+    "MaxWorkerMemoryBytes": 536870912,
+    "MaxMemoryDeltaBytes": 402653184,
+    "MaxWorkerCpuTimeSeconds": 60,
+    "MaxWorkerProcessCount": 1,
+    "RequireHardResourceLimits": false,
+    "MaxConcurrentWorkers": 2,
+    "MaxQueuedWorkerRequests": 8,
+    "WorkerQueueWaitTimeoutMilliseconds": 30000,
+    "MaxHostRpcCallsPerRun": 128,
+    "MaxHostRpcRecordsPerRun": 100000,
+    "MaxHostRpcResponseBytesPerRun": 8388608,
+    "MaxHostRpcSymbolsPerRun": 32,
+    "MaxHostRpcDateRangeDays": 3660,
+    "MaxWorkerProtocolBytes": 16777216,
+    "MaxWorkerStandardOutputBytes": 65536,
+    "MaxWorkerStandardErrorBytes": 65536
+  }
+}
+```
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
@@ -60,4 +123,4 @@ Keep script execution evidence-linked and avoid unvalidated promotion from strat
 ## Related docs
 
 - `docs/source/generated/source-roadmap-traceability.md`
-- `docs/plans/waves-2-4-operator-readiness-addendum.md`
+- `archive/docs/plans/waves-2-4-operator-readiness-addendum.md`

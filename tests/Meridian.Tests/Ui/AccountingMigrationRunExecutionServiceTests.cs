@@ -279,7 +279,7 @@ public sealed class AccountingMigrationRunExecutionServiceTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_UsesWorkerPlanDimensionsForDimensionalBackfill()
+    public async Task ExecuteAsync_PreservesWorkerPlanDimensionsWhenRequestSuppliesDifferentDimensions()
     {
         var artifactStore = new InMemoryAccountingMigrationRunArtifactStore();
         var workerPlans = new InMemoryAccountingMigrationRunWorkerPlanStore();
@@ -327,6 +327,11 @@ public sealed class AccountingMigrationRunExecutionServiceTests
             LedgerBookId: LedgerBookId,
             RunId: "migration-run-dimensional-worker-plan",
             CertifyOnSuccess: true,
+            Dimensions: new LedgerDimensionSetDto(
+                FundId: "default-fund",
+                BookId: LedgerBookId.ToString("D"),
+                EntityId: "untrusted-entity",
+                InvestorId: "untrusted-investor"),
             TenantId: "company-alpha",
             CompanyId: "company-alpha",
             ActionOrigin: OperationsActionOriginDto.HumanOperator,
@@ -337,6 +342,7 @@ public sealed class AccountingMigrationRunExecutionServiceTests
         result.Artifact.Dimensions!.FundId.Should().Be("default-fund");
         result.Artifact.Dimensions.BookId.Should().Be(LedgerBookId.ToString("D"));
         result.Artifact.Dimensions.EntityId.Should().Be("fund-entity-main");
+        result.Artifact.Dimensions.InvestorId.Should().Be("investor-lp-001");
         result.Artifact.Dimensions.ExternalGlDimensions.Should().ContainKey("external-company");
         result.Artifact.SourceRecordCount.Should().Be(812);
         result.Artifact.MigratedRecordCount.Should().Be(812);

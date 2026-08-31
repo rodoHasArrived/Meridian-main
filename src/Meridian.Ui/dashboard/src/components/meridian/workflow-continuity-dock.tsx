@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { ArrowRight, ChevronDown, GitBranch, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, GitBranch, SlidersHorizontal, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import "@/styles/workflow-continuity-dock.css";
 import type { AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
 import type { AppShellOperatingScopeQueryKey } from "@/app-shell.operating-scope";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export function WorkflowContinuityDock({
@@ -19,11 +18,16 @@ export function WorkflowContinuityDock({
   scopeDimensionsInEffect?: AppShellOperatingScopeQueryKey[];
 }) {
   const decision = viewModel.decisionBrief;
+  const routePathLabel = viewModel.routeLabel.split(/[?#]/, 1)[0] || "/";
   const scopeSummary = viewModel.operatingScope.items.map((item) => `${item.label} ${item.value}`).join(", ");
   const isDimensionInEffect = (id: string) =>
     !scopeDimensionsInEffect || scopeDimensionsInEffect.includes(id as AppShellOperatingScopeQueryKey);
   const [operatorFlowOpen, setOperatorFlowOpen] = useState(false);
   const toggleOperatorFlow = () => setOperatorFlowOpen((isOpen) => !isOpen);
+
+  if (viewModel.mode === "hidden") {
+    return null;
+  }
 
   return (
     <section
@@ -32,7 +36,7 @@ export function WorkflowContinuityDock({
       aria-describedby="workflow-continuity-screenreader-summary"
     >
       <p id="workflow-continuity-screenreader-summary" className="sr-only">
-        {viewModel.title}. {viewModel.summary} Current route {viewModel.routeLabel}. Next action: {viewModel.nextActionLabel}.
+        {viewModel.title}. {viewModel.summary} Current route {routePathLabel}. Next action: {viewModel.nextActionLabel}.
       </p>
       <div className="workflow-continuity-context">
         <div className="flex min-w-0 items-center gap-2">
@@ -43,9 +47,9 @@ export function WorkflowContinuityDock({
           </div>
         </div>
         <p className="sr-only">{viewModel.summary}</p>
-        <div className="workflow-continuity-meta" aria-label={`Current route ${viewModel.routeLabel}`}>
+        <div className="workflow-continuity-meta" aria-label={`Current route ${routePathLabel}`}>
           <span>{viewModel.contextValue}</span>
-          <span>{viewModel.routeLabel}</span>
+          <span>{routePathLabel}</span>
           {onEditOperatingContext ? (
             <button
               type="button"
@@ -90,36 +94,9 @@ export function WorkflowContinuityDock({
         ) : null}
       </div>
 
-      <article
-        className={cn(
-          "workflow-continuity-decision",
-          `workflow-continuity-decision-${decision.statusTone}`
-        )}
-        aria-labelledby="workflow-decision-title"
-      >
-        <div className="workflow-continuity-decision-copy">
-          <div className="workflow-continuity-decision-head">
-            <span className="eyebrow-label">{decision.label}</span>
-            <span className="workflow-continuity-decision-status">{decision.statusLabel}</span>
-          </div>
-          <h3 id="workflow-decision-title">{decision.title}</h3>
-          <p className="workflow-continuity-decision-summary">{decision.summary}</p>
-          <div className="workflow-continuity-decision-reason">
-            <span>{decision.reasonLabel}</span>
-            <span>{decision.reason}</span>
-          </div>
-          {decision.evidenceLabel ? (
-            <span className="workflow-continuity-decision-evidence">{decision.evidenceLabel}</span>
-          ) : null}
-        </div>
-        <Button asChild variant="default" size="sm" className="workflow-continuity-decision-action">
-          <Link to={decision.actionHref} aria-label={decision.actionAriaLabel}>
-            <span>{decision.actionLabel}</span>
-            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-          </Link>
-        </Button>
-      </article>
-
+      {/* The cross-workspace decision brief renders as the masthead status pill
+          (DecisionBriefPill); the dock keeps only operating context and the
+          on-demand flow details so a blocked item never repaints every route. */}
       <details
         className="workflow-continuity-operator-flow"
         aria-label={`${viewModel.primaryOperatorFlowLabel}: ${viewModel.primaryOperatorFlowSummary}`}
@@ -153,6 +130,10 @@ export function WorkflowContinuityDock({
               <span>{viewModel.primaryOperatorFlowLabel}</span>
               <span>{viewModel.primaryOperatorFlowSummary}</span>
             </p>
+            <p className="workflow-continuity-expanded-flow">
+              <span>Technical route</span>
+              <span>{viewModel.routeLabel}</span>
+            </p>
             <div className="workflow-continuity-expanded-decision" aria-label={`${decision.label} detail`}>
               <span className="workflow-continuity-decision-status">{decision.statusLabel}</span>
               <p>{decision.summary}</p>
@@ -160,26 +141,28 @@ export function WorkflowContinuityDock({
                 {viewModel.nextActionLabel}
               </Link>
             </div>
-            <nav className="workflow-continuity-steps" aria-label={viewModel.stepsLabel}>
-              {viewModel.steps.map((step) => (
-                <Link
-                  key={step.id}
-                  to={step.href}
-                  aria-label={step.ariaLabel}
-                  aria-current={step.active ? "step" : undefined}
-                  className={cn(
-                    "workflow-continuity-step focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                    `workflow-continuity-step-${step.statusTone}`,
-                    step.active && "workflow-continuity-step-active",
-                    step.next && "workflow-continuity-step-next"
-                  )}
-                >
-                  <span className="workflow-continuity-step-label">{step.label}</span>
-                  <span className="workflow-continuity-step-description">{step.description}</span>
-                  <span className="workflow-continuity-step-status">{step.statusLabel}</span>
-                </Link>
-              ))}
-            </nav>
+            {viewModel.steps.length > 0 ? (
+              <nav className="workflow-continuity-steps" aria-label={viewModel.stepsLabel}>
+                {viewModel.steps.map((step) => (
+                  <Link
+                    key={step.id}
+                    to={step.href}
+                    aria-label={step.ariaLabel}
+                    aria-current={step.active ? "step" : undefined}
+                    className={cn(
+                      "workflow-continuity-step focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                      `workflow-continuity-step-${step.statusTone}`,
+                      step.active && "workflow-continuity-step-active",
+                      step.next && "workflow-continuity-step-next"
+                    )}
+                  >
+                    <span className="workflow-continuity-step-label">{step.label}</span>
+                    <span className="workflow-continuity-step-description">{step.description}</span>
+                    <span className="workflow-continuity-step-status">{step.statusLabel}</span>
+                  </Link>
+                ))}
+              </nav>
+            ) : null}
             <nav className="workflow-continuity-steps" aria-label={viewModel.primaryOperatorFlowStepsLabel}>
               {viewModel.primaryOperatorFlowSteps.map((step) => (
                 <Link

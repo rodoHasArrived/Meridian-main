@@ -6,7 +6,9 @@ using Meridian.Core.Serialization;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
+using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
+using Meridian.Storage.Policies;
 using Meridian.Storage.Services;
 using Parquet;
 using Parquet.Data;
@@ -20,6 +22,14 @@ namespace Meridian.Storage.Sinks;
 /// Apache Parquet storage sink for high-performance columnar storage.
 /// Provides 10-20x better compression than JSONL and optimized for analytics.
 ///
+/// Deliberately KEEPS copy-on-write row-group appends (unlike the JSONL sink's persistent
+/// append streams): Parquet's footer-at-end format means a persistently open writer leaves an
+/// unreadable, footerless file after a crash, violating the published-artifact readability
+/// invariant that copy-plus-rename guarantees; part-file compaction would change the
+/// one-file-per-day contract query/export paths consume. Row-group flushes are batched and
+/// lower-cadence than the JSONL hot path, so the O(day-file) copy is the accepted cost.
+/// Revisit only with a measured need.
+///
 /// Based on: https://github.com/aloneguid/parquet-dotnet (MIT)
 /// Reference: docs/open-source-references.md #20
 /// </summary>
@@ -30,6 +40,7 @@ public sealed class ParquetStorageSink : IStorageSink
     private readonly ILogger _log = LoggingSetup.ForContext<ParquetStorageSink>();
     private readonly StorageOptions _options;
     private readonly ParquetStorageOptions _parquetOptions;
+    private readonly IStoragePolicy _policy;
     private readonly Func<string, Func<Stream, Task>, CancellationToken, Task> _writeAtomicallyAsync;
     private readonly ConcurrentDictionary<string, MarketEventBuffer> _buffers = new(StringComparer.OrdinalIgnoreCase);
     private readonly Task _flushLoopTask;
@@ -92,18 +103,26 @@ public sealed class ParquetStorageSink : IStorageSink
         new DataField<string>("Source")
     );
 
-    public ParquetStorageSink(StorageOptions options, ParquetStorageOptions? parquetOptions = null)
-        : this(options, parquetOptions, WriteAtomicallyAsync)
+    public ParquetStorageSink(
+        StorageOptions options,
+        ParquetStorageOptions? parquetOptions = null,
+        IStoragePolicy? policy = null)
+        : this(options, parquetOptions, WriteAtomicallyAsync, policy)
     {
     }
 
     internal ParquetStorageSink(
         StorageOptions options,
         ParquetStorageOptions? parquetOptions,
-        Func<string, Func<Stream, Task>, CancellationToken, Task> writeAtomicallyAsync)
+        Func<string, Func<Stream, Task>, CancellationToken, Task> writeAtomicallyAsync,
+        IStoragePolicy? policy = null)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _parquetOptions = parquetOptions ?? ParquetStorageOptions.Default;
+        // Directory layout is owned by the shared storage policy so a composite JSONL + Parquet sink
+        // converges on one directory tree for every naming convention. Falling back to a policy built
+        // from the same options keeps existing single-argument construction (and tests) working.
+        _policy = policy ?? new JsonlStoragePolicy(_options);
         _writeAtomicallyAsync = writeAtomicallyAsync ?? throw new ArgumentNullException(nameof(writeAtomicallyAsync));
 
         _flushLoopTask = RunPeriodicFlushLoopAsync(_disposalCts.Token);
@@ -287,19 +306,16 @@ public sealed class ParquetStorageSink : IStorageSink
             idx++;
         }
 
-        await _writeAtomicallyAsync(path, async tempStream =>
+        await WriteRowGroupAtomicallyAsync(path, TradeSchema, new[]
         {
-            using var groupWriter = await ParquetWriter.CreateAsync(TradeSchema, tempStream);
-            using var rowGroupWriter = groupWriter.CreateRowGroup();
-
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[0], timestamps));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[1], symbols));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[2], prices));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[3], sizes));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[4], aggressors));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[5], sequences));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[6], venues));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(TradeSchema.DataFields[7], sources));
+            new DataColumn(TradeSchema.DataFields[0], timestamps),
+            new DataColumn(TradeSchema.DataFields[1], symbols),
+            new DataColumn(TradeSchema.DataFields[2], prices),
+            new DataColumn(TradeSchema.DataFields[3], sizes),
+            new DataColumn(TradeSchema.DataFields[4], aggressors),
+            new DataColumn(TradeSchema.DataFields[5], sequences),
+            new DataColumn(TradeSchema.DataFields[6], venues),
+            new DataColumn(TradeSchema.DataFields[7], sources),
         }, ct);
     }
 
@@ -343,20 +359,17 @@ public sealed class ParquetStorageSink : IStorageSink
             idx++;
         }
 
-        await _writeAtomicallyAsync(path, async tempStream =>
+        await WriteRowGroupAtomicallyAsync(path, QuoteSchema, new[]
         {
-            using var groupWriter = await ParquetWriter.CreateAsync(QuoteSchema, tempStream);
-            using var rowGroupWriter = groupWriter.CreateRowGroup();
-
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[0], timestamps));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[1], symbols));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[2], bidPrices));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[3], bidSizes));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[4], askPrices));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[5], askSizes));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[6], spreads));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[7], sequences));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(QuoteSchema.DataFields[8], sources));
+            new DataColumn(QuoteSchema.DataFields[0], timestamps),
+            new DataColumn(QuoteSchema.DataFields[1], symbols),
+            new DataColumn(QuoteSchema.DataFields[2], bidPrices),
+            new DataColumn(QuoteSchema.DataFields[3], bidSizes),
+            new DataColumn(QuoteSchema.DataFields[4], askPrices),
+            new DataColumn(QuoteSchema.DataFields[5], askSizes),
+            new DataColumn(QuoteSchema.DataFields[6], spreads),
+            new DataColumn(QuoteSchema.DataFields[7], sequences),
+            new DataColumn(QuoteSchema.DataFields[8], sources),
         }, ct);
     }
 
@@ -371,51 +384,48 @@ public sealed class ParquetStorageSink : IStorageSink
         if (snapshots.Count is 0)
             return;
 
-        await _writeAtomicallyAsync(path, async tempStream =>
+        var count = snapshots.Count;
+        var timestamps = new DateTime[count];
+        var symbols = new string[count];
+        var bidCounts = new int[count];
+        var askCounts = new int[count];
+        var bestBids = new decimal[count];
+        var bestAsks = new decimal[count];
+        var spreads = new decimal?[count];
+        var seqNums = new long[count];
+        var sources = new string[count];
+        var bidsJson = new string[count];
+        var asksJson = new string[count];
+
+        for (var i = 0; i < count; i++)
         {
-            using var groupWriter = await ParquetWriter.CreateAsync(L2Schema, tempStream);
-            using var rowGroupWriter = groupWriter.CreateRowGroup();
+            var (evt, snap, seq) = snapshots[i];
+            timestamps[i] = evt.Timestamp.UtcDateTime;
+            symbols[i] = evt.EffectiveSymbol;
+            bidCounts[i] = snap.Bids?.Count ?? 0;
+            askCounts[i] = snap.Asks?.Count ?? 0;
+            bestBids[i] = snap.Bids is { Count: > 0 } bids ? bids[0].Price : 0m;
+            bestAsks[i] = snap.Asks is { Count: > 0 } asks ? asks[0].Price : 0m;
+            spreads[i] = ComputeSpread(snap);
+            seqNums[i] = seq;
+            sources[i] = evt.Source;
+            bidsJson[i] = JsonSerializer.Serialize(snap.Bids ?? EmptyBookLevels, MarketDataJsonContext.HighPerformanceOptions);
+            asksJson[i] = JsonSerializer.Serialize(snap.Asks ?? EmptyBookLevels, MarketDataJsonContext.HighPerformanceOptions);
+        }
 
-            var count = snapshots.Count;
-            var timestamps = new DateTime[count];
-            var symbols = new string[count];
-            var bidCounts = new int[count];
-            var askCounts = new int[count];
-            var bestBids = new decimal[count];
-            var bestAsks = new decimal[count];
-            var spreads = new decimal?[count];
-            var seqNums = new long[count];
-            var sources = new string[count];
-            var bidsJson = new string[count];
-            var asksJson = new string[count];
-
-            for (var i = 0; i < count; i++)
-            {
-                var (evt, snap, seq) = snapshots[i];
-                timestamps[i] = evt.Timestamp.UtcDateTime;
-                symbols[i] = evt.EffectiveSymbol;
-                bidCounts[i] = snap.Bids?.Count ?? 0;
-                askCounts[i] = snap.Asks?.Count ?? 0;
-                bestBids[i] = snap.Bids is { Count: > 0 } bids ? bids[0].Price : 0m;
-                bestAsks[i] = snap.Asks is { Count: > 0 } asks ? asks[0].Price : 0m;
-                spreads[i] = ComputeSpread(snap);
-                seqNums[i] = seq;
-                sources[i] = evt.Source;
-                bidsJson[i] = JsonSerializer.Serialize(snap.Bids ?? EmptyBookLevels, MarketDataJsonContext.HighPerformanceOptions);
-                asksJson[i] = JsonSerializer.Serialize(snap.Asks ?? EmptyBookLevels, MarketDataJsonContext.HighPerformanceOptions);
-            }
-
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[0], timestamps));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[1], symbols));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[2], bidCounts));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[3], askCounts));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[4], bestBids));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[5], bestAsks));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[6], spreads));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[7], seqNums));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[8], sources));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[9], bidsJson));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(L2Schema.DataFields[10], asksJson));
+        await WriteRowGroupAtomicallyAsync(path, L2Schema, new[]
+        {
+            new DataColumn(L2Schema.DataFields[0], timestamps),
+            new DataColumn(L2Schema.DataFields[1], symbols),
+            new DataColumn(L2Schema.DataFields[2], bidCounts),
+            new DataColumn(L2Schema.DataFields[3], askCounts),
+            new DataColumn(L2Schema.DataFields[4], bestBids),
+            new DataColumn(L2Schema.DataFields[5], bestAsks),
+            new DataColumn(L2Schema.DataFields[6], spreads),
+            new DataColumn(L2Schema.DataFields[7], seqNums),
+            new DataColumn(L2Schema.DataFields[8], sources),
+            new DataColumn(L2Schema.DataFields[9], bidsJson),
+            new DataColumn(L2Schema.DataFields[10], asksJson),
         }, ct);
     }
 
@@ -473,35 +483,32 @@ public sealed class ParquetStorageSink : IStorageSink
             idx++;
         }
 
-        await _writeAtomicallyAsync(path, async tempStream =>
+        await WriteRowGroupAtomicallyAsync(path, BarSchema, new[]
         {
-            using var groupWriter = await ParquetWriter.CreateAsync(BarSchema, tempStream);
-            using var rowGroupWriter = groupWriter.CreateRowGroup();
-
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[0], timestamps));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[1], symbols));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[2], opens));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[3], highs));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[4], lows));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[5], closes));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[6], volumes));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[7], sequences));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(BarSchema.DataFields[8], sources));
+            new DataColumn(BarSchema.DataFields[0], timestamps),
+            new DataColumn(BarSchema.DataFields[1], symbols),
+            new DataColumn(BarSchema.DataFields[2], opens),
+            new DataColumn(BarSchema.DataFields[3], highs),
+            new DataColumn(BarSchema.DataFields[4], lows),
+            new DataColumn(BarSchema.DataFields[5], closes),
+            new DataColumn(BarSchema.DataFields[6], volumes),
+            new DataColumn(BarSchema.DataFields[7], sequences),
+            new DataColumn(BarSchema.DataFields[8], sources),
         }, ct);
     }
 
+    // Generic (non-specialised) events are written as JSON strings in a simple schema
+    private static readonly ParquetSchema GenericSchema = new(
+        new DataField<DateTime>("Timestamp"),
+        new DataField<string>("Symbol"),
+        new DataField<string>("Type"),
+        new DataField<string>("PayloadJson"),
+        new DataField<long>("Sequence"),
+        new DataField<string>("Source")
+    );
+
     private async Task WriteGenericEventsAsync(string path, IReadOnlyList<MarketEvent> events, CancellationToken ct)
     {
-        // For generic events, write as JSON strings in a simple schema
-        var genericSchema = new ParquetSchema(
-            new DataField<DateTime>("Timestamp"),
-            new DataField<string>("Symbol"),
-            new DataField<string>("Type"),
-            new DataField<string>("PayloadJson"),
-            new DataField<long>("Sequence"),
-            new DataField<string>("Source")
-        );
-
         var count = events.Count;
         var timestamps = new DateTime[count];
         var symbols = new string[count];
@@ -521,89 +528,150 @@ public sealed class ParquetStorageSink : IStorageSink
             sources[i] = e.Source;
         }
 
-        await _writeAtomicallyAsync(path, async tempStream =>
+        await WriteRowGroupAtomicallyAsync(path, GenericSchema, new[]
         {
-            using var groupWriter = await ParquetWriter.CreateAsync(genericSchema, tempStream);
-            using var rowGroupWriter = groupWriter.CreateRowGroup();
-
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[0], timestamps));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[1], symbols));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[2], types));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[3], payloads));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[4], sequences));
-            await rowGroupWriter.WriteColumnAsync(new DataColumn(genericSchema.DataFields[5], sources));
+            new DataColumn(GenericSchema.DataFields[0], timestamps),
+            new DataColumn(GenericSchema.DataFields[1], symbols),
+            new DataColumn(GenericSchema.DataFields[2], types),
+            new DataColumn(GenericSchema.DataFields[3], payloads),
+            new DataColumn(GenericSchema.DataFields[4], sequences),
+            new DataColumn(GenericSchema.DataFields[5], sources),
         }, ct);
     }
 
     /// <summary>
-    /// Writes Parquet data atomically using a temp-file-then-rename strategy.
-    /// Prevents partially written files from appearing at the destination on crash or I/O error.
+    /// Writes Parquet data atomically using the shared <see cref="AtomicFileWriter"/> durable
+    /// write path (temp file, fsync, rename, directory fsync). Prevents partially written or
+    /// non-durable files from appearing at the destination on crash or I/O error.
     /// </summary>
-    private static async Task WriteAtomicallyAsync(string path, Func<Stream, Task> writeAsync, CancellationToken ct = default)
+    private static Task WriteAtomicallyAsync(string path, Func<Stream, Task> writeAsync, CancellationToken ct = default)
     {
-        ct.ThrowIfCancellationRequested();
-        var tempPath = GetAtomicTempPath(path);
+        return AtomicFileWriter.WriteStreamAsync(path, writeAsync, ct);
+    }
+
+    /// <summary>
+    /// Appends one row group to the deterministic per-day file. Same-day flushes share a file
+    /// path, so the existing file's bytes are copied into the atomic temp file and the new row
+    /// group is appended — replacing the file outright would erase every earlier flush of the
+    /// day. An existing file that is unreadable or has an incompatible schema is quarantined
+    /// (never overwritten) and a fresh file is written in its place.
+    /// </summary>
+    private async Task WriteRowGroupAtomicallyAsync(
+        string path,
+        ParquetSchema schema,
+        IReadOnlyList<DataColumn> columns,
+        CancellationToken ct)
+    {
+        var appendToExisting = File.Exists(path) && await CanAppendToExistingFileAsync(path, schema, ct).ConfigureAwait(false);
+
+        await _writeAtomicallyAsync(path, async tempStream =>
+        {
+            if (appendToExisting)
+            {
+                await using (var existing = new FileStream(
+                    path,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read,
+                    bufferSize: 65536,
+                    FileOptions.Asynchronous))
+                {
+                    await existing.CopyToAsync(tempStream, 65536, ct).ConfigureAwait(false);
+                }
+            }
+
+            using var groupWriter = await ParquetWriter.CreateAsync(schema, tempStream, append: appendToExisting).ConfigureAwait(false);
+            // Honour the configured compression method (previously ignored, so every file was written
+            // with the Parquet default regardless of ParquetStorageOptions.CompressionMethod).
+            groupWriter.CompressionMethod = _parquetOptions.CompressionMethod;
+            using var rowGroupWriter = groupWriter.CreateRowGroup();
+
+            foreach (var column in columns)
+            {
+                await rowGroupWriter.WriteColumnAsync(column).ConfigureAwait(false);
+            }
+        }, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Validates that the existing file at <paramref name="path"/> is a readable Parquet file
+    /// whose schema matches the row group about to be appended. On mismatch or corruption the
+    /// file is quarantined so its bytes are preserved for manual recovery.
+    /// </summary>
+    private async Task<bool> CanAppendToExistingFileAsync(string path, ParquetSchema schema, CancellationToken ct)
+    {
         try
         {
+            await using (var stream = new FileStream(
+                path,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                bufferSize: 65536,
+                FileOptions.Asynchronous))
             {
-                await using var tempStream = new FileStream(
-                    tempPath,
-                    FileMode.Create,
-                    FileAccess.Write,
-                    FileShare.None,
-                    bufferSize: 65536,
-                    FileOptions.Asynchronous);
-                await writeAsync(tempStream);
+                using var reader = await ParquetReader.CreateAsync(stream, cancellationToken: ct).ConfigureAwait(false);
+                if (reader.Schema.Equals(schema))
+                    return true;
             }
-            ct.ThrowIfCancellationRequested();
-            File.Move(tempPath, path, overwrite: true);
+
+            _log.Warning("Existing Parquet file {Path} has an incompatible schema; quarantining it before writing a fresh file", path);
         }
-        catch
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
-            TryDeleteTempFile(tempPath);
             throw;
         }
+        catch (Exception ex)
+        {
+            _log.Warning(ex, "Existing Parquet file {Path} is unreadable; quarantining it before writing a fresh file", path);
+        }
+
+        QuarantineExistingFile(path);
+        return false;
     }
 
-    private static string GetAtomicTempPath(string destinationPath)
+    private void QuarantineExistingFile(string path)
     {
-        var directory = Path.GetDirectoryName(destinationPath) ?? ".";
-        var fileName = Path.GetFileName(destinationPath);
-        return Path.Combine(directory, $".{fileName}.{Guid.NewGuid():N}.tmp");
-    }
-
-    private static void TryDeleteTempFile(string path)
-    {
+        var quarantinePath = $"{path}.corrupt-{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}";
         try
         {
-            if (File.Exists(path))
-                File.Delete(path);
+            File.Move(path, quarantinePath);
+            _log.Error("Quarantined incompatible Parquet file to {QuarantinePath}; a fresh file will be written at {Path}", quarantinePath, path);
         }
-        catch
+        catch (Exception ex)
         {
-            // best-effort: do not mask the original exception
+            // If the quarantine move fails, refuse to continue — overwriting the existing
+            // file would destroy data that could not be preserved. The flush restores the
+            // buffered events and retries later.
+            throw new IOException($"Failed to quarantine incompatible Parquet file '{path}'.", ex);
         }
     }
 
     private string GetBufferKey(MarketEvent evt)
     {
-        return $"{evt.EffectiveSymbol}_{evt.Type}_{evt.Timestamp.Date:yyyyMMdd}";
+        // Key each buffer by its full destination path so every event in a buffer maps to exactly
+        // one output file. Keying only by symbol/type/date would co-mingle events the policy routes
+        // to different directories (BySource/ByAssetClass/Hierarchical/Canonical); the flush writes
+        // the whole drained buffer to GetFilePath(events[0]), so those events would be misplaced
+        // into the first event's directory and diverge from the JSONL layout.
+        return GetFilePath(evt);
     }
 
     private string GetFilePath(MarketEvent evt)
     {
         var date = evt.Timestamp.Date;
         var typeName = evt.Type.ToString().ToLowerInvariant();
-        var effectiveSymbol = evt.EffectiveSymbol;
-        var fileName = $"{effectiveSymbol}_{typeName}_{date:yyyyMMdd}.parquet";
+        var fileName = $"{evt.EffectiveSymbol}_{typeName}_{date:yyyyMMdd}.parquet";
 
-        return _options.NamingConvention switch
-        {
-            FileNamingConvention.BySymbol => Path.Combine(_options.RootPath, effectiveSymbol, fileName),
-            FileNamingConvention.ByDate => Path.Combine(_options.RootPath, $"{date:yyyy}", $"{date:MM}", $"{date:dd}", fileName),
-            FileNamingConvention.ByType => Path.Combine(_options.RootPath, typeName, fileName),
-            _ => Path.Combine(_options.RootPath, fileName)
-        };
+        // Delegate the directory layout to the shared storage policy so every naming convention is
+        // honored identically to the JSONL sink. Previously only BySymbol/ByDate/ByType were handled
+        // and the remaining conventions (BySource, ByAssetClass, Hierarchical, Canonical) silently
+        // collapsed to a flat root, diverging from a co-located JSONL sink. The Parquet-specific
+        // file name and .parquet extension are retained; only the directory comes from the policy.
+        var directory = Path.GetDirectoryName(_policy.GetPath(evt));
+        return string.IsNullOrEmpty(directory)
+            ? Path.Combine(_options.RootPath, fileName)
+            : Path.Combine(directory, fileName);
     }
 
     public async ValueTask DisposeAsync()
@@ -668,11 +736,6 @@ public sealed class ParquetStorageOptions
     /// Compression method for Parquet files.
     /// </summary>
     public CompressionMethod CompressionMethod { get; init; } = CompressionMethod.Snappy;
-
-    /// <summary>
-    /// Row group size for Parquet files.
-    /// </summary>
-    public int RowGroupSize { get; init; } = 50000;
 
     public static ParquetStorageOptions Default => new();
 

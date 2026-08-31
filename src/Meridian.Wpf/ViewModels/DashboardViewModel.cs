@@ -84,6 +84,21 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
 
     public string HoldingsSnapshotCountText => $"{HoldingsSnapshotItems.Count:N0} holdings";
 
+    // ── Data-provenance badge (persistent, non-dismissable) ───────────────────────
+    // Same signal the browser client renders (components/meridian/data-provenance-banner.tsx),
+    // styled by the shared DataProvenanceBadge* resources. Whenever the workstation is showing
+    // seeded or fallback data the operator keeps seeing the label; it is never dismissable. Real
+    // data hides the badge.
+
+    private bool _isDataProvenanceBadgeVisible;
+    public bool IsDataProvenanceBadgeVisible { get => _isDataProvenanceBadgeVisible; private set => SetProperty(ref _isDataProvenanceBadgeVisible, value); }
+
+    private string _dataProvenanceBadgeLabel = string.Empty;
+    public string DataProvenanceBadgeLabel { get => _dataProvenanceBadgeLabel; private set => SetProperty(ref _dataProvenanceBadgeLabel, value); }
+
+    private string _dataProvenanceBadgeDetail = string.Empty;
+    public string DataProvenanceBadgeDetail { get => _dataProvenanceBadgeDetail; private set => SetProperty(ref _dataProvenanceBadgeDetail, value); }
+
     // ── Metric-card properties ────────────────────────────────────────────────────
 
     private string _publishedCount = "0";
@@ -405,6 +420,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         _connectionService.LatencyUpdated += OnLatencyUpdated;
         _statusService.LiveStatusReceived += OnLiveStatusReceived;
         _statusService.BackendReachabilityChanged += OnBackendReachabilityChanged;
+        Meridian.Ui.Services.Services.FixtureModeDetector.Instance.ModeChanged += OnFixtureModeChanged;
 
         // Create timers (DispatcherTimer must be created on the UI thread).
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
@@ -414,98 +430,18 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         _activityPollTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
         _activityPollTimer.Tick += OnActivityPollTimerTick;
 
-        SeedOperationalDashboardData();
+        InitializeOperationalDashboardEmptyState();
+        UpdateDataProvenanceBadge();
     }
 
-    private void SeedOperationalDashboardData()
+    private void InitializeOperationalDashboardEmptyState()
     {
-        var mutedBrush = _secondaryTextBrush;
-        var purpleBrush = (Brush)System.Windows.Application.Current.Resources["AccentPurpleBrush"];
-        var cyanBrush = (Brush)System.Windows.Application.Current.Resources["AccentCyanBrush"];
-        var successBackground = (Brush)System.Windows.Application.Current.Resources["BadgeSuccessBackgroundBrush"];
-        var successBorder = (Brush)System.Windows.Application.Current.Resources["BadgeSuccessBorderBrush"];
-        var warningBackground = (Brush)System.Windows.Application.Current.Resources["BadgeWarningBackgroundBrush"];
-        var warningBorder = (Brush)System.Windows.Application.Current.Resources["BadgeWarningBorderBrush"];
-        var dangerBackground = (Brush)System.Windows.Application.Current.Resources["BadgeDangerBackgroundBrush"];
-        var dangerBorder = (Brush)System.Windows.Application.Current.Resources["BadgeDangerBorderBrush"];
-        var infoBackground = (Brush)System.Windows.Application.Current.Resources["BadgeInfoBackgroundBrush"];
-        var infoBorder = (Brush)System.Windows.Application.Current.Resources["BadgeInfoBorderBrush"];
-
         OperationsMetrics.Clear();
-        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Holdings in Scope", Value = "24,816", Detail = "+128 validated this month", AccentBrush = _infoBrush });
-        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Quality Exceptions", Value = "37", Detail = "12 high priority", AccentBrush = _warningBrush });
-        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Ratings Gaps", Value = "14", Detail = "NAIC/S&P/Moody's mapping", AccentBrush = purpleBrush });
-        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Latest Custodian File", Value = "7:42 AM", Detail = "12,480 holdings processed", AccentBrush = cyanBrush });
-        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Holdings Reconciled", Value = "98.7%", Detail = "Across current portfolio", AccentBrush = _successBrush });
-        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Stale Valuations", Value = "22", Detail = "Older than pricing tolerance", AccentBrush = mutedBrush });
-        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Filing Data Gaps", Value = "9", Detail = "NAIC fields required", AccentBrush = _errorBrush });
-        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Maturity Watch", Value = "46", Detail = "Next 90 days", AccentBrush = _infoBrush });
-
         DataQualityCategories.Clear();
-        DataQualityCategories.Add(new DashboardDataQualityCategoryItem { Category = "Security master", Count = "12", Detail = "Identifier, issuer, or terms exceptions", Completion = 93, StatusBrush = _warningBrush });
-        DataQualityCategories.Add(new DashboardDataQualityCategoryItem { Category = "Ratings coverage", Count = "14", Detail = "NAIC/S&P/Moody's/Fitch mappings pending", Completion = 88, StatusBrush = purpleBrush });
-        DataQualityCategories.Add(new DashboardDataQualityCategoryItem { Category = "Valuation freshness", Count = "22", Detail = "Prices older than tolerance", Completion = 91, StatusBrush = mutedBrush });
-        DataQualityCategories.Add(new DashboardDataQualityCategoryItem { Category = "Ledger export readiness", Count = "3", Detail = "Fields blocked from downstream export", Completion = 98, StatusBrush = _successBrush });
-
         UpcomingMaturities.Clear();
-        UpcomingMaturities.Add(new DashboardUpcomingMaturityItem { Issuer = "US Treasury", MaturityDate = "2026-05-15", ParValue = "$18.2M", Status = "Cash ready", StatusBrush = _successBrush });
-        UpcomingMaturities.Add(new DashboardUpcomingMaturityItem { Issuer = "Federal Home Loan Bank", MaturityDate = "2026-06-03", ParValue = "$9.8M", Status = "Ops review", StatusBrush = _warningBrush });
-        UpcomingMaturities.Add(new DashboardUpcomingMaturityItem { Issuer = "JP Morgan Chase", MaturityDate = "2026-06-18", ParValue = "$7.5M", Status = "Cash ready", StatusBrush = _successBrush });
-        UpcomingMaturities.Add(new DashboardUpcomingMaturityItem { Issuer = "FNMA Pool", MaturityDate = "2026-07-01", ParValue = "$6.4M", Status = "Term gap", StatusBrush = _errorBrush });
-
         HoldingsSnapshotItems.Clear();
-        HoldingsSnapshotItems.Add(CreateHolding("91282CJN2", "US Treasury", "Treasury Note", "Bond", "AA+ / Aaa", "4.125%", "2028-01-31", "$32.0M", "$31.7M", "$32.4M", "+$0.7M", _successBrush, "Current", successBackground, successBorder, _successBrush));
-        HoldingsSnapshotItems.Add(CreateHolding("3130ATUC9", "Federal Home Loan Bank", "Callable Agency Note", "Agency", "AA+ / Aaa", "5.000%", "2029-06-14", "$18.5M", "$18.6M", "$18.2M", "-$0.4M", _errorBrush, "Needs review", warningBackground, warningBorder, _warningBrush));
-        HoldingsSnapshotItems.Add(CreateHolding("46647PBB1", "JP Morgan Chase", "Senior Unsecured Note", "Corporate", "A- / A1", "4.950%", "2030-07-22", "$11.0M", "$10.8M", "$11.3M", "+$0.5M", _successBrush, "Current", successBackground, successBorder, _successBrush));
-        HoldingsSnapshotItems.Add(CreateHolding("02007LAB3", "Ally Auto Receivables", "Auto Loan ABS 2024-A A3", "ABS", "AAA / Aaa", "5.310%", "2029-11-15", "$8.6M", "$8.5M", "$8.5M", "+$0.0M", _successBrush, "New lot", infoBackground, infoBorder, cyanBrush));
-        HoldingsSnapshotItems.Add(CreateHolding("61747YFG5", "Morgan Stanley", "Subordinated Note", "Corporate", "BBB+ / A3", "4.210%", "2034-04-20", "$7.2M", "$7.1M", "$6.9M", "-$0.2M", _errorBrush, "Stale price", warningBackground, warningBorder, _warningBrush));
-        HoldingsSnapshotItems.Add(CreateHolding("17327CAN3", "Citigroup", "Fixed-to-Float Note", "Corporate", "BBB / Baa1", "6.270%", "2036-02-13", "$6.8M", "$6.7M", "$6.6M", "-$0.1M", _errorBrush, "Current", successBackground, successBorder, _successBrush));
-        HoldingsSnapshotItems.Add(CreateHolding("3622ABCD4", "GNMA Pool", "Mortgage Pass-Through", "MBS", "AA+ / Aaa", "3.500%", "2042-09-20", "$5.9M", "$5.6M", "$5.4M", "-$0.2M", _errorBrush, "Data gap", dangerBackground, dangerBorder, _errorBrush));
-        HoldingsSnapshotItems.Add(CreateHolding("78467VAF9", "SPDR S&P 500 ETF", "Common ETF Holding", "Equity", "N/A", "--", "--", "$4.2M", "$4.0M", "$4.5M", "+$0.5M", _successBrush, "Locked", infoBackground, infoBorder, purpleBrush));
-
         PortfolioDataServiceStatuses.Clear();
-        PortfolioDataServiceStatuses.Add(new DashboardServiceStatusItem { ServiceName = "Pricing coverage", State = "current", StatusBrush = _successBrush });
-        PortfolioDataServiceStatuses.Add(new DashboardServiceStatusItem { ServiceName = "Security master", State = "clear", StatusBrush = _successBrush });
-        PortfolioDataServiceStatuses.Add(new DashboardServiceStatusItem { ServiceName = "Ledger export", State = "ready", StatusBrush = _successBrush });
-        PortfolioDataServiceStatuses.Add(new DashboardServiceStatusItem { ServiceName = "Reference data", State = "synced", StatusBrush = _infoBrush });
     }
-
-    private static DashboardHoldingSnapshotItem CreateHolding(
-        string cusip,
-        string issuer,
-        string description,
-        string assetClass,
-        string rating,
-        string coupon,
-        string maturity,
-        string parValue,
-        string bookValue,
-        string marketValue,
-        string valuationDelta,
-        Brush valuationDeltaBrush,
-        string dataStatus,
-        Brush dataStatusBackground,
-        Brush dataStatusBorderBrush,
-        Brush dataStatusForeground) =>
-        new()
-        {
-            Cusip = cusip,
-            Issuer = issuer,
-            Description = description,
-            AssetClass = assetClass,
-            Rating = rating,
-            Coupon = coupon,
-            Maturity = maturity,
-            ParValue = parValue,
-            BookValue = bookValue,
-            MarketValue = marketValue,
-            ValuationDelta = valuationDelta,
-            ValuationDeltaBrush = valuationDeltaBrush,
-            DataStatus = dataStatus,
-            DataStatusBackground = dataStatusBackground,
-            DataStatusBorderBrush = dataStatusBorderBrush,
-            DataStatusForeground = dataStatusForeground
-        };
 
     // ── Lifecycle (called by the Page) ────────────────────────────────────────────
 
@@ -553,6 +489,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         _connectionService.LatencyUpdated -= OnLatencyUpdated;
         _statusService.LiveStatusReceived -= OnLiveStatusReceived;
         _statusService.BackendReachabilityChanged -= OnBackendReachabilityChanged;
+        Meridian.Ui.Services.Services.FixtureModeDetector.Instance.ModeChanged -= OnFixtureModeChanged;
     }
 
     // ── Service event handlers ────────────────────────────────────────────────────
@@ -569,6 +506,33 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
 
             UpdateStaleIndicator(e.IsStale);
         });
+    }
+
+    private void OnFixtureModeChanged(object? sender, EventArgs e)
+        => _ = System.Windows.Application.Current.Dispatcher.InvokeAsync(UpdateDataProvenanceBadge);
+
+    /// <summary>
+    /// Maps the current fixture/offline posture onto the shared <see cref="DataProvenance"/> badge so
+    /// seeded or fallback data is always labeled. Real (live) data hides the badge entirely.
+    /// </summary>
+    private void UpdateDataProvenanceBadge()
+    {
+        var detector = Meridian.Ui.Services.Services.FixtureModeDetector.Instance;
+        var provenance = detector.ModeKind switch
+        {
+            Meridian.Ui.Services.Services.FixtureModeKind.Fixture => Meridian.Contracts.Operations.DataProvenance.Seeded,
+            Meridian.Ui.Services.Services.FixtureModeKind.Offline => Meridian.Contracts.Operations.DataProvenance.Sample,
+            // A connected backend that reports seeded/simulated data keeps the badge on;
+            // the token fails closed to Simulated when unrecognized (W9-TRUTH-001).
+            _ when detector.ServerDataProvenanceToken is { } token =>
+                Meridian.Contracts.Operations.DataProvenanceExtensions.ParseTokenOrSimulated(token),
+            _ => Meridian.Contracts.Operations.DataProvenance.Real
+        };
+
+        var badge = Meridian.Contracts.Operations.DataProvenanceBadge.TryCreate(provenance);
+        IsDataProvenanceBadgeVisible = badge is not null;
+        DataProvenanceBadgeLabel = badge?.Label ?? string.Empty;
+        DataProvenanceBadgeDetail = badge?.Detail ?? string.Empty;
     }
 
     private void OnBackendReachabilityChanged(object? sender, bool isReachable)

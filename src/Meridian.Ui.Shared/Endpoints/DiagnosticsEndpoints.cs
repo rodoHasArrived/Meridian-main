@@ -1,14 +1,15 @@
-using System.Text.Json;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Meridian.Core.Config;
-using Meridian.Contracts.Coordination;
+using System.Text.Json;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.Services;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Coordination;
 using Meridian.Contracts.Monitoring;
+using Meridian.Core.Config;
 using Meridian.Core.Diagnostics;
+using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Platform.Diagnostics;
 using Meridian.Storage;
@@ -47,6 +48,7 @@ public static class DiagnosticsEndpoints
             }, jsonOptions);
         })
         .WithName("RunDiagnosticsDryRun")
+        .RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200)
         .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -65,7 +67,7 @@ public static class DiagnosticsEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetDiagnosticsProviders")
+        .WithName("GetDiagnosticsProviders").RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200);
 
         // Storage diagnostics
@@ -115,7 +117,7 @@ public static class DiagnosticsEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetDiagnosticsStorage")
+        .WithName("GetDiagnosticsStorage").RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200);
 
         // Config diagnostics
@@ -141,7 +143,7 @@ public static class DiagnosticsEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetDiagnosticsConfig")
+        .WithName("GetDiagnosticsConfig").RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200);
 
         // Diagnostic bundle
@@ -161,7 +163,7 @@ public static class DiagnosticsEndpoints
                 message = result.Message
             }, jsonOptions);
         })
-        .WithName("GetDiagnosticsBundle")
+        .WithName("GetDiagnosticsBundle").RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200)
         .Produces(503);
 
@@ -268,7 +270,7 @@ public static class DiagnosticsEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetDiagnosticsMetrics")
+        .WithName("GetDiagnosticsMetrics").RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200);
 
         // Validate (generic validation)
@@ -290,6 +292,7 @@ public static class DiagnosticsEndpoints
             }, jsonOptions);
         })
         .WithName("RunDiagnosticsValidate")
+        .RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -301,17 +304,35 @@ public static class DiagnosticsEndpoints
 
             var provider = registry.GetAllProviders()
                 .FirstOrDefault(p => string.Equals(p.Name, providerName, StringComparison.OrdinalIgnoreCase));
+            var diagnostics = provider is null
+                ? null
+                : ProviderConnectionDiagnosticsProjection.Find(
+                    ProviderConnectionDiagnosticsProjection.BuildByProviderId(registry),
+                    provider.Name,
+                    provider.DisplayName);
 
             return Results.Json(new
             {
                 provider = providerName,
                 found = provider is not null,
                 isEnabled = provider?.IsEnabled ?? false,
-                reachable = provider?.IsEnabled ?? false,
+                reachable = provider is null
+                    ? (bool?)null
+                    : ProviderExtendedEndpoints.ResolveIsConnected(
+                        provider.IsEnabled,
+                        diagnostics?.IsConnected),
+                connectionState = provider is null
+                    ? "not-found"
+                    : ProviderExtendedEndpoints.ResolveConnectionState(
+                        provider.IsEnabled,
+                        diagnostics?.LifecycleState,
+                        diagnostics?.IsConnected),
+                diagnosticsAvailable = diagnostics is not null,
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
         .WithName("TestDiagnosticsProvider")
+        .RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -329,7 +350,7 @@ public static class DiagnosticsEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetDiagnosticsQuickCheck")
+        .WithName("GetDiagnosticsQuickCheck").RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200);
 
         // Show config (sanitized)
@@ -353,7 +374,7 @@ public static class DiagnosticsEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetDiagnosticsShowConfig")
+        .WithName("GetDiagnosticsShowConfig").RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200);
 
         // Error codes reference
@@ -363,7 +384,7 @@ public static class DiagnosticsEndpoints
                 .Select(e => new { code = (int)e, name = e.ToString() });
             return Results.Json(new { errorCodes = codes, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetDiagnosticsErrorCodes")
+        .WithName("GetDiagnosticsErrorCodes").RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200);
 
         // Self-test
@@ -384,6 +405,7 @@ public static class DiagnosticsEndpoints
             }, jsonOptions);
         })
         .WithName("RunDiagnosticsSelftest")
+        .RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -401,6 +423,7 @@ public static class DiagnosticsEndpoints
             }, jsonOptions);
         })
         .WithName("ValidateDiagnosticsCredentials")
+        .RequirePermission(UserPermission.ManageCredentials)
         .Produces(200)
         .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -411,11 +434,26 @@ public static class DiagnosticsEndpoints
             if (registry is null)
                 return Results.Json(new { error = "Provider registry not available" }, jsonOptions, statusCode: 503);
 
-            var providers = registry.GetAllProviders().Select(p => new
+            var diagnosticsByProviderId = ProviderConnectionDiagnosticsProjection.BuildByProviderId(registry);
+            var providers = registry.GetAllProviders().Select(p =>
             {
-                name = p.Name,
-                isEnabled = p.IsEnabled,
-                reachable = p.IsEnabled
+                var diagnostics = ProviderConnectionDiagnosticsProjection.Find(
+                    diagnosticsByProviderId,
+                    p.Name,
+                    p.DisplayName);
+                return new
+                {
+                    name = p.Name,
+                    isEnabled = p.IsEnabled,
+                    reachable = ProviderExtendedEndpoints.ResolveIsConnected(
+                        p.IsEnabled,
+                        diagnostics?.IsConnected),
+                    connectionState = ProviderExtendedEndpoints.ResolveConnectionState(
+                        p.IsEnabled,
+                        diagnostics?.LifecycleState,
+                        diagnostics?.IsConnected),
+                    diagnosticsAvailable = diagnostics is not null
+                };
             });
 
             return Results.Json(new
@@ -425,6 +463,7 @@ public static class DiagnosticsEndpoints
             }, jsonOptions);
         })
         .WithName("TestDiagnosticsConnectivity")
+        .RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200)
         .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -456,6 +495,7 @@ public static class DiagnosticsEndpoints
             }, jsonOptions);
         })
         .WithName("ValidateDiagnosticsConfig")
+        .RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -487,7 +527,7 @@ public static class DiagnosticsEndpoints
                 timestamp = snapshot.CapturedAtUtc
             }, jsonOptions);
         })
-        .WithName("GetDiagnosticsCoordination")
+        .WithName("GetDiagnosticsCoordination").RequirePermission(UserPermission.ViewDiagnostics)
         .Produces(200)
         .Produces(503);
     }

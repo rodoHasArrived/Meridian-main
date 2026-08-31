@@ -1,0 +1,774 @@
+classDiagram
+    %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_AccountingBasisProjectionSetDto["AccountingBasisProjectionSetDto"] {
+        +string Currency
+        +DateOnly EffectiveDate
+        +decimal EventAmount
+        +string FundProfileId
+        +IReadOnlyList~AccountingBasisProjectionItemDto~ Items
+        +DateTimeOffset ProjectedAtUtc
+        +Guid SourceEventId
+        +string SourceEventType
+    }
+    class Meridian_Contracts_Ledger_AccountingBasisProjectionSetRequestDto["AccountingBasisProjectionSetRequestDto"] {
+        +DateTimeOffset AccountingTimestamp
+        +string Actor
+        +string? CompanyId
+        +Guid? CorrelationId
+        +string? CounterpartyId
+        +string Currency
+        +string Description
+        +DateOnly EffectiveDate
+        +decimal EventAmount
+        +IReadOnlyList~string~ EvidenceLinks
+        +string FundProfileId
+        +string? InstrumentSymbol
+    }
+    class Meridian_Contracts_Ledger_AccountingBasisProjectionTargetDto["AccountingBasisProjectionTargetDto"] {
+        +AccountingBasisKindDto AccountingBasis
+        +LedgerDimensionSetDto? Dimensions
+        +Guid LedgerBookId
+        +Guid PeriodId
+        +string? PolicyId
+        +AccountingTreatmentKindDto? TreatmentKind
+    }
+    class Meridian_Contracts_Ledger_AccountingBookContextDto["AccountingBookContextDto"] {
+        +AccountingBasisKindDto AccountingBasis
+        +string AccountingPolicyId
+        +string AccountingPolicyVersion
+        +string BaseCurrency
+        +LedgerDimensionSetDto? Dimensions
+        +string DisplayName
+        +string FundProfileId
+        +Guid FundStructureNodeId
+        +FundStructureNodeKindDto FundStructureNodeKind
+        +Guid LedgerBookId
+        +Guid? PeriodId
+    }
+    class Meridian_Contracts_Ledger_AccountingCertificationStateDto["AccountingCertificationStateDto"] {
+    }
+    class Meridian_Contracts_Ledger_AccountingCloseReadinessItemDto["AccountingCloseReadinessItemDto"] {
+        +int BlockingIssueCount
+        +IReadOnlyList~AccountingConfigurationValidationIssueDto~ BlockingIssues
+        +string Category
+        +LedgerDimensionSetDto Dimensions
+        +IReadOnlyList~string~ EvidenceLinks
+        +string ItemId
+        +string Label
+        +Guid? LedgerBookId
+        +string RequiredAction
+        +AccountingReadinessStateDto State
+        +string Summary
+    }
+    class Meridian_Contracts_Ledger_AccountingConfigurationStatusDto["AccountingConfigurationStatusDto"] {
+    }
+    class Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto["AccountingConfigurationValidationIssueDto"] {
+        +string Code
+        +string Message
+        +AccountingConfigurationValidationSeverityDto Severity
+        +string? SuggestedAction
+        +string? TargetId
+    }
+    class Meridian_Contracts_Ledger_AccountingConfigurationValidationSeverityDto["AccountingConfigurationValidationSeverityDto"] {
+    }
+    class Meridian_Contracts_Ledger_AccountingConfigurationWorkspaceDto["AccountingConfigurationWorkspaceDto"] {
+        +IReadOnlyList~AccountingActionAuditEventDto~ AuditTrail
+        +IReadOnlyList~ChartOfAccountsNodeDto~ ChartOfAccounts
+        +string? CompanyId
+        +string ConfigurationVersion
+        +string FundProfileId
+        +IReadOnlyList~JournalEntryTemplateDto~ JournalTemplates
+        +Guid? LedgerBookId
+        +IReadOnlyList~LedgerBookDto~ LedgerBooks
+        +LedgerBookSetupCandidateDto? LedgerBookSetupCandidate
+        +IReadOnlyList~PostingRuleDto~ PostingRules
+        +AccountingRulesStudioDto? RulesStudio
+        +IReadOnlyList~AccountingRuleTestCaseDto~ RuleTestCases
+    }
+    class Meridian_Contracts_Ledger_AccountingJournalPreviewLineDto["AccountingJournalPreviewLineDto"] {
+        +string AccountName
+        +string AccountPath
+        +decimal Amount
+        +string Currency
+        +string? Description
+        +AccountingTemplateLineSideDto Side
+    }
+    class Meridian_Contracts_Ledger_AccountingJournalTemplatePreviewDto["AccountingJournalTemplatePreviewDto"] {
+        +string DisplayName
+        +bool IsBalanced
+        +IReadOnlyList~AccountingJournalPreviewLineDto~ Lines
+        +string TemplateId
+        +decimal TotalCredits
+        +decimal TotalDebits
+        +IReadOnlyList~AccountingConfigurationValidationIssueDto~ ValidationIssues
+    }
+    class Meridian_Contracts_Ledger_AccountingPolicyDto["AccountingPolicyDto"] {
+        +AccountingBasisKindDto AccountingBasis
+        +DateTimeOffset CreatedAt
+        +string DisplayName
+        +DateOnly EffectiveFrom
+        +DateOnly? EffectiveTo
+        +string? FundProfileId
+        +Guid? FundStructureNodeId
+        +string? InstrumentId
+        +bool IsDefault
+        +string PolicyId
+        +AccountingPolicyRulePackDto? RulePack
+        +string RulesJson
+    }
+    class Meridian_Contracts_Ledger_AccountingPolicyQuery["AccountingPolicyQuery"] {
+        +AccountingBasisKindDto AccountingBasis
+        +DateOnly? EffectiveDate
+        +string? FundProfileId
+        +Guid? FundStructureNodeId
+        +string? InstrumentId
+        +string? PolicyId
+        +Guid? SourceEventId
+    }
+    class Meridian_Contracts_Ledger_AccountingPolicyRuleDto["AccountingPolicyRuleDto"] {
+        +bool AllowsAutoPosting
+        +string? Description
+        +string? JournalTemplateId
+        +bool RequiresApproval
+        +bool RequiresEvidence
+        +string RuleId
+        +string RuleVersion
+        +string? SourceEventType
+        +IReadOnlyList~string~? Tags
+        +AccountingTreatmentKindDto TreatmentKind
+    }
+    class Meridian_Contracts_Ledger_AccountingPolicyRulePackDto["AccountingPolicyRulePackDto"] {
+        +string? Description
+        +string RulePackId
+        +string RulePackVersion
+        +IReadOnlyList~AccountingPolicyRuleDto~ Rules
+    }
+    class Meridian_Contracts_Ledger_AccountingPostingApprovalStateDto["AccountingPostingApprovalStateDto"] {
+    }
+    class Meridian_Contracts_Ledger_AccountingPostingCommandDto["AccountingPostingCommandDto"] {
+        +OperationsActionOriginDto ActionOrigin
+        +Guid AggregateId
+        +string? ApprovalId
+        +AccountingPostingApprovalStateDto ApprovalState
+        +AccountingBookContextDto? BookContext
+        +Guid? BookPositionId
+        +Guid? CausationId
+        +Guid CommandId
+        +Guid? CorrelationId
+        +EconomicEventReferenceDto? EconomicEvent
+        +DateOnly EffectiveDate
+        +IReadOnlyList~AccountingPostingEvidenceReferenceDto~ Evidence
+    }
+    class Meridian_Contracts_Ledger_AccountingPostingEvidenceKindDto["AccountingPostingEvidenceKindDto"] {
+    }
+    class Meridian_Contracts_Ledger_AccountingPostingEvidenceReferenceDto["AccountingPostingEvidenceReferenceDto"] {
+        +string? ContentHash
+        +string? Description
+        +DateOnly? EffectiveDate
+        +string EvidenceId
+        +long? EvidenceVersion
+        +AccountingPostingEvidenceKindDto Kind
+        +DateTimeOffset RetainedAtUtc
+        +string RetainedBy
+        +DateTimeOffset? ReviewedAtUtc
+        +string? Reviewer
+        +string? ReviewStatus
+        +string? SourceReference
+    }
+    class Meridian_Contracts_Ledger_AccountingPostingIntentDto["AccountingPostingIntentDto"] {
+    }
+    class Meridian_Contracts_Ledger_AccountingReadinessStateDto["AccountingReadinessStateDto"] {
+    }
+    class Meridian_Contracts_Ledger_AccountingReportPackageBundleDto["AccountingReportPackageBundleDto"] {
+        +ReportCertificationDto Certification
+        +IReadOnlyList~AccountingCloseReadinessItemDto~ CloseReadinessItems
+        +Guid? CloseWorkflowId
+        +string? CompanyId
+        +ReportDimensionScopeDto? DimensionScope
+        +IReadOnlyList~ReportExportArtifactDto~ ExportArtifacts
+        +FinancialStatementPackageDto FinancialStatements
+        +IReadOnlyList~InvestorCapitalStatementDto~ InvestorCapitalStatements
+        +NavPackageDto NavPackage
+        +RealizedGainLossReportDto RealizedGainLoss
+        +string? TenantId
+        +IReadOnlyList~AccountingConfigurationValidationIssueDto~ ValidationIssues
+    }
+    class Meridian_Contracts_Ledger_AccountingReportPackageRequestDto["AccountingReportPackageRequestDto"] {
+        +string Actor
+        +decimal BeginningCapital
+        +string? CapitalAccountId
+        +Guid? CloseWorkflowId
+        +string? CompanyId
+        +decimal Contributions
+        +string? CorrelationId
+        +string Currency
+        +LedgerDimensionSetDto? Dimensions
+        +decimal Distributions
+        +IReadOnlyList~string~ EvidenceLinks
+        +string FundProfileId
+    }
+    class Meridian_Contracts_Ledger_AccountingRuleConditionDto["AccountingRuleConditionDto"] {
+        +string ConditionId
+        +string? Description
+        +string Field
+        +bool IsRequired
+        +AccountingRuleConditionOperatorDto Operator
+        +string? SecondValue
+        +string? Value
+    }
+    class Meridian_Contracts_Ledger_AccountingRuleConditionGroupDto["AccountingRuleConditionGroupDto"] {
+        +IReadOnlyList~AccountingRuleConditionDto~ Conditions
+        +string? Description
+        +string GroupId
+        +bool IsRequired
+        +AccountingRuleConditionGroupOperatorDto Operator
+    }
+    class Meridian_Contracts_Ledger_AccountingRuleConditionGroupOperatorDto["AccountingRuleConditionGroupOperatorDto"] {
+    }
+    class Meridian_Contracts_Ledger_AccountingRuleConditionOperatorDto["AccountingRuleConditionOperatorDto"] {
+    }
+    class Meridian_Contracts_Ledger_AccountingRuleDefinitionDto["AccountingRuleDefinitionDto"] {
+        +IReadOnlyList~AllocationRuleDto~ Allocations
+        +IReadOnlyList~AccountingRuleConditionGroupDto~ ConditionGroups
+        +IReadOnlyList~AccountingRuleConditionDto~ Conditions
+        +string? Description
+        +string DisplayName
+        +DateOnly? EffectiveFrom
+        +DateOnly? EffectiveTo
+        +IReadOnlyList~AccountingRuleFormulaDto~ Formulas
+        +IReadOnlyList~GeneratedPostingLineDto~ GeneratedPostings
+        +int Priority
+        +RulePromotionApprovalDto? PromotionApproval
+        +bool RequiresPromotionApproval
+    }
+    class Meridian_Contracts_Ledger_AccountingRuleDryRunMatchDto["AccountingRuleDryRunMatchDto"] {
+        +string DisplayName
+        +IReadOnlyList~string~ Explanations
+        +bool IsMatched
+        +int Priority
+        +string RuleId
+        +string RuleVersion
+        +IReadOnlyList~AccountingConfigurationValidationIssueDto~ ValidationIssues
+    }
+    class Meridian_Contracts_Ledger_AccountingRuleFormulaDto["AccountingRuleFormulaDto"] {
+        +string Currency
+        +string? Description
+        +string FormulaId
+        +AccountingRuleFormulaKindDto Kind
+        +decimal Value
+    }
+    class Meridian_Contracts_Ledger_AccountingRuleFormulaKindDto["AccountingRuleFormulaKindDto"] {
+    }
+    class Meridian_Contracts_Ledger_AccountingRulePackReferenceDto["AccountingRulePackReferenceDto"] {
+        +string RulePackId
+        +string RulePackVersion
+        +string? SelectedRuleId
+        +string? SelectedRuleVersion
+    }
+    class Meridian_Contracts_Ledger_AccountingRuleTestCaseDto["AccountingRuleTestCaseDto"] {
+        +string DisplayName
+        +IReadOnlyList~string~ EvidenceLinks
+        +bool ExpectBalancedPosting
+        +IReadOnlyList~GeneratedPostingLineDto~ ExpectedGeneratedPostingLines
+        +IReadOnlyList~string~ ExpectedIssueCodes
+        +string? ExpectedRuleId
+        +string? ExpectedRuleVersion
+        +RuleDryRunRequestDto Request
+        +string TestCaseId
+    }
+    class Meridian_Contracts_Ledger_AccountingRuleTestCaseResultDto["AccountingRuleTestCaseResultDto"] {
+        +IReadOnlyList~AccountingConfigurationValidationIssueDto~ AssertionIssues
+        +string DisplayName
+        +RuleDryRunResultDto DryRunResult
+        +bool Passed
+        +string TestCaseId
+    }
+    class Meridian_Contracts_Ledger_AccountingRuleTestSuiteResultDto["AccountingRuleTestSuiteResultDto"] {
+        +string Actor
+        +DateTimeOffset ExecutedAtUtc
+        +int FailedCount
+        +string FundProfileId
+        +Guid? LedgerBookId
+        +int PassedCount
+        +IReadOnlyList~AccountingRuleTestCaseResultDto~ Results
+        +int TotalCount
+    }
+    class Meridian_Contracts_Ledger_AccountingRuleVersionDto["AccountingRuleVersionDto"] {
+        +string ChangeSummary
+        +DateTimeOffset CreatedAtUtc
+        +string CreatedBy
+        +IReadOnlyList~string~ EvidenceLinks
+        +RulePromotionApprovalDto? PromotionApproval
+        +string Version
+    }
+    class Meridian_Contracts_Ledger_AccountingRulesStudioDto["AccountingRulesStudioDto"] {
+        +IReadOnlyList~AccountingRulesStudioPromotionQueueItemDto~ PromotionQueue
+        +IReadOnlyList~AccountingRulesStudioRuleRowDto~ Rules
+        +AccountingRulesStudioSummaryDto Summary
+    }
+    class Meridian_Contracts_Ledger_AccountingRulesStudioPromotionQueueItemDto["AccountingRulesStudioPromotionQueueItemDto"] {
+        +string? ApprovalId
+        +ManualJournalEntryStatusDto? ApprovalState
+        +int CriticalIssueCount
+        +string DisplayName
+        +int MissingRegressionEvidenceCount
+        +int RegressionTestCaseCount
+        +DateTimeOffset? RequestedAtUtc
+        +string RequestedBy
+        +string RuleId
+        +string RuleVersion
+        +string SuggestedAction
+    }
+    class Meridian_Contracts_Ledger_AccountingRulesStudioRuleRowDto["AccountingRulesStudioRuleRowDto"] {
+        +int AllocationCount
+        +bool CanActivate
+        +bool CanDryRun
+        +bool CanRequestPromotion
+        +int ConditionCount
+        +int ConditionGroupCount
+        +int CriticalIssueCount
+        +string DisplayName
+        +DateOnly? EffectiveFrom
+        +DateOnly? EffectiveTo
+        +int FormulaCount
+        +int GeneratedPostingLineCount
+    }
+    class Meridian_Contracts_Ledger_AccountingRulesStudioSummaryDto["AccountingRulesStudioSummaryDto"] {
+        +int ActiveRules
+        +int ApprovedPromotionRules
+        +int ArchivedRules
+        +int CriticalIssueCount
+        +int EffectiveDatedRules
+        +int GeneratedPostingRules
+        +int PendingPromotionApprovalRules
+        +IReadOnlyList~string~ RequiredActions
+        +int RulesBlockedByCriticalIssues
+        +int RulesBlockedByPromotionApproval
+        +int RulesBlockedByRegressionTests
+        +int RulesMissingCurrentVersionRegressionTests
+    }
+    class Meridian_Contracts_Ledger_AccountingTemplateLineSideDto["AccountingTemplateLineSideDto"] {
+    }
+    class Meridian_Contracts_Ledger_AccountingTreatmentKindDto["AccountingTreatmentKindDto"] {
+    }
+    class Meridian_Contracts_Ledger_ActivateAccountingConfigurationRequest["ActivateAccountingConfigurationRequest"] {
+        +OperationsActionOriginDto ActionOrigin
+        +string Actor
+        +string? CompanyId
+        +string? CorrelationId
+        +IReadOnlyList~string~? EvidenceLinks
+        +string FundProfileId
+        +Guid? LedgerBookId
+        +IReadOnlyList~string~? ReportGroupPrincipalIds
+        +string? TenantId
+    }
+    class Meridian_Contracts_Ledger_AllocationRuleBasisDto["AllocationRuleBasisDto"] {
+    }
+    class Meridian_Contracts_Ledger_AllocationRuleDto["AllocationRuleDto"] {
+        +string AllocationRuleId
+        +AllocationRuleBasisDto Basis
+        +string? Description
+        +string? FormulaId
+        +LedgerDimensionSetDto? TargetDimensions
+        +decimal Weight
+    }
+    class Meridian_Contracts_Ledger_ApprovePostingRulePromotionRequest["ApprovePostingRulePromotionRequest"] {
+        +OperationsActionOriginDto ActionOrigin
+        +string Actor
+        +string ApprovalId
+        +string? CompanyId
+        +string? CorrelationId
+        +IReadOnlyList~string~ EvidenceLinks
+        +string FundProfileId
+        +Guid? LedgerBookId
+        +string Notes
+        +IReadOnlyList~string~? ReportGroupPrincipalIds
+        +DateTimeOffset? RequestedAtUtc
+        +string? RequestedBy
+    }
+    class Meridian_Contracts_Ledger_AttachManualJournalEntryEvidenceRequest["AttachManualJournalEntryEvidenceRequest"] {
+        +OperationsActionOriginDto ActionOrigin
+        +string Actor
+        +ManualJournalEntryEvidenceAttachmentDto Attachment
+        +string? CompanyId
+        +string? CorrelationId
+        +IReadOnlyList~string~? EvidenceLinks
+        +string FundProfileId
+        +Guid JournalEntryId
+        +Guid? LedgerBookId
+        +bool PeriodIsLocked
+        +IReadOnlyList~string~? ReportGroupPrincipalIds
+        +string? TenantId
+    }
+    class Meridian_Contracts_Ledger_AutomatedJournalEvidenceAssessmentDto["AutomatedJournalEvidenceAssessmentDto"] {
+        +string AssessmentCode
+        +decimal ConfidenceScore
+        +IReadOnlyList~string~ EvidenceLinks
+        +AutomatedJournalEvidenceQualityDto Quality
+        +IReadOnlyList~string~ Reasons
+        +bool RequiresInvestigation
+        +string Summary
+    }
+    class Meridian_Contracts_Ledger_AutomatedJournalEvidenceQualityDto["AutomatedJournalEvidenceQualityDto"] {
+    }
+    class Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationInputDto["CapitalAccountWorkbenchAllocationInputDto"] {
+        +decimal? Amount
+        +string? Currency
+        +DateOnly? EffectiveDate
+        +string? EvidenceRoute
+        +string InputId
+        +string Kind
+        +string Label
+        +string SourceId
+    }
+    class Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationRuleDto["CapitalAccountWorkbenchAllocationRuleDto"] {
+        +string? ApprovalReference
+        +string ApprovalState
+        +string Basis
+        +string CapitalAccountId
+        +string CategoryId
+        +DateOnly? EffectiveFrom
+        +DateOnly? EffectiveTo
+        +int EvidenceLinkCount
+        +IReadOnlyList~string~ EvidenceLinks
+        +string Formula
+        +IReadOnlyList~CapitalAccountWorkbenchAllocationInputDto~ Inputs
+        +string? InvestorId
+    }
+    class Meridian_Contracts_Ledger_CapitalAccountWorkbenchAuditDrillThroughDto["CapitalAccountWorkbenchAuditDrillThroughDto"] {
+        +string DrillThroughId
+        +int EvidenceLinkCount
+        +IReadOnlyList~string~ EvidenceLinks
+        +bool IsAvailable
+        +string Kind
+        +string Label
+        +IReadOnlyList~string~ RelatedIds
+        +string? Route
+        +string Summary
+    }
+    class Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto["CapitalAccountWorkbenchDto"] {
+        +IReadOnlyList~CapitalAccountWorkbenchAllocationRuleDto~ AllocationRules
+        +int AuditDrillThroughCount
+        +IReadOnlyList~CapitalAccountWorkbenchAuditDrillThroughDto~ AuditDrillThroughs
+        +string? CapitalAccountId
+        +string Currency
+        +int FundEventCount
+        +string FundProfileId
+        +int InvestorAccountCount
+        +IReadOnlyList~CapitalAccountWorkbenchInvestorAccountDto~ InvestorAccounts
+        +string? InvestorId
+        +Guid? LedgerBookId
+        +IReadOnlyList~string~ LiveCapabilities
+    }
+    class Meridian_Contracts_Ledger_CapitalAccountWorkbenchInvestorAccountDto["CapitalAccountWorkbenchInvestorAccountDto"] {
+        +string AccountKey
+        +string ActivityRoute
+        +int ApprovalQueueCount
+        +string CapitalAccountId
+        +decimal Contributions
+        +string Currency
+        +decimal Distributions
+        +decimal EndingNetActivity
+        +IReadOnlyList~PrivateCapitalEvidenceCategoryDto~ EvidenceCategories
+        +string EvidenceCategorySummary
+        +int EvidenceLinkCount
+        +IReadOnlyList~string~ EvidenceLinks
+    }
+    class Meridian_Contracts_Ledger_CapitalAccountWorkbenchRestatementChangedLineDto["CapitalAccountWorkbenchRestatementChangedLineDto"] {
+        +string CurrentValue
+        +int EvidenceLinkCount
+        +IReadOnlyList~string~ EvidenceLinks
+        +string LineKey
+        +string PreviousValue
+    }
+    class Meridian_Contracts_Ledger_CapitalAccountWorkbenchStatementLineageDto["CapitalAccountWorkbenchStatementLineageDto"] {
+        +string CapitalAccountId
+        +string? CapitalAccountSubledgerRoute
+        +string DisplayName
+        +IReadOnlyList~string~ EvidenceLinks
+        +string? EvidenceRoute
+        +bool HasRestatementLineage
+        +string? InvestorId
+        +bool IsPublished
+        +bool IsReportReady
+        +string LineageId
+        +string? PublicationEvidenceHash
+        +string? PublicationManifestId
+    }
+    class Meridian_Contracts_Ledger_CertifyAccountingReportPackageRequestDto["CertifyAccountingReportPackageRequestDto"] {
+        +OperationsActionOriginDto ActionOrigin
+        +string Actor
+        +string? CompanyId
+        +string? CorrelationId
+        +IReadOnlyList~string~ EvidenceLinks
+        +string Notes
+        +string PackageId
+        +string? TenantId
+    }
+    class Meridian_Contracts_Ledger_ChartOfAccountsNodeDto["ChartOfAccountsNodeDto"] {
+        +string AccountName
+        +string AccountType
+        +string? FinancialAccountId
+        +bool IsArchived
+        +string NodeId
+        +string? ParentPath
+        +string Path
+        +string? Symbol
+    }
+    class Meridian_Contracts_Ledger_CloseCalendarMilestoneDto["CloseCalendarMilestoneDto"] {
+        +int ApprovedSignOffCount
+        +string? BlockerReason
+        +int DependencyCount
+        +string DisplayName
+        +DateOnly DueDate
+        +IReadOnlyList~string~ EvidenceLinks
+        +bool IsBlocked
+        +bool IsPeriodLocked
+        +bool IsSatisfied
+        +string MilestoneId
+        +string Owner
+        +int RequiredSignOffCount
+    }
+    class Meridian_Contracts_Ledger_CloseDependencyDto["CloseDependencyDto"] {
+        +string DependencyId
+        +string DependsOnTaskId
+        +string Reason
+    }
+    class Meridian_Contracts_Ledger_CloseEvidenceReviewDto["CloseEvidenceReviewDto"] {
+        +IReadOnlyList~string~ EvidenceLinks
+        +string IssueCode
+        +string Notes
+        +DateTimeOffset ReviewedAtUtc
+        +string ReviewedBy
+        +string ReviewId
+        +string? TargetId
+    }
+    class Meridian_Contracts_Ledger_CloseLedgerPeriodRequest["CloseLedgerPeriodRequest"] {
+        +OperationsActionOriginDto ActionOrigin
+        +string ClosedBy
+        +LedgerPeriodCloseKindDto CloseKind
+        +string? Notes
+        +string RequiredSignoffRole
+        +string ToleranceProfileId
+    }
+    class Meridian_Contracts_Ledger_CloseOperatingCoverageItemDto["CloseOperatingCoverageItemDto"] {
+        +int BlockingIssueCount
+        +IReadOnlyList~AccountingConfigurationValidationIssueDto~ BlockingIssues
+        +string ControlId
+        +int EvidenceCount
+        +IReadOnlyList~string~ EvidenceLinks
+        +string Label
+        +string RequiredAction
+        +AccountingReadinessStateDto State
+    }
+    class Meridian_Contracts_Ledger_ClosePeriodLockResultDto["ClosePeriodLockResultDto"] {
+        +bool IsLocked
+        +IReadOnlyList~AccountingConfigurationValidationIssueDto~ Issues
+        +VerifiedOperationOutcome Outcome
+        +ClosePeriodPlanDto? Plan
+        +OperationsTransitionResultDto? Transition
+    }
+    class Meridian_Contracts_Ledger_ClosePeriodPlanConfigurationDto["ClosePeriodPlanConfigurationDto"] {
+        +DateTimeOffset? ConfiguredAtUtc
+        +string? ConfiguredBy
+        +IReadOnlyList~string~ EvidenceLinks
+        +MaterialityPolicyDto MaterialityPolicy
+        +IReadOnlyList~CloseTaskConfigurationDto~ TaskConfigurations
+        +Guid WorkflowId
+    }
+    class Meridian_Contracts_Ledger_ClosePeriodPlanDto["ClosePeriodPlanDto"] {
+        +IReadOnlyList~CloseCalendarMilestoneDto~ CloseCalendar
+        +DateOnly CloseDueDate
+        +string ClosePlanId
+        +ClosePostingGateDto? ClosingEntriesGate
+        +ClosePeriodPlanConfigurationDto? Configuration
+        +IReadOnlyList~CloseEvidenceReviewDto~ EvidenceReviews
+        +string FundProfileId
+        +bool IsPeriodLocked
+        +IReadOnlyList~LateAdjustmentRequestDto~ LateAdjustments
+        +Guid? LedgerBookId
+        +MaterialityPolicyDto MaterialityPolicy
+        +IReadOnlyList~CloseOperatingCoverageItemDto~ OperatingCoverage
+    }
+    class Meridian_Contracts_Ledger_ClosePeriodReopenResultDto["ClosePeriodReopenResultDto"] {
+        +ClosePostingGateDto? ClosingEntriesGate
+        +bool IsReopened
+        +IReadOnlyList~AccountingConfigurationValidationIssueDto~ Issues
+        +ClosePeriodPlanDto? Plan
+        +OperationsTransitionResultDto? Transition
+    }
+    class Meridian_Contracts_Ledger_ClosePostingBalanceDto["ClosePostingBalanceDto"] {
+        +string AccountName
+        +string AccountType
+        +decimal Balance
+        +LedgerDimensionSetDto? Dimensions
+        +string? FinancialAccountId
+        +string? Symbol
+    }
+    class Meridian_Contracts_Ledger_ClosePostingGateDto["ClosePostingGateDto"] {
+        +IReadOnlyList~ClosePostingBalanceDto~ Balances
+        +IReadOnlyList~Guid~ ClosingBatchJournalEntryIds
+        +string Detail
+        +Guid? DraftJournalEntryId
+        +ManualJournalEntryStatusDto? DraftStatus
+        +IReadOnlyList~string~ EvidenceLinks
+        +string GateId
+        +string? IdempotencyKey
+        +bool IsReadyForLock
+        +string Label
+        +decimal NetIncomeRoll
+        +IReadOnlyList~Guid~ ReversalDraftJournalEntryIds
+    }
+    class Meridian_Contracts_Ledger_ClosePostingGateStateDto["ClosePostingGateStateDto"] {
+    }
+    class Meridian_Contracts_Ledger_CloseSignOffDto["CloseSignOffDto"] {
+        +string? Actor
+        +ManualJournalEntryStatusDto ApprovalState
+        +IReadOnlyList~string~ EvidenceLinks
+        +string? Notes
+        +string Role
+        +DateTimeOffset? SignedAtUtc
+        +string SignOffId
+    }
+    class Meridian_Contracts_Ledger_CloseSignOffRequirementDto["CloseSignOffRequirementDto"] {
+        +int ApprovedCount
+        +string EvidenceRequirement
+        +bool IsSatisfied
+        +int RequiredApprovalCount
+        +string RequirementId
+        +string Role
+    }
+    class Meridian_Contracts_Ledger_CloseTaskConfigurationDto["CloseTaskConfigurationDto"] {
+        +IReadOnlyList~CloseTaskDependencyConfigurationDto~ DependencyConfigurations
+        +IReadOnlyList~string~ DependsOnTaskIds
+        +string? DisplayName
+        +DateOnly? DueDate
+        +string? Owner
+        +int? RequiredApprovalCount
+        +string? RequiredApprovalRole
+        +string? RequiredEvidence
+        +IReadOnlyList~CloseTaskSignOffRequirementConfigurationDto~ SignOffRequirementConfigurations
+        +string TaskId
+    }
+    class Meridian_Contracts_Ledger_CloseTaskDependencyConfigurationDto["CloseTaskDependencyConfigurationDto"] {
+        +string DependsOnTaskId
+        +string? Reason
+    }
+    class Meridian_Contracts_Ledger_CloseTaskDto["CloseTaskDto"] {
+        +string? BlockerReason
+        +IReadOnlyList~CloseDependencyDto~ Dependencies
+        +string DisplayName
+        +DateOnly DueDate
+        +IReadOnlyList~string~ EvidenceLinks
+        +string Owner
+        +IReadOnlyList~CloseSignOffRequirementDto~ SignOffRequirements
+        +IReadOnlyList~CloseSignOffDto~ SignOffs
+        +CloseTaskStatusDto Status
+        +string TaskId
+    }
+    class Meridian_Contracts_Ledger_CloseTaskSignOffRequirementConfigurationDto["CloseTaskSignOffRequirementConfigurationDto"] {
+        +string? EvidenceRequirement
+        +int RequiredApprovalCount
+        +string Role
+    }
+    class Meridian_Contracts_Ledger_CloseTaskStatusDto["CloseTaskStatusDto"] {
+    }
+    class Meridian_Contracts_Ledger_CreateAccountingPolicyRequest["CreateAccountingPolicyRequest"] {
+        +AccountingBasisKindDto AccountingBasis
+        +string DisplayName
+        +DateOnly EffectiveFrom
+        +DateOnly? EffectiveTo
+        +string? FundProfileId
+        +Guid? FundStructureNodeId
+        +string? InstrumentId
+        +bool IsDefault
+        +string PolicyId
+        +AccountingPolicyRulePackDto? RulePack
+        +string RulesJson
+        +Guid? SourceEventId
+    }
+    class Meridian_Contracts_Ledger_CreateLateAdjustmentRequestDto["CreateLateAdjustmentRequestDto"] {
+        +OperationsActionOriginDto ActionOrigin
+        +decimal Amount
+        +string? CorrelationId
+        +string Currency
+        +IReadOnlyList~string~ EvidenceLinks
+        +Guid JournalEntryId
+        +string Reason
+        +string RequestedBy
+        +Guid WorkflowId
+    }
+    Meridian_Contracts_Ledger_AccountingBasisProjectionSetRequestDto --> Meridian_Contracts_Ledger_AccountingBasisProjectionTargetDto
+    Meridian_Contracts_Ledger_AccountingBasisProjectionTargetDto --> Meridian_Contracts_Ledger_AccountingTreatmentKindDto
+    Meridian_Contracts_Ledger_AccountingCloseReadinessItemDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
+    Meridian_Contracts_Ledger_AccountingCloseReadinessItemDto --> Meridian_Contracts_Ledger_AccountingReadinessStateDto
+    Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationSeverityDto
+    Meridian_Contracts_Ledger_AccountingConfigurationWorkspaceDto --> Meridian_Contracts_Ledger_AccountingConfigurationStatusDto
+    Meridian_Contracts_Ledger_AccountingConfigurationWorkspaceDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
+    Meridian_Contracts_Ledger_AccountingConfigurationWorkspaceDto --> Meridian_Contracts_Ledger_AccountingRuleTestCaseDto
+    Meridian_Contracts_Ledger_AccountingConfigurationWorkspaceDto --> Meridian_Contracts_Ledger_AccountingRulesStudioDto
+    Meridian_Contracts_Ledger_AccountingConfigurationWorkspaceDto --> Meridian_Contracts_Ledger_ChartOfAccountsNodeDto
+    Meridian_Contracts_Ledger_AccountingJournalPreviewLineDto --> Meridian_Contracts_Ledger_AccountingTemplateLineSideDto
+    Meridian_Contracts_Ledger_AccountingJournalTemplatePreviewDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
+    Meridian_Contracts_Ledger_AccountingJournalTemplatePreviewDto --> Meridian_Contracts_Ledger_AccountingJournalPreviewLineDto
+    Meridian_Contracts_Ledger_AccountingPolicyDto --> Meridian_Contracts_Ledger_AccountingPolicyRulePackDto
+    Meridian_Contracts_Ledger_AccountingPolicyRuleDto --> Meridian_Contracts_Ledger_AccountingTreatmentKindDto
+    Meridian_Contracts_Ledger_AccountingPolicyRulePackDto --> Meridian_Contracts_Ledger_AccountingPolicyRuleDto
+    Meridian_Contracts_Ledger_AccountingPostingCommandDto --> Meridian_Contracts_Ledger_AccountingBookContextDto
+    Meridian_Contracts_Ledger_AccountingPostingCommandDto --> Meridian_Contracts_Ledger_AccountingPostingApprovalStateDto
+    Meridian_Contracts_Ledger_AccountingPostingCommandDto --> Meridian_Contracts_Ledger_AccountingPostingEvidenceReferenceDto
+    Meridian_Contracts_Ledger_AccountingPostingCommandDto --> Meridian_Contracts_Ledger_AccountingPostingIntentDto
+    Meridian_Contracts_Ledger_AccountingPostingCommandDto --> Meridian_Contracts_Ledger_AccountingRulePackReferenceDto
+    Meridian_Contracts_Ledger_AccountingPostingEvidenceReferenceDto --> Meridian_Contracts_Ledger_AccountingPostingEvidenceKindDto
+    Meridian_Contracts_Ledger_AccountingReportPackageBundleDto --> Meridian_Contracts_Ledger_AccountingCloseReadinessItemDto
+    Meridian_Contracts_Ledger_AccountingReportPackageBundleDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
+    Meridian_Contracts_Ledger_AccountingRuleConditionDto --> Meridian_Contracts_Ledger_AccountingRuleConditionOperatorDto
+    Meridian_Contracts_Ledger_AccountingRuleConditionGroupDto --> Meridian_Contracts_Ledger_AccountingRuleConditionDto
+    Meridian_Contracts_Ledger_AccountingRuleConditionGroupDto --> Meridian_Contracts_Ledger_AccountingRuleConditionGroupOperatorDto
+    Meridian_Contracts_Ledger_AccountingRuleDefinitionDto --> Meridian_Contracts_Ledger_AccountingRuleConditionDto
+    Meridian_Contracts_Ledger_AccountingRuleDefinitionDto --> Meridian_Contracts_Ledger_AccountingRuleConditionGroupDto
+    Meridian_Contracts_Ledger_AccountingRuleDefinitionDto --> Meridian_Contracts_Ledger_AccountingRuleFormulaDto
+    Meridian_Contracts_Ledger_AccountingRuleDefinitionDto --> Meridian_Contracts_Ledger_AccountingRuleVersionDto
+    Meridian_Contracts_Ledger_AccountingRuleDefinitionDto --> Meridian_Contracts_Ledger_AllocationRuleDto
+    Meridian_Contracts_Ledger_AccountingRuleDryRunMatchDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
+    Meridian_Contracts_Ledger_AccountingRuleFormulaDto --> Meridian_Contracts_Ledger_AccountingRuleFormulaKindDto
+    Meridian_Contracts_Ledger_AccountingRuleTestCaseResultDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
+    Meridian_Contracts_Ledger_AccountingRuleTestSuiteResultDto --> Meridian_Contracts_Ledger_AccountingRuleTestCaseResultDto
+    Meridian_Contracts_Ledger_AccountingRulesStudioDto --> Meridian_Contracts_Ledger_AccountingRulesStudioPromotionQueueItemDto
+    Meridian_Contracts_Ledger_AccountingRulesStudioDto --> Meridian_Contracts_Ledger_AccountingRulesStudioRuleRowDto
+    Meridian_Contracts_Ledger_AccountingRulesStudioDto --> Meridian_Contracts_Ledger_AccountingRulesStudioSummaryDto
+    Meridian_Contracts_Ledger_AllocationRuleDto --> Meridian_Contracts_Ledger_AllocationRuleBasisDto
+    Meridian_Contracts_Ledger_AutomatedJournalEvidenceAssessmentDto --> Meridian_Contracts_Ledger_AutomatedJournalEvidenceQualityDto
+    Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationRuleDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationInputDto
+    Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
+    Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationRuleDto
+    Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchAuditDrillThroughDto
+    Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchInvestorAccountDto
+    Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchStatementLineageDto
+    Meridian_Contracts_Ledger_CapitalAccountWorkbenchInvestorAccountDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
+    Meridian_Contracts_Ledger_CapitalAccountWorkbenchStatementLineageDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchRestatementChangedLineDto
+    Meridian_Contracts_Ledger_CloseCalendarMilestoneDto --> Meridian_Contracts_Ledger_CloseTaskStatusDto
+    Meridian_Contracts_Ledger_CloseOperatingCoverageItemDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
+    Meridian_Contracts_Ledger_CloseOperatingCoverageItemDto --> Meridian_Contracts_Ledger_AccountingReadinessStateDto
+    Meridian_Contracts_Ledger_ClosePeriodLockResultDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
+    Meridian_Contracts_Ledger_ClosePeriodLockResultDto --> Meridian_Contracts_Ledger_ClosePeriodPlanDto
+    Meridian_Contracts_Ledger_ClosePeriodPlanConfigurationDto --> Meridian_Contracts_Ledger_CloseTaskConfigurationDto
+    Meridian_Contracts_Ledger_ClosePeriodPlanDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
+    Meridian_Contracts_Ledger_ClosePeriodPlanDto --> Meridian_Contracts_Ledger_CloseCalendarMilestoneDto
+    Meridian_Contracts_Ledger_ClosePeriodPlanDto --> Meridian_Contracts_Ledger_CloseEvidenceReviewDto
+    Meridian_Contracts_Ledger_ClosePeriodPlanDto --> Meridian_Contracts_Ledger_CloseOperatingCoverageItemDto
+    Meridian_Contracts_Ledger_ClosePeriodPlanDto --> Meridian_Contracts_Ledger_ClosePeriodPlanConfigurationDto
+    Meridian_Contracts_Ledger_ClosePeriodPlanDto --> Meridian_Contracts_Ledger_ClosePostingGateDto
+    Meridian_Contracts_Ledger_ClosePeriodPlanDto --> Meridian_Contracts_Ledger_CloseTaskDto
+    Meridian_Contracts_Ledger_ClosePeriodReopenResultDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
+    Meridian_Contracts_Ledger_ClosePeriodReopenResultDto --> Meridian_Contracts_Ledger_ClosePeriodPlanDto
+    Meridian_Contracts_Ledger_ClosePeriodReopenResultDto --> Meridian_Contracts_Ledger_ClosePostingGateDto
+    Meridian_Contracts_Ledger_ClosePostingGateDto --> Meridian_Contracts_Ledger_ClosePostingBalanceDto
+    Meridian_Contracts_Ledger_ClosePostingGateDto --> Meridian_Contracts_Ledger_ClosePostingGateStateDto
+    Meridian_Contracts_Ledger_CloseTaskConfigurationDto --> Meridian_Contracts_Ledger_CloseTaskDependencyConfigurationDto
+    Meridian_Contracts_Ledger_CloseTaskConfigurationDto --> Meridian_Contracts_Ledger_CloseTaskSignOffRequirementConfigurationDto
+    Meridian_Contracts_Ledger_CloseTaskDto --> Meridian_Contracts_Ledger_CloseDependencyDto
+    Meridian_Contracts_Ledger_CloseTaskDto --> Meridian_Contracts_Ledger_CloseSignOffDto
+    Meridian_Contracts_Ledger_CloseTaskDto --> Meridian_Contracts_Ledger_CloseSignOffRequirementDto
+    Meridian_Contracts_Ledger_CloseTaskDto --> Meridian_Contracts_Ledger_CloseTaskStatusDto
+    Meridian_Contracts_Ledger_CreateAccountingPolicyRequest --> Meridian_Contracts_Ledger_AccountingPolicyRulePackDto

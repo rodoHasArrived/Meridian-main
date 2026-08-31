@@ -1,4 +1,5 @@
 using System.Windows.Media;
+using Meridian.Contracts.Lifecycle;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Services;
 using Microsoft.Extensions.Hosting;
@@ -12,6 +13,7 @@ public sealed class StartupWindowViewModel : BindableBase
     private static readonly Brush ErrorBrush = CreateBrush(0xBA, 0x3F, 0x55);
 
     private readonly DesktopAuthenticationSession _authenticationSession;
+    private readonly ILifecycleControlClient? _lifecycleClient;
 
     private string _username = string.Empty;
     private string _password = string.Empty;
@@ -19,13 +21,18 @@ public sealed class StartupWindowViewModel : BindableBase
     private Brush _statusBrush = InfoBrush;
     private Visibility _statusVisibility = Visibility.Collapsed;
     private bool _isBusy;
+    private bool _isRuntimeReady;
+    private string _lifecycleHeadingText = "Runtime lifecycle: checking";
+    private string _lifecycleDetailText = "Waiting for host readiness evidence from the lifecycle control plane.";
 
     public StartupWindowViewModel(
         DesktopAuthenticationSession authenticationSession,
         FixtureModeDetector fixtureModeDetector,
-        IHostEnvironment hostEnvironment)
+        IHostEnvironment hostEnvironment,
+        ILifecycleControlClient? lifecycleClient = null)
     {
         _authenticationSession = authenticationSession ?? throw new ArgumentNullException(nameof(authenticationSession));
+        _lifecycleClient = lifecycleClient;
         ArgumentNullException.ThrowIfNull(fixtureModeDetector);
         ArgumentNullException.ThrowIfNull(hostEnvironment);
 
@@ -49,6 +56,12 @@ public sealed class StartupWindowViewModel : BindableBase
         MissingConfigurationVisibility = authenticationSession.IsConfigured
             ? Visibility.Collapsed
             : Visibility.Visible;
+        _isRuntimeReady = lifecycleClient is null;
+        if (lifecycleClient is null)
+        {
+            _lifecycleHeadingText = "Runtime lifecycle: managed";
+            _lifecycleDetailText = "The lifecycle supervisor owns the host and its dedicated database session.";
+        }
 
         SignInCommand = new AsyncRelayCommand(SignInAsync, CanSignIn);
         ContinueWithoutCredentialsCommand = new RelayCommand(ContinueWithoutCredentials, () => authenticationSession.CanContinueWithoutCredentials && !IsBusy);
@@ -82,6 +95,18 @@ public sealed class StartupWindowViewModel : BindableBase
     public IRelayCommand ContinueWithoutCredentialsCommand { get; }
 
     public IRelayCommand CancelCommand { get; }
+
+    public string LifecycleHeadingText
+    {
+        get => _lifecycleHeadingText;
+        private set => SetProperty(ref _lifecycleHeadingText, value);
+    }
+
+    public string LifecycleDetailText
+    {
+        get => _lifecycleDetailText;
+        private set => SetProperty(ref _lifecycleDetailText, value);
+    }
 
     public string Username
     {
@@ -141,9 +166,60 @@ public sealed class StartupWindowViewModel : BindableBase
 
     private bool CanSignIn()
         => !IsBusy &&
+           _isRuntimeReady &&
            _authenticationSession.IsConfigured &&
            !string.IsNullOrWhiteSpace(Username) &&
            !string.IsNullOrWhiteSpace(Password);
+
+    public async Task RefreshLifecycleAsync(CancellationToken cancellationToken = default)
+    {
+        if (_lifecycleClient is null)
+            return;
+
+        try
+        {
+            var snapshot = await _lifecycleClient.GetStartupSnapshotAsync(cancellationToken).ConfigureAwait(true);
+            _isRuntimeReady = snapshot is
+            {
+                AcceptingWork: true,
+                Readiness: RuntimeReadinessStatus.Ready or RuntimeReadinessStatus.Degraded
+            };
+            LifecycleHeadingText = snapshot is null
+                ? "Runtime lifecycle: unavailable"
+                : $"Runtime lifecycle: {snapshot.Readiness}";
+            LifecycleDetailText = snapshot is null
+                ? "The host did not return startup readiness evidence. Sign-in remains unavailable."
+                : $"{snapshot.ActivePhase} · {snapshot.State} · {(_isRuntimeReady ? "accepting work" : "not accepting work")}";
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _isRuntimeReady = false;
+            LifecycleHeadingText = "Runtime lifecycle: unavailable";
+            LifecycleDetailText = $"Readiness check failed: {ex.Message}";
+        }
+        finally
+        {
+            SignInCommand.NotifyCanExecuteChanged();
+        }
+    }
+
+    public async Task WaitForLifecycleReadinessAsync(CancellationToken cancellationToken = default)
+    {
+        if (_lifecycleClient is null)
+            return;
+
+        while (!_isRuntimeReady)
+        {
+            await RefreshLifecycleAsync(cancellationToken).ConfigureAwait(true);
+            if (_isRuntimeReady)
+                return;
+            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(true);
+        }
+    }
 
     private async Task SignInAsync()
     {
@@ -157,15 +233,41 @@ public sealed class StartupWindowViewModel : BindableBase
         try
         {
             await Task.Yield();
-            var result = _authenticationSession.SignIn(Username, Password);
-            Password = string.Empty;
+            var username = Username;
+            var password = Password;
+            var result = _authenticationSession.SignIn(username, password);
             PasswordResetRequested?.Invoke(this, EventArgs.Empty);
             if (!result.Succeeded)
             {
+                Password = string.Empty;
                 SetStatus(result.Message, ErrorBrush);
                 return;
             }
 
+            if (_lifecycleClient is not null)
+            {
+                if (!await _lifecycleClient.AuthenticateAsync(username, password).ConfigureAwait(true))
+                {
+                    _authenticationSession.SignOut();
+                    Password = string.Empty;
+                    SetStatus("The host rejected the desktop authentication session.", ErrorBrush);
+                    return;
+                }
+
+                // Establish the shared workstation API session too (audit finding P8): the
+                // server session lets governed endpoints stamp the authenticated actor, and
+                // its CSRF cookie unlocks session-authenticated mutations.
+                if (!await Meridian.Ui.Services.ApiClientService.Instance
+                        .AuthenticateAsync(username, password).ConfigureAwait(true))
+                {
+                    _authenticationSession.SignOut();
+                    Password = string.Empty;
+                    SetStatus("The host rejected the workstation API session.", ErrorBrush);
+                    return;
+                }
+            }
+
+            Password = string.Empty;
             SetStatus(result.Message, SuccessBrush);
             StartupCompleted?.Invoke(this, EventArgs.Empty);
         }

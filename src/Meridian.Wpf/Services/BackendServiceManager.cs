@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Net.Http;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Ui.Services.Services;
@@ -13,16 +11,14 @@ using Meridian.Wpf.Contracts;
 namespace Meridian.Wpf.Services;
 
 /// <summary>
-/// WPF platform-specific backend service manager.
-/// Extends <see cref="BackendServiceManagerBase"/> with process management and HTTP health checks.
-/// Part of Phase 2 service extraction.
+/// Compatibility facade for the desktop service manager. Process mutations are
+/// delegated to the lifecycle supervisor; WPF never starts or stops the host directly.
 /// </summary>
 public sealed class BackendServiceManager : BackendServiceManagerBase
 {
     private static readonly Lazy<BackendServiceManager> _instance = new(() => new BackendServiceManager());
-    private const int DefaultDesktopPort = 8080;
-    private readonly HttpClient _httpClient;
     private readonly IRemoteWorkstationClient _remoteClient;
+    private readonly SemaphoreSlim _supervisorOperationGate = new(1, 1);
 
     public static BackendServiceManager Instance => _instance.Value;
 
@@ -35,10 +31,6 @@ public sealed class BackendServiceManager : BackendServiceManagerBase
         : base(appDataDirectory)
     {
         _remoteClient = remoteClient ?? throw new ArgumentNullException(nameof(remoteClient));
-        _httpClient = new HttpClient
-        {
-            Timeout = TimeSpan.FromSeconds(5)
-        };
     }
 
     protected override string? ResolveExecutablePath(string? preferredPath)
@@ -48,7 +40,7 @@ public sealed class BackendServiceManager : BackendServiceManagerBase
             return preferredPath;
         }
 
-        var configuredPath = Environment.GetEnvironmentVariable("MDC_BACKEND_PATH", EnvironmentVariableTarget.User);
+        var configuredPath = Environment.GetEnvironmentVariable("MDC_LIFECYCLE_SUPERVISOR_PATH", EnvironmentVariableTarget.User);
         if (!string.IsNullOrWhiteSpace(configuredPath) && File.Exists(configuredPath))
         {
             return configuredPath;
@@ -57,11 +49,9 @@ public sealed class BackendServiceManager : BackendServiceManagerBase
         var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
         var candidates = new[]
         {
-            Path.Combine(baseDirectory, "Meridian.exe"),
-            Path.Combine(baseDirectory, "Meridian", "Meridian.exe"),
-            Path.GetFullPath(Path.Combine(baseDirectory, "..", "Meridian", "Meridian.exe")),
-            Path.GetFullPath(Path.Combine(baseDirectory, "..", "..", "..", "..", "Meridian", "bin", "Release", "net9.0", "Meridian.exe")),
-            Path.GetFullPath(Path.Combine(baseDirectory, "..", "..", "..", "..", "Meridian", "bin", "Debug", "net9.0", "Meridian.exe"))
+            Path.Combine(baseDirectory, "Meridian.LifecycleSupervisor.exe"),
+            Path.Combine(baseDirectory, "Meridian", "Meridian.LifecycleSupervisor.exe"),
+            Path.GetFullPath(Path.Combine(baseDirectory, "..", "Meridian.LifecycleSupervisor.exe"))
         };
 
         foreach (var candidate in candidates)
@@ -74,50 +64,84 @@ public sealed class BackendServiceManager : BackendServiceManagerBase
     }
 
     protected override IReadOnlyList<string> GetProcessArguments(string executablePath)
-        => BuildProcessArguments(
-            FirstRunService.Instance.ConfigFilePath,
-            ConnectionService.Instance.ServiceUrl);
+        => BuildProcessArguments();
 
     protected override IReadOnlyDictionary<string, string?> GetProcessEnvironmentVariables(string executablePath)
-        => new Dictionary<string, string?>(StringComparer.Ordinal)
-        {
-            ["MDC_CONFIG_PATH"] = FirstRunService.Instance.ConfigFilePath,
-            ["MDC_SHUTDOWN_TOKEN"] = Convert.ToHexString(RandomNumberGenerator.GetBytes(32))
-        };
+        => new Dictionary<string, string?>(StringComparer.Ordinal);
 
-    internal static IReadOnlyList<string> BuildProcessArguments(string configPath, string serviceUrl)
-        => [
-            "--mode",
-            "desktop",
-            "--config",
-            configPath,
-            "--http-port",
-            ResolveHttpPort(serviceUrl).ToString(CultureInfo.InvariantCulture)
-        ];
+    internal static IReadOnlyList<string> BuildProcessArguments() => ["start"];
 
-    internal static int ResolveHttpPort(string serviceUrl)
+    public override async Task<BackendServiceOperationResult> StartAsync(CancellationToken ct = default)
     {
-        if (Uri.TryCreate(serviceUrl, UriKind.Absolute, out var serviceUri) && serviceUri.Port > 0)
+        await _supervisorOperationGate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            return serviceUri.Port;
-        }
+            var launched = LaunchSupervisorCommand("start");
+            if (!launched)
+                return BackendServiceOperationResult.Failed("Lifecycle supervisor could not be started.");
 
-        return DefaultDesktopPort;
+            var healthy = await WaitForHealthStateAsync(expectedHealthy: true, TimeSpan.FromSeconds(60), ct)
+                .ConfigureAwait(false);
+            return healthy
+                ? BackendServiceOperationResult.SuccessResult("Lifecycle supervisor started Meridian and readiness passed.")
+                : BackendServiceOperationResult.Failed("Lifecycle supervisor started, but Meridian did not become ready before the deadline.");
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException and not OperationCanceledException)
+        {
+            LogError("Lifecycle supervisor start failed", ex);
+            return BackendServiceOperationResult.Failed($"Start failed: {ex.Message}");
+        }
+        finally
+        {
+            _supervisorOperationGate.Release();
+        }
     }
 
-    private static int ResolveHttpPort(IReadOnlyList<string> arguments)
+    public override async Task<BackendServiceOperationResult> StopAsync(CancellationToken ct = default)
     {
-        for (var index = 0; index < arguments.Count - 1; index++)
+        await _supervisorOperationGate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            if (string.Equals(arguments[index], "--http-port", StringComparison.OrdinalIgnoreCase) &&
-                int.TryParse(arguments[index + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var port) &&
-                port > 0)
-            {
-                return port;
-            }
-        }
+            var exitCode = await RunTransientSupervisorCommandAsync("stop", ct).ConfigureAwait(false);
+            if (exitCode is not (0 or 3))
+                return BackendServiceOperationResult.Failed($"Lifecycle supervisor rejected shutdown with exit code {exitCode}.");
 
-        return DefaultDesktopPort;
+            var stopped = await WaitForHealthStateAsync(expectedHealthy: false, TimeSpan.FromSeconds(60), ct)
+                .ConfigureAwait(false);
+            return stopped
+                ? BackendServiceOperationResult.SuccessResult("Lifecycle supervisor stopped Meridian and its owned database.")
+                : BackendServiceOperationResult.Failed("Meridian did not stop before the lifecycle deadline.");
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException and not OperationCanceledException)
+        {
+            LogError("Lifecycle supervisor shutdown failed", ex);
+            return BackendServiceOperationResult.Failed($"Stop failed: {ex.Message}");
+        }
+        finally
+        {
+            _supervisorOperationGate.Release();
+        }
+    }
+
+    public override async Task<BackendServiceOperationResult> RestartAsync(CancellationToken ct = default)
+    {
+        await _supervisorOperationGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var exitCode = await RunTransientSupervisorCommandAsync("restart", ct).ConfigureAwait(false);
+            return exitCode == 0
+                ? BackendServiceOperationResult.SuccessResult("Lifecycle supervisor accepted the Meridian restart request.")
+                : BackendServiceOperationResult.Failed($"Lifecycle supervisor rejected restart with exit code {exitCode}.");
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException and not OperationCanceledException)
+        {
+            LogError("Lifecycle supervisor restart failed", ex);
+            return BackendServiceOperationResult.Failed($"Restart failed: {ex.Message}");
+        }
+        finally
+        {
+            _supervisorOperationGate.Release();
+        }
     }
 
     protected override int? StartProcess(
@@ -155,65 +179,104 @@ public sealed class BackendServiceManager : BackendServiceManagerBase
         return process?.Id;
     }
 
+    private bool LaunchSupervisorCommand(string command)
+    {
+        var executable = ResolveExecutablePath(null);
+        if (string.IsNullOrWhiteSpace(executable))
+            return false;
+        var process = Process.Start(CreateSupervisorStartInfo(executable, command));
+        process?.Dispose();
+        return process is not null;
+    }
+
+    private async Task<int> RunTransientSupervisorCommandAsync(string command, CancellationToken ct)
+    {
+        var executable = ResolveExecutablePath(null)
+            ?? throw new FileNotFoundException("Meridian lifecycle supervisor was not found.");
+        using var process = Process.Start(CreateSupervisorStartInfo(executable, command))
+            ?? throw new InvalidOperationException($"Could not start lifecycle supervisor command '{command}'.");
+        await process.WaitForExitAsync(ct).ConfigureAwait(false);
+        return process.ExitCode;
+    }
+
+    private static ProcessStartInfo CreateSupervisorStartInfo(string executable, string command)
+    {
+        var start = new ProcessStartInfo
+        {
+            FileName = executable,
+            WorkingDirectory = Path.GetDirectoryName(executable) ?? AppContext.BaseDirectory,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+        start.ArgumentList.Add(command);
+        return start;
+    }
+
+    private async Task<bool> WaitForHealthStateAsync(
+        bool expectedHealthy,
+        TimeSpan timeout,
+        CancellationToken ct)
+    {
+        var deadline = DateTimeOffset.UtcNow + timeout;
+        while (DateTimeOffset.UtcNow < deadline)
+        {
+            if (await IsHealthyAsync(ct).ConfigureAwait(false) == expectedHealthy)
+                return true;
+            await Task.Delay(TimeSpan.FromMilliseconds(250), ct).ConfigureAwait(false);
+        }
+
+        return await IsHealthyAsync(ct).ConfigureAwait(false) == expectedHealthy;
+    }
+
     protected override async Task<bool> KillProcessAsync(int processId, CancellationToken ct)
     {
-        try
-        {
-            var process = Process.GetProcessById(processId);
-            if (process.HasExited)
-                return true;
-
-            LogInfo("Backend graceful shutdown failed; terminating owned process", ("Pid", processId.ToString(CultureInfo.InvariantCulture)));
-            process.Kill(entireProcessTree: true);
-            await process.WaitForExitAsync(ct);
-            process.Dispose();
-            return true;
-        }
-        catch (Exception ex) when (ex is not OutOfMemoryException and not OperationCanceledException)
-        {
-            return false;
-        }
+        await Task.CompletedTask;
+        LogInfo(
+            "Desktop refused to force-terminate the lifecycle supervisor",
+            ("Pid", processId.ToString(CultureInfo.InvariantCulture)));
+        return false;
     }
 
     protected override async Task<bool> RequestGracefulStopAsync(BackendRuntimeInfo runtime, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(runtime.ShutdownToken))
+        if (string.IsNullOrWhiteSpace(runtime.ExecutablePath) || !File.Exists(runtime.ExecutablePath))
             return false;
-
-        var port = ResolveHttpPort(runtime.Arguments);
-        var shutdownUrl = $"http://localhost:{port}/api/system/shutdown";
 
         try
         {
-            using var request = new HttpRequestMessage(HttpMethod.Post, shutdownUrl);
-            request.Headers.TryAddWithoutValidation("X-Meridian-Shutdown-Token", runtime.ShutdownToken);
-            using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
+            using var stopProcess = Process.Start(new ProcessStartInfo
             {
-                LogInfo(
-                    "Backend graceful shutdown endpoint returned non-success",
-                    ("StatusCode", ((int)response.StatusCode).ToString(CultureInfo.InvariantCulture)));
+                FileName = runtime.ExecutablePath,
+                Arguments = "stop",
+                WorkingDirectory = Path.GetDirectoryName(runtime.ExecutablePath) ?? AppContext.BaseDirectory,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            });
+            if (stopProcess is null)
                 return false;
-            }
 
-            var deadline = DateTimeOffset.UtcNow.AddSeconds(10);
+            await stopProcess.WaitForExitAsync(ct).ConfigureAwait(false);
+            if (stopProcess.ExitCode is not (0 or 3))
+                return false;
+
+            var deadline = DateTimeOffset.UtcNow.AddSeconds(60);
             while (DateTimeOffset.UtcNow < deadline)
             {
                 if (!IsProcessRunning(runtime.ProcessId))
                 {
-                    LogInfo("Backend process exited after graceful shutdown", ("Pid", runtime.ProcessId.ToString(CultureInfo.InvariantCulture)));
+                    LogInfo("Lifecycle supervisor exited after graceful shutdown", ("Pid", runtime.ProcessId.ToString(CultureInfo.InvariantCulture)));
                     return true;
                 }
 
                 await Task.Delay(250, ct).ConfigureAwait(false);
             }
 
-            LogInfo("Backend graceful shutdown timed out", ("Pid", runtime.ProcessId.ToString(CultureInfo.InvariantCulture)));
+            LogInfo("Lifecycle supervisor shutdown timed out", ("Pid", runtime.ProcessId.ToString(CultureInfo.InvariantCulture)));
             return false;
         }
         catch (Exception ex) when (ex is not OutOfMemoryException and not OperationCanceledException)
         {
-            LogError("Backend graceful shutdown request failed", ex);
+            LogError("Lifecycle supervisor shutdown request failed", ex);
             return false;
         }
     }
@@ -251,9 +314,8 @@ public sealed class BackendServiceManager : BackendServiceManagerBase
                 }
             }
 
-            return process.ProcessName.Contains("Meridian", StringComparison.OrdinalIgnoreCase)
-                && runtime.Arguments.Contains("--mode", StringComparer.OrdinalIgnoreCase)
-                && runtime.Arguments.Contains("desktop", StringComparer.OrdinalIgnoreCase);
+            return process.ProcessName.Contains("LifecycleSupervisor", StringComparison.OrdinalIgnoreCase)
+                && runtime.Arguments.Contains("start", StringComparer.OrdinalIgnoreCase);
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {

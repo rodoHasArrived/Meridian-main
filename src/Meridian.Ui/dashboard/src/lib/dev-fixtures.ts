@@ -1,3 +1,4 @@
+import { fixtureTradingRisk } from "./dev-fixtures.trading-risk";
 import type {
   CoveredCallChainPreview,
   CoveredCallRunResult,
@@ -508,7 +509,7 @@ const fixtureExecutionAudit: ExecutionAuditEntry[] = [
     runId: "run-dev-1",
     symbol: null,
     correlationId: "fixture-readiness",
-    message: "Replay matched the fixture paper session state.",
+    message: "Replay matched the recorded paper session state.",
     metadata: { sessionId: "paper-dev-42" }
   }
 ];
@@ -641,16 +642,7 @@ const fixtureTradingWorkspace: TradingWorkspaceResponse = {
       timestamp: "09:40:10 ET"
     }
   ],
-  risk: {
-    state: "Observe",
-    summary: "Guardrails are active.",
-    netExposure: "$120,000",
-    grossExposure: "$150,000",
-    var95: "$9,000",
-    maxDrawdown: "-1.1%",
-    buyingPowerUsed: "58%",
-    activeGuardrails: ["Cap per single-name", "Throttle at 70%"]
-  },
+  risk: fixtureTradingRisk,
   brokerage: {
     provider: "Interactive Brokers",
     account: "DU1009034",
@@ -1592,6 +1584,24 @@ const fixtureAlpacaConnection: BrokerageConnectionStatus = {
   maskedKeyId: "********DEMO"
 };
 
+const fixtureRobinhoodConnection: BrokerageConnectionStatus = {
+  providerId: "robinhood",
+  displayName: "Robinhood read-only",
+  state: "Connected",
+  isConfigured: true,
+  isConnected: true,
+  authorizationUrl: null,
+  connectedAt: "2026-05-07T11:45:00Z",
+  expiresAt: "2026-05-07T12:45:00Z",
+  lastError: null,
+  warnings: [],
+  scopes: ["read_accounts", "read_holdings", "read_transactions"],
+  environment: "read-only",
+  externalAccountId: "RH-DEMO",
+  verifiedAt: "2026-05-07T11:50:00Z",
+  maskedKeyId: null
+};
+
 const fixtureAlpacaPortfolio: BrokerageHouseholdPortfolio = {
   providerId: "alpaca",
   asOf: "2026-05-07T12:00:00Z",
@@ -2394,7 +2404,7 @@ const fixtureCorporateActions: CorporateAction[] = [
     acquirerSecurityId: null,
     exchangeRatio: null,
     subscriptionPricePerShare: null,
-    rightsPerShare: null
+    rightsPerShare: null, recordDate: null, lifecycleState: "Paid", supersedesCorpActId: null, redemptionPricePercentOfPar: null, payload: null, payloadSchemaVersion: 1
   },
   {
     corpActId: "ca-aapl-split-2020-08",
@@ -2410,7 +2420,7 @@ const fixtureCorporateActions: CorporateAction[] = [
     acquirerSecurityId: null,
     exchangeRatio: null,
     subscriptionPricePerShare: null,
-    rightsPerShare: null
+    rightsPerShare: null, recordDate: null, lifecycleState: "Paid", supersedesCorpActId: null, redemptionPricePercentOfPar: null, payload: null, payloadSchemaVersion: 1
   }
 ];
 
@@ -4308,7 +4318,7 @@ const fixturePortfolioMultiAssetCoverage = {
     },
     {
       assetClass: "CustomAsset",
-      displayName: "MBS / ABS / CLO / CMBS / private assets",
+      displayName: "Profile-backed private / other assets",
       status: "ReviewRequired",
       statusLabel: "Review required",
       summary: "Structured and private assets require governed profiles, factor or NAV evidence, valuation approval, and profile-aware ledger classification.",
@@ -6163,7 +6173,7 @@ function buildFixtureFinancialRecordExplorer(explorerId: string): FinancialRecor
         source: "Security Master instruments",
         savedViewLabel: "Instrument proof",
         summaryItems: [
-          { label: "Coverage", value: "Ready", detail: "Instrument identity is retained.", tone: "Success" },
+          { label: "Coverage", value: "Verification pending", detail: "Confirm conflicts, reference routes, and passport evidence before relying on coverage.", tone: "Warning" },
           { label: "Conflicts", value: "0", detail: "No open identity conflict for AAPL.", tone: "Success" }
         ],
         filters: [
@@ -6385,7 +6395,7 @@ const fixtures = {
   [REPLAY_API_ENDPOINTS.files]: fixtureReplayFiles,
   [PROMOTION_API_ENDPOINTS.history]: fixturePromotionHistory,
   [brokerageConnectionStatusEndpoint("alpaca")]: fixtureAlpacaConnection,
-  [brokerageConnectionStatusEndpoint("robinhood")]: fixtureAlpacaConnection,
+  [brokerageConnectionStatusEndpoint("robinhood")]: fixtureRobinhoodConnection,
   [PORTFOLIO_API_ENDPOINTS.household]: fixtureAlpacaPortfolio,
   [WORKSTATION_API_ENDPOINTS.data]: fixtureDataWorkspace,
   "/api/workstation/data-operations": fixtureDataWorkspace,
@@ -6395,7 +6405,7 @@ const fixtures = {
   [PROVIDER_ROUTING_API_ENDPOINTS.bindings]: fixtureProviderRoutingBindings,
   [PROVIDER_ROUTING_API_ENDPOINTS.trustSnapshots]: fixtureProviderRoutingTrustSnapshots,
   [WORKSTATION_API_ENDPOINTS.accounting]: fixtureAccountingWorkspace,
-  [WORKSTATION_API_ENDPOINTS.reporting]: fixtureAccountingWorkspace,
+  [WORKSTATION_API_ENDPOINTS.reporting]: fixtureAccountingWorkspace.reporting,
   [WORKSTATION_API_ENDPOINTS.accountingConfiguration]: fixtureAccountingConfiguration,
   [WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRuleDryRun]: fixtureAccountingRuleDryRun,
   [WORKSTATION_API_ENDPOINTS.closeManagementPeriodPlan]: fixtureLedgerClosePeriodPlan,

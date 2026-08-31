@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Storage.Archival;
+using Meridian.Storage.Store;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors;
@@ -19,36 +20,22 @@ public interface IStatementMappingProfileStore
 /// persisted through <see cref="AtomicFileWriter"/> so a crash mid-write never corrupts
 /// operator-authored mapping profiles.
 /// </summary>
-public sealed class FileStatementMappingProfileStore : IStatementMappingProfileStore
+public sealed class FileStatementMappingProfileStore
+    : JsonFileSnapshotStore<StatementMappingProfileSnapshot>, IStatementMappingProfileStore
 {
     private const int SnapshotVersion = 1;
 
-    private readonly string _snapshotPath;
     private readonly ILogger<FileStatementMappingProfileStore>? _logger;
-    private readonly SemaphoreSlim _gate = new(1, 1);
 
     public FileStatementMappingProfileStore(string dataRoot, ILogger<FileStatementMappingProfileStore>? logger = null)
+        : base(GetSnapshotPath(dataRoot), StatementMappingProfileJsonContext.Default.StatementMappingProfileSnapshot)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
         _logger = logger;
-        var directory = Path.Combine(dataRoot, "reconciliation");
-        Directory.CreateDirectory(directory);
-        _snapshotPath = Path.Combine(directory, "statement-mapping-profiles.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(SnapshotPath)!);
     }
 
-    public async Task<IReadOnlyList<StatementMappingProfileDocument>> ListAsync(CancellationToken ct = default)
-    {
-        await _gate.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            var snapshot = await LoadCoreAsync(ct).ConfigureAwait(false);
-            return snapshot.Profiles;
-        }
-        finally
-        {
-            _gate.Release();
-        }
-    }
+    public Task<IReadOnlyList<StatementMappingProfileDocument>> ListAsync(CancellationToken ct = default)
+        => ReadSnapshotAsync(static snapshot => snapshot.Profiles, ct);
 
     public async Task<StatementMappingProfileDocument> UpsertAsync(StatementMappingProfileDocument document, CancellationToken ct = default)
     {
@@ -66,22 +53,15 @@ public sealed class FileStatementMappingProfileStore : IStatementMappingProfileS
             throw new InvalidDataException($"Statement mapping profile '{normalized.ProfileId}' is invalid: {string.Join(" ", errors)}");
         }
 
-        await _gate.WaitAsync(ct).ConfigureAwait(false);
-        try
+        return await UpdateSnapshotAsync(snapshot =>
         {
-            var snapshot = await LoadCoreAsync(ct).ConfigureAwait(false);
             var retained = snapshot.Profiles
                 .Where(existing => !string.Equals(existing.ProfileId, normalized.ProfileId, StringComparison.OrdinalIgnoreCase))
                 .Append(normalized)
                 .OrderBy(static profile => profile.ProfileId, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
-            await PersistAsync(new StatementMappingProfileSnapshot(SnapshotVersion, retained), ct).ConfigureAwait(false);
-            return normalized;
-        }
-        finally
-        {
-            _gate.Release();
-        }
+            return (new StatementMappingProfileSnapshot(SnapshotVersion, retained), normalized);
+        }, ct).ConfigureAwait(false);
     }
 
     public async Task<bool> DeleteAsync(string profileId, CancellationToken ct = default)
@@ -89,25 +69,34 @@ public sealed class FileStatementMappingProfileStore : IStatementMappingProfileS
         ArgumentException.ThrowIfNullOrWhiteSpace(profileId);
         EnsureNotBuiltIn(profileId);
 
-        await _gate.WaitAsync(ct).ConfigureAwait(false);
-        try
+        return await UpdateSnapshotAsync(snapshot =>
         {
-            var snapshot = await LoadCoreAsync(ct).ConfigureAwait(false);
             var retained = snapshot.Profiles
                 .Where(existing => !string.Equals(existing.ProfileId, profileId.Trim(), StringComparison.OrdinalIgnoreCase))
                 .ToArray();
-            if (retained.Length == snapshot.Profiles.Count)
-            {
-                return false;
-            }
+            return retained.Length == snapshot.Profiles.Count
+                ? (snapshot, false)
+                : (new StatementMappingProfileSnapshot(SnapshotVersion, retained), true);
+        }, ct).ConfigureAwait(false);
+    }
 
-            await PersistAsync(new StatementMappingProfileSnapshot(SnapshotVersion, retained), ct).ConfigureAwait(false);
-            return true;
-        }
-        finally
+    protected override StatementMappingProfileSnapshot CreateEmptySnapshot() => new(SnapshotVersion, []);
+
+    protected override StatementMappingProfileSnapshot OnSnapshotLoaded(StatementMappingProfileSnapshot snapshot)
+    {
+        if (snapshot.Version != SnapshotVersion)
         {
-            _gate.Release();
+            throw new InvalidOperationException(
+                $"Statement mapping profile snapshot version {snapshot.Version} is not supported. Expected {SnapshotVersion}: {SnapshotPath}");
         }
+
+        return snapshot;
+    }
+
+    protected override StatementMappingProfileSnapshot HandleCorruptSnapshot(JsonException exception)
+    {
+        _logger?.LogWarning(exception, "Statement mapping profile snapshot is not valid JSON: {Path}", SnapshotPath);
+        throw new InvalidOperationException($"Statement mapping profile snapshot is invalid: {SnapshotPath}", exception);
     }
 
     private static void EnsureNotBuiltIn(string profileId)
@@ -119,46 +108,9 @@ public sealed class FileStatementMappingProfileStore : IStatementMappingProfileS
         }
     }
 
-    private async Task<StatementMappingProfileSnapshot> LoadCoreAsync(CancellationToken ct)
+    private static string GetSnapshotPath(string dataRoot)
     {
-        ct.ThrowIfCancellationRequested();
-        if (!File.Exists(_snapshotPath))
-        {
-            return new StatementMappingProfileSnapshot(SnapshotVersion, []);
-        }
-
-        try
-        {
-            await using var stream = File.OpenRead(_snapshotPath);
-            var snapshot = await JsonSerializer.DeserializeAsync(
-                    stream,
-                    StatementMappingProfileJsonContext.Default.StatementMappingProfileSnapshot,
-                    ct)
-                .ConfigureAwait(false);
-            if (snapshot is null)
-            {
-                return new StatementMappingProfileSnapshot(SnapshotVersion, []);
-            }
-
-            if (snapshot.Version != SnapshotVersion)
-            {
-                throw new InvalidOperationException(
-                    $"Statement mapping profile snapshot version {snapshot.Version} is not supported. Expected {SnapshotVersion}: {_snapshotPath}");
-            }
-
-            return snapshot;
-        }
-        catch (JsonException ex)
-        {
-            _logger?.LogWarning(ex, "Statement mapping profile snapshot is not valid JSON: {Path}", _snapshotPath);
-            throw new InvalidOperationException($"Statement mapping profile snapshot is invalid: {_snapshotPath}", ex);
-        }
-    }
-
-    private async Task PersistAsync(StatementMappingProfileSnapshot snapshot, CancellationToken ct)
-    {
-        ct.ThrowIfCancellationRequested();
-        var json = JsonSerializer.Serialize(snapshot, StatementMappingProfileJsonContext.Default.StatementMappingProfileSnapshot);
-        await AtomicFileWriter.WriteAsync(_snapshotPath, json, ct).ConfigureAwait(false);
+        ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
+        return Path.Combine(dataRoot, "reconciliation", "statement-mapping-profiles.json");
     }
 }

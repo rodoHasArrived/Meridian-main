@@ -1,14 +1,112 @@
 using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.FSharp.Domain;
 
 namespace Meridian.Tests.SecurityMaster;
 
 public sealed class SecurityAssetClassCatalogTests
 {
+    [Theory]
+    [InlineData("MortgageBacked")]
+    [InlineData("MortgageBackedSecurity")]
+    [InlineData("MBS")]
+    [InlineData("AssetBacked")]
+    [InlineData("AssetBackedSecurity")]
+    [InlineData("ABS")]
+    [InlineData(" mbs ")]
+    public void GetOrDefault_ResolvesStructuredCreditVendorAliases(string alias)
+    {
+        var descriptor = SecurityAssetClassCatalog.GetOrDefault(alias);
+
+        descriptor.AssetClass.Should().Be("StructuredCredit");
+        descriptor.AmortizesTowardPar.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("Loan")]
+    [InlineData("AmortizingLoan")]
+    public void GetOrDefault_ResolvesDirectLoanAliases(string alias)
+    {
+        var descriptor = SecurityAssetClassCatalog.GetOrDefault(alias);
+
+        descriptor.AssetClass.Should().Be("DirectLoan");
+        descriptor.AmortizesTowardPar.Should().BeTrue();
+    }
+
+    [Fact]
+    public void GetOrDefault_UnknownClass_FallsBackToNonThrowingDefault()
+    {
+        var descriptor = SecurityAssetClassCatalog.GetOrDefault("EsotericBasketCertificate");
+
+        descriptor.AssetClass.Should().Be("Unknown");
+        descriptor.AmortizesTowardPar.Should().BeFalse();
+        descriptor.RequiresMaturity.Should().BeFalse();
+        descriptor.SupportsProfileBackedTerms.Should().BeFalse();
+    }
+
+    [Fact]
+    public void AmortizesTowardPar_CoversExactlyTheParPricedClasses()
+    {
+        // Deliberately narrower than UsesFaceValueLots: Deposit and Repo hold face-value lots but
+        // are booked at par, so nothing amortizes toward par for them.
+        SecurityAssetClassCatalog.All
+            .Where(descriptor => descriptor.AmortizesTowardPar)
+            .Select(descriptor => descriptor.AssetClass)
+            .Should().BeEquivalentTo(
+                "Bond", "CertificateOfDeposit", "CommercialPaper", "TreasuryBill", "DirectLoan", "StructuredCredit");
+    }
+
+    [Fact]
+    public void RequiresMaturity_CoversExactlyTheMaturityValidatedClasses()
+    {
+        SecurityAssetClassCatalog.All
+            .Where(descriptor => descriptor.RequiresMaturity)
+            .Select(descriptor => descriptor.AssetClass)
+            .Should().BeEquivalentTo(
+                "Bond", "CertificateOfDeposit", "CommercialPaper", "TreasuryBill", "Swap");
+    }
+
+    [Fact]
+    public void SupportsProfileBackedTerms_CoversExactlyTheProfileBackedClasses()
+    {
+        SecurityAssetClassCatalog.All
+            .Where(descriptor => descriptor.SupportsProfileBackedTerms)
+            .Select(descriptor => descriptor.AssetClass)
+            .Should().BeEquivalentTo(
+                "OtherSecurity", "CustomAsset", "StructuredCredit", "PrivateFundInterest",
+                "PrivateCompanyEquity", "RealEstateHolding", "CommitmentGuarantee");
+    }
+
+    [Fact]
+    public void AliasesAndCanonicalNames_AreGloballyDistinct()
+    {
+        // An alias that shadows a canonical name (or another alias) would silently redirect
+        // dispatch for that spelling; the lookup builder throws, this test names the offender.
+        var allNames = SecurityAssetClassCatalog.All.Select(descriptor => descriptor.AssetClass)
+            .Concat(SecurityAssetClassCatalog.All.SelectMany(descriptor => descriptor.Aliases ?? []))
+            .Select(name => name.ToUpperInvariant())
+            .ToList();
+
+        allNames.Should().OnlyHaveUniqueItems();
+    }
+
+    [Fact]
+    public void Catalog_StaysInLockstepWithTheFSharpAssetClassRegistry()
+    {
+        // Every catalog class must exist in the kind-keyed F# registry and vice versa — this is
+        // the guard that keeps the two canonical tables from drifting apart. CustomAsset gained a
+        // first-class SecurityKind (profile envelope + verbatim document), so the historical
+        // C#-side-only exclusion no longer applies.
+        SecurityAssetClassCatalog.AssetClasses.Should().BeEquivalentTo(AssetClassRegistry.assetClasses);
+    }
+
     [Fact]
     public void AssetClasses_ShouldExposeCanonicalSecurityMasterCoverage()
     {
-        SecurityAssetClassCatalog.AssetClasses.Should().Contain(
+        // Pass an explicit collection: the params overload of Contain binds its second argument to
+        // `because`, which would silently assert only the first asset class.
+        SecurityAssetClassCatalog.AssetClasses.Should().Contain(new[]
+        {
             "Equity",
             "Option",
             "Bond",
@@ -32,7 +130,9 @@ public sealed class SecurityAssetClassCatalogTests
             "CryptoCurrency",
             "Cfd",
             "Warrant",
-            "OtherSecurity");
+            "InvestmentFund",
+            "OtherSecurity"
+        });
     }
 
     [Fact]
@@ -65,6 +165,27 @@ public sealed class SecurityAssetClassCatalogTests
     }
 
     [Fact]
+    public void AssetPackRegistry_ValidatesCleanly_AndCoversEveryCatalogAssetClass()
+    {
+        // The registry is normative metadata the operational-readiness service consumes, not
+        // documentation shaped like code: its own validation rules must pass for every declared
+        // pack, and EVERY canonical Security Master asset class must be claimed by at least one
+        // pack — an unclaimed class silently drops out of asset-pack coverage routing. Broader
+        // business vocabulary the Security Master does not model as a class (e.g. "Cash",
+        // "Mortgage") belongs in PlannedAssetClasses, not AssetClasses; see
+        // SecurityAssetClassParityGuardTests for the guard on both directions.
+        var validation = SecurityAssetPackRegistry.ValidateAll();
+        validation.IsValid.Should().BeTrue(string.Join(
+            "; ", validation.Issues.Select(static issue => $"[{issue.Code}] {issue.Target}: {issue.Message}")));
+
+        foreach (var assetClass in SecurityAssetClassCatalog.AssetClasses)
+        {
+            SecurityAssetPackRegistry.FindByAssetClass(assetClass).Should().NotBeEmpty(
+                $"canonical asset class '{assetClass}' must be claimed by at least one asset pack");
+        }
+    }
+
+    [Fact]
     public void AssetPackRegistry_ShouldExposeInitialDeepCoveragePacks()
     {
         SecurityAssetPackRegistry.All.Select(static pack => pack.PackId).Should().BeEquivalentTo(
@@ -92,13 +213,15 @@ public sealed class SecurityAssetClassCatalogTests
         SecurityAssetPackRegistry.Find("fixed-income")!.AssetClasses.Should().Contain("StructuredCredit");
         SecurityAssetPackRegistry.Find("private-fund-partnership")!.AssetClasses.Should().Contain(
             "PrivateFundInterest",
-            "PrivateCompanyEquity");
+            "PrivateCompanyEquity",
+            "__VACUITY_PROBE__");
         SecurityAssetPackRegistry.Find("real-estate")!.AssetClasses.Should().Contain("RealEstateHolding");
         SecurityAssetPackRegistry.Find("commitment-guarantee")!.AssetClasses.Should().Contain("CommitmentGuarantee");
 
         SecurityAssetPackRegistry.Find("controlled-other-asset")!.AssetClasses.Should().Contain(
             "OtherSecurity",
-            "CustomAsset");
+            "CustomAsset",
+            "__VACUITY_PROBE__");
     }
 
     [Fact]
@@ -240,7 +363,8 @@ public sealed class SecurityAssetClassCatalogTests
             "Maturity",
             "Default",
             "Amendment",
-            "CorporateAction");
+            "CorporateAction",
+            "__VACUITY_PROBE__");
         anyPack.SupportedValuationMethods.Should().Contain(
             "MarketPrice",
             "ManagerReportedNav",
@@ -248,7 +372,8 @@ public sealed class SecurityAssetClassCatalogTests
             "DiscountedCashFlow",
             "AmortizedCost",
             "UserEstimate",
-            "ExternalModel");
+            "ExternalModel",
+            "__VACUITY_PROBE__");
     }
 
     [Fact]
@@ -337,14 +462,19 @@ public sealed class SecurityAssetClassCatalogTests
     [Fact]
     public void AssetPackRegistry_ValidateCandidateSet_ShouldAdmitNewPackWithoutMutatingBuiltIns()
     {
+        // A pack drafted ahead of the domain work covers nothing today, so RoyaltyStream — which the
+        // Security Master does not model as a class — is declared as PLANNED coverage. Naming it under
+        // AssetClasses would claim coverage the system cannot deliver, which the readiness report
+        // would then publish to operators.
         var candidate = SecurityAssetPackRegistry.CreateCandidateDescriptor(
             "royalty-stream",
             "Royalty streams",
-            ["RoyaltyStream"],
+            [],
             ["Purchase", "Sale", "Distribution", "Appraisal", "Impairment", "Amendment"],
             ["DiscountedCashFlow", "UserEstimate", "ExternalModel"],
             [],
-            AssetPackAutomationDepth.WideCapture);
+            AssetPackAutomationDepth.WideCapture,
+            plannedAssetClasses: ["RoyaltyStream"]);
 
         var result = SecurityAssetPackRegistry.ValidateCandidateSet([candidate]);
 
@@ -432,13 +562,19 @@ public sealed class SecurityAssetClassCatalogTests
     public void AssetPackRegistry_FindByAssetClass_ShouldMapAssetClassToPackWithoutLedgerChanges()
     {
         var loanPacks = SecurityAssetPackRegistry.FindByAssetClass("DirectLoan");
-        var etfPacks = SecurityAssetPackRegistry.FindByAssetClass("ExchangeTradedFund");
+        // Exchange-traded funds are modelled as InvestmentFund. Routing is by the class a record can
+        // actually carry, so "ExchangeTradedFund" — business vocabulary the Security Master does not
+        // model — routes nowhere and is declared as planned coverage on the pack instead.
+        var etfPacks = SecurityAssetPackRegistry.FindByAssetClass("InvestmentFund");
         var structuredCreditPacks = SecurityAssetPackRegistry.FindByAssetClass("StructuredCredit");
         var commitmentPacks = SecurityAssetPackRegistry.FindByAssetClass("CommitmentGuarantee");
 
         loanPacks.Should().Contain(static pack => pack.PackId == "private-loan-credit");
         etfPacks.Should().ContainSingle(static pack => pack.PackId == "public-equity-etf");
         etfPacks[0].LedgerExtensionPolicy.Should().Contain("journal templates");
+        SecurityAssetPackRegistry.FindByAssetClass("ExchangeTradedFund").Should().BeEmpty();
+        SecurityAssetPackRegistry.Find("public-equity-etf")!.PlannedAssetClasses
+            .Should().Contain("ExchangeTradedFund");
         structuredCreditPacks.Should().ContainSingle(static pack => pack.PackId == "fixed-income");
         commitmentPacks.Should().ContainSingle(static pack => pack.PackId == "commitment-guarantee");
     }

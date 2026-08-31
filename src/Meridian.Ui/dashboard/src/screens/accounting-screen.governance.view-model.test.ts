@@ -12,6 +12,7 @@ import type {
   AccountingTenantAdministrationProfile,
   RuleDryRunResult,
 } from "@/types";
+import { requirePresent } from "@/test/fixtures";
 
 describe("accounting governance view model", () => {  it("loads Accounting Rules Studio rules and runs shared dry-run previews", async () => {
     const workspace: AccountingConfigurationWorkspace = {
@@ -359,7 +360,7 @@ describe("accounting governance view model", () => {  it("loads Accounting Rules
         bookCount: 1,
         openPeriodCount: 1
       },
-      rulesStudioSummary: workspace.rulesStudio.summary,
+      rulesStudioSummary: requirePresent(workspace.rulesStudio, "workspace.rulesStudio").summary,
       ledgerBookWorkflows: {
         ledgerBookId: "book-primary",
         postingRulesLedgerBookNativeCertified: true,
@@ -869,12 +870,12 @@ describe("accounting governance view model", () => {  it("loads Accounting Rules
     expect(result.current.ledgerBookSummaryLabel).toBe("1 ledger book registered | selected Primary book.");
     expect(result.current.ledgerBookRows).toEqual([
       expect.objectContaining({
-        id: "book-primary",
+        id: "Selected ledger book",
         title: "Primary book",
         statusLabel: "Selected",
         subtitle: "Gaap basis | USD",
-        policyLabel: "policy-gaap/2026.06",
-        scopeLabel: "fund-alpha / Entity entity-master",
+        policyLabel: "Gaap policy | version 2026.06",
+        scopeLabel: "Entity scope",
         updatedLabel: "Updated 2026-06-30",
         tone: "success"
       })
@@ -1031,6 +1032,12 @@ describe("accounting governance view model", () => {  it("loads Accounting Rules
       await result.current.productionCertificationProfile.save();
     });
 
+    // The browser is not a certification authority. `ffeb200a2` hardened the save path to clear
+    // the certified-artifact and retained-evidence collections before the request leaves the
+    // client, on the grounds that they are server-owned command output — so a compromised or
+    // buggy client cannot assert that a lane passed. This assertion pins that contract: the
+    // request carries the operator's control selections and the evidence they typed, and nothing
+    // that claims certification happened.
     expect(services.upsertProductionCertificationProfile).toHaveBeenCalledWith(expect.objectContaining({
       actor: "browser-accounting-operator",
       profile: expect.objectContaining({
@@ -1039,72 +1046,19 @@ describe("accounting governance view model", () => {  it("loads Accounting Rules
         closeReportingLedgerBookNativeCertified: true,
         closePlanConfigurationLedgerBookNativeCertified: true,
         crossPeriodReportDimensionQueriesCertified: true,
-        evidenceReferences: expect.arrayContaining([
+        evidenceReferences: [
           "evidence://ledger-book/book-primary/workflow-certification",
-          "evidence://ledger-book/book-primary/close-reporting",
-          "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/posting-candidate",
-          "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/journal-lifecycle",
-          "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/close-reporting",
-          "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/close-plan-configuration",
-          "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/period-report/dimension-scope/canonical-production",
-          "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/cross-period/dimension-scope/canonical-production",
-          "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/journal-query/dimension-scope/canonical-production"
-        ]),
-        workflowCertificationArtifacts: expect.arrayContaining([
-          expect.objectContaining({
-            status: "Certified",
-            tenantId: "tenant-alpha",
-            companyId: "company-alpha",
-            fundProfileId: "fund-alpha",
-            ledgerBookId: "book-primary",
-            sourceService: "browser-accounting-configure",
-            lanes: expect.arrayContaining([
-              expect.objectContaining({ kind: "PostingRules", status: "Passed" }),
-              expect.objectContaining({ kind: "JournalLifecycle", status: "Passed" }),
-              expect.objectContaining({ kind: "CloseReporting", status: "Passed" }),
-              expect.objectContaining({ kind: "ClosePlanConfiguration", status: "Passed" })
-            ])
-          })
-        ]),
-        dimensionalCertificationArtifacts: expect.arrayContaining([
-          expect.objectContaining({
-            status: "Certified",
-            dimensionScopeEvidenceKey: "canonical-production",
-            sourceService: "browser-accounting-configure",
-            lanes: expect.arrayContaining([
-              expect.objectContaining({ kind: "PeriodReports", status: "Passed" }),
-              expect.objectContaining({ kind: "CrossPeriodReports", status: "Passed" }),
-              expect.objectContaining({ kind: "JournalFilters", status: "Passed" })
-            ])
-          })
-        ]),
-        tenantAdminCertificationArtifacts: expect.arrayContaining([
-          expect.objectContaining({
-            status: "Certified",
-            tenantId: "tenant-alpha",
-            companyId: "company-alpha",
-            fundProfileId: "fund-alpha",
-            ledgerBookId: "book-primary",
-            sourceService: "browser-accounting-configure",
-            lanes: expect.arrayContaining([
-              expect.objectContaining({ kind: "TenantScope", status: "Passed" }),
-              expect.objectContaining({ kind: "AdminRoleProfile", status: "Passed" }),
-              expect.objectContaining({ kind: "ScopedAccessPolicies", status: "Passed" })
-            ])
-          })
-        ])
+          "evidence://ledger-book/book-primary/close-reporting"
+        ],
+        workflowCertificationArtifacts: [],
+        dimensionalCertificationArtifacts: [],
+        tenantAdminCertificationArtifacts: [],
+        retainedEvidence: []
       }),
-      evidenceLinks: expect.arrayContaining([
+      evidenceLinks: [
         "evidence://ledger-book/book-primary/workflow-certification",
-        "evidence://ledger-book/book-primary/close-reporting",
-        "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/posting-candidate",
-        "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/journal-lifecycle",
-        "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/close-reporting",
-        "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/close-plan-configuration",
-        "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/period-report/dimension-scope/canonical-production",
-        "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/cross-period/dimension-scope/canonical-production",
-        "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/journal-query/dimension-scope/canonical-production"
-      ])
+        "evidence://ledger-book/book-primary/close-reporting"
+      ]
     }));
     expect(result.current.productionCertificationProfile.statusText).toBe("Production certification profile saved; readiness refreshed from retained book and dimension controls.");
     expect(result.current.tenantAdministrationProfile.scopeLabel).toBe("Tenant tenant-alpha | company company-alpha");
@@ -2231,8 +2185,19 @@ describe("accounting governance view model", () => {  it("loads Accounting Rules
       tone: "success"
     })));
     expect(result.current.createLedgerBookStatusText).toBe("Created Alpha Fund primary book.");
-    expect(result.current.activateDisabledReason).toBeNull();
-    expect(result.current.canActivate).toBe(true);
+    expect(result.current.setupReadinessRows[1]).toEqual(expect.objectContaining({
+      id: "activation-readiness",
+      value: "Unavailable",
+      tone: "danger",
+      detail: "Production readiness could not be verified. Refresh the assessment before activation."
+    }));
+    expect(result.current.activateDisabledReason).toBe("Refresh production readiness successfully before activation.");
+    expect(result.current.canActivate).toBe(false);
+
+    await act(async () => {
+      await result.current.activate();
+    });
+    expect(services.activate).not.toHaveBeenCalled();
   });
 
 });

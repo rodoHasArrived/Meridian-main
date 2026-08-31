@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-06-16
-**Last Updated:** 2026-06-16
+**Reviewed:** 2026-07-19
+**Last Updated:** 2026-07-19
 
 This file is the Copilot-specific companion to the shared Meridian AI guidance. Keep it short:
 shared policy belongs in [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md),
@@ -49,8 +49,9 @@ current source instead.
 
 Meridian is a .NET 10 operational-finance and trading platform where fund management is a first-class specialization. Active operator UI work spans
 [`../../../src/Meridian.Ui/dashboard/`](../../../src/Meridian.Ui/dashboard/) and
-[`../../../src/Meridian.Wpf/`](../../../src/Meridian.Wpf/), with built browser assets in
-[`../../../src/Meridian.Ui/wwwroot/workstation/`](../../../src/Meridian.Ui/wwwroot/workstation/).
+[`../../../src/Meridian.Wpf/`](../../../src/Meridian.Wpf/). Dashboard builds emit host-served
+browser assets under `src/Meridian.Ui/wwwroot/workstation/`; that generated directory may be absent
+in a fresh checkout.
 Shared product behavior should land behind shared contracts, local/web API endpoints, or shared
 read models before either client composes it.
 
@@ -112,6 +113,7 @@ python build/scripts/docs/check-ai-handoff.py --strict
 
 - Keep this file Copilot-specific; update shared rules in
   [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md).
+- Use [`ai-systems-inventory.md`](../ai-systems-inventory.md) when a task changes multiple Copilot, Codex, or Claude-facing AI surfaces.
 - Keep `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`,
   `.github/prompts/`, and this file aligned when Copilot behavior changes.
 - Keep [`../tooling/README.md`](../tooling/README.md) aligned when Copilot-facing validation or
@@ -140,6 +142,7 @@ When the repo layout changes, update the generated navigation or structure sourc
   and host mechanics in [`../../../.github/copilot-instructions.md`](../../../.github/copilot-instructions.md)
 - Generated-file handling: never hand-edit `docs/ai/generated/*` or `docs/generated/*`; rerun local navigation/regeneration lanes when routing truth changes
 - Agent orchestration: initialize handoff discipline with `../agent-handoff-checklist.md` and `../parallel-task-manifest-template.md` when multiple agents are involved
+- AI system scoping: start at `../ai-systems-inventory.md` for tasks with shared cross-host impact
 - Parallel development workflows: keep surfaces disjoint and record lane scope in the manifest
 - Token/context management: choose `../work-modes.md` first, keep context scoped to the lane, and escalate only when cross-provider or approval-gated decisions arise
 - Validation procedures: `python build/scripts/docs/check-ai-inventory.py --summary`, `python -m unittest build/scripts/docs/tests/test_check_ai_inventory.py`, plus task-appropriate command set

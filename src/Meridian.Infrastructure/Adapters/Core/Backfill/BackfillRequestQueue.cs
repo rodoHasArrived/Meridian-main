@@ -16,11 +16,13 @@ public sealed class BackfillRequestQueue : IDisposable
     private readonly PriorityQueue<BackfillRequest, int> _pendingRequests = new();
     private readonly ConcurrentDictionary<string, int> _activeRequestsByProvider = new();
     private readonly ConcurrentDictionary<string, DateTimeOffset> _providerCooldowns = new();
-    private readonly ConcurrentDictionary<string, BackfillRequest> _inFlightRequests = new();
+    private readonly ConcurrentDictionary<BackfillRequestAttemptToken, BackfillRequest> _inFlightRequests = new();
     private readonly Channel<BackfillRequest> _completedChannel;
     private readonly ProviderRateLimitTracker _rateLimitTracker;
     private readonly SemaphoreSlim _queueLock = new(1, 1);
     private readonly ILogger _log;
+    private long _nextAttemptId;
+    private int _pendingCount;
     private bool _disposed;
 
     /// <summary>
@@ -45,7 +47,7 @@ public sealed class BackfillRequestQueue : IDisposable
     /// </summary>
     public event Action<QueueStateChangedEventArgs>? OnQueueStateChanged;
 
-    public int PendingCount => _pendingRequests.Count;
+    public int PendingCount => Volatile.Read(ref _pendingCount);
     public int InFlightCount => _inFlightRequests.Count;
     public int TotalCount => PendingCount + InFlightCount;
     public bool IsEmpty => TotalCount == 0;
@@ -63,58 +65,137 @@ public sealed class BackfillRequestQueue : IDisposable
     /// <summary>
     /// Enqueue a batch of requests from a backfill job.
     /// </summary>
-    public async Task EnqueueJobRequestsAsync(BackfillJob job, GapAnalysisResult gapAnalysis, CancellationToken ct = default)
+    public async Task<IReadOnlyList<BackfillRequest>> EnqueueJobRequestsAsync(
+        BackfillJob job,
+        GapAnalysisResult gapAnalysis,
+        CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(job);
+        ArgumentNullException.ThrowIfNull(gapAnalysis);
+
+        var stagedRequests = new List<BackfillRequest>();
+        var stagedProgress = new List<(string Symbol, int TotalRequests, List<DateOnly> DatesToFill)>();
+
+        // Build the whole batch before taking queue ownership. Cancellation can therefore
+        // abandon an incomplete batch without leaving partially admitted requests behind.
+        foreach (var (symbol, gaps) in gapAnalysis.SymbolGaps)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!gaps.HasGaps)
+                continue;
+
+            var ranges = gaps.GetGapRanges(job.Options.BatchSizeDays);
+            foreach (var (from, to) in ranges)
+            {
+                ct.ThrowIfCancellationRequested();
+                stagedRequests.Add(new BackfillRequest
+                {
+                    JobId = job.JobId,
+                    Symbol = symbol,
+                    FromDate = from,
+                    ToDate = to,
+                    Granularity = job.Granularity,
+                    PreferredProviders = job.PreferredProviders.ToList(),
+                    Priority = CalculatePriority(job, symbol, from),
+                    MaxRetries = job.Options.MaxRetries,
+                    CreatedAt = DateTimeOffset.UtcNow
+                });
+            }
+
+            stagedProgress.Add((symbol, ranges.Count, [.. gaps.GapDates]));
+        }
+
         await _queueLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            foreach (var (symbol, gaps) in gapAnalysis.SymbolGaps)
+            // This is the commit point. There are no awaits or cancellation observations
+            // between this check and returning the complete admitted batch.
+            ct.ThrowIfCancellationRequested();
+            foreach (var request in stagedRequests)
             {
-                if (!gaps.HasGaps)
-                    continue;
+                _pendingRequests.Enqueue(request, request.Priority);
+            }
+            _pendingCount += stagedRequests.Count;
 
-                // Get consolidated date ranges to minimize requests
-                var ranges = gaps.GetGapRanges(job.Options.BatchSizeDays);
-
-                foreach (var (from, to) in ranges)
-                {
-                    var request = new BackfillRequest
-                    {
-                        JobId = job.JobId,
-                        Symbol = symbol,
-                        FromDate = from,
-                        ToDate = to,
-                        Granularity = job.Granularity,
-                        PreferredProviders = job.PreferredProviders.ToList(),
-                        Priority = CalculatePriority(job, symbol, from),
-                        MaxRetries = job.Options.MaxRetries,
-                        CreatedAt = DateTimeOffset.UtcNow
-                    };
-
-                    _pendingRequests.Enqueue(request, request.Priority);
-                }
-
+            foreach (var (symbol, totalRequests, datesToFill) in stagedProgress)
+            {
                 // Update job progress tracking
                 if (job.SymbolProgress.TryGetValue(symbol, out var progress))
                 {
-                    progress.TotalRequests = ranges.Count;
-                    progress.DatesToFill = gaps.GapDates;
+                    progress.TotalRequests = totalRequests;
+                    progress.DatesToFill = datesToFill;
                 }
                 else
                 {
                     job.SymbolProgress[symbol] = new SymbolBackfillProgress
                     {
                         Symbol = symbol,
-                        TotalRequests = ranges.Count,
-                        DatesToFill = gaps.GapDates
+                        TotalRequests = totalRequests,
+                        DatesToFill = datesToFill
                     };
                 }
             }
 
             _log.Information("Enqueued {RequestCount} requests for job {JobId} ({Symbols} symbols)",
-                _pendingRequests.Count, job.JobId, gapAnalysis.SymbolsWithGaps);
+                stagedRequests.Count, job.JobId, gapAnalysis.SymbolsWithGaps);
 
             NotifyQueueStateChanged();
+            return stagedRequests;
+        }
+        finally
+        {
+            _queueLock.Release();
+        }
+    }
+
+    /// <summary>
+    /// Rolls back one not-yet-persisted batch from the pending queue. This is intentionally
+    /// silent: a cancelled job start never committed ownership of these requests and must not
+    /// publish false terminal completions.
+    /// </summary>
+    internal async Task RollbackPendingRequestsAsync(
+        IReadOnlyCollection<BackfillRequest> requests,
+        CancellationToken ct = default)
+    {
+        if (requests.Count == 0)
+            return;
+
+        var requestSet = new HashSet<BackfillRequest>(
+            requests,
+            ReferenceEqualityComparer.Instance);
+
+        await _queueLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            FilterPendingRequests(requestSet.Contains, removeMatching: true);
+            NotifyQueueStateChanged();
+        }
+        finally
+        {
+            _queueLock.Release();
+        }
+    }
+
+    /// <summary>
+    /// Reports whether the queue still owns any request from an exact reference-identity batch.
+    /// </summary>
+    internal async Task<bool> ContainsAnyRequestsAsync(
+        IReadOnlyCollection<BackfillRequest> requests,
+        CancellationToken ct = default)
+    {
+        if (requests.Count == 0)
+            return false;
+
+        var requestSet = new HashSet<BackfillRequest>(
+            requests,
+            ReferenceEqualityComparer.Instance);
+
+        await _queueLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            return _pendingRequests.UnorderedItems.Any(
+                       item => requestSet.Contains(item.Element)) ||
+                   _inFlightRequests.Values.Any(requestSet.Contains);
         }
         finally
         {
@@ -131,6 +212,7 @@ public sealed class BackfillRequestQueue : IDisposable
         try
         {
             _pendingRequests.Enqueue(request, request.Priority);
+            _pendingCount++;
             NotifyQueueStateChanged();
         }
         finally
@@ -142,7 +224,7 @@ public sealed class BackfillRequestQueue : IDisposable
     /// <summary>
     /// Try to get the next request that can be processed (respecting rate limits and concurrency).
     /// </summary>
-    public async Task<BackfillRequest?> TryDequeueAsync(CancellationToken ct = default)
+    public async Task<BackfillRequestAttempt?> TryDequeueAsync(CancellationToken ct = default)
     {
         await _queueLock.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -183,18 +265,22 @@ public sealed class BackfillRequestQueue : IDisposable
 
             if (selected != null)
             {
+                _pendingCount--;
                 selected.Status = BackfillRequestStatus.InProgress;
                 selected.StartedAt = DateTimeOffset.UtcNow;
-                _inFlightRequests[selected.RequestId] = selected;
+                var attemptToken = new BackfillRequestAttemptToken(
+                    Interlocked.Increment(ref _nextAttemptId));
+                _inFlightRequests[attemptToken] = selected;
 
                 // Track active requests per provider
                 var provider = selected.AssignedProvider ?? "unknown";
                 _activeRequestsByProvider.AddOrUpdate(provider, 1, (_, count) => count + 1);
 
                 NotifyQueueStateChanged();
+                return new BackfillRequestAttempt(selected, attemptToken);
             }
 
-            return selected;
+            return null;
         }
         finally
         {
@@ -245,12 +331,34 @@ public sealed class BackfillRequestQueue : IDisposable
     /// <summary>
     /// Mark a request as completed (success or failure).
     /// </summary>
-    public async Task CompleteRequestAsync(BackfillRequest request, bool success, string? error = null, CancellationToken ct = default)
+    public Task CompleteRequestAsync(
+        BackfillRequest request,
+        BackfillRequestAttemptToken attemptToken,
+        bool success,
+        string? error = null,
+        CancellationToken ct = default)
+        => CompleteRequestAttemptAsync(request, attemptToken, success, error, ct);
+
+    internal async Task CompleteRequestAttemptAsync(
+        BackfillRequest request,
+        BackfillRequestAttemptToken attemptToken,
+        bool success,
+        string? error = null,
+        CancellationToken ct = default)
     {
+        var transitioned = false;
+
         await _queueLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            _inFlightRequests.TryRemove(request.RequestId, out _);
+            if (!TryRemoveCurrentAttempt(request, attemptToken))
+            {
+                _log.Warning(
+                    "Ignored stale completion for backfill request {RequestId}, attempt {AttemptToken}",
+                    request.RequestId,
+                    attemptToken.Value);
+                return;
+            }
 
             var provider = request.AssignedProvider ?? "unknown";
             _activeRequestsByProvider.AddOrUpdate(provider, 0, (_, count) => Math.Max(0, count - 1));
@@ -278,18 +386,119 @@ public sealed class BackfillRequestQueue : IDisposable
                     request.Priority += 10; // Lower priority on retry
 
                     _pendingRequests.Enqueue(request, request.Priority);
+                    _pendingCount++;
                     _log.Information("Requeued request for retry ({Retry}/{Max}): {Symbol}",
                         request.RetryCount, request.MaxRetries, request.Symbol);
                 }
             }
 
-            await _completedChannel.Writer.WriteAsync(request, ct).ConfigureAwait(false);
+            transitioned = true;
             NotifyQueueStateChanged();
         }
         finally
         {
             _queueLock.Release();
         }
+
+        if (transitioned)
+            await PublishCompletionAsync(request).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Atomically releases ownership of the current in-flight attempt and records cancellation.
+    /// A stale token cannot remove a newer attempt of the same request object.
+    /// </summary>
+    public Task<bool> CancelInFlightRequestAsync(
+        BackfillRequest request,
+        BackfillRequestAttemptToken attemptToken,
+        string reason,
+        CancellationToken ct = default)
+        => CancelInFlightAttemptAsync(request, attemptToken, reason, ct);
+
+    internal async Task<bool> CancelInFlightAttemptAsync(
+        BackfillRequest request,
+        BackfillRequestAttemptToken attemptToken,
+        string reason,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+
+        await _queueLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (!TryRemoveCurrentAttempt(request, attemptToken))
+                return false;
+
+            var provider = request.AssignedProvider ?? "unknown";
+            _activeRequestsByProvider.AddOrUpdate(provider, 0, (_, count) => Math.Max(0, count - 1));
+
+            request.CompletedAt = DateTimeOffset.UtcNow;
+            request.Status = BackfillRequestStatus.Cancelled;
+            request.ErrorMessage = reason;
+            NotifyQueueStateChanged();
+        }
+        finally
+        {
+            _queueLock.Release();
+        }
+
+        await PublishCompletionAsync(request).ConfigureAwait(false);
+        return true;
+    }
+
+    internal async Task<bool> RequeueInFlightAttemptAsync(
+        BackfillRequest request,
+        BackfillRequestAttemptToken attemptToken,
+        string reason,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+
+        await _queueLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (!TryRemoveCurrentAttempt(request, attemptToken))
+                return false;
+
+            var provider = request.AssignedProvider ?? "unknown";
+            _activeRequestsByProvider.AddOrUpdate(provider, 0, (_, count) => Math.Max(0, count - 1));
+
+            request.Status = BackfillRequestStatus.Pending;
+            request.AssignedProvider = null;
+            request.StartedAt = null;
+            request.ErrorMessage = reason;
+            _pendingRequests.Enqueue(request, request.Priority);
+            _pendingCount++;
+            NotifyQueueStateChanged();
+            return true;
+        }
+        finally
+        {
+            _queueLock.Release();
+        }
+    }
+
+    private bool TryRemoveCurrentAttempt(
+        BackfillRequest request,
+        BackfillRequestAttemptToken attemptToken)
+    {
+        if (attemptToken.Value <= 0 ||
+            !_inFlightRequests.TryGetValue(attemptToken, out var current) ||
+            !ReferenceEquals(current, request))
+        {
+            return false;
+        }
+
+        return _inFlightRequests.TryRemove(attemptToken, out _);
+    }
+
+    private async Task PublishCompletionAsync(BackfillRequest request)
+    {
+        // Terminal queue ownership commits before publication. Once committed, cancellation of
+        // the initiating call must not silently drop the corresponding completion notification.
+        await _completedChannel.Writer.WriteAsync(request, CancellationToken.None).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -328,10 +537,18 @@ public sealed class BackfillRequestQueue : IDisposable
     /// </summary>
     public async Task CancelJobRequestsAsync(string jobId, CancellationToken ct = default)
     {
+        List<BackfillRequest> cancelled;
         await _queueLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            FilterPendingRequests(r => r.JobId != jobId, removeMatching: true);
+            cancelled = FilterPendingRequests(r => r.JobId == jobId, removeMatching: true);
+            foreach (var request in cancelled)
+            {
+                request.Status = BackfillRequestStatus.Cancelled;
+                request.CompletedAt = DateTimeOffset.UtcNow;
+                request.ErrorMessage = "Cancelled with the owning backfill job.";
+            }
+
             _log.Information("Cancelled pending requests for job {JobId}", jobId);
             NotifyQueueStateChanged();
         }
@@ -339,6 +556,9 @@ public sealed class BackfillRequestQueue : IDisposable
         {
             _queueLock.Release();
         }
+
+        foreach (var request in cancelled)
+            await PublishCompletionAsync(request).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -351,21 +571,19 @@ public sealed class BackfillRequestQueue : IDisposable
 
         while (_pendingRequests.TryDequeue(out var req, out var pri))
         {
-            if (predicate(req))
-            {
-                if (!removeMatching)
-                    tempQueue.Enqueue(req, pri);
+            var isMatch = predicate(req);
+            if (isMatch)
                 matching.Add(req);
-            }
-            else
-            {
-                if (removeMatching)
-                    tempQueue.Enqueue(req, pri);
-            }
+
+            if (!removeMatching || !isMatch)
+                tempQueue.Enqueue(req, pri);
         }
 
         while (tempQueue.TryDequeue(out var req, out var pri))
             _pendingRequests.Enqueue(req, pri);
+
+        if (removeMatching)
+            _pendingCount -= matching.Count;
 
         return matching;
     }
@@ -374,6 +592,13 @@ public sealed class BackfillRequestQueue : IDisposable
     /// Get the channel reader for completed requests.
     /// </summary>
     public ChannelReader<BackfillRequest> CompletedRequests => _completedChannel.Reader;
+
+    /// <summary>
+    /// Closes completion publication after every admitted producer has quiesced. The reader can
+    /// then drain the bounded channel to completion without losing terminal notifications.
+    /// </summary>
+    internal void CompleteCompletionNotifications()
+        => _completedChannel.Writer.TryComplete();
 
     /// <summary>
     /// Get queue statistics.
@@ -436,12 +661,28 @@ public sealed class BackfillRequestQueue : IDisposable
 
     private void NotifyQueueStateChanged()
     {
-        OnQueueStateChanged?.Invoke(new QueueStateChangedEventArgs
+        var handlers = OnQueueStateChanged;
+        if (handlers is null)
+            return;
+
+        var notification = new QueueStateChangedEventArgs
         {
             PendingCount = PendingCount,
             InFlightCount = InFlightCount,
             Timestamp = DateTimeOffset.UtcNow
-        });
+        };
+
+        foreach (var handler in handlers.GetInvocationList().Cast<Action<QueueStateChangedEventArgs>>())
+        {
+            try
+            {
+                handler(notification);
+            }
+            catch (Exception ex)
+            {
+                _log.Error(ex, "Backfill queue-state observer failed");
+            }
+        }
     }
 
     public void Dispose()
@@ -450,7 +691,7 @@ public sealed class BackfillRequestQueue : IDisposable
             return;
         _disposed = true;
         _queueLock.Dispose();
-        _completedChannel.Writer.Complete();
+        _completedChannel.Writer.TryComplete();
     }
 }
 
@@ -476,6 +717,37 @@ public sealed class BackfillRequest
     public DateTimeOffset? CompletedAt { get; set; }
     public string? ErrorMessage { get; set; }
     public int BarsRetrieved { get; set; }
+}
+
+/// <summary>
+/// One immutable dequeue lease. A request can be requeued, but an earlier lease retains only its
+/// original token and cannot discover or act on the replacement attempt.
+/// </summary>
+public readonly record struct BackfillRequestAttempt
+{
+    internal BackfillRequestAttempt(
+        BackfillRequest request,
+        BackfillRequestAttemptToken token)
+    {
+        Request = request;
+        Token = token;
+    }
+
+    public BackfillRequest Request { get; }
+    public BackfillRequestAttemptToken Token { get; }
+}
+
+/// <summary>
+/// Opaque queue-issued capability for one dequeue attempt.
+/// </summary>
+public readonly record struct BackfillRequestAttemptToken
+{
+    internal BackfillRequestAttemptToken(long value)
+    {
+        Value = value;
+    }
+
+    internal long Value { get; }
 }
 
 /// <summary>

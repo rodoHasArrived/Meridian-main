@@ -1,7 +1,11 @@
 using System.Collections.Concurrent;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
+using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Operations;
 using Meridian.Domain.Events;
+using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -34,97 +38,444 @@ public sealed class DataQualityService : IDataQualityService
 
     public async Task<DataQualityScore> ScoreAsync(string path, CancellationToken ct = default)
     {
-        if (!File.Exists(path))
-            throw new FileNotFoundException($"File not found: {path}");
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        var sourcePath = path;
+        var operationId = $"quality-evaluation-{Guid.NewGuid():N}";
+        var startedAtUtc = DateTimeOffset.UtcNow;
+        try
+        {
+            ct.ThrowIfCancellationRequested();
+            sourcePath = Path.GetFullPath(path);
+            return await ScoreCoreAsync(sourcePath, operationId, startedAtUtc, ct).ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            var blocked = exception is OperationCanceledException && ct.IsCancellationRequested;
+            var failed = CreateFailedQualityScore(
+                sourcePath,
+                operationId,
+                startedAtUtc,
+                exception,
+                blocked);
+            try
+            {
+                await PersistFailureOutcomeAsync(failed.Outcome!, CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception persistenceException)
+            {
+                _logger.LogError(
+                    persistenceException,
+                    "Failed to retain terminal quality outcome {OperationId}; returning the failure receipt to the caller.",
+                    operationId);
+            }
+            return failed;
+        }
+    }
 
-        var fileInfo = new FileInfo(path);
+    private async Task<DataQualityScore> ScoreCoreAsync(
+        string path,
+        string operationId,
+        DateTimeOffset startedAtUtc,
+        CancellationToken ct)
+    {
+        var retainedInput = await RetainInputSnapshotAsync(path, ct).ConfigureAwait(false);
+        var scorePath = retainedInput.SnapshotPath;
         var dimensions = new List<QualityDimension>();
 
         // Calculate each quality dimension
-        var completeness = await CalculateCompletenessAsync(path, ct);
+        var completeness = await CalculateCompletenessAsync(scorePath, ct);
         dimensions.Add(new QualityDimension("Completeness", completeness.Score, 0.20, completeness.Issues));
 
-        var accuracy = await CalculateAccuracyAsync(path, ct);
+        var accuracy = await CalculateAccuracyAsync(scorePath, ct);
         dimensions.Add(new QualityDimension("Accuracy", accuracy.Score, 0.20, accuracy.Issues));
 
-        var timeliness = await CalculateTimelinessAsync(path, ct);
+        var timeliness = await CalculateTimelinessAsync(scorePath, ct);
         dimensions.Add(new QualityDimension("Timeliness", timeliness.Score, 0.15, timeliness.Issues));
 
-        var consistency = await CalculateConsistencyAsync(path, ct);
+        var consistency = await CalculateConsistencyAsync(scorePath, ct);
         dimensions.Add(new QualityDimension("Consistency", consistency.Score, 0.20, consistency.Issues));
 
-        var integrity = await CalculateIntegrityAsync(path, ct);
+        var integrity = await CalculateIntegrityAsync(scorePath, ct);
         dimensions.Add(new QualityDimension("Integrity", integrity.Score, 0.15, integrity.Issues));
 
-        var continuity = await CalculateContinuityAsync(path, ct);
+        var continuity = await CalculateContinuityAsync(scorePath, ct);
         dimensions.Add(new QualityDimension("Continuity", continuity.Score, 0.10, continuity.Issues));
 
         // Calculate weighted overall score
         var overallScore = dimensions.Sum(d => d.Score * d.Weight);
 
         var score = new DataQualityScore(
-            Path: path,
+            Path: retainedInput.SourcePath,
             EvaluatedAt: DateTimeOffset.UtcNow,
             OverallScore: Math.Round(overallScore, 4),
             Dimensions: dimensions.ToArray()
         );
 
-        _scoreCache[path] = score;
+        var outcome = await PersistQualityHistoryAsync(
+            retainedInput,
+            score,
+            operationId,
+            startedAtUtc,
+            ct).ConfigureAwait(false);
+        score = score with { Outcome = outcome };
+        _scoreCache[retainedInput.SourcePath] = score;
         return score;
+    }
+
+    private async Task<VerifiedOperationOutcome> PersistQualityHistoryAsync(
+        RetainedQualityInput retainedInput,
+        DataQualityScore score,
+        string operationId,
+        DateTimeOffset startedAtUtc,
+        CancellationToken ct)
+    {
+        const string inputEvidenceId = "quality-input";
+        const string resultEvidenceId = "quality-result";
+        var issueMessages = score.Dimensions
+            .SelectMany(static dimension => dimension.Issues.Select(issue => $"{dimension.Name}: {issue}"))
+            .ToArray();
+        var hasWarnings = issueMessages.Length > 0;
+        var completedAtUtc = DateTimeOffset.UtcNow;
+        var symbol = ExtractSymbol(retainedInput.SourcePath);
+        var date = DateOnly.FromDateTime(score.EvaluatedAt.UtcDateTime);
+        var provider = ExtractProvider(retainedInput.SourcePath);
+        const string rulesetVersion = "data-quality.v1";
+        var dimensionScores = score.Dimensions.ToDictionary(
+            static dimension => dimension.Name,
+            static dimension => dimension.Score,
+            StringComparer.OrdinalIgnoreCase);
+        var resultHash = QualityTrendResultHash.Compute(
+            operationId,
+            rulesetVersion,
+            retainedInput.InputHashSha256,
+            symbol,
+            date,
+            provider,
+            score.EvaluatedAt,
+            score.OverallScore,
+            dimensionScores);
+        var inputEvidence = new OperationEvidenceReference(
+            inputEvidenceId,
+            "input-file",
+            $"Immutable quality evaluation snapshot for {Path.GetFileName(retainedInput.SourcePath)}.",
+            new Uri(retainedInput.SnapshotPath).AbsoluteUri,
+            retainedInput.InputHashSha256,
+            completedAtUtc);
+        var resultEvidence = new OperationEvidenceReference(
+            resultEvidenceId,
+            "quality-result",
+            "Canonical hash of the evaluation identity, ruleset, retained input, aggregate score, and dimension scores.",
+            ContentHashSha256: resultHash,
+            CapturedAtUtc: completedAtUtc);
+        var issues = hasWarnings
+            ? new[]
+            {
+                new OperationIssue(
+                    "quality-observations",
+                    string.Join("; ", issueMessages),
+                    OperationIssueSeverity.Warning,
+                    EvidenceId: resultEvidenceId)
+            }
+            : Array.Empty<OperationIssue>();
+        var recovery = hasWarnings
+            ? new[]
+            {
+                new OperationRecoveryAction(
+                    "review-quality-observations",
+                    "Review quality observations",
+                    "Inspect the retained input and dimension scores, repair the source data when appropriate, then rerun scoring.",
+                    Retryable: true,
+                    RequiresHumanAction: true)
+                {
+                    EvidenceIds = [inputEvidenceId, resultEvidenceId]
+                }
+            }
+            : Array.Empty<OperationRecoveryAction>();
+        var outcome = VerifiedOperationOutcomeValidator.ValidateAndThrow(new VerifiedOperationOutcome(
+            operationId,
+            "data-quality-evaluation",
+            hasWarnings ? OperationTerminalState.CompletedWithWarnings : OperationTerminalState.Succeeded,
+            startedAtUtc,
+            completedAtUtc,
+            AttemptNumber: 1,
+            CorrelationId: operationId,
+            InputHashSha256: retainedInput.InputHashSha256,
+            Postconditions:
+            [
+                new OperationPostcondition(
+                    "quality-dimensions-evaluated",
+                    "All configured quality dimensions were evaluated against the retained input.",
+                    OperationPostconditionState.Satisfied,
+                    Required: true,
+                    EvidenceIds: [inputEvidenceId, resultEvidenceId])
+            ],
+            Evidence: [inputEvidence, resultEvidence],
+            Artifacts: [],
+            Issues: issues,
+            Recovery: recovery));
+
+        await _trendStore.AppendAsync(
+            new QualityTrendPoint(
+                Symbol: symbol,
+                Date: date,
+                Provider: provider,
+                ScoredAt: score.EvaluatedAt,
+                OverallScore: score.OverallScore,
+                DimensionScores: dimensionScores)
+            {
+                EvaluationId = operationId,
+                InputHashSha256 = retainedInput.InputHashSha256,
+                ResultHashSha256 = resultHash,
+                RulesetVersion = rulesetVersion,
+                Outcome = outcome
+            },
+            ct).ConfigureAwait(false);
+        return outcome;
+    }
+
+    private DataQualityScore CreateFailedQualityScore(
+        string sourcePath,
+        string operationId,
+        DateTimeOffset startedAtUtc,
+        Exception exception,
+        bool blocked)
+    {
+        var completedAtUtc = DateTimeOffset.UtcNow;
+        var inputHash = Sha256Digest.ComputeUtf8($"meridian.data-quality-request.v1\n{sourcePath.Length}:{sourcePath}");
+        const string sourceEvidenceId = "quality-source-request";
+        var evidence = new OperationEvidenceReference(
+            sourceEvidenceId,
+            "source-request",
+            $"Canonical request identity for the failed quality evaluation of '{sourcePath}'.",
+            ContentHashSha256: inputHash,
+            CapturedAtUtc: startedAtUtc);
+        var state = blocked ? OperationTerminalState.Blocked : OperationTerminalState.Failed;
+        var guidance = blocked
+            ? "Retry the quality evaluation when cancellation is cleared."
+            : "Inspect the retained failure receipt, repair source access or quality-history storage, then retry with a new operation ID.";
+        var outcome = VerifiedOperationOutcomeValidator.ValidateAndThrow(new VerifiedOperationOutcome(
+            operationId,
+            "data-quality-evaluation",
+            state,
+            startedAtUtc,
+            completedAtUtc,
+            AttemptNumber: 1,
+            CorrelationId: operationId,
+            InputHashSha256: inputHash,
+            Postconditions:
+            [
+                new OperationPostcondition(
+                    "quality-evaluation-retained",
+                    "The quality evaluation and its verified trend evidence were retained.",
+                    OperationPostconditionState.NotSatisfied,
+                    Required: true,
+                    EvidenceIds: [sourceEvidenceId])
+            ],
+            Evidence: [evidence],
+            Artifacts: [],
+            Issues:
+            [
+                new OperationIssue(
+                    blocked ? "quality-evaluation-cancelled" : "quality-evaluation-failed",
+                    exception.Message,
+                    OperationIssueSeverity.Error,
+                    EvidenceId: sourceEvidenceId)
+            ],
+            Recovery:
+            [
+                new OperationRecoveryAction(
+                    "retry-quality-evaluation",
+                    "Repair and retry quality evaluation",
+                    guidance,
+                    Retryable: true,
+                    RequiresHumanAction: !blocked)
+                {
+                    EvidenceIds = [sourceEvidenceId]
+                }
+            ]));
+
+        return new DataQualityScore(
+            sourcePath,
+            completedAtUtc,
+            OverallScore: 0,
+            Dimensions:
+            [
+                new QualityDimension(
+                    "Evaluation",
+                    0,
+                    1,
+                    [exception.Message])
+            ])
+        {
+            Outcome = outcome
+        };
+    }
+
+    private async Task PersistFailureOutcomeAsync(
+        VerifiedOperationOutcome outcome,
+        CancellationToken ct)
+    {
+        var directory = Path.Combine(_options.RootPath, "quality", "outcomes");
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, $"{outcome.OperationId}.json");
+        var json = JsonSerializer.Serialize(
+            outcome,
+            OperationsContractsJsonContext.Default.VerifiedOperationOutcome);
+        await AtomicFileWriter.WriteAsync(path, json, ct).ConfigureAwait(false);
+    }
+
+    private async Task<RetainedQualityInput> RetainInputSnapshotAsync(string path, CancellationToken ct)
+    {
+        var sourcePath = Path.GetFullPath(path);
+        if (!File.Exists(sourcePath))
+            throw new FileNotFoundException($"File not found: {sourcePath}", sourcePath);
+
+        var evidenceDirectory = Path.Combine(_options.RootPath, "quality", "evidence");
+        Directory.CreateDirectory(evidenceDirectory);
+        var sourceName = Path.GetFileName(sourcePath);
+        var suffixIndex = sourceName.IndexOf('.', StringComparison.Ordinal);
+        var suffix = suffixIndex >= 0 ? sourceName[suffixIndex..] : ".snapshot";
+        var snapshotPath = Path.Combine(evidenceDirectory, $"{Guid.NewGuid():N}{suffix}");
+        var temporaryPath = snapshotPath + ".tmp";
+        try
+        {
+            var sourceLastWriteUtc = File.GetLastWriteTimeUtc(sourcePath);
+            await using (var source = new FileStream(
+                             sourcePath,
+                             FileMode.Open,
+                             FileAccess.Read,
+                             FileShare.Read,
+                             bufferSize: 81920,
+                             FileOptions.Asynchronous | FileOptions.SequentialScan))
+            await using (var destination = new FileStream(
+                             temporaryPath,
+                             FileMode.CreateNew,
+                             FileAccess.ReadWrite,
+                             FileShare.None,
+                             bufferSize: 81920,
+                             FileOptions.Asynchronous | FileOptions.SequentialScan))
+            {
+                await source.CopyToAsync(destination, ct).ConfigureAwait(false);
+                await destination.FlushAsync(ct).ConfigureAwait(false);
+            }
+
+            await using var snapshot = new FileStream(
+                temporaryPath,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                bufferSize: 81920,
+                FileOptions.Asynchronous | FileOptions.SequentialScan);
+            var inputHash = await Sha256Digest.ComputeAsync(snapshot, ct).ConfigureAwait(false);
+            snapshot.Close();
+            File.Move(temporaryPath, snapshotPath);
+            File.SetLastWriteTimeUtc(snapshotPath, sourceLastWriteUtc);
+            return new RetainedQualityInput(sourcePath, snapshotPath, inputHash);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+                File.Delete(temporaryPath);
+        }
     }
 
     public async Task<DataQualityReport> GenerateReportAsync(QualityReportOptions options, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(options);
         var scores = new List<DataQualityScore>();
+        var reportIssues = new List<DataQualityReportIssue>();
         var recommendations = new List<string>();
+        var attempted = 0;
 
         foreach (var path in options.Paths)
         {
+            ct.ThrowIfCancellationRequested();
             if (Directory.Exists(path))
             {
-                var files = Directory.EnumerateFiles(path, "*.jsonl*", SearchOption.AllDirectories);
+                string[] files;
+                try
+                {
+                    files = Directory.EnumerateFiles(path, "*.jsonl*", SearchOption.AllDirectories).ToArray();
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    attempted++;
+                    reportIssues.Add(new DataQualityReportIssue(path, ex.Message, ex.GetType().FullName));
+                    _logger.LogWarning(ex, "Failed to enumerate quality-report directory {DirectoryPath}", path);
+                    continue;
+                }
+
                 foreach (var file in files)
                 {
                     ct.ThrowIfCancellationRequested();
+                    attempted++;
                     try
                     {
                         var score = await ScoreAsync(file, ct);
-                        if (score.OverallScore < options.MinScoreThreshold)
+                        if (IsFailedOutcome(score))
+                        {
+                            reportIssues.Add(ToReportIssue(file, score));
+                        }
+                        else
                         {
                             scores.Add(score);
                         }
                     }
+                    catch (OperationCanceledException)
+                    {
+                        throw;
+                    }
                     catch (Exception ex)
                     {
+                        reportIssues.Add(new DataQualityReportIssue(file, ex.Message, ex.GetType().FullName));
                         _logger.LogWarning(ex, "Failed to score file {FilePath} during quality report generation", file);
                     }
                 }
             }
-            else if (File.Exists(path))
+            else
             {
+                attempted++;
                 try
                 {
                     var score = await ScoreAsync(path, ct);
-                    if (score.OverallScore < options.MinScoreThreshold)
+                    if (IsFailedOutcome(score))
+                    {
+                        reportIssues.Add(ToReportIssue(path, score));
+                    }
+                    else
                     {
                         scores.Add(score);
                     }
                 }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
                 catch (Exception ex)
                 {
+                    reportIssues.Add(new DataQualityReportIssue(path, ex.Message, ex.GetType().FullName));
                     _logger.LogWarning(ex, "Failed to score individual file {FilePath} for quality report", path);
                 }
             }
         }
 
+        var lowQualityScores = scores
+            .Where(score => score.OverallScore < options.MinScoreThreshold)
+            .OrderBy(score => score.OverallScore)
+            .ToList();
+
         // Generate recommendations
         if (options.IncludeRecommendations)
         {
-            recommendations = GenerateRecommendations(scores);
+            recommendations = GenerateRecommendations(lowQualityScores);
         }
 
         // Calculate summary statistics
-        var avgScore = scores.Count > 0 ? scores.Average(s => s.OverallScore) : 1.0;
+        var avgScore = scores.Count > 0 ? scores.Average(s => s.OverallScore) : 0.0;
         var byDimension = new Dictionary<string, double>();
 
         foreach (var dim in new[] { "Completeness", "Accuracy", "Timeliness", "Consistency", "Integrity", "Continuity" })
@@ -144,15 +495,22 @@ public sealed class DataQualityService : IDataQualityService
             FilesAnalyzed: scores.Count,
             AverageScore: avgScore,
             ScoresByDimension: byDimension,
-            LowQualityFiles: scores.OrderBy(s => s.OverallScore).Take(20).ToList(),
+            LowQualityFiles: lowQualityScores.Take(20).ToList(),
             Recommendations: recommendations
-        );
+        )
+        {
+            FilesAttempted = attempted,
+            FilesSucceeded = scores.Count,
+            FilesFailed = reportIssues.Count,
+            Issues = reportIssues
+        };
     }
 
     public Task<DataQualityScore[]> GetHistoricalScoresAsync(string path, TimeSpan window, CancellationToken ct = default)
     {
         // In production, this would query stored historical scores
-        if (_scoreCache.TryGetValue(path, out var cached))
+        var cacheKey = Path.GetFullPath(path);
+        if (_scoreCache.TryGetValue(cacheKey, out var cached))
         {
             return Task.FromResult(new[] { cached });
         }
@@ -181,7 +539,19 @@ public sealed class DataQualityService : IDataQualityService
                     try
                     {
                         score = await ScoreAsync(path, ct);
-                        break;
+                        if (!IsFailedOutcome(score))
+                            break;
+
+                        _logger.LogWarning(
+                            "Quality scoring for source {SourceId} returned {State}: {Issue}",
+                            source.Id,
+                            score.Outcome!.State,
+                            score.Outcome.Issues.FirstOrDefault()?.Message ?? "No issue detail was retained.");
+                        score = null;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        throw;
                     }
                     catch (Exception ex)
                     {
@@ -212,6 +582,15 @@ public sealed class DataQualityService : IDataQualityService
 
         return sorted.ToArray();
     }
+
+    private static bool IsFailedOutcome(DataQualityScore score) =>
+        score.Outcome?.State is OperationTerminalState.Failed or OperationTerminalState.Blocked;
+
+    private static DataQualityReportIssue ToReportIssue(string path, DataQualityScore score) =>
+        new(
+            path,
+            score.Outcome?.Issues.FirstOrDefault()?.Message ?? "Quality evaluation did not complete.",
+            score.Outcome?.State.ToString());
 
     public async Task<ConsolidatedDataset> CreateGoldenRecordAsync(string symbol, DateTimeOffset date, ConsolidationOptions options, CancellationToken ct = default)
     {
@@ -535,6 +914,10 @@ public sealed class DataQualityService : IDataQualityService
                 }
             }
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Consistency check failed for {FilePath}", path);
@@ -578,6 +961,10 @@ public sealed class DataQualityService : IDataQualityService
                 issues.Add("Empty file");
                 return (0.0, issues.ToArray());
             }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -623,6 +1010,10 @@ public sealed class DataQualityService : IDataQualityService
                 }
             }
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Continuity check failed for {FilePath}", path);
@@ -649,6 +1040,10 @@ public sealed class DataQualityService : IDataQualityService
             {
                 count++;
             }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -711,6 +1106,11 @@ public sealed class DataQualityService : IDataQualityService
 
         return recommendations;
     }
+
+    private sealed record RetainedQualityInput(
+        string SourcePath,
+        string SnapshotPath,
+        string InputHashSha256);
 }
 
 /// <summary>
@@ -733,7 +1133,10 @@ public sealed record DataQualityScore(
     DateTimeOffset EvaluatedAt,
     double OverallScore,
     QualityDimension[] Dimensions
-);
+)
+{
+    public VerifiedOperationOutcome? Outcome { get; init; }
+}
 
 public sealed record QualityDimension(
     string Name,
@@ -749,7 +1152,18 @@ public sealed record DataQualityReport(
     Dictionary<string, double> ScoresByDimension,
     IReadOnlyList<DataQualityScore> LowQualityFiles,
     IReadOnlyList<string> Recommendations
-);
+)
+{
+    public int FilesAttempted { get; init; }
+    public int FilesSucceeded { get; init; }
+    public int FilesFailed { get; init; }
+    public IReadOnlyList<DataQualityReportIssue> Issues { get; init; } = [];
+}
+
+public sealed record DataQualityReportIssue(
+    string Path,
+    string Message,
+    string? ExceptionType);
 
 public sealed record QualityReportOptions(
     string[] Paths,

@@ -171,7 +171,12 @@ public async Task ConnectAsync(CancellationToken ct = default)
 
 ### Data Flow Pattern
 
-`IMarketDataClient` does **not** expose a `GetEventsAsync` method. Providers push events into dependency-injected collectors:
+`IMarketDataClient` does **not** expose a `GetEventsAsync` method. Providers push events into dependency-injected collectors. The collectors are shared singletons serving every active
+adapter, so every update **must stamp `Source`** with the provider's canonical identity
+(see `MarketDataSources` in `Meridian.Contracts.Domain`); a sourceless update is rejected at
+the collector seam with a missing-source integrity event. Pass the provider's real sequence
+number when the feed supplies one, `0`/`null` when it does not — never fabricate one
+client-side:
 
 ```csharp
 // In WebSocket message handler or data receive loop
@@ -183,9 +188,10 @@ private void HandleTradeMessage(JsonElement msg)
         Price: msg.GetProperty("price").GetDecimal(),
         Size: msg.GetProperty("size").GetInt64(),
         Aggressor: ParseAggressor(msg),
-        SequenceNumber: msg.GetProperty("seq").GetInt64(),
+        SequenceNumber: msg.GetProperty("seq").GetInt64(), // 0 when the feed is unsequenced
         StreamId: _streamId,
-        Venue: _options.Venue);
+        Venue: _options.Venue,
+        Source: "MYPROVIDER"); // required: real provider identity, stamped at origin
 
     // Push to collector — collector handles event publishing internally
     _tradeCollector.OnTrade(update);
@@ -199,7 +205,8 @@ private void HandleDepthMessage(JsonElement msg)
         Bids: ParseLevels(msg, "bids"),
         Asks: ParseLevels(msg, "asks"),
         SequenceNumber: msg.GetProperty("seq").GetInt64(),
-        StreamId: _streamId);
+        StreamId: _streamId,
+        Source: "MYPROVIDER");
 
     // Push to collector — collector handles event publishing internally
     _depthCollector.OnDepth(update);
@@ -960,11 +967,11 @@ public sealed class MockExampleClient : IMarketDataClient
 ## Related Documentation
 
 - **Architecture and Design:**
-  - [ADR-001: Provider Abstraction](../adr/001-provider-abstraction.md) — Interface contracts for data providers
-  - [ADR-004: Async Streaming Patterns](../adr/004-async-streaming-patterns.md) — CancellationToken, IAsyncEnumerable
-  - [ADR-005: Attribute-Based Discovery](../adr/005-attribute-based-discovery.md) — `[DataSource]`, `[ImplementsAdr]`
-  - [ADR-010: HttpClient Factory](../adr/010-httpclient-factory.md) — HTTP client lifecycle management
-  - [ADR-013: Bounded Channel Policy](../adr/013-bounded-channel-policy.md) — Consistent backpressure presets
+  - [ADR-001: Provider Abstraction](../../archive/docs/adr/001-provider-abstraction.md) — Interface contracts for data providers
+  - [ADR-004: Async Streaming Patterns](../../archive/docs/adr/004-async-streaming-patterns.md) — CancellationToken, IAsyncEnumerable
+  - [ADR-005: Attribute-Based Discovery](../../archive/docs/adr/005-attribute-based-discovery.md) — `[DataSource]`, `[ImplementsAdr]`
+  - [ADR-010: HttpClient Factory](../../archive/docs/adr/010-httpclient-factory.md) — HTTP client lifecycle management
+  - [ADR-013: Bounded Channel Policy](../../archive/docs/adr/013-bounded-channel-policy.md) — Consistent backpressure presets
   - [Provider Capability Matrix](../reference/provider-capability-matrix.md) — Feature comparison matrix and provider catalog
 
 - **Implementation Guides:**
@@ -974,7 +981,7 @@ public sealed class MockExampleClient : IMarketDataClient
 
 - **Operations and Testing:**
   - [Provider Backfill Operations](../operators/provider-backfill-operations.md) — Historical data procedures
-  - [Performance Tuning](../operations/performance-tuning.md) — Optimization strategies
+  - [Performance Tuning](../../archive/docs/operations/performance-tuning.md) — Optimization strategies
 - [Provider onboarding guides](../operators/README.md) — Interactive Brokers, Alpaca, and related operator procedures
 
 - **AI Guides:**

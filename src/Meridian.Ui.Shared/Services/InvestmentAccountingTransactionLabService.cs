@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -22,7 +23,7 @@ public sealed class InvestmentAccountingTransactionLabService
         var totalCredits = lines.Sum(static line => line.Credit);
         var isBalanced = totalDebits == totalCredits;
         var previewId = BuildPreviewId(request);
-        var journalPreview = new ExpectedJournalPreviewDto(
+        var expectedAccountingProjection = new ExpectedJournalPreviewDto(
             previewId,
             BuildExpectedEventId(request),
             BuildDescription(request, amount),
@@ -39,7 +40,7 @@ public sealed class InvestmentAccountingTransactionLabService
             request.Symbol.Trim().ToUpperInvariant(),
             request.EventDate,
             request.Currency.Trim().ToUpperInvariant(),
-            journalPreview,
+            expectedAccountingProjection,
             new LedgerImpactPreviewDto(
                 DraftEntryCount: 1,
                 NetDebitEffect: totalDebits,
@@ -50,8 +51,8 @@ public sealed class InvestmentAccountingTransactionLabService
             BuildTrialBalanceImpact(lines),
             BuildReconciliationExpectation(request, evidenceIds),
             evidenceIds,
-            NormalizeNullable(request.SourceRunId),
-            NormalizeNullable(request.SourceSessionId),
+            NormalizeOptional(request.SourceRunId),
+            NormalizeOptional(request.SourceSessionId),
             BuildBooksBeforeBrokerReadiness(request, evidenceIds, isBalanced));
     }
 
@@ -140,7 +141,7 @@ public sealed class InvestmentAccountingTransactionLabService
                     group.Key.AccountType,
                     group.Key.Symbol,
                     delta,
-                    $"{group.Key.AccountName} changes by {delta} from draft journal impact.");
+                    $"{group.Key.AccountName} changes by {delta} in the projected accounting effect; no journal has been posted.");
             })
             .ToArray();
 
@@ -160,12 +161,12 @@ public sealed class InvestmentAccountingTransactionLabService
         };
 
         return new InvestmentAccountingReconciliationExpectationDto(
-            evidenceIds.Count == 0 ? "EvidenceRequired" : "ReadyForReconciliation",
+            evidenceIds.Count == 0 ? "EvidenceRequired" : "ProjectedForReconciliation",
             expectedBreakType,
-            "Preview remains unposted; reconciliation should compare the draft journal, retained evidence, and broker/custodian statement source before approval.",
+            "Expected accounting projection remains unposted; reconciliation should compare the projected accounting effect, retained evidence, and broker/custodian statement source before any posting candidate is created.",
             evidenceIds,
-            NormalizeNullable(request.BrokerStatementId),
-            NormalizeNullable(request.ReconciliationCaseId));
+            NormalizeOptional(request.BrokerStatementId),
+            NormalizeOptional(request.ReconciliationCaseId));
     }
 
     private static BooksBeforeBrokerReadinessDto? BuildBooksBeforeBrokerReadiness(
@@ -181,7 +182,7 @@ public sealed class InvestmentAccountingTransactionLabService
         var blockers = new List<string>();
         if (!isBalanced)
         {
-            blockers.Add("journal-not-balanced");
+            blockers.Add("projected-accounting-effect-not-balanced");
         }
 
         if (evidenceIds.Count == 0)
@@ -233,15 +234,15 @@ public sealed class InvestmentAccountingTransactionLabService
     {
         if (blockers.Count > 0)
         {
-            return $"Books Before Broker preview is blocked by {string.Join(", ", blockers)}.";
+            return $"Books Before Broker accounting projection is blocked by {string.Join(", ", blockers)}.";
         }
 
         if (request.Kind == InvestmentAccountingTransactionKindDto.Trade)
         {
-            return $"{request.Side} {request.Quantity} {request.Symbol.Trim().ToUpperInvariant()} can be staged only after the previewed books, evidence, and approvals are accepted.";
+            return $"{request.Side} {request.Quantity} {request.Symbol.Trim().ToUpperInvariant()} can be staged only after the expected accounting projection, evidence, and approvals are accepted.";
         }
 
-        return "Accounting impact is ready for approval; no broker order should be staged for this preview.";
+        return "Projected accounting effect requires operator review; no broker order should be staged for this unposted preview.";
     }
 
     private static IReadOnlyList<string> BuildValidationFlags(bool isBalanced, IReadOnlyList<string> evidenceIds)
@@ -249,7 +250,7 @@ public sealed class InvestmentAccountingTransactionLabService
         var flags = new List<string>();
         if (!isBalanced)
         {
-            flags.Add("journal-not-balanced");
+            flags.Add("projected-accounting-effect-not-balanced");
         }
 
         if (evidenceIds.Count == 0)
@@ -277,8 +278,5 @@ public sealed class InvestmentAccountingTransactionLabService
         $"{request.FundAccountId.Trim()}|{request.Kind}|{request.Symbol.Trim().ToUpperInvariant()}|{request.EventDate:yyyyMMdd}|{amount}|{request.FeeAmount}";
 
     private static string BuildDescription(InvestmentAccountingTransactionLabRequestDto request, decimal amount) =>
-        $"{request.Kind} accounting preview for {request.Symbol.Trim().ToUpperInvariant()} {amount} {request.Currency.Trim().ToUpperInvariant()}";
-
-    private static string? NormalizeNullable(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        $"Expected {request.Kind} accounting projection for {request.Symbol.Trim().ToUpperInvariant()} {amount} {request.Currency.Trim().ToUpperInvariant()} (unposted)";
 }

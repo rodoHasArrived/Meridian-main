@@ -1,9 +1,12 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using static Meridian.Application.Integrations.ProviderIntegrationFieldTransforms;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.Integrations;
 
@@ -19,7 +22,8 @@ public sealed record ProviderIntegrationHttpRequest(
     string Path,
     IReadOnlyDictionary<string, string> Headers,
     IReadOnlyDictionary<string, string> Query,
-    string? BodyTemplate);
+    string? BodyTemplate,
+    string ApprovedBaseUri);
 
 public sealed record ProviderIntegrationHttpResponse(
     int StatusCode,
@@ -28,16 +32,20 @@ public sealed record ProviderIntegrationHttpResponse(
 
 public sealed class ProviderIntegrationRestDryRunService
 {
+    private const int MaximumDryRunRecords = 10_000;
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private readonly ILogger<ProviderIntegrationRestDryRunService> logger;
     private readonly IProviderIntegrationManifestStore store;
     private readonly IProviderIntegrationHttpTransport transport;
 
     public ProviderIntegrationRestDryRunService(
         IProviderIntegrationManifestStore store,
-        IProviderIntegrationHttpTransport transport)
+        IProviderIntegrationHttpTransport transport,
+        ILogger<ProviderIntegrationRestDryRunService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.transport = transport ?? throw new ArgumentNullException(nameof(transport));
+        this.logger = logger ?? NullLogger<ProviderIntegrationRestDryRunService>.Instance;
     }
 
     public async Task<ProviderIntegrationDryRunResultDto> RunRestDryRunAsync(
@@ -46,6 +54,22 @@ public sealed class ProviderIntegrationRestDryRunService
         => await RunRestDryRunAsync(null, request, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationDryRunResultDto> RunRestDryRunAsync(
+        string? tenantId,
+        ProviderIntegrationRestDryRunRequestDto request,
+        CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "rest-dry-run",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ManifestId: request?.ManifestId,
+                ConnectionId: request?.ConnectionId,
+                Capability: request is null ? null : request.Capability.ToString(),
+                EndpointKey: request?.EndpointKey,
+                SyncRunId: request?.SyncRunId),
+            () => RunRestDryRunCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationDryRunResultDto> RunRestDryRunCoreAsync(
         string? tenantId,
         ProviderIntegrationRestDryRunRequestDto request,
         CancellationToken ct = default)
@@ -109,15 +133,17 @@ public sealed class ProviderIntegrationRestDryRunService
         var quarantined = 0;
         string? firstPayloadId = null;
         string? cursor = null;
-        var maxPages = request.MaxPages <= 0 ? 1 : request.MaxPages;
+        var maxPages = Math.Clamp(request.MaxPages <= 0 ? 1 : request.MaxPages, 1, 100);
         var dedupeValidator = new ProviderIntegrationStagingDedupeValidator();
 
         for (var page = 1; page <= maxPages; page++)
         {
             ct.ThrowIfCancellationRequested();
-            var httpRequest = BuildHttpRequest(endpoint, request, cursor);
+            var httpRequest = BuildHttpRequest(manifest, endpoint, request, cursor);
             var response = await transport.SendAsync(httpRequest, ct).ConfigureAwait(false);
-            using var document = JsonDocument.Parse(response.Body);
+            using var document = JsonDocument.Parse(
+                response.Body,
+                new JsonDocumentOptions { MaxDepth = 64, CommentHandling = JsonCommentHandling.Disallow });
             var responseBody = document.RootElement.Clone();
             var payloadId = StableId("raw-payload", request.SyncRunId, endpoint.EndpointKey, page.ToString(CultureInfo.InvariantCulture));
             firstPayloadId ??= payloadId;
@@ -156,6 +182,12 @@ public sealed class ProviderIntegrationRestDryRunService
             }
 
             var rawRecords = ExtractRecords(responseBody, endpoint.Response.RecordsPath);
+            if (received + rawRecords.Count > MaximumDryRunRecords)
+            {
+                throw new InvalidOperationException(
+                    $"REST dry run exceeded the {MaximumDryRunRecords}-record processing limit.");
+            }
+
             received += rawRecords.Count;
             foreach (var rawRecord in rawRecords)
             {
@@ -334,6 +366,7 @@ public sealed class ProviderIntegrationRestDryRunService
     }
 
     private static ProviderIntegrationHttpRequest BuildHttpRequest(
+        ProviderIntegrationManifestDto manifest,
         EndpointDefinitionDto endpoint,
         ProviderIntegrationRestDryRunRequestDto request,
         string? cursor)
@@ -366,7 +399,26 @@ public sealed class ProviderIntegrationRestDryRunService
             path,
             new Dictionary<string, string>(endpoint.Headers, StringComparer.OrdinalIgnoreCase),
             query,
-            endpoint.RequestBodyTemplate);
+            endpoint.RequestBodyTemplate,
+            ResolveApprovedBaseUri(manifest));
+    }
+
+    private static string ResolveApprovedBaseUri(ProviderIntegrationManifestDto manifest)
+    {
+        if (manifest.Auth.Metadata.TryGetValue("baseUrl", out var configuredBaseUri) &&
+            Uri.TryCreate(configuredBaseUri, UriKind.Absolute, out var baseUri))
+        {
+            return baseUri.GetLeftPart(UriPartial.Authority);
+        }
+
+        if (Uri.TryCreate(manifest.Auth.TokenUrl, UriKind.Absolute, out var tokenUri))
+        {
+            return tokenUri.GetLeftPart(UriPartial.Authority);
+        }
+
+        throw new InvalidOperationException(
+            "REST integrations require an approved HTTPS base URL in auth metadata 'baseUrl' " +
+            "or an absolute token URL from the same provider origin.");
     }
 
     private static IReadOnlyList<JsonElement> ExtractRecords(JsonElement responseBody, string recordsPath)
@@ -463,7 +515,11 @@ public sealed class ProviderIntegrationRestDryRunService
             "uppercase" => value.Trim().ToUpperInvariant(),
             "lowercase" => value.Trim().ToLowerInvariant(),
             "decimal" or "decimalparsing" => ParseDecimal(value, mapping.TargetField, issues),
-            "signedamount" => ParseSignedAmount(value, mapping, record, issues),
+            "signedamount" => ParseSignedAmount(
+                value,
+                mapping,
+                path => ReadJsonString(record, path),
+                issues),
             "date" or "dateparsing" or "isodate" => ParseDate(value, mapping.TargetField, issues),
             "enum" or "enummapping" => MapEnum(value, mapping, issues),
             _ => value
@@ -487,78 +543,6 @@ public sealed class ProviderIntegrationRestDryRunService
             "Add this provider value to the enum mapping before activation."));
         return null;
     }
-
-    private static object? ParseSignedAmount(
-        string value,
-        FieldMappingDto mapping,
-        JsonElement record,
-        List<ValidationIssueDto> issues)
-    {
-        var parsed = ParseDecimal(value, mapping.TargetField, issues);
-        if (parsed is not decimal amount)
-        {
-            return null;
-        }
-
-        var conditionPath = GetTransformParameter(mapping, "conditionSourcePath") ??
-            GetTransformParameter(mapping, "conditionColumn");
-        if (string.IsNullOrWhiteSpace(conditionPath))
-        {
-            return amount;
-        }
-
-        var conditionValue = ReadJsonString(record, conditionPath);
-        if (string.IsNullOrWhiteSpace(conditionValue))
-        {
-            return amount;
-        }
-
-        var negativeValues = SplitTransformList(GetTransformParameter(mapping, "negativeValues"));
-        return negativeValues.Contains(conditionValue.Trim(), StringComparer.OrdinalIgnoreCase)
-            ? -Math.Abs(amount)
-            : amount;
-    }
-
-    private static object? ParseDecimal(string value, string targetField, List<ValidationIssueDto> issues)
-    {
-        var normalized = value.Replace(",", string.Empty, StringComparison.Ordinal).Trim();
-        if (decimal.TryParse(normalized, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed))
-        {
-            return parsed;
-        }
-
-        issues.Add(new ValidationIssueDto(
-            "transform.decimal.invalid",
-            ProviderIntegrationIssueSeverityDto.Critical,
-            $"Value '{value}' could not be parsed as a decimal.",
-            targetField,
-            "Confirm the source number format or choose the correct decimal parsing transform."));
-        return null;
-    }
-
-    private static object? ParseDate(string value, string targetField, List<ValidationIssueDto> issues)
-    {
-        if (DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsed))
-        {
-            return parsed.UtcDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        }
-
-        issues.Add(new ValidationIssueDto(
-            "transform.date.invalid",
-            ProviderIntegrationIssueSeverityDto.Critical,
-            $"Value '{value}' could not be parsed as a date.",
-            targetField,
-            "Confirm the provider date format or choose the correct date parsing transform."));
-        return null;
-    }
-
-    private static string? GetTransformParameter(FieldMappingDto mapping, string key)
-        => mapping.Transform?.Parameters.TryGetValue(key, out var value) == true ? value : null;
-
-    private static IReadOnlyList<string> SplitTransformList(string? value)
-        => string.IsNullOrWhiteSpace(value)
-            ? []
-            : value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
     private static string? ReadJsonString(JsonElement root, string sourcePath)
     {
@@ -657,7 +641,6 @@ public sealed class ProviderIntegrationRestDryRunService
     private static string StableId(params string[] parts)
     {
         var input = string.Join("|", parts);
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
-        return Convert.ToHexString(hash)[..24].ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(input)[..24];
     }
 }

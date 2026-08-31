@@ -18,7 +18,7 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 /// - Unlimited retry attempts by default (configurable via maxRetries parameter)
 /// - See EnhancedIBConnectionManager.IBApi.cs and Infrastructure/Performance/ConnectionWarmUp.cs for implementation
 /// </summary>
-public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient
+public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient, IIBDataServiceTransport, IIBDataLineageSource, IIBDataCallbackSource, IIBProviderConnectionIdentity
 {
 #if !IBAPI
     private readonly IBCallbackRouter _router;
@@ -58,6 +58,23 @@ public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient
     public event EventHandler<IBAccountSummaryUpdate>? AccountSummaryReceived;
     public event EventHandler<int>? AccountSummaryCompleted;
     public event EventHandler<IBApiError>? ErrorOccurred;
+    public event EventHandler<IBMarketDataTypeUpdate>? MarketDataTypeReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderContractDetails Details)>? ContractDetailsReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderOptionChainDefinition Definition)>? OptionChainDefinitionReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderNewsHeadline Headline)>? HistoricalNewsReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderNewsArticlePayload Article)>? NewsArticleReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderFundamentalReport Report)>? FundamentalReportReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderTickByTickObservation Observation)>? TickByTickReceived;
+    public event EventHandler<(int RequestId, IReadOnlyList<Meridian.ProviderSdk.ProviderDepthExchangeDescription> Exchanges)>? DepthExchangesReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderDividendEarnings Payload)>? DividendEarningsReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderOptionContract Contract)>? OptionContractReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderScannerResult Result)>? ScannerResultReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderRealTimeBar Bar)>? RealTimeBarReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderHistoricalTick Tick, bool Completed)>? HistoricalTickReceived;
+    public event EventHandler<(int RequestId, Meridian.ProviderSdk.ProviderAccountPnl Pnl)>? PnlReceived;
+    public event EventHandler<(int RequestId, IReadOnlyList<Meridian.ProviderSdk.ProviderMarketRuleIncrement> Increments)>? MarketRuleReceived;
+    public event EventHandler<int>? RequestCompleted;
+    public event EventHandler<(int RequestId, string Code, string Message)>? RequestRejected;
 #pragma warning restore CS0067
 
     /// <summary>
@@ -92,7 +109,9 @@ public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient
     public Task CancelOrderAsync(int orderId, CancellationToken ct = default)
         => Task.FromException(ThrowPlatformNotSupported());
 
-    public int RequestAccountSummary() => throw ThrowPlatformNotSupported();
+    public int ReserveAccountSummaryRequestId() => throw ThrowPlatformNotSupported();
+
+    public void RequestAccountSummary(int requestId) => throw ThrowPlatformNotSupported();
 
     public void CancelAccountSummary(int requestId) => throw ThrowPlatformNotSupported();
 
@@ -102,8 +121,25 @@ public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient
 
     public void RequestOpenOrders() => throw ThrowPlatformNotSupported();
 
+    public void RequestScanner(int requestId, IBScannerRequest request) => throw ThrowPlatformNotSupported();
+    public void RequestContractDetails(int requestId, SymbolConfig contract) => throw ThrowPlatformNotSupported();
+    public void RequestOptionChain(int requestId, SymbolConfig underlying) => throw ThrowPlatformNotSupported();
+    public void RequestHistoricalNews(int requestId, int conId, string providerCodes, DateTimeOffset start, DateTimeOffset end, int maximumResults) => throw ThrowPlatformNotSupported();
+    public void RequestNewsArticle(int requestId, string providerCode, string articleId) => throw ThrowPlatformNotSupported();
+    public void RequestFundamentals(int requestId, SymbolConfig contract, string reportType) => throw ThrowPlatformNotSupported();
+    public void RequestDividendEarnings(int requestId, SymbolConfig contract) => throw ThrowPlatformNotSupported();
+    public void RequestTickByTick(int requestId, SymbolConfig contract, string tickType, int numberOfTicks, bool ignoreSize) => throw ThrowPlatformNotSupported();
+    public void RequestPnl(int requestId, string account, string? modelCode) => throw ThrowPlatformNotSupported();
+    public void RequestMarketRule(int requestId, int marketRuleId) => throw ThrowPlatformNotSupported();
+    public void RequestDepthExchanges(int requestId) => throw ThrowPlatformNotSupported();
+    public void RequestRealTimeBars(int requestId, IBRealTimeBarRequest request) => throw ThrowPlatformNotSupported();
+    public void RequestHistoricalTicks(int requestId, IBHistoricalTickRequest request) => throw ThrowPlatformNotSupported();
+    public void CancelDataRequest(int requestId, string capability) => throw ThrowPlatformNotSupported();
+
     public void Dispose()
     {
     }
 #endif
+
+    public string ProviderConnectionId => $"ib://{Host}:{Port}/client/{ClientId}";
 }

@@ -53,7 +53,7 @@ These repo-local skills are the primary Meridian skill set for current AI work:
 | `meridian-provider-builder` | Build and extend providers with the right contracts |
 | `meridian-repo-navigation` | Route large-repo tasks before deeper work |
 | `meridian-roadmap-strategist` | Refresh roadmap and target-state documents |
-| `meridian-simulated-user-panel` | Run manifest-driven design-partner, release-gate, and usability-lab reviews |
+| `meridian-simulated-user-panel` | Run evidence-led canonical Persona Matrix reviews with fail-closed release gates |
 | `meridian-test-writer` | Produce scenario-first Meridian tests |
 | `modular-desktop-mvvm` | Implement modular WPF MVVM workstation changes |
 | `workstation-screen-composition` | Compose desktop screens from shared workstation primitives |
@@ -115,7 +115,7 @@ for Claude-compatible hosts. Keep both mirrors aligned when shared skill behavio
 | `meridian-provider-builder` | [`SKILL.md`](../../../.claude/skills/meridian-provider-builder/SKILL.md) | Scaffold and extend providers with the right contracts and resilience patterns |
 | `meridian-repo-navigation` | [`SKILL.md`](../../../.claude/skills/meridian-repo-navigation/SKILL.md) | Route large-repo tasks before deeper work |
 | `meridian-roadmap-strategist` | [`SKILL.md`](../../../.claude/skills/meridian-roadmap-strategist/SKILL.md) | Refresh roadmap and target-state documents |
-| `meridian-simulated-user-panel` | [`SKILL.md`](../../../.claude/skills/meridian-simulated-user-panel/SKILL.md) | Simulate realistic user panels and owner-minded product critique |
+| `meridian-simulated-user-panel` | [`SKILL.md`](../../../.claude/skills/meridian-simulated-user-panel/SKILL.md) | Simulate evidence-led canonical Persona Matrix panels without presenting them as recruited-user research |
 | `meridian-test-writer` | [`SKILL.md`](../../../.claude/skills/meridian-test-writer/SKILL.md) | Produce Meridian-style xUnit and FluentAssertions tests |
 
 Code-defined provider skills may also exist, such as AI documentation maintenance helpers exposed by the local skills provider.

@@ -67,6 +67,9 @@ public sealed class DirectLendingPostgresIntegrationTests
 
         var created = await db.Service.CreateLoanAsync(BuildCreateRequest());
         await db.Service.ActivateLoanAsync(created.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await db.Service.BookDrawdownAsync(
+            created.LoanId,
+            new BookDrawdownRequest(100_000m, new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 24), "wire-idempotency-seed"));
 
         var commandId = Guid.NewGuid();
         var metadata = new DirectLendingCommandMetadataDto(
@@ -99,6 +102,9 @@ public sealed class DirectLendingPostgresIntegrationTests
 
         var created = await db.Service.CreateLoanAsync(BuildCreateRequest());
         await db.Service.ActivateLoanAsync(created.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await db.Service.BookDrawdownAsync(
+            created.LoanId,
+            new BookDrawdownRequest(100_000m, new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 24), "wire-conflict-seed"));
 
         var commandId = Guid.NewGuid();
         var metadata = new DirectLendingCommandMetadataDto(
@@ -112,14 +118,14 @@ public sealed class DirectLendingPostgresIntegrationTests
             created.LoanId,
             new ApplyPrincipalPaymentRequest(50_000m, new DateOnly(2026, 4, 1), "wire-dup-2"),
             metadata);
-        var second = await db.CommandService.ApplyPrincipalPaymentAsync(
+        Func<Task> act = () => db.CommandService.ApplyPrincipalPaymentAsync(
             created.LoanId,
             new ApplyPrincipalPaymentRequest(10_000m, new DateOnly(2026, 4, 2), "wire-dup-3"),
             metadata);
 
         first.Error.Should().BeNull();
-        second.Error.Should().NotBeNull();
-        second.Error!.Code.Should().Be(DirectLendingErrorCode.Conflict);
+        var exception = await act.Should().ThrowAsync<DirectLendingCommandException>();
+        exception.Which.Error.Code.Should().Be(DirectLendingErrorCode.Conflict);
 
         var history = await db.Service.GetHistoryAsync(created.LoanId);
         history.Count(item => item.EventType == "loan.principal-payment-applied").Should().Be(1);
@@ -223,6 +229,56 @@ public sealed class DirectLendingPostgresIntegrationTests
     }
 
     [DirectLendingDatabaseFact]
+    public async Task AppendOperationsWorkflowAuditAsync_ShouldFollowHashChainWhenStorageTimestampsAreOutOfOrder()
+    {
+        await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
+        if (db is null)
+        {
+            return;
+        }
+
+        var workflowId = $"{WorkflowIdPrefix}{Guid.NewGuid():N}";
+        var fundAccountId = Guid.NewGuid();
+        const string periodId = "2026-Q2";
+
+        var first = await db.Store.AppendOperationsWorkflowAuditAsync(
+            BuildAuditAppendRequest(
+                workflowId,
+                fundAccountId,
+                periodId,
+                eventType: "state_transition",
+                fromState: "draft",
+                toState: "ready"));
+        var second = await db.Store.AppendOperationsWorkflowAuditAsync(
+            BuildAuditAppendRequest(
+                workflowId,
+                fundAccountId,
+                periodId,
+                eventType: "gate_change",
+                gate: "readiness",
+                fromGateStatus: "pending",
+                toGateStatus: "ready"));
+
+        await SetWorkflowAuditCreatedAtAsync(db, first.AuditId, new DateTimeOffset(2030, 1, 1, 0, 0, 0, TimeSpan.Zero));
+        await SetWorkflowAuditCreatedAtAsync(db, second.AuditId, new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.Zero));
+
+        var third = await db.Store.AppendOperationsWorkflowAuditAsync(
+            BuildAuditAppendRequest(
+                workflowId,
+                fundAccountId,
+                periodId,
+                eventType: "approval_action",
+                fromState: "ready",
+                toState: "approved"));
+        var stream = await db.Store.GetOperationsWorkflowAuditAsync(workflowId);
+
+        third.PreviousHash.Should().Be(second.Hash);
+        stream.Select(static entry => entry.AuditId).Should().Equal(first.AuditId, second.AuditId, third.AuditId);
+        stream[1].PreviousHash.Should().Be(stream[0].Hash);
+        stream[2].PreviousHash.Should().Be(stream[1].Hash);
+    }
+
+    [DirectLendingDatabaseFact]
     public async Task AppendOperationsWorkflowAuditAsync_ShouldRejectUnsupportedEventType()
     {
         await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
@@ -241,6 +297,23 @@ public sealed class DirectLendingPostgresIntegrationTests
 
         var exception = await act.Should().ThrowAsync<PostgresException>();
         exception.Which.SqlState.Should().Be(PostgresErrorCodes.CheckViolation);
+    }
+
+    private static async Task SetWorkflowAuditCreatedAtAsync(
+        DirectLendingPostgresTestDatabase db,
+        Guid auditId,
+        DateTimeOffset createdAt)
+    {
+        await using var connection = new NpgsqlConnection(db.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"update {db.Schema}.operations_workflow_audit set created_at = @created_at where audit_id = @audit_id;";
+        command.Parameters.AddWithValue("created_at", createdAt.UtcDateTime);
+        command.Parameters.AddWithValue("audit_id", auditId);
+
+        var affected = await command.ExecuteNonQueryAsync();
+        affected.Should().Be(1);
     }
 
     private static CreateLoanRequest BuildCreateRequest() =>
@@ -266,7 +339,13 @@ public sealed class DirectLendingPostgresIntegrationTests
                 CommitmentFeeRate: 0.03m,
                 DefaultRateSpreadBps: 200m,
                 PrepaymentAllowed: true,
-                CovenantsJson: "{\"leverage\": \"<= 4.5x\"}"));
+                CovenantsJson: "{\"leverage\": \"<= 4.5x\"}",
+                SecurityMasterReference: new DirectLendingSecurityMasterReferenceDto(
+                    DirectLendingPostgresTestDatabase.TestSecurityId,
+                    DirectLendingPostgresTestDatabase.TestSecuritySymbol,
+                    "integration-test-security-master",
+                    "integration-test-approval",
+                    "integration-test-ledger-map")));
 
     private static OperationsWorkflowAuditAppendRequest BuildAuditAppendRequest(
         string workflowId,

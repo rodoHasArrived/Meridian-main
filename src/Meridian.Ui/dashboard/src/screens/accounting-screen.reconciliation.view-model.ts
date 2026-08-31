@@ -55,6 +55,13 @@ type StatementRunSummaryWithMetadata = StatementRunSummary & {
   breakCount?: number | null;
   caseCount?: number | null;
   importedAtUtc?: string | null;
+  /**
+   * False when the row was derived from the reconciliation queue rather than reported by the
+   * statement-run service. Derived rows carry no match totals, and zero is a different fact from
+   * "not reported" in a reconciliation: one says the statement matched nothing, the other says
+   * Meridian does not know.
+   */
+  matchDataReported?: boolean;
 };
 
 export function resolveSelectedReconciliation(
@@ -102,7 +109,7 @@ export function buildReconciliationDetailViewState(
   return {
     eyebrow: "Reconciliation detail",
     title: item.strategyName,
-    description: `${item.runId} is currently ${item.reconciliationStatus}.`,
+    description: `Current reconciliation status: ${formatReconciliationState(item.reconciliationStatus)}.`,
     ariaLabel: `Reconciliation detail for ${item.strategyName}`,
     narrative: buildReconciliationNarrative(item),
     narrativeLabel: `Reconciliation narrative for ${item.strategyName}`,
@@ -171,6 +178,35 @@ function buildSystemReconciliationLine(
   };
 }
 
+export function sortStatementRunsNewestFirst(
+  statementRuns: readonly StatementRunSummaryWithMetadata[]
+): StatementRunSummaryWithMetadata[] {
+  return [...statementRuns].sort((left, right) => {
+    const leftTimestamp = statementRunTimestamp(left);
+    const rightTimestamp = statementRunTimestamp(right);
+    if (leftTimestamp !== rightTimestamp) {
+      return rightTimestamp - leftTimestamp;
+    }
+
+    return left.runId.localeCompare(right.runId);
+  });
+}
+
+function statementRunTimestamp(run: StatementRunSummaryWithMetadata): number {
+  for (const value of [run.importedAtUtc, run.completedAtUtc, run.startedAtUtc]) {
+    if (!value) {
+      continue;
+    }
+
+    const timestamp = Date.parse(value);
+    if (Number.isFinite(timestamp)) {
+      return timestamp;
+    }
+  }
+
+  return Number.NEGATIVE_INFINITY;
+}
+
 export function buildReconciliationStatementRunsViewState({
   statementRuns,
   fallbackQueue,
@@ -186,17 +222,20 @@ export function buildReconciliationStatementRunsViewState({
       importId: item.runId,
       startedAtUtc: item.lastUpdated,
       completedAtUtc: item.lastUpdated,
+      // The queue carries no match totals. These zeros satisfy the shared summary shape only;
+      // matchDataReported keeps them from being presented as reported results.
       positionMatches: 0,
       cashMatches: 0,
       transactionMatches: 0,
+      matchDataReported: false,
       openExceptionCount: item.openBreakCount,
       status: item.reconciliationStatus,
       breakCount: item.breakCount,
       caseCount: item.openBreakCount,
       importedAtUtc: item.lastUpdated
     }));
-  const sourceRows: StatementRunSummaryWithMetadata[] = statementRuns.length > 0 ? statementRuns : fallbackRows;
-  const effectiveSelectedRunId = selectedRunId ?? sourceRows[0]?.runId ?? null;
+  const sourceRows = sortStatementRunsNewestFirst(statementRuns.length > 0 ? statementRuns : fallbackRows);
+  const effectiveSelectedRunId = resolveStatementRunSelection(sourceRows, selectedRunId);
   const rows = sourceRows.map((run) => buildStatementRunRow(run, effectiveSelectedRunId, detailPanelId));
   const selected = sourceRows.find((run) => run.runId === effectiveSelectedRunId) ?? null;
 
@@ -249,8 +288,8 @@ export function buildReconciliationComparisonViewState({
       caseCount: item.openBreakCount,
       importedAtUtc: item.lastUpdated
     }));
-  const sourceRows: StatementRunSummaryWithMetadata[] = statementRuns.length > 0 ? statementRuns : fallbackRows;
-  const effectiveSelectedRunId = selectedRunId ?? sourceRows[0]?.runId ?? null;
+  const sourceRows = sortStatementRunsNewestFirst(statementRuns.length > 0 ? statementRuns : fallbackRows);
+  const effectiveSelectedRunId = resolveStatementRunSelection(sourceRows, selectedRunId);
   const sortedRows = [
     ...sourceRows.filter((row) => row.runId === effectiveSelectedRunId),
     ...sourceRows.filter((row) => row.runId !== effectiveSelectedRunId)
@@ -258,14 +297,14 @@ export function buildReconciliationComparisonViewState({
   const rows = sortedRows.map((run, index): ReconciliationComparisonRowViewModel => {
     const matchCount = run.matchCount ?? run.positionMatches + run.cashMatches + run.transactionMatches;
     const openCount = run.openExceptionCount;
-    const statusLabel = run.status ?? (openCount > 0 ? "Open" : "Matched");
+    const rawStatus = run.status ?? (openCount > 0 ? "Open" : "Matched");
+    const statusLabel = formatReconciliationState(rawStatus);
     const brokerCustodian = run.brokerCustodian?.trim() || `Statement ${index + 1}`;
     const account = run.account?.trim() || run.importId;
     const period = run.period?.trim() || run.completedAtUtc || run.startedAtUtc;
     const queueMatch = fallbackQueue.find((item) => item.runId === run.runId);
     const ledgerTitle = queueMatch?.strategyName ?? "Meridian ledger";
     const ledgerMeta = [
-      run.runId,
       matchCount.toLocaleString() + " matched",
       openCount > 0 ? openCount.toLocaleString() + " open" : "no open breaks"
     ].join(" · ");
@@ -279,9 +318,9 @@ export function buildReconciliationComparisonViewState({
       ledgerMeta,
       ledgerValue: index === 0 && cashFlow ? formatCurrency(cashFlow.totalLedgerCash) : (openCount > 0 ? `${openCount.toLocaleString()} open` : "Matched"),
       statusLabel,
-      statusTone: statusLabel === "SecurityCoverageOpen"
+      statusTone: rawStatus === "SecurityCoverageOpen"
         ? "danger"
-        : openCount > 0 || statusLabel === "BreaksOpen"
+        : openCount > 0 || rawStatus === "BreaksOpen"
           ? "warning"
           : "success"
     };
@@ -375,36 +414,49 @@ export function buildReconciliationComparisonViewState({
   };
 }
 
+function resolveStatementRunSelection(
+  sourceRows: readonly StatementRunSummaryWithMetadata[],
+  selectedRunId: string | null
+): string | null {
+  return selectedRunId && sourceRows.some((run) => run.runId === selectedRunId)
+    ? selectedRunId
+    : sourceRows[0]?.runId ?? null;
+}
+
 function buildStatementRunRow(
   run: StatementRunSummaryWithMetadata,
   selectedRunId: string | null,
   detailPanelId: string
 ): ReconciliationStatementRunRowViewModel {
+  const matchDataReported = run.matchDataReported !== false;
   const matchCount = run.matchCount ?? run.positionMatches + run.cashMatches + run.transactionMatches;
   const status = run.status ?? (run.openExceptionCount > 0 ? "ReviewRequired" : "Matched");
   const missing: string[] = [];
+  if (!matchDataReported) {
+    missing.push("Match counts");
+  }
   const brokerCustodianLabel = valueOrMissing(run.brokerCustodian, "Broker/custodian", missing);
   const accountLabel = valueOrMissing(run.account, "Account", missing);
   const periodLabel = valueOrMissing(run.period, "Period", missing);
   const validationIssueCount = run.validationIssueCount ?? run.openExceptionCount;
   const breakCount = run.breakCount ?? run.openExceptionCount;
   const caseCount = run.caseCount ?? run.openExceptionCount;
-  const importedAtLabel = run.importedAtUtc ?? run.completedAtUtc ?? run.startedAtUtc;
+  const importedAtLabel = formatDateTimeLabel(run.importedAtUtc ?? run.completedAtUtc ?? run.startedAtUtc);
 
   return {
     runId: run.runId,
     brokerCustodianLabel,
     accountLabel,
     periodLabel,
-    statusLabel: status,
+    statusLabel: formatReconciliationState(status),
     validationIssueCountLabel: String(validationIssueCount),
-    matchCountLabel: String(matchCount),
+    matchCountLabel: matchDataReported ? String(matchCount) : "—",
     breakCountLabel: String(breakCount),
     caseCountLabel: String(caseCount),
     importedAtLabel,
     isSelected: run.runId === selectedRunId,
     controlsId: detailPanelId,
-    ariaLabel: `Statement run ${run.runId}. ${status}. ${validationIssueCount} validation issues, ${matchCount} matches, ${breakCount} breaks, ${caseCount} cases. Imported ${importedAtLabel}.`,
+    ariaLabel: `Statement run ${run.runId}. ${status}. ${validationIssueCount} validation issues, ${matchDataReported ? `${matchCount} matches` : "match counts not reported"}, ${breakCount} breaks, ${caseCount} cases. Imported ${importedAtLabel}.`,
     selectAriaLabel: `Inspect statement run ${run.runId}`,
     unavailableReason: missing.length > 0 ? `${missing.join(", ")} not provided by statement run data.` : null
   };
@@ -420,18 +472,25 @@ function valueOrMissing(value: string | null | undefined, label: string, missing
   return "—";
 }
 
-function buildReconciliationRunDetailTabs(run: StatementRunSummary | null): ReconciliationRunDetailTabViewModel[] {
+function buildReconciliationRunDetailTabs(run: StatementRunSummaryWithMetadata | null): ReconciliationRunDetailTabViewModel[] {
   const disabledReason = run ? null : "Select a statement run before opening this detail tab.";
   const matchCount = run ? run.matchCount ?? run.positionMatches + run.cashMatches + run.transactionMatches : 0;
   const openExceptionCount = run?.openExceptionCount ?? 0;
+  // A derived run has no match totals. Badging a fabricated zero under a description that credits
+  // the reconciliation service would state the opposite of the truth, so those tabs carry no badge
+  // and say plainly that the totals were not reported.
+  const matchDataReported = run !== null && run.matchDataReported !== false;
+  const matchTotal = (value: number): string | null => (matchDataReported ? String(value) : null);
+  const matchDescription = (reported: string, subject: string): string =>
+    matchDataReported ? reported : `${subject} totals were not reported for this statement run.`;
   const tabs: Array<{ id: ReconciliationRunDetailTabId; label: string; badgeLabel: string | null; description: string }> = [
-    { id: "overview", label: "Overview", badgeLabel: run?.status ?? null, description: "Statement source, account coverage, import timing, and reconciliation status." },
+    { id: "overview", label: "Overview", badgeLabel: run ? formatReconciliationState(run.status) : null, description: "Statement source, account coverage, import timing, and reconciliation status." },
     { id: "validation", label: "Validation", badgeLabel: run ? String(run.validationIssueCount ?? openExceptionCount) : null, description: "Validation issues reported by the shared statement reconciliation run." },
-    { id: "positions", label: "Positions", badgeLabel: run ? String(run.positionMatches) : null, description: "Position match totals supplied by the reconciliation service." },
-    { id: "cash", label: "Cash", badgeLabel: run ? String(run.cashMatches) : null, description: "Cash match totals supplied by the reconciliation service." },
-    { id: "transactions", label: "Transactions", badgeLabel: run ? String(run.transactionMatches) : null, description: "Transaction match totals supplied by the reconciliation service." },
+    { id: "positions", label: "Positions", badgeLabel: run ? matchTotal(run.positionMatches) : null, description: matchDescription("Position match totals supplied by the reconciliation service.", "Position match") },
+    { id: "cash", label: "Cash", badgeLabel: run ? matchTotal(run.cashMatches) : null, description: matchDescription("Cash match totals supplied by the reconciliation service.", "Cash match") },
+    { id: "transactions", label: "Transactions", badgeLabel: run ? matchTotal(run.transactionMatches) : null, description: matchDescription("Transaction match totals supplied by the reconciliation service.", "Transaction match") },
     { id: "breaks-cases", label: "Breaks & Cases", badgeLabel: run ? String(run.breakCount ?? openExceptionCount) : null, description: "Break and case counts from reconciliation/casework read models; no case-state logic runs in React." },
-    { id: "evidence", label: "Evidence", badgeLabel: run ? String(matchCount) : null, description: "Evidence packet and imported statement references available for review." }
+    { id: "evidence", label: "Evidence", badgeLabel: run ? matchTotal(matchCount) : null, description: "Evidence packet and imported statement references available for review." }
   ];
 
   return tabs.map((tab) => ({
@@ -472,9 +531,9 @@ export function buildReconciliationQueuePanelViewState(
       return {
         runId: item.runId,
         strategyName: item.strategyName,
-        modeLabel: item.mode.toUpperCase(),
+        modeLabel: formatReconciliationState(item.mode),
         runStatusLabel: item.status,
-        reconciliationStatusLabel: item.reconciliationStatus,
+        reconciliationStatusLabel: formatReconciliationState(item.reconciliationStatus),
         reconciliationTone: reconciliationStatusTone(item.reconciliationStatus),
         breakCountLabel: `${item.breakCount} break${item.breakCount === 1 ? "" : "s"}`,
         openBreakLabel: `${item.openBreakCount} open`,
@@ -487,6 +546,18 @@ export function buildReconciliationQueuePanelViewState(
       };
     })
   };
+}
+
+function formatReconciliationState(value: string | null | undefined): string {
+  const normalized = (value ?? "")
+    .trim()
+    .replace(/[_-]+/g, " ")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+
+  return normalized ? normalized.replace(/^\w/, (character) => character.toUpperCase()) : "Unavailable";
 }
 
 function reconciliationStatusTone(
@@ -636,9 +707,11 @@ export function buildOperationalExceptionWorkbenchState({
       statusLabel: row.status,
       statusTone: row.statusBadgeVariant,
       ownerLabel: row.ownerLabel,
-      slaLabel: row.slaBadgeLabel ?? buildReconciliationSlaText(row),
+      slaLabel: buildReconciliationExceptionUrgency(row),
       commentLabel: `${row.commentCount ?? 0} comment${(row.commentCount ?? 0) === 1 ? "" : "s"}`,
-      auditLabel: `${row.evidenceCount ?? 0} evidence link${(row.evidenceCount ?? 0) === 1 ? "" : "s"}`,
+      auditLabel: (row.evidenceCount ?? 0) > 0
+        ? `${row.evidenceCount} evidence link${row.evidenceCount === 1 ? "" : "s"}`
+        : "Evidence required",
       routeHref: buildReconciliationBreakRoutingHref(row.routingTarget) ?? WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
       routeLabel: row.routingTarget ? "Open routed workflow" : "Open reconciliation",
       ariaLabel: `${row.financeLabel}. ${row.status}. ${row.reason}`
@@ -758,7 +831,7 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
     id: row.detailPanelId,
     eyebrow: "Break detail",
     title: `${row.strategyName} - ${row.financeLabel}`,
-    subtitle: `${row.breakId} - ${row.status}`,
+    subtitle: `Reconciliation exception - ${row.status}`,
     rawCategoryLabel: row.category,
     description: row.reason,
     ariaLabel: `Reconciliation break detail for ${row.breakId}`,
@@ -774,7 +847,7 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
       { label: "Tolerance profile", value: formatReconciliationMetadata(row.toleranceProfileId, "Unassigned") },
       { label: "Tolerance band", value: row.toleranceBand == null ? "Policy default" : formatCurrency(row.toleranceBand) },
       { label: "Priority", value: formatReconciliationMetadata(row.priority, "Normal") },
-      { label: "SLA", value: row.slaBadgeLabel ?? buildReconciliationSlaText(row) },
+      { label: "Urgency", value: buildReconciliationExceptionUrgency(row) },
       { label: "SLA tone", value: formatReconciliationMetadata(row.slaBadgeTone, "info") },
       { label: "Age band", value: formatReconciliationMetadata(row.ageBand, "0-4h") },
       { label: "Root cause", value: formatReconciliationMetadata(row.rootCauseCode, "Unset") },
@@ -801,8 +874,8 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
   };
 }
 
-export function financeBreakLabel(category: string): string {
-  const normalized = category.trim().toLowerCase();
+export function financeBreakLabel(category: string | null | undefined): string {
+  const normalized = (category ?? "").trim().toLowerCase();
   if (normalized.includes("amount") || normalized.includes("cash") || normalized.includes("fee")) {
     return "Cash variance needs review";
   }
@@ -822,7 +895,7 @@ function formatReconciliationList(values: string[] | null | undefined, fallback:
 
 
 function buildReconciliationSlaText(row: Pick<ReconciliationBreakQueueItem, "slaState" | "slaDueAt" | "slaWarningAt" | "slaBreachedAt">): string {
-  const state = row.slaState ?? "OnTrack";
+  const state = reconciliationSlaStateLabel(row.slaState);
   if (row.slaBreachedAt) {
     return `${state}; breached ${formatDateTimeLabel(row.slaBreachedAt)}`;
   }
@@ -833,6 +906,52 @@ function buildReconciliationSlaText(row: Pick<ReconciliationBreakQueueItem, "sla
     return `${state}; warning ${formatDateTimeLabel(row.slaWarningAt)}`;
   }
   return state;
+}
+
+function buildReconciliationExceptionUrgency(row: ReconciliationBreakRowViewModel): string {
+  const active = row.status === "Open" || row.status === "InReview";
+  const slaLabel = row.slaBadgeLabel?.trim() || buildReconciliationSlaText(row);
+
+  if (row.slaBreachedAt || row.slaState === "Breached" || row.slaBadgeTone === "danger") {
+    return slaLabel.startsWith("Breached") ? slaLabel : `SLA breached · ${slaLabel}`;
+  }
+
+  if (active) {
+    const trustGaps: string[] = [];
+    if (!row.assignedTo?.trim()) {
+      trustGaps.push("assign owner");
+    }
+    if ((row.evidenceCount ?? 0) === 0) {
+      trustGaps.push("attach evidence");
+    }
+    if (!row.requiredSignoffRole?.trim()) {
+      trustGaps.push("set sign-off role");
+    }
+    if (trustGaps.length > 0) {
+      return `Review required · ${trustGaps.join(" · ")}`;
+    }
+  }
+
+  return slaLabel;
+}
+
+function reconciliationSlaStateLabel(state: ReconciliationBreakQueueItem["slaState"]): string {
+  switch (state) {
+    case "OnTrack":
+      return "On track";
+    case "NotStarted":
+      return "Not started";
+    case "Warning":
+      return "Warning";
+    case "Breached":
+      return "Breached";
+    case "Paused":
+      return "Paused";
+    case "Stopped":
+      return "Stopped";
+    default:
+      return "SLA not assessed";
+  }
 }
 
 function buildReconciliationBreakRoutingHref(routingTarget: string | null | undefined): string | null {

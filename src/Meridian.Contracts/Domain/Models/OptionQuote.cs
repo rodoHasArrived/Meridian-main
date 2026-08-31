@@ -119,7 +119,7 @@ public sealed record OptionQuote : MarketEventPayload
         long? OpenInterest = null,
         long? Volume = null,
         long SequenceNumber = 0,
-        string Source = "IB")
+        string Source = MarketDataSources.Unknown)
     {
         if (string.IsNullOrWhiteSpace(Symbol))
             throw new ArgumentException("Symbol is required", nameof(Symbol));

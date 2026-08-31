@@ -1,5 +1,5 @@
 {
-  "schema_version": "2026-04-14",
+  "schema_version": "2026-07-19",
   "mode": "design_partner",
   "artifact_type": "roadmap-review",
   "artifact_paths": [
@@ -7,11 +7,29 @@
     "docs/roadmap/data/roadmap-items.yml",
     "docs/roadmap/generated/ROADMAP_SUMMARY.md"
   ],
+  "artifact_evidence": [
+    {
+      "path": "docs/plans/example-roadmap-item.md",
+      "kind": "roadmap",
+      "status": "supplied"
+    },
+    {
+      "path": "docs/roadmap/data/roadmap-items.yml",
+      "kind": "roadmap",
+      "status": "verified"
+    },
+    {
+      "path": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
+      "kind": "roadmap",
+      "status": "supplied"
+    }
+  ],
+  "artifact_freshness": "unknown",
   "artifact_summary": "Roadmap or blueprint review anchored in the current platform direction.",
   "persona_set": {
     "panel": "core-finance",
     "required_roles": [
-      "Owner-Operator"
+      "CIO"
     ]
   },
   "focus_areas": [

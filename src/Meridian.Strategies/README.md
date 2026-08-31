@@ -6,7 +6,7 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-06-06
+last_reviewed: 2026-08-03
 ---
 
 # src/Meridian.Strategies
@@ -33,10 +33,39 @@ policy outcome names and legacy cell kinds remain compatibility inputs.
 ## Important workflows
 
 Use this module for strategy run evidence, promotion lineage, and research-to-paper continuity.
+Production `StrategyRunStore` composition replays a versioned, source-generated run snapshot from
+the shared Contracts-owned operational case-history port. Start, pause, and stop commands retain
+intent before invoking the external strategy, then return a validated Succeeded,
+CompletedWithWarnings, Failed, or Blocked receipt with recovery guidance. Transient final-evidence
+failures retain a warning and can be reconciled against the already-completed external state without
+repeating the action. Lifecycle snapshots retain deterministic input hashes, actors, correlation and
+attempt lineage, exception details, approvals, evidence, artifacts, legal transition order, and
+monotonic timestamps. Version-two input hashes bind parent-run lineage, portfolio, ledger, audit,
+and fund-profile scope as well as datasets, feeds, engines, and ordered parameters; replay accepts
+verified legacy hashes only for an explicit one-time upgrade and rejects later scope mutation. The
+parameterless store remains an explicit in-memory compatibility seam for
+isolated tests; browser and WPF production composition and the desktop fallback use the same
+data-root-backed durable history store.
 `StrategyRunEntry` retains the W6 Backtest Studio evidence loop: operator acceptance criteria,
 retained evidence links, accounting-record references, approval references, paper-validation
 lineage, and governed-report references are stored with the run so downstream review surfaces do
 not need to infer backtest acceptance from dashboard-only state.
+Scoped Covered Call runs are visible only through exact tenant/company repository reads. Their
+Backtest-to-Paper checklist is projected from the durable promotion record and exact retained Paper
+child lineage, not from eligibility or declaration presence: all four canonical Paper checklist
+ids require an operator, audit reference, decision time, keyed source-run evidence, and a same-scope
+Paper target whose parent and strategy identities match. Unscoped APIs remain limited to genuinely
+legacy, non-Covered-Call records.
+Promotion decisions are first-decision-wins per source run and target mode. Sequential retries and
+concurrent requests across independent hosts targeting the same JSONL authority reuse the original
+approved or rejected record under a cross-process authority lease; a conflicting later transition
+cannot create another target, append another decision, or repeat launcher and audit side effects.
+An approval is retained and audited before its target becomes runnable. If target persistence fails,
+a retry repairs the exact retained target id under the same authority lease, while an unconfirmed
+decision write leaves no target for the startup resume sweep to activate.
+Completed runs may receive a subsequent append-only walk-forward evidence snapshot when the
+snapshot changes only that evidence; durable replay preserves the completed lifecycle state while
+allowing paper-to-live promotion to evaluate the newly retained out-of-sample evidence.
 `LedgerReadService` projects strategy-run trial balance and journal rows with canonical
 `LedgerDimensionSetDto` scope for fund, strategy, portfolio, book, account, entity, sleeve,
 organization, customer, vendor, project, and `externalGl.*` run-parameter filters so workstation
@@ -61,12 +90,39 @@ evidence so accounting operations can route principal-paydown blockers precisely
 Security Master adapter preserves mortgage-backed, asset-backed, and amortizing-loan asset classes
 when normalizing economic definitions so factor paydowns stay principal events instead of being
 collapsed into generic unsupported instruments.
+External-statement input is an optional reconciliation source. When no provider is configured, the
+production-safe null source contributes no statement rows; retained reconciliation run storage and
+the configured portfolio, ledger, and banking inputs remain authoritative.
+Retained reconciliation writes serialize first-observation continuity across workstation processes,
+use repository commit order when concurrent runs share one timestamp, and expose a leased latest
+snapshot callback for governance decisions. Lease callbacks are non-reentrant and fail fast if they
+try to call the same backing repository. Governance holds that lease through its audit append,
+rejects impossible break chronology and invalid policy thresholds, repairs a torn final JSONL record
+before a durable append, and keeps the established PascalCase JSON evidence-export contract.
+Factor rows retain their evidence link and source-content hash, and the Security Master accounting
+event service delegates factor math and deterministic event identity to Instruments
+`FactorPaydownProjectionService`. Reconciliation run ids no longer participate in factor event
+identity; missing factor evidence blocks the expected event instead of producing an unverifiable
+posting preview.
+For factor-bearing definitions, the production source adapter resolves a single effective Asset
+Operations book position by Security Master identity and account, carries its durable id/version,
+and fails the factor event closed when that position cannot be resolved. Multiple factor rows advance
+their expected position versions sequentially instead of reusing one optimistic-concurrency token.
 `GovernanceExceptionService` classifies ledger reconciliation breaks into strategy-governance
 exception severities and dashboard projections from this module instead of the Application layer.
 The shared reconciliation break queue also enforces v0.18 reviewed-automation boundaries: assistant
 or automation-origin commands may assist triage, comments, and evidence gathering, but resolve,
 sign-off, dismiss, and privileged reopen paths fail closed with a retained `MaterialActionDenied`
 audit event before case state changes.
+Break records carry explicit Value, Quantity, and CostBasis comparisons. A source that cannot
+provide a measure retains an unavailable reason instead of substituting zero. Governed casework
+supports assign, resolve, waive, and supersede dispositions with evidence hashes, independent
+approval for material dispositions, successor lineage, idempotency, and append-only audit history.
+The file-backed queue exposes a separate startup authority probe for production Reporting
+readiness. The probe discards process cache, reloads the retained snapshot, and reruns envelope,
+snapshot, audit-chain, and close-scope integrity checks. A failed probe clears the attempted cache
+again, so repeated checks remain fail-closed until the durable snapshot is actually repaired; it
+does not silently accept the last in-memory state.
 
 ## Diagrams
 
@@ -81,6 +137,9 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W3-CONT-001` | Research to paper continuity |
 | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 | `W7-LIVE-001` | Live-readiness governance |
+| `W10-RECON-001` | Durable break lineage identity and run-over-run break diff |
+| `W10-RECON-002` | Break clustering and bulk-resolution activation |
+| `W10-RECON-004` | Operator-taught match rules with promotion gate |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
@@ -101,5 +160,5 @@ Preserve evidence lineage and avoid breaking promotion compatibility across brow
 
 ## Related docs
 
-- `docs/plans/waves-2-4-operator-readiness-addendum.md`
+- `archive/docs/plans/waves-2-4-operator-readiness-addendum.md`
 - `docs/source/generated/source-roadmap-traceability.md`

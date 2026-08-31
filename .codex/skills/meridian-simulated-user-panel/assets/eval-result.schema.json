@@ -1,7 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://meridian.local/skills/meridian-simulated-user-panel/eval-result.schema.json",
-  "title": "Meridian Simulated User Panel Eval Result",
+  "title": "Meridian Simulated User Panel Grading Result",
+  "$comment": "This schema describes deterministic grading output. Panel review output uses review-result.schema.json.",
   "type": "object",
   "required": [
     "schema_version",

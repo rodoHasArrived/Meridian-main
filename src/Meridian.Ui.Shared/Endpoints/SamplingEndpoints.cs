@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.IO.Compression;
 using System.Text.Json;
 using Meridian.Contracts.Api;
@@ -103,7 +104,7 @@ public static class SamplingEndpoints
                 createdAt = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("CreateSample")
+        .WithName("CreateSample").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -146,7 +147,7 @@ public static class SamplingEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("EstimateSampleSize")
+        .WithName("EstimateSampleSize").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200);
 
         // List saved samples
@@ -170,7 +171,7 @@ public static class SamplingEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetSavedSamples")
+        .WithName("GetSavedSamples").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200);
 
         // Get sample by ID - returns actual sampled events
@@ -192,7 +193,7 @@ public static class SamplingEndpoints
                 sample.CreatedAt
             }, jsonOptions);
         })
-        .WithName("GetSampleById")
+        .WithName("GetSampleById").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200)
         .Produces(404);
     }

@@ -1,10 +1,13 @@
 using System.Text.Json;
 using Meridian.Core.Config;
+using Meridian.Core.Diagnostics;
 using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.DataSources;
+using Meridian.Infrastructure.Resilience;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -62,7 +65,7 @@ public static class ProviderEndpoints
                 failoverTimeoutSeconds = cfg.DataSources?.FailoverTimeoutSeconds ?? 30
             }, jsonOptions);
         })
-        .WithName("GetDataSources")
+        .WithName("GetDataSources").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ManageProviders)
         .WithDescription("Returns all configured data sources with failover and default source settings.")
         .Produces(200);
 
@@ -81,6 +84,15 @@ public static class ProviderEndpoints
             if (string.IsNullOrWhiteSpace(req.Name))
                 return Results.BadRequest("Name is required.");
 
+            // Fail closed on unknown provider names: silently coercing a typo to IB would
+            // persist a data source pointed at a provider the operator never chose.
+            if (!Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var provider) ||
+                !Enum.IsDefined(provider))
+            {
+                return Results.BadRequest(
+                    $"Unknown provider '{req.Provider}'. Valid values: {string.Join(", ", Enum.GetNames<DataSourceKind>())}.");
+            }
+
             var cfg = store.Load();
             var dataSources = cfg.DataSources ?? new DataSourcesConfig();
             var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
@@ -89,9 +101,11 @@ public static class ProviderEndpoints
             var source = new DataSourceConfig(
                 Id: id,
                 Name: req.Name,
-                Provider: Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var p) ? p : DataSourceKind.IB,
+                Provider: provider,
                 Enabled: req.Enabled,
-                Type: Enum.TryParse<DataSourceType>(req.Type, ignoreCase: true, out var t) ? t : DataSourceType.RealTime,
+                Type: Enum.TryParse<Meridian.Core.Config.DataSourceType>(req.Type, ignoreCase: true, out var t)
+                    ? t
+                    : Meridian.Core.Config.DataSourceType.RealTime,
                 Priority: req.Priority,
                 Alpaca: req.Alpaca?.ToDomain(),
                 Polygon: req.Polygon?.ToDomain(),
@@ -112,7 +126,7 @@ public static class ProviderEndpoints
 
             return Results.Ok(new { id });
         })
-        .WithName("UpsertDataSource")
+        .WithName("UpsertDataSource").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Creates or updates a data source configuration entry.")
         .Produces(200)
         .Produces(400)
@@ -142,7 +156,7 @@ public static class ProviderEndpoints
 
             return Results.Ok();
         })
-        .WithName("DeleteDataSource")
+        .WithName("DeleteDataSource").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Removes a data source configuration by ID.")
         .Produces(200)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -177,7 +191,7 @@ public static class ProviderEndpoints
 
             return Results.Ok();
         })
-        .WithName("ToggleDataSource")
+        .WithName("ToggleDataSource").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Toggles the enabled/disabled state of a data source.")
         .Produces(200)
         .Produces(404)
@@ -211,7 +225,7 @@ public static class ProviderEndpoints
 
             return Results.Ok();
         })
-        .WithName("SetDefaultSources")
+        .WithName("SetDefaultSources").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Sets the default real-time and historical data source IDs.")
         .Produces(200)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -244,7 +258,7 @@ public static class ProviderEndpoints
 
             return Results.Ok();
         })
-        .WithName("UpdateFailoverSettings")
+        .WithName("UpdateFailoverSettings").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Updates automatic failover settings including timeout and enable/disable.")
         .Produces(200)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -265,7 +279,7 @@ public static class ProviderEndpoints
                 ? Results.Json(result, jsonOptions)
                 : Results.BadRequest(result);
         })
-        .WithName("ConfigureProvider")
+        .WithName("ConfigureProvider").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Creates a provider data-source configuration from the browser provider setup form.")
         .Produces<ProviderSetupResult>(200)
         .Produces<ProviderSetupResult>(400)
@@ -340,7 +354,7 @@ public static class ProviderEndpoints
                 rankedAlternatives = selection.RankedAlternatives ?? Array.Empty<RoutePreviewCandidateDto>()
             }, jsonOptions);
         })
-        .WithName("GetProviderComparison")
+        .WithName("GetProviderComparison").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Returns a side-by-side comparison of all provider metrics including latency, quality, and throughput.")
         .Produces<ProviderComparisonResponse>(200);
 
@@ -351,7 +365,7 @@ public static class ProviderEndpoints
             var readiness = await service.GetReadinessAsync(ct).ConfigureAwait(false);
             return Results.Json(readiness, jsonOptions);
         })
-        .WithName("GetProviderReadiness")
+        .WithName("GetProviderReadiness").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.ManageCredentials, UserPermission.AdminMaintenance)
         .WithDescription("Returns the shared provider readiness command-center model across credentials, health, degradation, and evidence.")
         .Produces<ProviderReadinessSummaryDto>(200);
 
@@ -372,16 +386,27 @@ public static class ProviderEndpoints
                     s.Id,
                     s.Name,
                     s.Provider.ToString());
+                var observedIsConnected = diagnostics?.IsConnected ?? realMetrics?.IsConnected;
+                var connectionState = !s.Enabled
+                    ? "disabled"
+                    : diagnostics is not null
+                        ? ProviderExtendedEndpoints.ResolveConnectionState(
+                            s.Enabled,
+                            diagnostics.LifecycleState,
+                            diagnostics.IsConnected)
+                        : realMetrics is not null
+                            ? realMetrics.IsConnected ? "connected" : "disconnected"
+                            : "unknown";
 
                 return new ProviderStatusResponse(
                     ProviderId: s.Id,
                     Name: s.Name,
                     ProviderType: s.Provider.ToString(),
-                    IsConnected: diagnostics?.IsConnected ?? realMetrics?.IsConnected ?? s.Enabled,
+                    IsConnected: ProviderExtendedEndpoints.ResolveIsConnected(s.Enabled, observedIsConnected),
                     IsEnabled: s.Enabled,
                     Priority: s.Priority,
                     ActiveSubscriptions: diagnostics?.ActiveSubscriptions ?? (int)(realMetrics?.ActiveSubscriptions ?? 0),
-                    LastHeartbeat: diagnostics?.LastHeartbeatReceivedAt ?? realMetrics?.Timestamp ?? DateTimeOffset.UtcNow,
+                    LastHeartbeat: diagnostics?.LastHeartbeatReceivedAt ?? realMetrics?.Timestamp,
                     LifecycleState: diagnostics?.LifecycleState,
                     WebSocketState: diagnostics?.WebSocketState,
                     IsReconnecting: diagnostics?.IsReconnecting,
@@ -392,7 +417,10 @@ public static class ProviderEndpoints
                     LastFailureKind: diagnostics?.LastFailureKind,
                     FailedSubscriptions: diagnostics?.FailedSubscriptions,
                     RecoveringSubscriptions: diagnostics?.RecoveringSubscriptions,
-                    LastSubscriptionMessageAt: diagnostics?.LastSubscriptionMessageAt
+                    LastSubscriptionMessageAt: diagnostics?.LastSubscriptionMessageAt,
+                    ConnectionState: connectionState,
+                    DiagnosticsAvailable: diagnostics is not null || realMetrics is not null,
+                    Streams: ToStreamResponses(diagnostics?.Streams)
                 );
             }).ToList();
 
@@ -417,12 +445,18 @@ public static class ProviderEndpoints
                         diagnosticsByProviderId,
                         provider.Name,
                         provider.DisplayName);
+                    var connectionState = ProviderExtendedEndpoints.ResolveConnectionState(
+                        provider.IsEnabled,
+                        diagnostics?.LifecycleState,
+                        diagnostics?.IsConnected);
 
                     status.Add(new ProviderStatusResponse(
                         ProviderId: provider.Name,
                         Name: provider.DisplayName,
                         ProviderType: provider.ProviderType.ToString(),
-                        IsConnected: diagnostics?.IsConnected ?? provider.IsEnabled,
+                        IsConnected: ProviderExtendedEndpoints.ResolveIsConnected(
+                            provider.IsEnabled,
+                            diagnostics?.IsConnected),
                         IsEnabled: provider.IsEnabled,
                         Priority: provider.Priority,
                         ActiveSubscriptions: diagnostics?.ActiveSubscriptions ?? 0,
@@ -437,13 +471,16 @@ public static class ProviderEndpoints
                         LastFailureKind: diagnostics?.LastFailureKind,
                         FailedSubscriptions: diagnostics?.FailedSubscriptions,
                         RecoveringSubscriptions: diagnostics?.RecoveringSubscriptions,
-                        LastSubscriptionMessageAt: diagnostics?.LastSubscriptionMessageAt));
+                        LastSubscriptionMessageAt: diagnostics?.LastSubscriptionMessageAt,
+                        ConnectionState: connectionState,
+                        DiagnosticsAvailable: diagnostics is not null,
+                        Streams: ToStreamResponses(diagnostics?.Streams)));
                 }
             }
 
             return Results.Json(status.ToArray(), jsonOptions);
         })
-        .WithName("GetProviderStatus")
+        .WithName("GetProviderStatus").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Returns connection status for all configured providers.")
         .Produces<ProviderStatusResponse[]>(200);
 
@@ -481,7 +518,7 @@ public static class ProviderEndpoints
 
             return Results.Json(fallbackMetrics, jsonOptions);
         })
-        .WithName("GetProviderMetrics")
+        .WithName("GetProviderMetrics").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Returns detailed metrics for all providers including throughput, latency, and quality scores.")
         .Produces<ProviderMetricsResponse[]>(200);
 
@@ -524,7 +561,7 @@ public static class ProviderEndpoints
 
             return Results.Json(CreateFallbackMetrics(source), jsonOptions);
         })
-        .WithName("GetProviderMetricsById")
+        .WithName("GetProviderMetricsById").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Returns detailed metrics for a single provider by ID.")
         .Produces<ProviderMetricsResponse>(200)
         .Produces(404);
@@ -532,7 +569,11 @@ public static class ProviderEndpoints
         // Provider catalog endpoint - centralized metadata for UI consumption
         // Uses ProviderRegistry when available for runtime-derived catalog data,
         // otherwise falls back to static ProviderCatalog
-        group.MapGet(UiApiRoutes.ProviderCatalog, (HttpContext ctx, string? type, [FromServices] ProviderRegistry? registry) =>
+        group.MapGet(UiApiRoutes.ProviderCatalog, (
+            HttpContext ctx,
+            string? type,
+            [FromServices] ProviderRegistry? registry,
+            [FromServices] DataSourceRegistry? dataSourceRegistry) =>
         {
             IReadOnlyList<ProviderCatalogEntry> catalogEntries;
 
@@ -557,17 +598,20 @@ public static class ProviderEndpoints
                 };
             }
 
-            return Results.Json(new
-            {
-                providers = catalogEntries,
-                totalCount = catalogEntries.Count,
-                timestamp = DateTimeOffset.UtcNow,
-                source = registry != null ? "registry" : "static"
-            }, jsonOptions);
+            return Results.Json(
+                new ProviderCatalogResponse(
+                    catalogEntries,
+                    catalogEntries.Count,
+                    DateTimeOffset.UtcNow,
+                    registry != null ? "registry" : "static",
+                    dataSourceRegistry is null
+                        ? null
+                        : CreateRegistrationReportDto(dataSourceRegistry.GetRegistrationReport())),
+                jsonOptions);
         })
-        .WithName("GetProviderCatalog")
+        .WithName("GetProviderCatalog").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Returns the provider catalog with metadata. Filter by type using ?type=streaming or ?type=backfill.")
-        .Produces(200);
+        .Produces<ProviderCatalogResponse>(200);
 
         // Single provider catalog entry
         // Uses ProviderRegistry when available for runtime-derived catalog data
@@ -582,7 +626,7 @@ public static class ProviderEndpoints
 
             return Results.Json(entry, jsonOptions);
         })
-        .WithName("GetProviderCatalogById")
+        .WithName("GetProviderCatalogById").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithDescription("Returns catalog metadata for a single provider by ID.")
         .Produces<ProviderCatalogEntry>(200)
         .Produces(404);
@@ -602,7 +646,7 @@ public static class ProviderEndpoints
                 failoverTimeoutSeconds = cfg.DataSources?.FailoverTimeoutSeconds ?? 30
             }, jsonOptions);
         })
-        .WithName("GetDataSourcesAlias")
+        .WithName("GetDataSourcesAlias").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ManageProviders)
         .WithDescription("Alias for /api/config/datasources for backward compatibility.")
         .Produces(200);
 
@@ -620,6 +664,15 @@ public static class ProviderEndpoints
             if (string.IsNullOrWhiteSpace(req.Name))
                 return Results.BadRequest("Name is required.");
 
+            // Fail closed on unknown provider names: silently coercing a typo to IB would
+            // persist a data source pointed at a provider the operator never chose.
+            if (!Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var provider) ||
+                !Enum.IsDefined(provider))
+            {
+                return Results.BadRequest(
+                    $"Unknown provider '{req.Provider}'. Valid values: {string.Join(", ", Enum.GetNames<DataSourceKind>())}.");
+            }
+
             var cfg = store.Load();
             var dataSources = cfg.DataSources ?? new DataSourcesConfig();
             var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
@@ -628,9 +681,11 @@ public static class ProviderEndpoints
             var source = new DataSourceConfig(
                 Id: id,
                 Name: req.Name,
-                Provider: Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var p) ? p : DataSourceKind.IB,
+                Provider: provider,
                 Enabled: req.Enabled,
-                Type: Enum.TryParse<DataSourceType>(req.Type, ignoreCase: true, out var t) ? t : DataSourceType.RealTime,
+                Type: Enum.TryParse<Meridian.Core.Config.DataSourceType>(req.Type, ignoreCase: true, out var t)
+                    ? t
+                    : Meridian.Core.Config.DataSourceType.RealTime,
                 Priority: req.Priority,
                 Alpaca: req.Alpaca?.ToDomain(),
                 Polygon: req.Polygon?.ToDomain(),
@@ -651,13 +706,52 @@ public static class ProviderEndpoints
 
             return Results.Ok(new { id });
         })
-        .WithName("UpsertDataSourceAlias")
+        .WithName("UpsertDataSourceAlias").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Alias for /api/config/datasources POST for backward compatibility.")
         .Produces(200)
         .Produces(400)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+    }
+
+    private static IReadOnlyList<ProviderStreamStatusResponse>? ToStreamResponses(
+        IReadOnlyList<ProviderStreamDiagnostics>? streams)
+        => streams?.Select(stream => new ProviderStreamStatusResponse(
+            stream.AssetClass.ToString(), stream.Feed, stream.Entitlement,
+            stream.LifecycleState.ToString(), stream.IsConnected, stream.IsDegraded,
+            RuntimeDiagnosticRedactor.SanitizeText(stream.DegradationReason))).ToArray();
+
+    internal static ProviderRegistrationReportDto CreateRegistrationReportDto(ProviderRegistrationReport report)
+    {
+        ArgumentNullException.ThrowIfNull(report);
+        var failures = report.Failures
+            .Select(failure => new ProviderRegistrationFailureDto(
+                SanitizePublicDiagnostic(failure.Stage),
+                SanitizePublicDiagnostic(failure.Subject),
+                failure.ModuleId is null ? null : SanitizePublicDiagnostic(failure.ModuleId),
+                SanitizePublicDiagnostic(failure.ErrorType),
+                SanitizePublicDiagnostic(failure.ErrorMessage)))
+            .ToArray();
+
+        return new ProviderRegistrationReportDto(
+            report.GeneratedAt,
+            report.DiscoveredSourceCount,
+            report.ModuleCandidateCount,
+            report.ModuleActivationAttemptCount,
+            report.ModuleRegistrationAttemptCount,
+            report.RegisteredModuleCount,
+            report.SkippedModuleCount,
+            report.FailedModuleCount,
+            report.IsHealthy,
+            failures);
+    }
+
+    private static string SanitizePublicDiagnostic(string? value)
+    {
+        const int maxLength = 512;
+        var sanitized = RuntimeDiagnosticRedactor.SanitizeText(value);
+        return sanitized.Length <= maxLength ? sanitized : sanitized[..maxLength];
     }
 
     private static ProviderMetricsResponse CreateFallbackMetrics(DataSourceConfig source) => new(

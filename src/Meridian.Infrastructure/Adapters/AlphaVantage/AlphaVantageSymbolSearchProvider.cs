@@ -1,5 +1,8 @@
 using System.Globalization;
+using System.Net;
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Core.Exceptions;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
@@ -73,7 +76,7 @@ public sealed class AlphaVantageSymbolSearchProvider : BaseSymbolSearchProvider
 
     protected override IEnumerable<SymbolSearchResult> DeserializeSearchResults(string json, string query)
     {
-        if (IsErrorOrRateLimitBody(json))
+        if (IsErrorBody(json))
         {
             return Enumerable.Empty<SymbolSearchResult>();
         }
@@ -124,10 +127,50 @@ public sealed class AlphaVantageSymbolSearchProvider : BaseSymbolSearchProvider
         return Task.FromResult<SymbolDetails?>(details);
     }
 
-    private static bool IsErrorOrRateLimitBody(string json)
-        => json.Contains("\"Note\"", StringComparison.Ordinal) ||
-            json.Contains("\"Error Message\"", StringComparison.Ordinal) ||
-            json.Contains("Thank you for using Alpha Vantage", StringComparison.Ordinal);
+    protected override RateLimitException? CreateRateLimitException(
+        HttpResponseMessage response,
+        string symbol)
+    {
+        if (response.StatusCode != HttpStatusCode.TooManyRequests)
+            return null;
+
+        var retryAfter = response.Headers.RetryAfter?.Delta;
+        if (retryAfter is null && response.Headers.RetryAfter?.Date is { } retryAt)
+        {
+            var delay = retryAt - DateTimeOffset.UtcNow;
+            if (delay > TimeSpan.Zero)
+                retryAfter = delay;
+        }
+
+        return new RateLimitException(
+            $"Alpha Vantage symbol search rate limit exceeded for {symbol}.",
+            provider: Name,
+            symbol: symbol,
+            retryAfter: retryAfter ?? RateLimitWindow);
+    }
+
+    protected override bool IsQuotaExceededResponse(string json)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            if (document.RootElement.ValueKind == JsonValueKind.Object &&
+                (document.RootElement.TryGetProperty("Note", out _) ||
+                 document.RootElement.TryGetProperty("Information", out _)))
+            {
+                return true;
+            }
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+
+        return base.IsQuotaExceededResponse(json);
+    }
+
+    private static bool IsErrorBody(string json)
+        => json.Contains("\"Error Message\"", StringComparison.Ordinal);
 
     private static int ParseProviderScore(string? score)
     {

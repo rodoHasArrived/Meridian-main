@@ -1,0 +1,5 @@
+{
+  "description": "Per-file counts of legacy ApiClientService GetAsync<T>/PostAsync<T> call sites. CI fails when any file exceeds its count or a new file appears; migration batches shrink this to empty.",
+  "files": {},
+  "total": 0
+}

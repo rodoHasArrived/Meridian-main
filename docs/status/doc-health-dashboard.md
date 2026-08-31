@@ -11,7 +11,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 ## Overall Health Score
 
 ```text
-  [#########################-----] 83/100
+  [########################------] 80/100
   Rating: Good
 ```
 
@@ -19,14 +19,14 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 541 |
-| Total lines | 90,529 |
-| Average file size (lines) | 167.3 |
-| Orphaned files | 207 |
-| Files without headings | 38 |
+| Total documentation files | 662 |
+| Total lines | 136,739 |
+| Average file size (lines) | 206.6 |
+| Orphaned files | 253 |
+| Files without headings | 148 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 204 |
-| **Health score** | **83/100** |
+| TODO/FIXME markers | 253 |
+| **Health score** | **80/100** |
 
 ### Score Breakdown
 
@@ -45,21 +45,21 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 These files lack a Markdown heading, making them harder to navigate:
 
 - `Meridian Design System/SKILL.md`
-- `Meridian Design System/components/charts/CandleChart.prompt.md`
-- `Meridian Design System/components/charts/ChartCard.prompt.md`
-- `Meridian Design System/components/charts/EquityCurve.prompt.md`
-- `Meridian Design System/components/core/Badge.prompt.md`
-- `Meridian Design System/components/core/Button.prompt.md`
-- `Meridian Design System/components/core/Eyebrow.prompt.md`
-- `Meridian Design System/components/core/Input.prompt.md`
-- `Meridian Design System/components/core/PanelSurface.prompt.md`
-- `Meridian Design System/components/core/StatusBanner.prompt.md`
-- `Meridian Design System/components/data/DenseDataTable.prompt.md`
-- `Meridian Design System/components/data/EntitySummary.prompt.md`
-- `Meridian Design System/components/data/KeyValueGrid.prompt.md`
-- `Meridian Design System/components/data/MetricCard.prompt.md`
-- `Meridian Design System/components/shell/NavRail.prompt.md`
-- ... and 23 more
+- `Meridian Design System/components/accounting/AccountTree.prompt.md`
+- `Meridian Design System/components/accounting/AgingTable.prompt.md`
+- `Meridian Design System/components/accounting/AllocationEditor.prompt.md`
+- `Meridian Design System/components/accounting/AmountCell.prompt.md`
+- `Meridian Design System/components/accounting/CommitmentBar.prompt.md`
+- `Meridian Design System/components/accounting/FxRevaluationTable.prompt.md`
+- `Meridian Design System/components/accounting/JournalEntryForm.prompt.md`
+- `Meridian Design System/components/accounting/LedgerTable.prompt.md`
+- `Meridian Design System/components/accounting/Money.prompt.md`
+- `Meridian Design System/components/accounting/ReconciliationPanel.prompt.md`
+- `Meridian Design System/components/accounting/StatementTable.prompt.md`
+- `Meridian Design System/components/accounting/TaxLotTable.prompt.md`
+- `Meridian Design System/components/accounting/TrialBalance.prompt.md`
+- `Meridian Design System/components/charts/BarChart.prompt.md`
+- ... and 133 more
 
 ### Orphaned Documentation
 
@@ -76,16 +76,16 @@ These files are not linked from any other Markdown file in the repository:
 - `.agents/skills/meridian-repo-navigation/SKILL.md`
 - `.agents/skills/meridian-roadmap-strategist/SKILL.md`
 - `.agents/skills/meridian-simulated-user-panel/SKILL.md`
-- `.agents/skills/meridian-test-writer/SKILL.md`
-- `AGENTS.md`
-- `Meridian Design System/CONTENT_FUNDAMENTALS.md`
-- `Meridian Design System/ICONOGRAPHY.md`
-- `Meridian Design System/INSPIRATION_BRIEF.md`
-- `Meridian Design System/SKILL.md`
-- `Meridian Design System/VISUAL_FOUNDATIONS.md`
-- `Meridian Design System/components/charts/CandleChart.prompt.md`
-- `Meridian Design System/components/charts/ChartCard.prompt.md`
-- ... and 187 more
+- `.agents/skills/meridian-simulated-user-panel/agents/grader.md`
+- `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-01-welcome-onboarding-design-partner.md`
+- `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-02-provider-onboarding-release-gate.md`
+- `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-03-fund-ledger-controls-review.md`
+- `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-04-analysis-export-power-user-review.md`
+- `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-05-research-promotion-roadmap-review.md`
+- `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-06-provider-health-usability-lab.md`
+- `.agents/skills/meridian-simulated-user-panel/references/artifact-bundles.md`
+- `.agents/skills/meridian-simulated-user-panel/references/personas.md`
+- ... and 233 more
 
 ## Trend
 
@@ -93,7 +93,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 83 | 541 | 207 | 0 |
+| 1970-01-01 | 80 | 662 | 253 | 0 |
 
 ---
 

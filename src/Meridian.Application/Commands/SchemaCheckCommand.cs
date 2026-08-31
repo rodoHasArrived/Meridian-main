@@ -1,7 +1,7 @@
+using Meridian.Application.Services;
 using Meridian.Core.Config;
 using Meridian.DataIntegration.Monitoring;
 using Meridian.Platform.Results;
-using Meridian.Application.Services;
 using Serilog;
 
 namespace Meridian.Application.Commands;
@@ -21,10 +21,9 @@ internal sealed class SchemaCheckCommand : ICliCommand
         _log = log;
     }
 
-    public bool CanHandle(string[] args)
-    {
-        return CliArguments.HasFlag(args, "--check-schemas");
-    }
+    public IReadOnlyList<string> Triggers { get; } = ["--check-schemas"];
+
+    public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 
     public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {
@@ -32,7 +31,6 @@ internal sealed class SchemaCheckCommand : ICliCommand
 
         var schemaOptions = new SchemaValidationOptions
         {
-            EnableVersionTracking = true,
             MaxFilesToCheck = CliArguments.GetInt(args, "--max-files", 100),
             FailOnFirstIncompatibility = CliArguments.HasFlag(args, "--fail-fast")
         };

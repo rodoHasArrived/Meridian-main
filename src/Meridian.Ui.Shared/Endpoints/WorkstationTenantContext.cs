@@ -112,7 +112,12 @@ public sealed class WorkstationFundScopeTenantAccessor : IFundScopeTenantAccesso
         var httpContext = _httpContextAccessor.HttpContext;
         if (httpContext is null)
         {
-            return null;
+            // W9-GOV-008 criterion 2: out of request, fall back to the tenant a background job has
+            // explicitly declared it is acting for. ILedgerJournalStore alone serves roughly fifty
+            // internal and worker call sites, so once an unresolved tenant fails closed, a scheduled
+            // job with perfectly good retained authority would otherwise lose every read. A job that
+            // has declared nothing still resolves to null, and so still fails closed.
+            return FundScopeTenantAuthority.CurrentTenantId;
         }
 
         var context = HttpContextWorkstationTenantContextAccessor.Resolve(httpContext);
@@ -133,6 +138,13 @@ public static class WorkstationTenantScopeEndpointFilters
         return group;
     }
 
+    public static RouteHandlerBuilder RequireWorkstationTenantScope(this RouteHandlerBuilder builder)
+    {
+        builder.AddEndpointFilter(RequireTenantScope);
+        builder.WithMetadata(new WorkstationTenantScopeMetadata());
+        return builder;
+    }
+
     private static ValueTask<object?> RequireTenantScope(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
     {
         var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context.HttpContext);
@@ -141,9 +153,43 @@ public static class WorkstationTenantScopeEndpointFilters
             return next(context);
         }
 
-        return ValueTask.FromResult<object?>(Results.Problem(
-            MissingTenantScopeMessage,
-            statusCode: StatusCodes.Status403Forbidden));
+        return ValueTask.FromResult<object?>(
+            ApiProblemDetails.Forbidden(context.HttpContext, MissingTenantScopeMessage));
+    }
+}
+
+/// <summary>
+/// Unconditional isolation gate for workstation routes whose durable identity is tenant plus
+/// company. Unlike the broader rollout-controlled fund-write gate, this filter never permits or
+/// merely logs an incomplete scope.
+/// </summary>
+public static class WorkstationTenantCompanyScopeEndpointFilters
+{
+    private const string MissingScopeMessage =
+        "A tenant- and company-scoped workstation request context is required.";
+
+    public static RouteHandlerBuilder RequireWorkstationTenantCompanyScope(this RouteHandlerBuilder builder)
+    {
+        builder.AddEndpointFilter(RequireTenantAndCompanyScopeAsync);
+        // The stricter tenant+company gate also satisfies the discoverable tenant-scope contract
+        // used by endpoint coverage and authorization tooling.
+        builder.WithMetadata(new WorkstationTenantScopeMetadata());
+        return builder;
+    }
+
+    private static ValueTask<object?> RequireTenantAndCompanyScopeAsync(
+        EndpointFilterInvocationContext context,
+        EndpointFilterDelegate next)
+    {
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context.HttpContext);
+        if (!string.IsNullOrWhiteSpace(tenantContext.TenantId) &&
+            !string.IsNullOrWhiteSpace(tenantContext.CompanyId))
+        {
+            return next(context);
+        }
+
+        return ValueTask.FromResult<object?>(
+            ApiProblemDetails.Forbidden(context.HttpContext, MissingScopeMessage));
     }
 }
 
@@ -194,7 +240,7 @@ public static class FundScopedWriteTenantEndpointFilters
                 return await next(context).ConfigureAwait(false);
 
             case FundScopedWriteTenantDecision.Deny:
-                return Results.Problem(MissingTenantScopeMessage, statusCode: StatusCodes.Status403Forbidden);
+                return ApiProblemDetails.Forbidden(httpContext, MissingTenantScopeMessage);
 
             default:
                 // Detection-first: record the tenantless fund-scoped write without blocking it. Structured

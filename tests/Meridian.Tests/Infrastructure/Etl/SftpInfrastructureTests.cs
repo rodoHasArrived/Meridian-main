@@ -25,7 +25,7 @@ public sealed class SftpInfrastructureTests : IDisposable
     public async Task ListFilesAsync_WithoutPinnedHostKey_ShouldFailClosedBeforeConnecting()
     {
         var factory = new RecordingSftpClientFactory(new RecordingSftpClient());
-        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), factory);
+        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), factory, new EnvironmentSftpCredentialResolver(), ReadySftp);
         var source = CreateSource(hostKeyFingerprint: null);
 
         var act = () => reader.ListFilesAsync(source);
@@ -45,7 +45,7 @@ public sealed class SftpInfrastructureTests : IDisposable
     public async Task ListFilesAsync_WithInvalidUri_ShouldFailClosedBeforeConnecting(string location, string message)
     {
         var factory = new RecordingSftpClientFactory(new RecordingSftpClient());
-        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), factory);
+        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), factory, new EnvironmentSftpCredentialResolver(), ReadySftp);
         var source = CreateSource(location: location);
 
         var act = () => reader.ListFilesAsync(source);
@@ -67,7 +67,7 @@ public sealed class SftpInfrastructureTests : IDisposable
             ]
         };
         var factory = new RecordingSftpClientFactory(client);
-        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), factory);
+        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), factory, new EnvironmentSftpCredentialResolver(), ReadySftp);
         var source = CreateSource(
             location: "sftp://custodian.example.com:2222/inbound",
             hostKeyFingerprint: "SHA256:00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF");
@@ -88,7 +88,7 @@ public sealed class SftpInfrastructureTests : IDisposable
     public async Task StageFileAsync_WithRemoteFileOutsideSourceRoot_ShouldFailClosedBeforeConnecting()
     {
         var factory = new RecordingSftpClientFactory(new RecordingSftpClient());
-        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), factory);
+        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), factory, new EnvironmentSftpCredentialResolver(), ReadySftp);
         var source = CreateSource(location: "sftp://custodian.example.com/inbound");
         var file = new EtlRemoteFile
         {
@@ -107,7 +107,7 @@ public sealed class SftpInfrastructureTests : IDisposable
     public async Task StageFileAsync_WithTraversalFileName_ShouldFailClosedAtStagingBoundary()
     {
         var client = new RecordingSftpClient { DownloadPayload = "id,value" };
-        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), new RecordingSftpClientFactory(client));
+        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), new RecordingSftpClientFactory(client), new EnvironmentSftpCredentialResolver(), ReadySftp);
         var file = new EtlRemoteFile
         {
             Path = "/inbound/evil.csv",
@@ -129,7 +129,7 @@ public sealed class SftpInfrastructureTests : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
         var factory = new RecordingSftpClientFactory(new RecordingSftpClient());
-        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), factory);
+        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), factory, new EnvironmentSftpCredentialResolver(), ReadySftp);
 
         var act = () => reader.ListFilesAsync(CreateSource(), cts.Token);
 
@@ -144,7 +144,7 @@ public sealed class SftpInfrastructureTests : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
         var factory = new RecordingSftpClientFactory(new RecordingSftpClient());
-        var publisher = new SftpFilePublisher(factory);
+        var publisher = CreatePublisher(factory);
 
         var act = () => publisher.PublishAsync(CreateDestination(), localPath, cts.Token);
 
@@ -158,7 +158,7 @@ public sealed class SftpInfrastructureTests : IDisposable
         var localPath = await CreateLocalFileAsync("extract.csv");
         var client = new RecordingSftpClient { ThrowOnUpload = true };
         var factory = new RecordingSftpClientFactory(client);
-        var publisher = new SftpFilePublisher(factory);
+        var publisher = CreatePublisher(factory);
 
         var act = () => publisher.PublishAsync(CreateDestination(), localPath);
 
@@ -173,7 +173,7 @@ public sealed class SftpInfrastructureTests : IDisposable
     {
         var localPath = await CreateLocalFileAsync("extract.csv");
         var client = new RecordingSftpClient();
-        var publisher = new SftpFilePublisher(new RecordingSftpClientFactory(client));
+        var publisher = CreatePublisher(new RecordingSftpClientFactory(client));
         var destination = CreateDestination(overwriteIfExists: false);
 
         await publisher.PublishAsync(destination, localPath);
@@ -196,7 +196,7 @@ public sealed class SftpInfrastructureTests : IDisposable
         await File.WriteAllTextAsync(Path.Combine(outbound, "root.csv"), "root");
         await File.WriteAllTextAsync(Path.Combine(outbound, "nested", "child.csv"), "child");
         var client = new RecordingSftpClient();
-        var publisher = new SftpFilePublisher(new RecordingSftpClientFactory(client));
+        var publisher = CreatePublisher(new RecordingSftpClientFactory(client));
 
         await publisher.PublishAsync(CreateDestination(), outbound);
 
@@ -212,7 +212,7 @@ public sealed class SftpInfrastructureTests : IDisposable
     {
         var localPath = await CreateLocalFileAsync("extract.csv");
         var client = new RecordingSftpClient { ThrowOnRename = true };
-        var publisher = new SftpFilePublisher(new RecordingSftpClientFactory(client));
+        var publisher = CreatePublisher(new RecordingSftpClientFactory(client));
 
         var act = () => publisher.PublishAsync(CreateDestination(), localPath);
 
@@ -220,6 +220,94 @@ public sealed class SftpInfrastructureTests : IDisposable
         client.UploadedPaths.Should().ContainSingle();
         client.DeletedPaths.Should().Equal(client.UploadedPaths);
         client.DisconnectCalls.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task PostProcessFileAsync_ForNestedArchivePath_CreatesRemoteParentsBeforeRename()
+    {
+        var client = new RecordingSftpClient();
+        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), new RecordingSftpClientFactory(client), new EnvironmentSftpCredentialResolver(), ReadySftp);
+        var source = CreateSource(
+            postProcessingAction: EtlSourcePostProcessingAction.MoveToArchive,
+            archiveLocation: "/archive/2026/06");
+        var file = new EtlRemoteFile
+        {
+            Path = "/inbound/positions.csv",
+            Name = "positions.csv"
+        };
+
+        await reader.PostProcessFileAsync(source, file, succeeded: true);
+
+        client.CreatedDirectories.Should().Equal("/archive", "/archive/2026", "/archive/2026/06");
+        client.RenameCalls.Should().ContainSingle(call =>
+            call.OldPath == "/inbound/positions.csv" &&
+            call.NewPath == "/archive/2026/06/positions.csv" &&
+            !call.CanOverwrite);
+        client.DisconnectCalls.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task PostProcessFileAsync_WhenArchiveNameHoldsDifferentContent_RetainsBothRemoteSources()
+    {
+        var client = new RecordingSftpClient { DownloadPayload = "symbol,qty\nMSFT,250\n" };
+        client.SeedRemoteFile("/archive/positions.csv", "symbol,qty\nAAPL,100\n");
+        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), new RecordingSftpClientFactory(client), new EnvironmentSftpCredentialResolver(), ReadySftp);
+        var source = CreateSource(
+            postProcessingAction: EtlSourcePostProcessingAction.MoveToArchive,
+            archiveLocation: "/archive");
+        var file = new EtlRemoteFile { Path = "/inbound/positions.csv", Name = "positions.csv" };
+
+        await reader.PostProcessFileAsync(source, file, succeeded: true);
+
+        // The occupied name is never renamed over, and the source is not deleted: it is renamed
+        // to a deterministic content-addressed sibling so both remote sources survive.
+        client.RenameCalls.Should().ContainSingle(call =>
+            call.OldPath == "/inbound/positions.csv" &&
+            call.NewPath.StartsWith("/archive/positions.sha256-", StringComparison.Ordinal) &&
+            call.NewPath.EndsWith(".csv", StringComparison.Ordinal) &&
+            !call.CanOverwrite);
+        client.DeletedPaths.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task PostProcessFileAsync_WhenArchiveNameHoldsIdenticalContent_IsAnIdempotentReplay()
+    {
+        var client = new RecordingSftpClient { DownloadPayload = "symbol,qty\nMSFT,250\n" };
+        client.SeedRemoteFile("/archive/positions.csv", "symbol,qty\nMSFT,250\n");
+        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), new RecordingSftpClientFactory(client), new EnvironmentSftpCredentialResolver(), ReadySftp);
+        var source = CreateSource(
+            postProcessingAction: EtlSourcePostProcessingAction.MoveToArchive,
+            archiveLocation: "/archive");
+        var file = new EtlRemoteFile { Path = "/inbound/positions.csv", Name = "positions.csv" };
+
+        await reader.PostProcessFileAsync(source, file, succeeded: true);
+
+        // The move already happened; finishing it means consuming the source, not renaming again.
+        client.RenameCalls.Should().BeEmpty();
+        client.DeletedPaths.Should().Equal("/inbound/positions.csv");
+    }
+
+    [Fact]
+    public async Task PostProcessFileAsync_ForErrorAction_MovesOnlyFailedFiles()
+    {
+        var client = new RecordingSftpClient();
+        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), new RecordingSftpClientFactory(client), new EnvironmentSftpCredentialResolver(), ReadySftp);
+        var source = CreateSource(
+            postProcessingAction: EtlSourcePostProcessingAction.MoveToError,
+            errorLocation: "/error");
+        var file = new EtlRemoteFile
+        {
+            Path = "/inbound/positions.csv",
+            Name = "positions.csv"
+        };
+
+        await reader.PostProcessFileAsync(source, file, succeeded: true);
+        await reader.PostProcessFileAsync(source, file, succeeded: false);
+
+        client.RenameCalls.Should().ContainSingle(call =>
+            call.OldPath == "/inbound/positions.csv" &&
+            call.NewPath == "/error/positions.csv" &&
+            !call.CanOverwrite);
     }
 
     public void Dispose()
@@ -238,7 +326,10 @@ public sealed class SftpInfrastructureTests : IDisposable
 
     private static EtlSourceDefinition CreateSource(
         string location = "sftp://custodian.example.com/inbound",
-        string? hostKeyFingerprint = Fingerprint)
+        string? hostKeyFingerprint = Fingerprint,
+        EtlSourcePostProcessingAction postProcessingAction = EtlSourcePostProcessingAction.LeaveInPlace,
+        string? archiveLocation = null,
+        string? errorLocation = null)
         => new()
         {
             Kind = EtlSourceKind.Sftp,
@@ -246,8 +337,29 @@ public sealed class SftpInfrastructureTests : IDisposable
             FilePattern = "*.csv",
             Username = "ops",
             SecretRef = "password",
-            HostKeySha256Fingerprint = hostKeyFingerprint
+            HostKeySha256Fingerprint = hostKeyFingerprint,
+            PostProcessingAction = postProcessingAction,
+            ArchiveLocation = archiveLocation,
+            ErrorLocation = errorLocation
         };
+
+    // These tests exercise transport mechanics against an injected client, so the capability
+    // gate is satisfied by construction; the build-time SFTP flag is covered separately in
+    // SftpCapabilityServiceTests.
+    private static SftpFilePublisher CreatePublisher(ISftpClientFactory factory)
+        => new(factory, new EnvironmentSftpCredentialResolver(), new ReadySftpCapabilityService());
+
+    private sealed class ReadySftpCapabilityService : ISftpCapabilityService
+    {
+        public bool RealSftpEnabled => true;
+
+        public SftpCapabilityStatus Evaluate(EtlSourceDefinition source) => Ready();
+
+        public SftpCapabilityStatus Evaluate(EtlDestinationDefinition destination) => Ready();
+
+        private static SftpCapabilityStatus Ready()
+            => new(true, true, true, true, true, true, true, []);
+    }
 
     private static EtlDestinationDefinition CreateDestination(bool overwriteIfExists = true)
         => new()
@@ -259,6 +371,23 @@ public sealed class SftpInfrastructureTests : IDisposable
             HostKeySha256Fingerprint = Fingerprint,
             OverwriteIfExists = overwriteIfExists
         };
+
+    // These tests inject their own client to exercise transport mechanics, so the build-time
+    // capability gate is not what they are covering. A default EnableSftp=false build would
+    // otherwise fail them all at the gate before any transport ran.
+    private static readonly ISftpCapabilityService ReadySftp = new AlwaysReadySftpCapabilityService();
+
+    private sealed class AlwaysReadySftpCapabilityService : ISftpCapabilityService
+    {
+        public bool RealSftpEnabled => true;
+
+        public SftpCapabilityStatus Evaluate(EtlSourceDefinition source) => Status();
+
+        public SftpCapabilityStatus Evaluate(EtlDestinationDefinition destination) => Status();
+
+        private static SftpCapabilityStatus Status() =>
+            new(true, true, true, true, true, true, true, Array.Empty<string>());
+    }
 
     private sealed class RecordingSftpClientFactory(RecordingSftpClient client) : ISftpClientFactory
     {
@@ -279,6 +408,7 @@ public sealed class SftpInfrastructureTests : IDisposable
 
         public IReadOnlyList<ISftpFileEntry> Entries { get; init; } = [];
         public string DownloadPayload { get; init; } = string.Empty;
+        public Dictionary<string, string> PayloadsByPath { get; } = new(StringComparer.Ordinal);
         public bool ThrowOnUpload { get; init; }
         public bool ThrowOnRename { get; init; }
         public int ConnectCalls { get; private set; }
@@ -288,6 +418,7 @@ public sealed class SftpInfrastructureTests : IDisposable
         public List<string> UploadedPaths { get; } = [];
         public List<(string OldPath, string NewPath, bool CanOverwrite)> RenameCalls { get; } = [];
         public List<string> DeletedPaths { get; } = [];
+        public List<string> CreatedDirectories { get; } = [];
 
         public void Connect() => ConnectCalls++;
         public void Disconnect() => DisconnectCalls++;
@@ -301,8 +432,15 @@ public sealed class SftpInfrastructureTests : IDisposable
         public void DownloadFile(string path, Stream output)
         {
             DownloadPaths.Add(path);
-            var bytes = Encoding.UTF8.GetBytes(DownloadPayload);
+            var payload = PayloadsByPath.TryGetValue(path, out var scoped) ? scoped : DownloadPayload;
+            var bytes = Encoding.UTF8.GetBytes(payload);
             output.Write(bytes);
+        }
+
+        public void SeedRemoteFile(string path, string payload)
+        {
+            _remoteFiles.Add(path);
+            PayloadsByPath[path] = payload;
         }
 
         public void UploadFile(Stream input, string path, bool canOverwrite)
@@ -331,7 +469,11 @@ public sealed class SftpInfrastructureTests : IDisposable
         }
 
         public bool Exists(string path) => _remoteFiles.Contains(path);
-        public void CreateDirectory(string path) { }
+        public void CreateDirectory(string path)
+        {
+            CreatedDirectories.Add(path);
+            _remoteFiles.Add(path);
+        }
         public void Dispose() { }
     }
 

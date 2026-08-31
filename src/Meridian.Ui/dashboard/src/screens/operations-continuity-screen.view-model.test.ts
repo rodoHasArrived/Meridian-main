@@ -874,6 +874,10 @@ describe("Operations Continuity view model", () => {
       { label: "Latest audit", value: "Ledger Draft Blocked cdb9449e / devhash-ledg" }
     ]));
     expect(vm.gates.map((gate) => gate.label)).toEqual(["Broker intake", "Ledger posting"]);
+    expect(vm.gates[0]).toMatchObject({
+      completedLabel: "May 08, 14:20 UTC by Operations user",
+      completedByTechnicalLabel: "ops-user"
+    });
     expect(vm.blockers[0]).toMatchObject({
       code: "LEDGER_VALIDATION_REQUIRED",
       severityTone: "blocked"
@@ -1020,7 +1024,8 @@ describe("Operations Continuity view model", () => {
     });
     expect(vm.financialOperationsQueue.items[1]).toMatchObject({
       kindLabel: "Workflow blocker",
-      title: "LEDGER_VALIDATION_REQUIRED",
+      title: "Ledger validation required",
+      technicalCode: "LEDGER_VALIDATION_REQUIRED",
       detail: "Ledger Posting: Ledger posting requires a balanced and validated journal draft.",
       statusLabel: "Critical",
       statusTone: "blocked",
@@ -1193,7 +1198,9 @@ describe("Operations Continuity view model", () => {
       title: "Resolve Ledger Posting blockers",
       href: "/accounting",
       disabled: false,
-      disabledReason: null
+      disabledReason: null,
+      statusLabel: "Blocked",
+      statusTone: "blocked"
     });
     expect(vm.closeGovernance).toMatchObject({
       statusLabel: "Open",
@@ -1202,6 +1209,35 @@ describe("Operations Continuity view model", () => {
       closeAuditLabel: "No close audit event",
       reopenAuditLabel: "No governed reopen recorded",
       commandGuardLabel: "Close and reopen command decisions remain enforced by the shared workflow API."
+    });
+  });
+
+  it("keeps an actionable next step in review posture when its gate requires review", () => {
+    const reviewGates: OperationsGate[] = gates.map((gate) => gate.gateKey === "LedgerPosting"
+      ? { ...gate, status: "ReviewRequired", blockers: [] }
+      : gate);
+    const reviewSummary: OperationsContinuityWorkflowSummary = {
+      ...summary,
+      gates: reviewGates
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [reviewSummary],
+      selectedWorkflowId: workflowId,
+      detail: null,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.nextAction).toMatchObject({
+      title: "Resolve Ledger Posting blockers",
+      disabled: false,
+      statusLabel: "Review required",
+      statusTone: "review"
     });
   });
 

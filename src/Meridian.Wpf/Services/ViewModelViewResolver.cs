@@ -80,9 +80,13 @@ public sealed class ViewModelViewResolver : IViewModelViewResolver
         {
             _logger?.LogWarning(message, args);
         }
-        catch
+        catch (Exception ex)
         {
             // Startup diagnostics must not prevent the desktop shell from opening when a logger sink is unavailable.
+            LoggingService.Instance.LogDebug(
+                "Startup diagnostic logging failed.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 

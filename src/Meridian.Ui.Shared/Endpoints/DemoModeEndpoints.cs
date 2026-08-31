@@ -1,9 +1,12 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Operations;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Meridian.Identity.Auth;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -13,6 +16,12 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// </summary>
 public static class DemoModeEndpoints
 {
+    /// <summary>Demo output is always seeded; every response renders this persistent badge.</summary>
+    private const DataProvenance DemoProvenance = DataProvenance.Seeded;
+
+    private static readonly DataProvenanceBadge DemoProvenanceBadge =
+        DataProvenanceBadge.TryCreate(DemoProvenance)!;
+
     private static readonly Dictionary<string, DemoMarketSnapshot[]> DemoMarketData = new()
     {
         ["AAPL"] = new[]
@@ -68,19 +77,35 @@ public static class DemoModeEndpoints
         var group = app.MapGroup("").WithTags("Demo Mode");
 
         // Get demo mode status
-        group.MapGet(UiApiRoutes.DemoMode, (ConfigStore store) =>
+        group.MapGet(UiApiRoutes.DemoMode, (ConfigStore store, IServiceProvider serviceProvider, HttpContext context) =>
         {
             var cfg = store.Load();
             var isDemo = cfg.DataSources?.Sources?.Length == 0 ||
                         (cfg.DataSources?.Sources?.All(s => string.IsNullOrEmpty(s.Alpaca?.KeyId) &&
                                                            string.IsNullOrEmpty(s.Polygon?.ApiKey)) ?? true);
+            // W9-TRUTH-001: report the provenance pinned into the composed graph (seeded demo,
+            // forced simulated label for in-memory local durables) so connected workstations keep
+            // labeling this host's records; without a pinned declaration fall back to the demo
+            // heuristic so legacy behavior is unchanged.
+            var pinned = serviceProvider.GetService<Meridian.Application.Composition.MeridianDataProvenanceDeclaration>();
+
+            // The seeded symbol list is market data and stays behind a market-data permission. The
+            // posture flags are not: the browser shell treats provenance as the source of a persistent,
+            // non-dismissable banner on every workspace, so an operator who cannot read it is left
+            // labelling this host UNKNOWN -- which is the one answer the banner exists to prevent.
+            var canReadSeededSymbols = EndpointAuthorization.HasAnyPermission(
+                context,
+                UserPermission.ViewMarketData,
+                UserPermission.ViewHistoricalData);
+
             return Results.Json(new DemoModeConfig(
                 Enabled: isDemo,
-                DemoSymbols: DemoMarketData.Keys.ToArray(),
-                LastUpdated: DateTime.UtcNow
+                DemoSymbols: canReadSeededSymbols ? DemoMarketData.Keys.ToArray() : [],
+                LastUpdated: DateTime.UtcNow,
+                Provenance: pinned?.Provenance ?? (isDemo ? DataProvenance.Seeded : DataProvenance.Real)
             ), jsonOptions);
         })
-        .WithName("GetDemoMode")
+        .WithName("GetDemoMode").RequireEstablishedPrincipalRead()
         .WithDescription("Returns current demo mode status and available seeded symbols.")
         .Produces<DemoModeConfig>(200);
 
@@ -91,10 +116,12 @@ public static class DemoModeEndpoints
             {
                 symbols = DemoMarketData.Keys.ToArray(),
                 count = DemoMarketData.Count,
-                message = "Demo mode provides seeded market data without external API keys"
+                message = "Demo mode provides seeded market data without external API keys",
+                provenance = DemoProvenance.Token(),
+                provenanceBadge = DemoProvenanceBadge
             }, jsonOptions);
         })
-        .WithName("GetDemoSymbols")
+        .WithName("GetDemoSymbols").RequireAnyPermission(UserPermission.ViewMarketData, UserPermission.ViewHistoricalData)
         .WithDescription("Returns list of symbols available in demo mode.")
         .Produces(200);
 
@@ -107,11 +134,16 @@ public static class DemoModeEndpoints
             var latest = snapshots.FirstOrDefault();
             return latest is null
                 ? Results.NotFound()
-                : Results.Json(latest, jsonOptions);
+                : Results.Json(new
+                {
+                    snapshot = latest,
+                    provenance = DemoProvenance.Token(),
+                    provenanceBadge = DemoProvenanceBadge
+                }, jsonOptions);
         })
-        .WithName("GetDemoMarketData")
+        .WithName("GetDemoMarketData").RequireAnyPermission(UserPermission.ViewMarketData, UserPermission.ViewHistoricalData)
         .WithDescription("Returns latest market data snapshot for a demo symbol.")
-        .Produces<DemoMarketSnapshot>(200)
+        .Produces(200)
         .Produces(404);
 
         // Get historical data for demo symbol
@@ -126,10 +158,12 @@ public static class DemoModeEndpoints
                 symbol = symbol,
                 bars = result,
                 count = result.Length,
-                range = new { start = result.LastOrDefault()?.Date, end = result.FirstOrDefault()?.Date }
+                range = new { start = result.LastOrDefault()?.Date, end = result.FirstOrDefault()?.Date },
+                provenance = DemoProvenance.Token(),
+                provenanceBadge = DemoProvenanceBadge
             }, jsonOptions);
         })
-        .WithName("GetDemoHistoricalData")
+        .WithName("GetDemoHistoricalData").RequireAnyPermission(UserPermission.ViewMarketData, UserPermission.ViewHistoricalData)
         .WithDescription("Returns historical price data for a demo symbol.")
         .Produces(200)
         .Produces(404);

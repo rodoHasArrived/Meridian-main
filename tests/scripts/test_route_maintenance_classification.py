@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -19,6 +20,40 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ROUTE_SCRIPT = REPO_ROOT / "scripts" / "ai" / "route-maintenance.sh"
+
+
+def _resolve_bash() -> str:
+    override = os.environ.get("MERIDIAN_BASH_PATH")
+    if override:
+        return override
+    if os.name != "nt":
+        return shutil.which("bash") or "bash"
+
+    program_files = os.environ.get("ProgramFiles")
+    if program_files:
+        installed_git_bash = Path(program_files) / "Git" / "bin" / "bash.exe"
+        if installed_git_bash.is_file():
+            return str(installed_git_bash)
+
+    git_exec_path = subprocess.run(
+        ["git", "--exec-path"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    git_root = Path(git_exec_path).parents[2]
+    for relative_path in (Path("bin/bash.exe"), Path("usr/bin/bash.exe")):
+        candidate = git_root / relative_path
+        if candidate.is_file():
+            return str(candidate)
+
+    discovered = shutil.which("bash")
+    if discovered and "windows\\system32" not in discovered.lower():
+        return discovered
+    raise RuntimeError("Git Bash is required for route-maintenance classification tests on Windows.")
+
+
+BASH_EXECUTABLE = _resolve_bash()
 
 
 def _run_git(cwd: Path, *args: str) -> None:
@@ -62,7 +97,7 @@ def _classify(changed_files: list[str]) -> dict:
         env = dict(os.environ)
         subprocess.run(
             [
-                "bash",
+                BASH_EXECUTABLE,
                 str(ROUTE_SCRIPT),
                 "--classify-only",
                 "--base",

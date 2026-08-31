@@ -7,10 +7,10 @@ program:
   id: meridian-program
   title: Meridian Evidence-Backed Investment Operations
   owner: Core Team
-  snapshot_date: 2026-07-05
+  snapshot_date: 2026-08-30
   status: active
-  active_scope: Closed W1-W5 operational record baseline plus completed W5X shared explorer, Financial Operations control-center, and bounded W7 live-readiness governance milestones
-  scope_gate: New product work should strengthen data confidence, reconciliation, approvals, accounting records, close support, retained evidence, workflow controls, or governed reporting before expanding research, live trading, payments, forecasting, risk, portal, workflow-designer, mobile, or scale-out lanes.
+  active_scope: Closed W1-W5 operational record baseline plus completed W5X shared explorer, connector-library, Financial Operations control-center, Evidence Vault, statement-onboarding, bounded W6 backtest-evidence, and bounded W7 live-readiness governance milestones; WPF parity and browser workstation screen consolidation remain in progress; the ranked W9 first-order improvement slate has moved out of pure planning - W9-ASSET-010 is done, W9-TRUTH-001, W9-DEMO-002, W9-PAPER-003, W9-REPORT-005 and W9-NAV-006 remain accepted under operator decision DEC-W9-ACCEPTANCE-001, W9-CORPACT-011 is in_progress under DEC-W9-ACCEPTANCE-002 with evidence_posture in_progress and health red pending unchanged exit criterion four, W9-ALPACA-004 is held at ready_for_acceptance over three recorded fill-path caveats, and W9-SAFETY-007, W9-GOV-008 and W9-INGEST-009 remain in progress; the five remaining acceptances close governance gates on bounded rows only and do not move any row to done or certify a release. Next in sequence is the W10 depth slate (W10-MARK-001 through W10-CONSOL-001) which deepens existing functionality and mostly wires already-built capability rather than adding surface
+  scope_gate: New product work should strengthen data confidence, reconciliation, approvals, accounting records, close support, retained evidence, workflow controls, or governed reporting before expanding research, live trading, payments, forecasting, risk, portal, workflow-designer, mobile, or scale-out lanes. WPF desktop product/UI work is reactivated as an active co-equal lane whose immediate focus is web-UI parity over shared contracts.
   near_term_release_baseline:
     - W1-DATA-001
     - W2-TRD-001
@@ -22,28 +22,57 @@ program:
     - W5-MASSET-001
     - W5X-FREX-001
     - W5X-FINOPS-001
+    - W5X-CONNECT-001
+    - W5X-EVIDENCE-001
+    - W5X-STMT-ONBOARD-001
+    - W6-BTSTUDIO-001
     - W7-LIVE-001
-  active_productization_targets: []
+    - W8-WPF-PARITY-001
+    - W8-UX-CONSOL-001
+  active_productization_targets:
+    - W8-WPF-PARITY-001
+    - W8-UX-CONSOL-001
+    - W9-SAFETY-007
+    - W9-GOV-008
+    - W9-INGEST-009
+    - W9-CORPACT-011
   current_focus:
     - Data confidence and retained source evidence
     - Portfolio and accounting reconciliation
     - Accounting records
     - Approvals
+    - Corporate-action approval and posting completion against unchanged W9-CORPACT-011 exit criterion four
     - Governed report packs
-    - Shared browser and WPF operational record workflow
+    - Operational record workflow backed by shared services and contracts, delivered across both the browser workstation and the reactivated WPF desktop workstation
+    - WPF desktop workstation reactivation and web-UI parity over shared contracts and read models
+    - Browser workstation screen consolidation behind the seven charter roots
     - Financial Operations control center for reconciliation, exceptions, close support, workflow control, and audit evidence
     - Shared Financial Record Explorers for accounting, portfolio, security/instrument, and report-line provenance records
+    - Completed Evidence Vault and statement reconciliation onboarding over governed connector and production authority evidence
+    - Bounded Covered Call evidence loop with scoped Evidence Vault authority, durable strategy lineage, governed Paper promotion, and fail-closed acceptance checklist projection
     - Paper-first live-readiness governance for paper-to-live promotion evidence, overrides, controls, and audit retention
+    - Ranked W9 first-order improvement slate - truthful simulation posture, seeded demo evaluation, paper-trading realism, live fill streaming, client-grade reporting, fund economics, execution safety, governance hardening, and institutional statement ingestion
+    - W10 depth slate - fail-closed valuation freshness, durable break lineage, amount-level provenance behind one shared proof drawer, one close-readiness projection consumed by both workstation lanes, reconciliation break economics, durable recurring journals, tax-character surfacing, return measurement, and consolidated-view elimination
+  production_readiness:
+    status: blocked
+    reviewed: 2026-08-03
+    baseline_commit: 6d9a663c4
+    canonical_tracker: docs/product/implementation-todo-list.md
+    release_gate: Every P0 row in the canonical production-readiness tracker must be complete on the same release commit; unsupported paths must be explicitly scoped out and fail closed.
   deferred_lanes:
-    - Backtesting Studio
+    - Broad Backtesting Studio UX and alternate entrypoint composition beyond the bounded W6 Covered Call evidence and Paper-promotion loop
     - Live execution productization and live portfolio operations beyond bounded W7 governance
     - Full treasury payment execution
     - Full alternative asset operations
     - Forecasting and scenario engines
     - Enterprise risk platform
+    - Complex capital structure modeling
+    - Broad administration dashboards beyond durable shared tenant-scoped controls
+    - Broader self-service reporting and analytics expansion beyond the bounded reporting baseline and beyond the accepted W9-REPORT-005 client-reporting slice
     - Client portal
     - No-code workflow designer
+    - Broad collaboration and document-portal expansion beyond Evidence Vault
     - Mobile applications
-  active_ui_lane: browser_and_wpf_workstations
-  retained_support_lane: none
+  active_ui_lane: browser_workstation_and_wpf_desktop
+  shared_ui_seam: meridian_ui_services_shared_and_contracts
   mobile_lane: closed

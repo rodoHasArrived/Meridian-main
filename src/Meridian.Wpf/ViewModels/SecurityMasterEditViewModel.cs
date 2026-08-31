@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ui.Services;
 using WpfServices = Meridian.Wpf.Services;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -20,6 +21,7 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
     private readonly WpfServices.LoggingService _loggingService;
     private readonly WpfServices.NotificationService _notificationService;
     private readonly ISecurityMasterService _service;
+    private readonly WpfServices.IDesktopActorSource? _actorSource;
     private JsonElement _assetSpecificTerms;
 
     private static readonly IReadOnlyList<string> AssetClassesList = SecurityAssetClassCatalog.AssetClasses;
@@ -89,23 +91,42 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
     public SecurityMasterEditViewModel(
         WpfServices.LoggingService loggingService,
         WpfServices.NotificationService notificationService,
-        ISecurityMasterService service)
+        ISecurityMasterService service,
+        WpfServices.IDesktopActorSource? actorSource = null)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
         _service = service;
+        _actorSource = actorSource;
         _assetSpecificTerms = CreateAssetSpecificTermsTemplate("Equity");
 
         CancelCommand = new RelayCommand(() => CancelRequested?.Invoke());
+    }
+
+    /// <summary>
+    /// Resolves the operator to record as the author of this write. Fails closed: rather than
+    /// stamping a placeholder into an audit field, a save with no authenticated desktop session is
+    /// refused, so the golden record never carries a write it cannot attribute.
+    /// </summary>
+    private bool TryResolveActor(out string actor)
+    {
+        if (_actorSource is not null && _actorSource.TryGetAuthenticatedActor(out actor))
+        {
+            return true;
+        }
+
+        actor = string.Empty;
+        return false;
     }
 
     // ── Initialization ──────────────────────────────────────────────────────
     public static SecurityMasterEditViewModel CreateNew(
         WpfServices.LoggingService loggingService,
         WpfServices.NotificationService notificationService,
-        ISecurityMasterService service)
+        ISecurityMasterService service,
+        WpfServices.IDesktopActorSource? actorSource = null)
     {
-        return new SecurityMasterEditViewModel(loggingService, notificationService, service)
+        return new SecurityMasterEditViewModel(loggingService, notificationService, service, actorSource)
         {
             IsEditMode = false,
             Currency = "USD",
@@ -191,6 +212,12 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
 
     private async Task<SecurityDetailDto?> CreateSecurityAsync(CancellationToken ct)
     {
+        if (!TryResolveActor(out var actor))
+        {
+            ReportUnattributableWrite();
+            return null;
+        }
+
         var identifiers = new List<SecurityIdentifierDto>
         {
             new(
@@ -207,16 +234,32 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
             AssetSpecificTerms: CreateAssetSpecificTermsTemplate(AssetClass),
             Identifiers: identifiers,
             EffectiveFrom: DateTimeOffset.UtcNow,
+            // SourceSystem identifies the originating SYSTEM for conflict precedence, so it stays a
+            // constant for this lane; UpdatedBy is the audit actor and must be the real operator.
             SourceSystem: "WPF-UI",
-            UpdatedBy: "User",
+            UpdatedBy: actor,
             SourceRecordId: null,
             Reason: "Created via WPF UI");
 
         return await _service.CreateAsync(request, ct).ConfigureAwait(false);
     }
 
+    private void ReportUnattributableWrite()
+    {
+        const string message = "Sign in before saving: Security Master writes are recorded against the signed-in operator.";
+        StatusText = message;
+        _notificationService.ShowNotification("Security Master", message, NotificationType.Error);
+        _loggingService.LogWarning("Security Master save refused: no authenticated desktop operator to attribute the write to.");
+    }
+
     private async Task<SecurityDetailDto?> AmendSecurityAsync(CancellationToken ct)
     {
+        if (!TryResolveActor(out var actor))
+        {
+            ReportUnattributableWrite();
+            return null;
+        }
+
         var request = new AmendSecurityTermsRequest(
             SecurityId: EditingSecurityId!.Value,
             ExpectedVersion: EditingVersion!.Value,
@@ -226,7 +269,7 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
             IdentifiersToExpire: [],
             EffectiveFrom: DateTimeOffset.UtcNow,
             SourceSystem: "WPF-UI",
-            UpdatedBy: "User",
+            UpdatedBy: actor,
             SourceRecordId: null,
             Reason: "Amended via WPF UI");
 
@@ -283,9 +326,6 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
             ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
             ["classification"] = string.Equals(assetClass, "Equity", StringComparison.OrdinalIgnoreCase) ? "Common" : null
         });
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string ReadJsonString(JsonElement element, string propertyName)
         => element.TryGetProperty(propertyName, out var property) && property.ValueKind == JsonValueKind.String

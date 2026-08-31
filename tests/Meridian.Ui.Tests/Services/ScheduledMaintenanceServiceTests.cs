@@ -67,6 +67,31 @@ public sealed class ScheduledMaintenanceServiceTests
         verification.TaskType.Should().Be(MaintenanceTaskType.Verification);
     }
 
+    [Fact]
+    public void Tasks_OperatorEditsScheduleDuringRead_ReturnsStableSnapshot()
+    {
+        var service = ScheduledMaintenanceService.Instance;
+        service.StopScheduler();
+        var snapshot = service.Tasks;
+        var task = new MaintenanceTask
+        {
+            Id = $"snapshot-edit-{Guid.NewGuid()}",
+            Name = "Operator schedule edit"
+        };
+
+        service.AddTask(task);
+
+        try
+        {
+            snapshot.Should().NotContain(item => item.Id == task.Id);
+            service.Tasks.Should().Contain(item => item.Id == task.Id);
+        }
+        finally
+        {
+            service.RemoveTask(task.Id);
+        }
+    }
+
     // ── ExecutionLog property ───────────────────────────────────────
 
     [Fact]
@@ -118,6 +143,68 @@ public sealed class ScheduledMaintenanceServiceTests
         service.StopScheduler();
 
         service.IsSchedulerRunning.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CheckAndExecuteScheduledTasksAsync_OperatorEditsScheduleDuringTick_RemainsAvailable()
+    {
+        var service = ScheduledMaintenanceService.Instance;
+        service.StopScheduler();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var seededTaskIds = Enumerable.Range(0, 128)
+            .Select(index => $"concurrent-schedule-{index}-{Guid.NewGuid()}")
+            .ToArray();
+
+        foreach (var taskId in seededTaskIds)
+        {
+            service.AddTask(new MaintenanceTask
+            {
+                Id = taskId,
+                Name = "Concurrent operator schedule",
+                IsEnabled = true,
+                Schedule = new MaintenanceTimingConfig
+                {
+                    ScheduleType = ScheduleType.Hourly,
+                    MinuteOfHour = 59
+                }
+            });
+        }
+
+        try
+        {
+            var schedulerReads = Task.Run(async () =>
+            {
+                for (var index = 0; index < 200; index++)
+                {
+                    await service.CheckAndExecuteScheduledTasksAsync(timeout.Token);
+                }
+            }, timeout.Token);
+
+            var operatorEdits = Task.Run(() =>
+            {
+                foreach (var taskId in seededTaskIds)
+                {
+                    service.RemoveTask(taskId).Should().BeTrue();
+                    service.AddTask(new MaintenanceTask
+                    {
+                        Id = taskId,
+                        Name = "Updated concurrent operator schedule"
+                    });
+                }
+            }, timeout.Token);
+
+            await Task.WhenAll(schedulerReads, operatorEdits);
+
+            service.IsSchedulerRunning.Should().BeFalse();
+            service.Tasks.Should().Contain(task => task.Id == "daily-verification");
+        }
+        finally
+        {
+            foreach (var taskId in seededTaskIds)
+            {
+                service.RemoveTask(taskId);
+            }
+        }
     }
 
     // ── MaintenanceTask model ───────────────────────────────────────
@@ -220,6 +307,23 @@ public sealed class ScheduledMaintenanceServiceTests
     public void MaintenanceTaskType_ShouldHaveSixValues()
     {
         Enum.GetValues<MaintenanceTaskType>().Should().HaveCount(6);
+    }
+
+    [Fact]
+    public void IsSuccessfulArchiveMaintenanceExecution_CompletedWithWarningsAndFailedMaintenance_ReturnsFalse()
+    {
+        ScheduledMaintenanceService.IsSuccessfulArchiveMaintenanceExecution(
+            "CompletedWithWarnings",
+            maintenanceSucceeded: false).Should().BeFalse(
+            "maintenance warnings can represent archive integrity failures");
+    }
+
+    [Fact]
+    public void IsSuccessfulArchiveMaintenanceExecution_CompletedAndSuccessfulMaintenance_ReturnsTrue()
+    {
+        ScheduledMaintenanceService.IsSuccessfulArchiveMaintenanceExecution(
+            "Completed",
+            maintenanceSucceeded: true).Should().BeTrue();
     }
 
     // ── ScheduleType enum ───────────────────────────────────────────

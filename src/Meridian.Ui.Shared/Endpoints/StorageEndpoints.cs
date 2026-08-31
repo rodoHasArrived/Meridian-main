@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Identity.Auth;
 using Meridian.Storage;
 using Meridian.Storage.Services;
 using Meridian.Ui.Shared.Services;
@@ -30,7 +31,7 @@ public static class StorageEndpoints
                 profiles = presets.Select(p => new { p.Id, p.Label, p.Description })
             }, jsonOptions);
         })
-        .WithName("GetStorageProfiles").Produces(200);
+        .WithName("GetStorageProfiles").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/stats — overall storage statistics
         group.MapGet(UiApiRoutes.StorageStats, (StorageOptions opts) =>
@@ -73,7 +74,7 @@ public static class StorageEndpoints
                 retentionDays = opts.RetentionDays
             }, jsonOptions);
         })
-        .WithName("GetStorageStats").Produces(200);
+        .WithName("GetStorageStats").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/breakdown — breakdown by symbol
         group.MapGet(UiApiRoutes.StorageBreakdown, async (
@@ -86,7 +87,7 @@ public static class StorageEndpoints
                 return Results.Json(new { message = "Storage search service not available", breakdown = Array.Empty<object>() }, jsonOptions);
             }
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var catalog = await searchService.DiscoverAsync(new DiscoveryQuery(), ct);
                 return Results.Json(new
@@ -97,14 +98,9 @@ public static class StorageEndpoints
                     eventTypes = catalog.EventTypes,
                     sources = catalog.Sources
                 }, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to compute storage breakdown.");
-                return Results.Problem("Failed to compute storage breakdown.");
-            }
+            }, "Failed to compute storage breakdown.", logger);
         })
-        .WithName("GetStorageBreakdown").Produces(200);
+        .WithName("GetStorageBreakdown").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/symbol/{symbol}/info — storage info for a symbol
         group.MapGet(UiApiRoutes.StorageSymbolInfo, async (
@@ -129,7 +125,7 @@ public static class StorageEndpoints
                     : null
             }, jsonOptions);
         })
-        .WithName("GetStorageSymbolInfo").Produces(200);
+        .WithName("GetStorageSymbolInfo").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/symbol/{symbol}/stats — detailed stats for a symbol
         group.MapGet(UiApiRoutes.StorageSymbolStats, async (
@@ -156,7 +152,7 @@ public static class StorageEndpoints
                 byEventType = byType
             }, jsonOptions);
         })
-        .WithName("GetStorageSymbolStats").Produces(200);
+        .WithName("GetStorageSymbolStats").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/symbol/{symbol}/files — list files for a symbol
         group.MapGet(UiApiRoutes.StorageSymbolFiles, async (
@@ -183,7 +179,7 @@ public static class StorageEndpoints
                 files = result.Results?.Select(f => new { f.Path, f.SizeBytes, f.EventCount, f.Date, f.EventType })
             }, jsonOptions);
         })
-        .WithName("GetStorageSymbolFiles").Produces(200);
+        .WithName("GetStorageSymbolFiles").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/symbol/{symbol}/path — storage path for a symbol
         group.MapGet(UiApiRoutes.StorageSymbolPath, (string symbol, StorageOptions opts) =>
@@ -206,7 +202,7 @@ public static class StorageEndpoints
                 namingConvention = opts.NamingConvention.ToString()
             }, jsonOptions);
         })
-        .WithName("GetStorageSymbolPath").Produces(200);
+        .WithName("GetStorageSymbolPath").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/health — storage health summary
         group.MapGet(UiApiRoutes.StorageHealth, (StorageOptions opts) =>
@@ -238,7 +234,7 @@ public static class StorageEndpoints
                 compress = opts.Compress
             }, jsonOptions);
         })
-        .WithName("GetStorageHealth").Produces(200);
+        .WithName("GetStorageHealth").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/cleanup/candidates — files eligible for cleanup
         group.MapGet(UiApiRoutes.StorageCleanupCandidates, (StorageOptions opts) =>
@@ -273,7 +269,7 @@ public static class StorageEndpoints
                 candidates
             }, jsonOptions);
         })
-        .WithName("GetCleanupCandidates").Produces(200);
+        .WithName("GetCleanupCandidates").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // POST /api/storage/cleanup — run storage cleanup
         group.MapPost(UiApiRoutes.StorageCleanup, async (
@@ -283,7 +279,7 @@ public static class StorageEndpoints
             if (maintenanceService is null)
                 return Results.Problem("File maintenance service not available");
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var report = await maintenanceService.RunHealthCheckAsync(new HealthCheckOptions(), ct);
                 return Results.Json(new
@@ -305,14 +301,10 @@ public static class StorageEndpoints
                         }
                     }
                 }, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Storage cleanup failed.");
-                return Results.Problem("Storage cleanup failed.");
-            }
+            }, "Storage cleanup failed.", logger);
         })
         .WithName("RunStorageCleanup").Produces(200).Produces(500)
+        .RequirePermission(UserPermission.ManageStorage)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // GET /api/storage/archive/stats — archive tier statistics
@@ -347,7 +339,7 @@ public static class StorageEndpoints
                 tiering = opts.Tiering is not null ? new { opts.Tiering.Enabled, tiers = opts.Tiering.Tiers?.Count ?? 0 } : null
             }, jsonOptions);
         })
-        .WithName("GetArchiveStats").Produces(200);
+        .WithName("GetArchiveStats").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/catalog — storage catalog summary
         group.MapGet(UiApiRoutes.StorageCatalog, async (
@@ -358,18 +350,13 @@ public static class StorageEndpoints
             if (searchService is null)
                 return Results.Json(new { message = "Storage search not available" }, jsonOptions);
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var catalog = await searchService.DiscoverAsync(new DiscoveryQuery(), ct);
                 return Results.Json(catalog, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to load storage catalog.");
-                return Results.Problem("Failed to load storage catalog.");
-            }
+            }, "Failed to load storage catalog.", logger);
         })
-        .WithName("GetStorageCatalog").Produces(200);
+        .WithName("GetStorageCatalog").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/search/files — search for files
         group.MapGet(UiApiRoutes.StorageSearchFiles, async (
@@ -410,7 +397,7 @@ public static class StorageEndpoints
                 files = result.Results?.Select(f => new { f.Path, f.SizeBytes, f.EventCount, f.Date, f.EventType })
             }, jsonOptions);
         })
-        .WithName("SearchStorageFiles").Produces(200);
+        .WithName("SearchStorageFiles").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/health/check — detailed health check
         group.MapGet(UiApiRoutes.StorageHealthCheck, async (
@@ -420,19 +407,14 @@ public static class StorageEndpoints
             if (maintenanceService is null)
                 return Results.Json(new { status = "unavailable", message = "File maintenance service not available" }, jsonOptions);
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var report = await maintenanceService.RunHealthCheckAsync(
                     new HealthCheckOptions(ValidateChecksums: false, ParallelChecks: 2), ct);
                 return Results.Json(report, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Storage health check failed.");
-                return Results.Problem("Storage health check failed.");
-            }
+            }, "Storage health check failed.", logger);
         })
-        .WithName("RunStorageHealthCheck").Produces(200);
+        .WithName("RunStorageHealthCheck").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/health/orphans — find orphaned files
         group.MapGet(UiApiRoutes.StorageHealthOrphans, async (
@@ -442,18 +424,13 @@ public static class StorageEndpoints
             if (maintenanceService is null)
                 return Results.Json(new { message = "File maintenance service not available" }, jsonOptions);
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var report = await maintenanceService.FindOrphansAsync(ct);
                 return Results.Json(report, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Storage orphan scan failed.");
-                return Results.Problem("Storage orphan scan failed.");
-            }
+            }, "Storage orphan scan failed.", logger);
         })
-        .WithName("FindOrphanedFiles").Produces(200);
+        .WithName("FindOrphanedFiles").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // POST /api/storage/tiers/migrate — trigger tier migration
         group.MapPost(UiApiRoutes.StorageTiersMigrate, async (
@@ -468,7 +445,7 @@ public static class StorageEndpoints
             if (!Enum.TryParse<StorageTier>(req.TargetTier, ignoreCase: true, out var tier))
                 return Results.BadRequest(new { error = $"Invalid target tier: {req.TargetTier}. Use: Hot, Warm, Cold, Archive" });
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var result = await tierService.MigrateAsync(
                     req.SourcePath ?? opts.RootPath,
@@ -476,14 +453,10 @@ public static class StorageEndpoints
                     new MigrationOptions(DeleteSource: req.DeleteSource),
                     ct);
                 return Results.Json(result, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Storage tier migration failed.");
-                return Results.Problem("Storage tier migration failed.");
-            }
+            }, "Storage tier migration failed.", logger);
         })
         .WithName("MigrateTier").Produces(200).Produces(400)
+        .RequirePermission(UserPermission.ManageStorage)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // GET /api/storage/tiers/statistics — tier statistics
@@ -494,18 +467,13 @@ public static class StorageEndpoints
             if (tierService is null)
                 return Results.Json(new { message = "Tier migration service not available" }, jsonOptions);
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var stats = await tierService.GetTierStatisticsAsync(ct);
                 return Results.Json(stats, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to get tier statistics.");
-                return Results.Problem("Failed to get tier statistics.");
-            }
+            }, "Failed to get tier statistics.", logger);
         })
-        .WithName("GetTierStatistics").Produces(200);
+        .WithName("GetTierStatistics").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/tiers/plan — generate tier migration plan
         group.MapGet(UiApiRoutes.StorageTiersPlan, async (
@@ -518,18 +486,13 @@ public static class StorageEndpoints
 
             var days = int.TryParse(ctx.Request.Query["days"].FirstOrDefault(), out var d) ? Math.Clamp(d, 1, 365) : 7;
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var plan = await tierService.PlanMigrationAsync(TimeSpan.FromDays(days), ct);
                 return Results.Json(plan, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to generate migration plan.");
-                return Results.Problem("Failed to generate migration plan.");
-            }
+            }, "Failed to generate migration plan.", logger);
         })
-        .WithName("GetTierMigrationPlan").Produces(200);
+        .WithName("GetTierMigrationPlan").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // POST /api/storage/maintenance/defrag — run defragmentation
         group.MapPost(UiApiRoutes.StorageMaintenanceDefrag, async (
@@ -539,18 +502,14 @@ public static class StorageEndpoints
             if (maintenanceService is null)
                 return Results.Problem("File maintenance service not available");
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var result = await maintenanceService.DefragmentAsync(new DefragOptions(), ct);
                 return Results.Json(result, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Storage defragmentation failed.");
-                return Results.Problem("Storage defragmentation failed.");
-            }
+            }, "Storage defragmentation failed.", logger);
         })
         .WithName("RunDefragmentation").Produces(200)
+        .RequirePermission(UserPermission.ManageStorage)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // POST /api/storage/convert-parquet — convert completed JSONL files to Parquet
@@ -558,7 +517,7 @@ public static class StorageEndpoints
             StorageOptions opts,
             CancellationToken ct) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var conversionService = new Meridian.Storage.Services.ParquetConversionService(opts);
                 var result = await conversionService.ConvertCompletedDaysAsync(ct: ct);
@@ -572,14 +531,10 @@ public static class StorageEndpoints
                     errors = result.Errors,
                     outputDirectory = Path.Combine(opts.RootPath, "_parquet")
                 }, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Parquet conversion failed.");
-                return Results.Problem("Parquet conversion failed.");
-            }
+            }, "Parquet conversion failed.", logger);
         })
         .WithName("ConvertToParquet").Produces(200)
+        .RequirePermission(UserPermission.ManageStorage)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // GET /api/storage/capacity-forecast — predictive storage capacity warning
@@ -686,7 +641,7 @@ public static class StorageEndpoints
                 }, jsonOptions, statusCode: 500);
             }
         })
-        .WithName("GetStorageCapacityForecast")
+        .WithName("GetStorageCapacityForecast").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage)
         .WithDescription("Returns storage capacity forecast with growth rate, disk usage, and days-until-full prediction.")
         .Produces(200);
     }

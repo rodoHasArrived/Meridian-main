@@ -12,6 +12,21 @@ public sealed record SymbolAttribution(
     decimal MarginInterestAllocated);
 
 /// <summary>Aggregate performance statistics computed by <c>BacktestMetricsEngine</c>.</summary>
+/// <remarks>
+/// <see cref="NetPnl"/> is <c>FinalEquity - InitialCapital</c>: equity already reflects all
+/// frictions (commissions, margin interest, short rebates) because the simulated portfolio
+/// posts them through cash. <see cref="GrossPnl"/> is <see cref="NetPnl"/> with those frictions
+/// added back — the hypothetical friction-free result.
+/// </remarks>
+/// <param name="TotalReturn">Fraction of initial capital (0.15 = +15%), not percent units.</param>
+/// <param name="AnnualizedReturn">Fraction of initial capital (0.15 = +15%), not percent units.</param>
+/// <param name="MaxDrawdown">Absolute currency amount of the worst peak-to-trough decline.</param>
+/// <param name="MaxDrawdownPercent">
+/// Despite the name, this is a FRACTION of peak equity (0.15 = a 15% drawdown), not percent
+/// units. Every producer must agree: <c>BacktestMetricsEngine</c>, <c>WalkForwardService</c>,
+/// and <c>LiveRunMetricsTracker</c> all emit fractions, and the workstation multiplies by 100
+/// at render time. Emitting percent units here reads as a 100x drawdown downstream.
+/// </param>
 public sealed record BacktestMetrics(
     decimal InitialCapital,
     decimal FinalEquity,
@@ -63,4 +78,5 @@ public sealed record BacktestResult(
     long TotalEventsProcessed,
     IReadOnlyList<TradeTicket>? TradeTickets = null,
     TcaReport? TcaReport = null,
-    BacktestEngineMetadata? EngineMetadata = null);
+    BacktestEngineMetadata? EngineMetadata = null,
+    BiasDisclosureReport? BiasDisclosure = null);

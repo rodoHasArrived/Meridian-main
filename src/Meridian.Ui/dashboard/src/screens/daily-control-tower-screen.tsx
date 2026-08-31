@@ -1,67 +1,114 @@
+import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { AppShellTrustStripState, AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
 import { Button } from "@/components/ui/button";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { PanelSurface } from "@/components/ui/panel-surface";
-import { KeyValueGrid, MetricCard, type MetricCardTone } from "@/components/data/concrete";
+import { ScreenLayout } from "@/components/ui/screen-layout";
+import { KeyValueGrid } from "@/components/data/concrete";
+import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import { ReadinessPanel, SeverityBadge, WorkspaceSection } from "@/components/operations";
 import { buildDailyControlTowerModel } from "@/lib/daily-control-tower";
+import { appendOperatingScopeToRoute } from "@/app-shell.operating-scope";
+import {
+  badgeVariantToSeverityStatus,
+  readinessToneToSeverityStatus
+} from "@/lib/shared-tone-mappings";
 
 export interface DailyControlTowerScreenProps {
   viewModel: AppShellWorkflowContinuityViewModel;
   trustStrip: AppShellTrustStripState;
+  onEditOperatingScope?: () => void;
+  onRefresh?: () => void;
+  refreshing?: boolean;
 }
 
-// Concrete severity layer: the control tower's workflow-continuity tones
-// (ready · review · blocked · pending) resolve to the operator-readiness status
-// strings consumed by SeverityBadge / ReadinessPanel.
-type ControlTowerTone = "ready" | "review" | "blocked" | "pending";
-
-const severityStatusForTone: Record<ControlTowerTone, string> = {
-  ready: "Ready",
-  review: "ReviewRequired",
-  blocked: "Blocked",
-  pending: "Pending"
-};
-
-const badgeVariantToStatus: Record<"outline" | "success" | "warning" | "danger", string> = {
-  success: "Ready",
-  warning: "ReviewRequired",
-  danger: "Blocked",
-  outline: "Info"
-};
-
-export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlTowerScreenProps) {
+export function DailyControlTowerScreen({
+  viewModel,
+  trustStrip,
+  onEditOperatingScope,
+  onRefresh,
+  refreshing = false
+}: DailyControlTowerScreenProps) {
   const model = buildDailyControlTowerModel(viewModel, trustStrip);
-  const selectedQueueRow = model.queueRows[0] ?? null;
+  // Triage-in-place: the operator can inspect any queue row's evidence without
+  // leaving the tower. Falls back to the top-ranked row until one is chosen
+  // (or when the chosen row leaves the queue on refresh).
+  const [selectedQueueItemId, setSelectedQueueItemId] = useState<string | null>(null);
+  const [reviewAllScopes, setReviewAllScopes] = useState(false);
+  const selectedQueueRow =
+    model.queueRows.find((row) => row.item.id === selectedQueueItemId) ?? model.queueRows[0] ?? null;
+  const freshnessEvidence = selectedQueueRow?.proofPassportItems.find((item) => item.id === "freshness");
+  const freshness = buildTowerFreshness(
+    selectedQueueRow?.proof?.timestampIso,
+    freshnessEvidence?.detail
+  );
+  const providerTrust = trustStrip.items.find((item) => item.id === "providers") ?? null;
+  const evidencePanelId = "daily-control-tower-evidence-detail";
+  const queueVisible = viewModel.operatingScope.hasScope || reviewAllScopes;
+  const trustTone: OperationalTrustTone = model.statusTone === "ready"
+    ? "ready"
+    : model.statusTone === "blocked"
+      ? "blocked"
+      : model.statusTone === "review"
+        ? "review"
+      : "unknown";
+
+  useEffect(() => {
+    if (selectedQueueItemId && !model.queueRows.some((row) => row.item.id === selectedQueueItemId)) {
+      setSelectedQueueItemId(null);
+    }
+  }, [model.queueRows, selectedQueueItemId]);
+
+  const queueColumns: DenseDataTableColumn<(typeof model.queueRows)[number]>[] = [
+    {
+      id: "item",
+      label: "Blocked item",
+      className: "min-w-[18rem]",
+      render: (row) => (
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-medium text-foreground">{row.item.label}</span>
+            <SeverityBadge status={badgeVariantToSeverityStatus(row.badgeVariant)} label={row.statusLabel} />
+          </div>
+          <p className="text-xs leading-5 text-muted-foreground">{row.item.detail}</p>
+        </div>
+      )
+    },
+    { id: "owner", label: "Owner", render: (row) => row.item.workspaceLabel },
+    { id: "output", label: "Affected output", render: (row) => row.outputLabel },
+    {
+      id: "action",
+      label: "Next action",
+      render: (row) => (
+        <Link
+          to={row.item.route}
+          className="inline-flex items-center gap-1 font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          aria-label={row.item.ariaLabel}
+        >
+          <span>{row.item.actionLabel}</span>
+          <ArrowRight className="h-3 w-3" aria-hidden="true" />
+        </Link>
+      )
+    },
+    {
+      id: "evidence",
+      label: "Evidence",
+      render: (row) => row.proof?.label ?? "Evidence not linked"
+    }
+  ];
 
   return (
-    <section
-      className="space-y-5"
-      aria-labelledby="daily-control-tower-heading"
-      aria-describedby="daily-control-tower-summary"
+    <ScreenLayout
+      title="What needs an operator decision now"
+      scope="Daily control tower"
+      description="One priority, followed by a ranked finance queue with evidence available in place."
     >
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="max-w-4xl space-y-2">
-          <p className="eyebrow-label">Daily control tower</p>
-          <h2 id="daily-control-tower-heading" className="font-display text-2xl font-semibold text-foreground">
-            What needs an operator decision now
-          </h2>
-          <p id="daily-control-tower-summary" className="text-sm leading-6 text-muted-foreground">
-            Ranked from shell workflow continuity, trust posture, linked context, and timestamped evidence.
-          </p>
-        </div>
-
-        <Button asChild variant="default" size="sm" className="self-start">
-          <Link to={model.nextActionHref} aria-label={model.nextActionAriaLabel}>
-            <span>{model.nextActionLabel}</span>
-            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-          </Link>
-        </Button>
-      </div>
-
       <ReadinessPanel
-        state={severityStatusForTone[model.statusTone]}
+        state={readinessToneToSeverityStatus(model.statusTone)}
         statusLabel={model.statusLabel}
         title={model.decision.title}
         detail={model.decision.summary}
@@ -85,119 +132,139 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
         />
       </ReadinessPanel>
 
-      <section
-        aria-label="Daily control tower decision drivers"
-        className="grid gap-3 md:grid-cols-2 xl:grid-cols-5"
-      >
-        {model.driverItems.map((item) => (
-          <MetricCard
-            key={item.id}
-            label={item.label}
-            value={item.value}
-            delta={item.detail}
-            tone={metricToneForVariant(item.badgeVariant)}
-          />
-        ))}
-      </section>
-
-      <section aria-label="Daily control tower trust posture" className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {model.trustItems.map((item) => (
-          <PanelSurface key={item.id} flat className="space-y-2 p-4">
-            <div className="flex items-center justify-between gap-2">
-              <span className="eyebrow-label">{item.label}</span>
-              <SeverityBadge status={severityStatusForTone[item.tone]} label={item.value} />
-            </div>
-            <p className="text-xs leading-5 text-muted-foreground">{item.detail}</p>
-            {item.href && item.actionLabel ? (
-              <Link
-                to={item.href}
-                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                aria-label={item.ariaLabel}
-              >
-                <span>{item.actionLabel}</span>
-                <ArrowRight className="h-3 w-3" aria-hidden="true" />
+      <OperationalTrustSummary
+        label="Daily control tower confidence"
+        source={{
+          label: "Connectivity",
+          value: providerTrust?.value ?? "Provider posture unavailable",
+          detail: providerTrust?.detail ?? "Provider connectivity evidence has not loaded.",
+          tone: providerTrust ? operationalTrustToneFromStrip(providerTrust.tone) : "unknown",
+          action: providerTrust?.href && providerTrust.actionLabel ? (
+            <Button asChild variant="outline" size="sm">
+              <Link to={appendOperatingScopeToRoute(providerTrust.href, viewModel.operatingScope)}>
+                {providerTrust.actionLabel}
               </Link>
-            ) : null}
-          </PanelSurface>
-        ))}
-      </section>
+            </Button>
+          ) : null
+        }}
+        scope={{
+          value: viewModel.operatingScope.summary,
+          detail: viewModel.operatingScope.hasScope
+            ? "Applied to compatible workstation routes."
+            : "Choose a fund, account, run, provider, symbol, or date window.",
+          tone: viewModel.operatingScope.hasScope ? "ready" : "review",
+          action: onEditOperatingScope ? (
+            <Button type="button" variant="outline" size="sm" onClick={onEditOperatingScope}>
+              {viewModel.operatingScope.hasScope ? "Change scope" : "Set operating scope"}
+            </Button>
+          ) : null
+        }}
+        freshness={{
+          value: freshness.value,
+          detail: freshness.detail,
+          tone: freshness.tone,
+          action: onRefresh ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={refreshing}
+              aria-label={refreshing ? "Refreshing control tower evidence" : "Refresh control tower evidence"}
+              onClick={onRefresh}
+            >
+              {refreshing ? "Refreshing" : "Refresh evidence"}
+            </Button>
+          ) : null
+        }}
+        completeness={{
+          value: `${model.queueRows.length} ranked items · ${model.evidenceTimelineItems.length} evidence events`,
+          detail: "Finance queue and retained evidence coverage",
+          tone: model.queueRows.length > 0 && model.evidenceTimelineItems.length > 0 ? "ready" : "review"
+        }}
+        blocker={model.statusTone !== "ready" ? {
+          value: model.statusLabel,
+          detail: model.decision.reason,
+          tone: trustTone
+        } : undefined}
+      />
 
       <WorkspaceSection
         title="Finance queue"
         summary="Each row carries the evidence needed to move from source issue to downstream output."
       >
-        {model.queueRows.length > 0 ? (
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-border text-sm" aria-label="Daily control tower finance queue">
-                <thead className="bg-muted/35 text-left text-xs uppercase tracking-[0.08em] text-muted-foreground">
-                  <tr>
-                    <th scope="col" className="px-4 py-3 font-semibold">Blocked item</th>
-                    <th scope="col" className="px-4 py-3 font-semibold">Owner</th>
-                    <th scope="col" className="px-4 py-3 font-semibold">Affected output</th>
-                    <th scope="col" className="px-4 py-3 font-semibold">Next action</th>
-                    <th scope="col" className="px-4 py-3 font-semibold">Evidence</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {model.queueRows.map((row, index) => (
-                    <tr
-                      key={row.item.id}
-                      className={index === 0 ? "align-top bg-primary/5" : "align-top"}
-                      aria-current={index === 0 ? "true" : undefined}
-                    >
-                      <td className="max-w-sm px-4 py-4">
-                        <div className="space-y-2">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-medium text-foreground">{row.item.label}</span>
-                            <SeverityBadge
-                              status={badgeVariantToStatus[row.badgeVariant]}
-                              label={row.statusLabel}
-                            />
-                          </div>
-                          <p className="text-xs leading-5 text-muted-foreground">{row.item.detail}</p>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-foreground">{row.item.workspaceLabel}</td>
-                      <td className="px-4 py-4 text-sm text-foreground">{row.outputLabel}</td>
-                      <td className="px-4 py-4">
-                        <Link
-                          to={row.item.route}
-                          className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                          aria-label={row.item.ariaLabel}
-                        >
-                          <span>{row.item.actionLabel}</span>
-                          <ArrowRight className="h-3 w-3" aria-hidden="true" />
-                        </Link>
-                      </td>
-                      <td className="px-4 py-4 text-xs leading-5 text-muted-foreground">
-                        {row.proof?.label ?? row.proofPassportItems.find((item) => item.id === "freshness")?.value ?? "No evidence linked"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        {!queueVisible ? (
+          <PanelSurface flat role="region" aria-label="Choose Control Tower scope" className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Choose the scope for today’s queue</h3>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                Select a fund, account, provider, symbol, run, or date window to rank the most relevant decisions. You can still review the combined queue when cross-scope triage is required.
+              </p>
             </div>
+            <div className="flex flex-wrap gap-2">
+              {onEditOperatingScope ? (
+                <Button type="button" size="sm" onClick={onEditOperatingScope}>Set operating scope</Button>
+              ) : null}
+              <Button type="button" size="sm" variant="outline" onClick={() => setReviewAllScopes(true)}>
+                Review all scopes
+              </Button>
+            </div>
+          </PanelSurface>
+        ) : model.queueRows.length > 0 ? (
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
+            <DenseDataTable
+              tableId="daily-control-tower-queue"
+              columns={queueColumns}
+              rows={model.queueRows}
+              getRowId={(row) => row.item.id}
+              getRowAriaLabel={(row) => `${row.item.label}. ${row.statusLabel}. ${row.item.detail}`}
+              getRowSelectAriaLabel={(row) => row.item.label}
+              getRowAriaControls={() => evidencePanelId}
+              getRowAriaExpanded={(row) => row.item.id === selectedQueueRow?.item.id}
+              getRowClassName={() => "align-top"}
+              onRowSelect={(row) => setSelectedQueueItemId(row.item.id)}
+              selectedRowId={selectedQueueRow?.item.id ?? null}
+              emptyText={model.emptyQueueText}
+              ariaLabel="Daily control tower finance queue"
+              maxVisibleRows={null}
+            />
             {selectedQueueRow ? (
-              <section
-                aria-label={`${selectedQueueRow.item.label} Evidence summary`}
+              <DenseRowDetailPanel
+                id={evidencePanelId}
+                ariaLabel={`${selectedQueueRow.item.label} evidence summary`}
+                selectedSourceLabel={selectedQueueRow.item.label}
                 className="space-y-3 border-l border-border bg-background/50 p-4"
               >
                 <div>
                   <p className="eyebrow-label">Selected queue evidence</p>
                   <h3 className="text-sm font-semibold text-foreground">{selectedQueueRow.item.label}</h3>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{selectedQueueRow.proofPassportSummary}</p>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">{selectedQueueRow.proofPassportSummary}</p>
                 </div>
                 <dl className="grid gap-2">
-                  {selectedQueueRow.proofPassportItems.map((passportItem) => (
+                  {selectedQueueRow.proofPassportItems.slice(0, 4).map((passportItem) => (
                     <div key={passportItem.id} className="rounded border border-border bg-card p-2">
                       <dt className="eyebrow-label">{passportItem.label}</dt>
                       <dd className="mt-1 text-xs font-medium leading-5 text-foreground">{passportItem.value}</dd>
-                      <dd className="mt-1 text-[11px] leading-4 text-muted-foreground">{passportItem.detail}</dd>
+                      <dd className="mt-1 text-xs leading-5 text-muted-foreground">{passportItem.detail}</dd>
                     </div>
                   ))}
                 </dl>
-              </section>
+                {selectedQueueRow.proofPassportItems.length > 4 ? (
+                  <TechnicalDetails
+                    label="More evidence"
+                    description="Downstream usage, blockers, evidence packets, and audit trail for the selected queue item."
+                  >
+                    <dl className="grid gap-2">
+                      {selectedQueueRow.proofPassportItems.slice(4).map((passportItem) => (
+                        <div key={passportItem.id} className="rounded border border-border bg-card p-2">
+                          <dt className="eyebrow-label">{passportItem.label}</dt>
+                          <dd className="mt-1 text-xs font-medium leading-5 text-foreground">{passportItem.value}</dd>
+                          <dd className="mt-1 text-xs leading-5 text-muted-foreground">{passportItem.detail}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </TechnicalDetails>
+                ) : null}
+              </DenseRowDetailPanel>
             ) : null}
           </div>
         ) : (
@@ -207,104 +274,57 @@ export function DailyControlTowerScreen({ viewModel, trustStrip }: DailyControlT
         )}
       </WorkspaceSection>
 
-      <div className="grid gap-4 xl:grid-cols-2">
-        <SupportingList
-          label={viewModel.linkedContextLabel}
-          summary={viewModel.linkedContextSummary}
-          emptyText={viewModel.linkedContextEmptyText}
-          items={model.linkedContextItems.map((item) => ({
-            id: item.id,
-            label: item.label,
-            detail: `${item.workspaceLabel}: ${item.detail}`,
-            status: item.statusLabel,
-            href: item.route,
-            ariaLabel: item.ariaLabel,
-            tone: item.tone
-          }))}
-        />
-        <SupportingList
-          label={viewModel.evidenceTimelineLabel}
-          summary={viewModel.evidenceTimelineSummary}
-          emptyText={viewModel.evidenceTimelineEmptyText}
-          items={model.evidenceTimelineItems.map((item) => ({
-            id: item.id,
-            label: item.label,
-            detail: `${item.workspaceLabel} at ${item.timestampLabel}: ${item.detail}`,
-            status: item.workspaceLabel,
-            href: item.route,
-            ariaLabel: item.ariaLabel,
-            tone: item.tone
-          }))}
-        />
-      </div>
-    </section>
+    </ScreenLayout>
   );
 }
 
-function metricToneForVariant(variant: "outline" | "success" | "warning" | "danger"): MetricCardTone {
-  switch (variant) {
-    case "success":
-      return "success";
-    case "warning":
-      return "warning";
-    case "danger":
-      return "danger";
-    case "outline":
-      return "neutral";
+const TOWER_FRESHNESS_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+function buildTowerFreshness(
+  timestampIso: string | null | undefined,
+  detail: string | null | undefined,
+  nowMs = Date.now()
+): { value: string; detail: string; tone: OperationalTrustTone } {
+  const observedAtMs = Date.parse(timestampIso ?? "");
+  if (!Number.isFinite(observedAtMs)) {
+    return {
+      value: "Timestamp unavailable",
+      detail: detail ?? "No timestamped evidence is linked to the leading decision.",
+      tone: "review"
+    };
   }
+
+  const observedAt = new Date(observedAtMs);
+  const timestampLabel = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "UTC",
+    timeZoneName: "short"
+  }).format(observedAt).replace("24:", "00:");
+  const stale = nowMs - observedAtMs > TOWER_FRESHNESS_WINDOW_MS;
+
+  return {
+    value: `${stale ? "Stale update" : "Current"} · ${timestampLabel}`,
+    detail: detail ?? "Latest evidence for the leading decision.",
+    tone: stale ? "review" : "ready"
+  };
 }
 
-interface SupportingListItem {
-  id: string;
-  label: string;
-  detail: string;
-  status: string;
-  href: string;
-  ariaLabel: string;
-  tone: "ready" | "review" | "blocked" | "pending";
-}
-
-function SupportingList({
-  label,
-  summary,
-  emptyText,
-  items
-}: {
-  label: string;
-  summary: string;
-  emptyText: string;
-  items: SupportingListItem[];
-}) {
-  return (
-    <WorkspaceSection title={label} summary={summary}>
-      {items.length > 0 ? (
-        <ul className="space-y-2" aria-label={label}>
-          {items.map((item) => (
-            <li key={item.id}>
-              <PanelSurface flat className="flex items-start justify-between gap-3 p-3">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-sm font-medium text-foreground">{item.label}</span>
-                    <SeverityBadge status={severityStatusForTone[item.tone]} label={item.status} />
-                  </div>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.detail}</p>
-                </div>
-                <Link
-                  to={item.href}
-                  className="shrink-0 text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                  aria-label={item.ariaLabel}
-                >
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
-              </PanelSurface>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <PanelSurface flat className="p-4 text-sm text-muted-foreground">
-          {emptyText}
-        </PanelSurface>
-      )}
-    </WorkspaceSection>
-  );
+function operationalTrustToneFromStrip(
+  tone: AppShellTrustStripState["items"][number]["tone"]
+): OperationalTrustTone {
+  switch (tone) {
+    case "ready":
+      return "ready";
+    case "review":
+      return "review";
+    case "blocked":
+      return "blocked";
+    case "pending":
+      return "unknown";
+  }
 }

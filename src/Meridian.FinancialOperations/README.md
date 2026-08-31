@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-16
+last_reviewed: 2026-07-27
 ---
 
 # src/Meridian.FinancialOperations
@@ -45,7 +45,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   decisions, service-owned operating coverage rows for close setup, dependency graph, sign-off
   matrix, late adjustments, blocker review, and period lock, plus a governed
   close-period lock bridge that fails closed on unresolved plan blockers before delegating to the
-  Operations Continuity close-package publication gate.
+  Operations Continuity close-package publication gate. Hard close requires explicit Controller or
+  Fund Controller authority; preparation-only closing-entry requests do not acquire that authority
+  or seal the reconciliation queue.
 - `AccountingClose/AccountingReportPackageService.cs` - accounting report package assembly for
   financial statements, investor capital statements, realized gain/loss, NAV packages,
   dimension-scoped package requests, certification state, validation issues, retained package
@@ -54,14 +56,30 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - Ledger/AccountingPolicyService.cs - accounting-basis policy creation, resolution, listing,
   and projection metadata stamping for ledger writes.
 - Ledger/AccountingJournalDraftService.cs - source-backed journal draft construction, ledger-book scope propagation, treasury-context validation, typed evidence metadata, and posting-command preparation before durable ledger append.
+- `Ledger/AccountingPostingCandidateService.cs` - non-posting Rules Studio candidate construction,
+  authoritative ledger-book and accounting-policy resolution, and fail-closed typed book,
+  economic-event, book-position, projection-lineage, and rule-pack assertion validation.
 - `Ledger/TextJournal/` - ledger-compatible text-journal parsing, validation, report rendering,
   and CLI-facing report service backed by the Meridian double-entry ledger engine.
 - `AccountingSystem/AccountingSystemIntegrationService.cs` - provider-neutral external GL import, latest-import retention, ledger-truth reconciliation, provider availability projection, and read-only posting posture.
-- `Reconciliation/StatementRunWorkflowService.cs` - statement-run workflow that persists canonical imports, linked breaks, and case materialization for shared UI consumers.
-- `Reconciliation/StatementReconciliationService.cs` - broker/custodian statement intake, mapping-profile validation, duplicate detection, normalization, matching, and reconciliation result projection.
+- `Reconciliation/StatementRunWorkflowService.cs` - statement-run workflow that imports canonical statements, matches rows against Meridian's internal book through the shared sided `StatementMatchingEngine`, and persists linked breaks and case materialization for shared UI consumers. Rows with no internal counterpart — and internal records missing from the statement — surface as genuine breaks instead of self-matches.
+- `Reconciliation/StatementRunMatchingService.cs` - normalizes imported statement rows and projects the sided `StatementMatchingEngine` results into break records and per-row match outcomes for the live workflow; `ToleranceBreached` is computed from the actual variance.
+- `Reconciliation/InternalReconciliationBook.cs` - the internal-book seam (`IInternalReconciliationBookSource`) supplying the positions, cash balances, and ledger transactions a statement run is reconciled against; the default `EmptyInternalReconciliationBookSource` yields honest unmatched breaks until a real source is registered.
+- `Reconciliation/Connectors/StatementIngressLimits.cs` - the single PRD-010 ingress bound shared by
+  every statement connector and by `StatementImportService`, with the named diagnostic codes each
+  refusal carries. Registered once in `Reconciliation/ReconciliationServiceRegistration.cs`.
+- `Reconciliation/Connectors/StatementImportService.cs` - preview and authoritative import-commit
+  boundary used by the persisted statement reconciliation report coordinator; a committed import is
+  checkpointed before Evidence Vault linkage or JSON/CSV reconciliation artifact retention so
+  recovery cannot silently repeat the import. Commit rejects any parsed row or uploaded-document
+  account identity that differs from the authorized external account.
+- `Reconciliation/StatementReconciliationService.cs` - broker/custodian statement intake, mapping-profile validation, duplicate detection, normalization, matching, and reconciliation result projection. Position rows match through the shared `StatementMatchingEngine` against internal portfolio positions; rows without internal evidence surface as break cases instead of auto-matching.
 - `Reconciliation/StatementReconciliationOrchestrator.cs` - staged reconciliation orchestration, checkpoint persistence, failure recovery, and case intake coordination.
 - `Reconciliation/StatementRepositories.cs` - statement-run, validation, match, break, and case-link repository contracts and file-backed implementations.
-- `Reconciliation/StatementMatchingEngine.cs` and `Reconciliation/CanonicalReconciliationEngine.cs` - deterministic match, tolerance, candidate, and true-break evaluation.
+- `Reconciliation/StatementMatchingEngine.cs` and `Reconciliation/ReconciliationMatchingEngine.cs` - deterministic match, tolerance, candidate, and true-break evaluation. The canonical daily pipeline is split across `ReconciliationIngestionContracts.cs`, `ReconciliationNormalizationService.cs`, `MatchingTolerances.cs`, `ReconciliationMatchingEngine.cs`, `DefaultReconciliationIngestionScheduler.cs`, and `ReconciliationRunOrchestrator.cs` (one type per file).
+- `Reconciliation/ReconciliationMatchKernel.cs` - deterministic matching primitives under the canonical floor (and the seam the W9-INGEST-009 statement/ledger sided matcher inherits): stable best-first assignment over scored candidate pairs, bounded same-sign one-to-many/many-to-one split discovery, and content-derived identifiers. The floor itself is sided (candidate pairs must span two source snapshots; rows never match their own source), scores tolerance candidates instead of taking the first near-tolerance hit, records split-group shape (anchor, legs, residual) in `MatchEvidence` attributes, requires currency identity before comparing amounts (fail-closed FX surfaces as breaks), and derives match/break/evidence ids from run content so re-evaluating the same run is idempotent.
+- `Reconciliation/BusinessDayAccountingCalendar.cs` and `Reconciliation/FileAccountingCalendar.cs` - the production `IAccountingCalendar`: weekend/holiday classification, roll-forward period resolution for postings, and signed business-day distance used by cash staging evidence; deployments load market calendars from `reconciliation/business-calendar.json` with a fail-safe weekends-only default. Canonical-pipeline normalization (`ReconciliationNormalizationService.cs`) converts through the same fail-closed `IReconciliationFxRateProvider` seam the statement lane uses and resolves accounting periods from each entry's own posting timestamp.
+- `Reconciliation/ReconciliationIngestionOptions.cs` - capture policy for `DefaultReconciliationIngestionScheduler.cs`: bounded concurrent snapshot capture, per-source attempt timeout, and exponential-backoff retries; capture failures rethrow the final attempt's exception with its original type, and results return in deterministic source-type order regardless of completion order.
 - `Reconciliation/StatementBreakClassifier.cs`, `StatementMappingProfiles.cs`, and `StatementToleranceProfiles.cs` - canonical break taxonomy, broker mapping profiles, and tolerance governance.
 - `Reconciliation/ReconciliationEngineService.cs` - Security Master-enriched portfolio-vs-ledger
   reconciliation engine that joins positions, ledger balances, and the F# ledger reconciliation
@@ -70,11 +88,20 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Reconciliation/Connectors/` - custodian/broker statement connector library (ADR-018):
   declarative versioned CSV/OFX mapping-profile documents with a file-backed store, live catalog,
   and format-drift detection; per-column mapping-confidence scoring; connectors for
-  profile-driven CSV, OFX 1.x/2.x bank + investment statements, IB Flex Report XML, and
-  fetch-capable Alpaca activity + portfolio snapshots; `StatementImportService` preview/commit
+  profile-driven CSV, OFX 1.x/2.x bank + investment statements, remotely fetched or uploaded IB
+  Flex Report XML, fetch-capable Alpaca activity + portfolio snapshots with bounded complete
+  pagination, and profile-less ISO 20022 camt.053 and BAI2 institutional bank cash statements
+  (content-sniffed, mapped directly to canonical records); `StatementImportService` preview/commit
   orchestration that renders deterministic canonical-CSV artifacts into the existing
   statement-run workflow (positions, transactions, cash balances, fees, and dividends all
-  classify per kind); and persisted fetch schedules with an idempotent schedule runner.
+  classify per kind), retains a structured canonical-evidence sidecar for account margin, complete
+  activity cursors, option lifecycle, tax-lot, and borrow evidence, and returns retained break ids
+  plus structured reconciliation case links for the opened reconciliation work while retaining
+  legacy case id/route arrays for compatibility; and
+  persisted broker/custodian-classified fetch schedules with an idempotent schedule runner whose
+  transient failures retain a stable non-sensitive status without advancing the last-successful-fetch
+  watermark. Scheduled fetches reauthorize the retained tenant, company, fund, book, period, and
+  external-account scope before provider access.
 - `Banking/` - payment initiation, approval/rejection workflow, bank-side transaction records,
   deterministic transaction seeding, and PostgreSQL-backed banking persistence adapter.
 
@@ -84,7 +111,109 @@ Use this README to understand the module before editing source files. Update the
 
 Statement reconciliation also lives here. Broker/custodian statement intake, mapping profiles, validation, duplicate detection, matching, break classification, reconciliation decision journals, statement-run persistence, and durable case materialization are Financial Operations behavior. Application commands and shared UI services invoke the module workflow, but they do not own reconciliation state, matching rules, or statement-run persistence.
 
-The statement connector library (`Reconciliation/Connectors/`, ADR-018) extends that intake seam: connectors parse CSV, OFX, IB Flex XML, and Alpaca snapshot sources into canonical records classified per kind (position, transaction, cash balance, fee, dividend), driven by declarative, operator-editable mapping-profile documents rather than code. Commit renders a deterministic canonical-CSV artifact and hands it to `IStatementRunWorkflowService`, so the downstream matching, break, and case pipeline is unchanged and duplicate-key idempotency is preserved. Profiles record the last accepted column layout for format-drift warnings, and fetch-capable connectors reuse the existing brokerage gateways and provider credential store — never a new secret store.
+The statement connector library (`Reconciliation/Connectors/`, ADR-018) extends that intake seam: connectors parse CSV, OFX, uploaded or Web-Service-fetched IB Flex XML, and Alpaca snapshot sources into canonical records classified per kind (position, transaction, cash balance, fee, dividend), driven by declarative, operator-editable mapping-profile documents rather than code. Institutional bank cash statements are also ingested directly by the profile-less ISO 20022 camt.053 and BAI2 connectors (content-sniffed, closing-balance and signed entries mapped straight to canonical records) so most bank statements reconcile without hand-conversion. Commit renders a deterministic canonical-CSV artifact and hands it to `IStatementRunWorkflowService`, so the downstream matching, break, and case pipeline is unchanged and duplicate-key idempotency is preserved. A sibling `canonical-evidence.json` retains provider account margin, activity subtype and cursor completeness, option lifecycle, tax-lot, and securities-borrow evidence without widening the legacy reconciliation CSV seam. Profiles record the last accepted column layout for format-drift warnings, and fetch-capable connectors reuse the existing brokerage gateways and provider credential store — never a new secret store. Alpaca activity retrieval pages to a bounded complete cursor and fails closed if the provider cannot prove continuity. IB Flex uses the documented v3 request/retrieve flow with bounded polling and trusted-host enforcement. Persisted schedules retain an explicit broker/custodian source classification, support operator run-now and background cadence, and default legacy snapshots to broker; a failed fetch records only the exception type and advances a separate attempt/cadence watermark so provider or configuration failures do not retry every scheduler tick while the last-successful-fetch cursor remains available for recovery.
+
+Statement ingress is bounded (PRD-010). Before this bound a caller-supplied `StatementSourceDocument`
+sized the parse rather than the operator: `Camt053StatementConnector` built a whole-document
+`XDocument` and `Bai2StatementConnector` split the entire payload on newlines, neither enforced a
+record limit, and `StatementImportService` copied the source bytes before a connector was even
+resolved — so the transport-level upload and CLI caps never covered that seam. `StatementIngressLimits`
+is now one record shared by every connector and by the import service, so both refuse the same payload
+and a deployment raises a cap in one place instead of per seam. Connectors refuse mid-parse, before
+the allocation; the import service re-checks on preview, validate, and commit as the backstop no
+connector can leave open — that check counts `StatementParseResult.TotalRetainedRows`, not
+`Records.Count`, because the five evidence-only collections (account snapshots, activity events,
+activity cursors, tax lots, borrow positions) are retained just as durably as canonical records.
+
+`StatementIngressLimits.Default` bounds a document at `StatementConnectorLimits.MaxFileBytes`
+(20 MiB — the statement-specific cap the workstation endpoint and CLI already enforce, deliberately
+not the general 5 MiB data-upload cap, because IB Flex XML exports routinely exceed 5 MiB), 250,000
+retained rows, 64 KiB per line, 64 levels of XML nesting, 50,000 nodes in any one materialized XML
+subtree, 500,000 parsed nodes per document, 25,000 retained parse issues, and 500,000 flattened OFX
+aggregates. Every bound refuses with a named code:
+
+| Code | Bound |
+| --- | --- |
+| `STATEMENT_DOCUMENT_TOO_LARGE` | `MaxDocumentBytes`, checked by the import service and by every connector before it decodes — IB Flex included, which reported a private `STATEMENT_TOO_LARGE` until it took the shared limits, so a caller routing on this code missed Flex refusals alone |
+| `STATEMENT_TOO_MANY_RECORDS` | `MaxRecords`, against total retained rows — charged on the append by every connector, and by the import service as the backstop. Nothing is charged against a prediction of what a payload will yield. camt.053, BAI2 and OFX previously charged *candidates* — an entry, detail line, or aggregate about to be attempted — so a pending camt entry, a malformed BAI2 amount, or an aggregate the mapper rejects consumed a record allowance it never drew on, and refused documents whose canonical rows sat well inside the bound. Work that retains no record is bounded by the budget that owns it instead. Alpaca charges its five evidence collections up front, since `Deserialize` has already materialized them, then one row per canonical append; a rich activity is retained twice (record and activity event) while a corporate action with no amount is not retained at all |
+| `STATEMENT_TOO_MANY_ENTRIES` | `MaxDocumentEntries`, an UPPER bound on the objects a document could materialize before anything is mapped — raw OFX aggregates `OfxDocumentParser` flattens into entry dictionaries, and JSON objects the Alpaca pre-scan counts. Upper rather than exact: a deserializer skips unknown properties, so objects beneath a forward-compatible extension are charged here and never allocated. That is structural — a pre-scan must refuse before the allocation it prevents, so it can only bound what the payload contains, not what the deserializer keeps. Distinct from the record cap because the mapper rejects some aggregates, so aggregates and retained records are different counts; set above `MaxRecords` so an aggregate that maps to nothing does not consume a record's worth of the allowance. At the shipped defaults it cannot fire before `MaxParseNodes`: every object costs at least two tokens, so a 500,000-node budget is reached at roughly 250,000 objects. It is therefore an operator knob for deployments wanting a materialization ceiling stricter than the traversal budget, and only bites when set below about half of `MaxParseNodes` |
+| `STATEMENT_LINE_TOO_LONG` | `MaxLineBytes`, measured in UTF-8 bytes |
+| `STATEMENT_TOO_MANY_LINES` | `MaxDocumentLines`, the raw lines a line-oriented parser may walk, in both CSV and BAI2; refused before mapping. Blank lines count in both — they produce no canonical row but still cost an iteration to discover, and the byte cap alone permits twenty million of them. Only the synthetic final segment a terminating newline leaves is exempt, so acceptance does not depend on newline convention. CSV derived this from `MaxRecords` until 2026-08-30, which charged rows the mapper rejects to the record allowance one step removed |
+| `STATEMENT_NESTING_TOO_DEEP` | `MaxNestingDepth`, inclusive — a document nested at exactly the limit is accepted and one level deeper is refused, identically in every connector that reads it |
+| `STATEMENT_SUBTREE_TOO_LARGE` | `MaxSubtreeNodes`, one materialized XML subtree |
+| `STATEMENT_TOO_MANY_NODES` | `MaxParseNodes`, the whole-document node budget, charged by the camt.053, OFX and IB Flex parsers, and by the Alpaca JSON pre-scan — one activity's `Metadata` dictionary is open-ended, so members have to be counted before `Deserialize` materializes them |
+| `STATEMENT_TOO_MANY_DIAGNOSTICS` | `MaxDiagnostics`, retained parse issues; charged by every connector — the CSV, OFX, IB Flex and Alpaca row mappers, and the camt.053 and BAI2 per-row candidate charges, which also re-check after their parse loop so the final row's diagnostic cannot slip past |
+| `ROW_LIMIT_EXCEEDED` | `MaxRecords`, reported by the IB Flex connector against its retained rows |
+
+Preview returns these as issue objects, so a caller can branch on `issue.Code` directly. The other two
+paths report as text — commit throws `InvalidDataException`, and `ValidateAsync` returns a
+`StatementImportValidationResult` whose `Errors` is a list of strings — so both carry the code in
+brackets ahead of the prose. Otherwise the same document yields an actionable code from one path and an
+unclassifiable sentence from the others.
+
+These messages advise raising the configured limit deliberately. A deployment does that by registering
+its own `StatementIngressLimits` before `AddReconciliationServices`, since registration uses
+`TryAddSingleton(StatementIngressLimits.Default)` and takes the first registration that wins:
+
+```csharp
+services.AddSingleton(StatementIngressLimits.Default with { MaxRecords = 1_000_000 });
+services.AddStatementReconciliationServices();
+```
+
+Raise only the bound that actually refused, and record why: the defaults sit well above any real bank
+statement, so a breach is far more often a malformed or hostile payload than a large one.
+
+`MaxParseNodes` bounds how many nodes a parse walks, not how deep it goes or how large one subtree
+is. It was defined for the XML connectors and, until this change, only OFX charged it: camt.053 could
+walk hundreds of thousands of uniquely named shallow elements outside the single valid statement, with
+the reader's name table retaining every distinct name string, and no bound fired. Both camt passes now
+charge it, and IB Flex charges it in a streaming pre-scan ahead of the `XDocument` it still builds:
+`MaxCharactersInDocument` bounds the characters read, not the object graph built from them, so a
+permitted payload of many tiny elements could expand well past its own byte size before any row counter
+existed. The pre-scan allocates nothing and refuses first.
+
+`IbFlexStatementConnector` reads `MaxRecords` and `MaxDocumentBytes` like every other connector. It previously held a private
+100,000-row ceiling, which made the paragraph above false for Flex imports: a deployment could raise
+`MaxRecords` and still have a legitimate Flex report refused at row 100,001 by a number it had no way
+to configure. Both bounds counted the same thing - retained rows - so they are now one bound. This
+raises the default Flex ceiling from 100,000 to the shared 250,000; a deployment that wants the old
+ceiling sets `MaxRecords` to 100,000. The same applied to document size, which kept a private 32 MiB
+ceiling for one more round: it now reads `MaxDocumentBytes`, moving the Flex default the other way,
+32 MiB down to 20 MiB. On the import path the service already refused above 20 MiB before the connector
+saw the document, so that tightening binds only the direct fetch path.
+
+The shared Margin Control Center reads retained canonical evidence across providers, accounts, and
+prime brokers. Provider-reported buying power, maintenance margin, excess liquidity, and restriction
+flags remain authoritative. Meridian displays a clearly labelled Reg T or portfolio-margin shadow
+estimate only as a diagnostic comparison, never as liquidation or posting authority. Intraday
+snapshots are provisional; end-of-day certification is permission checked and blocked for stale,
+incomplete, or critical evidence.
+
+The UI Shared Statement Reconciliation Report intake adapter binds retained imports to an exact
+fund, ledger-book, open accounting-period, and as-of scope, starts or reuses the matching Operations
+Continuity workflow, and projects source obligations into the existing canonical reconciliation
+queue. Those are adapter actions into existing authorities. This module's statement-run, source-case,
+and Operations Continuity services continue to own reconciliation state and
+posting/approval/close gates; `IReconciliationBreakQueueRepository` and
+`IStatementReconciliationCaseworkHandoffService` own governed queue mutation and evidence
+synchronization. The adapter and its casework handoff may attach retained evidence, but they do not
+post, approve, or close on an operator's behalf.
+
+The statement-run workflow reconciles each imported statement against Meridian's own book rather than against itself: `StatementRunWorkflowService` resolves internal positions, cash, and ledger transactions through `IInternalReconciliationPopulationProvider` (default: an empty book, so every row is a genuine unmatched break) and runs the shared `StatementMatchingEngine` across positions, cash, and transactions in exact / tolerance / candidate / unmatched tiers. Foreign-currency amounts normalize to the reporting base currency through a fail-closed `IReconciliationFxRateProvider` (identity-only by default, so cross-currency lines break unless a rate is configured); cash matching retains its original currency identity after conversion so distinct per-currency balances cannot cross-match. Both statement-only and internal-only records surface as breaks with a truthful tolerance-breached flag and engine-sourced confidence. A real `IFxRateProvider` implementation (`InMemoryFxRateProvider`, identity/inverse/triangulation with as-of selection) is available to the execution and ledger layers.
+Import services capture bounded raw and canonical bytes once, compute authoritative SHA-256 values
+from those snapshots, validate any caller-supplied hash only as an assertion, and parse the same
+captured bytes. Canonical CSV rendering uses reversible RFC-style quoting for commas, quotes, and
+line breaks rather than replacing source characters. Raw uploads are retained under a portable,
+single-segment filename; traversal-shaped names keep only a valid basename, while dot segments and
+reserved device names use a deterministic safe fallback. Every retained path is resolved beneath
+the configured data root and refuses existing symbolic-link or reparse-point traversal. The
+retained duplicate key binds the raw and canonical hashes when they differ. Upgrade duplicate
+detection also checks the prior canonical-only identity and returns that retained run id, preventing
+the first post-upgrade retry from creating a second run for an already imported artifact.
+The commit result also carries the specific break ids and structured reconciliation case links
+created by the Financial Operations workflow, including each case route, status, priority, reason,
+and suggested next action, allowing Evidence Vault and browser clients to point operators directly
+at the retained casework instead of only showing aggregate break/case counts.
 
 Operations Continuity reconciliation runs retain the canonical Financial Operations lane coverage
 for cash, position, trade, income, MBS factor, bank, and GL support. The workflow aggregate derives
@@ -106,6 +235,18 @@ publishes period state, period-lock/reopen posture, NAV/report dependencies, unr
 approvals, and retained evidence gaps as one server-owned readiness posture so browser and WPF
 surfaces cannot show synthetic completion while required evidence, approvals, lock state, or NAV
 support remain blocked.
+Operations Continuity transition commands compose the shared four-state
+`VerifiedOperationOutcome`; the compatibility `Success` property is derived from that receipt and
+cannot contradict it. Accepted aggregate changes and their outcome-bearing audit event use one
+authoritative transition commit: PostgreSQL uses a serializable database transaction, the local
+file store atomically replaces a workflow-plus-timeline commit envelope, and the in-memory store
+coordinates both structures under one admitted commit. Precondition and policy blocks retain an
+unchanged-state `workflow-transition-blocked` audit event with structured issues, source references,
+and recovery actions. A commit exception returns `Failed`, retains no succeeded workflow snapshot
+or succeeded audit receipt, and attempts a separate truthful failure receipt without upgrading the
+result when that secondary retention is unavailable. Workflow snapshots remain rebuildable current
+state; the append-only, hash-chained audit and embedded terminal receipts are the durable decision
+evidence.
 It also derives the reviewed-automation summary from aggregate state and enforces the action-origin
 guard for material commands. Automation-origin and assistant-origin requests may carry suggestions,
 summaries, drafts, flags, and retained review evidence, but Security Master override approval,
@@ -117,7 +258,11 @@ exception and advance approval posture. When report-pack evidence is ready but n
 approval, the same summary surfaces report-commentary and audit-request-list drafts as review-only
 work so publication remains behind human approval. Already closed reconciliation breaks reject
 duplicate resolution or reassignment commands so retained case evidence and audit history cannot be
-mutated after closure. Break assignment, escalation, and resolution commands also refresh the
+mutated after closure. Terminal casework distinguishes resolved, waived, and
+superseded dispositions; material waivers and supersessions require independent approval evidence,
+and supersessions retain the successor break identifier. Value, quantity, and cost-basis measures
+remain attached to the case and its terminal evidence hash rather than collapsing into one amount.
+Break assignment, escalation, and resolution commands also refresh the
 derived reconciliation lane summaries so active-work queues, dashboards, and evidence tables do not
 show stale break counts, required actions, or retained assignment/resolution evidence after
 exception work. Lane required actions are derived from retained open break casework, including
@@ -252,6 +397,21 @@ can reach ready-for-review certification; close-backed packages also recheck tha
 the close plan book before certification. When `StorageOptions`
 is registered, late-adjustment requests and task-level close sign-off decisions are retained
 through an atomic JSON snapshot under the configured storage root and reproject after restart.
+Malformed, null, or incomplete close-management snapshots fail closed and remain untouched for
+recovery; a later sign-off cannot reinterpret missing slices as empty and overwrite retained close
+evidence. Once a service has observed or written the durable snapshot, disappearance of that file
+also fails closed instead of being treated as first-time initialization.
+The final close-plan control is the shared `Post closing entries` gate. After the existing task,
+sign-off, evidence, and version checks pass, the management service projects the current scoped
+revenue/expense residual, queues the deterministic closing-entry draft into the governed workbench,
+and waits for independent submit, approval, and posting. It rechecks that gate at the hard-close
+mutation boundary and finalizes the actual ledger period before publishing the workflow close
+package; an unavailable workbench, an unapproved current draft, a pending reversal, or any residual
+temporary-account balance fails closed. The projection fingerprint makes retries reuse the same
+draft while a late approved adjustment queues only its new closing delta. Governed reopen requires
+human Controller authority plus retained restatement approval evidence, creates or reuses every
+source-linked closing-batch reversal draft before moving the ledger period back to soft close, and
+supports deterministic retry if the first reopen attempt stopped after draft creation.
 Close blocker/evidence reviews are retained in the same close-management snapshot as explicit
 operator review records; they require human origin, notes, scoped close-review/blocker evidence
 that identifies the active issue, target, workflow or period, and selected ledger book, and they do
@@ -420,6 +580,33 @@ The generated candidate path also preserves the neutral operational dimensions c
 `LedgerDimensionSetDto` - organization, portfolio, book, account, customer, vendor, and project -
 through generated posting lines, governed draft lines, and approved append writes so reporting and
 external-GL mapping do not lose non-fund dimension scope at the rule-to-ledger boundary.
+Typed instrument-to-journal fields are additive assertions on that same candidate path.
+`AccountingBookContextDto` is re-resolved through `ILedgerBookService`, including book owner,
+period, basis, policy/version, currency, fund, and dimension scope; the client snapshot never grants
+posting authority. Economic-event and projection references must agree with retained source-event
+identity, evidence, effective date, instrument identity, and `BookPositionId`, while candidate and
+generated-line `PositionId` dimensions must match. `AccountingRulePackReferenceDto` is validated
+against the existing accounting policy rule pack and selected Rules Studio rule/version rather than
+creating another rule authority. Any mismatch remains a blocking candidate issue before draft/write
+creation.
+Security Master remains the canonical source of instrument identity, Instruments/Asset Operations
+own economic projections, and this module owns the governed candidate/approval handoff. These
+optional fields add no Financial Operations persistence, direct ledger-entry input, or alternate
+posting route; the approved immutable `JournalEntry` remains the accounting aggregate.
+`AssetAccountingEventSpineService` generalizes that authority boundary across Acquisition,
+Capitalization, Valuation, Income, Corporate Action, Impairment, Depreciation/Amortization, and
+Disposal. It re-reads the immutable Projected spine version, authoritative book position, ledger
+book, period version, accounting policy, and promoted rule pack, rejects any client assertion drift,
+and appends Drafted only after Rules Studio returns a balanced approval-gated candidate. Generic
+`AssetAccounting.*` candidate requests are rejected so callers cannot bypass this server-owned
+authority path.
+For the MBS factor-paydown model, candidate creation re-resolves the persisted holder role, book
+position, factor economic state, and projection lineage, reruns the Instruments projector, and uses
+the server amount for Rules Studio. Missing or stale projection state, cross-book identity, evidence
+drift, event/lineage drift, a missing or mismatched authoritative rule-pack reference, or a
+client-supplied amount mismatch blocks the candidate before approval. Factor detection is anchored
+to the canonical event type as well as projection lineage, so omitting or relabeling a client field
+cannot bypass server recalculation.
 `AccountingPostingCandidatePostService` is the separate append gate for approved generated
 candidates. It requires a configured Postgres-backed `ILedgerJournalStore`, a human-operator action
 origin, retained source-event identity, approval evidence, an aggregate id equal to the target
@@ -429,6 +616,17 @@ matches that ledger book, and a period owned by that book before calling the jou
 for the same `(ledger book aggregate, source event)` return the existing journal, while the same
 economic event may still produce separate GAAP, cash, tax, statutory, or primary postings because
 each basis uses its own ledger-book aggregate.
+Canonical asset acquisition and disposal candidates additionally require the Postgres atomic
+tax-lot journal store. Acquisition creates the new lot in the journal transaction; disposal consumes
+explicit selected lot ids under exact expected-version/open-quantity CAS. Both paths retain the
+mutation fingerprint, evidence, relief policy, before/after snapshots, correction lineage, and
+idempotent replay result. The event spine records Approved and Posted only from the durable journal
+identity and balanced posted amounts returned by that boundary.
+For this spine, a same-source journal is a replay only when its deterministic journal identity,
+complete Drafted candidate/result fingerprints, policy/rule pack, approval evidence, amounts,
+lines, currencies, and dimensions all match. Lots retain Security Master and book-position scope;
+disposal rechecks selected unit cost and aggregate cost basis against the exact asset-relief journal
+line under the same serializable transaction. A mismatch is a collision and blocks posting.
 External accounting-system providers remain read-only import, reconciliation, and export-package
 surfaces; this service appends only Meridian-owned ledger facts.
 The retained approval evidence for generated candidate append must name approval intent, fund,
@@ -439,9 +637,10 @@ preparer before the append gate can move a generated candidate into the Meridian
 Production certification profiles also fail closed before persistence when a retained profile marks
 posting rules, journal lifecycle, close/reporting, external GL, reconciliation, direct lending,
 strategy ledger reads, or dimensional reporting controls as certified without evidence that names
-the selected tenant, company, fund, ledger book, and the specific certified control family. A full
-production-certification evidence artifact can certify the full profile, but category-specific
-evidence cannot be reused to bless unrelated controls.
+the selected tenant, company, fund, ledger book, and the specific certified control family. Each
+positive control requires a complete typed retained-evidence identity; boolean flags, service or
+endpoint availability, legacy full-token links, and synthesized profile/report references cannot
+certify the profile.
 
 Payment approval and bank-transaction records also live here. `IBankingService` publishes the
 approval workflow and `IBankTransactionSource` evidence surface used by reconciliation, Plaid
@@ -474,6 +673,15 @@ evidence deletion.
 | `W5X-FINOPS-001` | Financial operations control center |
 | `W5X-CONNECT-001` | Custodian and broker statement connector library |
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
+| `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
+| `W10-RECON-001` | Durable break lineage identity and run-over-run break diff |
+| `W10-RECON-002` | Break clustering and bulk-resolution activation |
+| `W10-JRNL-001` | Durable recurring journal schedules and draft runner |
+| `W10-SEAM-001` | Unified close-readiness projection behind one shared contract |
+| `W10-RECON-003` | Unified tolerance model and what-if replay workbench |
+| `W10-RECON-004` | Operator-taught match rules with promotion gate |
+| `W10-PERF-001` | Portfolio and investor return measurement |
+| `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
@@ -501,7 +709,7 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 
 ### API and contract notes
 
-`IOperationsContinuityWorkflowService` publishes account-period close workflow commands and reads. `IOperationsContinuityRepository`, `IOperationsWorkflowAuditStore`, `IOperationsContinuityWorkflowStartCommitStore`, and `IOperationsContinuityTransactionalCommitStore` publish workflow persistence and transactional audit/ledger commit contracts. `IOperationsApprovalPolicyMatrixService` publishes the policy matrix consumed by shared workstation endpoints. `IOperationsCloseCalendarService` publishes close-calendar reads and governed item upserts. `IPrivateCapitalCloseCockpitService` is implemented here to publish the contract-owned close cockpit projection while endpoints remain in UI Shared. Accounting-close services publish journal posting, FX translation, trial-balance, roll-forward, and evidence-gate projections. `IAccountingPolicyService`, `IAccountingBasisProjectionService`, and `IAccountingBasisProjectionSetService` publish accounting-basis policy lookup, ledger write metadata projection, and one-source-event-to-many-book projection candidates for application workflows. `LedgerTextJournalReportService` publishes CLI-facing text-journal parsing and report rendering. `AccountingSystemIntegrationService` publishes provider listing, import preview/latest import, and latest external-GL reconciliation reads over `IAccountingSystemProvider` contracts. `IBankingService` publishes payment approval records, direct payment lookup, explicit bank-evidence recording, and bank-transaction evidence workflows over `Meridian.Contracts.Banking` DTOs. `IStatementRunWorkflowService`, `IStatementReconciliationService`, `IStatementReconciliationOrchestrator`, `IStatementValidationService`, and reconciliation repository contracts publish statement intake, validation, matching, persistence, and casework orchestration for commands and UI services. DTOs remain in `Meridian.Contracts.Workstation`, `Meridian.Contracts.AccountingSystem`, `Meridian.Contracts.Banking`, and `Meridian.Contracts.Ledger`; authorization roles and permissions come from `Meridian.Identity.Auth`; durable local writes use `Meridian.Storage.Archival.AtomicFileWriter` and banking persistence uses `Meridian.Storage.Banking`.
+`IOperationsContinuityWorkflowService` publishes account-period close workflow commands and reads. `IOperationsContinuityRepository`, `IOperationsWorkflowAuditStore`, `IOperationsContinuityTransitionCommitStore`, `IOperationsContinuityWorkflowStartCommitStore`, and `IOperationsContinuityTransactionalCommitStore` publish workflow persistence and atomic transition/audit/ledger commit contracts. `IOperationsApprovalPolicyMatrixService` publishes the policy matrix consumed by shared workstation endpoints. `IOperationsCloseCalendarService` publishes close-calendar reads and governed item upserts. `IPrivateCapitalCloseCockpitService` is implemented here to publish the contract-owned close cockpit projection while endpoints remain in UI Shared. Accounting-close services publish journal posting, FX translation, trial-balance, roll-forward, and evidence-gate projections. `IAccountingPolicyService`, `IAccountingBasisProjectionService`, and `IAccountingBasisProjectionSetService` publish accounting-basis policy lookup, ledger write metadata projection, and one-source-event-to-many-book projection candidates for application workflows. `LedgerTextJournalReportService` publishes CLI-facing text-journal parsing and report rendering. `AccountingSystemIntegrationService` publishes provider listing, import preview/latest import, and latest external-GL reconciliation reads over `IAccountingSystemProvider` contracts. `IBankingService` publishes payment approval records, direct payment lookup, explicit bank-evidence recording, and bank-transaction evidence workflows over `Meridian.Contracts.Banking` DTOs. `IStatementRunWorkflowService`, `IStatementReconciliationService`, `IStatementReconciliationOrchestrator`, `IStatementValidationService`, and reconciliation repository contracts publish statement intake, validation, matching, persistence, and casework orchestration for commands and UI services. DTOs remain in `Meridian.Contracts.Workstation`, `Meridian.Contracts.AccountingSystem`, `Meridian.Contracts.Banking`, and `Meridian.Contracts.Ledger`; authorization roles and permissions come from `Meridian.Identity.Auth`; durable local writes use `Meridian.Storage.Archival.AtomicFileWriter` and banking persistence uses `Meridian.Storage.Banking`.
 `IAccountingPostingCandidateService` consumes `PostingRuleJournalCandidateRequestDto` and returns
 `PostingRuleJournalCandidateResultDto` from the shared ledger contract surface so browser and WPF
 can call the same source-event-to-draft candidate path without owning posting-rule execution or

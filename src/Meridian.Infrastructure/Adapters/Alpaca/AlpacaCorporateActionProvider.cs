@@ -1,5 +1,10 @@
+using System.Buffers;
+using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Integrity;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -35,6 +40,9 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
     private const string BaseUrl = "https://api.alpaca.markets";
 
     public string ProviderId => "alpaca";
+
+    public CorporateActionProviderReleaseStatusDto ReleaseStatus =>
+        CorporateActionProviderReleaseStatusDto.AcceptanceEligible;
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
@@ -118,15 +126,22 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
             }
 
             await using var jsonStream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
-            var announcements = await JsonSerializer.DeserializeAsync(
-                    jsonStream,
-                    AlpacaCorporateActionJsonContext.Default.AlpacaAnnouncementArray,
-                    ct)
-                .ConfigureAwait(false)
-                ?? [];
+            using var document = await JsonDocument.ParseAsync(jsonStream, cancellationToken: ct)
+                .ConfigureAwait(false);
+            if (document.RootElement.ValueKind != JsonValueKind.Array)
+            {
+                return [];
+            }
 
-            return announcements
-                .Select(a => MapToCommand(a, securityId))
+            return document.RootElement.EnumerateArray()
+                .Select(payload => new
+                {
+                    Announcement = payload.Deserialize(
+                        AlpacaCorporateActionJsonContext.Default.AlpacaAnnouncement),
+                    Payload = payload,
+                })
+                .Where(item => item.Announcement is not null)
+                .Select(item => MapToCommand(item.Announcement!, item.Payload, securityId))
                 .Where(cmd => cmd is not null)
                 .Select(cmd => cmd!)
                 .ToArray();
@@ -139,7 +154,10 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
         }
     }
 
-    private CorporateActionCommand? MapToCommand(AlpacaAnnouncement announcement, Guid securityId)
+    private CorporateActionCommand? MapToCommand(
+        AlpacaAnnouncement announcement,
+        JsonElement completeProviderPayload,
+        Guid securityId)
     {
         if (!DateOnly.TryParse(announcement.ExDate, out var exDate))
             return null;
@@ -160,6 +178,10 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
             _ => announcement.CaType ?? "Unknown",
         };
 
+        var evidenceHash = ComputePayloadHash(completeProviderPayload);
+        var escapedId = string.IsNullOrWhiteSpace(announcement.Id)
+            ? null
+            : Uri.EscapeDataString(announcement.Id.Trim());
         return new CorporateActionCommand(
             SecurityId: securityId,
             ActionType: actionType,
@@ -171,7 +193,71 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
             SplitFromFactor: announcement.OldRate,
             SplitToFactor: announcement.NewRate,
             Description: announcement.CaSubType ?? actionType,
-            SourceProvider: ProviderId);
+            SourceProvider: ProviderId,
+            SourceEventId: announcement.Id,
+            SourceEventVersion: escapedId is null ? null : $"payload-sha256:{evidenceHash}",
+            ObservedAtUtc: DateTimeOffset.UtcNow,
+            EvidenceHash: escapedId is null ? null : evidenceHash,
+            EvidenceReference: escapedId is null
+                ? null
+                : $"alpaca://corporate-actions/announcements/{escapedId}/versions/{evidenceHash}",
+            ReleaseStatus: ReleaseStatus);
+    }
+
+    private static string ComputePayloadHash(JsonElement payload)
+    {
+        var buffer = new ArrayBufferWriter<byte>();
+        using (var writer = new Utf8JsonWriter(buffer))
+        {
+            WriteCanonicalPayload(writer, payload);
+        }
+
+        return Sha256Digest.ComputeUtf8(Encoding.UTF8.GetString(buffer.WrittenSpan));
+    }
+
+    private static void WriteCanonicalPayload(Utf8JsonWriter writer, JsonElement element)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Object:
+                writer.WriteStartObject();
+                foreach (var property in element.EnumerateObject()
+                             .OrderBy(static property => property.Name, StringComparer.Ordinal))
+                {
+                    writer.WritePropertyName(property.Name);
+                    WriteCanonicalPayload(writer, property.Value);
+                }
+                writer.WriteEndObject();
+                break;
+            case JsonValueKind.Array:
+                writer.WriteStartArray();
+                foreach (var item in element.EnumerateArray())
+                {
+                    WriteCanonicalPayload(writer, item);
+                }
+                writer.WriteEndArray();
+                break;
+            case JsonValueKind.Number when element.TryGetDecimal(out var value):
+                writer.WriteRawValue(value.ToString("G29", CultureInfo.InvariantCulture));
+                break;
+            case JsonValueKind.Number:
+                writer.WriteRawValue(element.GetRawText());
+                break;
+            case JsonValueKind.String:
+                writer.WriteStringValue(element.GetString());
+                break;
+            case JsonValueKind.True:
+                writer.WriteBooleanValue(true);
+                break;
+            case JsonValueKind.False:
+                writer.WriteBooleanValue(false);
+                break;
+            case JsonValueKind.Null:
+                writer.WriteNullValue();
+                break;
+            default:
+                throw new JsonException("Unsupported Alpaca corporate-action payload token.");
+        }
     }
 
     // ------------------------------------------------------------------
@@ -180,6 +266,9 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
 
     private sealed class AlpacaAnnouncement
     {
+        [JsonPropertyName("id")]
+        public string? Id { get; init; }
+
         [JsonPropertyName("ca_type")]
         public string? CaType { get; init; }
 
@@ -215,6 +304,6 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
         WriteIndented = false,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         PropertyNameCaseInsensitive = true)]
-    [JsonSerializable(typeof(AlpacaAnnouncement[]))]
+    [JsonSerializable(typeof(AlpacaAnnouncement))]
     private sealed partial class AlpacaCorporateActionJsonContext : JsonSerializerContext;
 }

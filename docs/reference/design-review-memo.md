@@ -48,7 +48,7 @@ The system is suitable for controlled production deployment (data collection + b
 - Guaranteed zero loss under all circumstances (bounded channels may drop under extreme load by design).
 - Exchange-certified market data reconstruction (feed limitations and fallback chains acknowledged).
 - Real-time portfolio optimization or algorithmic order routing.
-- Mobile-specific operator surfaces, native mobile clients, and mobile-first workflows. WPF and the browser workstation are both active operator surfaces; responsive browser validation is allowed only for the browser workstation route.
+- Mobile-specific operator surfaces, native mobile clients, and mobile-first workflows. The browser workstation and the WPF desktop workstation are two active co-equal operator UI lanes over shared contracts (WPF focus: web-UI parity, `W8-WPF-PARITY-001`). Responsive browser validation is allowed only for the browser workstation route.
 
 ---
 
@@ -380,4 +380,3 @@ This reduces restart risk and prevents partial-write corruption. Changes apply w
 - Completion of high-priority hardening items (compliance review, authentication, execution integration)
 - Regular audits and security reviews
 - Post-deployment monitoring and incident tracking
-

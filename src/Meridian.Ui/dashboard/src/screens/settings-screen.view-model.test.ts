@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api-errors";
 import {
   buildAlpacaConnectionCommandState,
+  buildSettingsFreshnessViewModel,
   buildSettingsRecentEventsSelectionViewModel,
   buildSettingsScreenViewModel,
   useAlpacaConnectionFormViewModel,
@@ -408,12 +409,40 @@ describe("buildSettingsScreenViewModel", () => {
   });
 
   it("builds system items from overview data", () => {
-    const vm = buildSettingsScreenViewModel(null, overview);
+    const vm = buildSettingsScreenViewModel({
+      session: null,
+      overview,
+      evaluatedAt: new Date("2026-05-02T02:00:00Z")
+    });
     expect(vm.hasOverview).toBe(true);
     expect(vm.systemItems.some((i) => i.label === "Status" && i.value === "Healthy")).toBe(true);
     expect(vm.systemItems.some((i) => i.label === "Active runs" && i.value === "2")).toBe(true);
     expect(vm.systemItems.some((i) => i.label === "Symbols monitored" && i.value === "120")).toBe(true);
-    expect(vm.systemItems.some((i) => i.label === "Last heartbeat" && i.value === "May 1, 00:00 UTC")).toBe(true);
+    expect(vm.systemItems.some((i) => i.label === "Last heartbeat" && i.value === "Stale · May 1, 00:00 UTC" && i.tone === "danger")).toBe(true);
+    expect(vm.systemTone).toBe("warning");
+  });
+
+  it("classifies freshness evidence without presenting old timestamps as current", () => {
+    const evaluatedAt = new Date("2026-07-13T12:00:00Z");
+
+    expect(buildSettingsFreshnessViewModel("2026-07-13T11:50:00Z", evaluatedAt)).toMatchObject({
+      status: "current",
+      tone: "success",
+      label: "Current · Jul 13, 11:50 UTC"
+    });
+    expect(buildSettingsFreshnessViewModel("2026-07-13T02:00:00Z", evaluatedAt)).toMatchObject({
+      status: "delayed",
+      tone: "warning"
+    });
+    expect(buildSettingsFreshnessViewModel("2026-07-10T12:00:00Z", evaluatedAt)).toMatchObject({
+      status: "stale",
+      tone: "danger"
+    });
+    expect(buildSettingsFreshnessViewModel(null, evaluatedAt)).toMatchObject({
+      status: "unavailable",
+      tone: "warning",
+      label: "Not reported"
+    });
   });
 
   it("builds fund operations control cards from configuration payloads", () => {
@@ -483,10 +512,11 @@ describe("buildSettingsScreenViewModel", () => {
       session,
       overview,
       providerConnections,
-      brokerageConnection: alpacaConnection
+      brokerageConnection: alpacaConnection,
+      evaluatedAt: new Date("2026-05-07T12:00:00Z")
     });
 
-    expect(vm.providerConnectionCenter.statusLabel).toBe("1 need review");
+    expect(vm.providerConnectionCenter.statusLabel).toBe("2 need review");
     expect(vm.providerConnectionCenter.statusVariant).toBe("warning");
     const brokerageRows = vm.providerConnectionCenter.groups.find((group) => group.id === "brokerage")?.rows ?? [];
     const dataRows = vm.providerConnectionCenter.groups.find((group) => group.id === "data")?.rows ?? [];
@@ -507,6 +537,78 @@ describe("buildSettingsScreenViewModel", () => {
       credentialLabel: "Missing",
       fallbackLabel: "Fallback active",
       actionHref: "/settings#provider-polygon-connection"
+    });
+  });
+
+  it("keeps provider verification, source, freshness, and readiness evidence coherent", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      evaluatedAt: new Date("2026-07-13T12:00:00Z"),
+      providerConnections: [{
+        ...providerConnections[0],
+        credentialState: "Configured",
+        credentialSource: "Operator" as ProviderConnectionRow["credentialSource"],
+        verificationState: "Verified",
+        lastVerifiedAt: "2026-05-07T11:50:00Z",
+        lastSuccessfulAt: "2026-05-07T11:50:00Z"
+      }]
+    });
+
+    expect(vm.providerConnectionCenter.description).toContain("1/1 provider verification succeeded");
+    expect(vm.providerConnectionCenter.statusLabel).toBe("1 need review");
+    const row = vm.providerConnectionCenter.groups.find((group) => group.id === "brokerage")?.rows[0];
+    expect(row).toMatchObject({
+      credentialLabel: "Configured",
+      verificationLabel: "Verified",
+      verificationStatus: "verified",
+      sourceLabel: "Source not reported",
+      freshnessStatus: "stale",
+      lastHeartbeatTone: "danger",
+      productionStateLabel: "Source evidence missing",
+      readinessLabel: "Review",
+      readinessTone: "warning"
+    });
+  });
+
+  it.each([
+    { condition: "enabled, bound, and trusted", enabled: true, bound: true, trusted: true, readinessLabel: "Ready", productionStateLabel: "Production ready" },
+    { condition: "disabled", enabled: false, bound: true, trusted: true, readinessLabel: "Review", productionStateLabel: "Certification needed" },
+    { condition: "unbound", enabled: true, bound: false, trusted: true, readinessLabel: "Review", productionStateLabel: "Certification needed" },
+    { condition: "not trusted for production", enabled: true, bound: true, trusted: false, readinessLabel: "Review", productionStateLabel: "Certification needed" }
+  ])("requires matched provider routing to be $condition", ({
+    enabled,
+    bound,
+    trusted,
+    readinessLabel,
+    productionStateLabel
+  }) => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      evaluatedAt: new Date("2026-05-07T12:00:00Z"),
+      providerConnections: [providerConnections[0]],
+      providerRoutingConnections: [{
+        ...providerRoutingConnections[0],
+        enabled,
+        productionReady: true
+      }],
+      providerRoutingBindings: bound ? [providerRoutingBindings[0]] : [],
+      providerRoutingTrustSnapshots: [{
+        ...providerRoutingTrustSnapshots[0],
+        isProductionReady: trusted,
+        isCertificationFresh: true
+      }]
+    });
+
+    const row = vm.providerConnectionCenter.groups
+      .flatMap((group) => group.rows)
+      .find((provider) => provider.providerId === "alpaca");
+
+    expect(row).toMatchObject({
+      integrationConnectionId: "provider-alpaca-paper",
+      readinessLabel,
+      productionStateLabel
     });
   });
 
@@ -556,7 +658,11 @@ describe("buildSettingsScreenViewModel", () => {
   });
 
   it("returns success tone for healthy system", () => {
-    const vm = buildSettingsScreenViewModel(null, overview);
+    const vm = buildSettingsScreenViewModel({
+      session: null,
+      overview,
+      evaluatedAt: new Date("2026-05-01T00:30:00Z")
+    });
     expect(vm.systemTone).toBe("success");
   });
 
@@ -687,7 +793,8 @@ describe("buildSettingsScreenViewModel", () => {
       reporting: {} as never,
       loading: false,
       error: null,
-      workspaceErrors: {}
+      workspaceErrors: {},
+      evaluatedAt: new Date("2026-05-01T00:30:00Z")
     });
 
     expect(vm.diagnosticStatusLabel).toBe("All reachable");
@@ -696,7 +803,7 @@ describe("buildSettingsScreenViewModel", () => {
       { label: "Environment", value: "PAPER" },
       { label: "Workspace", value: "settings" },
       { label: "Diagnostics", value: "All reachable" },
-      { label: "Heartbeat", value: "May 1, 00:00 UTC" }
+      { label: "Heartbeat", value: "Current · May 1, 00:00 UTC" }
     ]);
     expect(vm.diagnosticCounts).toMatchObject({
       loaded: 7,
@@ -707,13 +814,16 @@ describe("buildSettingsScreenViewModel", () => {
       checkingLabel: "0"
     });
     expect(vm.diagnosticLinks.every((link) => link.statusLabel === "Loaded")).toBe(true);
+    expect(vm.diagnosticExceptionLinks).toHaveLength(0);
+    expect(vm.diagnosticHealthyLinks).toHaveLength(vm.diagnosticLinks.length);
   });
 
   it("derives Alpaca connection panel state without exposing secrets", () => {
     const vm = buildSettingsScreenViewModel({
       session,
       overview,
-      brokerageConnection: alpacaConnection
+      brokerageConnection: alpacaConnection,
+      evaluatedAt: new Date("2026-05-07T12:00:00Z")
     });
 
     expect(vm.alpacaConnectionPanel).toMatchObject({
@@ -758,8 +868,8 @@ describe("buildSettingsScreenViewModel", () => {
       canConnect: false,
       canDisconnect: true
     });
-    expect(vm.robinhoodConnectionPanel.connectedAtLabel).toBe("2026-05-07T11:50:00Z");
-    expect(vm.robinhoodConnectionPanel.expiresAtLabel).toBe("2026-06-07T11:50:00Z");
+    expect(vm.robinhoodConnectionPanel.connectedAtLabel).toBe("May 7, 11:50 UTC");
+    expect(vm.robinhoodConnectionPanel.expiresAtLabel).toBe("Jun 7, 11:50 UTC");
     expect(vm.robinhoodConnectionPanel.statusDetail).toContain("Robinhood account RH-987");
     expect(vm.robinhoodConnectionPanel.statusDetail).not.toContain("Alpaca");
     expect(vm.robinhoodConnectionPanel.statusDetail).not.toContain("/v2/account");
@@ -851,7 +961,8 @@ describe("buildSettingsScreenViewModel", () => {
     const vm = buildSettingsScreenViewModel({
       session,
       overview,
-      brokerageConnection: alpacaConnection
+      brokerageConnection: alpacaConnection,
+      evaluatedAt: new Date("2026-05-07T12:00:00Z")
     });
 
     expect(vm.profileAuthenticationPanel).toMatchObject({
@@ -884,9 +995,63 @@ describe("buildSettingsScreenViewModel", () => {
       expect.objectContaining({
         id: "audit-diagnostics",
         statusLabel: "Review",
-        actionHref: "/settings#diagnostic-endpoints"
+        actionHref: "/settings/diagnostics"
       })
     ]));
+  });
+
+  it("blocks Access readiness when connected brokerage evidence is delayed or stale", () => {
+    const delayedVm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      brokerageConnection: alpacaConnection,
+      evaluatedAt: new Date("2026-05-07T14:00:00Z")
+    });
+
+    expect(delayedVm.profileAuthenticationPanel).toMatchObject({
+      statusLabel: "Access review",
+      statusTone: "warning",
+      authorityLabel: "Brokerage evidence delayed",
+      notice: {
+        title: "Brokerage verification needs refresh",
+        tone: "warning"
+      }
+    });
+    expect(delayedVm.profileAuthenticationPanel.facts).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "brokerage", value: "Brokerage evidence delayed", tone: "warning" })
+    ]));
+    expect(delayedVm.profileAuthenticationPanel.steps.find((step) => step.id === "brokerage-authority")).toMatchObject({
+      statusLabel: "Delayed",
+      tone: "warning",
+      actionLabel: "Review provider setup",
+      actionHref: "/settings#alpaca-provider-setup",
+      actionAriaLabel: "Review Alpaca provider setup from profile authentication posture"
+    });
+    expect(delayedVm.profileAuthenticationPanel.steps.find((step) => step.id === "brokerage-authority")?.actionHref).not.toBe("/trading/readiness");
+    expect(delayedVm.alpacaConnectionPanel.warnings[0]).toBe(
+      "The last successful Alpaca verification is delayed. Re-verify before relying on readiness evidence."
+    );
+    expect(delayedVm.alpacaConnectionPanel.setupChecklist.find((step) => step.id === "alpaca-account-verification")).toMatchObject({
+      statusLabel: "Refresh",
+      tone: "warning"
+    });
+    expect(delayedVm.alpacaConnectionPanel.setupChecklist.find((step) => step.id === "alpaca-readiness-handoff")).toMatchObject({
+      statusLabel: "Refresh",
+      actionHref: null
+    });
+
+    const staleVm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      brokerageConnection: alpacaConnection,
+      evaluatedAt: new Date("2026-05-09T12:00:00Z")
+    });
+
+    expect(staleVm.profileAuthenticationPanel.authorityLabel).toBe("Brokerage evidence stale");
+    expect(staleVm.profileAuthenticationPanel.steps.find((step) => step.id === "brokerage-authority")?.statusLabel).toBe("Stale");
+    expect(staleVm.alpacaConnectionPanel.warnings[0]).toBe(
+      "The last successful Alpaca verification is stale. Re-verify before relying on readiness evidence."
+    );
   });
 
   it("warns when profile authentication posture is operating in live mode", () => {
@@ -894,7 +1059,8 @@ describe("buildSettingsScreenViewModel", () => {
     const vm = buildSettingsScreenViewModel({
       session: liveSession,
       overview,
-      brokerageConnection: { ...alpacaConnection, environment: "live" }
+      brokerageConnection: { ...alpacaConnection, environment: "live" },
+      evaluatedAt: new Date("2026-05-07T12:00:00Z")
     });
 
     expect(vm.profileAuthenticationPanel).toMatchObject({
@@ -934,7 +1100,7 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.alpacaConnectionPanel.setupChecklist.find((step) => step.id === "alpaca-account-verification")).toMatchObject({
       statusLabel: "Failed",
       tone: "danger",
-      detail: "Alpaca /v2/account verification failed: status 401"
+      detail: "Alpaca account verification failed: status 401"
     });
     expect(vm.alpacaConnectionPanel.setupChecklist.find((step) => step.id === "alpaca-readiness-handoff")).toMatchObject({
       statusLabel: "Blocked",
@@ -995,6 +1161,35 @@ describe("buildSettingsScreenViewModel", () => {
       checked: false,
       required: false
     });
+  });
+
+  it("represents masked stored Alpaca credentials without asking for duplicate setup", () => {
+    const storedState = buildAlpacaConnectionCommandState({
+      canClear: true,
+      form: {
+        keyId: "",
+        secretKey: "",
+        environment: "paper",
+        liveAcknowledged: false,
+        busyAction: null,
+        submitted: false,
+        actionMessage: null,
+        actionDetails: [],
+        actionTone: "default"
+      }
+    });
+
+    expect(storedState).toMatchObject({
+      canSubmit: false,
+      formPanelTitle: "Stored credentials active",
+      formPanelTone: "success",
+      submitDisabledReason: "Enter both Alpaca credential values to replace and test the stored connection."
+    });
+    expect(storedState.formPanelDetail).toContain("Enter both values only to replace");
+    expect(storedState.requirements).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "alpaca-key-id-requirement", value: "Stored", met: true, tone: "success" }),
+      expect.objectContaining({ id: "alpaca-secret-key-requirement", value: "Stored", met: true, tone: "success" })
+    ]));
   });
 
   it("derives Alpaca credential command disabled and validation state", () => {
@@ -1328,6 +1523,9 @@ describe("buildSettingsScreenViewModel", () => {
 
     expect(vm.diagnosticStatusVariant).toBe("danger");
     expect(vm.diagnosticCounts.failed).toBeGreaterThan(0);
+    expect(vm.diagnosticExceptionLinks[0]?.tone).toBe("danger");
+    expect(vm.diagnosticExceptionLinks.every((link) => link.tone !== "success")).toBe(true);
+    expect(vm.diagnosticHealthyLinks.every((link) => link.tone === "success")).toBe(true);
     expect(tradingLink).toMatchObject({
       href: "/api/workstation/trading",
       statusLabel: "Failed",

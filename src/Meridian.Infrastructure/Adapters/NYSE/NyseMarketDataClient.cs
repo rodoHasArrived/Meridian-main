@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Net.Http;
 using System.Reactive.Disposables;
 using Meridian.Core.Logging;
+using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
@@ -20,7 +21,11 @@ namespace Meridian.Infrastructure.Adapters.NYSE;
 /// </summary>
 [DataSource("nyse-streaming", "NYSE Streaming", Infrastructure.DataSources.DataSourceType.Realtime, DataSourceCategory.Exchange,
     Priority = 5, Description = "Unified NYSE streaming client backed by NYSEDataSource")]
-public sealed class NyseMarketDataClient : IMarketDataClient, IProviderConnectionDiagnosticsSource
+public sealed class NyseMarketDataClient :
+    IMarketDataClient,
+    IProviderConnectionDiagnosticsSource,
+    IProviderRateLimitDiagnosticsSource,
+    IReconnectionGapSource
 {
     private readonly NYSEDataSource _source;
     private readonly TradeDataCollector _tradeCollector;
@@ -93,8 +98,19 @@ public sealed class NyseMarketDataClient : IMarketDataClient, IProviderConnectio
     }
 
     /// <inheritdoc/>
+    public event Action<ReconnectionGap>? ReconnectionGapDetected
+    {
+        add => _source.ReconnectionGapDetected += value;
+        remove => _source.ReconnectionGapDetected -= value;
+    }
+
+    /// <inheritdoc/>
     public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
         => _source.GetConnectionDiagnosticsSnapshot();
+
+    /// <inheritdoc/>
+    public ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot()
+        => _source.GetStreamingRateLimitDiagnosticsSnapshot();
 
     public Task ConnectAsync(CancellationToken ct = default)
         => _source.ConnectAsync(ct);
@@ -143,7 +159,8 @@ public sealed class NyseMarketDataClient : IMarketDataClient, IProviderConnectio
             trade.SequenceNumber ?? 0,
             trade.SourceId,
             trade.Exchange,
-            SplitConditions(trade.Conditions)));
+            SplitConditions(trade.Conditions),
+            Source: MarketDataSources.Nyse));
     }
 
     private void OnQuote(RealtimeQuote quote)
@@ -157,7 +174,8 @@ public sealed class NyseMarketDataClient : IMarketDataClient, IProviderConnectio
             quote.AskSize,
             quote.SequenceNumber,
             quote.SourceId,
-            quote.BidExchange ?? quote.AskExchange));
+            quote.BidExchange ?? quote.AskExchange,
+            Source: MarketDataSources.Nyse));
     }
 
     private void OnDepth(RealtimeDepthUpdate depth)
@@ -172,7 +190,8 @@ public sealed class NyseMarketDataClient : IMarketDataClient, IProviderConnectio
             depth.Size,
             depth.MarketMaker,
             depth.SequenceNumber ?? 0,
-            depth.SourceId));
+            depth.SourceId,
+            Source: MarketDataSources.Nyse));
     }
 
     private static string[]? SplitConditions(string? conditions)

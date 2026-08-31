@@ -4,13 +4,18 @@ import {
   type AppShellLinkedContextItem
 } from "@/app-shell.linked-context";
 import { countPendingReportPackDistributions, getReportPackDistributions } from "@/lib/reporting-distributions";
+import {
+  normalizeReportingWorkspace,
+  type ReportingWorkspacePayload
+} from "@/lib/reporting-workspace";
+import { pluralizeCount } from "@/lib/format";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
-import type { ReportingWorkspaceResponse } from "@/types";
 
 export function buildReportingLinkedContextItem(
-  reporting: ReportingWorkspaceResponse | null,
+  reportingPayload: ReportingWorkspacePayload | null,
   symbol: string
 ): AppShellLinkedContextItem {
+  const reporting = normalizeReportingWorkspace(reportingPayload);
   const route = appendLinkedContextSearchValue(WORKSTATION_ROUTE_CATALOG.reportingEvidence, "symbol", symbol);
   if (!reporting) {
     return buildLinkedContextItem({
@@ -24,8 +29,8 @@ export function buildReportingLinkedContextItem(
     });
   }
 
-  const distributions = getReportPackDistributions(reporting.reporting);
-  const pendingCount = countPendingReportPackDistributions(reporting.reporting);
+  const distributions = getReportPackDistributions(reporting);
+  const pendingCount = countPendingReportPackDistributions(reporting);
   const packCount = distributions.length;
   return buildLinkedContextItem({
     id: "reporting-evidence",
@@ -41,5 +46,5 @@ export function buildReportingLinkedContextItem(
 }
 
 function formatReportingLinkedContextCount(count: number, singular: string, plural = `${singular}s`): string {
-  return `${count} ${count === 1 ? singular : plural}`;
+  return pluralizeCount(count, singular, { plural });
 }

@@ -6,8 +6,12 @@ import {
   Settings2,
   Sparkles
 } from "lucide-react";
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScreenLayout } from "@/components/ui/screen-layout";
+import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { SeverityBadge } from "@/components/operations";
 import { QuantPlotChart } from "@/components/meridian/quant-plot";
 import {
@@ -54,23 +58,68 @@ const quantMetricColumns: DenseDataTableColumn<QuantMetricRowViewModel>[] = [
   }
 ];
 
+// The Formulas tab is withheld while `/strategy/quant-lab?view=formulas` is registered in
+// UNWIRED_WORKSTATION_ROUTES. Filtering it only out of the command palette left the dead end fully
+// navigable from inside the screen, which is the more likely way an operator would find it. Restore
+// this entry in the same change that mounts the built strategy-formula-workbench component against
+// a real formula-catalog endpoint.
+const QUANT_LAB_TABS = [{ id: "lab", label: "Script lab" }];
+
 export function QuantLabScreen() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  // A stale `?view=formulas` deep link or bookmark falls back to the script lab rather than
+  // rendering a permanent "not connected" card.
+  const view = "lab" as const;
+  const staleViewParam = searchParams.get("view");
+
+  // Canonicalize the address when an obsolete view arrives, so the URL matches what is on screen.
+  // Without this the shell's Copy Link action would share a link claiming to be the Formula
+  // Workbench while the operator is looking at the Script Lab.
+  useEffect(() => {
+    if (staleViewParam === null) return;
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete("view");
+    setSearchParams(nextParams, { replace: true });
+    // `searchParams` is intentionally omitted: it is a fresh object each render, and the effect
+    // only needs to re-run when the offending parameter changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [staleViewParam, setSearchParams]);
+
+  return (
+    <ScreenLayout
+      title={
+        <span className="flex items-center gap-2">
+          <FlaskConical className="h-5 w-5 text-primary" />
+          Quant Lab
+        </span>
+      }
+      scope="Strategy Lane"
+      description="Compile and execute C# / .csx scripts against Meridian's price-series, statistics, and backtesting APIs. Plots, metrics, and diagnostics returned inline."
+    >
+      <Tabs
+        tabs={QUANT_LAB_TABS}
+        value={view}
+        onValueChange={() => {
+          const nextParams = new URLSearchParams(searchParams);
+          nextParams.delete("view");
+          setSearchParams(nextParams, { replace: true });
+        }}
+      >
+        <TabPanel>
+          {view === "lab" ? <ScriptLabPanel /> : null}
+        </TabPanel>
+      </Tabs>
+    </ScreenLayout>
+  );
+}
+
+function ScriptLabPanel() {
   const vm = useQuantLabScreenViewModel();
 
   return (
-    <div className="space-y-6">
+    <div className="grid gap-4">
       <span className="sr-only" aria-live="polite">{vm.runStatusAnnouncement}</span>
       <Card>
-        <CardHeader>
-          <div className="eyebrow-label">Strategy Lane</div>
-          <CardTitle className="flex items-center gap-2">
-            <FlaskConical className="h-5 w-5 text-primary" />
-            Quant Lab
-          </CardTitle>
-          <CardDescription>
-            Compile and execute C# / .csx scripts against Meridian's price-series, statistics, and backtesting APIs. Plots, metrics, and diagnostics returned inline.
-          </CardDescription>
-        </CardHeader>
         <CardContent className="space-y-3">
           <ToolbarStrip
             ariaLabel="Quant Lab status"

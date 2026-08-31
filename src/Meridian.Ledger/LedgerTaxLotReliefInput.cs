@@ -13,7 +13,10 @@ public sealed record LedgerTaxLotReliefInput
         LedgerTaxLotReliefMethod reliefMethod,
         IReadOnlyList<LedgerTaxLot> openLots,
         string? financialAccountId = null,
-        IReadOnlyList<string>? specificLotIds = null)
+        IReadOnlyList<string>? specificLotIds = null,
+        IReadOnlyList<LedgerTaxLotBasisAdjustment>? basisAdjustments = null,
+        WashSalePolicy? washSalePolicy = null,
+        IReadOnlyList<WashSaleReplacementAcquisition>? replacementAcquisitions = null)
     {
         ArgumentNullException.ThrowIfNull(account);
         ArgumentNullException.ThrowIfNull(openLots);
@@ -39,6 +42,13 @@ public sealed record LedgerTaxLotReliefInput
                 .Select(static lotId => lotId.Trim())
                 .Where(static lotId => lotId.Length > 0)
                 .ToArray();
+        BasisAdjustments = basisAdjustments is null
+            ? []
+            : basisAdjustments.ToArray();
+        WashSalePolicy = (washSalePolicy ?? WashSalePolicy.Disabled).EnsureValid();
+        ReplacementAcquisitions = replacementAcquisitions is null
+            ? []
+            : replacementAcquisitions.ToArray();
     }
 
     public LedgerAccount Account { get; }
@@ -56,4 +66,24 @@ public sealed record LedgerTaxLotReliefInput
     public string? FinancialAccountId { get; }
 
     public IReadOnlyList<string> SpecificLotIds { get; }
+
+    /// <summary>
+    /// Reference-data-derived cost-basis adjustments (day-count amortization, pool factor, and
+    /// corporate-action restatements) applied to <see cref="OpenLots"/> before relief. Empty when
+    /// the sale relieves lots at their recorded quantity and unit cost.
+    /// </summary>
+    public IReadOnlyList<LedgerTaxLotBasisAdjustment> BasisAdjustments { get; }
+
+    /// <summary>
+    /// Wash-sale deferral policy. Defaults to <see cref="WashSalePolicy.Disabled"/>, in which case
+    /// realized losses are recognized in full and relief behaves exactly as before.
+    /// </summary>
+    public WashSalePolicy WashSalePolicy { get; }
+
+    /// <summary>
+    /// Candidate replacement acquisitions of the sold security considered for wash-sale matching.
+    /// The relief engine filters these to acquisitions within the <see cref="WashSalePolicy"/>
+    /// window and matching the sold security; empty when no wash-sale evaluation is required.
+    /// </summary>
+    public IReadOnlyList<WashSaleReplacementAcquisition> ReplacementAcquisitions { get; }
 }

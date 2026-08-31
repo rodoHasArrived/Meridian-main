@@ -34,6 +34,22 @@ class MeridianCiWorkflowTests(unittest.TestCase):
         self.assertIn("artifacts/test-results/dotnet/", self.workflow)
         self.assertIn("src/Meridian.Ui/dashboard/dist/", self.workflow)
 
+    def test_browser_lane_runs_full_dashboard_contract_checks(self) -> None:
+        self.assertIn("bash scripts/ci.sh --lane verify-browser", self.workflow)
+
+        ci_script = (REPO_ROOT / "scripts" / "ci.sh").read_text(encoding="utf-8")
+        self.assertIn("Generated UI contract drift gate", ci_script)
+        self.assertIn("npm --prefix src/Meridian.Ui/dashboard run lint", ci_script)
+        self.assertIn("npm --prefix src/Meridian.Ui/dashboard run typecheck:strict", ci_script)
+        self.assertIn("npm --prefix src/Meridian.Ui/dashboard run test", ci_script)
+
+    def test_docs_lane_keeps_subset_receipt_out_of_tracked_status_docs(self) -> None:
+        ci_script = (REPO_ROOT / "scripts" / "ci.sh").read_text(encoding="utf-8")
+
+        self.assertIn('handoff_summary_json="${ci_summary_dir}/ai-handoff-docs-automation-summary.json"', ci_script)
+        self.assertIn('--summary-json "$handoff_summary_json"', ci_script)
+        self.assertNotIn("--json-output docs/status/docs-automation-summary.json", ci_script)
+
 
 if __name__ == "__main__":
     unittest.main()

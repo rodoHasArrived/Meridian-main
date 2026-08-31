@@ -6,10 +6,16 @@ namespace Meridian.Wpf.Models;
 public sealed class SymbolProgressInfo
 {
     public string Symbol { get; set; } = string.Empty;
+    public string RangeText { get; set; } = "Range unavailable";
+    public string CurrentProvider { get; set; } = "Awaiting provider";
+    public string FallbackAttemptText { get; set; } = "Awaiting attempt";
+    public string RetryText { get; set; } = "Initial try";
     public double Progress { get; set; }
+    public string ProgressText { get; set; } = "0.0%";
     public string BarsText { get; set; } = string.Empty;
     public string StatusText { get; set; } = string.Empty;
     public string TimeText { get; set; } = string.Empty;
+    public string ErrorText { get; set; } = string.Empty;
     public SolidColorBrush StatusBackground { get; set; } = new(Color.FromArgb(40, 139, 148, 158));
 }
 

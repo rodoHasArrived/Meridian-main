@@ -132,6 +132,61 @@ public sealed class WalEventPipelineTests : IAsyncDisposable
             .Which.Symbol.Should().Be("AAPL");
     }
 
+    [Fact]
+    public async Task Consumer_WhenWalBackedSinkThrows_RetriesFailedBatchBeforeCommittingLaterEvents()
+    {
+        var wal = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.EveryWrite });
+        await wal.InitializeAsync();
+
+        await using var sink = new MockWalSink { FailuresRemaining = 1 };
+        await using var pipeline = new EventPipeline(
+            sink,
+            capacity: 100,
+            batchSize: 1,
+            enablePeriodicFlush: false,
+            wal: wal);
+
+        pipeline.TryPublish(CreateTradeEvent("LOST"));
+        pipeline.TryPublish(CreateTradeEvent("OK"));
+
+        await WaitForConsumption(sink, expectedCount: 2);
+
+        sink.ReceivedEvents.Select(evt => evt.Symbol).Should().Contain(new[] { "LOST", "OK" });
+        pipeline.GetStatistics().ConsumerIterationFailures.Should().BeGreaterThanOrEqualTo(1);
+    }
+
+    [Fact]
+    public async Task Consumer_WhenWalBackedBatchFlushThrows_DoesNotReappendPersistedEvents()
+    {
+        var wal = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.EveryWrite });
+        await wal.InitializeAsync();
+
+        await using var sink = new MockWalSink { FlushFailuresRemaining = 1 };
+        await using var pipeline = new EventPipeline(
+            sink,
+            capacity: 100,
+            batchSize: 3,
+            enablePeriodicFlush: false,
+            wal: wal);
+
+        pipeline.TryPublish(CreateTradeEvent("FIRST"));
+        pipeline.TryPublish(CreateTradeEvent("SECOND"));
+        pipeline.TryPublish(CreateTradeEvent("THIRD"));
+
+        await WaitForConsumption(sink, expectedCount: 3);
+        var timeout = DateTime.UtcNow.AddSeconds(5);
+        while (pipeline.GetStatistics().ConsumerIterationFailures == 0 && DateTime.UtcNow < timeout)
+        {
+            await Task.Delay(1);
+        }
+        await pipeline.FlushAsync();
+
+        sink.ReceivedEvents.Select(evt => evt.Symbol)
+            .Should().BeEquivalentTo(new[] { "FIRST", "SECOND", "THIRD" });
+        sink.ReceivedEvents.Should().HaveCount(3);
+        pipeline.GetStatistics().ConsumerIterationFailures.Should().BeGreaterThanOrEqualTo(1);
+    }
+
     #endregion
 
     #region Crash Recovery Tests
@@ -307,7 +362,7 @@ public sealed class WalEventPipelineTests : IAsyncDisposable
     #region Idempotent Recovery Tests (improvement 3.4)
 
     [Fact]
-    public async Task RecoverAsync_WithDedupLedger_SkipsDuplicates()
+    public async Task RecoverAsync_WithDedupLedger_SkipsDurabilityConfirmedDuplicates()
     {
         // Phase 1: persist two events to both WAL and sink (simulates partial crash after sink flush)
         var walDir1 = Path.Combine(_walDir, "dedup_p1");
@@ -327,16 +382,17 @@ public sealed class WalEventPipelineTests : IAsyncDisposable
         await wal1.FlushAsync();
         await wal1.DisposeAsync();
 
-        // Phase 2: recover with dedup ledger pre-seeded with the already-persisted events.
-        // IsDuplicateAsync records the event on first call and returns false;
-        // subsequent calls for the same event return true (duplicate).
+        // Phase 2: recover with a dedup ledger holding durability-confirmed (version 2)
+        // identities for both events — i.e. a prior run completed its sink flush and dedup
+        // commit for them, and only the WAL commit was lost in the crash.
         var wal2 = new WriteAheadLog(walDir1, new WalOptions { SyncMode = WalSyncMode.NoSync });
         var ledger = new PersistentDedupLedger(dedupDir);
         await ledger.InitializeAsync();
 
-        // Pre-seed: simulate the events having been written to the sink already
-        await ledger.IsDuplicateAsync(evt1, CancellationToken.None);
-        await ledger.IsDuplicateAsync(evt2, CancellationToken.None);
+        var reservation1 = await ledger.TryReserveAsync(evt1, DedupLookupScope.LiveIngress, CancellationToken.None);
+        var reservation2 = await ledger.TryReserveAsync(evt2, DedupLookupScope.LiveIngress, CancellationToken.None);
+        await ledger.CommitDurableAsync(
+            new[] { reservation1.Reservation, reservation2.Reservation }, CancellationToken.None);
 
         await using var sink = new MockWalSink();
         await using var pipeline = new EventPipeline(
@@ -345,11 +401,58 @@ public sealed class WalEventPipelineTests : IAsyncDisposable
 
         await pipeline.RecoverAsync();
 
-        // Assert: events were skipped because dedup ledger shows them already persisted
+        // Assert: events were skipped because their dedup identities are durability-confirmed
         sink.ReceivedEvents.Should().BeEmpty(
-            "events already recorded in the dedup ledger must not be written again on recovery");
+            "durability-confirmed identities must not be written again on recovery");
         pipeline.RecoveredCount.Should().Be(0,
             "skipped-as-duplicate events do not count as recovered");
+    }
+
+    [Fact]
+    public async Task RecoverAsync_LegacyV1DedupEntries_AreReplayedAndUpgraded()
+    {
+        // Phase 1: write two events to WAL without committing (simulates crash before WAL commit)
+        var walDir1 = Path.Combine(_walDir, "legacy_p1");
+        var dedupDir = Path.Combine(_walDir, "legacy_ledger");
+        Directory.CreateDirectory(walDir1);
+        Directory.CreateDirectory(dedupDir);
+
+        var wal1 = new WriteAheadLog(walDir1, new WalOptions { SyncMode = WalSyncMode.EveryWrite });
+        await wal1.InitializeAsync();
+
+        var evt1 = CreateTradeEvent("SPY");
+        var evt2 = CreateTradeEvent("AAPL");
+        await wal1.AppendAsync(evt1, evt1.Type.ToString());
+        await wal1.AppendAsync(evt2, evt2.Type.ToString());
+        await wal1.FlushAsync();
+        await wal1.DisposeAsync();
+
+        // Phase 2: the ledger knows both identities only as legacy (version 1) entries — the
+        // eager mark of the old ingest path, recorded before any sink durability was proven.
+        var wal2 = new WriteAheadLog(walDir1, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        var ledger = new PersistentDedupLedger(dedupDir);
+        await ledger.InitializeAsync();
+        (await ledger.IsDuplicateAsync(evt1, CancellationToken.None)).Should().BeFalse();
+        (await ledger.IsDuplicateAsync(evt2, CancellationToken.None)).Should().BeFalse();
+
+        await using var sink = new MockWalSink();
+        await using var pipeline = new EventPipeline(
+            sink, capacity: 100, enablePeriodicFlush: false,
+            wal: wal2, dedupLedger: ledger);
+
+        await pipeline.RecoverAsync();
+
+        // Legacy entries are untrusted during recovery: the events must be replayed to the
+        // sink (a possible duplicate is acceptable, silent loss is not) ...
+        sink.ReceivedEvents.Should().HaveCount(2,
+            "legacy version-1 dedup entries must not suppress WAL replay");
+        pipeline.RecoveredCount.Should().Be(2);
+
+        // ... and the replayed identities are upgraded to durability-confirmed, so a
+        // recovery-scope lookup now suppresses them.
+        var afterUpgrade = await ledger.TryReserveAsync(evt1, DedupLookupScope.WalRecovery, CancellationToken.None);
+        afterUpgrade.Status.Should().Be(DedupReservationStatus.Duplicate,
+            "a successfully replayed identity must be durability-confirmed after recovery");
     }
 
     [Fact]
@@ -490,7 +593,7 @@ public sealed class WalEventPipelineTests : IAsyncDisposable
             SequenceNumber: 1,
             Venue: "NYSE");
 
-        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade);
+        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade, source: "TEST");
     }
 
     private static async Task WaitForConsumption(MockWalSink sink, int expectedCount, int timeoutMs = 5000)
@@ -512,6 +615,8 @@ internal sealed class MockWalSink : IStorageSink
 {
     private readonly List<MarketEvent> _receivedEvents = new();
     private readonly object _lock = new();
+    private int _failuresRemaining;
+    private int _flushFailuresRemaining;
 
     public IReadOnlyList<MarketEvent> ReceivedEvents
     {
@@ -526,8 +631,26 @@ internal sealed class MockWalSink : IStorageSink
 
     public int FlushCount { get; private set; }
 
+    public int FailuresRemaining
+    {
+        get => Volatile.Read(ref _failuresRemaining);
+        set => Volatile.Write(ref _failuresRemaining, value);
+    }
+
+    public int FlushFailuresRemaining
+    {
+        get => Volatile.Read(ref _flushFailuresRemaining);
+        set => Volatile.Write(ref _flushFailuresRemaining, value);
+    }
+
     public ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default)
     {
+        if (Volatile.Read(ref _failuresRemaining) > 0)
+        {
+            Interlocked.Decrement(ref _failuresRemaining);
+            throw new InvalidOperationException("Simulated sink failure");
+        }
+
         lock (_lock)
         {
             _receivedEvents.Add(evt);
@@ -538,6 +661,12 @@ internal sealed class MockWalSink : IStorageSink
     public Task FlushAsync(CancellationToken ct = default)
     {
         FlushCount++;
+        if (Volatile.Read(ref _flushFailuresRemaining) > 0)
+        {
+            Interlocked.Decrement(ref _flushFailuresRemaining);
+            throw new InvalidOperationException("Simulated sink flush failure");
+        }
+
         return Task.CompletedTask;
     }
 

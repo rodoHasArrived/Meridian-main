@@ -9,6 +9,7 @@ using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
 using Meridian.FinancialOperations.Reconciliation;
+using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Workstation;
 using Meridian;
@@ -133,7 +134,7 @@ public sealed class BrokerageConnectionEndpointsTests
         }
     }
 
-    [Fact(Skip = "Full UiServer BackfillCoordinator resolution is a long-running integration fixture; provider factory credential registration is covered by ProviderFactoryCredentialContextTests.")]
+    [Fact]
     public async Task UiServer_BackfillCoordinator_UsesRegisteredHistoricalProviders()
     {
         using var governance = UiServerDevelopmentEnvironmentScope.Enable();
@@ -180,7 +181,7 @@ public sealed class BrokerageConnectionEndpointsTests
         try
         {
             await using var server = new UiServer(configPath, GetFreeTcpPort());
-            await server.StartAsync();
+            await server.StartAsync().WaitAsync(TimeSpan.FromSeconds(30));
             var app = GetServerApp(server);
 
             var routes = app.Services.GetServices<EndpointDataSource>()
@@ -221,6 +222,12 @@ public sealed class BrokerageConnectionEndpointsTests
             app.Services.GetRequiredService<IBrokerStatementService>().Should().NotBeNull();
             app.Services.GetRequiredService<IStatementRunWorkflowService>().Should().NotBeNull();
             app.Services.GetRequiredService<IReconciliationApiService>().Should().NotBeNull();
+            app.Services.GetRequiredService<IStatementFetchScheduleStore>().Should().NotBeNull();
+            app.Services.GetRequiredService<StatementFetchScheduleRunner>().Should().NotBeNull();
+            var scheduler = app.Services.GetRequiredService<StatementFetchSchedulerService>();
+            app.Services.GetServices<IHostedService>().Should().ContainSingle(
+                hostedService => ReferenceEquals(hostedService, scheduler),
+                "the primary UiServer must start the existing persisted statement-schedule worker");
         }
         finally
         {

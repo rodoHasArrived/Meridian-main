@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Ledger;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.SecurityMaster;
 
@@ -21,30 +23,6 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
     private readonly ISecurityResolver? _securityResolver;
 
     private static readonly int MaxTermsAgeDays = 180;
-
-    // Asset classes whose canonical validator requires a maturity date (see AssetClassValidatorRegistry).
-    // Other non-equity classes (options, futures, FX, money-market funds, deposits) use different
-    // required fields, so MA001 must not flag them for a missing maturity.
-    private static readonly HashSet<string> MaturityBearingClasses = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "Bond", "CertificateOfDeposit", "CommercialPaper", "TreasuryBill", "Swap"
-    };
-
-    // ISO 4217 subset covering the most common currencies; a full list would be loaded from a reference source.
-    private static readonly HashSet<string> Iso4217Codes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "USD","EUR","GBP","JPY","CHF","CAD","AUD","NZD","HKD","SGD","SEK","NOK","DKK","CNY","CNH",
-        "BRL","MXN","INR","ZAR","KRW","TRY","PLN","CZK","HUF","ILS","SAR","AED","MYR","THB","IDR",
-        "PHP","CLP","COP","PEN","ARS","VND","NGN","EGP","PKR","BDT","UAH","RON","BGN","HRK","RSD",
-        "ISK","GEL","KZT","UZS","AZN","AMD","BYR","MDL","MKD","ALL","BAM","RUB","TND","MAD","DZD",
-        "LYD","IQD","KWD","BHD","OMR","QAR","JOD","LBP","SYP","YER","AFN","IRR","XAU","XAG","XPT",
-        "XPD","XDR","XOF","XAF","XCD","XPF","CLF","UYU","UYI","SOS","GHS","ETB","TZS","UGX","MZN",
-        "AOA","KES","RWF","ZMW","BWP","MGA","ZWL","NAD","SCR","MUR","MWK","SZL","LSL","CVE","GMD",
-        "GNF","LRD","SLL","SLE","STN","XSU","XUA","NIO","GTQ","HNL","CRC","PAB","DOP","JMD","TTD",
-        "BBD","BSD","HTG","CUP","CUC","AWG","ANG","SRD","GYD","BMD","KYD","BZD","FJD","PGK","SBD",
-        "VUV","WST","TOP","MOP","BND","MMK","KHR","LAK","MNT","NPR","LKR","MVR","BTN","PKR","TJS",
-        "TMT","KGS","KPW","TWD"
-    };
 
     // ISO 3166-1 alpha-2 subset.
     private static readonly HashSet<string> Iso3166Alpha2Codes = new(StringComparer.OrdinalIgnoreCase)
@@ -122,8 +100,10 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
     {
         var assetClass = security.AssetClass;
 
-        // Only maturity-bearing classes require a maturity date.
-        if (MaturityBearingClasses.Contains(assetClass))
+        // Only maturity-bearing classes require a maturity date; the shared catalog owns that fact.
+        // Other non-equity classes (options, futures, FX, money-market funds, deposits) use different
+        // required fields, so MA001 must not flag them for a missing maturity.
+        if (SecurityAssetClassCatalog.GetOrDefault(assetClass).RequiresMaturity)
         {
             // The canonical Security Master mapper stores maturity under "maturity" for
             // Bond/CD/CP/TBill and "maturityDate" for swaps; accept either spelling.
@@ -197,7 +177,7 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
         SecurityProjectionRecord security, DateTimeOffset now)
     {
         if (!string.IsNullOrWhiteSpace(security.Currency)
-            && !Iso4217Codes.Contains(security.Currency))
+            && !CurrencyCodeCatalog.IsRecognized(security.Currency))
         {
             yield return Violation(
                 "TX001", "Invalid Currency Code", DataQualityRuleCategory.TaxonomyCheck,
@@ -348,8 +328,7 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
 
     private static Guid DeterministicSymbolId(string normalizedSymbol)
     {
-        var hash = System.Security.Cryptography.SHA256.HashData(
-            System.Text.Encoding.UTF8.GetBytes("security-master:coverage:" + normalizedSymbol));
+        var hash = Sha256Digest.ComputeBytesUtf8("security-master:coverage:" + normalizedSymbol);
         return new Guid(hash.AsSpan(0, 16));
     }
 
@@ -359,7 +338,7 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
     {
         if (element.ValueKind == JsonValueKind.Object
             && element.TryGetProperty(fieldName, out var prop)
-            && prop.ValueKind != JsonValueKind.Null
+            && prop.ValueKind == JsonValueKind.String
             && prop.TryGetDateTimeOffset(out var result))
             return result;
 

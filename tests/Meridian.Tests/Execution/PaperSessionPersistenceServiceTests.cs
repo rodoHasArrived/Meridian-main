@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Ledger;
@@ -251,6 +252,101 @@ public sealed class PaperSessionPersistenceServiceTests
         var portfolio = service.GetActivePortfolio("unknown-session");
 
         portfolio.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetLedger_ReturnsDetachedSnapshotThatCannotMutateSessionLedger()
+    {
+        var service = Build();
+        var summary = await service.CreateSessionAsync(
+            new CreatePaperSessionDto("strat-ledger-snapshot", null, 100_000m));
+        await service.RecordFillAsync(summary.SessionId, new ExecutionReport
+        {
+            OrderId = "snapshot-fill",
+            ReportType = ExecutionReportType.Fill,
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            OrderStatus = OrderStatus.Filled,
+            OrderQuantity = 1m,
+            FilledQuantity = 1m,
+            FillPrice = 100m,
+            Timestamp = DateTimeOffset.UtcNow,
+        });
+
+        var firstSnapshot = service.GetLedger(summary.SessionId);
+        firstSnapshot.Should().BeOfType<Meridian.Ledger.Ledger>();
+        var detachedLedger = (Meridian.Ledger.Ledger)firstSnapshot!;
+        var authoritativeCount = detachedLedger.JournalEntryCount;
+        detachedLedger.PostLines(
+            DateTimeOffset.UtcNow,
+            "caller-owned snapshot mutation",
+            [
+                (new LedgerAccount("Snapshot cash", LedgerAccountType.Asset), 1m, 0m),
+                (new LedgerAccount("Snapshot equity", LedgerAccountType.Equity), 0m, 1m),
+            ]);
+
+        var secondSnapshot = service.GetLedger(summary.SessionId);
+
+        detachedLedger.JournalEntryCount.Should().Be(authoritativeCount + 1);
+        secondSnapshot.Should().NotBeSameAs(firstSnapshot);
+        secondSnapshot!.JournalEntryCount.Should().Be(authoritativeCount);
+    }
+
+    [Fact]
+    public async Task GetLedger_WhileFillsAreApplied_AlwaysReturnsStableSnapshots()
+    {
+        var service = Build();
+        var summary = await service.CreateSessionAsync(
+            new CreatePaperSessionDto("strat-ledger-concurrency", null, 100_000m));
+        var readerReady = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var stopReader = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var readCount = 0;
+        var reader = Task.Run(async () =>
+        {
+            readerReady.SetResult();
+            while (!stopReader.Task.IsCompleted)
+            {
+                var snapshot = service.GetLedger(summary.SessionId);
+                if (snapshot is not null)
+                {
+                    _ = snapshot.Journal.SelectMany(static entry => entry.Lines).ToArray();
+                    _ = snapshot.TrialBalance();
+                    Interlocked.Increment(ref readCount);
+                }
+
+                await Task.Yield();
+            }
+        });
+
+        await readerReady.Task;
+        try
+        {
+            // Enough journal growth to make detached-index reconstruction materially overlap the
+            // writer; GetLedger must retain only the brief Journal.ToArray capture under lock.
+            var fills = Enumerable.Range(0, 128).Select(index => service.RecordFillAsync(
+                summary.SessionId,
+                new ExecutionReport
+                {
+                    OrderId = $"concurrent-fill-{index}",
+                    ReportType = ExecutionReportType.Fill,
+                    Symbol = "AAPL",
+                    Side = OrderSide.Buy,
+                    OrderStatus = OrderStatus.Filled,
+                    OrderQuantity = 1m,
+                    FilledQuantity = 1m,
+                    FillPrice = 1m,
+                    Timestamp = DateTimeOffset.UtcNow.AddTicks(index),
+                }));
+            await Task.WhenAll(fills);
+        }
+        finally
+        {
+            stopReader.SetResult();
+            await reader;
+        }
+
+        readCount.Should().BeGreaterThan(0);
+        service.GetLedger(summary.SessionId)!.JournalEntryCount.Should().BeGreaterThan(0);
     }
 
     // ---- RecordOrderUpdateAsync ----
@@ -690,6 +786,77 @@ public sealed class PaperSessionDurablePersistenceTests : IDisposable
         await svc3.InitialiseAsync();
         svc3.GetSessions().Should().ContainSingle(session => session.SessionId == created.SessionId && !session.IsActive);
     }
+
+    [Theory]
+    [InlineData(".")]
+    [InlineData("..")]
+    [InlineData("../outside")]
+    [InlineData(@"..\outside")]
+    [InlineData("session/child")]
+    [InlineData(@"session\child")]
+    [InlineData("/absolute")]
+    [InlineData(@"C:\absolute")]
+    public async Task SaveSessionMetadataAsync_InvalidSessionPath_RejectsWithoutCreatingFiles(string sessionId)
+    {
+        var store = BuildStore();
+        var record = BuildSessionRecord(sessionId);
+
+        var act = () => store.SaveSessionMetadataAsync(record);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+        Directory.EnumerateFiles(_tempDir, "*", SearchOption.AllDirectories).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task LoadFillsAsync_RootedSiblingPath_RejectsWithoutReadingOutsideBase()
+    {
+        var outsideDirectory = _tempDir + "-sibling";
+        Directory.CreateDirectory(outsideDirectory);
+        var outsidePath = Path.Combine(outsideDirectory, "fills.jsonl");
+        var outsideFill = BuildFill("OUTSIDE", OrderSide.Buy, 1m, 999m);
+        var outsideJson = JsonSerializer.Serialize(outsideFill);
+        await File.WriteAllTextAsync(outsidePath, outsideJson + Environment.NewLine);
+        try
+        {
+            var store = BuildStore();
+
+            var act = () => store.LoadFillsAsync(outsideDirectory);
+
+            await act.Should().ThrowAsync<ArgumentException>();
+            (await File.ReadAllTextAsync(outsidePath)).Should().Be(outsideJson + Environment.NewLine);
+        }
+        finally
+        {
+            Directory.Delete(outsideDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task LoadAllSessionsAsync_MetadataSessionIdDoesNotMatchDirectory_SkipsRecord()
+    {
+        var sessionDirectory = Path.Combine(_tempDir, "PAPER-SAFE-001");
+        Directory.CreateDirectory(sessionDirectory);
+        var record = BuildSessionRecord("../outside");
+        await File.WriteAllTextAsync(
+            Path.Combine(sessionDirectory, "session.json"),
+            JsonSerializer.Serialize(record));
+        var store = BuildStore();
+
+        var sessions = await store.LoadAllSessionsAsync();
+
+        sessions.Should().BeEmpty();
+    }
+
+    private static PersistedSessionRecord BuildSessionRecord(string sessionId)
+        => new(
+            sessionId,
+            "strategy-contained",
+            "Contained session",
+            10_000m,
+            DateTimeOffset.UtcNow,
+            ClosedAt: null,
+            IsActive: true,
+            Symbols: ["AAPL"]);
 }
 
 // ---------------------------------------------------------------------------
@@ -1791,11 +1958,46 @@ public sealed class PaperTradingAccountingScenarioTests : IDisposable
 
 internal sealed class ThrowingLedgerSaveStore : IPaperSessionStore
 {
+    private PaperSessionFillRecord? _fill;
+
     public Task SaveSessionMetadataAsync(PersistedSessionRecord record, CancellationToken ct = default)
         => Task.CompletedTask;
 
     public Task AppendFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default)
         => Task.CompletedTask;
+
+    public Task<PaperSessionFillAppendResult> TryAppendFillAsync(
+        string sessionId,
+        PaperSessionFillRecord record,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        record.Validate();
+        if (_fill is null)
+        {
+            _fill = record with { IsApplied = false };
+            return Task.FromResult(new PaperSessionFillAppendResult(PaperSessionFillAppendStatus.Added));
+        }
+
+        return Task.FromResult(new PaperSessionFillAppendResult(
+            _fill.FillId == record.FillId && _fill.CanonicalHash == record.CanonicalHash
+                ? PaperSessionFillAppendStatus.ExistingSame
+                : PaperSessionFillAppendStatus.Conflict,
+            _fill.CanonicalHash));
+    }
+
+    public Task MarkFillAppliedAsync(
+        string sessionId,
+        Guid fillId,
+        string canonicalHash,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (_fill is null || _fill.FillId != fillId || _fill.CanonicalHash != canonicalHash)
+            throw new InvalidDataException("Cannot acknowledge an unknown test fill.");
+        _fill = _fill with { IsApplied = true };
+        return Task.CompletedTask;
+    }
 
     public Task AppendOrderUpdateAsync(string sessionId, OrderState order, CancellationToken ct = default)
         => Task.CompletedTask;
@@ -1810,7 +2012,12 @@ internal sealed class ThrowingLedgerSaveStore : IPaperSessionStore
         => Task.FromResult<IReadOnlyList<PersistedSessionRecord>>([]);
 
     public Task<IReadOnlyList<ExecutionReport>> LoadFillsAsync(string sessionId, CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<ExecutionReport>>([]);
+        => Task.FromResult<IReadOnlyList<ExecutionReport>>(_fill is null ? [] : [_fill.Fill]);
+
+    public Task<IReadOnlyList<PaperSessionFillRecord>> LoadFillRecordsAsync(
+        string sessionId,
+        CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<PaperSessionFillRecord>>(_fill is null ? [] : [_fill]);
 
     public Task<IReadOnlyList<OrderState>> LoadOrderHistoryAsync(string sessionId, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<OrderState>>([]);

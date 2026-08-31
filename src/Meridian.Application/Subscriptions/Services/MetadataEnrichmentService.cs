@@ -268,9 +268,15 @@ public sealed class MetadataEnrichmentService
 
             _log.Debug("Loaded {Count} metadata entries from cache", _cache.Count);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            _log.Warning(ex, "Failed to load metadata cache from {Path}", _cachePath);
+            var quarantinePath = CorruptStoreQuarantine.PreserveOrThrow(_cachePath, ex);
+            _log.Error(ex, "Failed to load metadata cache from {Path}; unreadable file preserved at {QuarantinePath}",
+                _cachePath, quarantinePath);
         }
     }
 
@@ -290,6 +296,10 @@ public sealed class MetadataEnrichmentService
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
             await AtomicFileWriter.WriteAsync(_cachePath, json, ct);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

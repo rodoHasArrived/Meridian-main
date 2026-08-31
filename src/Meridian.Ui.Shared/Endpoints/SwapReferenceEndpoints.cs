@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Instruments.Derivatives;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Derivatives;
+using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,7 @@ public static class SwapReferenceEndpoints
             var reference = await service.GetReferenceAsync(securityId, ct).ConfigureAwait(false);
             return reference is null ? Results.NotFound() : Results.Json(reference, jsonOptions);
         })
-        .WithName("GetSwapReference")
+        .WithName("GetSwapReference").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<SwapReferenceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -34,7 +35,7 @@ public static class SwapReferenceEndpoints
             var results = await service.GetBySwapTypeAsync(swapType, ct).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
-        .WithName("GetSwapsByType")
+        .WithName("GetSwapsByType").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<SwapReferenceDto>>(StatusCodes.Status200OK);
 
         group.MapGet(UiApiRoutes.ReferenceDataSwapsMaturingBefore, async (
@@ -45,7 +46,7 @@ public static class SwapReferenceEndpoints
             var results = await service.GetMaturingBeforeAsync(beforeDate, ct).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
-        .WithName("GetSwapsMaturingBefore")
+        .WithName("GetSwapsMaturingBefore").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<SwapReferenceDto>>(StatusCodes.Status200OK);
     }
 }

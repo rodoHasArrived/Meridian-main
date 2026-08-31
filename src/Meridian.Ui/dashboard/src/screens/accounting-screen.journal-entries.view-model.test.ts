@@ -1,5 +1,5 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   useManualJournalEntryWorkbenchViewModel,
 } from "@/screens/accounting-screen.view-model";
@@ -767,7 +767,108 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
   }
 };
 
+function createJournalServices(
+  overrides: Partial<ManualJournalEntryWorkbenchServices> = {}
+): ManualJournalEntryWorkbenchServices {
+  return {
+    getWorkbench: vi.fn().mockResolvedValue(manualJournalWorkbench),
+    searchSecurities: vi.fn().mockResolvedValue([]),
+    saveDraft: vi.fn((request) => Promise.resolve({
+      ...request.draft,
+      version: request.draft.version + 1,
+      updatedAtUtc: "2026-06-30T00:01:00Z"
+    })),
+    validateDraft: vi.fn((request) => Promise.resolve(request.draft)),
+    submitApproval: vi.fn((request) => Promise.resolve({
+      ...manualJournalDraft,
+      journalEntryId: request.journalEntryId,
+      status: "Submitted" as const,
+      version: request.version + 1
+    })),
+    attachEvidence: vi.fn().mockResolvedValue(manualJournalDraft),
+    applyLifecycleAction: vi.fn(),
+    ...overrides
+  };
+}
+
+beforeEach(() => {
+  window.localStorage.clear();
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+  window.localStorage.clear();
+});
+
 describe("accounting-screen journal-entry view model", () => {
+  it("keeps editing unavailable when the governed workbench cannot load", async () => {
+    const services = {
+      getWorkbench: vi.fn().mockRejectedValue(new Error("journal workbench offline"))
+    } as unknown as ManualJournalEntryWorkbenchServices;
+
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+
+    await waitFor(() => expect(result.current.errorText).toBeTruthy());
+    expect(result.current.available).toBe(false);
+  });
+
+  it("keeps approval submission fail-closed until the current draft has completed validation", async () => {
+    const readyDraft: ManualJournalEntryDraft = {
+      ...manualJournalDraft,
+      evidenceLinks: ["evidence://manual-je/source-support"],
+      validationIssues: []
+    };
+    const workbench: ManualJournalEntryWorkbench = {
+      ...manualJournalWorkbench,
+      drafts: [readyDraft]
+    };
+    const services: ManualJournalEntryWorkbenchServices = {
+      getWorkbench: vi.fn().mockResolvedValue(workbench),
+      searchSecurities: vi.fn().mockResolvedValue([]),
+      saveDraft: vi.fn((request) => Promise.resolve(request.draft)),
+      validateDraft: vi.fn((request) => Promise.resolve(request.draft)),
+      submitApproval: vi.fn((request) => Promise.resolve({
+        ...readyDraft,
+        journalEntryId: request.journalEntryId,
+        status: "Submitted" as const,
+        version: request.version + 1
+      })),
+      attachEvidence: vi.fn().mockResolvedValue(readyDraft),
+      applyLifecycleAction: vi.fn()
+    };
+
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+    await waitFor(() => expect(result.current.draft.journalEntryId).toBe("manual-je-1"));
+
+    expect(result.current.validationIsCurrent).toBe(false);
+    expect(result.current.canSubmit).toBe(false);
+    expect(result.current.submitDisabledReason).toBe("Run Validate on the current draft before approval submission.");
+
+    await act(async () => {
+      await result.current.submit();
+    });
+    expect(services.submitApproval).not.toHaveBeenCalled();
+    expect(result.current.errorText).toBe("Run Validate on the current draft before approval submission.");
+
+    await act(async () => {
+      await result.current.validate();
+    });
+    expect(result.current.validationIsCurrent).toBe(true);
+    expect(result.current.canSubmit).toBe(true);
+
+    act(() => result.current.updateHeader("memo", "Edited after validation"));
+    expect(result.current.validationIsCurrent).toBe(false);
+    expect(result.current.canSubmit).toBe(false);
+
+    await act(async () => {
+      await result.current.validate();
+    });
+    await act(async () => {
+      await result.current.submit();
+    });
+    expect(services.submitApproval).toHaveBeenCalledTimes(1);
+  });
+
   it("builds manual journal line badges, Security Master picks, and evidence attachments", async () => {
     const savedDraft = {
       ...manualJournalDraft,
@@ -1273,7 +1374,8 @@ describe("accounting-screen journal-entry view model", () => {
         ledgerBookId: request.ledgerBookId ?? null,
         version: request.version + 1,
         evidenceLinks: request.evidenceLinks,
-        evidenceAttachments: [request.attachment]
+        evidenceAttachments: [request.attachment],
+        validationIssues: []
       })),
       applyLifecycleAction: vi.fn((request) => Promise.resolve({
         journalEntry: {
@@ -1317,12 +1419,6 @@ describe("accounting-screen journal-entry view model", () => {
     await act(async () => {
       await result.current.save();
     });
-    await act(async () => {
-      await result.current.validate();
-    });
-    await act(async () => {
-      await result.current.submit();
-    });
     act(() => {
       result.current.updateAttachmentDraft({
         displayName: "Book scoped support",
@@ -1332,6 +1428,12 @@ describe("accounting-screen journal-entry view model", () => {
     });
     await act(async () => {
       await result.current.addAttachment();
+    });
+    await act(async () => {
+      await result.current.validate();
+    });
+    await act(async () => {
+      await result.current.submit();
     });
     await act(async () => {
       await result.current.applyLifecycleAction("Approve");
@@ -1364,6 +1466,97 @@ describe("accounting-screen journal-entry view model", () => {
       ledgerBookId: "book-route",
       action: "Approve"
     }));
+  });
+
+  it("autosaves editable changes and reports saved health after the debounce", async () => {
+    const services = createJournalServices();
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+    await waitFor(() => expect(result.current.available).toBe(true));
+
+    vi.useFakeTimers();
+    act(() => result.current.updateHeader("memo", "Autosaved close adjustment"));
+    expect(result.current.saveState).toBe("unsaved");
+    expect(result.current.saveStatusLabel).toBe("Unsaved changes");
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1_200);
+    });
+
+    expect(services.saveDraft).toHaveBeenCalledWith(expect.objectContaining({
+      correlationId: "manual-je-autosave",
+      draft: expect.objectContaining({ memo: "Autosaved close adjustment" })
+    }));
+    expect(result.current.saveState).toBe("saved");
+    expect(result.current.draft.version).toBe(2);
+  });
+
+  it("recovers an unsaved local snapshot and can discard it for the server draft", async () => {
+    vi.useFakeTimers();
+    const services = createJournalServices();
+    const first = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+    await vi.waitFor(() => expect(first.result.current.available).toBe(true));
+
+    act(() => first.result.current.updateHeader("memo", "Recovered operator memo"));
+    expect(first.result.current.saveState).toBe("unsaved");
+    first.unmount();
+
+    const second = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+    await vi.waitFor(() => expect(second.result.current.saveState).toBe("recovered"));
+    expect(second.result.current.draft.memo).toBe("Recovered operator memo");
+    expect(second.result.current.recoveryStatusText).toContain("Recovered unsaved changes");
+
+    act(() => second.result.current.discardRecoveredDraft());
+    expect(second.result.current.saveState).toBe("saved");
+    expect(second.result.current.draft.memo).toBe("Manual close adjustment");
+  });
+
+  it("duplicates and inserts lines while keeping selected dimensions editable", async () => {
+    const services = createJournalServices();
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+    await waitFor(() => expect(result.current.available).toBe(true));
+
+    let duplicateId: string | null = null;
+    act(() => {
+      duplicateId = result.current.duplicateLine("line-debit");
+    });
+    expect(duplicateId).toBeTruthy();
+    expect(result.current.draft.lines).toHaveLength(3);
+    expect(result.current.draft.lines[1]).toMatchObject({
+      lineId: duplicateId,
+      side: "Debit",
+      amount: 100,
+      accountPath: "Assets:Cash",
+      description: "Cash debit (copy)"
+    });
+
+    let insertedId = "";
+    act(() => {
+      insertedId = result.current.insertLineAfter(duplicateId!, "Credit");
+      result.current.updateLine(duplicateId!, {
+        entityId: "entity-line",
+        fundAllocationId: "allocation-1",
+        taxLotId: "lot-1"
+      });
+      result.current.updateDraftDimensions({
+        strategyId: "strategy-1",
+        portfolioId: "portfolio-1",
+        costCenterId: "cost-center-1"
+      });
+    });
+
+    expect(result.current.selectedLineId).toBe(insertedId);
+    expect(result.current.draft.lines).toHaveLength(4);
+    expect(result.current.draft.lines.find((line) => line.lineId === duplicateId)).toMatchObject({
+      entityId: "entity-line",
+      fundAllocationId: "allocation-1",
+      taxLotId: "lot-1"
+    });
+    expect(result.current.draft.dimensions).toMatchObject({
+      strategyId: "strategy-1",
+      portfolioId: "portfolio-1",
+      costCenterId: "cost-center-1"
+    });
+    expect(result.current.validationIsCurrent).toBe(false);
   });
 
 

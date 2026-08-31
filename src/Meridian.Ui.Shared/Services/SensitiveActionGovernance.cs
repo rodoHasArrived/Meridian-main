@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
+using Meridian.Application.Composition;
+using Meridian.Contracts.Integrity;
 using Meridian.Identity.Auth;
 using Meridian.FSharp.Operations;
 
@@ -66,7 +66,11 @@ public sealed record ImmutableAuditEvent(
     string PreviousHash,
     string Hash);
 
-public sealed class ImmutableAuditLogService
+/// <summary>
+/// In-memory test/demo audit chain. Production composition uses the durable
+/// <c>Meridian.Audit.Compliance.ImmutableAuditLogService</c> instead.
+/// </summary>
+public sealed class ImmutableAuditLogService : INonProductionOnlyService
 {
     private readonly ConcurrentQueue<ImmutableAuditEvent> _events = new();
 
@@ -77,7 +81,7 @@ public sealed class ImmutableAuditLogService
         var beforeJson = JsonSerializer.Serialize(beforeState);
         var afterJson = JsonSerializer.Serialize(afterState);
         var payload = $"{sequence}|{context.Actor}|{action}|{objectId}|{beforeJson}|{afterJson}|{context.SourceIp}|{context.DeviceId}|{context.CorrelationId}|{previousHash}";
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)));
+        var hash = Sha256Digest.ComputeUtf8(payload);
 
         var ev = new ImmutableAuditEvent(
             sequence,
@@ -106,7 +110,7 @@ public sealed class ImmutableAuditLogService
         foreach (var item in snapshot)
         {
             var payload = $"{item.Sequence}|{item.Actor}|{item.Action}|{item.ObjectId}|{item.BeforeJson}|{item.AfterJson}|{item.SourceIp}|{item.DeviceId}|{item.CorrelationId}|{previousHash}";
-            var expected = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)));
+            var expected = Sha256Digest.ComputeUtf8(payload);
             if (!string.Equals(expected, item.Hash, StringComparison.Ordinal) ||
                 !string.Equals(item.PreviousHash, previousHash, StringComparison.Ordinal))
             {

@@ -219,10 +219,43 @@ type BondSubclass =
     | Other of string
 
 [<RequireQualifiedAccess>]
+module BondSubclass =
+    /// Canonical serialization label. Named cases use the case name; <c>Other</c> carries its raw
+    /// label — serializing the union's ToString (<c>Other "X"</c>) made every unknown subclass
+    /// re-wrap itself one level deeper per codec pass instead of round-tripping.
+    let label (subclass: BondSubclass) =
+        match subclass with
+        | BondSubclass.Other name -> name
+        | named -> string named
+
+/// A dated coupon-rate step: the annual rate payable from <c>EffectiveDate</c> until the next
+/// entry's effective date (or maturity for the last entry). The term data that makes the
+/// <see cref="BondSubclass.StepRate"/> and <see cref="BondSubclass.FixedToFloat"/> taxonomy
+/// computable instead of a label.
+type StepCouponEntry = {
+    EffectiveDate: DateOnly
+    Rate: decimal
+}
+
+[<RequireQualifiedAccess>]
 type BondCouponStructure =
     | Fixed of rate: decimal * dayCount: string option
     | Floating of index: string * spreadBps: decimal option * capRate: decimal option * floorRate: decimal option * dayCount: string option
     | ZeroCoupon
+    /// Step-rate coupon: a contractual dated rate schedule (step-up notes, step coupons around
+    /// call dates). The schedule is the coupon — there is no single scalar rate.
+    | Step of schedule: StepCouponEntry list * dayCount: string option
+    /// Inflation-linked coupon (TIPS, linkers): a real rate accruing on index-adjusted principal.
+    /// <c>indexName</c> names the reference index (e.g. "CPI-U"); <c>baseIndexValue</c> is the
+    /// index level at issue and <c>indexRatio</c> the current index ratio applied to principal.
+    | InflationLinked of realRate: decimal * indexName: string * baseIndexValue: decimal option * indexRatio: decimal option * dayCount: string option
+
+/// A scheduled principal repayment (amortizing instalment, sinking-fund payment, or term-loan
+/// instalment). Shared by bond and direct-loan terms.
+type PrincipalPaymentEntry = {
+    PaymentDate: DateOnly
+    Amount: decimal
+}
 
 type BondTerms = {
     Maturity: DateOnly
@@ -248,6 +281,10 @@ type BondTerms = {
     PreRefundDate: DateOnly option
     /// Date of a mandatory put feature that obligates the holder to tender at a set price.
     MandatoryPutDate: DateOnly option
+    /// Contractual principal instalment schedule for sinking-fund and other scheduled-principal
+    /// subclasses. Empty for bullet bonds. The BondSubclass taxonomy already names SinkingFund;
+    /// this is the term data that lets cash-flow and amortization math act on it.
+    PrincipalSchedule: PrincipalPaymentEntry list
 }
 
 [<RequireQualifiedAccess>]
@@ -256,31 +293,53 @@ module BondTerms =
         { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Fixed(couponRate, dayCount)
           IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
           Subclass = BondSubclass.Corporate
-          Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None }
+          Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
+          PrincipalSchedule = [] }
 
     let floatingRate maturity index spreadBps issuerName =
         { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Floating(index, spreadBps, None, None, None)
           IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
           Subclass = BondSubclass.FloatingRate
-          Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None }
+          Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
+          PrincipalSchedule = [] }
 
     let zeroCoupon maturity issuerName =
         { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.ZeroCoupon
           IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
           Subclass = BondSubclass.Corporate
-          Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None }
+          Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
+          PrincipalSchedule = [] }
 
     let couponRate (terms: BondTerms) =
         match terms.Coupon with
         | BondCouponStructure.Fixed(rate, _) -> Some rate
         | BondCouponStructure.Floating _ -> None
         | BondCouponStructure.ZeroCoupon -> None
+        // Step rates live in the dated schedule (see couponRateAsOf); a single scalar would
+        // misstate every period but the one it was sampled in.
+        | BondCouponStructure.Step _ -> None
+        | BondCouponStructure.InflationLinked(realRate, _, _, _, _) -> Some realRate
 
     let dayCount (terms: BondTerms) =
         match terms.Coupon with
         | BondCouponStructure.Fixed(_, dc) -> dc
         | BondCouponStructure.Floating(_, _, _, _, dc) -> dc
         | BondCouponStructure.ZeroCoupon -> None
+        | BondCouponStructure.Step(_, dc) -> dc
+        | BondCouponStructure.InflationLinked(_, _, _, _, dc) -> dc
+
+    /// The coupon rate payable as of a date: for step coupons, the latest scheduled step
+    /// effective on or before <paramref name="asOf"/>; for other structures, the scalar rate
+    /// (when one exists). None for floating/zero coupons and for a step date before the first step.
+    let couponRateAsOf (asOf: DateOnly) (terms: BondTerms) =
+        match terms.Coupon with
+        | BondCouponStructure.Step(schedule, _) ->
+            schedule
+            |> List.filter (fun entry -> entry.EffectiveDate <= asOf)
+            |> List.sortBy (fun entry -> entry.EffectiveDate)
+            |> List.tryLast
+            |> Option.map (fun entry -> entry.Rate)
+        | _ -> couponRate terms
 
 type FxSpotTerms = {
     BaseCurrency: string
@@ -370,12 +429,6 @@ type Covenant = {
     Notes: string option
 }
 
-/// A scheduled principal repayment (amortizing or term-loan instalment).
-type PrincipalPaymentEntry = {
-    PaymentDate: DateOnly
-    Amount: decimal
-}
-
 type DirectLoanTerms = {
     Borrower: string
     Maturity: DateOnly option
@@ -395,6 +448,14 @@ type DirectLoanTerms = {
     PricingSource: string option
 }
 
+/// A dated pool-factor point: the outstanding factor effective on <c>AsOfDate</c>. The typed
+/// counterpart of the free-text factor-schedule term, so amortization can be seeded from a dated
+/// schedule instead of a single scalar factor.
+type FactorScheduleEntry = {
+    AsOfDate: DateOnly
+    Factor: decimal
+}
+
 type StructuredCreditTerms = {
     Tranche: string
     PoolId: string option
@@ -402,7 +463,16 @@ type StructuredCreditTerms = {
     OriginalFace: decimal
     CurrentFactor: decimal option
     CouponOrIndex: string
+    /// Free-text factor-schedule reference (e.g. a trustee-report pointer). Kept for legacy rows;
+    /// dated factor data belongs in <see cref="FactorScheduleEntries"/>.
     FactorSchedule: string option
+    /// Typed, dated factor schedule consumed by the structured cash-flow resolver's
+    /// <c>FactorAsOf</c> lookup. Empty when no schedule has been supplied.
+    FactorScheduleEntries: FactorScheduleEntry list
+    /// Legal final maturity of the tranche. Cash-flow projection anchors on this date — without a
+    /// persisted maturity the calculated projection paths produce nothing for the record, so the
+    /// factor schedule alone cannot drive amortization math.
+    Maturity: DateOnly option
 }
 
 type PrivateFundInterestTerms = {
@@ -490,6 +560,23 @@ type WarrantTerms = {
     Multiplier: decimal option
 }
 
+/// Profile-backed custom asset: the typed governance envelope plus the complete
+/// asset-specific-terms document preserved verbatim. Profile fields are dynamic and governed
+/// by the approved profile version, so the domain carries the document opaquely instead of
+/// modeling per-profile shapes; the envelope fields are the ones every custom asset must carry.
+/// Carrying the raw document is what makes serialize → deserialize → serialize lossless for
+/// the extension point — previously CustomAsset collapsed into OtherSecurity and dropped the
+/// profile envelope on any amend.
+type CustomAssetTerms = {
+    /// Identifier of the approved custom-asset profile governing this record.
+    CustomProfileId: string
+    /// Version of the approved profile the record's fields were validated against.
+    ProfileVersion: int
+    /// The complete asset-specific-terms JSON document (envelope, profileFields, and any
+    /// additional governed keys such as category/subType/evidenceLinks), preserved verbatim.
+    TermsJson: string
+}
+
 [<RequireQualifiedAccess>]
 type SecurityKind =
     | Equity of EquityTerms
@@ -519,6 +606,166 @@ type SecurityKind =
     /// Mutual fund, ETF, hedge fund, REIT, or closed-end fund.
     /// Market value = units × NAV (or market price); no amortization in general.
     | InvestmentFund of InvestmentFundTerms
+    /// Governed profile-backed custom asset (MBS/ABS/CLO/CMBS and private assets modeled via
+    /// approved custom profiles). Terms are carried as an opaque, verbatim document.
+    | CustomAsset of CustomAssetTerms
+
+/// Structural classification metadata for a single asset class.
+/// Data-dependent refinements (e.g. demand vs. time deposits, free-text OtherSecurity
+/// sub-types) are layered on top of this default by callers; everything that is fixed
+/// per asset class lives here.
+type AssetClassDescriptor = {
+    /// Canonical asset-class name (e.g. "Equity", "Option"); also the classification TypeName.
+    AssetClassName: string
+    AssetClass: AssetClass
+    Family: AssetFamily option
+    /// Default economic sub-type for the asset class.
+    SubType: SecuritySubType
+    /// Default issuer archetype, when one is implied by the asset class.
+    IssuerType: string option
+    /// Default risk country, when one is implied by the asset class (e.g. US Treasury bills).
+    RiskCountry: string option
+    /// True for exchange-traded or OTC derivatives.
+    IsDerivative: bool
+}
+
+/// Single source of truth for Security Master asset classification.
+///
+/// Every <see cref="SecurityKind"/> resolves to exactly one <see cref="AssetClassDescriptor"/>
+/// here, and all asset-class dispatch — the asset-class string, the derivative predicate, and
+/// the canonical <see cref="SecurityClassification"/> consumed by the economic-definition upgrade
+/// path — is derived from this table rather than being re-encoded at each call site. Adding a new
+/// asset class means adding one <c>key</c> arm and one <c>Descriptors</c> entry; every downstream
+/// projection then updates automatically.
+[<RequireQualifiedAccess>]
+module AssetClassRegistry =
+    /// The one canonical metadata table, one entry per asset class. Order matches the
+    /// <see cref="SecurityKind"/> declaration so the taxonomy reads top-to-bottom.
+    let private descriptors : AssetClassDescriptor list =
+        [ { AssetClassName = "Equity"; AssetClass = AssetClass.Equity; Family = Some AssetFamily.CommonEquity
+            SubType = SecuritySubType.CommonShare; IssuerType = None; RiskCountry = None; IsDerivative = false }
+          { AssetClassName = "Option"; AssetClass = AssetClass.Derivative; Family = Some AssetFamily.ListedDerivative
+            SubType = SecuritySubType.OptionContract; IssuerType = None; RiskCountry = None; IsDerivative = true }
+          { AssetClassName = "Future"; AssetClass = AssetClass.Derivative; Family = Some AssetFamily.ListedDerivative
+            SubType = SecuritySubType.FutureContract; IssuerType = None; RiskCountry = None; IsDerivative = true }
+          { AssetClassName = "Bond"; AssetClass = AssetClass.FixedIncome; Family = Some AssetFamily.CorporateDebt
+            SubType = SecuritySubType.CorporateBond; IssuerType = Some "Corporate"; RiskCountry = None; IsDerivative = false }
+          { AssetClassName = "FxSpot"; AssetClass = AssetClass.Other; Family = None
+            SubType = SecuritySubType.OtherSubType "FxSpot"; IssuerType = None; RiskCountry = None; IsDerivative = false }
+          { AssetClassName = "Deposit"; AssetClass = AssetClass.CashEquivalent; Family = Some AssetFamily.BankProduct
+            SubType = SecuritySubType.TimeDeposit; IssuerType = Some "Bank"; RiskCountry = None; IsDerivative = false }
+          { AssetClassName = "MoneyMarketFund"; AssetClass = AssetClass.Fund; Family = Some AssetFamily.MoneyMarket
+            SubType = SecuritySubType.MoneyMarketFund; IssuerType = Some "FundVehicle"; RiskCountry = None; IsDerivative = false }
+          { AssetClassName = "CertificateOfDeposit"; AssetClass = AssetClass.CashEquivalent; Family = Some AssetFamily.BankProduct
+            SubType = SecuritySubType.CertificateOfDeposit; IssuerType = Some "Bank"; RiskCountry = None; IsDerivative = false }
+          { AssetClassName = "CommercialPaper"; AssetClass = AssetClass.CashEquivalent; Family = Some AssetFamily.CorporateDebt
+            SubType = SecuritySubType.CommercialPaper; IssuerType = Some "Corporate"; RiskCountry = None; IsDerivative = false }
+          { AssetClassName = "TreasuryBill"; AssetClass = AssetClass.FixedIncome; Family = Some AssetFamily.Sovereign
+            SubType = SecuritySubType.TreasuryBill; IssuerType = Some "Sovereign"; RiskCountry = Some "US"; IsDerivative = false }
+          { AssetClassName = "Repo"; AssetClass = AssetClass.Financing; Family = Some AssetFamily.RepurchaseAgreement
+            SubType = SecuritySubType.Repo; IssuerType = None; RiskCountry = None; IsDerivative = false }
+          { AssetClassName = "CashSweep"; AssetClass = AssetClass.CashEquivalent; Family = Some AssetFamily.StructuredCash
+            SubType = SecuritySubType.CashSweep; IssuerType = None; RiskCountry = None; IsDerivative = false }
+          { AssetClassName = "OtherSecurity"; AssetClass = AssetClass.Other; Family = None
+            SubType = SecuritySubType.OtherSubType "OtherSecurity"; IssuerType = None; RiskCountry = None; IsDerivative = false }
+          { AssetClassName = "Swap"; AssetClass = AssetClass.Derivative; Family = Some AssetFamily.ListedDerivative
+            SubType = SecuritySubType.SwapContract; IssuerType = None; RiskCountry = None; IsDerivative = true }
+          { AssetClassName = "DirectLoan"; AssetClass = AssetClass.PrivateCredit; Family = Some AssetFamily.PrivateLoan
+            SubType = SecuritySubType.DirectLoan; IssuerType = None; RiskCountry = None; IsDerivative = false }
+          { AssetClassName = "StructuredCredit"; AssetClass = AssetClass.FixedIncome; Family = Some AssetFamily.SecuritizedCredit
+            SubType = SecuritySubType.StructuredCredit; IssuerType = Some "StructuredVehicle"; RiskCountry = None; IsDerivative = false }
+          { AssetClassName = "PrivateFundInterest"; AssetClass = AssetClass.Fund; Family = Some AssetFamily.PartnershipEquity
+            SubType = SecuritySubType.LimitedPartnershipInterest; IssuerType = Some "FundVehicle"; RiskCountry = None; IsDerivative = false }
+          { AssetClassName = "PrivateCompanyEquity"; AssetClass = AssetClass.Equity; Family = Some (AssetFamily.OtherFamily "PrivateCompanyEquity")
+            SubType = SecuritySubType.PrivateCompanyEquity; IssuerType = Some "PrivateCompany"; RiskCountry = None; IsDerivative = false }
+          { AssetClassName = "RealEstateHolding"; AssetClass = AssetClass.Other; Family = Some (AssetFamily.OtherFamily "RealEstate")
+            SubType = SecuritySubType.RealEstateHolding; IssuerType = Some "PropertyOrSpv"; RiskCountry = None; IsDerivative = false }
+          { AssetClassName = "CommitmentGuarantee"; AssetClass = AssetClass.Financing; Family = Some (AssetFamily.OtherFamily "CommitmentGuarantee")
+            SubType = SecuritySubType.CommitmentGuarantee; IssuerType = Some "Counterparty"; RiskCountry = None; IsDerivative = false }
+          { AssetClassName = "Commodity"; AssetClass = AssetClass.Other; Family = Some (AssetFamily.OtherFamily "Commodity")
+            SubType = SecuritySubType.OtherSubType "Commodity"; IssuerType = None; RiskCountry = None; IsDerivative = false }
+          { AssetClassName = "CryptoCurrency"; AssetClass = AssetClass.Other; Family = Some (AssetFamily.OtherFamily "Crypto")
+            SubType = SecuritySubType.OtherSubType "CryptoCurrency"; IssuerType = None; RiskCountry = None; IsDerivative = false }
+          { AssetClassName = "Cfd"; AssetClass = AssetClass.Derivative; Family = Some AssetFamily.ListedDerivative
+            SubType = SecuritySubType.OtherSubType "Cfd"; IssuerType = None; RiskCountry = None; IsDerivative = true }
+          { AssetClassName = "Warrant"; AssetClass = AssetClass.Derivative; Family = Some AssetFamily.ListedDerivative
+            SubType = SecuritySubType.OtherSubType "Warrant"; IssuerType = None; RiskCountry = None; IsDerivative = true }
+          { AssetClassName = "InvestmentFund"; AssetClass = AssetClass.Fund; Family = None
+            SubType = SecuritySubType.OtherSubType "InvestmentFund"; IssuerType = None; RiskCountry = None; IsDerivative = false }
+          { AssetClassName = "CustomAsset"; AssetClass = AssetClass.Other; Family = Some (AssetFamily.OtherFamily "CustomAsset")
+            SubType = SecuritySubType.OtherSubType "CustomAsset"; IssuerType = None; RiskCountry = None; IsDerivative = false } ]
+
+    let private byName =
+        descriptors |> List.map (fun descriptor -> descriptor.AssetClassName, descriptor) |> Map.ofList
+
+    /// The single discriminated-union projection: maps a kind to its canonical asset-class name.
+    /// This is the only place that pattern-matches <see cref="SecurityKind"/> for classification;
+    /// all descriptor metadata is then resolved from the table above.
+    let private keyOf (kind: SecurityKind) : string =
+        match kind with
+        | SecurityKind.Equity _ -> "Equity"
+        | SecurityKind.Option _ -> "Option"
+        | SecurityKind.Future _ -> "Future"
+        | SecurityKind.Bond _ -> "Bond"
+        | SecurityKind.FxSpot _ -> "FxSpot"
+        | SecurityKind.Deposit _ -> "Deposit"
+        | SecurityKind.MoneyMarketFund _ -> "MoneyMarketFund"
+        | SecurityKind.CertificateOfDeposit _ -> "CertificateOfDeposit"
+        | SecurityKind.CommercialPaper _ -> "CommercialPaper"
+        | SecurityKind.TreasuryBill _ -> "TreasuryBill"
+        | SecurityKind.Repo _ -> "Repo"
+        | SecurityKind.CashSweep _ -> "CashSweep"
+        | SecurityKind.OtherSecurity _ -> "OtherSecurity"
+        | SecurityKind.Swap _ -> "Swap"
+        | SecurityKind.DirectLoan _ -> "DirectLoan"
+        | SecurityKind.StructuredCredit _ -> "StructuredCredit"
+        | SecurityKind.PrivateFundInterest _ -> "PrivateFundInterest"
+        | SecurityKind.PrivateCompanyEquity _ -> "PrivateCompanyEquity"
+        | SecurityKind.RealEstateHolding _ -> "RealEstateHolding"
+        | SecurityKind.CommitmentGuarantee _ -> "CommitmentGuarantee"
+        | SecurityKind.Commodity _ -> "Commodity"
+        | SecurityKind.CryptoCurrency _ -> "CryptoCurrency"
+        | SecurityKind.Cfd _ -> "Cfd"
+        | SecurityKind.Warrant _ -> "Warrant"
+        | SecurityKind.InvestmentFund _ -> "InvestmentFund"
+        | SecurityKind.CustomAsset _ -> "CustomAsset"
+
+    /// Every asset-class name known to the registry, in declaration order.
+    let assetClasses : string list =
+        descriptors |> List.map (fun descriptor -> descriptor.AssetClassName)
+
+    /// Resolves the descriptor for a kind. Total by construction — <see cref="keyOf"/> and the
+    /// <c>descriptors</c> table are locked together by <c>AssetClassRegistry</c> tests.
+    let descriptor (kind: SecurityKind) : AssetClassDescriptor =
+        let key = keyOf kind
+        match Map.tryFind key byName with
+        | Some descriptor -> descriptor
+        | None -> failwithf "AssetClassRegistry: no descriptor registered for asset class '%s'." key
+
+    /// Looks up a descriptor by canonical asset-class name.
+    let tryDescriptorByName (assetClass: string) : AssetClassDescriptor option =
+        Map.tryFind assetClass byName
+
+    /// Canonical asset-class string for a kind.
+    let assetClassName (kind: SecurityKind) : string =
+        (descriptor kind).AssetClassName
+
+    /// True when the kind is an exchange-traded or OTC derivative.
+    let isDerivative (kind: SecurityKind) : bool =
+        (descriptor kind).IsDerivative
+
+    /// Structural <see cref="SecurityClassification"/> for a kind. Callers that need
+    /// instrument-data-dependent refinement (e.g. demand vs. time deposits) refine the
+    /// returned value; sector/industry taxonomy is layered on separately.
+    let classification (kind: SecurityKind) : SecurityClassification =
+        let descriptor = descriptor kind
+        { AssetClass = descriptor.AssetClass
+          Family = descriptor.Family
+          SubType = descriptor.SubType
+          TypeName = descriptor.AssetClassName
+          IssuerType = descriptor.IssuerType
+          RiskCountry = descriptor.RiskCountry
+          Taxonomy = None }
 
 type Provenance = {
     SourceSystem: string
@@ -559,32 +806,7 @@ module SecurityMasterRecord =
         |> List.tryFind (fun identifier -> identifier.IsPrimary)
 
     let assetClass (record: SecurityMasterRecord) =
-        match record.Kind with
-        | SecurityKind.Equity _ -> "Equity"
-        | SecurityKind.Option _ -> "Option"
-        | SecurityKind.Future _ -> "Future"
-        | SecurityKind.Bond _ -> "Bond"
-        | SecurityKind.FxSpot _ -> "FxSpot"
-        | SecurityKind.Deposit _ -> "Deposit"
-        | SecurityKind.MoneyMarketFund _ -> "MoneyMarketFund"
-        | SecurityKind.CertificateOfDeposit _ -> "CertificateOfDeposit"
-        | SecurityKind.CommercialPaper _ -> "CommercialPaper"
-        | SecurityKind.TreasuryBill _ -> "TreasuryBill"
-        | SecurityKind.Repo _ -> "Repo"
-        | SecurityKind.CashSweep _ -> "CashSweep"
-        | SecurityKind.OtherSecurity _ -> "OtherSecurity"
-        | SecurityKind.Swap _ -> "Swap"
-        | SecurityKind.DirectLoan _ -> "DirectLoan"
-        | SecurityKind.StructuredCredit _ -> "StructuredCredit"
-        | SecurityKind.PrivateFundInterest _ -> "PrivateFundInterest"
-        | SecurityKind.PrivateCompanyEquity _ -> "PrivateCompanyEquity"
-        | SecurityKind.RealEstateHolding _ -> "RealEstateHolding"
-        | SecurityKind.CommitmentGuarantee _ -> "CommitmentGuarantee"
-        | SecurityKind.Commodity _ -> "Commodity"
-        | SecurityKind.CryptoCurrency _ -> "CryptoCurrency"
-        | SecurityKind.Cfd _ -> "Cfd"
-        | SecurityKind.Warrant _ -> "Warrant"
-        | SecurityKind.InvestmentFund _ -> "InvestmentFund"
+        AssetClassRegistry.assetClassName record.Kind
 
     let isActive (record: SecurityMasterRecord) =
         SecurityStatus.isActive record.Status
@@ -633,32 +855,7 @@ module SecurityMasterRecord =
 [<RequireQualifiedAccess>]
 module SecurityKind =
     let assetClass kind =
-        match kind with
-        | SecurityKind.Equity _ -> "Equity"
-        | SecurityKind.Option _ -> "Option"
-        | SecurityKind.Future _ -> "Future"
-        | SecurityKind.Bond _ -> "Bond"
-        | SecurityKind.FxSpot _ -> "FxSpot"
-        | SecurityKind.Deposit _ -> "Deposit"
-        | SecurityKind.MoneyMarketFund _ -> "MoneyMarketFund"
-        | SecurityKind.CertificateOfDeposit _ -> "CertificateOfDeposit"
-        | SecurityKind.CommercialPaper _ -> "CommercialPaper"
-        | SecurityKind.TreasuryBill _ -> "TreasuryBill"
-        | SecurityKind.Repo _ -> "Repo"
-        | SecurityKind.CashSweep _ -> "CashSweep"
-        | SecurityKind.OtherSecurity _ -> "OtherSecurity"
-        | SecurityKind.Swap _ -> "Swap"
-        | SecurityKind.DirectLoan _ -> "DirectLoan"
-        | SecurityKind.StructuredCredit _ -> "StructuredCredit"
-        | SecurityKind.PrivateFundInterest _ -> "PrivateFundInterest"
-        | SecurityKind.PrivateCompanyEquity _ -> "PrivateCompanyEquity"
-        | SecurityKind.RealEstateHolding _ -> "RealEstateHolding"
-        | SecurityKind.CommitmentGuarantee _ -> "CommitmentGuarantee"
-        | SecurityKind.Commodity _ -> "Commodity"
-        | SecurityKind.CryptoCurrency _ -> "CryptoCurrency"
-        | SecurityKind.Cfd _ -> "Cfd"
-        | SecurityKind.Warrant _ -> "Warrant"
-        | SecurityKind.InvestmentFund _ -> "InvestmentFund"
+        AssetClassRegistry.assetClassName kind
 
     let underlyingSecurityId kind =
         match kind with
@@ -667,29 +864,4 @@ module SecurityKind =
         | _ -> None
 
     let isDerivative kind =
-        match kind with
-        | SecurityKind.Option _
-        | SecurityKind.Future _
-        | SecurityKind.Swap _
-        | SecurityKind.Cfd _
-        | SecurityKind.Warrant _ -> true
-        | SecurityKind.Equity _
-        | SecurityKind.Bond _
-        | SecurityKind.FxSpot _
-        | SecurityKind.Deposit _
-        | SecurityKind.MoneyMarketFund _
-        | SecurityKind.CertificateOfDeposit _
-        | SecurityKind.CommercialPaper _
-        | SecurityKind.TreasuryBill _
-        | SecurityKind.Repo _
-        | SecurityKind.CashSweep _
-        | SecurityKind.OtherSecurity _
-        | SecurityKind.DirectLoan _
-        | SecurityKind.StructuredCredit _
-        | SecurityKind.PrivateFundInterest _
-        | SecurityKind.PrivateCompanyEquity _
-        | SecurityKind.RealEstateHolding _
-        | SecurityKind.CommitmentGuarantee _
-        | SecurityKind.Commodity _
-        | SecurityKind.CryptoCurrency _
-        | SecurityKind.InvestmentFund _ -> false
+        AssetClassRegistry.isDerivative kind

@@ -25,6 +25,24 @@ public interface ISecurityMasterConflictService
     /// Called automatically after projection writes such as create, amend, import, and rebuild replay.
     /// </summary>
     Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct);
+
+    /// <summary>
+    /// Compares the pre-write golden copy against an incoming revision of the same security and
+    /// records field-level cross-source conflicts (economic and common terms whose values disagree
+    /// between two source systems). Called on amend paths where the previous record is in hand;
+    /// same-source revisions record nothing. Conflicts an operator already resolved are preserved.
+    /// </summary>
+    Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct);
+
+    /// <summary>
+    /// Reconciles OPEN field conflicts against a projection that has just been DURABLY persisted:
+    /// a conflict whose both candidate values the persisted record no longer matches is closed as
+    /// Superseded (third-party author) or has its candidate refreshed (a candidate revising its
+    /// own value). This runs strictly AFTER the canonical write commits — retiring or refreshing
+    /// conflicts from a value the event store might still reject (a stale ExpectedVersion) would
+    /// mutate the governed conflict queue for an amendment that never happened.
+    /// </summary>
+    Task ReconcileOpenFieldConflictsAsync(SecurityProjectionRecord persisted, CancellationToken ct);
 }
 
 /// <summary>
@@ -40,20 +58,30 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
 
     public SecurityMasterConflictService(
         ISecurityMasterStore store,
-        ILogger<SecurityMasterConflictService> logger)
+        ILogger<SecurityMasterConflictService> logger,
+        Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null)
     {
         _store = store;
         _logger = logger;
+        _assetProfileCatalog = assetProfileCatalog;
     }
+
+    private readonly Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? _assetProfileCatalog;
 
     public async Task<IReadOnlyList<SecurityMasterConflict>> GetOpenConflictsAsync(CancellationToken ct)
     {
-        var detected = await DetectConflictsAsync(ct).ConfigureAwait(false);
+        var all = await _store.LoadAllAsync(ct).ConfigureAwait(false);
+        var detected = SecurityMasterConflictDetection.DetectAll(all, DateTimeOffset.UtcNow);
 
         foreach (var conflict in detected)
         {
             // Preserve existing resolution state; only add newly detected conflicts.
             _conflicts.TryAdd(conflict.ConflictId, conflict);
+        }
+
+        if (detected.Count > 0)
+        {
+            _logger.LogInformation("Detected {Count} identifier conflicts in Security Master", detected.Count);
         }
 
         return _conflicts.Values
@@ -110,58 +138,23 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
 
     public async Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
     {
-        // Load all projections and check the new record's identifiers against existing ones
+        // Load all projections and check the new record's identifiers against existing ones.
         var all = await _store.LoadAllAsync(ct).ConfigureAwait(false);
+        var candidates = SecurityMasterConflictDetection.DetectForProjection(projection, all, DateTimeOffset.UtcNow);
 
-        // Build a lookup of (kind, value) → (SecurityId, Provider) for all OTHER records
-        var byIdentifier = new Dictionary<string, (Guid SecurityId, string Provider)>(
-            StringComparer.OrdinalIgnoreCase);
-
-        foreach (var existing in all)
-        {
-            if (existing.SecurityId == projection.SecurityId)
-                continue;
-
-            foreach (var id in existing.Identifiers)
-            {
-                var key = $"{id.Kind}|{id.Value}";
-                // Track only the first record we encounter for each identifier (deterministic)
-                byIdentifier.TryAdd(key, (existing.SecurityId, id.Provider ?? "Unknown"));
-            }
-        }
-
-        // Check each identifier on the new projection
         int newConflicts = 0;
-        foreach (var id in projection.Identifiers)
+        foreach (var conflict in candidates)
         {
-            var key = $"{id.Kind}|{id.Value}";
-            if (!byIdentifier.TryGetValue(key, out var conflicting))
+            // Only record if not already tracked with a non-Open status.
+            if (_conflicts.TryGetValue(conflict.ConflictId, out var existing) && existing.Status != "Open")
                 continue;
 
-            var conflictId = DeterministicConflictId(id.Kind.ToString(), id.Value, projection.SecurityId, conflicting.SecurityId);
-
-            // Only record if not already tracked with a non-Open status
-            if (_conflicts.TryGetValue(conflictId, out var existing) && existing.Status != "Open")
-                continue;
-
-            var conflict = new SecurityMasterConflict(
-                ConflictId: conflictId,
-                SecurityId: projection.SecurityId,
-                ConflictKind: "IdentifierAmbiguity",
-                FieldPath: $"Identifiers.{id.Kind}",
-                ProviderA: id.Provider ?? "Unknown",
-                ValueA: projection.SecurityId.ToString(),
-                ProviderB: conflicting.Provider,
-                ValueB: conflicting.SecurityId.ToString(),
-                DetectedAt: DateTimeOffset.UtcNow,
-                Status: "Open");
-
-            _conflicts[conflictId] = conflict;
+            _conflicts[conflict.ConflictId] = conflict;
             newConflicts++;
 
             _logger.LogWarning(
-                "Ingest-time conflict detected: identifier {Kind}={Value} already assigned to security {ExistingId} (new: {NewId})",
-                id.Kind, id.Value, conflicting.SecurityId, projection.SecurityId);
+                "Ingest-time conflict detected: {FieldPath} already assigned to security {ExistingId} (new: {NewId})",
+                conflict.FieldPath, conflict.ValueB, projection.SecurityId);
         }
 
         if (newConflicts > 0)
@@ -170,86 +163,134 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
                 newConflicts, projection.SecurityId);
     }
 
-    private async Task<IReadOnlyList<SecurityMasterConflict>> DetectConflictsAsync(CancellationToken ct)
+    public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct)
     {
-        var all = await _store.LoadAllAsync(ct).ConfigureAwait(false);
+        var candidates = SecurityMasterConflictDetection.DetectFieldConflicts(
+            previous, incoming, DateTimeOffset.UtcNow, assetProfileCatalog: _assetProfileCatalog);
 
-        // Group identifiers by (kind, value) across all securities; flag where multiple
-        // distinct SecurityIds reference the same identifier from different providers.
-        var byIdentifier = new Dictionary<string, List<(Guid SecurityId, string Provider)>>(
-            StringComparer.OrdinalIgnoreCase);
-
-        foreach (var record in all)
+        int newConflicts = 0;
+        foreach (var conflict in candidates)
         {
-            foreach (var id in record.Identifiers)
+            // Only record if not already tracked with a non-Open status (operator resolutions win).
+            if (_conflicts.TryGetValue(conflict.ConflictId, out var existing) && existing.Status != "Open")
+                continue;
+
+            _conflicts[conflict.ConflictId] = conflict;
+            newConflicts++;
+
+            _logger.LogWarning(
+                "Cross-source field conflict on {FieldPath} for security {SecurityId}: {SourceA}='{ValueA}' vs {SourceB}='{ValueB}'",
+                conflict.FieldPath, conflict.SecurityId, conflict.ProviderA, conflict.ValueA, conflict.ProviderB, conflict.ValueB);
+        }
+
+        if (newConflicts > 0)
+            _logger.LogInformation(
+                "Recorded {Count} new field conflict(s) for security {SecurityId}",
+                newConflicts, incoming.SecurityId);
+
+        return Task.CompletedTask;
+    }
+
+    public Task ReconcileOpenFieldConflictsAsync(SecurityProjectionRecord persisted, CancellationToken ct)
+    {
+        // A DURABLY persisted write that replaces BOTH recorded candidate values makes an open
+        // field conflict obsolete: it can never resolve to either source (the durable store's
+        // resolution guard rejects a winner whose value the record no longer carries), so leaving
+        // it Open surfaces an actionable-looking queue row whose resolution flow cannot complete.
+        // WHO authored the write decides the outcome: a CANDIDATE author is revising its own
+        // value — the disagreement is still live, so its recorded candidate refreshes and the
+        // conflict stays open — while a third-party author replaced both candidates and the
+        // conflict closes as Superseded, recording why, without fabricating a winner or field
+        // provenance. This runs only AFTER the canonical write commits, never against a value the
+        // event store might still reject.
+        var persistedSource = SecurityMasterProvenanceReader.Read(persisted.Provenance).SourceSystem;
+        foreach (var (conflictId, existing) in _conflicts)
+        {
+            if (existing.SecurityId != persisted.SecurityId
+                || !string.Equals(existing.Status, "Open", StringComparison.OrdinalIgnoreCase)
+                || (!string.Equals(existing.ConflictKind, SecurityMasterConflictKinds.EconomicTermMismatch, StringComparison.Ordinal)
+                    && !string.Equals(existing.ConflictKind, SecurityMasterConflictKinds.CommonTermMismatch, StringComparison.Ordinal)))
             {
-                var key = $"{id.Kind}|{id.Value}";
-                if (!byIdentifier.TryGetValue(key, out var entries))
+                continue;
+            }
+
+            var persistedValue = SecurityMasterConflictDetection.ReadComparableFieldValue(persisted, existing.FieldPath, _assetProfileCatalog);
+            var declaredFieldType = SecurityMasterConflictDetection.ResolveDeclaredFieldTypeForPath(persisted, existing.FieldPath, _assetProfileCatalog);
+            if (!SecurityMasterConflictDetection.FieldConflictIsObsolete(existing, persistedValue, declaredFieldType))
+            {
+                continue;
+            }
+
+            if (SecurityMasterConflictDetection.TryMatchCandidateProvider(existing, persistedSource, out var revisesProviderA))
+            {
+                // COALESCE before refreshing: pre-persist detection may already have opened a
+                // newer conflict for this field and provider pair carrying the live values.
+                // Refreshing this row too would surface TWO independently resolvable queue
+                // entries for one disagreement — the older row closes into the newer one.
+                var newerDuplicate = _conflicts.Values.FirstOrDefault(other =>
+                    other.ConflictId != existing.ConflictId
+                    && other.SecurityId == existing.SecurityId
+                    && string.Equals(other.Status, "Open", StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(other.FieldPath, existing.FieldPath, StringComparison.Ordinal)
+                    && SecurityMasterConflictDetection.SameProviderPair(other, existing));
+                if (newerDuplicate is not null)
                 {
-                    entries = new List<(Guid, string)>();
-                    byIdentifier[key] = entries;
+                    var coalesced = existing with
+                    {
+                        Status = "Superseded",
+                        ResolvedBy = "system:canonical-write",
+                        ResolvedReason =
+                            $"Coalesced into conflict '{newerDuplicate.ConflictId:D}': the same providers dispute " +
+                            $"'{existing.FieldPath}' with refreshed candidate values recorded there.",
+                        ResolvedAt = DateTimeOffset.UtcNow,
+                    };
+                    if (_conflicts.TryUpdate(conflictId, coalesced, existing))
+                    {
+                        _logger.LogInformation(
+                            "Coalesced open field conflict {ConflictId} into {DuplicateId} ({FieldPath}) for security {SecurityId}.",
+                            conflictId, newerDuplicate.ConflictId, existing.FieldPath, existing.SecurityId);
+                    }
+
+                    continue;
                 }
 
-                var provider = id.Provider ?? "Unknown";
-                if (!entries.Any(e => e.SecurityId == record.SecurityId))
-                    entries.Add((record.SecurityId, provider));
+                var refreshed = revisesProviderA
+                    ? existing with { ValueA = persistedValue! }
+                    : existing with { ValueB = persistedValue! };
+                if (_conflicts.TryUpdate(conflictId, refreshed, existing))
+                {
+                    _logger.LogInformation(
+                        "Refreshed candidate {Provider} on open field conflict {ConflictId} ({FieldPath}) for security {SecurityId}: the candidate revised its own value.",
+                        revisesProviderA ? existing.ProviderA : existing.ProviderB,
+                        conflictId, existing.FieldPath, existing.SecurityId);
+                }
+
+                continue;
+            }
+
+            // An UNKNOWN author must never retire a real disagreement on guesswork.
+            if (string.Equals(persistedSource, SecurityMasterProvenanceReader.UnknownSource, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var superseded = existing with
+            {
+                Status = "Superseded",
+                ResolvedBy = "system:canonical-write",
+                ResolvedReason =
+                    $"A later canonical write persisted '{persistedValue}' for '{existing.FieldPath}', which matches " +
+                    $"neither recorded candidate ('{existing.ProviderA}'='{existing.ValueA}', '{existing.ProviderB}'='{existing.ValueB}').",
+                ResolvedAt = DateTimeOffset.UtcNow,
+            };
+            if (_conflicts.TryUpdate(conflictId, superseded, existing))
+            {
+                _logger.LogInformation(
+                    "Superseded obsolete field conflict {ConflictId} on {FieldPath} for security {SecurityId}: canonical write replaced both candidates.",
+                    conflictId, existing.FieldPath, existing.SecurityId);
             }
         }
 
-        var conflicts = new List<SecurityMasterConflict>();
-        foreach (var (key, entries) in byIdentifier)
-        {
-            if (entries.Count < 2)
-                continue;
-
-            var distinctSecurities = entries.DistinctBy(e => e.SecurityId).ToList();
-            if (distinctSecurities.Count < 2)
-                continue;
-
-            var parts = key.Split('|', 2);
-            var kind = parts[0];
-            var value = parts.Length > 1 ? parts[1] : string.Empty;
-
-            var a = distinctSecurities[0];
-            var b = distinctSecurities[1];
-
-            var conflictId = DeterministicConflictId(kind, value, a.SecurityId, b.SecurityId);
-
-            // Only emit if not already tracked (to avoid re-opening resolved conflicts).
-            if (_conflicts.TryGetValue(conflictId, out var existing) && existing.Status != "Open")
-                continue;
-
-            conflicts.Add(new SecurityMasterConflict(
-                ConflictId: conflictId,
-                SecurityId: a.SecurityId,
-                ConflictKind: "IdentifierAmbiguity",
-                FieldPath: $"Identifiers.{kind}",
-                ProviderA: a.Provider,
-                ValueA: a.SecurityId.ToString(),
-                ProviderB: b.Provider,
-                ValueB: b.SecurityId.ToString(),
-                DetectedAt: DateTimeOffset.UtcNow,
-                Status: "Open"));
-        }
-
-        if (conflicts.Count > 0)
-            _logger.LogInformation("Detected {Count} identifier conflicts in Security Master", conflicts.Count);
-
-        return conflicts;
-    }
-
-    /// <summary>
-    /// Generates a stable conflict ID from the identifier tuple so that re-detection
-    /// of the same conflict yields the same ID.
-    /// </summary>
-    private static Guid DeterministicConflictId(string kind, string value, Guid secA, Guid secB)
-    {
-        var ordered = secA.CompareTo(secB) <= 0
-            ? $"{kind}|{value}|{secA}|{secB}"
-            : $"{kind}|{value}|{secB}|{secA}";
-
-        var bytes = System.Security.Cryptography.MD5.HashData(
-            System.Text.Encoding.UTF8.GetBytes(ordered));
-        return new Guid(bytes);
+        return Task.CompletedTask;
     }
 }

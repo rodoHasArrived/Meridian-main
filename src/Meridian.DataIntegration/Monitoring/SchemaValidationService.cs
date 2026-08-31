@@ -1,21 +1,19 @@
 using System.Text.Json;
 using Meridian.Core.Logging;
-using Meridian.Domain.Events;
-using Meridian.Storage.Archival;
-using Serilog;
 using Meridian.Core.Monitoring;
+using Meridian.Domain.Events;
+using Serilog;
 
 namespace Meridian.DataIntegration.Monitoring;
 
 /// <summary>
 /// Consolidated schema validation service providing a single entrypoint for
-/// schema version validation in the ingestion path.
-/// Bridges EventSchemaValidator (runtime) and SchemaVersionManager (archival).
+/// schema version validation in the ingestion path, delegating runtime checks
+/// to <see cref="EventSchemaValidator"/>.
 /// </summary>
 public sealed class SchemaValidationService : IAsyncDisposable
 {
     private readonly ILogger _log = LoggingSetup.ForContext<SchemaValidationService>();
-    private readonly SchemaVersionManager? _versionManager;
     private readonly string? _dataRoot;
     private readonly SchemaValidationOptions _options;
     private bool _startupCheckCompleted;
@@ -26,23 +24,10 @@ public sealed class SchemaValidationService : IAsyncDisposable
     /// </summary>
     public static int CurrentSchemaVersion => EventSchemaValidator.CurrentSchemaVersion;
 
-    /// <summary>
-    /// Semantic version string corresponding to the current schema version.
-    /// Used for compatibility with SchemaVersionManager.
-    /// </summary>
-    public static string CurrentSemanticVersion => $"{CurrentSchemaVersion}.0.0";
-
     public SchemaValidationService(SchemaValidationOptions? options = null, string? dataRoot = null)
     {
         _options = options ?? new SchemaValidationOptions();
         _dataRoot = dataRoot;
-
-        if (_options.EnableVersionTracking && !string.IsNullOrEmpty(dataRoot))
-        {
-            var schemaDir = Path.Combine(dataRoot, "_schemas");
-            _versionManager = new SchemaVersionManager(schemaDir);
-            _log.Debug("Schema version tracking enabled at {SchemaDir}", schemaDir);
-        }
     }
 
     /// <summary>
@@ -240,27 +225,6 @@ public sealed class SchemaValidationService : IAsyncDisposable
         return fromVersion < toVersion && toVersion == CurrentSchemaVersion;
     }
 
-    /// <summary>
-    /// Gets the version manager for advanced schema operations.
-    /// Returns null if version tracking is disabled.
-    /// </summary>
-    public SchemaVersionManager? GetVersionManager() => _versionManager;
-
-    /// <summary>
-    /// Exports current schema definitions to the schema directory.
-    /// </summary>
-    public async Task ExportSchemasAsync(CancellationToken ct = default)
-    {
-        if (_versionManager == null)
-        {
-            _log.Warning("Cannot export schemas: version tracking is disabled");
-            return;
-        }
-
-        await _versionManager.ExportAllSchemasAsync(ct).ConfigureAwait(false);
-        _log.Information("Exported schema definitions");
-    }
-
     public ValueTask DisposeAsync()
     {
         // No unmanaged resources to dispose
@@ -273,11 +237,6 @@ public sealed class SchemaValidationService : IAsyncDisposable
 /// </summary>
 public sealed record SchemaValidationOptions
 {
-    /// <summary>
-    /// Enable schema version tracking with SchemaVersionManager.
-    /// </summary>
-    public bool EnableVersionTracking { get; init; } = true;
-
     /// <summary>
     /// Run startup schema check even if previously completed.
     /// </summary>

@@ -26,6 +26,12 @@ public sealed class TradingFeatureModule : IDesktopFeatureModule
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        // The desk safety commands' route to the shared execution service. Registered here rather
+        // than left optional so a composed Trading feature always has one: the presentation
+        // service treats an absent client as a command that did not send, which is honest but is
+        // not a state a real workstation should be in.
+        services.AddSingleton<IExecutionSafetyControlClient, ExecutionSafetyControlClient>();
+        services.AddSingleton<TradingSafetyCommandService>();
         services.AddWorkspaceScoped<TradingWorkspaceShellPresentationService>();
         services.AddTransient<TradingWorkspaceShellStateProvider>();
         services.AddTransient<TradingWorkspaceShellViewModel>();

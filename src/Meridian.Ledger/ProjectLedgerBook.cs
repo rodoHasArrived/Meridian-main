@@ -1,3 +1,5 @@
+using Meridian.Contracts.Text;
+
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -180,7 +182,7 @@ public sealed class ProjectLedgerBook
         return summaries
             .Select(pair => new LedgerAccountSummary(
                 pair.Key,
-                CalculateNetBalance(pair.Key, pair.Value.Debits, pair.Value.Credits),
+                Ledger.CalculateNetBalance(pair.Key, pair.Value.Debits, pair.Value.Credits),
                 pair.Value.Debits,
                 pair.Value.Credits,
                 pair.Value.EntryCount,
@@ -208,21 +210,13 @@ public sealed class ProjectLedgerBook
         return normalized;
     }
 
-    private static string? NormalizeOptionalValue(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
-    private static decimal CalculateNetBalance(LedgerAccount account, decimal debits, decimal credits)
-        => account.AccountType is LedgerAccountType.Asset or LedgerAccountType.Expense
-            ? debits - credits
-            : credits - debits;
-
     private IEnumerable<KeyValuePair<LedgerBookKey, Ledger>> FilterLedgers(
         string? ledgerBook = null,
         LedgerViewKind? ledgerView = null,
         string? scenarioId = null)
     {
-        var normalizedLedgerBook = NormalizeOptionalValue(ledgerBook);
-        var normalizedScenarioId = NormalizeOptionalValue(scenarioId);
+        var normalizedLedgerBook = TextPrimitives.NormalizeOptional(ledgerBook);
+        var normalizedScenarioId = TextPrimitives.NormalizeOptional(scenarioId);
 
         return _ledgers
             .Where(pair => normalizedLedgerBook is null

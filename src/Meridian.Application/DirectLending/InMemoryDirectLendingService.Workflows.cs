@@ -155,9 +155,17 @@ public sealed partial class InMemoryDirectLendingService
                 throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Prepayment is not permitted under the current loan terms."));
             }
 
+            var authoritativePrincipal = stored.Servicing.Balances.PrincipalOutstanding;
+            if (request.OutstandingPrincipal != authoritativePrincipal)
+            {
+                throw new DirectLendingCommandException(new DirectLendingCommandError(
+                    DirectLendingErrorCode.ConcurrencyConflict,
+                    $"Prepayment penalty principal basis conflict for loan '{loanId}': supplied basis does not match the authoritative current principal balance."));
+            }
+
             var penaltyRate = stored.TermsVersions[^1].Terms.PrepaymentPenaltyRate ?? 0m;
             var penaltyAmount = penaltyRate > 0m
-                ? Math.Round(request.OutstandingPrincipal * penaltyRate, 2, MidpointRounding.AwayFromZero)
+                ? Math.Round(authoritativePrincipal * penaltyRate, 2, MidpointRounding.AwayFromZero)
                 : 0m;
 
             stored.Servicing = stored.Servicing with
@@ -168,7 +176,7 @@ public sealed partial class InMemoryDirectLendingService
                 }
             };
             AppendRevision(stored, "InternalEvent", request.EffectiveDate, $"Prepayment penalty charged for {penaltyAmount:0.00}.");
-            AppendEvent(stored, "loan.prepayment-penalty-charged", request.EffectiveDate, new { loanId, request.OutstandingPrincipal, PenaltyAmount = penaltyAmount, request.EffectiveDate, request.ExternalRef }, metadata);
+            AppendEvent(stored, "loan.prepayment-penalty-charged", request.EffectiveDate, new { loanId, OutstandingPrincipal = authoritativePrincipal, PenaltyAmount = penaltyAmount, request.EffectiveDate, request.ExternalRef }, metadata);
             return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
         }
     }
@@ -391,7 +399,9 @@ public sealed partial class InMemoryDirectLendingService
             var nextDate = currentDate.AddMonths(1);
             if (nextDate > stored.TermsVersions[^1].Terms.MaturityDate)
                 nextDate = stored.TermsVersions[^1].Terms.MaturityDate;
-            var amount = Meridian.FSharp.DirectLendingInterop.DirectLendingInterop.CalculateDailyAccrualAmount(stored.Servicing.Balances.PrincipalOutstanding, annualRate, (int)stored.TermsVersions[^1].Terms.DayCountBasis) * Math.Max(1, nextDate.DayNumber - currentDate.DayNumber);
+            // Date-aware day count keyed on the period start: Act/Act uses the actual year
+            // length of the accrual period's start date (366 in leap years).
+            var amount = Meridian.FSharp.DirectLendingInterop.DirectLendingInterop.CalculateDailyAccrualAmountForDate(stored.Servicing.Balances.PrincipalOutstanding, annualRate, (int)stored.TermsVersions[^1].Terms.DayCountBasis, currentDate) * Math.Max(1, nextDate.DayNumber - currentDate.DayNumber);
             flows.Add(new ProjectedCashFlowDto(Guid.NewGuid(), run.ProjectionRunId, stored.LoanId, seq++, "Interest", nextDate, currentDate, nextDate, decimal.Round(amount, 2, MidpointRounding.AwayFromZero), stored.TermsVersions[^1].Terms.BaseCurrency, stored.Servicing.Balances.PrincipalOutstanding, annualRate, JsonSerializer.Serialize(new { type = "interest" }), DateTimeOffset.UtcNow));
             currentDate = nextDate;
         }

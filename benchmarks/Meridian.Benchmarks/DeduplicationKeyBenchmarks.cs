@@ -227,13 +227,13 @@ public class DeduplicationKeyBenchmarks
                     Spread: 0.05m,
                     SequenceNumber: sequence,
                     StreamId: source,
-                    Venue: "XNAS")),
+                    Venue: "XNAS"), source: "BENCH"),
             MarketEventType.L2Snapshot => MarketEvent.L2Snapshot(
                 timestamp,
                 symbol,
                 BuildSnapshot(timestamp, symbol, sequence, source),
-                sequence,
-                source),
+                source,
+                sequence),
             MarketEventType.OrderFlow => MarketEvent.OrderFlow(
                 timestamp,
                 symbol,
@@ -249,8 +249,8 @@ public class DeduplicationKeyBenchmarks
                     SequenceNumber: sequence,
                     StreamId: source,
                     Venue: "XNAS"),
-                sequence,
-                source),
+                source,
+                sequence),
             MarketEventType.OptionTrade => MarketEvent.OptionTrade(
                 timestamp,
                 symbol,
@@ -268,8 +268,8 @@ public class DeduplicationKeyBenchmarks
                     UnderlyingPrice: 150m,
                     SequenceNumber: sequence,
                     Source: source),
-                sequence,
-                source),
+                source,
+                sequence),
             _ => MarketEvent.Trade(
                 timestamp,
                 symbol,
@@ -282,8 +282,8 @@ public class DeduplicationKeyBenchmarks
                     SequenceNumber: sequence,
                     StreamId: source,
                     Venue: "XNAS"),
-                sequence,
-                source)
+                source,
+                sequence)
         };
     }
 

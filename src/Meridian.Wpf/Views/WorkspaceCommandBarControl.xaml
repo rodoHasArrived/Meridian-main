@@ -43,12 +43,20 @@
                                 Click="OnPrimaryCommandClick"
                                 Margin="0,0,8,8"
                                 IsEnabled="{Binding IsEnabled}"
+                                ToolTipService.ShowOnDisabled="True"
+                                AutomationProperties.AutomationId="{Binding AutomationId}"
                                 AutomationProperties.Name="{Binding Description}">
                             <Button.Style>
                                 <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
                                     <Setter Property="Padding" Value="14,10" />
                                     <Setter Property="FontWeight" Value="SemiBold" />
+                                    <Setter Property="ToolTip" Value="{Binding DisabledReason}" />
                                     <Style.Triggers>
+                                        <!-- Enabled commands carry no disabled reason; clearing the
+                                             tooltip stops WPF popping an empty one on hover. -->
+                                        <DataTrigger Binding="{Binding DisabledReason}" Value="">
+                                            <Setter Property="ToolTip" Value="{x:Null}" />
+                                        </DataTrigger>
                                         <DataTrigger Binding="{Binding IsCompactSurface, RelativeSource={RelativeSource AncestorType={x:Type views:WorkspaceCommandBarControl}}}" Value="True">
                                             <Setter Property="Padding" Value="12,7" />
                                         </DataTrigger>

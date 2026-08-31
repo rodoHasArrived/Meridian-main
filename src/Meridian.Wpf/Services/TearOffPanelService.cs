@@ -126,8 +126,13 @@ public sealed class TearOffPanelService
             foreach (var (key, value) in loaded)
                 _savedPositions[key] = value;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // Missing/corrupt saved positions are non-fatal; start from an empty layout.
+            LoggingService.Instance.LogDebug(
+                "Failed to load tear-off panel positions.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 
@@ -139,8 +144,13 @@ public sealed class TearOffPanelService
             var json = JsonSerializer.Serialize(_savedPositions);
             File.WriteAllText(PositionsFilePath, json);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // Position persistence is best-effort; disk failures must not crash the caller.
+            LoggingService.Instance.LogDebug(
+                "Failed to persist tear-off panel positions.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 }

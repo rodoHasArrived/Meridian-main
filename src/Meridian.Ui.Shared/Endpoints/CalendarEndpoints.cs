@@ -56,7 +56,7 @@ public static class CalendarEndpoints
                 }
             }, jsonOptions);
         })
-        .WithName("GetCalendarStatus")
+        .WithName("GetCalendarStatus").DeclareOpenRead("Exchange session state computed from TradingCalendar -- open/closed, half-day, next session -- which is public market structure carrying no deployment, account or tenant state.")
         .WithDescription("Returns current US market status including session state, next open/close times, and trading day info.")
         .Produces(200);
 
@@ -81,7 +81,7 @@ public static class CalendarEndpoints
                 halfDayCount = halfDays.Count
             }, jsonOptions);
         })
-        .WithName("GetCalendarHolidays")
+        .WithName("GetCalendarHolidays").DeclareOpenRead("Published exchange holiday list computed from TradingCalendar; public market structure with no deployment or account state.")
         .WithDescription("Returns market holidays and half-days for a given year (defaults to current year).")
         .Produces(200);
 
@@ -114,7 +114,7 @@ public static class CalendarEndpoints
                 })
             }, jsonOptions);
         })
-        .WithName("GetCalendarTradingDays")
+        .WithName("GetCalendarTradingDays").DeclareOpenRead("Trading days between two dates computed from TradingCalendar; public market structure with no deployment or account state.")
         .WithDescription("Returns trading days within a date range, including half-day indicators.")
         .Produces(200);
     }

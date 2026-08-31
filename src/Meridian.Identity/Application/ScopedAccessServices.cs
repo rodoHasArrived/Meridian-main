@@ -1,3 +1,4 @@
+using Meridian.Contracts.Operations;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Workstation;
 
@@ -29,6 +30,32 @@ public interface IScopedAuthorizationService
         Guid? scopeId,
         UserPermission globalPermissions,
         CancellationToken ct = default);
+
+    async Task<IReadOnlyDictionary<Guid, ScopedAuthorizationDecisionDto>> AuthorizeManyAsync(
+        string actor,
+        UserPermission requiredPermission,
+        AccessScopeKindDto scopeKind,
+        IReadOnlyCollection<Guid> scopeIds,
+        UserPermission globalPermissions,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scopeIds);
+        var decisions = new Dictionary<Guid, ScopedAuthorizationDecisionDto>();
+        foreach (var scopeId in scopeIds.Distinct())
+        {
+            ct.ThrowIfCancellationRequested();
+            decisions[scopeId] = await AuthorizeAsync(
+                    actor,
+                    requiredPermission,
+                    scopeKind,
+                    scopeId,
+                    globalPermissions,
+                    ct)
+                .ConfigureAwait(false);
+        }
+
+        return decisions;
+    }
 }
 
 public interface IAccessScopeLineageProvider
@@ -37,6 +64,22 @@ public interface IAccessScopeLineageProvider
         AccessScopeKindDto scopeKind,
         Guid scopeId,
         CancellationToken ct = default);
+
+    async Task<IReadOnlyDictionary<Guid, IReadOnlyList<AccessScopeRef>>> ResolveLineagesAsync(
+        AccessScopeKindDto scopeKind,
+        IReadOnlyCollection<Guid> scopeIds,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scopeIds);
+        var lineages = new Dictionary<Guid, IReadOnlyList<AccessScopeRef>>();
+        foreach (var scopeId in scopeIds.Distinct())
+        {
+            ct.ThrowIfCancellationRequested();
+            lineages[scopeId] = await ResolveLineageAsync(scopeKind, scopeId, ct).ConfigureAwait(false);
+        }
+
+        return lineages;
+    }
 }
 
 public sealed record AccessScopeRef(AccessScopeKindDto ScopeKind, Guid? ScopeId);
@@ -82,9 +125,25 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
     {
         ArgumentNullException.ThrowIfNull(request);
         EnsureHumanOrigin(request.ActionOrigin, "grant scoped access assignments");
+
+        // Refused rather than stored, because authorization cannot honour it. Both the scalar and the
+        // batch check narrow assignments to PrincipalKind.User -- their signatures carry an actor, not
+        // the actor's group memberships, so there is nothing to match a group assignment against. A
+        // stored one would read as a granted permission on every review of the assignment list while
+        // granting nothing on any route, which is the worst of the three possible behaviours.
+        // Resolving group membership during authorization is the alternative, and it is a change to
+        // the authorization contract rather than a validation fix.
+        if (request.PrincipalKind != AccessPrincipalKindDto.User)
+        {
+            throw new ArgumentException(
+                $"Scoped access assignments support {nameof(AccessPrincipalKindDto.User)} principals only; "
+                + $"authorization resolves no group membership, so a {request.PrincipalKind} assignment would never grant access.",
+                nameof(request));
+        }
+
         var normalized = ValidateCreate(request, actor);
         var now = DateTimeOffset.UtcNow;
-        var auditId = BuildAuditId("access-grant", now);
+        var auditId = IdentityGovernanceNormalization.NewAuditId("access-grant", now, maxLength: 46);
         var correlationId = string.IsNullOrWhiteSpace(request.CorrelationId)
             ? $"access-grant-{Guid.NewGuid():N}"
             : request.CorrelationId.Trim();
@@ -125,8 +184,8 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
     {
         ArgumentNullException.ThrowIfNull(request);
         EnsureHumanOrigin(request.ActionOrigin, "revoke scoped access assignments");
-        var resolvedActor = NormalizeRequired(actor, nameof(actor));
-        var rationale = NormalizeRequired(request.Rationale, nameof(request.Rationale));
+        var resolvedActor = IdentityGovernanceNormalization.NormalizeRequired(actor, nameof(actor));
+        var rationale = IdentityGovernanceNormalization.NormalizeRequired(request.Rationale, nameof(request.Rationale));
         var existing = await _store.GetAsync(request.AssignmentId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException($"Access assignment '{request.AssignmentId}' was not found.");
 
@@ -136,7 +195,7 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
         }
 
         var now = DateTimeOffset.UtcNow;
-        var auditId = BuildAuditId("access-revoke", now);
+        var auditId = IdentityGovernanceNormalization.NewAuditId("access-revoke", now, maxLength: 46);
         var correlationId = string.IsNullOrWhiteSpace(request.CorrelationId)
             ? $"access-revoke-{Guid.NewGuid():N}"
             : request.CorrelationId.Trim();
@@ -211,6 +270,70 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
             match.Version);
     }
 
+    public async Task<IReadOnlyDictionary<Guid, ScopedAuthorizationDecisionDto>> AuthorizeManyAsync(
+        string actor,
+        UserPermission requiredPermission,
+        AccessScopeKindDto scopeKind,
+        IReadOnlyCollection<Guid> scopeIds,
+        UserPermission globalPermissions,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scopeIds);
+        var distinctScopeIds = scopeIds.Distinct().ToArray();
+        if (distinctScopeIds.Length == 0)
+        {
+            return new Dictionary<Guid, ScopedAuthorizationDecisionDto>();
+        }
+
+        var normalizedActor = actor?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(normalizedActor))
+        {
+            return distinctScopeIds.ToDictionary(
+                static scopeId => scopeId,
+                scopeId => Denied(normalizedActor, requiredPermission, scopeKind, scopeId, "No authenticated actor was resolved."));
+        }
+
+        if ((globalPermissions & UserPermission.ManageUsers) == UserPermission.ManageUsers ||
+            (globalPermissions & UserPermission.AdminMaintenance) == UserPermission.AdminMaintenance)
+        {
+            return distinctScopeIds.ToDictionary(
+                static scopeId => scopeId,
+                scopeId => Allowed(normalizedActor, requiredPermission, scopeKind, scopeId, "Global administrator permission granted access."));
+        }
+
+        var candidateScopesById = await ResolveScopeLineagesAsync(scopeKind, distinctScopeIds, ct).ConfigureAwait(false);
+        var now = DateTimeOffset.UtcNow;
+        var assignments = (await _store.ListAsync(ct).ConfigureAwait(false))
+            .Where(assignment => assignment.PrincipalKind == AccessPrincipalKindDto.User)
+            .Where(assignment => string.Equals(assignment.PrincipalId, normalizedActor, StringComparison.OrdinalIgnoreCase))
+            .Where(assignment => assignment.RevokedAtUtc is null && IsEffective(assignment, now))
+            .Where(assignment => (assignment.PermissionMask & (long)requiredPermission) == (long)requiredPermission)
+            .ToArray();
+        var decisions = new Dictionary<Guid, ScopedAuthorizationDecisionDto>(distinctScopeIds.Length);
+        foreach (var scopeId in distinctScopeIds)
+        {
+            ct.ThrowIfCancellationRequested();
+            var candidateScopes = candidateScopesById[scopeId];
+            var match = assignments
+                .Where(assignment => candidateScopes.Any(scope => ScopeMatches(assignment, scope)))
+                .OrderByDescending(assignment => ScopeSpecificity(assignment.ScopeKind))
+                .ThenByDescending(assignment => assignment.EffectiveFrom)
+                .FirstOrDefault();
+            decisions[scopeId] = match is null
+                ? Denied(normalizedActor, requiredPermission, scopeKind, scopeId, "No effective scoped access assignment grants the required permission.")
+                : Allowed(
+                    normalizedActor,
+                    requiredPermission,
+                    scopeKind,
+                    scopeId,
+                    "Scoped access assignment granted access.",
+                    match.AssignmentId,
+                    match.Version);
+        }
+
+        return decisions;
+    }
+
     private async Task<IReadOnlyList<AccessScopeRef>> ResolveScopeLineageAsync(
         AccessScopeKindDto scopeKind,
         Guid? scopeId,
@@ -237,14 +360,43 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
         return scopes;
     }
 
+    private async Task<IReadOnlyDictionary<Guid, IReadOnlyList<AccessScopeRef>>> ResolveScopeLineagesAsync(
+        AccessScopeKindDto scopeKind,
+        IReadOnlyCollection<Guid> scopeIds,
+        CancellationToken ct)
+    {
+        var scopesById = scopeIds.ToDictionary(
+            static scopeId => scopeId,
+            scopeId => scopeKind == AccessScopeKindDto.Global
+                ? (IReadOnlyList<AccessScopeRef>)[new(AccessScopeKindDto.Global, null)]
+                : [new(scopeKind, scopeId), new(AccessScopeKindDto.Global, null)]);
+        if (_scopeLineageProvider is null || scopeKind == AccessScopeKindDto.Global)
+        {
+            return scopesById;
+        }
+
+        var resolved = await _scopeLineageProvider.ResolveLineagesAsync(scopeKind, scopeIds, ct).ConfigureAwait(false);
+        foreach (var scopeId in scopeIds)
+        {
+            if (!resolved.TryGetValue(scopeId, out var lineage) || lineage.Count == 0)
+            {
+                continue;
+            }
+
+            var scopes = scopesById[scopeId].ToList();
+            scopes.AddRange(lineage.Where(scope => scopes.All(existing => existing != scope)));
+            scopesById[scopeId] = scopes;
+        }
+
+        return scopesById;
+    }
+
     private static ValidatedCreateRequest ValidateCreate(UserAccessAssignmentCreateRequestDto request, string actor)
     {
-        var principalId = NormalizeRequired(request.PrincipalId, nameof(request.PrincipalId));
-        var resolvedActor = string.IsNullOrWhiteSpace(actor)
-            ? NormalizeRequired(request.RequestedBy, nameof(request.RequestedBy))
-            : actor.Trim();
-        var rationale = NormalizeRequired(request.Rationale, nameof(request.Rationale));
-        var roleName = NormalizeRequired(request.Role, nameof(request.Role));
+        var principalId = IdentityGovernanceNormalization.NormalizeRequired(request.PrincipalId, nameof(request.PrincipalId));
+        var resolvedActor = IdentityGovernanceNormalization.ResolveActor(actor, request.RequestedBy);
+        var rationale = IdentityGovernanceNormalization.NormalizeRequired(request.Rationale, nameof(request.Rationale));
+        var roleName = IdentityGovernanceNormalization.NormalizeRequired(request.Role, nameof(request.Role));
         if (!Enum.TryParse<UserRole>(roleName, ignoreCase: true, out var role))
         {
             throw new ArgumentException($"Unknown role '{request.Role}'.", nameof(request));
@@ -323,25 +475,8 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
         return scopeId;
     }
 
-    private static string NormalizeRequired(string? value, string parameterName)
-    {
-        var normalized = value?.Trim();
-        if (string.IsNullOrWhiteSpace(normalized))
-        {
-            throw new ArgumentException($"{parameterName} is required.", parameterName);
-        }
-
-        return normalized;
-    }
-
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
-    {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
-        {
-            throw new InvalidOperationException(
-                $"Reviewed automation cannot {action}; a human operator approval is required.");
-        }
-    }
+        => OperationsOriginGuard.RequireHumanOperator(actionOrigin, action);
 
     private static bool IsEffective(UserAccessAssignmentDto assignment, DateTimeOffset asOf)
         => assignment.EffectiveFrom <= asOf && (!assignment.EffectiveTo.HasValue || assignment.EffectiveTo > asOf);
@@ -369,12 +504,6 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
         Guid? scopeId,
         string reason)
         => new(false, actor, permission, scopeKind, scopeId, reason);
-
-    private static string BuildAuditId(string prefix, DateTimeOffset now)
-    {
-        var value = $"{prefix}-{now:yyyyMMddHHmmssfff}-{Guid.NewGuid():N}";
-        return value[..Math.Min(46, value.Length)];
-    }
 
     private static UserAccessAssignmentAuditEventDto BuildAuditEvent(
         string eventType,

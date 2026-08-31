@@ -40,18 +40,18 @@ public sealed class SloDefinitionRegistry
         {
             Id = "SLO-ING-001",
             Subsystem = SloSubsystem.Ingestion,
-            Name = "End-to-End Ingestion Latency",
-            Description = "P95 end-to-end latency from provider to storage",
-            MetricName = "mdc_provider_latency_seconds",
-            TargetValue = 2.0,
-            CriticalThreshold = 5.0,
-            Unit = "seconds",
+            Name = "Event Processing Latency",
+            Description = "P99 event processing latency through the pipeline",
+            MetricName = "mdc_processing_latency_microseconds",
+            TargetValue = 1000.0,
+            CriticalThreshold = 5000.0,
+            Unit = "microseconds",
             MeasurementWindow = TimeSpan.FromMinutes(5),
             ErrorBudgetPercent = 0.1,
             ErrorBudgetWindow = TimeSpan.FromDays(30),
             AlertRuleName = "MeridianHighProviderLatency",
-            RunbookSection = "docs/operations/operator-runbook.md#high-latency",
-            SloDocSection = "docs/operations/service-level-objectives.md#slo-ing-001"
+            RunbookSection = "docs/operators/operator-runbook.md#high-latency",
+            SloDocSection = "docs/operators/service-level-objectives.md#slo-ing-001"
         });
 
         Register(new SloDefinition
@@ -60,16 +60,16 @@ public sealed class SloDefinitionRegistry
             Subsystem = SloSubsystem.Ingestion,
             Name = "Event Drop Rate",
             Description = "Percentage of events dropped due to pipeline capacity",
-            MetricName = "mdc_pipeline_events_dropped_total",
-            TargetValue = 0.001, // 0.1%
-            CriticalThreshold = 0.01, // 1%
-            Unit = "ratio",
+            MetricName = "mdc_drop_rate_percent",
+            TargetValue = 0.1, // 0.1%
+            CriticalThreshold = 1.0, // 1%
+            Unit = "percent",
             MeasurementWindow = TimeSpan.FromHours(24),
             ErrorBudgetPercent = 0.1,
             ErrorBudgetWindow = TimeSpan.FromDays(30),
             AlertRuleName = "MeridianHighDropRate",
-            RunbookSection = "docs/operations/operator-runbook.md#high-drop-rate",
-            SloDocSection = "docs/operations/service-level-objectives.md#slo-ing-002"
+            RunbookSection = "docs/operators/operator-runbook.md#high-drop-rate",
+            SloDocSection = "docs/operators/service-level-objectives.md#slo-ing-002"
         });
 
         // --- Data Completeness Plane ---
@@ -78,17 +78,17 @@ public sealed class SloDefinitionRegistry
             Id = "SLO-DC-001",
             Subsystem = SloSubsystem.DataCompleteness,
             Name = "Daily Data Completeness",
-            Description = "Percentage of expected data points received per symbol per day",
-            MetricName = "mdc_data_quality_score",
-            TargetValue = 0.95, // 95%
-            CriticalThreshold = 0.80, // 80%
-            Unit = "ratio",
+            Description = "Percentage of ingested events that clear the validation stage",
+            MetricName = "mdc_validation_pass_rate_percent",
+            TargetValue = 95.0, // 95%
+            CriticalThreshold = 80.0, // 80%
+            Unit = "percent",
             MeasurementWindow = TimeSpan.FromHours(24),
             ErrorBudgetPercent = 5.0,
             ErrorBudgetWindow = TimeSpan.FromDays(30),
             AlertRuleName = "MeridianLowDataQuality",
-            RunbookSection = "docs/operations/operator-runbook.md#low-data-quality",
-            SloDocSection = "docs/operations/service-level-objectives.md#slo-dc-001"
+            RunbookSection = "docs/operators/operator-runbook.md#low-data-quality",
+            SloDocSection = "docs/operators/service-level-objectives.md#slo-dc-001"
         });
 
         Register(new SloDefinition
@@ -97,14 +97,14 @@ public sealed class SloDefinitionRegistry
             Subsystem = SloSubsystem.DataCompleteness,
             Name = "Maximum Data Gap Duration",
             Description = "No single gap longer than 5 minutes during market hours",
-            MetricName = "mdc_data_gap_duration_seconds",
-            TargetValue = 300.0, // 5 minutes max
-            CriticalThreshold = 600.0, // 10 minutes
-            Unit = "seconds",
+            MetricName = "mdc_sla_freshness_milliseconds",
+            TargetValue = 300_000.0, // 5 minutes max
+            CriticalThreshold = 600_000.0, // 10 minutes
+            Unit = "milliseconds",
             MeasurementWindow = TimeSpan.FromHours(1),
             AlertRuleName = "MeridianNoEventsPublished",
-            RunbookSection = "docs/operations/operator-runbook.md#no-events",
-            SloDocSection = "docs/operations/service-level-objectives.md#slo-dc-002"
+            RunbookSection = "docs/operators/operator-runbook.md#no-events",
+            SloDocSection = "docs/operators/service-level-objectives.md#slo-dc-002"
         });
 
         // --- Availability Plane ---
@@ -122,8 +122,8 @@ public sealed class SloDefinitionRegistry
             ErrorBudgetPercent = 0.1,
             ErrorBudgetWindow = TimeSpan.FromDays(30),
             AlertRuleName = "MeridianDown",
-            RunbookSection = "docs/operations/operator-runbook.md#application-down",
-            SloDocSection = "docs/operations/service-level-objectives.md#slo-av-001"
+            RunbookSection = "docs/operators/operator-runbook.md#application-down",
+            SloDocSection = "docs/operators/service-level-objectives.md#slo-av-001"
         });
 
         // --- Data Freshness Plane ---
@@ -133,14 +133,14 @@ public sealed class SloDefinitionRegistry
             Subsystem = SloSubsystem.DataFreshness,
             Name = "Data Freshness P95",
             Description = "P95 data age since last event per symbol",
-            MetricName = "mdc_data_freshness_age_seconds",
-            TargetValue = 60.0, // 60 seconds
-            CriticalThreshold = 300.0, // 5 minutes
-            Unit = "seconds",
+            MetricName = "mdc_sla_freshness_milliseconds",
+            TargetValue = 60_000.0, // 60 seconds
+            CriticalThreshold = 300_000.0, // 5 minutes
+            Unit = "milliseconds",
             MeasurementWindow = TimeSpan.FromMinutes(5),
             AlertRuleName = "MeridianDataFreshnessViolation",
-            RunbookSection = "docs/operations/operator-runbook.md#freshness-sla-violation",
-            SloDocSection = "docs/operations/service-level-objectives.md#slo-df-001"
+            RunbookSection = "docs/operators/operator-runbook.md#freshness-sla-violation",
+            SloDocSection = "docs/operators/service-level-objectives.md#slo-df-001"
         });
 
         // --- Storage Plane ---
@@ -149,15 +149,15 @@ public sealed class SloDefinitionRegistry
             Id = "SLO-ST-001",
             Subsystem = SloSubsystem.Storage,
             Name = "Zero Write Errors",
-            Description = "No storage write errors during normal operation",
-            MetricName = "mdc_storage_write_errors_total",
+            Description = "No write-ahead log integrity failures during normal operation",
+            MetricName = "mdc_wal_recovery_corrupted_records_total",
             TargetValue = 0.0,
             CriticalThreshold = 1.0,
             Unit = "count",
             MeasurementWindow = TimeSpan.FromMinutes(5),
             AlertRuleName = "MeridianStorageWriteErrors",
-            RunbookSection = "docs/operations/operator-runbook.md#storage-write-errors",
-            SloDocSection = "docs/operations/service-level-objectives.md#slo-st-001"
+            RunbookSection = "docs/operators/operator-runbook.md#storage-write-errors",
+            SloDocSection = "docs/operators/service-level-objectives.md#slo-st-001"
         });
 
         // --- Provider Connectivity Plane ---
@@ -166,15 +166,15 @@ public sealed class SloDefinitionRegistry
             Id = "SLO-PC-001",
             Subsystem = SloSubsystem.ProviderConnectivity,
             Name = "Provider Availability",
-            Description = "At least one provider connected during market hours",
-            MetricName = "mdc_provider_connected",
-            TargetValue = 0.995, // 99.5%
-            CriticalThreshold = 0.99, // 99%
-            Unit = "ratio",
+            Description = "Global provider circuit breaker remains closed (0=Closed, 1=Open, 2=HalfOpen)",
+            MetricName = "mdc_circuit_breaker_state",
+            TargetValue = 0.0,
+            CriticalThreshold = 1.0,
+            Unit = "count",
             MeasurementWindow = TimeSpan.FromDays(30),
             AlertRuleName = "MeridianProviderDisconnected",
-            RunbookSection = "docs/operations/operator-runbook.md#provider-disconnected",
-            SloDocSection = "docs/operations/service-level-objectives.md#slo-pc-001"
+            RunbookSection = "docs/operators/operator-runbook.md#provider-disconnected",
+            SloDocSection = "docs/operators/service-level-objectives.md#slo-pc-001"
         });
 
         _log.LogInformation("Registered {Count} default SLO definitions", _definitions.Count);
@@ -266,8 +266,12 @@ public sealed class SloDefinitionRegistry
 
     private static SloComplianceState EvaluateState(SloDefinition def, double value)
     {
-        // For "lower is better" metrics (latency, errors, drop rate)
-        if (def.Unit is "seconds" or "count" or "ratio" && def.TargetValue < def.CriticalThreshold)
+        // Direction is inferred from the thresholds alone, exactly as CalculateScore does.
+        // Keying off the unit string as well would silently score a "lower is better"
+        // objective in the wrong direction whenever its unit is not one of a hard-coded
+        // few (for example "percent" or "microseconds"), reporting a latency blowout as
+        // healthy.
+        if (def.TargetValue < def.CriticalThreshold)
         {
             if (value <= def.TargetValue)
                 return SloComplianceState.Healthy;

@@ -23,6 +23,8 @@ import {
   backfillCheckpointEndpoint,
   backfillCheckpointPendingEndpoint,
   backfillCheckpointResumeEndpoint,
+  workstationIngestionOperationActionEndpoint,
+  workstationIngestionOperationEndpoint,
   brokerageConnectionConnectEndpoint,
   brokerageConnectionEndpoint,
   brokerageConnectionStatusEndpoint,
@@ -32,8 +34,6 @@ import {
   coveredCallRunStatusEndpoint,
   coveredCallRunsEndpoint,
   exportPreviewEndpoint,
-  reportPackDeliveryPackageEndpoint,
-  reportPackDeliveryPortalPackageEndpoint,
   reportPackEvidenceBundleEndpoint,
   reportingRunAuditTrailEndpoint,
   reportingRunReportWriterGridEndpoint,
@@ -70,11 +70,29 @@ import {
   reconciliationBreakResolutionEndpoint,
   reconciliationBreakResolveEndpoint,
   reconciliationBreakReviewEndpoint,
+  reconciliationBreakSupersedeEndpoint,
   reconciliationBreakRootCauseEndpoint,
   reconciliationBreakSignOffEndpoint,
   reconciliationBreakTransitionEndpoint,
+  reconciliationBreakWaiveEndpoint,
   reconciliationRunEndpoint,
+  qualityCompletenessSummaryEndpoint,
+  qualityHealthEndpoint,
+  qualityHighLatencySymbolsEndpoint,
+  qualityLatencyStatisticsEndpoint,
+  qualityLowCompletenessEndpoint,
+  qualityStaleSymbolsEndpoint,
+  qualityTopErrorSymbolsEndpoint,
+  qualityUnacknowledgedAnomaliesEndpoint,
+  qualityUnhealthySymbolsEndpoint,
+  reconciliationBreakQueueTaxonomyEndpoint,
+  reconciliationBreakRebuiltSnapshotEndpoint,
+  reconciliationOpenCasesEndpoint,
+  reconciliationQueueStatusEndpoint,
+  reconciliationStatementRunBreaksEndpoint,
   reconciliationStatementRunEndpoint,
+  reconciliationStatementRunReconcileEndpoint,
+  reconciliationStatementRunValidationEndpoint,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
   securityMasterAssetProfileApproveEndpoint,
@@ -86,6 +104,9 @@ import {
   securityMasterAmendEndpoint,
   securityMasterConflictsEndpoint,
   securityMasterConflictResolveEndpoint,
+  securityMasterCorporateActionCaseConflictEndpoint,
+  securityMasterCorporateActionCaseConflictsEndpoint,
+  securityMasterCorporateActionSourceProposalAcceptEndpoint,
   securityMasterCorporateActionsEndpoint,
   securityMasterEntryEndpoint,
   securityMasterTradingParametersEndpoint,
@@ -117,11 +138,6 @@ import {
   workstationProviderIntegrationReconciliationHandoffHistoryEndpoint,
   workstationProviderIntegrationStagingReviewEndpoint,
   workstationProviderIntegrationTemplateEndpoint,
-  workstationChiefOfStaffDecisionEndpoint,
-  workstationChiefOfStaffHealthEndpoint,
-  workstationChiefOfStaffSessionEndpoint,
-  workstationChiefOfStaffSessionsEndpoint,
-  workstationChiefOfStaffTraceExportEndpoint,
   workstationOperatorInboxEndpoint,
   workstationAssetOperationsEndpoint,
   workstationOperationsContinuityApprovalSubmitEndpoint,
@@ -150,6 +166,9 @@ import {
   workstationOperationsContinuityTimelineEndpoint,
   workstationRunAttributionEndpoint,
   workstationRunCompareEndpoint,
+  ledgerPeriodsEndpoint,
+  ledgerPeriodTrialBalanceEndpoint,
+  ledgerPeriodPnlSummaryEndpoint,
   workstationRunContinuityEndpoint,
   workstationRunDiffEndpoint,
   workstationRunEquityCurveEndpoint,
@@ -178,6 +197,46 @@ import {
 } from "@/lib/workstation-endpoints";
 
 describe("workstation API endpoint catalog", () => {
+  it("builds canonical durable source-proposal acceptance routes", () => {
+    expect(securityMasterCorporateActionSourceProposalAcceptEndpoint("proposal / 1")).toBe(
+      "/api/security-master/corporate-actions/source-proposals/proposal%20%2F%201/accept"
+    );
+  });
+
+  it("builds durable corporate-action conflict recovery routes", () => {
+    expect(securityMasterCorporateActionCaseConflictsEndpoint("case / 1")).toBe(
+      "/api/security-master/corporate-actions/cases/case%20%2F%201/conflicts"
+    );
+    expect(securityMasterCorporateActionCaseConflictsEndpoint("case-1", { state: "Open", take: 25 })).toBe(
+      "/api/security-master/corporate-actions/cases/case-1/conflicts?state=Open&take=25"
+    );
+    expect(securityMasterCorporateActionCaseConflictEndpoint("case-1", "conflict / 2")).toBe(
+      "/api/security-master/corporate-actions/cases/case-1/conflicts/conflict%20%2F%202"
+    );
+  });
+
+  it("builds posted-journal ledger reporting routes over the governed book", () => {
+    expect(ledgerPeriodsEndpoint()).toBe("/api/ledger/periods");
+    expect(ledgerPeriodsEndpoint({ ledgerBookId: "book-1", status: "HardClosed" })).toBe(
+      "/api/ledger/periods?ledgerBookId=book-1&status=HardClosed"
+    );
+    expect(ledgerPeriodTrialBalanceEndpoint("11111111-2222-3333-4444-555555555555")).toBe(
+      "/api/ledger/periods/11111111-2222-3333-4444-555555555555/trial-balance"
+    );
+    expect(ledgerPeriodPnlSummaryEndpoint("11111111-2222-3333-4444-555555555555")).toBe(
+      "/api/ledger/periods/11111111-2222-3333-4444-555555555555/pnl-summary"
+    );
+  });
+  it("builds governed Data operations and assurance routes", () => {
+    expect(WORKSTATION_API_ENDPOINTS.ingestionOperations).toBe("/api/workstation/data/ingestion-operations");
+    expect(workstationIngestionOperationEndpoint("job / 1")).toBe("/api/workstation/data/ingestion-operations/job%20%2F%201");
+    expect(workstationIngestionOperationActionEndpoint("job / 1", "retry now")).toBe(
+      "/api/workstation/data/ingestion-operations/job%20%2F%201/actions/retry%20now"
+    );
+    expect(WORKSTATION_API_ENDPOINTS.storageAssurance).toBe("/api/workstation/data/storage-assurance");
+    expect(WORKSTATION_API_ENDPOINTS.storageMaintenancePreview).toBe("/api/workstation/data/storage-assurance/actions/preview");
+    expect(WORKSTATION_API_ENDPOINTS.storageMaintenanceExecute).toBe("/api/workstation/data/storage-assurance/actions/execute");
+  });
   it("keeps canonical workspace bootstrap endpoints in one shared catalog", () => {
     expect(WORKSTATION_API_ENDPOINTS).toMatchObject({
       session: "/api/workstation/session",
@@ -207,7 +266,6 @@ describe("workstation API endpoint catalog", () => {
       operationsContinuityApprovalPolicyRules: "/api/workstation/operations/continuity/approval-policy-rules",
       operationsContinuityCloseCalendar: "/api/workstation/operations/continuity/close-calendar",
       operationsContinuityCloseCalendarItems: "/api/workstation/operations/continuity/close-calendar-items",
-      chiefOfStaff: "/api/workstation/chief-of-staff",
       runHistory: "/api/workstation/runs/history",
       runTimeline: "/api/workstation/runs/timeline",
       runSweeps: "/api/workstation/runs/sweeps",
@@ -410,12 +468,9 @@ describe("workstation API endpoint catalog", () => {
     expect(FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingWorkbench).toBe("/api/fund-structure/ledger-mapping-view");
     expect(FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingAssignments).toBe("/api/fund-structure/ledger-mapping-assignments");
     expect(FUND_STRUCTURE_API_ENDPOINTS.transactionLabPreview).toBe("/api/fund-structure/accounting/transaction-lab/preview");
-    expect(FUND_STRUCTURE_API_ENDPOINTS.reportPackWorkflowDeliveryPackage).toBe(
-      "/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/package"
-    );
-    expect(FUND_STRUCTURE_API_ENDPOINTS.reportPackDeliveryPortalPackage).toBe("/portal/reporting/packages/{packageId}");
     expect(WORKSTATION_API_ENDPOINTS.reportingStructuredExport).toBe("/api/workstation/reporting/structured-exports/{exportId}");
     expect(FUND_STRUCTURE_API_ENDPOINTS.reportingStructuredExport).toBe("/api/fund-structure/reporting/structured-exports/{exportId}");
+    expect(FUND_STRUCTURE_API_ENDPOINTS.reportingRunReadiness).toBe("/api/fund-structure/reporting/runs/readiness");
     expect(FUND_STRUCTURE_API_ENDPOINTS.reportingRunAuditTrail).toBe("/api/fund-structure/reporting/runs/{runId}/audit");
     expect(reportingRunAuditTrailEndpoint("run / 1")).toBe(
       "/api/fund-structure/reporting/runs/run%20%2F%201/audit"
@@ -432,34 +487,6 @@ describe("workstation API endpoint catalog", () => {
     expect(reportingRunReportWriterGridEndpoint("run / 1", "grid / 1", "pdf")).toBe(
       "/api/fund-structure/reporting/runs/run%20%2F%201/report-writer-grids/grid%20%2F%201?format=pdf"
     );
-    expect(reportPackDeliveryPackageEndpoint("report / 1", "attempt / 1", "tok / 1")).toBe(
-      "/api/fund-structure/reporting/packs/report%20%2F%201/deliveries/attempt%20%2F%201/package?token=tok+%2F+1"
-    );
-    expect(reportPackDeliveryPortalPackageEndpoint("pkg / 1", "tok / 1")).toBe(
-      "/portal/reporting/packages/pkg%20%2F%201?token=tok+%2F+1"
-    );
-  });
-
-  it("builds Chief of Staff workstation endpoint routes", () => {
-    expect(workstationChiefOfStaffSessionsEndpoint()).toBe("/api/workstation/chief-of-staff/sessions");
-    expect(workstationChiefOfStaffSessionsEndpoint({
-      workspace: "Reporting",
-      fundProfileId: "fund / 1",
-      status: "AwaitingOperatorDecision",
-      limit: 10
-    })).toBe(
-      "/api/workstation/chief-of-staff/sessions?workspace=Reporting&fundProfileId=fund+%2F+1&status=AwaitingOperatorDecision&limit=10"
-    );
-    expect(workstationChiefOfStaffSessionEndpoint("session / 1")).toBe(
-      "/api/workstation/chief-of-staff/sessions/session%20%2F%201"
-    );
-    expect(workstationChiefOfStaffDecisionEndpoint("session / 1")).toBe(
-      "/api/workstation/chief-of-staff/sessions/session%20%2F%201/decisions"
-    );
-    expect(workstationChiefOfStaffTraceExportEndpoint("session / 1")).toBe(
-      "/api/workstation/chief-of-staff/sessions/session%20%2F%201/export-trace"
-    );
-    expect(workstationChiefOfStaffHealthEndpoint()).toBe("/api/workstation/chief-of-staff/health");
   });
 
   it("builds run evidence endpoints and matching Settings templates", () => {
@@ -713,6 +740,35 @@ describe("workstation API endpoint catalog", () => {
     expect(reconciliationStatementRunEndpoint("statement / 1")).toBe(
       "/api/workstation/reconciliation/statement-runs/statement%20%2F%201"
     );
+    expect(qualityHealthEndpoint()).toBe("/api/quality/health");
+    expect(qualityUnhealthySymbolsEndpoint()).toBe("/api/quality/health/unhealthy");
+    expect(qualityLatencyStatisticsEndpoint()).toBe("/api/quality/latency/statistics");
+    expect(qualityStaleSymbolsEndpoint()).toBe("/api/quality/anomalies/stale");
+    expect(qualityCompletenessSummaryEndpoint()).toBe("/api/quality/completeness/summary");
+    // Omitted query parameters leave the route bare so the server's own default applies.
+    expect(qualityHighLatencySymbolsEndpoint()).toBe("/api/quality/latency/high");
+    expect(qualityHighLatencySymbolsEndpoint(250)).toBe("/api/quality/latency/high?thresholdMs=250");
+    expect(qualityTopErrorSymbolsEndpoint(5)).toBe("/api/quality/errors/top-symbols?count=5");
+    expect(qualityUnacknowledgedAnomaliesEndpoint(25)).toBe("/api/quality/anomalies/unacknowledged?count=25");
+    expect(qualityLowCompletenessEndpoint()).toBe("/api/quality/completeness/low");
+    expect(qualityLowCompletenessEndpoint({ date: "2026-08-26", threshold: 0.5 }))
+      .toBe("/api/quality/completeness/low?date=2026-08-26&threshold=0.5");
+    expect(reconciliationQueueStatusEndpoint()).toBe("/api/workstation/reconciliation/queue-status");
+    expect(reconciliationBreakRebuiltSnapshotEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/rebuilt-snapshot"
+    );
+
+    expect(reconciliationOpenCasesEndpoint()).toBe("/api/workstation/reconciliation/cases");
+    expect(reconciliationBreakQueueTaxonomyEndpoint()).toBe("/api/workstation/reconciliation/break-queue/taxonomy");
+    expect(reconciliationStatementRunValidationEndpoint("statement / 1")).toBe(
+      "/api/workstation/reconciliation/statement-runs/statement%20%2F%201/validation"
+    );
+    expect(reconciliationStatementRunBreaksEndpoint("statement / 1")).toBe(
+      "/api/workstation/reconciliation/statement-runs/statement%20%2F%201/breaks"
+    );
+    expect(reconciliationStatementRunReconcileEndpoint("statement / 1")).toBe(
+      "/api/workstation/reconciliation/statement-runs/statement%20%2F%201/reconcile"
+    );
     expect(reconciliationBreakQueueEndpoint({ status: "Open", fundAccountId: "fund / 1" })).toBe(
       "/api/workstation/reconciliation/break-queue?status=Open&fundAccountId=fund+%2F+1"
     );
@@ -728,6 +784,12 @@ describe("workstation API endpoint catalog", () => {
     );
     expect(reconciliationBreakResolveEndpoint("break / 1")).toBe(
       "/api/workstation/reconciliation/break-queue/break%20%2F%201/resolve"
+    );
+    expect(reconciliationBreakWaiveEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/waive"
+    );
+    expect(reconciliationBreakSupersedeEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/supersede"
     );
     expect(reconciliationBreakAssignEndpoint("break / 1")).toBe(
       "/api/workstation/reconciliation/break-queue/break%20%2F%201/assign"
@@ -777,6 +839,9 @@ describe("workstation API endpoint catalog", () => {
     expect(backfillCheckpointResumeEndpoint("job / 1")).toBe("/api/backfill/checkpoints/job%20%2F%201/resume");
     expect(PROVIDER_API_ENDPOINTS.configure).toBe("/api/providers/configure");
     expect(PROVIDER_API_ENDPOINTS.status).toBe("/api/providers/status");
+    expect(PROVIDER_API_ENDPOINTS.catalog).toBe("/api/providers/catalog");
+    expect(PROVIDER_API_ENDPOINTS.rateLimits).toBe("/api/providers/rate-limits");
+    expect(PROVIDER_API_ENDPOINTS.health).toBe("/api/providers/health");
     expect(ACCOUNTING_SYSTEM_API_ENDPOINTS.productionReadiness).toBe("/api/accounting-system/production-readiness");
     expect(ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationWorkerPlans).toBe("/api/accounting-system/migration-worker-plans");
     expect(ACCOUNTING_SYSTEM_API_ENDPOINTS.tenantAdministrationProfile).toBe("/api/accounting-system/tenant-administration-profile");

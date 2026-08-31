@@ -14,7 +14,7 @@ public sealed class IBApiVersionValidatorTests
             clientVersion: IBApiVersionValidator.MinSupportedClientVersion);
 
         act.Should().Throw<IBApiVersionMismatchException>()
-            .WithMessage("*interactive-brokers-setup.md*")
+            .WithMessage("*provider-onboarding-interactive-brokers.md*")
             .WithMessage($"*{IBApiVersionValidator.MinSupportedServerVersion}*");
     }
 
@@ -44,8 +44,15 @@ public sealed class IBApiVersionValidatorTests
     {
         var message = IBApiVersionValidator.BuildVersionRequirementsMessage();
 
-        message.Should().Contain("interactive-brokers-setup.md");
+        message.Should().Contain("provider-onboarding-interactive-brokers.md");
         message.Should().Contain(IBApiVersionValidator.MinSupportedServerVersion.ToString());
         message.Should().Contain(IBApiVersionValidator.MaxTestedServerVersion.ToString());
+    }
+
+    [Fact]
+    public void CompatibilityBounds_DescribeTheOfficialSdkReleaseEvidence()
+    {
+        IBApiVersionValidator.MinSupportedClientVersion.Should().Be(178);
+        IBApiVersionValidator.BuildVersionRequirementsMessage().Should().Contain("TWS 10.19");
     }
 }

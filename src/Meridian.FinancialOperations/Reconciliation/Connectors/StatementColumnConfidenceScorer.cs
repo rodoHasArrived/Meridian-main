@@ -85,20 +85,37 @@ public static class StatementColumnConfidenceScorer
     {
         var trimmed = sourceColumn.Trim();
 
-        foreach (var (field, candidate, confidence) in candidates)
+        // A profile's explicit source-column mapping is authoritative. Search exact
+        // candidates before aliases so an implicit canonical-name alias from another
+        // field cannot steal a column that the profile deliberately remapped.
+        foreach (var (field, candidate, confidence) in candidates.Where(
+                     static candidate => candidate.Confidence == StatementMappingConfidence.Exact))
         {
             if (string.Equals(trimmed, candidate, StringComparison.OrdinalIgnoreCase))
             {
-                return confidence == StatementMappingConfidence.Exact
-                    ? new StatementColumnMapping(sourceColumn, field, StatementMappingConfidence.Exact, ExactScore,
-                        $"Column matches the profile source column '{candidate}'.")
-                    : new StatementColumnMapping(sourceColumn, field, StatementMappingConfidence.Alias, AliasScore,
-                        $"Column matches the declared alias '{candidate}'.");
+                return new StatementColumnMapping(sourceColumn, field, confidence, ExactScore,
+                    $"Column matches the profile source column '{candidate}'.");
+            }
+        }
+
+        foreach (var (field, candidate, confidence) in candidates.Where(
+                     static candidate => candidate.Confidence == StatementMappingConfidence.Alias))
+        {
+            if (string.Equals(trimmed, candidate, StringComparison.OrdinalIgnoreCase))
+            {
+                return new StatementColumnMapping(sourceColumn, field, confidence, AliasScore,
+                    $"Column matches the declared alias '{candidate}'.");
             }
         }
 
         var normalizedColumn = Normalize(trimmed);
-        foreach (var (field, candidate, _) in candidates)
+
+        // Keep the profile's explicit source mapping authoritative when the broker
+        // varies only casing or separators. Without the same exact-before-alias
+        // ordering used above, an earlier field's implicit canonical alias can
+        // capture a later field's deliberately remapped source column.
+        foreach (var (field, candidate, _) in candidates.Where(
+                     static candidate => candidate.Confidence == StatementMappingConfidence.Exact))
         {
             if (string.Equals(normalizedColumn, Normalize(candidate), StringComparison.Ordinal))
             {
@@ -107,15 +124,54 @@ public static class StatementColumnConfidenceScorer
             }
         }
 
-        foreach (var (field, candidate, _) in candidates)
+        foreach (var (field, candidate, _) in candidates.Where(
+                     static candidate => candidate.Confidence == StatementMappingConfidence.Alias))
         {
-            var normalizedCandidate = Normalize(candidate);
-            if (normalizedColumn.Length >= 3
-                && normalizedCandidate.Length >= 3
-                && EditDistance(normalizedColumn, normalizedCandidate) <= MaxFuzzyEditDistance)
+            if (string.Equals(normalizedColumn, Normalize(candidate), StringComparison.Ordinal))
             {
                 return new StatementColumnMapping(sourceColumn, field, StatementMappingConfidence.Fuzzy, FuzzyScore,
-                    $"Column is within edit distance {MaxFuzzyEditDistance} of '{candidate}'.");
+                    $"Column matches '{candidate}' after normalizing casing and separators.");
+            }
+        }
+
+        if (normalizedColumn.Length >= 3)
+        {
+            // For true edit-distance matches, closeness is stronger evidence than
+            // provenance. The explicit source column breaks ties, but it must not
+            // outrank a declared alias that is objectively closer to the input.
+            var editDistanceMatch = candidates
+                .Select((candidate, index) => new
+                {
+                    candidate.Field,
+                    candidate.Candidate,
+                    candidate.Confidence,
+                    Index = index,
+                    Normalized = Normalize(candidate.Candidate)
+                })
+                .Where(static candidate => candidate.Normalized.Length >= 3)
+                .Select(candidate => new
+                {
+                    candidate.Field,
+                    candidate.Candidate,
+                    candidate.Confidence,
+                    candidate.Index,
+                    Distance = EditDistance(normalizedColumn, candidate.Normalized)
+                })
+                .Where(static candidate => candidate.Distance <= MaxFuzzyEditDistance)
+                .OrderBy(static candidate => candidate.Distance)
+                .ThenBy(static candidate =>
+                    candidate.Confidence == StatementMappingConfidence.Exact ? 0 : 1)
+                .ThenBy(static candidate => candidate.Index)
+                .FirstOrDefault();
+
+            if (editDistanceMatch is not null)
+            {
+                return new StatementColumnMapping(
+                    sourceColumn,
+                    editDistanceMatch.Field,
+                    StatementMappingConfidence.Fuzzy,
+                    FuzzyScore,
+                    $"Column is within edit distance {editDistanceMatch.Distance} of '{editDistanceMatch.Candidate}'.");
             }
         }
 

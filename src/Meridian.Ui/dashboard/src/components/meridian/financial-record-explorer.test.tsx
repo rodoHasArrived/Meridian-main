@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "jest-axe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import type { FinancialRecordExplorerDto } from "@/types";
@@ -18,10 +19,11 @@ describe("FinancialRecordExplorerShell", () => {
     expect(screen.getByRole("heading", { name: "Ledger Explorer" })).toBeInTheDocument();
     expect(screen.getByLabelText("Explorer summary")).toHaveTextContent("$1,000.00");
     expect(screen.getByRole("cell", { name: "Cash" })).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("row", { name: /revenue income aapl/i }));
 
-    const detail = screen.getByLabelText("Revenue proof detail");
+    const detail = screen.getByRole("dialog", { name: "Revenue proof detail" });
     const passport = within(detail).getByRole("region", { name: "Revenue Number Passport" });
     expect(passport).toBeInTheDocument();
     [
@@ -45,6 +47,221 @@ describe("FinancialRecordExplorerShell", () => {
       "href",
       "/?frexExplorer=ledger&frexView=system-ledger-default&frexRecord=ledger%3Arun-1%3Arevenue"
     );
+  });
+
+  it("publishes the selected record so route-owned detail can stay synchronized", async () => {
+    const onSelectRecord = vi.fn();
+
+    renderExplorer(undefined, createSecurityInstrumentExplorerDto(), onSelectRecord);
+
+    await waitFor(() => expect(onSelectRecord).toHaveBeenCalledWith("security:11111111-1111-1111-1111-111111111111"));
+  });
+
+  it("opens row proof detail via keyboard activation", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    const row = screen.getByRole("row", { name: /revenue income aapl/i });
+    expect(row).toHaveAttribute("aria-selected", "false");
+
+    act(() => row.focus());
+    expect(row).toHaveAttribute("tabindex", "0");
+    await user.keyboard("{Enter}");
+
+    expect(screen.getByRole("dialog", { name: "Revenue proof detail" })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /revenue income aapl/i })).toHaveAttribute("aria-selected", "true");
+
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog", { name: "Revenue proof detail" })).not.toBeInTheDocument();
+    expect(row).toHaveFocus();
+
+    // Space reopens the selected proof record (default scroll suppressed).
+    await user.keyboard(" ");
+    expect(screen.getByRole("dialog", { name: "Revenue proof detail" })).toBeInTheDocument();
+  });
+
+  it("exposes the record table as a selectable grid", () => {
+    renderExplorer();
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const rows = within(grid).getAllByRole("row").filter((row) => row.hasAttribute("aria-selected"));
+
+    expect(rows.length).toBeGreaterThan(1);
+    // aria-selected is only meaningful inside a grid; on a plain table row assistive
+    // technology has no selection concept to report.
+    rows.forEach((row, index) => {
+      expect(row).toHaveAttribute("aria-selected");
+      // The header occupies row 1, so the first record is row 2.
+      expect(row).toHaveAttribute("aria-rowindex", String(index + 2));
+    });
+    expect(grid).toHaveAttribute("aria-rowcount", String(rows.length + 1));
+
+    const header = within(grid).getAllByRole("row").find((row) => !row.hasAttribute("aria-selected"));
+    expect(header).toHaveAttribute("aria-rowindex", "1");
+  });
+
+  it("keeps one tab stop for the whole grid", () => {
+    renderExplorer();
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const rows = within(grid).getAllByRole("row").filter((row) => row.hasAttribute("aria-selected"));
+
+    // Every row being tabbable would put a long explorer many Tab presses away from the
+    // next control; the grid keeps a single tab stop and moves it with the arrow keys.
+    const tabbable = rows.filter((row) => row.getAttribute("tabindex") === "0");
+    expect(tabbable).toHaveLength(1);
+  });
+
+  it("moves row focus with the arrow, Home, and End keys", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const rows = within(grid).getAllByRole("row").filter((row) => row.hasAttribute("aria-selected"));
+    expect(rows.length).toBeGreaterThanOrEqual(2);
+
+    act(() => rows[0].focus());
+    expect(rows[0]).toHaveFocus();
+
+    await user.keyboard("{ArrowDown}");
+    expect(rows[1]).toHaveFocus();
+    expect(rows[1]).toHaveAttribute("tabindex", "0");
+    expect(rows[0]).toHaveAttribute("tabindex", "-1");
+
+    await user.keyboard("{ArrowUp}");
+    expect(rows[0]).toHaveFocus();
+
+    await user.keyboard("{End}");
+    expect(rows[rows.length - 1]).toHaveFocus();
+
+    await user.keyboard("{Home}");
+    expect(rows[0]).toHaveFocus();
+  });
+
+  it("does not move focus past the first or last row", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const rows = within(grid).getAllByRole("row").filter((row) => row.hasAttribute("aria-selected"));
+
+    act(() => rows[0].focus());
+    await user.keyboard("{ArrowUp}");
+    expect(rows[0]).toHaveFocus();
+
+    act(() => rows[rows.length - 1].focus());
+    await user.keyboard("{ArrowDown}");
+    expect(rows[rows.length - 1]).toHaveFocus();
+  });
+
+  it("keeps cell links out of the tab sequence so the grid is one tab stop", async () => {
+    renderExplorer();
+
+    const link = screen.getByRole("link", { name: "Cash" });
+
+    // Leaving every anchor natively tabbable meant Tab still walked each link in each rendered
+    // row, so the roving row tabIndex bought nothing.
+    expect(link).toHaveAttribute("tabindex", "-1");
+  });
+
+  it("announces how to reach links that were removed from the tab order", async () => {
+    renderExplorer();
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const describedBy = grid.getAttribute("aria-describedby");
+    expect(describedBy).toBeTruthy();
+
+    // Removing the links from Tab is only half the job: without an announced replacement
+    // gesture a keyboard or screen-reader user cannot reach the proof links at all.
+    const help = document.getElementById(describedBy as string);
+    expect(help).toHaveTextContent(/Right Arrow to move into the record's links/i);
+    expect(help).toHaveTextContent(/Escape to return/i);
+  });
+
+  it("reaches a row's links with ArrowRight and returns with Escape", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const rows = within(grid).getAllByRole("row").filter((row) => row.hasAttribute("aria-selected"));
+
+    act(() => rows[0].focus());
+    await user.keyboard("{ArrowRight}");
+
+    // Removing the links from the tab order would strand them without this path.
+    const link = screen.getByRole("link", { name: "Cash" });
+    expect(link).toHaveFocus();
+
+    await user.keyboard("{Escape}");
+    expect(rows[0]).toHaveFocus();
+  });
+
+  it("lets a focused cell link handle its own Enter key", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    const link = screen.getByRole("link", { name: "Cash" });
+    act(() => link.focus());
+    await user.keyboard("{Enter}");
+
+    // The row's activation handler must not swallow Enter aimed at a descendant link, or the
+    // browser never follows it and the proof drawer opens instead.
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("marks only the selected row as selected", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    await user.click(screen.getByRole("row", { name: /revenue income aapl/i }));
+    await user.keyboard("{Escape}");
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const selected = within(grid)
+      .getAllByRole("row")
+      .filter((row) => row.getAttribute("aria-selected") === "true");
+
+    expect(selected).toHaveLength(1);
+    expect(selected[0]).toHaveTextContent("Revenue");
+  });
+
+  it("shows the keyboard hint on screen once focus enters the grid", async () => {
+    renderExplorer();
+
+    const help = screen.getByText(/Right Arrow to move into the record/i);
+    // A sighted keyboard-only operator never hears sr-only text, and the cell links are out of
+    // the tab sequence — so before focus arrives the hint may be screen-reader-only, but once
+    // the grid has focus it has to be visible or Tab silently skips every proof link.
+    expect(help).toHaveClass("sr-only");
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const firstRow = within(grid).getAllByRole("row")[1];
+    act(() => firstRow.focus());
+
+    expect(help).not.toHaveClass("sr-only");
+    expect(help).toBeVisible();
+  });
+
+  it("keeps the keyboard hint visible while focus moves between cells in the grid", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    const grid = screen.getByRole("grid", { name: "Ledger Explorer records" });
+    const firstRow = within(grid).getAllByRole("row")[1];
+    act(() => firstRow.focus());
+    await user.keyboard("{ArrowRight}");
+
+    // Moving into a cell link fires blur on the row; only focus leaving the grid entirely
+    // should hide the hint, or it flashes off exactly as the operator starts using it.
+    expect(screen.getByText(/Right Arrow to move into the record/i)).not.toHaveClass("sr-only");
+  });
+
+  it("has no detectable accessibility violations in the record grid", async () => {
+    const { container } = renderExplorer();
+
+    const results = await axe(container);
+
+    expect(results.violations).toHaveLength(0);
   });
 
   it("requires an operator name before saving a material view change", async () => {
@@ -92,12 +309,14 @@ describe("FinancialRecordExplorerShell", () => {
     renderExplorer();
 
     await user.click(screen.getByRole("row", { name: /revenue income aapl/i }));
-    expect(screen.getByLabelText("Revenue proof detail")).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Revenue proof detail" })).toBeInTheDocument();
+    await user.keyboard("{Escape}");
 
     await user.click(screen.getByRole("link", { name: "Cash" }));
 
-    expect(screen.getByLabelText("Revenue proof detail")).toBeInTheDocument();
-    expect(screen.queryByLabelText("Cash proof detail")).not.toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /revenue income aapl/i })).toHaveAttribute("aria-selected", "true");
+    expect(screen.queryByRole("dialog", { name: "Revenue proof detail" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Cash proof detail" })).not.toBeInTheDocument();
   });
 
   it("keeps selected proof detail aligned to filtered rows", async () => {
@@ -105,14 +324,15 @@ describe("FinancialRecordExplorerShell", () => {
     renderExplorer();
 
     await user.click(screen.getByRole("row", { name: /revenue income aapl/i }));
-    expect(screen.getByLabelText("Revenue proof detail")).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Revenue proof detail" })).toBeInTheDocument();
+    await user.keyboard("{Escape}");
 
     await user.type(screen.getByRole("textbox", { name: "Search Ledger Explorer" }), "cash");
 
     expect(screen.queryByRole("row", { name: /revenue income aapl/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("row", { name: /cash assets/i })).toBeInTheDocument();
-    expect(screen.getByLabelText("Cash proof detail")).toBeInTheDocument();
-    expect(screen.queryByLabelText("Revenue proof detail")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("row", { name: /cash assets/i }));
+    expect(screen.getByRole("dialog", { name: "Cash proof detail" })).toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Revenue proof detail" })).not.toBeInTheDocument();
   });
 
   it("applies selected saved-view filters and column selections", async () => {
@@ -187,7 +407,7 @@ describe("FinancialRecordExplorerShell", () => {
     expect(screen.getByRole("button", { name: "Income symbols" })).toHaveAttribute("aria-current", "true");
     expect(screen.getByRole("textbox", { name: "Search Ledger Explorer" })).toHaveValue("aapl");
     expect(screen.getByRole("row", { name: /revenue aapl/i })).toBeInTheDocument();
-    expect(screen.getByLabelText("Revenue proof detail")).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Revenue proof detail" })).toBeInTheDocument();
     expect(screen.queryByRole("row", { name: /cash assets/i })).not.toBeInTheDocument();
     expect(screen.getByRole("link", {
       name: "Share Ledger Explorer evidence state: view Income symbols; search aapl; filter Account Type equals Income; record Revenue"
@@ -208,7 +428,7 @@ describe("FinancialRecordExplorerShell", () => {
     expect(screen.getByLabelText("Applied explorer filters")).toHaveTextContent("Income");
     expect(screen.getByRole("row", { name: /revenue income aapl/i })).toBeInTheDocument();
     expect(screen.queryByRole("row", { name: /cash assets/i })).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Revenue proof detail")).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Revenue proof detail" })).toBeInTheDocument();
     expect(screen.getByRole("link", {
       name: "Share Ledger Explorer evidence state: filter Type equals Income; record Revenue"
     })).toHaveAttribute(
@@ -227,6 +447,7 @@ describe("FinancialRecordExplorerShell", () => {
     );
     renderExplorer(onSaveView);
 
+    await waitFor(() => expect(screen.getByRole("button", { name: "Close drawer" })).toHaveFocus());
     await user.type(screen.getByRole("textbox", { name: "Saved view name" }), "Income evidence review");
     await user.click(screen.getByRole("button", { name: "Save view" }));
 
@@ -243,26 +464,25 @@ describe("FinancialRecordExplorerShell", () => {
     }));
   });
 
-  it("persists the current explorer evidence state into the browser URL", async () => {
+  it("keeps explorer evidence state out of the browser URL until it is explicitly shared", async () => {
     const user = userEvent.setup();
     window.history.replaceState(null, "", "/accounting?period=2026-06");
     renderExplorer();
 
-    await waitFor(() => {
-      expect(window.location.href).toContain("period=2026-06");
-      expect(window.location.href).toContain("frexExplorer=ledger");
-      expect(window.location.href).toContain("frexView=system-ledger-default");
-      expect(window.location.href).toContain("frexRecord=ledger%3Arun-1%3Acash");
-    });
+    expect(window.location.pathname).toBe("/accounting");
+    expect(window.location.search).toBe("?period=2026-06");
 
     await user.click(screen.getByRole("row", { name: /revenue income aapl/i }));
+    await user.click(screen.getByRole("button", { name: "Close drawer" }));
+    expect(screen.queryByRole("dialog", { name: "Revenue proof detail" })).not.toBeInTheDocument();
     await user.type(screen.getByRole("textbox", { name: "Search Ledger Explorer" }), "aapl");
 
-    await waitFor(() => {
-      expect(window.location.href).toContain("period=2026-06");
-      expect(window.location.href).toContain("frexSearch=aapl");
-      expect(window.location.href).toContain("frexRecord=ledger%3Arun-1%3Arevenue");
-    });
+    expect(window.location.pathname).toBe("/accounting");
+    expect(window.location.search).toBe("?period=2026-06");
+    expect(screen.getByRole("link", { name: /share ledger explorer evidence state/i })).toHaveAttribute(
+      "href",
+      "/accounting?period=2026-06&frexExplorer=ledger&frexView=system-ledger-default&frexSearch=aapl&frexRecord=ledger%3Arun-1%3Arevenue"
+    );
   });
 
   it("renders Security & Instrument Explorer DTO fields used by WPF parity proof", async () => {
@@ -277,7 +497,7 @@ describe("FinancialRecordExplorerShell", () => {
 
     await user.click(screen.getByRole("row", { name: /apple inc.*96%.*ready.*1 projection/i }));
 
-    const detail = screen.getByLabelText("Apple Inc. proof detail");
+    const detail = screen.getByRole("dialog", { name: "Apple Inc. proof detail" });
     const passport = within(detail).getByRole("region", { name: "Apple Inc. Number Passport" });
     expect(within(passport).getByText("Report Usage")).toBeInTheDocument();
     expect(within(passport).getByText("/api/workstation/financial-record-explorers/report-line-provenance?lineKey=holdings.aapl.market-value&sourceId=AAPL")).toBeInTheDocument();
@@ -316,7 +536,8 @@ describe("FinancialRecordExplorerShell", () => {
     expect(screen.getByRole("button", { name: "Source unavailable" })).toBeDisabled();
   });
 
-  it("renders the shared Security & Instrument Explorer parity DTO", () => {
+  it("renders the shared Security & Instrument Explorer parity DTO", async () => {
+    const user = userEvent.setup();
     renderExplorer(undefined, loadSecurityInstrumentParityFixture());
 
     expect(screen.getByRole("heading", { name: "Security & Instrument Explorer" })).toBeInTheDocument();
@@ -327,7 +548,8 @@ describe("FinancialRecordExplorerShell", () => {
     expect(screen.getByRole("cell", { name: "1 projection" })).toBeInTheDocument();
     expect(screen.getByRole("cell", { name: "Board pack holdings.aapl.market-value" })).toBeInTheDocument();
 
-    const detail = screen.getByLabelText("AAPL - Apple Inc. proof detail");
+    await user.click(screen.getByRole("row", { name: /aapl - apple inc/i }));
+    const detail = screen.getByRole("dialog", { name: "AAPL - Apple Inc. proof detail" });
     expect(within(detail).getByText("Instrument Identity")).toBeInTheDocument();
     expect(within(detail).getByText("AAPL / US0378331005")).toBeInTheDocument();
     expect(within(detail).getByText("Provider Evidence")).toBeInTheDocument();
@@ -343,7 +565,8 @@ describe("FinancialRecordExplorerShell", () => {
 
 function renderExplorer(
   onSaveView?: Parameters<typeof FinancialRecordExplorerShell>[0]["onSaveView"],
-  explorer: FinancialRecordExplorerDto = createExplorerDto()
+  explorer: FinancialRecordExplorerDto = createExplorerDto(),
+  onSelectRecord?: Parameters<typeof FinancialRecordExplorerShell>[0]["onSelectRecord"]
 ) {
   return render(
     <FinancialRecordExplorerShell
@@ -356,6 +579,7 @@ function renderExplorer(
       appliedFilters={[]}
       explorer={explorer}
       onSaveView={onSaveView}
+      onSelectRecord={onSelectRecord}
     >
       <div>Fallback static content</div>
     </FinancialRecordExplorerShell>

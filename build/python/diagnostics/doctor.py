@@ -258,11 +258,52 @@ class Doctor:
 
     def _check_postgres(self) -> None:
         """Try a TCP connection to PostgreSQL and report fix hints."""
-        conn_str = os.getenv("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", "")
+        # Strip each variable before the `or`: a whitespace-only scoped value is truthy in Python,
+        # so selecting before trimming would pick it over a real MERIDIAN_DATABASE_URL and probe the
+        # localhost default. Runtime propagation treats the scoped value as unset via
+        # IsNullOrWhiteSpace and falls back to the unified URL — mirror that here. Keep the name of
+        # the selected variable so diagnostics point the operator at the setting that actually
+        # supplied the value rather than always naming MERIDIAN_DATABASE_URL.
+        security_master = os.getenv("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", "").strip()
+        database_url = os.getenv("MERIDIAN_DATABASE_URL", "").strip()
+        if security_master:
+            conn_str, conn_var = security_master, "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING"
+        else:
+            conn_str, conn_var = database_url, "MERIDIAN_DATABASE_URL"
         host = _POSTGRES_DEFAULT_HOST
         port = _POSTGRES_DEFAULT_PORT
 
-        if conn_str:
+        # The runtime trims the unified URL and matches the scheme case-insensitively in
+        # MeridianDatabaseEnvironment.NormalizeToConnectionString; mirror that here so an
+        # uppercase or whitespace-padded URL is parsed rather than skipped.
+        if conn_str.lower().startswith(("postgres://", "postgresql://")):
+            # URL form: postgres://user:pass@host:port/db
+            from urllib.parse import urlsplit
+
+            try:
+                parts = urlsplit(conn_str)
+                resolved_host = parts.hostname
+                resolved_port = parts.port
+            except ValueError:
+                # A structurally malformed URL (bad host, or a non-numeric/out-of-range
+                # port that urlsplit or the port property rejects) is a configuration
+                # error, not an unreachable server: the runtime rejects the same URL in
+                # MeridianDatabaseEnvironment.NormalizeToConnectionString, so report it
+                # loudly instead of probing a default port and masking the problem.
+                self.results.append(
+                    DoctorResult(
+                        name=f"PostgreSQL ({conn_var})",
+                        status="fail",
+                        details=f"{conn_var} is not a valid connection URL; the host would reject it at startup",
+                        expected="postgres://user:password@host:port/database with a numeric port in 1-65535",
+                    )
+                )
+                return
+            if resolved_host:
+                host = resolved_host
+            if resolved_port:
+                port = resolved_port
+        elif conn_str:
             host_m = re.search(r"[Hh]ost=([^;, ]+)", conn_str)
             port_m = re.search(r"[Pp]ort=(\d+)", conn_str)
             if host_m:
@@ -282,11 +323,7 @@ class Doctor:
                 )
             )
         except (socket.timeout, ConnectionRefusedError, OSError):
-            fix = (
-                f"Check MERIDIAN_SECURITY_MASTER_CONNECTION_STRING"
-                if conn_str
-                else _POSTGRES_DOCKER_FIX
-            )
+            fix = f"Check {conn_var}" if conn_str else _POSTGRES_DOCKER_FIX
             self.results.append(
                 DoctorResult(
                     name=f"PostgreSQL {host}:{port}",

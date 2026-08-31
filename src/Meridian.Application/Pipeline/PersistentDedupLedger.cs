@@ -18,15 +18,35 @@ namespace Meridian.Application.Pipeline;
 /// Uses a JSONL-backed rolling log with in-memory bloom-filter-like cache.
 /// Keyed by (provider, symbol, eventIdentity) with configurable TTL.
 /// </summary>
+/// <remarks>
+/// Persisted entries are versioned. Legacy lines without a <c>"v"</c> field are version 1:
+/// recorded before sink durability was confirmed, valid for live-ingress suppression only and
+/// untrusted during WAL recovery. Lines with <c>"v":2</c> are written exclusively by
+/// <see cref="CommitDurableAsync"/> after the caller's primary sink flushed, so they may
+/// suppress WAL replay. Pending reservations are memory-only and are never persisted;
+/// compaction rewrites committed entries preserving their version and never upgrades
+/// legacy trust implicitly.
+/// </remarks>
 public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
 {
+    /// <summary>Entry recorded without sink-durability confirmation (legacy live-ingress trust).</summary>
+    internal const byte EntryVersionLegacy = 1;
+
+    /// <summary>Entry recorded after the primary sink flushed (trusted during WAL recovery).</summary>
+    internal const byte EntryVersionSinkDurable = 2;
+
     private readonly ILogger _log = LoggingSetup.ForContext<PersistentDedupLedger>();
     private readonly string _ledgerPath;
     private readonly TimeSpan _entryTtl;
     private readonly int _maxInMemoryEntries;
 
-    // In-memory cache: composite key → expiry timestamp
-    private readonly ConcurrentDictionary<string, long> _cache = new(StringComparer.Ordinal);
+    // In-memory cache: composite key → (last-seen timestamp, persisted entry version)
+    private readonly ConcurrentDictionary<string, DedupCacheEntry> _cache = new(StringComparer.Ordinal);
+
+    // Pending reservations: composite key → process-local claim token. Never persisted —
+    // a crash discards all pending claims so their WAL records replay at-least-once.
+    private readonly ConcurrentDictionary<string, long> _pendingReservations = new(StringComparer.Ordinal);
+    private long _reservationTokenSequence;
 
     // Cache for key prefixes keyed by (source, symbol, type) — computed once per unique combination
     // to avoid repeated string interpolation on the hot path.
@@ -51,7 +71,8 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     public long TotalChecked => Interlocked.Read(ref _totalChecked);
 
     /// <summary>
-    /// Total duplicates detected.
+    /// Total deliveries suppressed by a committed ledger entry. Unresolved pending claims are
+    /// deferrals, not detections, and are never counted here.
     /// </summary>
     public long TotalDuplicates => Interlocked.Read(ref _totalDuplicates);
 
@@ -130,10 +151,26 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
                         var root = doc.RootElement;
                         var key = root.GetProperty("k").GetString();
                         var ticks = root.GetProperty("t").GetInt64();
+                        // Legacy lines carry no "v" field and load as version 1 (untrusted for
+                        // WAL recovery). Versions are clamped into the byte range defensively.
+                        var version = EntryVersionLegacy;
+                        if (root.TryGetProperty("v", out var versionElement) &&
+                            versionElement.TryGetInt32(out var parsedVersion) &&
+                            parsedVersion > EntryVersionLegacy)
+                        {
+                            version = parsedVersion >= byte.MaxValue ? byte.MaxValue : (byte)parsedVersion;
+                        }
 
                         if (key != null && ticks > cutoff)
                         {
-                            _cache[key] = ticks;
+                            // Later lines refresh the timestamp, but a durability confirmation is
+                            // never retracted by a later legacy sighting of the same identity.
+                            if (_cache.TryGetValue(key, out var existing) && existing.Version > version)
+                            {
+                                version = existing.Version;
+                            }
+
+                            _cache[key] = new DedupCacheEntry(ticks, version);
                             loaded++;
                         }
                         else
@@ -164,42 +201,227 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     /// Checks whether an event is a duplicate and records it if new.
     /// Returns true if the event is a DUPLICATE (should be skipped).
     /// </summary>
+    /// <remarks>
+    /// Legacy admission check: a miss eagerly records a version-1 entry, i.e. without
+    /// sink-durability confirmation, so it must not be used as a durability signal.
+    /// A miss is admitted through the same per-key pending claim the reservation path uses, so
+    /// the committed-state check and the legacy record are atomic with respect to concurrent
+    /// <see cref="TryReserveAsync"/> callers. An identity held by an in-flight reservation is
+    /// awaited (honouring <paramref name="ct"/>) until the claim commits or releases, never
+    /// reported as a duplicate while only a memory-resident claim exists.
+    /// Durable persistence paths use <see cref="TryReserveAsync"/> + <see cref="CommitDurableAsync"/>.
+    /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public async ValueTask<bool> IsDuplicateAsync(MarketEvent evt, CancellationToken ct = default)
     {
         Interlocked.Increment(ref _totalChecked);
 
         var key = GetCachedOrComputeEventKey(evt);
-        var nowTicks = DateTimeOffset.UtcNow.Ticks;
 
         // Check cache first
-        if (_cache.TryGetValue(key, out var existingTicks))
+        if (_cache.TryGetValue(key, out var existing) &&
+            DateTimeOffset.UtcNow.Ticks - existing.Ticks < _entryTtl.Ticks)
         {
-            // Entry exists and is not expired
-            if (nowTicks - existingTicks < _entryTtl.Ticks)
+            Interlocked.Increment(ref _totalDuplicates);
+            return true;
+        }
+
+        // A miss is admitted through the same per-key pending slot the reservation path uses,
+        // so the committed-state check and the legacy record are atomic with respect to
+        // concurrent TryReserveAsync callers — two callers can never both admit one identity.
+        // While the slot is held elsewhere its claim proves nothing durable (the holder may
+        // still fail and release), so wait for it to resolve: a commit surfaces here as a
+        // durable duplicate, a release lets this caller claim the slot and record the identity.
+        var token = Interlocked.Increment(ref _reservationTokenSequence);
+        while (!_pendingReservations.TryAdd(key, token))
+        {
+            await Task.Delay(10, ct).ConfigureAwait(false);
+
+            if (_cache.TryGetValue(key, out existing) &&
+                DateTimeOffset.UtcNow.Ticks - existing.Ticks < _entryTtl.Ticks)
             {
                 Interlocked.Increment(ref _totalDuplicates);
                 return true;
             }
         }
 
-        // Not a duplicate — record it
-        _cache[key] = nowTicks;
-        var ledgerLine = CreateLedgerLine(key, nowTicks);
+        try
+        {
+            // Double-check after acquiring the slot: a concurrent commit may have published the
+            // identity between the cache read above and the TryAdd (commits publish the cache
+            // entry before releasing their pending token, so it is guaranteed visible here).
+            var nowTicks = DateTimeOffset.UtcNow.Ticks;
+            if (_cache.TryGetValue(key, out existing) && nowTicks - existing.Ticks < _entryTtl.Ticks)
+            {
+                Interlocked.Increment(ref _totalDuplicates);
+                return true;
+            }
 
-        // Persist to disk (fire-and-forget the write, but serialize access)
+            // Not a duplicate — record it as a legacy (durability-unconfirmed) identity. Any
+            // entry already cached here is necessarily expired: a fresh entry of either
+            // version returned above, and no commit can publish while this caller holds the
+            // pending slot. An expired durability confirmation must not survive the refresh —
+            // past the TTL the key may describe a different logical occurrence, and the old
+            // sink write proves nothing about this newly admitted one, so trust resets to
+            // version 1 and WAL recovery replays it until a sink flush re-confirms it.
+            _cache[key] = new DedupCacheEntry(nowTicks, EntryVersionLegacy);
+            var ledgerLine = CreateLedgerLine(key, nowTicks, EntryVersionLegacy);
+
+            // Persist to disk (fire-and-forget the write, but serialize access)
+            await _writeLock.WaitAsync(ct).ConfigureAwait(false);
+            try
+            {
+                await EnsureWriterInitializedAsync(ct).ConfigureAwait(false);
+                await _writer!.WriteLineAsync(ledgerLine.AsMemory(), ct).ConfigureAwait(false);
+            }
+            finally
+            {
+                _writeLock.Release();
+            }
+
+            return false;
+        }
+        finally
+        {
+            ReleaseCore(key, token);
+        }
+    }
+
+    /// <inheritdoc />
+    public ValueTask<DedupReservationResult> TryReserveAsync(
+        MarketEvent evt,
+        DedupLookupScope scope,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        Interlocked.Increment(ref _totalChecked);
+
+        var key = GetCachedOrComputeEventKey(evt);
+        var nowTicks = DateTimeOffset.UtcNow.Ticks;
+
+        if (_cache.TryGetValue(key, out var existing) && nowTicks - existing.Ticks < _entryTtl.Ticks)
+        {
+            // Committed entries suppress live ingress at any version. WAL recovery trusts only
+            // an exact durability confirmation: legacy identities — and unknown future
+            // versions — are replayed rather than trusted.
+            if (scope == DedupLookupScope.LiveIngress || existing.Version == EntryVersionSinkDurable)
+            {
+                Interlocked.Increment(ref _totalDuplicates);
+                return ValueTask.FromResult(
+                    new DedupReservationResult(DedupReservationStatus.Duplicate, default));
+            }
+        }
+
+        var token = Interlocked.Increment(ref _reservationTokenSequence);
+        if (!_pendingReservations.TryAdd(key, token))
+        {
+            // Not counted as a duplicate: a pending claim is an unresolved deferral, and a
+            // caller waiting on it re-polls this path many times for one delivery. Only a
+            // committed-entry suppression is a detection; callers that suppress on their own
+            // batch-local claims track that in their own counters.
+            // Carry the identity key (with no token) so callers such as WAL recovery can tell
+            // whether the in-flight claim is one they hold themselves or an external one.
+            return ValueTask.FromResult(new DedupReservationResult(
+                DedupReservationStatus.PendingElsewhere,
+                new DedupReservation(key, 0)));
+        }
+
+        // Double-check after acquiring the pending slot: a concurrent commit may have published
+        // this identity between the cache read above and the TryAdd. Commits publish the cache
+        // entry BEFORE releasing their pending token, so once the slot was free the confirmation
+        // is guaranteed visible here — a reservation can never be granted for an identity that
+        // is already durability-confirmed in the requested scope.
+        if (_cache.TryGetValue(key, out existing) && nowTicks - existing.Ticks < _entryTtl.Ticks &&
+            (scope == DedupLookupScope.LiveIngress || existing.Version == EntryVersionSinkDurable))
+        {
+            ReleaseCore(key, token);
+            Interlocked.Increment(ref _totalDuplicates);
+            return ValueTask.FromResult(
+                new DedupReservationResult(DedupReservationStatus.Duplicate, default));
+        }
+
+        return ValueTask.FromResult(new DedupReservationResult(
+            DedupReservationStatus.Reserved,
+            new DedupReservation(key, token)));
+    }
+
+    /// <inheritdoc />
+    public async Task CommitDurableAsync(
+        IReadOnlyList<DedupReservation> reservations,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(reservations);
+        if (reservations.Count == 0)
+            return;
+
         await _writeLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
             await EnsureWriterInitializedAsync(ct).ConfigureAwait(false);
-            await _writer!.WriteLineAsync(ledgerLine.AsMemory(), ct).ConfigureAwait(false);
+            var nowTicks = DateTimeOffset.UtcNow.Ticks;
+
+            // Stage 1: append a durability-confirmed line for every reservation that is still
+            // held by its token, remembering which ones qualified. Nothing in memory changes
+            // yet, so a failure here (or in the flush below) leaves the pending claims intact
+            // and the commit can simply be retried; a repeated line is harmless because loads
+            // are last-write-wins.
+            var validatedIndexes = new List<int>(reservations.Count);
+            for (var i = 0; i < reservations.Count; i++)
+            {
+                var reservation = reservations[i];
+                if (!IsReservationHeld(reservation))
+                {
+                    _log.Error(
+                        "Dedup commit skipped reservation for key {Key}: its token is no longer held. The identity stays uncommitted and the event remains replayable",
+                        reservation.Key);
+                    continue;
+                }
+
+                var line = CreateLedgerLine(reservation.Key, nowTicks, EntryVersionSinkDurable);
+                await _writer!.WriteLineAsync(line.AsMemory(), ct).ConfigureAwait(false);
+                validatedIndexes.Add(i);
+            }
+
+            // Stage 2: make the committed identities durable before publishing them.
+            await _writer!.FlushAsync(ct).ConfigureAwait(false);
+
+            // Stage 3: post-durability bookkeeping. Publish each committed entry BEFORE dropping
+            // its pending claim: a concurrent TryReserveAsync that wins the freed slot re-checks
+            // the cache after its TryAdd, so this ordering guarantees it observes the
+            // durability confirmation instead of re-claiming an already-committed identity.
+            // The cache write is unconditional for validated entries — their line is durably
+            // flushed — while the release stays token-checked.
+            foreach (var index in validatedIndexes)
+            {
+                var reservation = reservations[index];
+                _cache[reservation.Key] = new DedupCacheEntry(nowTicks, EntryVersionSinkDurable);
+                ReleaseCore(reservation.Key, reservation.Token);
+            }
         }
         finally
         {
             _writeLock.Release();
         }
+    }
 
-        return false;
+    /// <inheritdoc />
+    public bool Release(in DedupReservation reservation)
+    {
+        return reservation.IsHeld && ReleaseCore(reservation.Key, reservation.Token);
+    }
+
+    private bool IsReservationHeld(in DedupReservation reservation)
+    {
+        return reservation.IsHeld &&
+               _pendingReservations.TryGetValue(reservation.Key, out var heldToken) &&
+               heldToken == reservation.Token;
+    }
+
+    private bool ReleaseCore(string key, long token)
+    {
+        // Atomic compare-and-remove: only the exact (key, token) pair is removed, so a stale
+        // token can never release a newer holder's claim.
+        return _pendingReservations.TryRemove(new KeyValuePair<string, long>(key, token));
     }
 
     private Task EnsureWriterInitializedAsync(CancellationToken ct)
@@ -221,6 +443,14 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     /// Uses provider-specific trade IDs when available, otherwise hashes
     /// the semantic identity fields per event type.
     /// </summary>
+    /// <remarks>
+    /// SCOPE: content-based identity is implemented only for Trade, BBO quote, and LOB
+    /// snapshot payloads — the high-volume types where provider replays and overlapping
+    /// backfills occur. Every other payload type falls back to sequence-number identity,
+    /// which dedups exact replays within one source stream but NOT re-deliveries that
+    /// arrive under a different sequence. When adding a new high-volume payload type,
+    /// give it a content key here rather than relying on the fallback.
+    /// </remarks>
     private string ComputeEventKey(MarketEvent evt)
     {
         // Key structure: {Source}:{EffectiveSymbol}:{Type}:{identity}
@@ -249,8 +479,16 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
                 // L2: use sequence + timestamp
                 resolvedPrefix + $"seq:{snap.SequenceNumber}",
 
+            Contracts.Domain.Models.AggregateBarPayload agg =>
+                // Aggregates: identity is the bar window itself (timeframe + start time),
+                // which is deterministic and replay-stable. Streaming aggregate feeds carry
+                // no provider sequence (Polygon A/AM), so sequence identity would either
+                // collide (constant 0) or defeat dedup entirely (fabricated counters).
+                resolvedPrefix + $"agg:{(byte)agg.Timeframe}:{agg.StartTime.UtcTicks}",
+
             _ =>
-                // Fallback: use sequence number
+                // Fallback: sequence-number identity (see the scope remarks above) — only
+                // dedups replays that preserve the original sequence numbering.
                 resolvedPrefix + $"seq:{evt.Sequence}"
         };
     }
@@ -262,8 +500,11 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             return cached.Key;
         }
 
+        // TryAdd: concurrent callers may race to cache the same event instance (the store is
+        // shared and thread-safe); the computed key is deterministic, so the loser's value is
+        // identical and the lost race is safely ignored.
         var key = ComputeEventKey(evt);
-        _eventKeyCache.Add(evt, new CachedKeyBox(key));
+        _eventKeyCache.TryAdd(evt, new CachedKeyBox(key));
         return key;
     }
 
@@ -425,10 +666,14 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         return s.Replace("\\", "\\\\").Replace("\"", "\\\"");
     }
 
-    private static string CreateLedgerLine(string key, long ticks)
+    private static string CreateLedgerLine(string key, long ticks, byte version)
     {
         var escapedKey = EscapeJson(key);
-        return $"{{\"k\":\"{escapedKey}\",\"t\":{ticks}}}";
+        // Version-1 lines keep the exact legacy shape (no "v" field) so files written by this
+        // build remain readable by earlier builds; higher versions are additive.
+        return version <= EntryVersionLegacy
+            ? $"{{\"k\":\"{escapedKey}\",\"t\":{ticks}}}"
+            : $"{{\"k\":\"{escapedKey}\",\"t\":{ticks},\"v\":{version}}}";
     }
 
     private static string CreateHashedKey(string prefix, ReadOnlySpan<byte> truncatedHash)
@@ -492,7 +737,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         }
 
         var nowTicks = DateTimeOffset.UtcNow.Ticks;
-        return _cache.TryGetValue(key!, out var existingTicks) && (nowTicks - existingTicks < _entryTtl.Ticks);
+        return _cache.TryGetValue(key!, out var existing) && (nowTicks - existing.Ticks < _entryTtl.Ticks);
     }
 
     /// <summary>
@@ -508,7 +753,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         {
             _benchmarkEventKeyCache[evt] = key;
         }
-        _cache[key] = DateTimeOffset.UtcNow.Ticks;
+        _cache[key] = new DedupCacheEntry(DateTimeOffset.UtcNow.Ticks, EntryVersionLegacy);
     }
 
     /// <summary>
@@ -574,6 +819,12 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     }
 
     /// <summary>
+    /// A committed cache entry: when the identity was last seen and the persisted entry version
+    /// (see <see cref="EntryVersionLegacy"/> / <see cref="EntryVersionSinkDurable"/>).
+    /// </summary>
+    private readonly record struct DedupCacheEntry(long Ticks, byte Version);
+
+    /// <summary>
     /// Background eviction of expired entries, called by the eviction timer.
     /// Runs off the hot path to avoid blocking event processing.
     /// </summary>
@@ -590,7 +841,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         var evicted = 0;
         foreach (var kvp in _cache)
         {
-            if (kvp.Value < cutoff)
+            if (kvp.Value.Ticks < cutoff)
             {
                 _cache.TryRemove(kvp.Key, out _);
                 evicted++;
@@ -646,11 +897,15 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             {
                 await using (var writer = new StreamWriter(tempPath, false, Encoding.UTF8))
                 {
-                    foreach (var (key, ticks) in _cache)
+                    // Only committed entries are rewritten — pending reservations stay
+                    // memory-only — and each entry keeps its recorded version so compaction
+                    // never implicitly upgrades legacy trust to durability-confirmed.
+                    foreach (var (key, entry) in _cache)
                     {
-                        if (ticks > cutoff)
+                        if (entry.Ticks > cutoff)
                         {
-                            await writer.WriteLineAsync($"{{\"k\":\"{EscapeJson(key)}\",\"t\":{ticks}}}".AsMemory(), ct).ConfigureAwait(false);
+                            await writer.WriteLineAsync(
+                                CreateLedgerLine(key, entry.Ticks, entry.Version).AsMemory(), ct).ConfigureAwait(false);
                             kept++;
                         }
                     }

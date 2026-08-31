@@ -1,6 +1,9 @@
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
+// Fully qualified at each use: Meridian.Contracts.SecurityMaster also declares an
+// ISecurityMasterQueryService, so importing that namespace here would make the name ambiguous.
+using SecurityAssetClassCatalog = Meridian.Contracts.SecurityMaster.SecurityAssetClassCatalog;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -10,6 +13,7 @@ public interface IMultiAssetCoverageReadService
         string? fundAccountId,
         string? entity,
         string? assetClass,
+        ReconciliationBreakQueueScope scope,
         CancellationToken ct = default);
 }
 
@@ -18,24 +22,29 @@ public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadServi
     private readonly ISecurityMasterOperationalReadinessService _readinessService;
     private readonly ProviderLedgerReconciliationService? _providerLedgerReconciliation;
     private readonly FundAccountCloseReadinessService? _closeReadiness;
+    private readonly ISecurityMasterQueryService? _securityMasterQuery;
 
     public MultiAssetCoverageReadService(
         ISecurityMasterOperationalReadinessService readinessService,
         ProviderLedgerReconciliationService? providerLedgerReconciliation = null,
-        FundAccountCloseReadinessService? closeReadiness = null)
+        FundAccountCloseReadinessService? closeReadiness = null,
+        ISecurityMasterQueryService? securityMasterQuery = null)
     {
         _readinessService = readinessService;
         _providerLedgerReconciliation = providerLedgerReconciliation;
         _closeReadiness = closeReadiness;
+        _securityMasterQuery = securityMasterQuery;
     }
 
     public async Task<MultiAssetCoverageSummaryDto> GetCoverageAsync(
         string? fundAccountId,
         string? entity,
         string? assetClass,
+        ReconciliationBreakQueueScope scope,
         CancellationToken ct = default)
     {
-        var evidenceSnapshot = await BuildEvidenceSnapshotAsync(fundAccountId, ct).ConfigureAwait(false);
+        ArgumentNullException.ThrowIfNull(scope);
+        var evidenceSnapshot = await BuildEvidenceSnapshotAsync(fundAccountId, scope, ct).ConfigureAwait(false);
         return await _readinessService.GetReadinessAsync(
                 new SecurityMasterOperationalReadinessRequest(fundAccountId, entity, assetClass, evidenceSnapshot),
                 ct)
@@ -44,6 +53,7 @@ public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadServi
 
     private async Task<SecurityMasterOperationalEvidenceSnapshot?> BuildEvidenceSnapshotAsync(
         string? fundAccountId,
+        ReconciliationBreakQueueScope scope,
         CancellationToken ct)
     {
         if (!Guid.TryParse(fundAccountId, out var accountId))
@@ -55,7 +65,7 @@ public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadServi
         var route = BuildRoute(UiApiRoutes.FundAccountBrokerageSyncReconciliationLatest, accountId);
         var latest = _providerLedgerReconciliation is null
             ? null
-            : await _providerLedgerReconciliation.GetLatestAsync(accountId, ct).ConfigureAwait(false);
+            : await _providerLedgerReconciliation.GetLatestAsync(accountId, scope, ct).ConfigureAwait(false);
 
         if (latest is not null)
         {
@@ -139,6 +149,16 @@ public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadServi
                         Reason: line.Reason));
                 }
 
+                // Resolve the asset class the referenced securities actually DECLARE before falling
+                // back to inferring one from the evidence's own description.
+                var declaredAssetClasses = await ResolveDeclaredAssetClassesAsync(
+                        latest.CorporateActionReadiness.EvidenceCandidates
+                            .Select(static candidate => candidate.SecurityId)
+                            .Concat(latest.CorporateActionReadiness.SecurityMasterScheduleFeeds
+                                .Select(static feed => feed.SecurityId)),
+                        ct)
+                    .ConfigureAwait(false);
+
                 foreach (var candidate in latest.CorporateActionReadiness.EvidenceCandidates)
                 {
                     evidence.Add(new SecurityMasterOperationalEvidenceItem(
@@ -147,7 +167,7 @@ public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadServi
                         EvidenceKind: $"{candidate.CandidateType} {candidate.RequiredFeed}",
                         Status: candidate.Status.ToString(),
                         Source: candidate.EvidenceSource,
-                        AssetClass: CandidateAssetClass(candidate),
+                        AssetClass: CandidateAssetClass(candidate, declaredAssetClasses),
                         Label: candidate.Symbol ?? candidate.CandidateType,
                         EvidenceRoute: route,
                         EvidenceLink: latest.Summary.DetailPath,
@@ -162,7 +182,7 @@ public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadServi
                         EvidenceKind: $"{feed.FeedKind} {feed.RequiredFeed}",
                         Status: feed.Status.ToString(),
                         Source: feed.EvidenceSource,
-                        AssetClass: ScheduleAssetClass(feed),
+                        AssetClass: ScheduleAssetClass(feed, declaredAssetClasses),
                         Label: feed.Symbol ?? feed.FeedKind,
                         EvidenceRoute: route,
                         EvidenceLink: latest.Summary.DetailPath,
@@ -186,7 +206,7 @@ public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadServi
 
         var closeReadiness = _closeReadiness is null
             ? null
-            : await _closeReadiness.GetAsync(accountId, ct).ConfigureAwait(false);
+            : await _closeReadiness.GetAsync(accountId, scope, ct).ConfigureAwait(false);
         if (closeReadiness is not null)
         {
             foreach (var component in closeReadiness.Components)
@@ -332,66 +352,94 @@ public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadServi
         return line.Label;
     }
 
-    private static string? CandidateAssetClass(ProviderCorporateActionEvidenceCandidateDto candidate)
+    /// <summary>
+    /// Resolves the asset class each referenced security DECLARES, keyed by security id. Evidence
+    /// rows that name a security get their real class from the Security Master instead of one
+    /// guessed from the evidence text. Securities that cannot be read (or an unavailable query
+    /// service) are simply absent, and the caller falls back to the evidence-shape inference.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<Guid, string>> ResolveDeclaredAssetClassesAsync(
+        IEnumerable<Guid?> securityIds,
+        CancellationToken ct)
     {
-        var combined = $"{candidate.CandidateType} {candidate.RequiredFeed} {candidate.Symbol} {candidate.SecurityDisplayName} {candidate.Reason}";
-        if (IsPrivateCreditEvidence(combined))
+        if (_securityMasterQuery is null)
+        {
+            return new Dictionary<Guid, string>();
+        }
+
+        var declaredAssetClasses = new Dictionary<Guid, string>();
+        foreach (var securityId in securityIds
+                     .Where(static securityId => securityId is { } value && value != Guid.Empty)
+                     .Select(static securityId => securityId!.Value)
+                     .Distinct())
+        {
+            var detail = await _securityMasterQuery.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            if (detail is not null && !string.IsNullOrWhiteSpace(detail.AssetClass))
+            {
+                // Normalize vendor spellings onto the canonical catalog name; an unrecognized class
+                // is still the record's own declared value, so it is kept rather than dropped.
+                var descriptor = SecurityAssetClassCatalog.GetOrDefault(detail.AssetClass);
+                declaredAssetClasses[securityId] = descriptor.AssetClass == "Unknown"
+                    ? detail.AssetClass.Trim()
+                    : descriptor.AssetClass;
+            }
+        }
+
+        return declaredAssetClasses;
+    }
+
+    private static string? CandidateAssetClass(
+        ProviderCorporateActionEvidenceCandidateDto candidate,
+        IReadOnlyDictionary<Guid, string> declaredAssetClasses)
+        => ResolveDeclared(candidate.SecurityId, declaredAssetClasses)
+           ?? InferAssetClassFromEvidenceShape($"{candidate.CandidateType} {candidate.RequiredFeed}");
+
+    private static string? ScheduleAssetClass(
+        ProviderSecurityMasterScheduleFeedDto feed,
+        IReadOnlyDictionary<Guid, string> declaredAssetClasses)
+        => ResolveDeclared(feed.SecurityId, declaredAssetClasses)
+           ?? InferAssetClassFromEvidenceShape($"{feed.FeedKind} {feed.RequiredFeed} {feed.LedgerEffectKind}");
+
+    private static string? ResolveDeclared(
+        Guid? securityId,
+        IReadOnlyDictionary<Guid, string> declaredAssetClasses)
+        => securityId is { } id && declaredAssetClasses.TryGetValue(id, out var declared) ? declared : null;
+
+    /// <summary>
+    /// Last-resort classification for evidence that names no security: reads the SHAPE of the feed —
+    /// its candidate/feed kind, required feed, and ledger effect — and never the security's symbol,
+    /// display name, or free-text reason. Those carry operator prose, and matching them classified a
+    /// security by what its name happened to contain.
+    /// <para>
+    /// Structured-asset evidence resolves to <c>StructuredCredit</c>, the canonical securitized home
+    /// under ADR-022 — not <c>CustomAsset</c>, which the asset-class validator now warns against for
+    /// securitized products (<c>SM_CUSTOM_ASSET_SECURITIZED_NONCANONICAL</c>).
+    /// </para>
+    /// </summary>
+    private static string? InferAssetClassFromEvidenceShape(string evidenceShape)
+    {
+        if (ContainsAny(evidenceShape, "loan", "private credit", "privatecredit", "borrower", "covenant", "unfunded"))
         {
             return "DirectLoan";
         }
 
-        if (IsStructuredAssetEvidence(combined))
+        if (ContainsAny(evidenceShape, "mbs", "abs", "clo", "cmbs", "structured", "servicer", "trustee", "warehouse"))
         {
-            return "CustomAsset";
+            return "StructuredCredit";
         }
 
-        return candidate.CandidateType.Contains("Factor", StringComparison.OrdinalIgnoreCase)
-            ? "Bond"
-            : null;
+        // NAV, capital-call and distribution feeds are private-fund lifecycle evidence; the previous
+        // resolver swept them into CustomAsset alongside securitized evidence.
+        if (ContainsAny(evidenceShape, "nav", "capital call", "capitalcall", "distribution"))
+        {
+            return "PrivateFundInterest";
+        }
+
+        return ContainsAny(evidenceShape, "factor") ? "Bond" : null;
     }
 
-    private static string? ScheduleAssetClass(ProviderSecurityMasterScheduleFeedDto feed)
-    {
-        var combined = $"{feed.FeedKind} {feed.RequiredFeed} {feed.Symbol} {feed.LedgerEffectKind} {feed.Reason}";
-        if (IsPrivateCreditEvidence(combined))
-        {
-            return "DirectLoan";
-        }
-
-        if (IsStructuredAssetEvidence(combined))
-        {
-            return "CustomAsset";
-        }
-
-        return feed.FeedKind.Contains("Loan", StringComparison.OrdinalIgnoreCase)
-            ? "DirectLoan"
-            : feed.FeedKind.Contains("Factor", StringComparison.OrdinalIgnoreCase) ||
-              feed.RequiredFeed.Contains("factor", StringComparison.OrdinalIgnoreCase)
-                ? "Bond"
-                : null;
-    }
-
-    private static bool IsPrivateCreditEvidence(string value)
-        => value.Contains("loan", StringComparison.OrdinalIgnoreCase) ||
-           value.Contains("private credit", StringComparison.OrdinalIgnoreCase) ||
-           value.Contains("privatecredit", StringComparison.OrdinalIgnoreCase) ||
-           value.Contains("borrower", StringComparison.OrdinalIgnoreCase) ||
-           value.Contains("covenant", StringComparison.OrdinalIgnoreCase) ||
-           value.Contains("unfunded", StringComparison.OrdinalIgnoreCase);
-
-    private static bool IsStructuredAssetEvidence(string value)
-        => value.Contains("mbs", StringComparison.OrdinalIgnoreCase) ||
-           value.Contains("abs", StringComparison.OrdinalIgnoreCase) ||
-           value.Contains("clo", StringComparison.OrdinalIgnoreCase) ||
-           value.Contains("cmbs", StringComparison.OrdinalIgnoreCase) ||
-           value.Contains("structured", StringComparison.OrdinalIgnoreCase) ||
-           value.Contains("servicer", StringComparison.OrdinalIgnoreCase) ||
-           value.Contains("trustee", StringComparison.OrdinalIgnoreCase) ||
-           value.Contains("warehouse", StringComparison.OrdinalIgnoreCase) ||
-           value.Contains("nav", StringComparison.OrdinalIgnoreCase) ||
-           value.Contains("capital call", StringComparison.OrdinalIgnoreCase) ||
-           value.Contains("distribution", StringComparison.OrdinalIgnoreCase) ||
-           value.Contains("obligation", StringComparison.OrdinalIgnoreCase);
+    private static bool ContainsAny(string value, params string[] tokens)
+        => tokens.Any(token => value.Contains(token, StringComparison.OrdinalIgnoreCase));
 
     private static string BuildRoute(string routeTemplate, Guid accountId)
         => routeTemplate.Replace("{accountId}", accountId.ToString("D"), StringComparison.OrdinalIgnoreCase);

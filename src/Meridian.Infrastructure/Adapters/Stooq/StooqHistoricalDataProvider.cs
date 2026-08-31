@@ -62,7 +62,10 @@ public sealed class StooqHistoricalDataProvider : BaseHistoricalDataProvider
         ValidateSymbol(symbol);
 
         var normalizedSymbol = NormalizeSymbol(symbol);
-        var url = $"{BaseUrl}/?s={normalizedSymbol}.us&i=d";
+        var providerSymbol = normalizedSymbol.EndsWith(".us", StringComparison.OrdinalIgnoreCase)
+            ? normalizedSymbol
+            : $"{normalizedSymbol}.us";
+        var url = $"{BaseUrl}/?s={providerSymbol}&i=d";
 
         Log.Information("Requesting Stooq history for {Symbol} ({Url})", symbol, url);
         var csv = await ExecuteGetAndReadAsync(url, symbol, "daily bars", ct).ConfigureAwait(false);
@@ -92,7 +95,7 @@ public sealed class StooqHistoricalDataProvider : BaseHistoricalDataProvider
             if (parts.Length < 6)
                 continue;
 
-            if (!DateOnly.TryParse(parts[0], out var date))
+            if (!ProviderDateParsing.TryParseProviderDate(parts[0], out var date))
                 continue;
 
             // Apply date filter

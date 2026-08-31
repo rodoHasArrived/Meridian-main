@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-06-25T02:00:53Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-08-24T06:17:53Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -10,7 +10,7 @@ Use this file when an assistant needs fast orientation before reading subsystem-
 |---|---|---|
 | Provider implementation and provider bugs | `Meridian.ProviderSdk`, `Meridian.Infrastructure`, `Meridian.Storage` | `docs/ai/claude/CLAUDE.providers.md`, `docs/development/provider-implementation.md`, `docs/ai/ai-known-errors.md` |
 | Browser workstation and dashboard UI issues | `Meridian.Ui.Dashboard`, `Meridian.Ui.Services`, `Meridian.Ui.Shared` | `docs/ai/navigation/README.md`, `docs/ai/ai-known-errors.md` |
-| WPF and workstation workflow issues | `Meridian.Wpf`, `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian` | `docs/plans/trading-workstation-migration-blueprint.md`, `docs/ai/ai-known-errors.md` |
+| WPF and workstation workflow issues | `Meridian.Wpf`, `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian` | `docs/development/wpf-web-ui-alignment-plan.md`, `docs/ai/ai-known-errors.md` |
 | Storage and WAL investigations | `Meridian.Storage`, `Meridian.Application` | `docs/ai/claude/CLAUDE.storage.md`, `docs/ai/ai-known-errors.md` |
 | MCP tools, prompts, and resources | `Meridian.Mcp` | `docs/ai/navigation/README.md`, `docs/ai/README.md` |
 
@@ -44,7 +44,7 @@ WPF desktop shell, shared UI services, and browser-facing UI surfaces.
 - Entrypoints: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/app.tsx`
 - Key contracts: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/main.tsx`
 - Common tasks: wpf issue, viewmodel routing, workspace flow, ui polish
-- Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`, `docs/plans/trading-workstation-migration-blueprint.md`
+- Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`, `docs/development/wpf-web-ui-alignment-plan.md`
 
 ### Backtesting and Strategy Analytics
 
@@ -107,6 +107,7 @@ MCP hosts, tools, prompts, and resources that expose Meridian capabilities to LL
 | From | To | Why it matters |
 |---|---|---|
 | `Meridian` | `Meridian.Application` | Meridian references Meridian.Application directly via project reference. |
+| `Meridian` | `Meridian.Backtesting` | Meridian references Meridian.Backtesting directly via project reference. |
 | `Meridian` | `Meridian.Contracts` | Meridian references Meridian.Contracts directly via project reference. |
 | `Meridian` | `Meridian.Core` | Meridian references Meridian.Core directly via project reference. |
 | `Meridian` | `Meridian.Domain` | Meridian references Meridian.Domain directly via project reference. |
@@ -125,7 +126,6 @@ MCP hosts, tools, prompts, and resources that expose Meridian capabilities to LL
 | `Meridian.Application` | `Meridian.Infrastructure` | Meridian.Application references Meridian.Infrastructure directly via project reference. |
 | `Meridian.Application` | `Meridian.Ledger` | Meridian.Application references Meridian.Ledger directly via project reference. |
 | `Meridian.Application` | `Meridian.ProviderSdk` | Meridian.Application references Meridian.ProviderSdk directly via project reference. |
-| `Meridian.Application` | `Meridian.Storage` | Meridian.Application references Meridian.Storage directly via project reference. |
 
 ## What Changed Recently
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | Desktop and UI Workflows | `635d1167c` (2026-06-24T16:15:05Z) | 13 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/report-writer-grid-diff-view.tsx` | Desktop and UI Workflows | `a4d453a7e` (2026-06-24T15:33:27Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/report-writer-grid-diff.test.ts` | Desktop and UI Workflows | `a4d453a7e` (2026-06-24T15:33:27Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/report-writer-grid-diff.ts` | Desktop and UI Workflows | `a4d453a7e` (2026-06-24T15:33:27Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/report-writer-chart-preview.tsx` | Desktop and UI Workflows | `d2ba8b1cf` (2026-06-24T15:28:29Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/report-writer-grid-format.test.ts` | Desktop and UI Workflows | `d2ba8b1cf` (2026-06-24T15:28:29Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/report-writer-grid-format.ts` | Desktop and UI Workflows | `d2ba8b1cf` (2026-06-24T15:28:29Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/reporting-hub.tsx` | Desktop and UI Workflows | `fd1591527` (2026-06-24T15:22:11Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/reporting-hub.test.ts` | Desktop and UI Workflows | `fd1591527` (2026-06-24T15:22:11Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/reporting-hub.ts` | Desktop and UI Workflows | `fd1591527` (2026-06-24T15:22:11Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/reporting-period-switcher.tsx` | Desktop and UI Workflows | `a188e17bc` (2026-06-24T15:15:41Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/reporting-periods.test.ts` | Desktop and UI Workflows | `a188e17bc` (2026-06-24T15:15:41Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/lib/reporting-periods.ts` | Desktop and UI Workflows | `a188e17bc` (2026-06-24T15:15:41Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | `e4921294b` (2026-06-24T15:08:16Z) | 57 |
-| `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs` | Host and Composition | `e4921294b` (2026-06-24T15:08:16Z) | 8 |
+| `src/Meridian.Execution/OrderManagementSystem.cs` | Execution, Risk, and Strategies | `0854e607d` (2026-08-24T04:06:54Z) | 10 |
+| `src/Meridian.Execution.Sdk/Models.cs` | Execution, Risk, and Strategies | `0854e607d` (2026-08-24T04:06:54Z) | 2 |
+| `src/Meridian.Execution/Services/PaperTradingPortfolio.cs` | Execution, Risk, and Strategies | `0854e607d` (2026-08-24T04:06:54Z) | 2 |
+| `src/Meridian.Execution/PaperTradingGateway.cs` | Execution, Risk, and Strategies | `0854e607d` (2026-08-24T04:06:54Z) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 13 |
+| `src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 13 |
+| `src/Meridian.Ui.Shared/Endpoints/ApiKeyMiddleware.cs` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 10 |
+| `src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs` | Providers and Storage | `d60d4100d` (2026-08-24T00:54:53Z) | 6 |
+| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 6 |
+| `src/Meridian.Contracts/Operations/DataProvenance.cs` | Host and Composition | `d60d4100d` (2026-08-24T00:54:53Z) | 2 |
+| `src/Meridian/UiServer.cs` | Host and Composition | `d60d4100d` (2026-08-24T00:54:53Z) | 2 |
+| `src/Meridian.Execution/Events/TradeExecutedEvent.cs` | Execution, Risk, and Strategies | `d60d4100d` (2026-08-24T00:54:53Z) | 1 |
+| `src/Meridian.Execution/OrderManagementSystem.FillIdentity.cs` | Execution, Risk, and Strategies | `d60d4100d` (2026-08-24T00:54:53Z) | 1 |
+| `src/Meridian.Wpf/ViewModels/DataBrowserViewModel.cs` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 1 |
+| `src/Meridian.Wpf/Views/DataBrowserPage.xaml` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 1 |
 

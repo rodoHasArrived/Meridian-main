@@ -3,10 +3,11 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.OperationsContinuity;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.PrivateCapital;
 
-public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCockpitService
+public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCockpitService
 {
     private const decimal ShadowNavTieOutTolerance = 0.01m;
 
@@ -39,13 +40,19 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
 
     private readonly IManualJournalEntryWorkbenchService? _manualJournalEntryWorkbenchService;
     private readonly IOperationsContinuityWorkflowService? _operationsContinuityWorkflowService;
+    private readonly IDailyValuationScheduleStatusSource? _dailyValuationScheduleStatusSource;
+    private readonly IAutomatedJournalScheduleStatusSource? _automatedJournalScheduleStatusSource;
 
     public PrivateCapitalCloseCockpitService(
         IManualJournalEntryWorkbenchService? manualJournalEntryWorkbenchService,
-        IOperationsContinuityWorkflowService? operationsContinuityWorkflowService)
+        IOperationsContinuityWorkflowService? operationsContinuityWorkflowService,
+        IDailyValuationScheduleStatusSource? dailyValuationScheduleStatusSource = null,
+        IAutomatedJournalScheduleStatusSource? automatedJournalScheduleStatusSource = null)
     {
         _manualJournalEntryWorkbenchService = manualJournalEntryWorkbenchService;
         _operationsContinuityWorkflowService = operationsContinuityWorkflowService;
+        _dailyValuationScheduleStatusSource = dailyValuationScheduleStatusSource;
+        _automatedJournalScheduleStatusSource = automatedJournalScheduleStatusSource;
     }
 
     public async Task<PrivateCapitalCloseCockpitDto> GetCockpitAsync(
@@ -54,15 +61,35 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         Guid? fundAccountId = null,
         string? periodId = null,
         string? entityId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
 
-        var activity = _manualJournalEntryWorkbenchService is null
+        var workbench = (_dailyValuationScheduleStatusSource is null && _automatedJournalScheduleStatusSource is null) ||
+                        _manualJournalEntryWorkbenchService is null
             ? null
             : await _manualJournalEntryWorkbenchService
-                .GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, ct)
+                .GetWorkbenchAsync(fundProfileId, ledgerBookId, ct, tenantId, companyId)
                 .ConfigureAwait(false);
+        var activity = workbench?.PrivateCapitalActivity ?? (_manualJournalEntryWorkbenchService is null
+            ? null
+            : await _manualJournalEntryWorkbenchService
+                .GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, ct, tenantId, companyId)
+                .ConfigureAwait(false));
+        var dailyValuationStatus = _dailyValuationScheduleStatusSource is null
+            ? null
+            : await _dailyValuationScheduleStatusSource
+                .GetStatusAsync(fundProfileId, ledgerBookId, periodId, ct, entityId, tenantId, companyId)
+                .ConfigureAwait(false);
+        var automatedJournalStatus = _automatedJournalScheduleStatusSource is null
+            ? null
+            : await _automatedJournalScheduleStatusSource
+                .GetStatusAsync(fundProfileId, ledgerBookId, periodId, ct, tenantId, companyId, entityId)
+                .ConfigureAwait(false);
+        var dailyValuationDrafts = FilterDailyValuationDrafts(workbench, periodId);
+        var automatedJournalDrafts = FilterAutomatedJournalDrafts(workbench, periodId, entityId);
         var workflows = await LoadWorkflowsAsync(fundAccountId, ledgerBookId, periodId, ct).ConfigureAwait(false);
         var records = FilterFundEventRecords(activity, periodId, entityId);
         var subledgers = FilterSubledgers(activity, records);
@@ -76,7 +103,16 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             .SelectMany(static workflow => workflow.CloseReadiness?.NextActions ?? workflow.NextActions)
             .DistinctBy(static action => action.Code, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var lanes = BuildLanes(activity, workflows, records, subledgers, reportOutputs);
+        var lanes = BuildLanes(
+            activity,
+            workflows,
+            records,
+            subledgers,
+            reportOutputs,
+            dailyValuationStatus,
+            dailyValuationDrafts,
+            automatedJournalStatus,
+            automatedJournalDrafts);
         var approvalHistory = BuildApprovalHistory(workflows, records, reportOutputs);
         var navSupportPackages = BuildNavSupportPackages(workflows, records, reportOutputs);
         var evidencePackages = BuildEvidencePackages(lanes, approvalHistory, navSupportPackages, workflows);
@@ -88,11 +124,11 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
                              approvalStatus == EvidenceStatusDto.Ready;
 
         return new PrivateCapitalCloseCockpitDto(
-            FundProfileId: Normalize(activity?.FundProfileId) ?? Normalize(fundProfileId),
+            FundProfileId: NormalizeOptional(activity?.FundProfileId) ?? NormalizeOptional(fundProfileId),
             LedgerBookId: activity?.LedgerBookId ?? ledgerBookId,
             FundAccountId: fundAccountId,
-            PeriodId: Normalize(periodId),
-            EntityId: Normalize(entityId),
+            PeriodId: NormalizeOptional(periodId),
+            EntityId: NormalizeOptional(entityId),
             ProjectedAtUtc: activity?.ProjectedAtUtc ?? DateTimeOffset.UtcNow,
             CockpitRoute: BuildCockpitRoute(fundProfileId, ledgerBookId, fundAccountId, periodId, entityId),
             OverallStatus: overallStatus,
@@ -113,7 +149,8 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             PlannedCapabilities: PlannedCapabilities,
             ApprovalHistory: approvalHistory,
             NavSupportPackages: navSupportPackages,
-            EvidencePackages: evidencePackages);
+            EvidencePackages: evidencePackages,
+            DailyValuationStatus: dailyValuationStatus);
     }
 
     private async Task<IReadOnlyList<OperationsContinuityWorkflowDto>> LoadWorkflowsAsync(
@@ -128,7 +165,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         }
 
         var summaries = await _operationsContinuityWorkflowService
-            .ListAsync(fundAccountId, Normalize(periodId), status: null, ct: ct, ledgerBookId: ledgerBookId)
+            .ListAsync(fundAccountId, NormalizeOptional(periodId), status: null, ct: ct, ledgerBookId: ledgerBookId)
             .ConfigureAwait(false);
         var workflows = new List<OperationsContinuityWorkflowDto>(summaries.Count);
         foreach (var summary in summaries)
@@ -151,10 +188,14 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         IReadOnlyList<OperationsContinuityWorkflowDto> workflows,
         IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
         IReadOnlyList<PrivateCapitalCapitalAccountSubledgerDto> subledgers,
-        IReadOnlyList<PrivateCapitalReportOutputDto> reportOutputs)
+        IReadOnlyList<PrivateCapitalReportOutputDto> reportOutputs,
+        DailyValuationScheduleStatusDto? dailyValuationStatus,
+        IReadOnlyList<ManualJournalEntryDraftDto> dailyValuationDrafts,
+        AutomatedJournalScheduleStatusDto? automatedJournalStatus,
+        IReadOnlyList<ManualJournalEntryDraftDto> automatedJournalDrafts)
     {
-        return
-        [
+        var lanes = new List<PrivateCapitalCloseCockpitLaneDto>
+        {
             BuildDataReceiptLane(activity, workflows, records),
             BuildReconciliationLane(workflows, records),
             BuildJournalLane(workflows, records),
@@ -169,7 +210,19 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             BuildCloseControlsLane(workflows),
             BuildClosePackageLane(workflows),
             BuildPeriodLockLane(workflows)
-        ];
+        };
+
+        if (dailyValuationStatus is not null)
+        {
+            lanes.Insert(8, BuildDailyValuationLane(dailyValuationStatus, dailyValuationDrafts));
+        }
+
+        if (automatedJournalStatus is not null)
+        {
+            lanes.Insert(dailyValuationStatus is null ? 8 : 9, BuildAutomatedJournalLane(automatedJournalStatus, automatedJournalDrafts));
+        }
+
+        return lanes;
     }
 
     private static PrivateCapitalCloseCockpitLaneDto BuildDataReceiptLane(
@@ -487,7 +540,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
                     : shadowNavReady
                         ? "NAV support package has shadow NAV evidence but still waits on administrator NAV tie-out, position, cash, pricing, or validation readiness."
                         : "NAV support package is missing retained shadow NAV, administrator NAV tie-out, or required close-readiness components.",
-                Normalize(route),
+                NormalizeOptional(route),
                 tieOut.MeridianShadowNav ?? EstimateShadowNav(records),
                 ResolveNavCurrency(records),
                 evidence.Length,
@@ -671,7 +724,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             component?.BlockingReason ?? (isReady
                 ? $"{component?.Label ?? SplitComponentLabel(key)} support is ready for NAV support."
                 : $"{component?.Label ?? SplitComponentLabel(key)} support is missing from close readiness."),
-            Normalize(component?.RouteHint),
+            NormalizeOptional(component?.RouteHint),
             component?.Score ?? (isReady ? 100 : 0));
     }
 
@@ -728,7 +781,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         var route = FirstReportRoute(administratorNavOutputs) ?? FirstReportRoute(shadowNavOutputs);
         var currency = ResolveNavCurrency(records) ??
                        shadowNavOutputs.Concat(administratorNavOutputs)
-                           .Select(static output => Normalize(output.Currency))
+                           .Select(static output => NormalizeOptional(output.Currency))
                            .FirstOrDefault(static value => value is not null);
         var status = ResolveShadowNavTieOutStatus(shadowNavOutputs, administratorNavOutputs, variance);
         var requiredActions = BuildShadowNavTieOutRequiredActions(status, shadowNavOutputs, administratorNavOutputs, variance);
@@ -743,10 +796,169 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             Tolerance: ShadowNavTieOutTolerance,
             Currency: currency,
             Summary: BuildShadowNavTieOutSummary(status, meridianShadowNav, administratorNav, variance),
-            Route: Normalize(route),
+            Route: NormalizeOptional(route),
             EvidenceLinkCount: evidence.Length,
             EvidenceLinks: evidence,
             RequiredActions: requiredActions);
+    }
+
+    private static PrivateCapitalCloseCockpitLaneDto BuildDailyValuationLane(
+        DailyValuationScheduleStatusDto schedule,
+        IReadOnlyList<ManualJournalEntryDraftDto> drafts)
+    {
+        var scopedIds = schedule.JournalEntryIds.ToHashSet();
+        var scopedDrafts = scopedIds.Count == 0
+            ? []
+            : drafts.Where(draft => scopedIds.Contains(draft.JournalEntryId)).ToArray();
+        var missingDraftCount = scopedIds.Count - scopedDrafts.Length;
+        var evidence = schedule.EvidenceLinks
+            .Concat(scopedDrafts.SelectMany(draft => draft.EvidenceLinks.Select((route, index) => new OperationsEvidenceLinkDto(
+                $"daily-valuation-draft:{draft.JournalEntryId:D}:{index + 1}",
+                "Daily valuation draft evidence",
+                route,
+                "manual-journal-workbench",
+                draft.UpdatedAtUtc))))
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var currentRunBlocked = schedule.State is DailyValuationScheduleStateDto.Blocked or
+            DailyValuationScheduleStateDto.Failed;
+        if (currentRunBlocked)
+        {
+            return Lane(
+                "daily-valuation",
+                "Daily valuation",
+                EvidenceStatusDto.Blocked,
+                isReady: false,
+                schedule.Summary,
+                UiApiRoutes.LedgerJournalAutomationDailyMarkToMarketSchedules,
+                evidence,
+                schedule.State == DailyValuationScheduleStateDto.Failed
+                    ? "Repair and rerun the failed daily valuation schedule"
+                    : "Resolve the daily valuation portfolio or mark-quality blockers");
+        }
+
+        if (scopedIds.Count > 0)
+        {
+            var allPosted = missingDraftCount == 0 && scopedDrafts.All(static draft =>
+                draft.Status is ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.CloseLocked);
+            var anyBlocked = scopedDrafts.Any(static draft =>
+                draft.Status is ManualJournalEntryStatusDto.NeedsFix or ManualJournalEntryStatusDto.Rejected) ||
+                missingDraftCount > 0;
+            var laneStatus = allPosted
+                ? EvidenceStatusDto.Ready
+                : anyBlocked
+                    ? EvidenceStatusDto.Blocked
+                    : EvidenceStatusDto.ReviewRequired;
+            var summary = allPosted
+                ? $"All {scopedDrafts.Length} daily valuation draft(s) are posted with retained closing-mark evidence."
+                : missingDraftCount > 0
+                    ? $"Daily valuation batch is missing {missingDraftCount} retained draft(s) and blocks close readiness."
+                    : anyBlocked
+                        ? "One or more daily valuation drafts require repair before close readiness."
+                        : $"Daily valuation batch has {scopedDrafts.Length} draft(s) awaiting governed approval or posting.";
+
+            return Lane(
+                "daily-valuation",
+                "Daily valuation",
+                laneStatus,
+                allPosted,
+                summary,
+                UiApiRoutes.LedgerManualJournalEntryDrafts,
+                evidence,
+                anyBlocked
+                    ? "Repair or reject the blocked daily valuation batch"
+                    : "Approve and post the governed daily valuation batch");
+        }
+
+        var scheduleReady = schedule.State == DailyValuationScheduleStateDto.NoAdjustment;
+        var scheduleBlocked = schedule.State is DailyValuationScheduleStateDto.Blocked or DailyValuationScheduleStateDto.Failed;
+        var laneStatusWithoutDraft = scheduleReady
+            ? EvidenceStatusDto.Ready
+            : schedule.State == DailyValuationScheduleStateDto.NotConfigured
+                ? EvidenceStatusDto.Missing
+                : scheduleBlocked
+                    ? EvidenceStatusDto.Blocked
+                    : EvidenceStatusDto.ReviewRequired;
+        var requiredAction = schedule.State switch
+        {
+            DailyValuationScheduleStateDto.NotConfigured => "Configure a governed daily valuation portfolio scope",
+            DailyValuationScheduleStateDto.Blocked => "Resolve the daily valuation portfolio or mark-quality blockers",
+            DailyValuationScheduleStateDto.Failed => "Repair and rerun the failed daily valuation schedule",
+            DailyValuationScheduleStateDto.DraftReady => "Open the governed daily valuation draft for approval",
+            DailyValuationScheduleStateDto.Posted => "Review retained daily valuation posting evidence",
+            _ => "Wait for or run the configured daily valuation schedule"
+        };
+
+        return Lane(
+            "daily-valuation",
+            "Daily valuation",
+            laneStatusWithoutDraft,
+            scheduleReady,
+            schedule.Summary,
+            UiApiRoutes.LedgerJournalAutomationDailyMarkToMarketSchedules,
+            evidence,
+            requiredAction);
+    }
+
+    private static PrivateCapitalCloseCockpitLaneDto BuildAutomatedJournalLane(
+        AutomatedJournalScheduleStatusDto schedule,
+        IReadOnlyList<ManualJournalEntryDraftDto> drafts)
+    {
+        var scopedIds = schedule.JournalEntryIds.ToHashSet();
+        var scopedDrafts = drafts.Where(draft => scopedIds.Contains(draft.JournalEntryId)).ToArray();
+        var allPosted = scopedDrafts.Length > 0 && scopedDrafts.All(static draft =>
+            draft.Status is ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.CloseLocked);
+        var anyNeedsFix = scopedDrafts.Any(static draft =>
+            draft.Status is ManualJournalEntryStatusDto.NeedsFix or ManualJournalEntryStatusDto.Rejected);
+        var readyWithoutDraft = schedule.State == AutomatedJournalScheduleStateDto.NoDraftRequired;
+        var isBlocked = schedule.State is AutomatedJournalScheduleStateDto.NeedsInvestigation or
+            AutomatedJournalScheduleStateDto.Blocked or
+            AutomatedJournalScheduleStateDto.Failed || anyNeedsFix;
+        var isReady = !isBlocked &&
+            (readyWithoutDraft ||
+             schedule.State == AutomatedJournalScheduleStateDto.DraftReady && allPosted);
+        var laneStatus = isReady
+            ? EvidenceStatusDto.Ready
+            : schedule.State == AutomatedJournalScheduleStateDto.NotConfigured
+                ? EvidenceStatusDto.Missing
+                : isBlocked
+                    ? EvidenceStatusDto.Blocked
+                    : EvidenceStatusDto.ReviewRequired;
+        var draftEvidence = scopedDrafts
+            .SelectMany(draft => draft.EvidenceLinks.Select((route, index) => new OperationsEvidenceLinkDto(
+                $"automated-journal-draft:{draft.JournalEntryId:D}:{index + 1}",
+                "Automated journal draft evidence",
+                route,
+                "manual-journal-workbench",
+                draft.UpdatedAtUtc)));
+        var evidence = schedule.EvidenceLinks
+            .Concat(draftEvidence)
+            .DistinctBy(static link => $"{link.EvidenceId}|{link.Route}", StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var summary = isReady && allPosted
+            ? $"{scopedDrafts.Length} monthly fee/dividend draft(s) are posted with retained evidence."
+            : $"{schedule.Summary} Configured={schedule.ConfiguredCount}, enabled={schedule.EnabledCount}, fee={schedule.FeeScheduleCount}, dividend={schedule.DividendScheduleCount}, ready={schedule.DraftReadyCount}, investigation={schedule.NeedsInvestigationCount}, blocked={schedule.BlockedCount}.";
+        var requiredAction = schedule.State switch
+        {
+            AutomatedJournalScheduleStateDto.NotConfigured => "Configure explicit monthly fee and dividend work items",
+            AutomatedJournalScheduleStateDto.NeedsInvestigation => "Investigate low-confidence corporate-action evidence before approval",
+            AutomatedJournalScheduleStateDto.Blocked => "Resolve blocked monthly accrual or dividend work",
+            AutomatedJournalScheduleStateDto.Failed => "Repair and rerun failed monthly automated-journal work",
+            AutomatedJournalScheduleStateDto.DraftReady => "Review, approve, and post the governed workbench drafts",
+            AutomatedJournalScheduleStateDto.Running => "Wait for the running monthly preparation work to finish",
+            _ => "Run the configured monthly fee and dividend schedules when due"
+        };
+
+        return Lane(
+            "scheduled-accruals",
+            "Monthly fees and dividends",
+            laneStatus,
+            isReady,
+            summary,
+            UiApiRoutes.LedgerJournalAutomationMonthlySchedules,
+            evidence,
+            requiredAction);
     }
 
     private static PrivateCapitalCloseCockpitLaneDto BuildValuationEvidenceLane(
@@ -877,7 +1089,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
                 EvidenceStatusDto.Blocked => $"Close-control checklist has blocked items for {string.Join(", ", unresolved)}.",
                 _ => $"Close-control checklist still needs retained evidence or approval for {string.Join(", ", unresolved)}."
             },
-            Normalize(route),
+            NormalizeOptional(route),
             evidence.Length,
             evidence,
             requiredActions);
@@ -956,7 +1168,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
 
     private static bool IsChecklistTaskComplete(OperationsCloseChecklistTaskDto task)
     {
-        var status = Normalize(task.Status);
+        var status = NormalizeOptional(task.Status);
         return string.Equals(status, "Done", StringComparison.OrdinalIgnoreCase) ||
                string.Equals(status, "Complete", StringComparison.OrdinalIgnoreCase) ||
                string.Equals(status, "Completed", StringComparison.OrdinalIgnoreCase) ||
@@ -966,7 +1178,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
 
     private static bool IsCloseControlTaskBlocked(OperationsCloseChecklistTaskDto task)
     {
-        var status = Normalize(task.Status);
+        var status = NormalizeOptional(task.Status);
         return string.Equals(status, "Blocked", StringComparison.OrdinalIgnoreCase) ||
                string.Equals(status, "Expired", StringComparison.OrdinalIgnoreCase) ||
                !string.IsNullOrWhiteSpace(task.BlockingReason);
@@ -983,7 +1195,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
 
         var approvals = workflow.ClosePackage?.ChecklistControlApprovals ?? [];
         var approvalCount = approvals
-            .Where(approval => string.Equals(Normalize(approval.TaskId), Normalize(task.TaskId), StringComparison.OrdinalIgnoreCase))
+            .Where(approval => string.Equals(NormalizeOptional(approval.TaskId), NormalizeOptional(task.TaskId), StringComparison.OrdinalIgnoreCase))
             .Where(static approval => !string.IsNullOrWhiteSpace(approval.ApprovedBy))
             .Where(static approval => approval.ApprovedAtUtc != default)
             .Select(static approval => approval.ApprovedBy.Trim())
@@ -1000,7 +1212,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             .Select(static item => new OperationsEvidenceLinkDto(
                 item.Task.EvidencePointer!.Trim(),
                 item.Task.Label,
-                Normalize(item.Task.RemediationRoute) ?? BuildWorkflowRoute(item.Workflow.WorkflowId),
+                NormalizeOptional(item.Task.RemediationRoute) ?? BuildWorkflowRoute(item.Workflow.WorkflowId),
                 "operations-continuity-close-checklist",
                 item.Task.AcknowledgedAtUtc ?? item.Workflow.UpdatedAtUtc))
             .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
@@ -1125,7 +1337,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             status,
             isReady,
             summary,
-            Normalize(route),
+            NormalizeOptional(route),
             evidenceLinks.Count,
             evidenceLinks,
             isReady ? [] : [requiredAction]);
@@ -1143,6 +1355,52 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         return activity.FundEventRecords
             .Where(record => MatchesPeriod(record.EffectiveDate, periodId))
             .Where(record => MatchesEntity(record, entityId))
+            .ToArray();
+    }
+
+    private static IReadOnlyList<ManualJournalEntryDraftDto> FilterDailyValuationDrafts(
+        ManualJournalEntryWorkbenchDto? workbench,
+        string? periodId)
+    {
+        if (workbench is null)
+        {
+            return [];
+        }
+
+        var normalizedPeriodId = NormalizeOptional(periodId);
+        return workbench.Drafts
+            .Where(static draft => draft.TreasuryContext?.IdempotencyKey?.StartsWith(
+                "fair-value|",
+                StringComparison.OrdinalIgnoreCase) == true)
+            .Where(draft => normalizedPeriodId is null ||
+                            string.Equals(draft.PeriodId, normalizedPeriodId, StringComparison.OrdinalIgnoreCase) ||
+                            MatchesPeriod(draft.AccountingDate, normalizedPeriodId))
+            .ToArray();
+    }
+
+    private static IReadOnlyList<ManualJournalEntryDraftDto> FilterAutomatedJournalDrafts(
+        ManualJournalEntryWorkbenchDto? workbench,
+        string? periodId,
+        string? entityId)
+    {
+        if (workbench is null)
+        {
+            return [];
+        }
+
+        var normalizedPeriodId = NormalizeOptional(periodId);
+        var normalizedEntityId = NormalizeOptional(entityId);
+        return workbench.Drafts
+            .Where(static draft => draft.TreasuryContext?.IdempotencyKey is { } key &&
+                (key.StartsWith("mgmt-fee|", StringComparison.OrdinalIgnoreCase) ||
+                 key.StartsWith("perf-fee|", StringComparison.OrdinalIgnoreCase) ||
+                 key.StartsWith("corp-act-dividend|", StringComparison.OrdinalIgnoreCase) ||
+                 key.StartsWith("corp-act-dividend-wht|", StringComparison.OrdinalIgnoreCase)))
+            .Where(draft => normalizedPeriodId is null ||
+                            string.Equals(draft.PeriodId, normalizedPeriodId, StringComparison.OrdinalIgnoreCase) ||
+                            MatchesPeriod(draft.AccountingDate, normalizedPeriodId))
+            .Where(draft => normalizedEntityId is null ||
+                            string.Equals(draft.EntityId, normalizedEntityId, StringComparison.OrdinalIgnoreCase))
             .ToArray();
     }
 
@@ -1178,14 +1436,14 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
 
     private static bool MatchesPeriod(DateOnly effectiveDate, string? periodId)
     {
-        var normalized = Normalize(periodId);
+        var normalized = NormalizeOptional(periodId);
         return normalized is null ||
                string.Equals(effectiveDate.ToString("yyyy-MM", CultureInfo.InvariantCulture), normalized, StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool MatchesEntity(PrivateCapitalFundEventLedgerRecordDto record, string? entityId)
     {
-        var normalized = Normalize(entityId);
+        var normalized = NormalizeOptional(entityId);
         return normalized is null ||
                record.LedgerImpacts
                    .SelectMany(static impact => impact.Lines)
@@ -1480,13 +1738,13 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             .Concat(shadowNavOutputs.Select(static output => output.ReportOutputId))
             .Concat(administratorNavOutputs.Select(static output => output.ReportOutputId))
             .FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value));
-        return $"shadow-nav-tie-out:{Normalize(scope) ?? "close-scope"}";
+        return $"shadow-nav-tie-out:{NormalizeOptional(scope) ?? "close-scope"}";
     }
 
     private static string? ResolveNavCurrency(IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records)
     {
         var currencies = records
-            .Select(static record => Normalize(record.Currency))
+            .Select(static record => NormalizeOptional(record.Currency))
             .Where(static currency => currency is not null)
             .Select(static currency => currency!)
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -1502,7 +1760,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
 
     private static OperationsEvidenceLinkDto LinkFromRoute(string route, string label, string source)
     {
-        var trimmed = Normalize(route) ?? "unresolved";
+        var trimmed = NormalizeOptional(route) ?? "unresolved";
         var evidenceId = trimmed
             .Trim('/')
             .Replace('/', ':')
@@ -1571,7 +1829,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
            !string.IsNullOrWhiteSpace(reportOutput.RetainedManifestPath);
 
     private static bool AmountsTie(decimal left, decimal right)
-        => left == right;
+        => Math.Abs(left - right) <= LedgerToleranceConstants.Balance;
 
     private static bool IsExpenseFeeAllocationRecord(PrivateCapitalFundEventLedgerRecordDto record)
         => record.FundEvent.EntryType is ManualJournalEntryTypeDto.AccruedExpense
@@ -1776,208 +2034,6 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             workflow.UpdatedAtUtc);
     }
 
-    private static IReadOnlyList<PrivateCapitalCloseCockpitApprovalDto> BuildApprovalHistory(
-        IReadOnlyList<OperationsContinuityWorkflowDto> workflows,
-        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
-        IReadOnlyList<PrivateCapitalReportOutputDto> reportOutputs)
-        => workflows
-            .SelectMany(BuildWorkflowApprovalHistory)
-            .Concat(workflows.SelectMany(BuildWorkflowReopenApprovalHistory))
-            .Concat(BuildFundEventApprovalHistory(workflows, records))
-            .Concat(BuildReportOutputApprovalHistory(workflows, reportOutputs))
-            .OrderByDescending(static approval =>
-                approval.DecidedAtUtc ??
-                approval.SubmittedAtUtc ??
-                DateTimeOffset.MinValue)
-            .ThenBy(static approval => approval.ApprovalId, StringComparer.OrdinalIgnoreCase)
-            .DistinctBy(static approval => approval.ApprovalId, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-    private static IEnumerable<PrivateCapitalCloseCockpitApprovalDto> BuildFundEventApprovalHistory(
-        IReadOnlyList<OperationsContinuityWorkflowDto> workflows,
-        IEnumerable<PrivateCapitalFundEventLedgerRecordDto> records)
-    {
-        foreach (var record in records.Where(static record =>
-                     !string.IsNullOrWhiteSpace(record.ApprovalId) ||
-                     record.ApprovalState != ManualJournalEntryStatusDto.Draft))
-        {
-            var workflow = ResolveApprovalWorkflow(workflows, record.EffectiveDate);
-            if (workflow is null)
-            {
-                continue;
-            }
-
-            var status = MapApprovalState(record.ApprovalState);
-            var evidence = RecordEvidence([record], "Fund-event approval evidence");
-            var submittedAt = SourceApprovalSubmittedAt(status, record.FundEvent.UpdatedAtUtc);
-            var decidedAt = SourceApprovalDecidedAt(status, record.FundEvent.UpdatedAtUtc);
-            yield return new PrivateCapitalCloseCockpitApprovalDto(
-                Normalize(record.ApprovalId) ?? $"fund-event-approval:{record.FundEventId}",
-                workflow.WorkflowId,
-                workflow.FundAccountId,
-                workflow.PeriodId,
-                status,
-                null,
-                null,
-                $"Fund-event approval retained for {record.FundEventType}.",
-                submittedAt,
-                decidedAt,
-                Normalize(record.ApprovalRoute) ?? Normalize(record.ActivityRoute) ?? BuildWorkflowRoute(workflow.WorkflowId),
-                evidence.Count,
-                evidence);
-        }
-    }
-
-    private static IEnumerable<PrivateCapitalCloseCockpitApprovalDto> BuildReportOutputApprovalHistory(
-        IReadOnlyList<OperationsContinuityWorkflowDto> workflows,
-        IEnumerable<PrivateCapitalReportOutputDto> reportOutputs)
-    {
-        foreach (var output in reportOutputs.Where(static output =>
-                     output.ApprovalState != ManualJournalEntryStatusDto.Draft ||
-                     output.IsPublished ||
-                     !string.IsNullOrWhiteSpace(output.ReportPackId)))
-        {
-            var workflow = ResolveApprovalWorkflow(workflows, output.EffectiveDate);
-            if (workflow is null)
-            {
-                continue;
-            }
-
-            var status = MapApprovalState(output.ApprovalState);
-            var evidence = ReportEvidence([output]);
-            var submittedAt = SourceApprovalSubmittedAt(status, output.PublishedAtUtc);
-            var decidedAt = SourceApprovalDecidedAt(status, output.PublishedAtUtc);
-            yield return new PrivateCapitalCloseCockpitApprovalDto(
-                $"report-output-approval:{output.ReportOutputId}",
-                workflow.WorkflowId,
-                workflow.FundAccountId,
-                workflow.PeriodId,
-                status,
-                null,
-                Normalize(output.PublishedBy),
-                output.IsPublished
-                    ? $"Report output publication retained for {output.DisplayName}."
-                    : $"Report output approval retained for {output.DisplayName}.",
-                submittedAt,
-                decidedAt,
-                Normalize(output.ApprovalRoute) ??
-                Normalize(output.ReportOutputRoute) ??
-                Normalize(output.EvidenceRoute) ??
-                Normalize(output.ReportRoute) ??
-                BuildWorkflowRoute(workflow.WorkflowId),
-                evidence.Count,
-                evidence);
-        }
-    }
-
-    private static OperationsContinuityWorkflowDto? ResolveApprovalWorkflow(
-        IReadOnlyList<OperationsContinuityWorkflowDto> workflows,
-        DateOnly effectiveDate)
-    {
-        var periodId = effectiveDate.ToString("yyyy-MM", CultureInfo.InvariantCulture);
-        return workflows.FirstOrDefault(workflow =>
-                   string.Equals(workflow.PeriodId, periodId, StringComparison.OrdinalIgnoreCase)) ??
-               workflows.FirstOrDefault();
-    }
-
-    private static OperationsApprovalStateDto MapApprovalState(ManualJournalEntryStatusDto status)
-        => status switch
-        {
-            ManualJournalEntryStatusDto.Approved => OperationsApprovalStateDto.Approved,
-            ManualJournalEntryStatusDto.Rejected => OperationsApprovalStateDto.Rejected,
-            ManualJournalEntryStatusDto.Submitted => OperationsApprovalStateDto.Submitted,
-            _ => OperationsApprovalStateDto.Pending
-        };
-
-    private static DateTimeOffset? SourceApprovalSubmittedAt(
-        OperationsApprovalStateDto status,
-        DateTimeOffset? timestamp)
-        => status is OperationsApprovalStateDto.Submitted or OperationsApprovalStateDto.Approved or OperationsApprovalStateDto.Rejected
-            ? timestamp
-            : null;
-
-    private static DateTimeOffset? SourceApprovalDecidedAt(
-        OperationsApprovalStateDto status,
-        DateTimeOffset? timestamp)
-        => status is OperationsApprovalStateDto.Approved or OperationsApprovalStateDto.Rejected
-            ? timestamp
-            : null;
-
-    private static IEnumerable<PrivateCapitalCloseCockpitApprovalDto> BuildWorkflowApprovalHistory(
-        OperationsContinuityWorkflowDto workflow)
-    {
-        var workflowRoute = BuildWorkflowRoute(workflow.WorkflowId);
-        foreach (var approval in workflow.Approvals.Select((approval, index) => (Approval: approval, Index: index)))
-        {
-            var evidence = approval.Approval.EvidenceLinks ?? [];
-            yield return new PrivateCapitalCloseCockpitApprovalDto(
-                Normalize(approval.Approval.ApprovalId) ?? $"approval:{workflow.WorkflowId:D}:{approval.Index + 1}",
-                workflow.WorkflowId,
-                workflow.FundAccountId,
-                workflow.PeriodId,
-                approval.Approval.Status,
-                Normalize(approval.Approval.Operator),
-                Normalize(approval.Approval.Reviewer),
-                Normalize(approval.Approval.Rationale),
-                approval.Approval.SubmittedAtUtc,
-                approval.Approval.DecidedAtUtc,
-                workflowRoute,
-                evidence.Count,
-                evidence);
-        }
-
-        var package = workflow.ClosePackage;
-        if (package is null)
-        {
-            yield break;
-        }
-
-        var packageEvidence = package.EvidenceLinks ?? [];
-        foreach (var approval in package.ChecklistControlApprovals)
-        {
-            var approvalId = $"checklist-control:{workflow.WorkflowId:D}:{Normalize(approval.TaskId) ?? "task"}:{approval.ApprovedAtUtc:yyyyMMddHHmmss}";
-            yield return new PrivateCapitalCloseCockpitApprovalDto(
-                approvalId,
-                workflow.WorkflowId,
-                workflow.FundAccountId,
-                workflow.PeriodId,
-                OperationsApprovalStateDto.Approved,
-                null,
-                Normalize(approval.ApprovedBy),
-                $"Checklist control approval retained for {approval.TaskId}.",
-                approval.ApprovedAtUtc,
-                approval.ApprovedAtUtc,
-                workflowRoute,
-                packageEvidence.Count,
-                packageEvidence);
-        }
-    }
-
-    private static IEnumerable<PrivateCapitalCloseCockpitApprovalDto> BuildWorkflowReopenApprovalHistory(
-        OperationsContinuityWorkflowDto workflow)
-    {
-        var workflowRoute = BuildWorkflowRoute(workflow.WorkflowId);
-        foreach (var entry in workflow.Timeline.Where(static entry =>
-                     string.Equals(entry.EventType, "workflow-reopened", StringComparison.OrdinalIgnoreCase)))
-        {
-            var evidence = entry.References ?? [];
-            yield return new PrivateCapitalCloseCockpitApprovalDto(
-                $"workflow-reopened:{entry.AuditId:D}",
-                workflow.WorkflowId,
-                workflow.FundAccountId,
-                workflow.PeriodId,
-                OperationsApprovalStateDto.Approved,
-                Normalize(entry.Actor),
-                Normalize(entry.Actor),
-                Normalize(entry.Rationale) ?? "Governed period reopen approval retained.",
-                entry.OccurredAtUtc,
-                entry.OccurredAtUtc,
-                workflowRoute,
-                evidence.Count,
-                evidence);
-        }
-    }
-
     private static string BuildCockpitRoute(
         string? fundProfileId,
         Guid? ledgerBookId,
@@ -2003,50 +2059,4 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             ? UiApiRoutes.OperationsPrivateCapitalCloseCockpit
             : UiApiRoutes.WithQuery(UiApiRoutes.OperationsPrivateCapitalCloseCockpit, string.Join("&", query));
     }
-
-    private static string BuildCapitalAccountWorkbenchRoute(
-        string fundProfileId,
-        Guid? ledgerBookId)
-    {
-        var query = new List<string>
-        {
-            $"fundProfileId={Uri.EscapeDataString(fundProfileId.Trim())}"
-        };
-
-        if (ledgerBookId.HasValue)
-        {
-            query.Add($"ledgerBookId={Uri.EscapeDataString(ledgerBookId.Value.ToString("D"))}");
-        }
-
-        return UiApiRoutes.WithQuery(UiApiRoutes.LedgerPrivateCapitalCapitalAccountWorkbench, string.Join("&", query));
-    }
-
-    private static void AddQuery(List<string> query, string key, string? value)
-    {
-        var normalized = Normalize(value);
-        if (normalized is not null)
-        {
-            query.Add($"{key}={Uri.EscapeDataString(normalized)}");
-        }
-    }
-
-    private static string BuildWorkflowRoute(Guid workflowId)
-        => UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityById, "workflowId", workflowId.ToString("D"));
-
-    private static string? Normalize(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
-    private sealed record ManagementCompanyEvidenceSignal(string Label, bool IsPresent);
-
-    private sealed record CloseControlRequirement(
-        string Key,
-        string Label,
-        string RequiredAction);
-
-    private sealed record CloseControlEvaluation(
-        OperationsContinuityWorkflowDto Workflow,
-        CloseControlRequirement Requirement,
-        IReadOnlyList<OperationsCloseChecklistTaskDto> Tasks,
-        EvidenceStatusDto Status,
-        bool IsReady);
 }

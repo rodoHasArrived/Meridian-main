@@ -1,7 +1,6 @@
 using System.Net.Http.Headers;
+using Meridian.Infrastructure.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Polly;
-using Polly.Extensions.Http;
 
 namespace Meridian.Ui.Services;
 
@@ -49,10 +48,10 @@ public static class HttpClientNames
 /// - Centralized configuration for timeouts, headers, retry policies
 /// - Better testability through DI
 ///
-/// This intentionally duplicates resilience policies from
-/// Meridian.Infrastructure.Http.SharedResiliencePolicies because the WPF desktop app
-/// cannot reference the Infrastructure project (XAML compiler limitation).
-/// When updating retry/circuit breaker policies, keep both implementations in sync.
+/// Retry and circuit-breaker behaviour is sourced from the single
+/// <see cref="SharedResiliencePolicies"/> definition in Meridian.Infrastructure (which
+/// both this project and the WPF desktop app already reference), so there is no longer a
+/// separate copy to keep in sync.
 /// </remarks>
 public static class HttpClientConfiguration
 {
@@ -74,21 +73,33 @@ public static class HttpClientConfiguration
             })
             .AddStandardResiliencePolicy();
 
-        // API client for communicating with collector service
+        // API client for communicating with collector service. Shares the process-wide
+        // ApiClientSession cookie container so one login establishes the server session
+        // (mdc-session + mdc-csrf) for every consumer of this named client.
         services.AddHttpClient(HttpClientNames.ApiClient)
             .ConfigureHttpClient(client =>
             {
                 client.Timeout = DefaultTimeout;
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                CookieContainer = ApiClientSession.Cookies,
+                UseCookies = true
+            })
             .AddStandardResiliencePolicy();
 
-        // Backfill client with long timeout
+        // Backfill client with long timeout; same shared session as the API client.
         services.AddHttpClient(HttpClientNames.BackfillClient)
             .ConfigureHttpClient(client =>
             {
                 client.Timeout = LongTimeout;
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                CookieContainer = ApiClientSession.Cookies,
+                UseCookies = true
             })
             .AddStandardResiliencePolicy();
 
@@ -181,76 +192,57 @@ public static class HttpClientConfiguration
     }
 
     /// <summary>
-    /// Adds standard resilience policies (retry with exponential backoff, circuit breaker).
+    /// Registers the process-wide compatibility API singleton without transferring its lifetime
+    /// to the service provider. The desktop application initializes its host client factory and
+    /// performs terminal disposal explicitly at process shutdown.
+    /// </summary>
+    public static IServiceCollection AddDesktopApiClient(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        services.AddSingleton(ApiClientService.Instance);
+        return services;
+    }
+
+    /// <summary>
+    /// Attaches the desktop host's client factory to the process-wide compatibility API singleton.
+    /// Registration is intentionally separate so short-lived test providers cannot dispose or
+    /// otherwise assume ownership of <see cref="ApiClientService.Instance"/>.
+    /// </summary>
+    public static ApiClientService InitializeDesktopApiClient(this IServiceProvider services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        var apiClient = services.GetRequiredService<ApiClientService>();
+        apiClient.AttachHttpClientFactory(services.GetRequiredService<IHttpClientFactory>());
+        return apiClient;
+    }
+
+    /// <summary>
+    /// Adds standard resilience policies (retry with exponential backoff, circuit breaker)
+    /// from the shared Infrastructure definition so desktop and service HTTP clients behave
+    /// identically.
     /// </summary>
     private static IHttpClientBuilder AddStandardResiliencePolicy(this IHttpClientBuilder builder)
-    {
-        return builder
-            .AddPolicyHandler(GetRetryPolicy())
-            .AddPolicyHandler(GetCircuitBreakerPolicy());
-    }
-
-    /// <summary>
-    /// Creates a retry policy with exponential backoff for transient HTTP errors.
-    /// </summary>
-    private static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
-    {
-        return HttpPolicyExtensions
-            .HandleTransientHttpError()
-            .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
-            .WaitAndRetryAsync(
-                retryCount: 3,
-                sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-                onRetry: (outcome, timespan, retryAttempt, _) =>
-                {
-                });
-    }
-
-    /// <summary>
-    /// Creates a circuit breaker policy to prevent cascading failures.
-    /// </summary>
-    private static IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
-    {
-        return HttpPolicyExtensions
-            .HandleTransientHttpError()
-            .CircuitBreakerAsync(
-                handledEventsAllowedBeforeBreaking: 5,
-                durationOfBreak: TimeSpan.FromSeconds(30));
-    }
+        => builder.AddSharedResiliencePolicy();
 }
 
 /// <summary>
-/// Static factory for creating HttpClient instances from IHttpClientFactory in desktop apps.
-/// Provides backward-compatible static access for services not yet fully converted to DI.
+/// Backward-compatible client creation for legacy services that are not constructed by DI.
 /// </summary>
 /// <remarks>
-/// This is a transitional pattern. New code should inject IHttpClientFactory directly.
+/// No service provider is built or retained here. Host-composed services must inject
+/// <see cref="IHttpClientFactory"/>; this process-local fallback exists only for legacy static
+/// entry points and gives each caller an independently disposable client/handler pair.
 /// </remarks>
 public static class HttpClientFactoryProvider
 {
-    private static readonly Lazy<IHttpClientFactory?> _factory = new(BuildFactory);
-
-    private static IHttpClientFactory? BuildFactory()
-    {
-        var services = new ServiceCollection();
-        services.AddDesktopHttpClients();
-        var provider = services.BuildServiceProvider();
-        return provider.GetService<IHttpClientFactory>();
-    }
+    internal static IHttpClientFactory CompatibilityFactory { get; } = new CompatibilityHttpClientFactory();
 
     /// <summary>
     /// Gets an HttpClient for the specified named client.
-    /// Auto-initializes on first use via thread-safe lazy initialization.
+    /// The returned fallback client is owned by the caller.
     /// </summary>
     public static HttpClient CreateClient(string name)
-    {
-        if (_factory.Value is { } factory)
-        {
-            return factory.CreateClient(name);
-        }
-
-        return new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
-    }
+        => CompatibilityFactory.CreateClient(name);
 
     /// <summary>
     /// Gets an HttpClient for the specified named client with header configuration.
@@ -263,7 +255,65 @@ public static class HttpClientFactoryProvider
     }
 
     /// <summary>
-    /// Checks if the factory has been initialized.
+    /// Indicates that the compatibility factory is available.
     /// </summary>
-    public static bool IsInitialized => _factory.IsValueCreated;
+    public static bool IsInitialized => true;
+
+    private sealed class CompatibilityHttpClientFactory : IHttpClientFactory
+    {
+        private static readonly TimeSpan CompatibilityDefaultTimeout = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan CompatibilityShortTimeout = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan CompatibilityLongTimeout = TimeSpan.FromMinutes(60);
+
+        public HttpClient CreateClient(string name)
+        {
+            var sharesApiSession = string.Equals(name, HttpClientNames.ApiClient, StringComparison.Ordinal)
+                || string.Equals(name, HttpClientNames.BackfillClient, StringComparison.Ordinal);
+            var handler = new HttpClientHandler
+            {
+                UseCookies = sharesApiSession,
+                CookieContainer = sharesApiSession ? ApiClientSession.Cookies : new System.Net.CookieContainer()
+            };
+            var client = new HttpClient(handler, disposeHandler: true);
+            ConfigureClient(client, name);
+            return client;
+        }
+
+        private static void ConfigureClient(HttpClient client, string name)
+        {
+            client.Timeout = name switch
+            {
+                HttpClientNames.BackfillClient => CompatibilityLongTimeout,
+                HttpClientNames.CredentialTest or HttpClientNames.SetupWizard => CompatibilityShortTimeout,
+                _ => CompatibilityDefaultTimeout
+            };
+
+            if (name is HttpClientNames.Default
+                or HttpClientNames.ApiClient
+                or HttpClientNames.BackfillClient
+                or HttpClientNames.Alpaca
+                or HttpClientNames.Polygon
+                or HttpClientNames.Tiingo
+                or HttpClientNames.Finnhub
+                or HttpClientNames.AlphaVantage)
+            {
+                client.DefaultRequestHeaders.Accept.Add(
+                    new MediaTypeWithQualityHeaderValue("application/json"));
+            }
+
+            client.BaseAddress = name switch
+            {
+                HttpClientNames.Polygon => new Uri("https://api.polygon.io/"),
+                HttpClientNames.Tiingo => new Uri("https://api.tiingo.com/"),
+                HttpClientNames.Finnhub => new Uri("https://finnhub.io/api/v1/"),
+                HttpClientNames.AlphaVantage => new Uri("https://www.alphavantage.co/"),
+                HttpClientNames.OpenFigi => new Uri("https://api.openfigi.com/v3/"),
+                HttpClientNames.NasdaqDataLink => new Uri("https://data.nasdaq.com/api/v3/"),
+                _ => null
+            };
+
+            if (string.Equals(name, HttpClientNames.OpenFigi, StringComparison.Ordinal))
+                client.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "application/json");
+        }
+    }
 }

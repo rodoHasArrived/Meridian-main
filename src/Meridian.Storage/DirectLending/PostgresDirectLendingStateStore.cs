@@ -346,10 +346,10 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
 
         var existingEventType = reader.GetString(0);
         var existingPayloadJson = reader.GetString(1);
-        var incomingPayloadJson = payload.RootElement.GetRawText();
+        using var existingPayload = JsonDocument.Parse(existingPayloadJson);
 
         return string.Equals(existingEventType, eventType, StringComparison.Ordinal) &&
-               string.Equals(existingPayloadJson, incomingPayloadJson, StringComparison.Ordinal)
+               JsonElement.DeepEquals(existingPayload.RootElement, payload.RootElement)
             ? DuplicateCommandStatus.Matching
             : DuplicateCommandStatus.Mismatched;
     }
@@ -929,7 +929,8 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                     commitment_fee_amount,
                     penalty_amount,
                     annual_rate_applied,
-                    recorded_at)
+                    recorded_at,
+                    pik_interest_amount)
                 values (
                     @accrual_entry_id,
                     @loan_id,
@@ -938,7 +939,8 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                     @commitment_fee_amount,
                     @penalty_amount,
                     @annual_rate_applied,
-                    @recorded_at);
+                    @recorded_at,
+                    @pik_interest_amount);
                 """;
             insert.Parameters.AddWithValue("accrual_entry_id", entry.AccrualEntryId);
             insert.Parameters.AddWithValue("loan_id", loanId);
@@ -948,6 +950,7 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
             insert.Parameters.AddWithValue("penalty_amount", entry.PenaltyAmount);
             insert.Parameters.AddWithValue("annual_rate_applied", entry.AnnualRateApplied);
             insert.Parameters.AddWithValue("recorded_at", entry.RecordedAt.UtcDateTime);
+            insert.Parameters.AddWithValue("pik_interest_amount", entry.PikInterestAmount);
             await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
     }
@@ -1310,7 +1313,8 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                    commitment_fee_amount,
                    penalty_amount,
                    annual_rate_applied,
-                   recorded_at
+                   recorded_at,
+                   pik_interest_amount
             from {Qualified("accrual_entry_projection")}
             where loan_id = @loan_id
             order by accrual_date desc, accrual_entry_id;
@@ -1328,7 +1332,8 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                 reader.GetDecimal(3),
                 reader.GetDecimal(4),
                 reader.GetDecimal(5),
-                new DateTimeOffset(reader.GetDateTime(6), TimeSpan.Zero)));
+                new DateTimeOffset(reader.GetDateTime(6), TimeSpan.Zero),
+                reader.GetDecimal(7)));
         }
 
         return results;

@@ -200,6 +200,7 @@ public sealed class PositionLimitRuleTests
 
         var result = await sut.EvaluateAsync(CreateBuyOrder(quantity: 200m));
 
+        result.IsApproved.Should().BeFalse();
         result.RejectReason.Should().Contain(DefaultSymbol);
     }
 }

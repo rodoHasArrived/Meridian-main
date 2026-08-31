@@ -861,9 +861,14 @@ public sealed class TradingOperatorReadinessServiceTests
 
     private static string[] CreateLivePromotionEvidenceReferences()
         => PromotionApprovalChecklist.CreateRequiredFor(RunType.Live)
-            .Select(static item => string.Equals(item, PromotionApprovalChecklist.LiveOverrideReviewed, StringComparison.Ordinal)
-                ? $"{item}:manual-override/override-live"
-                : $"{item}:evidence/{item.ToLowerInvariant()}")
+            .Select(static item => item switch
+            {
+                _ when string.Equals(item, PromotionApprovalChecklist.LiveOverrideReviewed, StringComparison.Ordinal)
+                    => $"{item}:manual-override/override-live",
+                _ when string.Equals(item, PromotionApprovalChecklist.PaperExecutionModelReviewed, StringComparison.Ordinal)
+                    => $"{item}:paper-match/1+paper-cost/1",
+                _ => $"{item}:evidence/{item.ToLowerInvariant()}"
+            })
             .ToArray();
 
     private static WorkstationBrokerageSyncStatusDto CreateHealthyBrokerageSyncStatus()

@@ -8,6 +8,9 @@ namespace Meridian.Tests.Application.Services;
 /// Tests for PreflightChecker covering disk space, file permissions,
 /// system time, environment variable checks, and failure modes.
 /// </summary>
+// Mutates process-global environment variables that concurrent compositions read ambiently, so
+// this class must not run in parallel with other collections (#2682).
+[Collection("Sequential")]
 public sealed class PreflightCheckerTests : IDisposable
 {
     private readonly string _tempDir;

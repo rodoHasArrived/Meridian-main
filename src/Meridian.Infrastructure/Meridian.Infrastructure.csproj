@@ -91,7 +91,7 @@
     <Error Condition="'$(EnableIbApiSmoke)' == 'true' and '$(EnableIbApiRuntime)' == 'true'" Text="EnableIbApiSmoke=true cannot be combined with EnableIbApiVendor=true or legacy DefineConstants=IBAPI. Use one Interactive Brokers build mode at a time." />
     <Error Condition="'$(EnableIbApiRuntime)' == 'true' and '$(EnableIbApiSmoke)' != 'true' and '$(IBApiProjectPath)' != '' and !Exists('$(IBApiProjectPath)')" Text="IBApiProjectPath '$(IBApiProjectPath)' was provided but does not exist." />
     <Error Condition="'$(EnableIbApiRuntime)' == 'true' and '$(EnableIbApiSmoke)' != 'true' and '$(IBApiDllPath)' != '' and !Exists('$(IBApiDllPath)')" Text="IBApiDllPath '$(IBApiDllPath)' was provided but does not exist." />
-    <Error Condition="'$(EnableIbApiRuntime)' == 'true' and '$(EnableIbApiSmoke)' != 'true' and '$(ResolvedIbApiProjectPath)' == '' and '$(ResolvedIbApiDllPath)' == ''" Text="Interactive Brokers vendor mode was requested but no official IBApi project or DLL was resolved. Place the vendor SDK under external\IBApi, or set IBApiProjectPath/IBApiDllPath. See docs/providers/interactive-brokers-setup.md." />
+    <Error Condition="'$(EnableIbApiRuntime)' == 'true' and '$(EnableIbApiSmoke)' != 'true' and '$(ResolvedIbApiProjectPath)' == '' and '$(ResolvedIbApiDllPath)' == ''" Text="Interactive Brokers vendor mode was requested but no official IBApi project or DLL was resolved. Place the vendor SDK under external\IBApi, or set IBApiProjectPath/IBApiDllPath. See docs/operators/provider-onboarding-interactive-brokers.md." />
   </Target>
 
   <!-- Provider implementation templates live under docs/examples/provider-template/ and are no longer part of this project. -->

@@ -15,4 +15,10 @@
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
     <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Migrations\*.sql">
+      <TargetPath>IdentityAccess\Migrations\%(Filename)%(Extension)</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

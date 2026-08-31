@@ -3,14 +3,20 @@ using System.Text;
 using System.Text.Json;
 using System.Runtime.Versioning;
 using Meridian.Contracts.Configuration;
+using Meridian.Core.Logging;
 using Meridian.Storage.Archival;
+using Serilog;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.DataIntegration.Credentials;
 
 public sealed class FileProviderCredentialStore : IProviderCredentialStore
 {
+    private static readonly ILogger Log = LoggingSetup.ForContext<FileProviderCredentialStore>();
+
     private const int VaultVersion = 1;
     private const string VaultFileName = "provider-credentials.vault";
+    private const string VaultBackupFileName = "provider-credentials.vault.bak";
     private const string KeyFileName = "provider-credentials.key";
     private const string AuditFileName = "provider-credentials.audit.jsonl";
     private const string EnvironmentFallbackOverride = "MDC_PROVIDER_ALLOW_ENV_FALLBACK";
@@ -27,6 +33,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly string _directoryPath;
+    private readonly string _vaultBackupPath;
     private readonly string _keyPath;
     private readonly string _auditPath;
 
@@ -36,6 +43,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
         _directoryPath = Path.Combine(Path.GetFullPath(dataRoot), ".mdc");
         VaultPath = Path.Combine(_directoryPath, VaultFileName);
+        _vaultBackupPath = Path.Combine(_directoryPath, VaultBackupFileName);
         _keyPath = Path.Combine(_directoryPath, KeyFileName);
         _auditPath = Path.Combine(_directoryPath, AuditFileName);
     }
@@ -192,7 +200,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
             record.LastVerifiedAt = verifiedAt;
             record.LastError = update.Success ? null : SanitizeError(update.ErrorMessage);
-            record.ExternalAccountId = update.Success ? NullIfBlank(update.ExternalAccountId) : record.ExternalAccountId;
+            record.ExternalAccountId = update.Success ? NormalizeOptional(update.ExternalAccountId) : record.ExternalAccountId;
             if (update.Success)
             {
                 record.LastSuccessfulAt = verifiedAt;
@@ -535,12 +543,53 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
     private async Task<ProviderCredentialVault> LoadVaultAsync(CancellationToken ct)
     {
-        if (!File.Exists(VaultPath))
+        try
+        {
+            return await LoadVaultFromFileAsync(VaultPath, ct).ConfigureAwait(false);
+        }
+        catch (Exception primaryFailure) when (IsVaultCorruption(primaryFailure))
+        {
+            // A single corrupt write must not lock operators out of every provider
+            // credential. Fall back to the rolling last-known-good backup — loudly, and
+            // leaving the corrupt primary on disk for inspection.
+            Log.Error(
+                primaryFailure,
+                "Provider credential vault at {VaultPath} is unreadable; attempting last-known-good backup at {BackupPath}",
+                VaultPath, _vaultBackupPath);
+
+            if (!File.Exists(_vaultBackupPath))
+            {
+                Log.Error("No provider credential vault backup exists at {BackupPath}; giving up", _vaultBackupPath);
+                throw;
+            }
+
+            try
+            {
+                var vault = await LoadVaultFromFileAsync(_vaultBackupPath, ct).ConfigureAwait(false);
+                Log.Warning(
+                    "Recovered provider credentials from backup {BackupPath}; changes made after the backup was taken are lost and the corrupt vault is preserved at {VaultPath}",
+                    _vaultBackupPath, VaultPath);
+                return vault;
+            }
+            catch (Exception backupFailure) when (IsVaultCorruption(backupFailure))
+            {
+                Log.Error(backupFailure, "Provider credential vault backup at {BackupPath} is also unreadable", _vaultBackupPath);
+                throw primaryFailure;
+            }
+        }
+    }
+
+    private static bool IsVaultCorruption(Exception ex)
+        => ex is JsonException or FormatException or InvalidOperationException or CryptographicException;
+
+    private async Task<ProviderCredentialVault> LoadVaultFromFileAsync(string path, CancellationToken ct)
+    {
+        if (!File.Exists(path))
         {
             return new ProviderCredentialVault();
         }
 
-        var envelopeJson = await File.ReadAllTextAsync(VaultPath, ct).ConfigureAwait(false);
+        var envelopeJson = await File.ReadAllTextAsync(path, ct).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(envelopeJson))
         {
             return new ProviderCredentialVault();
@@ -557,7 +606,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
     private async Task WriteVaultAsync(ProviderCredentialVault vault, CancellationToken ct)
     {
-        Directory.CreateDirectory(_directoryPath);
+        EnsureVaultDirectory();
         vault.Version = VaultVersion;
         vault.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -566,6 +615,22 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         var (protection, protectedBytes) = await ProtectAsync(plainBytes, ct).ConfigureAwait(false);
         var envelope = new ProtectedVaultEnvelope(VaultVersion, protection, Convert.ToBase64String(protectedBytes));
         var envelopeJson = JsonSerializer.Serialize(envelope, JsonOptions);
+
+        // Roll the current (readable) vault to the last-known-good backup before replacing
+        // it, so a corrupting write can always fall back one generation in LoadVaultAsync.
+        // Callers hold _gate, so the copy/write pair cannot interleave with another writer.
+        if (File.Exists(VaultPath))
+        {
+            try
+            {
+                File.Copy(VaultPath, _vaultBackupPath, overwrite: true);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                Log.Warning(ex, "Could not refresh provider credential vault backup at {BackupPath}", _vaultBackupPath);
+            }
+        }
+
         await AtomicFileWriter.WriteAsync(VaultPath, envelopeJson, ct).ConfigureAwait(false);
     }
 
@@ -633,18 +698,72 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         return plainBytes;
     }
 
+    // The AES-GCM key lives in the same directory as the ciphertext it opens, so on Unix the file
+    // mode is the only thing separating the two: a reader who can open the vault can open the key
+    // beside it. Owner-only is therefore a correctness requirement of the encryption, not
+    // defence in depth.
+    private const UnixFileMode OwnerOnlyFileMode =
+        UnixFileMode.UserRead | UnixFileMode.UserWrite;
+
+    private const UnixFileMode OwnerOnlyDirectoryMode =
+        UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
+
     private async Task<byte[]> GetOrCreateLocalKeyAsync(CancellationToken ct)
     {
-        Directory.CreateDirectory(_directoryPath);
+        EnsureVaultDirectory();
         if (File.Exists(_keyPath))
         {
+            RestrictExistingKeyFile(_keyPath);
             return await File.ReadAllBytesAsync(_keyPath, ct).ConfigureAwait(false);
         }
 
         var key = RandomNumberGenerator.GetBytes(32);
-        await AtomicFileWriter.WriteAsync(_keyPath, key, ct).ConfigureAwait(false);
+        await AtomicFileWriter.WriteAsync(_keyPath, key, OwnerOnlyFileMode, ct).ConfigureAwait(false);
         TrySetHidden(_keyPath);
         return key;
+    }
+
+    // Only a directory this store creates is narrowed. An existing .mdc is left as the deployment
+    // configured it - it is shared with other credential state, and silently removing access a
+    // running install depends on would be a worse failure than the one being prevented. The key
+    // file's own mode is what actually protects the key, and that is enforced either way.
+    private void EnsureVaultDirectory()
+    {
+        if (OperatingSystem.IsWindows() || Directory.Exists(_directoryPath))
+        {
+            Directory.CreateDirectory(_directoryPath);
+            return;
+        }
+
+        Directory.CreateDirectory(_directoryPath, OwnerOnlyDirectoryMode);
+    }
+
+    private static void RestrictExistingKeyFile(string path)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        try
+        {
+            var mode = File.GetUnixFileMode(path);
+            var exposed = mode & ~OwnerOnlyFileMode;
+            if (exposed == UnixFileMode.None)
+            {
+                return;
+            }
+
+            File.SetUnixFileMode(path, OwnerOnlyFileMode);
+            Log.Warning(
+                "Provider credential vault key at {KeyPath} was reachable beyond its owner ({ExposedMode}); tightened to owner-only. The key should be treated as disclosed and provider credentials rotated.",
+                path,
+                exposed);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or PlatformNotSupportedException)
+        {
+            Log.Warning(ex, "Could not verify permissions on the provider credential vault key at {KeyPath}", path);
+        }
     }
 
     private static void TrySetHidden(string path)
@@ -691,9 +810,6 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
         return message.Trim();
     }
-
-    private static string? NullIfBlank(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private sealed record ProtectedVaultEnvelope(int Version, string Protection, string CipherText);
 

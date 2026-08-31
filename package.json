@@ -12,7 +12,7 @@
     "ui:dashboard:test": "npm --prefix src/Meridian.Ui/dashboard run test"
   },
   "devDependencies": {
-    "@viz-js/viz": "^3.26.0",
-    "sharp": "^0.34.5"
+    "@viz-js/viz": "^3.29.0",
+    "sharp": "^0.35.2"
   }
 }

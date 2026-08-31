@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
@@ -34,6 +35,48 @@ public sealed class ReportingOrchestrationServiceTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_CapitalAccountManifestDoesNotInvokeLegacyProjectionSource()
+    {
+        var legacyProjectionSource = new RecordingPartnersCapitalSource();
+        var sut = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(),
+            new DeterministicReportingSectionRenderer(),
+            () => FixedNow,
+            runStore: null,
+            runNotifier: null,
+            partnersCapitalSource: legacyProjectionSource);
+        var asOf = new DateOnly(2026, 5, 31);
+        var parameters = new ReportingRunParametersDto(
+            new ReportingRunScopeDto("fund-alpha"),
+            "period-2026-05",
+            asOf,
+            new ReportingLedgerBookSelectionDto(Guid.NewGuid(), "PRIMARY"),
+            ReportingAccountingBasisDto.Gaap,
+            "USD",
+            ReportingConsolidationLevelDto.Fund,
+            ReportingOutputFormatDto.Pdf,
+            ReportingFinalityDto.Draft,
+            IncludeSupportingSchedules: false,
+            IncludeEvidenceAppendix: false);
+
+        var manifest = await sut.ExecuteAsync(
+            new ReportingJobContract(
+                "capital-canonical",
+                "capital-account-statement",
+                asOf,
+                ReportingRunTrigger.AdHoc,
+                0,
+                "alice",
+                FixedNow,
+                ResolvedParameters: parameters),
+            CancellationToken.None);
+
+        legacyProjectionSource.CaptureCount.Should().Be(0,
+            "capital-account bytes are sourced later from the exact certified ledger report pack");
+        manifest.CertifiedPartnersCapital.Should().BeNull();
+    }
+
+    [Fact]
     public async Task TransitionApprovalAsync_EnforcesGateAndRole()
     {
         var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);
@@ -50,22 +93,159 @@ public sealed class ReportingOrchestrationServiceTests
     }
 
     [Fact]
-    public async Task ExecuteDueSchedulesAsync_OnlyRunsDueSchedulesInStableOrder()
+    public async Task ExecuteAsync_BlocksSilentRegenerationOfReleasedManifest()
     {
         var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);
-        var dueLater = FixedNow.AddMinutes(5);
+        var contract = new ReportingJobContract("job-restate", "investor-monthly-statement", new DateOnly(2026, 5, 1), ReportingRunTrigger.AdHoc, 0, "alice", FixedNow);
+        var released = await ExecuteAndReleaseAsync(sut, contract);
+
+        var act = async () => await sut.ExecuteAsync(contract, CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*Released manifest*");
+        sut.GetAudit(released.RunId).Should().Contain(e => e.Action == "RestatementBlocked");
+        sut.GetManifest(released.RunId)!.Status.Should().Be(ReportingRunStatus.Released);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_RequiresRetryReasonForAuthorizedRestatement()
+    {
+        var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);
+        var contract = new ReportingJobContract("job-restate", "investor-monthly-statement", new DateOnly(2026, 5, 1), ReportingRunTrigger.AdHoc, 0, "alice", FixedNow);
+        var released = await ExecuteAndReleaseAsync(sut, contract);
+
+        var act = async () => await sut.ExecuteAsync(contract with { AllowRestatement = true }, CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*requires a RetryReason*");
+        sut.GetAudit(released.RunId).Should().Contain(e => e.Action == "RestatementBlocked");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_AllowsAuditableRestatementWhenAuthorized()
+    {
+        var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);
+        var contract = new ReportingJobContract("job-restate", "investor-monthly-statement", new DateOnly(2026, 5, 1), ReportingRunTrigger.AdHoc, 0, "alice", FixedNow);
+        var released = await ExecuteAndReleaseAsync(sut, contract);
+
+        var restatement = await sut.ExecuteAsync(
+            contract with { AllowRestatement = true, RetryReason = "Q2 NAV correction" },
+            CancellationToken.None);
+
+        restatement.RunId.Should().Be("job-restate-20260501-v2");
+        restatement.PriorRunId.Should().Be(released.RunId);
+        sut.GetAudit(released.RunId).Should().Contain(e =>
+            e.Action == "RestatementAuthorized" && e.Notes.Contains("Q2 NAV correction"));
+    }
+
+    private static async Task<ReportingOutputManifest> ExecuteAndReleaseAsync(
+        ReportingOrchestrationService sut,
+        ReportingJobContract contract)
+    {
+        var manifest = await sut.ExecuteAsync(contract, CancellationToken.None);
+        await sut.TransitionApprovalAsync(manifest.RunId, ReportingRunStatus.InReview, "bob", "Reviewer", "review", CancellationToken.None);
+        await sut.TransitionApprovalAsync(manifest.RunId, ReportingRunStatus.Approved, "cora", "ComplianceOfficer", "approved", CancellationToken.None);
+        await sut.TransitionApprovalAsync(manifest.RunId, ReportingRunStatus.Released, "dan", "OperationsLead", "release", CancellationToken.None);
+        return sut.GetManifest(manifest.RunId)!;
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_DetectsReleasedSeriesHeadWhenGloballyCappedListingHidesIt()
+    {
+        // A durable store whose ListRuns() is globally capped and does NOT surface older runs.
+        var store = new CappedListingRunStore();
+        var contract = new ReportingJobContract("job-capped", "investor-monthly-statement", new DateOnly(2026, 5, 1), ReportingRunTrigger.AdHoc, 0, "alice", FixedNow);
+
+        // Release the series through one instance; the manifest lives in the store but is hidden by ListRuns().
+        var seeding = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow, store);
+        var released = await ExecuteAndReleaseAsync(seeding, contract);
+
+        // A fresh instance has no in-memory manifests, so it must resolve the released head from the
+        // store by series-run-id probing rather than the capped listing.
+        var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow, store);
+        var act = async () => await sut.ExecuteAsync(contract, CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*Released manifest*");
+        // The released manifest must not have been overwritten by a regenerated v1.
+        store.GetManifest(released.RunId)!.Status.Should().Be(ReportingRunStatus.Released);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_StillRequiresAuthorizationAfterAFailedRestatementAttempt()
+    {
+        var store = new CappedListingRunStore();
+        var contract = new ReportingJobContract("job-failretry", "investor-monthly-statement", new DateOnly(2026, 5, 1), ReportingRunTrigger.AdHoc, 0, "alice", FixedNow);
+
+        // v1 released.
+        var seeding = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow, store);
+        var released = await ExecuteAndReleaseAsync(seeding, contract);
+
+        // An authorized restatement whose render fails persists a Failed v2 at the absolute head.
+        var failing = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new AlwaysFailingRenderer(), () => FixedNow, store);
+        var restate = async () => await failing.ExecuteAsync(
+            contract with { AllowRestatement = true, RetryReason = "attempt one" },
+            CancellationToken.None);
+        await restate.Should().ThrowAsync<InvalidOperationException>();
+
+        // A later run without authorization must still be blocked: v1 remains the released report,
+        // even though the failed v2 now sits at the absolute head of the series.
+        var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow, store);
+        var act = async () => await sut.ExecuteAsync(contract, CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*Released manifest*");
+        store.GetManifest(released.RunId)!.Status.Should().Be(ReportingRunStatus.Released);
+
+        // An authorized restatement uses the released head as its prior basis (not the failed attempt),
+        // so its lineage and grid diff compare against the released report being superseded.
+        var authorized = await sut.ExecuteAsync(
+            contract with { AllowRestatement = true, RetryReason = "attempt two" },
+            CancellationToken.None);
+        authorized.PriorRunId.Should().Be(released.RunId);
+    }
+
+    private sealed class CappedListingRunStore : IReportingRunStore
+    {
+        private readonly Dictionary<string, ReportingOutputManifest> manifests = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, IReadOnlyList<ReportingRunAuditEntry>> audits = new(StringComparer.OrdinalIgnoreCase);
+
+        // Simulate a globally capped listing that omits older runs (e.g. many newer runs in other series).
+        public IReadOnlyList<ReportingRunSnapshot> ListRuns(int limit = 25) => [];
+
+        public ReportingOutputManifest? GetManifest(string runId) => manifests.GetValueOrDefault(runId);
+
+        public IReadOnlyList<ReportingRunAuditEntry> GetAudit(string runId) =>
+            audits.TryGetValue(runId, out var entries) ? entries : [];
+
+        public Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList<ReportingRunAuditEntry> auditTrail, CancellationToken ct = default)
+        {
+            manifests[manifest.RunId] = manifest;
+            audits[manifest.RunId] = auditTrail;
+            return Task.CompletedTask;
+        }
+    }
+
+    [Fact]
+    public async Task ExecuteDueSchedulesAsync_FailsClosedOutsideHostedScheduleAuthority()
+    {
+        var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);
         var schedules = new[]
         {
-            new ReportingScheduleContract("sched-shadow", "shadow-nav-daily-pack", "0 22 * * 1-5", new DateOnly(2026, 5, 3), FixedNow.AddMinutes(-2), 1, "scheduler"),
-            new ReportingScheduleContract("sched-investor", "investor-monthly-statement", "0 8 1 * *", new DateOnly(2026, 5, 1), FixedNow.AddMinutes(-5), 1, "scheduler"),
-            new ReportingScheduleContract("sched-sec", "sec-13f-packet", "0 8 * * 5", new DateOnly(2026, 5, 8), dueLater, 1, "scheduler")
+            new ReportingScheduleContract(
+                "sched-investor",
+                "investor-monthly-statement",
+                "0 8 1 * *",
+                new DateOnly(2026, 5, 1),
+                FixedNow.AddMinutes(-5),
+                1,
+                "scheduler")
         };
 
-        var generated = await sut.ExecuteDueSchedulesAsync(schedules, FixedNow, CancellationToken.None);
+#pragma warning disable CS0618 // Verify the fail-closed behavior of the retained compatibility member.
+        Func<Task> act = async () =>
+            await sut.ExecuteDueSchedulesAsync(schedules, FixedNow, CancellationToken.None);
+#pragma warning restore CS0618
 
-        generated.Select(m => m.RunId).Should().Equal("sched-investor-20260501", "sched-shadow-20260503");
-        generated.Should().OnlyContain(m => m.Trigger == ReportingRunTrigger.Scheduled && m.ScheduleId != null);
-        sut.GetAudit("sched-shadow-20260503").Should().ContainSingle(e => e.Action == "RunGenerated" && e.Notes.Contains("trigger=Scheduled"));
+        await act.Should().ThrowAsync<NotSupportedException>()
+            .WithMessage("*host reporting-schedule adapter*");
+        sut.GetManifest("sched-investor-20260501").Should().BeNull();
     }
 
     [Fact]
@@ -212,6 +392,189 @@ public sealed class ReportingOrchestrationServiceTests
         reloaded.GetAudit(manifest.RunId).Select(static entry => entry.Action).Should().ContainInOrder("RunGenerated", "ApprovalTransition", "ApprovalTransition");
     }
 
+    [Fact]
+    public async Task TransitionApprovalAsync_SerializesSameRunAndReclaimsIdleKeyedLock()
+    {
+        var store = new InspectableReportingRunStore();
+        var sut = CreateRetentionService(store, maxRetainedTerminalRuns: 1);
+        var manifest = await sut.ExecuteAsync(
+            CreateRetentionContract("lock-serialization"),
+            CancellationToken.None);
+        var blockedSave = store.BlockNextSave();
+
+        var first = sut.TransitionApprovalAsync(
+            manifest.RunId,
+            ReportingRunStatus.InReview,
+            "reviewer",
+            "Reviewer",
+            "ready",
+            CancellationToken.None);
+        await blockedSave.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        var second = sut.TransitionApprovalAsync(
+            manifest.RunId,
+            ReportingRunStatus.Approved,
+            "operations",
+            "OperationsLead",
+            "approved",
+            CancellationToken.None);
+
+        store.MaxConcurrentSaveCount.Should().Be(1,
+            "the second same-run transition must wait behind the first lifecycle lease");
+        sut.GetRetentionSnapshot().ActiveRunLockCount.Should().Be(1);
+
+        blockedSave.Release.TrySetResult();
+        (await first).Should().BeTrue();
+        (await second).Should().BeTrue();
+        sut.GetManifest(manifest.RunId)!.Status.Should().Be(ReportingRunStatus.Approved);
+        sut.GetRetentionSnapshot().ActiveRunLockCount.Should().Be(0,
+            "the keyed lock entry must be reclaimed after its final holder and waiter exit");
+    }
+
+    [Fact]
+    public async Task DurableTerminalRetention_IsBoundedAndEvictedRunReloadsFromStore()
+    {
+        var store = new InspectableReportingRunStore();
+        var sut = CreateRetentionService(store, maxRetainedTerminalRuns: 1);
+        var first = await ExecuteAndReleaseAsync(
+            sut,
+            CreateRetentionContract("retained-terminal-a"));
+        var second = await ExecuteAndReleaseAsync(
+            sut,
+            CreateRetentionContract("retained-terminal-b"));
+
+        var bounded = sut.GetRetentionSnapshot();
+        bounded.RetainedRunCount.Should().Be(1);
+        bounded.EvictionEligibleTerminalRunCount.Should().Be(1);
+        store.GetManifest(first.RunId).Should().NotBeNull();
+        store.GetManifest(second.RunId).Should().NotBeNull();
+        var readsBeforeReload = store.ManifestReadCount;
+
+        var reloaded = sut.GetManifest(first.RunId);
+
+        reloaded.Should().NotBeNull();
+        reloaded!.Status.Should().Be(ReportingRunStatus.Released);
+        store.ManifestReadCount.Should().BeGreaterThan(readsBeforeReload);
+        sut.GetAudit(first.RunId).Should().Contain(entry => entry.Action == "ApprovalTransition");
+        sut.GetRetentionSnapshot().RetainedRunCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Retention_DoesNotEvictActiveOrNullStoreUnsavedRuns()
+    {
+        var store = new InspectableReportingRunStore();
+        var durable = CreateRetentionService(store, maxRetainedTerminalRuns: 0);
+        var activeA = await durable.ExecuteAsync(
+            CreateRetentionContract("active-retention-a"),
+            CancellationToken.None);
+        var activeB = await durable.ExecuteAsync(
+            CreateRetentionContract("active-retention-b"),
+            CancellationToken.None);
+
+        durable.GetRetentionSnapshot().RetainedRunCount.Should().Be(2,
+            "persisted Draft runs remain mutable and are not terminal eviction candidates");
+        durable.GetManifest(activeA.RunId).Should().NotBeNull();
+        durable.GetManifest(activeB.RunId).Should().NotBeNull();
+
+        var memoryOnly = CreateRetentionService(runStore: null, maxRetainedTerminalRuns: 0);
+        var unsavedA = await ExecuteAndReleaseAsync(
+            memoryOnly,
+            CreateRetentionContract("unsaved-retention-a"));
+        var unsavedB = await ExecuteAndReleaseAsync(
+            memoryOnly,
+            CreateRetentionContract("unsaved-retention-b"));
+
+        var memorySnapshot = memoryOnly.GetRetentionSnapshot();
+        memorySnapshot.HasDurableStore.Should().BeFalse();
+        memorySnapshot.RetainedRunCount.Should().Be(2,
+            "null-store state is the sole authority and cannot be safely evicted");
+        memoryOnly.GetManifest(unsavedA.RunId).Should().NotBeNull();
+        memoryOnly.GetManifest(unsavedB.RunId).Should().NotBeNull();
+        memorySnapshot.ActiveRunLockCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NotifiesRunChangedWithRunId()
+    {
+        var notifier = new RecordingRunNotifier();
+        var sut = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow, runStore: null, runNotifier: notifier);
+        var contract = new ReportingJobContract("job-notify", "investor-monthly-statement", new DateOnly(2026, 5, 1), ReportingRunTrigger.AdHoc, 0, "alice", FixedNow);
+
+        var manifest = await sut.ExecuteAsync(contract, CancellationToken.None);
+
+        notifier.RunIds.Should().Contain(manifest.RunId);
+    }
+
+    [Fact]
+    public async Task TransitionApprovalAsync_NotifiesRunChangedOnEachTransition()
+    {
+        var notifier = new RecordingRunNotifier();
+        var sut = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow, runStore: null, runNotifier: notifier);
+        var contract = new ReportingJobContract("job-notify-2", "sec-13f-packet", new DateOnly(2026, 5, 2), ReportingRunTrigger.AdHoc, 0, "alice", FixedNow);
+        var manifest = await sut.ExecuteAsync(contract, CancellationToken.None);
+        notifier.RunIds.Clear();
+
+        (await sut.TransitionApprovalAsync(manifest.RunId, ReportingRunStatus.InReview, "bob", "Reviewer", "review", CancellationToken.None)).Should().BeTrue();
+        (await sut.TransitionApprovalAsync(manifest.RunId, ReportingRunStatus.Approved, "cora", "ComplianceOfficer", "approved", CancellationToken.None)).Should().BeTrue();
+
+        notifier.RunIds.Should().HaveCount(2).And.OnlyContain(id => id == manifest.RunId);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithThrowingNotifier_StillPersistsAndDoesNotThrow()
+    {
+        // The notifier is best-effort — a throwing implementation must never surface on the
+        // run-execution path. Reaching the assertions at all proves ExecuteAsync did not rethrow.
+        var sut = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow, runStore: null, runNotifier: new ThrowingRunNotifier());
+        var contract = new ReportingJobContract("job-throw", "investor-monthly-statement", new DateOnly(2026, 5, 1), ReportingRunTrigger.AdHoc, 0, "alice", FixedNow);
+
+        var manifest = await sut.ExecuteAsync(contract, CancellationToken.None);
+
+        manifest.RunId.Should().Be("job-throw-20260501");
+        sut.GetManifest(manifest.RunId).Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_NotifiesEvenWhenTheRunFails()
+    {
+        var notifier = new RecordingRunNotifier();
+        var sut = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(), new AlwaysFailingRenderer(), () => FixedNow, runStore: null, runNotifier: notifier);
+        var contract = new ReportingJobContract("job-fail-notify", "investor-monthly-statement", new DateOnly(2026, 5, 1), ReportingRunTrigger.AdHoc, 0, "alice", FixedNow);
+
+        await sut.Awaiting(s => s.ExecuteAsync(contract, CancellationToken.None)).Should().ThrowAsync<InvalidOperationException>();
+
+        // The failed manifest is persisted (and therefore notified) before the throw propagates.
+        notifier.RunIds.Should().Contain("job-fail-notify-20260501");
+    }
+
+    private sealed class RecordingRunNotifier : IReportingRunNotifier
+    {
+        public List<string> RunIds { get; } = new();
+
+        public void NotifyRunChanged(string runId) => RunIds.Add(runId);
+    }
+
+    private sealed class ThrowingRunNotifier : IReportingRunNotifier
+    {
+        public void NotifyRunChanged(string runId) => throw new InvalidOperationException("notifier boom");
+    }
+
+    private sealed class RecordingPartnersCapitalSource : IReportingPartnersCapitalSource
+    {
+        public int CaptureCount { get; private set; }
+
+        public Task<CertifiedPartnersCapitalProjection?> CaptureAsync(
+            ReportingRunParametersDto parameters,
+            CancellationToken cancellationToken = default)
+        {
+            CaptureCount++;
+            return Task.FromResult<CertifiedPartnersCapitalProjection?>(null);
+        }
+    }
+
     private sealed class FailingOnceRenderer : IReportingSectionRenderer
     {
         private readonly DeterministicReportingSectionRenderer inner = new();
@@ -243,5 +606,117 @@ public sealed class ReportingOrchestrationServiceTests
                 : throw new KeyNotFoundException($"Unknown reporting template '{templateId}'.");
 
         public IReadOnlyList<ReportingTemplateMetadata> ListTemplates() => [template];
+    }
+
+    private static ReportingOrchestrationService CreateRetentionService(
+        IReportingRunStore? runStore,
+        int maxRetainedTerminalRuns) =>
+        new(
+            new DefaultReportingTemplateCatalog(),
+            new DeterministicReportingSectionRenderer(),
+            () => FixedNow,
+            runStore,
+            runNotifier: null,
+            partnersCapitalSource: null,
+            retentionOptions: new ReportingOrchestrationRetentionOptions
+            {
+                MaxRetainedTerminalRuns = maxRetainedTerminalRuns
+            });
+
+    private static ReportingJobContract CreateRetentionContract(string jobId) =>
+        new(
+            jobId,
+            "investor-monthly-statement",
+            new DateOnly(2026, 5, 1),
+            ReportingRunTrigger.AdHoc,
+            MaxRetries: 0,
+            RequestedBy: "retention-test",
+            RequestedAtUtc: FixedNow);
+
+    private sealed class InspectableReportingRunStore : IReportingRunStore
+    {
+        private readonly ConcurrentDictionary<string, ReportingRunSnapshot> runs =
+            new(StringComparer.OrdinalIgnoreCase);
+        private SaveGate? nextSaveGate;
+        private int concurrentSaveCount;
+        private int maxConcurrentSaveCount;
+        private int manifestReadCount;
+
+        public int MaxConcurrentSaveCount => Volatile.Read(ref maxConcurrentSaveCount);
+
+        public int ManifestReadCount => Volatile.Read(ref manifestReadCount);
+
+        public SaveGate BlockNextSave()
+        {
+            var gate = new SaveGate();
+            if (Interlocked.CompareExchange(ref nextSaveGate, gate, null) is not null)
+            {
+                throw new InvalidOperationException("A reporting-run save is already blocked.");
+            }
+            return gate;
+        }
+
+        public IReadOnlyList<ReportingRunSnapshot> ListRuns(int limit = 25) =>
+            runs.Values.Take(limit).ToArray();
+
+        public ReportingOutputManifest? GetManifest(string runId)
+        {
+            Interlocked.Increment(ref manifestReadCount);
+            return runs.TryGetValue(runId, out var snapshot) ? snapshot.Manifest : null;
+        }
+
+        public IReadOnlyList<ReportingRunAuditEntry> GetAudit(string runId) =>
+            runs.TryGetValue(runId, out var snapshot) ? snapshot.AuditTrail : [];
+
+        public async Task SaveAsync(
+            ReportingOutputManifest manifest,
+            IReadOnlyList<ReportingRunAuditEntry> auditTrail,
+            CancellationToken ct = default)
+        {
+            var concurrent = Interlocked.Increment(ref concurrentSaveCount);
+            UpdateMaximum(ref maxConcurrentSaveCount, concurrent);
+            try
+            {
+                var gate = Interlocked.Exchange(ref nextSaveGate, null);
+                if (gate is not null)
+                {
+                    gate.Entered.TrySetResult();
+                    await gate.Release.Task.WaitAsync(ct);
+                }
+
+                ct.ThrowIfCancellationRequested();
+                runs[manifest.RunId] = new ReportingRunSnapshot(
+                    manifest,
+                    auditTrail.ToArray(),
+                    FixedNow);
+            }
+            finally
+            {
+                Interlocked.Decrement(ref concurrentSaveCount);
+            }
+        }
+
+        private static void UpdateMaximum(ref int location, int candidate)
+        {
+            var observed = Volatile.Read(ref location);
+            while (candidate > observed)
+            {
+                var prior = Interlocked.CompareExchange(ref location, candidate, observed);
+                if (prior == observed)
+                {
+                    return;
+                }
+                observed = prior;
+            }
+        }
+
+        public sealed class SaveGate
+        {
+            public TaskCompletionSource Entered { get; } =
+                new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            public TaskCompletionSource Release { get; } =
+                new(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
     }
 }

@@ -22,7 +22,7 @@ Provide a single reproducible runbook that proves DK1 pilot parity against the a
   - `artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.md`
   - `artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json`
   - `artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.md`
-- Evidence schema contract: [`provider-validation-evidence-schema.md`](../provider-validation-evidence-schema.md)
+- Evidence schema contract: [`provider-validation-evidence-schema.md`](../../reference/provider-validation-evidence-schema.md)
 
 ### Provider-specific evidence links
 

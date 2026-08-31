@@ -47,7 +47,8 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         _corporateActionAdjuster = corporateActionAdjuster;
         _lotSelectionMethod = lotSelectionMethod;
 
-        var defaultAccount = new AccountState(DefaultAccountId, "Default Paper Account", AccountKind.Brokerage, initialCash);
+        var defaultAccount = new AccountState(
+            DefaultAccountId, "Default Paper Account", AccountKind.Brokerage, initialCash, syncRoot: _lock);
         _accounts[DefaultAccountId] = defaultAccount;
 
         if (ledger is not null && initialCash > 0)
@@ -92,7 +93,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
             _accounts[def.AccountId] = new AccountState(
                 def.AccountId, def.DisplayName, def.Kind, def.InitialCash,
-                def.MarginType, def.MarginModel);
+                def.MarginType, def.MarginModel, syncRoot: _lock);
 
             if (ledger is not null && def.InitialCash > 0)
             {
@@ -128,9 +129,24 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// Uses signed market values so short positions reduce portfolio value as the
+    /// liability they are, and adds back short margin collateral held at the broker
+    /// (deducted from cash at short entry but still owned by the trader).
+    /// </remarks>
     public decimal PortfolioValue
     {
-        get { lock (_lock) { return _accounts.Values.Sum(static a => a.Cash + a.Positions.Values.Sum(static p => p.MarketValue) - a.MarginBalance); } }
+        get
+        {
+            lock (_lock)
+            {
+                return _accounts.Values.Sum(static a =>
+                    a.Cash
+                    + a.Positions.Values.Sum(static p => p.SignedMarketValue)
+                    - a.MarginBalance
+                    + a.ShortMarginCollateral);
+            }
+        }
     }
 
     /// <inheritdoc />
@@ -153,7 +169,10 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         {
             lock (_lock)
             {
-                var netted = new Dictionary<string, (long qty, decimal costBasis, decimal unrealised, decimal realised)>(
+                // Carry the unrounded quantity beside the whole-share one: position limits and
+                // ownership attribution are decimal, and truncating here let a 0.9-share
+                // holding read as 0 against a share cap.
+                var netted = new Dictionary<string, (long qty, decimal exactQty, decimal costBasis, decimal unrealised, decimal realised)>(
                     StringComparer.OrdinalIgnoreCase);
 
                 foreach (var account in _accounts.Values)
@@ -164,6 +183,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                         {
                             netted[pos.Symbol] = (
                                 existing.qty + (long)pos.Quantity,
+                                existing.exactQty + pos.Quantity,
                                 existing.costBasis, // keep first account's cost basis for simplicity
                                 existing.unrealised + pos.UnrealisedPnl,
                                 existing.realised + account.RealisedPnl);
@@ -172,6 +192,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                         {
                             netted[pos.Symbol] = (
                                 (long)pos.Quantity,
+                                pos.Quantity,
                                 pos.CostBasis,
                                 pos.UnrealisedPnl,
                                 account.RealisedPnl);
@@ -181,7 +202,10 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
                 return netted.ToDictionary(
                     static kv => kv.Key,
-                    static kv => (IPosition)new ExecutionPosition(kv.Key, kv.Value.qty, kv.Value.costBasis, kv.Value.unrealised, kv.Value.realised),
+                    static kv => (IPosition)new ExecutionPosition(kv.Key, kv.Value.qty, kv.Value.costBasis, kv.Value.unrealised, kv.Value.realised)
+                    {
+                        ExactQuantity = kv.Value.exactQty
+                    },
                     StringComparer.OrdinalIgnoreCase);
             }
         }
@@ -389,10 +413,39 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     public void ApplyFill(ExecutionReport report) => ApplyFill(DefaultAccountId, report);
 
     /// <summary>
+    /// Applies a fill to the default account while recording the fund account that owns it
+    /// and the contract multiplier it carries. Cash and cost basis are unchanged; the
+    /// attribution lets a shared execution book be read per fund and keeps a derivative
+    /// position's exposure from being measured as if each contract were one share.
+    /// </summary>
+    public void ApplyFill(
+        ExecutionReport report,
+        string? ownerAccountId,
+        decimal contractMultiplier = 1m,
+        bool usesFaceValuePercentageOfPar = false)
+        => ApplyFill(DefaultAccountId, report, ownerAccountId, contractMultiplier, usesFaceValuePercentageOfPar);
+
+    /// <summary>
     /// Applies a fill to a specific <paramref name="accountId"/>.
     /// When the account does not exist it is ignored (no-op).
     /// </summary>
     public void ApplyFill(string accountId, ExecutionReport report)
+        => ApplyFill(accountId, report, ownerAccountId: null);
+
+    /// <inheritdoc cref="ApplyFill(string, ExecutionReport)"/>
+    /// <remarks>
+    /// When <paramref name="usesFaceValuePercentageOfPar"/> is set, the report's quantity is
+    /// face value and its clean price is quoted as a percentage of par. The price is converted
+    /// to dollars per unit of face before any cash, cost-basis, or ledger math runs — 100,000
+    /// face at 101.25 moves $101,250, not $10,125,000 — so the position's stored cost basis and
+    /// market price are held in per-unit dollar terms for these instruments.
+    /// </remarks>
+    public void ApplyFill(
+        string accountId,
+        ExecutionReport report,
+        string? ownerAccountId,
+        decimal contractMultiplier = 1m,
+        bool usesFaceValuePercentageOfPar = false)
     {
         ArgumentNullException.ThrowIfNull(report);
 
@@ -406,17 +459,39 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             ? report.FilledQuantity
             : -report.FilledQuantity;
 
+        // Explicit transaction costs (commission, regulatory fees, and modeled slippage)
+        // all charge cash and book to commission expense so paper economics reflect them.
+        var explicitCosts = (report.Commission ?? 0m) + (report.Fees ?? 0m) + (report.SlippageCost ?? 0m);
+
+        // The report's own stamp is authoritative alongside the caller's parameter: the OMS
+        // stamps live increments, and durable session records replay those same reports after
+        // a restart, when no caller is left to supply the classification.
+        var faceValueSizing = usesFaceValuePercentageOfPar || report.UsesFaceValuePercentageOfPar;
+
+        // A percentage of par is a fraction of par: convert once here so every downstream
+        // lot, cost-basis, cash, and ledger computation shares one per-unit dollar price.
+        var fillPrice = faceValueSizing
+            ? report.FillPrice.Value / 100m
+            : report.FillPrice.Value;
+
         lock (_lock)
         {
             if (!_accounts.TryGetValue(accountId, out var account))
                 return;
 
-            ApplyFillToAccount(account, report.Symbol, signedQty, report.FillPrice.Value,
-                report.Commission ?? 0m, report.Timestamp, report.OrderId);
+            ApplyFillToAccount(account, report.Symbol, signedQty, fillPrice,
+                explicitCosts, report.Timestamp, report.OrderId,
+                ownerAccountId, contractMultiplier, faceValueSizing);
         }
     }
 
-    /// <summary>Updates the last-known market price for <paramref name="symbol"/> across all accounts.</summary>
+    /// <summary>
+    /// Updates the last-known market price for <paramref name="symbol"/> across all accounts.
+    /// A position opened by face-value fills stores its cost basis and market price in dollars
+    /// per unit of face, so a quote still arriving as a percentage of par is normalized the
+    /// same way the fill price was — otherwise a 100,000-face position marked at 102.25 would
+    /// report ~$10.2M of market value instead of ~$102K.
+    /// </summary>
     public void UpdateMarketPrice(string symbol, decimal price)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
@@ -426,7 +501,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             foreach (var account in _accounts.Values)
             {
                 if (account.Positions.TryGetValue(symbol, out var pos))
-                    pos.MarketPrice = price;
+                    pos.MarketPrice = pos.UsesFaceValuePricing ? price / 100m : price;
             }
         }
     }
@@ -441,7 +516,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             if (_accounts.TryGetValue(accountId, out var account)
                 && account.Positions.TryGetValue(symbol, out var pos))
             {
-                pos.MarketPrice = price;
+                pos.MarketPrice = pos.UsesFaceValuePricing ? price / 100m : price;
             }
         }
     }
@@ -511,6 +586,22 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             {
                 pos.Quantity = adjustment.AdjustedQuantity;
                 pos.CostBasis = adjustment.AdjustedCostBasis;
+
+                // Rescale the lot book by the same factors so lots stay consistent with the
+                // aggregate; otherwise the next lot-consuming fill falls into the shortfall
+                // fallback and mis-states realized P&L (e.g. selling through a post-split
+                // position priced at pre-split lot costs).
+                var quantityFactor = originalQuantity == 0m
+                    ? 1m
+                    : adjustment.AdjustedQuantity / originalQuantity;
+                var priceFactor = originalCostBasis == 0m
+                    ? 1m
+                    : adjustment.AdjustedCostBasis / originalCostBasis;
+                pos.RescaleLots(quantityFactor, priceFactor);
+                // Ownership rides on quantity, so a split that doubles the position must
+                // double each fund's share too. Leaving the tallies behind would surface
+                // the difference as an unattributable residual a scoped operator cannot see.
+                pos.RescaleOwnerQuantities(quantityFactor);
             }
         }
     }
@@ -524,7 +615,10 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         decimal price,
         decimal commission,
         DateTimeOffset ts,
-        string orderId)
+        string orderId,
+        string? ownerAccountId = null,
+        decimal contractMultiplier = 1m,
+        bool usesFaceValuePricing = false)
     {
         if (!account.Positions.TryGetValue(symbol, out var pos))
         {
@@ -532,21 +626,57 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             account.Positions[symbol] = pos;
         }
 
+        // Once a face-value fill touches the position, its cost basis and market price are
+        // held in dollars per unit of face — so later market quotes, still arriving as a
+        // percentage of par, must be normalized the same way (see UpdateMarketPrice).
+        if (usesFaceValuePricing)
+        {
+            pos.UsesFaceValuePricing = true;
+        }
+
+        // Attribution runs before the position math so it records the fill regardless of
+        // which branch below applies it, and never depends on the resulting quantity.
+        pos.AttributeFill(ownerAccountId, signedQty, contractMultiplier);
+
+        // A fill that crosses through zero closes the existing side first, then opens
+        // the residual on the opposite side — the residual must not be dropped.
+        // Commission is charged once, on the closing leg.
         if (signedQty > 0 && pos.Quantity < 0)
-            ApplyCoverShort(account, pos, symbol, signedQty, price, commission, ts);
+        {
+            var coverQty = Math.Min(signedQty, -pos.Quantity);
+            ApplyCoverShort(account, pos, symbol, coverQty, price, commission, ts);
+
+            var residualQty = signedQty - coverQty;
+            if (residualQty > 0m)
+                ApplyBuy(account, pos, symbol, residualQty, price, 0m, ts);
+        }
         else if (signedQty > 0)
+        {
             ApplyBuy(account, pos, symbol, signedQty, price, commission, ts);
+        }
         else if (signedQty < 0 && pos.Quantity > 0)
-            ApplySellLong(account, pos, symbol, -signedQty, price, commission, ts);
+        {
+            var closeQty = Math.Min(-signedQty, pos.Quantity);
+            ApplySellLong(account, pos, symbol, closeQty, price, commission, ts);
+
+            var residualQty = -signedQty - closeQty;
+            if (residualQty > 0m)
+                ApplyShortSell(account, pos, symbol, residualQty, price, 0m, ts);
+        }
         else if (signedQty < 0)
+        {
             ApplyShortSell(account, pos, symbol, -signedQty, price, commission, ts);
+        }
 
         if (commission > 0)
             PostCommissionEntry(symbol, commission, ts);
 
         pos.MarketPrice = price;
 
-        if (pos.Quantity == 0m)
+        // A net-flat SHARED book is not a flat book. Fund A long 100 against Fund B short
+        // 100 nets to zero here, but both funds still hold real, opposing exposure that
+        // gross limits must see. Only drop the position when nobody is left holding it.
+        if (pos.Quantity == 0m && !pos.HasOwnerExposure)
             account.Positions.Remove(symbol);
     }
 
@@ -844,14 +974,24 @@ internal sealed class AccountState : IAccountPortfolio
 
     public Dictionary<string, PaperPosition> Positions { get; } = new(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// The owning portfolio's lock. Read-only projections off this account enumerate the
+    /// live position dictionary, and a fill mutating it mid-enumeration throws. Since the
+    /// pre-trade risk gate reads these projections on every submission, that exception
+    /// surfaces as a server error refusing live order flow.
+    /// </summary>
+    private readonly Lock _syncRoot;
+
     public AccountState(
         string accountId,
         string displayName,
         AccountKind kind,
         decimal cash,
         MarginAccountType marginType = MarginAccountType.Cash,
-        IMarginModel? marginModel = null)
+        IMarginModel? marginModel = null,
+        Lock? syncRoot = null)
     {
+        _syncRoot = syncRoot ?? new Lock();
         AccountId = accountId;
         DisplayName = displayName;
         Kind = kind;
@@ -866,11 +1006,19 @@ internal sealed class AccountState : IAccountPortfolio
     }
 
     // IAccountPortfolio explicit implementation (read-only projection)
-    IReadOnlyDictionary<string, IPosition> IAccountPortfolio.Positions =>
-        Positions.ToDictionary(
-            static kv => kv.Key,
-            static kv => (IPosition)kv.Value.ToExecutionPosition(),
-            StringComparer.OrdinalIgnoreCase);
+    IReadOnlyDictionary<string, IPosition> IAccountPortfolio.Positions
+    {
+        get
+        {
+            lock (_syncRoot)
+            {
+                return Positions.ToDictionary(
+                    static kv => kv.Key,
+                    static kv => (IPosition)kv.Value.ToExecutionPosition(),
+                    StringComparer.OrdinalIgnoreCase);
+            }
+        }
+    }
 
     /// <summary>
     /// Total amount borrowed from the broker to fund long positions.
@@ -946,6 +1094,7 @@ internal sealed class AccountState : IAccountPortfolio
 internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
 {
     private readonly List<PositionLot> _lots = [];
+    private readonly Dictionary<string, decimal> _ownerQuantities = new(StringComparer.OrdinalIgnoreCase);
     public string Symbol { get; } = symbol;
     public decimal Quantity { get; set; }
     public decimal CostBasis { get; set; }
@@ -957,11 +1106,26 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     /// </summary>
     public decimal MarginBorrowed { get; set; }
 
+    /// <summary>
+    /// The position was opened by face-value fills whose clean prices are quoted as a
+    /// percentage of par, so <see cref="CostBasis"/> and <see cref="MarketPrice"/> are held
+    /// in dollars per unit of face and incoming market quotes must be normalized by 100
+    /// before being stored (see <c>PaperTradingPortfolio.UpdateMarketPrice</c>).
+    /// </summary>
+    public bool UsesFaceValuePricing { get; set; }
+
+    /// <summary>Unsigned exposure magnitude (|qty| × price); use <see cref="SignedMarketValue"/> for equity math.</summary>
     public decimal MarketValue => Math.Abs(Quantity) * MarketPrice;
 
-    public decimal UnrealisedPnl => Quantity > 0
-        ? (MarketPrice - CostBasis) * Quantity
-        : 0m; // short unrealised P&L tracked separately
+    /// <summary>Signed market value: positive for longs, negative for shorts (a liability).</summary>
+    public decimal SignedMarketValue => Quantity * MarketPrice;
+
+    /// <summary>
+    /// Unrealised P&amp;L for longs and shorts alike: with a signed quantity,
+    /// (price − cost) × qty yields (cost − price) × |qty| for shorts, where
+    /// <see cref="CostBasis"/> is the weighted-average short entry price.
+    /// </summary>
+    public decimal UnrealisedPnl => (MarketPrice - CostBasis) * Quantity;
 
     public IReadOnlyList<PositionLotEntry> GetLots() => _lots
         .Select(static lot => new PositionLotEntry(
@@ -981,6 +1145,57 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
         _lots.Add(new PositionLot($"lot-{Guid.NewGuid():N}", signedQuantity, entryPrice, openedAt));
     }
 
+    /// <summary>
+    /// Rescales every open lot by the corporate-action factors applied to the aggregate
+    /// position, preserving lot identity and open time. Keeping the lot book in step with
+    /// <see cref="Quantity"/>/<see cref="CostBasis"/> is required for lot consumption: a
+    /// desynced book would push post-split sells into the shortfall fallback and fabricate
+    /// cost basis at the aggregate average.
+    /// </summary>
+    /// <summary>
+    /// Rescales every owner tally by the corporate-action quantity factor, keeping fund
+    /// attribution in step with the position it describes.
+    /// </summary>
+    public void RescaleOwnerQuantities(decimal quantityFactor)
+    {
+        if (quantityFactor == 1m || _ownerQuantities.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var owner in _ownerQuantities.Keys.ToArray())
+        {
+            var rescaled = _ownerQuantities[owner] * quantityFactor;
+            if (rescaled == 0m)
+            {
+                _ownerQuantities.Remove(owner);
+                continue;
+            }
+
+            _ownerQuantities[owner] = rescaled;
+        }
+    }
+
+    public void RescaleLots(decimal quantityFactor, decimal priceFactor)
+    {
+        if (quantityFactor == 1m && priceFactor == 1m)
+        {
+            return;
+        }
+
+        var rescaled = _lots
+            .Select(lot => new PositionLot(
+                lot.LotId,
+                lot.OpenQuantity * quantityFactor,
+                lot.EntryPrice * priceFactor,
+                lot.OpenedAt))
+            .Where(static lot => lot.OpenQuantity != 0m)
+            .ToList();
+
+        _lots.Clear();
+        _lots.AddRange(rescaled);
+    }
+
     public decimal ConsumeLots(decimal quantity, PositionLotSelectionMethod method, bool isCoveringShort)
     {
         if (quantity <= 0m)
@@ -988,35 +1203,33 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
             return 0m;
         }
 
-        var remaining = quantity;
+        var consumption = LotConsumption.Consume(
+            OrderLots(method, isCoveringShort),
+            quantity,
+            static lot => Math.Abs(lot.OpenQuantity));
+
         var removedCostBasis = 0m;
-
-        while (remaining > 0m)
+        foreach (var slice in consumption.Slices)
         {
-            var lot = SelectNextLot(method, isCoveringShort);
-            if (lot is null)
+            removedCostBasis += slice.Quantity * slice.Lot.EntryPrice;
+
+            if (slice.ClosesLot)
             {
-                removedCostBasis += remaining * CostBasis;
-                break;
-            }
-
-            var lotAvailable = Math.Abs(lot.OpenQuantity);
-            var consumed = Math.Min(remaining, lotAvailable);
-            removedCostBasis += consumed * lot.EntryPrice;
-            remaining -= consumed;
-
-            var newOpenQty = lot.OpenQuantity > 0m
-                ? lot.OpenQuantity - consumed
-                : lot.OpenQuantity + consumed;
-
-            if (newOpenQty == 0m)
-            {
-                _lots.Remove(lot);
+                _lots.Remove(slice.Lot);
             }
             else
             {
-                lot.OpenQuantity = newOpenQty;
+                slice.Lot.OpenQuantity = slice.Lot.OpenQuantity > 0m
+                    ? slice.Lot.OpenQuantity - slice.Quantity
+                    : slice.Lot.OpenQuantity + slice.Quantity;
             }
+        }
+
+        if (consumption.Shortfall > 0m)
+        {
+            // No matching lot records remain; carry the unmatched remainder at the
+            // position-level average cost (legacy positions without lot history).
+            removedCostBasis += consumption.Shortfall * CostBasis;
         }
 
         CostBasis = CalculateRemainingLotCostBasis(isCoveringShort);
@@ -1040,7 +1253,7 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
         return remainingNotional / remainingQuantity;
     }
 
-    private PositionLot? SelectNextLot(PositionLotSelectionMethod method, bool isCoveringShort)
+    private IEnumerable<PositionLot> OrderLots(PositionLotSelectionMethod method, bool isCoveringShort)
     {
         var candidates = isCoveringShort
             ? _lots.Where(static lot => lot.OpenQuantity < 0m)
@@ -1048,11 +1261,56 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
 
         return method switch
         {
-            PositionLotSelectionMethod.Fifo => candidates.OrderBy(static lot => lot.OpenedAt).FirstOrDefault(),
-            PositionLotSelectionMethod.Lifo => candidates.OrderByDescending(static lot => lot.OpenedAt).FirstOrDefault(),
-            PositionLotSelectionMethod.Hifo => candidates.OrderByDescending(static lot => lot.EntryPrice).ThenBy(static lot => lot.OpenedAt).FirstOrDefault(),
-            _ => candidates.OrderBy(static lot => lot.OpenedAt).FirstOrDefault(),
+            PositionLotSelectionMethod.Fifo => candidates.OrderBy(static lot => lot.OpenedAt),
+            PositionLotSelectionMethod.Lifo => candidates.OrderByDescending(static lot => lot.OpenedAt),
+            PositionLotSelectionMethod.Hifo => candidates.OrderByDescending(static lot => lot.EntryPrice).ThenBy(static lot => lot.OpenedAt),
+            _ => candidates.OrderBy(static lot => lot.OpenedAt),
         };
+    }
+
+    /// <summary>
+    /// Contract multiplier for this position, taken from the fills that opened it. A
+    /// position mixing multipliers keeps the largest, which cannot under-measure exposure.
+    /// </summary>
+    public decimal ContractMultiplier { get; private set; } = 1m;
+
+    /// <summary>Signed quantity attributed to each owning fund account.</summary>
+    public IReadOnlyDictionary<string, decimal> OwnerQuantities => _ownerQuantities;
+
+    /// <summary>
+    /// True while some fund still holds a non-zero position here, even if they cancel out
+    /// in aggregate. Offsetting fund books are exposure, not an absence of it.
+    /// </summary>
+    public bool HasOwnerExposure => _ownerQuantities.Count > 0;
+
+    /// <summary>
+    /// Records which fund a fill belonged to. Attribution only — the lot book, cost basis,
+    /// and realised P&amp;L are untouched, so cash and accounting stay exactly as before
+    /// while the read path gains the ownership the shared execution account cannot express.
+    /// The tallies always sum to <see cref="Quantity"/>: each is that fund's net signed
+    /// contribution, so a fund that bought and sold the same size nets to zero.
+    /// </summary>
+    public void AttributeFill(string? ownerAccountId, decimal signedQuantity, decimal contractMultiplier)
+    {
+        if (contractMultiplier > ContractMultiplier)
+        {
+            ContractMultiplier = contractMultiplier;
+        }
+
+        if (string.IsNullOrWhiteSpace(ownerAccountId) || signedQuantity == 0m)
+        {
+            return;
+        }
+
+        var owner = ownerAccountId.Trim();
+        var updated = _ownerQuantities.GetValueOrDefault(owner) + signedQuantity;
+        if (updated == 0m)
+        {
+            _ownerQuantities.Remove(owner);
+            return;
+        }
+
+        _ownerQuantities[owner] = updated;
     }
 
     public ExecutionPosition ToExecutionPosition() => new(
@@ -1060,7 +1318,14 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
         (long)Quantity,
         CostBasis,
         UnrealisedPnl,
-        0m);  // realised P&L is carried at the account level
+        0m)  // realised P&L is carried at the account level
+    {
+        OwnerQuantities = new Dictionary<string, decimal>(_ownerQuantities, StringComparer.OrdinalIgnoreCase),
+        ContractMultiplier = ContractMultiplier,
+        // The record's Quantity is whole shares; owner attribution is not. Carry the
+        // unrounded size so the unattributed remainder is a real remainder.
+        ExactQuantity = Quantity
+    };
 }
 
 internal sealed class PositionLot(string lotId, decimal openQuantity, decimal entryPrice, DateTimeOffset openedAt)

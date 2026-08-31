@@ -2,6 +2,7 @@ using Meridian.Contracts.Banking;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.PrivateCapital;
 
@@ -24,7 +25,7 @@ public sealed record PostedPrivateCapitalActivityProjection(
 
 public static class PrivateCapitalActivityProjectionBuilder
 {
-    private const decimal BalanceTolerance = 0.000001m;
+    private const decimal BalanceTolerance = LedgerToleranceConstants.Balance;
     private static readonly IReadOnlyDictionary<Guid, string> EmptyJournalEntryCurrencies = new Dictionary<Guid, string>();
 
     private sealed record PrivateCapitalCapitalAccountSubledgerSource(
@@ -2140,7 +2141,4 @@ public static class PrivateCapitalActivityProjectionBuilder
 
     private static string NormalizeCurrency(string? value)
         => string.IsNullOrWhiteSpace(value) ? "USD" : value.Trim().ToUpperInvariant();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

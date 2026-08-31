@@ -1,0 +1,91 @@
+<!-- @dsCard group="Trading" viewport="900x640" name="DepthLadder · InstrumentChip" subtitle="Classic DOM price ladder with washed depth bars + the instrument identity micro-chip" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Depth ladder & instrument chips</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#ECEFF3);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { DepthLadder, InstrumentChip } = window.MeridianDesignSystem_4f61be;
+const { useState } = React;
+
+function Section({ title, children }) {
+  return (
+    <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:16 }}>
+      <div style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em",
+        color:"var(--text-muted)", marginBottom:14 }}>{title}</div>
+      {children}
+    </div>
+  );
+}
+
+const BIDS = [
+  { price: 201.10, size: 1200 }, { price: 201.09, size: 3400 }, { price: 201.08, size: 2650 },
+  { price: 201.07, size: 5200 }, { price: 201.06, size: 1875 }, { price: 201.05, size: 7400 },
+  { price: 201.04, size: 2200 }, { price: 201.03, size: 4100 },
+];
+const ASKS = [
+  { price: 201.12, size: 900 },  { price: 201.13, size: 2100 }, { price: 201.14, size: 3800 },
+  { price: 201.15, size: 1450 }, { price: 201.16, size: 6100 }, { price: 201.17, size: 2900 },
+  { price: 201.18, size: 1700 }, { price: 201.19, size: 5000 },
+];
+
+function Demo() {
+  const [selected, setSelected] = useState("AAPL");
+  const [picked, setPicked] = useState(null);
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"300px 1fr", gap:16, maxWidth:840, alignItems:"start" }}>
+
+      <Section title="InstrumentChip · watchlist identity">
+        <div style={{ display:"flex", flexDirection:"column", gap:8, alignItems:"flex-start" }}>
+          <InstrumentChip symbol="AAPL" venue="XNAS" assetClass="eq"     selected={selected === "AAPL"} onClick={() => setSelected("AAPL")} />
+          <InstrumentChip symbol="SPY"  venue="ARCX" assetClass="etf"    selected={selected === "SPY"}  onClick={() => setSelected("SPY")} />
+          <InstrumentChip symbol="ESU6" venue="CME"  assetClass="fut"    selected={selected === "ESU6"} onClick={() => setSelected("ESU6")} />
+          <InstrumentChip symbol="EURUSD" venue="EBS" assetClass="fx"    selected={selected === "EURUSD"} onClick={() => setSelected("EURUSD")} />
+          <InstrumentChip symbol="BTC-PERP" venue="CGX" assetClass="crypto" selected={selected === "BTC-PERP"} onClick={() => setSelected("BTC-PERP")} />
+        </div>
+        <div style={{ display:"flex", gap:8, marginTop:14, alignItems:"center" }}>
+          <InstrumentChip symbol="AAPL 26C210" venue="OPRA" assetClass="opt" size="sm" />
+          <InstrumentChip symbol="T 4.25 34" venue="OTC" assetClass="bond" size="sm" />
+        </div>
+        <div style={{ marginTop:12, fontSize:11, color:"var(--text-muted)" }}>
+          Block letter = asset class on a washed semantic tint; <code>selected</code> carries the accent wash.
+        </div>
+      </Section>
+
+      <Section title="DepthLadder · price-click prefills the ticket">
+        <div style={{ display:"flex", gap:16, alignItems:"flex-start" }}>
+          <DepthLadder bids={BIDS} asks={ASKS} lastPrice={201.11}
+            onPriceClick={(price, side) => setPicked({ price, side })} />
+          <div style={{ fontFamily:"var(--font-data)", fontSize:12, color:"var(--text-secondary)", minWidth:150 }}>
+            <div style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em",
+              color:"var(--text-muted)", marginBottom:6, fontFamily:"var(--font-body)" }}>Ticket prefill</div>
+            {picked ? (
+              <div>
+                <span style={{ color: picked.side === "bid" ? "var(--green)" : "var(--red)", fontWeight:600 }}>
+                  {picked.side.toUpperCase()}
+                </span>{" "}
+                <span style={{ color:"var(--text-primary)", fontWeight:600 }}>{picked.price.toFixed(2)}</span>
+              </div>
+            ) : (
+              <div style={{ color:"var(--text-muted)" }}>Click a price level</div>
+            )}
+          </div>
+        </div>
+      </Section>
+
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

@@ -231,9 +231,13 @@ public sealed class StorageViewModel : BindableBase
         {
             MetricsStatusText = "Storage metrics scan cancelled.";
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // Leave metric placeholders in place while making the posture failure explicit.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Storage metrics scan failed; showing unavailable posture.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
             ApplyStoragePosture(BuildStoragePostureUnavailable());
             MetricsStatusText = "Storage metrics scan failed. Verify the configured DataRoot and permissions, then refresh.";
         }

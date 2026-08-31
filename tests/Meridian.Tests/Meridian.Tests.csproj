@@ -43,6 +43,7 @@
     <ProjectReference Include="..\..\src\Meridian.Backtesting\Meridian.Backtesting.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Backtesting.Sdk\Meridian.Backtesting.Sdk.csproj" />
     <ProjectReference Include="..\..\src\Meridian.DataIntegration\Meridian.DataIntegration.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Documents\Meridian.Documents.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Entities\Meridian.Entities.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Execution\Meridian.Execution.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Execution.Sdk\Meridian.Execution.Sdk.csproj" />
@@ -51,7 +52,11 @@
     <ProjectReference Include="..\..\src\Meridian.Identity\Meridian.Identity.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Instruments\Meridian.Instruments.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Ledger\Meridian.Ledger.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Mcp\Meridian.Mcp.csproj" />
+    <ProjectReference Include="..\Meridian.ProcessTestHelper\Meridian.ProcessTestHelper.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Platform\Meridian.Platform.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.QuantScript.Worker\Meridian.QuantScript.Worker.csproj"
+                      ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\Meridian.ReferenceData\Meridian.ReferenceData.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Reporting\Meridian.Reporting.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Risk\Meridian.Risk.csproj" />
@@ -62,11 +67,16 @@
     <ProjectReference Include="..\..\src\Meridian.Ui.Shared\Meridian.Ui.Shared.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Ui.Services\Meridian.Ui.Services.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Workflow\Meridian.Workflow.csproj" />
+    <ProjectReference Include="..\Meridian.TestSupport\Meridian.TestSupport.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\Shared\CorporateActions\*.cs" Link="Shared\CorporateActions\%(Filename)%(Extension)" />
+    <None Include="..\Meridian.ProcessTestHelper\Meridian.ProcessTestHelper.runtimeconfig.json" CopyToOutputDirectory="PreserveNewest" Link="Meridian.ProcessTestHelper.runtimeconfig.json" />
     <None Include="..\fixtures\corporate-actions\golden\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\corporate-actions\golden\%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="..\fixtures\fund-economics\golden\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\fund-economics\golden\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
+
+  <Import Project="..\..\src\Meridian.QuantScript.Worker\QuantScriptWorker.Sidecar.targets" />
 
 </Project>

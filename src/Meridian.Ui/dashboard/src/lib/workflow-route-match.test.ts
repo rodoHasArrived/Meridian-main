@@ -46,8 +46,9 @@ const library: WorkflowLibrary = {
       evidenceTags: [],
       marketPatternTags: []
     }
-  ]
-} as WorkflowLibrary;
+  ],
+  actions: []
+};
 
 describe("findWorkflowActionForRoute", () => {
   it("picks the longest matching route prefix", () => {

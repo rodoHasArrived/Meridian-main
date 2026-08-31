@@ -29,6 +29,8 @@ public sealed class ConventionTools(RepoPathService repo)
         sb.AppendLine("| Anti-Pattern | Why |");
         sb.AppendLine("|--------------|-----|");
         sb.AppendLine("| Blocking task completion APIs | Deadlocks in async contexts |");
+        sb.AppendLine("| `.GetAwaiter().GetResult()` outside `Dispose` | Sync-over-async; deadlocks and stalls the caller |");
+        sb.AppendLine("| `Task.Run(...).GetAwaiter().GetResult()` | Burns a pool thread *and* blocks on it |");
         sb.AppendLine("| `Task.Run` for I/O-bound work | Wastes thread pool threads |");
         sb.AppendLine("| Direct `HttpClient` construction | Socket exhaustion, DNS caching issues |");
         sb.AppendLine("| String interpolation in logger | Loses structured log benefits |");
@@ -65,6 +67,8 @@ public sealed class ConventionTools(RepoPathService repo)
             ("Hardcoding credentials", "Security risk, inflexible deployment", "Use environment variables; never put keys in source or config files"),
             ("`Task.Run` for I/O-bound work", "Wastes thread pool threads, adds unnecessary overhead", "Use async/await with native async I/O APIs"),
             ("Blocking task completion APIs", "Causes deadlocks in synchronization-context environments", "Use `await` all the way up the call stack"),
+            ("`.GetAwaiter().GetResult()` outside a sync `Dispose` bridge", "Sync-over-async: deadlocks under a synchronization context and stalls the calling thread", "Make the caller async and `await`. Only acceptable when bridging sync `IDisposable` to `DisposeAsync`"),
+            ("`Task.Run(...).GetAwaiter().GetResult()`", "Burns a thread-pool thread to run the work, then blocks another waiting on it — worst of both", "Await the async method directly; never wrap-then-block"),
             ("Direct `HttpClient` instances", "Socket exhaustion, DNS staleness, connection pool thrash", "Inject `IHttpClientFactory` and use named/typed clients"),
             ("String interpolation in logger calls", "Loses structured log parameter names, prevents log filtering", "Use semantic parameters: `_logger.LogInfo(\"{Symbol} bars: {Count}\", sym, n)`"),
             ("Missing `CancellationToken`", "Prevents graceful shutdown, can hang on I/O indefinitely", "Add `CancellationToken ct = default` to every async method signature"),

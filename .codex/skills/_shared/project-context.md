@@ -27,13 +27,13 @@ repeating the same facts in every `SKILL.md`.
 - Expansion lanes such as Backtesting Studio, live-readiness, treasury payment execution,
   alternative asset operations, forecasting/scenario engines, enterprise risk, client portal, and
   no-code workflow design can proceed when current source, roadmap, or user direction supports them.
-- Active operator UI work spans `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/`.
-- `src/Meridian.Wpf/` is again a first-class Windows desktop operator surface for workstation
-  workflows, launch automation, and desktop validation.
+- Operator UI work runs across two active co-equal lanes: the browser workstation in `src/Meridian.Ui/dashboard/` and the reactivated WPF desktop workstation in `src/Meridian.Wpf/`.
+- `src/Meridian.Wpf/` is an active product/UI lane; its immediate focus is web-UI parity (`W8-WPF-PARITY-001`, see `docs/development/wpf-web-ui-alignment-plan.md`) over the existing Windows desktop shell, compatibility, tests, launch automation, and desktop validation.
 - `src/Meridian.Ui/dashboard/` remains an active browser-based workstation lane, with production
   assets built into `src/Meridian.Ui/wwwroot/workstation/`.
 - `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` provide shared API/read-model layers
-  that should support both desktop and browser surfaces without duplicating business logic.
+  that should support the browser workstation and retained WPF compatibility without duplicating
+  business logic.
 - **No mobile development lane:** do not create mobile applications, mobile-specific product
   surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
   mobile-first workflows. Responsive browser validation is allowed only to keep the browser
@@ -205,8 +205,7 @@ and choose the narrowest lane that matches the user's request:
 | Archive | `meridian-archive-organizer` | Classify and move stale material with reference evidence. |
 | Roadmap | `meridian-roadmap-strategist` | Reconcile product direction, waves, and target-state docs from repo evidence. |
 | Cleanup | `meridian-cleanup` | Preserve behavior while removing dead code, duplication, or stale guidance. |
-| Simulated user review | `meridian-simulated-user-panel` | Critique concrete artifacts with personas and separate verified evidence from inference. |
-| CoS runtime / ADK | `cos-runtime-development` | Implement or extend CoS ADK nodes, HTTP host, MCP wiring, and runtime tests. |
+| Simulated user review | `meridian-simulated-user-panel` | Critique concrete artifacts with canonical roles, label simulation, and separate verified evidence, inference, and missing proof. |
 
 ## Solution Map
 
@@ -225,12 +224,11 @@ and choose the narrowest lane that matches the user's request:
 - `src/Meridian.Risk/`: pre-trade risk validation
 - `src/Meridian.Strategies/`: strategy lifecycle, run storage, shared read models
 - `src/Meridian.QuantScript/`: strategy analytics scripting and charting-oriented tooling
-- `src/Meridian.Mcp/`, `src/Meridian.McpServer/`: MCP hosts, tools, and resources
-- `tools/chief-of-staff-runtime/`: out-of-process Chief of Staff ADK node pipeline scaffold
+- `src/Meridian.Mcp/`: active MCP host, tools, and resources
 - `src/Meridian.Ui/dashboard/`: active browser-based operator workstation dashboard
 - `src/Meridian.Ui/wwwroot/workstation/`: built web workstation assets served by `Meridian.Ui`
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Wpf/`: shared UI
-  services, workstation endpoints, and the WPF shell
+  services, workstation endpoints, and the active WPF desktop shell
 - `tests/`: cross-platform, F#, UI-service, and WPF test projects
 - `benchmarks/`: BenchmarkDotNet performance suites
 
@@ -238,11 +236,14 @@ and choose the narrowest lane that matches the user's request:
 
 - Main host: `src/Meridian/Meridian.csproj`
 - Minimal MCP host: `src/Meridian.Mcp/Meridian.Mcp.csproj`
-- Market-data MCP host: `src/Meridian.McpServer/Meridian.McpServer.csproj`
-- CoS runtime ADK scaffold: `tools/chief-of-staff-runtime/runtime.py` (implemented via `cos-runtime-development` Codex skill)
 - Web workstation dashboard: `src/Meridian.Ui/dashboard`
 - Host-served workstation route: `http://localhost:8080/workstation/`
-- WPF desktop workstation: `src/Meridian.Wpf/Meridian.Wpf.csproj`
+- Active WPF desktop workstation: `src/Meridian.Wpf/Meridian.Wpf.csproj`
+
+Archived compatibility artifacts for the retired Chief of Staff runtime and
+`Meridian.McpServer` live under `archive/code/tools/chief-of-staff-runtime/`,
+`archive/code/.codex/skills/cos-runtime-development/`, and
+`archive/code/src/Meridian.McpServer/`. Do not route new implementation work to them.
 
 ## Desktop Persistence Baseline
 
@@ -279,8 +280,8 @@ and choose the narrowest lane that matches the user's request:
 - `src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs`: strategy lifecycle contract
 - `src/Meridian.Strategies/Services/StrategyRunReadService.cs`: shared run read-model seam
 - `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`: shared workstation surface
-- `src/Meridian.Wpf/Shell/`: WPF shell route, launch, session, refresh, and presentation seams
-- `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs`: WPF desktop shell view model and workstation navigation anchor
+- `src/Meridian.Wpf/Shell/`: retained WPF shell route, launch, session, refresh, and presentation seams
+- `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs`: retained WPF desktop shell view model and workstation navigation anchor
 
 ## Review Guardrails
 

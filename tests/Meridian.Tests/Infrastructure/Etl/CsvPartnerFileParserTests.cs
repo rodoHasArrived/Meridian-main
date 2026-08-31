@@ -39,6 +39,42 @@ public sealed class CsvPartnerFileParserTests : IDisposable
     }
 
     [Fact]
+    public async Task ParseAsync_PreservesQuotedEmbeddedNewlines_AsOneRecord()
+    {
+        Directory.CreateDirectory(_root);
+        var path = Path.Combine(_root, "embedded-newline.csv");
+        // RFC 4180: a quoted field may contain a raw newline. The venue field here spans
+        // two physical lines but must parse as a single record.
+        await File.WriteAllTextAsync(
+            path,
+            "timestamp,symbol,price,size,venue,sequence,aggressor\n" +
+            "2026-01-01T00:00:00Z,AAPL,100.5,10,\"XNAS\nfloor 2\",1,BUY\n" +
+            "2026-01-01T00:00:01Z,MSFT,401.25,20,XNAS,2,SELL\n");
+
+        var parser = new CsvPartnerFileParser(new PartnerSchemaRegistry());
+        var staged = new EtlStagedFile
+        {
+            OriginalPath = path,
+            StagedPath = path,
+            FileName = "embedded-newline.csv",
+            ChecksumSha256 = "nl123",
+            SizeBytes = new FileInfo(path).Length
+        };
+
+        var rows = new List<PartnerRecordEnvelope>();
+        await foreach (var row in parser.ParseAsync(staged, checkpoint: null, "partner.trades.csv.v1"))
+        {
+            rows.Add(row);
+        }
+
+        rows.Should().HaveCount(2, "the quoted newline must not split the first record into two");
+        rows[0].Fields["venue"].Should().Be("XNAS\nfloor 2");
+        rows[0].Fields["aggressor"].Should().Be("BUY");
+        rows[1].Fields["symbol"].Should().Be("MSFT");
+        rows[1].RecordIndex.Should().Be(2);
+    }
+
+    [Fact]
     public async Task ParseAsync_ParsesExcelWorkbookRows()
     {
         Directory.CreateDirectory(_root);

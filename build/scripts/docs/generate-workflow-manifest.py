@@ -23,6 +23,12 @@ class WorkflowRef:
     command: str
 
 
+def write_text_lf(path: Path, content: str) -> None:
+    """Write UTF-8 text with LF endings so generated docs match the repo on every platform."""
+    with path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(content)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate workflow docs/validation artifacts from manifest.")
     parser.add_argument(
@@ -339,7 +345,7 @@ def write_commands_reference(path: Path, workflows: list[dict[str, Any]]) -> Non
             lines.append(f"  - `{command}`")
         lines.append("")
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+    write_text_lf(path, "\n".join(lines).rstrip() + "\n")
 
 
 def main() -> int:
@@ -355,11 +361,11 @@ def main() -> int:
 
     help_doc = help_doc_path.read_text(encoding="utf-8")
     help_doc = replace_block(help_doc, HELP_BLOCK_START, HELP_BLOCK_END, build_help_snippet(workflows))
-    help_doc_path.write_text(help_doc, encoding="utf-8")
+    write_text_lf(help_doc_path, help_doc)
 
     dev_doc = dev_doc_path.read_text(encoding="utf-8")
     dev_doc = replace_block(dev_doc, DEV_BLOCK_START, DEV_BLOCK_END, build_dev_snippet(workflows))
-    dev_doc_path.write_text(dev_doc, encoding="utf-8")
+    write_text_lf(dev_doc_path, dev_doc)
 
     write_commands_reference(repo_root / args.commands_output, workflows)
 
@@ -402,7 +408,7 @@ def main() -> int:
 
     summary_path = repo_root / args.summary_output
     summary_path.parent.mkdir(parents=True, exist_ok=True)
-    summary_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    write_text_lf(summary_path, json.dumps(summary, indent=2) + "\n")
 
     drift_lines = [
         "# Workflow Drift Report",
@@ -457,7 +463,7 @@ def main() -> int:
 
     drift_path = repo_root / args.drift_output
     drift_path.parent.mkdir(parents=True, exist_ok=True)
-    drift_path.write_text("\n".join(drift_lines).rstrip() + "\n", encoding="utf-8")
+    write_text_lf(drift_path, "\n".join(drift_lines).rstrip() + "\n")
 
     print(f"Generated workflow artifacts for {len(workflows)} workflows.")
     print(f"Status: {drift_status}")

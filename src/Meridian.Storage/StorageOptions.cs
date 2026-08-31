@@ -37,7 +37,8 @@ public sealed class StorageOptions
     public bool IncludeProvider { get; init; } = false;
 
     /// <summary>
-    /// Custom file name prefix (optional).
+    /// Custom file name prefix (optional). Only ASCII letters, digits, underscores, and hyphens
+    /// are accepted so the prefix remains one safe file-name segment.
     /// </summary>
     public string? FilePrefix { get; init; }
 

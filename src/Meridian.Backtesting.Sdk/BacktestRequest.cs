@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Text;
+
 namespace Meridian.Backtesting.Sdk;
 
 /// <summary>
@@ -83,6 +86,29 @@ public enum BacktestCommissionKind
 /// price level when <see cref="ExecutionModel.OrderBook"/> is used. Values are clamped to 0..1;
 /// zero keeps the original immediate-depth-walk behavior.
 /// </param>
+/// <param name="FillTiming">
+/// When orders become eligible to fill relative to the event that generated them. Defaults to
+/// <see cref="FillTiming.NextBar"/> (no same-bar look-ahead); set <see cref="FillTiming.SameBar"/>
+/// explicitly to reproduce legacy same-bar fills — the run's bias disclosure will flag it.
+/// </param>
+/// <param name="FillConservatism">
+/// Limit/stop execution realism for bar-based fill models. Defaults to
+/// <see cref="FillConservatism.Conservative"/> (trade-through limits, gap-aware stops);
+/// set <see cref="FillConservatism.Optimistic"/> to reproduce legacy touch-fill behaviour.
+/// </param>
+/// <param name="DelistingPolicy">
+/// What to do with open positions in symbols whose data ends before <paramref name="To"/>.
+/// Defaults to <see cref="DelistingPolicy.LiquidateAtLastPrice"/>.
+/// </param>
+/// <param name="DelistingHaircutPercent">
+/// Haircut (0..1) applied against the position when the delisting policy liquidates it:
+/// longs receive <c>lastPrice × (1 − haircut)</c>, shorts cover at <c>lastPrice × (1 + haircut)</c>.
+/// Default 0 (liquidate at the last observed price).
+/// </param>
+/// <param name="DelistingGraceDays">
+/// Number of consecutive calendar days without events before an open position's symbol is treated
+/// as delisted. Keeps weekends, holidays, and short data gaps from triggering liquidation (default: 5).
+/// </param>
 public sealed record BacktestRequest(
     DateOnly From,
     DateOnly To,
@@ -108,8 +134,85 @@ public sealed record BacktestRequest(
     IReadOnlyDictionary<DateOnly, double>? RiskFreeRateSeries = null,
     decimal MaxParticipationRate = 0m,
     bool FailOnUnknownSymbols = false,
-    decimal OrderBookQueueAheadFraction = 0m)
+    decimal OrderBookQueueAheadFraction = 0m,
+    FillTiming FillTiming = FillTiming.NextBar,
+    FillConservatism FillConservatism = FillConservatism.Conservative,
+    DelistingPolicy DelistingPolicy = DelistingPolicy.LiquidateAtLastPrice,
+    decimal DelistingHaircutPercent = 0m,
+    int DelistingGraceDays = 5)
 {
+    /// <summary>
+    /// Captures every setting on this request that changes what numbers the run produces, so run
+    /// identity can account for execution realism rather than strategy inputs alone.
+    /// </summary>
+    public ExecutionRealismDescriptor ToRealismDescriptor() => new(
+        DefaultExecutionModel,
+        FillTiming,
+        FillConservatism,
+        DelistingPolicy,
+        DelistingHaircutPercent,
+        DelistingGraceDays,
+        CommissionKind,
+        CommissionRate,
+        CommissionMinimum,
+        CommissionMaximum,
+        SlippageBasisPoints,
+        MaxParticipationRate,
+        MarketImpactCoefficient,
+        OrderBookQueueAheadFraction,
+        AdjustForCorporateActions,
+        RiskFreeRate,
+        AnnualMarginRate,
+        AnnualShortRebateRate,
+        CanonicalAccountFinancing(),
+        CanonicalRiskFreeRateSeries(),
+        DefaultBrokerageAccountId);
+
+    /// <summary>
+    /// Canonical form of the resolved account financing configuration. Uses <see cref="ResolveAccounts"/>
+    /// so the legacy single-account fallback and an explicit account list that describe the same
+    /// simulation produce the same text.
+    /// </summary>
+    private string CanonicalAccountFinancing()
+    {
+        var builder = new StringBuilder();
+        foreach (var account in ResolveAccounts().OrderBy(a => a.AccountId, StringComparer.Ordinal))
+        {
+            var rules = account.Rules ?? new FinancialAccountRules();
+            builder.Append(account.AccountId).Append(':')
+                .Append(account.Kind).Append(':')
+                .Append(account.InitialCash.ToString("0.############################", CultureInfo.InvariantCulture)).Append(':')
+                .Append(rules.AllowMargin ? '1' : '0')
+                .Append(rules.AllowShortSelling ? '1' : '0').Append(':')
+                .Append(rules.AnnualMarginRate.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                .Append(rules.AnnualShortRebateRate.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                .Append(rules.AnnualCashInterestRate.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                .Append(rules.LotSelection).Append(';');
+        }
+
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// Canonical form of the risk-free-rate series. The series overrides <see cref="RiskFreeRate"/>
+    /// on the dates it covers, so hashing only the scalar would let runs with materially different
+    /// Sharpe and Sortino values share an identity. Ordered by date for a stable digest.
+    /// </summary>
+    private string CanonicalRiskFreeRateSeries()
+    {
+        if (RiskFreeRateSeries is not { Count: > 0 })
+            return string.Empty;
+
+        var builder = new StringBuilder();
+        foreach (var (date, rate) in RiskFreeRateSeries.OrderBy(pair => pair.Key))
+        {
+            builder.Append(date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append('=')
+                .Append(rate.ToString("R", CultureInfo.InvariantCulture)).Append(';');
+        }
+
+        return builder.ToString();
+    }
+
     /// <summary>
     /// Returns the normalized account list, falling back to a single default brokerage account for
     /// backward compatibility with older callers.

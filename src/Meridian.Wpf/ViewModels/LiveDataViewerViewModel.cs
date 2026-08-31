@@ -68,6 +68,11 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
     private int _tradeCount;
     private decimal _vwapNumerator;
     private decimal _lastPrice;
+    // Observation time of the trade that set _lastPrice, carried from the event's own timestamp
+    // rather than read from the local clock at render time. Null whenever that trade's payload
+    // omitted a timestamp, so the pair is always "this price, observed then" or "this price,
+    // observed we do not know when" - never this price beside some other trade's time.
+    private DateTime? _lastTradeAt;
     private decimal _bidPrice;
     private decimal _askPrice;
     private int _bidSize;
@@ -325,7 +330,13 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
                 AvailableSymbols.AddRange(nextSymbols);
             }
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when the view is torn down mid-load; benign.
+            _loggingService.LogDebug(
+                "Live data symbol load cancelled.",
+                ("view", GetType().Name));
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to load symbols from backend", ex);
@@ -457,7 +468,11 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
             var size = item.TryGetProperty("size", out var szp) ? szp.GetInt32() :
                        item.TryGetProperty("volume", out var vp) ? vp.GetInt32() : 0;
             var exchange = item.TryGetProperty("exchange", out var ep) ? ep.GetString() ?? "" : "";
-            var timestamp = item.TryGetProperty("timestamp", out var tsp) ? tsp.GetDateTime() : DateTime.UtcNow;
+            // The receipt-time fallback keeps ordering and id generation working when a payload
+            // omits its timestamp, but it is not an observation. Track which one this is so
+            // observation-time surfaces can say "unknown" rather than showing the local clock.
+            var hasObservedTimestamp = item.TryGetProperty("timestamp", out var tsp);
+            var timestamp = hasObservedTimestamp ? tsp.GetDateTime() : DateTime.UtcNow;
             var id = item.TryGetProperty("id", out var idp) ? idp.GetString() ?? "" :
                      $"{timestamp:HHmmssfffff}_{type}_{price}";
             var isBuy = type.Equals("TRADE", StringComparison.OrdinalIgnoreCase) &&
@@ -468,6 +483,7 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
             {
                 Id = id,
                 RawTimestamp = timestamp,
+                HasObservedTimestamp = hasObservedTimestamp,
                 Timestamp = timestamp.ToString("HH:mm:ss.fff"),
                 Type = type.ToUpperInvariant() switch
                 {
@@ -506,11 +522,50 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
         return true;
     }
 
+    /// <summary>
+    /// Feeds events through session-stat accumulation in the order the response supplied them,
+    /// then refreshes the quote display, so tests can exercise last-trade selection without an
+    /// HTTP round trip. Mirrors the raw-enumeration order of the polling loop deliberately.
+    /// </summary>
+    internal void ApplySessionEventsForTests(params LiveDataEventModel[] events)
+    {
+        ArgumentNullException.ThrowIfNull(events);
+
+        foreach (var evt in events)
+        {
+            UpdateSessionStats(evt);
+        }
+
+        UpdateQuoteDisplay();
+    }
+
+    /// <summary>Clears accumulated session state, as a symbol change does.</summary>
+    internal void ResetSessionStatsForTests() => ResetSessionStats();
+
     private void UpdateSessionStats(LiveDataEventModel evt)
     {
         if (evt.Type != "TRD" || evt.RawPrice <= 0)
             return;
-        _lastPrice = evt.RawPrice;
+
+        // This runs while the response is enumerated raw, before the display loop sorts by
+        // RawTimestamp, so the last event enumerated is not necessarily the latest trade. Pick
+        // the latest observed one, and set the price and its time together so the two always
+        // describe the same trade. A payload that omitted its timestamp only ever supplies a
+        // price - its RawTimestamp is receipt time, which is not an observation - so it can lead
+        // while nothing better has been seen but never displaces an observed trade.
+        if (evt.HasObservedTimestamp)
+        {
+            if (!_lastTradeAt.HasValue || evt.RawTimestamp >= _lastTradeAt.Value)
+            {
+                _lastPrice = evt.RawPrice;
+                _lastTradeAt = evt.RawTimestamp;
+            }
+        }
+        else if (!_lastTradeAt.HasValue)
+        {
+            _lastPrice = evt.RawPrice;
+        }
+
         if (!_sessionHigh.HasValue || evt.RawPrice > _sessionHigh)
             _sessionHigh = evt.RawPrice;
         if (!_sessionLow.HasValue || evt.RawPrice < _sessionLow)
@@ -554,7 +609,9 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
         }
 
         LastTradeText = _lastPrice > 0 ? _lastPrice.ToString("F2") : "--";
-        LastTradeTimeText = _lastPrice > 0 ? DateTime.Now.ToString("HH:mm:ss") : "--";
+        LastTradeTimeText = _lastPrice > 0 && _lastTradeAt.HasValue
+            ? _lastTradeAt.Value.ToString("HH:mm:ss")
+            : "--";
         SessionHighText = _sessionHigh?.ToString("F2") ?? "--";
         SessionLowText = _sessionLow?.ToString("F2") ?? "--";
         SessionVolumeText = _sessionVolume > 0 ? FormatNumber(_sessionVolume) : "--";
@@ -570,6 +627,7 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
         _tradeCount = 0;
         _vwapNumerator = 0;
         _lastPrice = 0;
+        _lastTradeAt = null;
         _bidPrice = 0;
         _askPrice = 0;
         _bidSize = 0;
@@ -621,6 +679,10 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
         }
         catch (ObjectDisposedException)
         {
+            // The token source was already disposed; nothing to cancel.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Ignored cancel on already-disposed token source.",
+                ("view", nameof(LiveDataViewerViewModel)));
         }
 
         cts.Dispose();

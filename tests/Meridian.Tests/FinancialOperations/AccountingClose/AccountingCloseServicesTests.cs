@@ -1,9 +1,11 @@
 using System.Collections.Immutable;
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.Storage;
 using NSubstitute;
 using Xunit;
 
@@ -617,9 +619,22 @@ public sealed class AccountingCloseServicesTests
         var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
         workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>())
             .Returns(workflow);
-        var service = new AccountingCloseManagementService(workflowService);
+        var postingWorkbench = CreateMutationGatedPostingWorkbench();
+        postingWorkbench.EvaluateAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new ClosePostingGateDto(
+                "period-close-posting:signoffs-missing",
+                "Post closing entries",
+                ClosePostingGateStateDto.Posted,
+                true,
+                0m,
+                0,
+                "Closing entries are already posted."));
+        var service = new AccountingCloseManagementService(workflowService, postingWorkbench);
 
-        var result = await service.LockClosePeriodAsync(
+        var result = await LockClosePeriodScopedAsync(
+            service,
             new LockClosePeriodRequestDto(
                 workflowId,
                 ExpectedWorkflowVersion: workflow.Version,
@@ -634,7 +649,8 @@ public sealed class AccountingCloseServicesTests
                 [
                     new OperationsChecklistControlApprovalDto("reconciliation-review", "controller-reviewer", DateTimeOffset.Parse("2026-04-03T12:00:00Z")),
                     new OperationsChecklistControlApprovalDto("report-certification", "controller-reviewer", DateTimeOffset.Parse("2026-04-03T12:05:00Z"))
-                ]),
+                ],
+                ControllerRole: "Controller"),
             "controller-reviewer");
 
         result.Should().NotBeNull();
@@ -648,10 +664,604 @@ public sealed class AccountingCloseServicesTests
     }
 
     [Fact]
+    public async Task Scenario_ClosePlan_LockPeriodFailsClosedWhenPostingGateIsUnavailableAfterSignOffsPass()
+    {
+        var workflowId = Guid.Parse("47474747-4747-4747-4747-474747474748");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var workflow = BuildCloseWorkflow(workflowId, firstTaskStatus: "Done", secondTaskStatus: "Done");
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>()).Returns(workflow);
+        var postingWorkbench = CreateMutationGatedPostingWorkbench();
+        var unavailableGate = new ClosePostingGateDto(
+            "period-close-posting:unavailable",
+            "Post closing entries",
+            ClosePostingGateStateDto.Unavailable,
+            false,
+            0m,
+            0,
+            "The closing-entry workbench is unavailable.");
+        postingWorkbench.EnsureClosingDraftQueuedAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<AccountingClosePostingCommand>(),
+                Arg.Any<CancellationToken>())
+            .Returns(unavailableGate);
+        postingWorkbench.EvaluateAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(unavailableGate);
+        var service = new AccountingCloseManagementService(workflowService, postingWorkbench);
+        await ApproveRequiredCloseTasksAsync(service, workflowId, ledgerBookId);
+
+        var result = await LockClosePeriodScopedAsync(
+            service,
+            new LockClosePeriodRequestDto(
+                workflowId,
+                workflow.Version,
+                "controller-reviewer",
+                "Lock after all retained close controls pass.",
+                "report-pack-2026-03",
+                [$"evidence:close-package:{workflowId:D}:2026-03:book:{ledgerBookId:D}:period-lock"],
+                ControllerRole: "Controller"),
+            "controller-reviewer");
+
+        result.Should().NotBeNull();
+        result!.IsLocked.Should().BeFalse();
+        result.Plan!.ClosingEntriesGate.Should().NotBeNull();
+        result.Plan.ClosingEntriesGate!.State.Should().Be(ClosePostingGateStateDto.Unavailable);
+        result.Issues.Should().ContainSingle(issue =>
+            issue.Code == "PeriodClosePostingGateUnavailable" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        await workflowService.DidNotReceiveWithAnyArgs().CloseWorkflowAsync(default, default!, default);
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_HardCloseFailsClosedWhenMutationConsistencyGateIsUnavailable()
+    {
+        var workflowId = Guid.Parse("47474747-4747-4747-4747-474747474755");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var workflow = BuildCloseWorkflow(workflowId, firstTaskStatus: "Done", secondTaskStatus: "Done");
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>()).Returns(workflow);
+        var service = new AccountingCloseManagementService(workflowService);
+        await ApproveRequiredCloseTasksAsync(service, workflowId, ledgerBookId);
+
+        var result = await LockClosePeriodScopedAsync(
+            service,
+            new LockClosePeriodRequestDto(
+                workflowId,
+                workflow.Version,
+                "controller-reviewer",
+                "Verify the durable close fence is mandatory.",
+                "report-pack-2026-03",
+                [$"evidence:close-package:{workflowId:D}:2026-03:book:{ledgerBookId:D}:period-lock"],
+                ControllerRole: "Controller"),
+            "controller-reviewer");
+
+        result.Should().NotBeNull();
+        result!.IsLocked.Should().BeFalse();
+        result.Issues.Should().ContainSingle(issue =>
+            issue.Code == "ClosePeriodMutationConsistencyGateUnavailable" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        await workflowService.DidNotReceiveWithAnyArgs().CloseWorkflowAsync(default, default!, default);
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_StaleWorkflowVersionStopsBeforeClosingDraftOrHardCloseMutation()
+    {
+        var workflowId = Guid.Parse("47474747-4747-4747-4747-474747474749");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var workflow = BuildCloseWorkflow(workflowId, firstTaskStatus: "Done", secondTaskStatus: "Done");
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>()).Returns(workflow);
+        var postingWorkbench = CreateMutationGatedPostingWorkbench();
+        postingWorkbench.EvaluateAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new ClosePostingGateDto(
+                "period-close-posting:stale-version",
+                "Post closing entries",
+                ClosePostingGateStateDto.Posted,
+                true,
+                0m,
+                0,
+                "Temporary balances are zero."));
+        var service = new AccountingCloseManagementService(workflowService, postingWorkbench);
+        await ApproveRequiredCloseTasksAsync(service, workflowId, ledgerBookId);
+
+        var result = await LockClosePeriodScopedAsync(
+            service,
+            new LockClosePeriodRequestDto(
+                workflowId,
+                ExpectedWorkflowVersion: workflow.Version - 1,
+                Actor: "controller-reviewer",
+                Rationale: "Attempt stale close-period lock.",
+                ReportPackId: "report-pack-2026-03",
+                EvidenceLinks:
+                [
+                    $"evidence:close-package:{workflowId:D}:2026-03:book:{ledgerBookId:D}:period-lock"
+                ],
+                ControllerRole: "Controller"),
+            "controller-reviewer");
+
+        result.Should().NotBeNull();
+        result!.IsLocked.Should().BeFalse();
+        result.Issues.Should().ContainSingle(issue =>
+            issue.Code == "ClosePeriodLockVersionMismatch" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        await postingWorkbench.DidNotReceive().EnsureClosingDraftQueuedAsync(
+            Arg.Any<AccountingClosePostingContext>(),
+            Arg.Any<AccountingClosePostingCommand>(),
+            Arg.Any<CancellationToken>());
+        await postingWorkbench.DidNotReceive().FinalizeHardCloseAsync(
+            Arg.Any<AccountingClosePostingContext>(),
+            Arg.Any<AccountingClosePostingCommand>(),
+            Arg.Any<CancellationToken>());
+        await workflowService.DidNotReceiveWithAnyArgs().CloseWorkflowAsync(default, default!, default);
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_PrepareClosingEntriesOnly_NeverHardClosesEvenWhenGateIsReady()
+    {
+        var workflowId = Guid.Parse("47474747-4747-4747-4747-474747474750");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var workflow = BuildCloseWorkflow(workflowId, firstTaskStatus: "Done", secondTaskStatus: "Done");
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>()).Returns(workflow);
+        var postingWorkbench = CreateMutationGatedPostingWorkbench();
+        var readyGate = new ClosePostingGateDto(
+            "period-close-posting:prepare-only",
+            "Post closing entries",
+            ClosePostingGateStateDto.Posted,
+            true,
+            0m,
+            0,
+            "Closing entries are already posted.");
+        postingWorkbench.EnsureClosingDraftQueuedAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<AccountingClosePostingCommand>(),
+                Arg.Any<CancellationToken>())
+            .Returns(readyGate);
+        postingWorkbench.EvaluateAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(readyGate);
+        var service = new AccountingCloseManagementService(workflowService, postingWorkbench);
+        await ApproveRequiredCloseTasksAsync(service, workflowId, ledgerBookId);
+
+        var result = await service.LockClosePeriodAsync(
+            new LockClosePeriodRequestDto(
+                workflowId,
+                workflow.Version,
+                "controller-reviewer",
+                "Prepare the governed closing-entry batch.",
+                "report-pack-2026-03",
+                [$"evidence:close-package:{workflowId:D}:2026-03:book:{ledgerBookId:D}:period-lock"],
+                PrepareClosingEntriesOnly: true),
+            "controller-reviewer");
+
+        result.Should().NotBeNull();
+        result!.IsLocked.Should().BeFalse();
+        result.Plan!.ClosingEntriesGate.Should().Be(readyGate);
+        result.Issues.Should().BeEmpty();
+        await postingWorkbench.Received(1).EnsureClosingDraftQueuedAsync(
+            Arg.Any<AccountingClosePostingContext>(),
+            Arg.Any<AccountingClosePostingCommand>(),
+            Arg.Any<CancellationToken>());
+        await postingWorkbench.DidNotReceive().FinalizeHardCloseAsync(
+            Arg.Any<AccountingClosePostingContext>(),
+            Arg.Any<AccountingClosePostingCommand>(),
+            Arg.Any<CancellationToken>());
+        await workflowService.DidNotReceiveWithAnyArgs().CloseWorkflowAsync(default, default!, default);
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_HardCloseWithoutControllerAuthorityFailsBeforeAnyCloseMutation()
+    {
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        var postingWorkbench = CreateMutationGatedPostingWorkbench();
+        var service = new AccountingCloseManagementService(workflowService, postingWorkbench);
+        var request = new LockClosePeriodRequestDto(
+            Guid.Parse("47474747-4747-4747-4747-474747474752"),
+            ExpectedWorkflowVersion: 7,
+            Actor: "accounting-operator",
+            Rationale: "Attempt hard close without retained Controller authority.",
+            ReportPackId: "report-pack-2026-03",
+            EvidenceLinks: ["evidence://close/attempt"]);
+
+        var act = () => LockClosePeriodScopedAsync(service, request, "accounting-operator");
+
+        await act.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*ControllerRole*required*");
+        await workflowService.DidNotReceive().GetAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<CancellationToken>());
+        await postingWorkbench.DidNotReceive().EnsureClosingDraftQueuedAsync(
+            Arg.Any<AccountingClosePostingContext>(),
+            Arg.Any<AccountingClosePostingCommand>(),
+            Arg.Any<CancellationToken>());
+        await postingWorkbench.DidNotReceive().FinalizeHardCloseAsync(
+            Arg.Any<AccountingClosePostingContext>(),
+            Arg.Any<AccountingClosePostingCommand>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_UnscopedHardCloseIsRejectedBeforeWorkflowRead()
+    {
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        var postingWorkbench = CreateMutationGatedPostingWorkbench();
+        var service = new AccountingCloseManagementService(workflowService, postingWorkbench);
+        var request = new LockClosePeriodRequestDto(
+            Guid.Parse("47474747-4747-4747-4747-474747474756"),
+            ExpectedWorkflowVersion: 7,
+            Actor: "controller-reviewer",
+            Rationale: "Attempt an unscoped hard close.",
+            ReportPackId: "report-pack-2026-03",
+            EvidenceLinks: ["evidence://close/attempt"],
+            ControllerRole: "Controller");
+
+        var act = () => service.LockClosePeriodAsync(request, "controller-reviewer");
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*authenticated tenant and company scope*");
+        await workflowService.DidNotReceive().GetAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_UnscopedReopenIsRejectedBeforeWorkflowRead()
+    {
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        var postingWorkbench = CreateMutationGatedPostingWorkbench();
+        var service = new AccountingCloseManagementService(workflowService, postingWorkbench);
+
+        var act = () => service.ReopenClosePeriodAsync(
+            BuildReopenRequest(
+                Guid.Parse("47474747-4747-4747-4747-474747474757"),
+                version: 7),
+            "controller-reviewer");
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*authenticated tenant and company scope*");
+        await workflowService.DidNotReceive().GetAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_RechecksWorkflowVersionImmediatelyBeforeLedgerHardClose()
+    {
+        var workflowId = Guid.Parse("47474747-4747-4747-4747-474747474751");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var currentWorkflow = BuildCloseWorkflow(workflowId, firstTaskStatus: "Done", secondTaskStatus: "Done");
+        var originalVersion = currentWorkflow.Version;
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>())
+            .Returns(_ => currentWorkflow);
+        var postingWorkbench = CreateMutationGatedPostingWorkbench();
+        var readyGate = new ClosePostingGateDto(
+            "period-close-posting:jit-version",
+            "Post closing entries",
+            ClosePostingGateStateDto.Posted,
+            true,
+            0m,
+            0,
+            "Closing entries are posted.");
+        postingWorkbench.EnsureClosingDraftQueuedAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<AccountingClosePostingCommand>(),
+                Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                currentWorkflow = currentWorkflow with { Version = originalVersion + 1 };
+                return readyGate;
+            });
+        postingWorkbench.EvaluateAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(readyGate);
+        var service = new AccountingCloseManagementService(workflowService, postingWorkbench);
+        await ApproveRequiredCloseTasksAsync(service, workflowId, ledgerBookId);
+
+        var result = await LockClosePeriodScopedAsync(
+            service,
+            new LockClosePeriodRequestDto(
+                workflowId,
+                originalVersion,
+                "controller-reviewer",
+                "Attempt close across a concurrent workflow mutation.",
+                "report-pack-2026-03",
+                [$"evidence:close-package:{workflowId:D}:2026-03:book:{ledgerBookId:D}:period-lock"],
+                ControllerRole: "Controller"),
+            "controller-reviewer");
+
+        result.Should().NotBeNull();
+        result!.IsLocked.Should().BeFalse();
+        result.Plan!.WorkflowVersion.Should().Be(originalVersion + 1);
+        result.Issues.Should().ContainSingle(issue => issue.Code == "ClosePeriodLockVersionMismatch");
+        await postingWorkbench.DidNotReceive().FinalizeHardCloseAsync(
+            Arg.Any<AccountingClosePostingContext>(),
+            Arg.Any<AccountingClosePostingCommand>(),
+            Arg.Any<CancellationToken>());
+        await workflowService.DidNotReceiveWithAnyArgs().CloseWorkflowAsync(default, default!, default);
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_CasFailureAfterLedgerHardClose_ExactRetryConvergesWorkflow()
+    {
+        var workflowId = Guid.Parse("47474747-4747-4747-4747-474747474752");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var currentWorkflow = BuildCloseWorkflow(workflowId, firstTaskStatus: "Done", secondTaskStatus: "Done");
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>()).Returns(_ => currentWorkflow);
+        var closeSequence = new List<string>();
+        var closeAttempts = 0;
+        workflowService.CloseWorkflowAsync(
+                workflowId,
+                Arg.Any<OperationsCloseWorkflowRequestDto>(),
+                Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                closeSequence.Add("workflow-close");
+                closeAttempts++;
+                if (closeAttempts == 1)
+                {
+                    currentWorkflow = currentWorkflow with { Version = currentWorkflow.Version + 1 };
+                    return new OperationsTransitionResultDto(
+                        false,
+                        "VERSION_CONFLICT",
+                        "Concurrent workflow mutation.",
+                        currentWorkflow,
+                        [],
+                        [],
+                        currentWorkflow.Version);
+                }
+
+                currentWorkflow = BuildLockedCloseWorkflow(currentWorkflow, currentWorkflow.Version + 1);
+                return new OperationsTransitionResultDto(
+                    true,
+                    null,
+                    null,
+                    currentWorkflow,
+                    [],
+                    [],
+                    currentWorkflow.Version);
+            });
+        var postingWorkbench = CreateMutationGatedPostingWorkbench();
+        var readyGate = new ClosePostingGateDto(
+            "period-close-posting:cas-retry",
+            "Post closing entries",
+            ClosePostingGateStateDto.Posted,
+            true,
+            0m,
+                0,
+                "Closing entries are posted.");
+        var finalizationCommands = new List<AccountingClosePostingCommand>();
+        postingWorkbench.EnsureClosingDraftQueuedAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<AccountingClosePostingCommand>(),
+                Arg.Any<CancellationToken>())
+            .Returns(readyGate);
+        postingWorkbench.EvaluateAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(readyGate);
+        postingWorkbench.FinalizeHardCloseAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<AccountingClosePostingCommand>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new LedgerPeriodDto(
+                Guid.NewGuid(),
+                ledgerBookId,
+                2026,
+                3,
+                "2026-03",
+                new DateOnly(2026, 3, 1),
+                new DateOnly(2026, 3, 31),
+                LedgerPeriodStatusDto.HardClosed,
+                DateTimeOffset.Parse("2026-03-01T00:00:00Z"),
+                DateTimeOffset.Parse("2026-04-03T12:09:00Z"),
+                3))
+            .AndDoes(call =>
+            {
+                closeSequence.Add("ledger-finalize");
+                finalizationCommands.Add(call.ArgAt<AccountingClosePostingCommand>(1));
+            });
+        var service = new AccountingCloseManagementService(workflowService, postingWorkbench);
+        await ApproveRequiredCloseTasksAsync(service, workflowId, ledgerBookId);
+
+        LockClosePeriodRequestDto Request(long version) => new(
+            workflowId,
+            version,
+            "controller-reviewer",
+            "Lock close period after report certification.",
+            "report-pack-2026-03",
+            [$"evidence:close-package:{workflowId:D}:2026-03:book:{ledgerBookId:D}:period-lock"],
+            CorrelationId: "close-cas-retry",
+            ControllerRole: "Controller");
+
+        var first = await LockClosePeriodScopedAsync(service, Request(currentWorkflow.Version), "controller-reviewer");
+        var retry = await LockClosePeriodScopedAsync(service, Request(currentWorkflow.Version), "controller-reviewer");
+
+        first!.IsLocked.Should().BeFalse();
+        first.Issues.Should().Contain(issue => issue.Code == "CloseWorkflowTransitionPendingAfterLedgerHardClose");
+        retry!.IsLocked.Should().BeTrue();
+        retry.Issues.Should().BeEmpty();
+        closeSequence.Should().Equal(
+            "ledger-finalize",
+            "workflow-close",
+            "ledger-finalize",
+            "workflow-close",
+            "ledger-finalize");
+        finalizationCommands.Should().HaveCount(3);
+        finalizationCommands.Should().OnlyContain(command =>
+            command.Actor == "controller-reviewer"
+            && command.Role == "Controller"
+            && command.CorrelationId == "close-cas-retry"
+            && command.EvidenceLinks.Contains(
+                $"evidence:close-package:{workflowId:D}:2026-03:book:{ledgerBookId:D}:period-lock",
+                StringComparer.Ordinal));
+        await postingWorkbench.Received(3).FinalizeHardCloseAsync(
+            Arg.Any<AccountingClosePostingContext>(),
+            Arg.Any<AccountingClosePostingCommand>(),
+            Arg.Any<CancellationToken>());
+        await workflowService.Received(2).CloseWorkflowAsync(
+            workflowId,
+            Arg.Any<OperationsCloseWorkflowRequestDto>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_ReopenRechecksWorkflowVersionBeforeLedgerMutation()
+    {
+        var workflowId = Guid.Parse("47474747-4747-4747-4747-474747474753");
+        var initial = BuildLockedCloseWorkflow(
+            BuildCloseWorkflow(workflowId, firstTaskStatus: "Done", secondTaskStatus: "Done"));
+        var changed = initial with { Version = initial.Version + 1 };
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>()).Returns(initial, changed);
+        var postingWorkbench = CreateMutationGatedPostingWorkbench();
+        postingWorkbench.EvaluateAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new ClosePostingGateDto(
+                "period-close-posting:reopen-jit",
+                "Post closing entries",
+                ClosePostingGateStateDto.Posted,
+                true,
+                0m,
+                0,
+                "Closing entries are posted."));
+        var service = new AccountingCloseManagementService(workflowService, postingWorkbench);
+
+        var result = await ReopenClosePeriodScopedAsync(
+            service,
+            BuildReopenRequest(workflowId, initial.Version),
+            "controller-reviewer");
+
+        result.Should().NotBeNull();
+        result!.IsReopened.Should().BeFalse();
+        result.Plan!.WorkflowVersion.Should().Be(changed.Version);
+        result.Issues.Should().ContainSingle(issue => issue.Code == "ClosePeriodReopenVersionMismatch");
+        await postingWorkbench.DidNotReceive().ReopenAndQueueClosingReversalsAsync(
+            Arg.Any<AccountingClosePostingContext>(),
+            Arg.Any<AccountingClosePostingCommand>(),
+            Arg.Any<CancellationToken>());
+        await workflowService.DidNotReceiveWithAnyArgs().ReopenWorkflowAsync(default, default!, default);
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_CasFailureAfterLedgerReopen_ExactRetryConvergesWorkflow()
+    {
+        var workflowId = Guid.Parse("47474747-4747-4747-4747-474747474754");
+        var currentWorkflow = BuildLockedCloseWorkflow(
+            BuildCloseWorkflow(workflowId, firstTaskStatus: "Done", secondTaskStatus: "Done"));
+        var consistencyLeases = new TrackingMutationLeaseState();
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>()).Returns(_ => currentWorkflow);
+        var reopenAttempts = 0;
+        workflowService.ReopenWorkflowAsync(
+                workflowId,
+                Arg.Any<OperationsReopenWorkflowRequestDto>(),
+                Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                consistencyLeases.ActiveCount.Should().Be(
+                    1,
+                    "the cross-host accounting-period fence must cover the Operations workflow reopen");
+                reopenAttempts++;
+                if (reopenAttempts == 1)
+                {
+                    currentWorkflow = currentWorkflow with { Version = currentWorkflow.Version + 1 };
+                    return new OperationsTransitionResultDto(
+                        false,
+                        "VERSION_CONFLICT",
+                        "Concurrent workflow mutation.",
+                        currentWorkflow,
+                        [],
+                        [],
+                        currentWorkflow.Version);
+                }
+
+                currentWorkflow = currentWorkflow with
+                {
+                    Version = currentWorkflow.Version + 1,
+                    Status = OperationsWorkflowStatusDto.ApprovalPending,
+                    ClosePackage = null
+                };
+                return new OperationsTransitionResultDto(
+                    true,
+                    null,
+                    null,
+                    currentWorkflow,
+                    [],
+                    [],
+                    currentWorkflow.Version);
+            });
+        var postingWorkbench = Substitute.For<IAccountingClosePostingWorkbench, IAccountingCloseMutationGate>();
+        ((IAccountingCloseMutationGate)postingWorkbench)
+            .AcquireAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(call => consistencyLeases.Acquire(call.ArgAt<CancellationToken>(1)));
+        var reversalGate = new ClosePostingGateDto(
+            "period-close-posting:reopen-cas",
+            "Post closing entries",
+            ClosePostingGateStateDto.ReversalQueued,
+            false,
+            0m,
+            0,
+            "No active retained closing batch requires reversal.");
+        postingWorkbench.ReopenAndQueueClosingReversalsAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<AccountingClosePostingCommand>(),
+                Arg.Any<CancellationToken>())
+            .Returns(reversalGate)
+            .AndDoes(call =>
+            {
+                call.ArgAt<AccountingClosePostingCommand>(1).ConsistencyLeaseHeld.Should().BeTrue();
+                consistencyLeases.ActiveCount.Should().Be(
+                    1,
+                    "the posting boundary and workflow transition must share one durable fence");
+            });
+        postingWorkbench.EvaluateAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(reversalGate);
+        var service = new AccountingCloseManagementService(workflowService, postingWorkbench);
+
+        var first = await ReopenClosePeriodScopedAsync(
+            service,
+            BuildReopenRequest(workflowId, currentWorkflow.Version),
+            "controller-reviewer");
+        var retry = await ReopenClosePeriodScopedAsync(
+            service,
+            BuildReopenRequest(workflowId, currentWorkflow.Version),
+            "controller-reviewer");
+
+        first!.IsReopened.Should().BeFalse();
+        first.Issues.Should().Contain(issue => issue.Code == "CloseWorkflowReopenPendingAfterLedgerReopen");
+        retry!.IsReopened.Should().BeTrue();
+        retry.Issues.Should().BeEmpty();
+        await postingWorkbench.Received(2).ReopenAndQueueClosingReversalsAsync(
+            Arg.Any<AccountingClosePostingContext>(),
+            Arg.Any<AccountingClosePostingCommand>(),
+            Arg.Any<CancellationToken>());
+        await workflowService.Received(2).ReopenWorkflowAsync(
+            workflowId,
+            Arg.Any<OperationsReopenWorkflowRequestDto>(),
+            Arg.Any<CancellationToken>());
+        consistencyLeases.AcquireCount.Should().Be(2);
+        consistencyLeases.ActiveCount.Should().Be(0);
+    }
+
+    [Fact]
     public async Task Scenario_ClosePlan_LockPeriodDelegatesToOperationsWorkflowAfterCloseControlsPass()
     {
         var workflowId = Guid.Parse("48484848-4848-4848-4848-484848484848");
         var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var consistencyLeases = new TrackingMutationLeaseState();
         var workflow = BuildCloseWorkflow(workflowId, firstTaskStatus: "Done", secondTaskStatus: "Done");
         var lockedWorkflow = workflow with
         {
@@ -681,6 +1291,7 @@ public sealed class AccountingCloseServicesTests
         var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
         workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>())
             .Returns(workflow);
+        var closeSequence = new List<string>();
         workflowService.CloseWorkflowAsync(workflowId, Arg.Any<OperationsCloseWorkflowRequestDto>(), Arg.Any<CancellationToken>())
             .Returns(new OperationsTransitionResultDto(
                 true,
@@ -689,8 +1300,62 @@ public sealed class AccountingCloseServicesTests
                 lockedWorkflow,
                 [],
                 [],
-                NewVersion: workflow.Version + 1));
-        var service = new AccountingCloseManagementService(workflowService);
+                NewVersion: workflow.Version + 1))
+            .AndDoes(_ =>
+            {
+                consistencyLeases.ActiveCount.Should().Be(
+                    1,
+                    "the cross-host accounting-period fence must cover the Operations workflow close");
+                closeSequence.Add("workflow-close");
+            });
+        var postingWorkbench = Substitute.For<IAccountingClosePostingWorkbench, IAccountingCloseMutationGate>();
+        ((IAccountingCloseMutationGate)postingWorkbench)
+            .AcquireAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(call => consistencyLeases.Acquire(call.ArgAt<CancellationToken>(1)));
+        var readyGate = new ClosePostingGateDto(
+            "period-close-posting:test",
+            "Post closing entries",
+            ClosePostingGateStateDto.Posted,
+            true,
+            0m,
+            0,
+            "Retained closing entries are posted and temporary balances are zero.");
+        postingWorkbench.EnsureClosingDraftQueuedAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<AccountingClosePostingCommand>(),
+                Arg.Any<CancellationToken>())
+            .Returns(readyGate);
+        postingWorkbench.EvaluateAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(readyGate);
+        postingWorkbench.FinalizeHardCloseAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<AccountingClosePostingCommand>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new LedgerPeriodDto(
+                Guid.Parse("49494949-4949-4949-4949-494949494949"),
+                ledgerBookId,
+                2026,
+                3,
+                "2026-03",
+                new DateOnly(2026, 3, 1),
+                new DateOnly(2026, 3, 31),
+                LedgerPeriodStatusDto.HardClosed,
+                DateTimeOffset.Parse("2026-03-01T00:00:00Z"),
+                DateTimeOffset.Parse("2026-04-03T12:09:00Z"),
+                3))
+            .AndDoes(call =>
+            {
+                call.ArgAt<AccountingClosePostingCommand>(1).ConsistencyLeaseHeld.Should().BeTrue();
+                consistencyLeases.ActiveCount.Should().Be(
+                    1,
+                    "both hard-close finalization passes must run under the coordinator-held fence");
+                closeSequence.Add("ledger-finalize");
+            });
+        var service = new AccountingCloseManagementService(workflowService, postingWorkbench);
         var reconciliationEvidence = $"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-signoff";
         await service.SignOffCloseTaskAsync(
             new SignOffCloseTaskRequestDto(
@@ -714,7 +1379,8 @@ public sealed class AccountingCloseServicesTests
                 [reportEvidence]),
             "controller-reviewer");
 
-        var result = await service.LockClosePeriodAsync(
+        var result = await LockClosePeriodScopedAsync(
+            service,
             new LockClosePeriodRequestDto(
                 workflowId,
                 ExpectedWorkflowVersion: workflow.Version,
@@ -733,7 +1399,8 @@ public sealed class AccountingCloseServicesTests
                 CorrelationId: "close-lock-2026-03",
                 ClosePackageId: "close-package-2026-03",
                 ClosePackageManifestId: "manifest-2026-03",
-                ClosePackageRetainedManifestRoute: "/workstation/reporting/packages/manifest-2026-03"),
+                ClosePackageRetainedManifestRoute: "/workstation/reporting/packages/manifest-2026-03",
+                ControllerRole: "Controller"),
             "controller-reviewer");
 
         result.Should().NotBeNull();
@@ -743,6 +1410,10 @@ public sealed class AccountingCloseServicesTests
         result.Plan!.IsPeriodLocked.Should().BeTrue();
         result.Transition.Should().NotBeNull();
         result.Transition!.Success.Should().BeTrue();
+        closeSequence.Should().Equal(
+            "ledger-finalize",
+            "workflow-close",
+            "ledger-finalize");
         await workflowService.Received(1).CloseWorkflowAsync(
             workflowId,
             Arg.Is<OperationsCloseWorkflowRequestDto>(request =>
@@ -752,6 +1423,180 @@ public sealed class AccountingCloseServicesTests
                 request.CorrelationId == "close-lock-2026-03" &&
                 request.ChecklistControlApprovals.Count == 2 &&
                 request.EvidenceLinks!.Any(link => link.EvidenceId.Contains("period-lock", StringComparison.OrdinalIgnoreCase))),
+            Arg.Any<CancellationToken>());
+        await postingWorkbench.Received(2).FinalizeHardCloseAsync(
+            Arg.Is<AccountingClosePostingContext>(context =>
+                context.WorkflowId == workflowId &&
+                context.LedgerBookId == ledgerBookId &&
+                context.PeriodId == "2026-03"),
+            Arg.Is<AccountingClosePostingCommand>(command =>
+                command.Actor == "controller-reviewer" &&
+                command.ActionOrigin == OperationsActionOriginDto.HumanOperator),
+            Arg.Any<CancellationToken>());
+        consistencyLeases.AcquireCount.Should().Be(1);
+        consistencyLeases.ActiveCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_PostCommitReportingHandoffFailureIsRetryableWithoutReopeningLedger()
+    {
+        var workflowId = Guid.Parse("48484848-4848-4848-4848-484848484849");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var periodId = Guid.Parse("49494949-4949-4949-4949-494949494950");
+        const string completionId = "hard-close-49494949494949494949494949494950-v3";
+        var workflow = BuildCloseWorkflow(workflowId, firstTaskStatus: "Done", secondTaskStatus: "Done");
+        var lockedWorkflow = workflow with
+        {
+            Status = OperationsWorkflowStatusDto.Closed,
+            ClosePackage = new OperationsClosePackagePublicationDto(
+                "close-package-retry",
+                "report-pack-retry",
+                "manifest-retry",
+                "/workstation/reporting/packages/manifest-retry",
+                "sha256-close-package-retry",
+                DateTimeOffset.Parse("2026-04-03T12:10:00Z"),
+                "controller-reviewer",
+                "Retry the reporting evidence handoff without reopening.",
+                [],
+                [])
+        };
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        var currentWorkflow = workflow;
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>()).Returns(_ => currentWorkflow);
+        var closeSequence = new List<string>();
+        workflowService.CloseWorkflowAsync(
+                workflowId,
+                Arg.Any<OperationsCloseWorkflowRequestDto>(),
+                Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                closeSequence.Add("workflow-close");
+                currentWorkflow = lockedWorkflow;
+                return new OperationsTransitionResultDto(
+                    true,
+                    null,
+                    null,
+                    currentWorkflow,
+                    [],
+                    [],
+                    NewVersion: currentWorkflow.Version);
+            });
+        var postingWorkbench = CreateMutationGatedPostingWorkbench();
+        var readyGate = new ClosePostingGateDto(
+            "period-close-posting:retry",
+            "Post closing entries",
+            ClosePostingGateStateDto.Posted,
+            true,
+            0m,
+            0,
+            "Closing entries are retained and posted.");
+        postingWorkbench.EnsureClosingDraftQueuedAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<AccountingClosePostingCommand>(),
+                Arg.Any<CancellationToken>())
+            .Returns(readyGate);
+        postingWorkbench.EvaluateAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(readyGate);
+        var hardClosed = new LedgerPeriodDto(
+            periodId,
+            ledgerBookId,
+            2026,
+            3,
+            "2026-03",
+            new DateOnly(2026, 3, 1),
+            new DateOnly(2026, 3, 31),
+            LedgerPeriodStatusDto.HardClosed,
+            DateTimeOffset.Parse("2026-03-01T00:00:00Z"),
+            DateTimeOffset.Parse("2026-04-03T12:09:00Z"),
+            3);
+        var finalizationContexts = new List<AccountingClosePostingContext>();
+        var finalizationCommands = new List<AccountingClosePostingCommand>();
+        var finalizationAttempts = 0;
+        postingWorkbench.FinalizeHardCloseAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<AccountingClosePostingCommand>(),
+                Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                finalizationAttempts++;
+                closeSequence.Add($"ledger-finalize-{finalizationAttempts}");
+                finalizationContexts.Add(call.ArgAt<AccountingClosePostingContext>(0));
+                finalizationCommands.Add(call.ArgAt<AccountingClosePostingCommand>(1));
+                return finalizationAttempts == 2
+                    ? Task.FromException<LedgerPeriodDto>(new ReportingCloseEvidenceHandoffException(
+                        hardClosed,
+                        completionId,
+                        "Ledger hard close is committed, but reporting evidence retention is pending.",
+                        new InvalidOperationException("evidence store unavailable")))
+                    : Task.FromResult(hardClosed);
+            });
+
+        var service = new AccountingCloseManagementService(workflowService, postingWorkbench);
+        await ApproveRequiredCloseTasksAsync(service, workflowId, ledgerBookId);
+        var request = new LockClosePeriodRequestDto(
+            workflowId,
+            workflow.Version,
+            "controller-reviewer",
+            "Retry-safe reporting close handoff.",
+            "report-pack-retry",
+            [$"evidence:close-package:{workflowId:D}:2026-03:book:{ledgerBookId:D}:period-lock"],
+            CorrelationId: "close-lock-retry",
+            ClosePackageId: "close-package-retry",
+            ClosePackageManifestId: "manifest-retry",
+            ClosePackageRetainedManifestRoute: "/workstation/reporting/packages/manifest-retry",
+            ControllerRole: "Controller");
+
+        var first = await LockClosePeriodScopedAsync(service, request, "controller-reviewer");
+
+        first.Should().NotBeNull();
+        first!.IsLocked.Should().BeFalse("the workflow publication waits for reporting evidence retention");
+        first.Plan!.IsPeriodLocked.Should().BeTrue("the underlying ledger hard close already committed");
+        first.Issues.Should().ContainSingle(issue =>
+            issue.Code == "CloseReportingEvidenceHandoffPending"
+            && issue.TargetId == completionId
+            && issue.SuggestedAction!.Contains("Retry this same close command", StringComparison.Ordinal)
+            && issue.SuggestedAction.Contains("do not reopen", StringComparison.Ordinal));
+        await workflowService.Received(1).CloseWorkflowAsync(
+            workflowId,
+            Arg.Any<OperationsCloseWorkflowRequestDto>(),
+            Arg.Any<CancellationToken>());
+
+        var retry = await LockClosePeriodScopedAsync(service, request, "controller-reviewer");
+
+        retry.Should().NotBeNull();
+        retry!.IsLocked.Should().BeTrue();
+        retry.Issues.Should().ContainSingle(issue => issue.Code == "ClosePeriodAlreadyLocked");
+        closeSequence.Should().Equal(
+            "ledger-finalize-1",
+            "workflow-close",
+            "ledger-finalize-2",
+            "ledger-finalize-3");
+        finalizationContexts.Should().HaveCount(3);
+        finalizationContexts.Should().OnlyContain(context =>
+            context.WorkflowId == workflowId
+            && context.LedgerBookId == ledgerBookId
+            && context.PeriodId == "2026-03");
+        finalizationCommands.Should().HaveCount(3);
+        finalizationCommands.Should().OnlyContain(command =>
+            command.Actor == "controller-reviewer"
+            && command.Role == "Controller"
+            && command.CorrelationId == "close-lock-retry"
+            && command.EvidenceLinks.Contains(
+                $"evidence:close-package:{workflowId:D}:2026-03:book:{ledgerBookId:D}:period-lock",
+                StringComparer.Ordinal));
+        await postingWorkbench.Received(3).FinalizeHardCloseAsync(
+            Arg.Any<AccountingClosePostingContext>(),
+            Arg.Any<AccountingClosePostingCommand>(),
+            Arg.Any<CancellationToken>());
+        await workflowService.Received(1).CloseWorkflowAsync(
+            workflowId,
+            Arg.Any<OperationsCloseWorkflowRequestDto>(),
+            Arg.Any<CancellationToken>());
+        await postingWorkbench.DidNotReceive().ReopenAndQueueClosingReversalsAsync(
+            Arg.Any<AccountingClosePostingContext>(),
+            Arg.Any<AccountingClosePostingCommand>(),
             Arg.Any<CancellationToken>());
     }
 
@@ -1164,5 +2009,456 @@ public sealed class AccountingCloseServicesTests
             Blockers: [],
             NextActions: [],
             LedgerBookId: Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"));
+    }
+
+    private static OperationsContinuityWorkflowDto BuildLockedCloseWorkflow(
+        OperationsContinuityWorkflowDto workflow,
+        long? version = null)
+        => workflow with
+        {
+            Version = version ?? workflow.Version,
+            Status = OperationsWorkflowStatusDto.Closed,
+            ClosePackage = new OperationsClosePackagePublicationDto(
+                $"close-package-{workflow.WorkflowId:D}",
+                "report-pack-2026-03",
+                $"manifest-{workflow.WorkflowId:D}",
+                $"/workstation/reporting/packages/manifest-{workflow.WorkflowId:D}",
+                "sha256-close-package",
+                DateTimeOffset.Parse("2026-04-03T12:10:00Z"),
+                "controller-reviewer",
+                "Lock close period after report certification.",
+                [],
+                [])
+        };
+
+    private static ReopenClosePeriodRequestDto BuildReopenRequest(Guid workflowId, long version)
+        => new(
+            workflowId,
+            version,
+            "controller-reviewer",
+            "Fund Controller",
+            "Reopen the close for a governed restatement.",
+            "incident-2026-03",
+            "A material restatement requires corrected accounting evidence.",
+            "reopen-approval-2026-03",
+            "March financial statements and downstream reports require recertification.",
+            ["evidence:restatement:2026-03:reopen-approval-2026-03"],
+            "reopen-correlation-2026-03");
+
+    [Fact]
+    public async Task Scenario_ClosePlan_TornPersistenceFileFailsClosedInsteadOfReportingAnEmptyClose()
+    {
+        var workflowId = Guid.Parse("5c5c5c5c-5c5c-5c5c-5c5c-5c5c5c5c5c5c");
+        using var storage = new TemporaryStorageRoot();
+        var service = BuildPersistedCloseService(workflowId, storage, out _);
+
+        await File.WriteAllTextAsync(storage.CloseManagementPath, "{\"LateAdjustments\":[");
+
+        var read = async () => await service.GetPeriodPlanAsync(workflowId);
+
+        await read.Should().ThrowAsync<InvalidDataException>()
+            .Where(ex => ex.Message.Contains("unreadable", StringComparison.Ordinal))
+            .WithInnerException<InvalidDataException, JsonException>();
+    }
+
+    [Theory]
+    [InlineData("null")]
+    [InlineData("{}")]
+    [InlineData("{\"TaskSignOffs\":[]}")]
+    public async Task Scenario_ClosePlan_RootOrMissingCoreLateAdjustmentsPersistenceFailsClosed(string persisted)
+    {
+        var workflowId = Guid.Parse("5e5e5e5e-5e5e-5e5e-5e5e-5e5e5e5e5e5e");
+        using var storage = new TemporaryStorageRoot();
+        var service = BuildPersistedCloseService(workflowId, storage, out _);
+
+        await File.WriteAllTextAsync(storage.CloseManagementPath, persisted);
+
+        var read = async () => await service.GetPeriodPlanAsync(workflowId);
+
+        await read.Should().ThrowAsync<InvalidDataException>()
+            .Where(ex => ex.Message.Contains("missing required state", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("{\"LateAdjustments\":[]}")]
+    [InlineData("{\"LateAdjustments\":[],\"TaskSignOffs\":[]}")]
+    [InlineData("{\"LateAdjustments\":[],\"TaskSignOffs\":[],\"PlanConfigurations\":[]}")]
+    public async Task Scenario_ClosePlan_HistoricallyContiguousLegacyPersistenceIsReadable(string persisted)
+    {
+        var workflowId = Guid.Parse("63636363-6363-6363-6363-636363636363");
+        using var storage = new TemporaryStorageRoot();
+        await File.WriteAllTextAsync(storage.CloseManagementPath, persisted);
+        var service = BuildPersistedCloseService(workflowId, storage, out _);
+
+        var plan = await service.GetPeriodPlanAsync(workflowId);
+
+        plan.Should().NotBeNull();
+    }
+
+    [Theory]
+    [InlineData("{\"LateAdjustments\":null}")]
+    [InlineData("{\"LateAdjustments\":[],\"TaskSignOffs\":null}")]
+    [InlineData("{\"LateAdjustments\":[],\"TaskSignOffs\":[],\"PlanConfigurations\":null}")]
+    [InlineData("{\"LateAdjustments\":[],\"TaskSignOffs\":[],\"PlanConfigurations\":[],\"EvidenceReviews\":null}")]
+    public async Task Scenario_ClosePlan_ExplicitNullPersistenceCollectionFailsClosed(string persisted)
+    {
+        var workflowId = Guid.Parse("64646464-6464-6464-6464-646464646464");
+        using var storage = new TemporaryStorageRoot();
+        await File.WriteAllTextAsync(storage.CloseManagementPath, persisted);
+        var service = BuildPersistedCloseService(workflowId, storage, out _);
+
+        var read = async () => await service.GetPeriodPlanAsync(workflowId);
+
+        await read.Should().ThrowAsync<InvalidDataException>()
+            .Where(ex => ex.Message.Contains("explicit null", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("{\"LateAdjustments\":[],\"PlanConfigurations\":[]}")]
+    [InlineData("{\"LateAdjustments\":[],\"TaskSignOffs\":[],\"EvidenceReviews\":[]}")]
+    public async Task Scenario_ClosePlan_GappedPersistenceGenerationFailsClosed(string persisted)
+    {
+        var workflowId = Guid.Parse("65656565-6565-6565-6565-656565656565");
+        using var storage = new TemporaryStorageRoot();
+        await File.WriteAllTextAsync(storage.CloseManagementPath, persisted);
+        var service = BuildPersistedCloseService(workflowId, storage, out _);
+
+        var read = async () => await service.GetPeriodPlanAsync(workflowId);
+
+        await read.Should().ThrowAsync<InvalidDataException>()
+            .Where(ex => ex.Message.Contains("gapped", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("{\"LateAdjustments\":[],\"UnexpectedCollection\":[]}", "not part of a recognized")]
+    [InlineData("{\"LateAdjustments\":[],\"lateAdjustments\":[]}", "appears more than once")]
+    [InlineData("{\"LateAdjustments\":{}}", "must be JSON arrays")]
+    public async Task Scenario_ClosePlan_UnsupportedPersistenceShapeFailsClosed(
+        string persisted,
+        string expectedMessage)
+    {
+        var workflowId = Guid.Parse("66666666-6666-6666-6666-666666666666");
+        using var storage = new TemporaryStorageRoot();
+        await File.WriteAllTextAsync(storage.CloseManagementPath, persisted);
+        var service = BuildPersistedCloseService(workflowId, storage, out _);
+
+        var read = async () => await service.GetPeriodPlanAsync(workflowId);
+
+        await read.Should().ThrowAsync<InvalidDataException>()
+            .Where(ex => ex.Message.Contains(expectedMessage, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_LegacyLateAdjustmentsOnlySnapshotNormalizesOnNextMutation()
+    {
+        var workflowId = Guid.Parse("61616161-6161-6161-6161-616161616161");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var journalEntryId = Guid.Parse("62626262-6262-6262-6262-626262626262");
+        using var storage = new TemporaryStorageRoot();
+        var writer = BuildPersistedCloseService(workflowId, storage, out _);
+        var created = await writer.RequestLateAdjustmentAsync(
+            new CreateLateAdjustmentRequestDto(
+                workflowId,
+                journalEntryId,
+                25_000m,
+                "USD",
+                "Material support arrived after the original close review.",
+                "fund-accountant",
+                [$"evidence:late-adjustment:{journalEntryId:D}:2026-03:book:{ledgerBookId:D}:request"]),
+            "fund-accountant");
+        var requestId = created!.LateAdjustments.Should().ContainSingle().Subject.RequestId;
+
+        using (var current = JsonDocument.Parse(await File.ReadAllTextAsync(storage.CloseManagementPath)))
+        {
+            var retainedLateAdjustments = current.RootElement.GetProperty("lateAdjustments").GetRawText();
+            await File.WriteAllTextAsync(
+                storage.CloseManagementPath,
+                $"{{\"LateAdjustments\":{retainedLateAdjustments}}}");
+        }
+
+        var service = BuildPersistedCloseService(workflowId, storage, out _);
+
+        var plan = await service.GetPeriodPlanAsync(workflowId);
+
+        plan.Should().NotBeNull();
+        plan!.LateAdjustments.Should().ContainSingle(adjustment =>
+            adjustment.RequestId == requestId &&
+            adjustment.JournalEntryId == journalEntryId);
+
+        await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "reconciliation-review",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained reconciliation close sign-off.",
+                [$"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
+
+        using var persisted = JsonDocument.Parse(await File.ReadAllTextAsync(storage.CloseManagementPath));
+        var root = persisted.RootElement;
+        root.GetProperty("lateAdjustments").GetArrayLength().Should().Be(1);
+        root.GetProperty("taskSignOffs").GetArrayLength().Should().Be(1);
+        root.GetProperty("planConfigurations").GetArrayLength().Should().Be(0);
+        root.GetProperty("evidenceReviews").GetArrayLength().Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_TornPersistenceFileIsNotOverwrittenByTheNextSignOff()
+    {
+        var workflowId = Guid.Parse("5d5d5d5d-5d5d-5d5d-5d5d-5d5d5d5d5d5d");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        using var storage = new TemporaryStorageRoot();
+        var service = BuildPersistedCloseService(workflowId, storage, out _);
+
+        await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "reconciliation-review",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained reconciliation close sign-off.",
+                [$"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
+
+        var persisted = await File.ReadAllTextAsync(storage.CloseManagementPath);
+        persisted.Should().Contain("reconciliation-review");
+
+        var torn = persisted[..(persisted.Length / 2)];
+        await File.WriteAllTextAsync(storage.CloseManagementPath, torn);
+
+        var secondSignOff = async () => await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "report-certification",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained report certification sign-off.",
+                [$"evidence:close-task:report-certification:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
+
+        await secondSignOff.Should().ThrowAsync<InvalidDataException>();
+
+        var afterFailedMutation = await File.ReadAllTextAsync(storage.CloseManagementPath);
+        afterFailedMutation.Should().Be(torn);
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_MissingPersistenceFileAfterSuccessfulWriteIsNotRecreatedByTheNextSignOff()
+    {
+        var workflowId = Guid.Parse("5f5f5f5f-5f5f-5f5f-5f5f-5f5f5f5f5f5f");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        using var storage = new TemporaryStorageRoot();
+        var service = BuildPersistedCloseService(workflowId, storage, out _);
+
+        await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "reconciliation-review",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained reconciliation close sign-off.",
+                [$"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
+
+        File.Exists(storage.CloseManagementPath).Should().BeTrue();
+        File.Delete(storage.CloseManagementPath);
+
+        var secondSignOff = async () => await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "report-certification",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained report certification sign-off.",
+                [$"evidence:close-task:report-certification:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
+
+        await secondSignOff.Should().ThrowAsync<InvalidDataException>()
+            .Where(ex => ex.Message.Contains("missing after durable", StringComparison.Ordinal));
+        File.Exists(storage.CloseManagementPath).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_PersistenceFileDeletedAfterServiceConstructionFailsClosedBeforeFirstRead()
+    {
+        var workflowId = Guid.Parse("60606060-6060-6060-6060-606060606060");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        using var storage = new TemporaryStorageRoot();
+        var writer = BuildPersistedCloseService(workflowId, storage, out _);
+
+        await writer.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "reconciliation-review",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained reconciliation close sign-off.",
+                [$"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
+
+        var replacement = BuildPersistedCloseService(workflowId, storage, out _);
+        File.Delete(storage.CloseManagementPath);
+
+        var secondSignOff = async () => await replacement.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "report-certification",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained report certification sign-off.",
+                [$"evidence:close-task:report-certification:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
+
+        await secondSignOff.Should().ThrowAsync<InvalidDataException>()
+            .Where(ex => ex.Message.Contains("missing after durable", StringComparison.Ordinal));
+        File.Exists(storage.CloseManagementPath).Should().BeFalse();
+    }
+
+    private static AccountingCloseManagementService BuildPersistedCloseService(
+        Guid workflowId,
+        TemporaryStorageRoot storage,
+        out IOperationsContinuityWorkflowService workflowService)
+    {
+        var workflow = BuildCloseWorkflow(workflowId, firstTaskStatus: "Done", secondTaskStatus: "Done");
+        workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>()).Returns(workflow);
+        return new AccountingCloseManagementService(
+            workflowService,
+            new StorageOptions { RootPath = storage.RootPath });
+    }
+
+    private sealed class TemporaryStorageRoot : IDisposable
+    {
+        public TemporaryStorageRoot()
+        {
+            RootPath = Path.Combine(Path.GetTempPath(), $"meridian-close-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(Path.Combine(RootPath, "accounting"));
+        }
+
+        public string RootPath { get; }
+
+        public string CloseManagementPath
+            => Path.Combine(RootPath, "accounting", "close-management-late-adjustments.json");
+
+        public void Dispose()
+        {
+            try
+            {
+                if (Directory.Exists(RootPath))
+                {
+                    Directory.Delete(RootPath, recursive: true);
+                }
+            }
+            catch (IOException)
+            {
+                // A leftover temp directory must not fail an otherwise passing test run.
+            }
+        }
+    }
+
+    private static IAccountingClosePostingWorkbench CreateMutationGatedPostingWorkbench(
+        TrackingMutationLeaseState? consistencyLeases = null)
+    {
+        var leases = consistencyLeases ?? new TrackingMutationLeaseState();
+        var postingWorkbench = Substitute.For<IAccountingClosePostingWorkbench, IAccountingCloseMutationGate>();
+        ((IAccountingCloseMutationGate)postingWorkbench)
+            .AcquireAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(call => leases.Acquire(call.ArgAt<CancellationToken>(1)));
+        return postingWorkbench;
+    }
+
+    private static Task<ClosePeriodLockResultDto?> LockClosePeriodScopedAsync(
+        AccountingCloseManagementService service,
+        LockClosePeriodRequestDto request,
+        string actor,
+        CancellationToken ct = default)
+        => service.LockClosePeriodScopedAsync(
+            request,
+            actor,
+            tenantId: "tenant-alpha",
+            companyId: "company-alpha",
+            ct: ct);
+
+    private static Task<ClosePeriodReopenResultDto?> ReopenClosePeriodScopedAsync(
+        AccountingCloseManagementService service,
+        ReopenClosePeriodRequestDto request,
+        string actor,
+        CancellationToken ct = default)
+        => service.ReopenClosePeriodScopedAsync(
+            request,
+            actor,
+            tenantId: "tenant-alpha",
+            companyId: "company-alpha",
+            ct: ct);
+
+    private static async Task ApproveRequiredCloseTasksAsync(
+        AccountingCloseManagementService service,
+        Guid workflowId,
+        Guid ledgerBookId)
+    {
+        await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "reconciliation-review",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained reconciliation close sign-off.",
+                [$"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
+        await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "report-certification",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained report certification sign-off.",
+                [$"evidence:close-task:report-certification:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
+    }
+
+    private sealed class TrackingMutationLeaseState
+    {
+        private int _acquireCount;
+        private int _activeCount;
+
+        public int AcquireCount => Volatile.Read(ref _acquireCount);
+
+        public int ActiveCount => Volatile.Read(ref _activeCount);
+
+        public ValueTask<IAsyncDisposable> Acquire(CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            Interlocked.Increment(ref _acquireCount);
+            Interlocked.Increment(ref _activeCount);
+            return ValueTask.FromResult<IAsyncDisposable>(new Lease(this));
+        }
+
+        private sealed class Lease(TrackingMutationLeaseState owner) : IAsyncDisposable
+        {
+            private TrackingMutationLeaseState? _owner = owner;
+
+            public ValueTask DisposeAsync()
+            {
+                var captured = Interlocked.Exchange(ref _owner, null);
+                if (captured is not null)
+                {
+                    Interlocked.Decrement(ref captured._activeCount);
+                }
+
+                return ValueTask.CompletedTask;
+            }
+        }
     }
 }

@@ -1,73 +1,176 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { formatCurrency } from "@/lib/format";
 import { LedgerTable, type LedgerRow } from "@/components/accounting/LedgerTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScreenLayout } from "@/components/ui/screen-layout";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { getManualJournalEntryWorkbench, getRunLedgerJournal } from "@/lib/api";
+import { getLedgerBooks, getLedgerPeriodJournalEntries } from "@/lib/ledger-reports-api";
+import { toLedgerJournalLine } from "@/screens/accounting-screen.posted-ledger.view-model";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
-import { buildJournalEntryDetailViewState } from "@/screens/journal-entry-detail-screen.view-model";
-import type { LedgerJournalLine, ManualJournalEntryDraft } from "@/types";
+import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
+import {
+  buildJournalEntryDetailViewState,
+  type JournalEntryDetailSourceKind
+} from "@/screens/journal-entry-detail-screen.view-model";
+import type { LedgerJournalLine, LedgerPostedJournalEntry, ManualJournalEntryDraft } from "@/types";
+
+const JOURNAL_ENTRY_SOURCE_LABELS: Record<JournalEntryDetailSourceKind, string> = {
+  "manual-draft": "Manual journal workbench",
+  "posted-journal": "Governed posted journal",
+  "run-summary": "Run ledger summary",
+  none: "Unknown"
+};
 
 export function JournalEntryDetailScreen() {
   const [searchParams] = useSearchParams();
   const journalEntryId = searchParams.get("journalEntryId") ?? "";
   const runId = searchParams.get("runId");
+  // Trial Balance links posted entries with ?periodId=. Those live in the governed journal, not
+  // in the manual workbench and not in any strategy run, so without this the fund's own postings
+  // were the one kind of entry this screen could not open.
+  const periodId = searchParams.get("periodId");
 
   const [draft, setDraft] = useState<ManualJournalEntryDraft | null>(null);
   const [journalLine, setJournalLine] = useState<LedgerJournalLine | null>(null);
+  const [postedEntry, setPostedEntry] = useState<LedgerPostedJournalEntry | null>(null);
+  // Posted amounts are in the ledger book's base currency, which the posted payload does not
+  // carry — only its ledgerBookId. Resolved from the books list so a EUR or GBP book is not
+  // labelled in dollars.
+  const [postedCurrency, setPostedCurrency] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [errorText, setErrorText] = useState<string | null>(null);
+  const [reloadVersion, setReloadVersion] = useState(0);
 
   useEffect(() => {
     if (!journalEntryId) {
       setDraft(null);
       setJournalLine(null);
+      setPostedEntry(null);
+      setPostedCurrency(null);
+      setErrorText(null);
       setLoading(false);
       return;
     }
 
     let cancelled = false;
     setLoading(true);
+    setErrorText(null);
+    // These three sources are mutually exclusive. Clearing only on an empty id or an error left a
+    // previous period's posting on screen when the same mounted route moved to a run-scoped
+    // entry, and buildJournalEntryDetailViewState prefers postedEntry.
+    setDraft(null);
+    setJournalLine(null);
+    setPostedEntry(null);
+    setPostedCurrency(null);
+
+    // A period scope means the governed journal is the authority. Nesting it inside the
+    // manual-workbench continuation meant an unavailable or forbidden workbench reported the
+    // posted entry as unavailable without ever asking the period route.
+    if (periodId) {
+      getLedgerPeriodJournalEntries(periodId)
+        .then((entries) => {
+          if (cancelled) return;
+          const matched = entries.find((entry) => entry.journalEntryId === journalEntryId) ?? null;
+          setPostedEntry(matched);
+          setJournalLine(matched ? toLedgerJournalLine(matched) : null);
+
+          // Fire-and-forget, deliberately not returned into this chain. The currency only decides
+          // how the amounts are labelled, so awaiting it here would hold `loading` — and therefore
+          // every piece of posting detail already in hand — behind a books request that may be
+          // slow or never settle.
+          if (matched?.ledgerBookId) {
+            void getLedgerBooks()
+              .then((books) => {
+                if (cancelled) return;
+                const book = books.find((candidate) => candidate.ledgerBookId === matched.ledgerBookId);
+                setPostedCurrency(book?.baseCurrency ?? null);
+              })
+              .catch(() => undefined);
+          }
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setErrorText("The posted journal for this period could not be loaded. No posting detail is shown until the source responds.");
+          }
+        })
+        .finally(() => {
+          if (!cancelled) {
+            setLoading(false);
+          }
+        });
+
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    // Unlike periodId, runId does not choose the source: a manual draft is routinely reached with
+    // a runId on the query for the "Back to Run Ledger" link, and the draft is still the record.
+    // So the workbench is asked first and a matching draft still wins. What must not happen is the
+    // workbench deciding the whole screen when it refuses: it authorizes on the manual-journal
+    // permissions, a ViewStrategies-only operator is refused there, and the run journal route does
+    // authorize them. Treating that refusal as "no draft" rather than as fatal lets the run lookup
+    // below answer for exactly those operators, who previously saw an unavailable-workbench error
+    // for a run journal they could in fact read.
+    let workbenchUnavailable = false;
 
     getManualJournalEntryWorkbench({})
-      .then((workbench) => {
+      .then((workbench) => workbench.drafts.find((candidate) => candidate.journalEntryId === journalEntryId) ?? null)
+      .catch(() => {
+        workbenchUnavailable = true;
+        return null;
+      })
+      .then((matchedDraft) => {
         if (cancelled) {
           return;
         }
 
-        const matchedDraft = workbench.drafts.find((candidate) => candidate.journalEntryId === journalEntryId) ?? null;
         setDraft(matchedDraft);
 
-        if (matchedDraft || !runId) {
+        if (matchedDraft) {
           setLoading(false);
           return;
         }
 
-        return getRunLedgerJournal(runId)
-          .then((lines) => {
-            if (!cancelled) {
-              setJournalLine(lines.find((line) => line.journalEntryId === journalEntryId) ?? null);
-            }
-          })
-          .finally(() => {
-            if (!cancelled) {
-              setLoading(false);
-            }
-          });
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setDraft(null);
-          setJournalLine(null);
-          setLoading(false);
+        if (runId) {
+          return getRunLedgerJournal(runId)
+            .then((lines) => {
+              if (!cancelled) {
+                setJournalLine(lines.find((line) => line.journalEntryId === journalEntryId) ?? null);
+              }
+            })
+            .catch(() => {
+              if (!cancelled) {
+                setErrorText("The run journal could not be loaded. No posting detail is shown until the source responds.");
+              }
+            })
+            .finally(() => {
+              if (!cancelled) {
+                setLoading(false);
+              }
+            });
         }
+
+        // Only report the workbench as the failure when it actually failed and nothing else could
+        // answer. A workbench that responded and simply held no such draft is not an error.
+        if (workbenchUnavailable) {
+          setJournalLine(null);
+          setPostedEntry(null);
+          setErrorText("The journal-entry record could not be loaded from the governed workbench. No posting detail is shown until the source responds.");
+        }
+
+        setLoading(false);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [journalEntryId, runId]);
+  }, [journalEntryId, periodId, reloadVersion, runId]);
 
   if (!journalEntryId) {
     return (
@@ -76,6 +179,14 @@ export function JournalEntryDetailScreen() {
           <CardTitle>Journal Entry Detail</CardTitle>
           <CardDescription>Open this page from a trial balance, ledger, or reconciliation row to inspect one posting.</CardDescription>
         </CardHeader>
+        <CardContent className="flex flex-wrap gap-2">
+          <Button asChild size="sm">
+            <Link to={WORKSTATION_ROUTE_CATALOG.accountingJournalEntries}>Open Journal Entries</Link>
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <Link to={WORKSTATION_ROUTE_CATALOG.accountingLedger}>Open Ledger Explorer</Link>
+          </Button>
+        </CardContent>
       </Card>
     );
   }
@@ -91,17 +202,39 @@ export function JournalEntryDetailScreen() {
       >
         <CardHeader>
           <CardTitle id="journal-entry-loading-title">Loading journal entry</CardTitle>
-          <CardDescription>Looking up {journalEntryId}.</CardDescription>
+          <CardDescription>Looking up the selected posting.</CardDescription>
         </CardHeader>
       </Card>
     );
   }
 
-  const view = buildJournalEntryDetailViewState({ journalEntryId, draft, journalLine });
+  if (errorText) {
+    return (
+      <Card className="panel-surface" role="region" aria-labelledby="journal-entry-error-title">
+        <CardHeader>
+          <CardTitle id="journal-entry-error-title">Journal entry unavailable</CardTitle>
+          <CardDescription>The selected posting reference could not be loaded.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <StatusBanner role="alert" tone="danger" title="Source unavailable" detail={errorText} />
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" onClick={() => setReloadVersion((current) => current + 1)}>Retry</Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to={WORKSTATION_ROUTE_CATALOG.accountingJournalEntries}>Back to Journal Entries</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const view = buildJournalEntryDetailViewState({ journalEntryId, draft, journalLine, postedEntry, postedCurrency });
+  const technicalSummaryFields = view.summaryFields.filter((field) => ["Journal entry", "Fund", "Ledger book"].includes(field.label));
+  const operationalSummaryFields = view.summaryFields.filter((field) => !technicalSummaryFields.includes(field));
 
   const lineRows: LedgerRow[] = view.lines.map((line) => ({
-    date: draft?.accountingDate ?? "",
-    ref: view.journalEntryId,
+    date: line.date ?? draft?.accountingDate ?? "",
+    ref: "Current entry",
     memo: line.description ?? "",
     account: line.account,
     debit: line.debit,
@@ -109,15 +242,12 @@ export function JournalEntryDetailScreen() {
   }));
 
   return (
-    <div className="space-y-4">
+    <ScreenLayout
+      title={view.title}
+      scope="Journal entry detail"
+      actions={<Badge variant={view.statusTone} dot>{view.statusLabel}</Badge>}
+    >
       <Card className="panel-surface">
-        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <CardTitle>{view.title}</CardTitle>
-            <CardDescription>Journal entry {view.journalEntryId}</CardDescription>
-          </div>
-          <Badge variant={view.statusTone} dot>{view.statusLabel}</Badge>
-        </CardHeader>
         <CardContent>
           {view.notFoundText ? (
             <StatusBanner role="alert" tone="warning" title="Journal entry not found" detail={view.notFoundText} />
@@ -133,17 +263,46 @@ export function JournalEntryDetailScreen() {
                 />
               ) : null}
               <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {view.summaryFields.map((field) => (
+                {operationalSummaryFields.map((field) => (
                   <div key={field.label}>
                     <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
-                    <dd className="mt-1 text-sm text-foreground">{field.value}</dd>
+                    <dd className="mt-1 text-sm text-foreground">{field.label === "Accounting date" ? presentJournalDate(field.value) : field.label === "Posted at" ? formatDateTimeLabel(field.value) : field.value}</dd>
                   </div>
                 ))}
               </dl>
+              {technicalSummaryFields.length > 0 ? (
+                <TechnicalDetails label="Journal identifiers" className="mt-4">
+                  <dl className="grid gap-2 sm:grid-cols-2">
+                    {technicalSummaryFields.map((field) => (
+                      <JournalEntryFact key={field.label} label={field.label} value={field.value} />
+                    ))}
+                  </dl>
+                </TechnicalDetails>
+              ) : null}
             </>
           )}
         </CardContent>
       </Card>
+
+      {view.dataCompleteness === "summary-only" ? (
+        <Card className="panel-surface">
+          <CardHeader>
+            <CardTitle>Posting summary</CardTitle>
+            <CardDescription>System-posted totals from the run ledger. Line-level detail lives in the run&apos;s Ledger Explorer.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <dl className="grid gap-3 sm:grid-cols-2">
+              <JournalEntryFact label="Total debits" value={formatCurrency(view.totalDebits)} />
+              <JournalEntryFact label="Total credits" value={formatCurrency(view.totalCredits)} />
+            </dl>
+            {runId ? (
+              <Button asChild size="sm" variant="outline">
+                <Link to={workstationRouteWithQuery("strategyRunLedger", { runId })}>Open in Run Ledger</Link>
+              </Button>
+            ) : null}
+          </CardContent>
+        </Card>
+      ) : null}
 
       {view.dataCompleteness === "full" ? (
         <Card className="panel-surface">
@@ -157,7 +316,10 @@ export function JournalEntryDetailScreen() {
         </Card>
       ) : null}
 
-      {view.dataCompleteness === "full" ? (
+      {/* Lifecycle, Evidence and Approval belong to the manual workbench's workflow. A governed
+          posted entry has none of them, and gating on completeness rendered all three for posted
+          entries with empty arrays and an "Approval pending" that can never resolve. */}
+      {view.sourceKind === "manual-draft" ? (
         <Card className="panel-surface">
           <CardHeader>
             <CardTitle>Lifecycle</CardTitle>
@@ -170,7 +332,7 @@ export function JournalEntryDetailScreen() {
                   <li key={transition.transitionId} className="rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-sm font-semibold text-foreground">{transition.label}</span>
-                      <span className="text-xs text-muted-foreground">{transition.recordedAtUtc}</span>
+                      <span className="text-xs text-muted-foreground">{formatDateTimeLabel(transition.recordedAtUtc)}</span>
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">By {transition.actor}{transition.notes ? ` - ${transition.notes}` : ""}</p>
                   </li>
@@ -183,7 +345,7 @@ export function JournalEntryDetailScreen() {
         </Card>
       ) : null}
 
-      {view.dataCompleteness === "full" ? (
+      {view.sourceKind === "manual-draft" ? (
         <Card className="panel-surface">
           <CardHeader>
             <CardTitle>Evidence</CardTitle>
@@ -200,7 +362,7 @@ export function JournalEntryDetailScreen() {
                     >
                       {attachment.displayName}
                     </Link>
-                    <p className="mt-1 text-xs text-muted-foreground">Added by {attachment.addedBy} on {attachment.addedAtUtc}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Added by {attachment.addedBy} on {formatDateTimeLabel(attachment.addedAtUtc)}</p>
                   </li>
                 ))}
               </ul>
@@ -213,6 +375,7 @@ export function JournalEntryDetailScreen() {
 
       {view.dataCompleteness !== "not-found" ? (
         <section className="grid gap-4 xl:grid-cols-3">
+          {view.sourceKind === "manual-draft" ? (
           <Card className="panel-surface">
             <CardHeader>
               <CardTitle>Approval</CardTitle>
@@ -223,10 +386,15 @@ export function JournalEntryDetailScreen() {
                 <JournalEntryFact label="Prepared by" value={fieldValue(view.summaryFields, "Prepared by") ?? "System"} />
                 <JournalEntryFact label="Reviewed by" value={view.lifecycle[0]?.actor ?? "Review pending"} />
                 <JournalEntryFact label="Approved by" value={view.lifecycle.find((item) => item.label.includes("Approve"))?.actor ?? "Approval pending"} />
-                <JournalEntryFact label="Approval ID" value={view.lifecycle.find((item) => item.label.includes("Approve"))?.transitionId ?? "Not approved"} />
               </dl>
+              {view.lifecycle.some((item) => item.label.includes("Approve")) ? (
+                <TechnicalDetails label="Approval reference" className="mt-3">
+                  <JournalEntryFact label="Approval ID" value={view.lifecycle.find((item) => item.label.includes("Approve"))?.transitionId ?? "Not approved"} />
+                </TechnicalDetails>
+              ) : null}
             </CardContent>
           </Card>
+          ) : null}
 
           <Card className="panel-surface">
             <CardHeader>
@@ -235,11 +403,16 @@ export function JournalEntryDetailScreen() {
             </CardHeader>
             <CardContent>
               <dl className="grid gap-2">
-                <JournalEntryFact label="Source" value={view.dataCompleteness === "full" ? "Manual journal workbench" : "Run ledger summary"} />
-                <JournalEntryFact label="Run / case" value={runId ?? "No run context"} />
+                <JournalEntryFact label="Source" value={JOURNAL_ENTRY_SOURCE_LABELS[view.sourceKind]} />
                 <JournalEntryFact label="Reversal of" value="No reversal retained" />
                 <JournalEntryFact label="Rebooked from" value="No rebook lineage retained" />
               </dl>
+              <TechnicalDetails label="Lineage references" className="mt-3">
+                <dl className="grid gap-2">
+                  <JournalEntryFact label="Journal entry" value={view.journalEntryId} />
+                  <JournalEntryFact label="Run / case" value={runId ?? "No run context"} />
+                </dl>
+              </TechnicalDetails>
             </CardContent>
           </Card>
 
@@ -274,14 +447,14 @@ export function JournalEntryDetailScreen() {
       <div className="flex flex-wrap gap-2">
         {runId ? (
           <Button asChild size="sm" variant="outline">
-            <Link to={workstationRouteWithQuery("accountingTrialBalance", { runId })}>Back to Trial Balance</Link>
+            <Link to={workstationRouteWithQuery("strategyRunLedger", { runId })}>Back to Run Ledger</Link>
           </Button>
         ) : null}
         <Button asChild size="sm" variant="outline">
           <Link to={WORKSTATION_ROUTE_CATALOG.accountingJournalEntries}>Open Journal Entries workbench</Link>
         </Button>
       </div>
-    </div>
+    </ScreenLayout>
   );
 }
 
@@ -296,4 +469,11 @@ function JournalEntryFact({ label, value }: { label: string; value: string }) {
 
 function fieldValue(fields: { label: string; value: string }[], label: string): string | null {
   return fields.find((field) => field.label === label)?.value ?? null;
+}
+
+function presentJournalDate(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 }

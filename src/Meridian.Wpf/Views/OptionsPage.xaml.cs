@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Meridian.Contracts.Api;
+using Meridian.Ui.Services;
 using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
 
@@ -16,18 +16,15 @@ public partial class OptionsPage : Page
     private readonly OptionsViewModel _viewModel;
 
     public OptionsPage()
+        : this(ApiClientService.Instance)
     {
+    }
+
+    public OptionsPage(ApiClientService apiClientService)
+    {
+        ArgumentNullException.ThrowIfNull(apiClientService);
         InitializeComponent();
-
-        UiApiClient? apiClient = null;
-        try
-        { apiClient = Ui.Services.ApiClientService.Instance?.UiApi; }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[OptionsPage] Failed to resolve API client: {ex.Message}");
-        }
-
-        _viewModel = new OptionsViewModel(WpfServices.LoggingService.Instance, apiClient);
+        _viewModel = new OptionsViewModel(WpfServices.LoggingService.Instance, apiClientService);
         DataContext = _viewModel;
     }
 
@@ -39,6 +36,10 @@ public partial class OptionsPage : Page
         }
         catch (System.OperationCanceledException)
         {
+            // Navigation cancelled the in-flight load before it completed; benign during teardown.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Page load cancelled during navigation.",
+                ("page", GetType().Name));
         }
         catch (System.Exception ex)
         {
@@ -72,4 +73,18 @@ public partial class OptionsPage : Page
 
     private async void RefreshData_Click(object sender, RoutedEventArgs e) =>
         await _viewModel.RefreshAsync();
+
+    private async void OnPageUnloaded(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await _viewModel.StopAsync();
+        }
+        catch (Exception ex)
+        {
+            WpfServices.LoggingService.Instance.LogError(
+                "Options page failed to stop in-flight loads during navigation.",
+                ex);
+        }
+    }
 }

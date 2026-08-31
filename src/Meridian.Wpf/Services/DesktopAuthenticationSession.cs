@@ -4,12 +4,29 @@ using Meridian.Identity.Auth;
 namespace Meridian.Wpf.Services;
 
 /// <summary>
+/// Supplies the actor a governed desktop write is recorded against. Narrow on purpose: view models
+/// that stamp an audit field need only this, and depending on it rather than the whole session keeps
+/// them testable without standing up a real login session.
+/// </summary>
+public interface IDesktopActorSource
+{
+    /// <summary>
+    /// Returns the actor to record as the author of a write, or <c>false</c> when this process has
+    /// nobody it can honestly name — in which case the caller must refuse the write rather than
+    /// substitute a placeholder.
+    /// </summary>
+    bool TryGetAuthenticatedActor(out string actor);
+}
+
+/// <summary>
 /// Holds the authenticated desktop operator for the current WPF process.
 /// Credentials stay hash-backed through <see cref="UserProfileRegistry"/>.
 /// </summary>
-public sealed class DesktopAuthenticationSession(LoginSessionService loginSessionService)
+public sealed class DesktopAuthenticationSession(LoginSessionService loginSessionService) : IDesktopActorSource
 {
     private string? _sessionToken;
+
+    public event EventHandler? SignedOut;
 
     public bool IsConfigured => loginSessionService.IsConfigured;
 
@@ -34,9 +51,65 @@ public sealed class DesktopAuthenticationSession(LoginSessionService loginSessio
         CurrentUser?.Username ??
         (IsAnonymousDevelopmentSession ? "local-development" : string.Empty);
 
+    /// <summary>
+    /// Resolves the actor to record as the author of a governed write, or returns <c>false</c> when
+    /// this process has nobody it can honestly name.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Distinct from <see cref="CurrentActor"/>, which resolves a username from the session token
+    /// alone. A token that has expired or been revoked still yields a profile there, so
+    /// <see cref="CurrentActor"/> can name an operator whose session no longer validates — fine for
+    /// pre-filling a text box, not for stamping an audit field. This gates on
+    /// <see cref="IsAuthenticated"/>, which validates the session, so a caller cannot attribute a
+    /// write to an operator who is no longer signed in.
+    /// </para>
+    /// <para>
+    /// The unconfigured local-development session is a deliberate exception: it has no credentials to
+    /// validate, so it reports its own identity rather than borrowing an operator's.
+    /// </para>
+    /// </remarks>
+    public bool TryGetAuthenticatedActor(out string actor)
+    {
+        if (IsAuthenticated && CurrentUser?.Username is { Length: > 0 } username)
+        {
+            actor = username;
+            return true;
+        }
+
+        if (IsAnonymousDevelopmentSession && CanContinueWithoutCredentials)
+        {
+            actor = "local-development";
+            return true;
+        }
+
+        actor = string.Empty;
+        return false;
+    }
+
     public UserRole? CurrentRole => CurrentUser?.Role;
 
     public UserPermission? CurrentPermissions => CurrentUser?.Permissions;
+
+    /// <summary>
+    /// Client-side defense-in-depth permission check for the desktop shell. Fails closed: unless
+    /// the environment explicitly permits continuing without credentials (unconfigured local
+    /// development), a resolved operator profile that grants <paramref name="permission"/> is
+    /// required. This prevents an unauthenticated Production session from being treated as fully
+    /// privileged. Server-side authorization remains authoritative in all cases.
+    /// </summary>
+    public bool HasPermission(UserPermission permission)
+    {
+        if (CanContinueWithoutCredentials)
+        {
+            // Unconfigured local development: gating defers to the authentication gates so the
+            // local shell is not blocked.
+            return true;
+        }
+
+        var current = CurrentPermissions;
+        return current is not null && (current.Value & permission) == permission;
+    }
 
     public DesktopSignInResult SignIn(string username, string password)
     {
@@ -87,6 +160,7 @@ public sealed class DesktopAuthenticationSession(LoginSessionService loginSessio
 
         _sessionToken = null;
         IsAnonymousDevelopmentSession = false;
+        SignedOut?.Invoke(this, EventArgs.Empty);
     }
 }
 

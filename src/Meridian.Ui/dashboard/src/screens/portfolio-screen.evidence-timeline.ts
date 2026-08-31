@@ -8,7 +8,9 @@ export function buildPortfolioEvidenceTimelineItems(portfolio: PortfolioWorkspac
       id: `portfolio-run:${run.runId}`,
       label: `${run.strategyName} portfolio ${run.status.toLowerCase()}`,
       detail: `${run.engine} ${run.mode} run, PnL ${run.pnl}, promotion ${run.promotionState ?? "none"}.`,
-      route: WORKSTATION_ROUTE_CATALOG.portfolio,
+      // Run evidence (run table, drill-ins, run detail) lives on the
+      // Attribution view; the overview no longer mounts it.
+      route: WORKSTATION_ROUTE_CATALOG.portfolioAttribution,
       workspaceLabel: "Portfolio",
       timestamp: run.lastUpdated,
       tone: run.status.toLowerCase().includes("review") ? "review" : "ready",

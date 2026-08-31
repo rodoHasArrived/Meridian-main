@@ -271,8 +271,6 @@ describe("QuantLabScreen", () => {
     await waitForAsyncEffects();
 
     expect(screen.getByRole("heading", { name: "Parameters" })).toBeInTheDocument();
-    expect(screen.getByText("Scanning source for runtime parameters.")).toHaveAttribute("role", "status");
-
     await waitFor(() =>
       expect(screen.getByText("No runtime parameters detected in the current script.")).toBeInTheDocument()
     );

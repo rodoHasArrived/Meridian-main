@@ -24,7 +24,13 @@ public enum SecurityMasterRevisionStateDto
     Submitted = 1,
     Approved = 2,
     Published = 3,
-    Rejected = 4
+    Rejected = 4,
+    /// <summary>
+    /// Read-tolerance member: a state written by a newer node that this node does not recognize.
+    /// An unknown state matches no workflow transition, so the revision is visible but inert
+    /// instead of failing every load of the revision list.
+    /// </summary>
+    Unknown = 5
 }
 
 /// <summary>
@@ -74,6 +80,19 @@ public sealed record SubmitSecurityMasterRevisionRequest(
     long ExpectedWorkflowVersion = 0,
     string? Reviewer = null,
     string? ReportPackId = null);
+
+/// <summary>
+/// Discards a staged (Draft or Submitted) revision, transitioning it to Rejected and withdrawing
+/// the staged override value it governs. This is the terminal path for abandoned drafts and
+/// gate-rejected submissions: without it a staged sibling defers the security-level override
+/// decision forever, leaving governed runs blocked behind a Pending overlay no revision can ever
+/// approve.
+/// </summary>
+public sealed record DiscardSecurityMasterRevisionRequest(
+    Guid SecurityId,
+    Guid RevisionId,
+    string Actor,
+    string? Reason = null);
 
 /// <summary>Approves a submitted revision through the operations-continuity approval gate.</summary>
 public sealed record ApproveSecurityMasterRevisionRequest(

@@ -18,11 +18,11 @@ WORKFLOW_DIR = REPO_ROOT / ".github" / "workflows"
 
 CURRENT_ACTION_REFS = {
     "actions/checkout": "v6.0.2",
-    "actions/setup-dotnet": "v5.2.0",
-    "actions/cache": "v5.0.5",
+    "actions/setup-dotnet": "v5.4.0",
+    "actions/cache": "v6.1.0",
     "actions/upload-artifact": "v7.0.1",
     "actions/setup-node": "v6.4.0",
-    "actions/setup-python": "v6.2.0",
+    "actions/setup-python": "v6.3.0",
 }
 
 ACTIVE_DOC_ROOTS = [
@@ -38,7 +38,6 @@ OLD_WORKFLOW_FILENAMES = {
     "bottleneck-detection.yml",
     "build-observability.yml",
     "code-quality.yml",
-    "codeql.yml",
     "desktop-builds.yml",
     "docker.yml",
     "export-standalone-exe.yml",
@@ -114,10 +113,17 @@ def check_local_uses_exist(failures: list[str]) -> None:
 
 
 def check_active_docs_do_not_reference_removed_workflows(failures: list[str]) -> None:
+    # Match whole filenames. A plain substring test reports any workflow whose name merely ends
+    # with a removed one — `desktop-evaluation-prerelease.yml` contains `release.yml` — which
+    # fails the gate for a file that exists and is correctly documented.
+    patterns = {
+        old_name: re.compile(rf"(?<![\w./-]){re.escape(old_name)}(?![\w])")
+        for old_name in OLD_WORKFLOW_FILENAMES
+    }
     for path in iter_text_files(ACTIVE_DOC_ROOTS):
         text = path.read_text(encoding="utf-8", errors="replace")
         for old_name in sorted(OLD_WORKFLOW_FILENAMES):
-            if old_name in text:
+            if patterns[old_name].search(text):
                 fail(f"{path.relative_to(REPO_ROOT)} still references removed workflow {old_name}.", failures)
 
 

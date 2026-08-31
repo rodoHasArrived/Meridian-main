@@ -1,4 +1,5 @@
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.DataIntegration.AccountingSystem.Fixtures;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
@@ -8,6 +9,8 @@ using Meridian.FinancialOperations.Ledger;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.ProviderSdk.AccountingSystem;
+using Meridian.Storage.AssetOperations;
+using Meridian.Storage.Ledger;
 using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Features.Accounting;
@@ -17,6 +20,7 @@ using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.ViewModels.Accounting;
 using Meridian.Wpf.Views;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Meridian.Wpf.Tests.Features.Accounting;
 
@@ -30,6 +34,7 @@ public sealed class AccountingFeatureModuleTests
             "AccountingShell",
             "FundStructureSetup",
             "FundLedger",
+            "OperationsContinuity",
             "RunLedger",
             "RunCashFlow",
             "FundBanking",
@@ -37,6 +42,7 @@ public sealed class AccountingFeatureModuleTests
             "FundAccountingConfigure",
             "FundAccountingClose",
             "FundTrialBalance",
+            "PostedLedger",
             "LedgerExplorer",
             "FundReconciliation",
             "FundAuditTrail",
@@ -80,6 +86,23 @@ public sealed class AccountingFeatureModuleTests
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingConfigurationService, AccountingConfigurationService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IManualJournalEntryDraftStore>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IManualJournalEntryWorkbenchService>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IDailyValuationPortfolioSource>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IDailyValuationScheduleStatusSource>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IAutomatedJournalScheduleStore>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IAutomatedJournalScheduleStatusSource>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<DailyValuationPositionService>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<DailyValuationBatchLifecycleService>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<DailyValuationScheduledWorker>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<AutomatedJournalScheduledWorker>(services, ServiceLifetime.Singleton);
+        // The scheduler host loops run server-side only. The desktop composition's ledger
+        // dependencies resolve null, so registering these hosted services here would run
+        // accounting automation against a forked, desktop-local state.
+        services.Should().NotContain(descriptor =>
+            descriptor.ServiceType == typeof(IHostedService) &&
+            descriptor.ImplementationType == typeof(DailyValuationSchedulerHostedService));
+        services.Should().NotContain(descriptor =>
+            descriptor.ServiceType == typeof(IHostedService) &&
+            descriptor.ImplementationType == typeof(AutomatedJournalSchedulerHostedService));
         DesktopFeatureModuleTestAssertions.AssertRegistered<ICapitalAccountWorkbenchService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingCloseManagementService, AccountingCloseManagementService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IPrivateCapitalCloseCockpitService>(services, ServiceLifetime.Singleton);
@@ -88,6 +111,12 @@ public sealed class AccountingFeatureModuleTests
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingJournalDraftService, AccountingJournalDraftService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingPostingCandidateService, AccountingPostingCandidateService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingPostingCandidateAuthorityBuilder>(services, ServiceLifetime.Singleton);
+        // Registered as a graceful singleton via AssetAccountingEventSpineService.TryCreate (mirroring
+        // LedgerFeatureRegistration): the WPF host does not register the asset-operations projection
+        // stores, so a concrete-type registration would fail Development ValidateOnBuild. The concrete
+        // resolution is asserted by Register_WiresAssetAccountingDependenciesIntoPostingService below.
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IAssetAccountingEventSpineService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingPostingCandidatePostService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>(services, ServiceLifetime.Singleton);
         services.Should().Contain(descriptor => descriptor.ServiceType == typeof(IAccountingSystemProvider) && descriptor.ImplementationType == typeof(QuickBooksFixtureAccountingProvider) && descriptor.Lifetime == ServiceLifetime.Singleton);
@@ -97,15 +126,121 @@ public sealed class AccountingFeatureModuleTests
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingProductionReadinessService>(services, ServiceLifetime.Singleton);
     }
 
+    [Fact]
+    public void Register_WiresAssetAccountingDependenciesIntoPostingService()
+    {
+        var candidateBuilder = Substitute.For<
+            IAccountingPostingCandidateWriteBuilder,
+            IAccountingPostingCandidateAuthorityBuilder>();
+        var journalStore = Substitute.For<ILedgerJournalStore>();
+        var atomicTaxLotStore = Substitute.For<IAtomicTaxLotJournalStore>();
+        var assetAccountingEventStore = Substitute.For<IAssetAccountingEventProjectionStore>();
+        var positionStore = Substitute.For<IInstrumentPositionProjectionStore>();
+        var securityMaster = Substitute.For<ISecurityMasterQueryService>();
+        var ledgerBookService = Substitute.For<ILedgerBookService>();
+        var accountingPolicyService = Substitute.For<IAccountingPolicyService>();
+        var accountingConfigurationService = Substitute.For<IAccountingConfigurationService>();
+        var services = new ServiceCollection();
+        services.AddSingleton<IAccountingPostingCandidateWriteBuilder>(candidateBuilder);
+        services.AddSingleton(journalStore);
+        services.AddSingleton(atomicTaxLotStore);
+        services.AddSingleton(assetAccountingEventStore);
+        services.AddSingleton(positionStore);
+        services.AddSingleton(securityMaster);
+        services.AddSingleton(ledgerBookService);
+        services.AddSingleton(accountingPolicyService);
+        services.AddSingleton(accountingConfigurationService);
+
+        new AccountingFeatureModule().Register(services);
+        using var provider = services.BuildServiceProvider();
+
+        provider.GetRequiredService<IAccountingPostingCandidateAuthorityBuilder>()
+            .Should().BeSameAs(candidateBuilder);
+        provider.GetRequiredService<IAssetAccountingEventSpineService>()
+            .Should().BeOfType<AssetAccountingEventSpineService>();
+        var postService = provider.GetRequiredService<IAccountingPostingCandidatePostService>()
+            .Should().BeOfType<AccountingPostingCandidatePostService>().Subject;
+        GetInjectedDependency(postService, "_journalStore").Should().BeSameAs(journalStore);
+        GetInjectedDependency(postService, "_atomicTaxLotStore").Should().BeSameAs(atomicTaxLotStore);
+        GetInjectedDependency(postService, "_assetAccountingEventStore").Should().BeSameAs(assetAccountingEventStore);
+        GetInjectedDependency(postService, "_authorityBuilder").Should().BeSameAs(candidateBuilder);
+    }
+
+    [Fact]
+    public async Task Register_ResolvesMonthlyAutomationGraph_WithoutDesktopSchedulerHostLoops()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        var configurationStore = new InMemoryAccountingConfigurationStore();
+        var auditStore = new InMemoryAccountingActionAuditStore();
+        var configurationService = new AccountingConfigurationService(configurationStore, auditStore);
+        var draftStore = new InMemoryManualJournalEntryDraftStore();
+        var workbench = new ManualJournalEntryWorkbenchService(draftStore, configurationService, auditStore);
+        var scheduleStore = new InMemoryAutomatedJournalScheduleStore();
+        services.AddSingleton<IAccountingConfigurationStore>(configurationStore);
+        services.AddSingleton<IAccountingActionAuditStore>(auditStore);
+        services.AddSingleton<IAccountingConfigurationService>(configurationService);
+        services.AddSingleton<IManualJournalEntryDraftStore>(draftStore);
+        services.AddSingleton<IManualJournalEntryWorkbenchService>(workbench);
+        services.AddSingleton<IAutomatedJournalScheduleStore>(scheduleStore);
+        services.AddSingleton<IAutomatedJournalScheduleStatusSource>(scheduleStore);
+
+        new AccountingFeatureModule().Register(services);
+        await using var provider = services.BuildServiceProvider();
+
+        // The deterministic worker seam still resolves, but no scheduler host loop runs in
+        // the desktop process — the server owns scheduled valuation/journal automation.
+        var worker = provider.GetRequiredService<AutomatedJournalScheduledWorker>();
+        var result = await worker.RunDueAsync(DateTimeOffset.UtcNow);
+
+        result.Runs.Should().BeEmpty();
+        provider.GetServices<IHostedService>()
+            .Should().NotContain(hosted =>
+                hosted is AutomatedJournalSchedulerHostedService ||
+                hosted is DailyValuationSchedulerHostedService);
+    }
+
+    [Fact]
+    public void AccountingLane_SourceSweep_DoesNotForkProductState()
+    {
+        var reconciliationReadServiceSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
+            @"src\Meridian.Wpf\Services\ReconciliationReadService.cs"));
+        var moduleSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
+            @"src\Meridian.Wpf\Features\Accounting\AccountingFeatureModule.cs"));
+        var fundAccountsXaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
+            @"src\Meridian.Wpf\Views\FundAccountsPage.xaml"));
+        var fundStructureXaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
+            @"src\Meridian.Wpf\Views\FundStructureSetupPage.xaml"));
+
+        // The workbench summary reads reconciliation posture from the server workstation API
+        // (the same client the break queue uses); it must not rebuild "open breaks" from the
+        // desktop-local fund-account stores or an in-process reconciliation engine.
+        reconciliationReadServiceSource.Should().Contain("IWorkstationReconciliationApiClient");
+        reconciliationReadServiceSource.Should().Contain("GetLatestRunDetailAsync");
+        reconciliationReadServiceSource.Should().NotContain("IFundAccountService");
+        reconciliationReadServiceSource.Should().NotContain("FundAccountReadService");
+        reconciliationReadServiceSource.Should().NotContain("IReconciliationRunService");
+        reconciliationReadServiceSource.Should().NotContain("Meridian.Strategies.Services");
+
+        // The desktop composition must not start scheduler host loops; the server owns them.
+        moduleSource.Should().NotContain("Singleton<IHostedService");
+
+        // Fund-account / fund-structure setup remains desktop-local, so both screens carry
+        // the shared data-provenance badge until the lane is migrated to the server API.
+        fundAccountsXaml.Should().Contain("DataProvenanceBadgeBorderStyle");
+        fundAccountsXaml.Should().Contain("DESKTOP-LOCAL DATA");
+        fundStructureXaml.Should().Contain("DataProvenanceBadgeBorderStyle");
+        fundStructureXaml.Should().Contain("DESKTOP-LOCAL DATA");
+    }
+
     [Theory]
     [InlineData("AccountingShell", "AccountingShell", "accounting")]
     [InlineData("GovernanceShell", "AccountingShell", "accounting")]
     [InlineData("AccountingWorkspace", "AccountingShell", "accounting")]
-    [InlineData("OperationsContinuity", "FundLedger", "accounting")]
+    [InlineData("OperationsContinuity", "OperationsContinuity", "accounting")]
     [InlineData("OperationsClose", "FundLedger", "accounting")]
     [InlineData("AccountingClose", "FundAccountingClose", "accounting")]
     [InlineData("CloseManagement", "FundAccountingClose", "accounting")]
-    [InlineData("EvidenceWorkbench", "FundAuditTrail", "accounting")]
     [InlineData("AccountingApprovals", "FundAuditTrail", "accounting")]
     [InlineData("LedgerInspector", "RunLedger", "accounting")]
     public void ShellRegistry_ResolvesAccountingAliasesAndRootNavigationTags(string requestedTag, string canonicalTag, string workspaceId)
@@ -133,4 +268,11 @@ public sealed class AccountingFeatureModuleTests
         source.Should().Contain("ItemsSource=\"{Binding CloseEvidenceReviewRows}\"");
         source.Should().Contain("ItemsSource=\"{Binding ClosePeriodLockIssueRows}\"");
     }
+
+    private static object? GetInjectedDependency(
+        AccountingPostingCandidatePostService service,
+        string fieldName)
+        => typeof(AccountingPostingCandidatePostService)
+            .GetField(fieldName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+            ?.GetValue(service);
 }

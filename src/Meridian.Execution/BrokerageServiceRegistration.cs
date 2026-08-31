@@ -1,4 +1,7 @@
+using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.Services;
 using Meridian.Execution.Adapters;
+using Meridian.Execution.Events;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
@@ -39,12 +42,20 @@ public static class BrokerageServiceRegistration
             if (!brokerageConfig.LiveExecutionEnabled || brokerageConfig.Gateway == "paper")
             {
                 var paperLogger = sp.GetRequiredService<ILogger<PaperTradingGateway>>();
-                return new PaperTradingGateway(paperLogger, options: sp.GetService<Adapters.PaperTradingGatewayOptions>());
+                return new PaperTradingGateway(
+                    paperLogger,
+                    options: sp.GetService<Adapters.PaperTradingGatewayOptions>(),
+                    liveFeed: sp.GetService<Interfaces.ILiveFeedAdapter>(),
+                    costOptions: sp.GetService<PaperMatching.PaperTradingCostOptions>());
             }
             return ResolveBrokerageGateway(sp, brokerageConfig.Gateway);
         });
 
-        // Register the BrokerageGatewayAdapter that bridges IBrokerageGateway → IOrderGateway
+        // Register the DI-resolvable IOrderGateway. In paper mode this is the fully functional
+        // PaperTradingGateway (paper sessions have no live broker and no gate stack to bypass).
+        // In live mode the raw BrokerageGatewayAdapter is an internal detail owned by the OMS;
+        // the resolvable gateway is a read-only view whose submit/cancel members are blocked, so
+        // live order placement cannot bypass the OMS pre-trade gate stack via IOrderGateway.
         services.TryAddSingleton<IOrderGateway>(sp =>
         {
             var brokerageConfig = sp.GetRequiredService<BrokerageConfiguration>();
@@ -54,13 +65,20 @@ public static class BrokerageServiceRegistration
             {
                 var paperLogger = sp.GetRequiredService<ILogger<Adapters.PaperTradingGateway>>();
                 var secMaster = sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
-                return new Adapters.PaperTradingGateway(paperLogger, secMaster, sp.GetService<Adapters.PaperTradingGatewayOptions>());
+                return new Adapters.PaperTradingGateway(
+                    paperLogger,
+                    secMaster,
+                    sp.GetService<Adapters.PaperTradingGatewayOptions>(),
+                    liveFeed: sp.GetService<Interfaces.ILiveFeedAdapter>(),
+                    costOptions: sp.GetService<PaperMatching.PaperTradingCostOptions>());
             }
 
-            // Resolve the named brokerage gateway via keyed registration
+            // Resolve the named brokerage gateway via keyed registration, then expose it as an
+            // OMS-governed read-only view rather than a directly submittable gateway.
             var gateway = ResolveBrokerageGateway(sp, brokerageConfig.Gateway);
             var adapterLogger = sp.GetRequiredService<ILogger<BrokerageGatewayAdapter>>();
-            return new BrokerageGatewayAdapter(gateway, adapterLogger, brokerageConfig);
+            var adapter = new BrokerageGatewayAdapter(gateway, adapterLogger, brokerageConfig);
+            return new OmsGovernedBrokerageOrderGateway(adapter);
         });
 
         // Register the OMS with the resolved gateway
@@ -75,6 +93,7 @@ public static class BrokerageServiceRegistration
             var portfolioState = sp.GetService<Meridian.Execution.Models.IPortfolioState>();
             var brokerageConfiguration = sp.GetRequiredService<BrokerageConfiguration>();
             var liveOrderReadinessGate = sp.GetService<ILiveOrderReadinessGate>();
+            var orderManagementOptions = sp.GetService<OrderManagementSystemOptions>();
 
             return new OrderManagementSystem(
                 gateway,
@@ -85,10 +104,133 @@ public static class BrokerageServiceRegistration
                 auditTrail,
                 portfolioState,
                 brokerageConfiguration: brokerageConfiguration,
-                liveOrderReadinessGate: liveOrderReadinessGate);
+                liveOrderReadinessGate: liveOrderReadinessGate,
+                options: orderManagementOptions,
+                tradeEventPublisher: sp.GetService<ITradeEventPublisher>(),
+                tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>(),
+                escalationQueue: sp.GetService<RiskEscalationQueueService>());
         });
 
         services.TryAddSingleton<BrokerageExecutionReconciliationService>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Explicitly composes accepted execution fills into one caller-owned ledger scope.
+    /// This registration deliberately requires an authoritative durable posting target and
+    /// durable handoff store because brokerage execution cannot infer or fake an accounting book.
+    /// An in-memory ledger is optional and is updated only as a projection after persistence.
+    /// </summary>
+    public static IServiceCollection AddTradeFillLedgerPosting(
+        this IServiceCollection services,
+        TradeFillLedgerPostingContext postingContext,
+        Func<IServiceProvider, ITradeFillLedgerPostingTarget> postingTargetFactory,
+        Func<IServiceProvider, ITradeFillPostingStore> postingStoreFactory,
+        Func<IServiceProvider, ITradeFillHandoffFailureStore> handoffFailureStoreFactory,
+        Func<IServiceProvider, Ledger.Ledger?>? projectionLedgerFactory = null,
+        Action<TradeFillLedgerPostingOptions>? configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(postingContext);
+        ArgumentNullException.ThrowIfNull(postingTargetFactory);
+        ArgumentNullException.ThrowIfNull(postingStoreFactory);
+        ArgumentNullException.ThrowIfNull(handoffFailureStoreFactory);
+
+        postingContext = postingContext.Validate();
+        var expectedScopeIdentity = TradeFillPostingScopeIdentity.FromContext(postingContext);
+        var options = new TradeFillLedgerPostingOptions();
+        configure?.Invoke(options);
+        if (options.ChannelCapacity <= 0)
+            throw new ArgumentOutOfRangeException(nameof(options.ChannelCapacity), "Trade-fill channel capacity must be positive.");
+        if (options.DrainTimeout is { } drainTimeout
+            && (drainTimeout <= TimeSpan.Zero || drainTimeout == Timeout.InfiniteTimeSpan))
+        {
+            throw new ArgumentOutOfRangeException(nameof(options.DrainTimeout), "Trade-fill drain timeout must be positive and finite.");
+        }
+        if (options.CancellationTimeout is { } cancellationTimeout
+            && (cancellationTimeout <= TimeSpan.Zero || cancellationTimeout == Timeout.InfiniteTimeSpan))
+        {
+            throw new ArgumentOutOfRangeException(nameof(options.CancellationTimeout), "Trade-fill cancellation timeout must be positive and finite.");
+        }
+        if (services.Any(static descriptor =>
+                descriptor.ServiceType == typeof(ITradeEventPublisher)
+                || descriptor.ServiceType == typeof(ITradeFillPostingStore)
+                || descriptor.ServiceType == typeof(ITradeFillLedgerPostingTarget)
+                || descriptor.ServiceType == typeof(ITradeFillHandoffFailureStore)
+                || descriptor.ServiceType == typeof(LedgerPostingConsumer)))
+        {
+            throw new InvalidOperationException(
+                "A trade-fill publisher or posting store is already registered. Compose multiple ledger scopes explicitly instead of allowing one registration to shadow another.");
+        }
+
+        services.AddSingleton<ITradeFillPostingStore>(sp =>
+        {
+            var store = postingStoreFactory(sp)
+                ?? throw new InvalidOperationException("The trade-fill posting store factory returned null.");
+            TradeFillPostingScopeIdentity storeScopeIdentity;
+            try
+            {
+                storeScopeIdentity = store.ScopeIdentity.Validate();
+            }
+            catch
+            {
+                store.DisposeAsync().AsTask().GetAwaiter().GetResult();
+                throw;
+            }
+
+            if (!storeScopeIdentity.IsExact || storeScopeIdentity != expectedScopeIdentity)
+            {
+                store.DisposeAsync().AsTask().GetAwaiter().GetResult();
+                throw new InvalidOperationException(
+                    $"Trade-fill posting store scope identity '{storeScopeIdentity}' does not match ledger scope identity '{expectedScopeIdentity}'.");
+            }
+
+            return store;
+        });
+        services.AddSingleton<ITradeFillLedgerPostingTarget>(postingTargetFactory);
+        services.AddSingleton<ITradeFillHandoffFailureStore>(sp =>
+        {
+            var store = handoffFailureStoreFactory(sp)
+                ?? throw new InvalidOperationException("The trade-fill handoff-failure store factory returned null.");
+            TradeFillPostingScopeIdentity storeScopeIdentity;
+            try
+            {
+                storeScopeIdentity = store.ScopeIdentity.Validate();
+            }
+            catch
+            {
+                store.DisposeAsync().AsTask().GetAwaiter().GetResult();
+                throw;
+            }
+
+            if (!storeScopeIdentity.IsExact || storeScopeIdentity != expectedScopeIdentity)
+            {
+                store.DisposeAsync().AsTask().GetAwaiter().GetResult();
+                throw new InvalidOperationException(
+                    $"Handoff-failure store scope identity '{storeScopeIdentity}' does not match ledger scope identity '{expectedScopeIdentity}'.");
+            }
+
+            return store;
+        });
+        services.AddSingleton<LedgerPostingConsumer>(sp =>
+        {
+            var securityGate = sp.GetRequiredService<ISecurityValidationGateService>();
+
+            return new LedgerPostingConsumer(
+                sp.GetRequiredService<ITradeFillLedgerPostingTarget>(),
+                sp.GetRequiredService<ILogger<LedgerPostingConsumer>>(),
+                sp.GetRequiredService<ITradeFillPostingStore>(),
+                postingContext,
+                projectionLedger: projectionLedgerFactory?.Invoke(sp),
+                channelCapacity: options.ChannelCapacity,
+                securityValidationGate: securityGate,
+                requireSecurityMasterPostingGate: true,
+                drainTimeout: options.DrainTimeout,
+                cancellationTimeout: options.CancellationTimeout);
+        });
+        services.AddSingleton<ITradeEventPublisher>(sp =>
+            sp.GetRequiredService<LedgerPostingConsumer>());
 
         return services;
     }
@@ -150,5 +292,68 @@ public static class BrokerageServiceRegistration
         throw new InvalidOperationException(
             $"No brokerage gateway registered with key '{gatewayId}'. " +
             "Register gateways using AddBrokerageGateway<T>(gatewayId) before calling AddBrokerageExecution().");
+    }
+}
+
+/// <summary>Runtime controls for the explicit fill-to-ledger consumer.</summary>
+public sealed class TradeFillLedgerPostingOptions
+{
+    public int ChannelCapacity { get; set; } = 10_000;
+
+    public TimeSpan? DrainTimeout { get; set; }
+
+    public TimeSpan? CancellationTimeout { get; set; }
+}
+
+/// <summary>
+/// Configuration-owned exact ledger scope for the production execution host. A period or book
+/// rollover requires updated values and a host restart so retained fills can never cross scopes.
+/// </summary>
+public sealed class TradeFillLedgerPostingHostOptions
+{
+    public const string SectionKey = "Execution:TradeFillLedgerPosting";
+
+    public bool Enabled { get; set; }
+
+    public Guid AggregateId { get; set; }
+
+    public Guid PeriodId { get; set; }
+
+    public Guid LedgerBookId { get; set; }
+
+    public string AccountingPolicyId { get; set; } = "execution-trade-fill";
+
+    public string AccountingPolicyVersion { get; set; } = "1";
+
+    public long? ExpectedPeriodVersion { get; set; }
+
+    public int ChannelCapacity { get; set; } = 10_000;
+
+    public TimeSpan? DrainTimeout { get; set; }
+
+    public TimeSpan? CancellationTimeout { get; set; }
+
+    public TradeFillLedgerPostingContext BuildContext()
+    {
+        if (!Enabled)
+            throw new InvalidOperationException("Trade-fill ledger posting is not enabled.");
+        if (AggregateId == Guid.Empty)
+            throw new InvalidOperationException("Execution trade-fill posting requires AggregateId.");
+        if (PeriodId == Guid.Empty)
+            throw new InvalidOperationException("Execution trade-fill posting requires PeriodId.");
+        if (LedgerBookId == Guid.Empty)
+            throw new InvalidOperationException("Execution trade-fill posting requires LedgerBookId.");
+        if (!ExpectedPeriodVersion.HasValue || ExpectedPeriodVersion.Value < 0)
+            throw new InvalidOperationException(
+                "Execution trade-fill posting requires the authoritative ExpectedPeriodVersion.");
+
+        return new TradeFillLedgerPostingContext(
+            $"ledger-book/{LedgerBookId:D}/period/{PeriodId:D}/aggregate/{AggregateId:D}",
+            AggregateId,
+            PeriodId,
+            LedgerBookId,
+            AccountingPolicyId,
+            AccountingPolicyVersion,
+            ExpectedPeriodVersion).Validate();
     }
 }

@@ -4,6 +4,7 @@ using System.Threading.Channels;
 using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Features;
+using Meridian.Application.DataQuality;
 using Meridian.Core.Config;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
@@ -145,6 +146,39 @@ public sealed class PipelineFeatureRegistrationTests : IDisposable
         dualPath.HotTradePublished.Should().Be(1);
     }
 
+    [Fact]
+    public async Task Register_FeedsLiveTradeIngressIntoQualityMonitoring()
+    {
+        var root = CreateTempDirectory();
+        var dataRoot = Path.Combine(root, "persistent-data");
+        var configPath = WriteConfig(root, new AppConfig(DataRoot: "persistent-data"));
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new StorageOptions { RootPath = dataRoot });
+
+        var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };
+        new ConfigurationFeatureRegistration().Register(services, options);
+        new PipelineFeatureRegistration().Register(services, options);
+
+        await using var provider = services.BuildServiceProvider();
+        var publisher = provider.GetRequiredService<IMarketEventPublisher>();
+        var monitoring = provider.GetRequiredService<DataQualityMonitoringService>();
+
+        publisher.Should().BeOfType<QualityMonitoringPublisher>();
+        publisher.TryPublish(CreateTradeEvent("QQQ", 1)).Should().BeTrue();
+
+        var deadline = DateTimeOffset.UtcNow.AddSeconds(5);
+        while (monitoring.GetSymbolHealth("QQQ") is null && DateTimeOffset.UtcNow < deadline)
+        {
+            await Task.Delay(10);
+        }
+
+        monitoring.GetSymbolHealth("QQQ").Should().NotBeNull(
+            "live trade ingress must reach the data-quality monitoring suite");
+        monitoring.GetRealTimeMetrics().ActiveSymbols.Should().Be(1);
+    }
+
     private static string GetReportOutputDirectory(DataQualityReportGenerator generator)
     {
         var field = typeof(DataQualityReportGenerator).GetField("_outputDirectory", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -163,7 +197,7 @@ public sealed class PipelineFeatureRegistrationTests : IDisposable
             Aggressor: AggressorSide.Buy,
             SequenceNumber: sequence);
 
-        return MarketEvent.Trade(now, symbol, trade, sequence);
+        return MarketEvent.Trade(now, symbol, trade, "TEST", sequence);
     }
 
     private string CreateTempDirectory()

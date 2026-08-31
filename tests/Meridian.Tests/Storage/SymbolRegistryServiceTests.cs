@@ -420,4 +420,265 @@ public sealed class SymbolRegistryServiceTests : IDisposable
         savedRegistry.Should().NotBeNull();
         savedRegistry!.Symbols.Should().ContainKey("TEST");
     }
+
+    [Fact]
+    public async Task SetMigrationMarkerAsync_ProcessRestart_PersistsMarkerThroughLockedStoreOperation()
+    {
+        await _service.InitializeAsync();
+
+        await _service.SetMigrationMarkerAsync("canonical-symbol-spine-v1", "FINGERPRINT-1");
+
+        var reloaded = new SymbolRegistryService(_testDirectory);
+        await reloaded.InitializeAsync();
+
+        (await reloaded.GetMigrationMarkerAsync("canonical-symbol-spine-v1"))
+            .Should().Be("FINGERPRINT-1");
+    }
+
+    [Fact]
+    public async Task ApplyMigrationAsync_LateConflictingEntry_RollsBackSymbolsAndMarker()
+    {
+        await _service.InitializeAsync();
+        var firstIdentity = Guid.NewGuid();
+        var secondIdentity = Guid.NewGuid();
+
+        var act = () => _service.ApplyMigrationAsync(
+            "conflicting-migration",
+            "FINGERPRINT-CONFLICT",
+            [
+                new SymbolRegistryEntry { Canonical = "TXN", SecurityId = firstIdentity },
+                new SymbolRegistryEntry { Canonical = "TXN", SecurityId = secondIdentity }
+            ]);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        _service.GetRegistry().Symbols.Should().NotContainKey("TXN");
+        (await _service.GetMigrationMarkerAsync("conflicting-migration")).Should().BeNull();
+
+        var reloaded = new SymbolRegistryService(_testDirectory);
+        await reloaded.InitializeAsync();
+        reloaded.GetRegistry().Symbols.Should().NotContainKey("TXN");
+        (await reloaded.GetMigrationMarkerAsync("conflicting-migration")).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ApplyMigrationAsync_CancelledAfterFirstCandidateWrite_RollsBackSymbolsAndMarker()
+    {
+        await _service.InitializeAsync();
+        using var cts = new CancellationTokenSource();
+
+        IEnumerable<SymbolRegistryEntry> CandidateEntries()
+        {
+            yield return new SymbolRegistryEntry { Canonical = "CANCELLED.ONE" };
+            cts.Cancel();
+            yield return new SymbolRegistryEntry { Canonical = "CANCELLED.TWO" };
+        }
+
+        var act = () => _service.ApplyMigrationAsync(
+            "cancelled-migration",
+            "FINGERPRINT-CANCELLED",
+            CandidateEntries(),
+            cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        _service.GetRegistry().Symbols.Should().NotContainKeys("CANCELLED.ONE", "CANCELLED.TWO");
+        (await _service.GetMigrationMarkerAsync("cancelled-migration")).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ApplyMigrationAsync_BlockedEnumeration_ConcurrentReadersCannotObserveCandidate()
+    {
+        await _service.InitializeAsync();
+        using var firstCandidateApplied = new ManualResetEventSlim();
+        using var releaseEnumeration = new ManualResetEventSlim();
+
+        IEnumerable<SymbolRegistryEntry> BlockingEntries()
+        {
+            yield return new SymbolRegistryEntry
+            {
+                Canonical = "PRIVATE.CANDIDATE",
+                Aliases = [new SymbolAlias { Alias = "PRIVATE-ALIAS" }]
+            };
+            firstCandidateApplied.Set();
+            releaseEnumeration.Wait();
+            yield return new SymbolRegistryEntry { Canonical = "PRIVATE.SECOND" };
+        }
+
+        var migration = Task.Run(() => _service.ApplyMigrationAsync(
+            "blocked-enumeration-migration",
+            "FINGERPRINT-BLOCKED",
+            BlockingEntries()));
+
+        try
+        {
+            firstCandidateApplied.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue(
+                "the migration must deterministically pause after applying its first private candidate");
+
+            _service.GetRegistry().Symbols.Should().NotContainKey("PRIVATE.CANDIDATE");
+            _service.GetAllSymbols().Should().NotContain(entry => entry.Canonical == "PRIVATE.CANDIDATE");
+            _service.LookupSymbol("PRIVATE.CANDIDATE").Found.Should().BeFalse();
+            _service.LookupSymbol("PRIVATE-ALIAS").Found.Should().BeFalse();
+        }
+        finally
+        {
+            releaseEnumeration.Set();
+        }
+
+        (await migration).Should().Be(2);
+        _service.GetRegistry().Symbols.Should().ContainKeys("PRIVATE.CANDIDATE", "PRIVATE.SECOND");
+        _service.LookupSymbol("PRIVATE-ALIAS").CanonicalSymbol.Should().Be("PRIVATE.CANDIDATE");
+    }
+
+    [Fact]
+    public async Task ApplyMigrationAsync_ForcedPersistenceFailure_DoesNotPublishRegistryIndexesOrMarker()
+    {
+        await _service.InitializeAsync();
+        var failingService = new SymbolRegistryService(
+            _testDirectory,
+            static (_, _, _) => Task.FromException(
+                new IOException("forced-symbol-registry-write-failure")));
+        await failingService.InitializeAsync();
+
+        var act = () => failingService.ApplyMigrationAsync(
+            "failed-persistence-migration",
+            "FINGERPRINT-FAILED",
+            [
+                new SymbolRegistryEntry
+                {
+                    Canonical = "UNCOMMITTED",
+                    Identifiers = new SymbolIdentifiers { Isin = "US0000000001" },
+                    Aliases = [new SymbolAlias { Alias = "UNCOMMITTED-ALIAS" }]
+                }
+            ]);
+
+        await act.Should().ThrowAsync<IOException>()
+            .WithMessage("forced-symbol-registry-write-failure");
+        failingService.GetRegistry().Symbols.Should().NotContainKey("UNCOMMITTED");
+        failingService.LookupSymbol("UNCOMMITTED").Found.Should().BeFalse();
+        failingService.LookupSymbol("UNCOMMITTED-ALIAS").Found.Should().BeFalse();
+        failingService.LookupSymbol("US0000000001").Found.Should().BeFalse();
+        (await failingService.GetMigrationMarkerAsync("failed-persistence-migration")).Should().BeNull();
+
+        var reloaded = new SymbolRegistryService(_testDirectory);
+        await reloaded.InitializeAsync();
+        reloaded.GetRegistry().Symbols.Should().NotContainKey("UNCOMMITTED");
+        (await reloaded.GetMigrationMarkerAsync("failed-persistence-migration")).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task RegisterSymbolAsync_SameSecurityIdDifferentTicker_MergesIntoOnePersistedInstrument()
+    {
+        await _service.InitializeAsync();
+        var securityId = Guid.NewGuid();
+
+        await _service.RegisterSymbolAsync(new SymbolRegistryEntry
+        {
+            Canonical = "IDENTITY.OLD",
+            SecurityId = securityId,
+            DisplayName = "Identity Corp",
+            ProviderSymbols = new Dictionary<string, string>
+            {
+                ["provider-a"] = "IDENTITY-A"
+            }
+        });
+        await _service.RegisterSymbolAsync(new SymbolRegistryEntry
+        {
+            Canonical = "IDENTITY.NEW",
+            SecurityId = securityId,
+            Identifiers = new SymbolIdentifiers { Figi = "BBG-IDENTITY-1" },
+            ProviderSymbols = new Dictionary<string, string>
+            {
+                ["provider-b"] = "IDENTITY-B"
+            }
+        });
+
+        var retained = _service.GetRegistry().Symbols.Values
+            .Where(entry => entry.SecurityId == securityId)
+            .Should().ContainSingle().Subject;
+        retained.Canonical.Should().Be("IDENTITY.OLD",
+            "the first retained canonical stays stable when no effective-date authority is supplied");
+        retained.Aliases.Should().ContainSingle(alias =>
+            alias.Alias == "IDENTITY.NEW" &&
+            alias.Source == SymbolMappingSources.SecurityMaster &&
+            alias.IsActive);
+        retained.Identifiers.Figi.Should().Be("BBG-IDENTITY-1");
+        retained.ProviderSymbols.Should().ContainKey("provider-a").WhoseValue.Should().Be("IDENTITY-A");
+        retained.ProviderSymbols.Should().ContainKey("provider-b").WhoseValue.Should().Be("IDENTITY-B");
+        _service.LookupSymbol("IDENTITY.NEW").CanonicalSymbol.Should().Be("IDENTITY.OLD");
+
+        var reloaded = new SymbolRegistryService(_testDirectory);
+        await reloaded.InitializeAsync();
+
+        var persisted = reloaded.GetRegistry().Symbols.Values
+            .Where(entry => entry.SecurityId == securityId)
+            .Should().ContainSingle().Subject;
+        persisted.Canonical.Should().Be("IDENTITY.OLD");
+        persisted.Aliases.Should().Contain(alias => alias.Alias == "IDENTITY.NEW");
+        reloaded.LookupSymbol("IDENTITY.NEW").CanonicalSymbol.Should().Be("IDENTITY.OLD");
+    }
+
+    [Fact]
+    public async Task RegisterSymbolAsync_SameCanonicalDifferentSecurityId_RejectsConflictWithoutChangingPersistence()
+    {
+        await _service.InitializeAsync();
+        var retainedSecurityId = Guid.NewGuid();
+        var conflictingSecurityId = Guid.NewGuid();
+        await _service.RegisterSymbolAsync(new SymbolRegistryEntry
+        {
+            Canonical = "IDENTITY.CONFLICT",
+            SecurityId = retainedSecurityId,
+            DisplayName = "Retained identity"
+        });
+
+        var act = () => _service.RegisterSymbolAsync(new SymbolRegistryEntry
+        {
+            Canonical = "IDENTITY.CONFLICT",
+            SecurityId = conflictingSecurityId,
+            DisplayName = "Conflicting identity"
+        });
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*already assigned to SecurityId*");
+
+        var reloaded = new SymbolRegistryService(_testDirectory);
+        await reloaded.InitializeAsync();
+        var persisted = reloaded.GetRegistry().Symbols["IDENTITY.CONFLICT"];
+        persisted.SecurityId.Should().Be(retainedSecurityId);
+        persisted.DisplayName.Should().Be("Retained identity");
+        reloaded.GetRegistry().Symbols.Values.Should().NotContain(entry =>
+            entry.SecurityId == conflictingSecurityId);
+    }
+
+    [Fact]
+    public async Task ImportSymbolsAsync_SameSecurityIdDifferentTickers_CollapsesBatchToOneRow()
+    {
+        await _service.InitializeAsync();
+        var securityId = Guid.NewGuid();
+
+        var imported = await _service.ImportSymbolsAsync(
+        [
+            new SymbolRegistryEntry
+            {
+                Canonical = "BATCH.OLD",
+                SecurityId = securityId,
+                Aliases = [new SymbolAlias { Alias = "BATCH-ALIAS-OLD" }]
+            },
+            new SymbolRegistryEntry
+            {
+                Canonical = "BATCH.NEW",
+                SecurityId = securityId,
+                Aliases = [new SymbolAlias { Alias = "BATCH-ALIAS-NEW" }]
+            }
+        ],
+        merge: true);
+
+        imported.Should().Be(2, "both source records were accepted into one durable identity");
+        var retained = _service.GetRegistry().Symbols.Values
+            .Where(entry => entry.SecurityId == securityId)
+            .Should().ContainSingle().Subject;
+        retained.Aliases.Select(alias => alias.Alias).Should().Contain([
+            "BATCH.NEW",
+            "BATCH-ALIAS-OLD",
+            "BATCH-ALIAS-NEW"
+        ]);
+    }
 }

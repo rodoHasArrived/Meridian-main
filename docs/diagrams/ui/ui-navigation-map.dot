@@ -18,7 +18,7 @@ digraph UiNavigationMap {
   node [fontname="Segoe UI", shape=box, style="rounded,filled", color="#475569", fontcolor="#e2e8f0", fillcolor="#1e293b"];
   edge [fontname="Segoe UI", color="#94a3b8", penwidth=1.3, arrowsize=0.8];
 
-  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: a189c4619c9d\nWorkspaces: 7\nRegistry pages: 92"];
+  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: 45f1b594736d\nWorkspaces: 7\nRegistry pages: 98"];
   shell [shape=component, fillcolor="#0f766e", color="#2dd4bf", label="ShellNavigationCatalog\nWorkspace registry"];
   navigation [shape=component, fillcolor="#7c3aed", color="#c4b5fd", label="NavigationService\nBuildDefault registry"];
   shell -> navigation [label="resolve canonical page tags", color="#38bdf8"];
@@ -73,7 +73,7 @@ digraph UiNavigationMap {
     label="Accounting workspace";
     color="#334155";
     style="rounded";
-    workspace_3 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Accounting\n14 shell entries"];
+    workspace_3 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Accounting\n16 shell entries"];
     shell -> workspace_3 [color="#22d3ee"];
     page_AccountingShell [label="Accounting Workspace\nAccountingShell → AccountingWorkspaceShellPage", fillcolor="#1e293b"];
     workspace_3 -> page_AccountingShell;
@@ -81,10 +81,14 @@ digraph UiNavigationMap {
     workspace_3 -> page_FundStructureSetup;
     page_FundLedger [label="Fund operations\nFundLedger → FundLedgerPage", fillcolor="#1e293b"];
     workspace_3 -> page_FundLedger;
+    page_OperationsContinuity [label="Operations continuity\nOperationsContinuity → OperationsContinuityPage", fillcolor="#1e293b"];
+    workspace_3 -> page_OperationsContinuity;
     page_RunLedger [label="Run ledger\nRunLedger → RunLedgerPage", fillcolor="#1e293b"];
     workspace_3 -> page_RunLedger;
     page_RunCashFlow [label="Run cash flow\nRunCashFlow → RunCashFlowPage", fillcolor="#1e293b"];
     workspace_3 -> page_RunCashFlow;
+    page_PostedLedger [label="Posted ledger\nPostedLedger → PostedLedgerPage", fillcolor="#1e293b"];
+    workspace_3 -> page_PostedLedger;
     page_FundReconciliation [label="Fund reconciliation\nFundReconciliation → FundLedgerPage", fillcolor="#1e293b"];
     workspace_3 -> page_FundReconciliation;
     page_FundBanking [label="Fund banking\nFundBanking → FundLedgerPage", fillcolor="#1e293b"];
@@ -109,7 +113,7 @@ digraph UiNavigationMap {
     label="Reporting workspace";
     color="#334155";
     style="rounded";
-    workspace_4 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Reporting\n8 shell entries"];
+    workspace_4 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Reporting\n10 shell entries"];
     shell -> workspace_4 [color="#22d3ee"];
     page_ReportingShell [label="Reporting Workspace\nReportingShell → ReportingWorkspaceShellPage", fillcolor="#1e293b"];
     workspace_4 -> page_ReportingShell;
@@ -117,6 +121,10 @@ digraph UiNavigationMap {
     workspace_4 -> page_FundReportPack;
     page_ReportRunStatus [label="Report run status\nReportRunStatus → DashboardPage", fillcolor="#1e293b"];
     workspace_4 -> page_ReportRunStatus;
+    page_EvidenceWorkbench [label="Evidence packets\nEvidenceWorkbench → EvidenceWorkbenchPage", fillcolor="#1e293b"];
+    workspace_4 -> page_EvidenceWorkbench;
+    page_OperationsRecordRelease [label="Operations record release\nOperationsRecordRelease → OperationsRecordReleasePage", fillcolor="#1e293b"];
+    workspace_4 -> page_OperationsRecordRelease;
     page_Dashboard [label="Reporting dashboard\nDashboard → DashboardPage", fillcolor="#1e293b"];
     workspace_4 -> page_Dashboard;
     page_AnalysisExport [label="Analysis export\nAnalysisExport → AnalysisExportPage", fillcolor="#1e293b"];
@@ -133,7 +141,7 @@ digraph UiNavigationMap {
     label="Strategy workspace";
     color="#334155";
     style="rounded";
-    workspace_5 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Strategy\n13 shell entries"];
+    workspace_5 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Strategy\n14 shell entries"];
     shell -> workspace_5 [color="#22d3ee"];
     page_LeanIntegration [label="Lean integration\nLeanIntegration → LeanIntegrationPage", fillcolor="#1e293b"];
     workspace_5 -> page_LeanIntegration;
@@ -161,6 +169,8 @@ digraph UiNavigationMap {
     workspace_5 -> page_QuantScript;
     page_HomeWorkspace [label="Home\nHomeWorkspace → HomeWorkspacePage", fillcolor="#1e293b"];
     workspace_5 -> page_HomeWorkspace;
+    page_OperatorReadinessConsole [label="Operator readiness\nOperatorReadinessConsole → OperatorReadinessConsolePage", fillcolor="#1e293b"];
+    workspace_5 -> page_OperatorReadinessConsole;
   }
 
   subgraph cluster_workspace_6 {
@@ -225,7 +235,7 @@ digraph UiNavigationMap {
     label="Settings workspace";
     color="#334155";
     style="rounded";
-    workspace_7 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Settings\n17 shell entries"];
+    workspace_7 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Settings\n18 shell entries"];
     shell -> workspace_7 [color="#22d3ee"];
     page_ActivityLog [label="Activity log\nActivityLog → ActivityLogPage", fillcolor="#1e293b"];
     workspace_7 -> page_ActivityLog;
@@ -247,6 +257,8 @@ digraph UiNavigationMap {
     workspace_7 -> page_CredentialManagement;
     page_SystemHealth [label="System health\nSystemHealth → SystemHealthPage", fillcolor="#1e293b"];
     workspace_7 -> page_SystemHealth;
+    page_LifecycleControl [label="Lifecycle control\nLifecycleControl → LifecycleControlPage", fillcolor="#1e293b"];
+    workspace_7 -> page_LifecycleControl;
     page_Diagnostics [label="Diagnostics\nDiagnostics → DiagnosticsPage", fillcolor="#1e293b"];
     workspace_7 -> page_Diagnostics;
     page_ServiceManager [label="Service manager\nServiceManager → ServiceManagerPage", fillcolor="#1e293b"];

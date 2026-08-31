@@ -28,6 +28,7 @@ import type {
   OperationsReconciliationLaneSummary,
   PrivateCapitalCloseCockpit
 } from "@/types";
+import { requirePresent } from "@/test/fixtures";
 
 vi.mock("@/lib/api", () => ({
   acknowledgeOperationsContinuityChecklistTask: vi.fn(),
@@ -1062,17 +1063,29 @@ describe("OperationsContinuityScreen", () => {
     expect(await screen.findByRole("heading", { name: "Operations continuity" })).toBeInTheDocument();
     const workflows = await screen.findByRole("treegrid", { name: "Operations continuity workflows" });
     expect(within(workflows).getByText("2026-05 close")).toBeInTheDocument();
+    expect(workflows).not.toHaveTextContent(fundAccountId);
     const workflowRow = within(workflows).getByRole("row", { name: /open 2026-05 operations continuity workflow/i });
     expect(workflowRow).toHaveAttribute("aria-controls", OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID);
     expect(workflowRow).toHaveAttribute("aria-expanded", "true");
     expect(workflowRow).toHaveClass("bg-warning/5");
-    expect(screen.getByRole("region", { name: "Operations continuity detail for 2026-05 close workflow" }))
-      .toHaveAttribute("id", OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID);
+    const selectedWorkflow = screen.getByRole("region", { name: "Operations continuity detail for 2026-05 close workflow" });
+    expect(selectedWorkflow).toHaveAttribute("id", OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID);
+    expect(selectedWorkflow).toHaveTextContent("Broker source: Custodian.");
+    expect(selectedWorkflow).not.toHaveTextContent(fundAccountId);
+    const workflowSystemDetails = screen.getByText("Workflow system details").closest("details");
+    expect(workflowSystemDetails).not.toHaveAttribute("open");
+    expect(within(workflowSystemDetails as HTMLElement).getByText(fundAccountId)).toBeInTheDocument();
 
     expect(await screen.findByRole("heading", { name: "Gates" })).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getAllByText("Ledger posting requires a balanced and validated journal draft.")).toHaveLength(2);
     });
+    const gates = screen.getByRole("table", { name: "Operations continuity gates" });
+    const brokerIntakeGate = within(gates).getByRole("row", { name: "Broker intake gate, Passed, 0 blockers" });
+    expect(within(brokerIntakeGate).getByText("May 08, 14:20 UTC by Operations user")).toBeInTheDocument();
+    const completionIdentity = within(brokerIntakeGate).getByText("Completion identity").closest("details");
+    expect(completionIdentity).not.toHaveAttribute("open");
+    expect(within(completionIdentity as HTMLElement).getByText("Actor ID: ops-user")).toBeInTheDocument();
     const checklist = screen.getByRole("table", { name: "Operations continuity close checklist" });
     const checklistSummary = screen.getByRole("list", { name: "Close checklist control summary" });
     expect(await screen.findByText("1 close task")).toBeInTheDocument();
@@ -1215,7 +1228,8 @@ describe("OperationsContinuityScreen", () => {
     expect(within(operatorQueue).getByText("MBS factor reconciliation")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("1 open break; MBS factor reconciliation has 1 open break requiring controller review.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Workflow blocker")).toBeInTheDocument();
-    expect(within(operatorQueue).getByText("LEDGER_VALIDATION_REQUIRED")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Ledger validation required")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Rule code: LEDGER_VALIDATION_REQUIRED")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Ledger Posting: Ledger posting requires a balanced and validated journal draft.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Resolve Ledger Posting blocker and retain evidence.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Ledger posting controller check")).toBeInTheDocument();
@@ -1269,7 +1283,7 @@ describe("OperationsContinuityScreen", () => {
     });
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: MBS factor reconciliation" }))
       .toHaveAttribute("href", "/accounting/reconciliation");
-    expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: LEDGER_VALIDATION_REQUIRED" }))
+    expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Ledger validation required" }))
       .toHaveAttribute("href", "/accounting/operations-continuity");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Ledger posting controller check" }))
       .toHaveAttribute("href", "/accounting/ledger");
@@ -1363,6 +1377,7 @@ describe("OperationsContinuityScreen", () => {
 
     const nextAction = screen.getByRole("link", { name: "Open operations continuity next action: Resolve Ledger Posting blockers" });
     expect(nextAction).toHaveAttribute("href", "/accounting");
+    expect(within(screen.getByRole("region", { name: "Recommended next action" })).getByText("Blocked")).toBeInTheDocument();
   });
 
   it("posts close checklist acknowledgement with the shared workflow guard", async () => {
@@ -2091,7 +2106,7 @@ function createClosedWorkflowDetail(closeEvidence: OperationsEvidenceLink): Oper
       closePackageId: "close-package-2026-05",
       reportPackId: "report-pack-2026-05",
       retainedManifestId: "close-package-2026-05-manifest",
-      retainedManifestRoute: closeEvidence.route,
+      retainedManifestRoute: requirePresent(closeEvidence.route, "closeEvidence.route"),
       evidenceHash: "b5f6c7d8e9a00112233445566778899aabbccddeeff00112233445566778899",
       publishedAtUtc: "2026-05-10T18:45:00Z",
       publishedBy: "fund-controller",

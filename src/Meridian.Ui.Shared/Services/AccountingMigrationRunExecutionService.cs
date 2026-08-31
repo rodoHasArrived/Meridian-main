@@ -1,7 +1,9 @@
 using System.Text.RegularExpressions;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -149,7 +151,7 @@ public sealed class AccountingMigrationRunExecutionService
         {
             FundProfileId = NormalizeOptional(request.FundProfileId) ?? workerPlan.FundProfileId,
             LedgerBookId = request.LedgerBookId ?? workerPlan.LedgerBookId,
-            Dimensions = request.Dimensions ?? workerPlan.Dimensions,
+            Dimensions = workerPlan.Dimensions,
             EvidenceLinks = evidenceLinks,
             TenantId = NormalizeOptional(request.TenantId) ?? workerPlan.TenantId,
             CompanyId = NormalizeOptional(request.CompanyId) ?? workerPlan.CompanyId,
@@ -703,9 +705,12 @@ public sealed class AccountingMigrationRunExecutionService
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin)
     {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        if (!OperationsOriginGuard.IsHumanOperator(actionOrigin))
         {
-            throw new ArgumentException("Only a human operator can execute accounting migration runs.", nameof(actionOrigin));
+            throw new ArgumentException(
+                "Only a human operator can execute accounting migration runs.",
+                nameof(actionOrigin),
+                OperationsOriginGuard.Refusal("execute accounting migration runs"));
         }
     }
 
@@ -716,9 +721,6 @@ public sealed class AccountingMigrationRunExecutionService
 
     private static string NormalizeFundProfileId(string? value)
         => string.IsNullOrWhiteSpace(value) ? DefaultFundProfileId : value.Trim();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string Sanitize(string value)
     {

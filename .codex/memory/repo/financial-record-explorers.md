@@ -90,7 +90,7 @@ review_after: 2026-09-20
 invalidates_when:
   - Financial Record Explorer DTO shape or endpoint routes change materially.
   - Saved-view partitioning or tenant scoping changes.
-  - Browser or WPF stops consuming the shared explorer DTO.
+  - Browser consumption changes materially, WPF compatibility is reactivated, or WPF compatibility is retired.
   - W5X Financial Record Explorer product scope changes materially.
 ---
 
@@ -118,15 +118,16 @@ Report-Line Provenance Explorer, saved views, and shared proof-drawer work.
   `src/Meridian.Ui/dashboard/src/components/meridian/financial-record-explorer.tsx`. It applies
   saved-view filters/search and selected columns locally over the server DTO, while proof action,
   relationship, record graph, and blocked-state semantics come from the DTO.
-- WPF rendering uses `FinancialRecordExplorerPage` and `FinancialRecordExplorerViewModel` to map
-  the same columns, rows, selected-record proof actions, `Used In`, and `Impacts` into dense
-  table/inspector controls. WPF page tags such as `LedgerExplorer`, `PortfolioExplorer`,
-  `SecurityInstrumentExplorer`, and `ReportLineProvenanceExplorer` resolve through the shell
-  registry without adding new root workspaces.
+- WPF rendering exists as retained compatibility through `FinancialRecordExplorerPage` and
+  `FinancialRecordExplorerViewModel`, mapping the same columns, rows, selected-record proof
+  actions, `Used In`, and `Impacts` into dense table/inspector controls. Do not add new WPF
+  explorer product/UI work unless the lane is explicitly reactivated.
 - Report-line provenance must preserve the retained chain from source record through instrument,
   position or transaction, reconciliation, journal, approval, delivery/restatement evidence, report
-  line, and audit links. Browser and WPF must not rebuild that lineage locally.
+  line, and audit links. Browser surfaces and retained WPF compatibility must not rebuild that
+  lineage locally.
 - Narrow validation for shared explorer changes starts with
   `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~WorkstationFinancialRecordExplorerEndpointTests" /p:EnableWindowsTargeting=true`
-  and adds `tests/Meridian.Wpf.Tests` or `npm --prefix src/Meridian.Ui/dashboard run test` when the
-  desktop or browser projection changes.
+  and adds `npm --prefix src/Meridian.Ui/dashboard run test` when the browser projection changes;
+  use `tests/Meridian.Wpf.Tests` only for explicitly approved WPF maintenance or compatibility
+  changes.

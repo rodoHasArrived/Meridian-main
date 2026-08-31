@@ -68,7 +68,12 @@ CHECKS = [
         "id": "governance-endpoints",
         "category": "Governance Operations",
         "label": "Workstation endpoints expose governance break queue and calibration routes",
-        "paths": ["src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs"],
+        "paths": [
+            "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs",
+            # Route literals moved into UiApiRoutes constants; scan both so
+            # constant-backed routes still count as endpoint evidence.
+            "src/Meridian.Contracts/Api/UiApiRoutes.cs",
+        ],
         "terms": ["break-queue", "calibration-summary", "sign-off"],
         "weight": 3,
         "remediation": "Keep governance readiness tied to workstation endpoints and documented route evidence.",

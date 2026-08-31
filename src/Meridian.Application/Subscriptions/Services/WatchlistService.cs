@@ -1,8 +1,10 @@
 using System.Text.Json;
 using Meridian.Core.Config;
+using Meridian.Core.Logging;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Application.UI;
 using Meridian.Storage.Archival;
+using Serilog;
 
 namespace Meridian.Application.Subscriptions.Services;
 
@@ -13,6 +15,7 @@ public sealed class WatchlistService
 {
     private readonly ConfigStore _configStore;
     private readonly string _watchlistsPath;
+    private readonly ILogger _log = LoggingSetup.ForContext<WatchlistService>();
 
     public WatchlistService(ConfigStore configStore, string? watchlistsPath = null)
     {
@@ -310,6 +313,10 @@ public sealed class WatchlistService
 
             return await CreateWatchlistAsync(request, ct);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch
         {
             return null;
@@ -366,8 +373,15 @@ public sealed class WatchlistService
             });
             return watchlists ?? new List<Watchlist>();
         }
-        catch
+        catch (OperationCanceledException)
         {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            var quarantinePath = CorruptStoreQuarantine.PreserveOrThrow(_watchlistsPath, ex);
+            _log.Error(ex, "Failed to load watchlists from {Path}; unreadable file preserved at {QuarantinePath}",
+                _watchlistsPath, quarantinePath);
             return new List<Watchlist>();
         }
     }

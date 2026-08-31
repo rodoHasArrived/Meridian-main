@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+<assembly><name>Meridian.FSharp.Ledger</name></assembly>
+<members>
+<member name="T:Meridian.FSharp.Ledger.ReconciliationRun">
+<summary>
+ Summary of one executed reconciliation run
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.ReconciliationRunStatus">
+<summary>
+ Lifecycle status of a reconciliation run
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.ReconciliationOutcome">
+<summary>
+ Outcome of reconciling a single projected flow against actuals.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.BreakRecord">
+<summary>
+ Immutable record representing one identified break found in a reconciliation run
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.LedgerBreakClassification">
+<summary>
+ Structural classification of a ledger break
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.BreakSeverity">
+<summary>
+ Severity of a ledger reconciliation break
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.CanonicalBreakClassification">
+<summary>
+ Stable classification output for UI/API Accounting surfaces.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.RawBreakFacts">
+<summary>
+ Raw incoming break facts accepted by the F# kernel.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.BreakReasonCode">
+<summary>
+ Closed reason-code set for canonical reconciliation classification.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.CanonicalBreakClass">
+<summary>
+ Closed canonical break classes used for governance-facing outputs.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.BreakTaxonomyVersion">
+<summary>
+ Versioned taxonomy identifier for canonical reconciliation break classes.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.MatchCandidate">
+<summary>
+ A projected-vs-actual candidate pair submitted for rule evaluation
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.MatchOutcome">
+<summary>
+ Outcome of evaluating a matching rule against one candidate pair
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.MatchingRule">
+<summary>
+ Configuration for a ledger matching rule
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Ledger.ReconciliationCaseWorkflowInterop.RecognizedQueueStatusTokens">
+<summary>
+ Queue-status tokens the workflow reads/produces; must match ReconciliationBreakQueueStatus names.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Ledger.ReconciliationCaseWorkflowInterop.RecognizedLifecycleStateTokens">
+<summary>
+ Lifecycle-state tokens the workflow reads/produces; must match ReconciliationCaseLifecycleState names.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Ledger.ReconciliationCaseWorkflowInterop.RecognizedErrorCodeTokens">
+<summary>
+ Error-code tokens the workflow can emit; must match ReconciliationBreakQueueTransitionErrorCode names.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Ledger.ReconciliationCaseWorkflowInterop.RecognizedActionTokens">
+<summary>
+ Action tokens the workflow understands; must match ReconciliationCaseTransitionAction names.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.PostingCheck">
+<summary>
+ Result of checking whether a posting date is acceptable in a period.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.PeriodCloseResult">
+<summary>
+ Result of attempting a period-close operation.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.PeriodCloseEvent">
+<summary>
+ A recorded close event for one accounting period.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.AccountingPeriod">
+<summary>
+ An accounting period identified by a fiscal year and period number.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.PeriodStatus.HardClosed">
+<summary>
+ Period is hard-closed; no further postings or adjustments are permitted.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.PeriodStatus.SoftClosed">
+<summary>
+ Period is soft-closed; no new originating entries, but approved adjustments are accepted.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.PeriodStatus.Open">
+<summary>
+ Period is open; postings are accepted and adjustments are free.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.PeriodStatus">
+<summary>
+ Lifecycle status of a ledger accounting period.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.LedgerInterop.TryClosePeriod(Meridian.FSharp.Ledger.AccountingPeriodDto,System.String,System.String,System.String,System.DateTimeOffset,System.String@)">
+ <summary>Attempt to soft-close or hard-close a period.</summary>
+ <param name="period">The period to close.</param>
+ <param name="newStatus">Target status: "SoftClosed" or "HardClosed".</param>
+ <param name="closedBy">Identifier of the operator requesting the close.</param>
+ <param name="notes">Optional close notes.</param>
+ <param name="now">Wall-clock time to stamp the close event.</param>
+ <param name="error">Populated with a failure message when the operation cannot proceed; otherwise null.</param>
+ <returns>
+   The <see cref="PeriodCloseEventDto"/> on success, or default when the period is already closed
+   or the transition is invalid.
+ </returns>
+</member>
+<member name="M:Meridian.FSharp.Ledger.LedgerInterop.PerformanceFeeAccrual(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Boolean)">
+ <summary>Performance fee against the high-water mark, net of a hurdle, with crystallization.</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.LedgerInterop.ManagementFeeAccrual(System.Decimal,System.Decimal,System.Int32,System.Int32)">
+ <summary>Day-weighted management fee accrual (net assets × rate × days / basis).</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.LedgerInterop.GenerateCalendarMonthPeriods(System.Int32,System.DateTimeOffset)">
+ <summary>Generate calendar-month accounting periods for a fiscal year.</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.LedgerInterop.ExpenseAccrual(System.Decimal,System.Int32,System.Int32)">
+ <summary>Straight-line expense accrual (annual amount × days / basis).</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.LedgerInterop.CheckPostingDate(System.DateOnly,System.Boolean,System.Collections.Generic.IEnumerable{Meridian.FSharp.Ledger.AccountingPeriodDto})">
+ <summary>Check whether a posting at the given date is permitted.</summary>
+ <param name="date">Date of the posting being validated.</param>
+ <param name="isAdjustment">True when this is an approved adjustment entry rather than an originating posting.</param>
+ <param name="periods">Active period list.</param>
+ <returns>
+   <c>"Allowed"</c> when the posting can proceed, <c>"PeriodNotFound"</c> when no period covers the date,
+   or <c>"Denied: &lt;reason&gt;"</c> when the period rejects the posting.
+ </returns>
+</member>
+<member name="T:Meridian.FSharp.Ledger.Posting">
+<summary>
+ Ordinals correspond to the C# LedgerAccountType enum:
+   Asset = 0 | Liability = 1 | Equity = 2 | Revenue = 3 | Expense = 4
+ Debit-normal accounts (normal balance is a debit): Asset, Expense.
+ Credit-normal accounts (normal balance is a credit): Liability, Equity, Revenue.
+
+ CROSS-LANGUAGE CONTRACT: this project cannot reference Meridian.Ledger (the dependency
+ points the other way), so the ordinals below duplicate the C# enum by value. Reordering
+ LedgerAccountType would silently flip balance signs here. The pinning is enforced by
+ LedgerAccountTypeOrdinalContractTests in Meridian.Tests — update both together.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Ledger.FundEconomics.PerformanceFeeAccrual.NewHighWaterMark">
+<summary>
+ High-water mark carried into the next period after crystallization.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Ledger.FundEconomics.PerformanceFeeAccrual.CrystallizedFee">
+<summary>
+ Fee that crystallizes (is locked in) this period; zero when not crystallizing.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Ledger.FundEconomics.PerformanceFeeAccrual.PerformanceFee">
+<summary>
+ Performance fee accrued this period.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Ledger.FundEconomics.PerformanceFeeAccrual.FeeBase">
+<summary>
+ Profit remaining after the hurdle is satisfied — the base the fee is charged on.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Ledger.FundEconomics.PerformanceFeeAccrual.GrossProfit">
+<summary>
+ Appreciation above the prior high-water mark, floored at zero.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.FundEconomics.PerformanceFeeAccrual">
+<summary>
+ Outcome of a performance-fee accrual against the high-water mark.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.FundEconomics.performanceFeeAccrual(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Boolean)">
+ <summary>
+ Performance fee against a high-water mark, net of a currency hurdle. Fee is charged only on
+ appreciation above both the prior high-water mark and the hurdle. When crystallizing, the fee
+ locks in and the high-water mark advances to the post-fee net asset value; otherwise the fee
+ accrues but the high-water mark is left unchanged until a later crystallization.
+ </summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.FundEconomics.expenseAccrual(System.Decimal,System.Int32,System.Int32)">
+ <summary>
+ Straight-line expense accrual: annual amount × accrual days / year-basis days.
+ </summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.FundEconomics.managementFeeAccrual(System.Decimal,System.Decimal,System.Int32,System.Int32)">
+ <summary>
+ Day-weighted management fee: net assets × annual rate × accrual days / year-basis days.
+ </summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.FundEconomics">
+<summary>
+ Pure, deterministic fund-economics accrual math kept in F# alongside the ledger kernels.
+
+ These are the fee/expense accruals a fund accountant needs that the C# NAV/waterfall/clawback
+ calculators in Meridian.Ledger intentionally do NOT cover: a day-weighted management fee, a
+ straight-line expense accrual, and a performance fee with a hurdle, high-water mark, and
+ crystallization. Callers convert the returned amounts into governed ledger postings; nothing
+ here touches I/O. Currency amounts round to 2 decimals, banker&apos;s rounding, matching the C#
+ LedgerCurrencyRounding used by the sibling kernels.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.LedgerBreakClassificationModule.severity(System.Decimal,Meridian.FSharp.Ledger.LedgerBreakClassification)">
+<summary>
+ Derive break severity from classification and nominal amount.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.ReconciliationClassification.classifyLegacy(System.Decimal,Meridian.FSharp.Ledger.LedgerBreakClassification)">
+<summary>
+ Migration helper to safely map legacy break discriminators into the new canonical model.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.ReconciliationRules.classifyBreaks(System.Guid,Meridian.FSharp.Ledger.MatchingRule,Microsoft.FSharp.Collections.FSharpList{Meridian.FSharp.Ledger.MatchCandidate})">
+<summary>
+ Classify all non-matching candidates into &lt;see cref=&quot;BreakRecord&quot;/&gt; values.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.ReconciliationRules.applyBest(Microsoft.FSharp.Collections.FSharpList{Meridian.FSharp.Ledger.MatchingRule},Meridian.FSharp.Ledger.MatchCandidate)">
+<summary>
+ Apply a prioritised list of rules; accept the first match found.
+ Falls back to &lt;c&gt;NoMatch MissingEntry&lt;/c&gt; if no rule produces a match.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.ReconciliationRules.materialityAdjustedClassifyBreaks(Meridian.FSharp.Ledger.MatchingThresholdProfile,System.Guid,Meridian.FSharp.Ledger.MatchingRule,Microsoft.FSharp.Collections.FSharpList{Meridian.FSharp.Ledger.MatchCandidate})">
+<summary>
+ Build canonical break metadata for materiality-aware matching.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.ReconciliationRules.applyWithMateriality(Meridian.FSharp.Ledger.MatchingRule,Meridian.FSharp.Ledger.MatchingThresholdProfile,Meridian.FSharp.Ledger.MatchCandidate)">
+<summary>
+ Apply a single matching rule and expose deterministic materiality diagnostics.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.ReconciliationRules.apply(Meridian.FSharp.Ledger.MatchingRule,Meridian.FSharp.Ledger.MatchCandidate)">
+<summary>
+ Apply a single matching rule to a projected-vs-actual candidate pair.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.ReconciliationRules.evaluateMateriality(Meridian.FSharp.Ledger.MatchingThresholdProfile,Meridian.FSharp.Ledger.MatchCandidate)">
+<summary>
+ Evaluate only the materiality impact of a candidate under the selected profile.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.ReconciliationRules.classifyMissingEntrySeverity(System.Decimal,Meridian.FSharp.Ledger.MatchingThresholdProfile)">
+<summary>
+ Classify a missing ledger entry by deterministic amount materiality.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.ReconciliationRules.isMaterialAmountMatch(System.Decimal,System.Decimal,Meridian.FSharp.Ledger.MatchingThresholdProfile)">
+<summary>
+ Returns true when a candidate match is material for a threshold profile.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Ledger.MatchingRuleModule.strict">
+<summary>
+ Strict rule: zero tolerance on both amount and timing.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Ledger.MatchingRuleModule.default">
+<summary>
+ Default rule: 1 % amount tolerance, 2-day timing window, currency must match exactly.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Ledger.ReconciliationCaseWorkflow.recognizedErrorCodeTokens">
+<summary>
+ Every error-code token the workflow can emit.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Ledger.ReconciliationCaseWorkflow.recognizedQueueStatusTokens">
+<summary>
+ Every queue-status token the workflow reads or produces.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Ledger.ReconciliationCaseWorkflow.recognizedLifecycleStateTokens">
+<summary>
+ Every lifecycle-state token the workflow reads or produces.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Ledger.ReconciliationCaseWorkflow.recognizedActionTokens">
+<summary>
+ Every action token the workflow understands.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.PeriodManagement.generateCalendarMonthPeriods(System.Int32,System.DateTimeOffset)">
+<summary>
+ Build a sequence of calendar-month periods for a full fiscal year.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.PeriodManagement.lastHardClosed(Microsoft.FSharp.Collections.FSharpList{Meridian.FSharp.Ledger.AccountingPeriod})">
+<summary>
+ Return the most recent hard-closed period, if any.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.PeriodManagement.openPeriods(Microsoft.FSharp.Collections.FSharpList{Meridian.FSharp.Ledger.AccountingPeriod})">
+<summary>
+ Return all open periods from a list, sorted by start date ascending.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.PeriodManagement.checkPostingDate(System.DateOnly,System.Boolean,Microsoft.FSharp.Collections.FSharpList{Meridian.FSharp.Ledger.AccountingPeriod})">
+<summary>
+ Check whether a posting at the given date is acceptable.
+ Pass &lt;c&gt;isAdjustment = true&lt;/c&gt; to apply soft-close override rules.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.PeriodManagement.applyClose(Meridian.FSharp.Ledger.AccountingPeriod,Meridian.FSharp.Ledger.PeriodCloseEvent)">
+<summary>
+ Apply a close event to a period, returning the updated period record.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.PeriodManagement.close(Meridian.FSharp.Ledger.AccountingPeriod,Meridian.FSharp.Ledger.PeriodStatus,System.String,System.String,System.DateTimeOffset)">
+<summary>
+ Attempt to close a period to the requested next status.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.AccountingPeriodModule.acceptsAdjustments(Meridian.FSharp.Ledger.AccountingPeriod)">
+<summary>
+ Returns true when the period can accept approved adjustment entries.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.AccountingPeriodModule.acceptsPostings(Meridian.FSharp.Ledger.AccountingPeriod)">
+<summary>
+ Returns true when the period can accept ordinary new postings.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.AccountingPeriodModule.contains(System.DateOnly,Meridian.FSharp.Ledger.AccountingPeriod)">
+<summary>
+ Returns true when the given date falls inside the period&apos;s date range (inclusive).
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.AccountingPeriodModule.create(System.Int32,System.Int32,System.DateOnly,System.DateOnly,System.DateTimeOffset)">
+<summary>
+ Create a new open period starting today.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.AccountingPeriodModule.quarterlyLabel(System.Int32,System.Int32)">
+<summary>
+ Build a quarterly period label such as &quot;2025-Q1&quot;.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.AccountingPeriodModule.monthlyLabel(System.Int32,System.Int32)">
+<summary>
+ Build a calendar-month period label such as &quot;2025-Q1&quot; or &quot;2025-P03&quot;.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.PeriodStatusModule.isValidTransition(Meridian.FSharp.Ledger.PeriodStatus,Meridian.FSharp.Ledger.PeriodStatus)">
+<summary>
+ Returns true when the requested close transition is valid.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.PeriodStatusModule.isAdjustable(Meridian.FSharp.Ledger.PeriodStatus)">
+<summary>
+ Returns true when the period accepts approved adjustment entries.
+ Hard-closed periods reject all postings, including adjustments.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.PeriodStatusModule.isPostable(Meridian.FSharp.Ledger.PeriodStatus)">
+<summary>
+ Returns true when the period accepts ordinary new originating postings.
+ Soft-closed and hard-closed periods reject ordinary postings; only approved
+ adjustment entries are allowed through the soft-close guard (see &lt;c&gt;isAdjustable&lt;/c&gt;).
+</summary>
+</member>
+</members>
+</doc>

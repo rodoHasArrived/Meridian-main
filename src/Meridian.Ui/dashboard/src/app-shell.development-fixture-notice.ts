@@ -27,10 +27,12 @@ export interface DevelopmentFixtureNoticeViewModel {
 
 export function buildDevelopmentFixtureNoticeViewModel({
   pathname,
+  search = "",
   hash = "",
   refreshing = false
 }: {
   pathname: string;
+  search?: string;
   hash?: string;
   refreshing?: boolean;
 }): DevelopmentFixtureNoticeViewModel {
@@ -48,7 +50,7 @@ export function buildDevelopmentFixtureNoticeViewModel({
     retryBusy: refreshing,
     steps: developmentFixtureDemoSteps.map((item) => ({
       ...item,
-      active: isCurrentDevelopmentFixtureDemoStep(item, pathname, hash)
+      active: isCurrentDevelopmentFixtureDemoStep(item, pathname, search, hash)
     }))
   };
 }
@@ -57,8 +59,9 @@ const developmentFixtureDemoSteps = [
   {
     id: "watchlist",
     step: "1",
-    href: WORKSTATION_ROUTE_CATALOG.dataWatchlist,
-    matchPath: WORKSTATION_ROUTE_CATALOG.dataWatchlist,
+    href: workstationRouteWithQuery("dataQuotes", { view: "watchlist" }),
+    matchPath: WORKSTATION_ROUTE_CATALOG.dataQuotes,
+    matchView: "watchlist",
     label: "Watchlist",
     ariaLabel: "Open sample watchlist demo lane"
   },
@@ -67,6 +70,7 @@ const developmentFixtureDemoSteps = [
     step: "2",
     href: workstationRouteWithQuery("dataQuotes", { symbol: "AAPL" }),
     matchPath: WORKSTATION_ROUTE_CATALOG.dataQuotes,
+    matchView: "quotes",
     label: "Quotes",
     ariaLabel: "Open sample live quotes for AAPL"
   },
@@ -92,11 +96,22 @@ const developmentFixtureDemoSteps = [
 function isCurrentDevelopmentFixtureDemoStep(
   item: (typeof developmentFixtureDemoSteps)[number],
   pathname: string,
+  search: string,
   hash: string
 ) {
   if (item.matchPath !== pathname) {
     return false;
   }
 
+  if ("matchView" in item && item.matchView !== resolveMarketDataDemoView(search)) {
+    return false;
+  }
+
   return !("matchHash" in item) || item.matchHash === hash;
+}
+
+/** Mirror the Market Data desk's view resolution: unknown views fall back to quotes. */
+function resolveMarketDataDemoView(search: string): "quotes" | "watchlist" | "alerts" {
+  const view = new URLSearchParams(search).get("view");
+  return view === "watchlist" || view === "alerts" ? view : "quotes";
 }

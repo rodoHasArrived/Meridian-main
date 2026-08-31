@@ -6,10 +6,17 @@ module_id: SRC-HOST
 path: src/Meridian
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-06-02
+last_reviewed: 2026-07-27
 ---
 
 # src/Meridian
+
+Consumer releases start this host through the persistent per-user lifecycle supervisor; the
+installed launcher is a thin shim. The supervisor owns dynamic loopback-port selection, the
+dedicated database and host process identities, data-root separation, readiness polling, shutdown
+deadlines, session receipts, and browser launch. The host owns its cooperative drain and flush
+sequence. Direct host commands remain developer/operator surfaces, not end-user installation
+instructions.
 
 ## Purpose
 
@@ -34,16 +41,18 @@ local workstation API process behavior, or production API binding policy.
 
 `ApiHost` configuration separates local workstation hosting from remote API deployment. The default
 `LocalWorkstation` posture preserves `http://localhost:8080` and host-served `/workstation` assets.
-`ProductionApi` is the remote service posture for browser and WPF workstations; production
-auth-required startup rejects non-HTTPS bindings unless
+Required-auth production startup permits HTTP only when every `LocalWorkstation` binding is
+loopback. `ProductionApi` is the remote service posture for browser and WPF workstations; it rejects
+non-HTTPS bindings unless
 `AllowInsecureTransportForReverseProxy` is explicitly enabled for a trusted TLS-terminating proxy.
 `AllowedOrigins` declares browser workstation origins that may call the API when the UI is deployed
 separately from the service.
 
 Hosted brokerage composition registers concrete Alpaca, Interactive Brokers, and Robinhood gateways
-by keyed runtime ID (`alpaca`, `ib`, `ibkr`, `robinhood`) and registers StockSharp only when the
-connector runtime type is present. `HostedBrokerageGatewayRuntimeSurfaceCatalog` reports the hosted
-registration surface for Alpaca, Interactive Brokers, the `ibkr` alias, Robinhood, and optional
+by keyed runtime ID (`alpaca`, `ibkr`, `robinhood`), retains `ib` as an Interactive Brokers
+compatibility alias, and registers StockSharp only when the connector runtime type is present.
+`HostedBrokerageGatewayRuntimeSurfaceCatalog` reports the hosted registration surface for Alpaca,
+Interactive Brokers, the `ib` compatibility alias, Robinhood, and optional
 StockSharp: concrete gateway type, declared gateway id, runtime-key match status,
 account/portfolio/activity sync support, order-modification and partial-fill capability, supported
 asset classes, validation issues, and missing-runtime notes. This is offline DI/runtime surface
@@ -59,6 +68,25 @@ are presented as readiness evidence.
 Financial Operations-backed `IReconciliationApiService` adapter instead of a host-local override,
 so browser and desktop composition resolve the same statement-run, break, case, and queue-status
 projection path.
+
+The workstation deployment-health projection treats governed reporting as independently
+fail-closed. It reports ready only when durable governance, release consistency, casework evidence,
+certified artifacts, scheduling, client-document packaging, active delivery workers, and delivery
+receipts share the configured reporting authority.
+
+`UiServer.StartAsync` is the cancellable startup boundary for database migrations and one-time
+legacy imports. The parent workstation host owns all configured domain database initialization,
+while desktop child hosts omit that duplicate initializer. Construction, failed start, stop, and
+disposal retain exact ownership: partially built applications and owned lifecycle controls are
+cleaned up, startup/stop/disposal operations cannot dispose the service graph underneath one
+another, and concurrent disposal callers await one idempotent cleanup operation. A failure after
+application start begins triggers bounded stop cleanup without replacing the original failure; that
+single-start instance then rejects unsafe retries and must be disposed. Shared operational endpoints use
+the registered RFC 7807 exception handler before authentication and other middleware, and an
+API-only status-code fallback converts otherwise empty 4xx/5xx results to the same Problem Details
+contract. Browser routes and static assets remain outside that fallback, while missing runtime
+services and safe server failures return typed errors instead of successful placeholder payloads
+or raw exception text.
 
 ## Diagrams
 

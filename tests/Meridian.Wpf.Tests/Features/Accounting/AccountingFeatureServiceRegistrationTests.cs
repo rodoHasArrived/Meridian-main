@@ -45,4 +45,20 @@ public sealed class AccountingFeatureServiceRegistrationTests
         services.SingleDescriptor<FinancialRecordExplorerViewModel>().Lifetime.Should().Be(ServiceLifetime.Transient);
         services.SingleDescriptor<AccountPortfolioViewModel>().Lifetime.Should().Be(ServiceLifetime.Transient);
     }
+
+    [Fact]
+    public void Register_ShouldResolveAccountingEvidenceServicesThroughInterfaces()
+    {
+        var services = new ServiceCollection();
+
+        new AccountingFeatureModule().Register(services);
+
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<IAutomatedJournalCapitalAccountReconciliationResolver>()
+            .Should()
+            .BeOfType<LedgerCapitalAccountReconciliationResolver>();
+        provider.GetRequiredService<IAccountingPositionSnapshotCaptureService>()
+            .Should()
+            .BeOfType<AccountingPositionSnapshotCaptureService>();
+    }
 }

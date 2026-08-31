@@ -1,12 +1,12 @@
 using System.Buffers.Binary;
 using System.Data;
-using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Ledger;
 using Npgsql;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.OperationsContinuity;
 
@@ -27,20 +27,36 @@ public sealed class PostgresOperationsContinuityStore :
     // IHttpContextAccessor-backed implementation. Null (no tenant in scope) => reads are not scoped.
     private readonly IFundScopeTenantAccessor? _tenantAccessor;
 
+    // W9-GOV-008 criterion 2: how strictly to enforce that scope. Defaults to the deployment-boundary
+    // posture so existing construction sites keep their behaviour; the host injects the configured one.
+    private readonly TenantScopeEnforcementOptions _tenantScope;
+
     public PostgresOperationsContinuityStore(
         LedgerJournalStoreOptions options,
         ITransactionalLedgerJournalStore ledgerJournalStore,
         IOperationsStatusDerivationService statusDerivation,
-        IFundScopeTenantAccessor? tenantAccessor = null)
+        IFundScopeTenantAccessor? tenantAccessor = null,
+        TenantScopeEnforcementOptions? tenantScope = null)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _ledgerJournalStore = ledgerJournalStore ?? throw new ArgumentNullException(nameof(ledgerJournalStore));
         _statusDerivation = statusDerivation ?? throw new ArgumentNullException(nameof(statusDerivation));
         _tenantAccessor = tenantAccessor;
+        _tenantScope = tenantScope ?? TenantScopeEnforcementOptions.DeploymentBoundary;
     }
 
-    // SEC-005 slice 4c: the caller's tenant for the current ambient scope, or null (fail-open).
+    // SEC-005 slice 4c: the caller's tenant for the current ambient scope, or null.
     private string? ResolveCallerTenant() => _tenantAccessor?.ResolveCallerTenant();
+
+    // Rejected, not emptied: an empty result is indistinguishable from a genuinely empty workflow set.
+    // A background job holding retained authority declares it via FundScopeTenantAuthority.
+    private void RejectUnscopedRead(string? callerTenantId)
+    {
+        if (TenantReadPredicate.ShouldRejectRead(callerTenantId, _tenantScope.Mode))
+        {
+            throw new TenantScopeRejectedException("operations-continuity workflows");
+        }
+    }
 
     public async Task SaveAsync(OperationsContinuityWorkflow workflow, CancellationToken ct = default)
     {
@@ -65,12 +81,14 @@ public sealed class PostgresOperationsContinuityStore :
             where workflow_id = @workflow_id
             """;
         command.Parameters.AddWithValue("workflow_id", workflowId);
-        // SEC-005 slice 4c: scope by the workflow's stamped tenant_id so a foreign workflow GUID resolves to
-        // not-found rather than leaking the workflow. Fail-open for a tenantless caller / unbound workflow.
+        // SEC-005 slice 4c: scope by the workflow's stamped tenant_id so a foreign workflow GUID resolves
+        // to not-found rather than leaking the workflow. Under the deployment-boundary posture an unbound
+        // workflow still resolves; under fail-closed it does not, and a tenantless caller is refused.
         var callerTenant = ResolveCallerTenant();
+        RejectUnscopedRead(callerTenant);
         if (TenantReadPredicate.ShouldFilter(callerTenant))
         {
-            command.CommandText += TenantReadPredicate.FilterClause("tenant_id");
+            command.CommandText += TenantReadPredicate.FilterClause("tenant_id", _tenantScope.Mode);
             command.Parameters.AddWithValue(
                 TenantReadPredicate.ParameterName,
                 TenantReadPredicate.NormalizeParameter(callerTenant!));
@@ -123,12 +141,13 @@ public sealed class PostgresOperationsContinuityStore :
 
         // SEC-005 slice 4c: scope by the workflow's stamped tenant_id, closing the slice-3b residual where
         // the close-cockpit / workflow-summary reach this store by fund_account_id / ledgerBookId without a
-        // fund_profile_id. Fail-open — applied only for a tenant-scoped caller; a null-tenant (unbound)
-        // workflow or a tenantless caller passes, so single-company-per-deployment behavior is unchanged.
+        // fund_profile_id. Applied only for a tenant-scoped caller; under the deployment-boundary posture
+        // an unbound workflow still passes, so single-company-per-deployment behavior is unchanged.
         var callerTenant = ResolveCallerTenant();
+        RejectUnscopedRead(callerTenant);
         if (TenantReadPredicate.ShouldFilter(callerTenant))
         {
-            command.CommandText += TenantReadPredicate.FilterClause("tenant_id");
+            command.CommandText += TenantReadPredicate.FilterClause("tenant_id", _tenantScope.Mode);
             command.Parameters.AddWithValue(
                 TenantReadPredicate.ParameterName,
                 TenantReadPredicate.NormalizeParameter(callerTenant!));
@@ -181,6 +200,19 @@ public sealed class PostgresOperationsContinuityStore :
             results.Add(DeserializeAudit(reader.GetString(0), workflowId));
         }
 
+        if (results.Any(entry => entry.WorkflowId != workflowId))
+        {
+            throw new InvalidDataException(
+                $"Operations continuity audit history for workflow '{workflowId}' contains an event for a different workflow.");
+        }
+
+        if (results.Count > 0 &&
+            !OperationsWorkflowAuditHashing.TryValidateChain(results, out var blockerCode, out var message))
+        {
+            throw new InvalidDataException(
+                $"Operations continuity audit history for workflow '{workflowId}' is invalid ({blockerCode}): {message}");
+        }
+
         return results;
     }
 
@@ -204,6 +236,33 @@ public sealed class PostgresOperationsContinuityStore :
         return new OperationsContinuityTransactionalCommitResult(workflow, audit);
     }
 
+    public async Task<OperationsContinuityTransactionalCommitResult> CommitWorkflowTransitionAsync(
+        OperationsContinuityWorkflow workflow,
+        OperationsWorkflowAuditDraft auditDraft,
+        bool persistWorkflowState,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(workflow);
+        ArgumentNullException.ThrowIfNull(auditDraft);
+        if (workflow.WorkflowId != auditDraft.WorkflowId)
+        {
+            throw new ArgumentException("Workflow and audit draft identities must match.", nameof(auditDraft));
+        }
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
+
+        var audit = await AppendAuditAsync(connection, transaction, auditDraft, ct).ConfigureAwait(false);
+        if (persistWorkflowState)
+        {
+            workflow.Touch(audit.OccurredAtUtc);
+            await UpsertWorkflowAsync(connection, transaction, workflow, ct).ConfigureAwait(false);
+        }
+
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return new OperationsContinuityTransactionalCommitResult(workflow, audit);
+    }
+
     public async Task<OperationsContinuityTransactionalCommitResult> CommitLedgerPostingAsync(
         OperationsContinuityWorkflow workflow,
         OperationsWorkflowAuditDraft auditDraft,
@@ -217,6 +276,8 @@ public sealed class PostgresOperationsContinuityStore :
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
 
+        // Reject an unresolved book before a transactional ledger append can create any related writes.
+        await EnsureLedgerBookTenantResolvableAsync(connection, transaction, workflow, ct).ConfigureAwait(false);
         await _ledgerJournalStore.AppendAsync(connection, transaction, journalEntry, ct).ConfigureAwait(false);
         var audit = await AppendAuditAsync(connection, transaction, auditDraft, ct).ConfigureAwait(false);
         workflow.Touch(audit.OccurredAtUtc);
@@ -316,7 +377,7 @@ public sealed class PostgresOperationsContinuityStore :
 
     private static long CreateWorkflowAuditLockKey(Guid workflowId)
     {
-        var hash = SHA256.HashData(workflowId.ToByteArray());
+        var hash = Sha256Digest.ComputeBytes(workflowId.ToByteArray());
         return BinaryPrimitives.ReadInt64BigEndian(hash.AsSpan(0, sizeof(long)));
     }
 
@@ -348,6 +409,10 @@ public sealed class PostgresOperationsContinuityStore :
         OperationsContinuityWorkflow workflow,
         CancellationToken ct)
     {
+        // Keep the tenant-resolution precondition at the write seam so all workflow upserts, including
+        // transactional workflow starts, reject book-scoped workflows that cannot be tenant-stamped.
+        await EnsureLedgerBookTenantResolvableAsync(connection, transaction, workflow, ct).ConfigureAwait(false);
+
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText =
@@ -424,8 +489,10 @@ public sealed class PostgresOperationsContinuityStore :
         // Trust-on-first-use fallback tenant for a genuinely BOOK-LESS workflow only: the resolved tenant of
         // the operator performing the write. Bound to null whenever a ledger book is present, so a
         // book-scoped workflow always derives its tenant from the authoritative fund registry (see the stamp
-        // SQL) and can never be mis-stamped with a caller tenant that differs from the fund's owner. Null for
-        // a background/non-request writer, which stays fail-open. Trimmed to match the write-side stamp.
+        // SQL) and can never be mis-stamped with a caller tenant that differs from the fund's owner. The
+        // pre-insert ledger-book tenant guard rejects unresolved book scopes before they can persist a
+        // tenantless fail-open workflow. Null for a background/non-request writer, which stays fail-open
+        // only for genuinely book-less workflows. Trimmed to match the write-side stamp.
         var callerTenantStamp = ResolveCallerTenant();
         var bookLessCallerTenant = workflow.LedgerBookId is null && !string.IsNullOrWhiteSpace(callerTenantStamp)
             ? (object)callerTenantStamp.Trim()
@@ -437,6 +504,37 @@ public sealed class PostgresOperationsContinuityStore :
         {
             throw new InvalidOperationException(
                 $"Operations continuity workflow '{workflow.WorkflowId}' was not saved because the stored version is newer or equal.");
+        }
+    }
+
+    private async Task EnsureLedgerBookTenantResolvableAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        OperationsContinuityWorkflow workflow,
+        CancellationToken ct)
+    {
+        if (workflow.LedgerBookId is null)
+        {
+            return;
+        }
+
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select t.tenant_id
+            from {Qualified("ledger_books")} b
+            join {Qualified("fund_profile_tenancy")} t
+              on t.fund_profile_id = lower(trim(b.fund_profile_id))
+            where b.ledger_book_id = @tenant_ledger_book_id
+            """;
+        command.Parameters.AddWithValue("tenant_ledger_book_id", workflow.LedgerBookId.Value);
+
+        var tenantId = await command.ExecuteScalarAsync(ct).ConfigureAwait(false) as string;
+        if (string.IsNullOrWhiteSpace(tenantId))
+        {
+            throw new InvalidOperationException(
+                $"Operations continuity workflow '{workflow.WorkflowId}' cannot be saved because ledger book '{workflow.LedgerBookId.Value}' does not resolve to a claimed fund tenant.");
         }
     }
 

@@ -73,7 +73,7 @@ def _build_path_lists(root: Path) -> tuple[list[Path], list[Path], list[Path]]:
         root / ".github" / "agents" / "code-review-agent.md",
         root / ".github" / "agents" / "documentation-agent.md",
         root / ".github" / "agents" / "repo-navigation-agent.md",
-        root / ".claude" / "agents" / "meridian-navigation.md",
+        root / ".claude" / "agents" / "meridian-repo-navigation.md",
         root / ".codex" / "skills" / "meridian-repo-navigation" / "SKILL.md",
         root / ".claude" / "skills" / "meridian-code-review" / "SKILL.md",
     ]
@@ -201,7 +201,7 @@ def _count_files(directory: str, extension: str) -> int:
     """Count files with given extension in directory, excluding bin/obj."""
     count = 0
     for root, dirs, files in os.walk(directory):
-        dirs[:] = [d for d in dirs if d not in {"bin", "obj", "node_modules", ".git", "__pycache__"}]
+        dirs[:] = [d for d in dirs if d not in {"bin", "obj", "node_modules", ".git", "__pycache__", ".pytest_cache"}]
         for f in files:
             if f.endswith(extension):
                 count += 1

@@ -1,6 +1,7 @@
 import type {
   JournalEntryLifecycleTransition,
   LedgerJournalLine,
+  LedgerPostedJournalEntry,
   ManualJournalEntryDraft,
   ManualJournalEntryStatus
 } from "@/types";
@@ -16,6 +17,12 @@ export interface JournalEntryDetailSummaryField {
 export interface JournalEntryDetailLineRow {
   lineId: string;
   account: string;
+  /**
+   * The date to show against this line. Posted lines carry their own timestamp, which is the only
+   * date a posted entry has — there is no draft accounting date to fall back on — so the
+   * projection must keep it or the detail table renders a blank Date column for the whole entry.
+   */
+  date: string | null;
   debit?: number;
   credit?: number;
   description: string | null;
@@ -38,8 +45,20 @@ export interface JournalEntryDetailEvidenceRow {
   addedAtUtc: string;
 }
 
+/**
+ * Which record answered for this entry.
+ *
+ * Deliberately separate from `dataCompleteness`, which says only how much of the entry we hold.
+ * A governed posted entry and a manual draft are both "full", but only the draft has an approval
+ * workflow, a lifecycle and attached evidence behind it. Deciding those sections from completeness
+ * made a posted entry render manual-workflow panels — including an "Approval pending" it can never
+ * resolve — and label its source as the manual journal workbench.
+ */
+export type JournalEntryDetailSourceKind = "manual-draft" | "posted-journal" | "run-summary" | "none";
+
 export interface JournalEntryDetailViewState {
   dataCompleteness: JournalEntryDetailDataCompleteness;
+  sourceKind: JournalEntryDetailSourceKind;
   journalEntryId: string;
   title: string;
   statusLabel: string;
@@ -83,15 +102,49 @@ function buildLifecycleRow(transition: JournalEntryLifecycleTransition): Journal
 export function buildJournalEntryDetailViewState({
   journalEntryId,
   draft,
-  journalLine
+  journalLine,
+  postedEntry = null,
+  postedCurrency = null
 }: {
   journalEntryId: string;
   draft: ManualJournalEntryDraft | null;
   journalLine: LedgerJournalLine | null;
+  /**
+   * The governed period's own entry, when the drill-through came from a posted journal. It
+   * carries full posting lines, so a posted entry is not reduced to a summary that discards
+   * detail the response already contained.
+   */
+  postedEntry?: LedgerPostedJournalEntry | null;
+  /**
+   * Base currency of the ledger book the posted entry belongs to. The posted payload carries a
+   * `ledgerBookId` but no currency, and its amounts are in the book's own units, so the caller
+   * resolves the book and passes the currency here. Without it the table labelled a EUR or GBP
+   * book's debits and credits as dollars.
+   */
+  postedCurrency?: string | null;
 }): JournalEntryDetailViewState {
   if (draft) {
+    const attachedEvidence = (draft.evidenceAttachments ?? []).map((attachment) => ({
+      attachmentId: attachment.attachmentId,
+      displayName: attachment.displayName,
+      uri: attachment.uri,
+      addedBy: attachment.addedBy,
+      addedAtUtc: attachment.addedAtUtc
+    }));
+    const attachedUris = new Set(attachedEvidence.map((attachment) => attachment.uri));
+    const linkedEvidence = (draft.evidenceLinks ?? [])
+      .filter((uri) => !attachedUris.has(uri))
+      .map((uri, index) => ({
+        attachmentId: `retained-evidence-${index + 1}`,
+        displayName: `Retained posting evidence ${index + 1}`,
+        uri,
+        addedBy: draft.preparedBy,
+        addedAtUtc: draft.updatedAtUtc
+      }));
+
     return {
       dataCompleteness: "full",
+      sourceKind: "manual-draft",
       journalEntryId,
       title: draft.memo || draft.journalEntryId,
       statusLabel: draft.status,
@@ -109,6 +162,7 @@ export function buildJournalEntryDetailViewState({
       lines: draft.lines.map((line) => ({
         lineId: line.lineId,
         account: line.accountPath,
+        date: draft.accountingDate ?? null,
         debit: line.side === "Debit" ? line.amount : undefined,
         credit: line.side === "Credit" ? line.amount : undefined,
         description: line.description ?? null,
@@ -117,13 +171,47 @@ export function buildJournalEntryDetailViewState({
       totalDebits: draft.totalDebits,
       totalCredits: draft.totalCredits,
       lifecycle: (draft.lifecycleTransitions ?? []).map(buildLifecycleRow),
-      evidence: (draft.evidenceAttachments ?? []).map((attachment) => ({
-        attachmentId: attachment.attachmentId,
-        displayName: attachment.displayName,
-        uri: attachment.uri,
-        addedBy: attachment.addedBy,
-        addedAtUtc: attachment.addedAtUtc
+      evidence: [...attachedEvidence, ...linkedEvidence],
+      summaryOnlyNotice: null,
+      notFoundText: null
+    };
+  }
+
+  // A posted entry from the governed period carries its own lines; render them rather than
+  // reporting "summary only" over detail the response already returned.
+  if (postedEntry && postedEntry.lines.length > 0) {
+    return {
+      dataCompleteness: "full",
+      sourceKind: "posted-journal",
+      journalEntryId,
+      title: postedEntry.description || postedEntry.journalEntryId,
+      statusLabel: "Posted",
+      statusTone: "default",
+      summaryFields: [
+        { label: "Journal entry", value: postedEntry.journalEntryId },
+        { label: "Posted at", value: postedEntry.timestamp },
+        { label: "Ledger book", value: postedEntry.ledgerBookId ?? "Unassigned" },
+        { label: "Basis", value: postedEntry.accountingBasis ?? "Primary" },
+        { label: "Line count", value: String(postedEntry.lines.length) },
+        { label: "Currency", value: postedCurrency ?? "Unknown" }
+      ],
+      // Posted amounts are in the book's own base currency. Falling back to the empty string
+      // rather than USD when the book could not be resolved: an unlabelled number is honest,
+      // a number labelled as dollars it is not is a misstatement.
+      currency: postedCurrency ?? "",
+      lines: postedEntry.lines.map((line, index) => ({
+        lineId: line.entryId || `posted-line-${index + 1}`,
+        account: line.accountName,
+        date: line.timestamp || postedEntry.timestamp || null,
+        debit: line.debit > 0 ? line.debit : undefined,
+        credit: line.credit > 0 ? line.credit : undefined,
+        description: line.description ?? null,
+        evidenceLink: null
       })),
+      totalDebits: postedEntry.totalDebits,
+      totalCredits: postedEntry.totalCredits,
+      lifecycle: [],
+      evidence: [],
       summaryOnlyNotice: null,
       notFoundText: null
     };
@@ -132,6 +220,7 @@ export function buildJournalEntryDetailViewState({
   if (journalLine) {
     return {
       dataCompleteness: "summary-only",
+      sourceKind: "run-summary",
       journalEntryId,
       title: journalLine.description || journalLine.journalEntryId,
       statusLabel: "Posted (summary only)",
@@ -154,8 +243,9 @@ export function buildJournalEntryDetailViewState({
 
   return {
     dataCompleteness: "not-found",
+    sourceKind: "none",
     journalEntryId,
-    title: journalEntryId,
+    title: "Journal entry not found",
     statusLabel: "Not found",
     statusTone: "warning",
     summaryFields: [],
@@ -166,6 +256,6 @@ export function buildJournalEntryDetailViewState({
     lifecycle: [],
     evidence: [],
     summaryOnlyNotice: null,
-    notFoundText: `No journal entry matching "${journalEntryId}" was found in the manual workbench or the selected run's ledger.`
+    notFoundText: "No matching journal entry was found in the manual workbench or the selected run's ledger."
   };
 }

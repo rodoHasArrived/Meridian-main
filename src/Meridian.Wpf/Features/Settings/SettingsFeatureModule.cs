@@ -28,6 +28,7 @@ public sealed class SettingsFeatureModule : IDesktopFeatureModule
         ShellPageRegistryBuilder.Page<SettingsPage>("Settings", "Settings", "Adjust workstation preferences, connections, and operator defaults.", "settings", "Preferences", "\uE713", 10, ShellNavigationVisibilityTier.Primary, ["preferences", "settings"], ["CredentialManagement", "KeyboardShortcuts", "Help"], ["Preferences"]),
         ShellPageRegistryBuilder.Page<CredentialManagementPage>("CredentialManagement", "Credential management", "Manage provider credentials and validate secure access.", "settings", "Preferences", "\uE72E", 20, ShellNavigationVisibilityTier.Primary, ["credentials", "security"], ["Settings", "AddProviderWizard"]),
         ShellPageRegistryBuilder.Page<SystemHealthPage>("SystemHealth", "System health", "Monitor workstation service health, dependencies, and readiness.", "settings", "Operations", "\uE9D9", 30, ShellNavigationVisibilityTier.Primary, ["health", "system"], ["Diagnostics", "ServiceManager"]),
+        ShellPageRegistryBuilder.Page<LifecycleControlPage>("LifecycleControl", "Lifecycle control", "Inspect readiness and request supervised restart or shutdown.", "settings", "Operations", "\uE7E8", 35, ShellNavigationVisibilityTier.Primary, ["lifecycle", "startup", "shutdown", "restart"], ["SystemHealth", "Diagnostics"]),
         ShellPageRegistryBuilder.Page<DiagnosticsPage>("Diagnostics", "Diagnostics", "Run checks, inspect latency, and troubleshoot operator issues.", "settings", "Operations", "\uE90F", 40, ShellNavigationVisibilityTier.Primary, ["diagnostics", "troubleshooting"], ["SystemHealth", "ServiceManager"]),
         ShellPageRegistryBuilder.Page<ServiceManagerPage>("ServiceManager", "Service manager", "Inspect background services, logs, and operational controls.", "settings", "Operations", "\uECE7", 50, ShellNavigationVisibilityTier.Secondary, ["services", "logs"], ["SystemHealth", "Diagnostics"]),
         ShellPageRegistryBuilder.Page<AdminMaintenancePage>("AdminMaintenance", "Admin maintenance", "Execute privileged maintenance tasks and operations.", "settings", "Operations", "\uE74D", 60, ShellNavigationVisibilityTier.Secondary, ["admin", "maintenance"], ["Diagnostics", "Settings"]),
@@ -51,6 +52,11 @@ public sealed class SettingsFeatureModule : IDesktopFeatureModule
         services.AddWorkspaceScoped<ISettingsWorkspaceShellPresentationService, SettingsWorkspaceShellPresentationService>();
         services.AddTransient<SettingsWorkspaceShellViewModel>();
         services.AddTransient<SettingsWorkspaceShellPage>();
+        services.AddSingleton<ILifecycleControlClient>(sp => new LifecycleControlClient(
+            WpfRemoteWorkstationClient.Instance,
+            sp.GetRequiredService<DesktopAuthenticationSession>()));
+        services.AddTransient<LifecycleControlViewModel>();
+        services.AddTransient<LifecycleControlPage>();
         services.AddSingleton<ProviderManagementService>(_ => ProviderManagementService.Instance);
         services.AddSingleton<AdminMaintenanceServiceBase>(_ => AdminMaintenanceServiceBase.Instance);
         services.AddSingleton<IAdminMaintenanceService>(sp => sp.GetRequiredService<AdminMaintenanceServiceBase>());

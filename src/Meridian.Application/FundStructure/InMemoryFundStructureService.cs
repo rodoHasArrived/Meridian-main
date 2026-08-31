@@ -4,9 +4,12 @@ using Meridian.Application.Composition;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Core.Logging;
 using Meridian.Entities.FundStructure;
 using Meridian.FSharp.CashFlowInterop;
 using Meridian.Storage.FundStructure;
+using Serilog;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Application.FundStructure;
 
@@ -14,8 +17,9 @@ namespace Meridian.Application.FundStructure;
 /// Thread-safe governance structure service backed by an in-memory working set
 /// with optional durable JSON snapshot persistence for local-first workflows.
 /// </summary>
-public sealed class InMemoryFundStructureService : INonProductionOnlyService, IFundStructureService
+public sealed partial class InMemoryFundStructureService : INonProductionOnlyService, IFundStructureService
 {
+    private static readonly ILogger Log = LoggingSetup.ForContext<InMemoryFundStructureService>();
     private static readonly StringComparer AssignmentComparer = StringComparer.OrdinalIgnoreCase;
     private const string DefaultCashFlowCurrency = "USD";
     private const string SecurityMasterInstrumentAssignmentType = "SecurityMasterInstrument";
@@ -494,8 +498,8 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
                 IsActive = request.IsActive ?? existing.IsActive,
                 EffectiveFrom = request.EffectiveFrom ?? existing.EffectiveFrom,
                 EffectiveTo = request.EffectiveTo ?? existing.EffectiveTo,
-                Description = CleanOptional(request.Description) ?? existing.Description,
-                RegistrationNumber = CleanOptional(request.RegistrationNumber) ?? existing.RegistrationNumber,
+                Description = NormalizeOptional(request.Description) ?? existing.Description,
+                RegistrationNumber = NormalizeOptional(request.RegistrationNumber) ?? existing.RegistrationNumber,
                 LifecycleStatus = request.LifecycleStatus ?? existing.LifecycleStatus,
                 BeneficialOwners = request.BeneficialOwners is null
                     ? existing.BeneficialOwners
@@ -3199,86 +3203,6 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
         }
     }
 
-    private void LoadState()
-    {
-        try
-        {
-            var json = _stateStore.Load();
-            if (string.IsNullOrWhiteSpace(json))
-            {
-                return;
-            }
-
-            var state = JsonSerializer.Deserialize<PersistedState>(json, JsonOptions);
-            if (state is null)
-            {
-                return;
-            }
-
-            foreach (var organization in state.Organizations)
-            {
-                _organizations[organization.OrganizationId] = organization;
-            }
-
-            foreach (var business in state.Businesses)
-            {
-                _businesses[business.BusinessId] = business;
-            }
-
-            foreach (var client in state.Clients)
-            {
-                _clients[client.ClientId] = client;
-            }
-
-            foreach (var fund in state.Funds)
-            {
-                _funds[fund.FundId] = fund;
-            }
-
-            foreach (var sleeve in state.Sleeves)
-            {
-                _sleeves[sleeve.SleeveId] = sleeve;
-            }
-
-            foreach (var vehicle in state.Vehicles)
-            {
-                _vehicles[vehicle.VehicleId] = vehicle;
-            }
-
-            foreach (var entity in state.Entities)
-            {
-                _entities[entity.EntityId] = entity;
-            }
-
-            foreach (var portfolio in state.InvestmentPortfolios)
-            {
-                _investmentPortfolios[portfolio.InvestmentPortfolioId] = portfolio;
-            }
-
-            foreach (var link in state.OwnershipLinks)
-            {
-                _ownershipLinks[link.OwnershipLinkId] = link;
-            }
-
-            foreach (var assignment in state.Assignments)
-            {
-                _assignments[assignment.AssignmentId] = assignment;
-            }
-
-            foreach (var linkedAccountId in state.LinkedAccountIds)
-            {
-                _linkedAccountIds.Add(linkedAccountId);
-            }
-
-            _stateVersion = 1;
-            _persistedVersion = 1;
-        }
-        catch (Exception ex) when (ex is IOException or JsonException)
-        {
-            // Preserve startup availability for malformed or missing local snapshots.
-        }
-    }
-
     private async Task<IReadOnlyList<AccountSummaryDto>> GetVisibleAccountsAsync(
         bool activeOnly,
         DateTimeOffset asOf,
@@ -3825,7 +3749,6 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
         }
     }
 
-
     private static FundStructureNodeKindDto ResolveKnownNodeKind(
         Guid nodeId,
         IReadOnlyDictionary<Guid, FundStructureNodeKindDto> nodeKinds)
@@ -3958,7 +3881,7 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
 
         var now = DateTimeOffset.UtcNow;
         foreach (var link in _ownershipLinks.Values
-            .Where(link => IsOwnershipLinkVisible(link, activeOnly: true, now))
+            .Where(link => OwnershipGraphValidation.IsOwnershipLinkVisible(link, activeOnly: true, now))
             .OrderBy(static link => link.EffectiveFrom)
             .ThenBy(static link => link.OwnershipLinkId))
         {
@@ -3968,98 +3891,11 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
 
     private List<OwnershipGraphValidationIssueDto> ValidateOwnershipGraphLocked(bool activeOnly, DateTimeOffset asOf)
     {
-        var issues = new List<OwnershipGraphValidationIssueDto>();
         var links = _ownershipLinks.Values
-            .Where(link => IsOwnershipLinkVisible(link, activeOnly, asOf))
+            .Where(link => OwnershipGraphValidation.IsOwnershipLinkVisible(link, activeOnly, asOf))
             .ToList();
-
-        foreach (var link in links)
-        {
-            if (link.ParentNodeId == link.ChildNodeId)
-            {
-                issues.Add(new OwnershipGraphValidationIssueDto(
-                    "ownership.self-link",
-                    "Ownership links cannot point a node to itself.",
-                    link.OwnershipLinkId,
-                    link.ParentNodeId));
-            }
-
-            if (!TryGetStoredNodeKindLocked(link.ParentNodeId, out _))
-            {
-                issues.Add(new OwnershipGraphValidationIssueDto(
-                    "ownership.parent-not-found",
-                    $"Parent node {link.ParentNodeId} was not found.",
-                    link.OwnershipLinkId,
-                    link.ParentNodeId));
-            }
-
-            if (!TryGetStoredNodeKindLocked(link.ChildNodeId, out _))
-            {
-                issues.Add(new OwnershipGraphValidationIssueDto(
-                    "ownership.child-not-found",
-                    $"Child node {link.ChildNodeId} was not found.",
-                    link.OwnershipLinkId,
-                    link.ChildNodeId));
-            }
-        }
-
-        var adjacency = links
-            .GroupBy(static link => link.ParentNodeId)
-            .ToDictionary(static group => group.Key, static group => group.Select(link => (link.ChildNodeId, link.OwnershipLinkId)).ToList());
-        var visiting = new HashSet<Guid>();
-        var visited = new HashSet<Guid>();
-        foreach (var nodeId in adjacency.Keys.ToList())
-        {
-            DetectOwnershipCycles(nodeId, adjacency, visiting, visited, issues);
-        }
-
-        return issues;
+        return OwnershipGraphValidation.Validate(links, nodeId => TryGetStoredNodeKindLocked(nodeId, out _));
     }
-
-    private static bool DetectOwnershipCycles(
-        Guid nodeId,
-        IReadOnlyDictionary<Guid, List<(Guid ChildNodeId, Guid OwnershipLinkId)>> adjacency,
-        HashSet<Guid> visiting,
-        HashSet<Guid> visited,
-        List<OwnershipGraphValidationIssueDto> issues)
-    {
-        if (visited.Contains(nodeId))
-        {
-            return false;
-        }
-
-        if (!visiting.Add(nodeId))
-        {
-            issues.Add(new OwnershipGraphValidationIssueDto(
-                "ownership.cycle",
-                $"Ownership graph contains a cycle at node {nodeId}.",
-                NodeId: nodeId));
-            return true;
-        }
-
-        if (adjacency.TryGetValue(nodeId, out var children))
-        {
-            foreach (var (childNodeId, ownershipLinkId) in children)
-            {
-                if (DetectOwnershipCycles(childNodeId, adjacency, visiting, visited, issues))
-                {
-                    issues.Add(new OwnershipGraphValidationIssueDto(
-                        "ownership.cycle-link",
-                        $"Ownership link {ownershipLinkId} participates in a cycle.",
-                        ownershipLinkId,
-                        childNodeId));
-                    return true;
-                }
-            }
-        }
-
-        visiting.Remove(nodeId);
-        visited.Add(nodeId);
-        return false;
-    }
-
-    private static bool IsOwnershipLinkVisible(OwnershipLinkDto link, bool activeOnly, DateTimeOffset asOf) =>
-        !activeOnly || (link.EffectiveFrom <= asOf && (link.EffectiveTo is null || link.EffectiveTo > asOf));
 
     private void ApplyOwnershipLinkLocked(OwnershipLinkDto link)
     {
@@ -4339,8 +4175,8 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
             Name = CleanRequired(entity.Name, entity.Name),
             Jurisdiction = CleanRequired(entity.Jurisdiction, entity.Jurisdiction),
             BaseCurrency = CleanRequired(entity.BaseCurrency, entity.BaseCurrency).ToUpperInvariant(),
-            RegistrationNumber = CleanOptional(entity.RegistrationNumber),
-            Description = CleanOptional(entity.Description),
+            RegistrationNumber = NormalizeOptional(entity.RegistrationNumber),
+            Description = NormalizeOptional(entity.Description),
             BeneficialOwners = NormalizeBeneficialOwners(entity.BeneficialOwners),
             LifecycleEvents = NormalizeLifecycleEvents(entity.LifecycleEvents)
         };
@@ -4354,8 +4190,8 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
                 .Select(static owner => owner with
                 {
                     OwnerName = owner.OwnerName.Trim(),
-                    OwnerIdentifier = CleanOptional(owner.OwnerIdentifier),
-                    Notes = CleanOptional(owner.Notes)
+                    OwnerIdentifier = NormalizeOptional(owner.OwnerIdentifier),
+                    Notes = NormalizeOptional(owner.Notes)
                 })
                 .ToList();
 
@@ -4370,7 +4206,7 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
                 {
                     RecordedBy = lifecycleEvent.RecordedBy.Trim(),
                     Summary = lifecycleEvent.Summary.Trim(),
-                    EvidenceReference = CleanOptional(lifecycleEvent.EvidenceReference)
+                    EvidenceReference = NormalizeOptional(lifecycleEvent.EvidenceReference)
                 })
                 .OrderBy(static lifecycleEvent => lifecycleEvent.OccurredAt)
                 .ThenBy(static lifecycleEvent => lifecycleEvent.EventId)
@@ -4399,8 +4235,6 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
         var value = string.IsNullOrWhiteSpace(candidate) ? fallback : candidate;
         return value.Trim();
     }
-
-    private static string? CleanOptional(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private sealed record ResolvedCashFlowScope(
         GovernanceCashFlowScopeDto Scope,

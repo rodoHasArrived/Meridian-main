@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Meridian.Core.Logging;
@@ -14,16 +13,23 @@ namespace Meridian.DataIntegration.Monitoring;
 /// </summary>
 public sealed class TimestampMonotonicityChecker : IDisposable
 {
-    private readonly ILogger _log = LoggingSetup.ForContext<TimestampMonotonicityChecker>();
-    private readonly ConcurrentDictionary<string, SymbolTimestampState> _symbolStates = new();
-    private readonly TimestampMonotonicityConfig _config;
-    private readonly Timer _cleanupTimer;
-    private volatile bool _isDisposed;
+    private static readonly TimeSpan CleanupInterval = TimeSpan.FromMinutes(10);
+    private static readonly TimeSpan StateRetentionWindow = TimeSpan.FromHours(24);
 
-    // Global counters
-    private long _totalEventsChecked;
-    private long _totalViolations;
-    private long _totalWarnings;
+    private readonly ILogger _log = LoggingSetup.ForContext<TimestampMonotonicityChecker>();
+    private readonly TimestampMonotonicityConfig _config;
+    private readonly TimeProvider _timeProvider;
+    private readonly ITimer _cleanupTimer;
+    private readonly TimestampMonotonicityCheckerTestHooks? _testHooks;
+    private readonly object _lifecycleSync = new();
+    private readonly object _callbackSync = new();
+    // Callback reentrancy is stack/thread-local; it must not flow into unrelated child tasks.
+    private readonly ThreadLocal<int> _operationDepth = new();
+    private TimestampGeneration _generation = new();
+    private int _activeOperations;
+    private bool _disposeRequested;
+    private bool _timerStopped;
+    private bool _disposeCompleted;
 
     /// <summary>
     /// Event raised when a monotonicity violation is detected (timestamp going backwards).
@@ -36,10 +42,30 @@ public sealed class TimestampMonotonicityChecker : IDisposable
     public event Action<TimestampGapAlert>? OnTimeGap;
 
     public TimestampMonotonicityChecker(TimestampMonotonicityConfig? config = null)
+        : this(config, TimeProvider.System)
     {
-        _config = config ?? TimestampMonotonicityConfig.Default;
-        _cleanupTimer = new Timer(CleanupOldStates, null,
-            TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
+    }
+
+    public TimestampMonotonicityChecker(
+        TimestampMonotonicityConfig? config,
+        TimeProvider timeProvider)
+        : this(config, timeProvider, testHooks: null)
+    {
+    }
+
+    internal TimestampMonotonicityChecker(
+        TimestampMonotonicityConfig? config,
+        TimeProvider timeProvider,
+        TimestampMonotonicityCheckerTestHooks? testHooks)
+    {
+        _config = ValidateConfig(config ?? TimestampMonotonicityConfig.Default);
+        _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
+        _testHooks = testHooks;
+        _cleanupTimer = _timeProvider.CreateTimer(
+            static state => ((TimestampMonotonicityChecker)state!).RunCleanup(),
+            this,
+            CleanupInterval,
+            CleanupInterval);
 
         _log.Information("TimestampMonotonicityChecker initialized with tolerance {ToleranceMs}ms, gap threshold {GapSeconds}s",
             _config.ToleranceMs, _config.TimeGapThresholdSeconds);
@@ -55,112 +81,92 @@ public sealed class TimestampMonotonicityChecker : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool CheckTimestamp(string symbol, string eventType, DateTimeOffset timestamp)
     {
-        if (_isDisposed)
+        if (!TryEnterOperation())
             return false;
 
-        Interlocked.Increment(ref _totalEventsChecked);
-
-        var key = $"{symbol}:{eventType}";
-        var state = _symbolStates.GetOrAdd(key, _ => new SymbolTimestampState());
-        var now = DateTimeOffset.UtcNow;
-
-        // Get the previous timestamp
-        var lastTimestamp = state.LastEventTimestamp;
-
-        // Record this event
-        state.RecordEvent(timestamp);
-
-        // First event for this symbol/type - nothing to compare
-        if (lastTimestamp == DateTimeOffset.MinValue)
+        try
         {
+            var normalizedSymbol = NormalizeRequiredIdentity(symbol, nameof(symbol));
+            var normalizedEventType = NormalizeRequiredIdentity(eventType, nameof(eventType));
+            var key = new SymbolEventKey(normalizedSymbol, normalizedEventType);
+            var generation = Volatile.Read(ref _generation);
+            var now = _timeProvider.GetUtcNow();
+            Interlocked.Increment(ref generation.TotalEventsChecked);
+
+            TimestampObservation observation;
+            while (true)
+            {
+                var state = generation.SymbolStates.GetOrAdd(
+                    key,
+                    _ => new SymbolTimestampState(symbol.Trim(), eventType.Trim()));
+                if (state.TryObserve(timestamp, now, _config, out observation))
+                    break;
+
+                TryRemoveExact(generation.SymbolStates, key, state);
+            }
+
+            _testHooks?.ObservationCommittedBeforePublish?.Invoke();
+
+            // First event for this symbol/type - nothing to compare
+            if (observation.IsFirstEvent)
+            {
+                return false;
+            }
+
+            // Check for backwards timestamp (violation)
+            if (observation.IsViolation)
+            {
+                Interlocked.Increment(ref generation.TotalViolations);
+
+                var violation = new MonotonicityViolation(
+                    Symbol: symbol,
+                    EventType: eventType,
+                    CurrentTimestamp: timestamp,
+                    PreviousTimestamp: observation.PreviousTimestamp,
+                    DeltaMs: observation.DeltaMs,
+                    ConsecutiveViolations: observation.ConsecutiveViolations,
+                    TotalViolations: observation.TotalViolations,
+                    DetectedAt: now
+                );
+
+                // Only log if cooldown has passed
+                if (observation.ShouldAlert)
+                {
+                    PublishViolationIfCurrentGeneration(generation, violation);
+                }
+
+                return true;
+            }
+
+            // Check for large time gaps (potential data loss)
+            if (observation.IsGap)
+            {
+                Interlocked.Increment(ref generation.TotalGaps);
+
+                var gapAlert = new TimestampGapAlert(
+                    Symbol: symbol,
+                    EventType: eventType,
+                    GapStartTimestamp: observation.PreviousTimestamp,
+                    GapEndTimestamp: timestamp,
+                    GapDurationSeconds: observation.DeltaMs / 1000.0,
+                    TotalGaps: observation.TotalGaps,
+                    DetectedAt: now
+                );
+
+                if (observation.ShouldAlert)
+                {
+                    PublishGapIfCurrentGeneration(generation, gapAlert);
+                }
+
+                return true;
+            }
+
             return false;
         }
-
-        // Calculate the time difference
-        var timeDelta = (timestamp - lastTimestamp).TotalMilliseconds;
-
-        // Check for backwards timestamp (violation)
-        if (timeDelta < -_config.ToleranceMs)
+        finally
         {
-            Interlocked.Increment(ref _totalViolations);
-            state.IncrementViolationCount();
-
-            var violation = new MonotonicityViolation(
-                Symbol: symbol,
-                EventType: eventType,
-                CurrentTimestamp: timestamp,
-                PreviousTimestamp: lastTimestamp,
-                DeltaMs: timeDelta,
-                ConsecutiveViolations: state.ConsecutiveViolations,
-                TotalViolations: state.TotalViolations,
-                DetectedAt: now
-            );
-
-            // Only log if cooldown has passed
-            if (state.CanAlert(now, _config.AlertCooldownMs))
-            {
-                _log.Warning("MONOTONICITY VIOLATION: {Symbol}:{EventType} timestamp went backwards by {DeltaMs:F2}ms " +
-                    "(current: {Current}, previous: {Previous})",
-                    symbol, eventType, -timeDelta, timestamp.ToString("O"), lastTimestamp.ToString("O"));
-
-                state.RecordAlert(now);
-
-                try
-                {
-                    OnViolation?.Invoke(violation);
-                }
-                catch (Exception ex)
-                {
-                    _log.Error(ex, "Error in monotonicity violation event handler");
-                }
-            }
-
-            return true;
+            ExitOperation();
         }
-
-        // Reset consecutive violations on normal event
-        if (state.ConsecutiveViolations > 0 && timeDelta >= 0)
-        {
-            state.ResetConsecutiveViolations();
-        }
-
-        // Check for large time gaps (potential data loss)
-        if (_config.DetectTimeGaps && timeDelta > _config.TimeGapThresholdSeconds * 1000)
-        {
-            Interlocked.Increment(ref _totalWarnings);
-            state.IncrementGapCount();
-
-            var gapAlert = new TimestampGapAlert(
-                Symbol: symbol,
-                EventType: eventType,
-                GapStartTimestamp: lastTimestamp,
-                GapEndTimestamp: timestamp,
-                GapDurationSeconds: timeDelta / 1000.0,
-                TotalGaps: state.TotalGaps,
-                DetectedAt: now
-            );
-
-            if (state.CanAlertGap(now, _config.GapAlertCooldownMs))
-            {
-                _log.Information("TIME GAP detected: {Symbol}:{EventType} - {GapSeconds:F2}s gap between events",
-                    symbol, eventType, timeDelta / 1000.0);
-
-                state.RecordGapAlert(now);
-
-                try
-                {
-                    OnTimeGap?.Invoke(gapAlert);
-                }
-                catch (Exception ex)
-                {
-                    _log.Error(ex, "Error in time gap event handler");
-                }
-            }
-
-            return true;
-        }
-
-        return false;
     }
 
     /// <summary>
@@ -174,54 +180,86 @@ public sealed class TimestampMonotonicityChecker : IDisposable
     }
 
     /// <summary>
-    /// Gets statistics about monotonicity checking.
+    /// Gets statistics about monotonicity checking. Overall counters cover the current lifetime
+    /// generation (construction or the most recent reset); retained-state counters and symbol
+    /// details cover only states that have not aged out during cleanup.
     /// </summary>
     public MonotonicityStats GetStats()
     {
+        var generation = Volatile.Read(ref _generation);
         var symbolStats = new List<SymbolMonotonicityStats>();
+        long retainedEvents = 0;
+        long retainedViolations = 0;
+        long retainedGaps = 0;
 
-        foreach (var kvp in _symbolStates)
+        foreach (var kvp in generation.SymbolStates)
         {
-            var parts = kvp.Key.Split(':');
-            var symbol = parts[0];
-            var eventType = parts.Length > 1 ? parts[1] : "unknown";
+            var snapshot = kvp.Value.GetSnapshot();
+            retainedEvents += snapshot.TotalEvents;
+            retainedViolations += snapshot.TotalViolations;
+            retainedGaps += snapshot.TotalGaps;
 
-            if (kvp.Value.TotalViolations > 0 || kvp.Value.TotalGaps > 0)
+            if (snapshot.TotalViolations > 0 || snapshot.TotalGaps > 0)
             {
                 symbolStats.Add(new SymbolMonotonicityStats(
-                    Symbol: symbol,
-                    EventType: eventType,
-                    TotalEvents: kvp.Value.TotalEvents,
-                    TotalViolations: kvp.Value.TotalViolations,
-                    TotalGaps: kvp.Value.TotalGaps,
-                    LastViolationTime: kvp.Value.LastViolationTime,
-                    LastEventTimestamp: kvp.Value.LastEventTimestamp
+                    Symbol: snapshot.Symbol,
+                    EventType: snapshot.EventType,
+                    TotalEvents: snapshot.TotalEvents,
+                    TotalViolations: snapshot.TotalViolations,
+                    TotalGaps: snapshot.TotalGaps,
+                    LastViolationTime: snapshot.LastViolationTime,
+                    LastEventTimestamp: snapshot.LastEventTimestamp
                 ));
             }
         }
 
         return new MonotonicityStats(
-            TotalEventsChecked: Interlocked.Read(ref _totalEventsChecked),
-            TotalViolations: Interlocked.Read(ref _totalViolations),
-            TotalGaps: Interlocked.Read(ref _totalWarnings),
-            SymbolStats: symbolStats.OrderByDescending(s => s.TotalViolations).ToList()
-        );
+            TotalEventsChecked: Interlocked.Read(ref generation.TotalEventsChecked),
+            TotalViolations: Interlocked.Read(ref generation.TotalViolations),
+            TotalGaps: Interlocked.Read(ref generation.TotalGaps),
+            SymbolStats: symbolStats.OrderByDescending(s => s.TotalViolations).ToList())
+        {
+            RetainedStateEvents = retainedEvents,
+            RetainedStateViolations = retainedViolations,
+            RetainedStateGaps = retainedGaps
+        };
     }
 
     /// <summary>
     /// Gets the total number of violations detected.
     /// </summary>
-    public long TotalViolations => Interlocked.Read(ref _totalViolations);
+    public long TotalViolations
+    {
+        get
+        {
+            var generation = Volatile.Read(ref _generation);
+            return Interlocked.Read(ref generation.TotalViolations);
+        }
+    }
 
     /// <summary>
     /// Gets the total number of time gaps detected.
     /// </summary>
-    public long TotalGaps => Interlocked.Read(ref _totalWarnings);
+    public long TotalGaps
+    {
+        get
+        {
+            var generation = Volatile.Read(ref _generation);
+            return Interlocked.Read(ref generation.TotalGaps);
+        }
+    }
 
     /// <summary>
     /// Gets the total number of events checked.
     /// </summary>
-    public long TotalEventsChecked => Interlocked.Read(ref _totalEventsChecked);
+    public long TotalEventsChecked
+    {
+        get
+        {
+            var generation = Volatile.Read(ref _generation);
+            return Interlocked.Read(ref generation.TotalEventsChecked);
+        }
+    }
 
     /// <summary>
     /// Gets the violation rate as a percentage.
@@ -230,10 +268,11 @@ public sealed class TimestampMonotonicityChecker : IDisposable
     {
         get
         {
-            var total = Interlocked.Read(ref _totalEventsChecked);
+            var generation = Volatile.Read(ref _generation);
+            var total = Interlocked.Read(ref generation.TotalEventsChecked);
             if (total == 0)
                 return 0;
-            return (double)Interlocked.Read(ref _totalViolations) / total * 100;
+            return (double)Interlocked.Read(ref generation.TotalViolations) / total * 100;
         }
     }
 
@@ -242,15 +281,17 @@ public sealed class TimestampMonotonicityChecker : IDisposable
     /// </summary>
     public IReadOnlyList<string> GetSymbolsWithViolations(int minutesBack = 60)
     {
-        var cutoff = DateTimeOffset.UtcNow.AddMinutes(-minutesBack);
-        var symbols = new HashSet<string>();
+        ArgumentOutOfRangeException.ThrowIfNegative(minutesBack);
+        var cutoff = SubtractMinutesClamped(_timeProvider.GetUtcNow(), minutesBack);
+        var generation = Volatile.Read(ref _generation);
+        var symbols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var kvp in _symbolStates)
+        foreach (var kvp in generation.SymbolStates)
         {
-            if (kvp.Value.LastViolationTime > cutoff)
+            var snapshot = kvp.Value.GetSnapshot();
+            if (snapshot.LastViolationTime > cutoff)
             {
-                var symbol = kvp.Key.Split(':')[0];
-                symbols.Add(symbol);
+                symbols.Add(snapshot.Symbol);
             }
         }
 
@@ -262,55 +303,261 @@ public sealed class TimestampMonotonicityChecker : IDisposable
     /// </summary>
     public void ResetStats()
     {
-        Interlocked.Exchange(ref _totalEventsChecked, 0);
-        Interlocked.Exchange(ref _totalViolations, 0);
-        Interlocked.Exchange(ref _totalWarnings, 0);
-        _symbolStates.Clear();
-
-        _log.Information("TimestampMonotonicityChecker statistics reset");
-    }
-
-    private void CleanupOldStates(object? state)
-    {
-        if (_isDisposed)
+        if (!TryEnterOperation())
             return;
 
         try
         {
-            var cutoff = DateTimeOffset.UtcNow.AddHours(-24);
-            var toRemove = new List<string>();
+            // Close the old generation before waiting for callback publication. Checks committed
+            // to it but not yet published observe the replacement and suppress their stale alert.
+            Interlocked.Exchange(ref _generation, new TimestampGeneration());
 
-            foreach (var kvp in _symbolStates)
+            // External resets wait for a callback already in progress. A callback can reset
+            // reentrantly because Monitor locks are reentrant; dispatch checks the generation
+            // between subscribers so no later subscriber sees the retired alert.
+            lock (_callbackSync)
             {
-                if (kvp.Value.LastEventTime < cutoff)
+            }
+
+            _log.Information("TimestampMonotonicityChecker statistics reset");
+        }
+        finally
+        {
+            ExitOperation();
+        }
+    }
+
+    private static bool TryRemoveExact(
+        ConcurrentDictionary<SymbolEventKey, SymbolTimestampState> states,
+        SymbolEventKey key,
+        SymbolTimestampState state)
+    {
+        return ((ICollection<KeyValuePair<SymbolEventKey, SymbolTimestampState>>)states)
+            .Remove(new KeyValuePair<SymbolEventKey, SymbolTimestampState>(key, state));
+    }
+
+    private void PublishViolationIfCurrentGeneration(
+        TimestampGeneration generation,
+        MonotonicityViolation violation)
+    {
+        lock (_callbackSync)
+        {
+            if (!ReferenceEquals(generation, Volatile.Read(ref _generation)))
+                return;
+
+            _log.Warning("MONOTONICITY VIOLATION: {Symbol}:{EventType} timestamp went backwards by {DeltaMs:F2}ms " +
+                "(current: {Current}, previous: {Previous})",
+                violation.Symbol,
+                violation.EventType,
+                -violation.DeltaMs,
+                violation.CurrentTimestamp.ToString("O"),
+                violation.PreviousTimestamp.ToString("O"));
+
+            var handlers = OnViolation;
+            if (handlers is null)
+                return;
+
+            foreach (Action<MonotonicityViolation> handler in handlers.GetInvocationList())
+            {
+                if (!ReferenceEquals(generation, Volatile.Read(ref _generation)))
+                    break;
+
+                try
                 {
-                    toRemove.Add(kvp.Key);
+                    handler(violation);
+                }
+                catch (Exception ex)
+                {
+                    _log.Error(ex, "Error in monotonicity violation event handler");
+                    break;
+                }
+            }
+        }
+    }
+
+    private void PublishGapIfCurrentGeneration(
+        TimestampGeneration generation,
+        TimestampGapAlert gapAlert)
+    {
+        lock (_callbackSync)
+        {
+            if (!ReferenceEquals(generation, Volatile.Read(ref _generation)))
+                return;
+
+            _log.Information("TIME GAP detected: {Symbol}:{EventType} - {GapSeconds:F2}s gap between events",
+                gapAlert.Symbol,
+                gapAlert.EventType,
+                gapAlert.GapDurationSeconds);
+
+            var handlers = OnTimeGap;
+            if (handlers is null)
+                return;
+
+            foreach (Action<TimestampGapAlert> handler in handlers.GetInvocationList())
+            {
+                if (!ReferenceEquals(generation, Volatile.Read(ref _generation)))
+                    break;
+
+                try
+                {
+                    handler(gapAlert);
+                }
+                catch (Exception ex)
+                {
+                    _log.Error(ex, "Error in time gap event handler");
+                    break;
+                }
+            }
+        }
+    }
+
+    internal void RunCleanup()
+    {
+        if (!TryEnterOperation())
+            return;
+
+        try
+        {
+            var cutoff = SubtractClamped(_timeProvider.GetUtcNow(), StateRetentionWindow);
+            var generation = Volatile.Read(ref _generation);
+            var removedCount = 0;
+
+            foreach (var kvp in generation.SymbolStates)
+            {
+                if (!kvp.Value.RetireIfInactive(cutoff))
+                    continue;
+
+                _testHooks?.StateRetiredBeforeRemoval?.Invoke();
+                if (TryRemoveExact(generation.SymbolStates, kvp.Key, kvp.Value))
+                {
+                    removedCount++;
                 }
             }
 
-            foreach (var key in toRemove)
+            if (removedCount > 0)
             {
-                _symbolStates.TryRemove(key, out _);
-            }
-
-            if (toRemove.Count > 0)
-            {
-                _log.Debug("Cleaned up {Count} inactive symbol states from monotonicity checker", toRemove.Count);
+                _log.Debug("Cleaned up {Count} inactive symbol states from monotonicity checker", removedCount);
             }
         }
         catch (Exception ex)
         {
             _log.Error(ex, "Error during monotonicity checker state cleanup");
         }
+        finally
+        {
+            ExitOperation();
+        }
     }
 
     public void Dispose()
     {
-        if (_isDisposed)
+        var stopTimer = false;
+        lock (_lifecycleSync)
+        {
+            if (!_disposeRequested)
+            {
+                _disposeRequested = true;
+                stopTimer = true;
+            }
+        }
+
+        if (stopTimer)
+        {
+            _testHooks?.DisposeRequested?.Invoke();
+            _cleanupTimer.Dispose();
+            lock (_lifecycleSync)
+            {
+                _timerStopped = true;
+                CompleteDisposeIfReadyUnderLock();
+                Monitor.PulseAll(_lifecycleSync);
+            }
+        }
+
+        if (_operationDepth.Value > 0)
             return;
-        _isDisposed = true;
-        _cleanupTimer.Dispose();
-        _symbolStates.Clear();
+
+        lock (_lifecycleSync)
+        {
+            while (!_disposeCompleted)
+            {
+                Monitor.Wait(_lifecycleSync);
+            }
+        }
+    }
+
+    private bool TryEnterOperation()
+    {
+        lock (_lifecycleSync)
+        {
+            if (_disposeRequested)
+                return false;
+
+            _activeOperations++;
+            _operationDepth.Value++;
+            return true;
+        }
+    }
+
+    private void ExitOperation()
+    {
+        _operationDepth.Value--;
+        lock (_lifecycleSync)
+        {
+            _activeOperations--;
+            CompleteDisposeIfReadyUnderLock();
+            Monitor.PulseAll(_lifecycleSync);
+        }
+    }
+
+    private void CompleteDisposeIfReadyUnderLock()
+    {
+        if (_disposeCompleted || !_disposeRequested || !_timerStopped || _activeOperations != 0)
+            return;
+
+        Volatile.Read(ref _generation).SymbolStates.Clear();
+        _disposeCompleted = true;
+    }
+
+    private static TimestampMonotonicityConfig ValidateConfig(TimestampMonotonicityConfig config)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(
+            config.ToleranceMs,
+            nameof(TimestampMonotonicityConfig.ToleranceMs));
+        ArgumentOutOfRangeException.ThrowIfNegative(
+            config.AlertCooldownMs,
+            nameof(TimestampMonotonicityConfig.AlertCooldownMs));
+        ArgumentOutOfRangeException.ThrowIfNegative(
+            config.TimeGapThresholdSeconds,
+            nameof(TimestampMonotonicityConfig.TimeGapThresholdSeconds));
+        ArgumentOutOfRangeException.ThrowIfNegative(
+            config.GapAlertCooldownMs,
+            nameof(TimestampMonotonicityConfig.GapAlertCooldownMs));
+        return config;
+    }
+
+    private static string NormalizeRequiredIdentity(string value, string parameterName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(value, parameterName);
+        return value.Trim().ToUpperInvariant();
+    }
+
+    private static DateTimeOffset SubtractMinutesClamped(DateTimeOffset value, int minutes)
+    {
+        var availableMinutes = (value - DateTimeOffset.MinValue).TotalMinutes;
+        return minutes >= availableMinutes ? DateTimeOffset.MinValue : value.AddMinutes(-minutes);
+    }
+
+    private static DateTimeOffset SubtractClamped(DateTimeOffset value, TimeSpan duration)
+        => duration >= value - DateTimeOffset.MinValue
+            ? DateTimeOffset.MinValue
+            : value - duration;
+
+    private sealed class TimestampGeneration
+    {
+        public ConcurrentDictionary<SymbolEventKey, SymbolTimestampState> SymbolStates { get; } = new();
+        public long TotalEventsChecked;
+        public long TotalViolations;
+        public long TotalGaps;
     }
 
     /// <summary>
@@ -318,69 +565,206 @@ public sealed class TimestampMonotonicityChecker : IDisposable
     /// </summary>
     private sealed class SymbolTimestampState
     {
-        private long _lastEventTimestampTicks = DateTimeOffset.MinValue.UtcTicks;
-        private long _lastEventTimeTicks = DateTimeOffset.MinValue.UtcTicks;
+        private readonly object _sync = new();
+        private readonly string _symbol;
+        private readonly string _eventType;
+        private DateTimeOffset _lastEventTimestamp = DateTimeOffset.MinValue;
+        private DateTimeOffset _lastEventTime = DateTimeOffset.MinValue;
         private DateTimeOffset _lastAlertTime = DateTimeOffset.MinValue;
         private DateTimeOffset _lastGapAlertTime = DateTimeOffset.MinValue;
-        private long _lastViolationTimeTicks = DateTimeOffset.MinValue.UtcTicks;
+        private DateTimeOffset _lastViolationTime = DateTimeOffset.MinValue;
+        private bool _hasEventTimestamp;
         private long _totalEvents;
         private long _totalViolations;
         private long _totalGaps;
         private int _consecutiveViolations;
+        private bool _retired;
 
-        public DateTimeOffset LastEventTimestamp => new DateTimeOffset(new DateTime(Volatile.Read(ref _lastEventTimestampTicks), DateTimeKind.Utc));
-        public DateTimeOffset LastEventTime => new DateTimeOffset(new DateTime(Volatile.Read(ref _lastEventTimeTicks), DateTimeKind.Utc));
-        public DateTimeOffset LastViolationTime => new DateTimeOffset(new DateTime(Volatile.Read(ref _lastViolationTimeTicks), DateTimeKind.Utc));
-        public long TotalEvents => Interlocked.Read(ref _totalEvents);
-        public long TotalViolations => Interlocked.Read(ref _totalViolations);
-        public long TotalGaps => Interlocked.Read(ref _totalGaps);
-        public int ConsecutiveViolations => Volatile.Read(ref _consecutiveViolations);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void RecordEvent(DateTimeOffset timestamp)
+        public SymbolTimestampState(string symbol, string eventType)
         {
-            Volatile.Write(ref _lastEventTimestampTicks, timestamp.UtcTicks);
-            Volatile.Write(ref _lastEventTimeTicks, DateTimeOffset.UtcNow.UtcTicks);
-            Interlocked.Increment(ref _totalEvents);
+            _symbol = symbol;
+            _eventType = eventType;
         }
 
-        public void IncrementViolationCount()
+        public bool TryObserve(
+            DateTimeOffset timestamp,
+            DateTimeOffset observedAt,
+            TimestampMonotonicityConfig config,
+            out TimestampObservation observation)
         {
-            Interlocked.Increment(ref _totalViolations);
-            Interlocked.Increment(ref _consecutiveViolations);
-            Volatile.Write(ref _lastViolationTimeTicks, DateTimeOffset.UtcNow.UtcTicks);
+            lock (_sync)
+            {
+                if (_retired)
+                {
+                    observation = default;
+                    return false;
+                }
+
+                _totalEvents++;
+                _lastEventTime = observedAt;
+
+                var previousTimestamp = _lastEventTimestamp;
+                if (!_hasEventTimestamp)
+                {
+                    _hasEventTimestamp = true;
+                    _lastEventTimestamp = timestamp;
+                    observation = new TimestampObservation(
+                        PreviousTimestamp: DateTimeOffset.MinValue,
+                        DeltaMs: 0,
+                        IsFirstEvent: true,
+                        IsViolation: false,
+                        IsGap: false,
+                        ShouldAlert: false,
+                        ConsecutiveViolations: 0,
+                        TotalViolations: _totalViolations,
+                        TotalGaps: _totalGaps);
+                    return true;
+                }
+
+                var timeDelta = (timestamp - previousTimestamp).TotalMilliseconds;
+
+                // A late arrival must never move the comparison watermark backwards.
+                if (timestamp > _lastEventTimestamp)
+                {
+                    _lastEventTimestamp = timestamp;
+                }
+
+                if (timeDelta < -(double)config.ToleranceMs)
+                {
+                    _totalViolations++;
+                    _consecutiveViolations++;
+                    _lastViolationTime = observedAt;
+
+                    var shouldAlert = CooldownElapsed(observedAt, _lastAlertTime, config.AlertCooldownMs);
+                    if (shouldAlert)
+                    {
+                        _lastAlertTime = observedAt;
+                    }
+
+                    observation = new TimestampObservation(
+                        PreviousTimestamp: previousTimestamp,
+                        DeltaMs: timeDelta,
+                        IsFirstEvent: false,
+                        IsViolation: true,
+                        IsGap: false,
+                        ShouldAlert: shouldAlert,
+                        ConsecutiveViolations: _consecutiveViolations,
+                        TotalViolations: _totalViolations,
+                        TotalGaps: _totalGaps);
+                    return true;
+                }
+
+                if (_consecutiveViolations > 0)
+                {
+                    _consecutiveViolations = 0;
+                }
+
+                var gapThresholdMilliseconds = (double)config.TimeGapThresholdSeconds * 1000d;
+                if (config.DetectTimeGaps && timeDelta > gapThresholdMilliseconds)
+                {
+                    _totalGaps++;
+
+                    var shouldAlert = CooldownElapsed(observedAt, _lastGapAlertTime, config.GapAlertCooldownMs);
+                    if (shouldAlert)
+                    {
+                        _lastGapAlertTime = observedAt;
+                    }
+
+                    observation = new TimestampObservation(
+                        PreviousTimestamp: previousTimestamp,
+                        DeltaMs: timeDelta,
+                        IsFirstEvent: false,
+                        IsViolation: false,
+                        IsGap: true,
+                        ShouldAlert: shouldAlert,
+                        ConsecutiveViolations: _consecutiveViolations,
+                        TotalViolations: _totalViolations,
+                        TotalGaps: _totalGaps);
+                    return true;
+                }
+
+                observation = new TimestampObservation(
+                    PreviousTimestamp: previousTimestamp,
+                    DeltaMs: timeDelta,
+                    IsFirstEvent: false,
+                    IsViolation: false,
+                    IsGap: false,
+                    ShouldAlert: false,
+                    ConsecutiveViolations: _consecutiveViolations,
+                    TotalViolations: _totalViolations,
+                    TotalGaps: _totalGaps);
+                return true;
+            }
         }
 
-        public void IncrementGapCount()
+        public SymbolTimestampSnapshot GetSnapshot()
         {
-            Interlocked.Increment(ref _totalGaps);
+            lock (_sync)
+            {
+                return new SymbolTimestampSnapshot(
+                    Symbol: _symbol,
+                    EventType: _eventType,
+                    LastEventTimestamp: _lastEventTimestamp,
+                    LastEventTime: _lastEventTime,
+                    LastViolationTime: _lastViolationTime,
+                    TotalEvents: _totalEvents,
+                    TotalViolations: _totalViolations,
+                    TotalGaps: _totalGaps);
+            }
         }
 
-        public void ResetConsecutiveViolations()
+        public bool RetireIfInactive(DateTimeOffset cutoff)
         {
-            Interlocked.Exchange(ref _consecutiveViolations, 0);
+            lock (_sync)
+            {
+                if (_retired)
+                    return true;
+                if (_lastEventTime >= cutoff)
+                    return false;
+
+                _retired = true;
+                return true;
+            }
         }
 
-        public bool CanAlert(DateTimeOffset now, int cooldownMs)
+        private static bool CooldownElapsed(
+            DateTimeOffset observedAt,
+            DateTimeOffset lastAlertTime,
+            int cooldownMs)
         {
-            return (now - _lastAlertTime).TotalMilliseconds >= cooldownMs;
-        }
-
-        public bool CanAlertGap(DateTimeOffset now, int cooldownMs)
-        {
-            return (now - _lastGapAlertTime).TotalMilliseconds >= cooldownMs;
-        }
-
-        public void RecordAlert(DateTimeOffset time)
-        {
-            _lastAlertTime = time;
-        }
-
-        public void RecordGapAlert(DateTimeOffset time)
-        {
-            _lastGapAlertTime = time;
+            return (observedAt - lastAlertTime).TotalMilliseconds >= cooldownMs;
         }
     }
+
+    private readonly record struct SymbolEventKey(string Symbol, string EventType);
+
+    private readonly record struct TimestampObservation(
+        DateTimeOffset PreviousTimestamp,
+        double DeltaMs,
+        bool IsFirstEvent,
+        bool IsViolation,
+        bool IsGap,
+        bool ShouldAlert,
+        int ConsecutiveViolations,
+        long TotalViolations,
+        long TotalGaps);
+
+    private readonly record struct SymbolTimestampSnapshot(
+        string Symbol,
+        string EventType,
+        DateTimeOffset LastEventTimestamp,
+        DateTimeOffset LastEventTime,
+        DateTimeOffset LastViolationTime,
+        long TotalEvents,
+        long TotalViolations,
+        long TotalGaps);
+}
+
+internal sealed class TimestampMonotonicityCheckerTestHooks
+{
+    public Action? ObservationCommittedBeforePublish { get; set; }
+    public Action? StateRetiredBeforeRemoval { get; set; }
+    public Action? DisposeRequested { get; set; }
 }
 
 /// <summary>
@@ -389,13 +773,13 @@ public sealed class TimestampMonotonicityChecker : IDisposable
 public sealed record TimestampMonotonicityConfig
 {
     /// <summary>
-    /// Tolerance in milliseconds for timestamp variations.
+    /// Tolerance in milliseconds for timestamp variations. Must be non-negative.
     /// Timestamps within this tolerance of the previous timestamp are not flagged.
     /// </summary>
     public int ToleranceMs { get; init; } = 100;
 
     /// <summary>
-    /// Minimum time between alerts for the same symbol/event type in milliseconds.
+    /// Minimum time between alerts for the same symbol/event type in milliseconds. Must be non-negative.
     /// </summary>
     public int AlertCooldownMs { get; init; } = 5000;
 
@@ -405,12 +789,12 @@ public sealed record TimestampMonotonicityConfig
     public bool DetectTimeGaps { get; init; } = true;
 
     /// <summary>
-    /// Threshold in seconds for detecting time gaps between events.
+    /// Threshold in seconds for detecting time gaps between events. Must be non-negative.
     /// </summary>
     public int TimeGapThresholdSeconds { get; init; } = 60;
 
     /// <summary>
-    /// Minimum time between gap alerts in milliseconds.
+    /// Minimum time between gap alerts in milliseconds. Must be non-negative.
     /// </summary>
     public int GapAlertCooldownMs { get; init; } = 30000;
 
@@ -447,12 +831,25 @@ public readonly record struct TimestampGapAlert(
 /// <summary>
 /// Overall statistics for monotonicity checking.
 /// </summary>
+/// <param name="TotalEventsChecked">Events checked since construction or the most recent reset.</param>
+/// <param name="TotalViolations">Violations detected since construction or the most recent reset.</param>
+/// <param name="TotalGaps">Gaps detected since construction or the most recent reset.</param>
+/// <param name="SymbolStats">Details for currently retained states that have violations or gaps.</param>
 public readonly record struct MonotonicityStats(
     long TotalEventsChecked,
     long TotalViolations,
     long TotalGaps,
-    IReadOnlyList<SymbolMonotonicityStats> SymbolStats
-);
+    IReadOnlyList<SymbolMonotonicityStats> SymbolStats)
+{
+    /// <summary>Events represented by states still retained after inactivity cleanup.</summary>
+    public long RetainedStateEvents { get; init; }
+
+    /// <summary>Violations represented by states still retained after inactivity cleanup.</summary>
+    public long RetainedStateViolations { get; init; }
+
+    /// <summary>Gaps represented by states still retained after inactivity cleanup.</summary>
+    public long RetainedStateGaps { get; init; }
+}
 
 /// <summary>
 /// Per-symbol monotonicity statistics.
