@@ -210,6 +210,81 @@ public sealed class DataConfidenceIndicatorModelTests
     }
 
     [Fact]
+    public void FromProviderStatus_ReconnectingSharedContractProvider_ReadsAsDegraded()
+    {
+        // The supervisor can publish a connected snapshot while a reconnect is still in
+        // progress, and the provider-health endpoint classifies that flag as yellow — the
+        // badge must not present the same state as Current.
+        var model = DataConfidenceIndicatorModel.FromProviderStatus(
+            new Meridian.Contracts.Api.ProviderStatusResponse(
+                ProviderId: "polygon",
+                Name: "Polygon.io",
+                ProviderType: "MarketData",
+                IsConnected: true,
+                IsEnabled: true,
+                Priority: 1,
+                ActiveSubscriptions: 3,
+                LastHeartbeat: null,
+                ConnectionState: "Streaming",
+                IsReconnecting: true,
+                LastMessageReceivedAt: DateTimeOffset.UtcNow));
+
+        model.ConfidenceLabel.Should().Be(DataConfidenceLabels.ProviderDegraded);
+        model.Tone.Should().Be(WorkspaceTone.Warning);
+    }
+
+    [Fact]
+    public void FromProviderStatus_ReconnectingLegacyProvider_ReadsAsDegraded()
+    {
+        var model = DataConfidenceIndicatorModel.FromProviderStatus(new ProviderStatusInfo
+        {
+            Name = "polygon",
+            DisplayName = "Polygon.io",
+            IsEnabled = true,
+            IsConnected = true,
+            Status = "Connected",
+            IsReconnecting = true,
+            LastMessageReceivedAt = DateTimeOffset.UtcNow
+        });
+
+        model.ConfidenceLabel.Should().Be(DataConfidenceLabels.ProviderDegraded);
+        model.Tone.Should().Be(WorkspaceTone.Warning);
+    }
+
+    [Fact]
+    public void FromProviderStatus_StreamMarkedDegradedByTheContract_ReadsAsDegraded()
+    {
+        // The contract carries per-stream degradation the aggregate counters may not
+        // reflect; a stream the route itself marks degraded is a partial degradation.
+        var model = DataConfidenceIndicatorModel.FromProviderStatus(
+            new Meridian.Contracts.Api.ProviderStatusResponse(
+                ProviderId: "polygon",
+                Name: "Polygon.io",
+                ProviderType: "MarketData",
+                IsConnected: true,
+                IsEnabled: true,
+                Priority: 1,
+                ActiveSubscriptions: 3,
+                LastHeartbeat: null,
+                ConnectionState: "Streaming",
+                LastMessageReceivedAt: DateTimeOffset.UtcNow,
+                Streams:
+                [
+                    new Meridian.Contracts.Api.ProviderStreamStatusResponse(
+                        AssetClass: "us_equity",
+                        Feed: "sip",
+                        Entitlement: "delayed",
+                        LifecycleState: "Streaming",
+                        IsConnected: true,
+                        IsDegraded: true,
+                        DegradationReason: "Entitlement downgraded to delayed data.")
+                ]));
+
+        model.ConfidenceLabel.Should().Be(DataConfidenceLabels.ProviderDegraded);
+        model.Tone.Should().Be(WorkspaceTone.Warning);
+    }
+
+    [Fact]
     public void FromEvidence_BlankSource_UsesTheSameFallbackInLabelAndExplanation()
     {
         var model = DataConfidenceIndicatorModel.FromEvidence(

@@ -332,6 +332,41 @@ public sealed class WorkstationPrimitiveControlsTests
         xaml.Should().Contain("<Setter Property=\"BorderThickness\" Value=\"0,1,0,0\" />");
     }
 
+    [Fact]
+    public void DataConfidenceIndicator_CommandParameterDefaultsToTheModelsExplanationRoute()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var indicator = new Meridian.Wpf.Controls.DataConfidenceIndicator
+            {
+                Model = DataConfidenceIndicatorModel.Unknown() with { ExplanationRoute = "meridian://providers/polygon" }
+            };
+            var window = Show(indicator);
+            try
+            {
+                // The model's advertised click-through route must reach the command without
+                // the caller redundantly copying it into ExplanationCommandParameter.
+                indicator.EffectiveExplanationCommandParameter.Should().Be("meridian://providers/polygon");
+                var button = indicator.FindName("ExplanationButton").Should().BeOfType<Button>().Which;
+                button.CommandParameter.Should().Be("meridian://providers/polygon");
+
+                indicator.ExplanationCommandParameter = "explicit-parameter";
+                indicator.EffectiveExplanationCommandParameter.Should().Be(
+                    "explicit-parameter", "an explicit parameter overrides the model's route");
+
+                indicator.ExplanationCommandParameter = null;
+                indicator.EffectiveExplanationCommandParameter.Should().Be(
+                    "meridian://providers/polygon", "clearing the explicit parameter restores the route default");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
     private static Window Show(FrameworkElement element)
     {
         var window = new Window

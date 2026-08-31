@@ -11,7 +11,7 @@
              AutomationProperties.Name="{Binding ElementName=Root, Path=Model.AccessibleExplanation}">
     <Button x:Name="ExplanationButton"
             DataContext="{Binding ElementName=Root}"
-            CommandParameter="{Binding ExplanationCommandParameter}"
+            CommandParameter="{Binding EffectiveExplanationCommandParameter}"
             ToolTip="{Binding Model.Explanation}"
             Padding="0"
             BorderThickness="0"

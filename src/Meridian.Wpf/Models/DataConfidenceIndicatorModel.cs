@@ -107,9 +107,12 @@ public sealed record DataConfidenceIndicatorModel(
         ArgumentNullException.ThrowIfNull(provider);
 
         var status = Normalize(provider.Status, provider.IsConnected ? "Connected" : "Disconnected");
+        // A reconnect in progress degrades the badge even while the socket still reads
+        // connected: the provider-health endpoint classifies the same flag as yellow.
         var degraded = !provider.IsConnected
             || !provider.IsEnabled
             || ContainsAny(status, "degraded", "unhealthy", "error", "failed", "blocked", "disconnected")
+            || provider.IsReconnecting is true
             || !string.IsNullOrWhiteSpace(provider.LastError)
             || !string.IsNullOrWhiteSpace(provider.LastFailureKind);
         // Connection time is not a data-delivery signal: a newly connected provider that
@@ -149,13 +152,18 @@ public sealed record DataConfidenceIndicatorModel(
         // when it has neither runtime diagnostics nor stored metrics — health that is
         // merely unavailable must not read as a degradation verdict.
         // The contract reports Recovering separately from Failed: a stream mid-recovery is
-        // not yet delivering trustworthy data, so it degrades the badge the same way.
+        // not yet delivering trustworthy data, so it degrades the badge the same way. A
+        // reconnect in progress likewise degrades even while the socket still reads
+        // connected (the provider-health endpoint classifies the same flag as yellow), and
+        // a stream the contract itself marks degraded is a partial degradation.
         var degraded = provider.IsConnected is false
             || !provider.IsEnabled
             || ContainsAny(status, "degraded", "unhealthy", "error", "failed", "blocked", "disconnected")
+            || provider.IsReconnecting is true
             || !string.IsNullOrWhiteSpace(provider.LastFailureKind)
             || provider.FailedSubscriptions is > 0
-            || provider.RecoveringSubscriptions is > 0;
+            || provider.RecoveringSubscriptions is > 0
+            || HasDegradedStream(provider.Streams);
         // Only genuine received-at fields feed the freshness instant: the route populates
         // LastHeartbeat from a stored metrics-snapshot timestamp when it has no live
         // diagnostics, and a snapshot time is not evidence that data arrived.
@@ -295,6 +303,10 @@ public sealed record DataConfidenceIndicatorModel(
         DataConfidenceReconciliationStatus.Estimated => DataConfidenceLabels.Estimated,
         _ => DataConfidenceLabels.Unknown
     };
+
+    private static bool HasDegradedStream(
+        IReadOnlyList<Meridian.Contracts.Api.ProviderStreamStatusResponse>? streams)
+        => streams is not null && streams.Any(static stream => stream.IsDegraded);
 
     private static string Normalize(params string?[] candidates)
         => candidates.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim() ?? string.Empty;

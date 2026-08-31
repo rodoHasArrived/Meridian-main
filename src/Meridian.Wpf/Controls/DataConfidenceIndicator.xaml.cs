@@ -29,7 +29,23 @@ public partial class DataConfidenceIndicator : UserControl
         DependencyProperty.Register(nameof(ExplanationCommand), typeof(ICommand), typeof(DataConfidenceIndicator), new PropertyMetadata(null));
 
     public static readonly DependencyProperty ExplanationCommandParameterProperty =
-        DependencyProperty.Register(nameof(ExplanationCommandParameter), typeof(object), typeof(DataConfidenceIndicator), new PropertyMetadata(null));
+        DependencyProperty.Register(
+            nameof(ExplanationCommandParameter),
+            typeof(object),
+            typeof(DataConfidenceIndicator),
+            new PropertyMetadata(null, OnExplanationCommandParameterChanged));
+
+    // The command receives the model's advertised ExplanationRoute unless the caller supplies
+    // an explicit parameter — otherwise the route would be dead data the command never sees.
+    private static readonly DependencyPropertyKey EffectiveExplanationCommandParameterPropertyKey =
+        DependencyProperty.RegisterReadOnly(
+            nameof(EffectiveExplanationCommandParameter),
+            typeof(object),
+            typeof(DataConfidenceIndicator),
+            new PropertyMetadata(null));
+
+    public static readonly DependencyProperty EffectiveExplanationCommandParameterProperty =
+        EffectiveExplanationCommandParameterPropertyKey.DependencyProperty;
 
     public static readonly DependencyProperty IsClickThroughEnabledProperty =
         DependencyProperty.Register(nameof(IsClickThroughEnabled), typeof(bool), typeof(DataConfidenceIndicator), new PropertyMetadata(true));
@@ -64,6 +80,7 @@ public partial class DataConfidenceIndicator : UserControl
         InitializeComponent();
         AutomationProperties.SetAutomationId(this, IndicatorAutomationId);
         UpdateAutomationName();
+        UpdateEffectiveExplanationCommandParameter();
     }
 
     public DataConfidenceIndicatorModel Model
@@ -88,6 +105,12 @@ public partial class DataConfidenceIndicator : UserControl
     {
         get => GetValue(ExplanationCommandParameterProperty);
         set => SetValue(ExplanationCommandParameterProperty, value);
+    }
+
+    public object? EffectiveExplanationCommandParameter
+    {
+        get => GetValue(EffectiveExplanationCommandParameterProperty);
+        private set => SetValue(EffectiveExplanationCommandParameterPropertyKey, value);
     }
 
     public bool IsClickThroughEnabled
@@ -144,7 +167,21 @@ public partial class DataConfidenceIndicator : UserControl
         {
             control.Tone = control.Model.Tone;
             control.UpdateAutomationName();
+            control.UpdateEffectiveExplanationCommandParameter();
         }
+    }
+
+    private static void OnExplanationCommandParameterChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DataConfidenceIndicator control)
+        {
+            control.UpdateEffectiveExplanationCommandParameter();
+        }
+    }
+
+    private void UpdateEffectiveExplanationCommandParameter()
+    {
+        EffectiveExplanationCommandParameter = ExplanationCommandParameter ?? Model.ExplanationRoute;
     }
 
     private static void OnIndicatorAutomationIdChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
