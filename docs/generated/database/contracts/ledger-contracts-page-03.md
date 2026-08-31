@@ -2,11 +2,22 @@
 
 # `ledger-contracts` data objects - page 3 of 4
 
-Objects 161-240 of 297. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 298. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_CreateLateAdjustmentRequestDto["CreateLateAdjustmentRequestDto"] {
+        +OperationsActionOriginDto ActionOrigin
+        +decimal Amount
+        +string? CorrelationId
+        +string Currency
+        +IReadOnlyList~string~ EvidenceLinks
+        +Guid JournalEntryId
+        +string Reason
+        +string RequestedBy
+        +Guid WorkflowId
+    }
     class Meridian_Contracts_Ledger_CreateLedgerBookRequest["CreateLedgerBookRequest"] {
         +AccountingBasisKindDto AccountingBasis
         +string AccountingPolicyId
@@ -657,8 +668,6 @@ classDiagram
         +OperationalFinanceTraceStageDto Stage
         +string Status
     }
-    class Meridian_Contracts_Ledger_OperationalFinanceTraceStageDto["OperationalFinanceTraceStageDto"] {
-    }
     Meridian_Contracts_Ledger_DimensionMappingProfileDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_ExternalGlExportLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportCertificationDto
@@ -724,5 +733,4 @@ classDiagram
     Meridian_Contracts_Ledger_OperationalFinanceScopeDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_OperationalFinanceScopeDto --> Meridian_Contracts_Ledger_OperationalFinanceScopeKindDto
     Meridian_Contracts_Ledger_OperationalFinanceTraceNodeDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
-    Meridian_Contracts_Ledger_OperationalFinanceTraceNodeDto --> Meridian_Contracts_Ledger_OperationalFinanceTraceStageDto
 ```
