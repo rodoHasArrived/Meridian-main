@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-26 (resolution pass; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
+**Reviewed:** 2026-08-31 (scheduled institutional-requirements pass; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -62,6 +62,15 @@ risks that compound as new asset classes land.
 > N2. N4, N5 and N6 stay open. See
 > [Resolution pass — 2026-08-26](#resolution-pass--2026-08-26), which also records the intended
 > behaviour deltas.
+>
+> **Scheduled institutional-requirements pass, 2026-08-31.** Re-read against `eaa83032`. The verdict
+> stands; N4, N5, N6 and the three deferred items are re-verified as still open; four new items are
+> filed. See
+> [Scheduled institutional-requirements pass — 2026-08-31](#scheduled-institutional-requirements-pass--2026-08-31).
+> Its highest-severity finding is new and is the same *shape* as the prose-classification defects the
+> last pass closed, one layer down: `StructuredCashFlowTermsResolver` keeps a second, unlocked alias
+> vocabulary alongside `SecurityAssetTermsSchema`, and it does not know the key `DirectLoan` actually
+> writes for its coupon — so every calculated private-credit projection prices interest at zero.
 
 ---
 
@@ -917,6 +926,217 @@ These are intended and stated rather than incidental:
 
 ---
 
+## Scheduled institutional-requirements pass — 2026-08-31
+
+Re-read against `eaa83032`. The verdict above stands unchanged. The three findings the 2026-08-26
+resolution pass left open were re-checked against current source and **all three remain open**, as do
+the three long-standing deferred items; four findings below are new to this document. No code was
+changed by this pass and no tests were run — every claim is a source read.
+
+The four new items share one root shape, and it is the shape the last pass began dismantling:
+**a per-asset-class fact is declared in one authoritative table and then re-declared, incompletely,
+by a consumer that nothing locks to it.** The last pass retired classification-by-prose in the
+accounting adapter and the coverage read model. The same pattern survives in the cash-flow resolver
+(A1), in identifier conflict detection (A2), in the readiness catalog (A3), and in the custom-profile
+field definition (A4).
+
+### Re-verified as still open
+
+| # | Item | Evidence at `eaa83032` |
+| --- | --- | --- |
+| N4 | `ValidateAll()` cannot fire its own overlap rule | `ValidateAll()` still calls `ValidateCandidateSet([])` (`SecurityAssetPackRegistry.cs:258-261`) and the overlap check still filters to groups containing a candidate pack (`:289`), so `candidateIds` is empty and no group survives. `DirectLoan` is still claimed by both `private-loan-credit` (`:198`) and `mortgage-facility-intercompany` (`:223`). |
+| N5 | Per-pack contract schema is one shared prose object | All ten packs still receive the same three static instances — `ContractSchema` (`:37`), `StandardValidationRules` (`:117`), `StandardReportingTaxonomy` (`:153`) — through `Pack(...)` (`:401, 413, 414`), and `ValidateDescriptor` still checks them only for non-emptiness. `InferLifecycleEvent` (`:482-518`) still derives lifecycle routing by substring-matching English journal-template names. |
+| N6 | Projection fan-out writes to every asset class on every upsert | `ProjectionWriters` is still fanned out unconditionally per record; the registry shape is right, the per-record amplification is unchanged. |
+| — | Relational projections for private/alternative classes | Still 11 projected classes (`PostgresSecurityMasterStore.ProjectedAssetClasses`) against 26 catalog classes, with the 15-class gap enumerated and partition-locked in `SecurityAssetTermsSchemaTests`. Governed, not drifting. |
+| — | Valid-time term history | `securities` still holds one current row per security; `effective_to` is written only by `DeactivateProjectionAsync` (`PostgresSecurityMasterStore.cs:100-117`), so it is a lifecycle window, not a version key. Term as-of remains per-security event replay via `RebuildAsOfAsync` — correct for one security, with no bulk point-in-time universe read behind it. |
+| — | Codec generation from `SecurityAssetTermsSchema` | Both arms still hand-written behind `SecurityAssetTermsSchemaRoundTripTests`. |
+
+### A1 — The cash-flow resolver cannot read `DirectLoan`'s coupon, so private credit projects at zero interest
+
+The highest-severity item this pass, and a live economic defect rather than an extensibility risk.
+
+`SecurityAssetTermsSchema` declares `DirectLoan`'s coupon as **`currentCouponRate`**
+(`SecurityAssetTermsSchema.cs:249`). The F# serializer writes that key
+(`Interop.SecurityMaster.fs:304`) and the C# deserializer reads it
+(`SecurityMasterMapping.cs:336`), so the codec round-trip guard passes and the term is persisted
+faithfully. But `StructuredCashFlowTermsResolver` — the single place that turns stored term JSON into
+projectable economics — keeps its own private alias table, and its `CouponRateAliases` are
+`["fixedCouponRate", "couponRate", "coupon", "annualRate"]` (`StructuredCashFlowTermsResolver.cs:19`).
+`currentCouponRate` is not among them, and `DirectLoan` emits no other coupon key.
+
+So `StructuredCashFlowTerms.CouponRate` resolves `null` for every direct loan, and
+`SecurityMasterCashFlowService.BuildCalculatedProjection` computes
+`annualRate = NormalizeAnnualRate(terms.CouponRate ?? 0m)` (`:314`). Every `CalculatedBullet` /
+`CalculatedSinker` projection for a `DirectLoan` therefore returns a principal-only schedule with
+**zero interest in every period**, and `BuildLedgerPostingsAsync` (`:240-263`) feeds that same
+projection to `SecurityMasterLedgerBridge.BuildCouponAccrualPostings`. The path is asset-class
+agnostic — nothing gates it to fixed income — so there is no fail-closed stop: the projection is not
+blocked as incomplete, it is simply arithmetically zero. `DirectLoan` carries
+`SupportsCashflowScheduleByDefault: true` and `AssetOperationsCapabilitySet.DirectLending`
+(including `ProjectedCashFlows` and `LedgerProjection`), so this is a class the system advertises as
+cash-flow capable.
+
+The floating side is missing for the same reason: `DirectLoan`'s `referenceIndex` and `spreadBps`
+(`SecurityAssetTermsSchema.cs:247-248`) have **no top-level resolution** at all. The resolver reads
+`LegIndexAliases` / `LegSpreadBpsAliases` only *inside* a leg row (`:53-54`), and `DirectLoan` has no
+`legs` array — so a SOFR + 350bp loan resolves neither a rate nor a spread.
+
+**Why the tests did not catch it.** `SecurityMasterCashFlowServiceTests` has two cases explicitly
+labelled "DirectLoan-style" / "DirectLoan-shaped"
+(`:154-198`, `:291-324`) — and both build their payload with `couponRate = 6m`, a key `DirectLoan`
+never writes. The tests assert the *principal-basis* reasoning those comments are about, which is
+correct and well-covered; they document DirectLoan intent while exercising a Bond-shaped document, so
+the interest gap sits directly underneath a passing test that names the class.
+
+**Root cause, and why it is the same shape as N1/N2.** `SecurityAssetTermField` already carries an
+`Aliases` list — the schema is a declared alias vocabulary. The resolver's twenty private alias arrays
+are a second one, hand-maintained, covering vendor spellings the schema does not know and *missing*
+canonical keys the schema does. Nothing locks them together, and the round-trip guard cannot see the
+gap because the resolver is not a codec surface. The generalizing fix is a parity guard asserting that
+every `Required`/`Opt` key in `SecurityAssetTermsSchema` is reachable by at least one resolver alias
+family for the classes the catalog marks cash-flow capable; the immediate fix is adding
+`currentCouponRate` and top-level index/spread resolution.
+
+### A2 — Identifier ambiguity is detected on raw values and resolved on normalized values
+
+Resolution and detection disagree on what "the same identifier" means, and the disagreement runs the
+wrong way: the duplicates resolution silently collapses are exactly the ones detection cannot see.
+
+- **Resolution normalizes.** `ResolveSecurityIdAsync` computes
+  `SecurityIdentifierNormalizer.NormalizeValue(kind, value)` and matches
+  `normalized_identifier_value` / `normalized_alias_value` / `normalized_primary_identifier_value`
+  (`PostgresSecurityMasterStore.cs:629-694`). For ISIN, CUSIP, SEDOL, FIGI, OCC, LEI, WKN and CIK,
+  normalization strips every non-alphanumeric character and uppercases.
+- **Detection does not.** `SecurityMasterConflictDetection` keys its ambiguity map on
+  `$"{id.Kind}|{id.Value}"` — the **raw** stored value — in both `DetectAll` (`:33`) and
+  `DetectForProjection` (`:107, 115`). `SecurityIdentifierDto` carries `NormalizedValue`; neither
+  method reads it.
+- **The database does not either.** `ux_securities_primary_identifier` is unique on
+  `(primary_identifier_kind, primary_identifier_value)` — the raw pair (migration 001). Migration 016
+  added `ix_securities_normalized_primary_identifier` as a **non-unique** index.
+
+So two securities whose ISINs differ only in punctuation or spacing (`US0378331005` vs
+`US-0378331005`) pass the unique constraint, raise no `IdentifierAmbiguity` conflict, and are both
+matched by the same resolution query — which returns whichever row wins `order by i.is_primary desc
+limit 1`, with no tiebreaker between two non-primary or two primary rows. That is a silent
+wrong-security resolution, and cross-vendor formatting variance is precisely where it arises: the
+golden-record conflict surface, which exists to catch this, is blind to it by construction.
+
+The mechanism is certain from source. What is not established without a query is how many such pairs
+exist in a live universe today; a one-off `group by identifier_kind, normalized_identifier_value
+having count(distinct security_id) > 1` is the cheapest way to size it, and is worth running before
+choosing between a unique normalized index (fail-closed on write) and normalized detection keys
+(detect-and-review, matching the current golden-record posture).
+
+### A3 — Operational readiness models 13 of 26 asset classes, with no parity guard and no "unmodeled" state
+
+`SecurityMasterOperationalReadinessService.Specifications` declares thirteen entries — `Equity`,
+`Option`, `Future`, `FxSpot`, `Bond`, `DirectLoan`, `StructuredCredit`, `PrivateFundInterest`,
+`PrivateCompanyEquity`, `RealEstateHolding`, `CommitmentGuarantee`, `CustomAsset`, `OtherSecurity`
+(`:43-173`). Thirteen catalog classes have none: `Deposit`, `MoneyMarketFund`,
+`CertificateOfDeposit`, `CommercialPaper`, `TreasuryBill`, `Repo`, `CashSweep`, `Swap`, `Commodity`,
+`CryptoCurrency`, `Cfd`, `Warrant`, `InvestmentFund` — which is most of the cash-and-equivalents
+family that fund operations closes on every period.
+
+`GetReadinessAsync` projects `Specifications` directly (`:254-259`). A class with no spec produces no
+row, so the surface does not report it as unmodeled — it reports nothing. Two consequences follow
+from that, both operator-facing:
+
+- The `multi-asset-classes` metric renders "Asset classes: 13 / covered" (`:266`) as though thirteen
+  were the universe. Its three companion counters — ready, review required, blocked — are all
+  computed over the same thirteen rows, so the readiness summary is silently scoped to half the
+  catalog.
+- A `request.AssetClass` filter naming, say, `Deposit` returns zero rows and a summary of
+  0 blocked / 0 review / 0 ready. "Not modeled" and "nothing to do" are indistinguishable to the
+  caller, and the more conservative reading is not the one the UI shows.
+
+This is the same defect class as V1 and N3, one registry later: a table governing per-asset-class
+behaviour with no catalog parity guard. Five such guards now exist (F# registry, terms schema,
+projections, validators, packs); this is the sixth, and the readiness catalog is the one whose
+absence is visible to operators rather than only to the next contributor. The guard should assert
+`Specifications ∪ IntentionallyUnspecifiedClasses = catalog`, mirroring the projection partition —
+so a deliberate gap stays declarable, and an accidental one fails at commit time.
+
+### A4 — The custom-profile extension point declares projected and searchable fields and honours neither
+
+`SecurityAssetProfileFieldDefinitionDto` carries `IsProjected` and `IsSearchable`
+(`SecurityAssetProfiles.cs:49-50`) — the two properties an operator would read as "this profile field
+is queryable". Across `src/` and `tests/`, neither flag reaches a projection writer, an index, or a
+search predicate. Every consumer counts or displays them:
+
+- `SecurityAssetProfileGovernanceService.cs:511, 525` counts them into the promotion-readiness score;
+- `SettingsViewModel.AssetProfiles.cs:898` (WPF) and
+  `settings-screen.operations-control.ts:105, 129` (browser) render the counts;
+- the remaining hits are DTO declarations, fixtures, and tests.
+
+There is nothing behind them. Profile fields live inside the `asset_specific_terms` jsonb document,
+which carries no GIN index; the full-text `search_vector` covers six fixed columns —
+`display_name`, `primary_identifier_value`, `asset_class`, `issuer_name`, `exchange_code`, `currency`
+(migration 002) — and no profile content. `CustomAsset` is one of the fifteen classes with no
+relational projection.
+
+So the designated extension point for new asset classes — governed profiles, which the promotion
+pipeline is explicitly built to grow into first-class packages — can define a field, mark it
+projected and searchable, approve it through the full governance lifecycle, and produce a field that
+cannot be queried or searched by any path. This is not drift: the flags have never had an
+implementation. It is worth either building the generic indexed seam they imply (a
+`security_profile_field_projection` keyed `(security_id, profile_id, field_key)` populated from
+declared-projected fields, plus profile content in the search vector for declared-searchable ones),
+or restating the two properties as promotion-readiness *intent* so no profile author reads them as a
+capability. The first option is also the cheapest available answer to the standing
+"relational projections for the private/alternative classes" item, since those classes are precisely
+the profile-backed ones.
+
+### Smaller notes, not filed as findings
+
+- **`ISecurityMasterQueryService` is declared twice, identically.**
+  `Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService` and
+  `Meridian.Application.SecurityMaster.ISecurityMasterQueryService` declare the same eleven members;
+  `SecurityMasterQueryService` and `NullSecurityMasterQueryService` implement both, both are
+  registered in DI (`StorageFeatureRegistration.cs:299, 404-405`), and roughly ten call sites carry
+  `using` aliases or fully-qualified names to disambiguate. Adding a query member means editing two
+  interfaces that nothing locks together.
+- **`StructuredCashFlowSourceKind` names vendors in a closed enum.** `MIAC` and `MoodysAnalytics` are
+  enum members persisted as values (`SecurityMasterCashFlow.cs:12-13`), so onboarding a cash-flow
+  vendor is a contract change plus a stored-value migration. The corporate-action envelope moved off
+  exactly this shape in migration 029; a provider-id string resolved against the registered
+  `IStructuredCashFlowProvider` set would match that precedent. The `Calculated*` and
+  `ClientProvided` members are genuine modes and would stay.
+- **Normalization rules are stated twice.** The kind lists that decide alphanumeric-stripping live in
+  `SecurityIdentifierNormalizer.NormalizeValue` (`:25-32`) and again as SQL `case` arms in migration
+  016. The migration is one-time so the two cannot diverge retroactively, but a new identifier kind
+  needing stripping has no test tying the two statements together.
+
+### Priorities from this pass
+
+Ordered by institutional risk per unit of work, read as a delta on the standing lists above:
+
+1. **Teach the cash-flow resolver `DirectLoan`'s coupon, then guard the alias vocabularies (A1).**
+   Adding `currentCouponRate`, `referenceIndex` and `spreadBps` to the resolver is a few lines; the
+   durable half is a parity guard tying resolver aliases to `SecurityAssetTermsSchema` for the
+   cash-flow-capable classes. Fix the two "DirectLoan-shaped" tests to use the keys `DirectLoan`
+   actually emits at the same time — as written they would have caught this and did not.
+2. **Reconcile identifier detection with identifier resolution (A2).** Run the duplicate query first
+   to size it, then pick one key. Either answer is cheap; the current split is the one state that
+   guarantees the conflict surface cannot see the ambiguity the resolver acts on.
+3. **Add the sixth parity guard, over the readiness catalog (A3).** Same shape, same cost, and lower
+   risk than the five that already exist — with the difference that this registry's gap is visible to
+   operators as an understated readiness summary rather than only to the next contributor.
+4. **Decide what `IsProjected` / `IsSearchable` mean (A4).** Build the generic profile-field seam or
+   demote the flags to intent. Building it is the one move that also answers the standing
+   private/alternative-projection item, since those classes are the profile-backed ones.
+5. **N4 and N5, together.** Both are `SecurityAssetPackRegistry`, both are unchanged across two
+   passes, and both are the same question: is this type a gate or documentation? Answering it once —
+   make `ValidateAll()` able to fire its own rule and promote the prose members to checkable per-pack
+   values, or restate the type as descriptive metadata — closes both and stops the registry
+   accumulating further weight either way.
+
+*Deferred and unchanged in posture:* N6 projection fan-out amplification, relational projections for
+the private/alternative classes, valid-time term history, codec generation from
+`SecurityAssetTermsSchema`.
+
+---
+
 ## Method
 
 Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`,
@@ -930,5 +1150,15 @@ The 2026-08-14 verification pass re-read the F# domain and interop, the 47 `Meri
 Security Master contracts, the 58 `Meridian.Application` Security Master services, the 46
 `Meridian.Storage` stores and 28 migrations, the workstation endpoint surfaces, and the codec
 round-trip and asset-class-support test suites.
+
+The 2026-08-31 scheduled pass re-read the F# domain and interop (`SecurityMaster.fs`,
+`Interop.SecurityMaster.fs`), the `Meridian.Contracts` Security Master surface (asset-class catalog,
+terms schema, pack registry, identifiers and normalizer, provenance, schema versions, upcaster chain,
+cash-flow contracts and terms resolver, face-value lot), the `Meridian.Application` Security Master
+services (query, cash-flow, readiness, validation registry, conflict detection, revision store,
+mapping, CSV parser), the `Meridian.Storage` store, projection registry and 30 migrations, the
+browser passport editor and workstation Security Master screens, and the
+`tests/Meridian.Tests/SecurityMaster/` (74 files) and `tests/Meridian.Tests/Application/`
+cash-flow suites.
 
 No code was changed. No tests were run — this review makes no behavioral claims requiring execution.
