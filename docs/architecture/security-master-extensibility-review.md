@@ -1254,15 +1254,33 @@ surfaces adopt. That is a real plan item and a smaller one than the draft implie
 
 1. **P1 + P4 together** — key identifier-ambiguity detection through
    `SecurityIdentifierNormalizer` and serve it from an indexed store query instead of
-   `LoadAllAsync`. One change closes a correctness gap and an O(N²) rebuild path, and the index it
-   needs already exists.
-2. **P2** — window-filter detection so recycled tickers stop generating unclearable conflicts. The
-   conflict queue is only useful if it can reach zero.
+   `LoadAllAsync`, closing a correctness gap and an O(N²) rebuild path with the index that already
+   exists. **Scope it to include aliases**: detection reads only `Identifiers`, so a normalized
+   canonical-identifier query — however well indexed — still leaves two securities claiming one
+   value through *aliases* undetected, while the alias lookup returns one of them unordered. The
+   unit of work is alias values and providers, their enabled state, and overlapping validity
+   windows, on the same terms `ResolveSecurityIdAsync` already applies to them. This is not "one
+   change"; it is one change plus the alias surface it does not reach.
+2. **P2** — window-filter detection so recycled tickers stop generating conflicts the system already
+   holds the facts to decide. These conflicts **are** dismissible and stay dismissed, so the case is
+   the recurring adjudication cost, not a queue that cannot reach zero; rank it as workload relief.
 3. **P5** — unique index on the normalized primary identifier, after a dedup pass. This is what
    makes P1's guarantee hold at the database rather than by convention.
-4. **P6** — plan (do not refactor) the convergence of `TaxLot` and `FaceValueLot` onto one
-   `SecurityId`-keyed, `decimal`-quantity, currency-aware lot aggregate.
-5. **P3** and the profile-backed parity guard — both small, both mechanical.
+4. **P6** — plan (do not refactor) **completing the convergence on the existing `LedgerTaxLot`
+   seam**, not building a new aggregate. `LedgerTaxLot` is already `SecurityId`-keyed with `decimal`
+   quantity and relief, and `FaceValueLotExtensions.ToLedgerTaxLot` already adapts the par model into
+   it; the open work is an acquisition currency/FX pair, where amortization lives, whether an
+   explicit quantity basis belongs on the type or in the adapter, and making it the seam new
+   lot-bearing surfaces adopt. Execution's `TaxLot` has no consumer outside Execution and is not the
+   thing to converge.
+5. **The profile-backed parity guard** — small and mechanical.
+6. **P3** — **not** small and not mechanical, which an earlier version of this list got wrong.
+   Emitting the missing claimant pairs is the easy half; resolving an `IdentifierAmbiguity` today
+   writes only the queue row, and the read path never applies the selected owner, so every pair can
+   be closed while lookup still returns an arbitrary claimant. Scoping this to pair fan-out ships
+   more adjudication and leaves the identity defect intact. Applying the chosen `SecurityId` —
+   through a governed identifier amendment, or an authoritative decision the read path consults —
+   is part of this item, and it is what makes the rest of it worth doing.
 
 ---
 
