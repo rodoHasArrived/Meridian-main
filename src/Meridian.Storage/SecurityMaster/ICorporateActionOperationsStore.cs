@@ -107,4 +107,61 @@ public interface ICorporateActionOperationsStore
         Guid transitionId,
         string requestFingerprint,
         CancellationToken ct = default);
+
+    /// <summary>Reads the case's current (non-superseded) accounting projection binding, if any.</summary>
+    Task<CorporateActionCaseAccountingProjectionDto?> GetAccountingProjectionAsync(
+        Guid caseId,
+        string tenantId,
+        string companyId,
+        CancellationToken ct = default);
+
+    /// <summary>Reads the case's active (non-voided) maker-checker approval, if any.</summary>
+    Task<CorporateActionCaseAccountingApprovalDto?> GetAccountingApprovalAsync(
+        Guid caseId,
+        string tenantId,
+        string companyId,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Replays a committed posting receipt for the exact command identity, or returns null. The
+    /// posting command must check this before re-running any preflight with side effects.
+    /// </summary>
+    Task<CorporateActionAccountingPostingResultDto?> GetAccountingPostingReceiptAsync(
+        Guid caseId,
+        string idempotencyKey,
+        string requestFingerprint,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Atomically supersedes any current binding, retains the supplied exact-version projection
+    /// binding, voids any unconsumed approval, and bumps the case version. Requires the case to be
+    /// in AccountingReview under the caller's full-scope assertion.
+    /// </summary>
+    Task<CorporateActionAccountingProjectionMutationResultDto> AttachAccountingProjectionAsync(
+        AttachCorporateActionAccountingProjectionRequestDto request,
+        CorporateActionCaseAccountingProjectionDto projection,
+        string requestFingerprint,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Atomically records the maker-checker approval and transitions ReadyForApproval to Approved.
+    /// </summary>
+    Task<CorporateActionAccountingApprovalResultDto> ApproveAccountingAsync(
+        ApproveCorporateActionCaseAccountingRequestDto request,
+        CorporateActionCaseAccountingApprovalDto approval,
+        Guid transitionId,
+        string requestFingerprint,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Atomically retains the durable posting result and transitions Approved to Posted. The
+    /// journal itself was already committed by the Asset Accounting Event Spine; this record binds
+    /// the case to that immutable journal identity.
+    /// </summary>
+    Task<CorporateActionAccountingPostingResultDto> RecordAccountingPostingAsync(
+        PostCorporateActionCaseAccountingRequestDto request,
+        CorporateActionCaseAccountingPostingDto posting,
+        Guid transitionId,
+        string requestFingerprint,
+        CancellationToken ct = default);
 }

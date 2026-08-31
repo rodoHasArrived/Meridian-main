@@ -118,6 +118,70 @@ erDiagram
         text source_event_version
         timestamp_with_time_zone linked_at
     }
+    security_master_corporate_action_case_accounting_approvals {
+        uuid approval_id PK
+        uuid case_id FK
+        uuid projection_id FK
+        bigint bound_case_version
+        text approved_by
+        timestamp_with_time_zone approved_at
+        text reason
+        text evidence_reference
+        character_64_ evidence_hash
+        timestamp_with_time_zone voided_at
+        text voided_by
+    }
+    security_master_corporate_action_case_accounting_postings {
+        uuid posting_id PK
+        uuid case_id FK
+        uuid projection_id FK
+        uuid approval_id FK
+        uuid journal_entry_id
+        uuid ledger_book_id
+        uuid period_id
+        text accounting_basis
+        text currency
+        numeric_28_10_ total_debits
+        numeric_28_10_ total_credits
+        text posting_status
+        uuid tax_lot_mutation_batch_id
+        text posted_by
+        timestamp_with_time_zone posted_at
+    }
+    security_master_corporate_action_case_accounting_projections {
+        uuid projection_id PK
+        uuid case_id FK
+        bigint bound_case_version
+        uuid accounting_event_id
+        bigint accounting_event_version
+        bigint spine_version
+        character_64_ projection_input_hash
+        character_64_ posting_intent_hash
+        text posting_idempotency_key
+        character_64_ drafted_candidate_fingerprint
+        uuid policy_decision_id
+        bigint policy_decision_version
+        text rule_pack_id
+        text rule_pack_version
+        text selected_rule_id
+        text selected_rule_version
+        uuid ledger_book_id
+        uuid period_id
+        bigint expected_period_version
+        text accounting_basis
+        text fund_profile_id
+        text currency
+        date effective_date
+        numeric_28_10_ total_debits
+        numeric_28_10_ total_credits
+        uuid lot_snapshot_id
+        bigint lot_snapshot_version
+        boolean has_authoritative_lot_resolution
+        text prepared_by
+        timestamp_with_time_zone prepared_at
+        boolean is_current
+        timestamp_with_time_zone superseded_at
+    }
     security_master_corporate_action_case_conflicts {
         uuid conflict_id PK
         uuid case_id FK
@@ -1033,6 +1097,12 @@ erDiagram
     }
     security_master_cash_transaction ||--o{ security_master_payment_allocation : "payment_allocation_cash_transaction_id_fkey"
     security_master_cash_transaction ||--o{ security_master_reconciliation_result : "reconciliation_result_cash_transaction_id_fkey"
+    security_master_corporate_action_case_accounting_approvals ||--o{ security_master_corporate_action_case_accounting_postings : "corporate_action_case_accounting_postings_approval_id_fkey"
+    security_master_corporate_action_case_accounting_projections ||--o{ security_master_corporate_action_case_accounting_approvals : "corporate_action_case_accounting_approvals_projection_id_fkey"
+    security_master_corporate_action_case_accounting_projections ||--o{ security_master_corporate_action_case_accounting_postings : "corporate_action_case_accounting_postings_projection_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_accounting_approvals : "corporate_action_case_accounting_approvals_case_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_accounting_postings : "corporate_action_case_accounting_postings_case_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_accounting_projections : "corporate_action_case_accounting_projections_case_id_fkey"
     security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_conflicts : "corporate_action_case_conflicts_case_id_fkey"
     security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_evidence : "corporate_action_case_evidence_case_id_fkey"
     security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_transitions : "corporate_action_case_transitions_case_id_fkey"

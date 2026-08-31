@@ -3493,7 +3493,6 @@ Meridian-main
 │   │   ├── Monitoring
 │   │   │   ├── DetailedHealthCheck.cs
 │   │   │   ├── PrometheusMetrics.cs
-│   │   │   ├── StatusHttpServer.cs
 │   │   │   ├── StatusSnapshot.cs
 │   │   │   └── StatusWriter.cs
 │   │   ├── Pipeline
@@ -3531,6 +3530,7 @@ Meridian-main
 │   │   │   │   ├── StructuredCashFlowLedgerBridge.cs
 │   │   │   │   └── StructuredCashFlowLedgerGate.cs
 │   │   │   ├── CorporateActions
+│   │   │   │   ├── CorporateActionCaseAccountingService.cs
 │   │   │   │   ├── CorporateActionCommandService.cs
 │   │   │   │   ├── CorporateActionInboxState.cs
 │   │   │   │   ├── CorporateActionIngestOrchestrator.cs
@@ -4003,6 +4003,7 @@ Meridian-main
 │   │   │   ├── EventSchema.cs
 │   │   │   └── ISchemaUpcaster.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── CorporateActionCaseAccountingContracts.cs
 │   │   │   ├── CorporateActionEconomicFingerprint.cs
 │   │   │   ├── CorporateActionEffectiveStateProjector.cs
 │   │   │   ├── CorporateActionEventTypeNormalization.cs
@@ -5728,7 +5729,8 @@ Meridian-main
 │   │   │   │   ├── 027_security_master_field_provenance.sql
 │   │   │   │   ├── 028_security_master_revision_values_and_versioned_provenance.sql
 │   │   │   │   ├── 029_security_master_corp_action_payload.sql
-│   │   │   │   └── 030_security_master_corporate_action_operations.sql
+│   │   │   │   ├── 030_security_master_corporate_action_operations.sql
+│   │   │   │   └── 031_security_master_corporate_action_accounting_lane.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -5756,6 +5758,7 @@ Meridian-main
 │   │   │   ├── PostgresCertificateOfDepositReferenceProjectionStore.cs
 │   │   │   ├── PostgresCommodityReferenceProjectionStore.cs
 │   │   │   ├── PostgresCorporateActionCanonicalStore.cs
+│   │   │   ├── PostgresCorporateActionOperationsStore.Accounting.cs
 │   │   │   ├── PostgresCorporateActionOperationsStore.Cases.cs
 │   │   │   ├── PostgresCorporateActionOperationsStore.cs
 │   │   │   ├── PostgresCryptoReferenceProjectionStore.cs
@@ -7083,6 +7086,7 @@ Meridian-main
 │   │   │   ├── MessagingEndpoints.cs
 │   │   │   ├── MoneyMarketFundEndpoints.cs
 │   │   │   ├── MoneyMarketFundReferenceEndpoints.cs
+│   │   │   ├── MonitoringEndpointExemptions.cs
 │   │   │   ├── MutationAuthorizationGuardMiddleware.cs
 │   │   │   ├── OmsIntegrationEndpoints.cs
 │   │   │   ├── OptionChainEndpoints.cs
@@ -9762,6 +9766,9 @@ Meridian-main
 │   │   │   │   ├── SecurityMasterConflictAuthorityPolicyTests.cs
 │   │   │   │   └── SecurityMasterWorkbenchCommandServiceTests.cs
 │   │   │   ├── CanonicalRegistryCoverageSourceTests.cs
+│   │   │   ├── CorporateActionAccountingMigrationTests.cs
+│   │   │   ├── CorporateActionCaseAccountingPolicyTests.cs
+│   │   │   ├── CorporateActionCaseAccountingServiceTests.cs
 │   │   │   ├── CorporateActionCommandServiceTests.cs
 │   │   │   ├── CorporateActionEffectiveStateProjectorTests.cs
 │   │   │   ├── CorporateActionGoldenLedgerTests.cs
