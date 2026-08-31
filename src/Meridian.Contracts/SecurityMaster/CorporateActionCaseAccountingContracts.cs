@@ -1,3 +1,5 @@
+using static Meridian.Contracts.Text.TextPrimitives;
+
 namespace Meridian.Contracts.SecurityMaster;
 
 /// <summary>
@@ -415,10 +417,7 @@ public static class CorporateActionCaseAccountingPolicy
     }
 
     private static bool FieldEquals(string? left, string? right) =>
-        string.Equals(Normalize(left), Normalize(right), StringComparison.Ordinal);
-
-    private static string? Normalize(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        string.Equals(NormalizeOptional(left), NormalizeOptional(right), StringComparison.Ordinal);
 
     private static bool IdentifierEquals(string? scopeValue, Guid bindingValue) =>
         Guid.TryParse(scopeValue?.Trim(), out var parsed) && parsed == bindingValue;

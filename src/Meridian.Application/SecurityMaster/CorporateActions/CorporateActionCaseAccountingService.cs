@@ -113,7 +113,7 @@ public sealed class CorporateActionCaseAccountingService : ICorporateActionCaseA
         }
 
         RequireId(request.ProjectionId, "ProjectionId");
-        RequireText(request.Reason, "Reason");
+        RequireCorporateActionText(request.Reason, "Reason");
         RequireCanonicalSha256(request.EvidenceHash, "EvidenceHash");
         if (!CorporateActionEvidenceKinds.IsTrustedReference(request.EvidenceReference))
         {
@@ -168,7 +168,7 @@ public sealed class CorporateActionCaseAccountingService : ICorporateActionCaseA
 
         RequireId(request.ProjectionId, "ProjectionId");
         RequireId(request.ApprovalId, "ApprovalId");
-        RequireText(request.Reason, "Reason");
+        RequireCorporateActionText(request.Reason, "Reason");
         if (_spineStore is null || _postingService is null || _ledgerBookService is null)
         {
             throw new CorporateActionPersistenceUnavailableException(
@@ -623,10 +623,10 @@ public sealed class CorporateActionCaseAccountingService : ICorporateActionCaseA
             throw new CorporateActionValidationException("ExpectedVersion must be greater than zero.");
         }
 
-        RequireText(idempotencyKey, "IdempotencyKey");
-        RequireText(actor, "Actor");
-        RequireText(tenantId, "TenantId");
-        RequireText(companyId, "CompanyId");
+        RequireCorporateActionText(idempotencyKey, "IdempotencyKey");
+        RequireCorporateActionText(actor, "Actor");
+        RequireCorporateActionText(tenantId, "TenantId");
+        RequireCorporateActionText(companyId, "CompanyId");
     }
 
     private static void RequireId(Guid id, string name)
@@ -645,7 +645,7 @@ public sealed class CorporateActionCaseAccountingService : ICorporateActionCaseA
         }
     }
 
-    private static void RequireText(string? value, string name)
+    private static void RequireCorporateActionText(string? value, string name)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
