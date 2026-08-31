@@ -3,6 +3,7 @@ using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Tenancy;
 using Meridian.Entities.FundStructure;
 using Meridian.Storage.FundStructure;
 using static Meridian.Contracts.Text.TextPrimitives;
@@ -21,20 +22,37 @@ public sealed class PostgresFundStructureService : IFundStructureService
     private readonly IGovernanceSharedDataAccessService? _sharedDataAccessService;
     private readonly ISecurityMasterQueryService? _securityMasterQueryService;
     private readonly IFundStructurePolicyService _policy;
+    private readonly IFundScopeTenantAccessor? _tenantAccessor;
+    private readonly TenantScopeEnforcementOptions _tenantScope;
     private readonly SemaphoreSlim _writeLock = new(1, 1);
 
+    /// <param name="tenantAccessor">
+    /// Resolves the calling session's tenant. Null leaves every caller unscoped, which is only
+    /// correct where the composition has no tenant to resolve.
+    /// </param>
+    /// <param name="tenantScope">
+    /// How strictly to enforce ownership. Defaults to
+    /// <see cref="TenantScopeEnforcementMode.DeploymentBoundary"/>, under which a node attributed to
+    /// another tenant is already refused but an unattributed one stays visible — the only safe
+    /// default until a deployment has run the attribution, because fail-closed over an unstamped
+    /// graph hides the whole structure rather than closing a leak.
+    /// </param>
     public PostgresFundStructureService(
         IFundStructureStore store,
         IFundAccountService fundAccountService,
         IFundStructurePolicyService policyService,
         IGovernanceSharedDataAccessService? sharedDataAccessService = null,
-        ISecurityMasterQueryService? securityMasterQueryService = null)
+        ISecurityMasterQueryService? securityMasterQueryService = null,
+        IFundScopeTenantAccessor? tenantAccessor = null,
+        TenantScopeEnforcementOptions? tenantScope = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
         _policy = policyService ?? throw new ArgumentNullException(nameof(policyService));
         _sharedDataAccessService = sharedDataAccessService;
         _securityMasterQueryService = securityMasterQueryService;
+        _tenantAccessor = tenantAccessor;
+        _tenantScope = tenantScope ?? TenantScopeEnforcementOptions.DeploymentBoundary;
     }
 
     // ── Create operations ─────────────────────────────────────────────────────
@@ -50,7 +68,7 @@ public sealed class PostgresFundStructureService : IFundStructureService
         try
         {
             var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
-            EnsureUniqueNode(request.OrganizationId, snap);
+            ClaimNewNode(request.OrganizationId, snap);
 
             var summary = new OrganizationSummaryDto(
                 request.OrganizationId,
@@ -64,6 +82,10 @@ public sealed class PostgresFundStructureService : IFundStructureService
                 request.Description);
 
             await _store.UpsertOrganizationAsync(summary, ct).ConfigureAwait(false);
+            // This create writes the one row directly rather than through PersistChangedAsync, so it
+            // owns the ownership stamp too; without this the root of every new hierarchy would be
+            // the one node left unattributed.
+            await StampCreatedNodesAsync(snap, ct).ConfigureAwait(false);
             return summary;
         }
         finally { _writeLock.Release(); }
@@ -80,7 +102,7 @@ public sealed class PostgresFundStructureService : IFundStructureService
         try
         {
             var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
-            EnsureUniqueNode(request.BusinessId, snap);
+            ClaimNewNode(request.BusinessId, snap);
             EnsureExistsInDict(snap.Organizations, request.OrganizationId, "Organization");
 
             var summary = new BusinessSummaryDto(
@@ -120,7 +142,7 @@ public sealed class PostgresFundStructureService : IFundStructureService
         try
         {
             var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
-            EnsureUniqueNode(request.ClientId, snap);
+            ClaimNewNode(request.ClientId, snap);
             EnsureExistsInDict(snap.Businesses, request.BusinessId, "Business");
 
             var summary = new ClientSummaryDto(
@@ -158,7 +180,7 @@ public sealed class PostgresFundStructureService : IFundStructureService
         try
         {
             var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
-            EnsureUniqueNode(request.FundId, snap);
+            ClaimNewNode(request.FundId, snap);
             if (request.BusinessId.HasValue)
                 EnsureExistsInDict(snap.Businesses, request.BusinessId.Value, "Business");
 
@@ -203,7 +225,7 @@ public sealed class PostgresFundStructureService : IFundStructureService
         try
         {
             var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
-            EnsureUniqueNode(request.SleeveId, snap);
+            ClaimNewNode(request.SleeveId, snap);
             EnsureExistsInDict(snap.Funds, request.FundId, "Fund");
 
             var summary = new SleeveSummaryDto(
@@ -241,7 +263,7 @@ public sealed class PostgresFundStructureService : IFundStructureService
         try
         {
             var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
-            EnsureUniqueNode(request.VehicleId, snap);
+            ClaimNewNode(request.VehicleId, snap);
             EnsureExistsInDict(snap.Funds, request.FundId, "Fund");
             EnsureExistsInDict(snap.Entities, request.LegalEntityId, "LegalEntity");
 
@@ -285,7 +307,7 @@ public sealed class PostgresFundStructureService : IFundStructureService
         try
         {
             var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
-            EnsureUniqueNode(request.EntityId, snap);
+            ClaimNewNode(request.EntityId, snap);
 
             var summary = new LegalEntitySummaryDto(
                 request.EntityId,
@@ -305,6 +327,12 @@ public sealed class PostgresFundStructureService : IFundStructureService
                 NormalizeLifecycleEvents(request.LifecycleEvents));
 
             await _store.UpsertLegalEntityAsync(summary, ct).ConfigureAwait(false);
+
+            // This path writes the entity directly instead of going through PersistChangedAsync, so
+            // it has to stamp for itself -- the same reason CreateOrganizationAsync does. Without it
+            // the new entity stays unattributed: its creator loses sight of it the moment the
+            // deployment goes fail-closed, and until then it reads as a legacy unowned row.
+            await StampCreatedNodesAsync(snap, ct).ConfigureAwait(false);
             return summary;
         }
         finally { _writeLock.Release(); }
@@ -320,8 +348,14 @@ public sealed class PostgresFundStructureService : IFundStructureService
         await _writeLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var existing = await _store.GetLegalEntityAsync(request.EntityId, ct).ConfigureAwait(false);
-            if (existing is null)
+            // Resolved from the scoped snapshot rather than from the store directly. Tenant filtering
+            // lives in LoadSnapshotAsync, so a read that goes straight to _store.GetLegalEntityAsync
+            // is outside the gate: a tenant-A caller who knows tenant B's entity id could read it here
+            // and overwrite it through the upsert below. A node the caller cannot see must be a node
+            // their existence check cannot find, which is what every other mutation on this service
+            // already relies on.
+            var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
+            if (!snap.Entities.TryGetValue(request.EntityId, out var existing))
             {
                 throw new InvalidOperationException($"LegalEntity {request.EntityId} was not found.");
             }
@@ -365,7 +399,7 @@ public sealed class PostgresFundStructureService : IFundStructureService
         try
         {
             var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
-            EnsureUniqueNode(request.InvestmentPortfolioId, snap);
+            ClaimNewNode(request.InvestmentPortfolioId, snap);
             EnsureExistsInDict(snap.Businesses, request.BusinessId, "Business");
             if (request.ClientId.HasValue)
                 EnsureExistsInDict(snap.Clients, request.ClientId.Value, "Client");
@@ -1039,6 +1073,15 @@ public sealed class PostgresFundStructureService : IFundStructureService
         public Dictionary<Guid, FundStructureAssignmentDto> Assignments = new();
         public HashSet<Guid> LinkedAccountIds = [];
 
+        /// <summary>
+        /// Every node id in the store, across all tenants, captured before tenant scoping.
+        /// Node identity is global even when visibility is not.
+        /// </summary>
+        public HashSet<Guid> AllNodeIds = [];
+
+        /// <summary>Nodes created during this mutation, to be stamped with the caller's tenant.</summary>
+        public HashSet<Guid> CreatedNodeIds = [];
+
         public StructureSnapshot ToStructureSnapshot() => new(
             Organizations.Values.ToList(),
             Businesses.Values.ToList(),
@@ -1083,7 +1126,110 @@ public sealed class PostgresFundStructureService : IFundStructureService
             if (!structureNodeIds.Contains(assignment.NodeId))
                 snap.LinkedAccountIds.Add(assignment.NodeId);
         }
+
+        // Node identity spans every tenant, and is captured BEFORE scoping. A create that checked
+        // uniqueness against only the caller's own view would pass on an id another tenant already
+        // holds and then upsert straight over their node — turning the read gate into a write leak.
+        snap.AllNodeIds = [.. structureNodeIds, .. snap.LinkedAccountIds];
+
+        await ScopeToCallerTenantAsync(snap, ct).ConfigureAwait(false);
         return snap;
+    }
+
+    /// <summary>
+    /// Restricts the loaded snapshot to what the calling session's tenant may see (W9-GOV-008
+    /// criterion 2).
+    /// </summary>
+    /// <remarks>
+    /// Scoping happens here rather than in the store because every mutation resolves its parent
+    /// nodes from this same snapshot. Filtering one shared view therefore closes the read on
+    /// <c>/api/fund-structure/graph</c> and the link-or-mutate-by-id write in the same stroke: a node
+    /// the caller cannot see is a node their <c>EnsureExistsInDict</c> check cannot find.
+    /// </remarks>
+    private async Task ScopeToCallerTenantAsync(MutableSnapshot snap, CancellationToken ct)
+    {
+        var tenants = await _store.GetNodeTenantsAsync(ct).ConfigureAwait(false);
+        if (!tenants.IsPartitioned)
+        {
+            return;
+        }
+
+        var callerTenant = _tenantAccessor?.ResolveCallerTenant();
+        var mode = _tenantScope.Mode;
+
+        if (!FundStructureTenantScope.IsCallerAdmissible(tenants, callerTenant, mode))
+        {
+            // Refused, not emptied: an empty graph is indistinguishable from a genuinely empty
+            // structure, so defaulting to it would hide the very rejection the criterion requires.
+            throw new FundStructureTenantScopeException(
+                "A tenant-scoped session is required to read the fund structure.");
+        }
+
+        bool IsVisible(Guid nodeId)
+            => FundStructureTenantScope.IsVisible(tenants, callerTenant, nodeId, mode);
+
+        RemoveHidden(snap.Organizations, IsVisible);
+        RemoveHidden(snap.Businesses, IsVisible);
+        RemoveHidden(snap.Clients, IsVisible);
+        RemoveHidden(snap.Funds, IsVisible);
+        RemoveHidden(snap.Sleeves, IsVisible);
+        RemoveHidden(snap.Vehicles, IsVisible);
+        RemoveHidden(snap.Entities, IsVisible);
+        RemoveHidden(snap.InvestmentPortfolios, IsVisible);
+        snap.LinkedAccountIds.RemoveWhere(nodeId => !IsVisible(nodeId));
+
+        // An edge needs both endpoints: serving a link whose other end is hidden would disclose
+        // that the node exists and what it hangs off, which is the ownership fact being withheld.
+        RemoveHiddenBy(
+            snap.OwnershipLinks,
+            link => IsVisible(link.ParentNodeId) && IsVisible(link.ChildNodeId));
+        RemoveHiddenBy(snap.Assignments, assignment => IsVisible(assignment.NodeId));
+    }
+
+    private static void RemoveHidden<T>(Dictionary<Guid, T> nodes, Func<Guid, bool> isVisible)
+    {
+        foreach (var nodeId in nodes.Keys.Where(nodeId => !isVisible(nodeId)).ToList())
+        {
+            nodes.Remove(nodeId);
+        }
+    }
+
+    private static void RemoveHiddenBy<T>(Dictionary<Guid, T> items, Func<T, bool> isVisible)
+    {
+        foreach (var key in items.Where(pair => !isVisible(pair.Value)).Select(pair => pair.Key).ToList())
+        {
+            items.Remove(key);
+        }
+    }
+
+    /// <summary>
+    /// Records the calling tenant's ownership of a node this service just created.
+    /// </summary>
+    /// <remarks>
+    /// Only newly created nodes are stamped. Claiming pre-existing unattributed nodes on an
+    /// incidental write would let whichever tenant happens to write next take a shared ancestor —
+    /// which is exactly the judgement <see cref="FundStructureTenantAttribution"/> refuses to make
+    /// and quarantines instead.
+    /// </remarks>
+    private async Task StampCreatedNodesAsync(MutableSnapshot snap, CancellationToken ct)
+    {
+        if (snap.CreatedNodeIds.Count == 0)
+        {
+            return;
+        }
+
+        var callerTenant = _tenantAccessor?.ResolveCallerTenant();
+        if (string.IsNullOrWhiteSpace(callerTenant))
+        {
+            return;
+        }
+
+        foreach (var nodeId in snap.CreatedNodeIds)
+        {
+            await _store.StampNodeTenantAsync(nodeId, callerTenant, ct).ConfigureAwait(false);
+        }
+
+        snap.CreatedNodeIds.Clear();
     }
 
     private async Task PersistChangedAsync(MutableSnapshot snap, CancellationToken ct)
@@ -1110,6 +1256,8 @@ public sealed class PostgresFundStructureService : IFundStructureService
             await _store.UpsertAssignmentAsync(a, ct).ConfigureAwait(false);
         foreach (var linkedAccountId in snap.LinkedAccountIds)
             await _store.UpsertLinkedAccountIdAsync(linkedAccountId, ct).ConfigureAwait(false);
+
+        await StampCreatedNodesAsync(snap, ct).ConfigureAwait(false);
     }
 
     private async Task<FundStructureNodeKindDto?> ResolveNodeKindAsync(Guid nodeId, CancellationToken ct)
@@ -1391,14 +1539,22 @@ public sealed class PostgresFundStructureService : IFundStructureService
     private static OwnershipLinkDto MakeAutoLink(Guid parentId, Guid childId, OwnershipRelationshipTypeDto rel, DateTimeOffset from, string? notes) =>
         new(Guid.NewGuid(), parentId, childId, rel, OwnershipPercent: null, IsPrimary: true, from, EffectiveTo: null, notes);
 
-    private static void EnsureUniqueNode(Guid nodeId, MutableSnapshot snap)
+    /// <summary>
+    /// Reserves a node id for a create: rejects one already in use anywhere in the store, and
+    /// records the node so the caller's tenant is stamped on it once the write lands.
+    /// </summary>
+    /// <remarks>
+    /// Uniqueness is checked against <see cref="MutableSnapshot.AllNodeIds"/> — the unscoped set —
+    /// not the tenant-filtered dictionaries. Scoping the uniqueness check would make an id held by
+    /// another tenant look free, and the create that followed would upsert over their node, so the
+    /// read gate would have become a write leak.
+    /// </remarks>
+    private static void ClaimNewNode(Guid nodeId, MutableSnapshot snap)
     {
-        if (snap.Organizations.ContainsKey(nodeId) || snap.Businesses.ContainsKey(nodeId)
-            || snap.Clients.ContainsKey(nodeId) || snap.Funds.ContainsKey(nodeId)
-            || snap.Sleeves.ContainsKey(nodeId) || snap.Vehicles.ContainsKey(nodeId)
-            || snap.Entities.ContainsKey(nodeId) || snap.InvestmentPortfolios.ContainsKey(nodeId)
-            || snap.LinkedAccountIds.Contains(nodeId))
+        if (!snap.AllNodeIds.Add(nodeId))
             throw new InvalidOperationException($"Node {nodeId} already exists.");
+
+        snap.CreatedNodeIds.Add(nodeId);
     }
 
     private static void EnsureExistsInDict<T>(Dictionary<Guid, T> dict, Guid id, string typeName)

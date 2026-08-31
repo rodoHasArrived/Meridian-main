@@ -39,7 +39,7 @@ Broad fund, book, period, report, and delivery administration dashboards remain 
 
 ## Reporting and Analytics Platform
 
-The bounded reporting platform baseline is implemented through governed report-pack runs, certified datasets, line provenance, scheduling, approval, immutable artifacts, distribution evidence, amendments, and restatements. This does not close broader analytics-product expansion or the client-grade rendering work tracked by `W9-REPORT-005`. Any additional analytics workspace, dataset, semantic-model, or self-service distribution surface must reuse the canonical reporting run and evidence chain and receive its own roadmap acceptance criteria before implementation.
+The bounded reporting platform baseline is implemented through governed report-pack runs, certified datasets, line provenance, scheduling, approval, immutable artifacts, distribution evidence, amendments, and restatements. This does not close broader analytics-product expansion. Client-grade PDF/XLSX rendering and the partners-capital statement are delivered and accepted under `W9-REPORT-005` (operator decision `DEC-W9-ACCEPTANCE-001`, 2026-08-29), so that work is no longer deferred; what remains outside the boundary is self-service analytics beyond the governed reporting baseline. Any additional analytics workspace, dataset, semantic-model, or self-service distribution surface must reuse the canonical reporting run and evidence chain and receive its own roadmap acceptance criteria before implementation.
 
 ## Client Portal
 

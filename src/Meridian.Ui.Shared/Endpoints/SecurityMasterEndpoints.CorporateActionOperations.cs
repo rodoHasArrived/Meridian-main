@@ -7,18 +7,29 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
 public static partial class SecurityMasterEndpoints
 {
     private const string CorporateActionSourceDecisionFanOutBlocker =
-        "Corporate-action source decisions are read-only until an authoritative service can enumerate every affected tenant/company scope and apply the decision atomically.";
+        CorporateActionOperationsService.SourceDecisionFanOutBlocker;
 
-    // This foundation retains global source proposals but does not yet own authoritative
-    // multi-tenant case fan-out. Keep the public decision boundary hard-disabled until that
-    // authority exists; this must not become an operator-configurable presentation toggle.
-    private static bool CorporateActionSourceDecisionsEnabled => false;
+    // Global source proposals are decided per accounting scope, so the public decision boundary
+    // stays closed unless the authoritative scope fan-out gate is composed. This is a composition
+    // fact rather than an operator-configurable toggle: a deployment without the authority cannot
+    // enumerate the affected scopes at all, and no setting may open the boundary over that.
+    //
+    // Composition alone does not authorize a decision. It only means the question is answerable —
+    // every decision still asks the gate for the exact affected scope, and the gate refuses when
+    // the fan-out is incomplete, empty, reaches another tenant, or spans more scopes than one
+    // atomic command can case. This read-side posture is therefore advisory by construction: it
+    // reports whether decisions are possible in this deployment, not whether this particular
+    // proposal will pass, which only the decision path can know and which can change between the
+    // read and the write regardless.
+    private static bool CorporateActionSourceDecisionsComposed(HttpContext context) =>
+        context.RequestServices.GetService<ICorporateActionScopeFanOutGate>() is not null;
 
     private static void MapCorporateActionOperationsEndpoints(
         RouteGroupBuilder group,
@@ -256,13 +267,41 @@ public static partial class SecurityMasterEndpoints
                     new CorporateActionValidationException("Route proposalId must match the request ProposalId."));
             }
 
-            if (!CorporateActionSourceDecisionsEnabled)
+            if (!TryResolveCorporateActionScope(context, out var scope))
             {
-                return CorporateActionSourceDecisionsUnavailable(context);
+                return CorporateActionProblem(context, new CorporateActionScopeMismatchException(
+                    "A tenant- and company-scoped workstation request context is required."));
+            }
+
+            if (!CorporateActionSourceDecisionsComposed(context))
+            {
+                return CorporateActionProblem(
+                    context,
+                    new CorporateActionPersistenceUnavailableException(CorporateActionSourceDecisionFanOutBlocker));
             }
 
             try
             {
+                // Rejecting retires a globally visible provider observation, so it removes the
+                // proposal from every scope's actionable inbox, not just the decider's. It may
+                // therefore only be taken by a caller who owns the whole affected set. Unlike
+                // acceptance — where the authority runs inside the atomic command because it
+                // resolves the case scope that command opens — a rejection resolves nothing, so
+                // the check is a plain authorization gate and belongs here.
+                var proposal = await service.GetSourceProposalAsync(request.ProposalId, ct).ConfigureAwait(false);
+                if (proposal is null)
+                {
+                    return CorporateActionProblem(
+                        context,
+                        new CorporateActionNotFoundException("Corporate-action source proposal", request.ProposalId));
+                }
+
+                if (await RefuseUnauthorizedSourceDecisionAsync(context, proposal, scope, ct).ConfigureAwait(false)
+                    is { } refusal)
+                {
+                    return refusal;
+                }
+
                 var trusted = request with
                 {
                     Actor = ResolveActor(context),
@@ -281,8 +320,11 @@ public static partial class SecurityMasterEndpoints
         .RequireAllPermissions(
             UserPermission.ModifySecurityMaster,
             UserPermission.ResolveCorporateActionTerms)
+        .RequireWorkstationTenantCompanyScope()
         .Produces<CorporateActionSourceProposalDecisionResultDto>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status403Forbidden)
         .ProducesProblem(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
         .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -589,16 +631,25 @@ public static partial class SecurityMasterEndpoints
                 "Acceptance scope tenant/company does not match the authenticated workstation scope."));
         }
 
-
+        // Narrow scope stays caller-forbidden now that the server can resolve it. A caller that
+        // supplies a fund, account, or book is asserting an assignment, and the whole point of the
+        // authority is that assignments are read from the record rather than asserted. The
+        // acceptance command stamps the resolved values itself.
         if (HasNarrowCorporateActionScope(request.Scope))
         {
             return CorporateActionProblem(context, new CorporateActionScopeMismatchException(
-                "Fund, account, portfolio, custody, ledger-book, basis, and other narrow corporate-action scope fields are denied until the endpoint can resolve them from an authoritative scoped assignment."));
+                "Fund, account, portfolio, custody, ledger-book, basis, and other narrow corporate-action scope fields are server-resolved from the authoritative scoped assignment and must not be supplied by the caller."));
         }
 
-        if (!CorporateActionSourceDecisionsEnabled)
+        // Only the cheap composition check happens here. The authoritative resolution itself runs
+        // inside the acceptance command, which must first replay a committed receipt — re-asking
+        // the authority for a retry whose holdings have since moved would refuse a command that
+        // already committed.
+        if (!CorporateActionSourceDecisionsComposed(context))
         {
-            return CorporateActionSourceDecisionsUnavailable(context);
+            return CorporateActionProblem(
+                context,
+                new CorporateActionPersistenceUnavailableException(CorporateActionSourceDecisionFanOutBlocker));
         }
 
         try
@@ -703,7 +754,8 @@ public static partial class SecurityMasterEndpoints
             blockers.Add(permissionBlocker);
         }
 
-        if (!CorporateActionSourceDecisionsEnabled
+        var decisionsComposed = CorporateActionSourceDecisionsComposed(context);
+        if (!decisionsComposed
             && !blockers.Contains(CorporateActionSourceDecisionFanOutBlocker, StringComparer.Ordinal))
         {
             blockers.Add(CorporateActionSourceDecisionFanOutBlocker);
@@ -711,8 +763,8 @@ public static partial class SecurityMasterEndpoints
 
         return availability with
         {
-            CanAccept = availability.CanAccept && canResolve && CorporateActionSourceDecisionsEnabled,
-            CanReject = availability.CanReject && canResolve && CorporateActionSourceDecisionsEnabled,
+            CanAccept = availability.CanAccept && canResolve && decisionsComposed,
+            CanReject = availability.CanReject && canResolve && decisionsComposed,
             // Staged inbox rows do not yet carry enough retained per-source evidence to make a
             // comparison control truthful. Keep this unavailable even if a stale projection says otherwise.
             CanCompareEvidence = false,
@@ -720,10 +772,52 @@ public static partial class SecurityMasterEndpoints
         };
     }
 
-    private static IResult CorporateActionSourceDecisionsUnavailable(HttpContext context) =>
-        CorporateActionProblem(
-            context,
-            new CorporateActionPersistenceUnavailableException(CorporateActionSourceDecisionFanOutBlocker));
+    /// <summary>
+    /// Refuses a source decision the scope authority will not authorize, or returns null when it
+    /// will. Each refusal keeps its own problem code so a caller can tell an authority that is
+    /// absent (retry later) from a fan-out that genuinely reaches beyond this command.
+    /// </summary>
+    private static async Task<IResult?> RefuseUnauthorizedSourceDecisionAsync(
+        HttpContext context,
+        CorporateActionSourceProposalDto proposal,
+        CorporateActionCaseScopeDto scope,
+        CancellationToken ct)
+    {
+        var gate = context.RequestServices.GetService<ICorporateActionScopeFanOutGate>();
+        if (gate is null)
+        {
+            return CorporateActionProblem(
+                context,
+                new CorporateActionPersistenceUnavailableException(CorporateActionSourceDecisionFanOutBlocker));
+        }
+
+        var effectiveDate = proposal.ProposedAction.RecordDate ?? proposal.ProposedAction.ExDate;
+        var decision = await gate
+            .ResolveDecisionScopeAsync(
+                proposal.SecurityId,
+                effectiveDate,
+                scope.TenantId,
+                scope.CompanyId,
+                ct)
+            .ConfigureAwait(false);
+        if (decision.IsPermitted)
+        {
+            return null;
+        }
+
+        var detail = decision.Blockers.Count == 0
+            ? CorporateActionSourceDecisionFanOutBlocker
+            : string.Join(" ", decision.Blockers);
+        return CorporateActionProblem(context, decision.Refusal switch
+        {
+            CorporateActionScopeFanOutRefusal.MultiScope => new CorporateActionOperationException(
+                CorporateActionProblemCodes.DownstreamAuthorityRequired,
+                detail),
+            CorporateActionScopeFanOutRefusal.ForeignScope or
+            CorporateActionScopeFanOutRefusal.NoAffectedScope => new CorporateActionScopeMismatchException(detail),
+            _ => new CorporateActionPersistenceUnavailableException(detail),
+        });
+    }
 
     private static CorporateActionProcessingCaseDto ApplyCallerActionAvailability(
         CorporateActionProcessingCaseDto processingCase,

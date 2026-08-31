@@ -24,9 +24,14 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
     priority rationale (`W9-TRUTH-001` through `W9-INGEST-009`, decision `DEC-PRIORITY-SLATE-001`);
     live status stays in the roadmap registry
   - [2026-08 W9 Close-Out Delivery Plan](w9-close-out-delivery-plan-2026-08.md) — adopted sequence
-    for the three W9 rows still open (`W9-SAFETY-007`, `W9-GOV-008`, `W9-INGEST-009`, decision
+    for the three original W9 close-out rows (`W9-SAFETY-007`, `W9-GOV-008`, `W9-INGEST-009`, decision
     `DEC-W9-CLOSEOUT-001`), with the source constraints found while checking each row against
     current code; live status stays in the roadmap registry
+  - [2026-08-29 W9 Operator Acceptance Record](w9-operator-acceptance-2026-08-29.md) — the operator
+    chronology for the original six-row acceptance and `W9-ALPACA-004` hold, followed by the
+    corrected-evidence reassessment that leaves five rows accepted and reopens `W9-CORPACT-011`
+    (decisions `DEC-W9-ACCEPTANCE-001` and `DEC-W9-ACCEPTANCE-002`); live status stays in the roadmap
+    registry
   - [2026-07 Depth Slate](w10-depth-slate-2026-07.md) — W10 rationale for deepening existing
     functionality (`W10-MARK-001` through `W10-CONSOL-001`, decision `DEC-DEPTH-SLATE-001`);
     live status stays in the roadmap registry. `W10-MARK-001` and `W10-SEAM-001` are pulled forward
@@ -138,12 +143,18 @@ bounded W6 Covered Call evidence loop as complete; WPF parity (`W8-WPF-PARITY-00
 screen consolidation (`W8-UX-CONSOL-001`) remain active. The accepted W1-W7 bounded milestones are
 capability claims, not blanket production certification.
 
-As of 2026-08-11 the W9 slate is mostly closed: `W9-ASSET-010` is `done`; `W9-TRUTH-001`,
-`W9-DEMO-002`, `W9-PAPER-003`, `W9-ALPACA-004`, `W9-REPORT-005`, and `W9-NAV-006` are
-`ready_for_acceptance` with implementation-complete evidence; `W9-SAFETY-007` is `in_progress`; and
-`W9-GOV-008` and `W9-INGEST-009` remain `planned`. Those three open rows are sequenced by the
-[2026-08 W9 Close-Out Delivery Plan](w9-close-out-delivery-plan-2026-08.md). Every W10 row still
-carries planned-evidence posture. The registry remains live truth for all of this.
+As of 2026-08-30 the W9 slate is mostly closed: `W9-ASSET-010` is `done`; `W9-TRUTH-001`,
+`W9-DEMO-002`, `W9-PAPER-003`, `W9-REPORT-005`, and `W9-NAV-006` remain `accepted` on operator
+decision `DEC-W9-ACCEPTANCE-001`; and `W9-CORPACT-011` is reopened as `in_progress` with
+`evidence_posture: in_progress` and `health: red` under `DEC-W9-ACCEPTANCE-002` pending unchanged
+exit criterion four. Both decisions and their chronology are recorded in the
+[2026-08-29 W9 Operator Acceptance Record](w9-operator-acceptance-2026-08-29.md).
+`W9-ALPACA-004` was deliberately held and stays `ready_for_acceptance` pending its three recorded
+fill-path caveats; `W9-SAFETY-007`, `W9-GOV-008`, and `W9-INGEST-009` also remain `in_progress`.
+Those latter three open rows are sequenced by the
+[2026-08 W9 Close-Out Delivery Plan](w9-close-out-delivery-plan-2026-08.md). Acceptance of a bounded
+row is not a release certification and does not move a row to `done`. Every W10 row still carries
+planned-evidence posture. The registry remains live truth for all of this.
 
 Production readiness is currently **blocked**. The release posture changes only when the
 [Implementation and Readiness Tracker](implementation-todo-list.md), roadmap evidence, packaging,

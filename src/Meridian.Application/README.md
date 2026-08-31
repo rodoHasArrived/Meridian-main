@@ -27,6 +27,19 @@ Core workstation host. Do not introduce a second listener or independent monitor
 
 ## Key folders and files
 
+- `Tenancy/` - the authoritative multi-tenant scope fan-out authority. `AuthoritativeScopeFanOutService`
+  composes the registered `IScopeAssignmentProvider` authorities that answer "which accounting scopes
+  does this security-level fact reach?"; `FundAccountHoldingScopeAssignmentProvider` is the first such
+  authority, joining custodied holdings to the fund-profile tenancy registry. Composition is by
+  unanimity rather than union: the result is authoritative only when every registered provider saw
+  the whole of its own slice, and zero providers is an unanswerable question rather than an empty
+  affected set. The provider enumerates accounts through `QueryAccountsAcrossTenantsAsync`, which
+  deliberately bypasses the caller-tenant read predicate — a caller-scoped list would make a fact
+  that also reaches other tenants look confined to one. A holding it can see but cannot attribute
+  (an account with no fund, a fund with no bound tenant, or an account with no custodian statement
+  for the effective date) makes the slice non-authoritative rather than silently shrinking the
+  affected set. Nothing read across tenants is returned to a caller; consumers learn only whether
+  the affected set is confined to their own scope.
 - `Commands/` - CLI command handlers and operator workflow adapters. Runbook command flags adapt
   the Workflow-owned runbook store and executor instead of owning runbook state in Application;
   fund workflow command-state transitions also live in `Meridian.Workflow.Workflows`. The schema
@@ -554,6 +567,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `W3-CONT-001` | Research to paper continuity |
 | `W5-ACCT-001` | Accounting records and operational evidence |
+| `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W10-MARK-001` | Fail-closed stale-mark policy and mark-age surfacing |
 <!-- source-roadmap-traceability:end -->
 
