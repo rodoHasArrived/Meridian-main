@@ -1086,10 +1086,15 @@ lookup (`PostgresSecurityMasterStore.cs:652-663`). So when two securities claim 
 aliases* rather than canonical identifiers, resolution still returns one of them and no conflict is
 ever raised — a gap the normalization fix above does not touch.
 
-Worth stating precisely, because it is worse than the identifier case: the identifier query orders
-its result (`order by i.is_primary desc limit 1`, `:645-646`), so it is at least deterministic. The
-alias query is `limit 1` with **no `order by` whatsoever** (`:663`), so which security an ambiguous
-alias resolves to is decided by row order. The alias query does honour `is_enabled` and the
+Worth stating precisely, because it is worse than the identifier case — though not for the reason an
+earlier version of this paragraph gave, which called the identifier query "deterministic". It is
+not. `order by i.is_primary desc limit 1` (`:645-646`) has **no tie-breaker**, and ties are the
+normal case here: two securities each claiming the identifier as primary share `is_primary = true`,
+so the ordering is unspecified and PostgreSQL may return either row. The identifier query merely
+*prefers* primary rows over non-primary ones; among equals it is as arbitrary as the alias query,
+which is `limit 1` with **no `order by` whatsoever** (`:663`). Both decide by row order; the alias
+query is worse only in that it does not even prefer a primary claimant, having no such column.
+Either way, a stable authoritative ordering is part of the remediation, not just detection parity. The alias query does honour `is_enabled` and the
 `valid_from`/`valid_to` window, so the remediation is to bring aliases into detection on the same
 terms resolution already applies to them — enabled state and validity window included — not to
 invent new predicates.
@@ -1187,9 +1192,18 @@ normalized column; `grep -n unique Migrations/*.sql` returns only the raw-value 
 So the one database-level uniqueness guarantee the identity layer has is stated over the form the
 system does *not* resolve on. Two securities whose primary ISINs differ only in punctuation or case
 both insert, and both then resolve from the same normalized lookup — with the second row's
-`GetByIdentifierAsync` result decided by row order rather than by a constraint. This is the
-structural counterpart of P1: raw uniqueness plus normalized resolution plus raw detection means no
-layer holds the invariant.
+`GetByIdentifierAsync` result decided by row order rather than by a constraint.
+
+**The two variant kinds are not equivalent, and an earlier version of this paragraph lumped them
+together.** Detection builds its ambiguity maps with `StringComparer.OrdinalIgnoreCase`
+(`SecurityMasterConflictDetection.cs:27, :96`), so a **case-only** pair collides in that map and *is*
+flagged — it is detected but not prevented, since the raw index compares bytewise and admits both
+rows. A **punctuation or whitespace** pair differs under `OrdinalIgnoreCase` too, so detection is
+silent on it while normalized resolution collapses it: undetected *and* unprevented. Only the second
+kind supports the strong reading. Stated accurately, the structural counterpart of P1 is that raw
+uniqueness plus normalized resolution plus case-insensitive-but-punctuation-sensitive detection
+leaves punctuation variants with no layer holding the invariant, and case variants with detection
+holding it alone.
 
 **The uniqueness rule is kind-specific, so a two-column index states it wrongly for one kind.**
 `SecurityValidationService.ValidateCrossRecordDuplicates` sets `includeProvider = isProviderSymbol`
