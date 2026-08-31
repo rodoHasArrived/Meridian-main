@@ -1,5 +1,7 @@
 using System.Reflection;
+using Meridian.Application.Composition;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Workstation;
@@ -281,6 +283,28 @@ public sealed class AppServiceRegistrationTests
                 source.IndexOf("await InitializeBackgroundServicesAsync();", StringComparison.Ordinal),
                 "DI-hosted database workers should start before WPF-local scheduler services");
         source.Should().Contain("host.StopAsync(cts.Token)");
+    }
+
+    [Fact]
+    public void ConfigureServices_ShouldRegisterTheFinalGraphProductionGuard()
+    {
+        // Fourteenth Codex review round. AddProductionRegistrationGuard is called from
+        // ServiceCompositionRoot.AddMarketDataServices, which this desktop never invokes: it
+        // composes its own graph. So ADR-019's final-graph guard was absent from precisely the lane
+        // whose tolerant startup catch this change was written to close, and the refusal escalation
+        // had nothing to escalate here.
+        //
+        // Registering it is a no-op on an ordinary launch — with no posture declaration and none of
+        // the posture environment variables set, StartAsync returns immediately — so this asserts
+        // the registration exists rather than that it refuses anything.
+        var services = BuildServiceCollection();
+
+        services.Should().Contain(
+            descriptor => descriptor.ServiceType == typeof(ProductionRegistrationGuardService),
+            "the desktop composes its own graph and must still be validated against ADR-019");
+        services.Should().Contain(
+            descriptor => descriptor.ServiceType == typeof(IHostedService),
+            "the guard runs as a hosted service, first in the chain");
     }
 
     [Fact]

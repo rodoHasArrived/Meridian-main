@@ -431,6 +431,19 @@ public partial class App : System.Windows.Application
             sp => sp.GetRequiredService<Meridian.Ui.Shared.Services.InMemoryFundStructureTenancyGuard>());
         services.AddSingleton<Meridian.Application.Composition.IStartupRefusalGuard>(
             sp => sp.GetRequiredService<Meridian.Ui.Shared.Services.InMemoryFundStructureTenancyGuard>());
+
+        // ADR-019's final-graph guard. Registered here because this desktop composes its own graph
+        // and never calls AddMarketDataServices, which is the only other caller of this extension --
+        // so the lane that most needed the refusal had no guard to raise one, and the escalation
+        // work elsewhere in this change had nothing to escalate here (Codex review finding on
+        // PR #2871).
+        //
+        // A no-op on an ordinary launch: with no MeridianDeploymentPostureDeclaration and none of
+        // the posture environment variables set, StartAsync takes neither the production branch nor
+        // the supported-local one and returns immediately. It bites only where a posture is actually
+        // declared, which is the point. Its eager factory validation runs inside
+        // StartHostServicesAsync, behind the shell, which is where that work belongs.
+        services.AddProductionRegistrationGuard();
         services.AddSingleton<LoginSessionService>();
         services.AddSingleton<WpfServices.DesktopAuthenticationSession>();
         services.AddTransient<StartupWindowViewModel>();

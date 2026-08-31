@@ -54,6 +54,14 @@ application that is closing does not show one. The guards that reach this path t
 `ProductionRegistrationGuardService` and W9-GOV-008's `InMemoryFundStructureTenancyGuard`; do not
 reintroduce a blanket catch around host startup that swallows them.
 
+Both are registered by `App.ConfigureServices`, and the ADR-019 one has to be: this desktop composes
+its own graph and never calls `AddMarketDataServices`, the only other caller of
+`AddProductionRegistrationGuard`, so leaving it out meant the lane whose tolerant catch this posture
+exists to close had no final-graph guard at all. It is a no-op on an ordinary launch — without a
+`MeridianDeploymentPostureDeclaration` or one of the posture environment variables, its `StartAsync`
+takes neither the production nor the supported-local branch — so it costs nothing until a posture is
+actually declared.
+
 **Refusals are decided before the shell exists, and only refusals.**
 `App.RunStartupRefusalPreflightAsync` runs every registered
 `Meridian.Application.Composition.IStartupRefusalGuard` in `OnStartup` *before* `MainWindow` is
