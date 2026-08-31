@@ -22,7 +22,7 @@ CURRENT_ACTION_REFS = {
     "actions/cache": "v6.1.0",
     "actions/upload-artifact": "v7.0.1",
     "actions/setup-node": "v6.4.0",
-    "actions/setup-python": "v6.3.0",
+    "actions/setup-python": "v7.0.0",
 }
 
 ACTIVE_DOC_ROOTS = [

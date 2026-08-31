@@ -15,7 +15,7 @@ class SchemaControlWorkflowTests(unittest.TestCase):
         self.assertIn("uses: actions/checkout@v6.0.2", self.workflow)
         self.assertIn("persist-credentials: false", self.workflow)
         self.assertIn("fetch-depth: 0", self.workflow)
-        self.assertIn("uses: actions/setup-python@v6.3.0", self.workflow)
+        self.assertIn("uses: actions/setup-python@v7.0.0", self.workflow)
         self.assertIn('python-version: "3.12"', self.workflow)
         self.assertIn("uses: actions/upload-artifact@v7.0.1", self.workflow)
 
