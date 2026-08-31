@@ -1157,6 +1157,18 @@ both insert, and both then resolve from the same normalized lookup — with the 
 structural counterpart of P1: raw uniqueness plus normalized resolution plus raw detection means no
 layer holds the invariant.
 
+**The uniqueness rule is kind-specific, so a two-column index states it wrongly for one kind.**
+`SecurityValidationService.ValidateCrossRecordDuplicates` sets `includeProvider = isProviderSymbol`
+and keys on `IdentifierKey(identifier, includeProvider)` (`:441-449`): provider is part of identity
+for `ProviderSymbol` and deliberately not for the canonical kinds. Two providers may legitimately
+issue the same symbol text for different securities. A `(kind, normalized value)` constraint applies
+the canonical rule to every kind and would reject that pair — and it *cannot* express the correct
+rule as written, because the denormalized `securities` primary columns carry no provider at all.
+Closing this therefore means either a partial/kind-scoped index over the canonical kinds only, or
+projecting a normalized primary provider column and including it for `ProviderSymbol`. The
+constraint below is stated for the canonical kinds; do not widen it to `ProviderSymbol` without
+that column.
+
 The fix is a unique index on `(primary_identifier_kind, normalized_primary_identifier_value)`,
 which needs a dedup pass over existing rows first.
 
@@ -1189,13 +1201,32 @@ referenced only within `src/Meridian.Execution.Sdk` and `src/Meridian.Execution/
 a repository-wide search returns no consumer in Ledger, Reporting or Backtesting. Its symbol keying
 and `long Quantity` are real constraints on an execution-side type, not a platform-wide lot model.
 
-What survives, and is worth the item, is narrower and now applies to **all three**: none carries an
-acquisition currency or an acquisition FX rate, so a multi-currency cost basis has nowhere to live
-in any of them — including the `LedgerTaxLot` the other two would converge on. And the convergence is
-partial rather than done: the adapter runs one way, `LedgerTaxLot` has no amortization, and nothing
-requires new lot-bearing surfaces to adopt it. The question this item should put is whether to
-finish converging on the ledger seam and give it an acquisition currency, not whether to design a
-new target aggregate.
+**There is a fourth model, and it is the durable one.** `LedgerTaxLotRecord`
+(`src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:332-349`) carries `AcquiredDate`, `decimal
+OriginalQuantity` and `OpenQuantity`, `decimal UnitCost`, `Guid SecurityId` — and **`string
+Currency`**. It is persisted and queried through `SaveTaxLotAsync` (`:65`, implemented at
+`PostgresLedgerJournalStore.cs:848`) and `ListOpenTaxLotsAsync` (`:71`), with atomic
+acquisition/disposal mutation kinds, versioning and an evidence ref. It is the authoritative storage
+model; `LedgerTaxLot` is the in-memory shape the relief projector operates on.
+
+**So an earlier version of this item was wrong, and wrong in the way it had just corrected someone
+else for.** It stated that none of the models carries an acquisition currency and that a
+multi-currency cost basis "has nowhere to live in any of them". `LedgerTaxLotRecord` has carried
+`Currency` the whole time. The prior draft had swept two models and stopped; this one swept three and
+stopped. Restated precisely, so the surviving claim is checkable rather than sweeping:
+
+- **Acquisition currency** — present on `LedgerTaxLotRecord`; absent from `FaceValueLot`,
+  `LedgerTaxLot` and Execution's `TaxLot`. The gap is that the durable model holds it and the
+  in-memory relief model does not, so currency is dropped on the way into relief.
+- **Acquisition FX rate** — absent from all four, `LedgerTaxLotRecord` included. That half stands.
+
+This also changes the target. Directing convergence at `LedgerTaxLot` without accounting for the
+storage model risks doing exactly what this item warns against — standing up another parallel seam
+beside the authoritative one. The question the item should put is how `LedgerTaxLotRecord`,
+`LedgerTaxLot` and the adapter relate: which is the contract new lot-bearing surfaces adopt, why
+`Currency` survives persistence but not relief, and where an FX rate belongs. The convergence is also
+still partial in the ways already noted — the adapter runs one way, `LedgerTaxLot` has no
+amortization, and nothing requires adoption.
 
 Symbol-keyed lots remain the specific thing corporate actions break — the subsystem models ticker
 changes (`SecurityMasterTickerChangeService`, `PermTicker`, the historical symbol timeline)
@@ -1264,15 +1295,23 @@ surfaces adopt. That is a real plan item and a smaller one than the draft implie
 2. **P2** — window-filter detection so recycled tickers stop generating conflicts the system already
    holds the facts to decide. These conflicts **are** dismissible and stay dismissed, so the case is
    the recurring adjudication cost, not a queue that cannot reach zero; rank it as workload relief.
-3. **P5** — unique index on the normalized primary identifier, after a dedup pass. This is what
-   makes P1's guarantee hold at the database rather than by convention.
-4. **P6** — plan (do not refactor) **completing the convergence on the existing `LedgerTaxLot`
-   seam**, not building a new aggregate. `LedgerTaxLot` is already `SecurityId`-keyed with `decimal`
-   quantity and relief, and `FaceValueLotExtensions.ToLedgerTaxLot` already adapts the par model into
-   it; the open work is an acquisition currency/FX pair, where amortization lives, whether an
-   explicit quantity basis belongs on the type or in the adapter, and making it the seam new
-   lot-bearing surfaces adopt. Execution's `TaxLot` has no consumer outside Execution and is not the
-   thing to converge.
+3. **P5** — unique index on the normalized primary identifier, after a dedup pass, **scoped to the
+   canonical kinds**. This is what makes P1's guarantee hold at the database rather than by
+   convention. It must not be applied to `ProviderSymbol`: provider is part of identity for that kind
+   (`ValidateCrossRecordDuplicates`, `:441-449`), two providers may legitimately share symbol text,
+   and the denormalized `securities` columns carry no provider to express the rule with. Widening it
+   means projecting a normalized primary provider column first.
+4. **P6** — plan (do not refactor) the lot-model convergence, and **start by reconciling the four
+   models rather than naming a target**. `LedgerTaxLotRecord`
+   (`Storage/Ledger/ILedgerJournalStore.cs:332-349`) is the durable model and already carries
+   `Currency`; `LedgerTaxLot` is the in-memory relief shape and does not;
+   `FaceValueLotExtensions.ToLedgerTaxLot` adapts the par model into the latter; Execution's `TaxLot`
+   has no consumer outside Execution and is not the thing to converge. The open work is why currency
+   survives persistence but not relief, where an acquisition FX rate belongs (absent from all four),
+   where amortization lives, whether an explicit quantity basis belongs on the type or in the
+   adapter, and which of the ledger pair is the contract new lot-bearing surfaces adopt. An earlier
+   version of this entry named `LedgerTaxLot` as the target without accounting for the storage model,
+   which risked standing up another parallel seam beside the authoritative one.
 5. **The profile-backed parity guard** — small and mechanical.
 6. **P3** — **not** small and not mechanical, which an earlier version of this list got wrong.
    Emitting the missing claimant pairs is the easy half; resolving an `IdentifierAmbiguity` today
@@ -1790,9 +1829,29 @@ nothing will say so until it becomes a catalog class, at which point all three p
 `asset-pack.planned-asset-class-already-modeled` at once and the ownership question has to be settled
 under a red build instead of before one.
 
-This is N4's defect reproduced on the new axis, and it argues for fixing N4 by making the overlap rule
-symmetric — evaluate both claimed and planned sets, for incumbents and candidates alike — rather than
-by patching the candidate filter alone.
+This is N4's defect reproduced on the new axis. **An earlier version of this item proposed making the
+overlap rule symmetric — "for incumbents and candidates alike" — and that remedy would break the
+shipped registry.** The rule's asymmetry is deliberate: after grouping claimants it filters
+`.Where(group => group.Any(row => candidateIds.Contains(row.PackId)))` (`:289`), so it polices a new
+candidate against the existing set and never the existing set against itself. That filter is what
+lets `DirectLoan` sit in both `private-loan-credit` (`:198`) and `mortgage-facility-intercompany`
+(`:222`) while `AssetPackRegistry_ValidateAll_ShouldAcceptBuiltInPacks`
+(`SecurityAssetClassCatalogTests.cs:454`) still passes. Dropping the candidate filter would fail the
+built-in registry and that test with it.
+
+The contract does not have a single-owner invariant to enforce, and more than one thing says so:
+`FindByAssetClass` returns `IReadOnlyList<SecurityAssetPackDescriptor>` (`:253`) rather than a single
+descriptor, the readiness service publishes every pack independently, and the built-in registry ships
+a deliberate two-pack class. So three packs planning `CreditFacility` is not by itself an ownership
+defect — it is only a defect if many-to-many coverage is disallowed, and nothing establishes that it
+is.
+
+Narrowed accordingly: extend the **planned** dimension into the rule's existing candidate-scoped
+shape, so a new candidate cannot silently plan a class an incumbent already claims or plans, and
+leave incumbent-versus-incumbent overlap alone. Making overlap an error in general is a different and
+larger change that needs a uniqueness or routing contract established first — deciding whether a
+class may have several packs and, if so, how a consumer picks — and that decision does not belong to
+this item.
 
 Mitigating context for N4 as a whole: `FindByAssetClass` (`:253`) has no production consumer, only
 tests. The registry reaches production through `SecurityMasterOperationalReadinessService:295` (the
