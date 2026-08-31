@@ -545,7 +545,7 @@ public sealed class IBDataServicesTests
         public void CancelDataRequest(int requestId, string capability) => Calls.Add($"cancel:{requestId}:{capability}");
     }
 
-    private sealed class CallbackTransport : RecordingTransport, IIBDataLineageSource, IIBDataCallbackSource, IIBProviderConnectionIdentity
+    private sealed class CallbackTransport : IIBDataServiceTransport, IIBDataLineageSource, IIBDataCallbackSource, IIBProviderConnectionIdentity
     {
         public string ProviderConnectionId => "ib-gateway:live:7";
         public ProviderScannerResult? ScannerResultDuringRequest { get; init; }
