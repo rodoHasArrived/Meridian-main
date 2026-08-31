@@ -1,11 +1,11 @@
 {
   "total_files": 700,
-  "total_lines": 148659,
+  "total_lines": 148783,
   "orphaned_count": 254,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 253,
-  "average_lines": 212.4,
+  "average_lines": 212.5,
   "health_score": 81,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2713,22 +2713,6 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-01.md",
-      "line_count": 730,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/generated/database/contracts/ledger-contracts-page-02.md",
-      "line_count": 782,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/generated/database/contracts/ledger-contracts-page-03.md",
       "line_count": 728,
       "has_heading": true,
       "todo_count": 0,
@@ -2736,8 +2720,24 @@
       "stale": false
     },
     {
+      "path": "docs/generated/database/contracts/ledger-contracts-page-02.md",
+      "line_count": 780,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/generated/database/contracts/ledger-contracts-page-03.md",
+      "line_count": 736,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/generated/database/contracts/ledger-contracts-page-04.md",
-      "line_count": 669,
+      "line_count": 671,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2953,7 +2953,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10857,
+      "line_count": 10866,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5481,7 +5481,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 597,
+      "line_count": 625,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5769,7 +5769,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2270,
+      "line_count": 2301,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5825,7 +5825,7 @@
     },
     {
       "path": "src/Meridian.Wpf/README.md",
-      "line_count": 760,
+      "line_count": 810,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

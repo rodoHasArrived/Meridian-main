@@ -65,6 +65,20 @@ public enum AccountingAuditChainAnchorPhase
 }
 
 /// <summary>One record in the external head journal.</summary>
+/// <param name="GenesisSequence">
+/// The chain's declared start, copied out of the snapshot so it can be checked against it.
+/// </param>
+/// <param name="PreChainEventCount">
+/// How many events were retained before chaining began, copied out for the same reason.
+/// </param>
+/// <remarks>
+/// <b>Why the genesis boundary is recorded here.</b> Verification bounds the retained event count
+/// by <c>PreChainEventCount + Links.Count</c>, and both of those live in the snapshot the chain
+/// protects — so an actor editing the snapshot could add an unlinked event, increment the count to
+/// match, and pass every check while the anchor stayed valid, because the anchor hash bound only
+/// the chain head (Codex review finding on PR #2871). Carrying the boundary out here, inside the
+/// anchor's own hash, is what makes the count an assertion the snapshot cannot restate.
+/// </remarks>
 public sealed record AccountingAuditChainAnchorRecord(
     int SchemaVersion,
     long Sequence,
@@ -72,7 +86,9 @@ public sealed record AccountingAuditChainAnchorRecord(
     AccountingAuditChainAnchorPhase Phase,
     DateTimeOffset RecordedAtUtc,
     string? PreviousAnchorHash,
-    string AnchorHash);
+    string AnchorHash,
+    long GenesisSequence = AccountingAuditChainState.FirstSequence,
+    int PreChainEventCount = 0);
 
 /// <summary>Why a chain failed verification. <see cref="Valid"/> is the only passing value.</summary>
 public enum AccountingAuditChainStatus
@@ -268,7 +284,7 @@ public static class AccountingAuditChain
             return links;
         }
 
-        return VerifyAnchor(state, anchor) ?? links;
+        return VerifyAnchor(state, auditEvents.Count, anchor) ?? links;
     }
 
     /// <summary>
@@ -412,6 +428,7 @@ public static class AccountingAuditChain
     /// </summary>
     private static AccountingAuditChainVerification? VerifyAnchor(
         AccountingAuditChainState? state,
+        int retainedEventCount,
         AccountingAuditChainAnchorRecord? anchor)
     {
         var head = state?.Head;
@@ -430,6 +447,25 @@ public static class AccountingAuditChain
                     preChainEventCount,
                     "No external head is retained for the chained events.",
                     head.Sequence);
+        }
+
+        // The genesis boundary first, because the count check downstream is only as good as this.
+        // Both fields live in the snapshot, so an actor who could edit it could add an unlinked
+        // event and raise PreChainEventCount to match; the anchor's copy is bound by the anchor's
+        // own hash, so disagreeing with it is the tamper evidence the count alone cannot give.
+        if (state is not null
+            && (state.GenesisSequence != anchor.GenesisSequence
+                || state.PreChainEventCount != anchor.PreChainEventCount))
+        {
+            return new AccountingAuditChainVerification(
+                AccountingAuditChainStatus.AnchorMismatch,
+                linksChecked,
+                preChainEventCount,
+                $"The snapshot declares genesis {state.GenesisSequence.ToString(CultureInfo.InvariantCulture)} "
+                + $"over {state.PreChainEventCount.ToString(CultureInfo.InvariantCulture)} pre-chain events, "
+                + $"but the external head records genesis {anchor.GenesisSequence.ToString(CultureInfo.InvariantCulture)} "
+                + $"over {anchor.PreChainEventCount.ToString(CultureInfo.InvariantCulture)}.",
+                head?.Sequence ?? anchor.Sequence);
         }
 
         if (head is not null
@@ -451,6 +487,28 @@ public static class AccountingAuditChain
         if (anchor.Phase == AccountingAuditChainAnchorPhase.Pending
             && anchor.Sequence == expectedNextSequence)
         {
+            // Before calling it an interrupted append: the boundary the declaration was made over
+            // has to still be the boundary. With no chain state the comparison above did not run --
+            // `state` is null for exactly the first append, which is the one that establishes the
+            // genesis -- so every retained event is still unchained, and the anchor's declared
+            // pre-chain count is what that number must be. Without this, a crash between the
+            // pending line and the snapshot left a window where the unchained history could gain or
+            // lose an event and the retry would redeclare the same sequence over it, founding the
+            // chain on a history nobody verified (Codex review finding on PR #2871).
+            if (state is null && anchor.PreChainEventCount != retainedEventCount)
+            {
+                return new AccountingAuditChainVerification(
+                    AccountingAuditChainStatus.AnchorMismatch,
+                    linksChecked,
+                    preChainEventCount,
+                    $"An append at sequence {anchor.Sequence.ToString(CultureInfo.InvariantCulture)} was "
+                    + $"declared over {anchor.PreChainEventCount.ToString(CultureInfo.InvariantCulture)} "
+                    + "unchained events, but "
+                    + $"{retainedEventCount.ToString(CultureInfo.InvariantCulture)} are retained now; "
+                    + "the history it was declared over is not the history it would chain.",
+                    anchor.Sequence);
+            }
+
             return new AccountingAuditChainVerification(
                 AccountingAuditChainStatus.InterruptedAppend,
                 linksChecked,
@@ -484,23 +542,31 @@ public static class AccountingAuditChain
     private const long TicksPerMicrosecond = 10;
 
     /// <summary>
-    /// The canonical rendering of an audit timestamp: UTC, truncated to microseconds.
+    /// Reduces an instant to the precision a durable store can actually hold: UTC, truncated to
+    /// microseconds.
     /// </summary>
     /// <remarks>
-    /// UTC so the same instant recorded behind a different offset digests alike. Truncated because
-    /// <c>timestamptz</c> stores microseconds while <see cref="DateTimeOffset"/> carries 100ns ticks,
-    /// so a digest over the full tick would verify in memory and then fail the moment the same event
-    /// came back from PostgreSQL — reported as tampering, caused by rounding. Truncating to the
-    /// coarser of the two resolutions is what makes one digest scheme usable in both postures.
+    /// <para>UTC so the same instant recorded behind a different offset digests alike. Microseconds
+    /// because <c>timestamptz</c> holds microseconds while <see cref="DateTimeOffset"/> carries
+    /// 100ns ticks, so anything finer is a value no PostgreSQL deployment can store.</para>
+    ///
+    /// <para><b>Anything digested on one side of a database round-trip must be reduced here
+    /// first.</b> Npgsql truncates to microseconds when it encodes a parameter, so a digest taken
+    /// over the raw tick names an instant the row does not hold, and the comparison it exists for
+    /// fails forever: <c>AccountingConfigurationService</c> hashes the workspace it is about to
+    /// save and later compares that digest against a reloaded one, so an <c>UpdatedAtUtc</c> hashed
+    /// at full precision made every interrupted mutation unreconcilable — and because each mutation
+    /// resolves outstanding markers first, that blocked the scope permanently (Codex review finding
+    /// on PR #2871). Reducing both sides is what makes the two digests comparable.</para>
     /// </remarks>
-    private static string NormalizeTimestamp(DateTimeOffset value)
+    public static DateTimeOffset ToRetainedPrecision(DateTimeOffset value)
     {
         var utc = value.ToUniversalTime();
-        var truncated = new DateTimeOffset(
-            utc.Ticks - (utc.Ticks % TicksPerMicrosecond),
-            TimeSpan.Zero);
-        return truncated.ToString("O", CultureInfo.InvariantCulture);
+        return new DateTimeOffset(utc.Ticks - (utc.Ticks % TicksPerMicrosecond), TimeSpan.Zero);
     }
+
+    private static string NormalizeTimestamp(DateTimeOffset value)
+        => ToRetainedPrecision(value).ToString("O", CultureInfo.InvariantCulture);
 
     // Length-prefixed so no combination of field values can be re-partitioned into a different
     // event that digests the same, and so null is distinct from empty.

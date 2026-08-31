@@ -30,7 +30,7 @@ namespace Meridian.Ui.Shared.Services;
 /// <para>Single-company deployments — the overwhelming majority of this posture — are unaffected, as
 /// are deployments that configure no company at all.</para>
 /// </remarks>
-public sealed class InMemoryFundStructureTenancyGuard : IHostedService
+public sealed class InMemoryFundStructureTenancyGuard : IStartupRefusalGuard
 {
     private readonly IFundStructureService _fundStructureService;
     private readonly IUserAccountStore _userAccountStore;
@@ -70,7 +70,10 @@ public sealed class InMemoryFundStructureTenancyGuard : IHostedService
             "W9-GOV-008: the configured fund-structure service has no tenant partition but {CompanyCount} companies are configured. Refusing to serve one undivided structure to multiple companies.",
             companies.Count);
 
-        throw new InvalidOperationException(
+        // StartupRefusedException, not a bare InvalidOperationException: hosts tolerate a worker
+        // that fails to start, and the WPF shell's catch does exactly that. A refusal has to be
+        // distinguishable from a failure or it is swallowed by the same tolerance.
+        throw new StartupRefusedException(
             $"The configured fund-structure service ('{_fundStructureService.GetType().Name}') has no tenant "
             + $"partition, but {companies.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} "
             + "companies are configured for this deployment. It would serve one undivided fund structure to "
