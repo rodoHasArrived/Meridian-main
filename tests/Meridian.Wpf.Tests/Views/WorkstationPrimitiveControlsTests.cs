@@ -3,6 +3,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.Workstation.Controls;
@@ -359,6 +360,33 @@ public sealed class WorkstationPrimitiveControlsTests
                 indicator.ExplanationCommandParameter = null;
                 indicator.EffectiveExplanationCommandParameter.Should().Be(
                     "meridian://providers/polygon", "clearing the explicit parameter restores the route default");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DataConfidenceIndicator_WithoutACommand_DoesNotOfferClickAffordance()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var indicator = new Meridian.Wpf.Controls.DataConfidenceIndicator();
+            var window = Show(indicator);
+            try
+            {
+                // A read-only badge with no bound command must not advertise a click.
+                var button = indicator.FindName("ExplanationButton").Should().BeOfType<Button>().Which;
+                button.Cursor.Should().Be(Cursors.Arrow);
+                button.Focusable.Should().BeFalse();
+
+                indicator.ExplanationCommand = new RoutedCommand();
+                button.Cursor.Should().Be(Cursors.Hand, "binding a command restores the click affordance");
+                button.Focusable.Should().BeTrue();
             }
             finally
             {

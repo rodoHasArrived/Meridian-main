@@ -34,6 +34,13 @@
                         <Setter Property="Focusable" Value="False" />
                         <Setter Property="Command" Value="{x:Null}" />
                     </DataTrigger>
+                    <!-- A read-only badge with no bound command must not advertise a click:
+                         a hand cursor and keyboard focus on an inert button is a broken
+                         affordance, not an action. -->
+                    <DataTrigger Binding="{Binding ExplanationCommand}" Value="{x:Null}">
+                        <Setter Property="Cursor" Value="Arrow" />
+                        <Setter Property="Focusable" Value="False" />
+                    </DataTrigger>
                 </Style.Triggers>
             </Style>
         </Button.Style>
