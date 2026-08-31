@@ -7,6 +7,8 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using Meridian.Wpf.Services;
 using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.Workstation.Controls;
@@ -62,6 +64,13 @@ public partial class DenseDataGridControl : UserControl
             typeof(DenseDataGridControl),
             new PropertyMetadata("DenseDataGridEmptyState"));
 
+    public static readonly DependencyProperty ShortcutScopeProperty =
+        DependencyProperty.Register(
+            nameof(ShortcutScope),
+            typeof(UIElement),
+            typeof(DenseDataGridControl),
+            new PropertyMetadata(null, OnShortcutScopeChanged));
+
     public static readonly DependencyProperty FilterTargetProperty =
         DependencyProperty.Register(
             nameof(FilterTarget),
@@ -100,7 +109,9 @@ public partial class DenseDataGridControl : UserControl
     private INotifyCollectionChanged? _observedRows;
     private readonly Dictionary<GridViewColumn, WorkstationTableColumnModel> _viewColumnModels = new();
     private readonly List<KeyBinding> _filterTargetBindings = [];
+    private readonly List<KeyBinding> _shortcutScopeBindings = [];
     private UIElement? _filterTargetWithBindings;
+    private UIElement? _shortcutScopeWithBindings;
 
     public DenseDataGridControl()
     {
@@ -115,11 +126,13 @@ public partial class DenseDataGridControl : UserControl
         {
             UpdateEmptyState();
             AttachFilterTargetBindings(FilterTarget);
+            AttachShortcutScopeBindings(ShortcutScope);
         };
         Unloaded += (_, _) =>
         {
             DetachRowsCollection();
             DetachFilterTargetBindings();
+            DetachShortcutScopeBindings();
         };
     }
 
@@ -171,6 +184,18 @@ public partial class DenseDataGridControl : UserControl
         set => SetValue(FilterTargetProperty, value);
     }
 
+    /// <summary>
+    /// An element composed around this grid — an inspector rail, toolbar, or the whole panel —
+    /// whose descendants should keep the grid's chrome shortcuts alive while they hold keyboard
+    /// focus. Siblings are not on the routed-input path to this control, so without the mirror
+    /// Escape and Ctrl+J go dead the moment focus enters the rail.
+    /// </summary>
+    public UIElement? ShortcutScope
+    {
+        get => (UIElement?)GetValue(ShortcutScopeProperty);
+        set => SetValue(ShortcutScopeProperty, value);
+    }
+
     public ICommand? OpenSelectedDetailsCommand
     {
         get => (ICommand?)GetValue(OpenSelectedDetailsCommandProperty);
@@ -213,6 +238,14 @@ public partial class DenseDataGridControl : UserControl
         }
     }
 
+    private static void OnShortcutScopeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DenseDataGridControl control)
+        {
+            control.AttachShortcutScopeBindings(e.NewValue as UIElement);
+        }
+    }
+
     /// <summary>
     /// The filter target is composed outside this control, so once <see cref="ExecuteFocusFilter"/>
     /// moves keyboard focus there the grid's own input bindings are no longer on the routed-input
@@ -238,6 +271,9 @@ public partial class DenseDataGridControl : UserControl
     }
 
     private void AddFilterTargetBinding(UIElement target, ICommand command, Key key, ModifierKeys modifiers)
+        => AddMirroredBinding(target, _filterTargetBindings, command, key, modifiers);
+
+    private void AddMirroredBinding(UIElement target, List<KeyBinding> tracked, ICommand command, Key key, ModifierKeys modifiers)
     {
         // Assigning Key/Modifiers (as XAML does) instead of using the KeyGesture constructor,
         // which rejects modifier-less non-function keys such as Escape.
@@ -248,7 +284,7 @@ public partial class DenseDataGridControl : UserControl
             Modifiers = modifiers,
             CommandTarget = this
         };
-        _filterTargetBindings.Add(binding);
+        tracked.Add(binding);
         target.InputBindings.Add(binding);
     }
 
@@ -264,6 +300,42 @@ public partial class DenseDataGridControl : UserControl
 
         _filterTargetBindings.Clear();
         _filterTargetWithBindings = null;
+    }
+
+    /// <summary>
+    /// Same mirror as <see cref="AttachFilterTargetBindings"/>, for a surrounding composition
+    /// scope such as the table-inspector rail: its panels are siblings of this control, so key
+    /// presses inside them never route through the grid's own bindings. Enter and Ctrl+C stay
+    /// unmirrored for the same reason as on the filter target — they belong to the focused
+    /// element's own commit, activation, and text-copy semantics.
+    /// </summary>
+    private void AttachShortcutScopeBindings(UIElement? scope)
+    {
+        DetachShortcutScopeBindings();
+        if (scope is null)
+        {
+            return;
+        }
+
+        _shortcutScopeWithBindings = scope;
+        AddMirroredBinding(scope, _shortcutScopeBindings, DenseGridKeyboardCommands.FocusFilter, Key.F, ModifierKeys.Control);
+        AddMirroredBinding(scope, _shortcutScopeBindings, DenseGridKeyboardCommands.CloseDetails, Key.Escape, ModifierKeys.None);
+        AddMirroredBinding(scope, _shortcutScopeBindings, DenseGridKeyboardCommands.ClearFilters, Key.F, ModifierKeys.Control | ModifierKeys.Shift);
+        AddMirroredBinding(scope, _shortcutScopeBindings, DenseGridKeyboardCommands.JumpToRelatedRecords, Key.J, ModifierKeys.Control);
+    }
+
+    private void DetachShortcutScopeBindings()
+    {
+        if (_shortcutScopeWithBindings is not null)
+        {
+            foreach (var binding in _shortcutScopeBindings)
+            {
+                _shortcutScopeWithBindings.InputBindings.Remove(binding);
+            }
+        }
+
+        _shortcutScopeBindings.Clear();
+        _shortcutScopeWithBindings = null;
     }
 
     private void RebuildColumns()
@@ -449,10 +521,41 @@ public partial class DenseDataGridControl : UserControl
         var text = FormatSelectedRowsForClipboard();
         if (!string.IsNullOrWhiteSpace(text))
         {
-            Clipboard.SetText(text);
+            TrySetClipboardText(text);
         }
 
         e.Handled = true;
+    }
+
+    /// <summary>
+    /// Another process briefly holding the clipboard open makes the Win32 clipboard call throw,
+    /// and the shell's dispatcher policy does not treat that exception as recoverable — so an
+    /// ordinary Ctrl+C during contention must end in a logged failed copy, never a terminated
+    /// workstation. The retrying SetDataObject overload absorbs the common case of a clipboard
+    /// viewer releasing within milliseconds; the catch absorbs the rest.
+    /// </summary>
+    internal bool TrySetClipboardText(string text, Action<string>? setClipboardText = null)
+    {
+        try
+        {
+            if (setClipboardText is not null)
+            {
+                setClipboardText(text);
+            }
+            else
+            {
+                Clipboard.SetDataObject(text, copy: true, retryTimes: 3, retryDelay: 40);
+            }
+
+            return true;
+        }
+        catch (ExternalException ex)
+        {
+            LoggingService.Instance.LogWarning(
+                "Dense grid copy failed: the system clipboard is held by another process.",
+                ("error", ex.Message));
+            return false;
+        }
     }
 
     internal string FormatSelectedRowsForClipboard()

@@ -93,6 +93,7 @@
                                                    SelectionMode="{Binding ElementName=Root, Path=SelectionMode}"
                                                    EmptyContent="{Binding ElementName=Root, Path=EmptyContent}"
                                                    FilterTarget="{Binding ElementName=Root, Path=FilterTarget}"
+                                                   ShortcutScope="{Binding ElementName=Root}"
                                                    OpenSelectedDetailsCommand="{Binding ElementName=Root, Path=OpenSelectedDetailsCommand}"
                                                    CloseDetailsCommand="{Binding ElementName=Root, Path=CloseDetailsCommand}"
                                                    ClearFiltersCommand="{Binding ElementName=Root, Path=ClearFiltersCommand}"

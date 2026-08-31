@@ -373,6 +373,118 @@ public sealed class WorkstationPrimitiveControlsTests
     }
 
     [Fact]
+    public void DenseDataGridControl_ShouldMirrorChromeShortcutsOntoTheShortcutScope()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var jumped = false;
+            var firstScope = new StackPanel();
+            var secondScope = new StackPanel();
+            var denseGrid = new DenseDataGridControl
+            {
+                ShortcutScope = firstScope,
+                JumpToRelatedRecordsCommand = new RelayCommand<object?>(_ => jumped = true)
+            };
+            firstScope.Children.Add(denseGrid);
+
+            var window = Show(new StackPanel { Children = { firstScope, secondScope } });
+            try
+            {
+                var mirrored = firstScope.InputBindings.OfType<KeyBinding>()
+                    .Where(binding => ReferenceEquals(binding.CommandTarget, denseGrid))
+                    .ToList();
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.FocusFilter);
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.ClearFilters);
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.CloseDetails);
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.JumpToRelatedRecords);
+                mirrored.Should().NotContain(binding => binding.Command == DenseGridKeyboardCommands.OpenSelectedDetails);
+                mirrored.Should().NotContain(binding => binding.Command == ApplicationCommands.Copy);
+
+                denseGrid.SelectedItem = new object();
+                var jumpBinding = mirrored.Single(binding => binding.Command == DenseGridKeyboardCommands.JumpToRelatedRecords);
+                ((RoutedCommand)jumpBinding.Command).Execute(null, (IInputElement)jumpBinding.CommandTarget!);
+                jumped.Should().BeTrue();
+
+                denseGrid.ShortcutScope = secondScope;
+                firstScope.InputBindings.OfType<KeyBinding>()
+                    .Should().NotContain(binding => ReferenceEquals(binding.CommandTarget, denseGrid));
+                secondScope.InputBindings.OfType<KeyBinding>()
+                    .Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.CloseDetails);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void WorkstationTableInspectorControl_KeepsChromeShortcutsLiveThroughoutTheComposition()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var tableRows = new ObservableCollection<RowFixture> { new("Polygon.io", "Healthy") };
+            var control = new WorkstationTableInspectorControl
+            {
+                Table = new WorkstationTableModel<RowFixture>(
+                    tableRows,
+                    [new("Provider", nameof(RowFixture.Name), 120), new("Status", nameof(RowFixture.Status), 100)],
+                    "Provider readiness table"),
+                Inspector = new InspectorPanelModel { Title = "Provider details" },
+                HeaderText = "Provider Management"
+            };
+
+            var window = Show(control);
+            try
+            {
+                // The inspector rail and toolbar are siblings of the grid, so key presses inside
+                // them never route through the grid's own bindings; the control root must carry
+                // the mirrored chrome shortcuts for the advertised keys to stay live there.
+                var denseGrid = control.FindName("TableGrid").Should().BeOfType<DenseDataGridControl>().Subject;
+                var mirrored = control.InputBindings.OfType<KeyBinding>()
+                    .Where(binding => ReferenceEquals(binding.CommandTarget, denseGrid))
+                    .ToList();
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.FocusFilter);
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.ClearFilters);
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.CloseDetails);
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.JumpToRelatedRecords);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DenseDataGridControl_ContendedClipboard_FailsTheCopyWithoutThrowing()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var denseGrid = new DenseDataGridControl();
+
+            // Another process holding the clipboard open surfaces as a COMException; the copy must
+            // report failure rather than reach the dispatcher's fatal unhandled-exception path.
+            var failed = denseGrid.TrySetClipboardText(
+                "Fund A\tHealthy",
+                _ => throw new System.Runtime.InteropServices.COMException(
+                    "OpenClipboard failed", unchecked((int)0x800401D0)));
+            failed.Should().BeFalse();
+
+            string? written = null;
+            var succeeded = denseGrid.TrySetClipboardText("Fund A\tHealthy", text => written = text);
+            succeeded.Should().BeTrue();
+            written.Should().Be("Fund A\tHealthy");
+        });
+    }
+
+    [Fact]
     public void DenseDataGridControl_ShouldQuoteClipboardCellsContainingTsvControlCharacters()
     {
         WpfTestThread.Run(() =>
