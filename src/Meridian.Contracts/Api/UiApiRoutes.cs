@@ -375,6 +375,9 @@ public static class UiApiRoutes
     public const string SecurityMasterCorporateActionCaseConflictResolution = "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}/resolution";
     public const string SecurityMasterCorporateActionCaseOptions = "/api/security-master/corporate-actions/cases/{caseId:guid}/options";
     public const string SecurityMasterCorporateActionCaseTransition = "/api/security-master/corporate-actions/cases/{caseId:guid}/transition";
+    public const string SecurityMasterCorporateActionCaseAccountingProjection = "/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-projection";
+    public const string SecurityMasterCorporateActionCaseAccountingApproval = "/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-approval";
+    public const string SecurityMasterCorporateActionCaseAccountingPosting = "/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-posting";
     public const string SecurityMasterCoverageDraft = "/api/security-master/coverage/draft/{symbol}";
     public const string SecurityMasterOperatorOverrides = "/api/security-master/{securityId:guid}/operator-overrides";
     public const string SecurityMasterFieldProvenance = "/api/security-master/{securityId:guid}/field-provenance";

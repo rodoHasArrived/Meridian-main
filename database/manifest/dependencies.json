@@ -8422,6 +8422,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ApproveCorporateActionCaseAccountingRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet"
     },
     {
@@ -8494,6 +8500,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.AttachCorporateActionAccountingProjectionRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CashFlowLegDirection"
     },
     {
@@ -8512,7 +8524,61 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingApprovalResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingDecisionAuthorityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingPostingResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingProjectionMutationResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAdjustmentBehavior"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingApprovalDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingPolicy"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingPostingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingProjectionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingStatusDto"
     },
     {
       "kind": "contract-set-member",
@@ -9064,6 +9130,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionCaseAccountingService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionOperationsService"
     },
     {
@@ -9179,6 +9251,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.OperatorOverridesPatchRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.PostCorporateActionCaseAccountingRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -20212,6 +20290,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ApproveCorporateActionCaseAccountingRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet"
     },
     {
@@ -20284,6 +20368,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.AttachCorporateActionAccountingProjectionRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CashFlowLegDirection"
     },
     {
@@ -20302,7 +20392,61 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingApprovalResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingDecisionAuthorityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingPostingResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingProjectionMutationResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAdjustmentBehavior"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingApprovalDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingPolicy"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingPostingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingProjectionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingStatusDto"
     },
     {
       "kind": "contract-set-member",
@@ -20854,6 +20998,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionCaseAccountingService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionOperationsService"
     },
     {
@@ -20969,6 +21119,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.OperatorOverridesPatchRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.PostCorporateActionCaseAccountingRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -30849,8 +31005,26 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.AddCorporateActionEvidenceRequestDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentifierDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.ApproveCorporateActionCaseAccountingRequestDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingDecisionAuthorityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.ApproveCorporateActionCaseAccountingRequestDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseScopeDto"
     },
     {
       "kind": "contract-reference",
@@ -30863,6 +31037,66 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.AssetPackRegistryValidationResult",
       "target": "contract:Meridian.Contracts.SecurityMaster.AssetPackRegistryValidationIssue"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.AttachCorporateActionAccountingProjectionRequestDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.AttachCorporateActionAccountingProjectionRequestDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseTransitionAuthorityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingApprovalResultDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingApprovalDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingApprovalResultDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseTransitionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingApprovalResultDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionProcessingCaseDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingPostingResultDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingPostingDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingPostingResultDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseTransitionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingPostingResultDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionProcessingCaseDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingProjectionMutationResultDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingProjectionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingProjectionMutationResultDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionProcessingCaseDto"
     },
     {
       "kind": "contract-reference",
@@ -31025,6 +31259,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionPersistenceUnavailableException",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionOperationException"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionProcessingCaseDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingStatusDto"
     },
     {
       "kind": "contract-reference",
@@ -31299,6 +31539,24 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.PostCorporateActionCaseAccountingRequestDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingDecisionAuthorityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.PostCorporateActionCaseAccountingRequestDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.RecordCorporateActionConflictRequestDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.RecordCorporateActionConflictRequestDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionConflictCandidateDto"
     },
@@ -31319,6 +31577,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.RecordCorporateActionSourceProposalRequestDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionSourceDisplayMetadataDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.ResolveCorporateActionConflictRequestDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseScopeDto"
     },
     {
       "kind": "contract-reference",
@@ -31876,6 +32140,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.TransitionCorporateActionCaseRequestDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.TransitionCorporateActionCaseRequestDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseTransitionAuthorityDto"
     },
     {
@@ -31883,6 +32153,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.UpsertCashFlowSourceRequest",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowSourceKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.UpsertCorporateActionProcessingOptionRequestDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseScopeDto"
     },
     {
       "kind": "contract-reference",
@@ -42983,6 +43259,198 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_approval_hash on security_master.corporate_action_case_accounting_approvals",
+      "target": "database:security_master.corporate_action_case_accounting_approvals.evidence_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_approval_identity_lengths on security_master.corporate_action_case_accounting_approvals",
+      "target": "database:security_master.corporate_action_case_accounting_approvals.approved_by"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_approval_identity_lengths on security_master.corporate_action_case_accounting_approvals",
+      "target": "database:security_master.corporate_action_case_accounting_approvals.voided_by"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_approval_version on security_master.corporate_action_case_accounting_approvals",
+      "target": "database:security_master.corporate_action_case_accounting_approvals.bound_case_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_approval_voiding on security_master.corporate_action_case_accounting_approvals",
+      "target": "database:security_master.corporate_action_case_accounting_approvals.voided_at"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_approval_voiding on security_master.corporate_action_case_accounting_approvals",
+      "target": "database:security_master.corporate_action_case_accounting_approvals.voided_by"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_posting_balance on security_master.corporate_action_case_accounting_postings",
+      "target": "database:security_master.corporate_action_case_accounting_postings.total_credits"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_posting_balance on security_master.corporate_action_case_accounting_postings",
+      "target": "database:security_master.corporate_action_case_accounting_postings.total_debits"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_posting_identity_lengths on security_master.corporate_action_case_accounting_postings",
+      "target": "database:security_master.corporate_action_case_accounting_postings.accounting_basis"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_posting_identity_lengths on security_master.corporate_action_case_accounting_postings",
+      "target": "database:security_master.corporate_action_case_accounting_postings.currency"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_posting_identity_lengths on security_master.corporate_action_case_accounting_postings",
+      "target": "database:security_master.corporate_action_case_accounting_postings.posted_by"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_posting_status on security_master.corporate_action_case_accounting_postings",
+      "target": "database:security_master.corporate_action_case_accounting_postings.posting_status"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_projection_hashes on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_case_accounting_projections.drafted_candidate_fingerprint"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_projection_hashes on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_case_accounting_projections.posting_intent_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_projection_hashes on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_case_accounting_projections.projection_input_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_projection_identity_lengths on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_case_accounting_projections.accounting_basis"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_projection_identity_lengths on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_case_accounting_projections.currency"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_projection_identity_lengths on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_case_accounting_projections.fund_profile_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_projection_identity_lengths on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_case_accounting_projections.posting_idempotency_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_projection_identity_lengths on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_case_accounting_projections.prepared_by"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_projection_identity_lengths on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_case_accounting_projections.rule_pack_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_projection_identity_lengths on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_case_accounting_projections.rule_pack_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_projection_identity_lengths on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_case_accounting_projections.selected_rule_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_projection_identity_lengths on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_case_accounting_projections.selected_rule_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_projection_superseded on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_case_accounting_projections.is_current"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_projection_superseded on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_case_accounting_projections.superseded_at"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_projection_versions on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_case_accounting_projections.accounting_event_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_projection_versions on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_case_accounting_projections.bound_case_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_projection_versions on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_case_accounting_projections.expected_period_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_projection_versions on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_case_accounting_projections.lot_snapshot_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_projection_versions on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_case_accounting_projections.policy_decision_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_corporate_action_case_accounting_projection_versions on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_case_accounting_projections.spine_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:security_master.ck_corporate_action_case_transition_idempotency_key_length on security_master.corporate_action_case_transitions",
       "target": "database:security_master.corporate_action_case_transitions.idempotency_key"
     },
@@ -43269,6 +43737,120 @@
       "label": "",
       "source": "database:security_master.corporate_action_canonical_sources_proposal_id_fkey on security_master.corporate_action_canonical_sources",
       "target": "database:security_master.corporate_action_source_proposals_pkey"
+    },
+    {
+      "constraint": "corporate_action_case_accounting_approvals_projection_id_fkey",
+      "kind": "foreign-key",
+      "label": "projection_id",
+      "source": "database:security_master.corporate_action_case_accounting_approvals",
+      "target": "database:security_master.corporate_action_case_accounting_projections"
+    },
+    {
+      "constraint": "corporate_action_case_accounting_approvals_case_id_fkey",
+      "kind": "foreign-key",
+      "label": "case_id",
+      "source": "database:security_master.corporate_action_case_accounting_approvals",
+      "target": "database:security_master.corporate_action_processing_cases"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.corporate_action_case_accounting_approvals_case_id_fkey on security_master.corporate_action_case_accounting_approvals",
+      "target": "database:security_master.corporate_action_processing_cases.case_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.corporate_action_case_accounting_approvals_case_id_fkey on security_master.corporate_action_case_accounting_approvals",
+      "target": "database:security_master.corporate_action_processing_cases_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.corporate_action_case_accounting_approvals_projection_id_fkey on security_master.corporate_action_case_accounting_approvals",
+      "target": "database:security_master.corporate_action_case_accounting_projections.projection_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.corporate_action_case_accounting_approvals_projection_id_fkey on security_master.corporate_action_case_accounting_approvals",
+      "target": "database:security_master.corporate_action_case_accounting_projections_pkey"
+    },
+    {
+      "constraint": "corporate_action_case_accounting_postings_approval_id_fkey",
+      "kind": "foreign-key",
+      "label": "approval_id",
+      "source": "database:security_master.corporate_action_case_accounting_postings",
+      "target": "database:security_master.corporate_action_case_accounting_approvals"
+    },
+    {
+      "constraint": "corporate_action_case_accounting_postings_projection_id_fkey",
+      "kind": "foreign-key",
+      "label": "projection_id",
+      "source": "database:security_master.corporate_action_case_accounting_postings",
+      "target": "database:security_master.corporate_action_case_accounting_projections"
+    },
+    {
+      "constraint": "corporate_action_case_accounting_postings_case_id_fkey",
+      "kind": "foreign-key",
+      "label": "case_id",
+      "source": "database:security_master.corporate_action_case_accounting_postings",
+      "target": "database:security_master.corporate_action_processing_cases"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.corporate_action_case_accounting_postings_approval_id_fkey on security_master.corporate_action_case_accounting_postings",
+      "target": "database:security_master.corporate_action_case_accounting_approvals.approval_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.corporate_action_case_accounting_postings_approval_id_fkey on security_master.corporate_action_case_accounting_postings",
+      "target": "database:security_master.corporate_action_case_accounting_approvals_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.corporate_action_case_accounting_postings_case_id_fkey on security_master.corporate_action_case_accounting_postings",
+      "target": "database:security_master.corporate_action_processing_cases.case_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.corporate_action_case_accounting_postings_case_id_fkey on security_master.corporate_action_case_accounting_postings",
+      "target": "database:security_master.corporate_action_processing_cases_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.corporate_action_case_accounting_postings_projection_id_fkey on security_master.corporate_action_case_accounting_postings",
+      "target": "database:security_master.corporate_action_case_accounting_projections.projection_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.corporate_action_case_accounting_postings_projection_id_fkey on security_master.corporate_action_case_accounting_postings",
+      "target": "database:security_master.corporate_action_case_accounting_projections_pkey"
+    },
+    {
+      "constraint": "corporate_action_case_accounting_projections_case_id_fkey",
+      "kind": "foreign-key",
+      "label": "case_id",
+      "source": "database:security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_processing_cases"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.corporate_action_case_accounting_projections_case_id_fkey on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_processing_cases.case_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.corporate_action_case_accounting_projections_case_id_fkey on security_master.corporate_action_case_accounting_projections",
+      "target": "database:security_master.corporate_action_processing_cases_pkey"
     },
     {
       "constraint": "corporate_action_case_conflicts_case_id_fkey",
@@ -45163,6 +45745,24 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.corporate_action_case_accounting_approvals"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.corporate_action_case_accounting_postings"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.corporate_action_case_accounting_projections"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.corporate_action_case_conflicts"
     },
     {
@@ -45599,7 +46199,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "18959208b3d8a03e6f250cc7c1ef019bc87c8ba2158be9d34f179380126f9d85",
+  "fingerprint": "de462e5501f6f97124bc0ee0e71bee09a620877fee1211c72669e54dbe878a5b",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -54071,6 +54671,12 @@
       "label": "Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ApproveCorporateActionCaseAccountingRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ApproveCorporateActionCaseAccountingRequestDto"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet",
       "kind": "contract-type",
@@ -54143,6 +54749,12 @@
       "label": "Meridian.Contracts.SecurityMaster.AssetSpecificTermsSchema"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.AttachCorporateActionAccountingProjectionRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.AttachCorporateActionAccountingProjectionRequestDto"
+    },
+    {
       "classification": "enum",
       "id": "contract:Meridian.Contracts.SecurityMaster.CashFlowLegDirection",
       "kind": "contract-type",
@@ -54161,10 +54773,64 @@
       "label": "Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingApprovalResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionAccountingApprovalResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingDecisionAuthorityDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionAccountingDecisionAuthorityDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingPostingResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionAccountingPostingResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingProjectionMutationResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionAccountingProjectionMutationResultDto"
+    },
+    {
       "classification": "enum",
       "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAdjustmentBehavior",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.CorporateActionAdjustmentBehavior"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingApprovalDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingApprovalDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingPolicy",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingPolicy"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingPostingDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingPostingDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingProjectionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingProjectionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingStatusDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingStatusDto"
     },
     {
       "classification": "dto",
@@ -54714,6 +55380,12 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionCaseAccountingService",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ICorporateActionCaseAccountingService"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionOperationsService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.ICorporateActionOperationsService"
@@ -54831,6 +55503,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.OperatorOverridesPatchRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.OperatorOverridesPatchRequest"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.PostCorporateActionCaseAccountingRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.PostCorporateActionCaseAccountingRequestDto"
     },
     {
       "classification": "dto",
@@ -65274,6 +65952,61 @@
       "label": "security_master.ck_corporate_action_canonical_source_provider_id_length on security_master.corporate_action_canonical_sources"
     },
     {
+      "id": "database:security_master.ck_corporate_action_case_accounting_approval_hash on security_master.corporate_action_case_accounting_approvals",
+      "kind": "database-object",
+      "label": "security_master.ck_corporate_action_case_accounting_approval_hash on security_master.corporate_action_case_accounting_approvals"
+    },
+    {
+      "id": "database:security_master.ck_corporate_action_case_accounting_approval_identity_lengths on security_master.corporate_action_case_accounting_approvals",
+      "kind": "database-object",
+      "label": "security_master.ck_corporate_action_case_accounting_approval_identity_lengths on security_master.corporate_action_case_accounting_approvals"
+    },
+    {
+      "id": "database:security_master.ck_corporate_action_case_accounting_approval_version on security_master.corporate_action_case_accounting_approvals",
+      "kind": "database-object",
+      "label": "security_master.ck_corporate_action_case_accounting_approval_version on security_master.corporate_action_case_accounting_approvals"
+    },
+    {
+      "id": "database:security_master.ck_corporate_action_case_accounting_approval_voiding on security_master.corporate_action_case_accounting_approvals",
+      "kind": "database-object",
+      "label": "security_master.ck_corporate_action_case_accounting_approval_voiding on security_master.corporate_action_case_accounting_approvals"
+    },
+    {
+      "id": "database:security_master.ck_corporate_action_case_accounting_posting_balance on security_master.corporate_action_case_accounting_postings",
+      "kind": "database-object",
+      "label": "security_master.ck_corporate_action_case_accounting_posting_balance on security_master.corporate_action_case_accounting_postings"
+    },
+    {
+      "id": "database:security_master.ck_corporate_action_case_accounting_posting_identity_lengths on security_master.corporate_action_case_accounting_postings",
+      "kind": "database-object",
+      "label": "security_master.ck_corporate_action_case_accounting_posting_identity_lengths on security_master.corporate_action_case_accounting_postings"
+    },
+    {
+      "id": "database:security_master.ck_corporate_action_case_accounting_posting_status on security_master.corporate_action_case_accounting_postings",
+      "kind": "database-object",
+      "label": "security_master.ck_corporate_action_case_accounting_posting_status on security_master.corporate_action_case_accounting_postings"
+    },
+    {
+      "id": "database:security_master.ck_corporate_action_case_accounting_projection_hashes on security_master.corporate_action_case_accounting_projections",
+      "kind": "database-object",
+      "label": "security_master.ck_corporate_action_case_accounting_projection_hashes on security_master.corporate_action_case_accounting_projections"
+    },
+    {
+      "id": "database:security_master.ck_corporate_action_case_accounting_projection_identity_lengths on security_master.corporate_action_case_accounting_projections",
+      "kind": "database-object",
+      "label": "security_master.ck_corporate_action_case_accounting_projection_identity_lengths on security_master.corporate_action_case_accounting_projections"
+    },
+    {
+      "id": "database:security_master.ck_corporate_action_case_accounting_projection_superseded on security_master.corporate_action_case_accounting_projections",
+      "kind": "database-object",
+      "label": "security_master.ck_corporate_action_case_accounting_projection_superseded on security_master.corporate_action_case_accounting_projections"
+    },
+    {
+      "id": "database:security_master.ck_corporate_action_case_accounting_projection_versions on security_master.corporate_action_case_accounting_projections",
+      "kind": "database-object",
+      "label": "security_master.ck_corporate_action_case_accounting_projection_versions on security_master.corporate_action_case_accounting_projections"
+    },
+    {
       "id": "database:security_master.ck_corporate_action_case_transition_idempotency_key_length on security_master.corporate_action_case_transitions",
       "kind": "database-object",
       "label": "security_master.ck_corporate_action_case_transition_idempotency_key_length on security_master.corporate_action_case_transitions"
@@ -65409,6 +66142,229 @@
       "id": "database:security_master.corporate_action_canonical_sources_proposal_id_fkey on security_master.corporate_action_canonical_sources",
       "kind": "database-object",
       "label": "security_master.corporate_action_canonical_sources_proposal_id_fkey on security_master.corporate_action_canonical_sources"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_approvals",
+      "kind": "database-table",
+      "label": "security_master.corporate_action_case_accounting_approvals",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_approvals.approval_id",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_approvals.approval_id"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_approvals.approved_by",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_approvals.approved_by"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_approvals.bound_case_version",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_approvals.bound_case_version"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_approvals.evidence_hash",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_approvals.evidence_hash"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_approvals.voided_at",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_approvals.voided_at"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_approvals.voided_by",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_approvals.voided_by"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_approvals_case_id_fkey on security_master.corporate_action_case_accounting_approvals",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_approvals_case_id_fkey on security_master.corporate_action_case_accounting_approvals"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_approvals_pkey",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_approvals_pkey"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_approvals_projection_id_fkey on security_master.corporate_action_case_accounting_approvals",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_approvals_projection_id_fkey on security_master.corporate_action_case_accounting_approvals"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_postings",
+      "kind": "database-table",
+      "label": "security_master.corporate_action_case_accounting_postings",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_postings.accounting_basis",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_postings.accounting_basis"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_postings.currency",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_postings.currency"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_postings.posted_by",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_postings.posted_by"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_postings.posting_status",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_postings.posting_status"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_postings.total_credits",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_postings.total_credits"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_postings.total_debits",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_postings.total_debits"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_postings_approval_id_fkey on security_master.corporate_action_case_accounting_postings",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_postings_approval_id_fkey on security_master.corporate_action_case_accounting_postings"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_postings_case_id_fkey on security_master.corporate_action_case_accounting_postings",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_postings_case_id_fkey on security_master.corporate_action_case_accounting_postings"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_postings_projection_id_fkey on security_master.corporate_action_case_accounting_postings",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_postings_projection_id_fkey on security_master.corporate_action_case_accounting_postings"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections",
+      "kind": "database-table",
+      "label": "security_master.corporate_action_case_accounting_projections",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.accounting_basis",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.accounting_basis"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.accounting_event_version",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.accounting_event_version"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.bound_case_version",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.bound_case_version"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.currency",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.currency"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.drafted_candidate_fingerprint",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.drafted_candidate_fingerprint"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.expected_period_version",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.expected_period_version"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.fund_profile_id",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.fund_profile_id"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.is_current",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.is_current"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.lot_snapshot_version",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.lot_snapshot_version"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.policy_decision_version",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.policy_decision_version"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.posting_idempotency_key",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.posting_idempotency_key"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.posting_intent_hash",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.posting_intent_hash"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.prepared_by",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.prepared_by"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.projection_id",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.projection_id"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.projection_input_hash",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.projection_input_hash"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.rule_pack_id",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.rule_pack_id"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.rule_pack_version",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.rule_pack_version"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.selected_rule_id",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.selected_rule_id"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.selected_rule_version",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.selected_rule_version"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.spine_version",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.spine_version"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections.superseded_at",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections.superseded_at"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections_case_id_fkey on security_master.corporate_action_case_accounting_projections",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections_case_id_fkey on security_master.corporate_action_case_accounting_projections"
+    },
+    {
+      "id": "database:security_master.corporate_action_case_accounting_projections_pkey",
+      "kind": "database-object",
+      "label": "security_master.corporate_action_case_accounting_projections_pkey"
     },
     {
       "id": "database:security_master.corporate_action_case_conflicts",
@@ -66512,11 +67468,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3049,
-    "contract_set_memberships": 3606,
-    "edges": 7578,
-    "foreign_keys": 114,
+    "contract_references": 3069,
+    "contract_set_memberships": 3632,
+    "edges": 7677,
+    "foreign_keys": 120,
     "logical_references": 6,
-    "nodes": 3609
+    "nodes": 3677
   }
 }
