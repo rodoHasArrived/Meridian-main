@@ -1,5 +1,6 @@
 using System.Net;
 using FluentAssertions;
+using Meridian.Contracts.Tenancy;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
@@ -12,10 +13,17 @@ using NSubstitute;
 namespace Meridian.Tests.Ui;
 
 /// <summary>
-/// The fund-profile tenant scope endpoint filter (SEC-005 slice 3) gates fund-scoped read routes: a
-/// request whose <c>fundProfileId</c> query value the guard reports as owned by another tenant is refused
-/// with 403, while a blank scope, an allowed fund, and an unavailable guard all pass through (fail open).
+/// The fund-profile tenant scope endpoint filter (SEC-005 slice 3, tightened for W9-GOV-008 criterion
+/// 2) gates fund-scoped read routes.
 /// </summary>
+/// <remarks>
+/// Under the deployment-boundary posture a request whose <c>fundProfileId</c> the guard reports as
+/// owned by another tenant is refused with 403, while a blank scope, an allowed fund, and an
+/// unavailable guard all pass. Under fail-closed each of those last three becomes a refusal, because
+/// each is a scope that could not be resolved — and the criterion is categorical about rejecting one
+/// rather than defaulting it. Both postures are pinned here; a suite that only covered the tightened
+/// one would not notice single-company deployments breaking.
+/// </remarks>
 public sealed class FundProfileScopeEndpointFilterTests
 {
     [Fact]
@@ -135,10 +143,191 @@ public sealed class FundProfileScopeEndpointFilterTests
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    // ── Fail-closed posture (W9-GOV-008 criterion 2) ──────────────────────────
+
+    [Fact]
+    public async Task FailClosed_RefusesACallerWithNoResolvableTenantScope()
+    {
+        var guard = AllowingGuard();
+        await using var app = await CreateAppAsync(
+            guard,
+            tenantScope: TenantScopeEnforcementOptions.FailClosed,
+            tenancyRegistry: RegistryOwning("fund-mine", "tenant-test"),
+            callerTenantId: null);
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync("/probe?fundProfileId=fund-mine");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task FailClosed_RefusesWhenTheGuardIsUnavailable()
+    {
+        // A gate that cannot reach its authority has not decided the caller is entitled; it has failed
+        // to ask. This is the case most easily left fail-open by accident.
+        await using var app = await CreateAppAsync(
+            guard: null,
+            tenantScope: TenantScopeEnforcementOptions.FailClosed,
+            tenancyRegistry: RegistryOwning("fund-mine", "tenant-test"));
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync("/probe?fundProfileId=fund-mine");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task FailClosed_RefusesASuppliedButBlankFundProfile()
+    {
+        await using var app = await CreateAppAsync(
+            AllowingGuard(),
+            tenantScope: TenantScopeEnforcementOptions.FailClosed,
+            tenancyRegistry: RegistryOwning("fund-mine", "tenant-test"));
+        var client = app.GetTestClient();
+
+        // A supplied-but-blank scope is an unresolvable scope, not an absent one — the boundary
+        // posture skips it, and that skip is exactly what the criterion calls defaulting.
+        using var response = await client.GetAsync("/probe?fundProfileId=");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task FailClosed_RefusesAFundTheRegistryAttributesToNobody()
+    {
+        // EvaluateAsync allows an unattributed fund by contract. Fail-closed needs positive ownership,
+        // so a fund nobody has claimed must not be served on the strength of nobody having claimed it.
+        await using var app = await CreateAppAsync(
+            AllowingGuard(),
+            tenantScope: TenantScopeEnforcementOptions.FailClosed,
+            tenancyRegistry: RegistryOwning("some-other-fund", "tenant-test"));
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync("/probe?fundProfileId=fund-unregistered");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task FailClosed_RefusesWhenTheRegistryIsUnavailable()
+    {
+        await using var app = await CreateAppAsync(
+            AllowingGuard(),
+            tenantScope: TenantScopeEnforcementOptions.FailClosed,
+            tenancyRegistry: null);
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync("/probe?fundProfileId=fund-mine");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task FailClosed_AllowsAFundTheRegistryAttributesToTheCaller()
+    {
+        // The other direction, and the one that matters for not breaking legitimate operators: a
+        // properly attributed fund read by its owner still succeeds under the tightened posture.
+        await using var app = await CreateAppAsync(
+            AllowingGuard(),
+            tenantScope: TenantScopeEnforcementOptions.FailClosed,
+            tenancyRegistry: RegistryOwning("fund-mine", "TENANT-TEST"));
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync("/probe?fundProfileId=fund-mine");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task FailClosed_LeavesARouteWithNoFundScopeToItsOwnGate()
+    {
+        // No fundProfileId supplied means there is no fund scope to resolve. Whether the route may be
+        // reached without one belongs to the route's own tenant gate, not to this filter.
+        await using var app = await CreateAppAsync(
+            AllowingGuard(),
+            tenantScope: TenantScopeEnforcementOptions.FailClosed,
+            tenancyRegistry: RegistryOwning("fund-mine", "tenant-test"));
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync("/probe");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    private static IFundProfileTenantGuard AllowingGuard()
+    {
+        var guard = Substitute.For<IFundProfileTenantGuard>();
+        guard.EvaluateAsync(Arg.Any<WorkstationTenantContext>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(FundProfileTenantDecision.Allow("not positively foreign"));
+        return guard;
+    }
+
+    private static IFundProfileTenancyRegistry RegistryOwning(string fundProfileId, string tenantId)
+    {
+        var registry = Substitute.For<IFundProfileTenancyRegistry>();
+        registry.ResolveAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo => Task.FromResult<FundProfileOwnership?>(
+                string.Equals(callInfo.ArgAt<string>(0), fundProfileId, StringComparison.OrdinalIgnoreCase)
+                    ? new FundProfileOwnership(fundProfileId, tenantId, null)
+                    : null));
+        return registry;
+    }
+
+    [Fact]
+    public async Task FailClosed_RefusesATenantlessCallerEvenWhenNoFundProfileIsSupplied()
+    {
+        // Codex review finding on PR #2866. Omitting the query entirely used to skip every check in
+        // this filter, because the absent-fund short circuit ran before the tenant-scope refusal.
+        // The routes behind this filter have no separate tenant gate -- ListAccountingConfigurationAudit
+        // is the clearest -- and their stores read a null tenant with no fund as no filter at all, so
+        // the omission served every tenant's audit history instead of being rejected.
+        var guard = Substitute.For<IFundProfileTenantGuard>();
+        await using var app = await CreateAppAsync(
+            guard,
+            tenantScope: TenantScopeEnforcementOptions.FailClosed,
+            callerTenantId: null);
+
+        using var response = await app.GetTestClient().GetAsync("/probe");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task FailClosed_AllowsATenantScopedCallerWhoSuppliesNoFundProfile()
+    {
+        // The refusal above must not become "fail-closed forbids every unscoped route": a caller who
+        // has a tenant is asking within it, and the stores narrow by that tenant.
+        var guard = Substitute.For<IFundProfileTenantGuard>();
+        await using var app = await CreateAppAsync(
+            guard,
+            tenantScope: TenantScopeEnforcementOptions.FailClosed,
+            callerTenantId: "tenant-test");
+
+        using var response = await app.GetTestClient().GetAsync("/probe");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task DeploymentBoundary_StillAllowsATenantlessCallerWithNoFundProfile()
+    {
+        // The default posture is unchanged: single-company deployments keep working.
+        var guard = Substitute.For<IFundProfileTenantGuard>();
+        await using var app = await CreateAppAsync(guard, callerTenantId: null);
+
+        using var response = await app.GetTestClient().GetAsync("/probe");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         IFundProfileTenantGuard? guard,
         UserPermission? callerPermission = null,
-        UserPermission[]? requiredReadPermissions = null)
+        UserPermission[]? requiredReadPermissions = null,
+        TenantScopeEnforcementOptions? tenantScope = null,
+        IFundProfileTenancyRegistry? tenancyRegistry = null,
+        string? callerTenantId = "tenant-test")
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
@@ -147,10 +336,24 @@ public sealed class FundProfileScopeEndpointFilterTests
             builder.Services.AddSingleton(guard);
         }
 
+        if (tenantScope is not null)
+        {
+            builder.Services.AddSingleton(tenantScope);
+        }
+
+        if (tenancyRegistry is not null)
+        {
+            builder.Services.AddSingleton(tenancyRegistry);
+        }
+
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
+            if (callerTenantId is not null)
+            {
+                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = callerTenantId;
+            }
+
             if (callerPermission is not null)
             {
                 context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = callerPermission.Value;

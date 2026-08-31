@@ -18,6 +18,14 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
 {
     public const string ClearwaterMethodologyProfileId = "clearwater-corporate-actions/v1";
 
+    /// <summary>
+    /// The standing reason a source decision is refused when the scope authority cannot answer.
+    /// Kept in one place so the endpoint's read-side posture and this write-side refusal state the
+    /// same thing.
+    /// </summary>
+    public const string SourceDecisionFanOutBlocker =
+        "Corporate-action source decisions are read-only until an authoritative service can enumerate every affected tenant/company scope and apply the decision atomically.";
+
     internal const int MaximumIndexedIdentityUtf8Bytes = 256;
     internal const int MaximumScopeIdentityUtf8Bytes = 256;
     internal const int MaximumCompositeScopeIdentityUtf8Bytes = 2_048;
@@ -28,17 +36,20 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
     private readonly ISecurityMasterEventStore? _eventStore;
     private readonly ISecurityMasterStore? _securityMasterStore;
     private readonly ICorporateActionRestatementTrigger? _restatementTrigger;
+    private readonly ICorporateActionScopeFanOutGate? _scopeFanOut;
 
     public CorporateActionOperationsService(
         ICorporateActionOperationsStore store,
         ISecurityMasterEventStore? eventStore = null,
         ISecurityMasterStore? securityMasterStore = null,
-        ICorporateActionRestatementTrigger? restatementTrigger = null)
+        ICorporateActionRestatementTrigger? restatementTrigger = null,
+        ICorporateActionScopeFanOutGate? scopeFanOut = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _eventStore = eventStore;
         _securityMasterStore = securityMasterStore;
         _restatementTrigger = restatementTrigger;
+        _scopeFanOut = scopeFanOut;
     }
 
     public async Task<CorporateActionSourceProposalDto> RecordSourceProposalAsync(
@@ -255,6 +266,16 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
                 CorporateActionProblemCodes.SpecialistReviewRequired,
                 "The provider observation is not acceptance-eligible. Acceptance requires a certified provider release, native stable event/version identity, a canonical lowercase SHA-256 content hash, and a retained typed evidence reference.");
         }
+
+        // The affected accounting scope is resolved here, after the receipt replay above and
+        // before any preflight with side effects. Placing it after the replay is deliberate: a
+        // committed retry must still return its original receipt even when holdings have since
+        // moved, so re-authorizing a replay would break the atomic-command contract. The caller's
+        // narrow scope is never trusted — every field below tenant/company comes from the
+        // assignment authority, and the gate refuses whenever the affected set is unknown, empty,
+        // not the caller's, or larger than the single case this command can open atomically.
+        scope = await ResolveAuthoritativeAcceptanceScopeAsync(proposal, scope, ct).ConfigureAwait(false);
+        trustedRequest = trustedRequest with { Scope = scope };
 
         var canonicalSupersedesId = proposal.ProposedAction.SupersedesCorpActId;
         if (proposal.SupersedesProposalId is { } parentProposalId)
@@ -1129,6 +1150,50 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
         var digest = Sha256Digest.ComputeUtf8(
             $"corporate-action:scoped-processing-case:v1:{corporateActionId:D}:{scopeIdentity}");
         return Guid.ParseExact(digest[..32], "N");
+    }
+
+    /// <summary>
+    /// Resolves the exact scope an acceptance may open a case in, or throws with the authority's
+    /// stated reason. Each refusal maps to its own problem code so a caller can tell an absent
+    /// authority (retry later) from a fan-out that genuinely reaches beyond this command.
+    /// </summary>
+    private async Task<CorporateActionCaseScopeDto> ResolveAuthoritativeAcceptanceScopeAsync(
+        CorporateActionSourceProposalDto proposal,
+        CorporateActionCaseScopeDto callerScope,
+        CancellationToken ct)
+    {
+        if (_scopeFanOut is null)
+        {
+            throw new CorporateActionPersistenceUnavailableException(SourceDecisionFanOutBlocker);
+        }
+
+        // Entitlement follows the record date; the ex-date is the fallback when a provider release
+        // does not carry one, and is never null on a normalized action.
+        var effectiveDate = proposal.ProposedAction.RecordDate ?? proposal.ProposedAction.ExDate;
+        var decision = await _scopeFanOut.ResolveDecisionScopeAsync(
+                proposal.SecurityId,
+                effectiveDate,
+                callerScope.TenantId,
+                callerScope.CompanyId,
+                ct)
+            .ConfigureAwait(false);
+        if (decision.IsPermitted && decision.ResolvedScope is { } resolved)
+        {
+            return NormalizeScope(resolved);
+        }
+
+        var detail = decision.Blockers.Count == 0
+            ? SourceDecisionFanOutBlocker
+            : string.Join(" ", decision.Blockers);
+        throw decision.Refusal switch
+        {
+            CorporateActionScopeFanOutRefusal.MultiScope => new CorporateActionOperationException(
+                CorporateActionProblemCodes.DownstreamAuthorityRequired,
+                detail),
+            CorporateActionScopeFanOutRefusal.ForeignScope or
+            CorporateActionScopeFanOutRefusal.NoAffectedScope => new CorporateActionScopeMismatchException(detail),
+            _ => new CorporateActionPersistenceUnavailableException(detail),
+        };
     }
 
     private static string RequestFingerprint<T>(string operation, T request)

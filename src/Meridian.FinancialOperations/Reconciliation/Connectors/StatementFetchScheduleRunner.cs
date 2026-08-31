@@ -1,3 +1,4 @@
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Microsoft.Extensions.Logging;
@@ -119,6 +120,17 @@ public sealed class StatementFetchScheduleRunner(
         try
         {
             EnsureAuthoritativeScope(schedule);
+
+            // W9-GOV-008 criterion 2: this schedule retains and reauthorizes its tenant, but nothing
+            // has ever made that tenant *ambient*, and the fund-scoped stores resolve the caller's
+            // tenant from the ambient accessor — which is HTTP-backed and returns null out of request.
+            // Once an unresolved tenant fails closed, every ledger read this run performs would be
+            // refused despite the authority the schedule plainly holds. Declaring it here scopes those
+            // reads to the same tenant the authorization below re-verifies, rather than exempting them.
+            using var tenantAuthority = FundScopeTenantAuthority.Enter(
+                schedule.TenantId!,
+                "statement-fetch-scheduler");
+
             if (ingestionAuthority is null)
             {
                 throw new InvalidOperationException(

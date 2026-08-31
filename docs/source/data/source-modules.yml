@@ -72,6 +72,7 @@ modules:
       - W2-PROMO-001
       - W3-CONT-001
       - W5-ACCT-001
+      - W9-GOV-008
       - W10-MARK-001
     stage_gates:
       - PaperSession
