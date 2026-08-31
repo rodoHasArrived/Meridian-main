@@ -11,6 +11,7 @@ import {
 import {
   readOnboardingState,
   withCompletedStep,
+  withSelectedOnboardingJourney,
   writeOnboardingState,
   type OnboardingState
 } from "@/lib/onboarding";
@@ -22,6 +23,7 @@ export interface OnboardingTourController {
   setExpanded: (expanded: boolean) => void;
   /** Permanently dismiss the tour. */
   dismiss: () => void;
+  selectJourney: (journeyId: string) => void;
 }
 
 /**
@@ -43,7 +45,7 @@ export function useOnboardingTour(): OnboardingTourController {
 
   // Visiting a step's route completes it — real actions, not a checklist.
   useEffect(() => {
-    const visitedStepId = resolveVisitedStepId(pathname);
+    const visitedStepId = resolveVisitedStepId(pathname, state.journeyId);
     if (!visitedStepId) {
       return;
     }
@@ -55,10 +57,14 @@ export function useOnboardingTour(): OnboardingTourController {
       writeOnboardingState(next);
       return next;
     });
-  }, [pathname]);
+  }, [pathname, state.journeyId]);
 
   const dismiss = useCallback(() => {
     persist({ ...state, dismissed: true });
+  }, [persist, state]);
+
+  const selectJourney = useCallback((journeyId: string) => {
+    persist(withSelectedOnboardingJourney(state, journeyId));
   }, [persist, state]);
 
   const viewModel = useMemo(
@@ -66,7 +72,7 @@ export function useOnboardingTour(): OnboardingTourController {
     [pathname, state]
   );
 
-  return { viewModel, expanded, setExpanded, dismiss };
+  return { viewModel, expanded, setExpanded, dismiss, selectJourney };
 }
 
 /** Header progress ring — visible until the operator graduates or dismisses. */
@@ -117,7 +123,7 @@ function ProgressRing({ fraction }: { fraction: number }) {
 
 /** Dismissible coach-mark card docked bottom-right, driven by the same controller. */
 export function OnboardingCoachMark({ controller }: { controller: OnboardingTourController }) {
-  const { viewModel, expanded, setExpanded, dismiss } = controller;
+  const { viewModel, expanded, setExpanded, dismiss, selectJourney } = controller;
   if (!viewModel.visible || !expanded) {
     return null;
   }
@@ -156,6 +162,23 @@ export function OnboardingCoachMark({ controller }: { controller: OnboardingTour
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
+      </div>
+
+      <div className="space-y-1 border-b border-border px-4 py-3">
+        <label htmlFor="onboarding-journey" className="text-xs font-medium text-foreground">
+          Choose your task journey
+        </label>
+        <select
+          id="onboarding-journey"
+          value={viewModel.journeyId}
+          onChange={(event) => selectJourney(event.target.value)}
+          className="min-h-8 w-full rounded-[2px] border border-border bg-background px-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        >
+          {viewModel.journeys.map((journey) => (
+            <option key={journey.id} value={journey.id}>{journey.label}</option>
+          ))}
+        </select>
+        <p className="text-xs leading-5 text-muted-foreground">{viewModel.journeyDescription}</p>
       </div>
 
       <Stepper

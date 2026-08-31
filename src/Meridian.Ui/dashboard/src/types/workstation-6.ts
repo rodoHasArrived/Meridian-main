@@ -21,6 +21,7 @@ import type {
   OperationsEvidencePackageSummary,
   OperationsNextAction,
   OperationsWorkflowStatus,
+  OperatorWorkItem,
   PaymentIntentCashDirection,
   PaymentIntentWorkflowStatus,
   PortfolioSummary,
@@ -28,6 +29,7 @@ import type {
   PrivateCapitalFundEventLedgerReadiness,
   PrivateCapitalPaymentIntentEvidenceStatus,
   WorkstationSecurityReference,
+  WorkstationBrokerageSyncStatus,
 } from "../types";
 
 export interface JournalEntryLifecycleTransition {
@@ -1009,6 +1011,117 @@ export interface LedgerJournalLine {
   dimensions?: LedgerDimensionSet | null;
 }
 
+export type LedgerPeriodStatus = "Open" | "SoftClosed" | "HardClosed";
+
+export type LedgerPeriodSignoffStatus = "NotRequired" | "Pending" | "SignedOff" | "Rejected";
+
+/** A posting period of the governed journal (`GET /api/ledger/periods`). */
+export interface LedgerPeriod {
+  periodId: string;
+  ledgerBookId: string;
+  fiscalYear: number;
+  periodNo: number;
+  label: string;
+  startDate: string;
+  endDate: string;
+  status: LedgerPeriodStatus;
+  openedAt: string;
+  closedAt: string | null;
+  version: number;
+  accountingBasis?: AccountingBasisKind;
+  accountingPolicyId?: string;
+  accountingPolicyVersion?: string;
+}
+
+/**
+ * A trial-balance line of the posted journal for a closed ledger period
+ * (`GET /api/ledger/periods/{periodId}/trial-balance`). Unlike the strategy-run
+ * ledger's `LedgerTrialBalanceLine`, these rows come from the governed posting
+ * spine and carry debit/credit totals but no resolved security reference.
+ */
+export interface LedgerPeriodTrialBalanceLine {
+  accountName: string;
+  accountType: string;
+  symbol: string | null;
+  financialAccountId: string | null;
+  debitTotal: number;
+  creditTotal: number;
+  balance: number;
+  entryCount: number;
+  accountingBasis?: AccountingBasisKind;
+  accountingPolicyId?: string;
+  accountingPolicyVersion?: string;
+  ruleId?: string | null;
+  ruleVersion?: string | null;
+  sourceEventId?: string | null;
+  sourceJournalEntryId?: string | null;
+  dimensions?: LedgerDimensionSet | null;
+}
+
+/**
+ * A posted journal entry for a ledger period
+ * (`GET /api/ledger/periods/{periodId}/journal-entries`). This is the immutable book's
+ * own entry, distinct from the strategy run's `LedgerJournalLine` evidence row.
+ */
+/** One posting line of a governed journal entry (`LedgerJournalEntryLineDto`). */
+export interface LedgerPostedJournalEntryLine {
+  entryId: string;
+  journalEntryId: string;
+  timestamp: string;
+  accountName: string;
+  accountType: string;
+  symbol?: string | null;
+  financialAccountId?: string | null;
+  debit: number;
+  credit: number;
+  description: string;
+  dimensions?: LedgerDimensionSet | null;
+}
+
+export interface LedgerPostedJournalEntry {
+  journalEntryId: string;
+  periodId: string;
+  ledgerBookId: string | null;
+  timestamp: string;
+  description: string;
+  totalDebits: number;
+  totalCredits: number;
+  isBalanced: boolean;
+  lines: LedgerPostedJournalEntryLine[];
+  accountingBasis?: AccountingBasisKind;
+  // No entry-level `dimensions`: LedgerJournalEntryDto declares none. Posting dimensions belong to
+  // LedgerJournalEntryLineDto, so an entry's scope has to be derived from its lines and only
+  // exists when they agree — see resolvePostedEntryDimensions.
+}
+
+/** P&L summary of the posted journal for a closed ledger period (`GET /api/ledger/periods/{periodId}/pnl-summary`). */
+export interface LedgerPeriodPnlSummary {
+  periodId: string;
+  ledgerBookId: string;
+  fiscalYear: number;
+  periodNo: number;
+  label: string;
+  totalRevenue: number;
+  totalExpenses: number;
+  netIncome: number;
+  periodOnPeriodVariance: number | null;
+  openBreakCount: number;
+  signoffStatus: LedgerPeriodSignoffStatus;
+  completedAt: string;
+  revenueLines: LedgerPeriodTrialBalanceLine[];
+  expenseLines: LedgerPeriodTrialBalanceLine[];
+  accountingBasis?: AccountingBasisKind;
+  accountingPolicyId?: string;
+  accountingPolicyVersion?: string;
+  realizedRevenue?: number;
+  realizedExpenses?: number;
+  realizedNetIncome?: number;
+  accrualAdjustmentRevenue?: number;
+  accrualAdjustmentExpenses?: number;
+  accrualBasisAdjustmentNetImpact?: number;
+  accrualAdjustmentLines?: LedgerPeriodTrialBalanceLine[] | null;
+}
+
 export interface LedgerSummary {
   ledgerReference: string;
   runId: string;
@@ -1285,6 +1398,28 @@ export interface BiasDisclosure {
   items: BiasDisclosureItem[];
 }
 
+export interface StrategyRunEvidenceLoop {
+  operatorAcceptanceCriteria: string[];
+  retainedEvidenceReferences: string[];
+  accountingRecordReferences: string[];
+  approvalReferences: string[];
+  paperValidationReferences: string[];
+  governedReportReferences: string[];
+}
+
+export type StrategyRunAcceptanceChecklistStatus = "ReviewRequired" | "Ready" | "Rejected";
+
+export interface StrategyRunAcceptanceChecklistItem {
+  checklistId: string;
+  label: string;
+  status: StrategyRunAcceptanceChecklistStatus;
+  evidenceReference?: string | null;
+  decidedBy?: string | null;
+  decidedAt?: string | null;
+  auditReference?: string | null;
+  blocker?: string | null;
+}
+
 export interface StrategyRunDetail {
   summary: StrategyRunSummary;
   parameters: Record<string, string>;
@@ -1295,6 +1430,8 @@ export interface StrategyRunDetail {
   governance?: unknown | null;
   governanceHooks?: unknown[] | null;
   biasDisclosure?: BiasDisclosure | null;
+  evidenceLoop?: StrategyRunEvidenceLoop | null;
+  acceptanceChecklist?: StrategyRunAcceptanceChecklistItem[] | null;
 }
 
 export interface StrategyRunContinuityLink {
@@ -1333,6 +1470,7 @@ export interface StrategyRunCashFlowDigest {
 export interface ReconciliationRunSummary {
   reconciliationRunId: string;
   runId: string;
+  bankEntityId?: string | null;
   createdAt: string;
   portfolioAsOf: string | null;
   ledgerAsOf: string | null;
@@ -1388,6 +1526,18 @@ export interface StrategyRunContinuityDto {
   cashFlow: StrategyRunCashFlowDigest | null;
   reconciliation: ReconciliationRunSummary | null;
   continuityStatus: StrategyRunContinuityStatus;
+}
+
+export interface StrategyRunReviewPacket {
+  runId: string;
+  generatedAt: string;
+  run: StrategyRunDetail;
+  continuity: StrategyRunContinuityDto | null;
+  fills: RunFillSummary | null;
+  attribution: RunAttributionSummary | null;
+  brokerageSync: WorkstationBrokerageSyncStatus | null;
+  workItems: OperatorWorkItem[];
+  warnings: string[];
 }
 
 // --- Security Master workstation types ---
@@ -1502,6 +1652,13 @@ export interface SecurityAssetProfileDefinition {
   approvedBy: string;
   approvedAtUtc: string;
   changeReason: string;
+  /**
+   * The governance approval reference recorded on this catalog version. The write seam verifies a
+   * created record's profileApproval.approvalReference against this value when present, so the
+   * creation flow must copy it verbatim rather than fabricating its own reference. Absent on
+   * definitions predating the field.
+   */
+  approvalReference?: string | null;
 }
 
 export interface SecurityAssetProfileDraftRequest {

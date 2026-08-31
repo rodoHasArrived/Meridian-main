@@ -260,6 +260,14 @@ public static class PrometheusMetrics
         "mdc_wal_recovery_duration_seconds",
         "Duration of WAL recovery on startup in seconds");
 
+    // Distinct from mdc_wal_recovery_events_total, which counts checksum-valid records the WAL
+    // scan found. This counts records a replay consumer drove all the way to durable primary
+    // storage, so records dropped as unreadable payloads never appear here. Alerting on
+    // recovery success wants this series; the gap between the two is the corruption tail.
+    private static readonly Counter WalReplayedEventsTotal = Prometheus.Metrics.CreateCounter(
+        "mdc_wal_replayed_events_total",
+        "Total number of WAL records durably replayed to primary storage during recovery");
+
     // Provider reconnection metrics (labeled by provider and outcome)
     private static readonly Counter ProviderReconnectionAttemptsTotal = Prometheus.Metrics.CreateCounter(
         "mdc_provider_reconnection_attempts_total",
@@ -439,20 +447,73 @@ public static class PrometheusMetrics
     /// Updates all Prometheus metrics from the current Metrics snapshot.
     /// Should be called periodically (e.g., every 1-5 seconds) to keep metrics current.
     /// </summary>
+    // Cumulative bases and last-seen values for each resettable source total, keyed by series.
+    // A reset is detected as "current is below what we last saw"; the pre-reset value is then
+    // added to the base so the exported counter never goes backwards and never stalls.
+    /// <summary>
+    /// Current value of <c>mdc_events_published_total</c> as exported.
+    /// </summary>
+    /// <remarks>
+    /// Exposed so the reset-crossing behaviour of <see cref="UpdateFromSnapshot"/> can be asserted
+    /// directly rather than by parsing the exposition text.
+    /// </remarks>
+    public static double PublishedEventsValue => PublishedEvents.Value;
+
+    private static readonly object ResettableTotalLock = new();
+    private static readonly Dictionary<string, (long Base, long Last)> ResettableTotals = new();
+
+    private const string PublishedKey = "published";
+    private const string DroppedKey = "dropped";
+    private const string IntegrityKey = "integrity";
+    private const string TradesKey = "trades";
+    private const string DepthUpdatesKey = "depth_updates";
+    private const string QuotesKey = "quotes";
+    private const string HistoricalBarsKey = "historical_bars";
+
+    /// <summary>
+    /// Translates a resettable source total into a monotonic counter value.
+    /// </summary>
+    /// <remarks>
+    /// Callers must hold <see cref="ResettableTotalLock"/>. Returns the value the Prometheus
+    /// counter should hold: the sum of every completed pre-reset run plus the current total.
+    /// </remarks>
+    private static long MirrorResettableTotal(string key, long current)
+    {
+        ResettableTotals.TryGetValue(key, out var state);
+
+        // A source total that moved backwards can only mean the underlying counter was reset.
+        if (current < state.Last)
+            state.Base += state.Last;
+
+        state.Last = current;
+        ResettableTotals[key] = state;
+        return state.Base + current;
+    }
+
     public static void UpdateFromSnapshot()
     {
         var combined = Meridian.Platform.Tracing.Metrics.GetCombinedSnapshot();
         var snapshot = combined.Core;
         var resubSnapshot = combined.Resubscription;
 
-        // Update counters (Prometheus counters only increase, so we set to current value)
-        PublishedEvents.IncTo(snapshot.Published);
-        DroppedEvents.IncTo(snapshot.Dropped);
-        IntegrityEvents.IncTo(snapshot.Integrity);
-        TradeEvents.IncTo(snapshot.Trades);
-        DepthUpdateEvents.IncTo(snapshot.DepthUpdates);
-        QuoteEvents.IncTo(snapshot.Quotes);
-        HistoricalBarEvents.IncTo(snapshot.HistoricalBars);
+        // Mirror the resettable source totals into monotonic counters. BackfillCoordinator.RunAsync
+        // calls Reset() on this same static snapshot, which zeroes every total; IncTo cannot
+        // decrease a counter, so the exported series froze at its pre-reset value until the fresh
+        // total climbed back past it. rate() and increase() read zero across that whole stretch,
+        // which is exactly what MeridianNoEventsPublished treats as a stalled feed — it would have
+        // paged during a healthy pipeline every time an operator started a backfill.
+        // MirrorResettableTotal carries the pre-reset total forward instead, so the counter keeps
+        // increasing across a reset and its rate stays true.
+        lock (ResettableTotalLock)
+        {
+            PublishedEvents.IncTo(MirrorResettableTotal(PublishedKey, snapshot.Published));
+            DroppedEvents.IncTo(MirrorResettableTotal(DroppedKey, snapshot.Dropped));
+            IntegrityEvents.IncTo(MirrorResettableTotal(IntegrityKey, snapshot.Integrity));
+            TradeEvents.IncTo(MirrorResettableTotal(TradesKey, snapshot.Trades));
+            DepthUpdateEvents.IncTo(MirrorResettableTotal(DepthUpdatesKey, snapshot.DepthUpdates));
+            QuoteEvents.IncTo(MirrorResettableTotal(QuotesKey, snapshot.Quotes));
+            HistoricalBarEvents.IncTo(MirrorResettableTotal(HistoricalBarsKey, snapshot.HistoricalBars));
+        }
 
         // Update rate gauges
         EventsPerSecond.Set(snapshot.EventsPerSecond);
@@ -650,6 +711,26 @@ public static class PrometheusMetrics
     {
         WalRecoveryEventsTotal.IncTo(recoveredEvents);
         WalRecoveryDurationSeconds.Set(durationSeconds);
+    }
+
+    /// <summary>
+    /// Adds the WAL records a recovery batch just replayed durably to primary storage. Callers
+    /// publish as each batch crosses its durability boundary rather than at the end of the
+    /// pass, so a later failure cannot strand the telemetry of records that are already durable
+    /// and will never be enumerated again.
+    /// </summary>
+    /// <param name="newlyReplayedEvents">
+    /// Records replayed by this batch alone, not a running total: the series is a cumulative
+    /// counter, so a process that recovers 100 records and later another 10 must report 110.
+    /// Raising it to a per-pass maximum instead would leave the second pass invisible, because
+    /// each pass counts from zero.
+    /// </param>
+    public static void RecordWalReplay(long newlyReplayedEvents)
+    {
+        if (newlyReplayedEvents <= 0)
+            return;
+
+        WalReplayedEventsTotal.Inc(newlyReplayedEvents);
     }
 
     /// <summary>

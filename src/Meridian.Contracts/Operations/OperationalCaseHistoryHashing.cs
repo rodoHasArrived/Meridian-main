@@ -1,5 +1,5 @@
-using System.Security.Cryptography;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Contracts.Operations;
 
@@ -34,7 +34,7 @@ public static class OperationalCaseHistoryHashing
             canonicalRecord,
             OperationsContractsJsonContext.Default.OperationalCaseHistoryRecord);
 
-        return Convert.ToHexStringLower(SHA256.HashData(bytes));
+        return Sha256Digest.Compute(bytes);
     }
 
     public static bool HasValidRecordHash(OperationalCaseHistoryRecord record) =>

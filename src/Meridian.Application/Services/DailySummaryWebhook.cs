@@ -29,9 +29,12 @@ public sealed class DailySummaryWebhook : IMonitoringWebhookSink, IAsyncDisposab
     private readonly ILogger _log = LoggingSetup.ForContext<DailySummaryWebhook>();
     private readonly DailySummaryWebhookConfig _config;
     private readonly HttpClient _httpClient;
-    private readonly Timer? _scheduledTimer;
     private readonly TradingCalendar _tradingCalendar;
+    private readonly TimeProvider _timeProvider;
     private readonly CancellationTokenSource _cts = new();
+    private readonly object _disposeLock = new();
+    private readonly Task? _scheduleLoop;
+    private Task? _disposeTask;
 
     // Statistics collectors
     private Func<PipelineStatistics>? _getPipelineStats;
@@ -48,10 +51,14 @@ public sealed class DailySummaryWebhook : IMonitoringWebhookSink, IAsyncDisposab
     /// </summary>
     public event Action<DailySummaryResult>? OnSummaryFailed;
 
-    public DailySummaryWebhook(DailySummaryWebhookConfig config, TradingCalendar? tradingCalendar = null)
+    public DailySummaryWebhook(
+        DailySummaryWebhookConfig config,
+        TradingCalendar? tradingCalendar = null,
+        TimeProvider? timeProvider = null)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _tradingCalendar = tradingCalendar ?? new TradingCalendar();
+        _timeProvider = timeProvider ?? TimeProvider.System;
 
         // TD-10: Use HttpClientFactory instead of creating new HttpClient instances
         _httpClient = HttpClientFactoryProvider.CreateClient(HttpClientNames.DailySummaryWebhook);
@@ -59,7 +66,7 @@ public sealed class DailySummaryWebhook : IMonitoringWebhookSink, IAsyncDisposab
 
         if (config.EnableScheduledSummary && !string.IsNullOrEmpty(config.ScheduledTime))
         {
-            _scheduledTimer = new Timer(ScheduledCallback, null, GetNextScheduledTime(), TimeSpan.FromDays(1));
+            _scheduleLoop = RunScheduledLoopAsync();
             _log.Information("DailySummaryWebhook scheduled for {ScheduledTime} ET", config.ScheduledTime);
         }
 
@@ -473,24 +480,73 @@ public sealed class DailySummaryWebhook : IMonitoringWebhookSink, IAsyncDisposab
 
     private static string GetContentType(WebhookType type) => "application/json";
 
-    private TimeSpan GetNextScheduledTime()
+    internal static DateTimeOffset CalculateNextScheduledRunUtc(
+        DateTimeOffset nowUtc,
+        TimeOnly scheduledTime,
+        TimeZoneInfo timeZone)
     {
-        if (!TimeOnly.TryParse(_config.ScheduledTime, out var scheduledTime))
+        ArgumentNullException.ThrowIfNull(timeZone);
+
+        var localNow = TimeZoneInfo.ConvertTime(nowUtc, timeZone);
+        var localCandidate = DateOnly.FromDateTime(localNow.DateTime)
+            .ToDateTime(scheduledTime, DateTimeKind.Unspecified);
+
+        if (localCandidate <= localNow.DateTime)
         {
-            scheduledTime = new TimeOnly(16, 30); // Default: 4:30 PM ET
+            localCandidate = localCandidate.AddDays(1);
         }
 
-        var easternZone = TimeZoneInfo.FindSystemTimeZoneById(GetEasternTimeZoneId());
-        var now = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, easternZone);
-        var todayScheduled = now.Date.Add(scheduledTime.ToTimeSpan());
-
-        if (now.DateTime > todayScheduled)
+        // A configured wall-clock time can fall into the spring-forward gap. In that
+        // case, run at the first valid local minute instead of silently skipping a day.
+        while (timeZone.IsInvalidTime(localCandidate))
         {
-            todayScheduled = todayScheduled.AddDays(1);
+            localCandidate = localCandidate.AddMinutes(1);
         }
 
-        var nextRun = new DateTimeOffset(todayScheduled, easternZone.GetUtcOffset(todayScheduled));
-        return nextRun - DateTimeOffset.UtcNow;
+        if (timeZone.IsAmbiguousTime(localCandidate))
+        {
+            var candidates = timeZone.GetAmbiguousTimeOffsets(localCandidate)
+                .Select(offset => new DateTimeOffset(localCandidate, offset).ToUniversalTime())
+                .Where(candidate => candidate > nowUtc)
+                .OrderBy(candidate => candidate)
+                .ToArray();
+
+            if (candidates.Length > 0)
+            {
+                return candidates[0];
+            }
+
+            return CalculateNextScheduledRunUtc(
+                nowUtc,
+                scheduledTime,
+                timeZone,
+                DateOnly.FromDateTime(localCandidate).AddDays(1));
+        }
+
+        return new DateTimeOffset(localCandidate, timeZone.GetUtcOffset(localCandidate)).ToUniversalTime();
+    }
+
+    private static DateTimeOffset CalculateNextScheduledRunUtc(
+        DateTimeOffset nowUtc,
+        TimeOnly scheduledTime,
+        TimeZoneInfo timeZone,
+        DateOnly localDate)
+    {
+        var localCandidate = localDate.ToDateTime(scheduledTime, DateTimeKind.Unspecified);
+        while (timeZone.IsInvalidTime(localCandidate))
+        {
+            localCandidate = localCandidate.AddMinutes(1);
+        }
+
+        if (timeZone.IsAmbiguousTime(localCandidate))
+        {
+            return timeZone.GetAmbiguousTimeOffsets(localCandidate)
+                .Select(offset => new DateTimeOffset(localCandidate, offset).ToUniversalTime())
+                .OrderBy(candidate => candidate)
+                .First();
+        }
+
+        return new DateTimeOffset(localCandidate, timeZone.GetUtcOffset(localCandidate)).ToUniversalTime();
     }
 
     private static string GetEasternTimeZoneId()
@@ -500,32 +556,68 @@ public sealed class DailySummaryWebhook : IMonitoringWebhookSink, IAsyncDisposab
         catch { return TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time").Id; }
     }
 
-    private async void ScheduledCallback(object? state)
+    private async Task RunScheduledLoopAsync()
     {
-        try
-        {
-            // Only send on trading days
-            if (!_tradingCalendar.IsTodayTradingDay())
-            {
-                _log.Debug("Skipping scheduled summary - not a trading day");
-                return;
-            }
+        var scheduledTime = TimeOnly.TryParse(_config.ScheduledTime, out var parsedTime)
+            ? parsedTime
+            : new TimeOnly(16, 30);
+        var easternZone = TimeZoneInfo.FindSystemTimeZoneById(GetEasternTimeZoneId());
 
-            await SendSummaryAsync(_cts.Token);
-        }
-        catch (Exception ex)
+        while (!_cts.IsCancellationRequested)
         {
-            _log.Error(ex, "Error in scheduled daily summary");
+            try
+            {
+                var nowUtc = _timeProvider.GetUtcNow();
+                var nextRunUtc = CalculateNextScheduledRunUtc(nowUtc, scheduledTime, easternZone);
+                await Task.Delay(nextRunUtc - nowUtc, _timeProvider, _cts.Token).ConfigureAwait(false);
+
+                var localRunTime = TimeZoneInfo.ConvertTime(_timeProvider.GetUtcNow(), easternZone);
+                var runDate = DateOnly.FromDateTime(localRunTime.DateTime);
+                if (!_tradingCalendar.IsTradingDay(runDate))
+                {
+                    _log.Debug("Skipping scheduled summary - {Date} is not a trading day", runDate);
+                    continue;
+                }
+
+                await SendSummaryAsync(_cts.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (_cts.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                _log.Error(ex, "Error in scheduled daily summary; the next wall-clock run will be recalculated");
+            }
         }
     }
 
     public ValueTask DisposeAsync()
     {
+        lock (_disposeLock)
+        {
+            return new ValueTask(_disposeTask ??= DisposeCoreAsync());
+        }
+    }
+
+    private async Task DisposeCoreAsync()
+    {
         _cts.Cancel();
-        _scheduledTimer?.Dispose();
+
+        if (_scheduleLoop is not null)
+        {
+            try
+            {
+                await _scheduleLoop.ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (_cts.IsCancellationRequested)
+            {
+                // The owned scheduler observes this token during normal shutdown.
+            }
+        }
+
         _httpClient.Dispose();
         _cts.Dispose();
-        return default;
     }
 }
 

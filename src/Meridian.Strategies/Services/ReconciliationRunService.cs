@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Banking;
 using Meridian.Contracts.SecurityMaster;
@@ -19,6 +21,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
     private readonly ISecurityValidationGateService? _securityValidationGate;
     private readonly ISecurityMasterAccountingEventService? _securityMasterAccountingEventService;
     private readonly ISecurityMasterAccountingEventSourceAdapter? _securityMasterAccountingEventSourceAdapter;
+    private readonly TimeProvider _timeProvider;
 
     public ReconciliationRunService(
         StrategyRunReadService runReadService,
@@ -32,6 +35,35 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         ISecurityValidationGateService? securityValidationGate = null,
         ISecurityMasterAccountingEventService? securityMasterAccountingEventService = null,
         ISecurityMasterAccountingEventSourceAdapter? securityMasterAccountingEventSourceAdapter = null)
+        : this(
+            runReadService,
+            projectionService,
+            repository,
+            bankTransactionSource,
+            ledgerAdapter,
+            portfolioAdapter,
+            internalCashAdapter,
+            externalStatementAdapter,
+            securityValidationGate,
+            securityMasterAccountingEventService,
+            securityMasterAccountingEventSourceAdapter,
+            TimeProvider.System)
+    {
+    }
+
+    public ReconciliationRunService(
+        StrategyRunReadService runReadService,
+        ReconciliationProjectionService projectionService,
+        IReconciliationRunRepository repository,
+        IBankTransactionSource? bankTransactionSource,
+        IStrategyLedgerReconciliationSourceAdapter? ledgerAdapter,
+        IStrategyPortfolioReconciliationSourceAdapter? portfolioAdapter,
+        IInternalCashReconciliationSourceAdapter? internalCashAdapter,
+        IExternalStatementReconciliationSourceAdapter? externalStatementAdapter,
+        ISecurityValidationGateService? securityValidationGate,
+        ISecurityMasterAccountingEventService? securityMasterAccountingEventService,
+        ISecurityMasterAccountingEventSourceAdapter? securityMasterAccountingEventSourceAdapter,
+        TimeProvider timeProvider)
     {
         _runReadService = runReadService ?? throw new ArgumentNullException(nameof(runReadService));
         _projectionService = projectionService ?? throw new ArgumentNullException(nameof(projectionService));
@@ -43,6 +75,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         _securityValidationGate = securityValidationGate;
         _securityMasterAccountingEventService = securityMasterAccountingEventService;
         _securityMasterAccountingEventSourceAdapter = securityMasterAccountingEventSourceAdapter;
+        _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
     }
 
     public async Task<ReconciliationRunDetail?> RunAsync(ReconciliationRunRequest request, CancellationToken ct = default)
@@ -67,6 +100,8 @@ public sealed class ReconciliationRunService : IReconciliationRunService
 
         var results = LedgerInterop.ReconcilePortfolioLedgerChecks(
             request.AmountTolerance, request.MaxAsOfDriftMinutes, allChecks);
+        var observedAt = _timeProvider.GetUtcNow();
+        var correlationKeys = new OperationsContinuityCorrelationKeysDto(RunId: request.RunId);
 
         // Track which check IDs originated from the banking/cash layer.
         var bankCheckIds = new HashSet<string>(
@@ -77,6 +112,16 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         var breaks = new List<ReconciliationBreakDto>();
         foreach (var result in results)
         {
+            var (bankEntityId, sourceScope) = ResolveLogicalBreakScope(
+                result.CheckId,
+                request,
+                normalizedInputs);
+            var logicalBreakIdentity = ReconciliationLogicalBreakIdentity.Create(
+                result.CheckId,
+                bankEntityId,
+                sourceScope,
+                correlationKeys);
+
             if (result.IsMatch)
             {
                 matches.Add(new ReconciliationMatchDto(
@@ -88,7 +133,13 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                     result.HasActualAmount ? result.ActualAmount : null,
                     result.Variance,
                     result.HasExpectedAsOf ? result.ExpectedAsOf : null,
-                    result.HasActualAsOf ? result.ActualAsOf : null));
+                    result.HasActualAsOf ? result.ActualAsOf : null)
+                {
+                    LogicalBreakIdentity = logicalBreakIdentity,
+                    BankEntityId = bankEntityId,
+                    SourceScope = sourceScope,
+                    CorrelationKeys = correlationKeys
+                });
                 continue;
             }
 
@@ -104,7 +155,14 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                 MapSeverity(result.Severity),
                 result.Reason,
                 result.HasExpectedAsOf ? result.ExpectedAsOf : null,
-                result.HasActualAsOf ? result.ActualAsOf : null));
+                result.HasActualAsOf ? result.ActualAsOf : null)
+            {
+                FirstObservedAt = observedAt,
+                LogicalBreakIdentity = logicalBreakIdentity,
+                BankEntityId = bankEntityId,
+                SourceScope = sourceScope,
+                CorrelationKeys = correlationKeys
+            });
         }
 
         var securityCoverageIssues = await BuildSecurityCoverageIssuesAsync(runDetail, request.RunId, ct).ConfigureAwait(false);
@@ -121,7 +179,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         var summary = new ReconciliationRunSummary(
             Guid.NewGuid().ToString("N"),
             request.RunId,
-            DateTimeOffset.UtcNow,
+            observedAt,
             runDetail.Portfolio?.AsOf,
             runDetail.Ledger?.AsOf,
             matches.Count,
@@ -137,7 +195,10 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             securityMasterAccountingResult?.ExpectedEvents.Count ?? 0,
             securityMasterAccountingResult?.JournalPreviews.Count ?? 0,
             securityMasterAccountingResult?.Issues.Count ?? 0,
-            securityMasterAccountingResult?.Issues.Count > 0);
+            securityMasterAccountingResult?.Issues.Count > 0)
+        {
+            BankEntityId = request.BankEntityId
+        };
 
         var detail = new ReconciliationRunDetail(summary, matches, breaks, securityCoverageIssues,
             securityClassifications.Count > 0 ? securityClassifications : null,
@@ -145,8 +206,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             securityMasterAccountingResult?.AccrualCalculations.Count > 0 ? securityMasterAccountingResult.AccrualCalculations : null,
             securityMasterAccountingResult?.JournalPreviews.Count > 0 ? securityMasterAccountingResult.JournalPreviews : null,
             securityMasterAccountingResult?.Issues.Count > 0 ? securityMasterAccountingResult.Issues : null);
-        await _repository.SaveAsync(detail, ct).ConfigureAwait(false);
-        return detail;
+        return await _repository.SaveWithFirstObservationContinuityAsync(detail, ct).ConfigureAwait(false);
     }
 
     public Task<ReconciliationRunDetail?> GetByIdAsync(string reconciliationRunId, CancellationToken ct = default) =>
@@ -225,6 +285,53 @@ public sealed class ReconciliationRunService : IReconciliationRunService
 
     private static bool IsUnresolvedStatus(ReconciliationBreakStatus status) =>
         status is not ReconciliationBreakStatus.Matched and not ReconciliationBreakStatus.Resolved;
+
+    private static (Guid? BankEntityId, string? SourceScope) ResolveLogicalBreakScope(
+        string checkId,
+        ReconciliationRunRequest request,
+        ReconciliationNormalizedInputs inputs)
+    {
+        if (checkId.StartsWith("bank-", StringComparison.OrdinalIgnoreCase))
+        {
+            return (request.BankEntityId, "bank");
+        }
+
+        if (checkId.StartsWith("external-statement-", StringComparison.OrdinalIgnoreCase))
+        {
+            var sources = inputs.ExternalStatementRows
+                .Select(static row => row.Source)
+                .Where(static source => !string.IsNullOrWhiteSpace(source))
+                .Select(static source => source.Trim().ToLowerInvariant())
+                .Distinct(StringComparer.Ordinal)
+                .Order(StringComparer.Ordinal)
+                .ToArray();
+            return (null, BuildExternalStatementSourceScope(sources));
+        }
+
+        return (null, null);
+    }
+
+    private static string BuildExternalStatementSourceScope(IReadOnlyList<string> sources)
+    {
+        if (sources.Count == 0)
+        {
+            return "external-statement";
+        }
+
+        var builder = new StringBuilder("external-statement:");
+        foreach (var source in sources)
+        {
+            // Length-prefix each provider name before adding a visual separator. Distinct source
+            // sets such as ["a,b", "c"] and ["a", "b,c"] must never collapse to one identity.
+            builder
+                .Append('|')
+                .Append(source.Length.ToString(CultureInfo.InvariantCulture))
+                .Append(':')
+                .Append(source);
+        }
+
+        return builder.ToString();
+    }
 
     private async Task<IReadOnlyList<ReconciliationSecurityCoverageIssueDto>> BuildSecurityCoverageIssuesAsync(
         StrategyRunDetail detail,

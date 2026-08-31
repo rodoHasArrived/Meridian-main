@@ -40,6 +40,21 @@ public sealed class AlpacaBrokerageGatewayTests
             equity = "100000.00",
             cash = "50000.00",
             buying_power = "90000.00",
+            multiplier = "2",
+            regt_buying_power = "85000.00",
+            initial_margin = "12500.00",
+            maintenance_margin = "10000.00",
+            last_maintenance_margin = "9750.00",
+            sma = "2500.00",
+            long_market_value = "50000.00",
+            short_market_value = "0.00",
+            non_marginable_buying_power = "40000.00",
+            trading_blocked = false,
+            transfers_blocked = false,
+            account_blocked = false,
+            shorting_enabled = true,
+            options_approved_level = 2,
+            options_trading_level = 2,
             currency = "USD",
             status
         });
@@ -47,18 +62,25 @@ public sealed class AlpacaBrokerageGatewayTests
     private static StringContent BuildOrderResponse(
         string id = "order-001",
         string status = "accepted",
-        string symbol = "AAPL") =>
+        string symbol = "AAPL",
+        string clientOrderId = "client-1",
+        string qty = "1",
+        string filledQty = "0",
+        string? filledAvgPrice = null) =>
         BuildJson(new
         {
             id,
-            client_order_id = "client-1",
+            client_order_id = clientOrderId,
             symbol,
             side = "buy",
             type = "market",
-            qty = "1",
-            filled_qty = "0",
+            qty,
+            filled_qty = filledQty,
+            filled_avg_price = filledAvgPrice,
             status,
-            created_at = "2024-01-15T10:00:00Z"
+            created_at = "2024-01-15T10:00:00Z",
+            updated_at = "2024-01-15T10:01:00Z",
+            filled_at = status == "filled" ? "2024-01-15T10:01:00Z" : null
         });
 
     private static StringContent BuildPositionsResponse(object[] positions) =>
@@ -306,6 +328,7 @@ public sealed class AlpacaBrokerageGatewayTests
         {
             new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse("ord-1") },
             new HttpResponseMessage(HttpStatusCode.NoContent),
+            new HttpResponseMessage(HttpStatusCode.NotFound),
         });
         var sut = CreateSut(new SequentialStubHandler(responses), tradeUpdates: stream);
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -314,6 +337,292 @@ public sealed class AlpacaBrokerageGatewayTests
         var report = await sut.CancelOrderAsync("ord-1", cts.Token);
 
         report.ReportType.Should().Be(ExecutionReportType.Cancelled);
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task CancelOrderAsync_ClientOrderId_ResolvesAndDeletesBrokerOrderId()
+    {
+        var requestedRoutes = new List<(HttpMethod Method, string PathAndQuery)>();
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = BuildOrderResponse("broker-uuid-1", "accepted", "AAPL")
+            },
+            new HttpResponseMessage(HttpStatusCode.NoContent),
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = BuildOrderResponse("broker-uuid-1", "canceled", "AAPL")
+            },
+        });
+        var sut = CreateSut(new SequentialStubHandler(
+            responses,
+            request => requestedRoutes.Add((request.Method, request.RequestUri!.PathAndQuery))));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        MarkConnected(sut);
+
+        var report = await ((IExplicitOrderCancellationGateway)sut).CancelOrderAsync(
+            new OrderCancellationIdentifier(
+                "client-1",
+                OrderCancellationIdentifierKind.ClientOrderId),
+            cts.Token);
+
+        report.OrderStatus.Should().Be(OrderStatus.Cancelled);
+        report.GatewayOrderId.Should().Be("broker-uuid-1");
+        report.ClientOrderId.Should().Be("client-1");
+        requestedRoutes.Should().ContainInOrder(
+            (HttpMethod.Get, "/v2/orders:by_client_order_id?client_order_id=client-1"),
+            (HttpMethod.Delete, "/v2/orders/broker-uuid-1"),
+            (HttpMethod.Get, "/v2/orders/broker-uuid-1"));
+        requestedRoutes.Should().NotContain((HttpMethod.Get, "/v2/orders/client-1"));
+        requestedRoutes.Should().NotContain((HttpMethod.Delete, "/v2/orders/client-1"));
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task CancelOrderAsync_UuidShapedClientId_DoesNotProbeBrokerIdNamespace()
+    {
+        const string clientId = "11111111-1111-1111-1111-111111111111";
+        var requestedRoutes = new List<(HttpMethod Method, string PathAndQuery)>();
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = BuildOrderResponse(
+                    "broker-target",
+                    "accepted",
+                    "AAPL",
+                    clientOrderId: clientId)
+            },
+            new HttpResponseMessage(HttpStatusCode.NoContent),
+            new HttpResponseMessage(HttpStatusCode.NotFound),
+        });
+        var sut = CreateSut(new SequentialStubHandler(
+            responses,
+            request => requestedRoutes.Add((request.Method, request.RequestUri!.PathAndQuery))));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        MarkConnected(sut);
+
+        var report = await ((IExplicitOrderCancellationGateway)sut).CancelOrderAsync(
+            new OrderCancellationIdentifier(clientId, OrderCancellationIdentifierKind.ClientOrderId),
+            cts.Token);
+
+        report.OrderStatus.Should().Be(OrderStatus.Cancelled);
+        requestedRoutes.Should().ContainInOrder(
+            (HttpMethod.Get, $"/v2/orders:by_client_order_id?client_order_id={clientId}"),
+            (HttpMethod.Delete, "/v2/orders/broker-target"),
+            (HttpMethod.Get, "/v2/orders/broker-target"));
+        requestedRoutes.Should().NotContain((HttpMethod.Get, $"/v2/orders/{clientId}"),
+            "identifier shape must never choose Alpaca's broker-ID namespace");
+        requestedRoutes.Should().NotContain((HttpMethod.Delete, $"/v2/orders/{clientId}"));
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task CancelOrderAsync_DeleteAcceptedButOrderFilled_ReportsVerifiedCumulativeFill()
+    {
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = BuildOrderResponse(
+                    "broker-uuid-1",
+                    "accepted",
+                    "AAPL",
+                    qty: "10",
+                    filledQty: "0")
+            },
+            new HttpResponseMessage(HttpStatusCode.NoContent),
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = BuildOrderResponse(
+                    "broker-uuid-1",
+                    "filled",
+                    "AAPL",
+                    qty: "10",
+                    filledQty: "10",
+                    filledAvgPrice: "151.25")
+            },
+        });
+        var sut = CreateSut(new SequentialStubHandler(responses));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        MarkConnected(sut);
+
+        var report = await sut.CancelOrderAsync("broker-uuid-1", cts.Token);
+
+        report.ReportType.Should().Be(ExecutionReportType.Fill);
+        report.OrderStatus.Should().Be(OrderStatus.Filled);
+        report.OrderQuantity.Should().Be(10m);
+        report.FilledQuantity.Should().Be(10m);
+        report.FillPrice.Should().Be(151.25m);
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task CancelOrderAsync_DeleteAcceptedButOrderRejected_ReportsBrokerTerminalState()
+    {
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = BuildOrderResponse("broker-uuid-1", "accepted", "AAPL")
+            },
+            new HttpResponseMessage(HttpStatusCode.NoContent),
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = BuildOrderResponse("broker-uuid-1", "rejected", "AAPL")
+            },
+        });
+        var sut = CreateSut(new SequentialStubHandler(responses));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        MarkConnected(sut);
+
+        var report = await sut.CancelOrderAsync("broker-uuid-1", cts.Token);
+
+        report.ReportType.Should().Be(ExecutionReportType.Rejected);
+        report.OrderStatus.Should().Be(OrderStatus.Rejected);
+        report.GatewayOrderId.Should().Be("broker-uuid-1");
+        report.RejectReason.Should().Contain("became terminal as Rejected");
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task CancelOrderAsync_BrokerLookupUnavailable_DoesNotReportOrderRejected()
+    {
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.ServiceUnavailable),
+        });
+        var sut = CreateSut(new SequentialStubHandler(responses));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        MarkConnected(sut);
+
+        var report = await sut.CancelOrderAsync("broker-uuid-1", cts.Token);
+
+        report.ReportType.Should().Be(ExecutionReportType.Rejected,
+            "the cancellation command could not be issued");
+        report.OrderStatus.Should().Be(OrderStatus.PendingCancel,
+            "an unavailable lookup is not broker evidence that a live order became terminal");
+        report.GatewayOrderId.Should().Be("broker-uuid-1");
+        report.RejectReason.Should().Contain("could not resolve");
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task CancelOrderAsync_DeleteRejected_PreservesBrokerOrderWorkingStatus()
+    {
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = BuildOrderResponse("broker-uuid-1", "accepted", "AAPL")
+            },
+            new HttpResponseMessage(HttpStatusCode.UnprocessableEntity)
+            {
+                Content = new StringContent("cancel rejected")
+            },
+        });
+        var sut = CreateSut(new SequentialStubHandler(responses));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        MarkConnected(sut);
+
+        var report = await sut.CancelOrderAsync("broker-uuid-1", cts.Token);
+
+        report.ReportType.Should().Be(ExecutionReportType.Rejected);
+        report.OrderStatus.Should().Be(OrderStatus.Accepted,
+            "a rejected cancel request is not evidence that the broker order itself was rejected");
+        report.RejectReason.Should().Contain("HTTP 422");
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task CancelOrderAsync_CancelledWithCumulativeFill_PreservesFillEvidence()
+    {
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = BuildOrderResponse(
+                    "broker-uuid-1",
+                    "accepted",
+                    "AAPL",
+                    qty: "10",
+                    filledQty: "0")
+            },
+            new HttpResponseMessage(HttpStatusCode.NoContent),
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = BuildOrderResponse(
+                    "broker-uuid-1",
+                    "canceled",
+                    "AAPL",
+                    qty: "10",
+                    filledQty: "3",
+                    filledAvgPrice: "151.25")
+            },
+        });
+        var sut = CreateSut(new SequentialStubHandler(responses));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        MarkConnected(sut);
+
+        var report = await sut.CancelOrderAsync("broker-uuid-1", cts.Token);
+
+        report.ReportType.Should().Be(ExecutionReportType.Cancelled);
+        report.OrderStatus.Should().Be(OrderStatus.Cancelled);
+        report.FilledQuantity.Should().Be(3m);
+        report.FillPrice.Should().Be(151.25m);
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task CancelOrderAsync_DeleteAcceptedButOrderStillOpen_DoesNotReportCancelled()
+    {
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = BuildOrderResponse("broker-uuid-1", "accepted", "AAPL")
+            },
+            new HttpResponseMessage(HttpStatusCode.NoContent),
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = BuildOrderResponse("broker-uuid-1", "pending_cancel", "AAPL")
+            },
+        });
+        var sut = CreateSut(new SequentialStubHandler(responses));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        MarkConnected(sut);
+
+        var report = await sut.CancelOrderAsync("broker-uuid-1", cts.Token);
+
+        report.OrderStatus.Should().Be(OrderStatus.PendingCancel);
+        report.ReportType.Should().Be(ExecutionReportType.Rejected);
+        report.RejectReason.Should().Contain("remains PendingCancel");
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task CancelOrderAsync_DeleteAcceptedButBrokerStateUnavailable_DoesNotReportCancelled()
+    {
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = BuildOrderResponse("broker-uuid-1", "accepted", "AAPL")
+            },
+            new HttpResponseMessage(HttpStatusCode.NoContent),
+            new HttpResponseMessage(HttpStatusCode.ServiceUnavailable),
+        });
+        var sut = CreateSut(new SequentialStubHandler(responses));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        MarkConnected(sut);
+
+        var report = await sut.CancelOrderAsync("broker-uuid-1", cts.Token);
+
+        report.OrderStatus.Should().Be(OrderStatus.PendingCancel);
+        report.ReportType.Should().Be(ExecutionReportType.Rejected);
+        report.RejectReason.Should().Contain("verification failed");
         await sut.DisposeAsync();
     }
 
@@ -356,19 +665,22 @@ public sealed class AlpacaBrokerageGatewayTests
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         await sut.ConnectAsync(cts.Token);
 
-        var report = await sut.SubmitOrderAsync(new OrderRequest
+        var request = new OrderRequest
         {
             Symbol = "912828YY0",
             Side = OrderSide.Buy,
             Type = OrderType.Market,
-            Quantity = 5000m,           // dollar notional
+            Quantity = 5000m,           // fixed-income face value
             Metadata = new Dictionary<string, string>
             {
                 ["notional"] = "true",
                 ["asset_class"] = "treasury",
                 ["broker_account_id"] = "broker-account-1",
             },
-        }, cts.Token);
+        };
+
+        sut.UsesFaceValuePercentageOfPar(request).Should().BeTrue();
+        var report = await sut.SubmitOrderAsync(request, cts.Token);
 
         report.ReportType.Should().Be(ExecutionReportType.New);
         capturedBody.Should().Contain("\"qty\"");
@@ -516,6 +828,193 @@ public sealed class AlpacaBrokerageGatewayTests
         doc.RootElement.GetProperty("take_profit").GetProperty("limit_price").GetString().Should().Be("301");
         doc.RootElement.GetProperty("stop_loss").GetProperty("stop_price").GetString().Should().Be("299");
         doc.RootElement.GetProperty("stop_loss").GetProperty("limit_price").GetString().Should().Be("298.5");
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task SubmitOrderAsync_BracketResponseWithLegs_SurfacesChildOrdersOnTheAck()
+    {
+        // Alpaca's bracket submit response nests the server-created TP/SL legs, each a full order
+        // with its own ids. Dropping them was how bracket children became invisible to the OMS
+        // and to the kill-switch sweep.
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildAccountResponse() },
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = BuildJson(new
+                {
+                    id = "parent-1",
+                    client_order_id = "client-parent",
+                    symbol = "SPY",
+                    side = "buy",
+                    type = "market",
+                    qty = "100",
+                    filled_qty = "0",
+                    status = "accepted",
+                    created_at = "2024-01-15T10:00:00Z",
+                    legs = new object[]
+                    {
+                        new
+                        {
+                            id = "leg-tp",
+                            client_order_id = "client-tp",
+                            symbol = "SPY",
+                            side = "sell",
+                            type = "limit",
+                            qty = "100",
+                            filled_qty = "0",
+                            limit_price = "301",
+                            status = "held",
+                            created_at = "2024-01-15T10:00:00Z"
+                        },
+                        new
+                        {
+                            id = "leg-sl",
+                            client_order_id = "client-sl",
+                            symbol = "SPY",
+                            side = "sell",
+                            type = "stop",
+                            qty = "100",
+                            filled_qty = "0",
+                            stop_price = "299",
+                            status = "held",
+                            created_at = "2024-01-15T10:00:00Z"
+                        }
+                    }
+                })
+            },
+        });
+        var sut = CreateSut(new SequentialStubHandler(responses));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await sut.ConnectAsync(cts.Token);
+
+        var report = await sut.SubmitOrderAsync(new OrderRequest
+        {
+            Symbol = "SPY",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 100m,
+            TimeInForce = TimeInForce.GoodTilCancelled,
+            Metadata = new Dictionary<string, string>
+            {
+                ["order_class"] = "bracket",
+                ["take_profit.limit_price"] = "301",
+                ["stop_loss.stop_price"] = "299",
+            },
+        }, cts.Token);
+
+        report.ChildOrders.Should().NotBeNull();
+        report.ChildOrders.Should().HaveCount(2);
+
+        var takeProfit = report.ChildOrders![0];
+        takeProfit.OrderId.Should().Be("leg-tp");
+        takeProfit.ClientOrderId.Should().Be("client-tp");
+        takeProfit.Side.Should().Be(OrderSide.Sell);
+        takeProfit.LimitPrice.Should().Be(301m);
+        takeProfit.Status.Should().Be(
+            OrderStatus.PendingNew,
+            "a held leg is a working order the sweep must not skip");
+
+        var stopLoss = report.ChildOrders![1];
+        stopLoss.OrderId.Should().Be("leg-sl");
+        stopLoss.ClientOrderId.Should().Be("client-sl");
+        stopLoss.StopPrice.Should().Be(299m);
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task GetOpenOrdersAsync_RequestsNestedOrders_AndFlattensChildLegsIntoTheList()
+    {
+        string? capturedQuery = null;
+        var sut = CreateSut(new CapturingStubHandler(
+            req => capturedQuery = req.RequestUri?.PathAndQuery,
+            _ => BuildJson(new object[]
+            {
+                new
+                {
+                    id = "parent-1",
+                    client_order_id = "client-parent",
+                    symbol = "SPY",
+                    side = "buy",
+                    type = "market",
+                    qty = "100",
+                    filled_qty = "0",
+                    status = "accepted",
+                    created_at = "2024-01-15T10:00:00Z",
+                    legs = new object[]
+                    {
+                        new
+                        {
+                            id = "leg-tp",
+                            client_order_id = "client-tp",
+                            symbol = "SPY",
+                            side = "sell",
+                            type = "limit",
+                            qty = "100",
+                            filled_qty = "0",
+                            limit_price = "301",
+                            status = "held",
+                            created_at = "2024-01-15T10:00:00Z"
+                        }
+                    }
+                }
+            })));
+
+        var orders = await sut.GetOpenOrdersAsync();
+
+        capturedQuery.Should().Contain("nested=true",
+            "the broker book must include bracket children, or the kill-switch sweep never sees them");
+        orders.Should().HaveCount(2, "the nested leg is flattened into the open-order list");
+        orders.Select(o => o.OrderId).Should().Contain(new[] { "parent-1", "leg-tp" });
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task GetOpenOrdersAsync_FullPage_PaginatesWithBrokerOrderIdCursor()
+    {
+        var requestedQueries = new List<string>();
+        var firstPage = Enumerable.Range(0, 500)
+            .Select(index => new
+            {
+                id = $"order-{index:D3}",
+                client_order_id = $"client-{index:D3}",
+                symbol = "AAPL",
+                side = "buy",
+                type = "limit",
+                qty = "1",
+                filled_qty = "0",
+                status = "accepted",
+                created_at = "2024-01-15T10:00:00Z"
+            })
+            .ToArray();
+        var sut = CreateSut(new CapturingStubHandler(
+            request => requestedQueries.Add(request.RequestUri!.PathAndQuery),
+            request => request.RequestUri!.Query.Contains("before_order_id=", StringComparison.Ordinal)
+                ? BuildJson(new[]
+                {
+                    new
+                    {
+                        id = "order-500",
+                        client_order_id = "client-500",
+                        symbol = "MSFT",
+                        side = "sell",
+                        type = "limit",
+                        qty = "2",
+                        filled_qty = "0",
+                        status = "accepted",
+                        created_at = "2024-01-15T10:00:00Z"
+                    }
+                })
+                : BuildJson(firstPage)));
+
+        var orders = await sut.GetOpenOrdersAsync();
+
+        orders.Should().HaveCount(501);
+        requestedQueries.Should().HaveCount(2);
+        requestedQueries.Should().OnlyContain(query => query.Contains("limit=500", StringComparison.Ordinal));
+        requestedQueries[1].Should().Contain("before_order_id=order-499");
+        orders.Should().ContainSingle(order => order.OrderId == "order-500" && order.Symbol == "MSFT");
         await sut.DisposeAsync();
     }
 
@@ -793,6 +1292,16 @@ public sealed class AlpacaBrokerageGatewayTests
                             market_value = "18750.00",
                             unrealized_pl = "1250.00",
                             asset_class = "equity",
+                        },
+                        new
+                        {
+                            symbol = "MSFT",
+                            qty = "-25",
+                            avg_entry_price = "430.00",
+                            current_price = "425.00",
+                            market_value = "-10625.00",
+                            unrealized_pl = "125.00",
+                            asset_class = "equity",
                         }
                     });
                 }
@@ -867,10 +1376,21 @@ public sealed class AlpacaBrokerageGatewayTests
             account.AccountId == "TEST123" &&
             account.Currency == "USD");
         portfolio.Balance.Equity.Should().Be(100000m);
+        portfolio.AccountSnapshot.Should().NotBeNull();
+        portfolio.AccountSnapshot!.MarginRegime.Should().Be(BrokerageMarginRegime.RegulationT);
+        portfolio.AccountSnapshot.MaintenanceMargin.Should().Be(10000m);
+        portfolio.AccountSnapshot.ExcessLiquidity.Should().Be(90000m);
+        portfolio.AccountSnapshot.ShortingEnabled.Should().BeTrue();
+        portfolio.AccountSnapshot.OptionsTradingLevel.Should().Be(2);
         portfolio.Positions.Should().ContainSingle(position =>
             position.Symbol == "AAPL" &&
             position.Quantity == 100m &&
             position.MarketValue == 18750m);
+        portfolio.BorrowPositions.Should().ContainSingle(position =>
+            position.AccountId == "TEST123" &&
+            position.Symbol == "MSFT" &&
+            position.Quantity == -25m &&
+            position.Status == BrokerageBorrowStatus.Unknown);
         activity.Orders.Should().ContainSingle(order =>
             order.OrderId == "ord-open-1" &&
             order.Status == OrderStatus.Accepted);
@@ -1217,13 +1737,21 @@ public sealed class AlpacaBrokerageGatewayTests
     private sealed class SequentialStubHandler : HttpMessageHandler
     {
         private readonly Queue<HttpResponseMessage> _responses;
+        private readonly Action<HttpRequestMessage>? _capture;
 
-        public SequentialStubHandler(Queue<HttpResponseMessage> responses) => _responses = responses;
+        public SequentialStubHandler(
+            Queue<HttpResponseMessage> responses,
+            Action<HttpRequestMessage>? capture = null)
+        {
+            _responses = responses;
+            _capture = capture;
+        }
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
+            _capture?.Invoke(request);
             return _responses.Count > 0
                 ? Task.FromResult(_responses.Dequeue())
                 : Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)

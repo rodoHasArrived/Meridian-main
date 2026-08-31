@@ -1,7 +1,7 @@
 using System.Buffers.Binary;
 using System.Data;
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Reporting;
 using Npgsql;
 using NpgsqlTypes;
@@ -247,7 +247,7 @@ public sealed class PostgresStatementReconciliationReportAuthorityStore :
         // Caller-owned memory may be mutated while persistence is awaiting I/O. Retain one exact
         // byte sequence for both the independently computed identity and the artifact-store write.
         var retainedContent = content.ToArray();
-        var expectedHash = ComputeSha256(retainedContent);
+        var expectedHash = Sha256Digest.Compute(retainedContent);
         var transactionalArtifactStore = RequireTransactionalArtifactStore();
 
         await using var connection = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
@@ -850,7 +850,7 @@ public sealed class PostgresStatementReconciliationReportAuthorityStore :
             || !string.Equals(companyId, expectedScope.CompanyId, StringComparison.Ordinal)
             || !string.Equals(workflowId, expectedScope.WorkflowId, StringComparison.Ordinal)
             || !string.Equals(documentKey, expectedDocumentKey, StringComparison.Ordinal)
-            || !IsSha256(contentHash)
+            || !Sha256Digest.IsCanonical(contentHash)
             || byteSize <= 0
             || version <= 0
             || updatedAtUtc < storedAtUtc)
@@ -1005,15 +1005,8 @@ public sealed class PostgresStatementReconciliationReportAuthorityStore :
         }
 
         return BinaryPrimitives.ReadInt64BigEndian(
-            SHA256.HashData(Encoding.UTF8.GetBytes(canonicalIdentity)));
+            Sha256Digest.ComputeBytesUtf8(canonicalIdentity));
     }
-
-    private static string ComputeSha256(ReadOnlySpan<byte> content) =>
-        Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
-
-    private static bool IsSha256(string value) =>
-        value.Length == 64
-        && value.All(static character => character is >= '0' and <= '9' or >= 'a' and <= 'f');
 
     private static DateTimeOffset ReadUtcTimestamp(NpgsqlDataReader reader, int ordinal) =>
         new(DateTime.SpecifyKind(reader.GetDateTime(ordinal), DateTimeKind.Utc));

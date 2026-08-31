@@ -1,6 +1,7 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Core.IO;
 using Meridian.Domain.Reconciliation;
@@ -76,8 +77,11 @@ public sealed class StatementImportService(
     StatementConnectorRegistry connectors,
     StatementMappingProfileCatalog catalog,
     IStatementRunWorkflowService workflow,
-    string dataRoot) : IStatementImportCommitService
+    string dataRoot,
+    StatementIngressLimits? ingressLimits = null) : IStatementImportCommitService
 {
+    private readonly StatementIngressLimits _ingressLimits = ingressLimits ?? StatementIngressLimits.Default;
+
     private const int SamplesPerKind = 5;
     private const int MaxProfileSuggestions = 3;
     private const string ReadyStatus = "ReadyToImport";
@@ -86,7 +90,8 @@ public sealed class StatementImportService(
     private static readonly string[] CanonicalArtifactHeader =
     [
         "account", "symbol", "quantity", "price", "cashAmount", "activityType", "tradeDate",
-        "settlementDate", "currency", "feesCommission", "externalTransactionId"
+        "settlementDate", "currency", "feesCommission", "externalTransactionId", "activityCategory",
+        "activitySubtype", "providerActivityCode", "relatedTransactionId", "orderId", "description"
     ];
 
     private readonly RootedPathGuard _retainedPathGuard = new(dataRoot);
@@ -96,6 +101,18 @@ public sealed class StatementImportService(
         string? connectorId,
         CancellationToken ct = default)
     {
+        if (document.Content.Length > _ingressLimits.MaxDocumentBytes)
+        {
+            return BuildPreview(
+                connectorId ?? "unknown",
+                connectorId ?? "Unknown connector",
+                profileId: document.MappingProfileId,
+                document,
+                parse: null,
+                extraIssues: [_ingressLimits.DocumentTooLarge(document.Content.Length)],
+                suggestions: []);
+        }
+
         var (connector, resolutionIssue) = ResolveConnector(document, connectorId);
         if (connector is null)
         {
@@ -111,6 +128,28 @@ public sealed class StatementImportService(
 
         var parse = await connector.ParseAsync(document, ct).ConfigureAwait(false);
         var issues = new List<StatementParseIssue>();
+        // TotalRetainedRows, not Records.Count. Five evidence-only collections on the parse result -
+        // account snapshots, activity events, activity cursors, tax lots, borrow positions - never
+        // contribute to Records, so a connector could return one canonical row alongside hundreds of
+        // thousands of evidence rows, pass this cap, and have every one of them serialized into the
+        // retained artifact. Bounding the total makes the cap a property of this seam rather than of
+        // whichever loops each connector happens to guard, and it covers connectors added later.
+        if (parse.TotalRetainedRows > _ingressLimits.MaxRecords)
+        {
+            // Return here rather than falling through. BuildPreview groups every canonical record and
+            // activity event and projects every account snapshot into fresh collections, so continuing
+            // would allocate in proportion to a payload already known to be refused - the opposite of what
+            // this bound is for. Commit and Validate both return at this point; Preview did not.
+            return BuildPreview(
+                connector.Descriptor.ConnectorId,
+                connector.Descriptor.DisplayName,
+                parse.ProfileId,
+                document,
+                parse: null,
+                extraIssues: [_ingressLimits.TooManyRecords()],
+                suggestions: []);
+        }
+
         var profile = await catalog.FindAsync(parse.ProfileId, ct).ConfigureAwait(false);
         if (profile is not null && StatementMappingProfileCatalog.CheckDrift(profile, parse.Fingerprint) is { } drift)
         {
@@ -133,6 +172,17 @@ public sealed class StatementImportService(
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+
+        // The byte cap has to be checked before this copy, not after. Every connector enforces the same
+        // bound, but the copy below is what actually doubles an oversize payload in memory, and it happens
+        // before the connector is even resolved — so a check that lived only in the connector would run
+        // after the allocation it exists to prevent.
+        if (request.Document.Content.Length > _ingressLimits.MaxDocumentBytes)
+        {
+            throw new InvalidDataException(
+                $"Statement cannot be imported: {Describe(_ingressLimits.DocumentTooLarge(request.Document.Content.Length))}");
+        }
+
         var capturedSourceBytes = request.Document.Content.ToArray();
         var capturedDocument = request.Document with { Content = capturedSourceBytes };
         var sourceKind = NormalizeSourceKind(request.SourceKind);
@@ -140,15 +190,26 @@ public sealed class StatementImportService(
         var (connector, resolutionIssue) = ResolveConnector(capturedDocument, request.ConnectorId);
         if (connector is null)
         {
-            throw new InvalidDataException(resolutionIssue!.Message);
+            throw new InvalidDataException(Describe(resolutionIssue!));
         }
 
         var parse = await connector.ParseAsync(capturedDocument, ct).ConfigureAwait(false);
+
+        // The record cap is enforced here, not only inside the connectors that stream it. camt.053 and
+        // BAI2 refuse mid-parse, but every other connector resolves through this service too, so without
+        // this check a format that accumulates rows without counting them could commit a document past
+        // the configured bound.
+        if (parse.TotalRetainedRows > _ingressLimits.MaxRecords)
+        {
+            throw new InvalidDataException(
+                $"Statement cannot be imported: {Describe(_ingressLimits.TooManyRecords())}");
+        }
+
         if (parse.HasErrors)
         {
             var errors = parse.Issues
                 .Where(static issue => issue.Severity == StatementParseIssue.ErrorSeverity)
-                .Select(static issue => issue.RowNumber is { } row ? $"Row {row}: {issue.Message}" : issue.Message);
+                .Select(Describe);
             throw new InvalidDataException($"Statement cannot be imported: {string.Join(" ", errors)}");
         }
 
@@ -202,10 +263,30 @@ public sealed class StatementImportService(
             retainedImportsDirectory,
             uploadId,
             "canonical.csv");
+        var canonicalEvidencePath = _retainedPathGuard.ResolvePath(
+            reconciliationDirectory,
+            retainedImportsDirectory,
+            uploadId,
+            "canonical-evidence.json");
+        var canonicalEvidence = new StatementCanonicalEvidenceArtifact(
+            ConnectorId: parse.ConnectorId,
+            ProfileId: parse.ProfileId,
+            RetainedAtUtc: DateTimeOffset.UtcNow,
+            Fingerprint: parse.Fingerprint,
+            Records: parse.Records,
+            AccountSnapshots: parse.AccountSnapshots ?? [],
+            ActivityEvents: parse.ActivityEvents ?? [],
+            ActivityCursors: parse.ActivityCursors ?? [],
+            TaxLots: parse.TaxLots ?? [],
+            BorrowPositions: parse.BorrowPositions ?? []);
+        var canonicalEvidenceBytes = JsonSerializer.SerializeToUtf8Bytes(
+            canonicalEvidence,
+            StatementCanonicalEvidenceJsonContext.Default.StatementCanonicalEvidenceArtifact);
         _retainedPathGuard.EnsurePath(retainedDirectory);
         await AtomicFileWriter.WriteAsync(rawPath, capturedSourceBytes, ct).ConfigureAwait(false);
         _retainedPathGuard.EnsurePath(canonicalPath);
         await AtomicFileWriter.WriteAsync(canonicalPath, artifactBytes, ct).ConfigureAwait(false);
+        await AtomicFileWriter.WriteAsync(canonicalEvidencePath, canonicalEvidenceBytes, ct).ConfigureAwait(false);
 
         var runRequest = new StatementRunCreateRequest(
             Broker: sourceKind,
@@ -231,6 +312,34 @@ public sealed class StatementImportService(
         var kindSummaries = BuildKindSummaries(parse.Records);
         var relativeRaw = ToRelativeRetainedPath(uploadId, $"{sourceSubdirectory}/{safeSourceName}");
         var relativeCanonical = ToRelativeRetainedPath(uploadId, "canonical.csv");
+        var relativeCanonicalEvidence = ToRelativeRetainedPath(uploadId, "canonical-evidence.json");
+
+        // Statement run creation is idempotent: it resumes an import that is already retained rather
+        // than reporting one, so a re-import of the same statement would otherwise be indisting-
+        // uishable from a first import. Ask before creating, using the importer's own compatibility
+        // rule — the current raw-plus-canonical identity, then the canonical-only identity that runs
+        // imported before raw source hashes were retained separately still carry.
+        var compatibleDuplicateKeys = request.AccountingScope is null
+            ? StatementDuplicateKey.CreateCompatibleKeys(
+                runRequest.FundAccountId,
+                runRequest.StatementPeriodStart,
+                runRequest.StatementPeriodEnd,
+                rawHash,
+                canonicalHash)
+            : StatementDuplicateKey.CreateCompatibleKeys(
+                runRequest.FundAccountId,
+                runRequest.StatementPeriodStart,
+                runRequest.StatementPeriodEnd,
+                rawHash,
+                canonicalHash,
+                request.AccountingScope);
+        var retainedImportIds = (await workflow.ListImportsAsync(ct).ConfigureAwait(false))
+            .Select(static import => import.ImportId)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (compatibleDuplicateKeys.FirstOrDefault(retainedImportIds.Contains) is { } retainedRunId)
+        {
+            return await DuplicateResultAsync(retainedRunId).ConfigureAwait(false);
+        }
 
         StatementRunWorkflowResult result;
         try
@@ -280,7 +389,8 @@ public sealed class StatementImportService(
             ReconciliationCaseRoutes = caseLinks
                 .Select(static item => item.Route)
                 .ToArray(),
-            ReconciliationCaseLinks = caseLinks
+            ReconciliationCaseLinks = caseLinks,
+            RetainedCanonicalEvidencePath = relativeCanonicalEvidence
         };
 
         async Task<StatementImportCommitResultDto> DuplicateResultAsync(string existingRunId)
@@ -329,16 +439,35 @@ public sealed class StatementImportService(
     {
         ArgumentNullException.ThrowIfNull(document);
 
+        if (document.Content.Length > _ingressLimits.MaxDocumentBytes)
+        {
+            return new StatementImportValidationResult(
+                false,
+                0,
+                [Describe(_ingressLimits.DocumentTooLarge(document.Content.Length))]);
+        }
+
         var (connector, resolutionIssue) = ResolveConnector(document, connectorId);
         if (connector is null)
         {
-            return new StatementImportValidationResult(false, 0, [resolutionIssue!.Message]);
+            return new StatementImportValidationResult(false, 0, [Describe(resolutionIssue!)]);
         }
 
         var parse = await connector.ParseAsync(document, ct).ConfigureAwait(false);
+        if (parse.TotalRetainedRows > _ingressLimits.MaxRecords)
+        {
+            return new StatementImportValidationResult(
+                false,
+                parse.Records.Count,
+                [Describe(_ingressLimits.TooManyRecords())]);
+        }
+
+        // StatementImportValidationResult.Errors is a string list, not issue objects, so the code has to
+        // travel inside the text here exactly as it does in the commit throws. Preview is the only path
+        // that returns StatementImportIssueDto with Code as its own field.
         var errors = parse.Issues
             .Where(static issue => string.Equals(issue.Severity, StatementParseIssue.ErrorSeverity, StringComparison.OrdinalIgnoreCase))
-            .Select(static issue => issue.RowNumber is { } row ? $"Row {row}: {issue.Message}" : issue.Message)
+            .Select(Describe)
             .ToArray();
 
         if (parse.HasErrors)
@@ -490,7 +619,52 @@ public sealed class StatementImportService(
             Status: hasErrors ? NeedsAttentionStatus : ReadyStatus,
             NextAction: hasErrors
                 ? "Resolve the blocking issues (adjust the mapping profile or repair the source file), then preview again."
-                : "Review the per-column mappings and per-kind records, then commit the import into the reconciliation queue.");
+                : "Review the per-column mappings and per-kind records, then commit the import into the reconciliation queue.")
+        {
+            AccountSnapshots = (parse?.AccountSnapshots ?? [])
+                .Select(static snapshot => new StatementAccountSnapshotPreviewDto(
+                    snapshot.ProviderId,
+                    snapshot.AccountId,
+                    snapshot.AsOf,
+                    snapshot.Currency,
+                    snapshot.Status,
+                    snapshot.MarginRegime.ToString(),
+                    snapshot.Cash,
+                    snapshot.Equity,
+                    snapshot.BuyingPower,
+                    snapshot.InitialMargin,
+                    snapshot.MaintenanceMargin,
+                    snapshot.ExcessLiquidity,
+                    snapshot.MarginLoan,
+                    snapshot.Multiplier,
+                    snapshot.TradingBlocked,
+                    snapshot.TransfersBlocked,
+                    snapshot.AccountBlocked,
+                    snapshot.ShortingEnabled,
+                    snapshot.OptionsApprovedLevel,
+                    snapshot.OptionsTradingLevel,
+                    snapshot.Restrictions ?? []))
+                .ToArray(),
+            ActivitySubtypeSummaries = (parse?.ActivityEvents ?? [])
+                .GroupBy(static activity => new { activity.Category, activity.Subtype })
+                .OrderBy(static group => group.Key.Category)
+                .ThenBy(static group => group.Key.Subtype)
+                .Select(static group => new StatementActivitySubtypeSummaryDto(
+                    group.Key.Category.ToString(),
+                    group.Key.Subtype.ToString(),
+                    group.Count()))
+                .ToArray(),
+            ActivityCompleteness = (parse?.ActivityCursors ?? [])
+                .Select(static cursor => new StatementActivityCompletenessDto(
+                    cursor.LastEventId,
+                    cursor.HighWatermark,
+                    cursor.PageCount,
+                    cursor.SourceRecordCount,
+                    cursor.IsComplete))
+                .ToArray(),
+            TaxLotCount = parse?.TaxLots?.Count ?? 0,
+            BorrowPositionCount = parse?.BorrowPositions?.Count ?? 0
+        };
     }
 
     private static IReadOnlyList<StatementKindSummaryDto> BuildKindSummaries(IReadOnlyList<StatementCanonicalRecord> records)
@@ -513,7 +687,13 @@ public sealed class StatementImportService(
                         record.SettlementDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                         record.Currency,
                         record.FeesCommission,
-                        record.ExternalTransactionId))
+                        record.ExternalTransactionId,
+                        record.ActivityCategory,
+                        record.ActivitySubtype,
+                        record.ProviderActivityCode,
+                        record.RelatedTransactionId,
+                        record.OrderId,
+                        record.Description))
                     .ToArray()))
             .ToArray();
 
@@ -523,7 +703,7 @@ public sealed class StatementImportService(
     /// always produces byte-identical bytes and therefore the same duplicate key.
     /// </summary>
     private static string ComputeSha256Hex(ReadOnlySpan<byte> content)
-        => Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+        => Sha256Digest.Compute(content);
 
     internal static string RenderCanonicalArtifact(IReadOnlyList<StatementCanonicalRecord> records)
     {
@@ -541,8 +721,14 @@ public sealed class StatementImportService(
                 .Append(record.TradeDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append(',')
                 .Append(record.SettlementDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append(',')
                 .Append(EncodeArtifactValue(record.Currency)).Append(',')
-                .Append(record.FeesCommission?.ToString(CultureInfo.InvariantCulture)).Append(',')
-                .Append(EncodeArtifactValue(record.ExternalTransactionId)).Append('\n');
+                .Append(EncodeArtifactValue(record.FeesCommission?.ToString(CultureInfo.InvariantCulture))).Append(',')
+                .Append(EncodeArtifactValue(record.ExternalTransactionId)).Append(',')
+                .Append(EncodeArtifactValue(record.ActivityCategory)).Append(',')
+                .Append(EncodeArtifactValue(record.ActivitySubtype)).Append(',')
+                .Append(EncodeArtifactValue(record.ProviderActivityCode)).Append(',')
+                .Append(EncodeArtifactValue(record.RelatedTransactionId)).Append(',')
+                .Append(EncodeArtifactValue(record.OrderId)).Append(',')
+                .Append(EncodeArtifactValue(record.Description)).Append('\n');
         }
 
         return builder.ToString();
@@ -566,6 +752,20 @@ public sealed class StatementImportService(
 
         return $"\"{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
     }
+
+    /// <summary>
+    /// Renders an issue with its stable code intact for the two paths that report as text. Preview is the
+    /// only one that returns the code as its own field, on StatementImportIssueDto; commit throws an
+    /// InvalidDataException carrying a message, and validate returns StatementImportValidationResult
+    /// whose Errors is a list of strings. Without this, the same document yielded an actionable
+    /// STATEMENT_DOCUMENT_TOO_LARGE from preview and prose a caller cannot branch on from either of the
+    /// others. The code is the part an operator or a client can act on programmatically, so it belongs in
+    /// the text wherever the text is all that survives.
+    /// </summary>
+    private static string Describe(StatementParseIssue issue)
+        => issue.RowNumber is { } row
+            ? $"[{issue.Code}] Row {row}: {issue.Message}"
+            : $"[{issue.Code}] {issue.Message}";
 
     private static string NormalizeSourceKind(string sourceKind)
     {

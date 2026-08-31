@@ -325,6 +325,12 @@ export interface FinancialRecordExplorerRowDto {
   tone: FinancialRecordExplorerTone;
   cells: FinancialRecordExplorerCellDto[];
   detail: FinancialRecordExplorerSelectedRecordDto;
+  /**
+   * The strategy run this row's record belongs to, when it has one. Row ids are composite and
+   * record-scoped (a ledger row is one account within one run), so never take a row id apart to
+   * recover the run. Null for record types with no owning run.
+   */
+  sourceRunId?: string | null;
 }
 
 export interface FinancialRecordExplorerSelectedRecordDto {
@@ -981,6 +987,16 @@ export interface RiskRuleConfig {
   maxSymbolConcentrationPercent?: number | null;
   maxOrderNotional?: number | null;
   escalateOrderNotional?: number | null;
+  /** Absolute per-order quantity ceiling for the fat-finger gate. */
+  maxOrderQuantity?: number | null;
+  /** Maximum aggressive price deviation from the market touch, in percent. */
+  maxPriceDeviationPercent?: number | null;
+  /**
+   * Aggressive price deviation, in percent, beyond which an order is parked for approval rather
+   * than rejected. Set below `maxPriceDeviationPercent` or the fat-finger band refuses first and
+   * the collar never fires.
+   */
+  priceCollarPercent?: number | null;
 }
 
 export interface RiskRuleConfigUpdateRequest {
@@ -993,6 +1009,16 @@ export interface RiskRuleConfigUpdateRequest {
   maxSymbolConcentrationPercent?: number | null;
   maxOrderNotional?: number | null;
   escalateOrderNotional?: number | null;
+  /** Absolute per-order quantity ceiling for the fat-finger gate. */
+  maxOrderQuantity?: number | null;
+  /** Maximum aggressive price deviation from the market touch, in percent. */
+  maxPriceDeviationPercent?: number | null;
+  /**
+   * Aggressive price deviation, in percent, beyond which an order is parked for approval rather
+   * than rejected. Set below `maxPriceDeviationPercent` or the fat-finger band refuses first and
+   * the collar never fires.
+   */
+  priceCollarPercent?: number | null;
 }
 
 /** A parked risk escalation awaiting (or resolved by) governed operator approval. */

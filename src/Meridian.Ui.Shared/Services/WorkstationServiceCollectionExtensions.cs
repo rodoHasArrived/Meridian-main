@@ -139,8 +139,25 @@ public static class WorkstationServiceCollectionExtensions
                 Environment.GetEnvironmentVariable("MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED"),
                 "true",
                 StringComparison.OrdinalIgnoreCase)));
+        // W9-GOV-008 criterion 2: read-side posture, the counterpart of the write gate above. Kept on
+        // the deployment-boundary default because fail-closed over a graph whose tenant attribution
+        // has not run hides the retained structure from every caller rather than closing a leak -- a
+        // deployment attributes first (FundStructureTenantAttribution, migration 004), reviews what
+        // the attribution quarantined, and then sets MERIDIAN_TENANT_SCOPE_ENFORCEMENT=fail-closed.
+        services.TryAddSingleton(TenantScopeEnforcementOptions.FromEnvironmentValue(
+            Environment.GetEnvironmentVariable(TenantScopeEnforcementOptions.EnvironmentVariable),
+            TenantScopeEnforcementOptions.DeploymentBoundary));
+        // W9-GOV-008 criterion 2: the fund-structure implementation with no tenant partition must not
+        // serve a deployment configured for more than one company. Checked once at startup rather
+        // than per call; see InMemoryFundStructureTenancyGuard for why that is the safer shape.
+        services.AddHostedService<InMemoryFundStructureTenancyGuard>();
         services.TryAddSingleton<IRolePermissionProfileStore, FileRolePermissionProfileStore>();
         services.TryAddSingleton<IUserAccountStore, FileUserAccountStore>();
+        services.TryAddSingleton<IAccessRoleAssignmentStore, UserAccountAccessRoleAssignmentStore>();
+        services.TryAddSingleton<IComplianceApprovalStore, FileComplianceApprovalStore>();
+        services.TryAddSingleton<IComplianceApprovalResolver>(sp =>
+            sp.GetRequiredService<IComplianceApprovalStore>());
+        services.TryAddSingleton<ICompliancePolicyEngine, CompliancePolicyEngine>();
         if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")))
         {
             var hasProcessWideScopedAccessMigration = services.Any(
@@ -204,8 +221,12 @@ public static class WorkstationServiceCollectionExtensions
 
         services.TryAddSingleton<IOperationalCaseHistoryStore>(sp =>
             new FileOperationalCaseHistoryStore(ResolveConfigDataRoot(sp)));
-        services.TryAddSingleton<IStrategyRepository>(sp =>
+        // The concrete store is the single instance: StrategyRunStore holds in-memory state, so
+        // registering it separately per interface would split that state between consumers.
+        services.TryAddSingleton(sp =>
             new StrategyRunStore(sp.GetRequiredService<IOperationalCaseHistoryStore>()));
+        services.TryAddSingleton<IStrategyRepository>(sp => sp.GetRequiredService<StrategyRunStore>());
+        services.TryAddSingleton<IResearchRunRecorder, StrategyRunResearchRecorder>();
         services.TryAddSingleton<PromotionRecordStoreOptions>(sp =>
             new PromotionRecordStoreOptions(Path.Combine(ResolveConfigDataRoot(sp), "strategies", "promotions")));
         services.TryAddSingleton<IPromotionRecordStore>(sp =>
@@ -265,10 +286,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton(BrokerageConnectionOptions.RobinhoodFromEnvironment());
         services.TryAddSingleton<BrokerageConnectionService>();
         services.TryAddSingleton<AlpacaBrokerageConnectionService>();
-        foreach (var handler in DefaultProviderSetupHandlers.Create())
-        {
-            services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IProviderSetupHandler), handler));
-        }
+        services.AddDefaultProviderSetupHandlers();
         services.TryAddSingleton<IProviderSetupRegistry, ProviderSetupRegistry>();
         services.TryAddSingleton<ProviderConnectionLifecycleService>();
         services.TryAddSingleton<ProviderReadinessService>();
@@ -300,6 +318,9 @@ public static class WorkstationServiceCollectionExtensions
             new FileAccountingProductionCertificationProfileStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "production-certification-profiles.json"),
                 sp.GetRequiredService<ILogger<FileAccountingProductionCertificationProfileStore>>()));
+        services.TryAddSingleton<IAccountingProductionCertificationEvidenceAuthority,
+            EvidenceVaultAccountingProductionCertificationEvidenceAuthority>();
+        services.TryAddSingleton<AccountingProductionCertificationCommandService>();
         services.TryAddSingleton<AccountingProductionReadinessService>();
         services.TryAddSingleton(ResolvePlaidOptions);
         services.TryAddSingleton<IPlaidConnectionRepository>(sp =>
@@ -316,10 +337,17 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
         services.TryAddSingleton<BrokeragePortfolioSyncService>();
         services.TryAddSingleton<ProviderLedgerReconciliationService>();
-        // Reconcile statement runs against Meridian's own retained account records (positions + cash)
-        // instead of the fail-closed empty book. Replace (not TryAdd) so this wins over the
-        // EmptyInternalReconciliationPopulationProvider that AddStatementReconciliationServices
-        // registers via TryAddSingleton, regardless of composition order.
+        services.TryAddSingleton(sp => new MarginCertificationStore(ResolveWorkstationDataDirectory(sp)));
+        services.TryAddSingleton<MarginControlCenterReadService>();
+        // Reconcile statement runs against Meridian's own retained account records (positions + cash +
+        // journal-projected ledger transactions) instead of the fail-closed empty book. Replace (not
+        // TryAdd) so this wins over the EmptyInternalReconciliationPopulationProvider that
+        // AddStatementReconciliationServices registers via TryAddSingleton, regardless of composition
+        // order. The transaction source projects posted journals when a durable ILedgerJournalStore is
+        // composed (Postgres); without one it fails closed to an empty population, so transaction
+        // breaks keep the informational internal-transaction-population-unavailable classification
+        // instead of blocking the close on a book Meridian does not retain.
+        services.TryAddSingleton<IInternalLedgerTransactionSource, LedgerJournalInternalTransactionSource>();
         services.Replace(ServiceDescriptor.Singleton<IInternalReconciliationPopulationProvider, RetainedInternalReconciliationPopulationProvider>());
         // Normalize cross-currency statement lines against their base-currency internal balance using an
         // operator-maintained FX rate table (reconciliation/fx-rates.json under the data root) instead of
@@ -348,6 +376,15 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<TradingOperatorReadinessService>());
         services.TryAddSingleton<ILiveOrderReadinessGate, TradingOperatorLiveOrderReadinessGate>();
         services.TryAddSingleton<CollateralExposureService>();
+        // First-run posture: with no operator snapshot on disk, every portfolio-aware rail
+        // starts armed at the conservative ceilings rather than unconfigured — a fresh install
+        // must not route any quantity at any price. A host (or test) that registers its own
+        // RiskRuleRuntimeOptions first keeps full control, and any persisted operator snapshot
+        // — including an explicit clear — always wins over these defaults.
+        services.TryAddSingleton(RiskRuleRuntimeOptions.Default with
+        {
+            FirstRunDefaults = RiskRuleFirstRunDefaults.Conservative
+        });
         services.TryAddSingleton<RiskRuleRuntimeService>();
         // Cross-strategy portfolio aggregation: the registry tracks every active run's
         // portfolio; the host paper portfolio is pre-registered so the aggregate surface
@@ -377,13 +414,36 @@ public static class WorkstationServiceCollectionExtensions
                 // Lazy accessor, not a constructor dependency: the OMS depends on the risk
                 // validator that consumes this provider, so resolving it eagerly would
                 // close a DI cycle. Working orders still reserve their exposure.
-                orderManagerAccessor: sp.GetService<Meridian.Execution.Sdk.IOrderManager>));
+                orderManagerAccessor: sp.GetService<Meridian.Execution.Sdk.IOrderManager>,
+                // The stop-trigger reference is read from the matcher's own observation rather
+                // than rebuilt from the collectors, so the guard that refuses wrong-side stops and
+                // the engine that fires them cannot disagree about what a stop triggers on. Lazy
+                // for the same DI-cycle reason as the order manager above.
+                liveFeedAccessor: sp.GetService<Meridian.Execution.Interfaces.ILiveFeedAdapter>,
+                // Only a paper composition may use the matcher's unfiltered observation for stop
+                // triggers. Against a live broker no matcher decides the fill, and the feed cache
+                // keeps prints indefinitely, so preferring a print there can measure a trigger
+                // against a price the market left hours ago.
+                paperMatchingIsAuthoritative: () =>
+                    sp.GetService<Meridian.Execution.Interfaces.IOrderGateway>()
+                        is Meridian.Execution.Adapters.PaperTradingGateway));
         // Governed-approval queue for escalated orders (severity outcome: Escalate parks).
         // Queue transitions persist atomically so parked approvals survive restarts.
         services.TryAddSingleton<RiskEscalationQueueService>(sp => new RiskEscalationQueueService(
             sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RiskEscalationQueueService>>(),
             sp.GetService<ExecutionAuditTrailService>(),
             sp.GetService<RiskEscalationQueueOptions>()));
+        // On-trip kill switch: when a Critical rule trips the circuit breaker automatically,
+        // the same cancel-all sweep the operator breaker endpoint performs must empty the open
+        // book — a halt that only blocks new submissions leaves resting orders filling. The
+        // order manager is reached through a lazy accessor, not a constructor dependency: the
+        // OMS depends on the risk validator that holds this handler, so resolving it eagerly
+        // would close a DI cycle (same pattern as orderManagerAccessor above).
+        services.TryAddSingleton<Meridian.Risk.ICircuitBreakerTripHandler>(sp =>
+            new Meridian.Risk.KillSwitchSweepTripHandler(
+                orderManagerAccessor: sp.GetService<Meridian.Execution.Sdk.IOrderManager>,
+                logger: sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.KillSwitchSweepTripHandler>>(),
+                auditTrail: sp.GetService<ExecutionAuditTrailService>()));
         // Enforced pre-trade risk path: Meridian.Risk's CompositeRiskValidator is the
         // IRiskValidator the OMS invokes before routing an order, composed of the operator-tuned
         // guardrails (thresholds sourced live from RiskRuleRuntimeService and the operator
@@ -398,12 +458,19 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<Meridian.Execution.IRiskValidator>(sp =>
         {
             var runtime = sp.GetRequiredService<RiskRuleRuntimeService>();
+            var orderRateThrottle = new Meridian.Risk.Rules.OrderRateThrottle(
+                () => runtime.MaxOrdersPerMinute,
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.OrderRateThrottle>>());
+
+            // Point the dashboard at the instance that enforces, so the reported rate is the number
+            // the gate will compare against the ceiling rather than a reconstruction from audit
+            // history that cannot see in-flight reservations.
+            runtime.OrderRateUsageProbe = () => orderRateThrottle.CurrentUsage;
+
             var rules = new List<Meridian.Risk.IRiskRule>
             {
                 new DrawdownGuardrailRule(runtime),
-                new Meridian.Risk.Rules.OrderRateThrottle(
-                    () => runtime.MaxOrdersPerMinute,
-                    sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.OrderRateThrottle>>()),
+                orderRateThrottle,
             };
 
             var operatorControls = sp.GetService<Meridian.Execution.Services.ExecutionOperatorControlService>();
@@ -416,6 +483,30 @@ public static class WorkstationServiceCollectionExtensions
             }
 
             var exposureProvider = sp.GetRequiredService<Meridian.Risk.IPortfolioExposureProvider>();
+            // Fat-finger runs ahead of the portfolio-aware rules (Priority -10) so a mistyped
+            // order is attributed to the mistake rather than to whichever exposure ceiling its
+            // inflated size happened to breach.
+            rules.Add(new Meridian.Risk.Rules.FatFingerRule(
+                exposureProvider,
+                () => runtime.FatFingerThresholds,
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.FatFingerRule>>()));
+            // Immediately behind the fat-finger band (Priority -9) and over the same shared price
+            // limbs, so an order that is both mistyped and beyond the collar is refused as the typo
+            // rather than offered a release for an order nobody meant to send.
+            rules.Add(new Meridian.Risk.Rules.PriceCollarRule(
+                exposureProvider,
+                () => runtime.PriceCollarThresholds,
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.PriceCollarRule>>()));
+            // Directly behind the parent price bands (Priority -8): bracket take-profit/stop-loss
+            // child prices ride in metadata past both parent price rules, so this focused rule
+            // runs the same fat-finger band over each child limb before dispatch. Price sanity
+            // only — the limbs reserve no notional or exposure capacity (one-executes exit legs
+            // close the parent's position; see the rule's remarks), and reservation-aware OCO
+            // arithmetic remains future work.
+            rules.Add(new Meridian.Risk.Rules.BracketChildLimbRule(
+                exposureProvider,
+                () => runtime.FatFingerThresholds,
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.BracketChildLimbRule>>()));
             rules.Add(new Meridian.Risk.Rules.GrossExposureRule(
                 exposureProvider,
                 () => runtime.MaxGrossExposure,
@@ -435,7 +526,10 @@ public static class WorkstationServiceCollectionExtensions
                 rules,
                 sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.CompositeRiskValidator>>(),
                 operatorControls,
-                sp.GetService<RiskEscalationQueueService>());
+                sp.GetService<RiskEscalationQueueService>(),
+                // Safe to resolve here: the handler defers its own IOrderManager lookup to trip
+                // time, so constructing it does not re-enter the OMS -> validator DI chain.
+                tripHandler: sp.GetService<Meridian.Risk.ICircuitBreakerTripHandler>());
         });
         services.TryAddSingleton<StrategyRunReviewPacketService>();
         services.TryAddSingleton<BacktestToLivePromoter>();
@@ -475,13 +569,19 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddScoped<
             Meridian.Application.SecurityMaster.IAffectedLedgerBookResolver,
             Meridian.Application.SecurityMaster.LedgerBookAffectedResolver>();
-        // Ordered published-revision side-effect fan-out: projection rebuild (Order=10) then coverage
-        // invalidation (Order=20). The period-aware restatement decision is resolved separately by the
-        // command service (it returns candidates the void handler seam cannot). The coverage read path
-        // is currently uncached, so the invalidator defaults to a no-op.
+        // Ordered published-revision side-effect fan-out: canonical merge (Order=5) then projection
+        // rebuild (Order=10) then coverage invalidation (Order=20). The merge emits a complete
+        // economic-definition amendment for approved assetSpecificTerms.* field edits so the
+        // correction reaches the golden record (and therefore cash flow, amortization, pricing, and
+        // NAV) before the rebuild refreshes the projection. The period-aware restatement decision is
+        // resolved separately by the command service (it returns candidates the void handler seam
+        // cannot). The coverage read path is currently uncached, so the invalidator defaults to a no-op.
         services.TryAddScoped<
             Meridian.Application.SecurityMaster.IMultiAssetCoverageInvalidator,
             Meridian.Application.SecurityMaster.NullMultiAssetCoverageInvalidator>();
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<
+            Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler,
+            Meridian.Application.SecurityMaster.ApprovedFieldEditCanonicalMergeHandler>());
         services.TryAddEnumerable(ServiceDescriptor.Scoped<
             Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler,
             Meridian.Application.SecurityMaster.Rebuild.SecurityProjectionRebuildHandler>());
@@ -662,6 +762,7 @@ public static class WorkstationServiceCollectionExtensions
         // seam. Canonical capital-account primary documents use the exact certified ledger pack.
         services.TryAddSingleton<IReportingPartnersCapitalSource>(sp =>
             new LedgerReportingPartnersCapitalSource(sp.GetService<ILedgerJournalStore>()));
+        services.TryAddSingleton<ReportingOrchestrationRetentionOptions>();
         services.TryAddSingleton<IReportingOrchestrationService>(sp =>
             new ReportingOrchestrationService(
                 sp.GetRequiredService<IReportingTemplateCatalog>(),
@@ -670,7 +771,9 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IReportingRunStore>(),
                 // Null until the report-run stream broadcaster is registered (D1d); the null-object
                 // default keeps run execution unaffected in the meantime.
-                sp.GetService<IReportingRunNotifier>()));
+                sp.GetService<IReportingRunNotifier>(),
+                partnersCapitalSource: null,
+                retentionOptions: sp.GetRequiredService<ReportingOrchestrationRetentionOptions>()));
         if (!isProductionComposition)
         {
             services.TryAddSingleton<ReportingStarterKitStoreOptions>(sp =>
@@ -769,6 +872,13 @@ public static class WorkstationServiceCollectionExtensions
             new FileAccountingConfigurationStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "accounting-configuration.json")));
         services.TryAddSingleton<IAccountingConfigurationStore>(sp => sp.GetRequiredService<FileAccountingConfigurationStore>());
+        // W9-GOV-008 criterion 3: the configuration store and the audit store are separate artifacts
+        // with no transaction to share, so the mutation and its audit append are made recoverable as a
+        // pair through a marker declared before the mutation and cleared after the append.
+        services.TryAddSingleton<IAccountingAuditPendingMarkerStore>(sp =>
+            new FileAccountingAuditPendingMarkerStore(
+                FileAccountingAuditPendingMarkerStore.MarkerPathFor(
+                    Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "accounting-configuration.json"))));
         services.TryAddSingleton<IAccountingActionAuditStore>(sp =>
             sp.GetRequiredService<IAccountingConfigurationStore>() is IAccountingActionAuditStore auditStore
                 ? auditStore
@@ -876,7 +986,8 @@ public static class WorkstationServiceCollectionExtensions
                 positionService,
                 sp.GetRequiredService<AutomatedJournalEvidencePolicy>(),
                 sp.GetService<IAutomatedJournalCapitalAccountReconciliationResolver>(),
-                sp.GetRequiredService<TimeProvider>());
+                sp.GetRequiredService<TimeProvider>(),
+                sp.GetService<IManualJournalEntryWorkbenchService>());
         });
         // Durable ledger and reporting-evidence services are present only when persistence-backed
         // storage is configured. Resolve them optionally so lightweight hosts still compose; when
@@ -936,7 +1047,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<Meridian.Infrastructure.Reconciliation.IReconciliationCaseStore>(),
                 sp.GetService<IStatementRunWorkflowService>(),
                 sp.GetService<IOperationsContinuityWorkflowService>(),
-                sp.GetService<ILedgerJournalStore>()));
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.IStatementCaseworkCommitStore>()));
         services.TryAddSingleton<SecurityMasterExceptionCaseworkService>(sp =>
             new SecurityMasterExceptionCaseworkService(
                 sp.GetService<IReconciliationBreakQueueRepository>(),
@@ -1075,22 +1187,12 @@ public static class WorkstationServiceCollectionExtensions
             .BindConfiguration(CoveredCallBacktestOptions.SectionName);
 
         services.TryAddSingleton<ICoveredCallChainProviderFactory, CoveredCallChainProviderFactory>();
-        services.TryAddSingleton<Func<BacktestRequest, BacktestEngine>>(sp =>
-        {
-            BacktestEngine CreateEngine(BacktestRequest request)
-            {
-                var storageOptions = new StorageOptions { RootPath = request.DataRoot };
-                var catalogService = new StorageCatalogService(request.DataRoot, storageOptions);
-                return new BacktestEngine(
-                    sp.GetRequiredService<ILogger<BacktestEngine>>(),
-                    catalogService,
-                    sp.GetService<ContractSecurityMasterQueryService>(),
-                    sp.GetService<ICorporateActionAdjustmentService>(),
-                    sp.GetService<IBacktestPreflightService>());
-            }
 
-            return CreateEngine;
-        });
+        // The engine factory and preflight service now compose from the Backtesting module itself
+        // rather than being assembled here. Registration is identical: AddMeridianBacktesting uses
+        // TryAdd throughout, and ContractSecurityMasterQueryService is a using alias for the same
+        // ISecurityMasterQueryService the extension resolves.
+        services.AddMeridianBacktesting();
 
         services.TryAddSingleton<CoveredCallBacktestService>(sp => new CoveredCallBacktestService(
             engineFactory: sp.GetRequiredService<Func<BacktestRequest, BacktestEngine>>(),
@@ -1098,7 +1200,8 @@ public static class WorkstationServiceCollectionExtensions
             runRepository: sp.GetRequiredService<IStrategyRepository>(),
             options: sp.GetRequiredService<Microsoft.Extensions.Options.IOptionsMonitor<CoveredCallBacktestOptions>>(),
             resultCache: sp.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>(),
-            loggerFactory: sp.GetRequiredService<ILoggerFactory>()));
+            loggerFactory: sp.GetRequiredService<ILoggerFactory>(),
+            evidenceArtifactStore: sp.GetRequiredService<IEvidenceArtifactStore>()));
         services.TryAddSingleton<ICoveredCallBacktestService>(sp => sp.GetRequiredService<CoveredCallBacktestService>());
         services.AddHostedService(sp => sp.GetRequiredService<CoveredCallBacktestService>());
     }

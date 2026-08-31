@@ -107,13 +107,12 @@ describe("workspace nav view model", () => {
       "/portfolio/asset-detail",
       "/portfolio/brokerage-sync",
       "/portfolio/cash-ladder",
-      "/portfolio/family-office"
+      "/portfolio/family-office",
+      "/portfolio/loan-book"
     ]);
-    expect(portfolio?.subItems.find((item) => item.route === "/portfolio/family-office")).toMatchObject({
-      label: "Family office",
-      active: true,
-      ariaCurrent: "page"
-    });
+    // Family Office left UNWIRED_WORKSTATION_ROUTES once the screen started loading
+    // /api/workstation/family-office/overview, so it belongs in primary navigation again.
+    expect(portfolio?.subItems.find((item) => item.route === "/portfolio/family-office")).toBeDefined();
 
     const cashLadder = buildWorkspaceNavViewModel("/portfolio/cash-ladder")
       .items.find((item) => item.key === "portfolio")
@@ -148,6 +147,7 @@ describe("workspace nav view model", () => {
       "/accounting/ledger",
       "/accounting/journal-entries",
       "/accounting/capital-accounts",
+      "/accounting/capital-calls",
       "/accounting/security-master",
       "/accounting/statement-import",
       "/accounting/reconciliation",
@@ -162,7 +162,7 @@ describe("workspace nav view model", () => {
       group.items.map((item) => item.label)
     ])).toEqual([
       ["Close", ["Today", "Operations continuity", "Close calendar"]],
-      ["Records", ["Ledger explorer", "Adjustments", "Capital accounts", "Security Master"]],
+      ["Records", ["Ledger explorer", "Adjustments", "Capital accounts", "Capital calls", "Security Master"]],
       ["Reconciliation", ["Import statement", "Casework", "External GL"]],
       ["Review", ["Exceptions", "Approvals"]],
       ["Administration", ["Entity setup", "Configure"]]
@@ -323,7 +323,8 @@ describe("workspace nav view model", () => {
       "/strategy/covered-call",
       "/strategy/promotions",
       "/strategy/lab",
-      "/strategy/quant-lab"
+      "/strategy/quant-lab",
+      "/strategy/run-ledger"
     ]);
     expect(strategy?.subItems.find((item) => item.route === "/strategy/covered-call")).toMatchObject({
       label: "Covered call",

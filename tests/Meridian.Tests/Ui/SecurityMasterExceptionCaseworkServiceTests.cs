@@ -356,6 +356,9 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
             SecurityProjectionRecord incoming,
             CancellationToken ct)
             => Task.CompletedTask;
+
+        public Task ReconcileOpenFieldConflictsAsync(SecurityProjectionRecord persisted, CancellationToken ct)
+            => Task.CompletedTask;
     }
 
     private sealed class StubOperatorOverridesStore : IOperatorOverridesStore

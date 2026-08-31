@@ -60,7 +60,7 @@ public sealed class PaperGatewayLiveFeedPricingTests
     }
 
     [Fact]
-    public async Task AdapterGateway_MarketOrder_UsesQuoteMidpointWhenNoTradeSeen()
+    public async Task AdapterGateway_MarketBuy_PaysTheObservedAskWhenOnlyQuotesSeen()
     {
         var cache = new LiveMarketDataCache();
         cache.RecordQuote("MSFT", new BboQuotePayload(
@@ -90,7 +90,8 @@ public sealed class PaperGatewayLiveFeedPricingTests
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         await foreach (var update in gateway.StreamOrderUpdatesAsync(cts.Token))
         {
-            update.AverageFillPrice.Should().Be(101m, "with no trade tick the quote midpoint is the best live price");
+            update.AverageFillPrice.Should().Be(102m,
+                "a market buy transacts against the observed ask — the spread is a real cost, not a free midpoint");
             return;
         }
 

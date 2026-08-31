@@ -23,13 +23,13 @@ The system uses a unified abstraction layer supporting both **real-time streamin
 │ Streaming Providers │              │ Historical Providers    │
 │ ├─ Alpaca           │              │ ├─ Alpaca               │
 │ ├─ Interactive Brkrs│              │ ├─ Yahoo Finance        │
-│ ├─ StockSharp       │              │ ├─ Stooq                │
+│ ├─ Synthetic        │              │ ├─ Stooq                │
 │ ├─ NYSE Direct      │              │ ├─ Tiingo               │
 │ └─ Polygon          │              │ ├─ Finnhub              │
 └─────────────────────┘              │ ├─ Alpha Vantage        │
                                      │ ├─ Nasdaq Data Link     │
 ┌─────────────────────┐              │ ├─ Polygon              │
-│ Failover            │              │ └─ StockSharp           │
+│ Failover            │              │ └─ Synthetic            │
 │ └─ FailoverAware    │              └─────────────────────────┘
 │    MarketDataClient │
 └─────────────────────┘
@@ -39,7 +39,7 @@ The system uses a unified abstraction layer supporting both **real-time streamin
 │ ├─ Polygon          │
 │ ├─ Finnhub          │
 │ ├─ OpenFIGI         │
-│ └─ StockSharp       │
+│ └─ Robinhood        │
 └─────────────────────┘
 ```
 
@@ -47,7 +47,9 @@ The system uses a unified abstraction layer supporting both **real-time streamin
 
 ## Current Provider Inventory (2026-03-31)
 
-The repository currently includes **32 concrete provider implementations** plus shared base and registry components.
+The repository currently includes **32 concrete provider implementations** plus shared base and
+registry components. That figure is a dated snapshot and predates the StockSharp correction below:
+rows marked _not implemented_ have no adapter in the tree and are not part of the count.
 
 ### Streaming / Hybrid Providers
 | Provider | Class | Path |
@@ -58,7 +60,7 @@ The repository currently includes **32 concrete provider implementations** plus 
 | NYSE | `NyseMarketDataClient` | `src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs` |
 | NYSE (data source) | `NYSEDataSource` | `src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs` |
 | Polygon | `PolygonMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs` |
-| StockSharp | `StockSharpMarketDataClient` | `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs` |
+| StockSharp | _not implemented_ | No adapter exists in the tree; deferred per `docs/reference/provider-integration-status.md` |
 | Synthetic | `SyntheticMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs` |
 | Streaming failover | `FailoverAwareMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs` |
 
@@ -73,7 +75,7 @@ The repository currently includes **32 concrete provider implementations** plus 
 | Interactive Brokers | `IBHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs` |
 | Nasdaq Data Link | `NasdaqDataLinkHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs` |
 | Polygon | `PolygonHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs` |
-| StockSharp | `StockSharpHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpHistoricalDataProvider.cs` |
+| StockSharp | _not implemented_ | No adapter exists in the tree; deferred per `docs/reference/provider-integration-status.md` |
 | Stooq | `StooqHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs` |
 | Synthetic | `SyntheticHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs` |
 | Tiingo | `TiingoHistoricalDataProvider` | `src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs` |
@@ -89,7 +91,7 @@ The repository currently includes **32 concrete provider implementations** plus 
 | OpenFIGI | `OpenFigiClient` | `src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs` |
 | Polygon | `PolygonSymbolSearchProvider` | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs` |
 | Robinhood | `RobinhoodSymbolSearchProvider` | `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs` |
-| StockSharp | `StockSharpSymbolSearchProvider` | `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpSymbolSearchProvider.cs` |
+| StockSharp | _not implemented_ | No adapter exists in the tree; deferred per `docs/reference/provider-integration-status.md` |
 | Synthetic | `SyntheticMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs` |
 
 ## File Locations
@@ -131,7 +133,7 @@ The repository currently includes **32 concrete provider implementations** plus 
 |----------|----------|-------|
 | Alpaca | `Infrastructure/Adapters/Alpaca/` | 1 |
 | Interactive Brokers | `Infrastructure/Adapters/InteractiveBrokers/` | 8 |
-| StockSharp | `Infrastructure/Adapters/StockSharp/` | 6 |
+| StockSharp | _no such directory_ | 0 |
 | NYSE | `Infrastructure/Adapters/NYSE/` | 3 |
 | Polygon | `Infrastructure/Adapters/Polygon/` | 1 |
 | Failover | `Infrastructure/Adapters/Failover/` | 3 |
@@ -146,13 +148,10 @@ The repository currently includes **32 concrete provider implementations** plus 
 - `IBApiLimits.cs` - API rate limiting
 - `IBSimulationClient.cs` - IB testing without live connection
 
-**StockSharp files:**
-- `StockSharpMarketDataClient.cs` - Main streaming client
-- `StockSharpConnectorFactory.cs` - Connector creation
-- `StockSharpConnectorCapabilities.cs` - Capability flags
-- `StockSharpSymbolSearchProvider.cs` - Symbol search
-- `Converters/MessageConverter.cs` - Message conversion
-- `Converters/SecurityConverter.cs` - Security conversion
+**StockSharp files:** none. This section previously listed six files under
+`Infrastructure/Adapters/StockSharp/`; no such directory or file exists in the tree. StockSharp is
+deferred and unwired — see `docs/reference/provider-integration-status.md`. Do not route work here
+expecting an adapter to modify.
 
 **Failover files:**
 - `FailoverAwareMarketDataClient.cs` - Automatic provider failover wrapper
@@ -173,7 +172,7 @@ The repository currently includes **32 concrete provider implementations** plus 
 | Alpha Vantage | `Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` |
 | Nasdaq Data Link | `Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs` |
 | Polygon | `Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs` |
-| StockSharp | `Infrastructure/Adapters/StockSharp/StockSharpHistoricalDataProvider.cs` |
+| StockSharp | _not implemented_ |
 | Interactive Brokers | `Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs` |
 
 ### Historical Support Modules
@@ -850,7 +849,6 @@ A planned [Deterministic Canonicalization](../../architecture/deterministic-cano
 | Provider | Hazard | Mitigation |
 |----------|--------|------------|
 | IB | Uses **seconds** for `tickByTickAllLast` but **milliseconds** in RTVolume | Provider adapter must normalize before calling `StampReceiveTime()` |
-| StockSharp | `msg.ServerTime` source varies by connector (exchange time vs. server time) | Document clock quality per connector |
 | Polygon | Timestamps are Unix epoch **milliseconds** | Standard conversion |
 | Alpaca | ISO 8601 strings | Standard parsing |
 

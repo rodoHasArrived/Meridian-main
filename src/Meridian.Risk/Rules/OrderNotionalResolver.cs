@@ -191,15 +191,29 @@ internal static class OrderNotionalResolver
         // else, scaled by the contract multiplier — no Greeks, no VaR, just the notional
         // the contracts actually represent. A multi-leg order's top-level price is the net
         // debit/credit of the combination, so each leg is valued on its own instead.
-        // Broker adapters may infer an option from its compact OCC symbol even when a
-        // caller omitted OptionContract. Risk must classify that same route as a
-        // derivative or it will measure premium-only notional without the 100x multiplier.
+        var usesFaceValuePercentageOfPar =
+            OrderSizingMetadata.UsesFaceValuePercentageOfPar(request.Metadata);
+
+        // Face value outranks an incidental derivative identity, and the order matters. The marker
+        // is server-stamped from the active gateway; OptionContract is caller-supplied and carries a
+        // caller-supplied multiplier. Alpaca decides fixed-income routing from asset_class alone and
+        // ignores OptionContract entirely, so it routes Quantity as face value at percentage-of-par
+        // regardless — and valuing the same order as contracts would measure 1,000,000 face at 100
+        // with Multiplier "0.000001" as $100 rather than $1,000,000, clearing the notional,
+        // gross-exposure, and concentration rails by six orders of magnitude. A leg list still wins,
+        // because a package's top-level price is a net debit or credit belonging to no single symbol.
+        //
+        // Broker adapters may also infer an option from its compact OCC symbol even when a caller
+        // omitted OptionContract. Risk must classify that same route as a derivative or it will
+        // measure premium-only notional without the 100x multiplier. The face-value marker outranks
+        // that inference for the same reason it outranks OptionContract.
         var inferredOccOption = request.Legs is not { Count: > 0 } &&
             request.OptionContract is null &&
+            !usesFaceValuePercentageOfPar &&
             IsOccOptionSymbol(request.Symbol);
-        if (request.Legs is { Count: > 0 } ||
-            request.OptionContract is not null ||
-            inferredOccOption)
+        if (request.Legs is { Count: > 0 }
+            || (request.OptionContract is not null && !usesFaceValuePercentageOfPar)
+            || inferredOccOption)
         {
             return ResolveDerivative(
                 request,
@@ -210,8 +224,11 @@ internal static class OrderNotionalResolver
         }
 
         // Broker-native notional sizing (Alpaca metadata "notional"/"alpaca:notional")
-        // routes the metadata dollars, not quantity x price — value exactly what routes.
-        if (BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is { } brokerNotional)
+        // routes the metadata dollars, not quantity x price — value exactly what routes. Fixed
+        // income is the exception: the gateway discards that metadata and routes Quantity as
+        // face value, so the rails must ignore it too.
+        if (!usesFaceValuePercentageOfPar
+            && BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is { } brokerNotional)
         {
             return brokerNotional;
         }
@@ -234,6 +251,14 @@ internal static class OrderNotionalResolver
         // $1 in a $100 symbol routes ~$100k. Neither may be valued at its own price alone.
         var pricePaidIsCapped = request.Side == OrderSide.Buy && request.LimitPrice is > 0m;
 
+        // A trigger or floor is not a safe fallback when the current market is unknown.
+        // Returning null makes every configured notional-based rail reject the order as
+        // unmeasurable instead of approving risk that can execute at an unbounded price.
+        if (!pricePaidIsCapped && marketPrice is null or <= 0m)
+        {
+            return null;
+        }
+
         if (referencePrice is null or <= 0m)
         {
             // No caller price: measure at the market. The portfolio may be flat in this
@@ -249,7 +274,20 @@ internal static class OrderNotionalResolver
         // symbol at the mark would measure $100k for a harmless order and could reject it
         // — or, at Critical severity, halt the desk on it.
 
-        return referencePrice is { } price and > 0m ? Math.Abs(request.Quantity) * price : null;
+        if (referencePrice is null or <= 0m)
+        {
+            return null;
+        }
+
+        var price = referencePrice.Value;
+        // Fixed-income Qty is par value and its clean price is a percentage of par: 100,000
+        // face at 101.25 is $101,250, not $10,125,000. Scale the price *before* multiplying —
+        // dividing the product instead lets the intermediate overflow on a representable result,
+        // and the rules turn that exception into RISK_RULE_EVALUATION_FAILED rather than measuring
+        // the order against their thresholds. A percentage of par is a fraction of par, so
+        // converting it once up front is also the more direct statement of what the price means.
+        var effectivePrice = usesFaceValuePercentageOfPar ? price / 100m : price;
+        return Math.Abs(request.Quantity) * effectivePrice;
     }
 
     private static bool IsOccOptionSymbol(string symbol) =>

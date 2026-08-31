@@ -2,7 +2,9 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Threading.Channels;
 using FluentAssertions;
+using Meridian.Application.Reconciliation;
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
@@ -10,6 +12,7 @@ using Meridian.Execution;
 using Meridian.Execution.Events;
 using Meridian.Execution.Serialization;
 using Meridian.Execution.Sdk;
+using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Ledger;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Ledger;
@@ -144,6 +147,87 @@ public sealed class EventDrivenDecouplingTests
 
         ledger.Journal.Should().HaveCount(2); // buy + commission
         ledger.Journal.Should().Contain(e => e.Description.Contains("Commission"));
+    }
+
+    [Fact]
+    public async Task LedgerPostingConsumer_TradeJournalIdentityTags_ExactMatchStatementRowThroughFitIdRule()
+    {
+        var target = new InMemoryTradeFillLedgerPostingTarget();
+        var consumer = new LedgerPostingConsumer(
+            target,
+            NullLogger<LedgerPostingConsumer>.Instance,
+            new InMemoryTradeFillPostingStore(TestPostingScope),
+            TestPostingContext,
+            securityValidationGate: new PassingSecurityValidationGate());
+        var evt = new TradeExecutedEvent(
+            FillId: Guid.NewGuid(),
+            OrderId: "ord-recon",
+            Symbol: "MSFT",
+            Side: OrderSide.Buy,
+            FilledQuantity: 12.50m,
+            FillPrice: 100.25m,
+            Commission: 1.25m,
+            RealizedPnl: 0m,
+            NewCash: 0m,
+            OccurredAt: new DateTimeOffset(2026, 5, 28, 14, 30, 0, TimeSpan.Zero),
+            FinancialAccountId: "EXT-1");
+
+        consumer.Publish(evt);
+        await consumer.DisposeAsync();
+
+        var tradeJournal = target.RetainedEntries.Single(e => e.Metadata.ActivityType == "trade-fill");
+        tradeJournal.Metadata.Tags.Should().ContainKey("quantity")
+            .WhoseValue.Should().Be("12.5", "the projection parses the invariant decimal form");
+        tradeJournal.Metadata.Tags.Should().ContainKey("externalTransactionId")
+            .WhoseValue.Should().Be(evt.FillId.ToString("D"));
+        tradeJournal.Metadata.Tags.Should().NotContainKey(
+            "settlementDate",
+            "the execution report carries no settlement date, and estimating T+n conventions is a policy decision");
+        var commissionJournal = target.RetainedEntries.Single(e => e.Metadata.ActivityType == "trade-commission");
+        commissionJournal.Metadata.Tags.Should().NotContainKey(
+            "quantity", "a share quantity does not apply to a fee movement");
+        commissionJournal.Metadata.Tags.Should().NotContainKey(
+            "externalTransactionId", "a fabricated fee FITID could never equal a custodian's");
+
+        // End to end: the durably retained journals project through the reconciliation source and
+        // the trade exact-matches a statement row via the matcher's FITID rule. The statement's
+        // settlement date equals the trade date because the projection defaults settlement to the
+        // trade date when no settlement source exists.
+        var internalTransactions = await new LedgerJournalInternalTransactionSource(
+                new RetainedRecordQueryLedgerJournalStore(target.RetainedRecords))
+            .GetTransactionsAsync(new InternalLedgerTransactionQuery(
+                "EXT-1", ["EXT-1"], new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 31), "USD"));
+
+        var projectedTrade = internalTransactions.Single(transaction => transaction.TransactionType == "trade");
+        projectedTrade.Quantity.Should().Be(12.5m);
+        projectedTrade.ExternalTransactionId.Should().Be(evt.FillId.ToString("D"));
+        projectedTrade.SettlementDate.Should().Be(new DateOnly(2026, 5, 28));
+
+        var statementRow = new NormalizedStatementTransaction(
+            "import-1:1",
+            evt.FillId.ToString("D"),
+            "EXT-1",
+            "MSFT",
+            "USD",
+            new DateOnly(2026, 5, 28),
+            new DateOnly(2026, 5, 28),
+            "trade",
+            12.5m,
+            -1253.125m,
+            "import-1:1");
+
+        var result = new StatementMatchingEngine().Run(new StatementMatchingRequest(
+            [],
+            [],
+            [statementRow],
+            [],
+            [],
+            internalTransactions,
+            new StatementMatchingToleranceProfile(0m, 0m, 0m, 0m, 0m)));
+
+        var match = result.Results.Single(r => r.MatchTier == StatementMatchTier.Exact);
+        match.RuleIds.Should().Contain("statement-transaction-external-id-v1");
+        match.InternalEvidenceReference.Should().Be($"internal:journal:{tradeJournal.JournalEntryId:D}");
     }
 
     [Fact]
@@ -1694,6 +1778,19 @@ public sealed class EventDrivenDecouplingTests
             }
         }
 
+        public IReadOnlyList<LedgerJournalEntryRecord> RetainedRecords
+        {
+            get
+            {
+                lock (_sync)
+                {
+                    return _retained.Values
+                        .OrderBy(static record => record.GlobalSequence)
+                        .ToArray();
+                }
+            }
+        }
+
         public async Task<TradeFillLedgerPostingConfirmation> PostAndConfirmAsync(
             LedgerJournalEntryWrite write,
             CancellationToken ct = default)
@@ -1737,6 +1834,59 @@ public sealed class EventDrivenDecouplingTests
                     _retained[id] = record with { Entry = replace(record.Entry) };
             }
         }
+    }
+
+    /// <summary>
+    /// Serves the consumer's durably retained journal records to the reconciliation projection's
+    /// scoped query so the end-to-end statement match runs against exactly what was posted.
+    /// </summary>
+    private sealed class RetainedRecordQueryLedgerJournalStore(
+        IReadOnlyList<LedgerJournalEntryRecord> records) : ILedgerJournalStore
+    {
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
+            LedgerJournalEntryQuery query,
+            CancellationToken ct = default) =>
+            Task.FromResult(records);
+
+        public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
+            Guid? ledgerBookId = null,
+            string? status = null,
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public Task<LedgerAccountingPeriod> SavePeriodAsync(
+            LedgerAccountingPeriod period,
+            long expectedVersion,
+            PeriodCloseEventRecord? closeEvent = null,
+            CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            FundStructureNodeKindDto? fundStructureNodeKind = null,
+            CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default) =>
+            throw new NotSupportedException();
     }
 
     private sealed class InMemoryTradeFillPostingStore : ITradeFillPostingStore

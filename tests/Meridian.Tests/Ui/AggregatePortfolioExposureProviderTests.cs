@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Execution.Models;
+using Meridian.Risk;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
 using Moq;
@@ -262,6 +263,40 @@ public sealed class AggregatePortfolioExposureProviderTests
         provider.GetSnapshot().GrossExposure.Should().Be(
             500_000m,
             "the reserve must match the dollars the gateway actually routes");
+    }
+
+    [Fact]
+    public void GetSnapshot_WorkingFaceValueOrder_UsesPercentageOfPar()
+    {
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+
+        var orderManager = new Mock<Meridian.Execution.Sdk.IOrderManager>();
+        orderManager.Setup(m => m.GetExposureReservingOrders()).Returns(
+        [
+            new Meridian.Execution.Sdk.OrderState
+            {
+                OrderId = "treasury-1",
+                Symbol = "912797AB1",
+                Side = Meridian.Execution.Sdk.OrderSide.Buy,
+                Type = Meridian.Execution.Sdk.OrderType.Limit,
+                Quantity = 100_000m,
+                LimitPrice = 101.25m,
+                UsesFaceValuePercentageOfPar = true,
+                Status = Meridian.Execution.Sdk.OrderStatus.Accepted,
+                CreatedAt = DateTimeOffset.UtcNow
+            }
+        ]);
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            orderManagerAccessor: () => orderManager.Object);
+
+        var snapshot = provider.GetSnapshot();
+        snapshot.GrossExposure.Should().Be(101_250m);
+        snapshot.NetExposure.Should().Be(101_250m);
+        snapshot.GetSymbolExposure("912797AB1").GrossExposure.Should().Be(101_250m);
+        snapshot.GetSymbolExposure("912797AB1").NetNotional.Should().Be(101_250m);
     }
 
     [Fact]
@@ -631,7 +666,7 @@ public sealed class AggregatePortfolioExposureProviderTests
             BidPrice: 0.99m,
             BidSize: 100,
             AskPrice: 1.01m,
-            AskSize: 100));
+            AskSize: 100, Source: "TEST"));
 
         var provider = new AggregatePortfolioExposureProvider(
             aggregate.Object,
@@ -660,7 +695,7 @@ public sealed class AggregatePortfolioExposureProviderTests
             BidPrice: 99m,
             BidSize: 100,
             AskPrice: 101m,
-            AskSize: 100));
+            AskSize: 100, Source: "TEST"));
 
         var provider = new AggregatePortfolioExposureProvider(
             aggregate.Object,
@@ -712,5 +747,244 @@ public sealed class AggregatePortfolioExposureProviderTests
             registry: new Meridian.Execution.Services.PortfolioRegistry());
 
         provider.GetSnapshot().PortfolioValue.Should().Be(75_000m);
+    }
+
+    // --- price accessors: which reference each control gets ---
+
+    /// <summary>
+    /// A one-sided book has no crossing price for the missing side, and the valuation accessor
+    /// answers with whichever side <em>is</em> present. For a sell that means the offer — the side
+    /// this order would never trade against — so a sell at 46 after a 50 print reads 54% through
+    /// the market instead of 8%, and any deviation band refuses it. The last print is the closest
+    /// thing to a crossing price when the book cannot supply one.
+    /// </summary>
+    [Fact]
+    public void TryGetTouchPrice_OneSidedBook_PrefersTheLastPrintOverTheOppositeQuote()
+    {
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+
+        var publisher = new Meridian.Tests.TestHelpers.TestMarketEventPublisher();
+        var quotes = new Meridian.Domain.Collectors.QuoteCollector(publisher);
+        var trades = new Meridian.Domain.Collectors.TradeDataCollector(publisher, quotes);
+
+        // Ask only: no bid at all on this book.
+        quotes.OnQuote(new Meridian.Contracts.Domain.Models.MarketQuoteUpdate(
+            Timestamp: DateTimeOffset.UtcNow,
+            Symbol: "AAPL",
+            BidPrice: 0m,
+            BidSize: 0,
+            AskPrice: 100m,
+            AskSize: 100, Source: "TEST"));
+        trades.OnTrade(new Meridian.Domain.Models.MarketTradeUpdate(
+            Timestamp: DateTimeOffset.UtcNow,
+            Symbol: "AAPL",
+            Price: 50m,
+            Size: 100,
+            Aggressor: Meridian.Contracts.Domain.Enums.AggressorSide.Buy,
+            SequenceNumber: 1, Source: "TEST"));
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            quotes: quotes,
+            trades: trades);
+
+        provider.TryGetTouchPrice("AAPL", Meridian.Execution.Sdk.OrderSide.Sell)
+            .Should().Be(50m, "the 100 ask is the side a sell never crosses");
+
+        // And with no print either, the honest answer is "no reference", not the opposite quote.
+        // A null here routes the order to FAT_FINGER_UNMEASURABLE rather than recording a
+        // measured breach that would hold the rule Constrained for an hour.
+        var quotesOnly = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            quotes: quotes,
+            trades: null);
+        quotesOnly.TryGetTouchPrice("AAPL", Meridian.Execution.Sdk.OrderSide.Sell)
+            .Should().BeNull();
+
+        // The buy side still crosses at the ask, which the book does supply.
+        provider.TryGetTouchPrice("AAPL", Meridian.Execution.Sdk.OrderSide.Buy)
+            .Should().Be(100m);
+    }
+
+    /// <summary>
+    /// The guard must resolve the trigger from the same observation the matcher will consume, and
+    /// with the matcher's freshness policy — which is to say, none. Every other accessor on this
+    /// provider filters stale marks, on purpose; applying that filter here drops a print the
+    /// matcher will still trigger from, and the guard approves a stop that fires on arrival.
+    /// </summary>
+    [Fact]
+    public void TryGetTriggerReferencePrice_UsesTheMatcherObservation_IncludingAStalePrint()
+    {
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+
+        // Six minutes past this provider's mark window: the collectors would discard it, the
+        // matcher would not.
+        var feed = new StubLiveFeed(lastTrade: 130m, bid: 90m, ask: 100m);
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            liveFeedAccessor: () => feed,
+            paperMatchingIsAuthoritative: () => true);
+
+        IPortfolioExposureProvider seam = provider;
+        seam.TryGetTriggerReferencePrice("AAPL", Meridian.Execution.Sdk.OrderSide.Buy)
+            .Should().Be(130m, "the matcher fires from that print regardless of its age");
+    }
+
+    /// <summary>
+    /// Against a live broker the paper matcher decides nothing, and the feed cache keeps prints
+    /// indefinitely — so preferring the print measures a trigger against a price the market may
+    /// have left hours ago. A stale $50 print beside a fresh $100 ask must not make a buy stop at
+    /// $60 look resting when the broker sees it already crossed.
+    /// </summary>
+    [Fact]
+    public void TryGetTriggerReferencePrice_InALivePosture_DoesNotPreferAStalePrint()
+    {
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+
+        var publisher = new Meridian.Tests.TestHelpers.TestMarketEventPublisher();
+        var quotes = new Meridian.Domain.Collectors.QuoteCollector(publisher);
+        var trades = new Meridian.Domain.Collectors.TradeDataCollector(publisher, quotes);
+
+        // A fresh two-sided book; the feed additionally holds an old print the cache never expires.
+        quotes.OnQuote(new Meridian.Contracts.Domain.Models.MarketQuoteUpdate(
+            Timestamp: DateTimeOffset.UtcNow,
+            Symbol: "AAPL",
+            BidPrice: 99m,
+            BidSize: 100,
+            AskPrice: 100m,
+            AskSize: 100, Source: "TEST"));
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            quotes: quotes,
+            trades: trades,
+            liveFeedAccessor: () => new StubLiveFeed(lastTrade: 50m, bid: 99m, ask: 100m));
+
+        IPortfolioExposureProvider seam = provider;
+        seam.TryGetTriggerReferencePrice("AAPL", Meridian.Execution.Sdk.OrderSide.Buy)
+            .Should().Be(100m, "the default posture is live, where a stale print must lose to a fresh quote");
+    }
+
+    /// <summary>
+    /// A bar-driven session has no print at all; the matcher falls to the bar close, so the guard
+    /// must too or it reads an already-triggered stop as resting.
+    /// </summary>
+    [Fact]
+    public void TryGetTriggerReferencePrice_FallsToTheBarClose_BeforeTheQuote()
+    {
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+
+        var feed = new StubLiveFeed(lastTrade: null, bid: 90m, ask: 100m, barClose: 130m);
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            liveFeedAccessor: () => feed,
+            paperMatchingIsAuthoritative: () => true);
+
+        IPortfolioExposureProvider seam = provider;
+        seam.TryGetTriggerReferencePrice("AAPL", Meridian.Execution.Sdk.OrderSide.Buy)
+            .Should().Be(130m);
+    }
+
+    /// <summary>
+    /// A stop fires off the traded price, so its reference must prefer the print. The valuation
+    /// mark checks the quote first and returns the midpoint, which on a wide book reads a resting
+    /// trigger as already crossed.
+    /// </summary>
+    [Fact]
+    public void TryGetTriggerReferencePrice_PrefersTheLastPrintOverTheQuoteMidpoint()
+    {
+        var aggregate = new Mock<IAggregatePortfolioService>();
+        aggregate.Setup(a => a.GetAggregatedPositions(null)).Returns([]);
+
+        var publisher = new Meridian.Tests.TestHelpers.TestMarketEventPublisher();
+        var quotes = new Meridian.Domain.Collectors.QuoteCollector(publisher);
+        var trades = new Meridian.Domain.Collectors.TradeDataCollector(publisher, quotes);
+
+        quotes.OnQuote(new Meridian.Contracts.Domain.Models.MarketQuoteUpdate(
+            Timestamp: DateTimeOffset.UtcNow,
+            Symbol: "AAPL",
+            BidPrice: 100m,
+            BidSize: 100,
+            AskPrice: 120m,
+            AskSize: 100, Source: "TEST"));
+        trades.OnTrade(new Meridian.Domain.Models.MarketTradeUpdate(
+            Timestamp: DateTimeOffset.UtcNow,
+            Symbol: "AAPL",
+            Price: 100m,
+            Size: 100,
+            Aggressor: Meridian.Contracts.Domain.Enums.AggressorSide.Buy,
+            SequenceNumber: 1, Source: "TEST"));
+
+        var provider = new AggregatePortfolioExposureProvider(
+            aggregate.Object,
+            quotes: quotes,
+            trades: trades);
+
+        IPortfolioExposureProvider seam = provider;
+        seam.TryGetTriggerReferencePrice("AAPL", Meridian.Execution.Sdk.OrderSide.Buy).Should().Be(100m);
+        seam.TryGetTriggerReferencePrice("AAPL", Meridian.Execution.Sdk.OrderSide.Sell).Should().Be(100m);
+        // No feed composed here, so this is the collector fallback path.
+        // Both quote-derived references are deliberately different, which is the whole reason the
+        // trigger gets its own seam: the mark says 110 and the crossing touch says 120.
+        provider.TryGetReferencePrice("AAPL").Should().Be(110m);
+        provider.TryGetTouchPrice("AAPL", Meridian.Execution.Sdk.OrderSide.Buy).Should().Be(120m);
+    }
+
+    /// <summary>
+    /// The feed the matcher reads: a plain cache with no freshness policy of its own, which is
+    /// exactly the property under test.
+    /// </summary>
+    private sealed class StubLiveFeed(
+        decimal? lastTrade,
+        decimal? bid,
+        decimal? ask,
+        decimal? barClose = null) : Meridian.Execution.Interfaces.ILiveFeedAdapter
+    {
+        public IReadOnlySet<string> SubscribedSymbols { get; } = new HashSet<string> { "AAPL" };
+
+        public Meridian.Contracts.Domain.Models.Trade? GetLastTrade(string symbol) =>
+            lastTrade is { } price
+                ? new Meridian.Contracts.Domain.Models.Trade(
+                    DateTimeOffset.UtcNow,
+                    symbol,
+                    price,
+                    100,
+                    Meridian.Contracts.Domain.Enums.AggressorSide.Buy,
+                    1)
+                : null;
+
+        public Meridian.Contracts.Domain.Models.BboQuotePayload? GetLastQuote(string symbol) =>
+            bid is { } b && ask is { } a
+                ? new Meridian.Contracts.Domain.Models.BboQuotePayload(
+                    DateTimeOffset.UtcNow,
+                    symbol,
+                    b,
+                    100,
+                    a,
+                    100,
+                    (b + a) / 2m,
+                    a - b,
+                    1)
+                : null;
+
+        public Meridian.Contracts.Domain.Models.LOBSnapshot? GetLastOrderBook(string symbol) => null;
+
+        public Meridian.Contracts.Domain.Models.HistoricalBar? GetLastBar(string symbol) =>
+            barClose is { } close
+                ? new Meridian.Contracts.Domain.Models.HistoricalBar(
+                    symbol,
+                    DateOnly.FromDateTime(DateTime.UtcNow),
+                    close,
+                    close,
+                    close,
+                    close,
+                    0)
+                : null;
     }
 }

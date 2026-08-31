@@ -1,6 +1,6 @@
-using System.Security.Cryptography;
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Integrity;
 using Meridian.Storage.Ledger;
 
 namespace Meridian.Storage.AssetOperations;
@@ -333,7 +333,7 @@ internal static class AssetAccountingEventProjectionRules
     public static string Fingerprint(AssetAccountingEventSpineDto projection)
     {
         var payload = JsonSerializer.SerializeToUtf8Bytes(projection, JsonOptions);
-        return Convert.ToHexString(SHA256.HashData(payload)).ToLowerInvariant();
+        return Sha256Digest.Compute(payload);
     }
 
     public static async Task ValidateDurablePostedImpactAsync(

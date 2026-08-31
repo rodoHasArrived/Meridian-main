@@ -15,7 +15,11 @@ This is the canonical operator entry for browser workstation installation and va
 ## Deployment Sequence
 
 For end users, the supported release artifact is the production-signed
-`Meridian-Setup.exe`. It detects x64 or ARM64, installs the self-contained local host,
+`Meridian-Setup.exe`. No production (`v*`) release exists yet; until one does, the
+download channel is the evaluation prerelease (`eval-v*`), whose
+`Desktop Evaluation Prerelease` workflow attaches an **unsigned** x64
+`Meridian-Setup.exe` with a `Meridian-Setup.exe.sha256` checksum alongside the
+self-signed MSIX packages. It detects x64 or ARM64, installs the self-contained local host,
 browser assets, desktop workstation, lifecycle supervisor, dedicated PostgreSQL runtime, and thin
 launcher, creates one Start Menu entry, and launches browser-first setup. It requires no
 PowerShell, SDK, Node, Git, certificate installation, database installation, or user-selected port.

@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Storage.Archival;
@@ -12,22 +11,37 @@ namespace Meridian.Storage.Services;
 /// </summary>
 public sealed class MetadataTagService : IMetadataTagService
 {
-    private readonly ConcurrentDictionary<string, FileMetadataRecord> _metadata = new(StringComparer.OrdinalIgnoreCase);
     private readonly string _metadataStorePath;
     private readonly SemaphoreSlim _saveLock = new(1, 1);
+    private readonly Action<string, string> _writeFile;
+    private readonly Func<string, string, CancellationToken, Task> _writeFileAsync;
+    private MetadataState _state = MetadataState.CreateEmpty();
 
     public MetadataTagService(string metadataStorePath)
+        : this(
+            metadataStorePath,
+            static (path, content) => AtomicFileWriter.Write(path, content),
+            static (path, content, ct) => AtomicFileWriter.WriteAsync(path, content, ct))
+    {
+    }
+
+    internal MetadataTagService(
+        string metadataStorePath,
+        Action<string, string> writeFile,
+        Func<string, string, CancellationToken, Task> writeFileAsync)
     {
         _metadataStorePath = metadataStorePath ?? throw new ArgumentNullException(nameof(metadataStorePath));
-        Load();
+        _writeFile = writeFile ?? throw new ArgumentNullException(nameof(writeFile));
+        _writeFileAsync = writeFileAsync ?? throw new ArgumentNullException(nameof(writeFileAsync));
+        Volatile.Write(ref _state, Load());
     }
 
     /// <inheritdoc />
     public void SetTag(string filePath, string key, string value)
     {
-        PersistChange(() =>
+        PersistChange(candidate =>
         {
-            var record = _metadata.GetOrAdd(filePath, _ => CreateDefaultRecord(filePath));
+            var record = GetOrAddRecord(candidate, filePath);
             record.Tags[key] = value;
             record.LastModifiedUtc = DateTime.UtcNow;
             return true;
@@ -37,10 +51,11 @@ public sealed class MetadataTagService : IMetadataTagService
     /// <inheritdoc />
     public void SetTags(string filePath, IReadOnlyDictionary<string, string> tags)
     {
-        PersistChange(() =>
+        var ownedTags = tags.ToArray();
+        PersistChange(candidate =>
         {
-            var record = _metadata.GetOrAdd(filePath, _ => CreateDefaultRecord(filePath));
-            foreach (var kvp in tags)
+            var record = GetOrAddRecord(candidate, filePath);
+            foreach (var kvp in ownedTags)
             {
                 record.Tags[kvp.Key] = kvp.Value;
             }
@@ -53,7 +68,8 @@ public sealed class MetadataTagService : IMetadataTagService
     /// <inheritdoc />
     public string? GetTag(string filePath, string key)
     {
-        if (_metadata.TryGetValue(filePath, out var record) && record.Tags.TryGetValue(key, out var value))
+        var state = Volatile.Read(ref _state);
+        if (state.Records.TryGetValue(filePath, out var record) && record.Tags.TryGetValue(key, out var value))
             return value;
         return null;
     }
@@ -61,8 +77,9 @@ public sealed class MetadataTagService : IMetadataTagService
     /// <inheritdoc />
     public IReadOnlyDictionary<string, string> GetAllTags(string filePath)
     {
-        if (_metadata.TryGetValue(filePath, out var record))
-            return record.Tags;
+        var state = Volatile.Read(ref _state);
+        if (state.Records.TryGetValue(filePath, out var record))
+            return CloneDictionary(record.Tags);
         return new Dictionary<string, string>();
     }
 
@@ -70,9 +87,9 @@ public sealed class MetadataTagService : IMetadataTagService
     public bool RemoveTag(string filePath, string key)
     {
         var removed = false;
-        PersistChange(() =>
+        PersistChange(candidate =>
         {
-            if (!_metadata.TryGetValue(filePath, out var record))
+            if (!candidate.Records.TryGetValue(filePath, out var record))
             {
                 return false;
             }
@@ -93,10 +110,11 @@ public sealed class MetadataTagService : IMetadataTagService
     /// <inheritdoc />
     public void RecordLineage(string filePath, LineageEntry entry)
     {
-        PersistChange(() =>
+        var ownedEntry = CloneLineageEntry(entry);
+        PersistChange(candidate =>
         {
-            var record = _metadata.GetOrAdd(filePath, _ => CreateDefaultRecord(filePath));
-            record.Lineage.Add(entry);
+            var record = GetOrAddRecord(candidate, filePath);
+            record.Lineage.Add(ownedEntry);
             record.LastModifiedUtc = DateTime.UtcNow;
             return true;
         });
@@ -105,18 +123,20 @@ public sealed class MetadataTagService : IMetadataTagService
     /// <inheritdoc />
     public IReadOnlyList<LineageEntry> GetLineage(string filePath)
     {
-        if (_metadata.TryGetValue(filePath, out var record))
-            return record.Lineage.AsReadOnly();
+        var state = Volatile.Read(ref _state);
+        if (state.Records.TryGetValue(filePath, out var record))
+            return record.Lineage.Select(CloneLineageEntry).ToArray();
         return Array.Empty<LineageEntry>();
     }
 
     /// <inheritdoc />
     public void SetInsight(string filePath, string insightKey, DataInsight insight)
     {
-        PersistChange(() =>
+        var ownedInsight = CloneInsight(insight);
+        PersistChange(candidate =>
         {
-            var record = _metadata.GetOrAdd(filePath, _ => CreateDefaultRecord(filePath));
-            record.Insights[insightKey] = insight;
+            var record = GetOrAddRecord(candidate, filePath);
+            record.Insights[insightKey] = ownedInsight;
             record.LastModifiedUtc = DateTime.UtcNow;
             return true;
         });
@@ -125,25 +145,33 @@ public sealed class MetadataTagService : IMetadataTagService
     /// <inheritdoc />
     public DataInsight? GetInsight(string filePath, string insightKey)
     {
-        if (_metadata.TryGetValue(filePath, out var record) && record.Insights.TryGetValue(insightKey, out var insight))
-            return insight;
+        var state = Volatile.Read(ref _state);
+        if (state.Records.TryGetValue(filePath, out var record) && record.Insights.TryGetValue(insightKey, out var insight))
+            return CloneInsight(insight);
         return null;
     }
 
     /// <inheritdoc />
     public IReadOnlyDictionary<string, DataInsight> GetAllInsights(string filePath)
     {
-        if (_metadata.TryGetValue(filePath, out var record))
-            return record.Insights;
+        var state = Volatile.Read(ref _state);
+        if (state.Records.TryGetValue(filePath, out var record))
+        {
+            return record.Insights.ToDictionary(
+                entry => entry.Key,
+                entry => CloneInsight(entry.Value),
+                record.Insights.Comparer);
+        }
+
         return new Dictionary<string, DataInsight>();
     }
 
     /// <inheritdoc />
     public void SetQualityScore(string filePath, double score, string? scoredBy = null)
     {
-        PersistChange(() =>
+        PersistChange(candidate =>
         {
-            var record = _metadata.GetOrAdd(filePath, _ => CreateDefaultRecord(filePath));
+            var record = GetOrAddRecord(candidate, filePath);
             record.QualityScore = Math.Clamp(score, 0.0, 1.0);
             record.QualityScoredBy = scoredBy;
             record.QualityScoredAtUtc = DateTime.UtcNow;
@@ -160,12 +188,14 @@ public sealed class MetadataTagService : IMetadataTagService
         string? scoredBy = null,
         CancellationToken ct = default)
     {
-        return PersistChangeAsync(() =>
+        var ownedInsight = CloneInsight(insight);
+        return PersistChangeAsync(candidate =>
         {
             ApplyQualityAssessment(
+                candidate,
                 filePath,
                 score,
-                insight,
+                ownedInsight,
                 scoredBy,
                 qualityInsightKey: "quality_assessment");
             return true;
@@ -178,17 +208,21 @@ public sealed class MetadataTagService : IMetadataTagService
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(assessments);
+        var ownedAssessments = assessments
+            .Select(CloneQualityAssessment)
+            .ToArray();
 
-        if (assessments.Count == 0)
+        if (ownedAssessments.Length == 0)
         {
             return Task.CompletedTask;
         }
 
-        return PersistChangeAsync(() =>
+        return PersistChangeAsync(candidate =>
         {
-            foreach (var assessment in assessments)
+            foreach (var assessment in ownedAssessments)
             {
                 ApplyQualityAssessment(
+                    candidate,
                     assessment.FilePath,
                     assessment.Score,
                     assessment.Insight,
@@ -203,7 +237,8 @@ public sealed class MetadataTagService : IMetadataTagService
     /// <inheritdoc />
     public double? GetQualityScore(string filePath)
     {
-        if (_metadata.TryGetValue(filePath, out var record))
+        var state = Volatile.Read(ref _state);
+        if (state.Records.TryGetValue(filePath, out var record))
             return record.QualityScore;
         return null;
     }
@@ -211,8 +246,9 @@ public sealed class MetadataTagService : IMetadataTagService
     /// <inheritdoc />
     public IReadOnlyList<string> SearchByTag(string key, string? valuePattern = null)
     {
+        var state = Volatile.Read(ref _state);
         var results = new List<string>();
-        foreach (var kvp in _metadata)
+        foreach (var kvp in state.Records)
         {
             if (kvp.Value.Tags.TryGetValue(key, out var value))
             {
@@ -228,7 +264,8 @@ public sealed class MetadataTagService : IMetadataTagService
     /// <inheritdoc />
     public IReadOnlyList<string> SearchByQualityScore(double minScore, double maxScore = 1.0)
     {
-        return _metadata
+        var state = Volatile.Read(ref _state);
+        return state.Records
             .Where(kvp => kvp.Value.QualityScore >= minScore && kvp.Value.QualityScore <= maxScore)
             .Select(kvp => kvp.Key)
             .ToList();
@@ -237,13 +274,14 @@ public sealed class MetadataTagService : IMetadataTagService
     /// <inheritdoc />
     public FileMetadataRecord? GetFullMetadata(string filePath)
     {
-        return _metadata.TryGetValue(filePath, out var record) ? record : null;
+        var state = Volatile.Read(ref _state);
+        return state.Records.TryGetValue(filePath, out var record) ? CloneRecord(record) : null;
     }
 
     /// <inheritdoc />
     public void RemoveMetadata(string filePath)
     {
-        PersistChange(() => _metadata.TryRemove(filePath, out _));
+        PersistChange(candidate => candidate.Records.Remove(filePath));
     }
 
     /// <inheritdoc />
@@ -252,7 +290,9 @@ public sealed class MetadataTagService : IMetadataTagService
         await _saveLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await SaveToDiskAsync(ct).ConfigureAwait(false);
+            var candidate = CloneState(Volatile.Read(ref _state));
+            await SaveToDiskAsync(candidate, ct).ConfigureAwait(false);
+            Volatile.Write(ref _state, candidate);
         }
         finally
         {
@@ -270,12 +310,14 @@ public sealed class MetadataTagService : IMetadataTagService
         };
     }
 
-    private void Load()
+    private MetadataState Load()
     {
+        var state = MetadataState.CreateEmpty();
+
         try
         {
             if (!File.Exists(_metadataStorePath))
-                return;
+                return state;
 
             var json = File.ReadAllText(_metadataStorePath);
             var data = JsonSerializer.Deserialize(json, MetadataTagServiceJsonContext.Default.MetadataStore);
@@ -284,7 +326,7 @@ public sealed class MetadataTagService : IMetadataTagService
             {
                 foreach (var kvp in data.Records)
                 {
-                    _metadata[kvp.Key] = kvp.Value;
+                    state.Records[kvp.Key] = CloneRecord(kvp.Value);
                 }
             }
         }
@@ -294,9 +336,11 @@ public sealed class MetadataTagService : IMetadataTagService
             System.Diagnostics.Trace.TraceWarning(
                 "MetadataTagService: failed to load metadata from {0}: {1}", _metadataStorePath, ex.Message);
         }
+
+        return state;
     }
 
-    private void PersistChange(Func<bool> mutate)
+    private void PersistChange(Func<MetadataState, bool> mutate)
     {
         // A metadata mutation is not successful unless the durable snapshot is written.
         if (!_saveLock.Wait(TimeSpan.FromSeconds(10)))
@@ -304,12 +348,14 @@ public sealed class MetadataTagService : IMetadataTagService
 
         try
         {
-            if (!mutate())
+            var candidate = CloneState(Volatile.Read(ref _state));
+            if (!mutate(candidate))
             {
                 return;
             }
 
-            SaveToDisk();
+            SaveToDisk(candidate);
+            Volatile.Write(ref _state, candidate);
         }
         finally
         {
@@ -317,17 +363,19 @@ public sealed class MetadataTagService : IMetadataTagService
         }
     }
 
-    private async Task PersistChangeAsync(Func<bool> mutate, CancellationToken ct)
+    private async Task PersistChangeAsync(Func<MetadataState, bool> mutate, CancellationToken ct)
     {
         await _saveLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            if (!mutate())
+            var candidate = CloneState(Volatile.Read(ref _state));
+            if (!mutate(candidate))
             {
                 return;
             }
 
-            await SaveToDiskAsync(ct).ConfigureAwait(false);
+            await SaveToDiskAsync(candidate, ct).ConfigureAwait(false);
+            Volatile.Write(ref _state, candidate);
         }
         finally
         {
@@ -336,13 +384,14 @@ public sealed class MetadataTagService : IMetadataTagService
     }
 
     private void ApplyQualityAssessment(
+        MetadataState state,
         string filePath,
         double score,
         DataInsight insight,
         string? scoredBy,
         string qualityInsightKey)
     {
-        var record = _metadata.GetOrAdd(filePath, _ => CreateDefaultRecord(filePath));
+        var record = GetOrAddRecord(state, filePath);
         var persistedAtUtc = insight.ComputedAtUtc == default ? DateTime.UtcNow : insight.ComputedAtUtc;
         record.QualityScore = Math.Clamp(score, 0.0, 1.0);
         record.QualityScoredBy = scoredBy;
@@ -351,34 +400,125 @@ public sealed class MetadataTagService : IMetadataTagService
         record.LastModifiedUtc = persistedAtUtc;
     }
 
-    private MetadataStore CreateStoreSnapshot()
+    private static MetadataStore CreateStoreSnapshot(MetadataState state)
     {
         return new MetadataStore
         {
             Version = "1.0.0",
             UpdatedAtUtc = DateTime.UtcNow,
-            Records = _metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
+            Records = state.Records
         };
     }
 
-    private void SaveToDisk()
+    private void SaveToDisk(MetadataState state)
     {
         var dir = Path.GetDirectoryName(_metadataStorePath);
         if (!string.IsNullOrEmpty(dir))
             Directory.CreateDirectory(dir);
 
-        var json = JsonSerializer.Serialize(CreateStoreSnapshot(), MetadataTagServiceJsonContext.Default.MetadataStore);
-        AtomicFileWriter.Write(_metadataStorePath, json);
+        var json = JsonSerializer.Serialize(CreateStoreSnapshot(state), MetadataTagServiceJsonContext.Default.MetadataStore);
+        _writeFile(_metadataStorePath, json);
     }
 
-    private async Task SaveToDiskAsync(CancellationToken ct)
+    private async Task SaveToDiskAsync(MetadataState state, CancellationToken ct)
     {
         var dir = Path.GetDirectoryName(_metadataStorePath);
         if (!string.IsNullOrEmpty(dir))
             Directory.CreateDirectory(dir);
 
-        var json = JsonSerializer.Serialize(CreateStoreSnapshot(), MetadataTagServiceJsonContext.Default.MetadataStore);
-        await AtomicFileWriter.WriteAsync(_metadataStorePath, json, ct).ConfigureAwait(false);
+        var json = JsonSerializer.Serialize(CreateStoreSnapshot(state), MetadataTagServiceJsonContext.Default.MetadataStore);
+        await _writeFileAsync(_metadataStorePath, json, ct).ConfigureAwait(false);
+    }
+
+    private static FileMetadataRecord GetOrAddRecord(MetadataState state, string filePath)
+    {
+        if (!state.Records.TryGetValue(filePath, out var record))
+        {
+            record = CreateDefaultRecord(filePath);
+            state.Records[filePath] = record;
+        }
+
+        return record;
+    }
+
+    private static MetadataState CloneState(MetadataState state)
+    {
+        var clone = MetadataState.CreateEmpty();
+        foreach (var record in state.Records)
+        {
+            clone.Records[record.Key] = CloneRecord(record.Value);
+        }
+
+        return clone;
+    }
+
+    private static FileMetadataRecord CloneRecord(FileMetadataRecord record)
+    {
+        return new FileMetadataRecord
+        {
+            FilePath = record.FilePath,
+            CreatedUtc = record.CreatedUtc,
+            LastModifiedUtc = record.LastModifiedUtc,
+            Tags = CloneDictionary(record.Tags),
+            Lineage = (record.Lineage ?? []).Select(CloneLineageEntry).ToList(),
+            Insights = CloneInsights(record.Insights),
+            QualityScore = record.QualityScore,
+            QualityScoredBy = record.QualityScoredBy,
+            QualityScoredAtUtc = record.QualityScoredAtUtc
+        };
+    }
+
+    private static Dictionary<string, string> CloneDictionary(Dictionary<string, string>? values)
+        => values == null
+            ? new Dictionary<string, string>()
+            : new Dictionary<string, string>(values, values.Comparer);
+
+    private static Dictionary<string, DataInsight> CloneInsights(
+        Dictionary<string, DataInsight>? insights)
+    {
+        if (insights == null)
+        {
+            return new Dictionary<string, DataInsight>();
+        }
+
+        return insights.ToDictionary(
+            entry => entry.Key,
+            entry => CloneInsight(entry.Value),
+            insights.Comparer);
+    }
+
+    private static IReadOnlyDictionary<string, string>? CloneDictionary(
+        IReadOnlyDictionary<string, string>? values)
+    {
+        if (values == null)
+        {
+            return null;
+        }
+
+        var comparer = values is Dictionary<string, string> dictionary
+            ? dictionary.Comparer
+            : StringComparer.Ordinal;
+        return new Dictionary<string, string>(values, comparer);
+    }
+
+    private static LineageEntry CloneLineageEntry(LineageEntry entry)
+        => entry with { Parameters = CloneDictionary(entry.Parameters) };
+
+    private static DataInsight CloneInsight(DataInsight insight) => insight with { };
+
+    private static QualityAssessmentMetadataUpdate CloneQualityAssessment(
+        QualityAssessmentMetadataUpdate assessment)
+        => assessment with { Insight = CloneInsight(assessment.Insight) };
+
+    private sealed class MetadataState
+    {
+        private MetadataState()
+        {
+        }
+
+        public Dictionary<string, FileMetadataRecord> Records { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+        public static MetadataState CreateEmpty() => new();
     }
 
     internal sealed class MetadataStore

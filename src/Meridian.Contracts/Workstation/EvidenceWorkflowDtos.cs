@@ -410,6 +410,8 @@ public sealed record EvidenceVaultIdentityDto(
     int SchemaVersion,
     string StorageKind)
 {
+    public string? TenantId { get; init; }
+    public string? Scope { get; init; }
     public IReadOnlyList<EvidenceVaultArtifactDto> Artifacts { get; init; } = [];
     public IReadOnlyList<EvidenceRequestListDto> RequestLists { get; init; } = [];
     public IReadOnlyList<EvidenceSupportRequestDto> SupportRequests { get; init; } = [];
@@ -482,7 +484,11 @@ public sealed record EvidenceVaultRequestListQueryDto(
     string? Status = null,
     string? SubjectKind = null,
     string? SubjectId = null,
-    int? MaxResults = null);
+    int? MaxResults = null)
+{
+    public string? TenantId { get; init; }
+    public string? Scope { get; init; }
+}
 
 public sealed record EvidenceVaultRequestListEntryDto(
     string RequestListId,
@@ -613,7 +619,11 @@ public sealed record EvidenceVaultLookupRequestDto(
     string? ReconciliationCaseId,
     string? AccountingRecordId = null,
     string? ReportPackDeliveryAttemptId = null,
-    string? ReportPackDeliveryPackageId = null);
+    string? ReportPackDeliveryPackageId = null)
+{
+    public string? TenantId { get; init; }
+    public string? Scope { get; init; }
+}
 
 public sealed record EvidenceEndpointErrorDto(
     string Code,
@@ -684,6 +694,8 @@ public sealed record EvidencePacketExportRequest(
     string? Reason,
     bool IncludeWarnings = true)
 {
+    public string? TenantId { get; init; }
+    public string? Scope { get; init; }
     public EvidenceLifecycleMetadataDto? Lifecycle { get; init; }
     public EvidenceSubjectLinkageDto? Linkage { get; init; }
 }

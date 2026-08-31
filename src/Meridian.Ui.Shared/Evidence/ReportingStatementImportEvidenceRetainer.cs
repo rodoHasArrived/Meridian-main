@@ -1,21 +1,20 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Core.IO;
 using Meridian.Reporting;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Ui.Shared.Evidence;
 
 /// <summary>
 /// Production statement-evidence adapter. It copies the import service's retained source bytes
-/// into the statement workflow's content-addressed authority and records deterministic linkage.
-/// The generic Evidence Workbench store remains a separate product surface.
+/// into the statement workflow's content-addressed authority and projects the verified source into
+/// the shared Evidence Workbench without moving reconciliation or reporting authority.
 /// </summary>
-public sealed class ReportingStatementImportEvidenceRetainer(
-    IStatementReconciliationReportAuthorityStore authorityStore,
-    string dataRoot) : IStatementImportEvidenceRetainer
+public sealed class ReportingStatementImportEvidenceRetainer : IStatementImportEvidenceRetainer
 {
     private const string StatementRunSubjectKind = "statement-run";
     private const int EvidenceSchemaVersion = 2;
@@ -24,11 +23,41 @@ public sealed class ReportingStatementImportEvidenceRetainer(
         WriteIndented = true
     };
 
-    private readonly string _dataRoot = Path.GetFullPath(
-        string.IsNullOrWhiteSpace(dataRoot)
-            ? throw new ArgumentException("Statement evidence data root is required.", nameof(dataRoot))
-            : dataRoot);
-    private readonly RootedPathGuard _retainedPathGuard = new(dataRoot);
+    private readonly IStatementReconciliationReportAuthorityStore authorityStore;
+    private readonly IEvidenceArtifactStore evidenceStore;
+    private readonly string _dataRoot;
+    private readonly RootedPathGuard _retainedPathGuard;
+    private readonly SemaphoreSlim _evidenceWorkbenchProjectionGate = new(1, 1);
+
+    public ReportingStatementImportEvidenceRetainer(
+        IStatementReconciliationReportAuthorityStore authorityStore,
+        string dataRoot)
+        : this(
+            authorityStore,
+            dataRoot,
+            new FileEvidenceArtifactStore(
+                dataRoot,
+                NullLogger<FileEvidenceArtifactStore>.Instance))
+    {
+    }
+
+    public ReportingStatementImportEvidenceRetainer(
+        IStatementReconciliationReportAuthorityStore authorityStore,
+        string dataRoot,
+        IEvidenceArtifactStore evidenceStore)
+    {
+        this.authorityStore = authorityStore
+            ?? throw new ArgumentNullException(nameof(authorityStore));
+        this.evidenceStore = evidenceStore
+            ?? throw new ArgumentNullException(nameof(evidenceStore));
+        _dataRoot = Path.GetFullPath(
+            string.IsNullOrWhiteSpace(dataRoot)
+                ? throw new ArgumentException(
+                    "Statement evidence data root is required.",
+                    nameof(dataRoot))
+                : dataRoot);
+        _retainedPathGuard = new RootedPathGuard(_dataRoot);
+    }
 
     /// <summary>
     /// Durable authority used for raw, canonical, and run-evidence retention. Exposed so
@@ -58,17 +87,42 @@ public sealed class ReportingStatementImportEvidenceRetainer(
             RequireIdentity(request.CompanyId, "company"),
             RequireIdentity(request.WorkflowId, "workflow"));
         var statusRoute = BuildStatusRoute(scope.WorkflowId);
-        if (result.EvidenceVaultIdentity is { } retainedIdentity
-            && await HasVerifiedCanonicalRunEvidenceAsync(
+        var evidenceWorkbenchRoute = BuildEvidenceWorkbenchRoute(result.RunId);
+        var reconciliationRoute = StatementImportEvidenceBridge.BuildReconciliationRoute(result.RunId);
+        if (result.EvidenceVaultIdentity is { } retainedIdentity)
+        {
+            var verifiedEvidence = await TryGetVerifiedCanonicalRunEvidenceAsync(
                     scope,
                     result,
                     request,
                     statusRoute,
                     retainedIdentity,
                     ct)
-                .ConfigureAwait(false))
-        {
-            return result;
+                .ConfigureAwait(false);
+            if (verifiedEvidence is not null)
+            {
+                var scopedRetainedIdentity = retainedIdentity with
+                {
+                    TenantId = request.TenantId,
+                    Scope = request.CompanyId
+                };
+                var sourceArtifact = scopedRetainedIdentity.Artifacts.Single(static artifact =>
+                    string.Equals(artifact.Kind, "statement-source", StringComparison.Ordinal));
+                await EnsureEvidenceWorkbenchProjectionAsync(
+                        result,
+                        request,
+                        reconciliationRoute,
+                        sourceArtifact.ContentHashSha256,
+                        retainedSourcePath: null,
+                        verifiedEvidence.SourceContent,
+                        ct)
+                    .ConfigureAwait(false);
+                return BuildRetainedResult(
+                    result,
+                    scopedRetainedIdentity,
+                    evidenceWorkbenchRoute,
+                    reconciliationRoute);
+            }
         }
 
         var sourcePath = ResolveRetainedPath(result.RetainedSourcePath, "source");
@@ -142,26 +196,223 @@ public sealed class ReportingStatementImportEvidenceRetainer(
             SchemaVersion: EvidenceSchemaVersion,
             StorageKind: authorityStore.StorageKind)
         {
+            TenantId = request.TenantId,
+            Scope = request.CompanyId,
             Artifacts = artifacts
         };
 
-        return result with
+        await EnsureEvidenceWorkbenchProjectionAsync(
+                result,
+                request,
+                reconciliationRoute,
+                sourceDocument.Identity.ContentHashSha256,
+                sourcePath,
+                retainedSourceContent: null,
+                ct)
+            .ConfigureAwait(false);
+
+        return BuildRetainedResult(
+            result,
+            identity,
+            evidenceWorkbenchRoute,
+            reconciliationRoute);
+    }
+
+    private async Task EnsureEvidenceWorkbenchProjectionAsync(
+        StatementImportCommitResultDto result,
+        StatementImportEvidenceBridgeRequest request,
+        string reconciliationRoute,
+        string sourceContentHashSha256,
+        string? retainedSourcePath,
+        byte[]? retainedSourceContent,
+        CancellationToken ct)
+    {
+        await _evidenceWorkbenchProjectionGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await EnsureEvidenceWorkbenchProjectionCoreAsync(
+                    result,
+                    request,
+                    reconciliationRoute,
+                    sourceContentHashSha256,
+                    retainedSourcePath,
+                    retainedSourceContent,
+                    ct)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            _evidenceWorkbenchProjectionGate.Release();
+        }
+    }
+
+    private async Task EnsureEvidenceWorkbenchProjectionCoreAsync(
+        StatementImportCommitResultDto result,
+        StatementImportEvidenceBridgeRequest request,
+        string reconciliationRoute,
+        string sourceContentHashSha256,
+        string? retainedSourcePath,
+        byte[]? retainedSourceContent,
+        CancellationToken ct)
+    {
+        var expectedIntake = StatementImportEvidenceBridge.BuildIntakeRequest(
+            result,
+            request,
+            result.RetainedSourcePath,
+            reconciliationRoute,
+            sourceContentHashSha256);
+        var query = new EvidenceVaultDocumentQueryDto(
+            Classification: EvidenceDocumentClassificationDto.Statement,
+            ChannelKind: EvidenceDocumentIntakeChannelDto.ImportedFileReference,
+            SubjectKind: StatementRunSubjectKind,
+            SubjectId: result.RunId,
+            TenantId: request.TenantId,
+            Scope: request.CompanyId,
+            MaxResults: 100);
+        var existing = await evidenceStore
+            .ListDocumentsAsync(query, ct)
+            .ConfigureAwait(false);
+        if (existing.Any(entry =>
+                MatchesEvidenceWorkbenchProjection(
+                    entry.Document,
+                    expectedIntake,
+                    sourceContentHashSha256)))
+        {
+            return;
+        }
+
+        retainedSourcePath ??= retainedSourceContent is null
+            ? ResolveRetainedPath(result.RetainedSourcePath, "source")
+            : result.RetainedSourcePath;
+        var intakeRequest = StatementImportEvidenceBridge.BuildIntakeRequest(
+            result,
+            request,
+            retainedSourcePath,
+            reconciliationRoute,
+            sourceContentHashSha256);
+        if (retainedSourceContent is not null)
+        {
+            intakeRequest = intakeRequest with
+            {
+                ContentBase64 = Convert.ToBase64String(retainedSourceContent),
+                IntakeSource = new EvidenceDocumentIntakeSourceDto(
+                    EvidenceDocumentIntakeSourceKindDto.UploadedContent,
+                    DisplayName: result.RetainedSourcePath,
+                    ExpectedContentHashSha256: sourceContentHashSha256)
+            };
+        }
+
+        var retained = await evidenceStore
+            .WriteIntakeArtifactAsync(intakeRequest, ct)
+            .ConfigureAwait(false);
+        if (retained.Document is not { } retainedDocument
+            || !MatchesEvidenceWorkbenchProjection(
+                retainedDocument,
+                expectedIntake,
+                sourceContentHashSha256))
+        {
+            throw new InvalidDataException(
+                "Evidence Workbench did not retain the authority-verified Statement document projection.");
+        }
+
+        var queryProof = await evidenceStore
+            .ListDocumentsAsync(query, ct)
+            .ConfigureAwait(false);
+        if (!queryProof.Any(entry =>
+                string.Equals(entry.VaultId, retained.VaultIdentity.VaultId, StringComparison.Ordinal)
+                && MatchesEvidenceWorkbenchProjection(
+                    entry.Document,
+                    expectedIntake,
+                    sourceContentHashSha256)))
+        {
+            throw new InvalidDataException(
+                "Evidence Workbench retained the Statement document but did not return it from the canonical query seam.");
+        }
+    }
+
+    private static bool MatchesEvidenceWorkbenchProjection(
+        EvidenceDocumentDto document,
+        EvidenceVaultIntakeRequestDto expected,
+        string sourceContentHashSha256)
+    {
+        var sourceRecord = document.SourceRecord;
+        if (document.Classification != EvidenceDocumentClassificationDto.Statement
+            || !string.Equals(document.FileName, expected.FileName, StringComparison.Ordinal)
+            || !string.Equals(
+                document.SourceHashSha256,
+                sourceContentHashSha256,
+                StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(document.SourceChannel, expected.IntakeChannel, StringComparison.Ordinal)
+            || !string.Equals(document.Actor, expected.Actor, StringComparison.Ordinal)
+            || !string.Equals(document.TenantId, expected.TenantId, StringComparison.Ordinal)
+            || !string.Equals(document.Scope, expected.Scope, StringComparison.Ordinal)
+            || document.ChannelKind != EvidenceDocumentIntakeChannelDto.ImportedFileReference
+            || !string.Equals(document.ExtractorId, expected.ExtractorId, StringComparison.Ordinal)
+            || !string.Equals(document.ContentType, expected.ContentType, StringComparison.Ordinal)
+            || !string.Equals(document.SourceSystem, expected.SourceSystem, StringComparison.Ordinal)
+            || !string.Equals(document.SourceReference, expected.SourceReference, StringComparison.Ordinal)
+            || sourceRecord is null
+            || !string.Equals(
+                sourceRecord.SourceHashSha256,
+                sourceContentHashSha256,
+                StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(
+                sourceRecord.ReceiptHash,
+                sourceContentHashSha256,
+                StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(sourceRecord.SourceChannel, expected.IntakeChannel, StringComparison.Ordinal)
+            || sourceRecord.ChannelKind != EvidenceDocumentIntakeChannelDto.ImportedFileReference
+            || !string.Equals(sourceRecord.Actor, expected.Actor, StringComparison.Ordinal)
+            || !string.Equals(sourceRecord.TenantId, expected.TenantId, StringComparison.Ordinal)
+            || !string.Equals(sourceRecord.Scope, expected.Scope, StringComparison.Ordinal)
+            || !string.Equals(sourceRecord.SourceSystem, expected.SourceSystem, StringComparison.Ordinal)
+            || !string.Equals(sourceRecord.SourceReference, expected.SourceReference, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        if (!expected.ObjectLinks.All(expectedLink =>
+                document.ObjectLinks.Any(actualLink =>
+                    actualLink.LinkKind == expectedLink.LinkKind
+                    && string.Equals(actualLink.ObjectId, expectedLink.ObjectId, StringComparison.Ordinal)
+                    && string.Equals(actualLink.Relationship, expectedLink.Relationship, StringComparison.Ordinal))))
+        {
+            return false;
+        }
+
+        if (!(expected.ExtractedFields ?? []).All(expectedField =>
+                document.ExtractedFields.Any(actualField =>
+                    string.Equals(actualField.FieldName, expectedField.FieldName, StringComparison.Ordinal)
+                    && string.Equals(actualField.ExtractedValue, expectedField.ExtractedValue, StringComparison.Ordinal)
+                    && actualField.ValidationStatus == expectedField.ValidationStatus)))
+        {
+            return false;
+        }
+
+        return document.AuditTrail.Any(auditEvent =>
+            string.Equals(auditEvent.Action, "DocumentIntakeRetained", StringComparison.Ordinal)
+            && string.Equals(auditEvent.Actor, expected.Actor, StringComparison.Ordinal)
+            && !string.IsNullOrWhiteSpace(auditEvent.CorrelationId));
+    }
+
+    private static StatementImportCommitResultDto BuildRetainedResult(
+        StatementImportCommitResultDto result,
+        EvidenceVaultIdentityDto identity,
+        string evidenceWorkbenchRoute,
+        string reconciliationRoute) =>
+        result with
         {
             EvidenceVaultIdentity = identity,
-            EvidenceWorkbenchRoute = statusRoute,
-            ReconciliationRoute =
-                $"/accounting/reconciliation/match?runId={Uri.EscapeDataString(result.RunId)}",
+            EvidenceWorkbenchRoute = evidenceWorkbenchRoute,
+            ReconciliationRoute = reconciliationRoute,
             NextActions =
             [
                 "Review the authority-retained source, canonical statement, and run evidence from the statement reconciliation workflow.",
-                result.CaseCount > 0 || result.BreakCount > 0
-                    ? "Review reconciliation cases linked to the retained statement and canonical run evidence."
-                    : "Review the statement run before using it as close support."
+                .. StatementImportEvidenceBridge.BuildNextActions(result)
             ]
         };
-    }
 
-    internal Task<bool> HasVerifiedCanonicalRunEvidenceAsync(
+    internal async Task<bool> HasVerifiedCanonicalRunEvidenceAsync(
         StatementImportCommitResultDto result,
         StatementImportEvidenceBridgeRequest request,
         CancellationToken ct = default)
@@ -171,23 +422,24 @@ public sealed class ReportingStatementImportEvidenceRetainer(
         if (!authorityStore.IsDurableAuthority
             || result.EvidenceVaultIdentity is not { } identity)
         {
-            return Task.FromResult(false);
+            return false;
         }
 
         var scope = new StatementReconciliationReportAuthorityScope(
             RequireIdentity(request.TenantId, "tenant"),
             RequireIdentity(request.CompanyId, "company"),
             RequireIdentity(request.WorkflowId, "workflow"));
-        return HasVerifiedCanonicalRunEvidenceAsync(
-            scope,
-            result,
-            request,
-            BuildStatusRoute(scope.WorkflowId),
-            identity,
-            ct);
+        return await TryGetVerifiedCanonicalRunEvidenceAsync(
+                scope,
+                result,
+                request,
+                BuildStatusRoute(scope.WorkflowId),
+                identity,
+                ct)
+            .ConfigureAwait(false) is not null;
     }
 
-    private async Task<bool> HasVerifiedCanonicalRunEvidenceAsync(
+    private async Task<VerifiedCanonicalRunEvidence?> TryGetVerifiedCanonicalRunEvidenceAsync(
         StatementReconciliationReportAuthorityScope scope,
         StatementImportCommitResultDto result,
         StatementImportEvidenceBridgeRequest request,
@@ -204,10 +456,10 @@ public sealed class ReportingStatementImportEvidenceRetainer(
             || !string.Equals(identity.VaultId, expectedVaultId, StringComparison.Ordinal)
             || !string.Equals(identity.ManifestPath, expectedManifestKey, StringComparison.Ordinal)
             || !string.Equals(identity.ManifestRoute, statusRoute, StringComparison.Ordinal)
-            || !IsSha256(identity.ContentHashSha256)
+            || !Sha256Digest.IsCanonical(identity.ContentHashSha256)
             || identity.Artifacts.Count != 3)
         {
-            return false;
+            return null;
         }
 
         try
@@ -224,7 +476,7 @@ public sealed class ReportingStatementImportEvidenceRetainer(
                     identity.ContentHashSha256,
                     StringComparison.Ordinal))
             {
-                return false;
+                return null;
             }
 
             var source = await TryReadVerifiedDocumentAsync(
@@ -244,7 +496,7 @@ public sealed class ReportingStatementImportEvidenceRetainer(
                 .ConfigureAwait(false);
             if (source is null || canonical is null || runEvidence is null)
             {
-                return false;
+                return null;
             }
 
             var expectedRunEvidenceBytes = JsonSerializer.SerializeToUtf8Bytes(
@@ -255,7 +507,7 @@ public sealed class ReportingStatementImportEvidenceRetainer(
                 JsonOptions);
             if (!runEvidence.Content.AsSpan().SequenceEqual(expectedRunEvidenceBytes))
             {
-                return false;
+                return null;
             }
 
             var expectedManifestBytes = JsonSerializer.SerializeToUtf8Bytes(
@@ -270,7 +522,7 @@ public sealed class ReportingStatementImportEvidenceRetainer(
                 JsonOptions);
             if (!manifest.Content.AsSpan().SequenceEqual(expectedManifestBytes))
             {
-                return false;
+                return null;
             }
 
             var expectedArtifacts = BuildArtifacts(
@@ -279,11 +531,13 @@ public sealed class ReportingStatementImportEvidenceRetainer(
                 source.Document,
                 canonical.Document,
                 runEvidence.Document);
-            return ArtifactsMatch(identity.Artifacts, expectedArtifacts);
+            return ArtifactsMatch(identity.Artifacts, expectedArtifacts)
+                ? new VerifiedCanonicalRunEvidence(source.Content)
+                : null;
         }
         catch (ReportingArtifactIntegrityException)
         {
-            return false;
+            return null;
         }
     }
 
@@ -304,7 +558,7 @@ public sealed class ReportingStatementImportEvidenceRetainer(
             || document.Scope != scope
             || !string.Equals(document.DocumentKey, documentKey, StringComparison.Ordinal)
             || document.ByteSize != content.LongLength
-            || !IsSha256(document.Identity.ContentHashSha256)
+            || !Sha256Digest.IsCanonical(document.Identity.ContentHashSha256)
             || !string.Equals(
                 ComputeHash(content),
                 document.Identity.ContentHashSha256,
@@ -315,6 +569,8 @@ public sealed class ReportingStatementImportEvidenceRetainer(
 
         return new VerifiedAuthorityDocument(document, content);
     }
+
+    private sealed record VerifiedCanonicalRunEvidence(byte[] SourceContent);
 
     private static bool ArtifactsMatch(
         IReadOnlyList<EvidenceVaultArtifactDto> actual,
@@ -494,8 +750,7 @@ public sealed class ReportingStatementImportEvidenceRetainer(
             scope.CompanyId,
             scope.WorkflowId,
             runId.Trim());
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)))
-            .ToLowerInvariant();
+        var hash = Sha256Digest.ComputeUtf8(canonical);
         return $"statement-evidence-{hash[..32]}";
     }
 
@@ -514,13 +769,14 @@ public sealed class ReportingStatementImportEvidenceRetainer(
             "workflowId",
             workflowId);
 
-    private static string ComputeHash(ReadOnlySpan<byte> content) =>
-        Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+    private static string BuildEvidenceWorkbenchRoute(string runId) =>
+        "/reporting/evidence"
+        + $"?subjectKind={Uri.EscapeDataString(StatementRunSubjectKind)}"
+        + $"&subjectId={Uri.EscapeDataString(runId)}"
+        + "&documentClassification=Statement";
 
-    private static bool IsSha256(string? value) =>
-        value is { Length: 64 }
-        && value.All(static character =>
-            character is >= '0' and <= '9' or >= 'a' and <= 'f');
+    private static string ComputeHash(ReadOnlySpan<byte> content) =>
+        Sha256Digest.Compute(content);
 
     private static string RequireIdentity(string? value, string kind) =>
         string.IsNullOrWhiteSpace(value)

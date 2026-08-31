@@ -6,6 +6,7 @@ using Meridian.Identity.Auth;
 using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Wpf.Services;
 using System.Globalization;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Wpf.ViewModels.Accounting;
 
@@ -1770,12 +1771,26 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
                 issue.TargetId ?? closePlan.ClosePlanId));
         }
 
+        // Operating-coverage evidence belongs in the same review surface as task, sign-off, and
+        // late-adjustment evidence. The coverage grid shows only a count, so without this an
+        // operator reviewing a blocked control could see that evidence existed and had no way to
+        // reach it (ACCT-CHECKLIST-07). Added before the empty check below so the "no retained
+        // evidence" row cannot claim there is none while coverage evidence is present.
+        foreach (var coverage in closePlan.OperatingCoverage)
+        {
+            AddEvidenceReviewRows(
+                CloseEvidenceReviewRows,
+                $"operating-coverage:{coverage.ControlId}",
+                coverage.EvidenceLinks,
+                coverage.Label);
+        }
+
         if (CloseEvidenceReviewRows.Count == 0)
         {
             CloseEvidenceReviewRows.Add(new AccountingWorkbenchRow(
                 "No retained evidence",
                 "Missing",
-                "The close plan does not expose retained setup, task, sign-off, or late-adjustment evidence.",
+                "The close plan does not expose retained setup, task, sign-off, late-adjustment, or operating-coverage evidence.",
                 "Retain close setup evidence before production certification.",
                 closePlan.ClosePlanId));
         }
@@ -1843,45 +1858,17 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
             _ => state.ToString()
         };
 
+    /// <summary>
+    /// Names a close posting's dimensional scope through the shared projection.
+    /// <para>
+    /// This used to enumerate the contract itself, and omitted customer, vendor and project — a
+    /// third copy of the same list, drifting from the other two. One definition now owns it.
+    /// </para>
+    /// </summary>
     private static string FormatClosePostingBalanceScope(LedgerDimensionSetDto? dimensions)
     {
-        if (dimensions is null)
-        {
-            return "No scoped dimensions returned";
-        }
-
-        var labels = new List<string>();
-        AddScopeLabel(labels, "Fund", dimensions.FundId);
-        AddScopeLabel(labels, "Entity", dimensions.EntityId);
-        AddScopeLabel(labels, "Sleeve", dimensions.SleeveId);
-        AddScopeLabel(labels, "Strategy", dimensions.StrategyId);
-        AddScopeLabel(labels, "Investor", dimensions.InvestorId);
-        AddScopeLabel(labels, "Capital account", dimensions.CapitalAccountId);
-        AddScopeLabel(labels, "Instrument", dimensions.InstrumentId?.ToString("D"));
-        AddScopeLabel(labels, "Position", dimensions.PositionId?.ToString("D"));
-        AddScopeLabel(labels, "Tax lot", dimensions.TaxLotId);
-        AddScopeLabel(labels, "Cost center", dimensions.CostCenterId);
-        AddScopeLabel(labels, "Counterparty", dimensions.CounterpartyId);
-        AddScopeLabel(labels, "Organization", dimensions.OrganizationId);
-        AddScopeLabel(labels, "Portfolio", dimensions.PortfolioId);
-        AddScopeLabel(labels, "Book", dimensions.BookId);
-        AddScopeLabel(labels, "Account", dimensions.AccountId);
-        foreach (var (key, value) in dimensions.ExternalGlDimensions.OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase))
-        {
-            AddScopeLabel(labels, $"External {key}", value);
-        }
-
-        return labels.Count == 0
-            ? "No scoped dimensions returned"
-            : string.Join(" | ", labels);
-    }
-
-    private static void AddScopeLabel(ICollection<string> labels, string label, string? value)
-    {
-        if (!string.IsNullOrWhiteSpace(value))
-        {
-            labels.Add($"{label}: {value.Trim()}");
-        }
+        var scope = PostedLedgerProjection.DescribeDimensionScope(dimensions, " | ");
+        return string.IsNullOrEmpty(scope) ? "No scoped dimensions returned" : scope;
     }
 
     private static AccountingWorkbenchRow BuildMaterialityPolicyRow(ClosePeriodPlanDto closePlan)
@@ -1979,8 +1966,4 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
 
     private static string NormalizeRequired(string? value, string fallback)
         => string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
 }

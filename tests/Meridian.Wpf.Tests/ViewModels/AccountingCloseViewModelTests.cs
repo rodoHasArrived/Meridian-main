@@ -352,6 +352,13 @@ public sealed class AccountingCloseViewModelTests
             row.Name == "late-adjustment:late-adjustment-1" &&
             row.Status == "Retained" &&
             row.Evidence == "evidence/late-adjustment");
+        // Operating-coverage evidence reaches the same review surface. The coverage grid shows only
+        // a count, so without this an operator reviewing a blocked control could see that evidence
+        // existed and had no way to reach it (ACCT-CHECKLIST-07).
+        viewModel.CloseEvidenceReviewRows.Should().Contain(row =>
+            row.Name == "operating-coverage:close-plan-setup" &&
+            row.Status == "Retained" &&
+            row.Evidence == "evidence/close-plan-configuration");
         viewModel.CloseEvidenceReviewRows.Should().Contain(row =>
             row.Name == "CloseTaskSignOffMissing" &&
             row.Status == "Review required" &&

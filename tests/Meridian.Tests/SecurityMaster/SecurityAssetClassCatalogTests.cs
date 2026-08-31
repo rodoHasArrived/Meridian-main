@@ -93,13 +93,11 @@ public sealed class SecurityAssetClassCatalogTests
     [Fact]
     public void Catalog_StaysInLockstepWithTheFSharpAssetClassRegistry()
     {
-        // CustomAsset is C#-side only: it shares the OtherSecurity SecurityKind, so the kind-keyed
-        // F# registry cannot carry a distinct row for it. Every other class must exist in both
-        // lanes — this is the guard that keeps the two canonical tables from drifting apart.
-        var catalogClasses = SecurityAssetClassCatalog.AssetClasses
-            .Where(assetClass => assetClass != "CustomAsset");
-
-        catalogClasses.Should().BeEquivalentTo(AssetClassRegistry.assetClasses);
+        // Every catalog class must exist in the kind-keyed F# registry and vice versa — this is
+        // the guard that keeps the two canonical tables from drifting apart. CustomAsset gained a
+        // first-class SecurityKind (profile envelope + verbatim document), so the historical
+        // C#-side-only exclusion no longer applies.
+        SecurityAssetClassCatalog.AssetClasses.Should().BeEquivalentTo(AssetClassRegistry.assetClasses);
     }
 
     [Fact]
@@ -164,6 +162,27 @@ public sealed class SecurityAssetClassCatalogTests
 
         equity.SupportsBasicCreateWorkflow.Should().BeTrue();
         equity.UsesFaceValueLots.Should().BeFalse();
+    }
+
+    [Fact]
+    public void AssetPackRegistry_ValidatesCleanly_AndCoversEveryCatalogAssetClass()
+    {
+        // The registry is normative metadata the operational-readiness service consumes, not
+        // documentation shaped like code: its own validation rules must pass for every declared
+        // pack, and EVERY canonical Security Master asset class must be claimed by at least one
+        // pack — an unclaimed class silently drops out of asset-pack coverage routing. Broader
+        // business vocabulary the Security Master does not model as a class (e.g. "Cash",
+        // "Mortgage") belongs in PlannedAssetClasses, not AssetClasses; see
+        // SecurityAssetClassParityGuardTests for the guard on both directions.
+        var validation = SecurityAssetPackRegistry.ValidateAll();
+        validation.IsValid.Should().BeTrue(string.Join(
+            "; ", validation.Issues.Select(static issue => $"[{issue.Code}] {issue.Target}: {issue.Message}")));
+
+        foreach (var assetClass in SecurityAssetClassCatalog.AssetClasses)
+        {
+            SecurityAssetPackRegistry.FindByAssetClass(assetClass).Should().NotBeEmpty(
+                $"canonical asset class '{assetClass}' must be claimed by at least one asset pack");
+        }
     }
 
     [Fact]
@@ -443,14 +462,19 @@ public sealed class SecurityAssetClassCatalogTests
     [Fact]
     public void AssetPackRegistry_ValidateCandidateSet_ShouldAdmitNewPackWithoutMutatingBuiltIns()
     {
+        // A pack drafted ahead of the domain work covers nothing today, so RoyaltyStream — which the
+        // Security Master does not model as a class — is declared as PLANNED coverage. Naming it under
+        // AssetClasses would claim coverage the system cannot deliver, which the readiness report
+        // would then publish to operators.
         var candidate = SecurityAssetPackRegistry.CreateCandidateDescriptor(
             "royalty-stream",
             "Royalty streams",
-            ["RoyaltyStream"],
+            [],
             ["Purchase", "Sale", "Distribution", "Appraisal", "Impairment", "Amendment"],
             ["DiscountedCashFlow", "UserEstimate", "ExternalModel"],
             [],
-            AssetPackAutomationDepth.WideCapture);
+            AssetPackAutomationDepth.WideCapture,
+            plannedAssetClasses: ["RoyaltyStream"]);
 
         var result = SecurityAssetPackRegistry.ValidateCandidateSet([candidate]);
 
@@ -538,13 +562,19 @@ public sealed class SecurityAssetClassCatalogTests
     public void AssetPackRegistry_FindByAssetClass_ShouldMapAssetClassToPackWithoutLedgerChanges()
     {
         var loanPacks = SecurityAssetPackRegistry.FindByAssetClass("DirectLoan");
-        var etfPacks = SecurityAssetPackRegistry.FindByAssetClass("ExchangeTradedFund");
+        // Exchange-traded funds are modelled as InvestmentFund. Routing is by the class a record can
+        // actually carry, so "ExchangeTradedFund" — business vocabulary the Security Master does not
+        // model — routes nowhere and is declared as planned coverage on the pack instead.
+        var etfPacks = SecurityAssetPackRegistry.FindByAssetClass("InvestmentFund");
         var structuredCreditPacks = SecurityAssetPackRegistry.FindByAssetClass("StructuredCredit");
         var commitmentPacks = SecurityAssetPackRegistry.FindByAssetClass("CommitmentGuarantee");
 
         loanPacks.Should().Contain(static pack => pack.PackId == "private-loan-credit");
         etfPacks.Should().ContainSingle(static pack => pack.PackId == "public-equity-etf");
         etfPacks[0].LedgerExtensionPolicy.Should().Contain("journal templates");
+        SecurityAssetPackRegistry.FindByAssetClass("ExchangeTradedFund").Should().BeEmpty();
+        SecurityAssetPackRegistry.Find("public-equity-etf")!.PlannedAssetClasses
+            .Should().Contain("ExchangeTradedFund");
         structuredCreditPacks.Should().ContainSingle(static pack => pack.PackId == "fixed-income");
         commitmentPacks.Should().ContainSingle(static pack => pack.PackId == "commitment-guarantee");
     }

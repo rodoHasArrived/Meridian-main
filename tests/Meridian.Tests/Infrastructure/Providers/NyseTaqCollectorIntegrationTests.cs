@@ -85,7 +85,7 @@ public sealed class NyseTaqCollectorIntegrationTests
             Venue: trade.Exchange,
             RawConditions: !string.IsNullOrWhiteSpace(trade.Conditions)
                 ? trade.Conditions.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                : null);
+                : null, Source: "NYSE");
     }
 
     // -------------------------------------------------------------------------
@@ -243,7 +243,8 @@ public sealed class NyseTaqCollectorIntegrationTests
                 Aggressor: AggressorSide.Unknown,
                 SequenceNumber: record.GlobalSequenceNumber,
                 StreamId: "nyse-taq",
-                Venue: "NYSE");
+                Venue: "NYSE",
+                Source: "NYSE");
 
         var update1 = CreateVwapTestUpdate(record1);
         var update2 = CreateVwapTestUpdate(record2);

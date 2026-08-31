@@ -429,6 +429,9 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
         return null;
     }
 
+    // Deliberately NOT routed through Sha256Digest (which lowercases): element hashes become
+    // persisted per-row identities on CanonicalStatementRow, so changing the casing would
+    // detach retained statement rows from their identities (#2691).
     private static string HashElement(XElement element) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(element.ToString(SaveOptions.DisableFormatting))));
 }

@@ -112,7 +112,8 @@ public sealed partial class OrderManagementSystem
             OrderState = parkedState,
             RequiresApproval = true,
             EscalationId = riskResult.EscalationId,
-            RiskWarnings = riskResult.Warnings.Count > 0 ? riskResult.Warnings : null
+            RiskWarnings = riskResult.Warnings.Count > 0 ? riskResult.Warnings : null,
+            RiskDecision = riskResult.ToSummary()
         };
     }
 
@@ -181,6 +182,68 @@ public sealed partial class OrderManagementSystem
     /// order-notional, gross-exposure, and concentration rules while the broker fills all
     /// 100,000 shares. Refusing beats measuring one size and routing another.
     /// </summary>
+    /// <summary>
+    /// Strips server-owned routing keys a caller must not supply, then copies the metadata once,
+    /// before anything reads it.
+    /// <para>
+    /// <see cref="ExecutionOrderMetadataPolicy.RemoveServerOwnedRoutingKeys"/> hands back the
+    /// original request when there is nothing to strip, so without the copy the sanitized request's
+    /// metadata <em>is</em> the caller's dictionary — and an in-process caller can hold a mutable one
+    /// across the awaits in placement. Sizing capability, risk validation, retained state, and
+    /// gateway submission each read metadata at a different point, so a caller could otherwise flip
+    /// <c>asset_class</c> after the sizing decision and have risk measure a treasury while the
+    /// gateway routes equity shares, with the order state under-reserving it as face value for the
+    /// rest of its life. One read, one copy, one order.
+    /// </para>
+    /// </summary>
+    private OrderRequest SanitizeAndSnapshotRequest(OrderRequest request, string orderId)
+    {
+        var safeRequest = ExecutionOrderMetadataPolicy.RemoveServerOwnedRoutingKeys(request);
+        if (!ReferenceEquals(safeRequest, request))
+        {
+            _logger.LogWarning(
+                "Order {OrderId} for {Symbol} contained server-owned broker routing metadata; routing keys were removed before gateway submission.",
+                LogSanitizer.Sanitize(orderId),
+                LogSanitizer.Sanitize(request.Symbol));
+        }
+
+        // Metadata is not the only caller-owned collection on the request: Legs is a list the caller
+        // may still hold, and the fat-finger quantity limb multiplies by the largest leg ratio, so a
+        // ratio raised after validation routes more contracts than the ceiling approved. Both are
+        // copied here for the same reason and at the same moment — snapshotting one and not the
+        // other just moves the race.
+        return safeRequest with
+        {
+            // Same construction the sizing stamp uses, so the request's key comparer and duplicate
+            // handling survive: broker metadata readers have ordered alias rules of their own.
+            Metadata = safeRequest.Metadata is { } callerMetadata
+                ? new Dictionary<string, string>(callerMetadata)
+                : safeRequest.Metadata,
+            Legs = safeRequest.Legs is { } callerLegs ? [.. callerLegs] : safeRequest.Legs
+        };
+    }
+
+    /// <summary>
+    /// Whether the active gateway routes this order's quantity as face value priced as a percentage
+    /// of par. Asset-class labels alone do not define quantity semantics: Alpaca routes fixed-income
+    /// <c>Qty</c> as face value, while IB routes a count of $1,000 bonds under the generic "bond"
+    /// class — so the gateway is asked rather than the label read.
+    /// </summary>
+    private bool ResolvesFaceValuePercentageOfPar(OrderRequest request) =>
+        _faceValueOrderSizingGateway?.UsesFaceValuePercentageOfPar(request) is true;
+
+    /// <summary>
+    /// Carries the gateway-resolved sizing fact into the request the risk rules evaluate, and only
+    /// there: the marker is server-owned, so it is stamped on a copy rather than on anything a
+    /// caller supplied or the gateway will receive.
+    /// </summary>
+    private static OrderRequest StampResolvedOrderSizing(
+        OrderRequest request,
+        bool usesFaceValuePercentageOfPar) =>
+        usesFaceValuePercentageOfPar
+            ? request with { Metadata = OrderSizingMetadata.WithFaceValuePercentageOfPar(request.Metadata) }
+            : request;
+
     private bool CarriesUnroutableNotionalMetadata(OrderRequest request) =>
         BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is not null &&
         _notionalSizingGateway?.RoutesNotionalMetadata(request) is not true;
@@ -209,6 +272,7 @@ public sealed partial class OrderManagementSystem
             Status = OrderStatus.PendingNew,
             CreatedAt = timestamp,
             ContractMultiplier = tracked?.ContractMultiplier ?? 1m,
+            UsesFaceValuePercentageOfPar = tracked?.UsesFaceValuePercentageOfPar ?? false,
             OptionContract = tracked?.OptionContract,
             Legs = tracked?.Legs
         };
@@ -319,36 +383,6 @@ public sealed partial class OrderManagementSystem
         // to clear it lazily.
         _parkedOrderIds.TryRemove(orderId, out _);
         return true;
-    }
-
-    /// <summary>
-    /// Withdraws every live parked escalation, for an emergency cancel-all. A parked order
-    /// is tracked in a terminal state and so is absent from the open book, which means the
-    /// ordinary cancel-all sweep never reaches it — leaving escalations that can still be
-    /// released to the broker after cancellation reports completion.
-    /// </summary>
-    private async Task WithdrawAllParkedEscalationsAsync(CancellationToken ct)
-    {
-        var parkedOrderIds = _parkedOrderIds.Keys.ToArray();
-        if (parkedOrderIds.Length == 0)
-        {
-            return;
-        }
-
-        _logger.LogInformation(
-            "Cancel-all is withdrawing {ParkedCount} parked escalation(s)",
-            parkedOrderIds.Length);
-
-        foreach (var parkedOrderId in parkedOrderIds)
-        {
-            var withdrawn = await TryCancelParkedOrderAsync(parkedOrderId, ct).ConfigureAwait(false);
-            if (withdrawn is null or { Success: false })
-            {
-                _logger.LogError(
-                    "Cancel-all could not withdraw the governed escalation holding order {OrderId}; it remains releasable",
-                    LogSanitizer.Sanitize(parkedOrderId));
-            }
-        }
     }
 
     /// <summary>
@@ -513,16 +547,17 @@ public sealed partial class OrderManagementSystem
     }
 
     /// <summary>
-    /// Metadata keys only this OMS's internal amendment probe may set. The evaluation-only
-    /// flag suppresses governed-approval parking, and the incremental notional tells the
-    /// portfolio rules to charge less than the order's full size — a caller who could set
-    /// either would obtain a parked outcome with no queue entry behind it, or declare their
-    /// own order to add zero exposure and walk past the gross and concentration ceilings.
+    /// Metadata keys only this OMS may set. The evaluation-only flag suppresses governed-approval
+    /// parking, the incremental notional tells portfolio rules to charge less than the order's
+    /// full size, and the sizing marker records a decision made by the active gateway. A caller
+    /// who could set them could bypass escalation, declare zero exposure, or opt out of the unit
+    /// ceiling by pretending an ordinary quantity were fixed-income face value.
     /// </summary>
     private static readonly string[] InternalRiskMetadataKeys =
     [
         RiskEscalationQueueService.EvaluationOnlyMetadataKey,
-        RiskEscalationQueueService.IncrementalNotionalMetadataKey
+        RiskEscalationQueueService.IncrementalNotionalMetadataKey,
+        OrderSizingMetadata.FaceValuePercentageOfParKey
     ];
 
     /// <summary>
@@ -531,16 +566,21 @@ public sealed partial class OrderManagementSystem
     /// </summary>
     private static OrderRequest StripInternalRiskMetadata(OrderRequest request)
     {
-        if (request.Metadata is null ||
-            !InternalRiskMetadataKeys.Any(request.Metadata.ContainsKey))
+        if (request.Metadata is null
+            || !request.Metadata.Keys.Any(candidate => InternalRiskMetadataKeys.Any(
+                key => string.Equals(candidate, key, StringComparison.OrdinalIgnoreCase))))
         {
             return request;
         }
 
-        var sanitized = new Dictionary<string, string>(request.Metadata, StringComparer.OrdinalIgnoreCase);
-        foreach (var key in InternalRiskMetadataKeys)
+        var sanitized = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (candidate, value) in request.Metadata)
         {
-            sanitized.Remove(key);
+            if (!InternalRiskMetadataKeys.Any(
+                    key => string.Equals(candidate, key, StringComparison.OrdinalIgnoreCase)))
+            {
+                sanitized[candidate] = value;
+            }
         }
 
         return request with { Metadata = sanitized };
@@ -551,10 +591,17 @@ public sealed partial class OrderManagementSystem
     /// to hand back to the caller, or the speculative <paramref name="Reservation"/> that
     /// publishes the amended size to concurrent placements while the amendment routes.
     /// </summary>
+    /// <param name="RiskDecision">
+    /// The approved amendment's risk decision, carrying any capacity a stateful rule reserved to
+    /// admit it. Null when no validator ran or the amendment was refused — a refusal releases its
+    /// own capacity before returning, so only an approved amendment hands anything to the caller,
+    /// which settles it once the gateway has answered.
+    /// </param>
     private readonly record struct AmendmentGateResult(
         OrderState? Reservation,
         string? Refusal,
-        IReadOnlyList<string>? Warnings);
+        IReadOnlyList<string>? Warnings,
+        RiskValidationResult? RiskDecision = null);
 
     /// <summary>
     /// Revalidates a risk-increasing amendment and reserves the amended exposure under the
@@ -571,6 +618,11 @@ public sealed partial class OrderManagementSystem
         IReadOnlyList<string>? warnings = null;
         string? consumedApprovalId = null;
 
+        // An amendment revalidation goes through the same reserving rules a placement does, so it
+        // takes real capacity. Discarding the result would hold that slot for the process's
+        // lifetime and eventually block every later order.
+        RiskValidationResult? amendmentDecision = null;
+
         await _preTradeReservationGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
@@ -579,17 +631,26 @@ public sealed partial class OrderManagementSystem
                 var amendedRisk = await _riskValidator.ValidateOrderAsync(amendmentProbe, ct).ConfigureAwait(false);
                 warnings = amendedRisk.Warnings.Count > 0 ? amendedRisk.Warnings : null;
                 consumedApprovalId = amendedRisk.ConsumedApprovalId;
+                amendmentDecision = amendedRisk;
 
                 if (!amendedRisk.IsApproved)
                 {
                     // An amendment is never parked: the original order stays live and the
                     // caller is told the increase was refused. Any approval token consumed
                     // by this evaluation is re-armed because nothing changed.
+                    // Refused: nothing routes, so release the capacity now rather than handing an
+                    // unsettleable handle to a caller whose only outcome is a refusal.
+                    SettleRiskReservations(amendmentDecision, commit: false, orderId);
                     RestoreConsumedApprovals(consumedApprovalId, "an amendment refused by risk validation");
                     var refusal = amendedRisk.RequiresApproval
                         ? $"Modification requires governed approval and was not applied: {amendedRisk.RejectReason}"
                         : amendedRisk.RejectReason ?? "Modification rejected by risk validation.";
-                    return new AmendmentGateResult(null, refusal, warnings);
+                    // Carry the decision itself, not just its headline. A composite rejection takes
+                    // its message from the highest-severity rule and keeps the rest in Violations,
+                    // so a fat-finger breach behind a gross-exposure headline exists only here —
+                    // dropping it leaves the amendment audit unable to show it, and rule status
+                    // reporting Healthy for a rule that is actively refusing amendments.
+                    return new AmendmentGateResult(null, refusal, warnings, amendedRisk);
                 }
             }
 
@@ -600,13 +661,19 @@ public sealed partial class OrderManagementSystem
                 Quantity = modification.NewQuantity ?? state.Quantity,
                 LimitPrice = modification.NewLimitPrice ?? state.LimitPrice,
                 StopPrice = modification.NewStopPrice ?? state.StopPrice,
-                RoutedNotional = null,
+                RoutedNotional = ResolveAmendedRoutedNotional(state, modification),
                 LastUpdatedAt = DateTimeOffset.UtcNow
             };
             if (_orders.TryUpdate(orderId, reservation, state))
             {
-                return new AmendmentGateResult(reservation, null, warnings);
+                return new AmendmentGateResult(reservation, null, warnings, amendmentDecision);
             }
+        }
+        catch
+        {
+            // Cancelled or faulted before the amendment could be published: nothing routed.
+            SettleRiskReservations(amendmentDecision, commit: false, orderId);
+            throw;
         }
         finally
         {
@@ -616,6 +683,8 @@ public sealed partial class OrderManagementSystem
         // The order moved underneath the gate, so the amended exposure was never published.
         // Routing the amendment anyway would raise the broker-side size while every
         // concurrent placement still measured the smaller order, so refuse it instead.
+        // The amendment lost the race and never published its exposure, so nothing can route.
+        SettleRiskReservations(amendmentDecision, commit: false, orderId);
         RestoreConsumedApprovals(consumedApprovalId, "an amendment whose exposure could not be reserved");
         _logger.LogWarning(
             "Order {OrderId} amendment was not applied: the order changed while its amended exposure was being reserved",
@@ -660,7 +729,8 @@ public sealed partial class OrderManagementSystem
         decimal? limitPrice,
         decimal? stopPrice,
         decimal? routedNotional,
-        decimal contractMultiplier = 1m)
+        decimal contractMultiplier = 1m,
+        bool usesFaceValuePercentageOfPar = false)
     {
         if (routedNotional is { } notional && notional > 0m)
         {
@@ -676,34 +746,47 @@ public sealed partial class OrderManagementSystem
         // A contract is not a share. Measuring an option amendment at quantity x premium
         // would assess an increase from 10 to 100 contracts at $5 as a $450 increment
         // instead of $45,000, and the per-order rule would see a $500 order.
-        return Math.Abs(quantity) * resolved * (contractMultiplier > 0m ? contractMultiplier : 1m);
+        //
+        // Scale percentage-of-par before multiplying, matching OrderNotionalResolver: dividing the
+        // product instead lets the intermediate overflow on a notional that is perfectly
+        // representable, and here that throws inside the amendment probe — before any risk decision
+        // or dispatch — so ModifyOrderAsync raises instead of returning a structured refusal.
+        var effectivePrice = usesFaceValuePercentageOfPar ? resolved / 100m : resolved;
+        return Math.Abs(quantity) * effectivePrice
+            * (contractMultiplier > 0m ? contractMultiplier : 1m);
     }
 
     /// <summary>
-    /// True when a modification could increase the order's measured exposure. This mirrors
-    /// the enforcement valuation (<c>OrderNotionalResolver</c>), which values an order at
-    /// the larger of its own price and the live mark: a higher price raises the measured
-    /// notional on either side, so a raised sell limit is risk-increasing too. Quantity
-    /// increases always qualify. When neither the current nor the amended order carries a
-    /// price, the amendment is treated as risk-increasing so the rules get to decide.
+    /// True when a modification needs a fresh risk decision. Quantity increases qualify because
+    /// they raise exposure. Every supplied limit or stop price also qualifies even when notional
+    /// falls: the dangerous direction is side- and order-type-specific, so a side-neutral numeric
+    /// increase test lets a sell limit or buy stop be amended through the market without the price
+    /// controls seeing it. Presence, rather than equality with the initially read state, also
+    /// prevents a concurrent amendment from turning an apparent no-op into an unvalidated price
+    /// reversal. Quantity-only reductions still bypass the gate so de-risking is never blocked.
     /// </summary>
-    private static bool IsRiskIncreasing(OrderState state, OrderModification modification)
+    private static bool RequiresRiskRevalidation(OrderState state, OrderModification modification)
     {
-        if (modification.NewQuantity is { } newQuantity && Math.Abs(newQuantity) > Math.Abs(state.Quantity))
+        if (modification.NewQuantity is { } newQuantity)
         {
-            return true;
+            // A quantity amendment on a broker-notional order changes the sizing BASIS, so the two
+            // numbers are not comparable and "smaller" does not mean smaller. The order's Quantity
+            // is dollars (or a placeholder standing in for them), while the amended value is units
+            // the gateway sends as qty with no notional field: $2,500 becoming 100 shares of a $100
+            // symbol is $10,000 at the venue, and comparing 100 against 2,500 reads it as a
+            // reduction and skips the gate on a fourfold increase. Any such amendment revalidates.
+            if (state.RoutedNotional is > 0m)
+            {
+                return true;
+            }
+
+            if (Math.Abs(newQuantity) > Math.Abs(state.Quantity))
+            {
+                return true;
+            }
         }
 
-        // Any price increase raises the measured notional under the enforcement model,
-        // regardless of side. A price decrease can only lower it (a marketable order is
-        // already valued at the mark), so it is never risk-increasing.
-        if (modification.NewLimitPrice is { } newLimit &&
-            newLimit > (state.LimitPrice ?? 0m))
-        {
-            return true;
-        }
-
-        return modification.NewStopPrice is { } newStop && newStop > (state.StopPrice ?? 0m);
+        return modification.NewLimitPrice is not null || modification.NewStopPrice is not null;
     }
 
     /// <summary>
@@ -721,11 +804,80 @@ public sealed partial class OrderManagementSystem
         ClientOrderId = state.OrderId,
         StrategyId = state.StrategyId,
         FundAccountId = state.FundAccountId,
+        Metadata = BuildAmendedSizingMetadata(state, modification),
         // Without the derivative identity the rules re-value the amended order as shares,
         // repeating the 1x mistake the multiplier above exists to prevent.
         OptionContract = state.OptionContract,
         Legs = state.Legs
     };
+
+    /// <summary>
+    /// The dollar sizing the broker still holds after an amendment. Nulling it instead makes the
+    /// exposure provider fall back to <c>Quantity × price</c>, and for a notional order the quantity
+    /// field is a placeholder rather than a size — a $2,500 buy carried as <c>Quantity = 1</c>
+    /// repriced to a $90 limit would reserve $90, and later orders would clear portfolio ceilings
+    /// against exposure understated by more than an order of magnitude. Under-reserving is the
+    /// direction that admits a breach, so this errs the other way.
+    /// <para>
+    /// A price-only amendment cannot change the routed dollars, so they carry over. A quantity
+    /// amendment ends the dollar sizing outright: <c>AlpacaBrokerageGateway.ModifyOrderAsync</c>
+    /// serializes <c>NewQuantity</c> as <c>qty</c> and sends no notional field, so the replacement
+    /// the venue holds is unit-sized. Keeping the old dollars past that point under-reserves rather
+    /// than over-reserves — a $2,500 notional order amended to 100 shares of a $100 symbol leaves
+    /// the broker holding $10,000 against a $2,500 reserve — so the classification is dropped and
+    /// every unit-based rail, the fat-finger quantity ceiling included, applies to the new size.
+    /// </para>
+    /// </summary>
+    private static decimal? ResolveAmendedRoutedNotional(OrderState state, OrderModification modification)
+    {
+        if (state.RoutedNotional is not { } routedNotional || routedNotional <= 0m)
+        {
+            return null;
+        }
+
+        return modification.NewQuantity is null ? routedNotional : null;
+    }
+
+    /// <summary>
+    /// Restores the order's sizing classification onto the rebuilt amendment. An amended request is
+    /// reconstructed from <see cref="OrderState"/> rather than carried over, so anything the rules
+    /// need in order to read <c>Quantity</c> correctly has to be put back explicitly — a price-only
+    /// amendment does not change how the venue sizes the order.
+    /// <para>
+    /// Both classifications matter and they are not the same. Face value says the quantity is par
+    /// and the price is a percentage of it; broker-native notional says the quantity field carries
+    /// <em>dollars</em> and the gateway discards it. Dropping the latter makes every rule that reads
+    /// quantity treat a dollar amount as a share count, so a $2,500 notional order cannot amend its
+    /// price under a 1,000-unit fat-finger ceiling — an order the venue would leave sized exactly as
+    /// it was, refused for a size it does not have.
+    /// </para>
+    /// </summary>
+    private static IReadOnlyDictionary<string, string>? BuildAmendedSizingMetadata(
+        OrderState state,
+        OrderModification modification)
+    {
+        var metadata = state.UsesFaceValuePercentageOfPar
+            ? new Dictionary<string, string>(OrderSizingMetadata.WithFaceValuePercentageOfPar(metadata: null))
+            : null;
+
+        // Dropped for a quantity amendment for the reason ResolveAmendedRoutedNotional gives: the
+        // gateway sends the new quantity as qty and no notional field, so the replacement is
+        // unit-sized. Carrying the marker would also make the fat-finger quantity limb read the new
+        // share count as dollars and skip its ceiling on the one amendment that changed the size.
+        if (modification.NewQuantity is not null
+            || state.RoutedNotional is not { } routedNotional
+            || routedNotional <= 0m)
+        {
+            return metadata;
+        }
+
+        metadata ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        // The canonical key, written as the decimal the reader treats as the notional itself
+        // rather than as a boolean over a quantity this request may be amending.
+        metadata[BrokerNotionalMetadata.Keys[0]] =
+            routedNotional.ToString("G29", CultureInfo.InvariantCulture);
+        return metadata;
+    }
 
     /// <summary>
     /// Builds the request the risk rules should evaluate for an amendment. The exposure
@@ -734,46 +886,117 @@ public sealed partial class OrderManagementSystem
     /// project $3k. When both sizes are measurable, this returns a probe carrying only the
     /// incremental value, so snapshot + probe equals the post-amendment book.
     /// <para>
-    /// The increment is only stamped when the order's own price is the price it will pay —
-    /// a buy limit. Everything else (any sell, a stop-market trigger, an unpriced order)
-    /// executes at the market, which the OMS cannot see, so an increment computed from the
-    /// order's own fields would understate it: raising a sell limited at $1 from 100 to 200
-    /// shares while the mark is $100 is a $10,000 increase, not $100. In those cases the
-    /// probe carries the whole amended order, which the rules price at the mark. That
-    /// double-counts the working order's existing reservation, but over-reserving can only
-    /// refuse an amendment, never admit one that breaches a ceiling.
+    /// An amendment that adds no exposure stamps an increment of zero, whatever its side: it adds
+    /// nothing to a book the snapshot already reserves. This is what keeps unchanged and reducing
+    /// amendments routable — projecting the full order on top of the reservation it replaces reads
+    /// an unchanged $10,000 sell as $20,000, and a gross ceiling between the two refuses it,
+    /// tripping the breaker at Critical severity over an amendment that changed no exposure at all.
+    /// </para>
+    /// <para>
+    /// Two kinds of order prove that differently, so they are decided by different evidence rather
+    /// than by one test with exceptions attached.
+    /// </para>
+    /// <para>
+    /// <b>Capped buy</b> — the limit is the price paid, so the measured value <em>is</em> exposure.
+    /// The increment is the measured difference, floored at zero.
+    /// </para>
+    /// <para>
+    /// <b>Everything else</b> (any sell, a stop-market trigger, an unpriced order) — the order's own
+    /// price is not what it pays, so measured value is not exposure and the two can move in opposite
+    /// directions: a sell amended from 10 shares at $100 to 100 at $1 measures downward while real
+    /// exposure at a $100 mark grows tenfold. What both sides share is the mark, and exposure is
+    /// quantity × mark, so exposure moves with <em>quantity</em> alone. A non-increasing quantity
+    /// proves no added exposure however the entered price moved — a 100-share sell repriced $100 to
+    /// $110 is the same shares against the same mark, and charging the full amended order for it
+    /// reads $21,000 against a $10,000 book. An increasing quantity cannot be valued here at all,
+    /// because the increase is Δquantity × mark and the OMS has no mark, so it carries the whole
+    /// amended order for the rules to price. That double-counts the existing reservation, but
+    /// over-reserving in this one direction can only refuse an amendment, never admit one that
+    /// breaches a ceiling.
     /// </para>
     /// </summary>
     private static OrderRequest BuildAmendmentProbe(OrderState state, OrderModification modification)
     {
         var amended = BuildAmendedRequest(state, modification);
-        var probeMetadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            [RiskEscalationQueueService.EvaluationOnlyMetadataKey] = "true"
-        };
+        var probeMetadata = amended.Metadata is null
+            ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            : new Dictionary<string, string>(amended.Metadata, StringComparer.OrdinalIgnoreCase);
+        probeMetadata[RiskEscalationQueueService.EvaluationOnlyMetadataKey] = "true";
 
         var pricePaidIsCapped = state.Side == OrderSide.Buy
             && state.LimitPrice is > 0m
             && amended.LimitPrice is > 0m;
-        if (!pricePaidIsCapped)
-        {
-            return amended with { Metadata = probeMetadata };
-        }
 
         var currentValue = MeasureOrderValue(
-            state.Quantity, state.LimitPrice, state.StopPrice, state.RoutedNotional, state.ContractMultiplier);
+            state.Quantity,
+            state.LimitPrice,
+            state.StopPrice,
+            state.RoutedNotional,
+            state.ContractMultiplier,
+            state.UsesFaceValuePercentageOfPar);
         var amendedValue = MeasureOrderValue(
-            amended.Quantity, amended.LimitPrice, amended.StopPrice, routedNotional: null, state.ContractMultiplier);
-        if (currentValue is not { } current || amendedValue is not { } proposed || proposed <= current)
+            amended.Quantity,
+            amended.LimitPrice,
+            amended.StopPrice,
+            routedNotional: null,
+            state.ContractMultiplier,
+            state.UsesFaceValuePercentageOfPar);
+        if (currentValue is not { } current || amendedValue is not { } proposed)
         {
+            // Genuinely unmeasurable on both sides of the comparison: nothing to difference, so the
+            // rules price the whole amended order at the mark and over-reserve.
             return amended with { Metadata = probeMetadata };
         }
 
         // Quantity stays the FULL amended quantity so the position-limit rule projects the
         // real post-amendment position; only the notional-based rules read the incremental
         // value, because the snapshot already reserves the working order's current size.
+        //
+        // An amendment that does not raise the order's own measured value adds nothing to the book,
+        // whatever its side. Falling through to the full amended order projects it *on top of* a
+        // snapshot that still reserves the original — an unchanged $10,000 sell reads as $20,000,
+        // and a $10,000 buy cut to $9,000 reads as $19,000 — so a gross ceiling between the two
+        // refuses the amendment, and at Critical severity trips the breaker, over an amendment that
+        // lowered exposure or changed none of it.
+        //
+        // That over-reservation was harmless while only *increases* were revalidated, because
+        // over-reserving an increase can refuse but never admit. Revalidating every supplied price
+        // brought unchanged and reducing amendments down the same path, where the same arithmetic
+        // blocks the directions a desk most needs to stay open.
+        //
+        // Which comparison proves "adds no exposure" depends on whether the order's own price is
+        // what it pays, so the two cases are decided by different evidence rather than by one test
+        // with exceptions bolted on:
+        //
+        //   Capped buy — the limit IS the price paid, so measured value is exact. The increment is
+        //   simply the measured difference, floored at zero for a reduction or an unchanged price.
+        //
+        //   Everything else (any sell, a stop-market trigger, an unpriced order) — the order's own
+        //   price is not what it pays, so measured value is not exposure. What both sides of the
+        //   amendment share is the mark, and exposure is quantity x mark, so exposure moves with
+        //   QUANTITY alone. A non-increasing quantity therefore proves no added exposure however
+        //   the entered price moved: a 100-share sell repriced $100 -> $110 is the same 100 shares
+        //   against the same mark, and charging the full amended order for it reads $21,000 against
+        //   a $10,000 book. An increasing quantity cannot be valued here at all — the increase is
+        //   Δquantity x mark and the OMS has no mark — so it goes to the rules whole.
+        if (pricePaidIsCapped)
+        {
+            var increment = proposed > current ? proposed - current : 0m;
+            probeMetadata[RiskEscalationQueueService.IncrementalNotionalMetadataKey] =
+                increment.ToString("G29", CultureInfo.InvariantCulture);
+            return amended with { Metadata = probeMetadata };
+        }
+
+        if (Math.Abs(amended.Quantity) > Math.Abs(state.Quantity))
+        {
+            // Priced at the mark by the rules, double-counting the working order's reservation.
+            // Over-reserving is the conservative answer in this one direction: it can refuse an
+            // amendment, never admit one that breaches a ceiling.
+            return amended with { Metadata = probeMetadata };
+        }
+
         probeMetadata[RiskEscalationQueueService.IncrementalNotionalMetadataKey] =
-            (proposed - current).ToString("G29", CultureInfo.InvariantCulture);
+            0m.ToString("G29", CultureInfo.InvariantCulture);
         return amended with { Metadata = probeMetadata };
     }
 
@@ -787,6 +1010,59 @@ public sealed partial class OrderManagementSystem
 
         var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         AppendRiskWarningsMetadata(metadata, warnings);
+        return metadata;
+    }
+
+    /// <summary>
+    /// Serializes the whole decision into the rejection audit: the headline names one breach, but
+    /// every rule is evaluated before a decision is taken, so a rejection can carry several.
+    /// Without these fields a breach behind the headline exists only on the transient
+    /// <see cref="OrderResult"/> and never reaches rule status or history.
+    /// </summary>
+    private static IReadOnlyDictionary<string, string>? BuildRiskDecisionAuditMetadata(
+        RiskValidationResult decision)
+    {
+        if (decision.Violations.Count == 0 && decision.Warnings.Count == 0)
+        {
+            return null;
+        }
+
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["decisionSource"] = "risk",
+            ["decision"] = decision.Decision.ToString(),
+        };
+
+        AppendRiskWarningsMetadata(metadata, decision.Warnings);
+
+        if (decision.Violations.Count == 0)
+        {
+            return metadata;
+        }
+
+        // Invariant culture on the numerics: a WAL written under one locale has to parse under
+        // another, and these are read back by the status projection.
+        metadata["violation.count"] = decision.Violations.Count.ToString(CultureInfo.InvariantCulture);
+        for (var i = 0; i < decision.Violations.Count; i++)
+        {
+            var violation = decision.Violations[i];
+            var prefix = string.Create(CultureInfo.InvariantCulture, $"violation.{i}");
+            metadata[$"{prefix}.rule"] = violation.RuleName;
+            metadata[$"{prefix}.code"] = violation.Code;
+            metadata[$"{prefix}.message"] = violation.Message;
+            metadata[$"{prefix}.severity"] = violation.Severity.ToString();
+
+            if (violation.ObservedValue is { } observed)
+            {
+                metadata[$"{prefix}.observed"] = observed.ToString(CultureInfo.InvariantCulture);
+            }
+
+            if (violation.LimitValue is { } limit)
+            {
+                metadata[$"{prefix}.limit"] = limit.ToString(CultureInfo.InvariantCulture);
+            }
+        }
+
         return metadata;
     }
 
@@ -865,7 +1141,126 @@ public sealed partial class OrderManagementSystem
         public bool PortfolioApplied { get; set; }
         public bool TradeEventPublished { get; set; }
         public bool SessionRecorded { get; set; }
+        public LosslessExecutionReportSubscriber[]? LosslessSubscriberTargets { get; set; }
+        public HashSet<long> DeliveredLosslessSubscriberIds { get; } = [];
+        public bool LosslessSubscribersPublished { get; set; }
         public bool ExecutionReportPublished { get; set; }
         public volatile bool IsComplete;
+
+        public void ReleaseLosslessSubscriberProgress()
+        {
+            LosslessSubscriberTargets = null;
+            DeliveredLosslessSubscriberIds.Clear();
+        }
+    }
+
+    /// <summary>
+    /// Settles the capacity the risk gate reserved for this order, exactly once, at the routing
+    /// boundary.
+    /// </summary>
+    /// <param name="decision">
+    /// The approved decision holding the reservations, or <see langword="null"/> when no validator
+    /// ran or the order never passed the gate. A non-approved decision has already released its own
+    /// capacity inside the validator, so there is nothing here to settle.
+    /// </param>
+    /// <param name="commit">
+    /// <see langword="true"/> when the order reached — or may have reached — a venue.
+    /// </param>
+    /// <remarks>
+    /// Never throws. Settlement runs on failure paths that are already unwinding, and a reservation
+    /// whose commit faults must not replace the outcome the caller is about to receive, nor stop the
+    /// remaining reservations from being settled.
+    /// </remarks>
+    private void SettleRiskReservations(RiskValidationResult? decision, bool commit, string orderId)
+    {
+        if (decision is null || decision.Reservations.Count == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            if (commit)
+            {
+                decision.CommitReservations();
+            }
+            else
+            {
+                decision.RollbackReservations();
+            }
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                _logger.LogError(
+                    ex,
+                    "Risk reservations for order {OrderId} could not be settled ({Settlement})",
+                    LogSanitizer.Sanitize(orderId),
+                    commit ? "commit" : "rollback");
+            }
+            catch
+            {
+                // The logging provider is the thing that failed. Nothing left to report with,
+                // and the settlement outcome must not become the caller's exception.
+            }
+        }
+    }
+
+    private async Task<OrderResult> RejectDuplicateClientOrderIdAsync(
+        string orderId,
+        OrderRequest request,
+        string? actor,
+        string brokerName,
+        string? runId,
+        string? correlationId,
+        CancellationToken ct)
+    {
+        var message = $"Duplicate client order id '{orderId}': an order with this id is already being tracked and is not in a terminal state.";
+
+        await RecordOrderRejectionAsync(
+            orderId,
+            request,
+            actor,
+            brokerName,
+            runId,
+            correlationId,
+            message,
+            ct,
+            rejectionSource: "duplicate client order id guard",
+            reasonCode: "DUPLICATE_CLIENT_ORDER_ID").ConfigureAwait(false);
+
+        return new OrderResult
+        {
+            Success = false,
+            OrderId = orderId,
+            ErrorMessage = message
+        };
+    }
+
+    private static OrderState CreateRejectedState(
+        string orderId,
+        OrderRequest request,
+        string? reason)
+    {
+        return new OrderState
+        {
+            OrderId = orderId,
+            Symbol = request.Symbol,
+            Side = request.Side,
+            Type = request.Type,
+            Quantity = request.Quantity,
+            LimitPrice = request.LimitPrice,
+            StopPrice = request.StopPrice,
+            Status = OrderStatus.Rejected,
+            CreatedAt = DateTimeOffset.UtcNow,
+            LastUpdatedAt = DateTimeOffset.UtcNow,
+            StrategyId = request.StrategyId,
+            // Fund scope survives a rejection: a parked order's state is built here, and
+            // cancelling one withdraws its approval — authorized against this field.
+            FundAccountId = request.FundAccountId,
+            AverageFillPrice = null,
+            FilledQuantity = 0m
+        };
     }
 }

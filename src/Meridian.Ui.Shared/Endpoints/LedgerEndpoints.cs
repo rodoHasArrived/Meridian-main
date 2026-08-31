@@ -1,8 +1,8 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
@@ -16,6 +16,7 @@ using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -46,10 +47,12 @@ public static partial class LedgerEndpoints
             var books = await service
                 .ListBooksAsync(new LedgerBookQuery(fundProfileId, fundStructureNodeId, AccountingBasis: accountingBasis), context.RequestAborted)
                 .ConfigureAwait(false);
-            return Results.Json(books, jsonOptions);
+            // Served in the canonical order rather than the store's: the first book is the scope a
+            // freshly opened surface takes. LedgerBookOrdering says why clients cannot re-derive it.
+            return Results.Json(LedgerBookOrdering.Sort(books), jsonOptions);
         })
-        .WithName("ListLedgerBooks")
-        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("ListLedgerBooks").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
         .Produces<IReadOnlyList<LedgerBookDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
@@ -71,7 +74,7 @@ public static partial class LedgerEndpoints
                 ? Results.NotFound(new { error = $"Ledger book '{ledgerBookId}' was not found." })
                 : Results.Json(book, jsonOptions);
         })
-        .WithName("GetLedgerBook")
+        .WithName("GetLedgerBook").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
         .Produces<LedgerBookDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented);
@@ -99,7 +102,7 @@ public static partial class LedgerEndpoints
                 return MapServiceException(ex);
             }
         })
-        .WithName("CreateLedgerBook")
+        .WithName("CreateLedgerBook").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<LedgerBookDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -142,7 +145,7 @@ public static partial class LedgerEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status501NotImplemented);
             }
         })
-        .WithName("AssessLedgerBookRollout")
+        .WithName("AssessLedgerBookRollout").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<LedgerBookRolloutAssessmentDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -181,8 +184,8 @@ public static partial class LedgerEndpoints
                 .ConfigureAwait(false);
             return Results.Json(periods, jsonOptions);
         })
-        .WithName("ListLedgerPeriods")
-        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("ListLedgerPeriods").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
         .Produces<IReadOnlyList<LedgerPeriodDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
@@ -209,7 +212,7 @@ public static partial class LedgerEndpoints
                 return MapServiceException(ex);
             }
         })
-        .WithName("CreateLedgerPeriod")
+        .WithName("CreateLedgerPeriod").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<LedgerPeriodDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -249,7 +252,8 @@ public static partial class LedgerEndpoints
                         periodId,
                         request with
                         {
-                            ClosedBy = actor
+                            ClosedBy = actor,
+                            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                         },
                         context.RequestAborted)
                     .ConfigureAwait(false);
@@ -260,7 +264,7 @@ public static partial class LedgerEndpoints
                 return MapServiceException(ex);
             }
         })
-        .WithName("CloseLedgerPeriod")
+        .WithName("CloseLedgerPeriod").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<LedgerPeriodCloseResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -307,7 +311,7 @@ public static partial class LedgerEndpoints
             var result = BuildJournalEntryDtos(entries, _ => bookId, dimensionFilter);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetLedgerPeriodJournalEntries")
+        .WithName("GetLedgerPeriodJournalEntries").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
         .Produces<IReadOnlyList<LedgerJournalEntryDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -357,7 +361,7 @@ public static partial class LedgerEndpoints
                 dimensionFilter);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetLedgerAggregateJournalEntries")
+        .WithName("GetLedgerAggregateJournalEntries").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
         .Produces<IReadOnlyList<LedgerJournalEntryDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
@@ -382,7 +386,7 @@ public static partial class LedgerEndpoints
                 ? Results.NotFound(new { error = $"Ledger period '{periodId}' has no closed-period summary." })
                 : Results.Json(ApplyDimensionFilter(summary, dimensionFilter).TrialBalance, jsonOptions);
         })
-        .WithName("GetLedgerPeriodTrialBalance")
+        .WithName("GetLedgerPeriodTrialBalance").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
         .Produces<IReadOnlyList<LedgerPeriodTrialBalanceLineDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
@@ -407,7 +411,7 @@ public static partial class LedgerEndpoints
                 ? Results.NotFound()
                 : Results.Json(BuildTrialBalanceReport(ApplyDimensionFilter(summary, dimensionFilter), context), jsonOptions);
         })
-        .WithName("GetLedgerPeriodTrialBalanceReport")
+        .WithName("GetLedgerPeriodTrialBalanceReport").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
         .Produces<LedgerTrialBalanceReportDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
@@ -432,7 +436,7 @@ public static partial class LedgerEndpoints
                 ? Results.NotFound(new { error = $"Ledger period '{periodId}' has no closed-period summary." })
                 : Results.Json(BuildPnlSummary(ApplyDimensionFilter(summary, dimensionFilter)), jsonOptions);
         })
-        .WithName("GetLedgerPeriodPnlSummary")
+        .WithName("GetLedgerPeriodPnlSummary").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
         .Produces<LedgerPeriodPnlSummaryDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
@@ -490,8 +494,8 @@ public static partial class LedgerEndpoints
                     dimensionFilter),
                 jsonOptions);
         })
-        .WithName("GetLedgerCrossPeriodTrialBalanceReport")
-        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("GetLedgerCrossPeriodTrialBalanceReport").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
         .Produces<LedgerCrossPeriodTrialBalanceReportDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -549,8 +553,8 @@ public static partial class LedgerEndpoints
                     dimensionFilter),
                 jsonOptions);
         })
-        .WithName("GetLedgerCrossPeriodPnlReport")
-        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("GetLedgerCrossPeriodPnlReport").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
         .Produces<LedgerCrossPeriodPnlReportDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -583,7 +587,7 @@ public static partial class LedgerEndpoints
                 ? Results.NotFound(new { error = $"Close workflow '{workflowId}' was not found." })
                 : Results.Json(scope.Plan, jsonOptions);
         })
-        .WithName("GetLedgerCloseManagementPeriodPlan")
+        .WithName("GetLedgerCloseManagementPeriodPlan").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
         .Produces<ClosePeriodPlanDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
@@ -619,7 +623,7 @@ public static partial class LedgerEndpoints
                 var actor = ResolveMutationActor(context, request.Actor ?? string.Empty);
                 var result = await service
                     .ConfigurePeriodPlanScopedAsync(
-                        request with { Actor = actor },
+                        request with { Actor = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) },
                         actor,
                         scope.TenantContext.TenantId,
                         scope.TenantContext.CompanyId,
@@ -641,7 +645,7 @@ public static partial class LedgerEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("ConfigureLedgerCloseManagementPeriodPlan")
+        .WithName("ConfigureLedgerCloseManagementPeriodPlan").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<ClosePeriodPlanDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -681,7 +685,7 @@ public static partial class LedgerEndpoints
                 var actor = ResolveMutationActor(context, request.RequestedBy);
                 var result = await service
                     .RequestLateAdjustmentScopedAsync(
-                        request with { RequestedBy = actor },
+                        request with { RequestedBy = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) },
                         actor,
                         scope.TenantContext.TenantId,
                         scope.TenantContext.CompanyId,
@@ -703,7 +707,7 @@ public static partial class LedgerEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("CreateLedgerCloseManagementLateAdjustment")
+        .WithName("CreateLedgerCloseManagementLateAdjustment").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<ClosePeriodPlanDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -743,7 +747,7 @@ public static partial class LedgerEndpoints
                 var actor = ResolveMutationActor(context, request.Actor);
                 var result = await service
                     .ReviewLateAdjustmentScopedAsync(
-                        request with { Actor = actor },
+                        request with { Actor = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) },
                         actor,
                         scope.TenantContext.TenantId,
                         scope.TenantContext.CompanyId,
@@ -765,7 +769,7 @@ public static partial class LedgerEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("ReviewLedgerCloseManagementLateAdjustment")
+        .WithName("ReviewLedgerCloseManagementLateAdjustment").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<ClosePeriodPlanDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -805,7 +809,7 @@ public static partial class LedgerEndpoints
                 var actor = ResolveMutationActor(context, request.Actor);
                 var result = await service
                     .SignOffCloseTaskScopedAsync(
-                        request with { Actor = actor },
+                        request with { Actor = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) },
                         actor,
                         scope.TenantContext.TenantId,
                         scope.TenantContext.CompanyId,
@@ -827,7 +831,7 @@ public static partial class LedgerEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("SignOffLedgerCloseManagementTask")
+        .WithName("SignOffLedgerCloseManagementTask").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<ClosePeriodPlanDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -867,7 +871,7 @@ public static partial class LedgerEndpoints
                 var actor = ResolveMutationActor(context, request.Actor);
                 var result = await service
                     .ReviewCloseEvidenceScopedAsync(
-                        request with { Actor = actor },
+                        request with { Actor = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) },
                         actor,
                         scope.TenantContext.TenantId,
                         scope.TenantContext.CompanyId,
@@ -889,7 +893,7 @@ public static partial class LedgerEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("ReviewLedgerCloseManagementEvidence")
+        .WithName("ReviewLedgerCloseManagementEvidence").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<ClosePeriodPlanDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -939,7 +943,8 @@ public static partial class LedgerEndpoints
                         request with
                         {
                             Actor = actor,
-                            ActionOrigin = OperationsActionOriginDto.HumanOperator,
+                            // Narrower of declaration and principal standing (#2673).
+                            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin),
                             ControllerRole = controllerRole
                         },
                         actor,
@@ -963,7 +968,7 @@ public static partial class LedgerEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("LockLedgerCloseManagementPeriod")
+        .WithName("LockLedgerCloseManagementPeriod").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<ClosePeriodLockResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1007,7 +1012,8 @@ public static partial class LedgerEndpoints
                         request with
                         {
                             Actor = actor,
-                            Role = controllerRole
+                            Role = controllerRole,
+                            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                         },
                         actor,
                         scope.TenantContext.TenantId,
@@ -1034,7 +1040,7 @@ public static partial class LedgerEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("ReopenLedgerCloseManagementPeriod")
+        .WithName("ReopenLedgerCloseManagementPeriod").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<ClosePeriodReopenResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1086,7 +1092,7 @@ public static partial class LedgerEndpoints
                 });
             }
         })
-        .WithName("BuildLedgerAccountingReportPackage")
+        .WithName("BuildLedgerAccountingReportPackage").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AccountingReportPackageBundleDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1124,7 +1130,8 @@ public static partial class LedgerEndpoints
                     {
                         Actor = actor,
                         TenantId = tenantContext.TenantId,
-                        CompanyId = tenantContext.CompanyId
+                        CompanyId = tenantContext.CompanyId,
+                        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
@@ -1143,7 +1150,7 @@ public static partial class LedgerEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("CertifyLedgerAccountingReportPackage")
+        .WithName("CertifyLedgerAccountingReportPackage").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<AccountingReportPackageBundleDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1189,8 +1196,8 @@ public static partial class LedgerEndpoints
                 .ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("ListLedgerAccountingReportPackages")
-        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("ListLedgerAccountingReportPackages").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
         .Produces<IReadOnlyList<AccountingReportPackageBundleDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
@@ -1239,7 +1246,7 @@ public static partial class LedgerEndpoints
                 });
             }
         })
-        .WithName("GetLedgerAccountingReportPackageExport")
+        .WithName("GetLedgerAccountingReportPackageExport").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
         .Produces<ReportExportArtifactManifestDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1266,7 +1273,7 @@ public static partial class LedgerEndpoints
             var workbench = await service.GetWorkbenchAsync(fundProfileId, ledgerBookId, context.RequestAborted, tenantContext.TenantId, tenantContext.CompanyId).ConfigureAwait(false);
             return Results.Json(workbench, jsonOptions);
         })
-        .WithName("GetManualJournalEntryWorkbench")
+        .WithName("GetManualJournalEntryWorkbench").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<ManualJournalEntryWorkbenchDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1298,7 +1305,7 @@ public static partial class LedgerEndpoints
                 FilterPrivateCapitalActivity(activity, fundEventId, capitalAccountId, investorId, paymentIntentId),
                 jsonOptions);
         })
-        .WithName("GetLedgerPrivateCapitalActivity")
+        .WithName("GetLedgerPrivateCapitalActivity").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<PrivateCapitalActivityProjectionDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1339,7 +1346,7 @@ public static partial class LedgerEndpoints
 
             return Results.Json(record, jsonOptions);
         })
-        .WithName("GetLedgerPrivateCapitalFundEventRecord")
+        .WithName("GetLedgerPrivateCapitalFundEventRecord").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<PrivateCapitalFundEventLedgerRecordDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
@@ -1380,7 +1387,7 @@ public static partial class LedgerEndpoints
 
             return Results.Json(commandCenter, jsonOptions);
         })
-        .WithName("GetLedgerPrivateCapitalFundEventCommandCenter")
+        .WithName("GetLedgerPrivateCapitalFundEventCommandCenter").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<PrivateCapitalFundEventCommandCenterDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
@@ -1441,7 +1448,7 @@ public static partial class LedgerEndpoints
 
             return Results.Json(subledgers[0], jsonOptions);
         })
-        .WithName("GetLedgerPrivateCapitalCapitalAccountSubledger")
+        .WithName("GetLedgerPrivateCapitalCapitalAccountSubledger").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<PrivateCapitalCapitalAccountSubledgerDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
@@ -1512,7 +1519,7 @@ public static partial class LedgerEndpoints
 
             return Results.Json(reportOutputs[0], jsonOptions);
         })
-        .WithName("GetLedgerPrivateCapitalReportOutput")
+        .WithName("GetLedgerPrivateCapitalReportOutput").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<PrivateCapitalReportOutputDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
@@ -1560,7 +1567,7 @@ public static partial class LedgerEndpoints
 
             return Results.Json(workbench, jsonOptions);
         })
-        .WithName("GetLedgerPrivateCapitalCapitalAccountWorkbench")
+        .WithName("GetLedgerPrivateCapitalCapitalAccountWorkbench").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<CapitalAccountWorkbenchDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1617,7 +1624,7 @@ public static partial class LedgerEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("SaveManualJournalEntryDraft")
+        .WithName("SaveManualJournalEntryDraft").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<ManualJournalEntryDraftDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1665,7 +1672,7 @@ public static partial class LedgerEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("ValidateManualJournalEntryDraft")
+        .WithName("ValidateManualJournalEntryDraft").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<ManualJournalEntryDraftDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1693,7 +1700,8 @@ public static partial class LedgerEndpoints
                     Actor = ResolveMutationActor(context, request.Actor),
                     TenantId = tenantContext.TenantId,
                     CompanyId = tenantContext.CompanyId,
-                    ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
+                    ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
+                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -1706,7 +1714,7 @@ public static partial class LedgerEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("SubmitManualJournalEntryApproval")
+        .WithName("SubmitManualJournalEntryApproval").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<ManualJournalEntryDraftDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1738,7 +1746,8 @@ public static partial class LedgerEndpoints
                     Actor = ResolveMutationActor(context, request.Actor),
                     TenantId = tenantContext.TenantId,
                     CompanyId = tenantContext.CompanyId,
-                    ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
+                    ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
+                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -1751,7 +1760,7 @@ public static partial class LedgerEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("AttachManualJournalEntryEvidence")
+        .WithName("AttachManualJournalEntryEvidence").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<ManualJournalEntryDraftDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1782,7 +1791,8 @@ public static partial class LedgerEndpoints
                         Actor = ResolveMutationActor(context, request.Actor),
                         TenantId = tenantContext.TenantId,
                         CompanyId = tenantContext.CompanyId,
-                        ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
+                        ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
+                        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -1796,7 +1806,7 @@ public static partial class LedgerEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("ApplyManualJournalEntryLifecycleAction")
+        .WithName("ApplyManualJournalEntryLifecycleAction").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<JournalEntryLifecycleActionResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1920,11 +1930,9 @@ public static partial class LedgerEndpoints
         => !string.IsNullOrWhiteSpace(tenantContext.TenantId) &&
            !string.IsNullOrWhiteSpace(tenantContext.CompanyId);
 
+    /// <summary>Read authority over the governed ledger. The ledger-report permissions are what this surface means; ManageDirectLending stays accepted so deployments that used it as the fund-accounting grant keep working.</summary>
     private static bool HasLedgerReadPermission(HttpContext context)
-        => EndpointAuthorization.HasAnyPermission(
-            context,
-            UserPermission.AdminMaintenance,
-            UserPermission.ManageDirectLending);
+        => EndpointAuthorization.HasAnyPermission(context, UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports);
 
     private static async Task<CloseWorkflowTenantScope> ResolveCloseWorkflowTenantScopeAsync(
         HttpContext context,
@@ -2061,11 +2069,9 @@ public static partial class LedgerEndpoints
         return decision.IsAllowed;
     }
 
+    /// <summary>Write authority over the governed ledger. Deliberately excludes ViewLedgerReports: reading the trial balance must never confer the authority to post to it.</summary>
     private static bool HasLedgerMutationPermission(HttpContext context)
-        => EndpointAuthorization.HasAnyPermission(
-            context,
-            UserPermission.AdminMaintenance,
-            UserPermission.ManageDirectLending);
+        => EndpointAuthorization.HasAnyPermission(context, UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports);
 
     private static bool TryResolveControllerRole(HttpContext context, out string role)
     {
@@ -2141,90 +2147,6 @@ public static partial class LedgerEndpoints
         => EndpointAuthorization.TryResolveActor(context, out var actor) && !string.IsNullOrWhiteSpace(actor)
             ? actor
             : suppliedActor;
-
-    private static UpsertChartOfAccountsNodeRequest WithAccessContext(
-        UpsertChartOfAccountsNodeRequest request,
-        HttpContext context)
-    {
-        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        return request with
-        {
-            Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId,
-            CompanyId = tenantContext.CompanyId,
-            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
-        };
-    }
-
-    private static UpsertJournalEntryTemplateRequest WithAccessContext(
-        UpsertJournalEntryTemplateRequest request,
-        HttpContext context)
-    {
-        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        return request with
-        {
-            Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId,
-            CompanyId = tenantContext.CompanyId,
-            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
-        };
-    }
-
-    private static UpsertPostingRuleRequest WithAccessContext(
-        UpsertPostingRuleRequest request,
-        HttpContext context)
-    {
-        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        return request with
-        {
-            Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId,
-            CompanyId = tenantContext.CompanyId,
-            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
-        };
-    }
-
-    private static ApprovePostingRulePromotionRequest WithAccessContext(
-        ApprovePostingRulePromotionRequest request,
-        HttpContext context)
-    {
-        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        return request with
-        {
-            Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId,
-            CompanyId = tenantContext.CompanyId,
-            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
-        };
-    }
-
-    private static UpsertAccountingRuleTestCaseRequest WithAccessContext(
-        UpsertAccountingRuleTestCaseRequest request,
-        HttpContext context)
-    {
-        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        return request with
-        {
-            Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId,
-            CompanyId = tenantContext.CompanyId,
-            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
-        };
-    }
-
-    private static ActivateAccountingConfigurationRequest WithAccessContext(
-        ActivateAccountingConfigurationRequest request,
-        HttpContext context)
-    {
-        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        return request with
-        {
-            Actor = ResolveMutationActor(context, request.Actor),
-            TenantId = tenantContext.TenantId,
-            CompanyId = tenantContext.CompanyId,
-            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
-        };
-    }
 
     private static IResult MapServiceException(LedgerBookServiceException exception)
         => exception switch
@@ -2390,7 +2312,7 @@ public static partial class LedgerEndpoints
             builder.AppendLine(EscapeSignatureField(BuildDimensionSignature(line.Dimensions)));
         }
 
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     private static LedgerLineDimensionSet? ToLineDimensionSet(LedgerDimensionReportFilter filter)
@@ -2587,28 +2509,28 @@ public static partial class LedgerEndpoints
     private static LedgerDimensionSetDto? BuildDimensions(JournalEntryMetadata metadata)
     {
         var tags = metadata.Tags;
-        var positionId = Guid.TryParse(FirstTag(tags, "positionId"), out var parsedPositionId)
+        var positionId = Guid.TryParse(LedgerDimensionTags.FirstTag(tags, "positionId"), out var parsedPositionId)
             ? parsedPositionId
             : (Guid?)null;
         var dimensions = new LedgerDimensionSetDto(
-            FundId: FirstTag(tags, "fundId", "fundProfileId"),
-            EntityId: FirstTag(tags, "entityId", "legalEntityId"),
-            SleeveId: FirstTag(tags, "sleeveId"),
-            StrategyId: metadata.StrategyId ?? FirstTag(tags, "strategyId"),
-            InvestorId: metadata.InvestorId ?? FirstTag(tags, "investorId"),
-            CapitalAccountId: metadata.CapitalAccountId ?? FirstTag(tags, "capitalAccountId"),
+            FundId: LedgerDimensionTags.FirstTag(tags, "fundId", "fundProfileId"),
+            EntityId: LedgerDimensionTags.FirstTag(tags, "entityId", "legalEntityId"),
+            SleeveId: LedgerDimensionTags.FirstTag(tags, "sleeveId"),
+            StrategyId: metadata.StrategyId ?? LedgerDimensionTags.FirstTag(tags, "strategyId"),
+            InvestorId: metadata.InvestorId ?? LedgerDimensionTags.FirstTag(tags, "investorId"),
+            CapitalAccountId: metadata.CapitalAccountId ?? LedgerDimensionTags.FirstTag(tags, "capitalAccountId"),
             InstrumentId: metadata.SecurityId,
-            TaxLotId: FirstTag(tags, "taxLotId", "lotId"),
-            CostCenterId: FirstTag(tags, "costCenterId"),
-            CounterpartyId: metadata.CounterpartyAccountId ?? FirstTag(tags, "counterpartyId", "counterpartyAccountId"),
-            ExternalGlDimensions: ExtractExternalGlDimensions(tags),
-            OrganizationId: FirstTag(tags, "organizationId"),
-            PortfolioId: FirstTag(tags, "portfolioId"),
-            BookId: metadata.LedgerBook ?? FirstTag(tags, "bookId"),
-            AccountId: metadata.FinancialAccountId ?? FirstTag(tags, "accountId"),
-            CustomerId: FirstTag(tags, "customerId"),
-            VendorId: FirstTag(tags, "vendorId"),
-            ProjectId: metadata.ProjectId ?? FirstTag(tags, "projectId"))
+            TaxLotId: LedgerDimensionTags.FirstTag(tags, "taxLotId", "lotId"),
+            CostCenterId: LedgerDimensionTags.FirstTag(tags, "costCenterId"),
+            CounterpartyId: metadata.CounterpartyAccountId ?? LedgerDimensionTags.FirstTag(tags, "counterpartyId", "counterpartyAccountId"),
+            ExternalGlDimensions: LedgerDimensionTags.ExtractExternalGlDimensions(tags),
+            OrganizationId: LedgerDimensionTags.FirstTag(tags, "organizationId"),
+            PortfolioId: LedgerDimensionTags.FirstTag(tags, "portfolioId"),
+            BookId: metadata.LedgerBook ?? LedgerDimensionTags.FirstTag(tags, "bookId"),
+            AccountId: metadata.FinancialAccountId ?? LedgerDimensionTags.FirstTag(tags, "accountId"),
+            CustomerId: LedgerDimensionTags.FirstTag(tags, "customerId"),
+            VendorId: LedgerDimensionTags.FirstTag(tags, "vendorId"),
+            ProjectId: metadata.ProjectId ?? LedgerDimensionTags.FirstTag(tags, "projectId"))
         {
             PositionId = positionId
         };
@@ -2658,28 +2580,28 @@ public static partial class LedgerEndpoints
             return null;
         }
 
-        var positionId = Guid.TryParse(FirstTag(tags, prefix + "positionId"), out var parsedPositionId)
+        var positionId = Guid.TryParse(LedgerDimensionTags.FirstTag(tags, prefix + "positionId"), out var parsedPositionId)
             ? parsedPositionId
             : (Guid?)null;
         var dimensions = new LedgerDimensionSetDto(
-            FundId: FirstTag(tags, prefix + "fundId"),
-            EntityId: FirstTag(tags, prefix + "entityId"),
-            SleeveId: FirstTag(tags, prefix + "sleeveId"),
-            StrategyId: FirstTag(tags, prefix + "strategyId"),
-            InvestorId: FirstTag(tags, prefix + "investorId"),
-            CapitalAccountId: FirstTag(tags, prefix + "capitalAccountId"),
-            InstrumentId: Guid.TryParse(FirstTag(tags, prefix + "instrumentId"), out var instrumentId) ? instrumentId : null,
-            TaxLotId: FirstTag(tags, prefix + "taxLotId"),
-            CostCenterId: FirstTag(tags, prefix + "costCenterId"),
-            CounterpartyId: FirstTag(tags, prefix + "counterpartyId"),
-            ExternalGlDimensions: ExtractExternalGlDimensions(tags, prefix),
-            OrganizationId: FirstTag(tags, prefix + "organizationId"),
-            PortfolioId: FirstTag(tags, prefix + "portfolioId"),
-            BookId: FirstTag(tags, prefix + "bookId"),
-            AccountId: FirstTag(tags, prefix + "accountId"),
-            CustomerId: FirstTag(tags, prefix + "customerId"),
-            VendorId: FirstTag(tags, prefix + "vendorId"),
-            ProjectId: FirstTag(tags, prefix + "projectId"))
+            FundId: LedgerDimensionTags.FirstTag(tags, prefix + "fundId"),
+            EntityId: LedgerDimensionTags.FirstTag(tags, prefix + "entityId"),
+            SleeveId: LedgerDimensionTags.FirstTag(tags, prefix + "sleeveId"),
+            StrategyId: LedgerDimensionTags.FirstTag(tags, prefix + "strategyId"),
+            InvestorId: LedgerDimensionTags.FirstTag(tags, prefix + "investorId"),
+            CapitalAccountId: LedgerDimensionTags.FirstTag(tags, prefix + "capitalAccountId"),
+            InstrumentId: Guid.TryParse(LedgerDimensionTags.FirstTag(tags, prefix + "instrumentId"), out var instrumentId) ? instrumentId : null,
+            TaxLotId: LedgerDimensionTags.FirstTag(tags, prefix + "taxLotId"),
+            CostCenterId: LedgerDimensionTags.FirstTag(tags, prefix + "costCenterId"),
+            CounterpartyId: LedgerDimensionTags.FirstTag(tags, prefix + "counterpartyId"),
+            ExternalGlDimensions: LedgerDimensionTags.ExtractExternalGlDimensions(tags, prefix),
+            OrganizationId: LedgerDimensionTags.FirstTag(tags, prefix + "organizationId"),
+            PortfolioId: LedgerDimensionTags.FirstTag(tags, prefix + "portfolioId"),
+            BookId: LedgerDimensionTags.FirstTag(tags, prefix + "bookId"),
+            AccountId: LedgerDimensionTags.FirstTag(tags, prefix + "accountId"),
+            CustomerId: LedgerDimensionTags.FirstTag(tags, prefix + "customerId"),
+            VendorId: LedgerDimensionTags.FirstTag(tags, prefix + "vendorId"),
+            ProjectId: LedgerDimensionTags.FirstTag(tags, prefix + "projectId"))
         {
             PositionId = positionId
         };
@@ -2818,7 +2740,6 @@ public static partial class LedgerEndpoints
             PositionId = dimensions.PositionId
         };
 
-        return HasAnyCanonicalDimension(canonical) ? canonical : null;
+        return LedgerDimensionTags.HasAnyDimension(canonical) ? canonical : null;
     }
-
 }

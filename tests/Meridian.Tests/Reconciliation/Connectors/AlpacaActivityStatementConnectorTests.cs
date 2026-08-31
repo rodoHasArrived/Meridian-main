@@ -44,8 +44,10 @@ public sealed class AlpacaActivityStatementConnectorTests : IDisposable
         var byKind = result.Records.GroupBy(record => record.Kind).ToDictionary(group => group.Key, group => group.Count());
         byKind.Should().BeEquivalentTo(new Dictionary<StatementRecordKind, int>
         {
-            [StatementRecordKind.Transaction] = 2,
-            [StatementRecordKind.CashBalance] = 2,
+            // Fills plus the CSD wire deposit: cash activities are ledger movements and reconcile in
+            // the transaction lane; only the portfolio snapshot's balance is a genuine cash balance.
+            [StatementRecordKind.Transaction] = 3,
+            [StatementRecordKind.CashBalance] = 1,
             [StatementRecordKind.Fee] = 1,
             [StatementRecordKind.Dividend] = 1,
             [StatementRecordKind.Position] = 2
@@ -66,8 +68,12 @@ public sealed class AlpacaActivityStatementConnectorTests : IDisposable
         dividend.CashAmount.Should().Be(24.00m);
         dividend.TradeDate.Should().Be(new DateOnly(2026, 6, 10));
 
-        var balance = result.Records.Single(record =>
-            record.Kind == StatementRecordKind.CashBalance && record.ExternalTransactionId is null);
+        var deposit = result.Records.Single(record => record.ExternalTransactionId == "cash-3001");
+        deposit.Kind.Should().Be(StatementRecordKind.Transaction, "a wire deposit is a movement with its transaction id intact");
+        deposit.CashAmount.Should().Be(50000.00m);
+
+        var balance = result.Records.Single(record => record.Kind == StatementRecordKind.CashBalance);
+        balance.ExternalTransactionId.Should().BeNull();
         balance.CashAmount.Should().Be(31247.93m);
 
         var positions = result.Records.Where(record => record.Kind == StatementRecordKind.Position).ToArray();

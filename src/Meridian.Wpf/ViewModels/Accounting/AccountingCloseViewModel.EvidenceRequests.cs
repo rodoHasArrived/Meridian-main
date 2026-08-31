@@ -1,6 +1,7 @@
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Wpf.ViewModels.Accounting;
 

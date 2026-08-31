@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using FluentAssertions;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
@@ -9,6 +10,7 @@ using Meridian.FinancialOperations.Reconciliation.Connectors.Alpaca;
 using Meridian.FinancialOperations.Reconciliation.Connectors.IbFlex;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Ofx;
 using Meridian.Infrastructure.Reconciliation;
+using Meridian.Tests.TestHelpers;
 using Xunit;
 
 namespace Meridian.Tests.Reconciliation.Connectors;
@@ -42,7 +44,7 @@ public sealed class StatementImportServiceTests : IDisposable
         ]);
 
         var statementStore = new JsonCanonicalStatementStore(_root);
-        _workflow = new StatementRunWorkflowService(
+        _workflow = StatementRunWorkflowService.CreateEphemeralForTesting(
             statementStore,
             new JsonReconciliationCaseStore(_root),
             new JsonReconciliationBreakStore(_root),
@@ -165,16 +167,18 @@ public sealed class StatementImportServiceTests : IDisposable
         var rawPath = Path.Combine(_root, result.RetainedSourcePath);
         var canonicalPath = Path.Combine(_root, result.RetainedCanonicalPath);
         run.Import.SourceFileHash.Should().Be(
-            Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(rawPath))),
+            Sha256Digest.Compute(await File.ReadAllBytesAsync(rawPath)),
             "the retained source hash is authoritative evidence for the original upload bytes");
         run.Import.CanonicalArtifactHash.Should().Be(
-            Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(canonicalPath))),
+            Sha256Digest.Compute(await File.ReadAllBytesAsync(canonicalPath)),
             "the parse artifact hash is retained separately from the original upload hash");
         run.Cases.Should().HaveCount(6);
         run.Cases.Should().OnlyContain(reconciliationCase => reconciliationCase.Status == "Open");
 
         File.Exists(Path.Combine(_root, result.RetainedSourcePath)).Should().BeTrue();
         File.Exists(Path.Combine(_root, result.RetainedCanonicalPath)).Should().BeTrue();
+        result.RetainedCanonicalEvidencePath.Should().NotBeNull();
+        File.Exists(Path.Combine(_root, result.RetainedCanonicalEvidencePath!)).Should().BeTrue();
     }
 
     [Fact]
@@ -263,13 +267,13 @@ public sealed class StatementImportServiceTests : IDisposable
 
         var artifact = await File.ReadAllTextAsync(Path.Combine(_root, result.RetainedCanonicalPath));
         artifact.Should().Be(
-            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId\n" +
-            "FUND-A,AAPL,100,187.25,-18726.05,trade,2026-06-02,2026-06-04,USD,1.05,T-1001\n" +
-            "FUND-A,MSFT,-50,412.10,20603.98,trade,2026-06-15,2026-06-17,USD,1.02,T-1002\n" +
-            "FUND-A,AAPL,100,190.10,19010.00,position,2026-06-30,,USD,,\n" +
-            "FUND-A,,0,0,31247.93,cash,2026-06-30,,USD,,\n" +
-            "FUND-A,,0,0,-25.00,fee,2026-06-28,,USD,,F-9001\n" +
-            "FUND-A,AAPL,0,0,24.00,dividend,2026-06-10,,USD,,D-7001\n");
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId,activityCategory,activitySubtype,providerActivityCode,relatedTransactionId,orderId,description\n" +
+            "FUND-A,AAPL,100,187.25,-18726.05,trade,2026-06-02,2026-06-04,USD,1.05,T-1001,,,,,,\n" +
+            "FUND-A,MSFT,-50,412.10,20603.98,trade,2026-06-15,2026-06-17,USD,1.02,T-1002,,,,,,\n" +
+            "FUND-A,AAPL,100,190.10,19010.00,position,2026-06-30,,USD,,,,,,,,\n" +
+            "FUND-A,,0,0,31247.93,cash,2026-06-30,,USD,,,,,,,,\n" +
+            "FUND-A,,0,0,-25.00,fee,2026-06-28,,USD,,F-9001,,,,,,\n" +
+            "FUND-A,AAPL,0,0,24.00,dividend,2026-06-10,,USD,,D-7001,,,,,,\n");
     }
 
     [Fact]
@@ -350,7 +354,7 @@ public sealed class StatementImportServiceTests : IDisposable
         var run = await _workflow.GetAsync(result.RunId);
         run.Should().NotBeNull();
         run!.Import.SourceFileHash.Should().Be(
-            Convert.ToHexString(SHA256.HashData(expectedSource)));
+            Sha256Digest.Compute(expectedSource));
     }
 
     [Fact]
@@ -488,9 +492,11 @@ public sealed class StatementImportServiceTests : IDisposable
         const string source =
             "account,symbol,quantity,price,cashAmount,activityType,tradeDate\n" +
             "FUND-A,AAPL,1,100,-100,trade,2026-06-02\n";
+        // The pre-upgrade run is keyed by the hash of the canonical rendering, so this constant has
+        // to be the exact artifact the writer produces today — including every trailing column.
         const string canonical =
-            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId\n" +
-            "FUND-A,AAPL,1,100,-100,trade,2026-06-02,,,,\n";
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId,activityCategory,activitySubtype,providerActivityCode,relatedTransactionId,orderId,description\n" +
+            "FUND-A,AAPL,1,100,-100,trade,2026-06-02,,,,,,,,,,\n";
         var document = new StatementSourceDocument("legacy-import.csv", Encoding.UTF8.GetBytes(source));
         var canonicalHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)));
         var rawHash = Convert.ToHexString(SHA256.HashData(document.Content.Span));
@@ -554,6 +560,13 @@ public sealed class StatementImportServiceTests : IDisposable
 
         ofxResult.RecordCount.Should().Be(4);
         flexResult.RecordCount.Should().Be(7);
+
+        // OFX STMTTRN movements commit into the transaction lane with only LEDGERBAL as a cash
+        // balance; Flex CashTransactions likewise land as transactions, never as ending balances.
+        ofxResult.KindSummaries.Single(summary => summary.Kind == "Transaction").RecordCount.Should().Be(2);
+        ofxResult.KindSummaries.Single(summary => summary.Kind == "CashBalance").RecordCount.Should().Be(1);
+        flexResult.KindSummaries.Single(summary => summary.Kind == "Transaction").RecordCount.Should().Be(3);
+        flexResult.KindSummaries.Should().NotContain(summary => summary.Kind == "CashBalance");
 
         var imports = await _workflow.ListImportsAsync();
         imports.Select(import => import.ImportId).Should().Contain([ofxResult.RunId, flexResult.RunId]);
@@ -827,6 +840,37 @@ public sealed class StatementImportServiceTests : IDisposable
             .LastRunStatus
             .Should()
             .Be("Failed: InvalidOperationException");
+    }
+
+    [Fact]
+    public async Task ScheduleRunner_FailureLogDoesNotContainExternalAccountIdentifier()
+    {
+        const string sensitiveIban = "GB82WEST12345698765432";
+        var scheduleStore = new FileStatementFetchScheduleStore(_root);
+        var schedule = await scheduleStore.UpsertAsync(
+            CreateScopedSchedule(
+                "sensitive-account-log",
+                new DateOnly(2026, 6, 1),
+                new DateOnly(2026, 6, 30)) with
+            {
+                ExternalAccountId = sensitiveIban
+            });
+        var ingestion = new RecordingStatementFetchIngestionAuthority(
+            _service,
+            authorizationFailure: new InvalidOperationException($"Account {sensitiveIban} is unavailable."));
+        var logger = new RecordingLogger<StatementFetchScheduleRunner>();
+        var runner = new StatementFetchScheduleRunner(scheduleStore, _service, ingestion, logger);
+
+        var result = await runner.RunScheduleAsync(
+            schedule,
+            new DateTimeOffset(2026, 7, 1, 6, 0, 0, TimeSpan.Zero));
+
+        result.Should().BeNull();
+        var entry = logger.Entries.Should().ContainSingle().Subject;
+        entry.Message.Should().NotContain(sensitiveIban);
+        (entry.Exception?.ToString() ?? string.Empty).Should().NotContain(sensitiveIban);
+        entry.Exception.Should().BeNull(
+            "provider exceptions may echo sensitive account identifiers and must not be attached to logs");
     }
 
     [Fact]

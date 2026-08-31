@@ -1,7 +1,9 @@
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Operations;
 using Meridian.Identity.Auth;
 using Meridian.Identity;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Http;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -29,7 +31,9 @@ public static class AuthEndpoints
             var hasError = context.Request.Query.ContainsKey("error");
             var html = HtmlTemplateGenerator.Login(returnUrl, hasError);
             return Results.Content(html, "text/html");
-        }).ExcludeFromDescription();
+        })
+        .DeclareOpenRead("Sign-in page; necessarily reachable before a session exists.")
+        .ExcludeFromDescription();
 
         // POST /api/auth/login – authenticate and issue a session cookie
         app.MapPost(UiApiRoutes.AuthApiLogin, async (HttpContext context, LoginSessionService sessionService) =>
@@ -138,7 +142,10 @@ public static class AuthEndpoints
 
             var redirect = string.IsNullOrWhiteSpace(returnUrl) ? "/workstation/" : returnUrl;
             return Results.Redirect(redirect);
-        }).ExcludeFromDescription();
+        }).ExcludeFromDescription()
+          .DeclarePermissionlessMutation(
+              "Login is the seam that establishes the session permissions come from; requiring a " +
+              "permission here would make authentication itself unreachable.");
 
         // POST /api/auth/logout – invalidate session and redirect to login
         app.MapPost(UiApiRoutes.AuthApiLogout, (HttpContext context, LoginSessionService sessionService) =>
@@ -158,7 +165,10 @@ public static class AuthEndpoints
                 });
             CookieCsrfProtection.DeleteCsrfCookie(context, secureCookies);
             return Results.Redirect(UiApiRoutes.AuthLoginPage);
-        }).ExcludeFromDescription();
+        }).ExcludeFromDescription()
+          .DeclarePermissionlessMutation(
+              "Logout must be reachable by any caller holding a session cookie, including one " +
+              "whose permissions can no longer be resolved; it only removes the caller's own session.");
 
         // GET /api/auth/me – return the current user's identity and role
         app.MapGet(UiApiRoutes.AuthApiMe, (HttpContext context, LoginSessionService sessionService) =>
@@ -178,13 +188,27 @@ public static class AuthEndpoints
                 permissionNames = RolePermissions.GetPermissionNames(profile.Permissions).ToArray()
             });
         }).WithName("GetCurrentUser")
+          .DeclareOpenRead("The caller's own profile, role and permissions; it discloses nothing the caller does not already carry, answers 401 without a session, and is how each shell learns its own authority.")
           .WithSummary("Returns the currently authenticated user's profile, role, and permissions.")
           .Produces(StatusCodes.Status200OK)
           .Produces(StatusCodes.Status401Unauthorized);
 
-        app.MapGet(UiApiRoutes.AuthApiRoles, async (IRolePermissionProfileStore roleProfileStore, CancellationToken ct) =>
-                Results.Ok(await roleProfileStore.GetCatalogAsync(ct).ConfigureAwait(false)))
+        // LoginSessionMiddleware exempts the whole /api/auth prefix before it validates a cookie, so
+        // this route has to establish the session itself the way /api/auth/me does -- a declaration
+        // alone enforces nothing here, and the catalog names the deployment's custom roles and the
+        // permissions each one grants.
+        app.MapGet(UiApiRoutes.AuthApiRoles, async (
+                HttpContext context,
+                LoginSessionService sessionService,
+                IRolePermissionProfileStore roleProfileStore,
+                CancellationToken ct) =>
+                EndpointAuthorization.IsNonSessionPrincipal(context) ||
+                ResolveCurrentProfile(context, sessionService) is null
+                    ? Results.Json(new { error = "Not authenticated." }, statusCode: StatusCodes.Status401Unauthorized)
+                    : Results.Ok(await roleProfileStore.GetCatalogAsync(ct).ConfigureAwait(false)))
             .WithName("GetRolePermissionCatalog")
+            .DeclareOpenRead("Role and permission catalog for the deployment, open to any authenticated operator because each needs it to render the authority profile they already hold; the handler resolves the session itself and answers 401 without one, since the /api/auth prefix is exempt from the session middleware.")
+            .Produces(StatusCodes.Status401Unauthorized)
             .WithSummary("Returns built-in and custom roles, permissions, and permission metadata for role configuration surfaces.")
             .Produces<RolePermissionCatalogDto>(StatusCodes.Status200OK);
 
@@ -205,7 +229,7 @@ public static class AuthEndpoints
                     var result = await accountStore.GetAccountsAsync(ct).ConfigureAwait(false);
                     return Results.Ok(result);
                 })
-            .WithName("ListUserAccounts")
+            .WithName("ListUserAccounts").RequireManageUsersSession()
             .WithSummary("Lists governed user accounts without password hashes.")
             .Produces<IReadOnlyList<UserAccountDto>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -242,7 +266,7 @@ public static class AuthEndpoints
                         return Results.BadRequest(new { error = ex.Message });
                     }
                 })
-            .WithName("UpsertUserAccount")
+            .WithName("UpsertUserAccount").RequireManageUsersSession()
             .WithSummary("Creates or updates a governed user account with a stored password hash.")
             .Produces<UserAccountMutationResultDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
@@ -301,7 +325,7 @@ public static class AuthEndpoints
                         return Results.BadRequest(new { error = ex.Message });
                     }
                 })
-            .WithName("ResetUserAccountPassword")
+            .WithName("ResetUserAccountPassword").RequireManageUsersSession()
             .WithSummary("Resets a user account password and can revoke active sessions.")
             .Produces<UserAccountMutationResultDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
@@ -361,7 +385,7 @@ public static class AuthEndpoints
                         return Results.BadRequest(new { error = ex.Message });
                     }
                 })
-            .WithName("SetUserAccountDisabled")
+            .WithName("SetUserAccountDisabled").RequireManageUsersSession()
             .WithSummary("Disables or re-enables a governed user account and can revoke active sessions.")
             .Produces<UserAccountMutationResultDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
@@ -394,7 +418,7 @@ public static class AuthEndpoints
                         ct).ConfigureAwait(false);
                     return Results.Ok(result);
                 })
-            .WithName("RevokeUserSessions")
+            .WithName("RevokeUserSessions").RequireManageUsersSession()
             .WithSummary("Revokes active login sessions by account or for all accounts.")
             .Produces<UserSessionRevokeResultDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -418,7 +442,7 @@ public static class AuthEndpoints
                     var result = await accountStore.GetAuditEventsAsync(limit, ct).ConfigureAwait(false);
                     return Results.Ok(result);
                 })
-            .WithName("ListUserAccountAuditEvents")
+            .WithName("ListUserAccountAuditEvents").RequireManageUsersSession()
             .WithSummary("Lists user-account, password-reset, disable, and session-revocation audit events.")
             .Produces<IReadOnlyList<UserAccountAuditEventDto>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -469,7 +493,7 @@ public static class AuthEndpoints
                         return Results.BadRequest(new { error = ex.Message });
                     }
                 })
-            .WithName("UpsertRolePermissionProfile")
+            .WithName("UpsertRolePermissionProfile").RequireManageUsersSession()
             .WithSummary("Creates or updates a governed custom role profile with audit evidence.")
             .Produces<RolePermissionProfileUpsertResultDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
@@ -511,7 +535,7 @@ public static class AuthEndpoints
                     var result = await scopedAccess.QueryAsync(query, ct).ConfigureAwait(false);
                     return Results.Ok(result);
                 })
-            .WithName("ListScopedAccessAssignments")
+            .WithName("ListScopedAccessAssignments").RequireManageUsersSession()
             .WithSummary("Lists governed scoped access assignments for identity and access administration.")
             .Produces<IReadOnlyList<UserAccessAssignmentDto>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -550,7 +574,7 @@ public static class AuthEndpoints
                         return Results.BadRequest(new { error = ex.Message });
                     }
                 })
-            .WithName("CreateScopedAccessAssignment")
+            .WithName("CreateScopedAccessAssignment").RequireManageUsersSession()
             .WithSummary("Creates a governed scoped access assignment with audit evidence.")
             .Produces<UserAccessAssignmentMutationResultDto>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
@@ -605,7 +629,7 @@ public static class AuthEndpoints
                         return Results.BadRequest(new { error = ex.Message });
                     }
                 })
-            .WithName("RevokeScopedAccessAssignment")
+            .WithName("RevokeScopedAccessAssignment").RequireManageUsersSession()
             .WithSummary("Revokes a governed scoped access assignment using optimistic concurrency.")
             .Produces<UserAccessAssignmentMutationResultDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
@@ -654,11 +678,45 @@ public static class AuthEndpoints
             CompanyId: string.IsNullOrWhiteSpace(ctxCompanyId) ? null : ctxCompanyId.Trim());
     }
 
+    /// <summary>
+    /// Declares and enforces the ManageUsers requirement for an account-administration route.
+    /// <para>
+    /// This is not <c>RequirePermission</c>: /api/auth/* is exempt from LoginSessionMiddleware, so
+    /// the request-Items permission snapshot that filter reads is never populated here. Enforcement
+    /// resolves the session cookie directly, exactly as <see cref="ResolveManageUsersActor"/> does
+    /// in the handlers — and the filter runs before any request validation, so a sessionless caller
+    /// gets 401 instead of the pre-auth validation responses these routes used to leak. The stamped
+    /// metadata is identical to a declarative RequirePermission(ManageUsers).
+    /// </para>
+    /// </summary>
+    private static RouteHandlerBuilder RequireManageUsersSession(this RouteHandlerBuilder builder)
+    {
+        builder.AddEndpointFilter(async (invocation, next) =>
+        {
+            var http = invocation.HttpContext;
+            var sessionService = http.RequestServices.GetRequiredService<LoginSessionService>();
+            var actor = ResolveManageUsersActor(http, sessionService, requestedBy: "account-admin");
+            return actor.StatusCode is { } statusCode
+                ? ToAuthorizationFailure(statusCode)
+                : await next(invocation);
+        });
+        builder.WithMetadata(new EndpointAuthorizationMetadata(new[] { UserPermission.ManageUsers }, requireAll: true));
+        return builder;
+    }
+
     private static ManageUsersActor ResolveManageUsersActor(
         HttpContext context,
         LoginSessionService sessionService,
         string requestedBy)
     {
+        // The filter is named for a session and must mean it: an API key or the optional-mode
+        // anonymous actor carries a role snapshot with no operator behind it, so it can satisfy the
+        // ManageUsers check below without anyone having signed in.
+        if (EndpointAuthorization.IsNonSessionPrincipal(context))
+        {
+            return new ManageUsersActor(requestedBy, StatusCodes.Status403Forbidden);
+        }
+
         var currentProfile = ResolveCurrentProfile(context, sessionService);
         UserPermission currentPermissions;
         var actor = currentProfile?.Username;
@@ -691,8 +749,13 @@ public static class AuthEndpoints
             ? Results.Unauthorized()
             : EndpointHelpers.Forbidden();
 
+    // Type first, message second. A governance refusal now arrives as HumanOperatorRequiredException,
+    // so the wording of the refusal is no longer load-bearing for the status code it maps to. The
+    // prefix test stays only for any gate still throwing a bare InvalidOperationException with the
+    // canonical text; those are the sites a wording change would silently reclassify.
     private static bool IsReviewedAutomationRejection(InvalidOperationException ex)
-        => ex.Message.StartsWith("Reviewed automation cannot ", StringComparison.Ordinal);
+        => ex is HumanOperatorRequiredException
+            || ex.Message.StartsWith("Reviewed automation cannot ", StringComparison.Ordinal);
 
     private sealed record ManageUsersActor(string Actor, int? StatusCode);
 }

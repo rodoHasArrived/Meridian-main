@@ -6,12 +6,22 @@ public class LedgerBookServiceException : Exception
         : base(message)
     {
     }
+
+    public LedgerBookServiceException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
 }
 
 public sealed class LedgerBookValidationException : LedgerBookServiceException
 {
     public LedgerBookValidationException(string message)
         : base(message)
+    {
+    }
+
+    public LedgerBookValidationException(string message, Exception innerException)
+        : base(message, innerException)
     {
     }
 }

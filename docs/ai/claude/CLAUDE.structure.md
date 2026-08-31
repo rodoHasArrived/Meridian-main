@@ -65,36 +65,9 @@ Meridian/
 │   │   ├── workflow-results-test-matrix.prompt.yml
 │   │   ├── wpf-debug-improve.prompt.yml
 │   │   └── write-unit-tests.prompt.yml
-│   ├── workflows/
-│   │   ├── benchmark.yml
-│   │   ├── bottleneck-detection.yml
-│   │   ├── build-observability.yml
-│   │   ├── close-duplicate-issues.yml
-│   │   ├── code-quality.yml
-│   │   ├── copilot-pull-request-reviewer.yml
-│   │   ├── copilot-setup-steps.yml
-│   │   ├── copilot-swe-agent-copilot.yml
-│   │   ├── desktop-builds.yml
-│   │   ├── docker.yml
-│   │   ├── docs-check.yml
-│   │   ├── documentation.yml
-│   │   ├── export-project-artifact.yml
-│   │   ├── labeling.yml
-│   │   ├── nightly.yml
-│   │   ├── pr-checks.yml
-│   │   ├── prompt-generation.yml
-│   │   ├── README.md
-│   │   ├── release.yml
-│   │   ├── reusable-dotnet-build.yml
-│   │   ├── scheduled-maintenance.yml
-│   │   ├── security.yml
-│   │   ├── skill-evals.yml
-│   │   ├── SKIPPED_JOBS_EXPLAINED.md
-│   │   ├── stale.yml
-│   │   ├── test-matrix.yml
-│   │   ├── ticker-data-collection.yml
-│   │   ├── update-diagrams.yml
-│   │   └── validate-workflows.yml
+│   ├── workflows/            # see docs/generated/workflows-overview.md for the current list
+│   │                         # (hand-listing them here rotted: 25 of the 27 entries that used
+│   │                         # to appear named workflows that no longer exist)
 │   ├── copilot-instructions.md
 │   ├── dependabot.yml
 │   ├── labeler.yml
@@ -421,7 +394,6 @@ Meridian/
 │   ├── generated/
 │   │   ├── adr-index.md
 │   │   ├── configuration-schema.md
-│   │   ├── documentation-coverage.md
 │   │   ├── project-context.md
 │   │   ├── provider-registry.md
 │   │   ├── README.md

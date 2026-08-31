@@ -504,6 +504,118 @@ public sealed class ScheduledArchiveMaintenanceServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task TriggerScheduleAsync_WhenExecutionAlreadyPending_RejectsDuplicate()
+    {
+        var schedule = await CreateScheduleAsync(MaintenanceTaskType.HealthCheck);
+        var sut = CreateSut();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        await sut.TriggerScheduleAsync(schedule.ScheduleId, cts.Token);
+        Func<Task> act = () => sut.TriggerScheduleAsync(schedule.ScheduleId, cts.Token);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*already has an execution queued or running*");
+        sut.QueuedExecutions.Should().Be(1);
+        _scheduleManager.ExecutionHistory.GetExecutionsForSchedule(schedule.ScheduleId)
+            .Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task PollDueSchedulesAsync_BlockedExecutionAcrossRepeatedPolls_QueuesOnlyOnce()
+    {
+        var schedule = await CreateScheduleAsync(MaintenanceTaskType.HealthCheck);
+        var sut = CreateSut();
+        var firstPollAt = DateTimeOffset.UtcNow.AddDays(2);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        await sut.PollDueSchedulesAsync(firstPollAt, cts.Token);
+        var claimedNextExecution = _scheduleManager.GetSchedule(schedule.ScheduleId)!.NextExecutionAt;
+
+        await sut.PollDueSchedulesAsync(firstPollAt.AddDays(2), cts.Token);
+
+        sut.QueuedExecutions.Should().Be(1,
+            "one blocked queued execution owns the schedule across repeated polls");
+        _scheduleManager.ExecutionHistory.GetExecutionsForSchedule(schedule.ScheduleId)
+            .Should().ContainSingle();
+        _scheduleManager.GetSchedule(schedule.ScheduleId)!.NextExecutionAt
+            .Should().Be(claimedNextExecution,
+                "a poll must not claim or advance a schedule that already has outstanding work");
+    }
+
+    [Fact]
+    public async Task Restart_ExpiredDispatchedClaim_RequeuesSameDurableExecutionIdentity()
+    {
+        var schedule = await CreateScheduleAsync(MaintenanceTaskType.HealthCheck);
+        var firstService = CreateSut();
+        var original = await firstService.TriggerScheduleAsync(schedule.ScheduleId);
+        firstService.Dispose(); // Simulate a process exit that loses the in-memory channel.
+
+        var restartedManager = new ArchiveMaintenanceScheduleManager(
+            NullLogger<ArchiveMaintenanceScheduleManager>.Instance,
+            Path.Combine(_tempRoot, "manager"));
+        var restartedService = CreateSut(manager: restartedManager);
+
+        await restartedService.PollDueSchedulesAsync(
+            DateTimeOffset.UtcNow.AddMinutes(6),
+            CancellationToken.None);
+
+        restartedService.QueuedExecutions.Should().Be(1);
+        var pending = restartedManager.GetSchedule(schedule.ScheduleId)!.PendingExecution;
+        pending.Should().NotBeNull();
+        pending!.ExecutionId.Should().Be(original.ExecutionId);
+        restartedManager.ExecutionHistory.GetExecutionsForSchedule(schedule.ScheduleId)
+            .Should().ContainSingle(execution => execution.ExecutionId == original.ExecutionId);
+    }
+
+    [Fact]
+    public async Task Restart_ExpiredRunningClaim_WithTerminalHistory_FinalizesKnownOutcomeWithoutReplay()
+    {
+        var schedule = await CreateScheduleAsync(MaintenanceTaskType.HealthCheck);
+        var claimedAt = schedule.NextExecutionAt!.Value.AddMinutes(1);
+        var claimed = await _scheduleManager.TryClaimDueScheduleAsync(
+            schedule.ScheduleId,
+            claimedAt,
+            "departed-host",
+            TimeSpan.FromMinutes(1));
+        claimed.Should().NotBeNull();
+        (await _scheduleManager.MarkExecutionRunningAsync(
+            schedule.ScheduleId,
+            claimed!.Execution.ExecutionId,
+            claimedAt,
+            "departed-host",
+            TimeSpan.FromMinutes(1))).Should().BeTrue();
+        var completed = new MaintenanceExecution
+        {
+            ExecutionId = claimed.Execution.ExecutionId,
+            ScheduleId = schedule.ScheduleId,
+            ScheduleName = schedule.Name,
+            TaskType = schedule.TaskType,
+            StartedAt = claimed.Execution.CreatedAt,
+            CompletedAt = claimedAt.AddSeconds(30),
+            Status = MaintenanceExecutionStatus.Completed
+        };
+        await _scheduleManager.ExecutionHistory.RecordExecutionAsync(completed);
+
+        var restartedManager = new ArchiveMaintenanceScheduleManager(
+            NullLogger<ArchiveMaintenanceScheduleManager>.Instance,
+            Path.Combine(_tempRoot, "manager"));
+        var restartedService = CreateSut(manager: restartedManager);
+
+        await restartedService.PollDueSchedulesAsync(
+            claimedAt.AddMinutes(2),
+            CancellationToken.None);
+
+        restartedService.QueuedExecutions.Should().Be(0,
+            "terminal retained evidence closes the durable claim without replaying side effects");
+        restartedManager.ExecutionHistory.GetExecution(completed.ExecutionId)!.Status
+            .Should().Be(MaintenanceExecutionStatus.Completed);
+        var retained = restartedManager.GetSchedule(schedule.ScheduleId)!;
+        retained.PendingExecution.Should().BeNull();
+        retained.SuccessfulExecutions.Should().Be(1);
+        retained.LastExecutionId.Should().Be(completed.ExecutionId);
+    }
+
+    [Fact]
     public async Task StartAsync_TriggeredSchedule_ExecutesAndUpdatesScheduleCounters()
     {
         _fileMaintenance
@@ -540,10 +652,11 @@ public sealed class ScheduledArchiveMaintenanceServiceTests : IDisposable
         var completed = completions[0];
         completed.ExecutionId.Should().Be(queued.ExecutionId);
         completed.Status.Should().Be(MaintenanceExecutionStatus.Completed);
-        schedule.ExecutionCount.Should().Be(1);
-        schedule.SuccessfulExecutions.Should().Be(1);
-        schedule.LastExecutionStatus.Should().Be(MaintenanceExecutionStatus.Completed);
-        schedule.LastExecutionId.Should().Be(queued.ExecutionId);
+        var retainedSchedule = _scheduleManager.GetSchedule(schedule.ScheduleId)!;
+        retainedSchedule.ExecutionCount.Should().Be(1);
+        retainedSchedule.SuccessfulExecutions.Should().Be(1);
+        retainedSchedule.LastExecutionStatus.Should().Be(MaintenanceExecutionStatus.Completed);
+        retainedSchedule.LastExecutionId.Should().Be(queued.ExecutionId);
     }
 
     [Fact]
@@ -563,8 +676,8 @@ public sealed class ScheduledArchiveMaintenanceServiceTests : IDisposable
 
         await sut.StartAsync(cts.Token);
         await sut.TriggerScheduleAsync(schedule.ScheduleId, cts.Token);
-        await sut.TriggerScheduleAsync(schedule.ScheduleId, cts.Token);
         var failed = await failedTcs.Task.WaitAsync(cts.Token);
+        await sut.TriggerScheduleAsync(schedule.ScheduleId, cts.Token);
         var completed = await completedTcs.Task.WaitAsync(cts.Token);
         await sut.StopAsync(cts.Token);
 
@@ -583,7 +696,7 @@ public sealed class ScheduledArchiveMaintenanceServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task CancelExecutionAsync_RunningManualExecution_StopsWorkAndReportsFailure()
+    public async Task CancelExecutionAsync_RunningManualExecution_StopsWorkAndReportsCancelled()
     {
         var startedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var blockTcs = new TaskCompletionSource<HealthReport>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -606,9 +719,8 @@ public sealed class ScheduledArchiveMaintenanceServiceTests : IDisposable
         (await sut.CancelExecutionAsync(started!.ExecutionId)).Should().BeTrue();
         var execution = await runTask.WaitAsync(cts.Token);
 
-        // The manual path's catch(Exception) swallows the OperationCanceledException,
-        // so a cancelled manual run reports Failed (not Cancelled) — pinned as-is.
-        execution.Status.Should().Be(MaintenanceExecutionStatus.Failed);
+        execution.Status.Should().Be(MaintenanceExecutionStatus.Cancelled);
+        execution.ErrorMessage.Should().Be("Execution was cancelled");
         failedRaised.Should().BeTrue();
         sut.CurrentExecution.Should().BeNull();
         (await sut.CancelExecutionAsync(started.ExecutionId)).Should().BeFalse(
@@ -649,7 +761,7 @@ public sealed class ScheduledArchiveMaintenanceServiceTests : IDisposable
         failed.Status.Should().Be(MaintenanceExecutionStatus.TimedOut,
             "a run past the schedule's MaxDuration must be contained, not hang forever");
         failed.ErrorMessage.Should().Be("Execution timed out");
-        schedule.FailedExecutions.Should().Be(1);
+        _scheduleManager.GetSchedule(schedule.ScheduleId)!.FailedExecutions.Should().Be(1);
     }
 
     [Fact]
@@ -662,9 +774,7 @@ public sealed class ScheduledArchiveMaintenanceServiceTests : IDisposable
         var act = () => sut.StopAsync(cts.Token);
 
         await act.Should().NotThrowAsync();
-        // IsRunning deliberately not asserted here: the executor loop faults with an
-        // OperationCanceledException outside its catch when the queue reader is
-        // cancelled, so the flag never resets — a known quirk pinned by this comment.
+        sut.IsRunning.Should().BeFalse();
     }
 
     [Fact]
@@ -700,11 +810,13 @@ public sealed class ScheduledArchiveMaintenanceServiceTests : IDisposable
         act.Should().NotThrow();
     }
 
-    private ScheduledArchiveMaintenanceService CreateSut(int? retentionDays = null)
+    private ScheduledArchiveMaintenanceService CreateSut(
+        int? retentionDays = null,
+        ArchiveMaintenanceScheduleManager? manager = null)
     {
         var service = new ScheduledArchiveMaintenanceService(
             NullLogger<ScheduledArchiveMaintenanceService>.Instance,
-            _scheduleManager,
+            manager ?? _scheduleManager,
             _fileMaintenance.Object,
             _tierMigration.Object,
             new StorageOptions { RootPath = _storageRoot, RetentionDays = retentionDays });

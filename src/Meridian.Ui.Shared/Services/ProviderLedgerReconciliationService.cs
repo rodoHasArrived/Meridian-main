@@ -20,6 +20,7 @@ using Meridian.Storage.Archival;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -135,7 +136,7 @@ public sealed partial class ProviderLedgerReconciliationService
 
         var operationId = NormalizeOperationId(request.OperationId);
         var requestHash = ComputeRequestHash(accountId, accessScope, request);
-        var operationLockKey = $"{accountId:N}:{ComputeSha256(operationId)}";
+        var operationLockKey = $"{accountId:N}:{Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(operationId)}";
         var operationGate = OperationLocks.GetOrAdd(operationLockKey, static _ => new SemaphoreSlim(1, 1));
         await operationGate.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -236,7 +237,7 @@ public sealed partial class ProviderLedgerReconciliationService
         var lifecycle = new BreakLifecycleContext(
             CreatedAt: createdAt,
             AmountTolerance: tolerance,
-            DefaultOwner: NormalizeOwner(request.DefaultBreakOwner) ?? "fund-accounting",
+            DefaultOwner: NormalizeOptional(request.DefaultBreakOwner) ?? "fund-accounting",
             SignedOffBreakKeys: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
             SignedOffBy: null,
             PreviousBreaksByKey: BuildPreviousBreakMap(previousLatest));
@@ -1551,7 +1552,7 @@ public sealed partial class ProviderLedgerReconciliationService
     {
         var summary = detail.Summary;
         var signedOff = breakRow.SignOffState == ProviderLedgerReconciliationBreakSignOffStateDto.SignedOff;
-        var signedOffBy = NormalizeOwner(breakRow.SignedOffBy);
+        var signedOffBy = NormalizeOptional(breakRow.SignedOffBy);
         var signedOffAt = breakRow.SignedOffAt ?? (signedOff ? summary.CreatedAt : null);
         var status = signedOff
             ? ReconciliationBreakQueueStatus.Resolved
@@ -1559,7 +1560,7 @@ public sealed partial class ProviderLedgerReconciliationService
         var isSecurityMasterIdentityCase = IsSecurityMasterIdentityBreak(breakRow);
         var signoffRole = isSecurityMasterIdentityCase ? "Security Master steward" : "Fund accounting";
         var assignedTo = isSecurityMasterIdentityCase
-            ? NormalizeOwner(request.DefaultBreakOwner) ?? "security-master-steward"
+            ? NormalizeOptional(request.DefaultBreakOwner) ?? "security-master-steward"
             : breakRow.Owner;
         var signoffStatus = signedOff
             ? "signed-off"
@@ -1730,7 +1731,7 @@ public sealed partial class ProviderLedgerReconciliationService
             Status: ReconciliationBreakQueueStatus.Open,
             Variance: 0m,
             Reason: reason,
-            AssignedTo: NormalizeOwner(request.DefaultBreakOwner) ?? "security-master-steward",
+            AssignedTo: NormalizeOptional(request.DefaultBreakOwner) ?? "security-master-steward",
             DetectedAt: candidate.ObservedAt,
             LastUpdatedAt: summary.CreatedAt,
             Severity: severity,
@@ -1808,7 +1809,7 @@ public sealed partial class ProviderLedgerReconciliationService
             Status: ReconciliationBreakQueueStatus.Open,
             Variance: 0m,
             Reason: reason,
-            AssignedTo: NormalizeOwner(request.DefaultBreakOwner) ?? "security-master-steward",
+            AssignedTo: NormalizeOptional(request.DefaultBreakOwner) ?? "security-master-steward",
             DetectedAt: passport.ProviderSyncedAt,
             LastUpdatedAt: summary.CreatedAt,
             Severity: ReconciliationBreakSeverity.Medium,
@@ -1981,7 +1982,7 @@ public sealed partial class ProviderLedgerReconciliationService
                 .Append('|');
         }
 
-        return ComputeSha256(builder.ToString());
+        return Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     private static ReconciliationBreakCategory MapCorporateActionCandidateCategory(
@@ -2525,9 +2526,6 @@ public sealed partial class ProviderLedgerReconciliationService
             NormalizeBreakIdPart(checkId),
             NormalizeBreakIdPart(code),
             NormalizeBreakIdPart(string.IsNullOrWhiteSpace(symbol) ? "account" : symbol));
-
-    private static string? NormalizeOwner(string? owner)
-        => string.IsNullOrWhiteSpace(owner) ? null : owner.Trim();
 
     private sealed record BreakLifecycleContext(
         DateTimeOffset CreatedAt,

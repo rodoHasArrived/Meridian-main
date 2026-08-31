@@ -27,10 +27,18 @@ public interface ISecurityMasterRevisionStore
         DateTimeOffset fieldEffectiveFrom,
         string fieldJustification,
         string? fundProfileId = null,
+        SecurityMasterRevisionFieldValue? fieldValue = null,
         CancellationToken ct = default);
 
     /// <summary>Returns the revision, or <c>null</c> when no revision with that id exists.</summary>
     Task<SecurityMasterRevisionRecord?> GetAsync(Guid revisionId, CancellationToken ct = default);
+
+    /// <summary>
+    /// All revisions recorded for one security, in no guaranteed order. Used by the approval seam
+    /// to decide whether a security-level override decision would co-approve values staged by
+    /// OTHER, not-yet-approved revisions.
+    /// </summary>
+    Task<IReadOnlyList<SecurityMasterRevisionRecord>> ListBySecurityAsync(Guid securityId, CancellationToken ct = default);
 
     /// <summary>
     /// Atomically transitions a revision from <paramref name="expected"/> to <paramref name="next"/>.
@@ -48,6 +56,15 @@ public interface ISecurityMasterRevisionStore
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// The exact overlay VALUE a field-edit revision governs — <c>null</c> models a staged CLEAR.
+/// Wrapping the nullable value distinguishes "the edit recorded a clear" from "no value was
+/// recorded at all" (legacy revisions predating value persistence), which discard-time restoration
+/// must tell apart: a recorded clear restores by removing the key, while an unrecorded value is
+/// unrecoverable and falls back to the fail-closed sibling handling.
+/// </summary>
+public sealed record SecurityMasterRevisionFieldValue(string? Value);
+
 /// <summary>Durable record of a passport revision's governed lifecycle state.</summary>
 public sealed record SecurityMasterRevisionRecord(
     Guid RevisionId,
@@ -60,7 +77,9 @@ public sealed record SecurityMasterRevisionRecord(
     string? FieldPath = null,
     DateTimeOffset? FieldEffectiveFrom = null,
     string? FieldJustification = null,
-    string? FundProfileId = null);
+    string? FundProfileId = null,
+    string? FieldValue = null,
+    bool FieldValueRecorded = false);
 
 /// <summary>
 /// Raised when a revision lifecycle transition is attempted out of order — e.g. publishing a revision
@@ -87,7 +106,7 @@ public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisio
     private readonly ConcurrentDictionary<Guid, SecurityMasterRevisionRecord> _revisions = new();
 
     public Task<SecurityMasterRevisionRecord> CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default)
-        => CreateDraftCore(securityId, actor, fieldPath: null, fieldEffectiveFrom: null, fieldJustification: null, fundProfileId: null);
+        => CreateDraftCore(securityId, actor, fieldPath: null, fieldEffectiveFrom: null, fieldJustification: null, fundProfileId: null, fieldValue: null);
 
     public Task<SecurityMasterRevisionRecord> CreateDraftAsync(
         Guid securityId,
@@ -96,8 +115,9 @@ public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisio
         DateTimeOffset fieldEffectiveFrom,
         string fieldJustification,
         string? fundProfileId = null,
+        SecurityMasterRevisionFieldValue? fieldValue = null,
         CancellationToken ct = default)
-        => CreateDraftCore(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification, fundProfileId);
+        => CreateDraftCore(securityId, actor, fieldPath, fieldEffectiveFrom, fieldJustification, fundProfileId, fieldValue);
 
     private Task<SecurityMasterRevisionRecord> CreateDraftCore(
         Guid securityId,
@@ -105,7 +125,8 @@ public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisio
         string? fieldPath,
         DateTimeOffset? fieldEffectiveFrom,
         string? fieldJustification,
-        string? fundProfileId)
+        string? fundProfileId,
+        SecurityMasterRevisionFieldValue? fieldValue)
     {
         var now = DateTimeOffset.UtcNow;
         var record = new SecurityMasterRevisionRecord(
@@ -119,7 +140,9 @@ public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisio
             FieldPath: fieldPath,
             FieldEffectiveFrom: fieldEffectiveFrom,
             FieldJustification: fieldJustification,
-            FundProfileId: string.IsNullOrWhiteSpace(fundProfileId) ? null : fundProfileId.Trim());
+            FundProfileId: string.IsNullOrWhiteSpace(fundProfileId) ? null : fundProfileId.Trim(),
+            FieldValue: fieldValue?.Value,
+            FieldValueRecorded: fieldValue is not null);
         _revisions[record.RevisionId] = record;
         return Task.FromResult(record);
     }
@@ -129,6 +152,10 @@ public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisio
         _revisions.TryGetValue(revisionId, out var record);
         return Task.FromResult(record);
     }
+
+    public Task<IReadOnlyList<SecurityMasterRevisionRecord>> ListBySecurityAsync(Guid securityId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<SecurityMasterRevisionRecord>>(
+            _revisions.Values.Where(record => record.SecurityId == securityId).ToArray());
 
     public Task<SecurityMasterRevisionRecord> TransitionAsync(
         Guid revisionId,

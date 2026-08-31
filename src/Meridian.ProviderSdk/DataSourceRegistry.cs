@@ -41,6 +41,81 @@ public sealed record ProviderRegistrationReport(
 }
 
 /// <summary>
+/// Classifies a data-source candidate relative to the registry snapshot used for discovery.
+/// </summary>
+public enum DataSourceRegistrationDisposition
+{
+    /// <summary>The provider family/capability identity was not present and can be added.</summary>
+    Added,
+
+    /// <summary>The same provider metadata and implementation type were already registered.</summary>
+    Duplicate,
+
+    /// <summary>An overlapping capability in the provider family was claimed by different metadata or an implementation type.</summary>
+    Conflict
+}
+
+/// <summary>
+/// The classification of one discovered data-source candidate.
+/// </summary>
+public sealed record DataSourceRegistrationOutcome(
+    DataSourceMetadata Candidate,
+    DataSourceRegistrationDisposition Disposition,
+    DataSourceMetadata? Existing = null,
+    string? Reason = null);
+
+/// <summary>
+/// Transactional discovery result for one assembly. Candidate dispositions describe what was
+/// found; <see cref="Committed"/> is authoritative about whether any <see cref="DataSourceRegistrationDisposition.Added"/>
+/// candidates were published to the registry.
+/// </summary>
+public sealed record DataSourceAssemblyRegistrationResult(
+    string AssemblyName,
+    bool Committed,
+    IReadOnlyList<DataSourceRegistrationOutcome> Outcomes)
+{
+    public bool HasConflicts => Outcomes.Any(static outcome =>
+        outcome.Disposition == DataSourceRegistrationDisposition.Conflict);
+
+    public int AddedCount => Committed
+        ? Outcomes.Count(static outcome => outcome.Disposition == DataSourceRegistrationDisposition.Added)
+        : 0;
+
+    public int DuplicateCount => Outcomes.Count(static outcome =>
+        outcome.Disposition == DataSourceRegistrationDisposition.Duplicate);
+
+    public int ConflictCount => Outcomes.Count(static outcome =>
+        outcome.Disposition == DataSourceRegistrationDisposition.Conflict);
+}
+
+/// <summary>
+/// Raised by the compatibility discovery API when an assembly attempts to claim an overlapping
+/// capability within a provider family using different metadata or an implementation type.
+/// </summary>
+public sealed class DataSourceRegistrationConflictException : InvalidOperationException
+{
+    public DataSourceRegistrationConflictException(DataSourceAssemblyRegistrationResult result)
+        : base(BuildMessage(result))
+    {
+        Result = result;
+    }
+
+    public DataSourceAssemblyRegistrationResult Result { get; }
+
+    private static string BuildMessage(DataSourceAssemblyRegistrationResult result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        var conflicts = result.Outcomes
+            .Where(static outcome => outcome.Disposition == DataSourceRegistrationDisposition.Conflict)
+            .Select(outcome =>
+                $"'{outcome.Candidate.Id}' [{string.Join("|", outcome.Candidate.CapabilityKeys)}] ({outcome.Candidate.ImplementationType.FullName})")
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        return $"Data-source discovery for assembly '{result.AssemblyName}' was rejected transactionally because provider identity conflicts were found: {string.Join(", ", conflicts)}.";
+    }
+}
+
+/// <summary>
 /// Registry for discovering and registering data source providers.
 /// </summary>
 public sealed class DataSourceRegistry
@@ -104,37 +179,159 @@ public sealed class DataSourceRegistry
     }
 
     /// <summary>
-    /// Discover data sources from the provided assemblies.
+    /// Discovers data sources from the provided assemblies. Each assembly is committed
+    /// transactionally. Exact duplicates and disjoint capabilities in the same provider family are
+    /// harmless; an overlapping conflicting capability rejects the entire assembly and raises
+    /// <see cref="DataSourceRegistrationConflictException"/>.
     /// </summary>
     public void DiscoverFromAssemblies(params Assembly[] assemblies)
+    {
+        ValidateAssemblies(assemblies);
+        foreach (var assembly in assemblies)
+        {
+            var result = DiscoverFromAssemblyWithResult(assembly);
+            if (result.HasConflicts)
+            {
+                throw new DataSourceRegistrationConflictException(result);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Discovers data sources and returns an explicit result for every assembly. Discovery is
+    /// transactional per assembly: if any candidate conflicts, no candidate from that assembly is
+    /// published. A provider ID is a family identity: implementations with disjoint recognized
+    /// service-contract capability keys may coexist. Exact duplicates require a case-insensitive ID
+    /// match and otherwise identical <see cref="DataSourceMetadata"/>, including capability keys and
+    /// implementation type. Different implementations whose capability keys overlap conflict.
+    /// </summary>
+    public IReadOnlyList<DataSourceAssemblyRegistrationResult> DiscoverFromAssembliesWithResults(
+        params Assembly[] assemblies)
+    {
+        ValidateAssemblies(assemblies);
+        return assemblies
+            .Select(DiscoverFromAssemblyWithResult)
+            .ToArray();
+    }
+
+    private static void ValidateAssemblies(Assembly[] assemblies)
     {
         if (assemblies is null || assemblies.Length == 0)
         {
             throw new ArgumentException("At least one assembly must be provided.", nameof(assemblies));
         }
 
-        foreach (var assembly in assemblies)
+        if (assemblies.Any(static assembly => assembly is null))
         {
-            var types = GetLoadableTypes(assembly);
-            foreach (var type in types)
+            throw new ArgumentException("Assemblies cannot contain null entries.", nameof(assemblies));
+        }
+    }
+
+    /// <summary>
+    /// Discovers and transactionally classifies the data sources in one assembly.
+    /// </summary>
+    public DataSourceAssemblyRegistrationResult DiscoverFromAssemblyWithResult(Assembly assembly)
+    {
+        ArgumentNullException.ThrowIfNull(assembly);
+        var assemblyName = assembly.GetName().Name ?? assembly.FullName ?? "unknown";
+        var candidates = GetLoadableTypes(assembly)
+            .Where(static type => type.IsDataSource())
+            .Select(static type => type.GetDataSourceMetadata())
+            .Where(static metadata => metadata is not null)
+            .Cast<DataSourceMetadata>()
+            .OrderBy(static metadata => metadata.Id, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static metadata => metadata.ImplementationType.FullName, StringComparer.Ordinal)
+            .ToArray();
+
+        lock (_sync)
+        {
+            var outcomes = ClassifyCandidates(candidates);
+            var hasConflicts = outcomes.Any(static outcome =>
+                outcome.Disposition == DataSourceRegistrationDisposition.Conflict);
+            if (!hasConflicts)
             {
-                if (!type.IsDataSource())
+                _sources.AddRange(outcomes
+                    .Where(static outcome =>
+                        outcome.Disposition == DataSourceRegistrationDisposition.Added)
+                    .Select(static outcome => outcome.Candidate));
+            }
+
+            return new DataSourceAssemblyRegistrationResult(
+                assemblyName,
+                Committed: !hasConflicts,
+                Array.AsReadOnly(outcomes));
+        }
+    }
+
+    private DataSourceRegistrationOutcome[] ClassifyCandidates(
+        IReadOnlyList<DataSourceMetadata> candidates)
+    {
+        var outcomes = new List<DataSourceRegistrationOutcome>(candidates.Count);
+        foreach (var group in candidates.GroupBy(
+                     static metadata => metadata.Id,
+                     StringComparer.OrdinalIgnoreCase))
+        {
+            var groupedCandidates = group.ToArray();
+            foreach (var candidate in groupedCandidates)
+            {
+                var conflictingCandidate = groupedCandidates.FirstOrDefault(other =>
+                    !ReferenceEquals(other, candidate)
+                    && !IsExactDuplicate(candidate, other)
+                    && CapabilitiesOverlap(candidate, other));
+                if (conflictingCandidate is not null)
                 {
+                    outcomes.Add(new DataSourceRegistrationOutcome(
+                        candidate,
+                        DataSourceRegistrationDisposition.Conflict,
+                        conflictingCandidate,
+                        "The assembly contains different implementations or metadata definitions with an overlapping provider capability."));
                     continue;
                 }
 
-                var metadata = type.GetDataSourceMetadata();
-                if (metadata is not null)
-                {
-                    lock (_sync)
-                    {
-                        if (_sources.All(s => !s.Id.Equals(metadata.Id, StringComparison.OrdinalIgnoreCase)))
-                            _sources.Add(metadata);
-                    }
-                }
+                var family = _sources.Where(source =>
+                    source.Id.Equals(candidate.Id, StringComparison.OrdinalIgnoreCase));
+                var exact = family.FirstOrDefault(existing =>
+                    IsExactDuplicate(existing, candidate));
+                var conflict = exact is null
+                    ? family.FirstOrDefault(existing => CapabilitiesOverlap(existing, candidate))
+                    : null;
+                var disposition = exact is not null
+                    ? DataSourceRegistrationDisposition.Duplicate
+                    : conflict is not null
+                        ? DataSourceRegistrationDisposition.Conflict
+                        : DataSourceRegistrationDisposition.Added;
+                outcomes.Add(new DataSourceRegistrationOutcome(
+                    candidate,
+                    disposition,
+                    exact ?? conflict,
+                    disposition == DataSourceRegistrationDisposition.Conflict
+                        ? "An overlapping provider capability is already registered by different metadata or an implementation type."
+                        : null));
             }
         }
+
+        return outcomes.ToArray();
     }
+
+    private static bool IsExactDuplicate(
+        DataSourceMetadata left,
+        DataSourceMetadata right) =>
+        left.Id.Equals(right.Id, StringComparison.OrdinalIgnoreCase)
+        && string.Equals(left.DisplayName, right.DisplayName, StringComparison.Ordinal)
+        && string.Equals(left.Description, right.Description, StringComparison.Ordinal)
+        && left.Type == right.Type
+        && left.Category == right.Category
+        && left.Priority == right.Priority
+        && left.EnabledByDefault == right.EnabledByDefault
+        && string.Equals(left.ConfigSection, right.ConfigSection, StringComparison.Ordinal)
+        && left.ImplementationType == right.ImplementationType
+        && left.CapabilityKeys.SequenceEqual(right.CapabilityKeys, StringComparer.Ordinal);
+
+    private static bool CapabilitiesOverlap(
+        DataSourceMetadata left,
+        DataSourceMetadata right) =>
+        left.CapabilityKeys.Any(capability =>
+            right.CapabilityKeys.Contains(capability, StringComparer.Ordinal));
 
     /// <summary>
     /// Registers discovered data sources into the service collection.

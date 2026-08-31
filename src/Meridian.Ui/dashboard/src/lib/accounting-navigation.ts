@@ -79,6 +79,11 @@ export const ACCOUNTING_NAVIGATION_GROUPS: readonly AccountingNavigationGroupDef
         route: WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts
       },
       {
+        id: "capital-calls",
+        label: "Capital calls",
+        route: WORKSTATION_ROUTE_CATALOG.accountingCapitalCalls
+      },
+      {
         id: "security-master",
         label: "Security Master",
         route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster

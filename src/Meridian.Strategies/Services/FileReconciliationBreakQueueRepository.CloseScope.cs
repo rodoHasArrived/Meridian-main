@@ -1,6 +1,6 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Strategies.Services;
@@ -475,7 +475,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
         if (string.IsNullOrWhiteSpace(retained.ScopeKey)
             || string.IsNullOrWhiteSpace(retained.Token)
             || !Guid.TryParseExact(retained.Token, "N", out _)
-            || !IsSha256(retained.CheckpointHashSha256)
+            || !Sha256Digest.IsWellFormed(retained.CheckpointHashSha256)
             || retained.UpdatedAtUtc == default
             || retained.CheckpointItems is null
             || retained.Generation <= 0
@@ -589,9 +589,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
                 generation,
                 items = ordered
             };
-        return Convert.ToHexString(SHA256.HashData(
-                Encoding.UTF8.GetBytes(JsonSerializer.Serialize(checkpoint, _jsonOptions))))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(checkpoint, _jsonOptions));
     }
 
     private static void ValidateCloseScopeReopenCommand(
@@ -611,7 +609,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
         }
         var evidence = NormalizeCloseScopeReopenEvidence(command.EvidenceLinks);
         if (command.ReopenedLedgerPeriodVersion <= 0
-            || !IsSha256(command.CommandHashSha256)
+            || !Sha256Digest.IsWellFormed(command.CommandHashSha256)
             || evidence.Count == 0
             || !evidence.Any(link =>
                 link.Contains(command.ApprovalReference.Trim(), StringComparison.OrdinalIgnoreCase)))

@@ -34,7 +34,7 @@ public class TradeDataCollectorTests
             SequenceNumber: 1,
             StreamId: "TEST",
             Venue: "NYSE"
-        );
+        , Source: "TEST");
 
         // Act
         _collector.OnTrade(update);
@@ -66,7 +66,7 @@ public class TradeDataCollectorTests
             Size: 50,
             Aggressor: AggressorSide.Unknown,
             SequenceNumber: 1
-        );
+        , Source: "TEST");
 
         // Act
         _collector.OnTrade(update);
@@ -304,7 +304,7 @@ public class TradeDataCollectorTests
             SequenceNumber: seqNum,
             StreamId: "TEST",
             Venue: "TEST"
-        );
+        , Source: "TEST");
     }
 
     private static MarketTradeUpdate CreateTradeAtTime(
@@ -324,6 +324,6 @@ public class TradeDataCollectorTests
             SequenceNumber: seqNum,
             StreamId: "TEST",
             Venue: "TEST"
-        );
+        , Source: "TEST");
     }
 }

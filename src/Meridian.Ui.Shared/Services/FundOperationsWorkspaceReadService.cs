@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.SecurityMaster;
@@ -599,6 +600,7 @@ public sealed partial class FundOperationsWorkspaceReadService
             report,
             auditActor,
             ct).ConfigureAwait(false);
+        var derivedProvenanceToken = ReportPackProvenanceResolver.ResolveDerivedToken(runs, ledgerBook.ConsolidatedJournalEntries());
         var validationIssues = _reportPackValidationService.Validate(new ReportPackValidationContext(
             ReportId: report.ReportId,
             AsOf: asOf,
@@ -611,7 +613,8 @@ public sealed partial class FundOperationsWorkspaceReadService
             StaleReplayCount: 0,
             UnresolvedSecurityMasterConflictCount: securityValidationResults.Count(result =>
                 result.Report.Issues.Any(issue => issue.Severity is SecurityValidationSeverityDto.Critical or SecurityValidationSeverityDto.Error)),
-            SecurityValidationResults: securityValidationResults));
+            SecurityValidationResults: securityValidationResults,
+            DataProvenanceToken: derivedProvenanceToken));
         var status = _reportPackValidationService.ResolveStatus(validationIssues);
         var lifecycleEvents = _reportPackValidationService.BuildGenerationLifecycle(
             auditActor,
@@ -637,7 +640,8 @@ public sealed partial class FundOperationsWorkspaceReadService
                 reconciliation,
                 nav,
                 runs),
-            SchemaVersion: schemaVersion);
+            SchemaVersion: schemaVersion,
+            DataProvenanceToken: derivedProvenanceToken);
         var artifactContents = BuildReportPackArtifacts(report, formats, brandingTheme, ct);
         generationStopwatch.Stop();
         var warnings = BuildReportPackWarnings(report, reconciliation, runs.Count, securityMissingCount);
@@ -2331,7 +2335,7 @@ public sealed partial class FundOperationsWorkspaceReadService
         };
 
         var json = JsonSerializer.SerializeToUtf8Bytes(source, ReportArtifactJsonOptions);
-        return Convert.ToHexString(SHA256.HashData(json)).ToLowerInvariant();
+        return Sha256Digest.Compute(json);
     }
 
     private static IReadOnlyList<FundReportPackLineagePointerDto> BuildLineagePointers(
@@ -4332,7 +4336,7 @@ public sealed partial class FundOperationsWorkspaceReadService
             builder.Append(row.TryGetValue(column.Name, out var value) ? value : string.Empty);
         }
 
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     private static string BuildStructuredExportRoute(
@@ -4413,7 +4417,7 @@ public sealed partial class FundOperationsWorkspaceReadService
             retainedPath,
             retainedManifestPath,
             versionStamp);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(input))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(input);
     }
 
     private static string BuildStructuredExportIntegritySummary(

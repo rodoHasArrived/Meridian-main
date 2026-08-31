@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using Meridian.Reporting;
 using Npgsql;
 using NpgsqlTypes;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.Reporting;
 
@@ -167,7 +168,7 @@ public sealed class PostgresReportingArtifactStore : IReportingArtifactStore
         // Clone caller-owned memory before hashing or awaiting so mutations cannot change the bytes
         // between identity calculation and persistence.
         var content = request.Content.ToArray();
-        var contentHash = ComputeSha256(content);
+        var contentHash = Sha256Digest.Compute(content);
         return new PreparedArtifactWrite(
             new ReportingArtifactIdentity(tenantId, contentHash),
             content);
@@ -258,7 +259,7 @@ public sealed class PostgresReportingArtifactStore : IReportingArtifactStore
                 $"declared size {row.DeclaredByteSize} does not match retained size {row.PhysicalByteSize}");
         }
 
-        var actualHash = ComputeSha256(row.Content);
+        var actualHash = Sha256Digest.Compute(row.Content);
         if (!string.Equals(actualHash, identity.ContentHashSha256, StringComparison.Ordinal))
         {
             throw new ReportingArtifactIntegrityException(
@@ -303,9 +304,6 @@ public sealed class PostgresReportingArtifactStore : IReportingArtifactStore
 
         return normalized;
     }
-
-    private static string ComputeSha256(byte[] content) =>
-        Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
 
     private static DateTimeOffset ReadUtcTimestamp(NpgsqlDataReader reader, int ordinal) =>
         new(DateTime.SpecifyKind(reader.GetDateTime(ordinal), DateTimeKind.Utc));

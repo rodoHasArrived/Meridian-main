@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Meridian.ProcessIsolation\Meridian.ProcessIsolation.csproj" />
     <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
     <ProjectReference Include="..\Meridian.Backtesting\Meridian.Backtesting.csproj" />
     <ProjectReference Include="..\Meridian.Backtesting.Sdk\Meridian.Backtesting.Sdk.csproj" />
@@ -23,6 +24,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
   </ItemGroup>
 
 </Project>

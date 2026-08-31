@@ -6,6 +6,7 @@ import {
   buildCommandPaletteTriggerState,
   buildDevelopmentFixtureNoticeViewModel,
   normalizeWorkspace,
+  resolveAppShellLocation,
   resolveAppShellCommandPaletteShortcut,
   type AppShellWorkspacePayload
 } from "@/app-shell.view-model";
@@ -44,6 +45,42 @@ describe("app shell view model", () => {
     expect(skipLinkRule).toContain("left: -100vw");
     expect(skipLinkRule).not.toContain("transform:");
     expect(focusedSkipLinkRule).toContain("left: 0.75rem");
+  });
+
+  it("lets every masthead track shrink rather than spill past the viewport", () => {
+    const shellStyles = readFileSync(resolve(process.cwd(), "src/styles/app-shell.css"), "utf8");
+    const mastheadRule = shellStyles.match(/\.workstation-masthead\s*\{(?<rule>[\s\S]*?)\}/)?.groups?.rule ?? "";
+    const columns = mastheadRule.match(/grid-template-columns:(?<value>[^;]*);/)?.groups?.value ?? "";
+
+    expect(columns).not.toBe("");
+    // A track floor beats the child's own `min-width: 0`, so any non-zero minimum here
+    // adds to a row minimum that the 980px stack does not rescue in between.
+    expect(columns).not.toMatch(/minmax\(\s*(?!0[,)])[^,]+,/);
+    expect(columns.match(/minmax\(/g) ?? []).toHaveLength(3);
+  });
+
+  it("ellipsizes the session identity instead of pushing it off the masthead", () => {
+    const shellStyles = readFileSync(resolve(process.cwd(), "src/styles/app-shell.css"), "utf8");
+    const nameRule = shellStyles.match(/\.workstation-session-name\s*\{(?<rule>[\s\S]*?)\}/)?.groups?.rule ?? "";
+    const roleRule = shellStyles.match(/\.workstation-session-role\s*\{(?<rule>[\s\S]*?)\}/)?.groups?.rule ?? "";
+
+    for (const rule of [nameRule, roleRule]) {
+      expect(rule).toContain("white-space: nowrap");
+      // Flex items default to `min-width: auto` and refuse to shrink below their text,
+      // which would leave the overflow rules dead and the card spilling.
+      expect(rule).toContain("min-width: 0");
+      expect(rule).toContain("overflow: hidden");
+      expect(rule).toContain("text-overflow: ellipsis");
+    }
+  });
+
+  it("holds the environment badge at full width while the rest of the session card gives way", () => {
+    const shellStyles = readFileSync(resolve(process.cwd(), "src/styles/app-shell.css"), "utf8");
+    const badgeRule =
+      shellStyles.match(/\.workstation-session-card\s*>\s*:first-child\s*\{(?<rule>[\s\S]*?)\}/)?.groups?.rule ?? "";
+
+    // PAPER vs LIVE is the one thing in this card an operator cannot afford to lose.
+    expect(badgeRule).toContain("flex: none");
   });
 
   it("keeps route-owned continuity builders outside shell internals", () => {
@@ -113,7 +150,7 @@ describe("app shell view model", () => {
     expect(trustStripSource).toContain("export function buildTrustStripState");
     expect(trustStripSource).toContain("function buildProviderTrustStripItem");
     expect(trustStripSource).toContain("function formatCount");
-    expect(trustStripSource).toContain("packageJson.version");
+    expect(trustStripSource).toContain("__APP_VERSION__");
     expect(trustStripSource).toContain("Provider posture has not loaded yet.");
     expect(commandPaletteSource).toContain("export function buildCommandPaletteTriggerState");
     expect(commandPaletteSource).toContain("export function resolveAppShellCommandPaletteShortcut");
@@ -215,7 +252,7 @@ describe("app shell view model", () => {
     expect(source).not.toContain("function buildProviderTrustStripItem");
     expect(source).not.toContain("function titleCase");
     expect(source).not.toContain("function formatCount");
-    expect(source).not.toContain("packageJson.version");
+    expect(source).not.toContain("__APP_VERSION__");
     expect(source).not.toContain("Provider posture has not loaded yet.");
     expect(source).not.toContain("export function buildCommandPaletteTriggerState");
     expect(source).not.toContain("export function resolveAppShellCommandPaletteShortcut");
@@ -244,6 +281,14 @@ describe("app shell view model", () => {
     expect(normalizeWorkspace("/unknown")).toBe("trading");
   });
 
+  it("models the root as shell home without adding an eighth workspace", () => {
+    expect(resolveAppShellLocation("/")).toEqual({ kind: "home" });
+    expect(resolveAppShellLocation("/accounting/reconciliation")).toEqual({
+      kind: "workspace",
+      workspaceKey: "accounting"
+    });
+  });
+
   it("treats the root route as the Daily Control Tower shell focus", () => {
     const state = buildAppShellViewState({
       pathname: "/",
@@ -258,6 +303,8 @@ describe("app shell view model", () => {
       documentTitle: "Daily Control Tower - Meridian",
       fallbackElementId: "workbench-content"
     });
+    expect(state.location).toEqual({ kind: "home" });
+    expect(state.workflowContinuity.contextValue).toBe("Daily Control Tower / Today");
     expect(state.workflowContinuity.title).toBe("Daily Control Tower");
     expect(state.workflowContinuity.steps.map((step) => step.label)).toEqual([
       "Today",

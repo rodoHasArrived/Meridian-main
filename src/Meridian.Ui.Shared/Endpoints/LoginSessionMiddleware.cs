@@ -1,8 +1,11 @@
+using Meridian.Contracts.Configuration;
 using Meridian.Identity;
 using Meridian.Identity.Auth;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System.Net;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -11,7 +14,10 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// <summary>
 /// Middleware that enforces session-based authentication.
 /// <list type="bullet">
-///   <item>Health probes (/healthz, /readyz, /livez) are always exempt.</item>
+///   <item>Health probes (/health, /healthz, /readyz, /livez) and the Prometheus scrape path (/metrics) are always exempt.</item>
+///   <item>The initial-account bootstrap surface (/setup/account, /api/auth/bootstrap) is exempt
+///     while no account exists; those endpoints gate themselves on the loopback-only, one-use
+///     MDC_BOOTSTRAP_TOKEN.</item>
 ///   <item>The login page (/login) and auth API endpoints (/api/auth/*) are exempt when authentication is configured.</item>
 ///   <item>Unauthenticated API requests receive a 401 JSON response.</item>
 ///   <item>Unauthenticated browser (non-/api) requests are redirected to /login.</item>
@@ -21,7 +27,31 @@ namespace Meridian.Ui.Shared.Endpoints;
 public sealed class LoginSessionMiddleware
 {
     private const string LocalShutdownTokenEnvironmentVariable = "MDC_SHUTDOWN_TOKEN";
+    private const string AnonymousRoleEnvironmentVariable = "MDC_ANONYMOUS_ROLE";
+    private const string AnonymousTenantEnvironmentVariable = "MDC_ANONYMOUS_TENANT";
+
+    /// <summary>Actor recorded for optional-mode callers so audit trails are attributed.</summary>
+    internal const string AnonymousLocalActor = "local-operator";
+
+    /// <summary>
+    /// Marks a request whose principal came from optional mode rather than a validated login session.
+    /// </summary>
+    internal const string AnonymousPrincipalKey = "CurrentUserIsAnonymous";
+
+    /// <summary>
+    /// Marks the anonymous local operator established only by the isolated, explicitly requested
+    /// demo runtime. Read-only workstation bootstrap routes may opt into this principal without
+    /// treating every optional-auth caller as a validated login session.
+    /// </summary>
+    internal const string DemoLocalOperatorPrincipalKey = "CurrentUserIsDemoLocalOperator";
+
     private const string LocalShutdownTokenHeader = "X-Meridian-Shutdown-Token";
+
+    /// <summary>
+    /// Authentication type stamped on <see cref="HttpContext.User"/> for validated login sessions,
+    /// so <c>Identity.IsAuthenticated</c> is true for exactly the principals a session established.
+    /// </summary>
+    public const string SessionAuthenticationType = "MeridianLoginSession";
 
     /// <summary>Name of the HTTP-only session cookie set after successful login.</summary>
     public const string SessionCookieName = "mdc-session";
@@ -64,7 +94,13 @@ public sealed class LoginSessionMiddleware
 
     private static readonly HashSet<string> ExemptPaths = new(StringComparer.OrdinalIgnoreCase)
     {
+        // "/health" is what the shipped docker-compose healthcheck curls and "/metrics" is what
+        // the shipped Prometheus scrape config targets; without both here every authenticated
+        // deployment reports its container unhealthy and scrapes nothing. The detailed probe
+        // ("/health/detailed") stays authenticated — only the exact liveness/scrape paths open.
+        "/health",
         "/healthz",
+        "/metrics",
         "/ready",
         "/readyz",
         "/live",
@@ -99,6 +135,95 @@ public sealed class LoginSessionMiddleware
         if (!sessionService.IsConfigured)
         {
             if (sessionService.AllowAnonymousWhenUnconfigured)
+            {
+                // Optional mode means this deployment has no accounts at all -- the demo and local
+                // development posture. Such a caller has no authorization context, so every governed
+                // route refuses it, which is correct by default: "authentication is optional" must not
+                // silently become "authorization is absent". A deployment that genuinely wants an
+                // anonymous operator to work the surface -- the demo runtime does -- opts in by naming
+                // the role that operator carries, and nothing is granted without that explicit choice.
+                // A request carrying an API key is judged by the key's own role downstream, so an
+                // unusable anonymous posture must not decide it: without this, a typo in an
+                // MDC_ANONYMOUS_ROLE nobody is using would disable every independently configured
+                // API-key client with a 503 they cannot act on.
+                //
+                // The initial-account bootstrap is exempt for the same reason the method cap below
+                // exempts it, and it is exempt here too because this branch runs first: a misconfigured
+                // role must not be able to make a fresh install unrecoverable. Refusing bootstrap here
+                // would leave an operator with a typo in a setting they cannot reach a UI to fix, and
+                // nothing is granted by the exemption -- the bootstrap endpoint's own loopback and
+                // one-use token checks still decide the request, and a failed resolve leaves the
+                // anonymous principal unset either way.
+                if (!TryResolveAnonymousRole(out var anonymousRole) &&
+                    !ApiKeyMiddleware.IsApiKeyCandidate(context) &&
+                    !IsInitialAccountBootstrapRequest(trimmedPath))
+                {
+                    await WriteAnonymousRoleConfigurationErrorAsync(context, path);
+                    return;
+                }
+
+                if (anonymousRole is { } role)
+                {
+                    // The same read-only contract the API-key principal carries: naming ReadOnly as
+                    // the anonymous role must not let an unauthenticated caller drive the legacy
+                    // mutations that are declared with view-grade permissions ReadOnly holds. The two
+                    // postures share one rule so this cannot diverge again.
+                    //
+                    // It binds only to requests that will actually be served as this principal. Two
+                    // are not, and both are decided further down the pipeline than this branch runs:
+                    // a request carrying an API key is judged by the key's own role in
+                    // ApiKeyMiddleware, which runs after this middleware, so rejecting it here would
+                    // let a read-only anonymous posture silently disable every key mutation; and the
+                    // initial-account bootstrap is gated by its own loopback and one-use token
+                    // checks, which are stronger than a role and must stay reachable or a fresh
+                    // install with an anonymous role can never create its first account.
+                    if (!ApiKeyMiddleware.IsApiKeyCandidate(context) &&
+                        !IsInitialAccountBootstrapRequest(trimmedPath) &&
+                        EndpointAuthorization.IsReadOnlyRoleMutation(context, role))
+                    {
+                        await ApiProblemDetails.Forbidden(
+                                context,
+                                $"The {role} anonymous role allows only GET, HEAD, and OPTIONS requests, plus routes requiring {UserPermission.ExportData}. Set {AnonymousRoleEnvironmentVariable} to a role that authorizes this command endpoint.")
+                            .ExecuteAsync(context);
+                        return;
+                    }
+
+                    context.Items[CurrentUserKey] = AnonymousLocalActor;
+                    context.Items[CurrentUserRoleKey] = role;
+                    context.Items[CurrentUserPermissionsKey] = RolePermissions.For(role);
+
+                    // A session takes its tenant from the account's company; an anonymous caller has
+                    // no account to take one from. Optional local development therefore names its own
+                    // tenant explicitly, while the supported demo workspace falls back to its seeded
+                    // tenant/company pair. With neither, the caller keeps a role but no scope and the
+                    // tenant-scoped workstation stays refused.
+                    if (ResolveAnonymousTenant() is { } configuredTenant)
+                    {
+                        context.Items[CurrentUserCompanyIdKey] = configuredTenant;
+                        context.Items[CurrentTenantIdKey] = configuredTenant;
+                    }
+                    else if (DemoWorkspaceLayout.IsDemoModeRequested(Array.Empty<string>()))
+                    {
+                        context.Items[CurrentUserCompanyIdKey] = DemoTenantBlueprint.CompanyId;
+                        context.Items[CurrentTenantIdKey] = DemoTenantBlueprint.TenantId;
+                        context.Items[DemoLocalOperatorPrincipalKey] = true;
+                    }
+
+                    // Marks this principal as anonymous rather than a validated login session, so a
+                    // deployment that also configures MDC_API_KEY still has its key enforced -- the
+                    // API-key middleware exempts sessions, and an anonymous caller is not one.
+                    context.Items[AnonymousPrincipalKey] = true;
+                }
+
+                await _next(context);
+                return;
+            }
+
+            // The initial-account bootstrap surface must stay reachable while no account
+            // exists, or a fresh install can never create its first login. The endpoints
+            // fail closed on their own: loopback-only, one-use MDC_BOOTSTRAP_TOKEN, and
+            // refusal once any account exists.
+            if (IsInitialAccountBootstrapRequest(trimmedPath))
             {
                 await _next(context);
                 return;
@@ -146,6 +271,22 @@ public sealed class LoginSessionMiddleware
                 }
 
                 context.Items[CurrentUserPermissionsKey] = profile.Permissions;
+
+                // Framework components see only the standard principal, never the session items:
+                // the ASP.NET rate limiter partitions the direct-lending policy by
+                // HttpContext.User.Identity?.Name, and with User left anonymous every session fell
+                // into the shared per-IP bucket. Stamp a minimal authenticated principal for
+                // validated login sessions only — API-key and optional-mode anonymous callers are
+                // not sessions and deliberately keep the default anonymous User, so nothing
+                // downstream can mistake them for a signed-in operator.
+                context.User = new ClaimsPrincipal(new ClaimsIdentity(
+                    new[]
+                    {
+                        new Claim(ClaimTypes.Name, profile.Username),
+                        new Claim(ClaimTypes.Role, profile.Role.ToString())
+                    },
+                    authenticationType: SessionAuthenticationType));
+
                 CookieCsrfProtection.EnsureCsrfCookie(
                     context,
                     CookieCsrfProtection.ShouldUseSecureCookies(context),
@@ -197,6 +338,61 @@ public sealed class LoginSessionMiddleware
         await context.Response.WriteAsync(
             "Authentication is required but not configured. Set MDC_USERS with passwordHash values or configure MDC_AUTH_MODE=optional for local development.");
     }
+
+    /// <summary>
+    /// Resolves the role an unauthenticated caller carries in optional mode. Unset yields no role at
+    /// all, so the governed surface keeps refusing anonymous callers; a value naming no known role
+    /// fails closed rather than silently applying a different permission set than was configured.
+    /// </summary>
+    private static bool TryResolveAnonymousRole(out UserRole? role)
+    {
+        role = null;
+        var configured = Environment.GetEnvironmentVariable(AnonymousRoleEnvironmentVariable);
+        if (string.IsNullOrWhiteSpace(configured))
+        {
+            return true;
+        }
+
+        if (ApiKeyMiddleware.TryParseRoleName(configured, out var parsed))
+        {
+            role = parsed;
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Tenant and company authority an optional-mode caller carries, or null when the deployment has
+    /// named none. This is a deployment-chosen identifier matched against stored records rather than
+    /// a member of a closed set, so non-empty values are normalized but not enum-validated here.
+    /// </summary>
+    private static string? ResolveAnonymousTenant()
+    {
+        var configured = Environment.GetEnvironmentVariable(AnonymousTenantEnvironmentVariable);
+        return string.IsNullOrWhiteSpace(configured) ? null : configured.Trim();
+    }
+
+    private static async Task WriteAnonymousRoleConfigurationErrorAsync(HttpContext context, string path)
+    {
+        var detail =
+            $"{AnonymousRoleEnvironmentVariable} is set to a value that is not a known role. "
+            + "Set it to a valid role, or unset it to leave anonymous callers without authorization.";
+
+        if (path.StartsWith("/api/", StringComparison.OrdinalIgnoreCase))
+        {
+            await ApiProblemDetails.ServiceUnavailable(context, "authentication", detail).ExecuteAsync(context);
+            return;
+        }
+
+        context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+        context.Response.ContentType = "text/plain; charset=utf-8";
+        await context.Response.WriteAsync(detail);
+    }
+
+    private static bool IsInitialAccountBootstrapRequest(string trimmedPath)
+        => trimmedPath.Equals("/setup/account", StringComparison.OrdinalIgnoreCase)
+        || trimmedPath.Equals("/api/auth/bootstrap", StringComparison.OrdinalIgnoreCase);
 
     private static bool IsLifecycleTokenRequest(HttpContext context, string trimmedPath)
     {

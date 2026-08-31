@@ -112,7 +112,12 @@ public sealed class WorkstationFundScopeTenantAccessor : IFundScopeTenantAccesso
         var httpContext = _httpContextAccessor.HttpContext;
         if (httpContext is null)
         {
-            return null;
+            // W9-GOV-008 criterion 2: out of request, fall back to the tenant a background job has
+            // explicitly declared it is acting for. ILedgerJournalStore alone serves roughly fifty
+            // internal and worker call sites, so once an unresolved tenant fails closed, a scheduled
+            // job with perfectly good retained authority would otherwise lose every read. A job that
+            // has declared nothing still resolves to null, and so still fails closed.
+            return FundScopeTenantAuthority.CurrentTenantId;
         }
 
         var context = HttpContextWorkstationTenantContextAccessor.Resolve(httpContext);
@@ -166,6 +171,9 @@ public static class WorkstationTenantCompanyScopeEndpointFilters
     public static RouteHandlerBuilder RequireWorkstationTenantCompanyScope(this RouteHandlerBuilder builder)
     {
         builder.AddEndpointFilter(RequireTenantAndCompanyScopeAsync);
+        // The stricter tenant+company gate also satisfies the discoverable tenant-scope contract
+        // used by endpoint coverage and authorization tooling.
+        builder.WithMetadata(new WorkstationTenantScopeMetadata());
         return builder;
     }
 

@@ -1,4 +1,5 @@
 using Meridian.Contracts.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.Ledger;
 
@@ -135,7 +136,4 @@ public sealed class AccountingBasisProjectionSetService : IAccountingBasisProjec
         => string.IsNullOrWhiteSpace(value)
             ? throw new ArgumentException($"{parameterName} is required.", parameterName)
             : value.Trim();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

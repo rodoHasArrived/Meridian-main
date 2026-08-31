@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Globalization;
 using System.IO.Compression;
 using System.Xml.Linq;
@@ -79,7 +80,7 @@ public static partial class WorkstationEndpoints
             var bytes = XlsxWorkbookWriter.CreateWorkbook(worksheets, request.HttpContext.RequestAborted);
             return Results.File(bytes, WorkstationStructuredXlsxContentType, OnboardingWorkbookFileName);
         })
-        .WithName("GetWorkstationOnboardingWorkbook")
+        .WithName("GetWorkstationOnboardingWorkbook").DeclareOpenRead("Generated onboarding workbook contains only built-in upload schemas; carries no tenant or deployment state.")
         .Produces(StatusCodes.Status200OK, contentType: WorkstationStructuredXlsxContentType)
         .ProducesValidationProblem();
 
@@ -164,7 +165,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(preview, jsonOptions);
         })
-        .WithName("PreviewWorkstationOnboardingWorkbook")
+        .WithName("PreviewWorkstationOnboardingWorkbook").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<DataUploadWorkbookPreviewResultDto>(200)
         .ProducesValidationProblem()
         .Produces(403);

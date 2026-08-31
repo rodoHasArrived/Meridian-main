@@ -1,6 +1,6 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 
@@ -647,7 +647,7 @@ public sealed class ShadowBookValuationService : IShadowBookValuationService
         Append(builder, "accruals", FormatDecimal(request.Accruals));
         Append(builder, "externalReferenceNav", FormatDecimal(request.ExternalReferenceNav));
 
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     private static void Append(StringBuilder builder, string key, string? value)

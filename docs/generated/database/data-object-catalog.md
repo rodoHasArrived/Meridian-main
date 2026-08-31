@@ -4,36 +4,36 @@
 
 This is a source inventory of public DTOs and related contract objects. Database-to-contract links are explicit module associations; they do not assert one-to-one structural equivalence.
 
-- Public contract objects: 2513
-- Namespaces: 54
+- Public contract objects: 2684
+- Namespaces: 56
 
 ## Classifications
 
 | Classification | Count |
 | --- | ---: |
-| `catalog` | 10 |
-| `class` | 175 |
-| `configuration` | 19 |
-| `dto` | 1228 |
-| `enum` | 346 |
+| `catalog` | 11 |
+| `class` | 217 |
+| `configuration` | 20 |
+| `dto` | 1296 |
+| `enum` | 374 |
 | `event` | 5 |
-| `payload` | 60 |
-| `record` | 304 |
+| `payload` | 63 |
+| `record` | 319 |
 | `record_struct` | 3 |
-| `request` | 144 |
-| `response` | 88 |
-| `result` | 39 |
-| `service_contract` | 85 |
+| `request` | 147 |
+| `response` | 91 |
+| `result` | 42 |
+| `service_contract` | 89 |
 | `struct` | 7 |
 
 ## Database-adjacent diagrams
 
-- [`ledger-contracts`](contracts/ledger-contracts.md): 283 objects; mapped schemas: `ledger`.
-- [`security-master-contracts`](contracts/security-master-contracts.md): 174 objects; mapped schemas: `security_master`.
+- [`ledger-contracts`](contracts/ledger-contracts.md): 297 objects; mapped schemas: `ledger`.
+- [`security-master-contracts`](contracts/security-master-contracts.md): 243 objects; mapped schemas: `security_master`.
 - [`direct-lending-contracts`](contracts/direct-lending-contracts.md): 98 objects; mapped schemas: `security_master`.
-- [`asset-operations-contracts`](contracts/asset-operations-contracts.md): 69 objects; mapped schemas: `asset_operations`.
+- [`asset-operations-contracts`](contracts/asset-operations-contracts.md): 107 objects; mapped schemas: `asset_operations`.
 - [`fund-governance-contracts`](contracts/fund-governance-contracts.md): 141 objects; mapped schemas: `fund_accounts`, `fund_structure`.
-- [`banking-contracts`](contracts/banking-contracts.md): 10 objects; mapped schemas: `banking`.
+- [`banking-contracts`](contracts/banking-contracts.md): 11 objects; mapped schemas: `banking`.
 - [`money-market-contracts`](contracts/money-market-contracts.md): 1 objects; mapped schemas: `money_market`.
 - [`reporting-contracts`](contracts/reporting-contracts.md): 22 objects; mapped schemas: `reporting`.
 - [`identity-access-contracts`](contracts/identity-access-contracts.md): 50 objects; mapped schemas: `identity_access`.

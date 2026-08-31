@@ -1,13 +1,13 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
-using Meridian.Identity;
-using Meridian.Identity.Auth;
-using Meridian.PortfolioRecords.Accounts;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Identity;
+using Meridian.Identity.Auth;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -44,7 +44,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(snapshot, jsonOptions);
         })
-        .WithName("GetExecutionAccount")
+        .WithName("GetExecutionAccount").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionAccountSnapshot>(200)
         .Produces(503);
 
@@ -57,7 +57,7 @@ public static class ExecutionEndpoints
             var positions = portfolio.Positions.Values.ToArray();
             return Results.Json(positions, jsonOptions);
         })
-        .WithName("GetExecutionPositions")
+        .WithName("GetExecutionPositions").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionPosition[]>(200)
         .Produces(503);
 
@@ -71,7 +71,7 @@ public static class ExecutionEndpoints
                 ? Results.Problem("Execution position services are not active.", statusCode: StatusCodes.Status503ServiceUnavailable)
                 : Results.Json(snapshot, jsonOptions);
         })
-        .WithName("GetExecutionBlotterPositions")
+        .WithName("GetExecutionBlotterPositions").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionBlotterSnapshotResponse>(200)
         .Produces(503);
 
@@ -91,7 +91,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(snapshot, jsonOptions);
         })
-        .WithName("GetExecutionPortfolio")
+        .WithName("GetExecutionPortfolio").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionPortfolioSnapshot>(200)
         .Produces(503);
 
@@ -106,7 +106,7 @@ public static class ExecutionEndpoints
             var orders = oms.GetOpenOrders();
             return Results.Json(orders, jsonOptions);
         })
-        .WithName("GetOpenOrders")
+        .WithName("GetOpenOrders").RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<OrderState>>(200)
         .Produces(503);
 
@@ -121,7 +121,7 @@ public static class ExecutionEndpoints
                 ? Results.NotFound()
                 : Results.Json(order, jsonOptions);
         })
-        .WithName("GetOrderById")
+        .WithName("GetOrderById").RequirePermission(UserPermission.ViewTrades)
         .Produces<OrderState>(200)
         .Produces(404)
         .Produces(503);
@@ -195,7 +195,7 @@ public static class ExecutionEndpoints
                 _ => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest)
             };
         })
-        .WithName("SubmitOrder")
+        .WithName("SubmitOrder").RequirePermission(UserPermission.ManageOrders)
         .Produces<OrderResult>(201)
         .Produces<OrderResult>(202)
         .Produces<OrderResult>(400)
@@ -255,7 +255,7 @@ public static class ExecutionEndpoints
                 ? Results.Json(actionResult, jsonOptions)
                 : Results.Json(actionResult, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
         })
-        .WithName("CancelOrder")
+        .WithName("CancelOrder").RequirePermission(UserPermission.ManageOrders)
         .Produces<TradingActionResult>(200)
         .Produces<TradingActionResult>(400)
         .Produces(503);
@@ -275,19 +275,34 @@ public static class ExecutionEndpoints
             var actionId = GenerateActionId();
             var openCount = oms.GetOpenOrders().Count;
 
-            await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false);
+            var sweep = await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false)
+                ?? KillSwitchSweepResult.Unestablished(openCount);
 
-            logger.LogInformation("Trading action {ActionId}: cancel-all — cancelled {Count} open orders", actionId, openCount);
+            logger.LogInformation(
+                "Trading action {ActionId}: cancel-all — cancelled {Cancelled} of {Requested} open order(s), {StillWorking} still working",
+                actionId,
+                sweep.Cancelled,
+                sweep.Requested,
+                sweep.StillWorking.Count);
 
+            // The operator is told what the sweep achieved, not that it was requested. A ticket
+            // reading "Completed" over a book that still has working orders is the specific
+            // failure this endpoint used to produce.
             var actionResult = new TradingActionResult(
                 ActionId: actionId,
-                Status: "Completed",
-                Message: $"Cancellation requested for {openCount} open order(s).",
-                OccurredAt: DateTimeOffset.UtcNow);
+                Status: sweep.Outcome.ToString(),
+                Message: sweep.Describe(),
+                OccurredAt: DateTimeOffset.UtcNow,
+                // Every surviving order, not the bounded prose. A caller driving recovery needs the
+                // ids to cancel by hand, and the rendered message names only the first ten.
+                StillWorking: sweep.StillWorking,
+                // Distinct from Status: a Completed sweep over an unenumerable broker book has
+                // emptied only the in-memory view, and the caller must be able to see that.
+                BrokerViewUnavailable: sweep.BrokerViewUnavailable ? true : null);
 
             return Results.Json(actionResult, jsonOptions);
         })
-        .WithName("CancelAllOrders")
+        .WithName("CancelAllOrders").RequirePermission(UserPermission.ManageOrders)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces<TradingActionResult>(200)
         .Produces(403)
@@ -312,7 +327,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(health, jsonOptions);
         })
-        .WithName("GetExecutionHealth")
+        .WithName("GetExecutionHealth").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionGatewayHealth>(200)
         .Produces(503);
 
@@ -324,7 +339,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(gateway.Capabilities, jsonOptions);
         })
-        .WithName("GetExecutionCapabilities")
+        .WithName("GetExecutionCapabilities").RequirePermission(UserPermission.ViewTrades)
         .Produces<OrderGatewayCapabilities>(200)
         .Produces(503);
 
@@ -341,7 +356,7 @@ public static class ExecutionEndpoints
                 .ConfigureAwait(false);
             return Results.Json(entries, jsonOptions);
         })
-        .WithName("GetExecutionAudit")
+        .WithName("GetExecutionAudit").RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<ExecutionAuditEntry>>(200);
 
         group.MapGet("/audit/search", async (
@@ -390,7 +405,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(result, jsonOptions);
         })
-        .WithName("SearchExecutionAuditTrail")
+        .WithName("SearchExecutionAuditTrail").RequirePermission(UserPermission.ViewTrades)
         .Produces<AuditTrailExplorerResultDto>(200);
 
         group.MapGet("/controls", (HttpContext context) =>
@@ -403,7 +418,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(controls.GetSnapshot(), jsonOptions);
         })
-        .WithName("GetExecutionControls")
+        .WithName("GetExecutionControls").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionControlSnapshot>(200)
         .Produces(503);
 
@@ -428,9 +443,91 @@ public static class ExecutionEndpoints
             var snapshot = await controls
                 .SetCircuitBreakerAsync(request.IsOpen, request.Reason, actor, request.CorrelationId, context.RequestAborted)
                 .ConfigureAwait(false);
-            return Results.Json(snapshot, jsonOptions);
+
+            // Opening the breaker is the kill switch: beyond blocking new submissions it must
+            // sweep the open book, or resting orders keep filling while routing is "halted".
+            // The cancel sweep runs after the durable breaker flip so a crash between the two
+            // restarts into the halted state, and its outcome is audited separately from the
+            // activation so a failed sweep is visible rather than silently absorbed.
+            KillSwitchSweepResult? sweepOutcome = null;
+            if (request.IsOpen && context.RequestServices.GetService<IOrderManager>() is { } oms)
+            {
+                var auditTrail = context.RequestServices.GetService<ExecutionAuditTrailService>();
+                var openCount = oms.GetOpenOrders().Count;
+                try
+                {
+                    // A null sweep is an order manager that established nothing about the book.
+                    // Fail closed on it rather than dereferencing: the kill switch reporting
+                    // "object reference not set" tells an operator nothing about their orders.
+                    var sweep = await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false)
+                        ?? KillSwitchSweepResult.Unestablished(openCount);
+                    sweepOutcome = sweep;
+
+                    // Outcome, not invocation. The Failed branch below fires only on a thrown
+                    // exception, so a broker that merely refuses a cancellation never reaches it —
+                    // which is how a half-fired kill switch used to be audited as Completed.
+                    if (sweep.RequiresOperatorAction)
+                    {
+                        GetLogger(context.RequestServices).LogError(
+                            "Circuit breaker opened by {Actor} but the cancel-all sweep left {StillWorking} order(s) working; manual cancellation is required",
+                            actor,
+                            sweep.StillWorking.Count);
+                    }
+                    else
+                    {
+                        GetLogger(context.RequestServices).LogInformation(
+                            "Circuit breaker opened by {Actor}; cancel-all emptied the book of {Count} open order(s)",
+                            actor, sweep.Requested);
+                    }
+
+                    if (auditTrail is not null)
+                    {
+                        await auditTrail.RecordAsync(
+                                "controls",
+                                "CircuitBreakerCancelAll",
+                                sweep.Outcome.ToString(),
+                                actor: actor,
+                                correlationId: request.CorrelationId,
+                                message: sweep.Describe(),
+                                ct: CancellationToken.None)
+                            .ConfigureAwait(false);
+                    }
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    GetLogger(context.RequestServices).LogError(
+                        ex,
+                        "Circuit breaker opened by {Actor} but the cancel-all sweep failed; open orders may remain working",
+                        actor);
+                    if (auditTrail is not null)
+                    {
+                        await auditTrail.RecordAsync(
+                                "controls",
+                                "CircuitBreakerCancelAll",
+                                "Failed",
+                                actor: actor,
+                                correlationId: request.CorrelationId,
+                                message: $"Kill-switch cancel-all failed with {openCount} open order(s); manual cancellation is required.",
+                                reason: ex.Message,
+                                ct: CancellationToken.None)
+                            .ConfigureAwait(false);
+                    }
+
+                    sweepOutcome = KillSwitchSweepResult.Unestablished(openCount);
+                }
+            }
+
+            // The activation response carries what the sweep achieved. Returning the plain snapshot
+            // either way meant a caller pulling the kill switch got an identical 200 whether the
+            // book emptied or orders were still working, and could only discover the difference by
+            // separately querying the audit trail.
+            return Results.Json(
+                sweepOutcome is null
+                    ? snapshot
+                    : (object)ExecutionCircuitBreakerActivationResponse.From(snapshot, sweepOutcome),
+                jsonOptions);
         })
-        .WithName("UpdateExecutionCircuitBreaker")
+        .WithName("UpdateExecutionCircuitBreaker").RequirePermission(UserPermission.ManageOrders)
         .Produces<ExecutionControlSnapshot>(200)
         .Produces(403)
         .Produces(429)
@@ -461,7 +558,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(snapshot, jsonOptions);
         })
-        .WithName("UpdateExecutionDefaultPositionLimit")
+        .WithName("UpdateExecutionDefaultPositionLimit").RequirePermission(UserPermission.ManageOrders)
         .Produces<ExecutionControlSnapshot>(200)
         .Produces(403)
         .Produces(429)
@@ -492,7 +589,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(snapshot, jsonOptions);
         })
-        .WithName("UpdateExecutionSymbolPositionLimit")
+        .WithName("UpdateExecutionSymbolPositionLimit").RequirePermission(UserPermission.ManageOrders)
         .Produces<ExecutionControlSnapshot>(200)
         .Produces(403)
         .Produces(429)
@@ -537,7 +634,7 @@ public static class ExecutionEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("CreateExecutionManualOverride")
+        .WithName("CreateExecutionManualOverride").RequirePermission(UserPermission.ManageOrders)
         .Produces<ExecutionManualOverride>(201)
         .Produces(403)
         .Produces(429)
@@ -583,7 +680,7 @@ public static class ExecutionEndpoints
                     OccurredAt: DateTimeOffset.UtcNow),
                 jsonOptions);
         })
-        .WithName("ClearExecutionManualOverride")
+        .WithName("ClearExecutionManualOverride").RequirePermission(UserPermission.ManageOrders)
         .Produces<TradingActionResult>(200)
         .Produces(403)
         .Produces(429)
@@ -603,7 +700,7 @@ public static class ExecutionEndpoints
             var sessions = persistence.GetSessions();
             return Results.Json(sessions, jsonOptions);
         })
-        .WithName("GetExecutionSessions")
+        .WithName("GetExecutionSessions").RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<PaperSessionSummaryDto>>(200);
 
         group.MapGet("/sessions/{sessionId}", async (string sessionId, HttpContext context) =>
@@ -616,7 +713,7 @@ public static class ExecutionEndpoints
             var session = persistence.GetSession(sessionId);
             return session is null ? Results.NotFound() : Results.Json(session, jsonOptions);
         })
-        .WithName("GetExecutionSessionById")
+        .WithName("GetExecutionSessionById").RequirePermission(UserPermission.ViewTrades)
         .Produces<PaperSessionDetailDto>(200)
         .Produces(404);
 
@@ -638,7 +735,7 @@ public static class ExecutionEndpoints
                 session.OrderHistory);
             return Results.Json(report, jsonOptions);
         })
-        .WithName("GetExecutionSessionTcaReport")
+        .WithName("GetExecutionSessionTcaReport").RequirePermission(UserPermission.ViewTrades)
         .Produces<SessionTcaReport>(200)
         .Produces(404);
 
@@ -704,7 +801,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(session, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
-        .WithName("CreateExecutionSession")
+        .WithName("CreateExecutionSession").RequirePermission(UserPermission.ExecuteTrades)
         .Produces<PaperSessionSummaryDto>(201)
         .Produces(400)
         .Produces(429)
@@ -761,7 +858,7 @@ public static class ExecutionEndpoints
                     AuditId: auditEntry?.AuditId),
                 jsonOptions);
         })
-        .WithName("CloseExecutionSession")
+        .WithName("CloseExecutionSession").RequirePermission(UserPermission.ManageOrders)
         .Produces<TradingActionResult>(200)
         .Produces(404)
         .Produces(503);
@@ -832,7 +929,7 @@ public static class ExecutionEndpoints
                 },
                 jsonOptions);
         })
-        .WithName("ReplayExecutionSession")
+        .WithName("ReplayExecutionSession").RequirePermission(UserPermission.ManageOrders)
         .Produces<PaperSessionReplayVerificationDto>(200)
         .Produces(404)
         .Produces(503);
@@ -855,7 +952,7 @@ public static class ExecutionEndpoints
             var single = BuildLegacySingleAccountSnapshot(portfolio);
             return Results.Json(new[] { single }, jsonOptions);
         })
-        .WithName("GetExecutionAccounts")
+        .WithName("GetExecutionAccounts").RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<ExecutionAccountDetailSnapshot>>(200)
         .Produces(503);
 
@@ -876,7 +973,7 @@ public static class ExecutionEndpoints
 
             return Results.NotFound();
         })
-        .WithName("GetExecutionAccountById")
+        .WithName("GetExecutionAccountById").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionAccountDetailSnapshot>(200)
         .Produces(404)
         .Produces(503);
@@ -900,7 +997,7 @@ public static class ExecutionEndpoints
 
             return Results.NotFound();
         })
-        .WithName("GetExecutionAccountPositions")
+        .WithName("GetExecutionAccountPositions").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionPosition[]>(200)
         .Produces(404)
         .Produces(503);
@@ -919,7 +1016,7 @@ public static class ExecutionEndpoints
             var aggregate = MultiAccountPortfolioSnapshot.FromAccounts([singleSnap]);
             return Results.Json(aggregate, jsonOptions);
         })
-        .WithName("GetExecutionPortfolioAggregate")
+        .WithName("GetExecutionPortfolioAggregate").RequirePermission(UserPermission.ViewTrades)
         .Produces<MultiAccountPortfolioSnapshot>(200)
         .Produces(503);
 
@@ -972,7 +1069,7 @@ public static class ExecutionEndpoints
                 jsonOptions: jsonOptions,
                 context: context).ConfigureAwait(false);
         })
-        .WithName("ClosePositionByKey")
+        .WithName("ClosePositionByKey").RequirePermission(UserPermission.ExecuteTrades)
         .Produces<TradingActionResult>(200)
         .Produces<TradingActionResult>(400)
         .Produces(403)
@@ -1025,7 +1122,7 @@ public static class ExecutionEndpoints
                 jsonOptions: jsonOptions,
                 context: context).ConfigureAwait(false);
         })
-        .WithName("UpsizePositionByKey")
+        .WithName("UpsizePositionByKey").RequirePermission(UserPermission.ExecuteTrades)
         .Produces<TradingActionResult>(200)
         .Produces<TradingActionResult>(400)
         .Produces(403)
@@ -1091,7 +1188,7 @@ public static class ExecutionEndpoints
                 jsonOptions: jsonOptions,
                 context: context).ConfigureAwait(false);
         })
-        .WithName("ClosePosition")
+        .WithName("ClosePosition").RequirePermission(UserPermission.ExecuteTrades)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces<TradingActionResult>(200)
         .Produces<TradingActionResult>(400)
@@ -1548,20 +1645,11 @@ public static class ExecutionEndpoints
             return null;
         }
 
-        var scopedAuthorization = context.RequestServices.GetService<IScopedAuthorizationService>();
-        if (scopedAuthorization is null ||
-            !EndpointAuthorization.TryResolveActor(context, out var actor) ||
-            !EndpointAuthorization.TryGetPermissions(context, out var permissions))
-        {
-            return EndpointHelpers.Forbidden();
-        }
-
-        var decision = await scopedAuthorization.AuthorizeAsync(
-                actor,
+        var decision = await EndpointAuthorization.AuthorizeScopedAsync(
+                context,
                 requiredPermission,
                 AccessScopeKindDto.Account,
                 fundAccountId.Value,
-                permissions,
                 context.RequestAborted)
             .ConfigureAwait(false);
 
@@ -1739,12 +1827,57 @@ public sealed record CreatePaperSessionRequest(
 /// Structured result returned by every Trading write action (cancel, close, pause, etc.).
 /// Carries a correlation ID so UI and backend audit logs can be cross-referenced.
 /// </summary>
+/// <summary>
+/// Circuit-breaker activation result: the control state, plus what the coupled kill-switch sweep
+/// achieved. The two travel together so opening the breaker cannot report success over a book that
+/// still has working orders.
+/// <para>
+/// The snapshot's members are repeated at the top level rather than nested under a wrapper
+/// property, so every existing consumer of this route — the browser workstation and the WPF halt
+/// client among them — keeps deserializing the shape it already expects and simply ignores the
+/// added sweep. Nesting them would have reported "Stop did not take effect" on a breaker the server
+/// had just opened.
+/// </para>
+/// </summary>
+public sealed record ExecutionCircuitBreakerActivationResponse(
+    ExecutionCircuitBreakerState CircuitBreaker,
+    decimal? DefaultMaxPositionSize,
+    IReadOnlyDictionary<string, decimal> SymbolPositionLimits,
+    IReadOnlyList<ExecutionManualOverride> ManualOverrides,
+    DateTimeOffset AsOf,
+    long Version,
+    KillSwitchSweepResult Sweep)
+{
+    public static ExecutionCircuitBreakerActivationResponse From(
+        ExecutionControlSnapshot snapshot,
+        KillSwitchSweepResult sweep) => new(
+            snapshot.CircuitBreaker,
+            snapshot.DefaultMaxPositionSize,
+            snapshot.SymbolPositionLimits,
+            snapshot.ManualOverrides,
+            snapshot.AsOf,
+            snapshot.Version,
+            sweep);
+}
+
 public sealed record TradingActionResult(
     string ActionId,
     string Status,
     string Message,
     DateTimeOffset OccurredAt,
-    string? AuditId = null);
+    string? AuditId = null,
+    /// <summary>
+    /// Orders a kill-switch sweep could not cancel, in full. The rendered <paramref name="Message"/>
+    /// names only the first few, so this is what a caller uses to finish the job by hand.
+    /// </summary>
+    IReadOnlyList<KillSwitchSweepFailure>? StillWorking = null,
+    /// <summary>
+    /// True when the kill-switch sweep could not enumerate the broker's own open-order book and
+    /// covered only the in-memory view — the broker may hold working orders the sweep never saw,
+    /// so the broker book must be verified by hand even when <c>Status</c> reads Completed.
+    /// Null on actions that carry no sweep, and omitted when the broker view was established.
+    /// </summary>
+    bool? BrokerViewUnavailable = null);
 
 /// <summary>Request to update the global execution circuit breaker.</summary>
 public sealed record UpdateExecutionCircuitBreakerRequest(

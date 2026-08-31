@@ -171,7 +171,12 @@ public async Task ConnectAsync(CancellationToken ct = default)
 
 ### Data Flow Pattern
 
-`IMarketDataClient` does **not** expose a `GetEventsAsync` method. Providers push events into dependency-injected collectors:
+`IMarketDataClient` does **not** expose a `GetEventsAsync` method. Providers push events into dependency-injected collectors. The collectors are shared singletons serving every active
+adapter, so every update **must stamp `Source`** with the provider's canonical identity
+(see `MarketDataSources` in `Meridian.Contracts.Domain`); a sourceless update is rejected at
+the collector seam with a missing-source integrity event. Pass the provider's real sequence
+number when the feed supplies one, `0`/`null` when it does not — never fabricate one
+client-side:
 
 ```csharp
 // In WebSocket message handler or data receive loop
@@ -183,9 +188,10 @@ private void HandleTradeMessage(JsonElement msg)
         Price: msg.GetProperty("price").GetDecimal(),
         Size: msg.GetProperty("size").GetInt64(),
         Aggressor: ParseAggressor(msg),
-        SequenceNumber: msg.GetProperty("seq").GetInt64(),
+        SequenceNumber: msg.GetProperty("seq").GetInt64(), // 0 when the feed is unsequenced
         StreamId: _streamId,
-        Venue: _options.Venue);
+        Venue: _options.Venue,
+        Source: "MYPROVIDER"); // required: real provider identity, stamped at origin
 
     // Push to collector — collector handles event publishing internally
     _tradeCollector.OnTrade(update);
@@ -199,7 +205,8 @@ private void HandleDepthMessage(JsonElement msg)
         Bids: ParseLevels(msg, "bids"),
         Asks: ParseLevels(msg, "asks"),
         SequenceNumber: msg.GetProperty("seq").GetInt64(),
-        StreamId: _streamId);
+        StreamId: _streamId,
+        Source: "MYPROVIDER");
 
     // Push to collector — collector handles event publishing internally
     _depthCollector.OnDepth(update);

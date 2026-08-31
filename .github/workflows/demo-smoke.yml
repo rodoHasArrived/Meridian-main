@@ -6,12 +6,16 @@ on:
       - ".github/workflows/demo-smoke.yml"
       - "src/Meridian/Program.cs"
       - "src/Meridian/DemoWorkspaceCli.cs"
+      - "src/Meridian/WorkstationAssetTree.cs"
+      - "src/Meridian.Ui/wwwroot/workstation/**"
       - "src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs"
       - "src/Meridian.Contracts/Workstation/FirstRunDtos.cs"
       - "src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs"
       - "src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs"
       - "src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs"
       - "tests/Meridian.Tests/Demo/**"
+      - "README.md"
+      - "docs/start/README.md"
   push:
     branches:
       - main
@@ -19,12 +23,16 @@ on:
       - ".github/workflows/demo-smoke.yml"
       - "src/Meridian/Program.cs"
       - "src/Meridian/DemoWorkspaceCli.cs"
+      - "src/Meridian/WorkstationAssetTree.cs"
+      - "src/Meridian.Ui/wwwroot/workstation/**"
       - "src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs"
       - "src/Meridian.Contracts/Workstation/FirstRunDtos.cs"
       - "src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs"
       - "src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs"
       - "src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs"
       - "tests/Meridian.Tests/Demo/**"
+      - "README.md"
+      - "docs/start/README.md"
   workflow_dispatch:
 
 permissions:
@@ -79,6 +87,50 @@ jobs:
           # reconciliation and strategy screens render populated (HTTP 200, not empty, not 501),
           # plus the reset guard and restart-survival checks. A broken first-run fails here.
           dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore --filter "FullyQualifiedName~Meridian.Tests.Demo" --logger "trx;LogFilePrefix=demo-smoke" --results-directory artifacts/test-results/demo-smoke /p:EnableWindowsTargeting=true
+
+      - name: Prove the documented first-mile command works from a clean environment
+        run: |
+          set -euo pipefail
+
+          # The tests above boot a TestServer and set the demo's environment defaults in-process,
+          # so a green result there does not prove the CLI verb, the real host boot, or the login
+          # path a new user actually hits. Run exactly what README tells a new user to run, with
+          # none of those defaults present in the environment.
+          demo_run() {
+            env -u DOTNET_ENVIRONMENT -u MDC_AUTH_MODE -u MERIDIAN_USE_INMEMORY_GOVERNANCE \
+              dotnet run --project src/Meridian/Meridian.csproj -c Release -- "$@"
+          }
+
+          demo_run --seed-demo --seed-only
+
+          demo_run --demo --http-port 8123 > demo-serve.log 2>&1 &
+          serve_pid=$!
+
+          served=""
+          for _ in $(seq 1 60); do
+            if ! kill -0 "$serve_pid" 2>/dev/null; then
+              echo "::error::The demo host exited before it served the workstation."
+              cat demo-serve.log
+              exit 1
+            fi
+            if curl -fsS -o /dev/null "http://127.0.0.1:8123/workstation/"; then
+              served=yes
+              break
+            fi
+            sleep 2
+          done
+
+          kill "$serve_pid" 2>/dev/null || true
+          wait "$serve_pid" 2>/dev/null || true
+
+          if [ -z "$served" ]; then
+            echo "::error::The demo never served /workstation/ within 120s."
+            cat demo-serve.log
+            exit 1
+          fi
+          echo "The demo served /workstation/ from a clean environment."
+
+          demo_run --reset-demo
 
       - name: Upload demo-smoke evidence
         if: always()

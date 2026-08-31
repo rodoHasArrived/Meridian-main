@@ -8,6 +8,7 @@ using Meridian.Identity.Auth;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Microsoft.AspNetCore.Http;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -484,6 +485,20 @@ public static partial class LedgerEndpoints
         => !string.IsNullOrWhiteSpace(value)
            && value.Contains("accru", StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// Resolves the acting operator for a ledger period close, admitting the same authority its
+    /// sibling close-management routes do.
+    /// <para>
+    /// This previously gated on the <see cref="UserRole"/> name, admitting only Admin and
+    /// Accounting. That was an anomaly rather than a deliberate tightening: period lock, period
+    /// reopen, task sign-offs and late adjustments all gate on
+    /// <c>HasLedgerMutationPermission</c>, and reopening a locked period is at least as sensitive
+    /// as closing one. A role-name check also defeats configurable role profiles, refusing a
+    /// custom profile that holds every accounting permission purely because its role is not
+    /// literally named Accounting. Gating on the permission fixes both, and lets the route state
+    /// its policy in <c>EndpointAuthorizationMetadata</c>, which cannot express a role.
+    /// </para>
+    /// </summary>
     private static bool TryGetLedgerCloseActor(HttpContext context, out string actor)
     {
         actor = string.Empty;
@@ -493,12 +508,7 @@ public static partial class LedgerEndpoints
             return false;
         }
 
-        if (context.Items[LoginSessionMiddleware.CurrentUserRoleKey] is not UserRole role)
-        {
-            return false;
-        }
-
-        if (role is not UserRole.Admin and not UserRole.Accounting)
+        if (!HasLedgerClosePermission(context))
         {
             return false;
         }

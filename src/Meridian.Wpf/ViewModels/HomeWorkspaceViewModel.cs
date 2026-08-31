@@ -20,6 +20,7 @@ public sealed class HomeWorkspaceViewModel : BindableBase
     private readonly WorkstationWorkflowSummaryService? _workflowSummaryService;
     private readonly FundContextService? _fundContextService;
     private readonly WorkstationOperatingContextService? _operatingContextService;
+    private readonly DesktopAuthenticationSession? _authenticationSession;
     private readonly ObservableCollection<HomeWorkspaceSectionViewModel> _sections = [];
     private readonly ObservableCollection<HomeWorkspaceNavigationItem> _workspaceNavigationItems = [];
     private readonly ObservableCollection<HomeWorkspaceActivityItem> _recentActivity = [];
@@ -31,12 +32,14 @@ public sealed class HomeWorkspaceViewModel : BindableBase
         INavigationService navigationService,
         WorkstationWorkflowSummaryService? workflowSummaryService = null,
         FundContextService? fundContextService = null,
-        WorkstationOperatingContextService? operatingContextService = null)
+        WorkstationOperatingContextService? operatingContextService = null,
+        DesktopAuthenticationSession? authenticationSession = null)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _workflowSummaryService = workflowSummaryService;
         _fundContextService = fundContextService;
         _operatingContextService = operatingContextService;
+        _authenticationSession = authenticationSession;
 
         Sections = new ReadOnlyObservableCollection<HomeWorkspaceSectionViewModel>(_sections);
         WorkspaceNavigationItems = new ReadOnlyObservableCollection<HomeWorkspaceNavigationItem>(_workspaceNavigationItems);
@@ -126,6 +129,7 @@ public sealed class HomeWorkspaceViewModel : BindableBase
         var operatingContext = _operatingContextService?.CurrentContext;
         var fund = _fundContextService?.CurrentFundProfile;
         return await _workflowSummaryService!.GetAsync(
+            DesktopWorkflowReadScopeResolver.Resolve(_authenticationSession),
             hasOperatingContext: operatingContext is not null || fund is not null,
             operatingContextDisplayName: operatingContext?.DisplayName,
             fundProfileId: fund?.FundProfileId,

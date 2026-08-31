@@ -68,6 +68,7 @@ import { CopyLinkButton } from "@/components/meridian/copy-link-button";
 import { SaveViewButton } from "@/components/meridian/save-view-dialog";
 import { NotificationCenter } from "@/components/meridian/notification-center";
 import { ActivityCenter } from "@/components/meridian/activity-center";
+import { DataProvenanceBanner } from "@/components/meridian/data-provenance-banner";
 import { DegradedModeBanner } from "@/components/meridian/degraded-mode-banner";
 import { resolveWorkstationDataProvenance } from "@/app-shell.data-provenance-badge";
 import { DesignSystemMasthead } from "@/design-system/primitives";
@@ -87,7 +88,14 @@ import {
   type WorkstationRouteErrorContext
 } from "@/lib/route-error-telemetry";
 import { cn } from "@/lib/utils";
-import { legacyWorkspaceRedirect, resolveWorkstationRouteBreadcrumbLabel, workspacePath } from "@/lib/workspace";
+import {
+  DATA_WORKSTATION_SCREEN_ROUTES,
+  SETTINGS_PROVIDER_SCREEN_ROUTE_PATTERNS,
+  SETTINGS_WORKSTATION_SCREEN_ROUTES,
+  legacyWorkspaceRedirect,
+  resolveWorkstationRouteBreadcrumbLabel,
+  workspacePath
+} from "@/lib/workspace";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
 import { FirstRunScreen } from "@/features/first-run/first-run-screen";
 import type { FirstRunStatus } from "@/features/first-run/types";
@@ -100,11 +108,17 @@ import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 const ROUTE_FOCUS_FALLBACK_DELAY_MS = 4_000;
 const ROUTE_FOCUS_WATCHDOG_DELAY_MS = 15_000;
 
+type FirstRunLoadState =
+  | { phase: "loading"; status: null }
+  | { phase: "loaded"; status: FirstRunStatus }
+  | { phase: "failed"; status: null };
+
 const DataScreen = lazy(() => import("@/screens/data-screen").then((module) => ({ default: memo(module.DataScreen) })));
 const DailyControlTowerScreen = lazy(() => import("@/screens/daily-control-tower-screen").then((module) => ({ default: memo(module.DailyControlTowerScreen) })));
 const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-screen").then((module) => ({ default: module.EvidenceWorkbenchScreen })));
 const AccountingScreen = lazy(() => import("@/screens/accounting-screen").then((module) => ({ default: memo(module.AccountingScreen) })));
 const FamilyOfficeScreen = lazy(() => import("@/screens/family-office-screen").then((module) => ({ default: module.FamilyOfficeScreen })));
+const LoanBookScreen = lazy(() => import("@/screens/loan-book-screen").then((module) => ({ default: module.LoanBookScreen })));
 const CashLadderScreen = lazy(() => import("@/screens/cash-ladder-screen").then((module) => ({ default: module.CashLadderScreen })));
 const MarketDataScreen = lazy(() => import("@/screens/market-data-screen").then((module) => ({ default: module.MarketDataScreen })));
 const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: memo(module.OperatorReadinessConsole) })));
@@ -117,6 +131,8 @@ const CloseCalendarScreen = lazy(() => import("@/screens/finance-standard-pages-
 const LedgerExplorerScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.LedgerExplorerScreen })));
 const ReconciliationMatchWorkbenchScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReconciliationMatchWorkbenchScreen })));
 const StatementImportScreen = lazy(() => import("@/screens/statement-import-screen").then((module) => ({ default: module.StatementImportScreen })));
+const CapitalCallIssuanceScreen = lazy(() => import("@/screens/capital-call-issuance-screen").then((module) => ({ default: module.CapitalCallIssuanceScreen })));
+const MarginControlCenterScreen = lazy(() => import("@/screens/margin-control-center-screen").then((module) => ({ default: module.MarginControlCenterScreen })));
 const ReportPreviewValidationScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReportPreviewValidationScreen })));
 const ReportRunDetailScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReportRunDetailScreen })));
 const ReportLibraryScreen = lazy(() => import("@/screens/report-library-screen").then((module) => ({ default: module.ReportLibraryScreen })));
@@ -126,11 +142,20 @@ const EntitySetupWizard = lazy(() => import("@/features/fund-structure/entity-se
 const PortfolioScreen = lazy(() => import("@/screens/portfolio-screen").then((module) => ({ default: memo(module.PortfolioScreen) })));
 const CoveredCallScreen = lazy(() => import("@/screens/covered-call-screen").then((module) => ({ default: module.CoveredCallScreen })));
 const QuantLabScreen = lazy(() => import("@/screens/quant-lab-screen").then((module) => ({ default: module.QuantLabScreen })));
+const StrategyRunLedgerScreen = lazy(() => import("@/screens/strategy-run-ledger-screen").then((module) => ({ default: module.StrategyRunLedgerScreen })));
 const ReportingScreen = lazy(() => import("@/screens/reporting-screen").then((module) => ({ default: memo(module.ReportingScreen) })));
 const StrategyScreen = lazy(() => import("@/screens/strategy-screen").then((module) => ({ default: memo(module.StrategyScreen) })));
 const StrategyDesignerScreen = lazy(() => import("@/screens/strategy-designer-screen").then((module) => ({ default: module.StrategyDesignerScreen })));
 const SettingsScreen = lazy(() => import("@/screens/settings-screen").then((module) => ({ default: memo(module.SettingsScreen) })));
 const TradingScreen = lazy(() => import("@/screens/trading-screen").then((module) => ({ default: memo(module.TradingScreen) })));
+
+/**
+ * The demo-mode probe resolves the shell's provenance badge. Transient failures retry
+ * automatically with linear backoff; once the attempts are spent the shell settles on the
+ * `unknown` badge, whose manual retry control re-arms the probe.
+ */
+const DEMO_MODE_PROBE_MAX_AUTO_RETRIES = 2;
+const DEMO_MODE_PROBE_RETRY_DELAY_MS = 2000;
 
 export function App() {
   return (
@@ -151,22 +176,38 @@ export function App() {
  */
 function AppRoot() {
   const { pathname } = useLocation();
-  const [firstRun, setFirstRun] = useState<FirstRunStatus | null>(null);
-  const [firstRunChecked, setFirstRunChecked] = useState(false);
+  const [firstRunState, setFirstRunState] = useState<FirstRunLoadState>({
+    phase: "loading",
+    status: null
+  });
+  const [firstRunAttempt, setFirstRunAttempt] = useState(0);
   const [demoMode, setDemoMode] = useState<{
     enabled?: boolean;
     provenance?: unknown;
   } | null>(null);
+  const [demoModeAttempt, setDemoModeAttempt] = useState(0);
+  const [demoModeProbing, setDemoModeProbing] = useState(true);
   useEffect(() => {
     let active = true;
+    setFirstRunState({ phase: "loading", status: null });
     apiGetJson<FirstRunStatus>(WORKSTATION_API_ENDPOINTS.firstRunStatus)
-      .then((value) => { if (active) { setFirstRun(value); setFirstRunChecked(true); } })
-      .catch(() => { if (active) setFirstRunChecked(true); });
+      .then((value) => {
+        if (active) {
+          setFirstRunState({ phase: "loaded", status: value });
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setFirstRunState({ phase: "failed", status: null });
+        }
+      });
     return () => { active = false; };
-  }, []);
+  }, [firstRunAttempt]);
   useEffect(() => {
     const controller = new AbortController();
     let active = true;
+    let retryTimer: number | undefined;
+    setDemoModeProbing(true);
     apiGetJson<{ enabled?: boolean; provenance?: unknown }>(
       WORKSTATION_API_ENDPOINTS.demoMode,
       { signal: controller.signal, allowDevelopmentFallback: false }
@@ -174,37 +215,132 @@ function AppRoot() {
       .then((value) => {
         if (active) {
           setDemoMode(value);
+          setDemoModeProbing(false);
         }
       })
       .catch(() => {
-        // Missing provenance remains null so the shell renders a fail-closed simulated badge.
+        // Unresolved provenance stays null and surfaces as the `unknown` badge with a
+        // retry control — never as a confirmed SIMULATED claim. Transient failures
+        // retry with backoff before the shell settles on unknown.
+        if (!active || controller.signal.aborted) {
+          return;
+        }
+        setDemoModeProbing(false);
+        if (demoModeAttempt < DEMO_MODE_PROBE_MAX_AUTO_RETRIES) {
+          retryTimer = window.setTimeout(
+            () => setDemoModeAttempt((attempt) => attempt + 1),
+            DEMO_MODE_PROBE_RETRY_DELAY_MS * (demoModeAttempt + 1)
+          );
+        }
       });
     return () => {
       active = false;
       controller.abort();
+      if (retryTimer !== undefined) {
+        window.clearTimeout(retryTimer);
+      }
     };
-  }, []);
+  }, [demoModeAttempt]);
 
   if (isCompanionPaneRoute(pathname)) {
     return <CompanionPaneWindow />;
   }
-  if (firstRunChecked && firstRun && !firstRun.isComplete && pathname !== "/setup") {
+  if (firstRunState.phase === "loading") {
+    return <ActivationStatusGate phase="loading" />;
+  }
+  if (firstRunState.phase === "failed") {
+    return (
+      <ActivationStatusGate
+        phase="failed"
+        onRetry={() => setFirstRunAttempt((attempt) => attempt + 1)}
+      />
+    );
+  }
+
+  const firstRun = firstRunState.status;
+  if (!firstRun.isComplete && pathname !== "/setup") {
     return <Navigate to="/setup" replace />;
   }
   if (pathname === "/setup") {
     // onStatusChange lifts completion back into this component's state so the
     // redirect guard above releases the user instead of bouncing them to /setup.
-    return <FirstRunScreen initialStatus={firstRun} onStatusChange={setFirstRun} />;
+    return (
+      <FirstRunScreen
+        initialStatus={firstRun}
+        onStatusChange={(status) => setFirstRunState({ phase: "loaded", status })}
+      />
+    );
   }
-  return <AppShell firstRunStatus={firstRun} demoMode={demoMode} />;
+  return (
+    <AppShell
+      firstRunStatus={firstRun}
+      demoMode={demoMode}
+      demoModeProbeBusy={demoModeProbing}
+      onRetryDemoModeProbe={() => setDemoModeAttempt((attempt) => attempt + 1)}
+    />
+  );
+}
+
+function ActivationStatusGate({
+  phase,
+  onRetry
+}: {
+  phase: "loading" | "failed";
+  onRetry?: () => void;
+}) {
+  const loading = phase === "loading";
+  return (
+    <main
+      className="flex min-h-screen items-center justify-center bg-background px-5 py-10 text-foreground"
+      aria-labelledby="activation-status-title"
+    >
+      <PanelSurface className="w-full max-w-xl p-6" elevated>
+        <div
+          className="flex items-start gap-3"
+          role={loading ? "status" : "alert"}
+          aria-label={loading ? "Activation status check" : undefined}
+          aria-live={loading ? "polite" : "assertive"}
+        >
+          {loading
+            ? <LoaderCircle className="mt-0.5 size-5 animate-spin text-primary" aria-hidden="true" />
+            : <AlertTriangle className="mt-0.5 size-5 text-danger" aria-hidden="true" />}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Meridian workstation
+            </p>
+            <h1 id="activation-status-title" className="mt-2 text-xl font-semibold">
+              {loading ? "Checking activation status" : "Activation status unavailable"}
+            </h1>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              {loading
+                ? "Meridian is confirming whether this workstation is ready or still needs first-run setup."
+                : "Activation state is unknown. Meridian has not opened the workstation or assumed setup is complete."}
+            </p>
+          </div>
+        </div>
+        {!loading ? (
+          <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border pt-4">
+            <Button type="button" onClick={onRetry}>Retry activation check</Button>
+            <span className="text-xs text-muted-foreground">
+              Check that the Meridian host is running, then retry this read-only status request.
+            </span>
+          </div>
+        ) : null}
+      </PanelSurface>
+    </main>
+  );
 }
 
 function AppShell({
   firstRunStatus,
-  demoMode
+  demoMode,
+  demoModeProbeBusy,
+  onRetryDemoModeProbe
 }: {
   firstRunStatus?: FirstRunStatus | null;
   demoMode: { enabled?: boolean; provenance?: unknown } | null;
+  demoModeProbeBusy?: boolean;
+  onRetryDemoModeProbe?: () => void;
 }) {
   const [commandOpen, setCommandOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
@@ -475,6 +611,51 @@ function AppShell({
     workspaceLabel: shell.activeWorkspace.label,
     routeLabel: resolveWorkstationRouteBreadcrumbLabel(pathname, shell.activeWorkspace)
   }), [hash, pathname, search, shell.activeWorkspace]);
+  const dataRouteElement = (
+    <DataScreen
+      data={data}
+      session={session}
+      providerConnections={providerConnections}
+      providerReadiness={providerReadiness}
+      providerRoutingConnections={providerRoutingConnections}
+      providerRoutingBindings={providerRoutingBindings}
+      providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
+      providerRoutingRefreshing={providerRoutingRefreshing}
+      onProviderSetupConfigured={refreshProviderRouting}
+      onProviderRoutingRefresh={refreshProviderRouting}
+    />
+  );
+  const settingsRouteElement = (
+    <SettingsScreen
+      session={session}
+      overview={overview}
+      strategy={strategy}
+      trading={trading}
+      portfolio={portfolio}
+      data={data}
+      accounting={accounting}
+      reporting={reporting}
+      brokerageConnection={brokerageConnection}
+      robinhoodConnection={robinhoodConnection}
+      providerConnections={providerConnections}
+      providerRoutingConnections={providerRoutingConnections}
+      providerRoutingBindings={providerRoutingBindings}
+      providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
+      providerRoutingRefreshing={providerRoutingRefreshing}
+      featureCapabilities={featureCapabilities}
+      rolePermissionCatalog={rolePermissionCatalog}
+      securityAssetProfiles={securityAssetProfiles}
+      ledgerMappingWorkbench={ledgerMappingWorkbench}
+      operationsApprovalPolicyMatrix={operationsApprovalPolicyMatrix}
+      operationsCloseCalendar={operationsCloseCalendar}
+      onFeatureCapabilityToggle={updateFeatureCapability}
+      onRefresh={refresh}
+      onProviderRoutingRefresh={refreshProviderRouting}
+      loading={loading}
+      error={error}
+      workspaceErrors={workspaceErrors}
+    />
+  );
 
   useEffect(() => {
     const previousRouteKey = previousRouteKeyRef.current;
@@ -544,6 +725,15 @@ function AppShell({
         )}
       />
 
+      {/* Persistent, non-dismissable simulation label (W9-TRUTH-001): whenever the
+          workstation is showing simulated, seeded, or sample data the operator keeps
+          seeing it. Renders nothing for real data. Unresolved provenance renders the
+          `unknown` badge with a retry control instead of a false SIMULATED claim. */}
+      <DataProvenanceBanner
+        provenance={dataProvenance}
+        onRetryLiveData={onRetryDemoModeProbe}
+        retryBusy={demoModeProbeBusy}
+      />
       <DegradedModeBanner degradedMode={overview?.degradedMode} />
 
       <div className="workstation-shell">
@@ -619,6 +809,7 @@ function AppShell({
                   )} />
                   <Route path="/trading/*" element={<TradingScreen data={trading} fundAccountId={operatingScopeInput.fundAccountId} />} />
                   <Route path="/portfolio/family-office" element={<FamilyOfficeScreen />} />
+                  <Route path="/portfolio/loan-book" element={<LoanBookScreen />} />
                   <Route path="/portfolio/cash-ladder" element={<CashLadderScreen fundAccountId={operatingScopeInput.fundAccountId ?? undefined} />} />
                   <Route path="/portfolio/asset-detail" element={<AssetDetailScreen />} />
                   <Route path="/portfolio/*" element={(
@@ -641,12 +832,14 @@ function AppShell({
                   <Route path="/accounting/journal-entries/detail" element={<JournalEntryDetailScreen />} />
                   <Route path="/accounting/reconciliation/match" element={<ReconciliationMatchWorkbenchScreen data={accounting} />} />
                   <Route path="/accounting/statement-import" element={<StatementImportScreen />} />
+                  <Route path="/accounting/capital-calls" element={<CapitalCallIssuanceScreen />} />
+                  <Route path="/accounting/margin-control" element={<MarginControlCenterScreen />} />
                   <Route path="/accounting/close-calendar" element={<CloseCalendarScreen data={accounting} />} />
                   <Route path="/accounting/approvals/inbox" element={<ApprovalInboxScreen data={accounting} />} />
                   <Route path="/accounting/security-master/detail" element={<AssetDetailScreen />} />
                   <Route path="/accounting/evidence/detail" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/accounting/evidence" element={<LegacyWorkspaceRedirect />} />
-                  <Route path="/accounting/*" element={<AccountingScreen data={accounting} multiAssetCoverage={portfolioMultiAssetCoverage} />} />
+                  <Route path="/accounting/*" element={<AccountingScreen data={accounting} multiAssetCoverage={portfolioMultiAssetCoverage} session={session} />} />
                   <Route path="/reporting/operations-record" element={<OperationsRecordReleaseScreen data={data} reporting={reporting} />} />
                   <Route path="/reporting/library" element={<ReportLibraryScreen data={reporting} />} />
                   <Route path="/reporting/run" element={<ReportRunParametersScreen data={reporting} accounting={accounting} />} />
@@ -658,6 +851,7 @@ function AppShell({
                   <Route path="/strategy/designer" element={<StrategyDesignerScreen />} />
                   <Route path="/strategy/formula-workbench" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
+                  <Route path="/strategy/run-ledger" element={<StrategyRunLedgerScreen />} />
                   <Route path="/strategy/*" element={<StrategyScreen data={strategy} />} />
                   <Route path="/data/quotes" element={<MarketDataScreen />} />
                   <Route path="/data/watchlist" element={<LegacyWorkspaceRedirect />} />
@@ -665,50 +859,15 @@ function AppShell({
                   <Route path="/data/evidence" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/security-master" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/security-master/*" element={<LegacyWorkspaceRedirect />} />
-                  <Route path="/data/*" element={(
-                    <DataScreen
-                      data={data}
-                      providerConnections={providerConnections}
-                      providerReadiness={providerReadiness}
-                      providerRoutingConnections={providerRoutingConnections}
-                      providerRoutingBindings={providerRoutingBindings}
-                      providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
-                      providerRoutingRefreshing={providerRoutingRefreshing}
-                      onProviderSetupConfigured={refreshProviderRouting}
-                      onProviderRoutingRefresh={refreshProviderRouting}
-                    />
-                  )} />
-                  <Route path="/settings/*" element={(
-                    <SettingsScreen
-                      session={session}
-                      overview={overview}
-                      strategy={strategy}
-                      trading={trading}
-                      portfolio={portfolio}
-                      data={data}
-                      accounting={accounting}
-                      reporting={reporting}
-                      brokerageConnection={brokerageConnection}
-                      robinhoodConnection={robinhoodConnection}
-                      providerConnections={providerConnections}
-                      providerRoutingConnections={providerRoutingConnections}
-                      providerRoutingBindings={providerRoutingBindings}
-                      providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
-                      providerRoutingRefreshing={providerRoutingRefreshing}
-                      featureCapabilities={featureCapabilities}
-                      rolePermissionCatalog={rolePermissionCatalog}
-                      securityAssetProfiles={securityAssetProfiles}
-                      ledgerMappingWorkbench={ledgerMappingWorkbench}
-                      operationsApprovalPolicyMatrix={operationsApprovalPolicyMatrix}
-                      operationsCloseCalendar={operationsCloseCalendar}
-                      onFeatureCapabilityToggle={updateFeatureCapability}
-                      onRefresh={refresh}
-                      onProviderRoutingRefresh={refreshProviderRouting}
-                      loading={loading}
-                      error={error}
-                      workspaceErrors={workspaceErrors}
-                    />
-                  )} />
+                  {DATA_WORKSTATION_SCREEN_ROUTES.map((route) => (
+                    <Route key={route} path={route} element={dataRouteElement} />
+                  ))}
+                  {SETTINGS_WORKSTATION_SCREEN_ROUTES.map((route) => (
+                    <Route key={route} path={route} element={settingsRouteElement} />
+                  ))}
+                  {SETTINGS_PROVIDER_SCREEN_ROUTE_PATTERNS.map((route) => (
+                    <Route key={route} path={route} element={settingsRouteElement} />
+                  ))}
                   <Route path="/overview/*" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/research/*" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data-operations/*" element={<LegacyWorkspaceRedirect />} />

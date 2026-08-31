@@ -4,11 +4,13 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
 using Meridian.Storage.Export;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -385,7 +387,7 @@ public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecor
             return false;
         }
 
-        var checksum = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+        var checksum = Sha256Digest.Compute(content);
         return content.LongLength == expectedArtifact.ByteSize
             && string.Equals(checksum, expectedArtifact.ChecksumSha256, StringComparison.OrdinalIgnoreCase);
     }
@@ -470,7 +472,7 @@ public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecor
                 $"Delivery artifact '{retainedPath}' cannot retain an empty blob.");
         }
 
-        var checksum = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+        var checksum = Sha256Digest.Compute(content);
         var blobName = $"{checksum}.blob";
         var blobPath = Path.Combine(GetBlobDirectory(), blobName);
         if (File.Exists(blobPath))
@@ -555,7 +557,7 @@ public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecor
             return null;
         }
 
-        var checksum = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+        var checksum = Sha256Digest.Compute(content);
         return content.LongLength == expectedArtifact.ByteSize
             && string.Equals(checksum, expectedArtifact.ChecksumSha256, StringComparison.OrdinalIgnoreCase)
                 ? RetainArtifactBlob(legacyContent.RetainedPath, content)
@@ -620,7 +622,7 @@ public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecor
         }
 
         using var stream = File.OpenRead(blobPath);
-        var actualChecksum = Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant();
+        var actualChecksum = Sha256Digest.Compute(stream);
         if (!string.Equals(actualChecksum, expectedChecksum, StringComparison.Ordinal))
         {
             throw new InvalidDataException(
@@ -814,7 +816,7 @@ public sealed partial class ReportPackDeliveryService
                 target.DistributionId,
                 Actor: fallbackActor,
                 DeliveryReference: $"schedule:{normalizedTemplateId}:{record.ReportId:N}:{target.DistributionId}",
-                Note: NormalizeNullable(target.Note) ?? $"Scheduled delivery for {normalizedTemplateId}.",
+                Note: NormalizeOptional(target.Note) ?? $"Scheduled delivery for {normalizedTemplateId}.",
                 Formats: target.Formats,
                 DeliveryMode: target.DeliveryMode),
             fallbackActor);
@@ -862,7 +864,7 @@ public sealed partial class ReportPackDeliveryService
                 actor,
                 attemptNumber,
                 reference,
-                NormalizeNullable(target.Note) ?? $"Scheduled reporting-run delivery for {manifest.TemplateId}.",
+                NormalizeOptional(target.Note) ?? $"Scheduled reporting-run delivery for {manifest.TemplateId}.",
                 FailureReason: null,
                 EvidenceLinks: packageEvidenceLinks,
                 Package: package);
@@ -961,8 +963,8 @@ public sealed partial class ReportPackDeliveryService
                 actor,
                 attemptNumber,
                 reference,
-                NormalizeNullable(note),
-                NormalizeNullable(failureReason),
+                NormalizeOptional(note),
+                NormalizeOptional(failureReason),
                 NormalizeEvidenceLinks(requestEvidenceLinks.Concat(packageEvidenceLinks).ToArray()),
                 package);
             PersistCandidateAttempts(
@@ -979,9 +981,6 @@ public sealed partial class ReportPackDeliveryService
         ArgumentException.ThrowIfNullOrWhiteSpace(actor);
         return actor;
     }
-
-    private static string? NormalizeNullable(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private void PersistCandidateAttempts(
         IReadOnlyList<ReportPackDeliveryAttemptDto> candidateAttempts,
@@ -3228,7 +3227,7 @@ public sealed partial class ReportPackDeliveryService
 
     private static Guid BuildReportingRunReportId(string runId)
     {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(runId));
+        var bytes = Sha256Digest.ComputeBytesUtf8(runId);
         return new Guid(bytes.AsSpan(0, 16));
     }
 
@@ -3253,8 +3252,7 @@ public sealed partial class ReportPackDeliveryService
 
     private static string ComputeSha256Hex(byte[] value)
     {
-        var bytes = SHA256.HashData(value);
-        return Convert.ToHexString(bytes).ToLowerInvariant();
+        return Sha256Digest.Compute(value);
     }
 
     private ReportPackDeliveryAttemptDto? GetDeliveredAttempt(Guid reportId, Guid attemptId)

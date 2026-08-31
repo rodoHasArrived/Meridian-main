@@ -1641,4 +1641,10 @@ export interface StatementRecordPreview {
   currency: string | null;
   feesCommission: number | null;
   externalTransactionId: string | null;
+  activityCategory?: string | null;
+  activitySubtype?: string | null;
+  providerActivityCode?: string | null;
+  relatedTransactionId?: string | null;
+  orderId?: string | null;
+  description?: string | null;
 }

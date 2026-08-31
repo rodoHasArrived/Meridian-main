@@ -7,8 +7,10 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
 using Meridian.Strategies.Services;
+using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 
@@ -101,6 +103,94 @@ public sealed class BrokeragePortfolioSyncServiceTests
                 Arg.Any<FundAccountBrokerageSyncActivityDto>(),
                 Arg.Any<DateTimeOffset>(),
                 Arg.Any<CancellationToken>());
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task RunSyncAsync_ProviderFailureLogsDoNotContainExternalAccountIdentifier()
+    {
+        const string sensitiveIban = "GB82WEST12345698765432";
+        var root = CreateTempRoot();
+        try
+        {
+            var logger = new RecordingLogger<BrokeragePortfolioSyncService>();
+            var (service, serviceProvider) = CreateService(
+                root,
+                new EchoingAccountPortfolioAdapter("alpaca"),
+                new EchoingAccountActivityAdapter("alpaca"),
+                includeSecurityLookup: false,
+                logger: logger);
+
+            var fundAccountId = Guid.NewGuid();
+            await serviceProvider.GetRequiredService<IFundAccountService>().CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    "BRK-SENSITIVE-LOG",
+                    "Sensitive log regression",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-10),
+                    "tests"));
+
+            var status = await service.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto("alpaca", sensitiveIban, "ops-review"));
+
+            status.Warnings.Should().OnlyContain(warning =>
+                !warning.Contains(sensitiveIban, StringComparison.Ordinal));
+            logger.Entries.Should().HaveCount(2);
+            logger.Entries.Should().OnlyContain(entry =>
+                !entry.Message.Contains(sensitiveIban, StringComparison.Ordinal) &&
+                (entry.Exception == null || !entry.Exception.ToString().Contains(sensitiveIban, StringComparison.Ordinal)));
+            logger.Entries.Should().OnlyContain(entry => entry.Exception == null,
+                "provider exceptions may echo sensitive account identifiers and must not be attached to logs");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task RunSyncAsync_AccountingCaptureFailureLogDoesNotContainExternalAccountIdentifier()
+    {
+        const string sensitiveIban = "GB82WEST12345698765432";
+        var root = CreateTempRoot();
+        try
+        {
+            var logger = new RecordingLogger<BrokeragePortfolioSyncService>();
+            var capture = new EchoingAccountCaptureService(sensitiveIban);
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter("alpaca"),
+                new FixedActivityAdapter("alpaca"),
+                includeSecurityLookup: true,
+                accountingSnapshotCapture: capture,
+                logger: logger);
+            var fundAccountId = Guid.NewGuid();
+            await serviceProvider.GetRequiredService<IFundAccountService>().CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    "BRK-REDACT",
+                    "Redaction test brokerage",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-1),
+                    "tests"));
+
+            await service.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto("alpaca", sensitiveIban, "ops-review"));
+
+            var entry = logger.Entries.Should().ContainSingle().Subject;
+            entry.Message.Should().NotContain(sensitiveIban);
+            (entry.Exception?.ToString() ?? string.Empty).Should().NotContain(sensitiveIban);
+            entry.Exception.Should().BeNull(
+                "capture exceptions may echo sensitive account identifiers and must not be attached to logs");
         }
         finally
         {
@@ -823,6 +913,156 @@ public sealed class BrokeragePortfolioSyncServiceTests
     }
 
     [Fact]
+    public async Task DiscoverAccountsAsync_ShouldIncludeAFundAccountLinkedOnlyByItsMetadata()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            // A link need not be persisted to exist: ResolveLinkAsync falls back to the account's
+            // Institution, or the configured default provider, with its SubAccountNumber, PortfolioId
+            // or AccountCode. Building the candidate list from links/*.json alone made discovery
+            // disagree with the status and sync routes, which treat such an account as linked -- so an
+            // authorized caller saw no matching account at all.
+            var providerId = "alpaca";
+            var inferredExternalAccountId = "AL-INFERRED";
+            var catalog = new FixedAccountCatalog(
+                providerId,
+                [BuildExternalAccount(providerId, inferredExternalAccountId)]);
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter(providerId),
+                new FixedActivityAdapter(providerId),
+                includeSecurityLookup: true,
+                catalogs: [catalog]);
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+            var fundAccountId = Guid.NewGuid();
+            await serviceProvider.GetRequiredService<IFundAccountService>().CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    inferredExternalAccountId,
+                    inferredExternalAccountId,
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-1),
+                    "tests"),
+                cts.Token);
+
+            // Deliberately no LinkAccountAsync: the account code is the whole link.
+            IReadOnlyCollection<Guid>? candidates = null;
+            var discovered = await service.DiscoverAccountsAsync(
+                (fundAccountIds, _) =>
+                {
+                    candidates = fundAccountIds.ToArray();
+                    return Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid> { fundAccountId });
+                },
+                ct: cts.Token);
+
+            candidates.Should().Contain(fundAccountId, "an account linked by metadata is still a candidate");
+            discovered.Should().ContainSingle().Which.AccountId.Should().Be(inferredExternalAccountId);
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task DiscoverAccountsAsync_ReturnsOnlyAuthorizedLinkedAccountsInOneBatch()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var providerId = "robinhood";
+            var allowedExternalAccountId = "RH-ALLOWED";
+            var deniedExternalAccountId = "RH-DENIED";
+            var unlinkedExternalAccountId = "RH-UNLINKED";
+            var otherProviderExternalAccountId = "PA-UNLINKED";
+            var catalog = new FixedAccountCatalog(
+                providerId,
+                [
+                    BuildExternalAccount(providerId, allowedExternalAccountId),
+                    BuildExternalAccount(providerId, deniedExternalAccountId),
+                    BuildExternalAccount(providerId, unlinkedExternalAccountId)
+                ]);
+            var otherProviderCatalog = new FixedAccountCatalog(
+                "alpaca",
+                [BuildExternalAccount("alpaca", otherProviderExternalAccountId)]);
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter(providerId),
+                new FixedActivityAdapter(providerId),
+                includeSecurityLookup: true,
+                catalogs: [catalog, otherProviderCatalog]);
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var fundAccountService = serviceProvider.GetRequiredService<IFundAccountService>();
+            var allowedFundAccountId = Guid.NewGuid();
+            var deniedFundAccountId = Guid.NewGuid();
+            foreach (var account in new[]
+                     {
+                         (Id: allowedFundAccountId, Code: "BRK-DISC-ALLOWED"),
+                         (Id: deniedFundAccountId, Code: "BRK-DISC-DENIED")
+                     })
+            {
+                await fundAccountService.CreateAccountAsync(
+                    new CreateAccountRequest(
+                        account.Id,
+                        AccountTypeDto.Brokerage,
+                        account.Code,
+                        account.Code,
+                        "USD",
+                        DateTimeOffset.UtcNow.AddDays(-1),
+                        "tests"),
+                    cts.Token);
+            }
+
+            await service.LinkAccountAsync(
+                allowedFundAccountId,
+                new BrokerageAccountLinkRequestDto(providerId, allowedExternalAccountId, "Allowed", "tests"),
+                cts.Token);
+            await service.LinkAccountAsync(
+                deniedFundAccountId,
+                new BrokerageAccountLinkRequestDto(providerId, deniedExternalAccountId, "Denied", "tests"),
+                cts.Token);
+
+            var authorizationCalls = 0;
+            IReadOnlyCollection<Guid>? authorizationCandidates = null;
+            var discovered = await service.DiscoverAccountsAsync(
+                (fundAccountIds, _) =>
+                {
+                    authorizationCalls++;
+                    authorizationCandidates = fundAccountIds.ToArray();
+                    return Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid> { allowedFundAccountId });
+                },
+                ct: cts.Token);
+
+            authorizationCalls.Should().Be(1);
+            authorizationCandidates.Should().BeEquivalentTo([allowedFundAccountId, deniedFundAccountId]);
+            discovered.Should().ContainSingle().Which.AccountId.Should().Be(allowedExternalAccountId);
+            catalog.GetAccountsCalls.Should().Be(1);
+            otherProviderCatalog.GetAccountsCalls.Should().Be(0, "scoped discovery should not enumerate a provider with no authorized links");
+
+            var adminDiscovery = await service.DiscoverAccountsAsync(
+                (_, _) =>
+                {
+                    authorizationCalls++;
+                    return Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid>());
+                },
+                includeUnlinkedAccounts: true,
+                ct: cts.Token);
+
+            authorizationCalls.Should().Be(1, "the explicit administrator view does not need scoped link authorization");
+            adminDiscovery.Select(static account => account.AccountId).Should().BeEquivalentTo(
+                [allowedExternalAccountId, deniedExternalAccountId, unlinkedExternalAccountId, otherProviderExternalAccountId]);
+            otherProviderCatalog.GetAccountsCalls.Should().Be(1);
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task Scenario_RobinhoodThreeAccountLinks_BrokerageSyncPreservesAccountKindsAndHouseholdRollup()
     {
         var root = CreateTempRoot();
@@ -873,8 +1113,20 @@ public sealed class BrokeragePortfolioSyncServiceTests
                 status.AccountKind.Should().Be(spec.Kind);
             }
 
-            var household = await service.GetHouseholdAsync("robinhood", cts.Token);
+            var authorizationCalls = 0;
+            IReadOnlyCollection<Guid>? authorizationCandidates = null;
+            var household = await service.GetHouseholdAsync(
+                "robinhood",
+                (fundAccountIds, _) =>
+                {
+                    authorizationCalls++;
+                    authorizationCandidates = fundAccountIds.ToArray();
+                    return Task.FromResult<IReadOnlySet<Guid>>(fundAccountIds.ToHashSet());
+                },
+                cts.Token);
 
+            authorizationCalls.Should().Be(1);
+            authorizationCandidates.Should().BeEquivalentTo(accountSpecs.Select(static spec => spec.AccountId));
             household.ProviderId.Should().Be("robinhood");
             household.Accounts.Should().HaveCount(3);
             household.Accounts.Select(static account => account.AccountKind).Should().BeEquivalentTo([
@@ -885,6 +1137,24 @@ public sealed class BrokeragePortfolioSyncServiceTests
             household.TotalEquity.Should().Be(375000m);
             household.TotalCash.Should().Be(150000m);
             household.Positions.Should().HaveCount(3);
+
+            var allowedAccountId = accountSpecs[0].AccountId;
+            var scopedHousehold = await service.GetHouseholdAsync(
+                "robinhood",
+                (fundAccountIds, _) =>
+                {
+                    authorizationCalls++;
+                    authorizationCandidates = fundAccountIds.ToArray();
+                    return Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid> { allowedAccountId });
+                },
+                cts.Token);
+
+            authorizationCalls.Should().Be(2, "each household request authorizes its projection candidates once");
+            authorizationCandidates.Should().BeEquivalentTo(accountSpecs.Select(static spec => spec.AccountId));
+            scopedHousehold.Accounts.Should().ContainSingle(account => account.FundAccountId == allowedAccountId);
+            scopedHousehold.Positions.Should().OnlyContain(position => position.FundAccountId == allowedAccountId);
+            scopedHousehold.TotalEquity.Should().Be(125000m);
+            scopedHousehold.TotalCash.Should().Be(50000m);
         }
         finally
         {
@@ -1098,7 +1368,8 @@ public sealed class BrokeragePortfolioSyncServiceTests
         TimeSpan? staleAfter = null,
         IReadOnlyList<IBrokerageAccountCatalog>? catalogs = null,
         IAccountingPositionSnapshotCaptureService? accountingSnapshotCapture = null,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        ILogger<BrokeragePortfolioSyncService>? logger = null)
     {
         var services = new ServiceCollection();
         services.AddSingleton<IFundAccountService, InMemoryFundAccountService>();
@@ -1122,7 +1393,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
             portfolioAdapters: [portfolioAdapter],
             activityAdapters: [activityAdapter],
             services: serviceProvider,
-            logger: NullLogger<BrokeragePortfolioSyncService>.Instance);
+            logger: logger ?? NullLogger<BrokeragePortfolioSyncService>.Instance);
         return (syncService, serviceProvider);
     }
 
@@ -1138,6 +1409,33 @@ public sealed class BrokeragePortfolioSyncServiceTests
         if (Directory.Exists(root))
         {
             Directory.Delete(root, recursive: true);
+        }
+    }
+
+    private static BrokerageExternalAccountDto BuildExternalAccount(string providerId, string accountId)
+        => new(
+            providerId,
+            accountId,
+            accountId,
+            "active",
+            "USD",
+            DateTimeOffset.UtcNow);
+
+    private sealed class FixedAccountCatalog(
+        string providerId,
+        IReadOnlyList<BrokerageExternalAccountDto> accounts) : IBrokerageAccountCatalog
+    {
+        public int GetAccountsCalls { get; private set; }
+
+        public string ProviderId { get; } = providerId;
+
+        public string ProviderDisplayName { get; } = providerId;
+
+        public Task<IReadOnlyList<BrokerageExternalAccountDto>> GetAccountsAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            GetAccountsCalls++;
+            return Task.FromResult(accounts);
         }
     }
 
@@ -1303,6 +1601,46 @@ public sealed class BrokeragePortfolioSyncServiceTests
         {
             ct.ThrowIfCancellationRequested();
             throw new InvalidOperationException(message);
+        }
+    }
+
+    private sealed class EchoingAccountPortfolioAdapter(string providerId) : IBrokeragePortfolioSync
+    {
+        public string ProviderId { get; } = providerId;
+
+        public Task<BrokeragePortfolioSnapshotDto> GetPortfolioSnapshotAsync(
+            string externalAccountId,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            throw new InvalidOperationException($"Portfolio request for account {externalAccountId} failed.");
+        }
+    }
+
+    private sealed class EchoingAccountActivityAdapter(string providerId) : IBrokerageActivitySync
+    {
+        public string ProviderId { get; } = providerId;
+
+        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            throw new InvalidOperationException($"Activity request for account {externalAccountId} failed.");
+        }
+    }
+
+    private sealed class EchoingAccountCaptureService(string externalAccountId)
+        : IAccountingPositionSnapshotCaptureService
+    {
+        public Task<int> CaptureBrokerageSyncAsync(
+            FundAccountBrokerageSyncActivityDto projection,
+            DateTimeOffset sourceAsOfUtc,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            throw new InvalidOperationException($"Capture for account {externalAccountId} failed.");
         }
     }
 

@@ -1,3 +1,4 @@
+using static Meridian.Contracts.Text.TextPrimitives;
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -155,7 +156,4 @@ public static class AutomatedJournalDraftProjector
         ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
         return symbol.Trim().ToUpperInvariant();
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

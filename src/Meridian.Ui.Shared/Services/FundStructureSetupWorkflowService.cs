@@ -1,6 +1,7 @@
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -126,11 +127,11 @@ public sealed class FundStructureSetupWorkflowService
         var ids = ResolveIds(draft);
 
         var organization = await _fundStructureService.CreateOrganizationAsync(
-            new CreateOrganizationRequest(ids.OrganizationId, Clean(draft.Organization.Code), Clean(draft.Organization.Name), CleanCurrency(draft.Organization.BaseCurrency), effectiveFrom, auditActor, CleanOptional(draft.Organization.Description)),
+            new CreateOrganizationRequest(ids.OrganizationId, Clean(draft.Organization.Code), Clean(draft.Organization.Name), CleanCurrency(draft.Organization.BaseCurrency), effectiveFrom, auditActor, NormalizeOptional(draft.Organization.Description)),
             ct).ConfigureAwait(false);
 
         var business = await _fundStructureService.CreateBusinessAsync(
-            new CreateBusinessRequest(ids.BusinessId, organization.OrganizationId, draft.BusinessLane.BusinessKind, Clean(draft.BusinessLane.Code), Clean(draft.BusinessLane.Name), CleanCurrency(draft.BusinessLane.BaseCurrency), effectiveFrom, auditActor, CleanOptional(draft.BusinessLane.Description)),
+            new CreateBusinessRequest(ids.BusinessId, organization.OrganizationId, draft.BusinessLane.BusinessKind, Clean(draft.BusinessLane.Code), Clean(draft.BusinessLane.Name), CleanCurrency(draft.BusinessLane.BaseCurrency), effectiveFrom, auditActor, NormalizeOptional(draft.BusinessLane.Description)),
             ct).ConfigureAwait(false);
 
         ClientSummaryDto? client = null;
@@ -138,13 +139,13 @@ public sealed class FundStructureSetupWorkflowService
         if (draft.ClientOrFund.CreateClient)
         {
             client = await _fundStructureService.CreateClientAsync(
-                new CreateClientRequest(ids.ClientOrFundId, business.BusinessId, Clean(draft.ClientOrFund.Code), Clean(draft.ClientOrFund.Name), CleanCurrency(draft.ClientOrFund.BaseCurrency), effectiveFrom, auditActor, CleanOptional(draft.ClientOrFund.Description), draft.ClientOrFund.ClientSegmentKind),
+                new CreateClientRequest(ids.ClientOrFundId, business.BusinessId, Clean(draft.ClientOrFund.Code), Clean(draft.ClientOrFund.Name), CleanCurrency(draft.ClientOrFund.BaseCurrency), effectiveFrom, auditActor, NormalizeOptional(draft.ClientOrFund.Description), draft.ClientOrFund.ClientSegmentKind),
                 ct).ConfigureAwait(false);
         }
         else
         {
             fund = await _fundStructureService.CreateFundAsync(
-                new CreateFundRequest(ids.ClientOrFundId, Clean(draft.ClientOrFund.Code), Clean(draft.ClientOrFund.Name), CleanCurrency(draft.ClientOrFund.BaseCurrency), effectiveFrom, auditActor, CleanOptional(draft.ClientOrFund.Description), business.BusinessId),
+                new CreateFundRequest(ids.ClientOrFundId, Clean(draft.ClientOrFund.Code), Clean(draft.ClientOrFund.Name), CleanCurrency(draft.ClientOrFund.BaseCurrency), effectiveFrom, auditActor, NormalizeOptional(draft.ClientOrFund.Description), business.BusinessId),
                 ct).ConfigureAwait(false);
         }
 
@@ -158,10 +159,10 @@ public sealed class FundStructureSetupWorkflowService
                 CleanCurrency(draft.LegalEntity.BaseCurrency),
                 effectiveFrom,
                 auditActor,
-                CleanOptional(draft.LegalEntity.Description),
+                NormalizeOptional(draft.LegalEntity.Description),
                 draft.LegalEntity.LegalForm,
                 draft.LegalEntity.LifecycleStatus,
-                CleanOptional(draft.LegalEntity.RegistrationNumber),
+                NormalizeOptional(draft.LegalEntity.RegistrationNumber),
                 CleanBeneficialOwners(draft.LegalEntity.BeneficialOwners),
                 BuildInitialLifecycleEvents(draft.LegalEntity, effectiveFrom, auditActor)),
             ct).ConfigureAwait(false);
@@ -176,7 +177,7 @@ public sealed class FundStructureSetupWorkflowService
         }
 
         var vehicle = await _fundStructureService.CreateVehicleAsync(
-            new CreateVehicleRequest(ids.VehicleId, vehicleFundId, legalEntity.EntityId, Clean(draft.Vehicle.Code), Clean(draft.Vehicle.Name), CleanCurrency(draft.Vehicle.BaseCurrency), effectiveFrom, auditActor, CleanOptional(draft.Vehicle.Description)),
+            new CreateVehicleRequest(ids.VehicleId, vehicleFundId, legalEntity.EntityId, Clean(draft.Vehicle.Code), Clean(draft.Vehicle.Name), CleanCurrency(draft.Vehicle.BaseCurrency), effectiveFrom, auditActor, NormalizeOptional(draft.Vehicle.Description)),
             ct).ConfigureAwait(false);
 
         var portfolio = await _fundStructureService.CreateInvestmentPortfolioAsync(
@@ -191,14 +192,14 @@ public sealed class FundStructureSetupWorkflowService
                 ClientId: client?.ClientId,
                 FundId: fund?.FundId,
                 EntityId: legalEntity.EntityId,
-                Description: CleanOptional(draft.InvestmentPortfolio.Description)),
+                Description: NormalizeOptional(draft.InvestmentPortfolio.Description)),
             ct).ConfigureAwait(false);
 
         var links = new List<OwnershipLinkDto>();
         foreach (var link in draft.InitialOwnershipLinks ?? Array.Empty<FundStructureSetupOwnershipLinkDraftDto>())
         {
             links.Add(await _fundStructureService.LinkNodesAsync(
-                new LinkFundStructureNodesRequest(link.OwnershipLinkId ?? Guid.NewGuid(), ResolveAlias(link.Parent, ids), ResolveAlias(link.Child, ids), link.RelationshipType, effectiveFrom, auditActor, link.OwnershipPercent, link.IsPrimary, CleanOptional(link.Notes)),
+                new LinkFundStructureNodesRequest(link.OwnershipLinkId ?? Guid.NewGuid(), ResolveAlias(link.Parent, ids), ResolveAlias(link.Child, ids), link.RelationshipType, effectiveFrom, auditActor, link.OwnershipPercent, link.IsPrimary, NormalizeOptional(link.Notes)),
                 ct).ConfigureAwait(false));
         }
 
@@ -208,8 +209,8 @@ public sealed class FundStructureSetupWorkflowService
             Clean(draft.AccountHandoff.DisplayName),
             draft.AccountHandoff.AccountType.ToString(),
             CleanCurrency(draft.AccountHandoff.BaseCurrency),
-            CleanOptional(draft.AccountHandoff.Institution) ?? string.Empty,
-            CleanOptional(draft.AccountHandoff.LedgerReference) ?? string.Empty
+            NormalizeOptional(draft.AccountHandoff.Institution) ?? string.Empty,
+            NormalizeOptional(draft.AccountHandoff.LedgerReference) ?? string.Empty
         });
 
         var assignment = await _fundStructureService.AssignNodeAsync(
@@ -233,7 +234,7 @@ public sealed class FundStructureSetupWorkflowService
     }
 
     private static FundStructureNodeDto Node(Guid id, FundStructureNodeKindDto kind, string code, string name, string? description, DateTimeOffset effectiveFrom)
-        => new(id, kind, Clean(code), Clean(name), CleanOptional(description), true, effectiveFrom, null);
+        => new(id, kind, Clean(code), Clean(name), NormalizeOptional(description), true, effectiveFrom, null);
 
     private static DateTimeOffset ResolveEffectiveFrom(FundStructureSetupDraftDto draft) => draft.EffectiveFrom ?? DateTimeOffset.UtcNow;
 
@@ -282,8 +283,6 @@ public sealed class FundStructureSetupWorkflowService
 
     private static string CleanCurrency(string value) => value.Trim().ToUpperInvariant();
 
-    private static string? CleanOptional(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
     private static IReadOnlyList<BeneficialOwnerSummaryDto> CleanBeneficialOwners(
         IReadOnlyList<BeneficialOwnerSummaryDto>? beneficialOwners) =>
         beneficialOwners is null
@@ -292,8 +291,8 @@ public sealed class FundStructureSetupWorkflowService
                 .Select(static owner => owner with
                 {
                     OwnerName = Clean(owner.OwnerName),
-                    OwnerIdentifier = CleanOptional(owner.OwnerIdentifier),
-                    Notes = CleanOptional(owner.Notes)
+                    OwnerIdentifier = NormalizeOptional(owner.OwnerIdentifier),
+                    Notes = NormalizeOptional(owner.Notes)
                 })
                 .Where(static owner => !string.IsNullOrWhiteSpace(owner.OwnerName))
                 .ToList();
@@ -303,7 +302,7 @@ public sealed class FundStructureSetupWorkflowService
         DateTimeOffset effectiveFrom,
         string auditActor)
     {
-        var summary = CleanOptional(legalEntity.InitialLifecycleEventSummary)
+        var summary = NormalizeOptional(legalEntity.InitialLifecycleEventSummary)
             ?? $"{Clean(legalEntity.Name)} initial legal entity setup.";
         return
         [
@@ -313,7 +312,7 @@ public sealed class FundStructureSetupWorkflowService
                 DateTimeOffset.UtcNow,
                 auditActor,
                 summary,
-                CleanOptional(legalEntity.InitialLifecycleEvidenceReference),
+                NormalizeOptional(legalEntity.InitialLifecycleEvidenceReference),
                 effectiveFrom,
                 EffectiveTo: null)
         ];

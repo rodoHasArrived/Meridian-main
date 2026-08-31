@@ -20,6 +20,7 @@ using Meridian.Ledger;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Endpoints;
+using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -5757,10 +5758,8 @@ public sealed class AccountingSystemIntegrationServiceTests
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
-        var certificationEvidence =
-            $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full/dimension-scope/canonical-production";
-        var approvalEvidence =
-            $"approval:tenant:company-alpha:company:company-alpha:fund:default-fund:ledgerBookId={ExternalGlLedgerBookId:D}:production-certification";
+        const string certificationEvidence = "evidence-vault://accounting-certification-full";
+        const string corroboratingEvidence = "evidence-vault://accounting-certification-corroborating";
         var workflowArtifact = BuildWorkflowCertificationArtifact(
             ExternalGlLedgerBookId,
             $"evidence://ledger-book/{ExternalGlLedgerBookId:D}/workflow-certification/artifact",
@@ -5813,7 +5812,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 CorrelationId: "production-certification-default-fund",
                 EvidenceLinks:
                 [
-                    approvalEvidence
+                    corroboratingEvidence
                 ])));
 
         upsertResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -5823,7 +5822,20 @@ public sealed class AccountingSystemIntegrationServiceTests
         upserted.TenantId.Should().Be("company-alpha");
         upserted.CompanyId.Should().Be("company-alpha");
         upserted.UpdatedBy.Should().Be("controller.admin");
-        upserted.EvidenceReferences.Should().Contain(approvalEvidence);
+        upserted.EvidenceReferences.Should().Contain(reference =>
+            reference.StartsWith($"{corroboratingEvidence}/documents/", StringComparison.OrdinalIgnoreCase));
+        upserted.WorkflowCertificationArtifacts.Should().ContainSingle();
+        upserted.DimensionalCertificationArtifacts.Should().ContainSingle();
+        var workflowCertificationId = upserted.WorkflowCertificationArtifacts[0].CertificationId;
+        var dimensionalCertificationId = upserted.DimensionalCertificationArtifacts[0].CertificationId;
+        upserted.RetainedEvidence.Select(static evidence => evidence.EvidenceId)
+            .Should().OnlyHaveUniqueItems();
+        upserted.RetainedEvidence.Should().Contain(evidence =>
+            evidence.SubjectType == AccountingProductionCertificationEvidenceSubjectTypes.WorkflowArtifact &&
+            evidence.SubjectId == workflowCertificationId);
+        upserted.RetainedEvidence.Should().Contain(evidence =>
+            evidence.SubjectType == AccountingProductionCertificationEvidenceSubjectTypes.DimensionalArtifact &&
+            evidence.SubjectId == dimensionalCertificationId);
 
         var getResponse = await client.GetAsync(
             $"{UiApiRoutes.AccountingSystemProductionCertificationProfile}?fundProfileId=default-fund&ledgerBookId={ExternalGlLedgerBookId:D}");
@@ -5851,7 +5863,7 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
-    public async Task AccountingSystemProductionCertificationProfileEndpoint_BlocksMismatchedRolloutEvidence()
+    public async Task AccountingSystemProductionCertificationProfileEndpoint_RejectsEvidenceVaultIdentityOutsideSelectedScope()
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
@@ -5874,7 +5886,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                     UpdatedBy: "controller",
                     EvidenceReferences:
                     [
-                        $"evidence://tenant/company-beta/company/company-beta/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full/dimension-scope/canonical-production"
+                        "evidence-vault://accounting-certification-mismatched-scope"
                     ],
                     ReconciliationLedgerBookNativeCertified: true,
                     DirectLendingLedgerBookNativeCertified: true,
@@ -5897,11 +5909,11 @@ public sealed class AccountingSystemIntegrationServiceTests
         var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
         problem.Errors.Should().ContainKey("request");
         problem.Errors["request"].Should().Contain(error =>
-            error.Contains("selected tenant, company, fund profile, and ledger book", StringComparison.OrdinalIgnoreCase));
+            error.Contains("does not match the selected tenant, company, fund profile, and ledger book", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
-    public async Task AccountingSystemProductionCertificationProfileEndpoint_BlocksMissingLedgerBookScope()
+    public async Task AccountingSystemProductionCertificationProfileEndpoint_RejectsMissingLedgerBookBeforeAuthorityResolution()
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
@@ -5922,7 +5934,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                     ExternalExportDimensionMappingCertified: false,
                     UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
                     UpdatedBy: "controller",
-                    EvidenceReferences: ["evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/production-certification/full"],
+                    EvidenceReferences: ["evidence-vault://accounting-certification-workflow"],
                     ReconciliationLedgerBookNativeCertified: true,
                     DirectLendingLedgerBookNativeCertified: true,
                     StrategyLedgerReadLedgerBookNativeCertified: true,
@@ -5940,11 +5952,11 @@ public sealed class AccountingSystemIntegrationServiceTests
         var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
         problem.Errors.Should().ContainKey("request");
         problem.Errors["request"].Should().Contain(error =>
-            error.Contains("ledger book is required", StringComparison.OrdinalIgnoreCase));
+            error.Contains("requires a ledger book id", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
-    public async Task AccountingSystemProductionCertificationProfileEndpoint_BlocksExtendedLedgerBookEvidenceToken()
+    public async Task AccountingSystemProductionCertificationProfileEndpoint_RejectsEvidenceVaultIdentityForAnotherLedgerBook()
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
@@ -5967,7 +5979,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                     UpdatedBy: "controller",
                     EvidenceReferences:
                     [
-                        $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}ffff/posting-candidate/certification"
+                        "evidence-vault://accounting-certification-other-ledger-book"
                     ],
                     WorkflowCertificationArtifacts:
                     [
@@ -5984,11 +5996,11 @@ public sealed class AccountingSystemIntegrationServiceTests
         var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
         problem.Errors.Should().ContainKey("request");
         problem.Errors["request"].Should().Contain(error =>
-            error.Contains("selected tenant, company, fund profile, and ledger book", StringComparison.OrdinalIgnoreCase));
+            error.Contains("does not match the selected tenant, company, fund profile, and ledger book", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
-    public async Task AccountingSystemProductionCertificationProfileEndpoint_BlocksMismatchedControlEvidence()
+    public async Task AccountingSystemProductionCertificationProfileEndpoint_RejectsPostingOnlyAuthorityEvidenceWhenJournalLifecycleRequested()
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
@@ -6011,7 +6023,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                     UpdatedBy: "controller",
                     EvidenceReferences:
                     [
-                        $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/posting-candidate/certification"
+                        "evidence-vault://accounting-certification-posting-only"
                     ],
                     WorkflowCertificationArtifacts:
                     [
@@ -6047,11 +6059,12 @@ public sealed class AccountingSystemIntegrationServiceTests
         var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
         problem.Errors.Should().ContainKey("request");
         problem.Errors["request"].Should().Contain(error =>
-            error.Contains("scoped, passed journal-entry lifecycle workflow artifact", StringComparison.OrdinalIgnoreCase));
+            error.Contains("Authoritative accounting workflow evidence is missing", StringComparison.OrdinalIgnoreCase) &&
+            error.Contains(nameof(AccountingWorkflowCertificationLaneKindDto.JournalLifecycle), StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
-    public async Task AccountingSystemProductionCertificationProfileEndpoint_BlocksSplitWorkflowControlEvidence()
+    public async Task AccountingSystemProductionCertificationProfileEndpoint_RejectsNonVaultExternalGlAuthorityReference()
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
@@ -6074,7 +6087,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                     UpdatedBy: "controller",
                     EvidenceReferences:
                     [
-                        $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/production-certification/rollout",
+                        "evidence-vault://accounting-certification-rollout",
                         "evidence://external-gl/workflow-certification/unscoped"
                     ],
                     RetainedEvidence:
@@ -6091,12 +6104,11 @@ public sealed class AccountingSystemIntegrationServiceTests
         var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
         problem.Errors.Should().ContainKey("request");
         problem.Errors["request"].Should().Contain(error =>
-            error.Contains("external-GL workflow artifact", StringComparison.OrdinalIgnoreCase) &&
-            error.Contains("bound to the same certification id", StringComparison.OrdinalIgnoreCase));
+            error.Contains("not an Evidence Vault id or route", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
-    public async Task AccountingSystemProductionCertificationProfileEndpoint_BlocksDimensionCertificationWithoutDimensionScopeEvidence()
+    public async Task AccountingSystemProductionCertificationProfileEndpoint_RejectsWorkflowOnlyAuthorityEvidenceWhenDimensionalControlsRequested()
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
@@ -6119,7 +6131,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                     UpdatedBy: "controller",
                     EvidenceReferences:
                     [
-                        $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full"
+                        "evidence-vault://accounting-certification-workflow"
                     ],
                     ReconciliationLedgerBookNativeCertified: true,
                     DirectLendingLedgerBookNativeCertified: true,
@@ -6155,11 +6167,11 @@ public sealed class AccountingSystemIntegrationServiceTests
         var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
         problem.Errors.Should().ContainKey("request");
         problem.Errors["request"].Should().Contain(error =>
-            error.Contains("dimensional scope evidence key", StringComparison.OrdinalIgnoreCase));
+            error.Contains("Authoritative accounting dimensional evidence is missing", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
-    public async Task AccountingSystemProductionCertificationProfileEndpoint_BlocksSplitDimensionScopeEvidence()
+    public async Task AccountingSystemProductionCertificationProfileEndpoint_RejectsNonVaultDimensionalAuthorityReference()
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
@@ -6182,7 +6194,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                     UpdatedBy: "controller",
                     EvidenceReferences:
                     [
-                        $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full",
+                        "evidence-vault://accounting-certification-workflow",
                         "evidence://dimensions/report-query-certification/full/dimension-scope/canonical-production"
                     ],
                     ReconciliationLedgerBookNativeCertified: true,
@@ -6206,7 +6218,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
         problem.Errors.Should().ContainKey("request");
         problem.Errors["request"].Should().Contain(error =>
-            error.Contains("retained evidence bound to its certification id", StringComparison.OrdinalIgnoreCase));
+            error.Contains("not an Evidence Vault id or route", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -6308,6 +6320,11 @@ public sealed class AccountingSystemIntegrationServiceTests
             var body = await response.Content.ReadAsStringAsync();
             body.Should().Contain("human operator");
         }
+
+        var productionCertificationProblem =
+            await ReadAsync<HttpValidationProblemDetails>(productionCertificationResponse);
+        productionCertificationProblem.Errors["request"].Should().Equal(
+            "Only a human operator can certify accounting production controls.");
     }
 
     [Fact]
@@ -6710,6 +6727,14 @@ public sealed class AccountingSystemIntegrationServiceTests
         builder.Services.AddSingleton<AccountingMigrationRunExecutionService>();
         builder.Services.AddSingleton<IAccountingTenantAdministrationProfileStore, InMemoryAccountingTenantAdministrationProfileStore>();
         builder.Services.AddSingleton<IAccountingProductionCertificationProfileStore, InMemoryAccountingProductionCertificationProfileStore>();
+        // The certification upsert endpoint takes this command service as a handler parameter.
+        // Minimal APIs infer a complex parameter as a service only when the container knows the
+        // type; without it the parameter is unresolvable, endpoint-graph construction throws, and
+        // every route in this app answers 500 — not just the certification route.
+        builder.Services.AddSingleton<IEvidenceArtifactStore, AccountingCertificationEvidenceStore>();
+        builder.Services.AddSingleton<IAccountingProductionCertificationEvidenceAuthority,
+            EvidenceVaultAccountingProductionCertificationEvidenceAuthority>();
+        builder.Services.AddSingleton<AccountingProductionCertificationCommandService>();
         builder.Services.AddSingleton<AccountingProductionReadinessService>();
         builder.Services.AddRateLimiter(options =>
         {
@@ -6734,6 +6759,177 @@ public sealed class AccountingSystemIntegrationServiceTests
 
         await app.StartAsync();
         return app;
+    }
+
+    private sealed class AccountingCertificationEvidenceStore : IEvidenceArtifactStore
+    {
+        private static readonly DateTimeOffset ReceivedAtUtc =
+            DateTimeOffset.Parse("2026-01-31T00:15:00Z");
+        private static readonly DateTimeOffset ReviewedAtUtc =
+            DateTimeOffset.Parse("2026-01-31T00:30:00Z");
+        private static readonly DateTimeOffset RetainedAtUtc =
+            DateTimeOffset.Parse("2026-01-31T00:45:00Z");
+
+        public Task<EvidenceVaultIdentityDto?> TryGetVaultIdentityAsync(
+            string vaultId,
+            string tenantId,
+            string scope,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var allWorkflowLanes = Enum.GetValues<AccountingWorkflowCertificationLaneKindDto>();
+            var allDimensionalLanes = Enum.GetValues<AccountingDimensionalCertificationLaneKindDto>();
+            (AccountingWorkflowCertificationLaneKindDto[] WorkflowLanes,
+                AccountingDimensionalCertificationLaneKindDto[] DimensionalLanes) laneCoverage = vaultId switch
+                {
+                    "accounting-certification-full" or "accounting-certification-corroborating" =>
+                        (allWorkflowLanes, allDimensionalLanes),
+                    "accounting-certification-workflow" =>
+                        (allWorkflowLanes, []),
+                    "accounting-certification-posting-only" =>
+                        ([AccountingWorkflowCertificationLaneKindDto.PostingRules], []),
+                    "accounting-certification-rollout" =>
+                        ([AccountingWorkflowCertificationLaneKindDto.ExternalGl], []),
+                    "accounting-certification-mismatched-scope" or "accounting-certification-other-ledger-book" =>
+                        (allWorkflowLanes, allDimensionalLanes),
+                    _ => ([], [])
+                };
+            var workflowLanes = laneCoverage.WorkflowLanes;
+            var dimensionalLanes = laneCoverage.DimensionalLanes;
+            if (workflowLanes.Length == 0 && dimensionalLanes.Length == 0)
+            {
+                return Task.FromResult<EvidenceVaultIdentityDto?>(null);
+            }
+
+            var subjectId = vaultId switch
+            {
+                "accounting-certification-mismatched-scope" =>
+                    AccountingProductionCertificationAuthoritySubjects.BuildScopeSubjectId(
+                        "company-beta",
+                        "company-beta",
+                        "default-fund",
+                        ExternalGlLedgerBookId),
+                "accounting-certification-other-ledger-book" =>
+                    AccountingProductionCertificationAuthoritySubjects.BuildScopeSubjectId(
+                        tenantId,
+                        scope,
+                        "default-fund",
+                        Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")),
+                _ => AccountingProductionCertificationAuthoritySubjects.BuildScopeSubjectId(
+                    tenantId,
+                    scope,
+                    "default-fund",
+                    ExternalGlLedgerBookId)
+            };
+            return Task.FromResult<EvidenceVaultIdentityDto?>(BuildIdentity(
+                vaultId,
+                tenantId,
+                scope,
+                subjectId,
+                workflowLanes,
+                dimensionalLanes));
+        }
+
+        private static EvidenceVaultIdentityDto BuildIdentity(
+            string vaultId,
+            string tenantId,
+            string companyId,
+            string subjectId,
+            IReadOnlyList<AccountingWorkflowCertificationLaneKindDto> workflowLanes,
+            IReadOnlyList<AccountingDimensionalCertificationLaneKindDto> dimensionalLanes)
+        {
+            var confirmedFields = new List<EvidenceDocumentConfirmedFieldDto>();
+            if (workflowLanes.Count > 0)
+            {
+                confirmedFields.Add(new EvidenceDocumentConfirmedFieldDto(
+                    EvidenceVaultAccountingProductionCertificationEvidenceAuthority.WorkflowLanesField,
+                    string.Join(",", workflowLanes),
+                    "accounting-controller",
+                    ReviewedAtUtc));
+            }
+
+            if (dimensionalLanes.Count > 0)
+            {
+                confirmedFields.Add(new EvidenceDocumentConfirmedFieldDto(
+                    EvidenceVaultAccountingProductionCertificationEvidenceAuthority.DimensionalLanesField,
+                    string.Join(",", dimensionalLanes),
+                    "accounting-controller",
+                    ReviewedAtUtc));
+            }
+
+            var document = new EvidenceDocumentDto(
+                DocumentId: $"{vaultId}-document",
+                FileName: $"{vaultId}.json",
+                Classification: EvidenceDocumentClassificationDto.AdminPackage,
+                SourceHashSha256: new string('a', 64),
+                ReceivedAt: ReceivedAtUtc,
+                SourceChannel: "test-vault",
+                Actor: "accounting-controller",
+                TenantId: tenantId,
+                Scope: companyId,
+                ExtractionStatus: EvidenceExtractionStatusDto.Accepted,
+                ObjectLinks: [],
+                ReviewerState: new EvidenceDocumentReviewStateDto(
+                    EvidenceDocumentReviewStatusDto.Accepted,
+                    "accounting-controller",
+                    ReviewedAtUtc)
+                {
+                    ConfirmedFields = confirmedFields
+                },
+                AuditTrail:
+                [
+                    new EvidenceDocumentAuditEventDto(
+                        ReviewedAtUtc,
+                        "accounting-controller",
+                        "accepted",
+                        "Accepted accounting production certification evidence.")
+                ])
+            {
+                SourceSystem = nameof(AccountingCertificationEvidenceStore),
+                SourceReference = $"test-vault://{vaultId}"
+            };
+            return new EvidenceVaultIdentityDto(
+                VaultId: vaultId,
+                SubjectKind: AccountingProductionCertificationAuthoritySubjects.EvidenceVaultSubjectKind,
+                SubjectId: subjectId,
+                ManifestPath: $"workstation/evidence/vault/{vaultId}/manifest.json",
+                ManifestRoute: $"/api/workstation/evidence/vault/{vaultId}",
+                RetainedAt: RetainedAtUtc,
+                ContentHashSha256: new string('b', 64),
+                SchemaVersion: 1,
+                StorageKind: "test-vault")
+            {
+                TenantId = tenantId,
+                Scope = companyId,
+                Documents = [document]
+            };
+        }
+
+        public Task<EvidencePacketExportResponse> WriteManifestAsync(
+            EvidencePacketDto packet,
+            EvidencePacketExportRequest request,
+            CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public Task<EvidenceVaultIntakeResponseDto> WriteIntakeArtifactAsync(
+            EvidenceVaultIntakeRequestDto request,
+            CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public Task<IReadOnlyList<EvidenceVaultIdentityDto>> FindByLinkageAsync(
+            EvidenceVaultLookupRequestDto request,
+            CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public Task<IReadOnlyList<EvidenceVaultRequestListEntryDto>> ListRequestListsAsync(
+            EvidenceVaultRequestListQueryDto query,
+            CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public Task<IReadOnlyList<EvidenceVaultDocumentEntryDto>> ListDocumentsAsync(
+            EvidenceVaultDocumentQueryDto query,
+            CancellationToken ct = default) =>
+            throw new NotSupportedException();
     }
 
     private static StringContent JsonContent(object payload) =>

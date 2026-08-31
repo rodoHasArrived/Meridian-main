@@ -1,3 +1,5 @@
+using Meridian.Identity.Auth;
+using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
@@ -13,8 +15,9 @@ public static partial class LedgerEndpoints
 {
     /// <summary>
     /// Maps the automated journal-intake routes (daily valuation, corporate-action dividends,
-    /// fee-schedule accruals, and period-close closing entries) that project source evidence or
-    /// closed-period trial balances into governed manual journal workbench drafts.
+    /// fee-schedule accruals, capital-call issuance and funding, and period-close closing
+    /// entries) that project source evidence or closed-period trial balances into governed
+    /// manual journal workbench drafts.
     /// </summary>
     private static void MapJournalAutomationEndpoints(WebApplication app, JsonSerializerOptions jsonOptions)
     {
@@ -49,7 +52,7 @@ public static partial class LedgerEndpoints
                 .ToArray();
             return Results.Json(schedules, jsonOptions);
         })
-        .WithName("ListLedgerJournalAutomationMonthlySchedules")
+        .WithName("ListLedgerJournalAutomationMonthlySchedules").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
         .Produces<IReadOnlyList<AutomatedJournalScheduleWorkItem>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
@@ -80,18 +83,19 @@ public static partial class LedgerEndpoints
 
                 if (existing?.State == AutomatedJournalScheduleStateDto.Running)
                 {
-                    return Results.Conflict(new
-                    {
-                        error = $"Automated journal schedule '{existing.ScheduleId}' is Running and cannot be reconfigured until its durable claim completes or resumes."
-                    });
+                    return ApiProblemDetails.Conflict(
+                        context,
+                        $"Automated journal schedule '{existing.ScheduleId}' is Running and cannot be reconfigured until its durable claim completes or resumes.");
                 }
 
                 if (existing is not null && request.Version != existing.Version)
                 {
-                    return Results.Conflict(new
-                    {
-                        error = $"Automated journal schedule '{existing.ScheduleId}' version is stale. Expected {request.Version}, current {existing.Version}."
-                    });
+                    return ApiProblemDetails.VersionConflict(
+                        context,
+                        $"Automated journal schedule '{existing.ScheduleId}' version is stale. Expected {request.Version}, current {existing.Version}.",
+                        resourceId: existing.ScheduleId,
+                        expectedVersion: request.Version.ToString(CultureInfo.InvariantCulture),
+                        currentVersion: existing.Version.ToString(CultureInfo.InvariantCulture));
                 }
 
                 if (existing is not null && existing.JournalEntryIds.Count > 0)
@@ -115,10 +119,9 @@ public static partial class LedgerEndpoints
                             ManualJournalEntryStatusDto.Submitted or
                             ManualJournalEntryStatusDto.Approved)
                         {
-                            return Results.Conflict(new
-                            {
-                                error = $"Automated journal schedule '{existing.ScheduleId}' cannot be re-armed while retained draft '{journalEntryId:D}' is pending. Post or reject the current draft before rearming."
-                            });
+                            return ApiProblemDetails.Conflict(
+                                context,
+                                $"Automated journal schedule '{existing.ScheduleId}' cannot be re-armed while retained draft '{journalEntryId:D}' is pending. Post or reject the current draft before rearming.");
                         }
                     }
                 }
@@ -176,18 +179,25 @@ public static partial class LedgerEndpoints
             }
             catch (AutomatedJournalScheduleConcurrencyException ex)
             {
-                return Results.Conflict(new { error = ex.Message });
+                // Canonical optimistic-concurrency contract: the exception's version data reaches
+                // the client instead of being flattened into the message text.
+                return ApiProblemDetails.VersionConflict(
+                    context,
+                    ex.Message,
+                    resourceId: ex.ScheduleId,
+                    expectedVersion: ex.ExpectedVersion.ToString(CultureInfo.InvariantCulture),
+                    currentVersion: ex.ActualVersion.ToString(CultureInfo.InvariantCulture));
             }
             catch (InvalidOperationException)
             {
                 return EndpointHelpers.Forbidden();
             }
         })
-        .WithName("ConfigureLedgerJournalAutomationMonthlySchedule")
+        .WithName("ConfigureLedgerJournalAutomationMonthlySchedule").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AutomatedJournalScheduleWorkItem>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
@@ -215,7 +225,7 @@ public static partial class LedgerEndpoints
                 context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("RunDueLedgerJournalAutomationMonthlySchedules")
+        .WithName("RunDueLedgerJournalAutomationMonthlySchedules").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AutomatedJournalScheduledBatchResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented)
@@ -249,7 +259,7 @@ public static partial class LedgerEndpoints
                 .ToArray();
             return Results.Json(schedules, jsonOptions);
         })
-        .WithName("ListLedgerJournalAutomationDailyMarkToMarketSchedules")
+        .WithName("ListLedgerJournalAutomationDailyMarkToMarketSchedules").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
         .Produces<IReadOnlyList<DailyValuationScheduleWorkItem>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
@@ -299,10 +309,9 @@ public static partial class LedgerEndpoints
                             ManualJournalEntryStatusDto.Submitted or
                             ManualJournalEntryStatusDto.Approved)
                         {
-                            return Results.Conflict(new
-                            {
-                                error = $"Daily valuation schedule '{existing.ScheduleId}' cannot be reconfigured while retained batch draft '{journalEntryId:D}' is pending. Post or reject the current batch first."
-                            });
+                            return ApiProblemDetails.Conflict(
+                                context,
+                                $"Daily valuation schedule '{existing.ScheduleId}' cannot be reconfigured while retained batch draft '{journalEntryId:D}' is pending. Post or reject the current batch first.");
                         }
                     }
                 }
@@ -335,11 +344,11 @@ public static partial class LedgerEndpoints
                 return EndpointHelpers.Forbidden();
             }
         })
-        .WithName("ConfigureLedgerJournalAutomationDailyMarkToMarketSchedule")
+        .WithName("ConfigureLedgerJournalAutomationDailyMarkToMarketSchedule").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<DailyValuationScheduleWorkItem>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
@@ -367,7 +376,7 @@ public static partial class LedgerEndpoints
                 context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("RunDueLedgerJournalAutomationDailyMarkToMarketSchedules")
+        .WithName("RunDueLedgerJournalAutomationDailyMarkToMarketSchedules").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<DailyValuationScheduledBatchResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented)
@@ -396,6 +405,11 @@ public static partial class LedgerEndpoints
                 var result = await service.ApproveAndPostAsync(request with
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
+                    // Derived alongside Actor and tenant scope. This batch approves and posts
+                    // journal entries through a service that gates them on RequireHumanOperator, so
+                    // an origin taken from the body would let a service credential satisfy the very
+                    // control that exists to require a human (#2673).
+                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin),
                     TenantId = tenantContext.TenantId,
                     CompanyId = tenantContext.CompanyId
                 }, context.RequestAborted).ConfigureAwait(false);
@@ -411,14 +425,14 @@ public static partial class LedgerEndpoints
             }
             catch (InvalidOperationException ex)
             {
-                return Results.Conflict(new { error = ex.Message });
+                return ApiProblemDetails.Conflict(context, ex.Message);
             }
         })
-        .WithName("ApproveAndPostLedgerJournalAutomationDailyMarkToMarketBatch")
+        .WithName("ApproveAndPostLedgerJournalAutomationDailyMarkToMarketBatch").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<DailyValuationBatchLifecycleResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
@@ -454,14 +468,14 @@ public static partial class LedgerEndpoints
             }
             catch (InvalidOperationException ex)
             {
-                return Results.Conflict(new { error = ex.Message });
+                return ApiProblemDetails.Conflict(context, ex.Message);
             }
         })
-        .WithName("RunLedgerJournalAutomationDailyMarkToMarketIntake")
+        .WithName("RunLedgerJournalAutomationDailyMarkToMarketIntake").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<DailyMarkToMarketIntakeRunResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
@@ -497,14 +511,14 @@ public static partial class LedgerEndpoints
             }
             catch (InvalidOperationException ex)
             {
-                return Results.Conflict(new { error = ex.Message });
+                return ApiProblemDetails.Conflict(context, ex.Message);
             }
         })
-        .WithName("RunLedgerJournalAutomationDividendIntake")
+        .WithName("RunLedgerJournalAutomationDividendIntake").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
@@ -542,14 +556,100 @@ public static partial class LedgerEndpoints
             }
             catch (InvalidOperationException ex)
             {
-                return Results.Conflict(new { error = ex.Message });
+                return ApiProblemDetails.Conflict(context, ex.Message);
             }
         })
-        .WithName("RunLedgerJournalAutomationFeeAccrualIntake")
+        .WithName("RunLedgerJournalAutomationFeeAccrualIntake").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope()
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerJournalAutomationCapitalCallIssuanceIntake, async (RunCapitalCallIssuanceDraftIntakeRequest request, HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var runner = context.RequestServices.GetService<AutomatedJournalIntakeRunner>();
+            if (runner is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await runner.RunCapitalCallIssuanceIntakeAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
+                }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return ApiProblemDetails.Conflict(context, ex.Message);
+            }
+        })
+        .WithName("RunLedgerJournalAutomationCapitalCallIssuanceIntake").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
+        .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope()
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerJournalAutomationCapitalCallFundingIntake, async (RunCapitalCallFundingDraftIntakeRequest request, HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var runner = context.RequestServices.GetService<AutomatedJournalIntakeRunner>();
+            if (runner is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await runner.RunCapitalCallFundingIntakeAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
+                }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return ApiProblemDetails.Conflict(context, ex.Message);
+            }
+        })
+        .WithName("RunLedgerJournalAutomationCapitalCallFundingIntake").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
+        .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
@@ -585,14 +685,14 @@ public static partial class LedgerEndpoints
             }
             catch (InvalidOperationException ex)
             {
-                return Results.Conflict(new { error = ex.Message });
+                return ApiProblemDetails.Conflict(context, ex.Message);
             }
         })
-        .WithName("RunLedgerJournalAutomationPeriodCloseIntake")
+        .WithName("RunLedgerJournalAutomationPeriodCloseIntake").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Store;
 using Microsoft.Extensions.Logging;
@@ -206,9 +207,12 @@ public sealed class FileAccountingMigrationRunArtifactStore :
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin)
     {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        if (!OperationsOriginGuard.IsHumanOperator(actionOrigin))
         {
-            throw new ArgumentException("Only a human operator can retain accounting migration run artifacts.", nameof(actionOrigin));
+            throw new ArgumentException(
+                "Only a human operator can retain accounting migration run artifacts.",
+                nameof(actionOrigin),
+                OperationsOriginGuard.Refusal("retain accounting migration run artifacts"));
         }
     }
 

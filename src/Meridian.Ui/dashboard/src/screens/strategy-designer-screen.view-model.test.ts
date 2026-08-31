@@ -155,7 +155,12 @@ describe("strategy designer view-model", () => {
       emptyState: null
     });
     expect(vm.fieldSearchState.resultCountText).toContain('match "duration"');
-    expect(vm.backtest.runCommand.disabled).toBe(false);
+    // A valid design still cannot run a backtest proof: the run needs governed evidence
+    // references this screen cannot collect. The command stays blocked and says why, so the
+    // status text, aria-label, and button agree instead of advertising a run that cannot happen.
+    expect(vm.backtest.runCommand.disabled).toBe(true);
+    expect(vm.backtest.runCommand.disabledReason).toContain("governed evidence references");
+    expect(vm.backtest.statusLabel).toBe("Blocked");
     expect(vm.backtest.routeActions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

@@ -36,9 +36,12 @@ This lane is the canonical operator procedure page for reconciliation exception 
 1. Open `Accounting` -> `Import statement`.
 2. Choose the source path:
    - `File upload` for CSV, OFX/QFX, IB Flex XML, ISO 20022 camt.053, BAI2, or connector JSON; or
-   - `Scheduled fetch` for a fetch-capable provider connection such as Alpaca.
+   - `Scheduled fetch` for a fetch-capable provider connection such as Alpaca or the IB Flex Web
+     Service.
 3. Review the detected canonical columns, per-column confidence, position/transaction/cash/fee/
-   dividend record counts, sample rows, mapping-profile suggestion, and format-drift warnings.
+   dividend record counts, sample rows, mapping-profile suggestion, and format-drift warnings. For
+   brokerage sources, also review the provider account margin snapshot, activity subtype summary,
+   paging-completeness posture, and retained option, tax-lot, and borrow counts.
 4. For a new CSV or OFX layout, clone or create a declarative mapping profile, edit its field aliases
    and activity codes, save it, and confirm that live preview is ready before commit. This does not
    require a Meridian release.
@@ -49,10 +52,49 @@ This lane is the canonical operator procedure page for reconciliation exception 
 6. Open the returned Evidence Vault route to inspect retained source/canonical proof and open the
    returned reconciliation route for break or case review.
 
+Statement ingress is bounded, and a breach is refused rather than truncated — no partially imported
+statement is ever committed. A refusal surfaces as a blocking issue on preview and validate, and as a
+failed commit, carrying one of `STATEMENT_DOCUMENT_TOO_LARGE` (over 20 MiB),
+`STATEMENT_TOO_MANY_RECORDS` (over 250,000 retained rows, counting the retained margin, activity,
+tax-lot, and borrow evidence alongside canonical rows), `STATEMENT_LINE_TOO_LONG`,
+`STATEMENT_TOO_MANY_LINES`, `STATEMENT_NESTING_TOO_DEEP`, `STATEMENT_SUBTREE_TOO_LARGE`,
+`STATEMENT_TOO_MANY_NODES`, or `STATEMENT_TOO_MANY_DIAGNOSTICS` (over 25,000 retained parse issues —
+a file failing that many rows is malformed at a scale no operator can reconcile row by row, so correct
+the export or the mapping profile rather than reviewing the diagnostics). An IB Flex import reports
+the same retained-row ceiling as
+`ROW_LIMIT_EXCEEDED`. The defaults sit well above any real bank or broker statement, so treat a
+breach first as a malformed or hostile file — check the source with the institution before assuming it
+is merely large. If the statement is genuinely legitimate, split it into shorter periods and import
+each; that needs no configuration change. Raising a bound is a deployment change, not an operator
+setting: it is a single registration documented in `src/Meridian.FinancialOperations/README.md`, and
+it should be raised only for the bound that actually refused, with the reason recorded.
+
 Scheduled-fetch credentials remain in the existing provider credential vault. The statement screen
 never asks for, displays, or persists API keys. A transient fetch failure advances the schedule
 watermark, so the next automatic retry respects the configured cadence; the schedule row shows a
 stable failure type without exposing upstream exception text.
+
+Alpaca activity fetches continue until the provider cursor is complete and fail closed when a page
+token is missing or repeated. IB Flex fetches submit the configured query, poll its documented v3
+retrieve URL with a bounded retry window, and retain the returned XML before mapping. Configure the
+IB Flex `Token` and `QueryId` under provider id `ib-flex`; do not place either value in a schedule,
+mapping profile, or uploaded file.
+
+## Review And Certify Margin Evidence
+
+1. Open `Accounting` -> `Margin control` after importing or fetching each account statement.
+2. Confirm every expected provider, prime broker, and account is present. Missing accounts are a
+   completeness issue, not a zero balance.
+3. Compare provider-reported maintenance margin, excess liquidity, buying power, and restriction
+   flags with the clearly labelled Meridian shadow estimate. The provider values are authoritative;
+   the shadow is an operator diagnostic and must not drive liquidation or accounting entries.
+4. Inspect activity-cursor alerts, short/borrow evidence, option lifecycle counts, tax-lot counts,
+   and position-level shadow contributions before clearing a variance.
+5. Treat intraday snapshots as provisional. At end of day, certify only when the surface reports an
+   EOD candidate and has no stale, incomplete, or critical evidence. Certification is durable,
+   permission checked, actor attributed, and scoped to the exact provider/account/as-of snapshot.
+   Margin Control treats evidence older than 72 hours, or materially future-dated evidence, as stale
+   and requires a fresh fetch before certification.
 
 ## Mandatory Checks
 
@@ -71,6 +113,7 @@ curl http://localhost:8080/api/workstation/operator/inbox
 curl http://localhost:8080/api/workstation/reconciliation/queue
 curl http://localhost:8080/api/workstation/reconciliation/statement-connectors
 curl http://localhost:8080/api/workstation/reconciliation/statement-fetch-schedules
+curl http://localhost:8080/api/workstation/reconciliation/margin-control
 ```
 
 - Support recovery commands follow per-provider policy in

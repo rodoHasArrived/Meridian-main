@@ -24,12 +24,31 @@ public sealed class StrategyRunContinuityService
         _reconciliationRunService = reconciliationRunService ?? throw new ArgumentNullException(nameof(reconciliationRunService));
     }
 
-    public async Task<StrategyRunContinuityDetail?> GetRunContinuityAsync(string runId, CancellationToken ct = default)
+    public Task<StrategyRunContinuityDetail?> GetRunContinuityAsync(string runId, CancellationToken ct = default) =>
+        GetRunContinuityCoreAsync(runId, scope: null, ct);
+
+    public Task<StrategyRunContinuityDetail?> GetRunContinuityAsync(
+        string runId,
+        StrategyRunReadScope scope,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return GetRunContinuityCoreAsync(runId, scope, ct);
+    }
+
+    private async Task<StrategyRunContinuityDetail?> GetRunContinuityCoreAsync(
+        string runId,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
 
-        var runTask = _runReadService.GetRunDetailAsync(runId, ct);
-        var runsTask = _runReadService.GetRunsAsync(ct: ct);
+        var runTask = scope is null
+            ? _runReadService.GetRunDetailAsync(runId, ct)
+            : _runReadService.GetRunDetailAsync(runId, scope, ct);
+        var runsTask = scope is null
+            ? _runReadService.GetRunsAsync(ct: ct)
+            : _runReadService.GetRunsAsync(null, null, scope, ct);
         var cashFlowTask = _cashFlowProjectionService.GetAsync(runId, ct: ct);
         var reconciliationTask = _reconciliationRunService.GetLatestForRunAsync(runId, ct);
 

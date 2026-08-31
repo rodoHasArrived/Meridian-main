@@ -398,6 +398,12 @@ export interface StrategyDesignPreviewResult {
 export interface StrategyDesignRunBacktestRequest {
   document: StrategyDesignDocument;
   parameters?: Record<string, string> | null;
+  operatorAcceptanceCriteria: string[];
+  retainedEvidenceReferences: string[];
+  accountingRecordReferences: string[];
+  approvalReferences: string[];
+  paperValidationReferences: string[];
+  governedReportReferences: string[];
 }
 
 export interface StrategyDesignRunBacktestResponse {

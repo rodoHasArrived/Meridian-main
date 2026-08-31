@@ -45,6 +45,12 @@ Use this module for domain behavior that should remain stable across providers, 
   quarantine or dead-letter review. Application supplies the concrete dead-letter implementation;
   Data Integration can depend on the port while keeping canonicalization free of Application
   storage dependencies.
+- `MarketTradeUpdate.SequenceStreamId` can define a provider's continuity domain separately from
+  the published trade `StreamId` and venue. The trade collector uses that explicit key for sequence
+  and rolling order-flow state, excluding venue so per-ticker provider sequences are compared across
+  execution venues without discarding trade-ID or venue provenance from emitted events.
+  `SequenceSessionDate` scopes a provider-reset stream to its market session date; adapters own the
+  timezone conversion rather than letting the collector mistake UTC midnight for a session boundary.
 
 ## Diagrams
 
@@ -58,6 +64,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
+| `W10-RECON-004` | Operator-taught match rules with promotion gate |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

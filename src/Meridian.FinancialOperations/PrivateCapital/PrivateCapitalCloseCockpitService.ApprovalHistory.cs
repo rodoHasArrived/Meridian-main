@@ -1,6 +1,7 @@
 using System.Globalization;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.PrivateCapital;
 
@@ -42,7 +43,7 @@ public sealed partial class PrivateCapitalCloseCockpitService
             var submittedAt = SourceApprovalSubmittedAt(status, record.FundEvent.UpdatedAtUtc);
             var decidedAt = SourceApprovalDecidedAt(status, record.FundEvent.UpdatedAtUtc);
             yield return new PrivateCapitalCloseCockpitApprovalDto(
-                Normalize(record.ApprovalId) ?? $"fund-event-approval:{record.FundEventId}",
+                NormalizeOptional(record.ApprovalId) ?? $"fund-event-approval:{record.FundEventId}",
                 workflow.WorkflowId,
                 workflow.FundAccountId,
                 workflow.PeriodId,
@@ -52,7 +53,7 @@ public sealed partial class PrivateCapitalCloseCockpitService
                 $"Fund-event approval retained for {record.FundEventType}.",
                 submittedAt,
                 decidedAt,
-                Normalize(record.ApprovalRoute) ?? Normalize(record.ActivityRoute) ?? BuildWorkflowRoute(workflow.WorkflowId),
+                NormalizeOptional(record.ApprovalRoute) ?? NormalizeOptional(record.ActivityRoute) ?? BuildWorkflowRoute(workflow.WorkflowId),
                 evidence.Count,
                 evidence);
         }
@@ -84,16 +85,16 @@ public sealed partial class PrivateCapitalCloseCockpitService
                 workflow.PeriodId,
                 status,
                 null,
-                Normalize(output.PublishedBy),
+                NormalizeOptional(output.PublishedBy),
                 output.IsPublished
                     ? $"Report output publication retained for {output.DisplayName}."
                     : $"Report output approval retained for {output.DisplayName}.",
                 submittedAt,
                 decidedAt,
-                Normalize(output.ApprovalRoute) ??
-                Normalize(output.ReportOutputRoute) ??
-                Normalize(output.EvidenceRoute) ??
-                Normalize(output.ReportRoute) ??
+                NormalizeOptional(output.ApprovalRoute) ??
+                NormalizeOptional(output.ReportOutputRoute) ??
+                NormalizeOptional(output.EvidenceRoute) ??
+                NormalizeOptional(output.ReportRoute) ??
                 BuildWorkflowRoute(workflow.WorkflowId),
                 evidence.Count,
                 evidence);
@@ -141,14 +142,14 @@ public sealed partial class PrivateCapitalCloseCockpitService
         {
             var evidence = approval.Approval.EvidenceLinks ?? [];
             yield return new PrivateCapitalCloseCockpitApprovalDto(
-                Normalize(approval.Approval.ApprovalId) ?? $"approval:{workflow.WorkflowId:D}:{approval.Index + 1}",
+                NormalizeOptional(approval.Approval.ApprovalId) ?? $"approval:{workflow.WorkflowId:D}:{approval.Index + 1}",
                 workflow.WorkflowId,
                 workflow.FundAccountId,
                 workflow.PeriodId,
                 approval.Approval.Status,
-                Normalize(approval.Approval.Operator),
-                Normalize(approval.Approval.Reviewer),
-                Normalize(approval.Approval.Rationale),
+                NormalizeOptional(approval.Approval.Operator),
+                NormalizeOptional(approval.Approval.Reviewer),
+                NormalizeOptional(approval.Approval.Rationale),
                 approval.Approval.SubmittedAtUtc,
                 approval.Approval.DecidedAtUtc,
                 workflowRoute,
@@ -165,7 +166,7 @@ public sealed partial class PrivateCapitalCloseCockpitService
         var packageEvidence = package.EvidenceLinks ?? [];
         foreach (var approval in package.ChecklistControlApprovals)
         {
-            var approvalId = $"checklist-control:{workflow.WorkflowId:D}:{Normalize(approval.TaskId) ?? "task"}:{approval.ApprovedAtUtc:yyyyMMddHHmmss}";
+            var approvalId = $"checklist-control:{workflow.WorkflowId:D}:{NormalizeOptional(approval.TaskId) ?? "task"}:{approval.ApprovedAtUtc:yyyyMMddHHmmss}";
             yield return new PrivateCapitalCloseCockpitApprovalDto(
                 approvalId,
                 workflow.WorkflowId,
@@ -173,7 +174,7 @@ public sealed partial class PrivateCapitalCloseCockpitService
                 workflow.PeriodId,
                 OperationsApprovalStateDto.Approved,
                 null,
-                Normalize(approval.ApprovedBy),
+                NormalizeOptional(approval.ApprovedBy),
                 $"Checklist control approval retained for {approval.TaskId}.",
                 approval.ApprovedAtUtc,
                 approval.ApprovedAtUtc,
@@ -197,9 +198,9 @@ public sealed partial class PrivateCapitalCloseCockpitService
                 workflow.FundAccountId,
                 workflow.PeriodId,
                 OperationsApprovalStateDto.Approved,
-                Normalize(entry.Actor),
-                Normalize(entry.Actor),
-                Normalize(entry.Rationale) ?? "Governed period reopen approval retained.",
+                NormalizeOptional(entry.Actor),
+                NormalizeOptional(entry.Actor),
+                NormalizeOptional(entry.Rationale) ?? "Governed period reopen approval retained.",
                 entry.OccurredAtUtc,
                 entry.OccurredAtUtc,
                 workflowRoute,

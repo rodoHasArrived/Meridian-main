@@ -1,6 +1,7 @@
 using Meridian.Contracts.FundStructure;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.Storage.FundAccounts;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.PortfolioRecords.FundAccounts;
 
@@ -969,7 +970,4 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             throw new ArgumentException($"{parameterName} is required.", parameterName);
         return value.Trim();
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

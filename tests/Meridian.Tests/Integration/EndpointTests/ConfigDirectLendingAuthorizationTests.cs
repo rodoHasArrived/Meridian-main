@@ -18,7 +18,7 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class ConfigDirectLendingAuthorizationTests : IDisposable
+public sealed class ConfigDirectLendingAuthorizationTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly EndpointTestFixture _fixture;
     private readonly HttpClient _unauthenticatedClient;

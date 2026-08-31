@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -22,6 +23,58 @@ public static partial class WorkstationEndpoints
 
     private static void MapStatementConnectorEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationMarginControl), async (
+            HttpContext context,
+            [FromServices] Meridian.Ui.Shared.Services.MarginControlCenterReadService? marginControl) =>
+        {
+            if (marginControl is null)
+                return StatementConnectorsNotRegistered();
+
+            var result = await marginControl.GetAsync(context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("GetMarginControlCenter").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .Produces<MarginControlCenterDto>(200);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationMarginCertifications), async (
+            MarginCertificationRequestDto request,
+            HttpContext context,
+            [FromServices] Meridian.Ui.Shared.Services.MarginControlCenterReadService? marginControl) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+                return EndpointHelpers.Forbidden();
+            if (marginControl is null)
+                return StatementConnectorsNotRegistered();
+
+            try
+            {
+                var result = await marginControl.CertifyAsync(
+                    request,
+                    ResolveCurrentActor(context),
+                    context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Results.NotFound(new { error = ex.Message });
+            }
+            catch (InvalidDataException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]> { ["note"] = [ex.Message] });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .WithName("CertifyMarginAccountSnapshot").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
+        .Produces<MarginCertificationResultDto>(200)
+        .ProducesValidationProblem()
+        .Produces(403)
+        .Produces(404)
+        .Produces(409)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
         MapStatementReconciliationReportEndpoints(group, jsonOptions);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementConnectors), (
@@ -45,7 +98,7 @@ public static partial class WorkstationEndpoints
                 .ToArray();
             return Results.Json(connectors, jsonOptions);
         })
-        .WithName("ListStatementConnectors")
+        .WithName("ListStatementConnectors").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<StatementConnectorDescriptorDto>>(200);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementMappingProfiles), async (
@@ -60,7 +113,7 @@ public static partial class WorkstationEndpoints
             var profiles = await catalog.ListAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(profiles.Select(ToProfileDto).ToArray(), jsonOptions);
         })
-        .WithName("ListStatementMappingProfiles")
+        .WithName("ListStatementMappingProfiles").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<StatementMappingProfileDto>>(200);
 
         group.MapPut(WorkstationSubroute(UiApiRoutes.ReconciliationStatementMappingProfiles), async (
@@ -88,7 +141,7 @@ public static partial class WorkstationEndpoints
                 return MissingDataUploadPayload("profile", ex.Message);
             }
         })
-        .WithName("UpsertStatementMappingProfile")
+        .WithName("UpsertStatementMappingProfile").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<StatementMappingProfileDto>(200)
         .ProducesValidationProblem()
         .Produces(403)
@@ -119,7 +172,7 @@ public static partial class WorkstationEndpoints
                 return MissingDataUploadPayload("profileId", ex.Message);
             }
         })
-        .WithName("DeleteStatementMappingProfile")
+        .WithName("DeleteStatementMappingProfile").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces(204)
         .Produces(403)
         .Produces(404)
@@ -177,7 +230,7 @@ public static partial class WorkstationEndpoints
             var preview = await importService.PreviewAsync(document!, connectorId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(preview, jsonOptions);
         })
-        .WithName("PreviewStatementImport")
+        .WithName("PreviewStatementImport").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<StatementImportPreviewDto>(200)
         .ProducesValidationProblem()
         .Produces(403)
@@ -301,7 +354,7 @@ public static partial class WorkstationEndpoints
                         : StatusCodes.Status409Conflict);
             }
         })
-        .WithName("CommitStatementImport")
+        .WithName("CommitStatementImport").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<StatementImportCommitResultDto>(200)
         .ProducesValidationProblem()
         .Produces(403)
@@ -396,7 +449,7 @@ public static partial class WorkstationEndpoints
                     statusCode: StatusCodes.Status409Conflict);
             }
         })
-        .WithName("PreviewStatementFetch")
+        .WithName("PreviewStatementFetch").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<StatementImportPreviewDto>(200)
         .ProducesValidationProblem()
         .Produces(403)
@@ -426,7 +479,7 @@ public static partial class WorkstationEndpoints
                 .ToArray();
             return Results.Json(schedules.Select(ToScheduleDto).ToArray(), jsonOptions);
         })
-        .WithName("ListStatementFetchSchedules")
+        .WithName("ListStatementFetchSchedules").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<StatementFetchScheduleDto>>(200);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementFetchSchedules), async (
@@ -551,7 +604,7 @@ public static partial class WorkstationEndpoints
                         : StatusCodes.Status409Conflict);
             }
         })
-        .WithName("UpsertStatementFetchSchedule")
+        .WithName("UpsertStatementFetchSchedule").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<StatementFetchScheduleDto>(200)
         .ProducesValidationProblem()
         .Produces(403)
@@ -593,7 +646,7 @@ public static partial class WorkstationEndpoints
             var deleted = await scheduleStore.DeleteAsync(schedule.ScheduleId, context.RequestAborted).ConfigureAwait(false);
             return deleted ? Results.NoContent() : Results.NotFound();
         })
-        .WithName("DeleteStatementFetchSchedule")
+        .WithName("DeleteStatementFetchSchedule").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces(204)
         .Produces(403)
         .Produces(404)
@@ -647,7 +700,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(result, jsonOptions);
         })
-        .WithName("RunStatementFetchSchedule")
+        .WithName("RunStatementFetchSchedule").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<StatementImportCommitResultDto>(200)
         .Produces(403)
         .Produces(404)

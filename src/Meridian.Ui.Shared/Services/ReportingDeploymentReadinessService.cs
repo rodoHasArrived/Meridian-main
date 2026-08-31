@@ -17,8 +17,10 @@ public interface IReportingDeploymentReadinessService
 
     /// <summary>
     /// Returns deployment blockers for the schedule worker's own polling cycle. Implementations
-    /// may exclude only their scheduling-worker liveness receipt so that the first successful
-    /// cycle can earn that receipt. The default remains fully fail-closed.
+    /// may exclude the scheduling-worker liveness receipt so it can earn its first receipt. A
+    /// production implementation may also exclude the delivery-worker liveness receipt only while
+    /// that peer explicitly reports its one-time initial-start window. The default remains fully
+    /// fail-closed.
     /// </summary>
     IReadOnlyList<string> GetScheduleWorkerCycleBlockingReasons() =>
         ReportingDeploymentReadinessService.ResolveCapabilityBlockingReasons(Evaluate());
@@ -107,13 +109,21 @@ public sealed class ReportingScheduleWorkerReadinessState
 /// </summary>
 public sealed class ReportingDeliveryWorkerReadinessState
 {
+    private const int LifecycleNotStarted = 0;
+    private const int LifecycleInitialStart = 1;
+    private const int LifecycleOperational = 2;
+
     private int _ready;
     private int _consecutiveFailures;
+    private int _lifecycleState;
     private long _lastSuccessfulCycleUtcTicks;
 
     public bool IsReady => Volatile.Read(ref _ready) == 1;
 
     public int ConsecutiveFailures => Volatile.Read(ref _consecutiveFailures);
+
+    internal bool IsInitialStartInProgress =>
+        Volatile.Read(ref _lifecycleState) == LifecycleInitialStart;
 
     public DateTimeOffset? LastSuccessfulCycleUtc =>
         ReadTimestamp(ref _lastSuccessfulCycleUtcTicks);
@@ -126,20 +136,37 @@ public sealed class ReportingDeliveryWorkerReadinessState
             nowUtc,
             maximumHeartbeatAge);
 
-    internal void MarkReady(DateTimeOffset? completedAtUtc = null) =>
+    internal void MarkStarting()
+    {
+        Volatile.Write(ref _ready, 0);
+        _ = Interlocked.CompareExchange(
+            ref _lifecycleState,
+            LifecycleInitialStart,
+            LifecycleNotStarted);
+    }
+
+    internal void MarkReady(DateTimeOffset? completedAtUtc = null)
+    {
+        Volatile.Write(ref _lifecycleState, LifecycleOperational);
         WorkerReadinessState.MarkReady(
             ref _ready,
             ref _consecutiveFailures,
             ref _lastSuccessfulCycleUtcTicks,
             completedAtUtc);
+    }
 
     internal void MarkCycleFailed()
     {
+        Volatile.Write(ref _lifecycleState, LifecycleOperational);
         Interlocked.Increment(ref _consecutiveFailures);
         Volatile.Write(ref _ready, 0);
     }
 
-    internal void MarkNotReady() => Volatile.Write(ref _ready, 0);
+    internal void MarkNotReady()
+    {
+        Volatile.Write(ref _lifecycleState, LifecycleOperational);
+        Volatile.Write(ref _ready, 0);
+    }
 
     private static DateTimeOffset? ReadTimestamp(ref long ticks)
     {
@@ -191,6 +218,7 @@ public sealed class ReportingDeploymentReadinessService(
     IServiceProvider services) : IReportingDeploymentReadinessService
 {
     internal const string SchedulingWorkerComponentId = "scheduling-worker";
+    internal const string DeliveryWorkerComponentId = "delivery-worker";
 
     private static readonly IReadOnlyDictionary<string, ReportingDeploymentSchemaRequirement>
         SchemaRequirements =
@@ -680,10 +708,25 @@ public sealed class ReportingDeploymentReadinessService(
     }
 
     public IReadOnlyList<string> GetScheduleWorkerCycleBlockingReasons()
-        => ResolveScheduleWorkerCycleBlockingReasons(Evaluate());
+    {
+        var capability = Evaluate();
+        var deliveryWorkerReadiness =
+            _services.GetService<ReportingDeliveryWorkerReadinessState>();
+        return ResolveScheduleWorkerCycleBlockingReasons(
+            capability,
+            allowDeliveryWorkerInitialBootstrap:
+                deliveryWorkerReadiness?.IsInitialStartInProgress == true);
+    }
 
     internal static IReadOnlyList<string> ResolveScheduleWorkerCycleBlockingReasons(
-        ReportingDeploymentCapabilityDto capability)
+        ReportingDeploymentCapabilityDto capability) =>
+        ResolveScheduleWorkerCycleBlockingReasons(
+            capability,
+            allowDeliveryWorkerInitialBootstrap: false);
+
+    internal static IReadOnlyList<string> ResolveScheduleWorkerCycleBlockingReasons(
+        ReportingDeploymentCapabilityDto capability,
+        bool allowDeliveryWorkerInitialBootstrap)
     {
         var blockers = ResolveCapabilityBlockingReasons(capability).ToList();
         var schedulingWorker = capability.Components.SingleOrDefault(component =>
@@ -695,10 +738,8 @@ public sealed class ReportingDeploymentReadinessService(
         {
             blockers.Add(
                 "Reporting deployment readiness omitted the scheduling-worker component.");
-            return blockers;
         }
-
-        if (!schedulingWorker.IsReady)
+        else if (!schedulingWorker.IsReady)
         {
             var selfBlockerIndex = blockers.FindIndex(reason =>
                 string.Equals(
@@ -708,6 +749,29 @@ public sealed class ReportingDeploymentReadinessService(
             if (selfBlockerIndex >= 0)
             {
                 blockers.RemoveAt(selfBlockerIndex);
+            }
+        }
+
+        var deliveryWorker = capability.Components.SingleOrDefault(component =>
+            string.Equals(
+                component.ComponentId,
+                DeliveryWorkerComponentId,
+                StringComparison.Ordinal));
+        if (deliveryWorker is null)
+        {
+            blockers.Add(
+                "Reporting deployment readiness omitted the delivery-worker component.");
+        }
+        else if (allowDeliveryWorkerInitialBootstrap && !deliveryWorker.IsReady)
+        {
+            var peerBlockerIndex = blockers.FindIndex(reason =>
+                string.Equals(
+                    reason,
+                    deliveryWorker.Summary,
+                    StringComparison.Ordinal));
+            if (peerBlockerIndex >= 0)
+            {
+                blockers.RemoveAt(peerBlockerIndex);
             }
         }
 

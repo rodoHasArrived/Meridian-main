@@ -1,10 +1,11 @@
-using System.Security.Cryptography;
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.Ledger;
 
@@ -87,9 +88,11 @@ public static class AccountingPostingCommandValidator
                 "Accounting posting command expected version is required at the production ledger append boundary.");
         }
 
-        if (command.ActionOrigin != OperationsActionOriginDto.HumanOperator)
+        if (!OperationsOriginGuard.IsHumanOperator(command.ActionOrigin))
         {
-            throw new LedgerValidationException("Material accounting posting commands require a human-operator action origin.");
+            throw new LedgerValidationException(
+                "Material accounting posting commands require a human-operator action origin.",
+                OperationsOriginGuard.Refusal("append material accounting posting commands"));
         }
 
         if (string.IsNullOrWhiteSpace(command.IdempotencyKey))
@@ -173,49 +176,34 @@ public static class AccountingPostingCommandValidator
         }
     }
 
-    // Unambiguous, structured simulated-origin markers. Matched by exact (trimmed, case-insensitive)
-    // equality against the source system / source domain — never by substring — so legitimate values
-    // like "Sample Custodian" or "fixture-bank" are not mistaken for a simulated origin. The explicit
-    // command Provenance mark is the primary gate; this is a narrow safety net for a source that is
-    // labeled simulated while the posting forgot to carry the mark.
-    private static readonly string[] SimulatedOriginTokens =
-    [
-        "simulated", "simulation", "synthetic", "backtest",
-        "seeded", "seed", "demo", "fixture",
-        "sample", "placeholder"
-    ];
+    // The shared structured token table in DataProvenanceExtensions is the single source of
+    // truth for simulated-origin markers. The explicit command Provenance mark is the primary
+    // gate; this is a narrow safety net for evidence that declares a fabricated origin while
+    // the posting forgot to carry the mark.
 
     private static bool DeclaresSimulatedOrigin(AccountingPostingCommandDto command)
     {
         foreach (var evidence in command.Evidence)
         {
-            if (IsSimulatedOriginToken(evidence.SourceSystem))
+            // Structured references carry the origin as a colon-delimited segment — a mark
+            // priced off a synthetic random walk retains evidence like
+            // "daily-close:AAPL:2026-08-18:synthetic" — so every structured evidence field is
+            // scanned by segment, not just SourceSystem by whole value. Without this, a NAV
+            // built entirely on fabricated closes derives provenance "real" and posts clean.
+            if (CarriesSimulatedOriginToken(evidence.SourceSystem)
+                || CarriesSimulatedOriginToken(evidence.EvidenceId)
+                || CarriesSimulatedOriginToken(evidence.Uri)
+                || CarriesSimulatedOriginToken(evidence.SourceReference))
             {
                 return true;
             }
         }
 
-        return IsSimulatedOriginToken(command.EconomicEvent?.SourceDomain);
+        return CarriesSimulatedOriginToken(command.EconomicEvent?.SourceDomain);
     }
 
-    private static bool IsSimulatedOriginToken(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return false;
-        }
-
-        var trimmed = value.Trim();
-        foreach (var token in SimulatedOriginTokens)
-        {
-            if (string.Equals(trimmed, token, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
+    private static bool CarriesSimulatedOriginToken(string? value) =>
+        DataProvenanceExtensions.CarriesSimulatedOriginToken(value);
 
     private static void ValidateAssetAccountingEvidence(AccountingPostingCommandDto command)
     {
@@ -415,7 +403,7 @@ public static class AccountingPostingCommandValidator
             LedgerBook = FirstText(metadata.LedgerBook, command.LedgerBookId?.ToString("D")),
             IdempotencyKey = FirstText(metadata.IdempotencyKey, treasury?.IdempotencyKey, command.IdempotencyKey),
             FundEventId = FirstText(metadata.FundEventId, treasury?.FundEventId),
-            FundEventType = FirstText(metadata.FundEventType, treasury?.FundEventType, command.SourceEventType),
+            FundEventType = FirstText(metadata.FundEventType, treasury?.FundEventType),
             CapitalAccountId = FirstText(metadata.CapitalAccountId, treasury?.CapitalAccountId),
             InvestorId = FirstText(metadata.InvestorId, treasury?.InvestorId),
             PaymentIntentId = FirstText(metadata.PaymentIntentId, treasury?.PaymentIntentId),
@@ -481,8 +469,7 @@ public static class AccountingPostingCommandValidator
             WriteCanonicalJson(writer, element);
         }
 
-        var hash = SHA256.HashData(stream.ToArray());
-        return $"sha256:{Convert.ToHexString(hash).ToLowerInvariant()}";
+        return $"sha256:{Sha256Digest.Compute(stream.ToArray())}";
     }
 
     private static void WriteCanonicalJson(Utf8JsonWriter writer, JsonElement element)
@@ -627,7 +614,12 @@ public static class AccountingPostingCommandValidator
                 line.Debit,
                 line.Credit,
                 line.Description,
-                normalizedDimensions);
+                normalizedDimensions,
+                // Carried, not defaulted. This rebuild exists to normalize dimensions; dropping
+                // the leg's currency here discarded the transaction currency, both
+                // transaction-side amounts, and the FX rate on the way to the store, because
+                // every posting that reaches this path has dimensions and therefore gets rebuilt.
+                line.Currency);
         }
 
         return normalized ?? lines;
@@ -739,7 +731,4 @@ public static class AccountingPostingCommandValidator
 
     private static string? FirstText(params string?[] values)
         => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

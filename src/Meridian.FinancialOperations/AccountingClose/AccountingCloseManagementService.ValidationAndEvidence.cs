@@ -1,6 +1,8 @@
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.OperationsContinuity;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.AccountingClose;
 
@@ -25,12 +27,7 @@ public sealed partial class AccountingCloseManagementService
             string.Equals(signOff.Role, requiredRole, StringComparison.OrdinalIgnoreCase));
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
-    {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
-        {
-            throw new InvalidOperationException($"Reviewed automation cannot {action}; a human operator must perform this accounting close action.");
-        }
-    }
+        => OperationsOriginGuard.RequireHumanOperator(actionOrigin, action);
 
     private static void EnsureIndependentCloseTaskSignOffActor(
         OperationsCloseChecklistTaskDto task,
@@ -330,9 +327,6 @@ public sealed partial class AccountingCloseManagementService
 
         return role;
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string Sanitize(string value)
         => string.Concat(value.Select(static ch => char.IsLetterOrDigit(ch) ? char.ToLowerInvariant(ch) : '-'));

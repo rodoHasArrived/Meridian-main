@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.Configuration;
@@ -21,6 +22,7 @@ public sealed class AlpacaCorporateActionProviderTests
             var payload = request.RequestUri?.Query.Contains("ca_types=dividend", StringComparison.Ordinal) == true
                 ? BuildAnnouncementsPayload(new
                 {
+                    id = "alpaca-dividend-1",
                     ca_type = "dividend",
                     ca_sub_type = "cash",
                     symbol = "AAPL",
@@ -32,6 +34,7 @@ public sealed class AlpacaCorporateActionProviderTests
                 })
                 : BuildAnnouncementsPayload(new
                 {
+                    id = "alpaca-split-1",
                     ca_type = "split",
                     ca_sub_type = "forward",
                     symbol = "AAPL",
@@ -50,9 +53,18 @@ public sealed class AlpacaCorporateActionProviderTests
 
         var results = await provider.FetchAsync("AAPL", securityId, CancellationToken.None);
 
+        provider.ReleaseStatus.Should().Be(CorporateActionProviderReleaseStatusDto.AcceptanceEligible);
         results.Should().HaveCount(2);
         results.Select(result => result.ActionType).Should().Equal("Dividend", "StockSplit");
         results.Select(result => result.SourceProvider).Should().OnlyContain(providerId => providerId == "alpaca");
+        results.Should().OnlyContain(result =>
+            result.SourceEventVersion!.StartsWith("payload-sha256:", StringComparison.Ordinal)
+            && result.EvidenceHash!.Length == 64
+            && result.EvidenceHash.All(character =>
+                (character >= '0' && character <= '9') || (character >= 'a' && character <= 'f'))
+            && result.EvidenceReference ==
+               $"alpaca://corporate-actions/announcements/{result.SourceEventId}/versions/{result.EvidenceHash}"
+            && result.ReleaseStatus == CorporateActionProviderReleaseStatusDto.AcceptanceEligible);
         results[0].Amount.Should().Be(0.25m);
         results[1].SplitFromFactor.Should().Be(1m);
         results[1].SplitToFactor.Should().Be(4m);

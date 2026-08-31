@@ -124,7 +124,7 @@ public sealed class JsonlReplayerTests : IDisposable
     {
         var timestamp = new DateTimeOffset(2026, 1, 2, 14, 30, 0, TimeSpan.Zero).AddSeconds(sequence);
         var trade = new Trade(timestamp, symbol, 100m + sequence, 10, AggressorSide.Buy, sequence, "TEST", "XNYS");
-        return MarketEvent.Trade(timestamp, symbol, trade, sequence, "TEST");
+        return MarketEvent.Trade(timestamp, symbol, trade, "TEST", sequence);
     }
 
     private static string SerializeLine(MarketEvent evt) =>

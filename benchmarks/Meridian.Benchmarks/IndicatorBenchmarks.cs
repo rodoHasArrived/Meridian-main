@@ -60,7 +60,7 @@ public class IndicatorBenchmarks
                 SequenceNumber: i,
                 StreamId: "BENCH",
                 Venue: "TEST"
-            );
+            , Source: "BENCH");
         }
 
         // Generate historical bars

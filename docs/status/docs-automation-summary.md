@@ -8,6 +8,7 @@
 |--------|--------|--------------|--------|
 | `scan-todos` | `success` | `0.000` | `docs/status/TODO.md` |
 | `validate-docs-structure` | `success` | `0.000` | `-` |
+| `validate-agent-definitions` | `success` | `0.000` | `-` |
 | `generate-structure-docs` | `success` | `0.000` | `docs/generated/repository-structure.md` |
 | `generate-health-dashboard` | `success` | `0.000` | `docs/status/doc-health-dashboard.md` |
 | `validate-examples` | `success` | `0.000` | `docs/status/example-validation.md` |
@@ -20,7 +21,6 @@
 | `check-ai-routing-parity` | `success` | `0.000` | `-` |
 | `check-mode-escalation` | `success` | `0.000` | `-` |
 | `generate-coverage` | `success` | `0.000` | `docs/status/coverage-report.md` |
-| `generate-pilot-readiness-dashboard` | `success` | `0.000` | `docs/status/pilot-readiness-dashboard.md` |
 | `generate-paper-replay-reliability-dashboard` | `success` | `0.000` | `docs/status/paper-replay-reliability-dashboard.md` |
 | `generate-evidence-continuity-dashboard` | `success` | `0.000` | `docs/status/evidence-continuity-dashboard.md` |
 | `generate-governance-readiness-dashboard` | `success` | `0.000` | `docs/status/governance-readiness-dashboard.md` |

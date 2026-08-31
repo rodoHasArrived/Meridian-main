@@ -221,6 +221,7 @@ public sealed partial class FileReconciliationBreakQueueRepository :
     {
         ArgumentNullException.ThrowIfNull(item);
         EnsureTenantCompanyScopeShape(item);
+        item = EnsureEntryProvenance(item);
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -328,6 +329,42 @@ public sealed partial class FileReconciliationBreakQueueRepository :
         {
             _gate.Release();
         }
+    }
+
+    /// <summary>
+    /// Data-provenance intake gate (fail closed), W9-TRUTH-001: a break whose source declares a
+    /// simulated, seeded, or sample origin may only enter the reconciliation queue when it carries
+    /// the retained provenance mark (<see cref="ReconciliationBreakQueueItem.DataProvenanceToken"/>
+    /// set to a non-real token). An unmarked simulated break is refused at entry rather than
+    /// silently queued as if it were real; a marked one is accepted with its token normalized to
+    /// the canonical vocabulary so every downstream surface renders one label. This mirrors the
+    /// ledger append boundary in <c>AccountingPostingCommandValidator.ValidateDataProvenance</c>.
+    /// </summary>
+    private static ReconciliationBreakQueueItem EnsureEntryProvenance(ReconciliationBreakQueueItem item)
+    {
+        if (!string.IsNullOrWhiteSpace(item.DataProvenanceToken))
+        {
+            var declared = DataProvenanceExtensions.ParseTokenOrSimulated(item.DataProvenanceToken);
+            if (declared.IsNonReal())
+            {
+                var normalizedToken = declared.Token();
+                return string.Equals(item.DataProvenanceToken, normalizedToken, StringComparison.Ordinal)
+                    ? item
+                    : item with { DataProvenanceToken = normalizedToken };
+            }
+        }
+
+        if (DataProvenanceExtensions.IsSimulatedOriginToken(item.SourceSystem)
+            || DataProvenanceExtensions.IsSimulatedOriginToken(item.SourceType))
+        {
+            throw new InvalidOperationException(
+                $"Reconciliation break '{item.BreakId}' declares a simulated, seeded, or sample source " +
+                $"('{item.SourceSystem ?? item.SourceType}') but carries no data-provenance mark. Refusing to " +
+                "enqueue an unmarked simulated figure; set DataProvenanceToken so the simulated origin is " +
+                "retained on the case.");
+        }
+
+        return item;
     }
 
     public async Task<bool> CreateOrMigrateAsync(ReconciliationBreakQueueItem item, string? previousBreakId, CancellationToken ct = default)
@@ -860,11 +897,11 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                     Error: $"Cannot move break from {item.Status} to {request.Status}.");
             }
 
-            if (request.ActionOrigin != OperationsActionOriginDto.HumanOperator)
+            if (!OperationsOriginGuard.IsHumanOperator(request.ActionOrigin))
             {
                 var validation = Invalid(
                     item,
-                    "Reviewed automation cannot resolve or dismiss reconciliation breaks; a human operator approval is required.",
+                    OperationsOriginGuard.RefusalMessage("resolve or dismiss reconciliation breaks"),
                     ReconciliationBreakQueueTransitionErrorCode.MaterialActionRequiresHumanOperator,
                     ["actionOrigin"],
                     ReconciliationCaseLifecycleState.Resolved);

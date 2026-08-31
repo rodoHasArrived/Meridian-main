@@ -1,10 +1,11 @@
 using System.Collections.Immutable;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -884,23 +885,14 @@ public sealed class ReportingRunCertificationService
     }
 
     private static string ComputeHash(string value) =>
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
+        Sha256Digest.ComputeUtf8(value);
 
     private static string ComputeHash(ReadOnlySpan<byte> value) =>
-        Convert.ToHexString(SHA256.HashData(value)).ToLowerInvariant();
-
-    private static bool IsSha256(string? value) =>
-        value is { Length: 64 } && value.All(Uri.IsHexDigit);
+        Sha256Digest.Compute(value);
 
     private static bool IsLowercaseSha256(string? value) =>
-        IsSha256(value)
+        Sha256Digest.IsWellFormed(value)
         && string.Equals(value, value!.ToLowerInvariant(), StringComparison.Ordinal);
-
-    private static string? NormalizeOptional(string? value)
-    {
-        var normalized = value?.Trim();
-        return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
-    }
 
     private static string? ReadOptional(JsonElement element, string propertyName) =>
         element.TryGetProperty(propertyName, out var property) && property.ValueKind != JsonValueKind.Null

@@ -27,9 +27,16 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 GENERATOR_VERSION = "1.0"
-EXCLUDED_PARTS = {"bin", "obj", "node_modules", ".git", ".vs", "__pycache__", "TestResults", "artifacts"}
+EXCLUDED_PARTS = {"bin", "obj", "node_modules", ".git", ".vs", "__pycache__", ".pytest_cache", "TestResults", "artifacts"}
 DEFAULT_RECENT_CHANGES_DAYS = 14
 DEFAULT_RECENT_CHANGES_LIMIT = 40
+
+# Build output that lives under src/ but is not source. The recent-changes feed is a bounded
+# routing signal, and one dashboard rebuild rewrites dozens of hash-named bundle files at once —
+# enough to evict nearly every real source change from the list and leave agents routed at
+# "Unmapped" assets. The authored code for this tree is src/Meridian.Ui/dashboard/, which is
+# still tracked normally.
+RECENT_CHANGE_EXCLUDED_PREFIXES = ("src/Meridian.Ui/wwwroot/workstation/",)
 
 
 @dataclass(frozen=True)
@@ -165,7 +172,10 @@ PROJECT_SEEDS: dict[str, ProjectSeed] = {
             "src/Meridian.Ui/dashboard/package.json",
             "src/Meridian.Ui/dashboard/src/main.tsx",
         ),
-        ("package.json", "src/main.tsx", "src/App.tsx"),
+        # `src/app.tsx` is lowercase on disk and owns the workstation shell and route table.
+        # The former "src/App.tsx" spelling resolved only on case-insensitive filesystems, so
+        # Linux generation silently produced a map without the application entrypoint.
+        ("package.json", "src/main.tsx", "src/app.tsx"),
     ),
     "Meridian.Backtesting": ProjectSeed(
         "Meridian.Backtesting",
@@ -935,6 +945,9 @@ def collect_recent_source_changes(
             continue
 
         if current_header is None or not line.startswith("src/"):
+            continue
+
+        if line.startswith(RECENT_CHANGE_EXCLUDED_PREFIXES):
             continue
 
         if not (root / line).exists():

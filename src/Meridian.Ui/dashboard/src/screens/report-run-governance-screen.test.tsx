@@ -132,7 +132,7 @@ describe("ReportRunGovernanceScreen", () => {
   it("aborts authoritative reads when the route unmounts", async () => {
     let requestSignal: AbortSignal | undefined;
     vi.mocked(governanceApi.getGovernedReportingRun).mockImplementation((_runId, options) => {
-      requestSignal = options.signal;
+      requestSignal = options?.signal;
       return new Promise<GovernedReportingRun>(() => undefined);
     });
 

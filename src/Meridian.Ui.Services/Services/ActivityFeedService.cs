@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
 using System.Text.Json;
+using System.Threading.Channels;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Configuration;
+using Meridian.Storage.Archival;
 using Meridian.Ui.Services.Collections;
 using Meridian.Ui.Services.Contracts;
 
@@ -12,7 +14,7 @@ namespace Meridian.Ui.Services;
 /// Provides a timeline of events for user awareness and polls the backend
 /// for server-side error events so the activity feed shows real backend logs.
 /// </summary>
-public sealed class ActivityFeedService
+public sealed class ActivityFeedService : IAsyncDisposable
 {
     private const string ActivityLogFileName = "activity_log.json";
     private const int MaxActivities = 100;
@@ -27,6 +29,13 @@ public sealed class ActivityFeedService
     private readonly string _legacyActivityLogPath;
     private readonly BoundedObservableCollection<ActivityItem> _activities;
     private readonly JsonSerializerOptions _jsonOptions;
+    private readonly object _stateGate = new();
+    private readonly Channel<ActivityFeedPersistenceRequest> _persistenceRequests;
+    private readonly Func<string, string, CancellationToken, Task> _persistAsync;
+    private readonly Task _persistenceWorker;
+    private readonly Task _initialization;
+    private Exception? _lastPersistenceError;
+    private int _disposeStarted;
 
     // Tracks IDs of server-side error events already added, to prevent duplicates
     // across repeated FetchServerEventsAsync calls.
@@ -44,16 +53,43 @@ public sealed class ActivityFeedService
     public BoundedObservableCollection<ActivityItem> Activities => _activities;
 
     /// <summary>
+    /// Gets the most recent activity-feed persistence failure, or <c>null</c> after a
+    /// subsequent write succeeds.
+    /// </summary>
+    public Exception? LastPersistenceError
+    {
+        get
+        {
+            lock (_stateGate)
+            {
+                return _lastPersistenceError;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the initial load task so callers that require a fully hydrated feed can await it.
+    /// </summary>
+    public Task Initialization => _initialization;
+
+    /// <summary>
     /// Event raised when a new activity is added.
     /// </summary>
     public event EventHandler<ActivityItem>? ActivityAdded;
+
+    /// <summary>
+    /// Raised when the ordered persistence worker cannot commit an activity-feed snapshot.
+    /// </summary>
+    public event EventHandler<ActivityFeedPersistenceFailedEventArgs>? PersistenceFailed;
 
     private ActivityFeedService()
         : this(new ConfigService())
     {
     }
 
-    internal ActivityFeedService(IConfigService configService)
+    internal ActivityFeedService(
+        IConfigService configService,
+        Func<string, string, CancellationToken, Task>? persistAsync = null)
     {
         _configService = configService;
         _activityLogPath = ResolveActivityLogPath();
@@ -65,8 +101,19 @@ public sealed class ActivityFeedService
             WriteIndented = true
         };
 
-        // Load initial activities with proper exception handling
-        _ = LoadActivitiesAsync().ContinueWith(
+        _persistAsync = persistAsync ?? ((path, content, ct) =>
+            AtomicFileWriter.WriteAsync(path, content, ct));
+        _persistenceRequests = Channel.CreateUnbounded<ActivityFeedPersistenceRequest>(
+            new UnboundedChannelOptions
+            {
+                SingleReader = true,
+                SingleWriter = false,
+                AllowSynchronousContinuations = false
+            });
+        _persistenceWorker = RunPersistenceWorkerAsync();
+
+        _initialization = LoadActivitiesAsync();
+        _ = _initialization.ContinueWith(
             t => System.Diagnostics.Trace.TraceError(
                 $"Failed to load activities from {_activityLogPath}: {t.Exception?.InnerException?.Message}"),
             TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
@@ -78,24 +125,18 @@ public sealed class ActivityFeedService
     /// </summary>
     public void AddActivity(ActivityItem activity)
     {
-        if (string.IsNullOrEmpty(activity.Id))
-            activity.Id = Guid.NewGuid().ToString();
-        if (activity.Timestamp == default)
+        ArgumentNullException.ThrowIfNull(activity);
+        ThrowIfDisposing();
+
+        lock (_stateGate)
         {
-            activity.Timestamp = DateTime.UtcNow;
+            ThrowIfDisposing();
+            PrepareActivity(activity);
+            _activities.Prepend(activity);
+            QueuePersistenceNoLock(awaitCompletion: false);
         }
 
-        // Prepend to collection - automatically handles capacity limit
-        _activities.Prepend(activity);
-
-        // Raise event
         ActivityAdded?.Invoke(this, activity);
-
-        // Persist to disk asynchronously with proper exception handling
-        _ = SaveActivitiesAsync().ContinueWith(
-            t => System.Diagnostics.Trace.TraceError(
-                $"Failed to save activities to {_activityLogPath}: {t.Exception?.InnerException?.Message}"),
-            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
     }
 
     /// <summary>
@@ -110,6 +151,9 @@ public sealed class ActivityFeedService
         string? provider = null,
         Dictionary<string, object>? metadata = null, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
+        ThrowIfDisposing();
+
         var activity = new ActivityItem
         {
             Id = Guid.NewGuid().ToString(),
@@ -122,14 +166,16 @@ public sealed class ActivityFeedService
             Metadata = metadata
         };
 
-        // Prepend to collection - automatically handles capacity limit
-        _activities.Prepend(activity);
+        Task persistence;
+        lock (_stateGate)
+        {
+            ThrowIfDisposing();
+            _activities.Prepend(activity);
+            persistence = QueuePersistenceNoLock(awaitCompletion: true);
+        }
 
-        // Raise event
         ActivityAdded?.Invoke(this, activity);
-
-        // Persist to disk
-        await SaveActivitiesAsync();
+        await persistence.WaitAsync(ct).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -249,29 +295,24 @@ public sealed class ActivityFeedService
     /// <returns><c>true</c> if the item was new and added; <c>false</c> if it was a duplicate.</returns>
     public bool AddServerEventIfNew(ActivityItem item)
     {
-        if (string.IsNullOrEmpty(item.Id))
+        ArgumentNullException.ThrowIfNull(item);
+        ThrowIfDisposing();
+
+        lock (_stateGate)
         {
-            item.Id = Guid.NewGuid().ToString();
+            ThrowIfDisposing();
+            PrepareActivity(item);
+
+            if (!_seenServerEventIds.Add(item.Id))
+            {
+                return false;
+            }
+
+            _activities.Prepend(item);
+            QueuePersistenceNoLock(awaitCompletion: false);
         }
 
-        if (!_seenServerEventIds.Add(item.Id))
-        {
-            return false;
-        }
-
-        if (item.Timestamp == default)
-        {
-            item.Timestamp = DateTime.UtcNow;
-        }
-
-        _activities.Prepend(item);
         ActivityAdded?.Invoke(this, item);
-
-        _ = SaveActivitiesAsync().ContinueWith(
-            t => System.Diagnostics.Trace.TraceError(
-                $"Failed to save activities: {t.Exception?.InnerException?.Message}"),
-            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
-
         return true;
     }
 
@@ -358,8 +399,37 @@ public sealed class ActivityFeedService
     /// </summary>
     public async Task ClearActivitiesAsync(CancellationToken ct = default)
     {
-        _activities.Clear();
-        await SaveActivitiesAsync();
+        ct.ThrowIfCancellationRequested();
+        ThrowIfDisposing();
+
+        Task persistence;
+        lock (_stateGate)
+        {
+            ThrowIfDisposing();
+            _activities.Clear();
+            _seenServerEventIds.Clear();
+            persistence = QueuePersistenceNoLock(awaitCompletion: true);
+        }
+
+        await persistence.WaitAsync(ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Waits until all snapshots queued before this call have been committed.
+    /// </summary>
+    public async Task FlushAsync(CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        ThrowIfDisposing();
+
+        Task persistence;
+        lock (_stateGate)
+        {
+            ThrowIfDisposing();
+            persistence = QueuePersistenceNoLock(awaitCompletion: true);
+        }
+
+        await persistence.WaitAsync(ct).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -367,6 +437,16 @@ public sealed class ActivityFeedService
     /// in-memory items that may have been logged while the initial load was running.
     /// </summary>
     internal void MergeLoadedActivities(IEnumerable<ActivityItem> items)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+
+        lock (_stateGate)
+        {
+            MergeLoadedActivitiesNoLock(items);
+        }
+    }
+
+    private void MergeLoadedActivitiesNoLock(IEnumerable<ActivityItem> items)
     {
         var persistedItems = items.Take(MaxActivities).ToList();
         if (persistedItems.Count == 0)
@@ -389,13 +469,11 @@ public sealed class ActivityFeedService
         try
         {
             var loadPath = _activityLogPath;
-            var migratedFromLegacy = false;
             if (!File.Exists(loadPath) &&
                 !PathsEqual(_activityLogPath, _legacyActivityLogPath) &&
                 File.Exists(_legacyActivityLogPath))
             {
                 loadPath = _legacyActivityLogPath;
-                migratedFromLegacy = true;
             }
 
             if (File.Exists(loadPath))
@@ -404,12 +482,16 @@ public sealed class ActivityFeedService
                 var items = JsonSerializer.Deserialize<List<ActivityItem>>(json, _jsonOptions);
                 if (items != null)
                 {
-                    MergeLoadedActivities(items);
-                }
+                    Task persistence;
+                    lock (_stateGate)
+                    {
+                        MergeLoadedActivitiesNoLock(items);
+                        // Always queue the merged snapshot. This prevents an in-memory activity
+                        // logged during startup from racing an older pre-load snapshot to disk.
+                        persistence = QueuePersistenceNoLock(awaitCompletion: true);
+                    }
 
-                if (migratedFromLegacy)
-                {
-                    await SaveActivitiesAsync(ct);
+                    await persistence.WaitAsync(ct).ConfigureAwait(false);
                 }
             }
         }
@@ -419,22 +501,117 @@ public sealed class ActivityFeedService
         }
     }
 
-    private async Task SaveActivitiesAsync(CancellationToken ct = default)
+    private Task QueuePersistenceNoLock(bool awaitCompletion)
+    {
+        var completion = awaitCompletion
+            ? new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously)
+            : null;
+        var json = JsonSerializer.Serialize(_activities.ToList(), _jsonOptions);
+        var request = new ActivityFeedPersistenceRequest(json, completion);
+
+        if (!_persistenceRequests.Writer.TryWrite(request))
+        {
+            throw new ObjectDisposedException(nameof(ActivityFeedService));
+        }
+
+        return completion?.Task ?? Task.CompletedTask;
+    }
+
+    private async Task RunPersistenceWorkerAsync()
+    {
+        await foreach (var request in _persistenceRequests.Reader.ReadAllAsync().ConfigureAwait(false))
+        {
+            try
+            {
+                await _persistAsync(_activityLogPath, request.Json, CancellationToken.None)
+                    .ConfigureAwait(false);
+
+                lock (_stateGate)
+                {
+                    _lastPersistenceError = null;
+                }
+
+                request.Completion?.TrySetResult();
+            }
+            catch (Exception ex)
+            {
+                lock (_stateGate)
+                {
+                    _lastPersistenceError = ex;
+                }
+
+                System.Diagnostics.Trace.TraceError(
+                    "Failed to persist activity feed entries to {0}: {1}",
+                    _activityLogPath,
+                    ex.Message);
+                RaisePersistenceFailed(ex);
+                request.Completion?.TrySetException(ex);
+            }
+        }
+    }
+
+    private void RaisePersistenceFailed(Exception exception)
     {
         try
         {
-            var directory = Path.GetDirectoryName(_activityLogPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            var json = JsonSerializer.Serialize(_activities.ToList(), _jsonOptions);
-            await File.WriteAllTextAsync(_activityLogPath, json, ct);
+            PersistenceFailed?.Invoke(
+                this,
+                new ActivityFeedPersistenceFailedEventArgs(_activityLogPath, exception));
         }
-        catch
+        catch (Exception callbackException)
         {
-            System.Diagnostics.Trace.TraceWarning("Failed to persist activity feed entries to {0}", _activityLogPath);
+            System.Diagnostics.Trace.TraceError(
+                "Activity-feed persistence failure callback threw: {0}",
+                callbackException.Message);
+        }
+    }
+
+    private static void PrepareActivity(ActivityItem activity)
+    {
+        if (string.IsNullOrEmpty(activity.Id))
+        {
+            activity.Id = Guid.NewGuid().ToString();
+        }
+
+        if (activity.Timestamp == default)
+        {
+            activity.Timestamp = DateTime.UtcNow;
+        }
+    }
+
+    private void ThrowIfDisposing()
+    {
+        if (Volatile.Read(ref _disposeStarted) != 0)
+        {
+            throw new ObjectDisposedException(nameof(ActivityFeedService));
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        if (Interlocked.Exchange(ref _disposeStarted, 1) != 0)
+        {
+            await _persistenceWorker.ConfigureAwait(false);
+            return;
+        }
+
+        await _initialization.ConfigureAwait(false);
+
+        Task finalPersistence;
+        lock (_stateGate)
+        {
+            finalPersistence = QueuePersistenceNoLock(awaitCompletion: true);
+            _persistenceRequests.Writer.TryComplete();
+        }
+
+        try
+        {
+            await finalPersistence.ConfigureAwait(false);
+        }
+        finally
+        {
+            await _persistenceWorker.ConfigureAwait(false);
         }
     }
 
@@ -522,6 +699,21 @@ public sealed class ActivityFeedService
     }
 
     private static string FormatBytes(long bytes) => FormatHelpers.FormatBytes(bytes);
+
+    private sealed record ActivityFeedPersistenceRequest(
+        string Json,
+        TaskCompletionSource? Completion);
+}
+
+/// <summary>
+/// Describes a failed activity-feed persistence attempt.
+/// </summary>
+public sealed class ActivityFeedPersistenceFailedEventArgs(
+    string path,
+    Exception exception) : EventArgs
+{
+    public string Path { get; } = path;
+    public Exception Exception { get; } = exception;
 }
 
 /// <summary>

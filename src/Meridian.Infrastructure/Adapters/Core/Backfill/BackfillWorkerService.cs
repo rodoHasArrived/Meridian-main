@@ -1047,12 +1047,19 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
             // Route historical writes through the shared storage policy and atomic writer
             // so backfill data lands in the same durable, predictable structure as the
             // rest of the JSONL storage stack.
+            // Partition the storage path by the provider that actually served the bars
+            // (each bar carries its own Source stamp); the top-level provider name is only
+            // a fallback and may be "composite" on the failover path.
+            var exemplarSource = string.IsNullOrWhiteSpace(dateBars[0].Source) ||
+                                 string.Equals(dateBars[0].Source, "composite", StringComparison.OrdinalIgnoreCase)
+                ? _provider.Name
+                : dateBars[0].Source;
             var exemplarEvent = MarketEvent.HistoricalBar(
                 dateBars[0].ToTimestampUtc(),
                 dateBars[0].Symbol,
                 dateBars[0],
-                dateBars[0].SequenceNumber,
-                _provider.Name);
+                exemplarSource,
+                dateBars[0].SequenceNumber);
             var filePath = BuildFilePath(request.Granularity, exemplarEvent);
 
             var lines = dateBars.Select(b => JsonSerializer.Serialize(
