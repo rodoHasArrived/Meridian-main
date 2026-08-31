@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Threading;
 using Meridian.PortfolioRecords.FundAccounts;
+using Meridian.Application.Composition;
 using Meridian.Application.FundStructure;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
