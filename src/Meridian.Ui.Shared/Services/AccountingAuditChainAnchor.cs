@@ -42,7 +42,14 @@ public sealed class AccountingAuditChainAnchorException : Exception
 public sealed class FileAccountingAuditChainAnchor
 {
     /// <summary>Anchor journal format version.</summary>
-    public const int CurrentSchemaVersion = 1;
+    /// <remarks>
+    /// Raised to 2 when the genesis boundary joined the anchor hash. A journal written by the
+    /// previous build is refused by <see cref="ReadAllUnlockedAsync"/> naming its version, rather
+    /// than being verified under the old rules or reported as tampering: a v1 record cannot carry
+    /// the assertion a v2 verifier needs, and silently accepting one would leave exactly the hole
+    /// the version exists to close. That refusal is deliberate and is the upgrade cost.
+    /// </remarks>
+    public const int CurrentSchemaVersion = 2;
 
     private static readonly TimeSpan CrossProcessLockTimeout = TimeSpan.FromSeconds(30);
 
@@ -88,20 +95,30 @@ public sealed class FileAccountingAuditChainAnchor
     public Task<AccountingAuditChainAnchorRecord> DeclareAsync(
         long sequence,
         string entryHash,
+        long genesisSequence,
+        int preChainEventCount,
         CancellationToken ct = default)
-        => AppendAsync(sequence, entryHash, AccountingAuditChainAnchorPhase.Pending, ct);
+        => AppendAsync(
+            sequence, entryHash, AccountingAuditChainAnchorPhase.Pending,
+            genesisSequence, preChainEventCount, ct);
 
     /// <summary>Confirms that the snapshot carrying <paramref name="sequence"/> was written.</summary>
     public Task<AccountingAuditChainAnchorRecord> CommitAsync(
         long sequence,
         string entryHash,
+        long genesisSequence,
+        int preChainEventCount,
         CancellationToken ct = default)
-        => AppendAsync(sequence, entryHash, AccountingAuditChainAnchorPhase.Committed, ct);
+        => AppendAsync(
+            sequence, entryHash, AccountingAuditChainAnchorPhase.Committed,
+            genesisSequence, preChainEventCount, ct);
 
     private async Task<AccountingAuditChainAnchorRecord> AppendAsync(
         long sequence,
         string entryHash,
         AccountingAuditChainAnchorPhase phase,
+        long genesisSequence,
+        int preChainEventCount,
         CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(entryHash);
@@ -122,7 +139,9 @@ public sealed class FileAccountingAuditChainAnchor
             EnsureAdvances(head, sequence, phase);
 
             var recordedAtUtc = DateTimeOffset.UtcNow;
-            var anchorHash = ComputeAnchorHash(sequence, entryHash, phase, recordedAtUtc, head?.AnchorHash);
+            var anchorHash = ComputeAnchorHash(
+                sequence, entryHash, phase, recordedAtUtc, head?.AnchorHash,
+                genesisSequence, preChainEventCount);
             var record = new AccountingAuditChainAnchorRecord(
                 CurrentSchemaVersion,
                 sequence,
@@ -130,7 +149,9 @@ public sealed class FileAccountingAuditChainAnchor
                 phase,
                 recordedAtUtc,
                 head?.AnchorHash,
-                anchorHash);
+                anchorHash,
+                genesisSequence,
+                preChainEventCount);
 
             // Copy-on-write append (temp → fsync → rename → dir fsync) so a crash mid-write cannot
             // leave a torn line that later reads as a broken journal.
@@ -254,7 +275,8 @@ public sealed class FileAccountingAuditChainAnchor
             }
 
             var expected = ComputeAnchorHash(
-                record.Sequence, record.EntryHash, record.Phase, record.RecordedAtUtc, record.PreviousAnchorHash);
+                record.Sequence, record.EntryHash, record.Phase, record.RecordedAtUtc,
+                record.PreviousAnchorHash, record.GenesisSequence, record.PreChainEventCount);
             if (!string.Equals(expected, record.AnchorHash, StringComparison.Ordinal))
             {
                 throw new AccountingAuditChainAnchorException(
@@ -269,12 +291,20 @@ public sealed class FileAccountingAuditChainAnchor
         return records;
     }
 
+    /// <remarks>
+    /// The genesis boundary participates because verification bounds the retained event count by
+    /// it, and it otherwise lived only in the snapshot being protected -- so raising
+    /// <c>PreChainEventCount</c> alongside an injected unlinked event satisfied the count while the
+    /// anchor, binding only the head, still verified (Codex review finding on PR #2871).
+    /// </remarks>
     private static string ComputeAnchorHash(
         long sequence,
         string entryHash,
         AccountingAuditChainAnchorPhase phase,
         DateTimeOffset recordedAtUtc,
-        string? previousAnchorHash)
+        string? previousAnchorHash,
+        long genesisSequence,
+        int preChainEventCount)
     {
         var material = string.Join(
             '\n',
@@ -283,7 +313,9 @@ public sealed class FileAccountingAuditChainAnchor
             entryHash,
             phase.ToString(),
             recordedAtUtc.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture),
-            previousAnchorHash ?? string.Empty);
+            previousAnchorHash ?? string.Empty,
+            genesisSequence.ToString(CultureInfo.InvariantCulture),
+            preChainEventCount.ToString(CultureInfo.InvariantCulture));
         return Sha256Digest.ComputeUtf8(material);
     }
 

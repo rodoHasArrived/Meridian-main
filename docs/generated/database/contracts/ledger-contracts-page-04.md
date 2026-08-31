@@ -2,11 +2,13 @@
 
 # `ledger-contracts` data objects - page 4 of 4
 
-Objects 241-297 of 297. References crossing pages remain available in the dependency manifest.
+Objects 241-298 of 298. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_OperationalFinanceTraceStageDto["OperationalFinanceTraceStageDto"] {
+    }
     class Meridian_Contracts_Ledger_PaymentIntentApprovalStepDto["PaymentIntentApprovalStepDto"] {
         +string Actor
         +DateTimeOffset? DecidedAtUtc

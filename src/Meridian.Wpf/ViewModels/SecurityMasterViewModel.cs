@@ -12,6 +12,7 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
@@ -43,6 +44,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
     private readonly ISmQueryService _queryService;
     private readonly ISmService _service;
     private readonly WpfServices.DesktopAuthenticationSession? _authenticationSession;
+    private readonly WpfServices.IDesktopMutationAuthorization _mutationAuthorization;
     private readonly bool _hasPolygonApiKey;
     private readonly object _selectedSecurityLoadGate = new();
     private bool _isRefreshingSearchWorkspaceFilters;
@@ -1506,6 +1508,35 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         SelectedConflict is not null &&
         !string.IsNullOrWhiteSpace(ConflictOperatorText);
 
+    /// <summary>
+    /// Whether this desktop session may mutate the Security Master golden record. Every HTTP route
+    /// that mutates it requires <see cref="UserPermission.ModifySecurityMaster"/>; the desktop
+    /// create, edit, deactivate, import, and trading-parameter backfill commands reach the same
+    /// services in-process, so they are held to the same grant. Gates command enablement and is
+    /// re-checked by every handler before the service call.
+    /// </summary>
+    public bool CanModifySecurityMaster => _mutationAuthorization.IsGranted(UserPermission.ModifySecurityMaster);
+
+    /// <summary>
+    /// Enforcement half of the mutation gate: command enablement is advisory (a command can be
+    /// executed programmatically regardless of its predicate), so every mutation handler calls this
+    /// before reaching a service.
+    /// </summary>
+    private bool EnsureCanModifySecurityMaster()
+    {
+        if (CanModifySecurityMaster)
+        {
+            return true;
+        }
+
+        _loggingService.LogWarning("Security Master mutation refused: this desktop session does not hold the ModifySecurityMaster permission.");
+        _notificationService.ShowNotification(
+            "Security Master",
+            "This operator is not permitted to modify the Security Master.",
+            NotificationType.Error);
+        return false;
+    }
+
     private bool SetSectionProperty<T>(
         T currentValue,
         T newValue,
@@ -1549,6 +1580,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         _queryService = queryService;
         _service = service;
         _authenticationSession = authenticationSession;
+        _mutationAuthorization = new WpfServices.DesktopMutationAuthorization(authenticationSession);
         if (authenticationSession?.CurrentActor is { Length: > 0 } sessionActor)
         {
             // Pre-fills the operator text box only. Governed writes resolve their actor through
@@ -1559,15 +1591,15 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
         _passportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient);
 
-        CreateNewCommand = new RelayCommand(OnCreateNew);
-        EditSelectedCommand = new RelayCommand(OnEditSelected, () => HasSelectedSecurity);
-        DeactivateSelectedCommand = new RelayCommand(OnDeactivateSelected, () => HasSelectedSecurity && IsSelectedSecurityActive());
+        CreateNewCommand = new RelayCommand(OnCreateNew, () => CanModifySecurityMaster);
+        EditSelectedCommand = new RelayCommand(OnEditSelected, () => HasSelectedSecurity && CanModifySecurityMaster);
+        DeactivateSelectedCommand = new RelayCommand(OnDeactivateSelected, () => HasSelectedSecurity && IsSelectedSecurityActive() && CanModifySecurityMaster);
         LoadCorporateActionsCommand = new AsyncRelayCommand(OnLoadCorporateActions, () => HasSelectedSecurity);
         ShowRecordCorpActionCommand = new RelayCommand(OnShowRecordCorpAction, () => HasSelectedSecurity);
         CancelRecordCorpActionCommand = new RelayCommand(OnCancelRecordCorpAction);
         RecordCorpActionCommand = new AsyncRelayCommand(OnRecordCorpAction);
-        BackfillTradingParamsCommand = new AsyncRelayCommand(OnBackfillTradingParams);
-        ImportFromFileCommand = new AsyncRelayCommand(OnImportFromFile, () => !IsImporting);
+        BackfillTradingParamsCommand = new AsyncRelayCommand(OnBackfillTradingParams, () => CanModifySecurityMaster);
+        ImportFromFileCommand = new AsyncRelayCommand(OnImportFromFile, () => !IsImporting && CanModifySecurityMaster);
         CloseImportResultCommand = new RelayCommand(OnCloseImportResult);
         SearchCommand = new AsyncRelayCommand(ct => SearchAsync(ct), CanSearch);
         ClearSearchCommand = new RelayCommand(OnClearSearch, CanClearSearch);
@@ -1632,14 +1664,17 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void OnCreateNew()
     {
-        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService, _service, _authenticationSession);
+        if (!EnsureCanModifySecurityMaster())
+            return;
+
+        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService, _service, _authenticationSession, _mutationAuthorization);
         WireEditVmEvents();
         IsEditPanelVisible = true;
     }
 
     private void OnEditSelected()
     {
-        if (SelectedSecurity is null)
+        if (SelectedSecurity is null || !EnsureCanModifySecurityMaster())
             return;
 
         // Fetch the full detail so we have all the required information
@@ -1660,7 +1695,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             {
                 await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService, _service, _authenticationSession);
+                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService, _service, _authenticationSession, _mutationAuthorization);
                     EditVm.LoadForEdit(detail);
                     WireEditVmEvents();
                     IsEditPanelVisible = true;
@@ -1681,10 +1716,10 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void OnDeactivateSelected()
     {
-        if (SelectedSecurity is null)
+        if (SelectedSecurity is null || !EnsureCanModifySecurityMaster())
             return;
 
-        DeactivateVm = new SecurityMasterDeactivateViewModel(_loggingService, _notificationService, _service)
+        DeactivateVm = new SecurityMasterDeactivateViewModel(_loggingService, _notificationService, _service, _mutationAuthorization)
         {
             SecurityName = SelectedSecurity.DisplayName,
             SecurityId = SelectedSecurity.SecurityId,
@@ -2189,6 +2224,11 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
     private async Task OnBackfillTradingParams()
     {
+        // The largest single mutation on this lane: one invocation amends up to 1,000 securities,
+        // so it is gated exactly like the per-record commands.
+        if (!EnsureCanModifySecurityMaster())
+            return;
+
         try
         {
             IsBackfillingTradingParams = true;

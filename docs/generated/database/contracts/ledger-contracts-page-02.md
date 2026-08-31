@@ -2,11 +2,19 @@
 
 # `ledger-contracts` data objects - page 2 of 4
 
-Objects 81-160 of 297. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 298. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_AccountingBasisProjectionItemDto["AccountingBasisProjectionItemDto"] {
+        +AccountingBasisKindDto AccountingBasis
+        +PostingRuleJournalCandidateResultDto Candidate
+        +string? DisabledReason
+        +Guid LedgerBookId
+        +Guid PeriodId
+        +string Status
+    }
     class Meridian_Contracts_Ledger_AccountingBasisProjectionSetDto["AccountingBasisProjectionSetDto"] {
         +string Currency
         +DateOnly EffectiveDate
@@ -694,17 +702,7 @@ classDiagram
         +string RulesJson
         +Guid? SourceEventId
     }
-    class Meridian_Contracts_Ledger_CreateLateAdjustmentRequestDto["CreateLateAdjustmentRequestDto"] {
-        +OperationsActionOriginDto ActionOrigin
-        +decimal Amount
-        +string? CorrelationId
-        +string Currency
-        +IReadOnlyList~string~ EvidenceLinks
-        +Guid JournalEntryId
-        +string Reason
-        +string RequestedBy
-        +Guid WorkflowId
-    }
+    Meridian_Contracts_Ledger_AccountingBasisProjectionSetDto --> Meridian_Contracts_Ledger_AccountingBasisProjectionItemDto
     Meridian_Contracts_Ledger_AccountingBasisProjectionSetRequestDto --> Meridian_Contracts_Ledger_AccountingBasisProjectionTargetDto
     Meridian_Contracts_Ledger_AccountingBasisProjectionTargetDto --> Meridian_Contracts_Ledger_AccountingTreatmentKindDto
     Meridian_Contracts_Ledger_AccountingCloseReadinessItemDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
