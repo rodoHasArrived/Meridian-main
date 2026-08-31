@@ -3,13 +3,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:Meridian.Wpf.Controls"
              x:Name="Root"
              mc:Ignorable="d"
              MinHeight="34"
              d:DesignHeight="52" d:DesignWidth="320"
              AutomationProperties.AutomationId="{Binding ElementName=Root, Path=IndicatorAutomationId}"
              AutomationProperties.Name="{Binding ElementName=Root, Path=Model.AccessibleExplanation}">
-    <Button x:Name="ExplanationButton"
+    <!-- The derived button's automation peer drops the Button/Invoke role while no command
+         is bound, so a read-only badge does not read as a false action to screen readers. -->
+    <controls:DataConfidenceExplanationButton x:Name="ExplanationButton"
             DataContext="{Binding ElementName=Root}"
             CommandParameter="{Binding EffectiveExplanationCommandParameter}"
             ToolTip="{Binding Model.Explanation}"
@@ -108,5 +111,5 @@
                 </StackPanel>
             </Grid>
         </Border>
-    </Button>
+    </controls:DataConfidenceExplanationButton>
 </UserControl>
