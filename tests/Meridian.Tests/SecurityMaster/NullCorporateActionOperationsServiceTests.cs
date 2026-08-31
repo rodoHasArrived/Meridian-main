@@ -33,4 +33,35 @@ public sealed class NullCorporateActionOperationsServiceTests
             Assert.Equal(CorporateActionProblemCodes.PersistenceUnavailable, exception.Code);
         }
     }
+
+    [Fact]
+    public async Task AccountingLaneCommands_WhenPersistenceIsNotConfigured_ThrowTypedUnavailableError()
+    {
+        var service = new NullCorporateActionCaseAccountingService();
+        var caseId = Guid.Parse("ed899b2d-0c76-4057-b85d-f41e0e87f49a");
+        (string Name, Func<Task> Command)[] commands =
+        [
+            ("AttachProjection", async () => _ = await service.AttachProjectionAsync(
+                new AttachCorporateActionAccountingProjectionRequestDto(
+                    caseId, 1, "attach:v1", "tenant-a", "company-a", Guid.NewGuid(), 1, 3,
+                    new string('a', 64), new string('b', 64),
+                    $"corporate-action-posting/v1:{new string('c', 64)}",
+                    Guid.NewGuid(), 1, Guid.NewGuid(), 1, "actor"))),
+            ("Approve", async () => _ = await service.ApproveAsync(
+                new ApproveCorporateActionCaseAccountingRequestDto(
+                    caseId, 1, "approve:v1", "tenant-a", "company-a", Guid.NewGuid(),
+                    "reason", "document://approvals/1", new string('e', 64), "actor"))),
+            ("Post", async () => _ = await service.PostAsync(
+                new PostCorporateActionCaseAccountingRequestDto(
+                    caseId, 1, "post:v1", "tenant-a", "company-a", Guid.NewGuid(), Guid.NewGuid(),
+                    "reason", "actor"))),
+        ];
+
+        foreach (var command in commands)
+        {
+            var exception = await Assert.ThrowsAsync<CorporateActionOperationException>(command.Command);
+
+            Assert.Equal(CorporateActionProblemCodes.PersistenceUnavailable, exception.Code);
+        }
+    }
 }

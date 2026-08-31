@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-08-11
+last_reviewed: 2026-08-30
 ---
 
 # src/Meridian.Ui.Shared
@@ -42,6 +42,31 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 
 ## Key folders and files
 
+- `Services/HostStartupEscalation` - the rule a host uses to decide whether a fault raised while
+  starting hosted services must take the application down or may be degraded past. A component that
+  fails to start is degradable; a guard raising `Meridian.Application.Composition.StartupRefusedException`
+  has refused the composition, and continuing past it runs exactly the posture the guard exists to
+  reject. It unwraps aggregates and inner exceptions, since hosts may start services concurrently and
+  a wrapped refusal is still a refusal. It lives here, rather than inline in each shell's catch
+  clause, so the rule is exercised by tests: the WPF startup path cannot be run off Windows, and an
+  inline predicate there would be reviewed and never executed.
+- `Services/InMemoryFundStructureTenancyGuard` - refuses to start a multi-company deployment on the
+  unpartitioned in-memory fund structure (W9-GOV-008 criterion 2), raising the same refusal type.
+- `Services/StartupRefusalPreflight` - runs the composition's
+  `Meridian.Application.Composition.IStartupRefusalGuard`s on their own, for a host that must decide
+  every refusal before it shows a shell. Deliberately not the same as starting the host:
+  `IHost.StartAsync` returns only once every hosted service has started, and one that reads a slow or
+  unreachable data root would gate the window indefinitely -- an operator who never gets a shell is
+  not better off than one who briefly gets the wrong one. It lets a refusal through untouched,
+  because the caller owns what a refusal means for its lifetime and swallowing one in a shared helper
+  is how a guard comes to have no effect at all -- and it reports a guard that fails for any *other*
+  reason as a refusal too, since a guard that cannot tell whether the composition is safe has not
+  said that it is. Constructing the guards is inside that same wrapper: resolving them runs their
+  constructors and their dependencies', so a broken one would otherwise escape before any per-guard
+  handling could see it. Lives here, like `HostStartupEscalation`, so the behaviour the WPF shell
+  depends on is covered by tests that run off Windows. Only guards that answer cheaply belong in it:
+  ADR-019's `ProductionRegistrationGuardService` is a refusal guard but stays unmarked, because in a
+  production posture it resolves every factory-registered singleton.
 - `Endpoints/` - shared workstation endpoint mapping and projection helpers, including
   host liveness/readiness/startup probes, fund-structure ownership lifecycle, portable packaging,
   archive-maintenance, and data-quality monitoring routes.
@@ -97,6 +122,9 @@ and `/startup` surfaces for local process supervision and pre-login progress. Au
 and WPF operator controls use the loopback-only `/api/system/lifecycle`,
 `/api/system/shutdown`, shutdown-operation, and latest-receipt routes. Clients consume the shared
 `Meridian.Contracts.Lifecycle` payloads and never infer readiness or terminate processes locally.
+The comprehensive `/health` route remains authenticated. Prometheus `/metrics` is the only
+unauthenticated rich monitoring payload and is supported only behind the loopback-bound compose
+posture enforced by `validate-monitoring-deployment.py`; the compose healthcheck calls `/readyz`.
 
 `FundStructureSetupWorkflowService` backs `/api/fund-structure/setup-drafts/validate` and `/api/fund-structure/setup-drafts/create`, composing `IFundStructureService` commands once for browser and WPF entity setup instead of duplicating setup sequencing in clients.
 Ownership lifecycle mutation routes under `/api/fund-structure/links/{id}` require the session-derived `ManageFundStructure` permission before updating, expiring, or replacing governance-impacting ownership links, and the underlying ownership/cash-flow policy is owned by `Meridian.Entities.FundStructure`.
@@ -278,7 +306,13 @@ ledger-book scope, the same workspace carries a server-derived ledger-book setup
 clients can call the shared ledger-book endpoint without reconstructing fund-structure node details
 locally.
 `FileAccountingConfigurationStore` persists accounting configuration workspaces by authenticated
-tenant, company, fund profile, and ledger book. The shared accounting endpoints stamp the resolved
+tenant, company, fund profile, and ledger book. Its audit history is hash-chained against an
+external head journal (`FileAccountingAuditChainAnchor`), whose records bind the chain head **and**
+the declared genesis boundary -- the pre-chain event count is what bounds how many retained events
+may sit outside the chain, and it lives in the snapshot being protected, so an anchor that did not
+carry it could be satisfied by the same edit that defeated it. **That journal is at format version
+2; a v1 journal written before the boundary was bound is refused by name on read** rather than
+verified under the weaker rules or reported as tampering. The shared accounting endpoints stamp the resolved
 tenant/company context on chart, template, posting-rule, rule-test, promotion, activation, read,
 dry-run, execution, and audit requests so browser and WPF clients cannot spoof a different
 configuration workspace through request body fields. Configuration audit history is filtered by the

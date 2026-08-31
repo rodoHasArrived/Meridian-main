@@ -1,5 +1,7 @@
 using System.Reflection;
+using Meridian.Application.Composition;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Workstation;
@@ -281,6 +283,63 @@ public sealed class AppServiceRegistrationTests
                 source.IndexOf("await InitializeBackgroundServicesAsync();", StringComparison.Ordinal),
                 "DI-hosted database workers should start before WPF-local scheduler services");
         source.Should().Contain("host.StopAsync(cts.Token)");
+    }
+
+    [Fact]
+    public void ConfigureServices_ShouldRegisterTheFinalGraphProductionGuard()
+    {
+        // Fourteenth Codex review round. AddProductionRegistrationGuard is called from
+        // ServiceCompositionRoot.AddMarketDataServices, which this desktop never invokes: it
+        // composes its own graph. So ADR-019's final-graph guard was absent from precisely the lane
+        // whose tolerant startup catch this change was written to close, and the refusal escalation
+        // had nothing to escalate here.
+        //
+        // Registering it is a no-op on an ordinary launch — with no posture declaration and none of
+        // the posture environment variables set, StartAsync returns immediately — so this asserts
+        // the registration exists rather than that it refuses anything.
+        var services = BuildServiceCollection();
+
+        services.Should().Contain(
+            descriptor => descriptor.ServiceType == typeof(ProductionRegistrationGuardService),
+            "the desktop composes its own graph and must still be validated against ADR-019");
+        services.Should().Contain(
+            descriptor => descriptor.ServiceType == typeof(IHostedService),
+            "the guard runs as a hosted service, first in the chain");
+    }
+
+    [Fact]
+    public void AppStartup_ShouldRunRefusalGuardsBeforeShowingTheMainWindow()
+    {
+        // Seventh Codex review round on PR #2871. MainWindow.OnWindowLoaded navigates to the
+        // fund-profile page, starts the shell view model and loads workspaces as soon as the window
+        // is shown, so a guard that runs after Show() leaves the very posture it rejects live and
+        // interactive until teardown finishes -- and checking the refusal flag afterwards only
+        // suppresses the later visibility recovery, it cannot un-serve what was already on screen.
+        //
+        // Eighth round narrowed it to the guards alone: host startup stays behind the window, so a
+        // slow hosted service can no longer hold the shell back indefinitely. Hence the preflight
+        // call, not StartHostServicesAsync, is what has to precede the window here.
+        //
+        // Asserted over the source, like the host-ordering test above, because OnStartup owns
+        // process lifetime and ends in Shutdown(): there is no way to drive it from a test host.
+        var source = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\App.xaml.cs"));
+
+        var guards = source.IndexOf("await RunStartupRefusalPreflightAsync();", StringComparison.Ordinal);
+        var resolveWindow = source.IndexOf("Services.GetRequiredService<MainWindow>();", StringComparison.Ordinal);
+        var showWindow = source.IndexOf("mainWindow.Show();", StringComparison.Ordinal);
+
+        guards.Should().BeGreaterThanOrEqualTo(0, "the guard phase must be its own awaited step in OnStartup");
+        resolveWindow.Should().BeGreaterThanOrEqualTo(0);
+        showWindow.Should().BeGreaterThanOrEqualTo(0);
+
+        guards.Should().BeLessThan(
+            resolveWindow, "a composition a guard refuses must not even construct the shell");
+        guards.Should().BeLessThan(
+            showWindow, "a composition a guard refuses must never be shown to an operator");
+
+        // Only call sites in OnStartup are compared. Callee bodies sit further down the file than
+        // OnStartup, so their source offsets say nothing about when they run -- which is why the
+        // window is NOT asserted against StartHostServicesAsync here.
     }
 
     private static ServiceProvider BuildServiceProvider()

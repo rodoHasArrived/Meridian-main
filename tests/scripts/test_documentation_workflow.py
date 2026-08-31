@@ -26,7 +26,7 @@ class DocumentationWorkflowTests(unittest.TestCase):
         diff_index = self.workflow.index("Compare dashboard readiness deltas vs previous commit")
         regenerate_block = self.workflow[checkout_index:diff_index]
 
-        self.assertIn("uses: actions/checkout@v6.0.2", regenerate_block)
+        self.assertIn("uses: actions/checkout@v7.0.1", regenerate_block)
         self.assertIn("fetch-depth: 0", regenerate_block)
 
     def test_diagram_dependencies_use_root_lockfile(self) -> None:

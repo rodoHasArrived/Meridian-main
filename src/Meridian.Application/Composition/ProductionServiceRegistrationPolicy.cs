@@ -64,7 +64,7 @@ public static class ProductionServiceRegistrationPolicy
             return;
         }
 
-        throw new InvalidOperationException(
+        throw new StartupRefusedException(
             "Production startup policy rejected non-production DI registrations: " +
             $"{string.Join(", ", violations)}. Replace each binding with a production implementation, " +
             "or scope the capability out of the supported envelope per ADR-019.");
@@ -138,7 +138,7 @@ public static class ProductionServiceRegistrationPolicy
             IsTruthy(Environment.GetEnvironmentVariable("MDC_PACKAGED_BUILD")) ||
             IsTruthy(Environment.GetEnvironmentVariable("MERIDIAN_CUSTOMER_BUILD")))
         {
-            throw new InvalidOperationException(
+            throw new StartupRefusedException(
                 "QuantLab:Enabled cannot be used in a production, packaged, or customer build. " +
                 "The isolated worker's current OS controls do not remove the launching identity's " +
                 "file/network permissions and are not certified as a hostile-code sandbox under ADR-019.");
@@ -262,7 +262,7 @@ public static class ProductionServiceRegistrationPolicy
             return;
         }
 
-        throw new InvalidOperationException(
+        throw new StartupRefusedException(
             "Supported local-workstation posture requires durable money-path stores but found in-memory " +
             $"bindings: {string.Join(", ", bindings)}. Bind a durable store, or drop the durability requirement " +
             "and force the persistent simulated-data label so fabricated data can never be mistaken for real.");
