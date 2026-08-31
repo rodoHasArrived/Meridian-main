@@ -728,6 +728,56 @@ public sealed class AccountingConfigurationPostgresStoreTests
         (await markers.ReadAsync()).Should().BeNull("a resolved marker must not re-fire");
     }
 
+    [Fact]
+    public async Task AMarkerFromAMutationWhoseTestCaseDisplayOrderInvertsIdOrder_IsClearedRatherThanRaised()
+    {
+        // Control for a Codex round-23 finding on PR #2871, kept because it pins the property the
+        // finding questioned. LoadRuleTestCasesAsync reloads rows ordered by display_name then
+        // test_case_id, while the mutation ordered the in-memory collection it hashed differently
+        // -- but the digest orders RuleTestCases by TestCaseId itself, inside Durable, on both the
+        // save side and the recovery side, so the store's row order never reaches the hash. Two
+        // cases whose display-name order inverts their id order make the reload order genuinely
+        // different from id order; recovery must still clear.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var store = database.AccountingConfigurationStore;
+        using var markerRoot = new TempDirectory();
+        var markers = new FileAccountingAuditPendingMarkerStore(
+            Path.Combine(markerRoot.Path, "pending-audit.json"));
+
+        var service = CreateService(store, markers);
+        await service.UpsertRuleTestCaseAsync(new UpsertAccountingRuleTestCaseRequest(
+            "fund-alpha",
+            TestCase("case-b", "Alpha check"),
+            Actor: "operator@example.test"));
+        await service.UpsertRuleTestCaseAsync(new UpsertAccountingRuleTestCaseRequest(
+            "fund-alpha",
+            TestCase("case-a", "Zulu check"),
+            Actor: "operator@example.test"));
+
+        // Reload order is display-name first: (Alpha, case-b) then (Zulu, case-a) -- id order inverted.
+        var declared = (await store.ListAsync("fund-alpha"))
+            .OrderByDescending(static item => item.RecordedAtUtc)
+            .First();
+        await markers.WriteAsync(new AccountingAuditPendingMarker(declared, DateTimeOffset.UtcNow));
+
+        var recovery = await CreateService(store, markers).RecoverPendingAuditAsync();
+
+        recovery.Outcome.Should().Be(AccountingAuditRecoveryOutcome.AlreadyAudited);
+        (await markers.ReadAsync()).Should().BeNull("a resolved marker must not re-fire");
+    }
+
+    private static AccountingRuleTestCaseDto TestCase(string testCaseId, string displayName)
+        => new(
+            testCaseId,
+            displayName,
+            new RuleDryRunRequestDto(
+                "fund-alpha",
+                "InterestAccrual",
+                100m,
+                "USD",
+                new DateOnly(2026, 6, 30),
+                "controller"));
+
     private static async Task ExecuteAsync(
         LedgerPostgresTestDatabase database,
         string commandTemplate,
