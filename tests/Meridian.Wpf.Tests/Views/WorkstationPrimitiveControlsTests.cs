@@ -326,6 +326,91 @@ public sealed class WorkstationPrimitiveControlsTests
     }
 
     [Fact]
+    public void DenseDataGridControl_ShouldMirrorChromeShortcutsOntoExternalFilterTarget()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var cleared = false;
+            var firstFilterBox = new TextBox();
+            var secondFilterBox = new TextBox();
+            var denseGrid = new DenseDataGridControl
+            {
+                FilterTarget = firstFilterBox,
+                ClearFiltersCommand = new RelayCommand(() => cleared = true)
+            };
+
+            var window = Show(new StackPanel { Children = { firstFilterBox, secondFilterBox, denseGrid } });
+            try
+            {
+                var mirrored = firstFilterBox.InputBindings.OfType<KeyBinding>()
+                    .Where(binding => ReferenceEquals(binding.CommandTarget, denseGrid))
+                    .ToList();
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.FocusFilter);
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.ClearFilters);
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.CloseDetails);
+                mirrored.Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.JumpToRelatedRecords);
+                mirrored.Should().NotContain(binding => binding.Command == DenseGridKeyboardCommands.OpenSelectedDetails);
+                mirrored.Should().NotContain(binding => binding.Command == ApplicationCommands.Copy);
+
+                var clearBinding = mirrored.Single(binding => binding.Command == DenseGridKeyboardCommands.ClearFilters);
+                ((RoutedCommand)clearBinding.Command).Execute(null, (IInputElement)clearBinding.CommandTarget!);
+                cleared.Should().BeTrue();
+
+                denseGrid.FilterTarget = secondFilterBox;
+                firstFilterBox.InputBindings.OfType<KeyBinding>()
+                    .Should().NotContain(binding => ReferenceEquals(binding.CommandTarget, denseGrid));
+                secondFilterBox.InputBindings.OfType<KeyBinding>()
+                    .Should().Contain(binding => binding.Command == DenseGridKeyboardCommands.ClearFilters);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DenseDataGridControl_ShouldQuoteClipboardCellsContainingTsvControlCharacters()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var tableRows = new ObservableCollection<RowFixture>
+            {
+                new("Fund \"A\"", "Degraded\nrestarting feed"),
+                new("Fund B", "Holds\ttab")
+            };
+            var denseGrid = new DenseDataGridControl
+            {
+                Table = new WorkstationTableModel<RowFixture>(
+                    tableRows,
+                    [new("Provider", nameof(RowFixture.Name), 120), new("Status", nameof(RowFixture.Status), 100)],
+                    "Provider readiness table"),
+                SelectionMode = SelectionMode.Extended
+            };
+
+            var window = Show(denseGrid);
+            try
+            {
+                var rowsList = denseGrid.FindName("RowsList").Should().BeOfType<ListView>().Subject;
+                rowsList.SelectAll();
+
+                denseGrid.FormatSelectedRowsForClipboard().Should().Be(
+                    "Provider\tStatus\n" +
+                    "\"Fund \"\"A\"\"\"\t\"Degraded\nrestarting feed\"\n" +
+                    "Fund B\t\"Holds\ttab\"");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
     public void DenseDataGridSource_ShouldUseCompactInstitutionalTableChrome()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(

@@ -7,7 +7,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Reflection;
-using System.Text;
 using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.Workstation.Controls;
@@ -68,7 +67,7 @@ public partial class DenseDataGridControl : UserControl
             nameof(FilterTarget),
             typeof(UIElement),
             typeof(DenseDataGridControl),
-            new PropertyMetadata(null));
+            new PropertyMetadata(null, OnFilterTargetChanged));
 
     public static readonly DependencyProperty OpenSelectedDetailsCommandProperty =
         DependencyProperty.Register(
@@ -99,6 +98,8 @@ public partial class DenseDataGridControl : UserControl
             new PropertyMetadata(null));
 
     private INotifyCollectionChanged? _observedRows;
+    private readonly List<KeyBinding> _filterTargetBindings = [];
+    private UIElement? _filterTargetWithBindings;
 
     public DenseDataGridControl()
     {
@@ -109,8 +110,16 @@ public partial class DenseDataGridControl : UserControl
         CommandBindings.Add(new CommandBinding(ApplicationCommands.Copy, ExecuteCopySelection, CanExecuteCopySelection));
         CommandBindings.Add(new CommandBinding(DenseGridKeyboardCommands.ClearFilters, ExecuteClearFilters, CanExecuteClearFilters));
         CommandBindings.Add(new CommandBinding(DenseGridKeyboardCommands.JumpToRelatedRecords, ExecuteJumpToRelatedRecords, CanExecuteJumpToRelatedRecords));
-        Loaded += (_, _) => UpdateEmptyState();
-        Unloaded += (_, _) => DetachRowsCollection();
+        Loaded += (_, _) =>
+        {
+            UpdateEmptyState();
+            AttachFilterTargetBindings(FilterTarget);
+        };
+        Unloaded += (_, _) =>
+        {
+            DetachRowsCollection();
+            DetachFilterTargetBindings();
+        };
     }
 
     public WorkstationTableModel? Table
@@ -193,6 +202,67 @@ public partial class DenseDataGridControl : UserControl
             control.AttachRowsCollection();
             control.UpdateEmptyState();
         }
+    }
+
+    private static void OnFilterTargetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DenseDataGridControl control)
+        {
+            control.AttachFilterTargetBindings(e.NewValue as UIElement);
+        }
+    }
+
+    /// <summary>
+    /// The filter target is composed outside this control, so once <see cref="ExecuteFocusFilter"/>
+    /// moves keyboard focus there the grid's own input bindings are no longer on the routed-input
+    /// path. Mirroring the chrome shortcuts onto the target — with this control as the command
+    /// target so the routed commands resolve against its command bindings — keeps Ctrl+F,
+    /// Ctrl+Shift+F, Escape and Ctrl+J live while the operator types in the filter. Enter and
+    /// Ctrl+C are deliberately not mirrored: they belong to the target's own commit and text-copy
+    /// semantics.
+    /// </summary>
+    private void AttachFilterTargetBindings(UIElement? target)
+    {
+        DetachFilterTargetBindings();
+        if (target is null)
+        {
+            return;
+        }
+
+        _filterTargetWithBindings = target;
+        AddFilterTargetBinding(target, DenseGridKeyboardCommands.FocusFilter, Key.F, ModifierKeys.Control);
+        AddFilterTargetBinding(target, DenseGridKeyboardCommands.CloseDetails, Key.Escape, ModifierKeys.None);
+        AddFilterTargetBinding(target, DenseGridKeyboardCommands.ClearFilters, Key.F, ModifierKeys.Control | ModifierKeys.Shift);
+        AddFilterTargetBinding(target, DenseGridKeyboardCommands.JumpToRelatedRecords, Key.J, ModifierKeys.Control);
+    }
+
+    private void AddFilterTargetBinding(UIElement target, ICommand command, Key key, ModifierKeys modifiers)
+    {
+        // Assigning Key/Modifiers (as XAML does) instead of using the KeyGesture constructor,
+        // which rejects modifier-less non-function keys such as Escape.
+        var binding = new KeyBinding
+        {
+            Command = command,
+            Key = key,
+            Modifiers = modifiers,
+            CommandTarget = this
+        };
+        _filterTargetBindings.Add(binding);
+        target.InputBindings.Add(binding);
+    }
+
+    private void DetachFilterTargetBindings()
+    {
+        if (_filterTargetWithBindings is not null)
+        {
+            foreach (var binding in _filterTargetBindings)
+            {
+                _filterTargetWithBindings.InputBindings.Remove(binding);
+            }
+        }
+
+        _filterTargetBindings.Clear();
+        _filterTargetWithBindings = null;
     }
 
     private void RebuildColumns()
@@ -362,20 +432,37 @@ public partial class DenseDataGridControl : UserControl
         }
 
         var columns = Table?.Columns ?? Array.Empty<WorkstationTableColumnModel>();
-        var builder = new StringBuilder();
+        var lines = new List<string>();
         if (columns.Count > 0)
         {
-            builder.AppendLine(string.Join("\t", columns.Select(column => column.Header)));
+            lines.Add(string.Join("\t", columns.Select(column => EscapeTsvCell(column.Header))));
         }
 
         foreach (var selectedItem in RowsList.SelectedItems.Cast<object>())
         {
-            builder.AppendLine(columns.Count == 0
-                ? Convert.ToString(selectedItem, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty
-                : string.Join("\t", columns.Select(column => FormatCellValue(selectedItem, column.BindingPath))));
+            lines.Add(columns.Count == 0
+                ? EscapeTsvCell(Convert.ToString(selectedItem, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty)
+                : string.Join("\t", columns.Select(column => EscapeTsvCell(FormatCellValue(selectedItem, column.BindingPath)))));
         }
 
-        return builder.ToString().TrimEnd('\r', '\n');
+        return string.Join("\n", lines);
+    }
+
+    private static readonly char[] TsvEscapeTriggers = ['"', '\t', '\r', '\n'];
+
+    /// <summary>
+    /// Free-text cells (journal descriptions, system-event messages) can legally contain tabs,
+    /// newlines and quotes; quoting those RFC-4180 style — mirroring the browser workstation's
+    /// csv.ts — keeps the clipboard table rectangular when pasted into a spreadsheet.
+    /// </summary>
+    private static string EscapeTsvCell(string value)
+    {
+        if (value.IndexOfAny(TsvEscapeTriggers) < 0)
+        {
+            return value;
+        }
+
+        return "\"" + value.Replace("\"", "\"\"") + "\"";
     }
 
     private static string FormatCellValue(object row, string bindingPath)
