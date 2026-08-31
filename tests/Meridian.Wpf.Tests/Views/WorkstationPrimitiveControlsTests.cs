@@ -412,6 +412,43 @@ public sealed class WorkstationPrimitiveControlsTests
     }
 
     [Fact]
+    public void DenseDataGridControl_ShouldNeutralizeFormulaPrefixesOnStringCellsOnly()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var tableRows = new ObservableCollection<IndexedRowFixture>
+            {
+                new(-1234.5m, new Dictionary<string, string> { ["fund"] = "=SUM(A1:A9)" })
+            };
+            var denseGrid = new DenseDataGridControl
+            {
+                Table = new WorkstationTableModel<IndexedRowFixture>(
+                    tableRows,
+                    [new("Notional", nameof(IndexedRowFixture.Notional), 120, "N2"), new("Fund", "Cells[fund]", 100)],
+                    "Indexed table")
+            };
+
+            var window = Show(denseGrid);
+            try
+            {
+                var rowsList = denseGrid.FindName("RowsList").Should().BeOfType<ListView>().Subject;
+                rowsList.SelectedItem = tableRows[0];
+
+                // A string cell that would execute as a spreadsheet formula is prefixed;
+                // a negative numeric cell keeps its leading minus untouched.
+                var expectedNotional = string.Format(denseGrid.Language.GetSpecificCulture(), "{0:N2}", -1234.5m);
+                denseGrid.FormatSelectedRowsForClipboard().Should().Be($"Notional\tFund\n{expectedNotional}\t'=SUM(A1:A9)");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
     public void DenseDataGridControl_ShouldCopyColumnsInTheDisplayedOrder()
     {
         WpfTestThread.Run(() =>
@@ -472,7 +509,9 @@ public sealed class WorkstationPrimitiveControlsTests
                 var rowsList = denseGrid.FindName("RowsList").Should().BeOfType<ListView>().Subject;
                 rowsList.SelectedItem = tableRows[0];
 
-                var expectedNotional = string.Format(System.Globalization.CultureInfo.CurrentCulture, "{0:N2}", 1234.5m);
+                // The display bindings format with the element's WPF Language, so the
+                // clipboard expectation is computed with that same culture.
+                var expectedNotional = string.Format(denseGrid.Language.GetSpecificCulture(), "{0:N2}", 1234.5m);
                 denseGrid.FormatSelectedRowsForClipboard().Should().Be($"Notional\tFund\n{expectedNotional}\tFund A");
             }
             finally

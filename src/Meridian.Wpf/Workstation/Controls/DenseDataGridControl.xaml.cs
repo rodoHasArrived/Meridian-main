@@ -462,6 +462,11 @@ public partial class DenseDataGridControl : UserControl
             return string.Empty;
         }
 
+        // The display bindings format with the element's WPF Language (they set no
+        // ConverterCulture), so the clipboard must use that same culture or copied
+        // currency/decimal separators diverge from the visible cells on machines whose
+        // regional settings differ from the grid's language.
+        var culture = Language.GetSpecificCulture();
         var columns = DisplayedColumns();
         var lines = new List<string>();
         if (columns.Count > 0)
@@ -472,8 +477,8 @@ public partial class DenseDataGridControl : UserControl
         foreach (var selectedItem in RowsList.SelectedItems.Cast<object>())
         {
             lines.Add(columns.Count == 0
-                ? EscapeTsvCell(Convert.ToString(selectedItem, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty)
-                : string.Join("\t", columns.Select(column => EscapeTsvCell(FormatCellForClipboard(selectedItem, column)))));
+                ? EscapeTsvCell(GuardFormulaPrefix(selectedItem, Convert.ToString(selectedItem, culture) ?? string.Empty))
+                : string.Join("\t", columns.Select(column => EscapeTsvCell(FormatCellForClipboard(selectedItem, column, culture)))));
         }
 
         return string.Join("\n", lines);
@@ -496,7 +501,7 @@ public partial class DenseDataGridControl : UserControl
         return "\"" + value.Replace("\"", "\"\"") + "\"";
     }
 
-    private static string FormatCellForClipboard(object row, WorkstationTableColumnModel column)
+    private static string FormatCellForClipboard(object row, WorkstationTableColumnModel column, System.Globalization.CultureInfo culture)
     {
         var value = ResolveCellValue(row, column.BindingPath);
         if (value is null)
@@ -504,6 +509,7 @@ public partial class DenseDataGridControl : UserControl
             return string.Empty;
         }
 
+        string text;
         if (!string.IsNullOrWhiteSpace(column.StringFormat))
         {
             // Match WPF Binding.StringFormat semantics: a format without a placeholder is applied
@@ -512,10 +518,31 @@ public partial class DenseDataGridControl : UserControl
             var format = column.StringFormat.Contains('{')
                 ? column.StringFormat
                 : "{0:" + column.StringFormat + "}";
-            return string.Format(System.Globalization.CultureInfo.CurrentCulture, format, value);
+            text = string.Format(culture, format, value);
+        }
+        else
+        {
+            text = Convert.ToString(value, culture) ?? string.Empty;
         }
 
-        return Convert.ToString(value, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty;
+        return GuardFormulaPrefix(value, text);
+    }
+
+    /// <summary>
+    /// Neutralizes spreadsheet formula prefixes on string-sourced cells: an externally
+    /// sourced message or identifier beginning with '=', '+', '-' or '@' would otherwise
+    /// execute as a formula when the TSV is pasted into a spreadsheet. Only raw string
+    /// values are guarded — numeric and temporal cells legitimately format with a leading
+    /// minus, and prefixing those would corrupt ordinary financial data.
+    /// </summary>
+    private static string GuardFormulaPrefix(object? value, string text)
+    {
+        if (value is string && text.Length > 0 && text[0] is '=' or '+' or '-' or '@')
+        {
+            return "'" + text;
+        }
+
+        return text;
     }
 
     private static object? ResolveCellValue(object row, string bindingPath)
