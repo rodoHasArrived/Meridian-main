@@ -2466,8 +2466,22 @@ the interest gap sits directly underneath a passing test that names the class.
 `Aliases` list — the schema is a declared alias vocabulary. The resolver's twenty private alias arrays
 are a second one, hand-maintained, covering vendor spellings the schema does not know and *missing*
 canonical keys the schema does. Nothing locks them together, and the round-trip guard cannot see the
-gap because the resolver is not a codec surface. The immediate fix is adding `currentCouponRate` and
-top-level index/spread resolution.
+gap because the resolver is not a codec surface. The immediate fix is adding `currentCouponRate`
+resolution — which closes the **fixed-rate** case and only that case.
+
+**It does not close the floating case, and an earlier version of this item implied it did by
+prescribing "top-level index/spread resolution".** There is nowhere for a resolved index and spread
+to land, and nothing that would consume them: `StructuredCashFlowTerms` declares `CouponRate` and
+inflation members but no top-level `referenceIndex` or `spreadBps` (`:14, :21-23`), and the
+single-stream path computes
+`var annualRate = NormalizeAnnualRate(terms.CouponRate ?? 0m) + ScenarioRateShift(scenario)`
+(`SecurityMasterCashFlowService.cs:314`) — solely from `CouponRate`, defaulting to **zero**. So a
+floating `DirectLoan` supplying `referenceIndex` and `spreadBps` but omitting the optional
+`currentCouponRate` still projects zero interest after that fix. Unlike the leg path, there is also
+no current index fixing to combine with the spread. Closing the floating case requires deciding
+*where the all-in rate comes from* — an ingest-supplied all-in `currentCouponRate`, or a current
+fixing source the projection can combine with the spread — and adding the members and the rate
+derivation to match. That is a design decision, not a resolver-alias addition.
 
 The generalizing fix needs care, and the obvious statement of it is wrong. A parity guard asserting
 that **every** `Required`/`Opt` key in `SecurityAssetTermsSchema` is reachable by a resolver alias
@@ -2546,8 +2560,16 @@ This is the same defect class as V1 and N3, one registry later: a table governin
 behaviour with no catalog parity guard. Five such guards now exist (F# registry, terms schema,
 projections, validators, packs); this is the sixth, and the readiness catalog is the one whose
 absence is visible to operators rather than only to the next contributor. The guard should assert
-`Specifications ∪ IntentionallyUnspecifiedClasses = catalog`, mirroring the projection partition —
-so a deliberate gap stays declarable, and an accidental one fails at commit time.
+`Specifications ∪ IntentionallyUnspecifiedClasses = catalog` **and
+`Specifications ∩ IntentionallyUnspecifiedClasses = ∅`** — so a deliberate gap stays declarable, and
+an accidental one fails at commit time.
+
+Both halves are load-bearing, and an earlier version of this entry stated only the union while
+claiming it "mirrors the projection partition". A partition is disjoint as well as exhaustive, and
+exhaustiveness alone does not give the property this guard exists for: a class listed in *both* sets
+passes, and then an accidental removal of its specification also passes, because the stale waiver
+keeps supplying catalog coverage. That recreates precisely the silent omission A3 is meant to
+prevent, with a green guard over it.
 
 ### A4 — The custom-profile extension point declares projected and searchable fields and honours neither
 
@@ -2588,9 +2610,18 @@ indexed seam the flags imply (a
 `security_profile_field_projection` keyed `(security_id, profile_id, field_key)` populated from
 declared-projected fields, plus profile content in the search vector for declared-searchable ones),
 or restating the two properties as promotion-readiness *intent* so no profile author reads them as a
-capability. The first option is also the cheapest available answer to the standing
-"relational projections for the private/alternative classes" item, since those classes are precisely
-the profile-backed ones.
+capability.
+
+**It is not, however, an answer to the standing "relational projections for the private/alternative
+classes" item, and an earlier version of this entry claimed it was** — on the premise that those
+classes are precisely the profile-backed ones. They are not. `SupportsProfileBackedTerms: true`
+appears at seven catalog entries (`SecurityAssetClassCatalog.cs:216, 231, 275, 290, 304, 317, 330`);
+`DirectLoan` (`:246-259`) is not among them, and `DirectLoan` is squarely inside the standing
+projection gap. A profile-field projection is also keyed on the `profileFields` envelope, so even a
+profile-capable class carrying ordinary typed terms would fall outside it. Indexing profile fields
+therefore leaves exactly the records the standing item is about without indexed class-specific
+fields. Keep the two remedies separate: this one closes the flags-mean-nothing defect; the standing
+item needs projections that cover every record shape.
 
 ### Smaller notes, not filed as findings
 
@@ -2624,7 +2655,12 @@ the profile-backed ones.
 Ordered by institutional risk per unit of work, read as a delta on the standing lists above:
 
 1. **Teach the cash-flow resolver `DirectLoan`'s coupon, then guard the alias vocabularies (A1).**
-   Adding `currentCouponRate`, `referenceIndex` and `spreadBps` to the resolver is a few lines; the
+   Adding `currentCouponRate` to the resolver is a few lines and closes the **fixed-rate** case.
+   The **floating** case is not a resolver change: `StructuredCashFlowTerms` has no top-level
+   `referenceIndex`/`spreadBps` members and the single-stream path takes its rate solely from
+   `terms.CouponRate`, defaulting to zero (`SecurityMasterCashFlowService.cs:314`), so resolving
+   those keys alone still projects zero interest. Decide where the all-in rate or current fixing
+   comes from, and add the members and rate derivation with it. The
    durable half is a parity guard tying resolver aliases to `SecurityAssetTermsSchema` for the
    cash-flow-capable classes — scoped to an explicit **cash-flow-relevant subset** of schema keys, not
    every `Required`/`Opt` key, which would fail the shipped `DirectLoan` schema on `borrower`,
@@ -2639,13 +2675,17 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    append-plus-projection creation or it converts normalized collisions into orphaned event streams.
 3. **Add the sixth parity guard, over the readiness catalog (A3).** Same shape, same cost, and lower
    risk than the five that already exist — with the difference that this registry's gap is visible to
-   operators as an understated readiness summary rather than only to the next contributor.
+   operators as an understated readiness summary rather than only to the next contributor. Assert the
+   two sets are **disjoint as well as exhaustive**; union alone lets a stale waiver mask a later
+   accidental removal of a specification, which is the omission the guard exists to catch.
 4. **Decide what `IsProjected` / `IsSearchable` mean (A4).** Enforce the flags over the profile-field
    search path that **already exists** (`SecurityMasterQueryService.SearchAsync:488-489, 528-542`) and
    give it an index, or demote the flags to intent — do not build a second query capability beside it.
    Today the path is an unindexed full-universe scan that ignores both flags, so a field marked
-   non-searchable is searched anyway. Indexing it is the one move that also answers the standing
-   private/alternative-projection item, since those classes are the profile-backed ones.
+   non-searchable is searched anyway. Keep this separate from the standing
+   private/alternative-projection item: `DirectLoan` sits in that gap and is **not** profile-backed
+   (`SecurityAssetClassCatalog.cs:246-259`, against the seven entries that do set
+   `SupportsProfileBackedTerms`), so a profile-field projection does not cover it.
 5. **N4 and N5, together.** Both are `SecurityAssetPackRegistry`, both are unchanged across two
    passes, and both are the same question: is this type a gate or documentation? Answering it once
    closes both and stops the registry accumulating further weight either way.
