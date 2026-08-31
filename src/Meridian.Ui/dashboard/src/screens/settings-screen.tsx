@@ -59,6 +59,14 @@ import {
 } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import {
+  buildProfileFieldPayload,
+  buildProfileFieldValueState,
+  createProfileBackedSecurityState,
+  isWriteSelectableAssetProfile,
+  missingRequiredIdentifierDetails,
+  type ProfileBackedSecurityState
+} from "./settings-profile-backed-security";
+import {
   formatProviderIntegrationSetupDraftIssues,
   validateProviderIntegrationSetupDraft
 } from "@/lib/provider-integration-setup-validation";
@@ -285,19 +293,6 @@ interface AssetProfileDraftState {
   rollbackTargetVersion: number;
   lineage: SecurityAssetProfileLineage | null;
   result: SecurityAssetProfileGovernanceResult | null;
-  message: string | null;
-  details: string[];
-  tone: "default" | "success" | "danger" | "warning";
-}
-
-interface ProfileBackedSecurityState {
-  profileId: string;
-  displayName: string;
-  internalCode: string;
-  currency: string;
-  fieldValues: Record<string, string>;
-  rationale: string;
-  busy: boolean;
   message: string | null;
   details: string[];
   tone: "default" | "success" | "danger" | "warning";
@@ -786,7 +781,7 @@ export function SettingsScreen({
     [operationsCloseCalendar]
   );
   const approvedAssetProfiles = useMemo(
-    () => (securityAssetProfiles ?? []).filter((profile) => profile.status === "Approved"),
+    () => (securityAssetProfiles ?? []).filter((profile) => isWriteSelectableAssetProfile(profile)),
     [securityAssetProfiles]
   );
   const firstApprovedAssetProfile = approvedAssetProfiles[0] ?? null;
@@ -2325,6 +2320,12 @@ export function SettingsScreen({
     firstApprovedAssetProfile;
   const selectedProfileBackedSecurityProfile = approvedAssetProfiles.find((profile) => profile.profileId === profileBackedSecurity.profileId) ??
     firstApprovedAssetProfile;
+  // The write seam enforces the profile's REQUIRED identifier preferences at creation, so the form
+  // must collect every required kind — an InternalCode-only form makes a profile requiring CUSIP
+  // fail SM_CUSTOM_PROFILE_IDENTIFIER_COVERAGE_MISSING on every submission. InternalCode keeps its
+  // dedicated primary-identifier input; the remaining required kinds render below.
+  const additionalRequiredIdentifierPreferences = (selectedProfileBackedSecurityProfile?.identifierPreferences ?? [])
+    .filter((preference) => preference.isRequiredForClose && preference.kind !== "InternalCode");
 
   const selectAssetProfileStarter = (profileId: string) => {
     const selected = approvedAssetProfiles.find((profile) => profile.profileId === profileId);
@@ -2569,11 +2570,19 @@ export function SettingsScreen({
     const missingFields = selected.fields
       .filter((field) => field.isRequired && !profileBackedSecurity.fieldValues[field.key]?.trim())
       .map((field) => field.label);
-    if (!profileBackedSecurity.displayName.trim() || !profileBackedSecurity.internalCode.trim() || missingFields.length > 0) {
+    const requiredIdentifierPreferences = selected.identifierPreferences
+      .filter((preference) => preference.isRequiredForClose && preference.kind !== "InternalCode");
+    // Includes the ProviderSymbol provider namespace: the write-side command validation rejects
+    // that kind with a blank provider, so the form must catch it up front.
+    const missingIdentifiers = missingRequiredIdentifierDetails(requiredIdentifierPreferences, profileBackedSecurity);
+    if (!profileBackedSecurity.displayName.trim()
+      || !profileBackedSecurity.internalCode.trim()
+      || missingFields.length > 0
+      || missingIdentifiers.length > 0) {
       setProfileBackedSecurity((current) => ({
         ...current,
-        message: "Display name, internal code, and required profile fields are required.",
-        details: missingFields,
+        message: "Display name, internal code, required identifiers, and required profile fields are required.",
+        details: [...missingIdentifiers, ...missingFields],
         tone: "warning"
       }));
       return;
@@ -2611,7 +2620,11 @@ export function SettingsScreen({
           profileApproval: {
             approvedBy: selected.approvedBy,
             approvedAtUtc: selected.approvedAtUtc,
-            approvalReference: `profile:${selected.profileId}:v${selected.version}`
+            // The write seam verifies this reference against the catalog's own recorded approval
+            // reference when one exists, so the governed value must be copied verbatim; the
+            // legacy fabricated form remains only for catalog versions predating the field
+            // (where the seam has no fact to compare).
+            approvalReference: selected.approvalReference ?? `profile:${selected.profileId}:v${selected.version}`
           },
           evidenceLinks: []
         },
@@ -2621,7 +2634,16 @@ export function SettingsScreen({
             value: profileBackedSecurity.internalCode.trim(),
             isPrimary: true,
             validFrom: effectiveFrom
-          }
+          },
+          ...requiredIdentifierPreferences.map((preference) => ({
+            kind: preference.kind,
+            value: profileBackedSecurity.identifierValues[preference.kind]!.trim(),
+            isPrimary: false,
+            validFrom: effectiveFrom,
+            ...(preference.kind === "ProviderSymbol"
+              ? { provider: profileBackedSecurity.identifierProviders[preference.kind]!.trim() }
+              : {})
+          }))
         ],
         effectiveFrom,
         sourceSystem: "Meridian.Settings.AssetProfiles",
@@ -3956,6 +3978,38 @@ export function SettingsScreen({
                 />
               </label>
             </div>
+            {additionalRequiredIdentifierPreferences.length > 0 ? (
+              <div className="grid gap-3 lg:grid-cols-3">
+                {additionalRequiredIdentifierPreferences.map((preference) => (
+                  <label key={preference.kind} className="grid gap-1 text-xs font-medium text-muted-foreground">
+                    {`${preference.kind} identifier`}
+                    <Input
+                      value={profileBackedSecurity.identifierValues[preference.kind] ?? ""}
+                      onChange={(event) => setProfileBackedSecurity((current) => ({
+                        ...current,
+                        identifierValues: { ...current.identifierValues, [preference.kind]: event.target.value },
+                        message: null
+                      }))}
+                      disabled={profileBackedSecurity.busy}
+                      aria-label={`Profile-backed security ${preference.kind} identifier`}
+                    />
+                    {preference.kind === "ProviderSymbol" ? (
+                      <Input
+                        value={profileBackedSecurity.identifierProviders[preference.kind] ?? ""}
+                        onChange={(event) => setProfileBackedSecurity((current) => ({
+                          ...current,
+                          identifierProviders: { ...current.identifierProviders, [preference.kind]: event.target.value },
+                          message: null
+                        }))}
+                        placeholder="Provider namespace (e.g. bloomberg)"
+                        disabled={profileBackedSecurity.busy}
+                        aria-label={`Profile-backed security ${preference.kind} provider namespace`}
+                      />
+                    ) : null}
+                  </label>
+                ))}
+              </div>
+            ) : null}
             {selectedProfileBackedSecurityProfile ? (
               <div className="grid gap-3 lg:grid-cols-3">
                 {selectedProfileBackedSecurityProfile.fields.map((field) => (
@@ -5145,13 +5199,33 @@ function AssetProfileFieldInput({
   onChange: (value: string) => void;
 }) {
   if (field.fieldType === "Boolean") {
+    if (!field.isRequired) {
+      // TRI-STATE for optional Booleans: blank means "not asserted" and stays omitted from the
+      // payload, so an operator who touched the control can still return the field to absence -
+      // a two-state checkbox renders blank and false identically and would trap the field in a
+      // meaningful negative assertion once toggled.
+      return (
+        <FilterSelect
+          label={field.label}
+          value={value}
+          onChange={onChange}
+          options={[
+            { value: "", label: "Not asserted" },
+            { value: "true", label: "Yes" },
+            { value: "false", label: "No" }
+          ]}
+          disabled={disabled}
+        />
+      );
+    }
+
     return (
       <Checkbox
         checked={value === "true"}
         onCheckedChange={(checked) => onChange(checked ? "true" : "false")}
         className="min-h-16 rounded-md border border-border/60 bg-secondary/15 px-3 py-2 text-xs"
         disabled={disabled}
-        label={`${field.label}${field.isRequired ? " *" : ""}`}
+        label={`${field.label} *`}
       />
     );
   }
@@ -5210,86 +5284,6 @@ function createAssetProfileDraftState(profile: SecurityAssetProfileDefinition | 
     details: [],
     tone: "default"
   };
-}
-
-function createProfileBackedSecurityState(profile: SecurityAssetProfileDefinition | null): ProfileBackedSecurityState {
-  return {
-    profileId: profile?.profileId ?? "",
-    displayName: "",
-    internalCode: "",
-    currency: "USD",
-    fieldValues: profile ? buildProfileFieldValueState(profile, {}) : {},
-    rationale: "Create profile-backed custom asset with approved Security Master profile version.",
-    busy: false,
-    message: null,
-    details: [],
-    tone: "default"
-  };
-}
-
-function buildProfileFieldValueState(
-  profile: SecurityAssetProfileDefinition,
-  previous: Record<string, string>
-): Record<string, string> {
-  return Object.fromEntries(profile.fields.map((field) => [
-    field.key,
-    previous[field.key] ?? defaultProfileFieldValue(field)
-  ]));
-}
-
-function defaultProfileFieldValue(field: SecurityAssetProfileFieldDefinition): string {
-  if (field.fieldType === "Boolean") return "false";
-  return "";
-}
-
-/**
- * Builds the profile field payload for security creation. Values that fail to parse are reported
- * in invalidFields instead of being emitted - Number.parseFloat("") is NaN, which JSON.stringify
- * would silently serialize as null, and prefix-parsers would truncate values like "12,5" to 12.
- */
-function buildProfileFieldPayload(
-  fields: SecurityAssetProfileFieldDefinition[],
-  values: Record<string, string>
-): { payload: Record<string, unknown>; invalidFields: string[] } {
-  const payload: Record<string, unknown> = {};
-  const invalidFields: string[] = [];
-  for (const field of fields) {
-    const raw = values[field.key]?.trim() ?? "";
-    if (!raw) {
-      if (field.isRequired) {
-        invalidFields.push(`${field.label}: a value is required.`);
-      }
-      continue;
-    }
-
-    switch (field.fieldType) {
-      case "Decimal": {
-        const parsed = Number(raw);
-        if (!Number.isFinite(parsed)) {
-          invalidFields.push(`${field.label}: enter a valid number.`);
-          break;
-        }
-        payload[field.key] = parsed;
-        break;
-      }
-      case "Integer": {
-        const parsed = Number(raw);
-        if (!Number.isInteger(parsed)) {
-          invalidFields.push(`${field.label}: enter a whole number.`);
-          break;
-        }
-        payload[field.key] = parsed;
-        break;
-      }
-      case "Boolean":
-        payload[field.key] = raw === "true";
-        break;
-      default:
-        payload[field.key] = raw;
-        break;
-    }
-  }
-  return { payload, invalidFields };
 }
 
 function normalizeAssetProfileId(value: string): string {

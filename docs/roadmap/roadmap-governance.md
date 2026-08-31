@@ -21,6 +21,23 @@ If no declaration is found, CI fails with:
 No phase declaration found. Provide --phase/--dispatch-phase, a 'phase:PRx' label, or a PR body marker like '<!-- phase:PR2 -->'.
 ```
 
+### Generated-artifact exemption
+
+The gate polices *authored* edits to the roadmap/source-doc surface. Machine-generated files listed
+in `GENERATED_ARTIFACT_PATTERNS` are exempt, because they are already drift-checked by the
+render/regenerate jobs that produce them. A pull request whose only governed-surface changes are
+generated artifacts therefore passes without any phase declaration:
+
+```text
+Phase scope gate passed: no authored roadmap/source-doc changes (generated artifacts and out-of-surface files are exempt).
+```
+
+Without that exemption such a pull request is trapped: the documentation drift gate requires the
+regenerated files to be committed, and this gate would reject the same files as out of phase scope.
+When a new generated file starts landing under a governed path, add it to
+`GENERATED_ARTIFACT_PATTERNS` in `tools/roadmap/enforce_phase_scope.py` rather than widening a phase
+marker to accommodate it.
+
 ## Examples
 
 ### PR body marker

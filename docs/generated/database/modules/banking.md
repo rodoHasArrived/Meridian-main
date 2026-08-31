@@ -24,6 +24,9 @@ erDiagram
         timestamp_with_time_zone recorded_at
         boolean is_voided
         text recorded_by
+        uuid pending_payment_id FK
+        text evidence_id
+        text canonical_input_hash
     }
     banking_pending_payments {
         uuid pending_payment_id PK
@@ -37,16 +40,21 @@ erDiagram
         text review_notes
         timestamp_with_time_zone initiated_at
         timestamp_with_time_zone reviewed_at
+        text currency
+        text currency_remediated_by
+        text currency_remediation_reason
+        timestamp_with_time_zone currency_remediated_at
     }
     banking_schema_migrations {
         text filename PK
         text checksum
         timestamp_with_time_zone applied_at
     }
+    banking_pending_payments ||--o{ banking_bank_transactions : "fk_bank_transactions_pending_payment"
 ```
 
 | Relation | Kind | Columns | Primary key | Foreign keys | Indexes | Comment |
 | --- | --- | ---: | --- | ---: | ---: | --- |
-| `bank_transactions` | table | 12 | `bank_transaction_id` | 0 | 3 | - |
-| `pending_payments` | table | 11 | `pending_payment_id` | 0 | 3 | - |
+| `bank_transactions` | table | 15 | `bank_transaction_id` | 1 | 5 | - |
+| `pending_payments` | table | 15 | `pending_payment_id` | 0 | 3 | - |
 | `schema_migrations` | table | 3 | `filename` | 0 | 1 | - |

@@ -126,10 +126,8 @@ public sealed class FundLedgerViewModelTests
                     projectionService: new ReconciliationProjectionService(),
                     repository: reconciliationRepository);
                 var reconciliationReadService = new ReconciliationReadService(
-                    fundAccountService,
-                    fundAccountReadService,
                     workspaceService,
-                    strategyReconciliationService);
+                    fakeApiClient);
                 var workbenchService = new FundReconciliationWorkbenchService(
                     reconciliationReadService,
                     fundAccountService,
@@ -179,11 +177,13 @@ public sealed class FundLedgerViewModelTests
                     position.CoverageLabel == "Unresolved");
                 viewModel.SecurityCoverageText.Should().Contain("need Security Master coverage");
 
+                // Run posture now comes from the workstation API detail (BuildStrategyDetail),
+                // not an in-process recomputation over local stores.
                 viewModel.ReconciliationRuns.Should().Contain(item =>
                     item.ScopeLabel == "Strategy Run" &&
                     item.RunId == "run-fund-ops" &&
                     item.HasSecurityCoverageIssues &&
-                    item.SecurityIssueCount == 2);
+                    item.SecurityIssueCount == 1);
                 viewModel.SelectedReconciliationQueueIndex.Should().Be(0);
                 viewModel.IsOpenBreakQueueFilterSelected.Should().BeTrue();
                 viewModel.ReconciliationBreakQueueItems.Should().ContainSingle(item =>
@@ -293,10 +293,8 @@ public sealed class FundLedgerViewModelTests
                     projectionService: new ReconciliationProjectionService(),
                     repository: reconciliationRepository);
                 var reconciliationReadService = new ReconciliationReadService(
-                    fundAccountService,
-                    fundAccountReadService,
                     workspaceService,
-                    strategyReconciliationService);
+                    fakeApiClient);
                 var workbenchService = new FundReconciliationWorkbenchService(
                     reconciliationReadService,
                     fundAccountService,
@@ -373,7 +371,7 @@ public sealed class FundLedgerViewModelTests
     }
 
     [Fact]
-    public void RefreshReconciliationWorkbenchAsync_PreservesRunSelection_AndLoadsAccountDetail()
+    public void RefreshReconciliationWorkbenchAsync_PreservesRunSelection_AndExcludesDesktopLocalAccountRuns()
     {
         WpfTestThread.Run(async () =>
         {
@@ -468,10 +466,8 @@ public sealed class FundLedgerViewModelTests
                     projectionService: new ReconciliationProjectionService(),
                     repository: reconciliationRepository);
                 var reconciliationReadService = new ReconciliationReadService(
-                    fundAccountService,
-                    fundAccountReadService,
                     workspaceService,
-                    strategyReconciliationService);
+                    fakeApiClient);
                 var workbenchService = new FundReconciliationWorkbenchService(
                     reconciliationReadService,
                     fundAccountService,
@@ -495,28 +491,30 @@ public sealed class FundLedgerViewModelTests
                     workspaceService);
 
                 await viewModel.LoadAsync();
-                await WaitForConditionAsync(() => viewModel.ReconciliationRunItems.Any(item => item.SourceType == FundReconciliationSourceType.AccountRun));
+                await WaitForConditionAsync(() => viewModel.ReconciliationRunItems.Any(item => item.SourceType == FundReconciliationSourceType.StrategyRun));
 
-                var accountRun = viewModel.ReconciliationRunItems.Single(item => item.SourceType == FundReconciliationSourceType.AccountRun);
+                // The locally reconciled custody account must not surface a run row: the run
+                // list is served by the workstation API, not the desktop-local JSON universe.
+                viewModel.ReconciliationRunItems.Should().NotContain(item => item.SourceType == FundReconciliationSourceType.AccountRun);
+
+                var strategyRun = viewModel.ReconciliationRunItems.Single(item => item.SourceType == FundReconciliationSourceType.StrategyRun);
                 viewModel.SelectedReconciliationQueueIndex = 1;
-                viewModel.SelectedReconciliationRun = accountRun;
+                viewModel.SelectedReconciliationRun = strategyRun;
 
                 await WaitForConditionAsync(() =>
-                    viewModel.ReconciliationDetailTitle == accountRun.PrimaryLabel &&
-                    viewModel.CanOpenSelectedReconciliationAccountWorkflow);
+                    viewModel.ReconciliationDetailTitle == strategyRun.PrimaryLabel);
 
                 await viewModel.RefreshReconciliationWorkbenchAsync();
                 await WaitForConditionAsync(() =>
-                    viewModel.SelectedReconciliationRun?.RowKey == accountRun.RowKey &&
-                    viewModel.ReconciliationDetailTitle == accountRun.PrimaryLabel &&
-                    viewModel.CanOpenSelectedReconciliationAccountWorkflow);
+                    viewModel.SelectedReconciliationRun?.RowKey == strategyRun.RowKey &&
+                    viewModel.ReconciliationDetailTitle == strategyRun.PrimaryLabel);
 
                 viewModel.SelectedReconciliationQueueIndex.Should().Be(1);
                 viewModel.SelectedReconciliationRun.Should().NotBeNull();
-                viewModel.SelectedReconciliationRun!.RowKey.Should().Be(accountRun.RowKey);
-                viewModel.ReconciliationDetailTitle.Should().Be(accountRun.PrimaryLabel);
+                viewModel.SelectedReconciliationRun!.RowKey.Should().Be(strategyRun.RowKey);
+                viewModel.ReconciliationDetailTitle.Should().Be(strategyRun.PrimaryLabel);
                 viewModel.SupportsSelectedBreakActions.Should().BeFalse();
-                viewModel.CanOpenSelectedReconciliationAccountWorkflow.Should().BeTrue();
+                viewModel.CanOpenSelectedReconciliationAccountWorkflow.Should().BeFalse();
             }
             finally
             {
@@ -583,10 +581,8 @@ public sealed class FundLedgerViewModelTests
                     projectionService: new ReconciliationProjectionService(),
                     repository: reconciliationRepository);
                 var reconciliationReadService = new ReconciliationReadService(
-                    fundAccountService,
-                    fundAccountReadService,
                     workspaceService,
-                    strategyReconciliationService);
+                    fakeApiClient);
                 var workbenchService = new FundReconciliationWorkbenchService(
                     reconciliationReadService,
                     fundAccountService,
@@ -702,10 +698,8 @@ public sealed class FundLedgerViewModelTests
                     projectionService: new ReconciliationProjectionService(),
                     repository: reconciliationRepository);
                 var reconciliationReadService = new ReconciliationReadService(
-                    fundAccountService,
-                    fundAccountReadService,
                     workspaceService,
-                    strategyReconciliationService);
+                    fakeApiClient);
                 var workbenchService = new FundReconciliationWorkbenchService(
                     reconciliationReadService,
                     fundAccountService,
@@ -1471,16 +1465,15 @@ public sealed class FundLedgerViewModelTests
                     runReadService: runReadService,
                     projectionService: new ReconciliationProjectionService(),
                     repository: reconciliationRepository);
+                var fakeApiClient = new FakeWorkstationReconciliationApiClient([], []);
                 var reconciliationReadService = new ReconciliationReadService(
-                    fundAccountService,
-                    fundAccountReadService,
                     workspaceService,
-                    strategyReconciliationService);
+                    fakeApiClient);
                 var workbenchService = new FundReconciliationWorkbenchService(
                     reconciliationReadService,
                     fundAccountService,
                     workspaceService,
-                    new FakeWorkstationReconciliationApiClient([], []));
+                    fakeApiClient);
                 var fundOperationsWorkspaceReadService = CreateFundOperationsWorkspaceReadService(
                     fundAccountService,
                     store,
@@ -1835,16 +1828,15 @@ public sealed class FundLedgerViewModelTests
                     runReadService: runReadService,
                     projectionService: new ReconciliationProjectionService(),
                     repository: reconciliationRepository);
+                var fakeApiClient = new FakeWorkstationReconciliationApiClient([], []);
                 var reconciliationReadService = new ReconciliationReadService(
-                    fundAccountService,
-                    fundAccountReadService,
                     workspaceService,
-                    strategyReconciliationService);
+                    fakeApiClient);
                 var workbenchService = new FundReconciliationWorkbenchService(
                     reconciliationReadService,
                     fundAccountService,
                     workspaceService,
-                    new FakeWorkstationReconciliationApiClient([], []));
+                    fakeApiClient);
                 var fundOperationsWorkspaceReadService = CreateFundOperationsWorkspaceReadService(
                     fundAccountService,
                     store,

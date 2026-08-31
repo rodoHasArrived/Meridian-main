@@ -1,3 +1,4 @@
+import { BACKTEST_EVIDENCE_BLOCKER } from "@/screens/strategy-designer-screen.copy";
 import { useCallback, useMemo, useState } from "react";
 import { formatPrefixedCurrency } from "@/lib/format";
 import { STRATEGY_DESIGNER_API_ENDPOINTS } from "@/lib/workstation-endpoints";
@@ -1388,7 +1389,7 @@ export function buildStrategyBuilderWorkbenchViewModel({
     ? `${errorCount} blocking issue${errorCount === 1 ? "" : "s"}`
     : validationMessages.length > 0
       ? `${validationMessages.length} advisory issue${validationMessages.length === 1 ? "" : "s"}`
-      : "Ready for preview and backtest";
+      : "Design valid; backtest execution not yet available";
 
   return {
     document,
@@ -1437,16 +1438,14 @@ export function buildStrategyBuilderWorkbenchViewModel({
     validationSummary,
     liveRegionMessage: `${document.name}. ${validationSummary}. ${selectedCell ? `${selectedCell.label} selected.` : "No cell selected."}`,
     backtest: {
-      statusLabel: errorCount > 0 ? "Blocked" : "Ready",
-      proofSummary: errorCount > 0
-        ? "Fix designer validation before QuantScript preview or backtest execution."
-        : "Generated QuantScript will run through the existing Quant Lab and strategy run ledger.",
+      statusLabel: "Blocked",
+      proofSummary: errorCount > 0 ? `Fix designer validation before QuantScript preview. ${BACKTEST_EVIDENCE_BLOCKER}` : BACKTEST_EVIDENCE_BLOCKER,
       datasetFingerprint,
       runCommand: {
         label: "Run backtest proof",
-        ariaLabel: errorCount > 0 ? `Run backtest proof blocked: ${validationSummary}` : "Run backtest proof through Quant Lab",
-        disabled: errorCount > 0,
-        disabledReason: errorCount > 0 ? validationSummary : null
+        ariaLabel: `Run backtest proof blocked: ${BACKTEST_EVIDENCE_BLOCKER}`,
+        disabled: true,
+        disabledReason: errorCount > 0 ? `${BACKTEST_EVIDENCE_BLOCKER} Also: ${validationSummary}.` : BACKTEST_EVIDENCE_BLOCKER
       },
       routeActions: [
         buildStrategyBuilderBackendLink("templates", "Templates", STRATEGY_DESIGNER_API_ENDPOINTS.templates, "GET"),

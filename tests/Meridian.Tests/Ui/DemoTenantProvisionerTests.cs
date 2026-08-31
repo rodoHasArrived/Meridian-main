@@ -26,10 +26,15 @@ public sealed class DemoTenantProvisionerTests
         report.StrategyRunLoaded.Should().BeTrue();
         report.Warnings.Should().BeEmpty();
 
-        var seededBreaks = await breaks.GetAllAsync();
+        var seededBreaks = await breaks.GetAllAsync(new Meridian.Contracts.Workstation.ReconciliationBreakQueueScope(
+            DemoTenantBlueprint.TenantId,
+            DemoTenantBlueprint.CompanyId));
         seededBreaks.Should().HaveCount(DemoTenantBlueprint.BreakDefinitions.Count);
         seededBreaks.Select(item => item.BreakId).Should().BeEquivalentTo(
             DemoTenantBlueprint.BreakDefinitions.Select(definition => definition.Id));
+        seededBreaks.Should().OnlyContain(item =>
+            item.TenantId == DemoTenantBlueprint.TenantId &&
+            item.CompanyId == DemoTenantBlueprint.CompanyId);
 
         var run = await strategyStore.GetRunByIdAsync(DemoTenantBlueprint.StrategyRunId);
         run.Should().NotBeNull();

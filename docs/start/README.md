@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-07-19
+**Reviewed:** 2026-08-24
 
 Use this page for the fastest safe orientation in a fresh Meridian checkout. Run commands from the
 repository root unless a command says otherwise.
@@ -73,9 +73,12 @@ Key properties:
 
 - **Isolated.** All demo data lives in a dedicated root, `{dataRoot}/demo-workspace`, that is never
   mixed with your real data root.
-- **Durable.** The reconciliation and strategy desks are written to durable, file-backed stores under
-  the demo root and survive a restart with zero configuration. Money-path stores such as the ledger
-  become durable only when PostgreSQL is configured — set
+- **Durable.** Reconciliation casework, the paper strategy run, market history for the Data desk,
+  the sample fund account and portfolio position snapshot, balanced draft journal entries, and a
+  review-required sample report pack are all written to durable, file-backed stores under the demo
+  root and survive a restart with zero configuration. Accounting records seed as drafts for human
+  review — the demo never posts ledger entries. Posted money-path stores such as the ledger become
+  durable only when PostgreSQL is configured — set
   `MERIDIAN_DATABASE_URL=postgres://user:password@localhost:5432/meridian` before seeding for a
   fully database-backed demo.
 - **Idempotent.** Re-running `--seed-demo` never duplicates casework or runs.
@@ -96,6 +99,21 @@ dotnet run --project src/Meridian/Meridian.csproj -- --reset-demo
 The seeded workspace is the same sample workspace the browser onboarding wizard's "Use sample data"
 choice provisions, so the demo and the guided first-run experience walk through identical data. See
 `dotnet run --project src/Meridian/Meridian.csproj -- --help demo` for the full command reference.
+
+### The workstation bundle the demo serves
+
+The browser workstation is served from one canonical, git-tracked bundle:
+`src/Meridian.Ui/wwwroot/workstation`. A fresh clone already carries it, so the demo reaches a
+populated `/workstation/` screen without Node.js installed, and the host resolves that same tree
+regardless of the directory you launch from. When you change dashboard source, regenerate and
+commit the bundle with:
+
+```powershell
+npm --prefix src/Meridian.Ui/dashboard run build
+```
+
+CI runs a freshness gate that fails when the tracked bundle lags `src/Meridian.Ui/dashboard`, so
+the served assets always match the same commit's dashboard source.
 
 ## First Help Commands
 
@@ -121,7 +139,7 @@ If `where.exe make` finds nothing, skip Make and use the underlying `dotnet`, `n
 | Goal | Command | Notes |
 | --- | --- | --- |
 | Seeded end-to-end demo (fastest evaluation) | `dotnet run --project src/Meridian/Meridian.csproj -- --seed-demo` | Seeds an isolated, durable, `Seeded`-labelled demo workspace and opens the populated workstation. See [See It Working](#see-it-working-one-command-demo). |
-| Local host and browser-served workstation | `dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080` | Serves the host and, after assets are built, `http://localhost:8080/workstation/`. |
+| Local host and browser-served workstation | `dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080` | Requires a persistence decision first — see [Persistence and simulation defaults](#persistence-and-simulation-defaults); bare, it fails closed at startup. Once configured, serves the host and `http://localhost:8080/workstation/` from the tracked canonical bundle (`src/Meridian.Ui/wwwroot/workstation`), independent of launch directory. |
 | Desktop-local host mode | `dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080` | Use when intentionally running the desktop-local host and streaming collector together. |
 | Browser workstation development | `npm --prefix src/Meridian.Ui/dashboard run dev` | Use for active React/TypeScript workstation work. |
 | WPF desktop development shell | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development` | Builds Debug artifacts and explicitly opts into the local Development/in-memory governance profile. |
@@ -134,17 +152,30 @@ If `where.exe make` finds nothing, skip Make and use the underlying `dotnet`, `n
 
 Two defaults matter before you trust what a local launch shows you:
 
-- **Persistence.** Without database configuration, every money-path store (ledger, fund
-  accounts, banking, reporting, and more) runs in-memory — journal entries, reconciliations,
-  and approvals are lost on restart. Set one variable to persist all store domains to
-  PostgreSQL: `MERIDIAN_DATABASE_URL=postgres://user:password@localhost:5432/meridian`
-  (per-domain `MERIDIAN_*_CONNECTION_STRING` variables override it individually). Hosts log
-  `PERSISTENCE: NONE`/`PARTIAL` at startup, report it on `/readyz`, and the browser
-  workstation shows a persistent red banner until persistence is configured.
+- **Persistence.** `--seed-demo` is the only launch that works with zero configuration — it
+  opts into a database-less local profile for you. Every other launch, including
+  `--mode workstation`, requires a persistence decision first and **fails closed at startup**
+  (`StorageFeatureRegistration` throws, naming the missing variable) rather than silently
+  running in-memory. Either point Meridian at PostgreSQL —
+  `MERIDIAN_DATABASE_URL=postgres://user:password@localhost:5432/meridian` covers all store
+  domains, with per-domain `MERIDIAN_*_CONNECTION_STRING` variables overriding it
+  individually — or, for local/dev fixture scenarios only, opt in explicitly with
+  `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` in a non-production environment (the in-memory
+  profile is forbidden when the environment is `Production`, the default when none is named).
+  When the in-memory opt-in is active, journal entries, reconciliations, and approvals are
+  lost on restart; hosts log `PERSISTENCE: NONE`/`PARTIAL` at startup, report it on
+  `/readyz`, and the browser workstation shows a persistent red banner until persistence is
+  configured.
 - **Market data.** The default `ib` streaming source runs as a random-walk **simulator** in
   standard builds (no IBAPI reference), and the `synthetic` source is always simulated.
   Simulated data is flagged in `/api/status` (`degradedMode.marketDataMode`) and by the same
   red workstation banner — never treat quotes, fills, or P&L from a simulated source as real.
+
+Authentication defaults to required outside Development, so a non-demo launch also needs a
+credential path. Packaged installs get their first account through the one-use
+`MDC_BOOTSTRAP_TOKEN` and the `/setup/account` page: the lifecycle supervisor generates the token
+and passes it to the host it starts, while a from-source launch must set it explicitly (see
+[environment variables](../reference/environment-variables.md)).
 
 The WPF desktop startup screen prompts for the environment-backed Meridian operator profile. Configure
 `MDC_USERS` with `passwordHash` values for multi-user login, or use the legacy `MDC_USERNAME` /

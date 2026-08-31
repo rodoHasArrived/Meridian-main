@@ -1,15 +1,17 @@
 using System.Collections.Concurrent;
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.AccountingSystem;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.AccountingSystem;
 
@@ -1180,7 +1182,7 @@ public sealed class AccountingSystemIntegrationService
                     package.EvidenceReferenceCount,
                     string.Join("\u001d", package.EvidenceReferences.Order(StringComparer.OrdinalIgnoreCase)),
                     string.Join("\u001d", package.RequiredActions.Order(StringComparer.OrdinalIgnoreCase))))));
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(payload);
     }
 
     private static string ComputeExportPackageHash(
@@ -1220,7 +1222,7 @@ public sealed class AccountingSystemIntegrationService
                 .ThenBy(static issue => issue.TargetId, StringComparer.OrdinalIgnoreCase)
                 .Select(static issue => $"{issue.Code}:{issue.Severity}:{issue.TargetId}:{issue.Message}:{issue.SuggestedAction}")),
             string.Join(",", evidenceLinks.Order(StringComparer.OrdinalIgnoreCase)));
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(payload);
     }
 
     private static string FormatReconciliationRowForHash(AccountingSystemReconciliationRowDto row)
@@ -1454,7 +1456,7 @@ public sealed class AccountingSystemIntegrationService
                 .OrderBy(static line => line.ExternalAccountId, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static line => line.AccountCode, StringComparer.OrdinalIgnoreCase)
                 .Select(FormatTrialBalanceLineForHash)));
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(payload);
     }
 
     private static string FormatChartAccountForHash(AccountingSystemChartAccountDto account)
@@ -2129,14 +2131,8 @@ public sealed class AccountingSystemIntegrationService
            index >= reference.Length ||
            reference[index] is '/' or ':' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}' or ' ' or '\t' or '\r' or '\n';
 
-
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
-    {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
-        {
-            throw new InvalidOperationException($"Reviewed automation cannot {action}; a human operator must perform this external accounting action.");
-        }
-    }
+        => OperationsOriginGuard.RequireHumanOperator(actionOrigin, action);
 
     private static string RequireText(string? value, string label)
         => string.IsNullOrWhiteSpace(value)
@@ -2150,9 +2146,6 @@ public sealed class AccountingSystemIntegrationService
 
     private static string NormalizeFundProfileId(string? fundProfileId)
         => string.IsNullOrWhiteSpace(fundProfileId) ? DefaultFundProfileId : fundProfileId.Trim();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string ImportKey(
         string providerId,

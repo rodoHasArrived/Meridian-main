@@ -26,7 +26,7 @@ public static class FutureReferenceEndpoints
             var reference = await service.GetReferenceAsync(securityId, ct).ConfigureAwait(false);
             return reference is null ? Results.NotFound() : Results.Json(reference, jsonOptions);
         })
-        .WithName("GetFutureReference")
+        .WithName("GetFutureReference").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<FutureReferenceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden)
@@ -40,7 +40,7 @@ public static class FutureReferenceEndpoints
             var results = await service.GetByRootSymbolAsync(rootSymbol, ct).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
-        .WithName("GetFuturesByRootSymbol")
+        .WithName("GetFuturesByRootSymbol").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<FutureReferenceDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden);
@@ -53,7 +53,7 @@ public static class FutureReferenceEndpoints
             var ladder = await service.GetExpiryLadderAsync(rootSymbol, ct).ConfigureAwait(false);
             return Results.Json(ladder, jsonOptions);
         })
-        .WithName("GetFutureExpiryLadder")
+        .WithName("GetFutureExpiryLadder").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<FutureReferenceDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden);
@@ -66,7 +66,7 @@ public static class FutureReferenceEndpoints
             var frontMonth = await service.GetFrontMonthAsync(rootSymbol, ct).ConfigureAwait(false);
             return frontMonth is null ? Results.NotFound() : Results.Json(frontMonth, jsonOptions);
         })
-        .WithName("GetFutureFrontMonth")
+        .WithName("GetFutureFrontMonth").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<FutureReferenceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden)

@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
+using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Evidence;
 
@@ -9,6 +11,8 @@ public sealed partial class FileEvidenceArtifactStore
     private async Task<EvidenceVaultDocumentReviewResponseDto?> ReviewDocumentUnderLockAsync(
         string safeVaultId,
         string normalizedDocumentId,
+        string tenantId,
+        string scope,
         string reviewer,
         EvidenceVaultDocumentReviewRequestDto request,
         CancellationToken ct)
@@ -16,13 +20,39 @@ public sealed partial class FileEvidenceArtifactStore
         var reviewedAt = DateTimeOffset.UtcNow;
         var indexPath = Path.Combine(_rootDirectory, "_vault", $"{safeVaultId}.json");
         var identity = await TryReadVaultIdentityAsync(indexPath, ct).ConfigureAwait(false);
-        if (identity is null)
+        if (identity is null || !MatchesIdentityScope(identity, tenantId, scope))
         {
             return null;
         }
 
+        var manifestPath = ResolveVaultManifestPath(identity, safeVaultId);
+        if (manifestPath is null)
+        {
+            return null;
+        }
+
+        var manifest = await TryReadRetainedManifestAsync(manifestPath, ct).ConfigureAwait(false);
+        if (manifest is null
+            || !TryResolveManifestAuthority(
+                manifest,
+                identity,
+                tenantId,
+                scope,
+                out var manifestIdentity)
+            || manifestIdentity is null)
+        {
+            return null;
+        }
+
+        // The embedded manifest identity is the committed semantic authority. If a previous
+        // review reached its manifest write but not its index write, continue from that newer
+        // review state and heal the locator index on this successful mutation.
+        identity = manifestIdentity;
         var document = ResolveIdentityDocuments(identity)
-            .FirstOrDefault(item => string.Equals(item.DocumentId, normalizedDocumentId, StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(item =>
+                string.Equals(item.DocumentId, normalizedDocumentId, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(item.TenantId, tenantId, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(item.Scope, scope, StringComparison.OrdinalIgnoreCase));
         if (document is null)
         {
             return null;
@@ -65,28 +95,45 @@ public sealed partial class FileEvidenceArtifactStore
         };
 
         var reviewedIdentity = ReplaceIdentityDocument(identity, reviewedDocument);
-        var manifestPath = ResolveVaultManifestPath(identity, safeVaultId);
-        if (manifestPath is not null)
+
+        var reviewedManifest = manifest with
         {
-            var manifest = await TryReadRetainedManifestAsync(manifestPath, ct).ConfigureAwait(false);
-            if (manifest is not null)
+            VaultIdentity = reviewedIdentity
+        };
+        reviewedIdentity = RefreshVaultIdentityContentHash(reviewedIdentity, reviewedManifest);
+        reviewedManifest = reviewedManifest with
+        {
+            VaultIdentity = reviewedIdentity
+        };
+        var originalManifestJson = JsonSerializer.Serialize(manifest, _jsonOptions);
+        await AtomicFileWriter
+            .WriteAsync(manifestPath, JsonSerializer.Serialize(reviewedManifest, _jsonOptions), ct)
+            .ConfigureAwait(false);
+
+        try
+        {
+            await WriteVaultIndexAsync(reviewedIdentity, ct).ConfigureAwait(false);
+        }
+        catch (Exception writeException) when (writeException is IOException
+                                               or UnauthorizedAccessException
+                                               or OperationCanceledException)
+        {
+            try
             {
-                var reviewedManifest = manifest with
-                {
-                    VaultIdentity = reviewedIdentity
-                };
-                reviewedIdentity = RefreshVaultIdentityContentHash(reviewedIdentity, reviewedManifest);
-                reviewedManifest = reviewedManifest with
-                {
-                    VaultIdentity = reviewedIdentity
-                };
                 await AtomicFileWriter
-                    .WriteAsync(manifestPath, JsonSerializer.Serialize(reviewedManifest, _jsonOptions), ct)
+                    .WriteAsync(manifestPath, originalManifestJson, CancellationToken.None)
                     .ConfigureAwait(false);
             }
-        }
+            catch (Exception rollbackException) when (rollbackException is IOException or UnauthorizedAccessException)
+            {
+                _logger.LogError(
+                    rollbackException,
+                    "Evidence vault review rollback could not restore manifest '{ManifestPath}' after index write failure.",
+                    manifestPath);
+            }
 
-        await WriteVaultIndexAsync(reviewedIdentity, ct).ConfigureAwait(false);
+            throw;
+        }
 
         var entry = new EvidenceVaultDocumentEntryDto(
             reviewedDocument,

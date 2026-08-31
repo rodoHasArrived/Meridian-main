@@ -40,6 +40,7 @@ the [Roadmap Registry](../roadmap/README.md).
   - `metrics-dashboard.md`
   - `rules-report.md`
   - `TODO.md`
+  - `ui-route-wiring-report.md`
   - `wpf-screen-development-tracker.md`
 - Include generated JSON artifacts as read-only outputs unless generator contracts change:
   - `workflow-validation-summary.json`
@@ -49,6 +50,7 @@ the [Roadmap Registry](../roadmap/README.md).
   - `wpf-screen-development-tracker.json`
   - `workflow-manifest.json`
   - `todo-scan-results.json`
+  - `ui-route-wiring-report.json`
   - `workstation-cockpit-acceptance-matrix.json`
   - `run-contract.schema.json`
 

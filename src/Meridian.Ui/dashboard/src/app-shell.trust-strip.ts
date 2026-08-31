@@ -5,7 +5,6 @@ import {
   buildDataProvenanceBadgeViewModel,
   type DataProvenanceKind
 } from "@/app-shell.data-provenance-badge";
-import packageJson from "../package.json";
 import type { DataWorkspaceResponse, SessionInfo } from "@/types";
 
 export type AppShellTrustStripTone = "ready" | "review" | "blocked" | "pending";
@@ -51,7 +50,7 @@ export function buildTrustStripState({
   });
   const resolvedProvenance = usingDevelopmentFixtures
     ? "seeded"
-    : dataProvenance ?? "simulated";
+    : dataProvenance ?? "unknown";
   const provenanceBadge = buildDataProvenanceBadgeViewModel({
     provenance: resolvedProvenance
   });
@@ -98,10 +97,10 @@ export function buildTrustStripState({
       {
         id: "build",
         label: "Build",
-        value: `v${packageJson.version}`,
+        value: `v${__APP_VERSION__}`,
         detail: "Current Meridian web release.",
         tone: "ready",
-        ariaLabel: `Build ${packageJson.version}. Current Meridian web release.`,
+        ariaLabel: `Build ${__APP_VERSION__}. Current Meridian web release.`,
         href: null,
         actionLabel: null
       },

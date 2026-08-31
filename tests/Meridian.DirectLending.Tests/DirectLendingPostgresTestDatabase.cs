@@ -1,7 +1,9 @@
+using System.Text.Json;
 using Meridian.Application.DirectLending;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.DirectLending;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Ledger;
@@ -21,7 +23,14 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
 {
     private const string EnvVar = "MERIDIAN_DIRECT_LENDING_CONNECTION_STRING";
     private const string DisableDockerEnvVar = "MERIDIAN_DISABLE_DOCKER_TESTS";
-    private static readonly ILedgerJournalStore _noOpLedgerJournalStore = new InMemoryNoOpLedgerJournalStore();
+
+    internal static Guid TestSecurityId { get; } = Guid.Parse("d1643625-caa0-4fa5-98fb-64e202915a28");
+
+    internal const string TestSecuritySymbol = "DL-TEST";
+
+    private static readonly ITransactionalLedgerJournalStore _noOpLedgerJournalStore = new InMemoryNoOpLedgerJournalStore();
+    private static readonly Meridian.Application.SecurityMaster.ISecurityMasterQueryService _securityMasterQueryService =
+        new DeterministicSecurityMasterQueryService();
 
     private readonly PostgresTestServer _server;
 
@@ -38,14 +47,17 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
             CurrentEventSchemaVersion = 1
         };
 
-        Store = new PostgresDirectLendingStateStore(Options);
+        Store = new PostgresDirectLendingStateStore(Options, _noOpLedgerJournalStore);
         Rebuilder = new DirectLendingEventRebuilder();
         QueryService = new PostgresDirectLendingQueryService(Store, Store, Rebuilder);
         CommandService = new PostgresDirectLendingCommandService(
             Store,
             Store,
             QueryService,
-            new LoanAccountingProjector(_noOpLedgerJournalStore, new AccountingPolicyService()),
+            new LoanAccountingProjector(
+                _noOpLedgerJournalStore,
+                new AccountingPolicyService(),
+                _securityMasterQueryService),
             Options);
         Service = new PostgresDirectLendingService(CommandService, QueryService);
     }
@@ -83,16 +95,24 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
             return null;
         }
 
-        var schema = PostgresTestSchema.NewSchemaName("dl");
         var server = await PostgresTestServer.CreateAsync(
                 EnvVar,
                 new PostgresTestContainerOptions { Database = "meridian_dl_test" })
             .ConfigureAwait(false);
+        var schema = server.CreateSchemaName("dl");
 
         var database = new DirectLendingPostgresTestDatabase(server, schema);
-        var runner = new DirectLendingMigrationRunner(database.Options);
-        await runner.EnsureMigratedAsync().ConfigureAwait(false);
-        return database;
+        try
+        {
+            var runner = new DirectLendingMigrationRunner(database.Options);
+            await runner.EnsureMigratedAsync().ConfigureAwait(false);
+            return database;
+        }
+        catch
+        {
+            await database.DisposeAsync().ConfigureAwait(false);
+            throw;
+        }
     }
 
     public async Task<long> CountSnapshotsAsync(Guid loanId)
@@ -117,23 +137,32 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        // External databases persist across runs, so the run-scoped schema must be dropped;
-        // containers are discarded whole by the shared server.
-        if (_server.UsesExternalConnection)
-        {
-            await using var connection = new NpgsqlConnection(ConnectionString);
-            await connection.OpenAsync().ConfigureAwait(false);
-            await using var command = connection.CreateCommand();
-            command.CommandText = $"drop schema if exists {Schema} cascade;";
-            await command.ExecuteNonQueryAsync().ConfigureAwait(false);
-        }
-
         await _server.DisposeAsync().ConfigureAwait(false);
     }
 
-    private sealed class InMemoryNoOpLedgerJournalStore : ILedgerJournalStore
+    private sealed class InMemoryNoOpLedgerJournalStore : ITransactionalLedgerJournalStore
     {
+        private static readonly LedgerAccountingPeriod TestAccountingPeriod = new(
+            PeriodId: Guid.Parse("58190d5b-2306-4e0d-a818-a2fb5e087bbf"),
+            LedgerBookId: null,
+            FiscalYear: 2026,
+            PeriodNo: 1,
+            Label: "2026",
+            StartDate: new DateOnly(2026, 1, 1),
+            EndDate: new DateOnly(2026, 12, 31),
+            Status: "Open",
+            OpenedAt: new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            ClosedAt: null,
+            Version: 0);
+
         public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task AppendAsync(
+            NpgsqlConnection connection,
+            NpgsqlTransaction transaction,
+            LedgerJournalEntryWrite entry,
+            CancellationToken ct = default) =>
+            Task.CompletedTask;
 
         public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>([]);
@@ -142,7 +171,8 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
             Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>([]);
 
         public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default) =>
-            Task.FromResult<LedgerAccountingPeriod?>(null);
+            Task.FromResult<LedgerAccountingPeriod?>(
+                periodId == TestAccountingPeriod.PeriodId ? TestAccountingPeriod : null);
 
         public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
             Guid? ledgerBookId = null,
@@ -150,12 +180,19 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
             string? fundProfileId = null,
             Guid? fundStructureNodeId = null,
             CancellationToken ct = default) =>
-            Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>([]);
+            Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>([TestAccountingPeriod]);
 
         public Task<LedgerAccountingPeriod> SavePeriodAsync(
             LedgerAccountingPeriod period,
             long expectedVersion,
             PeriodCloseEventRecord? closeEvent = null,
+            CancellationToken ct = default) =>
+            Task.FromResult(period);
+
+        public Task<LedgerAccountingPeriod> SaveHardClosedPeriodAsync(
+            LedgerAccountingPeriod period,
+            long expectedVersion,
+            PeriodCloseEventRecord closeEvent,
             CancellationToken ct = default) =>
             Task.FromResult(period);
 
@@ -171,5 +208,79 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
 
         public Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default) =>
             Task.FromResult(book);
+    }
+
+    private sealed class DeterministicSecurityMasterQueryService :
+        Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+    {
+        private static readonly SecurityDetailDto TestSecurity = new(
+            SecurityId: TestSecurityId,
+            AssetClass: "PrivateCredit",
+            Status: SecurityStatusDto.Active,
+            DisplayName: TestSecuritySymbol,
+            Currency: "USD",
+            CommonTerms: JsonSerializer.SerializeToElement(new { }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(new { }),
+            Identifiers: [],
+            Aliases: [],
+            Version: 1,
+            EffectiveFrom: new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            EffectiveTo: null);
+
+        public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default) =>
+            Task.FromResult<SecurityDetailDto?>(securityId == TestSecurityId ? TestSecurity : null);
+
+        public Task<SecurityDetailDto?> GetByIdAsOfAsync(
+            Guid securityId,
+            DateTimeOffset asOfUtc,
+            CancellationToken ct = default) =>
+            GetByIdAsync(securityId, ct);
+
+        public Task<SecurityDetailDto?> GetByIdentifierAsync(
+            SecurityIdentifierKind identifierKind,
+            string identifierValue,
+            string? provider,
+            CancellationToken ct = default,
+            DateTimeOffset? asOfUtc = null) =>
+            Task.FromResult<SecurityDetailDto?>(
+                string.Equals(identifierValue, TestSecuritySymbol, StringComparison.OrdinalIgnoreCase)
+                    ? TestSecurity
+                    : null);
+
+        public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(
+            SecuritySearchRequest request,
+            CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<SecuritySummaryDto>>([]);
+
+        public Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(
+            SecurityHistoryRequest request,
+            CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>([]);
+
+        public Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(
+            Guid securityId,
+            CancellationToken ct = default) =>
+            Task.FromResult<SecurityEconomicDefinitionRecord?>(null);
+
+        public Task<TradingParametersDto?> GetTradingParametersAsync(
+            Guid securityId,
+            DateTimeOffset asOf,
+            CancellationToken ct = default) =>
+            Task.FromResult<TradingParametersDto?>(null);
+
+        public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(
+            Guid securityId,
+            CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<CorporateActionDto>>([]);
+
+        public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(
+            Guid securityId,
+            CancellationToken ct = default) =>
+            Task.FromResult<PreferredEquityTermsDto?>(null);
+
+        public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(
+            Guid securityId,
+            CancellationToken ct = default) =>
+            Task.FromResult<ConvertibleEquityTermsDto?>(null);
     }
 }

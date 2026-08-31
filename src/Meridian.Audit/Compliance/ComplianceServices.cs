@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using Meridian.Identity.Auth;
 using Meridian.Storage.Archival;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Audit.Compliance;
 
@@ -23,6 +24,17 @@ public sealed class CompliancePolicyEngine : ICompliancePolicyEngine
         [SensitiveAction.OverrideApproval] = UserPermission.AdminMaintenance
     };
 
+    private readonly IComplianceApprovalResolver _approvalResolver;
+    private readonly TimeProvider _timeProvider;
+
+    public CompliancePolicyEngine(
+        IComplianceApprovalResolver approvalResolver,
+        TimeProvider? timeProvider = null)
+    {
+        _approvalResolver = approvalResolver ?? throw new ArgumentNullException(nameof(approvalResolver));
+        _timeProvider = timeProvider ?? TimeProvider.System;
+    }
+
     public (bool Allowed, string Reason) Evaluate(ActorContext actor, ComplianceActionRequest request)
     {
         if (!RequiredPermissions.TryGetValue(request.Action, out var requiredPermission))
@@ -35,12 +47,6 @@ public sealed class CompliancePolicyEngine : ICompliancePolicyEngine
             return (false, "Missing required privileged role.");
         }
 
-        if (!string.IsNullOrWhiteSpace(request.RequestedByActorId) &&
-            request.RequestedByActorId.Equals(actor.ActorId, StringComparison.OrdinalIgnoreCase))
-        {
-            return (false, "Segregation of duties violation: requester cannot self-approve.");
-        }
-
         if (request.Action is SensitiveAction.PaymentRelease or SensitiveAction.OverrideApproval)
         {
             if (!actor.MfaSatisfied)
@@ -48,8 +54,59 @@ public sealed class CompliancePolicyEngine : ICompliancePolicyEngine
                 return (false, "Step-up requirement failed: MFA required.");
             }
 
-            var approvers = request.AdditionalApproverIds ?? [];
-            if (approvers.Distinct(StringComparer.OrdinalIgnoreCase).Count() < 2)
+            if (string.IsNullOrWhiteSpace(request.ApprovalRequestId))
+            {
+                return (false, "Step-up requirement failed: authoritative approval request required.");
+            }
+
+            var approvalRequest = _approvalResolver.Resolve(request.ApprovalRequestId);
+            if (approvalRequest is null)
+            {
+                return (false, "Step-up requirement failed: approval request not found.");
+            }
+
+            if (!IsBoundToRequest(approvalRequest, request))
+            {
+                return (false, "Step-up requirement failed: approval evidence does not match the requested object.");
+            }
+
+            if (approvalRequest.ExpiresAtUtc <= _timeProvider.GetUtcNow())
+            {
+                return (false, "Step-up requirement failed: approval request expired.");
+            }
+
+            if (string.Equals(
+                    approvalRequest.RequestedByActorId,
+                    actor.ActorId,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return (false, "Segregation of duties violation: requester cannot execute their own approved action.");
+            }
+
+            if (approvalRequest.Decisions.Any(decision => !decision.Approved))
+            {
+                return (false, "Step-up requirement failed: approval request was rejected.");
+            }
+
+            if (approvalRequest.Decisions.Any(decision =>
+                    string.IsNullOrWhiteSpace(decision.ApprovedByActorId) ||
+                    string.Equals(
+                        decision.ApprovedByActorId,
+                        approvalRequest.RequestedByActorId,
+                        StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(
+                        decision.ApprovedByActorId,
+                        actor.ActorId,
+                        StringComparison.OrdinalIgnoreCase)))
+            {
+                return (false, "Segregation of duties violation: approval actors must be independent.");
+            }
+
+            var approvers = approvalRequest.Decisions
+                .Where(decision => decision.Approved)
+                .Select(decision => decision.ApprovedByActorId)
+                .Distinct(StringComparer.OrdinalIgnoreCase);
+            if (approvers.Count() < 2)
             {
                 return (false, "Step-up requirement failed: dual approval required.");
             }
@@ -62,6 +119,14 @@ public sealed class CompliancePolicyEngine : ICompliancePolicyEngine
         => Enum.TryParse<UserRole>(role, ignoreCase: true, out var parsed)
             && Enum.IsDefined(parsed)
             && RolePermissions.HasPermission(parsed, required);
+
+    private static bool IsBoundToRequest(
+        ComplianceApprovalRequestRecord approval,
+        ComplianceActionRequest request)
+        => approval.Action == request.Action
+           && string.Equals(approval.ObjectType, request.ObjectType, StringComparison.OrdinalIgnoreCase)
+           && string.Equals(approval.ObjectId, request.ObjectId, StringComparison.Ordinal)
+           && string.Equals(approval.EntityId, NormalizeOptional(request.EntityId), StringComparison.Ordinal);
 }
 
 public sealed class ImmutableAuditLogService
@@ -246,42 +311,5 @@ public sealed class ImmutableAuditLogService
         }
 
         return true;
-    }
-}
-
-public sealed class AccessReviewService
-{
-    // Registered as a singleton like the other compliance services, so concurrent reviews
-    // must not corrupt the list; guard mutation and snapshot reads the same way
-    // ImmutableAuditLogService does above.
-    private readonly object _lock = new();
-    private readonly List<AccessReviewRecord> _reviews = [];
-
-    public AccessReviewRecord ReviewDormantPermissions(string actorId, string reviewedBy, string[] currentRoles, DateTimeOffset lastUsedAtUtc)
-    {
-        var isDormant = lastUsedAtUtc < DateTimeOffset.UtcNow.AddDays(-90);
-        var removed = isDormant ? currentRoles : [];
-        var review = new AccessReviewRecord(
-            ReviewId: $"access-{Guid.NewGuid():N}",
-            ReviewedAtUtc: DateTimeOffset.UtcNow,
-            ReviewedBy: reviewedBy,
-            ActorId: actorId,
-            RemovedRoles: removed,
-            Reason: isDormant ? "Dormant permissions cleanup." : "No dormant permissions.");
-
-        lock (_lock)
-        {
-            _reviews.Add(review);
-        }
-
-        return review;
-    }
-
-    public IReadOnlyList<AccessReviewRecord> GetReviews()
-    {
-        lock (_lock)
-        {
-            return _reviews.ToArray();
-        }
     }
 }

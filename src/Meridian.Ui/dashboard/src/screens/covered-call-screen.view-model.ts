@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as coveredCallApi from "@/lib/api/covered-call.api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
-import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
+import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type {
   CoveredCallBacktestRequest,
   CoveredCallChainPreview,
@@ -15,6 +15,15 @@ import type {
   CoveredCallTrade
 } from "@/lib/covered-call";
 import { buildShortCallPayoffCurve, shortCallBreakEven } from "@/lib/covered-call/payoff";
+import {
+  formatCount,
+  formatDecimal,
+  formatExitReason,
+  formatRatioAsPercent,
+  formatPrice,
+  formatSignedMoney,
+  formatUtcDateTime
+} from "@/screens/covered-call-screen.formatters";
 
 export type CoveredCallStage = "configure" | "run" | "results";
 
@@ -40,12 +49,20 @@ export interface CoveredCallFormState {
   initialCash: string;
   initialUnderlyingShares: string;
   label: string;
+  operatorAcceptanceCriterion: string;
+  retainedEvidenceReference: string;
 }
 
 export type CoveredCallFormErrors = Partial<Record<keyof CoveredCallFormState, string>>;
 
 export const COVERED_CALL_CHAIN_DETAIL_PANEL_ID = "covered-call-chain-candidate-detail";
 export const COVERED_CALL_TRADE_DETAIL_PANEL_ID = "covered-call-trade-detail";
+export const MAX_COVERED_CALL_ACCEPTANCE_CRITERION_LENGTH = 1_024;
+export const MAX_COVERED_CALL_EVIDENCE_REFERENCE_LENGTH = 2_048;
+export const MAX_COVERED_CALL_AGGREGATE_EVIDENCE_CHARACTERS = 32_768;
+
+const CANONICAL_EVIDENCE_VAULT_REFERENCE =
+  /^evidence:\/\/evidence-vault\/ev-[0-9a-f]{24}$/i;
 
 type CoveredCallBadgeVariant = "outline" | "success" | "warning" | "danger" | "paper" | "research" | "default";
 
@@ -317,7 +334,9 @@ export const DEFAULT_COVERED_CALL_FORM: CoveredCallFormState = {
   riskFreeRate: "0.04",
   initialCash: "100000",
   initialUnderlyingShares: "100",
-  label: ""
+  label: "",
+  operatorAcceptanceCriterion: "Operator must review the covered-call backtest evidence before promotion.",
+  retainedEvidenceReference: ""
 };
 
 type CoveredCallFormFieldDefinition = Omit<CoveredCallFormFieldViewModel, "error" | "invalid" | "describedBy">;
@@ -543,6 +562,26 @@ const COVERED_CALL_FORM_FIELD_DEFINITIONS: CoveredCallFormFieldDefinition[] = [
     helperText: "Optional operator label shown in previous-run history.",
     errorId: "cc-label-error",
     options: []
+  },
+  {
+    key: "operatorAcceptanceCriterion",
+    id: "cc-operatorAcceptanceCriterion",
+    label: "Operator acceptance criterion",
+    type: "text",
+    required: true,
+    helperText: "Required review criterion retained with the canonical strategy run; this text is not an acceptance decision.",
+    errorId: "cc-operatorAcceptanceCriterion-error",
+    options: []
+  },
+  {
+    key: "retainedEvidenceReference",
+    id: "cc-retainedEvidenceReference",
+    label: "Evidence reference declaration",
+    type: "text",
+    required: true,
+    helperText: "Required canonical evidence://evidence-vault/{vaultId} reference. Create or select retained evidence in the existing Reporting Evidence Workbench.",
+    errorId: "cc-retainedEvidenceReference-error",
+    options: []
   }
 ];
 
@@ -558,7 +597,8 @@ const COVERED_CALL_FORM_FIELD_GROUPS: Array<{ id: string; columns: 1 | 2; fields
   { id: "exit-roll", columns: 2, fields: ["takeProfitCapture", "rollDelta"] },
   { id: "dividend-rate", columns: 2, fields: ["exDivWindowDays", "riskFreeRate"] },
   { id: "account", columns: 2, fields: ["initialCash", "initialUnderlyingShares"] },
-  { id: "label", columns: 1, fields: ["label"] }
+  { id: "label", columns: 1, fields: ["label"] },
+  { id: "evidence-loop", columns: 2, fields: ["operatorAcceptanceCriterion", "retainedEvidenceReference"] }
 ];
 
 export function buildCoveredCallFormFields(errors: CoveredCallFormErrors): CoveredCallFormFieldMap {
@@ -635,6 +675,30 @@ export function validateForm(form: CoveredCallFormState): CoveredCallFormErrors 
     errors.initialUnderlyingShares = "Initial underlying shares cannot be negative.";
   }
 
+  const operatorAcceptanceCriterion = form.operatorAcceptanceCriterion.trim();
+  const retainedEvidenceReference = form.retainedEvidenceReference.trim();
+  if (!operatorAcceptanceCriterion) {
+    errors.operatorAcceptanceCriterion = "An operator acceptance criterion is required.";
+  } else if (operatorAcceptanceCriterion.length > MAX_COVERED_CALL_ACCEPTANCE_CRITERION_LENGTH) {
+    errors.operatorAcceptanceCriterion =
+      `Acceptance criteria may contain at most ${MAX_COVERED_CALL_ACCEPTANCE_CRITERION_LENGTH} characters.`;
+  }
+
+  if (retainedEvidenceReference.length > MAX_COVERED_CALL_EVIDENCE_REFERENCE_LENGTH) {
+    errors.retainedEvidenceReference =
+      `Evidence references may contain at most ${MAX_COVERED_CALL_EVIDENCE_REFERENCE_LENGTH} characters.`;
+  } else if (!CANONICAL_EVIDENCE_VAULT_REFERENCE.test(retainedEvidenceReference)) {
+    errors.retainedEvidenceReference = "Reference retained evidence as evidence://evidence-vault/{vaultId}.";
+  }
+
+  if (
+    operatorAcceptanceCriterion.length + retainedEvidenceReference.length >
+    MAX_COVERED_CALL_AGGREGATE_EVIDENCE_CHARACTERS
+  ) {
+    errors.retainedEvidenceReference =
+      `Evidence declarations may contain at most ${MAX_COVERED_CALL_AGGREGATE_EVIDENCE_CHARACTERS} aggregate characters.`;
+  }
+
   return errors;
 }
 
@@ -667,12 +731,41 @@ export function formToRequest(form: CoveredCallFormState): CoveredCallBacktestRe
     riskFreeRate: Number(form.riskFreeRate),
     initialCash: Number(form.initialCash),
     initialUnderlyingShares: Number(form.initialUnderlyingShares),
-    label: form.label.trim() ? form.label.trim() : null
+    label: form.label.trim() ? form.label.trim() : null,
+    operatorAcceptanceCriteria: [form.operatorAcceptanceCriterion.trim()],
+    retainedEvidenceReferences: [form.retainedEvidenceReference.trim()],
+    accountingRecordReferences: [],
+    approvalReferences: [],
+    paperValidationReferences: [],
+    governedReportReferences: []
   };
 }
 
 export function isTerminalPhase(phase: CoveredCallRunPhase): boolean {
-  return phase === "Completed" || phase === "Failed" || phase === "Cancelled";
+  return phase === "Completed"
+    || phase === "Failed"
+    || phase === "Cancelled"
+    || phase === "PersistenceDegraded";
+}
+
+const PERSISTENCE_DEGRADED_FALLBACK =
+  "Covered-call lifecycle persistence is degraded. The run stopped without an authoritative durable terminal outcome. Retry after persistence recovers.";
+
+function buildTerminalStatusIssue(status: CoveredCallRunStatus): ApiErrorDisplay | null {
+  if (status.phase === "PersistenceDegraded") {
+    return {
+      summary: status.failureMessage?.trim() || PERSISTENCE_DEGRADED_FALLBACK,
+      details: [
+        "No Completed, Failed, or Cancelled lifecycle outcome was durably recorded for this run."
+      ]
+    };
+  }
+
+  if (status.phase === "Failed" && status.failureMessage) {
+    return { summary: status.failureMessage, details: [] };
+  }
+
+  return null;
 }
 
 const FORM_ERROR_PRIORITY: Array<keyof CoveredCallFormState> = [
@@ -685,7 +778,9 @@ const FORM_ERROR_PRIORITY: Array<keyof CoveredCallFormState> = [
   "minDte",
   "maxDte",
   "initialCash",
-  "initialUnderlyingShares"
+  "initialUnderlyingShares",
+  "operatorAcceptanceCriterion",
+  "retainedEvidenceReference"
 ];
 
 function firstFormError(errors: CoveredCallFormErrors): string | null {
@@ -758,7 +853,9 @@ export function buildCoveredCallCancelCommandState(
   }
 
   if (run.status && isTerminalPhase(run.status.phase)) {
-    const disabledReason = `Run is already ${run.status.phase.toLowerCase()}.`;
+    const disabledReason = run.status.phase === "PersistenceDegraded"
+      ? "Run cannot be cancelled because its lifecycle persistence is degraded."
+      : `Run is already ${run.status.phase.toLowerCase()}.`;
     return {
       label: "Cancel run",
       ariaLabel: "Cancel covered-call backtest run",
@@ -821,6 +918,16 @@ export function buildCoveredCallRunProgressPanel(run: CoveredCallRunState): Cove
   const percentComplete = Math.round(status.percentComplete * 100);
   const currentDate = status.currentBacktestDate ? ` - ${status.currentBacktestDate}` : "";
   const terminal = isTerminalPhase(status.phase);
+
+  if (status.phase === "PersistenceDegraded") {
+    return {
+      title: "Backtest lifecycle persistence degraded",
+      description: status.failureMessage?.trim() || PERSISTENCE_DEGRADED_FALLBACK,
+      percentComplete,
+      ariaValueText: `Persistence degraded at ${percentComplete}% complete. No durable terminal outcome is authoritative.`,
+      ariaBusy: undefined
+    };
+  }
 
   return {
     title: terminal ? "Backtest run finished" : "Running backtest",
@@ -907,6 +1014,20 @@ export function buildCoveredCallResultsActionPanel(
       : "Complete or load a covered-call run before moving evidence into the next workflow.",
     actions: result
       ? [
+          {
+            id: "run-checklist",
+            label: "Review acceptance checklist",
+            description: "Open this exact run in Strategy to review its read-only paper-promotion checklist.",
+            href: workstationRouteWithQuery("strategyPromotions", { runId: result.runId }),
+            ariaLabel: `Review the paper-promotion checklist for covered-call run ${result.runId}`
+          },
+          {
+            id: "evidence-workbench",
+            label: "Open retained evidence",
+            description: "Inspect this exact strategy run in the existing Reporting Evidence Workbench.",
+            href: evidenceWorkbenchPath("strategy-run", result.runId),
+            ariaLabel: `Open retained evidence for covered-call run ${result.runId}`
+          },
           {
             id: "live-quote",
             label: "Validate live quote",
@@ -1153,7 +1274,7 @@ function buildCoveredCallTradeTimelineDetail(
       { label: "Total net PnL", value: totalPnl },
       { label: "Holding days", value: formatCount(trade.holdingDays) },
       { label: "Multiplier", value: formatCount(trade.multiplier) },
-      { label: "Entry IV", value: trade.entryImpliedVolatility === null ? "—" : formatPercent(trade.entryImpliedVolatility) },
+      { label: "Entry IV", value: trade.entryImpliedVolatility === null ? "—" : formatRatioAsPercent(trade.entryImpliedVolatility) },
       { label: "Assignment", value: trade.wasAssigned ? "Assigned" : "Not assigned" }
     ],
     ariaLabel: `Selected covered-call trade ${index + 1}: ${underlyingSymbol} ${strikeLabel} call`
@@ -1303,7 +1424,7 @@ function buildChainPreviewDetail(
       { label: "DTE", value: formatCount(row.daysToExpiration) },
       { label: "Bid / Ask", value: `${formatPrice(row.bid)} / ${formatPrice(row.ask)}` },
       { label: "Delta", value: formatDecimal(row.delta, 2) },
-      { label: "Implied volatility", value: row.impliedVolatility === null ? "—" : formatPercent(row.impliedVolatility) },
+      { label: "Implied volatility", value: row.impliedVolatility === null ? "—" : formatRatioAsPercent(row.impliedVolatility) },
       { label: "Open interest", value: formatCount(row.openInterest) },
       { label: "Volume", value: formatCount(row.volume) }
     ],
@@ -1317,50 +1438,12 @@ function clampIndex(index: number, length: number): number {
   return Math.min(Math.max(Math.trunc(index), 0), length - 1);
 }
 
-function formatPrice(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return value.toFixed(2);
-}
-
-function formatDecimal(value: number, digits: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return value.toFixed(digits);
-}
-
-function formatPercent(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return `${(value * 100).toFixed(1)}%`;
-}
-
-function formatCount(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return Math.trunc(value).toLocaleString("en-US");
-}
-
-function formatSignedMoney(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  const sign = value < 0 ? "-$" : "$";
-  return `${sign}${Math.abs(value).toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
-}
-
-function formatExitReason(value: string): string {
-  const normalized = value.trim();
-  if (!normalized) return "Closed";
-  return normalized
-    .replace(/[_-]+/g, " ")
-    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase()
-    .replace(/^\w/, (letter) => letter.toUpperCase());
-}
-
 export function buildCoveredCallHistoryRows(history: CoveredCallRunSummary[]): CoveredCallHistoryRowViewModel[] {
   return history.map((row) => {
     const startedAtLabel = formatUtcDateTime(row.startedAt);
     const rangeLabel = `${row.from} to ${row.to}`;
     const statusBadgeVariant = statusBadgeVariantForHistory(row.status);
-    const cagrLabel = row.cagr === null ? "—" : formatPercent(row.cagr);
+    const cagrLabel = row.cagr === null ? "—" : formatRatioAsPercent(row.cagr);
     const sharpeRatioLabel = row.sharpeRatio === null ? "—" : formatDecimal(row.sharpeRatio, 2);
     const labelText = row.label?.trim() || "Unlabeled";
 
@@ -1403,21 +1486,6 @@ function statusBadgeVariantForHistory(status: string): CoveredCallBadgeVariant {
 
   return "outline";
 }
-
-function formatUtcDateTime(value: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "Unavailable";
-  }
-
-  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
-}
-
-function padUtc(value: number): string {
-  return String(value).padStart(2, "0");
-}
-
-const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export interface CoveredCallScreenState {
   stage: CoveredCallStage;
@@ -1662,8 +1730,9 @@ export function useCoveredCallScreenViewModel(
           } catch (resultErr) {
             setErrorBanner(describeApiError(resultErr, "Covered-call result failed to load."));
           }
-        } else if (status.phase === "Failed" && status.failureMessage) {
-          setErrorBanner({ summary: status.failureMessage, details: [] });
+        } else {
+          const terminalIssue = buildTerminalStatusIssue(status);
+          if (terminalIssue) setErrorBanner(terminalIssue);
         }
       } else {
         pollTimerRef.current = window.setTimeout(() => {
@@ -1731,11 +1800,15 @@ export function useCoveredCallScreenViewModel(
     try {
       const status = await services.cancelRun(runId);
       setRun((prev) => ({ ...prev, status, isCancelling: false }));
+      if (status.phase === "PersistenceDegraded") {
+        stopPolling();
+        setErrorBanner(buildTerminalStatusIssue(status));
+      }
     } catch (error) {
       setErrorBanner(describeApiError(error, "Covered-call cancel request failed."));
       setRun((prev) => ({ ...prev, isCancelling: false }));
     }
-  }, [pendingCancelRunId, run.isCancelling, run.runId, services]);
+  }, [pendingCancelRunId, run.isCancelling, run.runId, services, stopPolling]);
 
   const loadHistory = useCallback(async () => {
     setHistoryLoading(true);

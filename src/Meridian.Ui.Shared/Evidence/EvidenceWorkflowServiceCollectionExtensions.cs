@@ -74,6 +74,7 @@ public static class EvidenceWorkflowServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, OperationsApprovalEvidenceContributor>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, PrivateCapitalFundEventEvidenceContributor>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, PaymentIntentEvidenceContributor>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, JournalEntryEvidenceContributor>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, EvidenceVaultEvidenceContributor>());
         return services;
     }
@@ -88,7 +89,8 @@ public static class EvidenceWorkflowServiceCollectionExtensions
         {
             return new ReportingStatementImportEvidenceRetainer(
                 authority,
-                FileEvidenceArtifactStore.ResolveDataRoot(serviceProvider));
+                FileEvidenceArtifactStore.ResolveDataRoot(serviceProvider),
+                serviceProvider.GetRequiredService<IEvidenceArtifactStore>());
         }
 
         if (isProductionComposition)

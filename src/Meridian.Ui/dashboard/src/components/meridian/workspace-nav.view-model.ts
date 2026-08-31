@@ -59,6 +59,8 @@ export interface WorkspaceNavCurrentWorkspaceViewModel {
 }
 
 export interface WorkspaceNavViewModel {
+  isHome: boolean;
+  activeWorkspaceKey: WorkspaceKey | null;
   brandTitle: string;
   brandSubtitle: string;
   modelEyebrow: string;
@@ -96,7 +98,8 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Asset detail", route: WORKSTATION_ROUTE_CATALOG.portfolioAssetDetail },
     { label: "Brokerage sync", route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync },
     { label: "Cash ladder", route: WORKSTATION_ROUTE_CATALOG.portfolioCashLadder },
-    { label: "Family office", route: WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice }
+    { label: "Family office", route: WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice },
+    { label: "Loan book", route: WORKSTATION_ROUTE_CATALOG.portfolioLoanBook }
   ],
   reporting: [
     { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.reporting, match: "exact" },
@@ -114,7 +117,8 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Covered call", route: WORKSTATION_ROUTE_CATALOG.strategyCoveredCall },
     { label: "Promotions", route: WORKSTATION_ROUTE_CATALOG.strategyPromotions },
     { label: "Strategy Lab", route: WORKSTATION_ROUTE_CATALOG.strategyLab },
-    { label: "Quant Lab", route: WORKSTATION_ROUTE_CATALOG.strategyQuantLab }
+    { label: "Quant Lab", route: WORKSTATION_ROUTE_CATALOG.strategyQuantLab },
+    { label: "Run Ledger Explorer", route: WORKSTATION_ROUTE_CATALOG.strategyRunLedger }
   ],
   data: [
     { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.data, match: "exact" },
@@ -142,13 +146,14 @@ export function buildWorkspaceNavViewModel(
   search = "",
   operatingContextScope: AppShellOperatingScopeInput | null = null
 ): WorkspaceNavViewModel {
+  const isHome = pathname === "/";
   const visibleWorkspaces = canonicalizeWorkspaceSummaries(workspaces);
   const currentWorkspace =
     visibleWorkspaces.find((workspace) => isWorkspacePathActive(pathname, workspace.key)) ?? visibleWorkspaces[0];
   const operatingScope = buildOperatingScopeFromSearch(search, operatingContextScope);
 
   const items = visibleWorkspaces.map<WorkspaceNavItemViewModel>((workspace) => {
-    const active = isWorkspacePathActive(pathname, workspace.key);
+    const active = !isHome && isWorkspacePathActive(pathname, workspace.key);
     const maturityTone = workspaceMaturityTone(workspace.maturity);
     const workspaceCanonicalRoute = workspacePath(workspace.key);
     const exactWorkspaceActive = isExactRouteActive(pathname, workspaceCanonicalRoute);
@@ -211,6 +216,8 @@ export function buildWorkspaceNavViewModel(
   const contextItems = buildContextItems(pathname, currentWorkspace.key, operatingScope, search);
 
   return {
+    isHome,
+    activeWorkspaceKey: isHome ? null : currentWorkspace.key,
     brandTitle: "Meridian",
     brandSubtitle: "Operator Workstation",
     modelEyebrow: "Operating model",

@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-07-27T07:05:55Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-08-24T06:17:53Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 13 |
-| `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 6 |
-| `src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 5 |
-| `src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 4 |
-| `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 3 |
-| `src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 3 |
-| `src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 3 |
-| `src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 1 |
-| `src/Meridian.Ui.Shared/Services/LedgerAmountProvenanceService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 1 |
-| `src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 1 |
-| `src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 1 |
-| `src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs` | Desktop and UI Workflows | `029db58d0` (2026-07-26T23:07:30-07:00) | 1 |
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `86b5a548d` (2026-07-26T22:50:25-07:00) | 18 |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Reconciliation.cs` | Desktop and UI Workflows | `86b5a548d` (2026-07-26T22:50:25-07:00) | 5 |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationBreaks.cs` | Desktop and UI Workflows | `86b5a548d` (2026-07-26T22:50:25-07:00) | 3 |
+| `src/Meridian.Execution/OrderManagementSystem.cs` | Execution, Risk, and Strategies | `0854e607d` (2026-08-24T04:06:54Z) | 10 |
+| `src/Meridian.Execution.Sdk/Models.cs` | Execution, Risk, and Strategies | `0854e607d` (2026-08-24T04:06:54Z) | 2 |
+| `src/Meridian.Execution/Services/PaperTradingPortfolio.cs` | Execution, Risk, and Strategies | `0854e607d` (2026-08-24T04:06:54Z) | 2 |
+| `src/Meridian.Execution/PaperTradingGateway.cs` | Execution, Risk, and Strategies | `0854e607d` (2026-08-24T04:06:54Z) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 13 |
+| `src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 13 |
+| `src/Meridian.Ui.Shared/Endpoints/ApiKeyMiddleware.cs` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 10 |
+| `src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs` | Providers and Storage | `d60d4100d` (2026-08-24T00:54:53Z) | 6 |
+| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 6 |
+| `src/Meridian.Contracts/Operations/DataProvenance.cs` | Host and Composition | `d60d4100d` (2026-08-24T00:54:53Z) | 2 |
+| `src/Meridian/UiServer.cs` | Host and Composition | `d60d4100d` (2026-08-24T00:54:53Z) | 2 |
+| `src/Meridian.Execution/Events/TradeExecutedEvent.cs` | Execution, Risk, and Strategies | `d60d4100d` (2026-08-24T00:54:53Z) | 1 |
+| `src/Meridian.Execution/OrderManagementSystem.FillIdentity.cs` | Execution, Risk, and Strategies | `d60d4100d` (2026-08-24T00:54:53Z) | 1 |
+| `src/Meridian.Wpf/ViewModels/DataBrowserViewModel.cs` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 1 |
+| `src/Meridian.Wpf/Views/DataBrowserPage.xaml` | Desktop and UI Workflows | `d60d4100d` (2026-08-24T00:54:53Z) | 1 |
 

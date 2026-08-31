@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Meridian.Contracts.Integrity;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
@@ -283,11 +283,7 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
         return result;
     }
 
-    private static string ComputeHash(string source)
-    {
-        var bytes = Encoding.UTF8.GetBytes(source);
-        return Convert.ToHexString(SHA256.HashData(bytes));
-    }
+    private static string ComputeHash(string source) => Sha256Digest.ComputeUtf8(source);
 
     private static void AddDescriptors(
         ICollection<ParameterDescriptor> destination,

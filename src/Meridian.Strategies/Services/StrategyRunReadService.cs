@@ -7,6 +7,11 @@ using Meridian.Strategies.Promotions;
 namespace Meridian.Strategies.Services;
 
 /// <summary>
+/// Authoritative tenant and company scope for workstation strategy-run reads.
+/// </summary>
+public sealed record StrategyRunReadScope(string? TenantId, string? CompanyId);
+
+/// <summary>
 /// Provides the shared Phase 12 run browser/read model for backtest, paper, and live history.
 /// </summary>
 public sealed class StrategyRunReadService
@@ -19,6 +24,8 @@ public sealed class StrategyRunReadService
     private const string LedgerCoverageStatusMissing = "Missing";
     private const string CashFlowHealthHealthy = "Healthy";
     private const string CashFlowHealthMissing = "Missing";
+    private const string CoveredCallStrategyId = "covered-call-overwrite";
+    private const string CoveredCallScopedStrategyIdPrefix = "covered-call-overwrite:";
 
     private static readonly IReadOnlyDictionary<string, string> EmptyParameters = new Dictionary<string, string>();
     private static readonly IReadOnlyDictionary<string, StrategyPromotionRecord> EmptyPromotionLookup =
@@ -47,40 +54,84 @@ public sealed class StrategyRunReadService
         _cashFlowProjectionService = cashFlowProjectionService;
     }
 
-    public async Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(
+    public Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(
         string? strategyId = null,
         RunType? runType = null,
+        CancellationToken ct = default) =>
+        GetRunsCoreAsync(strategyId, runType, scope: null, ct);
+
+    public Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(
+        string? strategyId,
+        RunType? runType,
+        StrategyRunReadScope scope,
         CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return GetRunsCoreAsync(strategyId, runType, scope, ct);
+    }
+
+    private async Task<IReadOnlyList<StrategyRunSummary>> GetRunsCoreAsync(
+        string? strategyId,
+        RunType? runType,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
     {
         var repositoryQuery = new StrategyRunRepositoryQuery(
             StrategyId: string.IsNullOrWhiteSpace(strategyId) ? null : strategyId,
             RunTypes: runType.HasValue ? [runType.Value] : null,
             Limit: int.MaxValue);
-        var runs = await _repository.QueryRunsAsync(repositoryQuery, ct).ConfigureAwait(false);
+        var runs = await _repository.QueryVisibleRunsAsync(
+                repositoryQuery,
+                ToRepositoryScope(scope),
+                ct)
+            .ConfigureAwait(false);
         var promotionLookup = await LoadPromotionLookupAsync(ct).ConfigureAwait(false);
 
         return runs
+            .Where(run => scope is null ? IsVisibleWithoutScope(run) : IsVisibleToScope(run, scope))
             .Select(run => ToSummary(run, promotionLookup))
             .OrderByDescending(static run => run.StartedAt)
             .ThenBy(static run => run.RunId, StringComparer.Ordinal)
             .ToArray();
     }
 
-    public async Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(
+    public Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(
         StrategyRunHistoryQuery query,
+        CancellationToken ct = default) =>
+        GetRunsCoreAsync(query, scope: null, ct);
+
+    public Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(
+        StrategyRunHistoryQuery query,
+        StrategyRunReadScope scope,
         CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(scope);
+        return GetRunsCoreAsync(query, scope, ct);
+    }
+
+    private async Task<IReadOnlyList<StrategyRunSummary>> GetRunsCoreAsync(
+        StrategyRunHistoryQuery query,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
+    {
         ArgumentNullException.ThrowIfNull(query);
+        var requestedLimit = Math.Clamp(query.Limit, 1, 500);
 
         var repositoryQuery = new StrategyRunRepositoryQuery(
             StrategyId: string.IsNullOrWhiteSpace(query.StrategyId) ? null : query.StrategyId,
             RunTypes: MapModesToRunTypes(query.Modes),
             Status: query.Status,
-            Limit: Math.Clamp(query.Limit, 1, 500));
-        var runs = await _repository.QueryRunsAsync(repositoryQuery, ct).ConfigureAwait(false);
+            Limit: requestedLimit);
+        var runs = await _repository.QueryVisibleRunsAsync(
+                repositoryQuery,
+                ToRepositoryScope(scope),
+                ct)
+            .ConfigureAwait(false);
         var promotionLookup = await LoadPromotionLookupAsync(ct).ConfigureAwait(false);
 
         return runs
+            .Where(run => scope is null ? IsVisibleWithoutScope(run) : IsVisibleToScope(run, scope))
+            .Take(requestedLimit)
             .Select(run => ToSummary(run, promotionLookup))
             .ToArray();
     }
@@ -90,6 +141,29 @@ public sealed class StrategyRunReadService
         CancellationToken ct = default)
     {
         var runs = await GetRunsAsync(query, ct).ConfigureAwait(false);
+        return runs
+            .Select(static run => new StrategyRunTimelineEntry(
+                RunId: run.RunId,
+                StrategyId: run.StrategyId,
+                StrategyName: run.StrategyName,
+                Mode: run.Mode,
+                Status: run.Status,
+                StartedAt: run.StartedAt,
+                CompletedAt: run.CompletedAt,
+                LastUpdatedAt: run.LastUpdatedAt,
+                NetPnl: run.NetPnl,
+                TotalReturn: run.TotalReturn,
+                FillCount: run.FillCount))
+            .ToArray();
+    }
+
+    public async Task<IReadOnlyList<StrategyRunTimelineEntry>> GetMergedTimelineAsync(
+        StrategyRunHistoryQuery query,
+        StrategyRunReadScope scope,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        var runs = await GetRunsAsync(query, scope, ct).ConfigureAwait(false);
         return runs
             .Select(static run => new StrategyRunTimelineEntry(
                 RunId: run.RunId,
@@ -124,17 +198,67 @@ public sealed class StrategyRunReadService
             .ToArray();
     }
 
-    public async Task<StrategyRunDetail?> GetRunDetailAsync(string runId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<StrategyRunLineageTimelineEntry>> GetLineageTimelineAsync(
+        StrategyRunHistoryQuery query,
+        StrategyRunReadScope scope,
+        CancellationToken ct = default)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentNullException.ThrowIfNull(query);
+        ArgumentNullException.ThrowIfNull(scope);
 
-        var run = await _repository.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
+        var runs = await GetRunsAsync(query, scope, ct).ConfigureAwait(false);
+
+        return runs
+            .GroupBy(static run => run.Identity?.CanonicalRunKey ?? run.RunId, StringComparer.Ordinal)
+            .SelectMany(BuildLineageTimelineEntries)
+            .OrderBy(static entry => entry.EventTimestamp ?? DateTimeOffset.MinValue)
+            .ThenBy(static entry => entry.CanonicalRunKey, StringComparer.Ordinal)
+            .ThenBy(static entry => entry.RunId, StringComparer.Ordinal)
+            .ThenBy(static entry => entry.EventType)
+            .ToArray();
+    }
+
+    public Task<StrategyRunDetail?> GetRunDetailAsync(string runId, CancellationToken ct = default) =>
+        GetRunDetailCoreAsync(runId, scope: null, ct);
+
+    public Task<StrategyRunDetail?> GetRunDetailAsync(
+        string runId,
+        StrategyRunReadScope scope,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return GetRunDetailCoreAsync(runId, scope, ct);
+    }
+
+    public async Task<bool> IsRunAccessibleAsync(
+        string runId,
+        StrategyRunReadScope scope,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return await GetRunForScopeAsync(runId, scope, ct).ConfigureAwait(false) is not null;
+    }
+
+    private async Task<StrategyRunDetail?> GetRunDetailCoreAsync(
+        string runId,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
+    {
+        var run = await GetRunForScopeAsync(runId, scope, ct).ConfigureAwait(false);
         if (run is null)
         {
             return null;
         }
 
         var promotionLookup = await LoadPromotionLookupAsync(ct).ConfigureAwait(false);
+        StrategyRunEntry? promotionTargetRun = null;
+        if (promotionLookup.TryGetValue(run.RunId, out var promotionDecision) &&
+            !string.IsNullOrWhiteSpace(promotionDecision.TargetRunId))
+        {
+            promotionTargetRun = await _repository
+                .GetRunByIdAsync(promotionDecision.TargetRunId, ct)
+                .ConfigureAwait(false);
+        }
         var portfolioTask = _portfolioReadService.BuildSummaryAsync(run, ct);
         var ledgerTask = _ledgerReadService.BuildSummaryAsync(run, ct);
 
@@ -150,8 +274,36 @@ public sealed class StrategyRunReadService
             Governance: BuildGovernanceSummary(run),
             // PR-02: governance hooks for approval/audit/compliance seams
             GovernanceHooks: BuildGovernanceHooks(run, promotionLookup),
-            BiasDisclosure: MapBiasDisclosure(run.Metrics?.BiasDisclosure));
+            BiasDisclosure: MapBiasDisclosure(run.Metrics?.BiasDisclosure))
+        {
+            EvidenceLoop = BuildEvidenceLoop(run),
+            AcceptanceChecklist = BuildAcceptanceChecklist(run, promotionLookup, promotionTargetRun, scope)
+        };
     }
+
+    private async Task<StrategyRunEntry?> GetRunForScopeAsync(
+        string runId,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+
+        var run = await _repository.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
+        return run is null || (scope is null ? !IsVisibleWithoutScope(run) : !IsVisibleToScope(run, scope))
+            ? null
+            : run;
+    }
+
+    private static bool IsVisibleWithoutScope(StrategyRunEntry run)
+        => StrategyRunRepositoryVisibility.IsVisible(run, scope: null);
+
+    private static bool IsVisibleToScope(StrategyRunEntry run, StrategyRunReadScope scope)
+        => StrategyRunRepositoryVisibility.IsVisible(run, ToRepositoryScope(scope));
+
+    private static StrategyRunRepositoryScope? ToRepositoryScope(StrategyRunReadScope? scope) =>
+        scope is null
+            ? null
+            : new StrategyRunRepositoryScope(scope.TenantId, scope.CompanyId);
 
     /// <summary>Projects the engine's bias-disclosure report onto the workstation DTO.</summary>
     public static BiasDisclosureDto? MapBiasDisclosure(BiasDisclosureReport? report)
@@ -175,6 +327,247 @@ public sealed class StrategyRunReadService
                     item.Title,
                     item.Detail))
                 .ToArray());
+    }
+
+    private static StrategyRunEvidenceLoop? BuildEvidenceLoop(StrategyRunEntry run)
+    {
+        return StrategyRunEvidenceLoop.TryCreateRequired(
+            run.StrategyId,
+            run.OperatorAcceptanceCriteria,
+            run.RetainedEvidenceReferences,
+            run.AccountingRecordReferences,
+            run.ApprovalReferences,
+            run.PaperValidationReferences,
+            run.GovernedReportReferences,
+            out var evidenceLoop,
+            out _)
+            ? evidenceLoop
+            : null;
+    }
+
+    private static IReadOnlyList<StrategyRunAcceptanceChecklistItemDto> BuildAcceptanceChecklist(
+        StrategyRunEntry run,
+        IReadOnlyDictionary<string, StrategyPromotionRecord> promotionLookup,
+        StrategyRunEntry? promotionTargetRun,
+        StrategyRunReadScope? scope)
+    {
+        if (run.RunType != RunType.Backtest ||
+            !run.EndedAt.HasValue ||
+            !IsCoveredCallStrategy(run.StrategyId))
+        {
+            return [];
+        }
+
+        promotionLookup.TryGetValue(run.RunId, out var decision);
+        var decisionChecklist = PromotionApprovalChecklist.Normalize(decision?.ApprovalChecklist)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var isApproved = string.Equals(
+            decision?.Decision,
+            PromotionDecisionKinds.Approved,
+            StringComparison.OrdinalIgnoreCase);
+        var isRejected = string.Equals(
+            decision?.Decision,
+            PromotionDecisionKinds.Rejected,
+            StringComparison.OrdinalIgnoreCase);
+        var hasDecisionAuthority = decision is not null &&
+            !string.IsNullOrWhiteSpace(decision.ApprovedBy) &&
+            !string.IsNullOrWhiteSpace(decision.AuditReference) &&
+            decision.PromotedAt != default;
+        var hasExactDurablePaperTarget = HasExactDurablePaperTarget(
+            run,
+            decision,
+            promotionTargetRun,
+            scope);
+
+        return PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper)
+            .Select(checklistId =>
+            {
+                var evidenceReference = FindKeyedEvidenceReference(decision?.EvidenceReferences, checklistId);
+                var hasChecklistDecision = decisionChecklist.Contains(checklistId);
+                var evidenceMatchesRun = EvidenceMatchesRunReference(run, evidenceReference);
+                var status = isRejected && hasDecisionAuthority
+                    ? StrategyRunAcceptanceChecklistStatusDto.Rejected
+                    : isApproved && hasDecisionAuthority && hasExactDurablePaperTarget && hasChecklistDecision && evidenceReference is not null && evidenceMatchesRun
+                        ? StrategyRunAcceptanceChecklistStatusDto.Ready
+                        : StrategyRunAcceptanceChecklistStatusDto.ReviewRequired;
+
+                return new StrategyRunAcceptanceChecklistItemDto(
+                    ChecklistId: checklistId,
+                    Label: GetAcceptanceChecklistLabel(checklistId),
+                    Status: status,
+                    EvidenceReference: evidenceReference,
+                    DecidedBy: decision?.ApprovedBy,
+                    DecidedAt: decision?.PromotedAt,
+                    AuditReference: decision?.AuditReference,
+                    Blocker: BuildAcceptanceChecklistBlocker(
+                        decision,
+                        isApproved,
+                        isRejected,
+                        hasDecisionAuthority,
+                        hasExactDurablePaperTarget,
+                        hasChecklistDecision,
+                        evidenceReference,
+                        evidenceMatchesRun));
+            })
+            .ToArray();
+    }
+
+    private static bool IsCoveredCallStrategy(string strategyId)
+        => string.Equals(strategyId, CoveredCallStrategyId, StringComparison.Ordinal) ||
+           strategyId.StartsWith(CoveredCallScopedStrategyIdPrefix, StringComparison.Ordinal);
+
+    private static bool HasExactDurablePaperTarget(
+        StrategyRunEntry sourceRun,
+        StrategyPromotionRecord? decision,
+        StrategyRunEntry? targetRun,
+        StrategyRunReadScope? scope)
+    {
+        if (decision is null ||
+            targetRun is null ||
+            scope is null ||
+            decision.SourceRunType != RunType.Backtest ||
+            decision.TargetRunType != RunType.Paper ||
+            !string.Equals(decision.SourceRunId, sourceRun.RunId, StringComparison.Ordinal) ||
+            !string.Equals(decision.StrategyId, sourceRun.StrategyId, StringComparison.Ordinal) ||
+            !string.Equals(decision.TargetRunId, targetRun.RunId, StringComparison.Ordinal) ||
+            targetRun.RunType != RunType.Paper ||
+            !string.Equals(targetRun.ParentRunId, sourceRun.RunId, StringComparison.Ordinal) ||
+            !string.Equals(targetRun.StrategyId, sourceRun.StrategyId, StringComparison.Ordinal) ||
+            !StrategyRunRepositoryVisibility.TryGetRetainedScope(sourceRun, out var sourceScope) ||
+            !StrategyRunRepositoryVisibility.TryGetRetainedScope(targetRun, out var targetScope) ||
+            sourceScope != targetScope ||
+            !StrategyRunRepositoryVisibility.TryCreateScopeKey(
+                new StrategyRunRepositoryScope(scope.TenantId, scope.CompanyId),
+                out var requestedScope))
+        {
+            return false;
+        }
+
+        return sourceScope == requestedScope;
+    }
+
+    private static string? FindKeyedEvidenceReference(
+        IEnumerable<string>? evidenceReferences,
+        string checklistId)
+    {
+        if (evidenceReferences is null)
+        {
+            return null;
+        }
+
+        foreach (var candidate in evidenceReferences)
+        {
+            if (string.IsNullOrWhiteSpace(candidate))
+            {
+                continue;
+            }
+
+            var trimmed = candidate.Trim();
+            var separatorIndex = trimmed.IndexOf(':', StringComparison.Ordinal);
+            if (separatorIndex <= 0 || separatorIndex == trimmed.Length - 1)
+            {
+                continue;
+            }
+
+            var normalizedKey = PromotionApprovalChecklist.Normalize([trimmed[..separatorIndex]])
+                .FirstOrDefault();
+            if (string.Equals(normalizedKey, checklistId, StringComparison.OrdinalIgnoreCase) &&
+                !string.IsNullOrWhiteSpace(trimmed[(separatorIndex + 1)..]))
+            {
+                return trimmed;
+            }
+        }
+
+        return null;
+    }
+
+    private static string GetAcceptanceChecklistLabel(string checklistId)
+        => checklistId switch
+        {
+            PromotionApprovalChecklist.Dk1TrustPacketReviewed => "DK1 trust packet reviewed",
+            PromotionApprovalChecklist.RunLineageReviewed => "Run lineage reviewed",
+            PromotionApprovalChecklist.PortfolioLedgerContinuityReviewed => "Portfolio and ledger continuity reviewed",
+            PromotionApprovalChecklist.RiskControlsReviewed => "Risk controls reviewed",
+            _ => checklistId.Replace('_', ' ')
+        };
+
+    private static bool EvidenceMatchesRunReference(StrategyRunEntry run, string? keyedEvidenceReference)
+    {
+        if (keyedEvidenceReference is null)
+        {
+            return false;
+        }
+
+        var separatorIndex = keyedEvidenceReference.IndexOf(':', StringComparison.Ordinal);
+        if (separatorIndex < 0 || separatorIndex == keyedEvidenceReference.Length - 1)
+        {
+            return false;
+        }
+
+        var evidenceValue = keyedEvidenceReference[(separatorIndex + 1)..].Trim();
+        return run.RetainedEvidenceReferences
+            .Concat(run.AccountingRecordReferences)
+            .Concat(run.ApprovalReferences)
+            .Concat(run.PaperValidationReferences)
+            .Concat(run.GovernedReportReferences)
+            .Any(reference => string.Equals(reference?.Trim(), evidenceValue, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string? BuildAcceptanceChecklistBlocker(
+        StrategyPromotionRecord? decision,
+        bool isApproved,
+        bool isRejected,
+        bool hasDecisionAuthority,
+        bool hasExactDurablePaperTarget,
+        bool hasChecklistDecision,
+        string? evidenceReference,
+        bool evidenceMatchesRun)
+    {
+        if (decision is null)
+        {
+            return "No durable promotion decision has been recorded.";
+        }
+
+        if (!hasDecisionAuthority)
+        {
+            return "The durable decision is missing its operator, decision time, or audit authority.";
+        }
+
+        if (isRejected)
+        {
+            return string.IsNullOrWhiteSpace(decision.ApprovalReason)
+                ? "The durable promotion decision rejected this promotion."
+                : decision.ApprovalReason;
+        }
+
+        if (!isApproved)
+        {
+            return $"The durable promotion decision '{decision.Decision}' is not an approval.";
+        }
+
+        if (!hasExactDurablePaperTarget)
+        {
+            return "The durable approval does not resolve to its exact tenant/company-scoped Paper child run.";
+        }
+
+        if (!hasChecklistDecision && evidenceReference is null)
+        {
+            return "The durable approval is missing both this checklist id and its keyed evidence reference.";
+        }
+
+        if (!hasChecklistDecision)
+        {
+            return "The durable approval is missing this canonical checklist id.";
+        }
+
+        if (evidenceReference is not null && !evidenceMatchesRun)
+        {
+            return "The keyed evidence value does not match any retained reference on the source run.";
+        }
+
+        return evidenceReference is null
+            ? "The durable approval is missing a keyed evidence reference for this checklist id."
+            : null;
     }
 
     // ── PR-02: mode-filtered and active-run queries ──────────────────────────
@@ -213,19 +606,47 @@ public sealed class StrategyRunReadService
         return await GetRunsAsync(query, ct).ConfigureAwait(false);
     }
 
-    public async Task<LedgerSummary?> GetLedgerSummaryAsync(string runId, CancellationToken ct = default)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+    public Task<LedgerSummary?> GetLedgerSummaryAsync(string runId, CancellationToken ct = default) =>
+        GetLedgerSummaryCoreAsync(runId, scope: null, ct);
 
-        var run = await _repository.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
+    public Task<LedgerSummary?> GetLedgerSummaryAsync(
+        string runId,
+        StrategyRunReadScope scope,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return GetLedgerSummaryCoreAsync(runId, scope, ct);
+    }
+
+    private async Task<LedgerSummary?> GetLedgerSummaryCoreAsync(
+        string runId,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
+    {
+        var run = await GetRunForScopeAsync(runId, scope, ct).ConfigureAwait(false);
         return run is null
             ? null
             : await _ledgerReadService.BuildSummaryAsync(run, ct).ConfigureAwait(false);
     }
 
-    public async Task<IReadOnlyList<StrategyRunComparison>> CompareRunsAsync(
+    public Task<IReadOnlyList<StrategyRunComparison>> CompareRunsAsync(
         IEnumerable<string> runIds,
+        CancellationToken ct = default) =>
+        CompareRunsCoreAsync(runIds, scope: null, ct);
+
+    public Task<IReadOnlyList<StrategyRunComparison>> CompareRunsAsync(
+        IEnumerable<string> runIds,
+        StrategyRunReadScope scope,
         CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return CompareRunsCoreAsync(runIds, scope, ct);
+    }
+
+    private async Task<IReadOnlyList<StrategyRunComparison>> CompareRunsCoreAsync(
+        IEnumerable<string> runIds,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(runIds);
 
@@ -241,7 +662,8 @@ public sealed class StrategyRunReadService
         var promotionLookup = await LoadPromotionLookupAsync(ct).ConfigureAwait(false);
         var results = new List<StrategyRunComparison>(runs.Count);
 
-        foreach (var run in runs)
+        foreach (var run in runs.Where(run =>
+                     scope is null ? IsVisibleWithoutScope(run) : IsVisibleToScope(run, scope)))
         {
             var metrics = run.Metrics?.Metrics;
             var artifactCompleteness = BuildArtifactCompleteness(run);
@@ -257,7 +679,7 @@ public sealed class StrategyRunReadService
                 FinalEquity: metrics?.FinalEquity,
                 MaxDrawdown: metrics?.MaxDrawdown,
                 SharpeRatio: metrics?.SharpeRatio,
-                FillCount: run.Metrics?.Fills.Count ?? 0,
+                FillCount: run.RetainedFillCount,
                 LastUpdatedAt: GetLastUpdatedAt(run),
                 PromotionState: BuildPromotionSummary(run, promotionLookup).State,
                 HasLedger: !string.IsNullOrWhiteSpace(run.LedgerReference),
@@ -273,10 +695,27 @@ public sealed class StrategyRunReadService
             .ToArray();
     }
 
-    public async Task<IReadOnlyList<RunComparisonDto>> GetRunComparisonDtosAsync(
+    public Task<IReadOnlyList<RunComparisonDto>> GetRunComparisonDtosAsync(
         IEnumerable<string> runIds,
         bool governanceFirst = false,
+        CancellationToken ct = default) =>
+        GetRunComparisonDtosCoreAsync(runIds, governanceFirst, scope: null, ct);
+
+    public Task<IReadOnlyList<RunComparisonDto>> GetRunComparisonDtosAsync(
+        IEnumerable<string> runIds,
+        StrategyRunReadScope scope,
+        bool governanceFirst = false,
         CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return GetRunComparisonDtosCoreAsync(runIds, governanceFirst, scope, ct);
+    }
+
+    private async Task<IReadOnlyList<RunComparisonDto>> GetRunComparisonDtosCoreAsync(
+        IEnumerable<string> runIds,
+        bool governanceFirst,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(runIds);
 
@@ -292,7 +731,8 @@ public sealed class StrategyRunReadService
         var promotionLookup = await LoadPromotionLookupAsync(ct).ConfigureAwait(false);
         var results = new List<RunComparisonDto>(runs.Count);
 
-        foreach (var run in runs)
+        foreach (var run in runs.Where(run =>
+                     scope is null ? IsVisibleWithoutScope(run) : IsVisibleToScope(run, scope)))
         {
             var metrics = run.Metrics?.Metrics;
             var continuity = BuildComparisonContinuity(run);
@@ -322,7 +762,7 @@ public sealed class StrategyRunReadService
                 TotalTrades: metrics?.TotalTrades ?? 0,
                 WinningTrades: metrics?.WinningTrades ?? 0,
                 LosingTrades: metrics?.LosingTrades ?? 0,
-                FillCount: run.Metrics?.Fills.Count ?? 0,
+                FillCount: run.RetainedFillCount,
                 TotalCommissions: metrics?.TotalCommissions ?? 0m,
                 TotalMarginInterest: metrics?.TotalMarginInterest ?? 0m,
                 TotalShortRebates: metrics?.TotalShortRebates ?? 0m,
@@ -359,7 +799,7 @@ public sealed class StrategyRunReadService
     private static ComparisonContinuitySignals BuildComparisonContinuity(StrategyRunEntry run)
     {
         var hasLedgerReference = !string.IsNullOrWhiteSpace(run.LedgerReference);
-        var ledgerEntryCount = run.Metrics?.Ledger?.Journal?.Count ?? 0;
+        var ledgerEntryCount = run.RetainedJournalEntryCount;
         var hasLedgerEntryCoverage = hasLedgerReference && ledgerEntryCount > 0;
         var cashFlowEntries = run.Metrics?.CashFlows?.Count ?? 0;
         var hasCashFlowCoverage = cashFlowEntries > 0;
@@ -397,7 +837,7 @@ public sealed class StrategyRunReadService
             HasPortfolio: !string.IsNullOrWhiteSpace(run.PortfolioId),
             HasLedger: !string.IsNullOrWhiteSpace(run.LedgerReference),
             HasCashFlow: run.Metrics?.CashFlows.Count > 0,
-            HasFills: run.Metrics?.Fills.Count > 0,
+            HasFills: run.RetainedFillCount > 0,
             HasAuditTrail: !string.IsNullOrWhiteSpace(run.AuditReference));
     }
 
@@ -441,9 +881,29 @@ public sealed class StrategyRunReadService
         return warnings.Distinct(StringComparer.Ordinal).ToArray();
     }
 
-    public async Task<IReadOnlyList<StrategySweepResultGroup>> GetSweepResultGroupsAsync(int limit = 25, CancellationToken ct = default)
+    public Task<IReadOnlyList<StrategySweepResultGroup>> GetSweepResultGroupsAsync(
+        int limit = 25,
+        CancellationToken ct = default) =>
+        GetSweepResultGroupsCoreAsync(limit, scope: null, ct);
+
+    public Task<IReadOnlyList<StrategySweepResultGroup>> GetSweepResultGroupsAsync(
+        int limit,
+        StrategyRunReadScope scope,
+        CancellationToken ct = default)
     {
-        var runs = await GetRunsAsync(new StrategyRunHistoryQuery(Limit: Math.Clamp(limit * 20, 1, 500)), ct).ConfigureAwait(false);
+        ArgumentNullException.ThrowIfNull(scope);
+        return GetSweepResultGroupsCoreAsync(limit, scope, ct);
+    }
+
+    private async Task<IReadOnlyList<StrategySweepResultGroup>> GetSweepResultGroupsCoreAsync(
+        int limit,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
+    {
+        var query = new StrategyRunHistoryQuery(Limit: Math.Clamp(limit * 20, 1, 500));
+        var runs = scope is null
+            ? await GetRunsAsync(query, ct).ConfigureAwait(false)
+            : await GetRunsAsync(query, scope, ct).ConfigureAwait(false);
         return runs
             .Where(static run => !string.IsNullOrWhiteSpace(run.SweepId) && !string.IsNullOrWhiteSpace(run.SweepDefinitionHash))
             .GroupBy(static run => $"{run.SweepId}|{run.SweepDefinitionHash}", StringComparer.Ordinal)
@@ -501,7 +961,7 @@ public sealed class StrategyRunReadService
             NetPnl: metrics?.NetPnl,
             TotalReturn: metrics?.TotalReturn,
             FinalEquity: metrics?.FinalEquity,
-            FillCount: run.Metrics?.Fills.Count ?? 0,
+            FillCount: run.RetainedFillCount,
             LastUpdatedAt: GetLastUpdatedAt(run),
             AuditReference: run.AuditReference,
             Identity: BuildIdentity(run, promotionLookup),
@@ -539,7 +999,7 @@ public sealed class StrategyRunReadService
     {
         var metrics = run.Metrics?.Metrics;
         return new StrategyRunExecutionSummary(
-            FillCount: run.Metrics?.Fills.Count ?? 0,
+            FillCount: run.RetainedFillCount,
             TotalTrades: metrics?.TotalTrades ?? 0,
             WinningTrades: metrics?.WinningTrades ?? 0,
             LosingTrades: metrics?.LosingTrades ?? 0,
@@ -719,7 +1179,8 @@ public sealed class StrategyRunReadService
             ManualOverrideId = matchedRecord?.ManualOverrideId,
             ApprovedBy = matchedRecord?.ApprovedBy,
             ApprovalChecklist = matchedRecord?.ApprovalChecklist,
-            EvidenceReferences = matchedRecord?.EvidenceReferences
+            EvidenceReferences = matchedRecord?.EvidenceReferences,
+            PromotedAt = matchedRecord?.PromotedAt
         };
     }
 
@@ -917,11 +1378,24 @@ public sealed class StrategyRunReadService
     /// Returns the equity curve with per-point drawdown for the given run.
     /// Returns <c>null</c> when the run does not exist or has no snapshots recorded.
     /// </summary>
-    public async Task<EquityCurveSummary?> GetEquityCurveAsync(string runId, CancellationToken ct = default)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+    public Task<EquityCurveSummary?> GetEquityCurveAsync(string runId, CancellationToken ct = default) =>
+        GetEquityCurveCoreAsync(runId, scope: null, ct);
 
-        var run = await _repository.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
+    public Task<EquityCurveSummary?> GetEquityCurveAsync(
+        string runId,
+        StrategyRunReadScope scope,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return GetEquityCurveCoreAsync(runId, scope, ct);
+    }
+
+    private async Task<EquityCurveSummary?> GetEquityCurveCoreAsync(
+        string runId,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
+    {
+        var run = await GetRunForScopeAsync(runId, scope, ct).ConfigureAwait(false);
         return run is null
             ? null
             : BuildEquityCurve(run);
@@ -974,11 +1448,24 @@ public sealed class StrategyRunReadService
     /// Returns all executed fills for the given run, ordered by fill time.
     /// Returns <c>null</c> when the run does not exist.
     /// </summary>
-    public async Task<RunFillSummary?> GetFillsAsync(string runId, CancellationToken ct = default)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+    public Task<RunFillSummary?> GetFillsAsync(string runId, CancellationToken ct = default) =>
+        GetFillsCoreAsync(runId, scope: null, ct);
 
-        var run = await _repository.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
+    public Task<RunFillSummary?> GetFillsAsync(
+        string runId,
+        StrategyRunReadScope scope,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return GetFillsCoreAsync(runId, scope, ct);
+    }
+
+    private async Task<RunFillSummary?> GetFillsCoreAsync(
+        string runId,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
+    {
+        var run = await GetRunForScopeAsync(runId, scope, ct).ConfigureAwait(false);
         if (run is null)
         {
             return null;
@@ -1010,11 +1497,24 @@ public sealed class StrategyRunReadService
     /// Returns per-symbol P&amp;L attribution for the given run.
     /// Returns <c>null</c> when the run does not exist or has no metrics.
     /// </summary>
-    public async Task<RunAttributionSummary?> GetAttributionAsync(string runId, CancellationToken ct = default)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+    public Task<RunAttributionSummary?> GetAttributionAsync(string runId, CancellationToken ct = default) =>
+        GetAttributionCoreAsync(runId, scope: null, ct);
 
-        var run = await _repository.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
+    public Task<RunAttributionSummary?> GetAttributionAsync(
+        string runId,
+        StrategyRunReadScope scope,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return GetAttributionCoreAsync(runId, scope, ct);
+    }
+
+    private async Task<RunAttributionSummary?> GetAttributionCoreAsync(
+        string runId,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
+    {
+        var run = await GetRunForScopeAsync(runId, scope, ct).ConfigureAwait(false);
         if (run is null)
         {
             return null;
@@ -1050,19 +1550,38 @@ public sealed class StrategyRunReadService
     /// <summary>
     /// Returns a normalized, versioned portfolio drill-in aggregate for one run.
     /// </summary>
-    public async Task<RunPortfolioDrillInSummary?> GetPortfolioDrillInAsync(string runId, CancellationToken ct = default)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+    public Task<RunPortfolioDrillInSummary?> GetPortfolioDrillInAsync(string runId, CancellationToken ct = default) =>
+        GetPortfolioDrillInCoreAsync(runId, scope: null, ct);
 
-        var run = await _repository.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
+    public Task<RunPortfolioDrillInSummary?> GetPortfolioDrillInAsync(
+        string runId,
+        StrategyRunReadScope scope,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return GetPortfolioDrillInCoreAsync(runId, scope, ct);
+    }
+
+    private async Task<RunPortfolioDrillInSummary?> GetPortfolioDrillInCoreAsync(
+        string runId,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
+    {
+        var run = await GetRunForScopeAsync(runId, scope, ct).ConfigureAwait(false);
         if (run is null)
         {
             return null;
         }
 
-        var attributionTask = GetAttributionAsync(runId, ct);
-        var drawdownTask = GetEquityCurveAsync(runId, ct);
-        var tradeTask = GetFillsAsync(runId, ct);
+        var attributionTask = scope is null
+            ? GetAttributionAsync(runId, ct)
+            : GetAttributionAsync(runId, scope, ct);
+        var drawdownTask = scope is null
+            ? GetEquityCurveAsync(runId, ct)
+            : GetEquityCurveAsync(runId, scope, ct);
+        var tradeTask = scope is null
+            ? GetFillsAsync(runId, ct)
+            : GetFillsAsync(runId, scope, ct);
         var cashFlowTask = _cashFlowProjectionService?.GetAsync(runId, ct: ct) ?? Task.FromResult<RunCashFlowSummary?>(null);
 
         await Task.WhenAll(attributionTask, drawdownTask, tradeTask, cashFlowTask).ConfigureAwait(false);

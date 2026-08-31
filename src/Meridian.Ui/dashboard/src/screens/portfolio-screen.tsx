@@ -1224,7 +1224,18 @@ export function PortfolioScreen({
                 />
               ) : (
                 <div role="status" className="rounded-sm border border-border/70 bg-background/40">
-                  <EmptyState icon="table" title="No open holdings" detail={vm.positionEmptyText} compact />
+                  <EmptyState
+                    icon="table"
+                    title="No open holdings"
+                    detail={vm.positionEmptyText}
+                    action={vm.positionEmptyAction?.label}
+                    onAction={
+                      vm.positionEmptyAction
+                        ? () => navigate({ pathname: vm.positionEmptyAction!.route, search: location.search })
+                        : undefined
+                    }
+                    compact
+                  />
                 </div>
               )}
             </CardContent>

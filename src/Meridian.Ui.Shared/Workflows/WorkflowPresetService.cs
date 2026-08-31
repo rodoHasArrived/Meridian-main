@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Workflows;
 
@@ -274,12 +275,6 @@ public sealed class WorkflowPresetService
         return string.IsNullOrWhiteSpace(normalized)
             ? $"workflow-preset-{Guid.NewGuid():N}"
             : normalized[..Math.Min(normalized.Length, MaxPresetIdLength)];
-    }
-
-    private static string? NormalizeOptional(string? value)
-    {
-        var trimmed = value?.Trim();
-        return string.IsNullOrWhiteSpace(trimmed) ? null : trimmed;
     }
 
     private static IReadOnlyList<string> NormalizeTags(IReadOnlyList<string>? tags)

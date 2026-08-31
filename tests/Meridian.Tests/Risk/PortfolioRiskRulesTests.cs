@@ -190,7 +190,7 @@ public sealed class PortfolioRiskRulesTests
     }
 
     [Fact]
-    public async Task Concentration_WithZeroPortfolioValue_Approves()
+    public async Task Concentration_WithZeroPortfolioValue_RejectsIncreasedExposure()
     {
         var rule = new SymbolConcentrationRule(
             Provider(grossExposure: 0m, portfolioValue: 0m),
@@ -199,7 +199,8 @@ public sealed class PortfolioRiskRulesTests
 
         var result = await rule.EvaluateAsync(CreateOrder(limitPrice: 100m));
 
-        result.IsApproved.Should().BeTrue();
+        result.IsApproved.Should().BeFalse();
+        result.RejectReason.Should().Contain("portfolio value is exhausted");
     }
 
     // --- OrderNotionalRule ---
@@ -281,6 +282,75 @@ public sealed class PortfolioRiskRulesTests
     }
 
     [Fact]
+    public async Task OrderNotional_FixedIncomeFaceValue_UsesPercentageOfPar()
+    {
+        var rule = new OrderNotionalRule(
+            Provider(),
+            () => 200_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+        var order = CreateOrder(symbol: "912797AB1", quantity: 100_000m, limitPrice: 101.25m) with
+        {
+            Metadata = OrderSizingMetadata.WithFaceValuePercentageOfPar(
+                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["asset_class"] = "treasury"
+                })
+        };
+
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeTrue(
+            "100,000 face at 101.25% of par is $101,250, not $10,125,000");
+    }
+
+    [Fact]
+    public async Task OrderNotional_FixedIncome_IgnoresUnroutableNotionalMetadata()
+    {
+        var rule = new OrderNotionalRule(
+            Provider(),
+            () => 100_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+        var order = CreateOrder(symbol: "912797AB1", quantity: 100_000m, limitPrice: 101.25m) with
+        {
+            Metadata = OrderSizingMetadata.WithFaceValuePercentageOfPar(
+                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["asset_class"] = "treasury",
+                    ["notional"] = "1"
+                })
+        };
+
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeFalse(
+            "fixed-income routing discards notional metadata and sends $101,250 of face-value exposure");
+    }
+
+    [Fact]
+    public async Task OrderNotional_GenericBondClass_DoesNotAssumeAlpacaFaceValueSizing()
+    {
+        var rule = new OrderNotionalRule(
+            Provider(),
+            () => 100m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+        var order = CreateOrder(symbol: "IB-BOND", quantity: 5m, limitPrice: 101m) with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["asset_class"] = "bond"
+            }
+        };
+
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeFalse(
+            "a generic IB bond class must not receive Alpaca's divide-by-100 face-value semantics");
+    }
+
+    [Fact]
     public async Task OrderNotional_AmendmentProbe_MeasuresTheWholeAmendedOrder()
     {
         var rule = new OrderNotionalRule(
@@ -348,6 +418,23 @@ public sealed class PortfolioRiskRulesTests
         var result = await rule.EvaluateAsync(order);
 
         result.IsApproved.Should().BeFalse("a triggered buy stop routes at the market, not at its stop price");
+    }
+
+    [Fact]
+    public async Task OrderNotional_BuyStopWithNoCurrentMarket_RejectsAsUnmeasurable()
+    {
+        var rule = new OrderNotionalRule(
+            Provider(),
+            () => 50_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        var order = CreateOrder(quantity: 1_000m, type: OrderType.StopMarket) with { StopPrice = 1m };
+
+        var result = await rule.EvaluateAsync(order);
+
+        result.IsApproved.Should().BeFalse("a stop trigger does not cap the execution price");
+        result.RejectReason.Should().Contain("No current price");
     }
 
     [Fact]
@@ -655,6 +742,22 @@ public sealed class PortfolioRiskRulesTests
             CreateOrder(quantity: 10_000m, limitPrice: 1m, side: OrderSide.Sell));
 
         result.IsApproved.Should().BeFalse("the executable value is 10,000 x the 100 market, not the 1 limit");
+    }
+
+    [Fact]
+    public async Task OrderNotional_SellLimitWithNoCurrentMarket_RejectsAsUnmeasurable()
+    {
+        var rule = new OrderNotionalRule(
+            Provider(),
+            () => 500_000m,
+            () => null,
+            NullLogger<OrderNotionalRule>.Instance);
+
+        var result = await rule.EvaluateAsync(
+            CreateOrder(quantity: 10_000m, limitPrice: 1m, side: OrderSide.Sell));
+
+        result.IsApproved.Should().BeFalse("a sell limit is a floor, not a cap on execution value");
+        result.RejectReason.Should().Contain("No current price");
     }
 
     [Fact]

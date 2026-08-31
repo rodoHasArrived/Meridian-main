@@ -512,7 +512,8 @@ const securityAssetProfiles: SecurityAssetProfileDefinition[] = [
     effectiveTo: null,
     approvedBy: "Security Master Council",
     approvedAtUtc: "2026-05-01T00:00:00Z",
-    changeReason: "Seed template"
+    changeReason: "Seed template",
+    approvalReference: "MERIDIAN-SEED-APPROVAL"
   }
 ];
 
@@ -922,7 +923,9 @@ describe("SettingsScreen", () => {
           navDate: "2026-04-30"
         }),
         profileApproval: expect.objectContaining({
-          approvalReference: "profile:private-fund-interest:v1"
+          // The catalog's governed approval reference is copied verbatim; the write seam rejects
+          // a fabricated reference when the catalog records one.
+          approvalReference: "MERIDIAN-SEED-APPROVAL"
         })
       }),
       identifiers: [
@@ -935,6 +938,74 @@ describe("SettingsScreen", () => {
     }));
     expect(onRefresh).toHaveBeenCalledOnce();
     expect(await within(form).findByText("Security created for Meridian Private Fund I.")).toBeInTheDocument();
+  });
+
+  it("collects and submits every identifier kind the profile requires", async () => {
+    // The write seam enforces the profile's required identifier preferences at creation: a
+    // profile requiring CUSIP coverage must surface a CUSIP input and submit that identifier,
+    // or every creation fails with SM_CUSTOM_PROFILE_IDENTIFIER_COVERAGE_MISSING.
+    const user = userEvent.setup();
+    const profilesRequiringCusip: SecurityAssetProfileDefinition[] = [
+      {
+        ...securityAssetProfiles[0],
+        identifierPreferences: [
+          ...securityAssetProfiles[0].identifierPreferences,
+          { kind: "Cusip", isRequiredForClose: true, reason: "Structured strips need CUSIP coverage." }
+        ]
+      }
+    ];
+    apiMocks.createSecurityMasterEntry.mockResolvedValue({
+      securityId: "sec-private-fund-cusip",
+      displayName: "Meridian Private Fund II",
+      status: "Active",
+      classification: {
+        assetClass: "CustomAsset",
+        subType: "PrivateFundInterest",
+        primaryIdentifierKind: "InternalCode",
+        primaryIdentifierValue: "PF-II",
+        matchedIdentifierKind: null,
+        matchedIdentifierValue: null,
+        matchedProvider: null
+      },
+      economicDefinition: {
+        currency: "USD",
+        version: 1,
+        effectiveFrom: "2026-05-29T00:00:00Z",
+        effectiveTo: null,
+        subType: "PrivateFundInterest",
+        assetFamily: "AlternativeAsset",
+        issuerType: null
+      }
+    });
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        securityAssetProfiles={profilesRequiringCusip}
+      />
+    );
+
+    const form = screen.getByRole("form", { name: "Create profile-backed security" });
+    await user.type(within(form).getByLabelText("Profile-backed security display name"), "Meridian Private Fund II");
+    await user.type(within(form).getByLabelText("Profile-backed security internal code"), "PF-II");
+    await user.type(within(form).getByLabelText("Profile field Sponsor"), "Meridian GP");
+    await user.type(within(form).getByLabelText("Profile field NAV date"), "2026-04-30");
+
+    // Leaving the required CUSIP blank blocks creation before the API is called.
+    await user.click(within(form).getByRole("button", { name: /Create security/i }));
+    expect(apiMocks.createSecurityMasterEntry).not.toHaveBeenCalled();
+    expect(within(form).getByLabelText("Profile-backed security Cusip identifier")).toBeInTheDocument();
+
+    await user.type(within(form).getByLabelText("Profile-backed security Cusip identifier"), "023135106");
+    await user.click(within(form).getByRole("button", { name: /Create security/i }));
+
+    expect(apiMocks.createSecurityMasterEntry).toHaveBeenCalledWith(expect.objectContaining({
+      identifiers: [
+        expect.objectContaining({ kind: "InternalCode", value: "PF-II", isPrimary: true }),
+        expect.objectContaining({ kind: "Cusip", value: "023135106", isPrimary: false })
+      ]
+    }));
   });
 
   it("blocks profile-backed security creation when a numeric profile field does not parse", async () => {

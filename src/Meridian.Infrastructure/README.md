@@ -147,6 +147,19 @@ account's balances or positions. Account-summary request correlation is register
 so synchronous vendor callbacks cannot arrive before the awaiting operation exists.
 Alpaca trade-update streaming accumulates complete WebSocket messages across fragmented frames,
 bounds each message before UTF-8 decoding, and reconnects after an incomplete oversized payload.
+Alpaca order cancellation accepts a typed client-ID or broker-ID namespace. Client identifiers use
+only the provider's dedicated lookup route, so a UUID-shaped client ID cannot collide with an
+unrelated broker UUID; DELETE receives only the resolved broker ID. HTTP 204 is acceptance rather
+than completion: the adapter rereads that exact broker order and emits `Cancelled` only after the
+provider reports cancellation or absence. If it filled in the race, the verified cumulative
+quantity and average price are emitted as a fill. Open-order reads request nested pages at the
+provider maximum of 500 and advance by broker-order cursor until a short page, so bracket children
+and orders beyond the default page cannot disappear from kill-switch evidence.
+Polygon trade mapping retains `i` as the published trade identity while continuity checks use a
+separate per-ticker sequence domain for `q`, independent of execution venue. Sparse increasing
+values remain valid, while duplicate or decreasing values across changing trade IDs and venues are
+rejected by the shared trade collector. Because Polygon resets `q` each U.S. equities session, the
+continuity key includes the America/New_York trading date; UTC midnight does not reset the stream.
 Failover cleanup remains best effort, but failed depth or trade unsubscriptions are logged with the
 provider and subscription identity so leaked quota-consuming streams remain observable.
 The IB vendor runtime also exposes an entitlement-aware `IBDataServices` seam for scanner discovery,
@@ -190,12 +203,25 @@ ETL SFTP publishing is an Infrastructure adapter implementation of the Contracts
 only owns transport connection, pinned host-key verification, directory creation, and upload
 mechanics. SFTP source and destination definitions must provide a SHA-256 host-key fingerprint so
 imports and exports fail closed before trusting a remote server identity.
-SFTP source imports now resolve credentials through `ISftpCredentialResolver` before opening a
-session, expose `ISftpCapabilityService` for runtime readiness diagnostics, and support explicit
-post-import source handling (`leave`, `delete`, `archive`, `error`, or `.done` marker) without
-weakening the pinned-host-key requirement. SFTP locations are strict `sftp://` URIs with a host and
-absolute remote path; user info, query strings, fragments, traversal segments, and files outside the
-configured source root are rejected before opening a session. Local and SFTP ETL source readers
+SFTP imports **and exports** resolve credentials through the same `ISftpCredentialResolver`:
+`ResolveAsync` has source and destination overloads that share one secret model, so an `env:`
+reference resolves identically on both sides. Before this the publisher passed
+`destination.SecretRef` through verbatim, sending the literal text `env:VARIABLE` as the password
+on the write side while the read side resolved it correctly.
+
+`ISftpCapabilityService` provides runtime readiness diagnostics for sources and destinations alike
+and exposes `RealSftpEnabled`, the build-time `EnableSftp` state. `SftpFilePublisher` evaluates
+capability *before* opening any connection, so a default `EnableSftp=false` build reports the
+readiness issues rather than surfacing the disabled stub's `NotSupportedException` as a transport
+failure. Readiness delegates location validation to `SftpRemoteLocation.ParseRequired`, the same
+parser the transfer path uses, so a destination cannot be reported ready and then rejected before
+connecting. Readiness also rejects a malformed host-key fingerprint and an `env:` reference whose
+variable is unset or empty, both of which would otherwise fail only after a job was accepted.
+
+Sources additionally support explicit post-import handling (`leave`, `delete`, `archive`, `error`,
+or `.done` marker) without weakening the pinned-host-key requirement. SFTP locations are strict
+`sftp://` URIs with a host and absolute remote path; user info, query strings, fragments, traversal
+segments, and files outside the configured source root are rejected before opening a session. Local and SFTP ETL source readers
 discover both CSV and XLSX partner files by default, with semicolon-delimited file patterns for
 scoped exchanges. Publisher uploads use temporary remote names and rename into place so readers do
 not observe partial exports; the SSH.NET transfer calls remain synchronous, with cancellation

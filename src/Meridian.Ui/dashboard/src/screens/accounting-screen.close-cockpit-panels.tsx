@@ -402,7 +402,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
           <Button
             type="button"
             size="sm"
-            variant="outline"
+            variant={view.lockClosePeriodArmed ? "destructive" : "outline"}
             disabled={Boolean(view.lockClosePeriodDisabledReason)}
             disabledReason={view.lockClosePeriodDisabledReason ?? undefined}
             busy={view.lockClosePeriodBusy}
@@ -752,6 +752,13 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                       <ul className="mt-2 space-y-1 text-xs text-warning">
                         {row.issueLabels.map((issue) => (
                           <li key={`${row.controlId}-${issue}`}>{issue}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    {row.evidenceReferences.length > 0 ? (
+                      <ul className="mt-2 space-y-1" aria-label={`Evidence references for ${row.label}`}>
+                        {row.evidenceReferences.map((reference) => (
+                          <li key={`${row.controlId}-${reference}`} className="break-all font-mono text-xs text-muted-foreground">{reference}</li>
                         ))}
                       </ul>
                     ) : null}

@@ -34,6 +34,174 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
         "meridian-statement-casework-handoff-tests",
         Guid.NewGuid().ToString("N"));
 
+    [Theory]
+    [InlineData(StatementCaseworkCommitFaultPoint.EnvelopeRetained)]
+    [InlineData(StatementCaseworkCommitFaultPoint.BreakProjected)]
+    [InlineData(StatementCaseworkCommitFaultPoint.BreakAuditProjected)]
+    [InlineData(StatementCaseworkCommitFaultPoint.CaseProjected)]
+    [InlineData(StatementCaseworkCommitFaultPoint.CompletionRetained)]
+    public async Task ApplyAsync_SourceCommitFaultAtEveryProjection_ExactReplayConvergesOnce(
+        StatementCaseworkCommitFaultPoint faultPoint)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var now = new DateTimeOffset(2026, 7, 26, 11, 0, 0, TimeSpan.Zero);
+        var fundAccountId = Guid.NewGuid();
+        var import = BuildImport($"import-source-commit-{faultPoint}", fundAccountId);
+        var sourceBreak = BuildSourceBreak(import.ImportId, $"source-break-{faultPoint}");
+        var sourceCase = BuildSourceCase(import.ImportId, sourceBreak.BreakId, now.AddHours(-1));
+        var item = BuildQueueItem(import, sourceBreak.BreakId, now) with
+        {
+            Status = ReconciliationBreakQueueStatus.Resolved,
+            LifecycleState = ReconciliationCaseLifecycleState.Resolved,
+            Disposition = ReconciliationBreakDispositionDto.Resolved,
+            DispositionReason = "Reviewed statement variance.",
+            ResolvedBy = "fund-ops",
+            ResolvedAt = now
+        };
+        var command = BuildCommand(item, ReconciliationCaseworkAction.Resolve);
+        var breakStore = new JsonReconciliationBreakStore(_root);
+        var caseStore = new JsonReconciliationCaseStore(_root);
+        await breakStore.WriteAsync([sourceBreak], timeout.Token);
+        await caseStore.SaveAsync(sourceCase, timeout.Token);
+        var operations = CreateOperationsService(out var operationsRepository);
+        await operationsRepository.SaveAsync(
+            BuildOperationsWorkflow(fundAccountId, import, now.AddDays(-1)),
+            timeout.Token);
+        var journalStore = CreateStrictJournalStore(import);
+        var firstCommitStore = new FileStatementCaseworkCommitStore(_root);
+        var firstService = new StatementReconciliationCaseworkHandoffService(
+            new StaticQueueRepository(item),
+            breakStore,
+            caseStore,
+            new StaticStatementRunWorkflowService(import),
+            operations,
+            journalStore.Object,
+            firstCommitStore,
+            new ThrowOnceSourceCommitFaultInjector(faultPoint));
+
+        var first = async () => await firstService.ApplyAsync(QueueScope, command, timeout.Token);
+        await first.Should().ThrowAsync<StatementReconciliationCaseworkHandoffException>();
+
+        var restartedCommitStore = new FileStatementCaseworkCommitStore(_root);
+        var restartedService = new StatementReconciliationCaseworkHandoffService(
+            new StaticQueueRepository(item),
+            breakStore,
+            caseStore,
+            new StaticStatementRunWorkflowService(import),
+            operations,
+            journalStore.Object,
+            restartedCommitStore);
+        await restartedService.ApplyAsync(QueueScope, command, timeout.Token);
+
+        var envelope = await restartedCommitStore.GetAsync(command.CommandId, timeout.Token);
+        envelope.Should().NotBeNull();
+        envelope!.OriginalBreak.Status.Should().Be("Open");
+        envelope.BreakAudit.PreviousStatus.Should().Be("Open");
+        envelope.NextBreak.Status.Should().Be("Resolved");
+        (await restartedCommitStore.IsCompletedAsync(
+            command.CommandId,
+            envelope.InputHashSha256,
+            timeout.Token)).Should().BeTrue();
+        (await breakStore.GetAsync(sourceBreak.BreakId, timeout.Token))!.Status.Should().Be("Resolved");
+        var retainedCase = await caseStore.GetAsync(sourceCase.CaseId, timeout.Token);
+        retainedCase!.AuditEvents.Should().ContainSingle(audit => audit.EventType == "StatementBreakDisposed");
+        retainedCase.DecisionNotes.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task ApplyAsync_SourceCommitCrashAfterCaseBody_ReplayRepairsSidecarWithoutStatusOrEvidenceRegression()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var now = new DateTimeOffset(2026, 7, 26, 11, 30, 0, TimeSpan.Zero);
+        var fundAccountId = Guid.NewGuid();
+        var import = BuildImport("import-source-commit-repair", fundAccountId);
+        var sourceBreak = BuildSourceBreak(import.ImportId, "source-break-source-commit-repair");
+        var sourceCase = BuildSourceCase(import.ImportId, sourceBreak.BreakId, now.AddHours(-1));
+        var item = BuildQueueItem(import, sourceBreak.BreakId, now) with
+        {
+            Status = ReconciliationBreakQueueStatus.Resolved,
+            LifecycleState = ReconciliationCaseLifecycleState.Resolved,
+            Disposition = ReconciliationBreakDispositionDto.Resolved,
+            DispositionReason = "Statement support ties to the retained ledger evidence.",
+            ResolvedBy = "fund-ops",
+            ResolvedAt = now
+        };
+        var command = BuildCommand(item, ReconciliationCaseworkAction.Resolve);
+        var breakStore = new JsonReconciliationBreakStore(_root);
+        var caseStore = new JsonReconciliationCaseStore(_root);
+        await breakStore.WriteAsync([sourceBreak], timeout.Token);
+        await caseStore.SaveAsync(sourceCase, timeout.Token);
+        var operations = CreateOperationsService(out var operationsRepository);
+        await operationsRepository.SaveAsync(
+            BuildOperationsWorkflow(fundAccountId, import, now.AddDays(-1)),
+            timeout.Token);
+        var journalStore = CreateStrictJournalStore(import);
+        var firstCommitStore = new FileStatementCaseworkCommitStore(_root);
+        var firstService = new StatementReconciliationCaseworkHandoffService(
+            new StaticQueueRepository(item),
+            breakStore,
+            caseStore,
+            new StaticStatementRunWorkflowService(import),
+            operations,
+            journalStore.Object,
+            firstCommitStore,
+            new ThrowOnceSourceCommitFaultInjector(StatementCaseworkCommitFaultPoint.BreakAuditProjected));
+
+        var first = async () => await firstService.ApplyAsync(QueueScope, command, timeout.Token);
+        var failure = await first.Should().ThrowAsync<StatementReconciliationCaseworkHandoffException>();
+        failure.Which.Code.Should().Be("STATEMENT_BREAK_SYNCHRONIZATION_FAILED");
+        var envelope = await firstCommitStore.GetAsync(command.CommandId, timeout.Token);
+        envelope.Should().NotBeNull();
+        envelope!.OriginalBreak.Status.Should().Be("Open");
+        envelope.BreakAudit.PreviousStatus.Should().Be("Open");
+        envelope.NextBreak.Status.Should().Be("Resolved");
+        (await firstCommitStore.IsCompletedAsync(
+            command.CommandId,
+            envelope.InputHashSha256,
+            timeout.Token)).Should().BeFalse();
+
+        // Simulate a crash after the case body reached disk but before the deterministic case-audit
+        // sidecar and source-commit completion marker were retained.
+        await caseStore.SaveAsync(envelope.NextCase!, timeout.Token);
+        (await caseStore.GetCaseworkAuditAsync(
+            envelope.NextCase!.CaseId,
+            command.CommandId,
+            timeout.Token)).Should().BeNull();
+
+        var restartedCommitStore = new FileStatementCaseworkCommitStore(_root);
+        var restartedService = new StatementReconciliationCaseworkHandoffService(
+            new StaticQueueRepository(item),
+            breakStore,
+            caseStore,
+            new StaticStatementRunWorkflowService(import),
+            operations,
+            journalStore.Object,
+            restartedCommitStore);
+        var replay = await restartedService.ApplyAsync(QueueScope, command, timeout.Token);
+
+        replay.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+        var retainedBreak = await breakStore.GetAsync(sourceBreak.BreakId, timeout.Token);
+        retainedBreak!.Status.Should().Be("Resolved", "replay must not regress to the original status");
+        var breakAudit = await breakStore.GetCaseworkAuditAsync(
+            sourceBreak.BreakId,
+            command.CommandId,
+            timeout.Token);
+        breakAudit!.PreviousStatus.Should().Be("Open");
+        breakAudit.NewStatus.Should().Be("Resolved");
+        var retainedCase = await caseStore.GetAsync(sourceCase.CaseId, timeout.Token);
+        retainedCase!.AuditEvents.Should().ContainSingle(audit => audit.EventType == "StatementBreakDisposed");
+        retainedCase.DecisionNotes.Should().ContainSingle();
+        retainedCase.History.Should().ContainSingle();
+        (await caseStore.GetCaseworkAuditAsync(
+            sourceCase.CaseId,
+            command.CommandId,
+            timeout.Token)).Should().BeEquivalentTo(envelope.CaseAudit);
+        (await restartedCommitStore.IsCompletedAsync(
+            command.CommandId,
+            envelope.InputHashSha256,
+            timeout.Token)).Should().BeTrue();
+    }
+
     [Fact]
     public async Task ApplyAsync_ResolvedStatementCase_ShouldSynchronizeSourceAndAttachOperationsEvidenceOnce()
     {
@@ -66,7 +234,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             caseStore,
             new StaticStatementRunWorkflowService(import),
             operations,
-            journalStore.Object);
+            journalStore.Object,
+            new FileStatementCaseworkCommitStore(_root));
 
         var first = await service.ApplyAsync(QueueScope, command);
         var replay = await service.ApplyAsync(QueueScope, command);
@@ -138,7 +307,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             caseStore,
             new StaticStatementRunWorkflowService(import),
             operations,
-            journalStore.Object);
+            journalStore.Object,
+            new FileStatementCaseworkCommitStore(_root));
 
         await service.ApplyAsync(QueueScope, command);
 
@@ -181,7 +351,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             caseStore,
             new StaticStatementRunWorkflowService(import),
             operations,
-            journalStore.Object);
+            journalStore.Object,
+            new FileStatementCaseworkCommitStore(_root));
 
         var first = () => service.ApplyAsync(QueueScope, command);
         var failure = await first.Should().ThrowAsync<StatementReconciliationCaseworkHandoffException>();
@@ -244,7 +415,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             caseStore,
             new StaticStatementRunWorkflowService(import),
             operations,
-            journalStore.Object);
+            journalStore.Object,
+            new FileStatementCaseworkCommitStore(_root));
 
         await service.ApplyAsync(QueueScope, BuildCommand(item, ReconciliationCaseworkAction.Resolve));
 
@@ -301,7 +473,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             caseStore,
             new StaticStatementRunWorkflowService(import),
             operations,
-            journalStore.Object);
+            journalStore.Object,
+            new FileStatementCaseworkCommitStore(_root));
 
         var apply = () => service.ApplyAsync(
             QueueScope,
@@ -360,7 +533,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             caseStore,
             new StaticStatementRunWorkflowService(import),
             operations,
-            journalStore.Object);
+            journalStore.Object,
+            new FileStatementCaseworkCommitStore(_root));
 
         var apply = () => service.ApplyAsync(
             QueueScope,
@@ -421,7 +595,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             caseStore,
             new StaticStatementRunWorkflowService(import),
             operations,
-            journalStore.Object);
+            journalStore.Object,
+            new FileStatementCaseworkCommitStore(_root));
         var request = new ReconciliationBulkCaseworkRequest(
             BreakIds: [initial.BreakId],
             Action: ReconciliationCaseworkAction.Resolve,
@@ -538,7 +713,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             caseStore,
             new StaticStatementRunWorkflowService(import),
             operations,
-            journalStore.Object);
+            journalStore.Object,
+            new FileStatementCaseworkCommitStore(_root));
 
         var first = () => service.ApplyAsync(QueueScope, command);
         var failure = await first.Should().ThrowAsync<StatementReconciliationCaseworkHandoffException>();
@@ -634,7 +810,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             caseStore,
             new StaticStatementRunWorkflowService(import),
             operations,
-            journalStore.Object);
+            journalStore.Object,
+            new FileStatementCaseworkCommitStore(_root));
 
         var replay = await restartedService.ApplyAsync(QueueScope, command);
 
@@ -958,5 +1135,24 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
         public Task<IReadOnlyList<ReconciliationCase>> ListCasesAsync(
             CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<ReconciliationCase>>([]);
+    }
+
+    private sealed class ThrowOnceSourceCommitFaultInjector(StatementCaseworkCommitFaultPoint point)
+        : IStatementCaseworkCommitFaultInjector
+    {
+        private int _remaining = 1;
+
+        public Task OnPointAsync(
+            StatementCaseworkCommitFaultPoint observed,
+            string commandId,
+            CancellationToken ct = default)
+        {
+            if (observed == point && Interlocked.Exchange(ref _remaining, 0) == 1)
+            {
+                throw new IOException($"Injected statement source-commit fault after {observed}.");
+            }
+
+            return Task.CompletedTask;
+        }
     }
 }

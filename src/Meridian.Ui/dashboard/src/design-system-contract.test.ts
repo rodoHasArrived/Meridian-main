@@ -6,6 +6,14 @@ function readDashboardStyles() {
   return readFileSync(resolve(process.cwd(), "src/styles/index.css"), "utf8");
 }
 
+function readDashboardStyleBundle() {
+  const stylesPath = resolve(process.cwd(), "src/styles");
+  return readdirSync(stylesPath)
+    .filter((file) => file.endsWith(".css"))
+    .map((file) => readFileSync(resolve(stylesPath, file), "utf8"))
+    .join("\n");
+}
+
 function readManualDarkHexToken(styles: string, token: string) {
   const darkScope = styles.match(/:root\[data-theme="dark"\]\s*\{([\s\S]*?)\n {2}\}/)?.[1];
   if (!darkScope) {
@@ -347,6 +355,17 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain("--cyan-focus: var(--ws-accent)");
     expect(styles).toContain(".focus-visible\\:ring-primary\\/40:focus-visible");
     expect(styles).toContain("--tw-ring-color: var(--cyan-focus)");
+  });
+
+  it("preserves legible metadata and explicit Windows forced-colors states", () => {
+    const styles = readDashboardStyles();
+    const styleBundle = readDashboardStyleBundle();
+
+    expect(styleBundle).not.toMatch(/font-size:\s*0\.(?:5625|59375|625)rem/);
+    expect(styles).toContain("@media (forced-colors: active)");
+    expect(styles).toContain('outline: 2px solid Highlight');
+    expect(styles).toContain('[aria-selected="true"]');
+    expect(styles).toContain("border-color: CanvasText");
   });
 
   it("uses the paper canvas background from the design-system documentation", () => {

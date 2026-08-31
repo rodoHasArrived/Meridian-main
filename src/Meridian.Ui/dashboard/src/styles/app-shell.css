@@ -40,7 +40,13 @@
 .workstation-masthead {
   display: grid;
   min-height: 48px;
-  grid-template-columns: max-content minmax(220px, 1fr) minmax(300px, auto) auto;
+  /* The 1fr and auto tracks carry no floor on purpose. A track floor wins over the
+     child's own `min-width: 0`, so a 220px/300px minimum here made the row's minimum
+     width exceed the viewport on ordinary laptop widths and spilled the last column
+     past the right edge — the single-row layout holds until the 980px stack, so
+     nothing rescued it in between. Without floors the tracks shrink and their
+     contents ellipsize instead. */
+  grid-template-columns: max-content minmax(0, 1fr) minmax(0, auto) minmax(0, auto);
   gap: 0.75rem;
   align-items: center;
   padding: 0 1rem;
@@ -177,7 +183,7 @@
   border-radius: var(--radius-chip, 2px);
   color: #8A929B;
   font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   white-space: nowrap;
 }
 
@@ -193,10 +199,13 @@
   position: relative;
 }
 
+/* Clipping the summary is safe for the dropdown: the menu is a sibling inside
+   `.workstation-trust-details`, not a descendant of the summary. */
 .workstation-trust-summary {
   display: inline-flex;
   min-height: 2rem;
   max-width: min(28rem, 34vw);
+  overflow: hidden;
   align-items: center;
   gap: 0.35rem;
   border: 1px solid var(--topbar-border, #262B31);
@@ -258,7 +267,7 @@
   background: #0F1216;
   color: #AEB7C0;
   font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   text-decoration: none;
   white-space: normal;
 }
@@ -393,14 +402,29 @@ a.workstation-trust-item:focus-visible {
   font-size: 0.6875rem;
 }
 
+/* The environment badge is the one part of the session card that must never shrink:
+   it is how an operator tells PAPER from LIVE. The name and role give way first. */
+.workstation-session-card > :first-child {
+  flex: none;
+}
+
+/* `min-width: 0` is what lets these ellipsize at all. As flex items they default to
+   `min-width: auto`, which refuses to shrink below the text's own width, so the
+   overflow rules below would never fire and the card would push past the masthead. */
 .workstation-session-name {
   color: #EAF0F6;
   white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .workstation-session-role {
   color: #8A929B;
   white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ── Shell body (nav rail + workbench) ──────────────────────────────────────── */

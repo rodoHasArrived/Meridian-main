@@ -1,3 +1,5 @@
+using Meridian.Execution.Sdk;
+
 namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 
 /// <summary>
@@ -94,7 +96,13 @@ public sealed record StatementCanonicalRecord(
     DateOnly? SettlementDate = null,
     string? Currency = null,
     decimal? FeesCommission = null,
-    string? ExternalTransactionId = null);
+    string? ExternalTransactionId = null,
+    string? ActivityCategory = null,
+    string? ActivitySubtype = null,
+    string? ProviderActivityCode = null,
+    string? RelatedTransactionId = null,
+    string? OrderId = null,
+    string? Description = null);
 
 /// <summary>
 /// Structural fingerprint of a parsed source used for format-drift detection: when a
@@ -113,11 +121,53 @@ public sealed record StatementParseResult(
     IReadOnlyList<StatementColumnMapping> ColumnMappings,
     IReadOnlyList<StatementCanonicalRecord> Records,
     IReadOnlyList<StatementParseIssue> Issues,
-    StatementFormatFingerprint Fingerprint)
+    StatementFormatFingerprint Fingerprint,
+    IReadOnlyList<BrokerageAccountSnapshotDto>? AccountSnapshots = null,
+    IReadOnlyList<BrokerageActivityEventDto>? ActivityEvents = null,
+    IReadOnlyList<BrokerageActivityCursorDto>? ActivityCursors = null,
+    IReadOnlyList<BrokerageTaxLotSnapshotDto>? TaxLots = null,
+    IReadOnlyList<BrokerageBorrowPositionSnapshotDto>? BorrowPositions = null)
 {
     public bool HasErrors => Issues.Any(static issue =>
         string.Equals(issue.Severity, StatementParseIssue.ErrorSeverity, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Every row this parse retains, canonical and evidence-only alike. The record cap was applied to
+    /// <see cref="Records"/> alone, which five sibling collections bypass entirely - a connector can
+    /// return one canonical row and hundreds of thousands of tax lots, borrow positions, account
+    /// snapshots, activity events or cursors, stay under the cap, and still have every one of them
+    /// serialized into the retained canonical-evidence artifact.
+    ///
+    /// Bounding this total at the service is what makes the cap a property of the seam rather than of
+    /// whichever loops a connector author remembered to guard. Per-connector guards still matter, because
+    /// they refuse before the allocation happens rather than after; this is the backstop none of them can
+    /// leave open, including connectors written later.
+    /// </summary>
+    public int TotalRetainedRows =>
+        Records.Count
+        + (AccountSnapshots?.Count ?? 0)
+        + (ActivityEvents?.Count ?? 0)
+        + (ActivityCursors?.Count ?? 0)
+        + (TaxLots?.Count ?? 0)
+        + (BorrowPositions?.Count ?? 0);
 }
+
+/// <summary>
+/// Additive canonical evidence retained beside the reconciliation CSV. The CSV remains the
+/// stable row-ingestion contract; this sidecar preserves account, cursor, options, borrow,
+/// and tax-lot detail without flattening missing values into zeroes.
+/// </summary>
+public sealed record StatementCanonicalEvidenceArtifact(
+    string ConnectorId,
+    string? ProfileId,
+    DateTimeOffset RetainedAtUtc,
+    StatementFormatFingerprint Fingerprint,
+    IReadOnlyList<StatementCanonicalRecord> Records,
+    IReadOnlyList<BrokerageAccountSnapshotDto> AccountSnapshots,
+    IReadOnlyList<BrokerageActivityEventDto> ActivityEvents,
+    IReadOnlyList<BrokerageActivityCursorDto> ActivityCursors,
+    IReadOnlyList<BrokerageTaxLotSnapshotDto> TaxLots,
+    IReadOnlyList<BrokerageBorrowPositionSnapshotDto> BorrowPositions);
 
 public interface IStatementConnector
 {

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
 using Meridian.Ui.Shared.Services;
@@ -46,9 +47,7 @@ public static partial class FundStructureEndpoints
         }
         catch (ReportingScheduleConcurrencyException exception)
         {
-            return Results.Problem(
-                exception.Message,
-                statusCode: StatusCodes.Status409Conflict);
+            return ReportingScheduleFailure(context, exception);
         }
         catch (Exception exception) when (exception is ArgumentException
                                           or InvalidDataException
@@ -84,9 +83,18 @@ public static partial class FundStructureEndpoints
             statusCode: StatusCodes.Status503ServiceUnavailable);
     }
 
-    private static int ReportingScheduleFailureStatus(Exception exception) =>
-        exception is ReportingScheduleExecutionLeaseException
-            or ReportingScheduleConcurrencyException
-            ? StatusCodes.Status409Conflict
-            : StatusCodes.Status400BadRequest;
+    private static IResult ReportingScheduleFailure(HttpContext context, Exception exception) =>
+        exception switch
+        {
+            // This family versions by retained-revision timestamp, carried in the same string
+            // extensions the numeric families use (round-trip "o" format).
+            ReportingScheduleConcurrencyException concurrency => ApiProblemDetails.VersionConflict(
+                context,
+                concurrency.Message,
+                resourceId: concurrency.ScheduleId,
+                expectedVersion: concurrency.ExpectedUpdatedAtUtc?.ToString("o", CultureInfo.InvariantCulture),
+                currentVersion: concurrency.ActualUpdatedAtUtc?.ToString("o", CultureInfo.InvariantCulture)),
+            ReportingScheduleExecutionLeaseException => ApiProblemDetails.Conflict(context, exception.Message),
+            _ => Results.Problem(exception.Message, statusCode: StatusCodes.Status400BadRequest),
+        };
 }

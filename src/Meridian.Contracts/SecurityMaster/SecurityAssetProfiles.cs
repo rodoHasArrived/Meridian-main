@@ -76,7 +76,11 @@ public sealed record SecurityAssetProfileDefinitionDto(
     DateOnly? EffectiveTo,
     string ApprovedBy,
     DateTimeOffset ApprovedAtUtc,
-    string ChangeReason);
+    string ChangeReason,
+    // The governance approval reference for this version, so the write seam can verify the
+    // approval evidence a record's envelope claims against the catalog's own facts. Null on
+    // definitions predating the field — verification then has no catalog fact to compare.
+    string? ApprovalReference = null);
 
 public sealed record SecurityAssetProfileTermsDto(
     string CustomProfileId,

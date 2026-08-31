@@ -1,8 +1,11 @@
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
+using static Meridian.Contracts.Ledger.LedgerDimensionTags;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Storage.Ledger;
 
@@ -478,10 +481,11 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
     {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        if (!OperationsOriginGuard.IsHumanOperator(actionOrigin))
         {
             throw new LedgerBookValidationException(
-                $"Reviewed automation cannot {action}; a human operator approval is required.");
+                OperationsOriginGuard.RefusalMessage(action),
+                OperationsOriginGuard.Refusal(action));
         }
     }
 
@@ -932,96 +936,6 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         return HasAnyDimension(dimensionSet) ? dimensionSet : null;
     }
 
-    private static bool HasAnyDimension(LedgerDimensionSetDto dimensions)
-        => !string.IsNullOrWhiteSpace(dimensions.FundId)
-           || !string.IsNullOrWhiteSpace(dimensions.EntityId)
-           || !string.IsNullOrWhiteSpace(dimensions.SleeveId)
-           || !string.IsNullOrWhiteSpace(dimensions.StrategyId)
-           || !string.IsNullOrWhiteSpace(dimensions.InvestorId)
-           || !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId)
-           || dimensions.InstrumentId.HasValue
-           || dimensions.PositionId.HasValue
-           || !string.IsNullOrWhiteSpace(dimensions.TaxLotId)
-           || !string.IsNullOrWhiteSpace(dimensions.CostCenterId)
-           || !string.IsNullOrWhiteSpace(dimensions.CounterpartyId)
-           || dimensions.ExternalGlDimensions.Count > 0
-           || !string.IsNullOrWhiteSpace(dimensions.OrganizationId)
-           || !string.IsNullOrWhiteSpace(dimensions.PortfolioId)
-           || !string.IsNullOrWhiteSpace(dimensions.BookId)
-           || !string.IsNullOrWhiteSpace(dimensions.AccountId)
-           || !string.IsNullOrWhiteSpace(dimensions.CustomerId)
-           || !string.IsNullOrWhiteSpace(dimensions.VendorId)
-           || !string.IsNullOrWhiteSpace(dimensions.ProjectId);
-
-    private static IReadOnlyDictionary<string, string> ExtractExternalGlDimensions(
-        IReadOnlyDictionary<string, string>? tags)
-        => ExtractExternalGlDimensions(tags, prefix: null);
-
-    private static IReadOnlyDictionary<string, string> ExtractExternalGlDimensions(
-        IReadOnlyDictionary<string, string>? tags,
-        string? prefix)
-    {
-        if (tags is null || tags.Count == 0)
-        {
-            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var pair in tags)
-        {
-            var key = NormalizeOptional(pair.Key);
-            var value = NormalizeOptional(pair.Value);
-            if (key is null || value is null)
-            {
-                continue;
-            }
-
-            var scopedKey = prefix is null
-                ? key
-                : StripPrefix(key, prefix);
-            if (scopedKey is null)
-            {
-                continue;
-            }
-
-            var dimensionKey = StripPrefix(scopedKey, "externalGl.")
-                               ?? StripPrefix(scopedKey, "externalGl:")
-                               ?? StripPrefix(scopedKey, "gl.")
-                               ?? StripPrefix(scopedKey, "gl:");
-            if (!string.IsNullOrWhiteSpace(dimensionKey))
-            {
-                result[dimensionKey] = value;
-            }
-        }
-
-        return result;
-    }
-
-    private static string? StripPrefix(string value, string prefix)
-        => value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
-            ? NormalizeOptional(value[prefix.Length..])
-            : null;
-
-    private static string? FirstTag(
-        IReadOnlyDictionary<string, string>? tags,
-        params string[] keys)
-    {
-        if (tags is null || tags.Count == 0)
-        {
-            return null;
-        }
-
-        foreach (var key in keys)
-        {
-            if (tags.TryGetValue(key, out var value))
-            {
-                return NormalizeOptional(value);
-            }
-        }
-
-        return null;
-    }
-
     private static string BuildAccumulatorKey(LedgerAccount account, LedgerDimensionSetDto? dimensions)
         => string.Join(
             "\u001f",
@@ -1137,9 +1051,6 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
 
         return value.Trim();
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private sealed class AccountAccumulator
     {

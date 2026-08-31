@@ -70,6 +70,12 @@ public static class IngestionJobEndpoints
             {
                 request = await ctx.Request.ReadFromJsonAsync<IngestionJobTransitionRequest>(jsonOptions, ct);
             }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                // The caller hung up mid-body. Propagate rather than answering 400, which blames
+                // them for malformed JSON they never finished sending.
+                throw;
+            }
             catch
             {
                 return Results.BadRequest(new { error = "Invalid request body" });
@@ -113,6 +119,11 @@ public static class IngestionJobEndpoints
             try
             {
                 request = await ctx.Request.ReadFromJsonAsync<CreateIngestionJobRequest>(jsonOptions, ct);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                // As above: an aborted body read is not a malformed request.
+                throw;
             }
             catch
             {

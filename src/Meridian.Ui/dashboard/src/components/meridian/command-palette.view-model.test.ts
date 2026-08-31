@@ -297,24 +297,15 @@ describe("command palette view model", () => {
       "external gl"
     );
 
-    expect(familyOfficeModel.filteredItems.map((item) => item.id)).toContain("route:portfolio-family-office");
-    expect(familyOfficeModel.items.find((item) => item.id === "route:portfolio-family-office")).toMatchObject({
-      kind: "route",
-      label: "Family office",
-      route: "/portfolio/family-office",
-      statusLabel: "Current",
-      commandLabel: "Stay on Family office",
-      active: true
-    });
-    expect(formulaWorkbenchModel.filteredItems.map((item) => item.id)).toContain("route:strategy-formula-workbench");
-    expect(formulaWorkbenchModel.items.find((item) => item.id === "route:strategy-formula-workbench")).toMatchObject({
-      kind: "route",
-      label: "Formula Workbench",
-      route: "/strategy/quant-lab?view=formulas",
-      statusLabel: "Current",
-      commandLabel: "Stay on Formula Workbench",
-      active: true
-    });
+    // The Formula Workbench is still registered in UNWIRED_WORKSTATION_ROUTES: it renders a
+    // permanent "not connected" state, so the palette must not offer it even when the operator is
+    // standing on the route. Steering someone into a guaranteed dead end is worse than omitting
+    // the command. Family Office left that set once its overview read landed, so it is offered.
+    expect(familyOfficeModel.items.find((item) => item.id === "route:portfolio-family-office")).toBeDefined();
+    expect(formulaWorkbenchModel.filteredItems.map((item) => item.id)).not.toContain(
+      "route:strategy-formula-workbench"
+    );
+    expect(formulaWorkbenchModel.items.find((item) => item.id === "route:strategy-formula-workbench")).toBeUndefined();
 
     expect(operationsRecordModel.filteredItems.map((item) => item.id)).toContain("route:reporting-operations-record");
     expect(operationsRecordModel.items.find((item) => item.id === "route:reporting-operations-record")).toMatchObject({

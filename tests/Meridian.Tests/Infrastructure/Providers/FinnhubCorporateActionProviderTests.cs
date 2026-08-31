@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text;
 using FluentAssertions;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Infrastructure.Http;
 using Meridian.Tests.TestHelpers;
@@ -85,6 +86,7 @@ public sealed class FinnhubCorporateActionProviderTests
             };
         });
         var provider = CreateSut(handler);
+        provider.ReleaseStatus.Should().Be(CorporateActionProviderReleaseStatusDto.ReviewOnly);
 
         var results = await provider.FetchAsync("aapl", securityId, CancellationToken.None);
 

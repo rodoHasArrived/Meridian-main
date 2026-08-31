@@ -26,7 +26,7 @@ public static class DepositReferenceEndpoints
             var reference = await service.GetReferenceAsync(securityId, ct).ConfigureAwait(false);
             return reference is null ? Results.NotFound() : Results.Json(reference, jsonOptions);
         })
-        .WithName("GetDepositReference")
+        .WithName("GetDepositReference").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<DepositReferenceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden)
@@ -40,7 +40,7 @@ public static class DepositReferenceEndpoints
             var results = await service.GetByInstitutionAsync(institutionName, ct).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
-        .WithName("GetDepositsByInstitution")
+        .WithName("GetDepositsByInstitution").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<DepositReferenceDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden);
@@ -53,7 +53,7 @@ public static class DepositReferenceEndpoints
             var results = await service.GetMaturingBeforeAsync(beforeDate, ct).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
-        .WithName("GetDepositsMaturingBefore")
+        .WithName("GetDepositsMaturingBefore").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<DepositReferenceDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden);

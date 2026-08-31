@@ -34,8 +34,8 @@ public static partial class LedgerEndpoints
                 .ConfigureAwait(false);
             return Results.Json(workspace, jsonOptions);
         })
-        .WithName("GetAccountingConfiguration")
-        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("GetAccountingConfiguration").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
@@ -63,7 +63,7 @@ public static partial class LedgerEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("UpsertAccountingConfigurationChartNode")
+        .WithName("UpsertAccountingConfigurationChartNode").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -94,7 +94,7 @@ public static partial class LedgerEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("UpsertAccountingConfigurationTemplate")
+        .WithName("UpsertAccountingConfigurationTemplate").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -125,7 +125,7 @@ public static partial class LedgerEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("UpsertAccountingConfigurationPostingRule")
+        .WithName("UpsertAccountingConfigurationPostingRule").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -160,7 +160,7 @@ public static partial class LedgerEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("ApproveAccountingConfigurationPostingRulePromotion")
+        .WithName("ApproveAccountingConfigurationPostingRulePromotion").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -192,7 +192,7 @@ public static partial class LedgerEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("UpsertAccountingConfigurationPostingRuleTestCase")
+        .WithName("UpsertAccountingConfigurationPostingRuleTestCase").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -227,7 +227,7 @@ public static partial class LedgerEndpoints
             }, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("PreviewAccountingConfigurationTemplate")
+        .WithName("PreviewAccountingConfigurationTemplate").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AccountingJournalTemplatePreviewDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented)
@@ -269,7 +269,7 @@ public static partial class LedgerEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("DryRunAccountingConfigurationPostingRule")
+        .WithName("DryRunAccountingConfigurationPostingRule").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<RuleDryRunResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -312,7 +312,7 @@ public static partial class LedgerEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("BuildAccountingConfigurationPostingRuleCandidate")
+        .WithName("BuildAccountingConfigurationPostingRuleCandidate").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<PostingRuleJournalCandidateResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -363,7 +363,7 @@ public static partial class LedgerEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("ProjectAssetAccountingEventSpine")
+        .WithName("ProjectAssetAccountingEventSpine").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AssetAccountingEventSpineAppendResultDto>(StatusCodes.Status200OK)
         .Produces<AssetAccountingEventSpineAppendResultDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
@@ -405,7 +405,7 @@ public static partial class LedgerEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("AppendAssetAccountingEventLifecycleStage")
+        .WithName("AppendAssetAccountingEventLifecycleStage").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<AssetAccountingEventSpineAppendResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -462,7 +462,7 @@ public static partial class LedgerEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("BuildAssetAccountingEventSpinePostingCandidate")
+        .WithName("BuildAssetAccountingEventSpinePostingCandidate").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AssetAccountingPostingCandidateDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -505,7 +505,8 @@ public static partial class LedgerEndpoints
                     {
                         Actor = ResolveMutationActor(context, request.Actor),
                         TenantId = tenantContext.TenantId,
-                        CompanyId = tenantContext.CompanyId
+                        CompanyId = tenantContext.CompanyId,
+                        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -519,7 +520,7 @@ public static partial class LedgerEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("PostAccountingConfigurationPostingRuleCandidate")
+        .WithName("PostAccountingConfigurationPostingRuleCandidate").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<PostedPostingRuleJournalCandidateResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -564,7 +565,7 @@ public static partial class LedgerEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("BuildAccountingConfigurationPostingRuleProjectionSet")
+        .WithName("BuildAccountingConfigurationPostingRuleProjectionSet").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AccountingBasisProjectionSetDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -605,7 +606,7 @@ public static partial class LedgerEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("ExecuteAccountingConfigurationPostingRuleTests")
+        .WithName("ExecuteAccountingConfigurationPostingRuleTests").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AccountingRuleTestSuiteResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -639,7 +640,7 @@ public static partial class LedgerEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("ActivateAccountingConfiguration")
+        .WithName("ActivateAccountingConfiguration").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -669,10 +670,106 @@ public static partial class LedgerEndpoints
                 .ConfigureAwait(false);
             return Results.Json(audit, jsonOptions);
         })
-        .WithName("ListAccountingConfigurationAudit")
-        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
+        .WithName("ListAccountingConfigurationAudit").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
+        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<IReadOnlyList<AccountingActionAuditEventDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
+    }
+
+    // The six WithAccessContext overloads live here rather than in LedgerEndpoints.cs
+    // because every one of their call sites is in this file, and LedgerEndpoints.cs sits at
+    // its file-size cap -- the ratchet's own advice is to decompose before extending.
+
+    private static UpsertChartOfAccountsNodeRequest WithAccessContext(
+        UpsertChartOfAccountsNodeRequest request,
+        HttpContext context)
+    {
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        return request with
+        {
+            Actor = ResolveMutationActor(context, request.Actor),
+            TenantId = tenantContext.TenantId,
+            CompanyId = tenantContext.CompanyId,
+            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
+        };
+    }
+
+    private static UpsertJournalEntryTemplateRequest WithAccessContext(
+        UpsertJournalEntryTemplateRequest request,
+        HttpContext context)
+    {
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        return request with
+        {
+            Actor = ResolveMutationActor(context, request.Actor),
+            TenantId = tenantContext.TenantId,
+            CompanyId = tenantContext.CompanyId,
+            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
+        };
+    }
+
+    private static UpsertPostingRuleRequest WithAccessContext(
+        UpsertPostingRuleRequest request,
+        HttpContext context)
+    {
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        return request with
+        {
+            Actor = ResolveMutationActor(context, request.Actor),
+            TenantId = tenantContext.TenantId,
+            CompanyId = tenantContext.CompanyId,
+            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
+        };
+    }
+
+    private static ApprovePostingRulePromotionRequest WithAccessContext(
+        ApprovePostingRulePromotionRequest request,
+        HttpContext context)
+    {
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        return request with
+        {
+            Actor = ResolveMutationActor(context, request.Actor),
+            TenantId = tenantContext.TenantId,
+            CompanyId = tenantContext.CompanyId,
+            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
+            // Narrowed against the principal, like Actor and tenant scope above: the bound value
+            // decides whether the human-operator governance gate applies and it arrived in the
+            // request body, but a declared automation origin is preserved, not overwritten (#2673).
+            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
+        };
+    }
+
+    private static UpsertAccountingRuleTestCaseRequest WithAccessContext(
+        UpsertAccountingRuleTestCaseRequest request,
+        HttpContext context)
+    {
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        return request with
+        {
+            Actor = ResolveMutationActor(context, request.Actor),
+            TenantId = tenantContext.TenantId,
+            CompanyId = tenantContext.CompanyId,
+            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
+        };
+    }
+
+    private static ActivateAccountingConfigurationRequest WithAccessContext(
+        ActivateAccountingConfigurationRequest request,
+        HttpContext context)
+    {
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        return request with
+        {
+            Actor = ResolveMutationActor(context, request.Actor),
+            TenantId = tenantContext.TenantId,
+            CompanyId = tenantContext.CompanyId,
+            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
+            // Narrowed against the principal, like Actor and tenant scope above: the bound value
+            // decides whether the human-operator governance gate applies and it arrived in the
+            // request body, but a declared automation origin is preserved, not overwritten (#2673).
+            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
+        };
     }
 }

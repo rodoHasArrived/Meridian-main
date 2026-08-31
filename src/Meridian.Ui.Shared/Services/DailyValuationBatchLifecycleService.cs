@@ -1,5 +1,7 @@
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using static Meridian.Contracts.Text.TextPrimitives;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -34,6 +36,7 @@ public sealed class DailyValuationBatchLifecycleService
         var fundProfileId = RequireText(request.FundProfileId, nameof(request.FundProfileId));
         var actor = RequireText(request.Actor, nameof(request.Actor));
         var notes = RequireText(request.Notes, nameof(request.Notes));
+        var actionOrigin = request.ActionOrigin;
         var tenantId = NormalizeOptional(request.TenantId);
         var companyId = NormalizeOptional(request.CompanyId);
 
@@ -129,6 +132,7 @@ public sealed class DailyValuationBatchLifecycleService
                             actor,
                             notes,
                             batchCorrelationId,
+                            actionOrigin,
                             lifecycleEvidence,
                             ct).ConfigureAwait(false);
                         drafts[index] = validation.JournalEntry;
@@ -157,6 +161,7 @@ public sealed class DailyValuationBatchLifecycleService
                             actor,
                             notes,
                             batchCorrelationId,
+                            actionOrigin,
                             lifecycleEvidence,
                             ct).ConfigureAwait(false);
                     }
@@ -233,6 +238,7 @@ public sealed class DailyValuationBatchLifecycleService
         string actor,
         string notes,
         string batchCorrelationId,
+        OperationsActionOriginDto actionOrigin,
         IReadOnlyList<string> callerEvidence,
         CancellationToken ct)
     {
@@ -245,6 +251,7 @@ public sealed class DailyValuationBatchLifecycleService
                 actor,
                 notes,
                 batchCorrelationId,
+                actionOrigin,
                 callerEvidence,
                 ct).ConfigureAwait(false)).JournalEntry;
         }
@@ -257,6 +264,7 @@ public sealed class DailyValuationBatchLifecycleService
                 actor,
                 notes,
                 batchCorrelationId,
+                actionOrigin,
                 callerEvidence,
                 ct).ConfigureAwait(false)).JournalEntry;
         }
@@ -269,6 +277,7 @@ public sealed class DailyValuationBatchLifecycleService
                 actor,
                 notes,
                 batchCorrelationId,
+                actionOrigin,
                 callerEvidence,
                 ct).ConfigureAwait(false)).JournalEntry;
         }
@@ -288,6 +297,7 @@ public sealed class DailyValuationBatchLifecycleService
         string actor,
         string notes,
         string batchCorrelationId,
+        OperationsActionOriginDto actionOrigin,
         IReadOnlyList<string> callerEvidence,
         CancellationToken ct)
     {
@@ -311,6 +321,11 @@ public sealed class DailyValuationBatchLifecycleService
                 Notes: $"{notes} Daily valuation batch {batchCorrelationId}.",
                 CorrelationId: BuildActionCorrelationId(batchCorrelationId, draft.JournalEntryId, action),
                 EvidenceLinks: evidence,
+                // Propagated rather than left to default: JournalEntryLifecycleActionRequestDto
+                // defaults ActionOrigin to HumanOperator, so omitting it here handed every batch
+                // -- including one driven by a service credential -- the human standing that
+                // ManualJournalEntryWorkbenchService's EnsureHumanOrigin gate checks for (#2673).
+                ActionOrigin: actionOrigin,
                 LedgerBookId: draft.LedgerBookId,
                 TenantId: draft.TenantId,
                 CompanyId: draft.CompanyId),
@@ -339,7 +354,20 @@ public sealed class DailyValuationBatchLifecycleService
         string? companyId)
         => BuildLifecycleEvidenceRoute(
             action,
-            draft.LedgerBookId ?? Guid.Empty,
+            // Not coerced to Guid.Empty. Every other component that meets a ledger book treats an
+            // all-zeros id as invalid and refuses it -- AccountingPostingCommandValidator,
+            // TradeFillLedgerPostingTarget, DailyMarkToMarketService, ShadowBookValuationService and
+            // the wash-sale query among them -- so substituting one here stamped an evidence route
+            // with a scope no reader would accept (ACCT-CHECKLIST-01).
+            //
+            // Unreachable in practice: ApproveAndPostAsync blocks any draft whose LedgerBookId does
+            // not equal the schedule's non-nullable book before a draft reaches this path. Requiring
+            // it states that invariant instead of silently standing in for it, and both callers of
+            // this overload already convert InvalidOperationException into a visible batch blocker,
+            // so an unscoped draft would surface rather than post under a fabricated scope.
+            draft.LedgerBookId ?? throw new InvalidOperationException(
+                $"Daily valuation draft '{journalEntryId:D}' reached evidence-route construction with no "
+                + "ledger book; the batch scope check should have blocked it."),
             draft.PeriodId,
             journalEntryId,
             tenantId,
@@ -375,7 +403,7 @@ public sealed class DailyValuationBatchLifecycleService
     {
         var seed = System.Text.Encoding.UTF8.GetBytes(
             $"daily-valuation-lifecycle|{batchCorrelationId}|{journalEntryId:N}|{action}");
-        return new Guid(System.Security.Cryptography.SHA256.HashData(seed).AsSpan(0, 16)).ToString("D");
+        return new Guid(Sha256Digest.ComputeBytes(seed).AsSpan(0, 16)).ToString("D");
     }
 
     private static string BuildRecoveredBatchCorrelationId(
@@ -384,7 +412,7 @@ public sealed class DailyValuationBatchLifecycleService
     {
         var seed = System.Text.Encoding.UTF8.GetBytes(
             $"daily-valuation-recovered-lifecycle|{schedule.ScheduleId.Trim().ToLowerInvariant()}|{string.Join('|', journalEntryIds.Order())}");
-        return new Guid(System.Security.Cryptography.SHA256.HashData(seed).AsSpan(0, 16)).ToString("D");
+        return new Guid(Sha256Digest.ComputeBytes(seed).AsSpan(0, 16)).ToString("D");
     }
 
     private static string ActionEvidenceToken(JournalEntryLifecycleActionDto action)
@@ -418,7 +446,4 @@ public sealed class DailyValuationBatchLifecycleService
         => string.IsNullOrWhiteSpace(value)
             ? throw new ArgumentException("A non-empty value is required.", parameterName)
             : value.Trim();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

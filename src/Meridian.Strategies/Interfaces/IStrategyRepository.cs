@@ -145,6 +145,133 @@ public interface IStrategyRepository
 
         return results;
     }
+
+    /// <summary>
+    /// Queries runs using repository-owned workstation visibility filtering.
+    /// </summary>
+    /// <remarks>
+    /// The default implementation preserves compatibility for existing repository adapters. The
+    /// production <see cref="StrategyRunStore"/> overrides this method with visibility-specific
+    /// indexes so foreign history is neither materialized nor allowed to consume the query limit.
+    /// A <see langword="null"/> <paramref name="scope"/> represents an unscoped compatibility
+    /// read; a non-null scope retains legacy unscoped runs in addition to exact tenant/company
+    /// matches.
+    /// </remarks>
+    async Task<IReadOnlyList<StrategyRunEntry>> QueryVisibleRunsAsync(
+        StrategyRunRepositoryQuery query,
+        StrategyRunRepositoryScope? scope,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+
+        var limit = query.Limit <= 0 ? int.MaxValue : query.Limit;
+        var candidates = await QueryRunsAsync(
+                query with { Limit = int.MaxValue },
+                ct)
+            .ConfigureAwait(false);
+
+        return candidates
+            .Where(run => StrategyRunRepositoryVisibility.IsVisible(run, scope))
+            .Take(limit)
+            .ToArray();
+    }
+}
+
+/// <summary>
+/// Trusted tenant and company boundary for repository-owned strategy-run visibility filtering.
+/// </summary>
+/// <remarks>
+/// A non-null instance means the caller is operating in a scoped workstation context even when
+/// one of the identifiers is missing. Missing identifiers fail closed for retained scoped runs
+/// while legacy runs that declared neither identifier remain visible for compatibility.
+/// </remarks>
+public sealed record StrategyRunRepositoryScope(string? TenantId, string? CompanyId);
+
+internal readonly record struct StrategyRunRepositoryScopeKey(string TenantId, string CompanyId);
+
+internal static class StrategyRunRepositoryVisibility
+{
+    private const string WorkstationTenantIdParameter = "workstationTenantId";
+    private const string WorkstationCompanyIdParameter = "workstationCompanyId";
+    private const string CoveredCallStrategyId = "covered-call-overwrite";
+    private const string CoveredCallScopedStrategyIdPrefix = "covered-call-overwrite:";
+
+    internal static bool IsVisible(
+        StrategyRunEntry run,
+        StrategyRunRepositoryScope? scope)
+    {
+        ArgumentNullException.ThrowIfNull(run);
+
+        if (IsLegacyUnscopedVisible(run))
+        {
+            return true;
+        }
+
+        return scope is not null &&
+            TryGetRetainedScope(run, out var retainedScope) &&
+            TryCreateScopeKey(scope, out var requestedScope) &&
+            retainedScope == requestedScope;
+    }
+
+    internal static bool IsLegacyUnscopedVisible(StrategyRunEntry run)
+    {
+        ArgumentNullException.ThrowIfNull(run);
+
+        var parameters = run.ParameterSet;
+        var declaresTenant = parameters?.ContainsKey(WorkstationTenantIdParameter) == true;
+        var declaresCompany = parameters?.ContainsKey(WorkstationCompanyIdParameter) == true;
+        return !declaresTenant &&
+            !declaresCompany &&
+            !IsCoveredCall(run.StrategyId);
+    }
+
+    internal static bool TryGetRetainedScope(
+        StrategyRunEntry run,
+        out StrategyRunRepositoryScopeKey scope)
+    {
+        ArgumentNullException.ThrowIfNull(run);
+
+        var parameters = run.ParameterSet;
+        string? tenantId = null;
+        string? companyId = null;
+        var declaresTenant = parameters is not null &&
+            parameters.TryGetValue(WorkstationTenantIdParameter, out tenantId);
+        var declaresCompany = parameters is not null &&
+            parameters.TryGetValue(WorkstationCompanyIdParameter, out companyId);
+
+        if (declaresTenant &&
+            declaresCompany &&
+            !string.IsNullOrWhiteSpace(tenantId) &&
+            !string.IsNullOrWhiteSpace(companyId))
+        {
+            scope = new StrategyRunRepositoryScopeKey(tenantId.Trim(), companyId.Trim());
+            return true;
+        }
+
+        scope = default;
+        return false;
+    }
+
+    internal static bool TryCreateScopeKey(
+        StrategyRunRepositoryScope scope,
+        out StrategyRunRepositoryScopeKey key)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+
+        if (!string.IsNullOrWhiteSpace(scope.TenantId) &&
+            !string.IsNullOrWhiteSpace(scope.CompanyId))
+        {
+            key = new StrategyRunRepositoryScopeKey(scope.TenantId.Trim(), scope.CompanyId.Trim());
+            return true;
+        }
+
+        key = default;
+        return false;
+    }
+
+    private static bool IsCoveredCall(string strategyId) =>
+        string.Equals(strategyId, CoveredCallStrategyId, StringComparison.Ordinal) ||
+        strategyId.StartsWith(CoveredCallScopedStrategyIdPrefix, StringComparison.Ordinal);
 }
 
 internal static class StrategyRunRepositoryOrdering

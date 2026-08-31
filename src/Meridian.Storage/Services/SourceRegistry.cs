@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Storage.Archival;
@@ -11,29 +10,38 @@ namespace Meridian.Storage.Services;
 /// </summary>
 public sealed class SourceRegistry : ISourceRegistry
 {
-    private readonly ConcurrentDictionary<string, SourceInfo> _sources = new(StringComparer.OrdinalIgnoreCase);
-    private readonly ConcurrentDictionary<string, SymbolInfo> _symbols = new(StringComparer.OrdinalIgnoreCase);
-    private readonly ConcurrentDictionary<string, string> _aliases = new(StringComparer.OrdinalIgnoreCase);
     private readonly SemaphoreSlim _saveGate = new(1, 1);
     private readonly string? _persistencePath;
+    private readonly Action<string, string> _writeFile;
+    private RegistrySnapshot _state = RegistrySnapshot.CreateEmpty();
 
     public SourceRegistry(string? persistencePath = null)
+        : this(
+            persistencePath,
+            static (path, content) => AtomicFileWriter.Write(path, content))
+    {
+    }
+
+    internal SourceRegistry(string? persistencePath, Action<string, string> writeFile)
     {
         _persistencePath = persistencePath;
+        _writeFile = writeFile ?? throw new ArgumentNullException(nameof(writeFile));
+
+        RegistrySnapshot initialState;
 
         if (!string.IsNullOrEmpty(_persistencePath) && File.Exists(_persistencePath))
         {
-            Load();
+            initialState = Load();
         }
         else
         {
-            InitializeDefaults();
+            initialState = CreateDefaultState();
 
             if (!string.IsNullOrEmpty(_persistencePath))
             {
                 try
                 {
-                    SaveToDisk();
+                    SaveToDisk(initialState);
                 }
                 catch (IOException)
                 {
@@ -45,49 +53,65 @@ public sealed class SourceRegistry : ISourceRegistry
                 }
             }
         }
+
+        Volatile.Write(ref _state, initialState);
     }
 
     public SourceInfo? GetSourceInfo(string sourceId)
     {
-        return _sources.TryGetValue(sourceId, out var info) ? info : null;
+        var state = Volatile.Read(ref _state);
+        return state.Sources.TryGetValue(sourceId, out var info) ? CloneSource(info) : null;
     }
 
     public SymbolInfo? GetSymbolInfo(string symbol)
     {
+        var state = Volatile.Read(ref _state);
+
         // First check canonical names
-        if (_symbols.TryGetValue(symbol, out var info))
-            return info;
+        if (state.Symbols.TryGetValue(symbol, out var info))
+            return CloneSymbol(info);
 
         // Then check aliases
-        if (_aliases.TryGetValue(symbol, out var canonical))
-            return _symbols.TryGetValue(canonical, out info) ? info : null;
+        if (state.Aliases.TryGetValue(symbol, out var canonical))
+            return state.Symbols.TryGetValue(canonical, out info) ? CloneSymbol(info) : null;
 
         return null;
     }
 
     public IReadOnlyList<SourceInfo> GetAllSources()
     {
-        return _sources.Values.OrderBy(s => s.Priority).ToList();
+        var state = Volatile.Read(ref _state);
+        return state.Sources.Values
+            .OrderBy(source => source.Priority)
+            .Select(CloneSource)
+            .ToList();
     }
 
     public IReadOnlyList<SymbolInfo> GetAllSymbols()
     {
-        return _symbols.Values.OrderBy(s => s.Symbol).ToList();
+        var state = Volatile.Read(ref _state);
+        return state.Symbols.Values
+            .OrderBy(symbol => symbol.Symbol)
+            .Select(CloneSymbol)
+            .ToList();
     }
 
     public void RegisterSource(SourceInfo source)
     {
-        PersistChange(() => _sources[source.Id] = source);
+        var ownedSource = CloneSource(source);
+        PersistChange(candidate => candidate.Sources[ownedSource.Id] = ownedSource);
     }
 
     public void RegisterSymbol(SymbolInfo symbol)
     {
-        PersistChange(() => AddOrUpdateSymbol(symbol));
+        var ownedSymbol = CloneSymbol(symbol);
+        PersistChange(candidate => AddOrUpdateSymbol(candidate, ownedSymbol));
     }
 
     public string ResolveSymbolAlias(string alias)
     {
-        if (_aliases.TryGetValue(alias, out var canonical))
+        var state = Volatile.Read(ref _state);
+        if (state.Aliases.TryGetValue(alias, out var canonical))
             return canonical;
 
         return alias;
@@ -95,17 +119,20 @@ public sealed class SourceRegistry : ISourceRegistry
 
     public string[] GetSourcePriorityOrder()
     {
-        return _sources.Values
+        var state = Volatile.Read(ref _state);
+        return state.Sources.Values
             .Where(s => s.Enabled)
             .OrderBy(s => s.Priority)
             .Select(s => s.Id)
             .ToArray();
     }
 
-    private void InitializeDefaults()
+    private static RegistrySnapshot CreateDefaultState()
     {
+        var state = RegistrySnapshot.CreateEmpty();
+
         // Register default data sources
-        AddOrUpdateSource(new SourceInfo(
+        AddOrUpdateSource(state, new SourceInfo(
             Id: "alpaca",
             Name: "Alpaca Markets",
             Type: SourceType.Live,
@@ -117,7 +144,7 @@ public sealed class SourceRegistry : ISourceRegistry
             Enabled: true
         ));
 
-        AddOrUpdateSource(new SourceInfo(
+        AddOrUpdateSource(state, new SourceInfo(
             Id: "ib",
             Name: "Interactive Brokers",
             Type: SourceType.Live,
@@ -129,7 +156,7 @@ public sealed class SourceRegistry : ISourceRegistry
             Enabled: true
         ));
 
-        AddOrUpdateSource(new SourceInfo(
+        AddOrUpdateSource(state, new SourceInfo(
             Id: "polygon",
             Name: "Polygon.io",
             Type: SourceType.Live,
@@ -139,7 +166,7 @@ public sealed class SourceRegistry : ISourceRegistry
             Enabled: false
         ));
 
-        AddOrUpdateSource(new SourceInfo(
+        AddOrUpdateSource(state, new SourceInfo(
             Id: "stooq",
             Name: "Stooq Historical",
             Type: SourceType.Historical,
@@ -149,7 +176,7 @@ public sealed class SourceRegistry : ISourceRegistry
             Enabled: true
         ));
 
-        AddOrUpdateSource(new SourceInfo(
+        AddOrUpdateSource(state, new SourceInfo(
             Id: "yahoo",
             Name: "Yahoo Finance",
             Type: SourceType.Historical,
@@ -158,24 +185,26 @@ public sealed class SourceRegistry : ISourceRegistry
             DataTypes: new[] { "HistoricalBar" },
             Enabled: true
         ));
+
+        return state;
     }
 
-    private void AddOrUpdateSource(SourceInfo source)
+    private static void AddOrUpdateSource(RegistrySnapshot state, SourceInfo source)
     {
-        _sources[source.Id] = source;
+        state.Sources[source.Id] = CloneSource(source);
     }
 
-    private void AddOrUpdateSymbol(SymbolInfo symbol)
+    private static void AddOrUpdateSymbol(RegistrySnapshot state, SymbolInfo symbol)
     {
-        foreach (var existingAlias in _aliases
+        foreach (var existingAlias in state.Aliases
                      .Where(entry => string.Equals(entry.Value, symbol.Canonical, StringComparison.OrdinalIgnoreCase))
                      .Select(entry => entry.Key)
                      .ToArray())
         {
-            _aliases.TryRemove(existingAlias, out _);
+            state.Aliases.Remove(existingAlias);
         }
 
-        _symbols[symbol.Symbol] = symbol;
+        state.Symbols[symbol.Symbol] = symbol;
 
         if (symbol.Aliases == null)
         {
@@ -184,69 +213,67 @@ public sealed class SourceRegistry : ISourceRegistry
 
         foreach (var alias in symbol.Aliases)
         {
-            _aliases[alias] = symbol.Canonical;
+            state.Aliases[alias] = symbol.Canonical;
         }
     }
 
-    private void Load()
+    private RegistrySnapshot Load()
     {
         try
         {
             if (string.IsNullOrEmpty(_persistencePath))
-                return;
+                return RegistrySnapshot.CreateEmpty();
 
             var json = File.ReadAllText(_persistencePath);
             var data = JsonSerializer.Deserialize(json, SourceRegistryJsonContext.Default.RegistryData);
+            var state = RegistrySnapshot.CreateEmpty();
 
             if (data?.Sources != null)
             {
                 foreach (var source in data.Sources)
-                    _sources[source.Id] = source;
+                    state.Sources[source.Id] = CloneSource(source);
             }
 
             if (data?.Symbols != null)
             {
                 foreach (var symbol in data.Symbols)
                 {
-                    _symbols[symbol.Symbol] = symbol;
-                    if (symbol.Aliases != null)
+                    var ownedSymbol = CloneSymbol(symbol);
+                    state.Symbols[ownedSymbol.Symbol] = ownedSymbol;
+                    if (ownedSymbol.Aliases != null)
                     {
-                        foreach (var alias in symbol.Aliases)
-                            _aliases[alias] = symbol.Canonical;
+                        foreach (var alias in ownedSymbol.Aliases)
+                            state.Aliases[alias] = ownedSymbol.Canonical;
                     }
                 }
             }
+
+            return state;
         }
         catch (IOException)
         {
             // If loading fails, use defaults
-            InitializeDefaults();
+            return CreateDefaultState();
         }
         catch (UnauthorizedAccessException)
         {
             // If loading fails, use defaults
-            InitializeDefaults();
+            return CreateDefaultState();
         }
         catch (JsonException)
         {
             // If loading fails, use defaults
-            InitializeDefaults();
+            return CreateDefaultState();
         }
         catch (NotSupportedException)
         {
             // If loading fails, use defaults
-            InitializeDefaults();
+            return CreateDefaultState();
         }
     }
 
-    private void PersistChange(Action applyChange)
+    private void PersistChange(Action<RegistrySnapshot> applyChange)
     {
-        if (string.IsNullOrEmpty(_persistencePath))
-        {
-            applyChange();
-            return;
-        }
-
         // A registry mutation is not reported as successful until the resulting snapshot has
         // been durably retained. Contention therefore returns an explicit failure instead of
         // silently relying on a future, unrelated mutation to persist this one.
@@ -255,8 +282,15 @@ public sealed class SourceRegistry : ISourceRegistry
 
         try
         {
-            applyChange();
-            SaveToDisk();
+            var candidate = CloneState(Volatile.Read(ref _state));
+            applyChange(candidate);
+
+            if (!string.IsNullOrEmpty(_persistencePath))
+            {
+                SaveToDisk(candidate);
+            }
+
+            Volatile.Write(ref _state, candidate);
         }
         finally
         {
@@ -264,15 +298,15 @@ public sealed class SourceRegistry : ISourceRegistry
         }
     }
 
-    private void SaveToDisk()
+    private void SaveToDisk(RegistrySnapshot state)
     {
         if (string.IsNullOrEmpty(_persistencePath))
             return;
 
         var data = new RegistryData
         {
-            Sources = _sources.Values.ToList(),
-            Symbols = _symbols.Values.ToList()
+            Sources = state.Sources.Values.ToList(),
+            Symbols = state.Symbols.Values.ToList()
         };
 
         var dir = Path.GetDirectoryName(_persistencePath);
@@ -280,7 +314,62 @@ public sealed class SourceRegistry : ISourceRegistry
             Directory.CreateDirectory(dir);
 
         var json = JsonSerializer.Serialize(data, SourceRegistryJsonContext.Default.RegistryData);
-        AtomicFileWriter.Write(_persistencePath, json);
+        _writeFile(_persistencePath, json);
+    }
+
+    private static RegistrySnapshot CloneState(RegistrySnapshot state)
+    {
+        var clone = RegistrySnapshot.CreateEmpty();
+
+        foreach (var source in state.Sources)
+        {
+            clone.Sources[source.Key] = CloneSource(source.Value);
+        }
+
+        foreach (var symbol in state.Symbols)
+        {
+            clone.Symbols[symbol.Key] = CloneSymbol(symbol.Value);
+        }
+
+        foreach (var alias in state.Aliases)
+        {
+            clone.Aliases[alias.Key] = alias.Value;
+        }
+
+        return clone;
+    }
+
+    private static SourceInfo CloneSource(SourceInfo source)
+    {
+        return source with
+        {
+            AssetClasses = source.AssetClasses?.ToArray(),
+            DataTypes = source.DataTypes?.ToArray()
+        };
+    }
+
+    private static SymbolInfo CloneSymbol(SymbolInfo symbol)
+    {
+        return symbol with
+        {
+            Aliases = symbol.Aliases?.ToArray(),
+            Metadata = symbol.Metadata == null
+                ? null
+                : new Dictionary<string, string>(symbol.Metadata, symbol.Metadata.Comparer)
+        };
+    }
+
+    private sealed class RegistrySnapshot
+    {
+        private RegistrySnapshot()
+        {
+        }
+
+        public Dictionary<string, SourceInfo> Sources { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, SymbolInfo> Symbols { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, string> Aliases { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+        public static RegistrySnapshot CreateEmpty() => new();
     }
 
     internal sealed class RegistryData

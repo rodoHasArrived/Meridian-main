@@ -10,7 +10,7 @@
     "screenshots": "node ../../../scripts/dev/capture-web-screenshots.mjs",
     "smoke:workstation": "node scripts/smoke-workstation.mjs",
     "lint": "eslint src",
-    "typecheck:strict": "tsc --noEmit -p tsconfig.strict-null.json",
+    "typecheck:strict": "tsc --noEmit -p tsconfig.strict.json",
     "test": "node --max-old-space-size=4096 ./scripts/run-vitest-stable.mjs",
     "test:vitest": "vitest run",
     "test:watch": "vitest",
@@ -21,7 +21,7 @@
     "meridian-tools": "file:../../..",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "react-router-dom": "7.18.1"
+    "react-router-dom": "7.18.2"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -33,6 +33,7 @@
     "@types/react-dom": "18.3.1",
     "@vitejs/plugin-react": "6.0.2",
     "autoprefixer": "10.4.20",
+    "axe-core": "4.10.2",
     "eslint": "^10.6.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "jest-axe": "^10.0.0",
@@ -46,6 +47,7 @@
     "vitest": "4.1.8"
   },
   "overrides": {
-    "postcss": "8.5.23"
+    "postcss": "8.5.23",
+    "nanoid": "^3.3.18"
   }
 }

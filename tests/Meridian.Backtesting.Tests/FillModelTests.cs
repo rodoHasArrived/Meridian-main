@@ -12,14 +12,14 @@ public sealed class FillModelTests
 {
     private static MarketEvent MakeBarEvent(string symbol, decimal open, decimal high, decimal low, decimal close) =>
         MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, symbol, new HistoricalBar(
-            symbol, DateOnly.FromDateTime(DateTime.Today), open, high, low, close, 100_000L, "test"));
+            symbol, DateOnly.FromDateTime(DateTime.Today), open, high, low, close, 100_000L, "test"), source: "TEST");
 
     private static MarketEvent MakeLobEvent(string symbol, decimal askPrice, long askQty, decimal? bidPrice = null, long bidQty = 1_000L) =>
         MarketEvent.L2Snapshot(DateTimeOffset.UtcNow, symbol, new LOBSnapshot(
             DateTimeOffset.UtcNow,
             symbol,
             Bids: [new OrderBookLevel(OrderBookSide.Bid, 0, bidPrice ?? askPrice - 0.01m, bidQty)],
-            Asks: [new OrderBookLevel(OrderBookSide.Ask, 0, askPrice, askQty)]));
+            Asks: [new OrderBookLevel(OrderBookSide.Ask, 0, askPrice, askQty)]), source: "TEST");
 
     [Fact]
     public void BarMidpointFillModel_FillsMarketOrder_AtMidpoint()

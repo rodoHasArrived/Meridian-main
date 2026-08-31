@@ -1,7 +1,7 @@
 using System.Data;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Reporting;
 using Npgsql;
 using NpgsqlTypes;
@@ -318,7 +318,7 @@ public sealed class PostgresReportingArtifactAuditStore : IReportingArtifactAudi
             previousHash ?? string.Empty,
             "\n",
             eventPayload);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(material))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(material);
     }
 
     private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken cancellationToken)

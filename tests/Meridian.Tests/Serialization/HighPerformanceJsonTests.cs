@@ -34,7 +34,7 @@ public class HighPerformanceJsonTests
                 SequenceNumber: 12345,
                 StreamId: "ALPACA",
                 Venue: "NYSE"
-            ));
+            ), source: "TEST");
 
         // Act
         var json = HighPerformanceJson.Serialize(evt);
@@ -54,7 +54,7 @@ public class HighPerformanceJsonTests
         var evt = MarketEvent.Trade(
             ts,
             "SPY",
-            new Trade(ts, "SPY", 450.25m, 100, AggressorSide.Buy, 12345, "TEST", "NYSE"));
+            new Trade(ts, "SPY", 450.25m, 100, AggressorSide.Buy, 12345, "TEST", "NYSE"), source: "TEST");
 
         // Act
         var jsonString = HighPerformanceJson.Serialize(evt);
@@ -73,7 +73,7 @@ public class HighPerformanceJsonTests
         var originalEvent = MarketEvent.Trade(
             ts,
             "SPY",
-            new Trade(ts, "SPY", 450.25m, 100, AggressorSide.Buy, 12345, "ALPACA", "NYSE"));
+            new Trade(ts, "SPY", 450.25m, 100, AggressorSide.Buy, 12345, "ALPACA", "NYSE"), source: "TEST");
 
         var json = HighPerformanceJson.Serialize(originalEvent);
 
@@ -94,7 +94,7 @@ public class HighPerformanceJsonTests
         var originalEvent = MarketEvent.Trade(
             ts,
             "QQQ",
-            new Trade(ts, "QQQ", 350.50m, 200, AggressorSide.Sell, 67890, "TEST", "NASDAQ"));
+            new Trade(ts, "QQQ", 350.50m, 200, AggressorSide.Sell, 67890, "TEST", "NASDAQ"), source: "TEST");
 
         var jsonBytes = HighPerformanceJson.SerializeToUtf8Bytes(originalEvent);
 
@@ -184,7 +184,7 @@ public class HighPerformanceJsonTests
         var evt = MarketEvent.Trade(
             ts,
             "SPY",
-            new Trade(ts, "SPY", 450.25m, 100, AggressorSide.Buy, 12345, "TEST", "NYSE"));
+            new Trade(ts, "SPY", 450.25m, 100, AggressorSide.Buy, 12345, "TEST", "NYSE"), source: "TEST");
 
         // Act
         var json = JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions);
@@ -202,7 +202,7 @@ public class HighPerformanceJsonTests
         var evt = MarketEvent.Trade(
             ts,
             "SPY",
-            new Trade(ts, "SPY", 450.25m, 100, AggressorSide.Buy, 12345, "TEST", "NYSE"));
+            new Trade(ts, "SPY", 450.25m, 100, AggressorSide.Buy, 12345, "TEST", "NYSE"), source: "TEST");
 
         // Act
         var json = JsonSerializer.Serialize(evt, MarketDataJsonContext.PrettyPrintOptions);

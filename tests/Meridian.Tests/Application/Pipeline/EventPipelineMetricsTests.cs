@@ -137,7 +137,7 @@ public class EventPipelineMetricsTests : IAsyncLifetime
             SequenceNumber: 1,
             Venue: "TEST");
 
-        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade);
+        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade, source: "TEST");
     }
 
     private async Task WaitForConsumption(int expectedCount, int maxWaitMs = 2000)

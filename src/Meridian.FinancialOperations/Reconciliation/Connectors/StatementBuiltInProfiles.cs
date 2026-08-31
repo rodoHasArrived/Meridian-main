@@ -124,20 +124,23 @@ public static class StatementBuiltInProfiles
         ],
         ActivityCodes:
         [
-            new("CREDIT", "cash"),
-            new("DEBIT", "cash"),
-            new("INT", "cash"),
-            new("XFER", "cash"),
-            new("PAYMENT", "cash"),
-            new("ATM", "cash"),
-            new("POS", "cash"),
-            new("CHECK", "cash"),
-            new("DEP", "cash"),
-            new("DIRECTDEP", "cash"),
-            new("DIRECTDEBIT", "cash"),
-            new("REPEATPMT", "cash"),
-            new("CASH", "cash"),
-            new("OTHER", "cash"),
+            // STMTTRN types are ledger movements, not the account's ending cash balance. The canonical
+            // "cash"/"cashbalance" activities are reserved for balance rows (LEDGERBAL), so movements map
+            // to "transaction" and reconcile against ledger transactions with their FITID identity intact.
+            new("CREDIT", "transaction"),
+            new("DEBIT", "transaction"),
+            new("INT", "transaction"),
+            new("XFER", "transaction"),
+            new("PAYMENT", "transaction"),
+            new("ATM", "transaction"),
+            new("POS", "transaction"),
+            new("CHECK", "transaction"),
+            new("DEP", "transaction"),
+            new("DIRECTDEP", "transaction"),
+            new("DIRECTDEBIT", "transaction"),
+            new("REPEATPMT", "transaction"),
+            new("CASH", "transaction"),
+            new("OTHER", "transaction"),
             new("FEE", "fee"),
             new("SRVCHG", "fee"),
             new("DIV", "dividend"),
@@ -184,11 +187,14 @@ public static class StatementBuiltInProfiles
             new("Payment In Lieu Of Dividends", "dividend"),
             new("Withholding Tax", "fee"),
             new("Broker Interest Paid", "fee"),
-            new("Broker Interest Received", "cash"),
+            // Flex CashTransactions are ledger movements, not the account's ending cash balance, so
+            // they reconcile against ledger transactions: canonical "cash"/"cashbalance" are reserved
+            // for balance rows (the CashReport section).
+            new("Broker Interest Received", "transaction"),
             new("Other Fees", "fee"),
             new("Commission Adjustments", "fee"),
-            new("Deposits/Withdrawals", "cash"),
-            new("Deposits & Withdrawals", "cash")
+            new("Deposits/Withdrawals", "transaction"),
+            new("Deposits & Withdrawals", "transaction")
         ],
         IsBuiltIn: true,
         Notes: "IB Flex Query XML sections: Trades, CashTransactions (types mapped here), OpenPositions. Sections present depend on the operator's Flex query configuration.");
@@ -222,10 +228,12 @@ public static class StatementBuiltInProfiles
             new("DIVCGS", "dividend"),
             new("DIVNRA", "dividend"),
             new("DIVROC", "dividend"),
-            new("INT", "cash"),
-            new("CSD", "cash"),
-            new("CSW", "cash"),
-            new("JNLC", "cash"),
+            // Alpaca cash activities (interest, deposits, withdrawals, journals) are ledger movements;
+            // the portfolio snapshot's balance record is the only genuine cash balance for this profile.
+            new("INT", "transaction"),
+            new("CSD", "transaction"),
+            new("CSW", "transaction"),
+            new("JNLC", "transaction"),
             new("FEE", "fee"),
             new("REG", "fee"),
             new("TAF", "fee"),

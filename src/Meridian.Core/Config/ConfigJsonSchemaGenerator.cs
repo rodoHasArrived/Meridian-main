@@ -118,7 +118,8 @@ public sealed class ConfigJsonSchemaGenerator
                 },
                 ["GoldenCopySource"] = AllowNull(CreateTypedSchema("string")),
                 ["RequireIndependentReviewer"] = CreateTypedSchema("boolean"),
-                ["MaxBulkResolveBatch"] = CreateTypedSchema("integer")
+                ["MaxBulkResolveBatch"] = CreateTypedSchema("integer"),
+                ["RequireGovernedTermAmendments"] = CreateTypedSchema("boolean")
             }
         };
 
@@ -141,6 +142,28 @@ public sealed class ConfigJsonSchemaGenerator
                     {
                         ["AllowScaffoldMarketFills"] = CreateTypedSchema("boolean"),
                         ["ScaffoldMarketFillPrice"] = CreateTypedSchema("number")
+                    }
+                },
+                ["Costs"] = new JsonObject
+                {
+                    ["type"] = "object",
+                    ["additionalProperties"] = false,
+                    ["properties"] = new JsonObject
+                    {
+                        ["CommissionKind"] = new JsonObject
+                        {
+                            ["type"] = "string",
+                            ["enum"] = new JsonArray(
+                                "PerShare",
+                                "BasisPointsOfNotional",
+                                "FixedPerOrder")
+                        },
+                        ["CommissionRate"] = CreateTypedSchema("number"),
+                        ["CommissionMinimum"] = CreateTypedSchema("number"),
+                        ["CommissionMaximum"] = AllowNull(CreateTypedSchema("number")),
+                        ["FeePerOrder"] = CreateTypedSchema("number"),
+                        ["FeeBasisPoints"] = CreateTypedSchema("number"),
+                        ["SlippageBasisPoints"] = CreateTypedSchema("number")
                     }
                 },
                 ["Sessions"] = new JsonObject

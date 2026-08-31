@@ -4,7 +4,7 @@ description: >
   Browser workstation specialist for Meridian. Routes and implements
   TypeScript/React tasks in src/Meridian.Ui/dashboard with Meridian-specific
   guardrails for screens, shared components, and workstation endpoints.
-tools: ["read", "search", "edit", "mcp"]
+tools: Read, Glob, Grep, Edit, Write, Bash
 ---
 
 # Meridian — Browser Workstation Specialist

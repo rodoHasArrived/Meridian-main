@@ -71,4 +71,22 @@ public sealed class DataProvenanceTests
 
         badge!.Detail.Should().Be("Random-walk simulator; no real fills.");
     }
+
+    [Theory]
+    [InlineData("synthetic", true)]
+    [InlineData("daily-close:AAPL:2026-08-18:synthetic", true)]
+    [InlineData("workstation://valuation/daily-close:MSFT:2026-08-18:backtest", true)]
+    [InlineData("vendor:demo", true)]
+    [InlineData("Sample Custodian", false)]
+    [InlineData("fixture-bank", false)]
+    [InlineData("vendor:synthetic-desk", false)]
+    [InlineData("https://vendor.example/prices", false)]
+    [InlineData(null, false)]
+    [InlineData("", false)]
+    public void CarriesSimulatedOriginToken_MatchesBareTokensAndColonDelimitedSegments(
+        string? value,
+        bool expected)
+    {
+        DataProvenanceExtensions.CarriesSimulatedOriginToken(value).Should().Be(expected);
+    }
 }

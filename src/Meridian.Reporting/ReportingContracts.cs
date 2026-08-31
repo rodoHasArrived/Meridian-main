@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
-using System.Security.Cryptography;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Reporting;
@@ -19,6 +19,29 @@ public enum ReportingRunStatus
     Released,
     Failed
 }
+
+/// <summary>
+/// Bounds only terminal run snapshots whose durable reload has been revision-verified. Active,
+/// in-flight, unsaved, and compatibility-store snapshots without verifiable reload are never
+/// eviction candidates.
+/// </summary>
+public sealed class ReportingOrchestrationRetentionOptions
+{
+    public const int DefaultMaxRetainedTerminalRuns = 256;
+
+    public int MaxRetainedTerminalRuns { get; init; } = DefaultMaxRetainedTerminalRuns;
+}
+
+/// <summary>
+/// Point-in-time diagnostics for reporting orchestration retention and keyed lifecycle locks.
+/// The retained count may exceed the configured terminal cap when active or unsaved runs exist.
+/// </summary>
+public sealed record ReportingOrchestrationRetentionSnapshot(
+    int RetainedRunCount,
+    int EvictionEligibleTerminalRunCount,
+    int ActiveRunLockCount,
+    int MaxRetainedTerminalRuns,
+    bool HasDurableStore);
 
 public enum ReportingTemplateFamily
 {
@@ -510,7 +533,7 @@ public static class ReportingRunStoreRevision
             WriteCanonical(writer, document.RootElement);
         }
 
-        return Convert.ToHexString(SHA256.HashData(stream.ToArray())).ToLowerInvariant();
+        return Sha256Digest.Compute(stream.ToArray());
     }
 
     public static bool Matches(string left, string right) =>

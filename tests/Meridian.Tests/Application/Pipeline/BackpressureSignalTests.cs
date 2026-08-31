@@ -75,7 +75,7 @@ public sealed class BackpressureSignalTests : IAsyncLifetime
         var trade = new Trade(ts, "SPY", 520m, 100L, AggressorSide.Buy, 1L);
         for (var i = 0; i < 10; i++)
         {
-            _pipeline.TryPublish(MarketEvent.Trade(ts, "SPY", trade, seq: i));
+            _pipeline.TryPublish(MarketEvent.Trade(ts, "SPY", trade, seq: i, source: "TEST"));
         }
 
         signal.QueueUtilization.Should().BeInRange(0.0, 1.0,
@@ -90,7 +90,7 @@ public sealed class BackpressureSignalTests : IAsyncLifetime
 
         var ts = DateTimeOffset.UtcNow;
         var trade = new Trade(ts, "MSFT", 420m, 50L, AggressorSide.Sell, 1L);
-        _pipeline.TryPublish(MarketEvent.Trade(ts, "MSFT", trade, seq: 1));
+        _pipeline.TryPublish(MarketEvent.Trade(ts, "MSFT", trade, seq: 1, source: "TEST"));
 
         var publicUtil = _pipeline.QueueUtilization; // 0–100
         var signalUtil = signal.QueueUtilization;    // 0–1

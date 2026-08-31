@@ -1,0 +1,3386 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+<assembly><name>Meridian.FSharp</name></assembly>
+<members>
+<member name="P:Meridian.FSharp.Domain.Identifier.Provider">
+<summary>
+ Optional source/provider namespace retained as identifier metadata. Identifier identity
+ continues to use the ProviderSymbol discriminant only, so adding source metadata to an
+ exchange-standard identifier does not change duplicate or expiry semantics.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.IdentifierKind.Cik">
+<summary>
+ SEC Central Index Key — identifies an EDGAR filer or issuer, not a standalone tradable security.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.IdentifierKind.Ric">
+<summary>
+ Reuters Instrument Code — used by Refinitiv Eikon / LSEG feeds.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.IdentifierKind.PermTicker">
+<summary>
+ Meridian-stable ticker that survives corporate actions (Bloomberg PermTicker convention).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.IdentifierKind.Valoren">
+<summary>
+ Valoren — Swiss SIX exchange security number.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.IdentifierKind.Wkn">
+<summary>
+ Wertpapierkennnummer — German/Austrian exchange standard (6 alphanumeric chars).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.IdentifierKind.Bbgid">
+<summary>
+ Bloomberg Global Identifier (BBGID) — stable across corporate actions; distinct from ticker.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.IdentifierKind.PermId">
+<summary>
+ Refinitiv/LSEG PermID — stable cross-asset persistent identifier.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.IdentifierKind.Lei">
+<summary>
+ Legal Entity Identifier (ISO 17442) — 20-char alphanumeric; required for OTC derivatives regulatory reporting.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.SecurityClassification.Taxonomy">
+<summary>
+ Structured sector / industry taxonomy (GICS, ICB, SIC, NAICS, etc.).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.SectorTaxonomy.TaxonomyScheme">
+<summary>
+ Taxonomy scheme identifier (e.g. &quot;GICS&quot;, &quot;ICB&quot;, &quot;SIC&quot;, &quot;NAICS&quot;).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.SectorTaxonomy">
+<summary>
+ Structured sector / industry classification supporting multiple taxonomy schemes.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.SecurityTermModules.Pci">
+<summary>
+ Purchased Credit Impaired lot designation with expected-yield accounting.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.SecurityTermModules.AccountingElections">
+<summary>
+ Account or lot-level accounting elections (amortization method, yield update frequency, etc.).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.SecurityTermModules.SinkingFund">
+<summary>
+ Contractual sinking fund or scheduled principal instalment schedule.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.SecurityTermModules.InflationLinked">
+<summary>
+ Inflation index and factor data for TIPS, index-linked GILTs, and similar instruments.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.PciTerms.LastYieldUpdateDate">
+<summary>
+ Date of the most recent expected-yield update; updates are prospective for PCI.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.PciTerms.ExpectedCashFlows">
+<summary>
+ Projected cash flows as (date, amount) pairs; client-supplied or model-derived.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.PciTerms.ExpectedYield">
+<summary>
+ Expected yield over the remaining life as of the last update.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.PciTerms.InitialBookValue">
+<summary>
+ Book value at the time of PCI designation or acquisition.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.PciTerms.DesignationBasis">
+<summary>
+ Accounting basis for the PCI model (e.g. &quot;ASC-310-30&quot;, &quot;ASC-325-40&quot;).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.PciTerms">
+<summary>
+ Purchased Credit Impaired (PCI) lot designation.
+ A lot-level accounting election rather than a separate economic security type.
+ Supports EITF 99-20 / ASC 325-40 and SOP 03-3 / ASC 310-30 models.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.AccountingElectionsTerms.IsLotLevelNoAmortization">
+<summary>
+ Lot-level No Amortization override; supersedes the account-level method for this lot.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.AccountingElectionsTerms.IgnorePutDates">
+<summary>
+ When true, put dates are excluded from the amortization schedule.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.AccountingElectionsTerms.IgnoreCallDates">
+<summary>
+ When true, call dates are excluded from the amortization schedule.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.AccountingElectionsTerms">
+<summary>
+ Account or lot-level accounting elections controlling amortization, yield updates, and cash-flow source.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CashFlowSource.FinalMaturityFallback">
+<summary>
+ Use legal final maturity as a single bullet repayment when no other source is available.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CashFlowSource.Wal">
+<summary>
+ Use weighted-average life as a single expected principal repayment.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CashFlowSource.SystemCalculated">
+<summary>
+ Clearwater-calculated from Security Master terms (non-prepaying fixed-rate instruments).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CashFlowSource.ClientProvided">
+<summary>
+ Client-supplied cash flows; take precedence once established.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CashFlowSource.VendorProvided">
+<summary>
+ Third-party vendor cash flows (e.g. MIAC for agency MBS, Moody&apos;s Analytics for other prepaying securities).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CashFlowSource">
+<summary>
+ Cash-flow source hierarchy for accounting calculations.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.YieldAdjustmentMethod.NoAdjustment">
+<summary>
+ Maintain original amortization curve; no periodic yield adjustment.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.YieldAdjustmentMethod.Prospective">
+<summary>
+ Recompute yield using current book value and current future cash flows; no immediate book-value adjustment.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.YieldAdjustmentMethod.Retrospective">
+<summary>
+ Recompute yield using actual cash flows since last adjustment and current projections; record a book-value catch-up.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.YieldAdjustmentMethod">
+<summary>
+ FAS 91-style adjustment method for prepaying structured securities.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.YieldUpdateFrequency">
+<summary>
+ Frequency at which book yield is reset for prepaying securities.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.AmortizationMethod.PurchasedCreditImpaired">
+<summary>
+ Recognises income using expected yield over remaining life; used for PCI-designated lots.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.AmortizationMethod.AuctionRate">
+<summary>
+ Recognises all premium/discount immediately to par when amortization begins; used for ARS.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.AmortizationMethod.NoAmortization">
+<summary>
+ Book price held flat; no daily premium/discount recognised.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.AmortizationMethod.StraightLine">
+<summary>
+ Equal daily movement from starting book price to target price; used for short-dated instruments.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.AmortizationMethod.ConstantYield">
+<summary>
+ Effective-interest method: income recognised as a constant proportion of book value (Clearwater default for most debt).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.AmortizationMethod">
+<summary>
+ Amortization method applied at the account or lot level.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.SinkingFundTerms.IsProRata">
+<summary>
+ True when instalments retire bonds pro-rata across all holders via lottery or open-market purchase.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.SinkingFundTerms.SinkFrequency">
+<summary>
+ Descriptive frequency label (e.g. &quot;Annual&quot;, &quot;SemiAnnual&quot;).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.SinkingFundTerms">
+<summary>
+ Sinking fund schedule module for bonds with contractual principal instalments.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.SinkingFundEntry.Amount">
+<summary>
+ Par amount retired on this date.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.SinkingFundEntry">
+<summary>
+ A single principal instalment in a sinking fund or scheduled-amortizing bond.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.InflationLinkedTerms.IndexFloor">
+<summary>
+ Minimum factor floor; 1.0 for US TIPS (principal cannot fall below original par).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.InflationLinkedTerms.FactorDate">
+<summary>
+ As-of date for the current factor.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.InflationLinkedTerms.CurrentFactor">
+<summary>
+ Most recently published factor: Current_index / Base_index.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.InflationLinkedTerms.BaseDate">
+<summary>
+ Date of the base index value (usually issue date or original auction date).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.InflationLinkedTerms.BaseIndexValue">
+<summary>
+ Reference index value at the original issue date.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.InflationLinkedTerms.InflationIndex">
+<summary>
+ Index series used to adjust principal (e.g. &quot;CPI-U&quot;, &quot;RPI&quot;, &quot;HICPxT&quot;).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.InflationLinkedTerms">
+<summary>
+ Inflation index terms for TIPS, index-linked GILTs, and similar instruments.
+ Supports the Clearwater adjusted-principal calculation: Base_units × Inflation_factor.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.MultiCalendarTerms">
+<summary>
+ Multi-calendar module for complex instruments (e.g. cross-currency swaps).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.CalendarRef.CalendarPurpose">
+<summary>
+ Purpose of this calendar (e.g. &quot;Settlement&quot;, &quot;Accrual&quot;, &quot;Fixing&quot;, &quot;Payment&quot;).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CalendarRef">
+<summary>
+ Calendar reference for instruments subject to multiple holiday calendars.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.StructuredProductTerms.CreditEnhancementPct">
+<summary>
+ Credit-enhancement level as a percentage of deal balance (subordination, OC, etc.).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.StructuredProductTerms.Originator">
+<summary>
+ Originator or guarantor name (e.g. &quot;Fannie Mae&quot;, &quot;Freddie Mac&quot;, &quot;Ginnie Mae&quot;).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.StructuredProductTerms.NotionalBalance">
+<summary>
+ For IO strips: the outstanding notional balance of the underlying pool.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.StructuredProductTerms.IsPrincipalOnly">
+<summary>
+ True when this security receives only principal cash flows (PO strip).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.StructuredProductTerms.IsInterestOnly">
+<summary>
+ True when this security receives only interest cash flows (IO strip or residual).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.StructuredProductTerms.AverageLifeYears">
+<summary>
+ Estimated average life in years under the prepayment assumption.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.StructuredProductTerms.PrepaymentAssumption">
+<summary>
+ Prepayment speed assumption used for pricing and average-life calculation.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.StructuredProductTerms.TrancheClass">
+<summary>
+ Tranche class within a multi-class structure (e.g. &quot;A1&quot;, &quot;B&quot;, &quot;M1&quot;, &quot;Z&quot;, &quot;IO&quot;, &quot;PO&quot;).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.StructuredProductTerms.PoolIdentifier">
+<summary>
+ Pool or deal identifier (e.g. Fannie Mae pool number, CLO deal CUSIP).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.StructuredProductTerms.CollateralType">
+<summary>
+ Collateral asset type backing the pool (e.g. &quot;ResidentialMortgage&quot;,
+ &quot;AutoLoan&quot;, &quot;CreditCard&quot;, &quot;StudentLoan&quot;, &quot;LeveragedLoan&quot;).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.StructuredProductTerms.WeightedAvgLoanAgeMos">
+<summary>
+ Weighted-average loan age of the pool in months (WALA).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.StructuredProductTerms.WeightedAvgMaturityMonths">
+<summary>
+ Weighted-average remaining maturity of the pool loans in months.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.StructuredProductTerms.WeightedAvgCoupon">
+<summary>
+ Weighted-average coupon of the underlying loan pool (%).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.StructuredProductTerms.FactorDate">
+<summary>
+ As-of date for the current Factor.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.StructuredProductTerms.Factor">
+<summary>
+ Remaining principal balance as a fraction of original face value (0.0–1.0).
+ Declines over time as scheduled and unscheduled principal is returned.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.StructuredProductTerms">
+<summary>
+ Analytics and pool-level data for factorable structured-credit instruments
+ (MBS, CMO, CLO, ABS, PO strips, IO strips, CMO residuals, etc.).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.PrepaymentModel.Smm">
+<summary>
+ Single Monthly Mortality — monthly equivalent of CPR.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.PrepaymentModel.Cpr">
+<summary>
+ Constant Prepayment Rate — annualised fraction of the remaining pool (e.g. 0.06 = 6% CPR).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.PrepaymentModel.Psa">
+<summary>
+ PSA standard prepayment model expressed as a percentage (e.g. 150.0 = 150% PSA).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.PrepaymentModel">
+<summary>
+ Prepayment speed assumption used for cash-flow analytics on factorable bonds.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.VenueTerms.OtcProtocol">
+<summary>
+ OTC master agreement protocol (e.g. &quot;ISDA&quot;, &quot;GMRA&quot;).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.VenueTerms">
+<summary>
+ Venue / market structure terms — distinguishes listed vs. OTC instruments.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.EsgTerms.PaiIndicatorFlags">
+<summary>
+ SFDR Principal Adverse Impact indicator flags.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.EsgTerms.UNSDGAlignments">
+<summary>
+ UN Sustainable Development Goals (e.g. [&quot;SDG 7&quot;, &quot;SDG 13&quot;]).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.EsgTerms.IsGreenBond">
+<summary>
+ Green Bond Principles (ICMA) aligned issuance.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.EsgTerms.EsgRating">
+<summary>
+ Provider-native rating string (e.g. &quot;AA&quot;, &quot;B&quot;, &quot;CCC&quot;, &quot;High Risk&quot;).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.EsgTerms.EsgScore">
+<summary>
+ Normalised score 0–100.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.EsgTerms">
+<summary>
+ ESG / sustainability classification module.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CovenantTerms">
+<summary>
+ Covenant module — applicable to bonds, loans, and direct credit instruments.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.CovenantEntry.Metric">
+<summary>
+ Metric name, e.g. &quot;Net Debt / EBITDA&quot;.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CovenantEntry">
+<summary>
+ A single covenant on a bond or loan.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CovenantKind">
+<summary>
+ Covenant kind for bond and loan covenants.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.DividendScheduleTerms.IsQualifiedDividend">
+<summary>
+ True when dividends qualify for preferential US tax treatment.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.DividendScheduleTerms.DividendCurrency">
+<summary>
+ Currency of dividend payments (may differ from security&apos;s own currency).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.DividendScheduleTerms.AnnualDividendRate">
+<summary>
+ Trailing 12-month gross dividend per share.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.DividendScheduleTerms">
+<summary>
+ Dividend schedule module — snapshot of dividend cadence for common and preferred equity.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.DividendFrequency">
+<summary>
+ Dividend frequency for equity dividend schedule.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.DepositaryReceiptTerms.UnderlyingExchangeMic">
+<summary>
+ ISO 10383 MIC of the exchange where the underlying ordinary share trades.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.DepositaryReceiptTerms.OrdinaryShareRatio">
+<summary>
+ Number of underlying ordinary shares per depositary receipt unit.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.DepositaryReceiptTerms.UnderlyingSecurityId">
+<summary>
+ SecurityId of the underlying ordinary share in the security master.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.DepositaryReceiptTerms">
+<summary>
+ Depositary receipt terms — for ADR, GDR, and similar instruments.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.CreditRatingTerms.CompositeRating">
+<summary>
+ Meridian-computed composite rating string (e.g. &quot;BBB+&quot;).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CreditRatingTerms">
+<summary>
+ Credit rating module — supports multiple agencies and maintains current ratings per agency.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.RatingEntry.IssuanceLevel">
+<summary>
+ Level of the rating (e.g. &quot;Issuer&quot;, &quot;Instrument&quot;, &quot;Senior&quot;).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.RatingEntry.Grade">
+<summary>
+ Long-form rating grade (e.g. &quot;Baa2&quot;, &quot;BBB-&quot;).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.RatingEntry.Agency">
+<summary>
+ Rating agency name (e.g. &quot;Moody&apos;s&quot;, &quot;S&amp;P&quot;, &quot;Fitch&quot;, &quot;DBRS&quot;).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.RatingEntry">
+<summary>
+ Per-agency credit rating entry.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.VotingRightsCat">
+<summary>
+ Voting rights category for equity instruments.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.IssuerRef.IssuerSector">
+<summary>
+ Short free-text sector (e.g. &quot;Technology&quot;); full taxonomy is in SecurityClassification.Taxonomy.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.IssuerRef.LeiCode">
+<summary>
+ 20-character Legal Entity Identifier (ISO 17442); denormalized from the Identifiers list for fast access.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.IssuerRef">
+<summary>
+ Enriched issuer reference with LEI linkage and parent hierarchy.
+ Replaces the flat IssuerTerms record.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.EconomicCallTerms.CallSchedule">
+<summary>
+ Full step-up call schedule ordered ascending by CallDt.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.EconomicCallTerms.CallPrice">
+<summary>
+ Convenience field — mirrors the first entry&apos;s price for quick access.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.EconomicCallTerms.FirstCallDate">
+<summary>
+ Convenience field — mirrors the first entry in CallSchedule for quick access.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.CallScheduleEntry.CallType">
+<summary>
+ e.g. &quot;American&quot;, &quot;European&quot;, &quot;Bermudan&quot;, &quot;Makewhole&quot;.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.CallScheduleEntry.CallPx">
+<summary>
+ Call price as percentage of par (e.g. 102.5 means 102.5% of face value).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.SweepVehicle">
+<summary>
+ Vehicle used when sweeping idle cash.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.DistributionPolicy">
+<summary>
+ Distribution policy for equity-like instruments.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.RedemptionStyle">
+<summary>
+ Redemption structure for principal return.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CouponKind">
+<summary>
+ Coupon style for interest-bearing instruments.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.DayCountConvention">
+<summary>
+ Day-count basis for accrual calculations.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.PaymentFrequency">
+<summary>
+ Payment cadence for income or fee streams.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.AssetClassDescriptor.IsDerivative">
+<summary>
+ True for exchange-traded or OTC derivatives.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.AssetClassDescriptor.RiskCountry">
+<summary>
+ Default risk country, when one is implied by the asset class (e.g. US Treasury bills).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.AssetClassDescriptor.IssuerType">
+<summary>
+ Default issuer archetype, when one is implied by the asset class.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.AssetClassDescriptor.SubType">
+<summary>
+ Default economic sub-type for the asset class.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.AssetClassDescriptor.AssetClassName">
+<summary>
+ Canonical asset-class name (e.g. &quot;Equity&quot;, &quot;Option&quot;); also the classification TypeName.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.AssetClassDescriptor">
+<summary>
+ Structural classification metadata for a single asset class.
+ Data-dependent refinements (e.g. demand vs. time deposits, free-text OtherSecurity
+ sub-types) are layered on top of this default by callers; everything that is fixed
+ per asset class lives here.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.SecurityKind.InvestmentFund">
+<summary>
+ Mutual fund, ETF, hedge fund, REIT, or closed-end fund.
+ Market value = units × NAV (or market price); no amortization in general.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.InvestmentFundTerms.PricingSource">
+<summary>
+ Price/NAV data source (e.g. &quot;iMoneyNet&quot;, &quot;Bloomberg&quot;, &quot;Client&quot;).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.InvestmentFundTerms.IsStableNav">
+<summary>
+ True for stable-NAV money market and government liquidity funds.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.InvestmentFundTerms.DistributionPolicy">
+<summary>
+ Distribution policy (Accumulating, Distributing, etc.).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.InvestmentFundTerms.NavCurrency">
+<summary>
+ Currency of the NAV (may differ from the account base currency).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.InvestmentFundTerms.FundType">
+<summary>
+ Fund category (e.g. &quot;MutualFund&quot;, &quot;ETF&quot;, &quot;HedgeFund&quot;, &quot;REIT&quot;, &quot;ClosedEnd&quot;).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.InvestmentFundTerms">
+<summary>
+ Terms for mutual funds, ETFs, hedge funds, REITs, and closed-end funds.
+ These instruments generally do not amortize; market value is units × NAV/price.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.DirectLoanTerms.PricingSource">
+<summary>
+ Pricing source for market value (e.g. &quot;IHSMarkit&quot;, &quot;Refinitiv&quot;, &quot;Client&quot;).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.DirectLoanTerms.PrincipalSchedule">
+<summary>
+ Contractual or expected principal instalment schedule.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.DirectLoanTerms.ResetFrequency">
+<summary>
+ Rate reset frequency (e.g. &quot;Daily&quot;, &quot;Monthly&quot;, &quot;Quarterly&quot;).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.DirectLoanTerms.CurrentCouponRate">
+<summary>
+ Current all-in coupon rate (reference rate + spread, subject to floor/cap).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.DirectLoanTerms.SpreadBps">
+<summary>
+ Spread over the reference index in basis points (e.g. 350 = SOFR + 3.50%).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.DirectLoanTerms.ReferenceIndex">
+<summary>
+ Floating rate reference index (e.g. &quot;SOFR&quot;, &quot;LIBOR&quot;, &quot;EURIBOR&quot;).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.PrincipalPaymentEntry">
+<summary>
+ A scheduled principal repayment (amortizing or term-loan instalment).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.BondTerms.MandatoryPutDate">
+<summary>
+ Date of a mandatory put feature that obligates the holder to tender at a set price.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.BondTerms.PreRefundDate">
+<summary>
+ Date to which a pre-refunded municipal bond is called using escrowed proceeds.
+ When present, cash flows and amortization target this date rather than final maturity.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.BondTerms.LegalFinalMaturity">
+<summary>
+ Latest contractual date by which principal is legally due under the governing documents.
+ May differ from Maturity for pre-refunded or mandatory-put bonds.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.BondTerms.PaymentFrequency">
+<summary>
+ Coupon payment frequency (Annual, SemiAnnual, Quarterly, Monthly, etc.).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.BondTerms.Par">
+<summary>
+ Face/par value of the bond (e.g. 1000 for a $1,000 par bond).
+ Used in market value calculation: Par × Factor × Price / 100.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.BondTerms.Subclass">
+<summary>
+ Economic subclass of this bond instrument.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.BondSubclass.InverseInterestOnly">
+<summary>
+ Inverse Interest-Only strip: leveraged IO with inverse-floating coupon.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.BondSubclass.InterestOnly">
+<summary>
+ Interest-Only strip: receives only interest cash flows; notional-referenced.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.BondSubclass.PrincipalOnly">
+<summary>
+ Principal-Only strip: receives only scheduled and unscheduled principal cash flows.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.BondSubclass.Cdo">
+<summary>
+ Collateralized Debt Obligation — generic CDO tranche.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.BondSubclass.Clo">
+<summary>
+ Collateralized Loan Obligation — CLO tranche backed by leveraged loans.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.BondSubclass.Cmo">
+<summary>
+ Collateralized Mortgage Obligation — a CMO tranche carved from an MBS pool.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.BondSubclass.CommercialMbs">
+<summary>
+ Commercial mortgage-backed security.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.BondSubclass.AgencyMbs">
+<summary>
+ Agency MBS guaranteed by Fannie Mae, Freddie Mac, or Ginnie Mae.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.BondSubclass.MortgageBacked">
+<summary>
+ Agency or non-agency residential mortgage-backed security (pass-through pool).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.BondSubclass.AssetBacked">
+<summary>
+ Generic asset-backed security (auto loans, credit cards, student loans, etc.).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.BondSubclass.BankLoan">
+<summary>
+ Syndicated or bilateral bank loan; floating rate, principal schedule per credit agreement.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.BondSubclass.AuctionRate">
+<summary>
+ Auction Rate Security — rate resets at periodic auction; Clearwater may hold at par.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.BondSubclass.Vrdn">
+<summary>
+ Variable Rate Demand Note — daily or weekly reset rate; investor may tender on demand.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.BondSubclass.FixedToFloat">
+<summary>
+ Fixed-rate bond that converts to floating at a specified date.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.BondSubclass.StepRate">
+<summary>
+ Step-rate bond whose coupon increases per a contractual schedule (may be callable at step dates).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.BondSubclass.SinkingFund">
+<summary>
+ Bond with contractual sinking fund or mandatory principal instalments.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.BondSubclass">
+<summary>
+ Discriminated union identifying the bond&apos;s economic subclass.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.FutureTerms.RollWindowDays">
+<summary>
+ Number of calendar days before expiry when the roll window opens.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.FutureTerms.IsRollTarget">
+<summary>
+ True when this contract is the current front-month / roll target.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.FutureTerms.DeliveryLocationCode">
+<summary>
+ Delivery point code for physically settled commodity futures.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.FutureTerms.SettlementType">
+<summary>
+ &quot;Physical&quot; or &quot;Cash&quot;.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.OptionTerms.IsAdjusted">
+<summary>
+ True when this contract has been adjusted for a corporate action (split, special dividend, etc.).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.OptionTerms.SettlementType">
+<summary>
+ &quot;Physical&quot; or &quot;Cash&quot;.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.OptionTerms.OptChainId">
+<summary>
+ Links this contract to its option chain / series aggregate.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.OptChainId">
+<summary>
+ Single-case option-chain identity used by option-contract and series projections.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.ExerciseStyle">
+<summary>
+ Exercise style for options and warrants.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.CommonTerms.HolidayCalendarId">
+<summary>
+ Named holiday calendar used for settlement and accrual calculations (e.g. &quot;NYSE&quot;, &quot;LDN&quot;, &quot;T2S&quot;).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.CommonTerms.SettlementCycleDays">
+<summary>
+ Standard settlement lag in business days (e.g. 1 for T+1 US equities, 2 for most bonds and EU equities).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.CommonTerms.CountryOfIncorporation">
+<summary>
+ Country of legal incorporation; may differ from CountryOfRisk (e.g. Bermuda-domiciled NYSE-listed company).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.CommonTerms.PrimaryListingMic">
+<summary>
+ ISO 10383 Market Identifier Code of the primary listing venue (e.g. &quot;XNAS&quot;, &quot;XNYS&quot;).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CashLadder">
+<summary>
+ A time-bucketed forward view of projected cash flows
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CashLadderBucket">
+<summary>
+ One time-bucket within a projected cash ladder
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CashFlowState">
+<summary>
+ State machine for a cash-flow line as it moves from projection to settlement.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.BreakClassification">
+<summary>
+ Structural classification of how a projected cash event broke
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.BreakSeverity">
+<summary>
+ Severity assigned to a reconciliation break
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.MatchTolerance">
+<summary>
+ Tolerance parameters for matching projected against actual cash events
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.ActualCashEvent">
+<summary>
+ An observed cash movement posted to the ledger or bank feed.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.ProjectedCashEvent">
+<summary>
+ A single projected cash event derived from an instrument&apos;s terms
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CashFlowEventKind">
+<summary>
+ Kind of cash-flow event projected from a security&apos;s economic terms
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CashFlowBreak">
+<summary>
+ A single identified break between a projected and an actual cash event
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CorpActEvent.CryptoFork">
+<summary>
+ Chain fork that may produce a new digital asset.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CorpActEvent.OptionContractAdjustment">
+<summary>
+ OCC-style option contract-terms adjustment; the ratio rides the envelope&apos;s
+ ExchangeRatio carrier.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CorpActEvent.FuturesExpiry">
+<summary>
+ Futures contract reaches expiry.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CorpActEvent.PrincipalPaydown">
+<summary>
+ Pro-rata principal repayment via pool-factor reduction on factor-based debt.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CorpActEvent.ReverseStockSplit">
+<summary>
+ Reverse stock split (`SplitRatio` strictly between 0 and 1).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CorpActEvent.ReturnOfCapital">
+<summary>
+ Return of capital distribution — tax-distinct from dividends; reduces cost basis.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CorpActEvent.BondMaturityRedemption">
+<summary>
+ Bond matures and principal is redeemed at scheduled maturity.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CorpActEvent.BondCall">
+<summary>
+ Issuer exercises a call on a callable bond.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CorpActEvent.Delisting">
+<summary>
+ Delisting from exchange (distinct from SecurityDeactivated which is system-internal).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CorpActEvent.NameChange">
+<summary>
+ Legal name change.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CorpActEvent.SymbolChange">
+<summary>
+ Ticker symbol change (e.g. Facebook → Meta).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CorpActEvent.SpecialDividend">
+<summary>
+ Special cash dividend — tax treatment distinct from regular dividends.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CorpActEvent.TenderOffer">
+<summary>
+ Tender offer: an acquirer offers to purchase shares at a premium over market price.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CorpActEvent.RightsIssue">
+<summary>
+ Rights issue: existing shareholders are offered additional shares at a subscription price.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CorpActEvent.MergerAbsorption">
+<summary>
+ Merger/absorption: this security is absorbed into an acquirer.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CorpActEvent.SpinOff">
+<summary>
+ Spin-off: a portion of the parent company is distributed as shares of a new entity.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CorpActEvent.StockSplit">
+<summary>
+ Forward stock split (`SplitRatio` strictly greater than 1). Reverse splits are the
+ distinct `ReverseStockSplit` case; legacy events encoded with a sub-1 ratio map to
+ `ReverseStockSplit` at the read boundary.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CorpActEvent.Dividend">
+<summary>
+ Cash or stock dividend. `DividendPerShare` is in the instrument&apos;s currency.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CorpActId">
+<summary>
+ Opaque identifier for a corporate action event.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.FundAccountDetails">
+<summary>
+ Extended account details discriminated by settlement network type.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.BankAccountDetails">
+<summary>
+ Banking-specific settlement details attached to an AccountDefinition where AccountType = Bank.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CustodianAccountDetails">
+<summary>
+ Custody-specific settlement details attached to an AccountDefinition where AccountType = Custody.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.AccountReconciliationBreak">
+<summary>
+ Shared envelope for account-level aggregation in UI/API projections.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.CashReconciliationBreak">
+<summary>
+ Cash-focused reconciliation break for bank/cash-balance validation.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.PositionReconciliationBreak">
+<summary>
+ Position-focused reconciliation break for custody/position validation.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Sides.AggressorSide.Seller">
+<summary>
+ Seller was the aggressor (hit the bid)
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Sides.AggressorSide.Buyer">
+<summary>
+ Buyer was the aggressor (lifted the offer)
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Sides.AggressorSide.Unknown">
+<summary>
+ Trade aggressor could not be determined
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.Sides.AggressorSide.ToInt">
+<summary>
+ Convert to integer for C# interop (0 = Unknown, 1 = Buyer, 2 = Seller)
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.Sides.AggressorSide.FromInt(System.Int32)">
+<summary>
+ Create from integer for C# interop
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Sides.AggressorSide">
+<summary>
+ Represents the aggressor side of a trade.
+ The aggressor is the party that initiated the trade by
+ crossing the spread (hitting the bid or lifting the offer).
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.Sides.Side.ToInt">
+<summary>
+ Convert to integer for C# interop (0 = Buy, 1 = Sell)
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.Sides.Side.FromInt(System.Int32)">
+<summary>
+ Create from integer for C# interop
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Sides.Side">
+<summary>
+ Represents the side of an order in the order book.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.Sides.InferAggressorFromBBO(System.Decimal,Microsoft.FSharp.Core.FSharpOption{System.Decimal},Microsoft.FSharp.Core.FSharpOption{System.Decimal})">
+<summary>
+ Infer the aggressor side from trade price relative to BBO (Best Bid/Offer).
+ - If trade price &gt;= ask price, buyer is aggressor (lifted the offer)
+ - If trade price &lt;= bid price, seller is aggressor (hit the bid)
+ - Otherwise, aggressor is unknown (trade inside spread or no BBO data)
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Sides">
+<summary>
+ Side and aggressor types for market data events.
+ These discriminated unions provide exhaustive pattern matching
+ and eliminate null reference exceptions.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.Integrity.IntegrityEvent.Venue">
+<summary>
+ Optional venue/exchange identifier
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.Integrity.IntegrityEvent.StreamId">
+<summary>
+ Optional stream identifier for multi-stream scenarios
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.Integrity.IntegrityEvent.SequenceNumber">
+<summary>
+ Sequence number for event ordering
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.Integrity.IntegrityEvent.EventType">
+<summary>
+ Specific type of integrity event with associated data
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.Integrity.IntegrityEvent.Severity">
+<summary>
+ Severity of the integrity issue
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.Integrity.IntegrityEvent.Timestamp">
+<summary>
+ When the integrity issue was detected
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.Integrity.IntegrityEvent.Symbol">
+<summary>
+ Symbol this event relates to
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Integrity.IntegrityEvent">
+<summary>
+ Complete integrity event with symbol, timestamp, and event details.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Integrity.IntegrityEventType.DataQualityIssue">
+<summary>
+ Generic data quality issue
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Integrity.IntegrityEventType.ConnectionIssue">
+<summary>
+ Connection issue detected
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Integrity.IntegrityEventType.VolumeSpike">
+<summary>
+ Volume spike detected (abnormal volume)
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Integrity.IntegrityEventType.PriceSpike">
+<summary>
+ Price spike detected (abnormal price movement)
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Integrity.IntegrityEventType.DuplicateMessage">
+<summary>
+ Duplicate message received
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Integrity.IntegrityEventType.StaleQuote">
+<summary>
+ Quote data is stale (no updates for specified duration)
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Integrity.IntegrityEventType.BookCrossed">
+<summary>
+ Order book is crossed at the specified level
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Integrity.IntegrityEventType.NegativeSpread">
+<summary>
+ Negative bid-ask spread (crossed market)
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Integrity.IntegrityEventType.OutOfOrder">
+<summary>
+ Messages received out of order
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Integrity.IntegrityEventType.SequenceGap">
+<summary>
+ Sequence number gap detected (missing messages)
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Integrity.IntegrityEventType">
+<summary>
+ Integrity event types with associated data.
+ Each case carries the specific data needed to describe that issue.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Integrity.IntegritySeverity.Critical">
+<summary>
+ Critical event, requires immediate attention
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Integrity.IntegritySeverity.Error">
+<summary>
+ Error event, indicates data quality problem
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Integrity.IntegritySeverity.Warning">
+<summary>
+ Warning event, may indicate potential issues
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Integrity.IntegritySeverity.Info">
+<summary>
+ Informational event, no action required
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.Integrity.IntegritySeverity.ToInt">
+<summary>
+ Convert to integer for C# interop
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.Integrity.IntegritySeverity.FromInt(System.Int32)">
+<summary>
+ Create from integer for C# interop
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Integrity.IntegritySeverity">
+<summary>
+ Severity level for integrity events.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.Integrity.IntegrityEventModule.GetDescription(Meridian.FSharp.Domain.Integrity.IntegrityEvent)">
+<summary>
+ Get a human-readable description of the integrity event
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.Integrity.IntegrityEventModule.CreatePriceSpike(System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Int64)">
+<summary>
+ Create a price spike event
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.Integrity.IntegrityEventModule.CreateStaleQuote(System.String,System.DateTimeOffset,System.TimeSpan,System.Int64)">
+<summary>
+ Create a stale quote event
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.Integrity.IntegrityEventModule.CreateBookCrossed(System.String,System.DateTimeOffset,System.Int32,System.Int64)">
+<summary>
+ Create a book crossed event
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.Integrity.IntegrityEventModule.CreateNegativeSpread(System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Int64)">
+<summary>
+ Create a negative spread event
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.Integrity.IntegrityEventModule.CreateOutOfOrder(System.String,System.DateTimeOffset,System.Int64,System.Int64,System.Int64,Microsoft.FSharp.Core.FSharpOption{System.String},Microsoft.FSharp.Core.FSharpOption{System.String})">
+<summary>
+ Create an out-of-order event
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.Integrity.IntegrityEventModule.CreateSequenceGap(System.String,System.DateTimeOffset,System.Int64,System.Int64,System.Int64,Microsoft.FSharp.Core.FSharpOption{System.String},Microsoft.FSharp.Core.FSharpOption{System.String})">
+<summary>
+ Create a sequence gap event
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Integrity.IntegrityEventModule">
+<summary>
+ Smart constructors for creating well-formed integrity events.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.Integrity">
+<summary>
+ Integrity event types for data quality monitoring.
+ Uses discriminated unions to model different integrity issues
+ with their associated data, ensuring exhaustive pattern matching.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.MarketEvents.MarketEvent.Heartbeat">
+<summary>
+ System heartbeat
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.MarketEvents.MarketEvent.Integrity">
+<summary>
+ Data integrity event
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.MarketEvents.MarketEvent.Bar">
+<summary>
+ Historical bar data
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.MarketEvents.MarketEvent.OrderBook">
+<summary>
+ Complete order book snapshot
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.MarketEvents.MarketEvent.Depth">
+<summary>
+ Order book depth update
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.MarketEvents.MarketEvent.Quote">
+<summary>
+ Best bid/offer quote update
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.MarketEvents.MarketEvent.Trade">
+<summary>
+ Trade execution event
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.MarketEvents.MarketEvent">
+<summary>
+ Unified market event with type-safe payload.
+ Uses discriminated unions to ensure exhaustive handling
+ of all event types.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.MarketEvents.MarketEventType">
+<summary>
+ Market event type enumeration for pattern matching.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.BarEvent.PeriodSeconds">
+<summary>
+ Bar period in seconds
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.BarEvent.Timestamp">
+<summary>
+ Bar start timestamp
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.BarEvent.Volume">
+<summary>
+ Bar volume
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.BarEvent.Close">
+<summary>
+ Bar close price
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.BarEvent.Low">
+<summary>
+ Bar low price
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.BarEvent.High">
+<summary>
+ Bar high price
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.BarEvent.Open">
+<summary>
+ Bar open price
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.BarEvent.Symbol">
+<summary>
+ Trading symbol
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.MarketEvents.BarEvent">
+<summary>
+ Historical bar (OHLCV) data.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.OrderBookSnapshot.StreamId">
+<summary>
+ Stream identifier
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.OrderBookSnapshot.Timestamp">
+<summary>
+ Snapshot timestamp
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.OrderBookSnapshot.SequenceNumber">
+<summary>
+ Sequence number for ordering
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.OrderBookSnapshot.Asks">
+<summary>
+ Ask side levels (sorted by price ascending)
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.OrderBookSnapshot.Bids">
+<summary>
+ Bid side levels (sorted by price descending)
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.OrderBookSnapshot.Symbol">
+<summary>
+ Trading symbol
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.MarketEvents.OrderBookSnapshot">
+<summary>
+ Complete order book snapshot.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.DepthEvent.StreamId">
+<summary>
+ Stream identifier
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.DepthEvent.Timestamp">
+<summary>
+ Local timestamp
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.DepthEvent.SequenceNumber">
+<summary>
+ Sequence number for ordering
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.DepthEvent.OrderCount">
+<summary>
+ Number of orders at this level
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.DepthEvent.Quantity">
+<summary>
+ Quantity at this level
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.DepthEvent.Price">
+<summary>
+ Price at this level
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.DepthEvent.Level">
+<summary>
+ Depth level (0 = top of book)
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.DepthEvent.Side">
+<summary>
+ Side of the book (bid or ask)
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.DepthEvent.Symbol">
+<summary>
+ Trading symbol
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.MarketEvents.DepthEvent">
+<summary>
+ Market depth event representing order book snapshot or update.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.BookLevel.OrderCount">
+<summary>
+ Number of orders at this level
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.BookLevel.Quantity">
+<summary>
+ Total quantity at this level
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.BookLevel.Price">
+<summary>
+ Price level
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.MarketEvents.BookLevel">
+<summary>
+ Order book level with price, quantity, and order count.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.QuoteEvent.StreamId">
+<summary>
+ Stream identifier
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.QuoteEvent.ExchangeTimestamp">
+<summary>
+ Exchange timestamp (if available)
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.QuoteEvent.Timestamp">
+<summary>
+ Local timestamp
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.QuoteEvent.SequenceNumber">
+<summary>
+ Sequence number for ordering
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.QuoteEvent.AskSize">
+<summary>
+ Best ask size
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.QuoteEvent.AskPrice">
+<summary>
+ Best ask price
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.QuoteEvent.BidSize">
+<summary>
+ Best bid size
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.QuoteEvent.BidPrice">
+<summary>
+ Best bid price
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.QuoteEvent.Symbol">
+<summary>
+ Trading symbol
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.MarketEvents.QuoteEvent">
+<summary>
+ Quote event representing best bid/offer update.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.TradeEvent.Venue">
+<summary>
+ Venue/exchange identifier
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.TradeEvent.StreamId">
+<summary>
+ Stream identifier for multi-stream reconciliation
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.TradeEvent.ExchangeTimestamp">
+<summary>
+ Exchange timestamp (if available)
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.TradeEvent.Timestamp">
+<summary>
+ Local timestamp when event was received
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.TradeEvent.SequenceNumber">
+<summary>
+ Sequence number for ordering
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.TradeEvent.Side">
+<summary>
+ Inferred aggressor side
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.TradeEvent.Quantity">
+<summary>
+ Trade size/quantity
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.TradeEvent.Price">
+<summary>
+ Trade execution price
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.MarketEvents.TradeEvent.Symbol">
+<summary>
+ Trading symbol (e.g., &quot;AAPL&quot;, &quot;SPY&quot;)
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.MarketEvents.TradeEvent">
+<summary>
+ Trade event representing a single executed trade.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.MarketEvents.MarketEventModule.CreateHeartbeat(System.DateTimeOffset,System.String)">
+<summary>
+ Create a heartbeat event
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.MarketEvents.MarketEventModule.CreateQuote(System.String,System.Decimal,System.Int64,System.Decimal,System.Int64,System.Int64,System.DateTimeOffset)">
+<summary>
+ Create a quote event
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.MarketEvents.MarketEventModule.CreateTrade(System.String,System.Decimal,System.Int64,Meridian.FSharp.Domain.Sides.AggressorSide,System.Int64,System.DateTimeOffset)">
+<summary>
+ Create a trade event
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.MarketEvents.MarketEventModule.IsIntegrity(Meridian.FSharp.Domain.MarketEvents.MarketEvent)">
+<summary>
+ Check if event is an integrity event
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.MarketEvents.MarketEventModule.IsQuote(Meridian.FSharp.Domain.MarketEvents.MarketEvent)">
+<summary>
+ Check if event is a quote
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.MarketEvents.MarketEventModule.IsTrade(Meridian.FSharp.Domain.MarketEvents.MarketEvent)">
+<summary>
+ Check if event is a trade
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.MarketEvents.MarketEventModule.GetEventType(Meridian.FSharp.Domain.MarketEvents.MarketEvent)">
+<summary>
+ Get the event type
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.MarketEvents.MarketEventModule.GetSequenceNumber(Meridian.FSharp.Domain.MarketEvents.MarketEvent)">
+<summary>
+ Get the sequence number from any market event
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.MarketEvents.MarketEventModule.GetTimestamp(Meridian.FSharp.Domain.MarketEvents.MarketEvent)">
+<summary>
+ Get the timestamp from any market event
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.MarketEvents.MarketEventModule.GetSymbol(Meridian.FSharp.Domain.MarketEvents.MarketEvent)">
+<summary>
+ Get the symbol from any market event
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.MarketEvents.MarketEventModule">
+<summary>
+ Helper functions for working with market events.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.MarketEvents">
+<summary>
+ Market event types with type-safe discriminated unions.
+ Provides exhaustive pattern matching for all event types
+ and eliminates null reference exceptions.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.SecurityIdentifier.validateLei(System.String)">
+<summary>
+ Validates an LEI (Legal Entity Identifier, ISO 17442) using MOD 97-10 (ISO 7064).
+ Returns true when the check digits are valid.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.SecurityIdentifier.validateCusip(System.String)">
+<summary>
+ Validates a CUSIP (Committee on Uniform Security Identification Procedures) check digit.
+ Returns true when the check digit is valid.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.SecurityIdentifier.validateIsin(System.String)">
+<summary>
+ Validates an ISIN using the Luhn mod-10 algorithm applied to a numeric-expanded form.
+ Returns true when the check digit is valid.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.SecurityIdentifier.providerMetadataMatchesKind(Meridian.FSharp.Domain.Identifier)">
+<summary>
+ ProviderSymbol carries its identity namespace in the discriminant. When the optional
+ provider metadata is also populated, it may repeat that namespace but must not contradict
+ it. Provider metadata on every other identifier kind remains independent provenance.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.AssetClassRegistry.classification(Meridian.FSharp.Domain.SecurityKind)">
+<summary>
+ Structural &lt;see cref=&quot;SecurityClassification&quot;/&gt; for a kind. Callers that need
+ instrument-data-dependent refinement (e.g. demand vs. time deposits) refine the
+ returned value; sector/industry taxonomy is layered on separately.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.AssetClassRegistry.isDerivative(Meridian.FSharp.Domain.SecurityKind)">
+<summary>
+ True when the kind is an exchange-traded or OTC derivative.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.AssetClassRegistry.assetClassName(Meridian.FSharp.Domain.SecurityKind)">
+<summary>
+ Canonical asset-class string for a kind.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.AssetClassRegistry.tryDescriptorByName(System.String)">
+<summary>
+ Looks up a descriptor by canonical asset-class name.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.AssetClassRegistry.descriptor(Meridian.FSharp.Domain.SecurityKind)">
+<summary>
+ Resolves the descriptor for a kind. Total by construction — &lt;see cref=&quot;keyOf&quot;/&gt; and the
+ &lt;c&gt;descriptors&lt;/c&gt; table are locked together by &lt;c&gt;AssetClassRegistry&lt;/c&gt; tests.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.AssetClassRegistry.assetClasses">
+<summary>
+ Every asset-class name known to the registry, in declaration order.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.AssetClassRegistry.keyOf(Meridian.FSharp.Domain.SecurityKind)">
+<summary>
+ The single discriminated-union projection: maps a kind to its canonical asset-class name.
+ This is the only place that pattern-matches &lt;see cref=&quot;SecurityKind&quot;/&gt; for classification;
+ all descriptor metadata is then resolved from the table above.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Domain.AssetClassRegistry.descriptors">
+<summary>
+ The one canonical metadata table, one entry per asset class. Order matches the
+ &lt;see cref=&quot;SecurityKind&quot;/&gt; declaration so the taxonomy reads top-to-bottom.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Domain.AssetClassRegistry">
+<summary>
+ Single source of truth for Security Master asset classification.
+
+ Every &lt;see cref=&quot;SecurityKind&quot;/&gt; resolves to exactly one &lt;see cref=&quot;AssetClassDescriptor&quot;/&gt;
+ here, and all asset-class dispatch — the asset-class string, the derivative predicate, and
+ the canonical &lt;see cref=&quot;SecurityClassification&quot;/&gt; consumed by the economic-definition upgrade
+ path — is derived from this table rather than being re-encoded at each call site. Adding a new
+ asset class means adding one &lt;c&gt;key&lt;/c&gt; arm and one &lt;c&gt;Descriptors&lt;/c&gt; entry; every downstream
+ projection then updates automatically.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.CashLadderModule.build(System.DateTimeOffset,System.String,System.Int32,Microsoft.FSharp.Collections.FSharpList{Meridian.FSharp.Domain.ProjectedCashEvent})">
+<summary>
+ Build a time-bucketed cash ladder from a list of projected events in the given currency.
+ Events before &lt;paramref name=&quot;asOf&quot;/&gt; are excluded; &lt;paramref name=&quot;bucketDays&quot;/&gt; must be ≥ 1.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.CashFlowRules.classifyStates(Meridian.FSharp.Domain.MatchTolerance,Microsoft.FSharp.Collections.FSharpList{Meridian.FSharp.Domain.ProjectedCashEvent},Microsoft.FSharp.Collections.FSharpMap{System.Tuple{System.Guid,System.Guid},Meridian.FSharp.Domain.ActualCashEvent})">
+<summary>
+ Evaluate a list of projected events and return their state machine representation.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.CashFlowRules.classifyAll(Meridian.FSharp.Domain.MatchTolerance,Microsoft.FSharp.Collections.FSharpList{Meridian.FSharp.Domain.ProjectedCashEvent},Microsoft.FSharp.Collections.FSharpMap{System.Tuple{System.Guid,System.Guid},Meridian.FSharp.Domain.ActualCashEvent})">
+<summary>
+ Evaluate a list of projected events against supplied actuals, returning all breaks.
+ &lt;paramref name=&quot;actuals&quot;/&gt; is a map from (securityId, flowId) to &lt;see cref=&quot;ActualCashEvent&quot;/&gt;.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.CashFlowRules.classifyState(Meridian.FSharp.Domain.MatchTolerance,Meridian.FSharp.Domain.ProjectedCashEvent,Meridian.FSharp.Domain.ActualCashEvent)">
+<summary>
+ Evaluate a projected event against a single actual, yielding a strongly-typed state.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.CashFlowRules.buildBreak(System.Guid,Meridian.FSharp.Domain.ProjectedCashEvent,Meridian.FSharp.Domain.BreakClassification)">
+<summary>
+ Build a &lt;see cref=&quot;CashFlowBreak&quot;/&gt; record from a classified break.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.CashFlowRules.applyTolerance(Meridian.FSharp.Domain.MatchTolerance,Meridian.FSharp.Domain.ProjectedCashEvent,System.Decimal,System.String,System.DateTimeOffset)">
+<summary>
+ Attempt to match a projected cash event against the actual outcome values.
+ Returns &lt;c&gt;None&lt;/c&gt; when within tolerance (matched), or &lt;c&gt;Some(BreakClassification)&lt;/c&gt; on break.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.BreakSeverityInfo.ofClassification(System.Decimal,Meridian.FSharp.Domain.BreakClassification)">
+<summary>
+ Derive severity from the break classification and the projected nominal amount.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.SecurityMasterLegacyUpgrade.classificationFromKind(Meridian.FSharp.Domain.SecurityKind)">
+<summary>
+ Builds the canonical classification for a legacy kind from the single
+ &lt;see cref=&quot;AssetClassRegistry&quot;/&gt; source of truth, layering on the two
+ instrument-data-dependent sub-type refinements the registry cannot express
+ structurally (demand vs. time deposits, and free-text OtherSecurity sub-types).
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.FundStructure.bankAccountsForFund(Meridian.FSharp.Domain.StructureNodeId,System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.OwnershipLink})">
+<summary>
+ Returns ownership links where the fund is the parent and the relationship is BanksFor.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.FundStructure.custodianAccountsForFund(Meridian.FSharp.Domain.StructureNodeId,System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.OwnershipLink})">
+<summary>
+ Returns ownership links where the fund is the parent and the relationship is CustodiesFor.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.DirectLending.calculateDailyAccrualAmountForDate(Meridian.FSharp.Domain.DirectLendingDayCountBasis,System.Decimal,System.Decimal,System.DateOnly)">
+<summary>
+ Date-aware variant used for ActualActualISDA where leap-year matters.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.DirectLending.calculatePikAccrual(System.Decimal,System.Decimal,Meridian.FSharp.Domain.DirectLendingDayCountBasis,System.DateOnly)">
+<summary>
+ PIK accrual: add interest to principal balance instead of cash payment.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.DirectLending.calculateStraightLineAmortization(System.Decimal,System.Int32)">
+<summary>
+ Amortization amount for one period using straight-line method.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.DirectLending.calculateCollateralCoverage(System.Decimal,System.Decimal)">
+<summary>
+ Net present value of collateral minus principal outstanding.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Domain.DirectLending.accrualFractionForDay(Meridian.FSharp.Domain.DirectLendingDayCountBasis,System.DateOnly)">
+<summary>
+ Returns the accrual fraction for a single day under each convention.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationTypes.ValidationResult`1">
+<summary>
+ Result type alias for validation operations.
+ Ok contains the validated value, Error contains a list of validation errors.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationTypes.ValidationError.Custom">
+<summary>
+ Generic validation error
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationTypes.ValidationError.InvalidSpread">
+<summary>
+ Bid-ask spread is invalid
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationTypes.ValidationError.InvalidSequence">
+<summary>
+ Sequence number validation failed
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationTypes.ValidationError.FutureTimestamp">
+<summary>
+ Timestamp is in the future
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationTypes.ValidationError.StaleTimestamp">
+<summary>
+ Timestamp is stale
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationTypes.ValidationError.InvalidSymbol">
+<summary>
+ Symbol validation failed
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationTypes.ValidationError.InvalidQuantity">
+<summary>
+ Quantity validation failed
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationTypes.ValidationError.InvalidPrice">
+<summary>
+ Price validation failed
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Validation.ValidationTypes.ValidationError.Description">
+<summary>
+ Get a human-readable description of the error
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationTypes.ValidationError">
+<summary>
+ Validation error types with associated data.
+ Each error carries context about what went wrong.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.Validate.ValidateCustom``1(System.String,Microsoft.FSharp.Core.FSharpFunc{``0,System.Boolean},System.String,``0)">
+<summary>
+ Validate with a custom predicate
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.Validate.ValidateSpread(System.Decimal,System.Decimal)">
+<summary>
+ Validate that bid &lt; ask (positive spread)
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.Validate.ValidateSequence(System.Int64,System.Int64)">
+<summary>
+ Validate that a sequence number is greater than the last seen
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.Validate.ValidateTimestampDefault(System.DateTimeOffset)">
+<summary>
+ Validate timestamp with default max age of 5 seconds
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.Validate.ValidateTimestamp(System.TimeSpan,System.DateTimeOffset)">
+<summary>
+ Validate that a timestamp is not stale
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.Validate.ValidateSymbolDefault(System.String)">
+<summary>
+ Validate symbol with default max length of 20
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.Validate.ValidateSymbol(System.Int32,System.String)">
+<summary>
+ Validate that a symbol is non-empty and within length limits
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.Validate.ValidateQuantityDefault(System.Int64)">
+<summary>
+ Validate quantity with default max of 10,000,000
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.Validate.ValidateQuantity(System.Int64,System.Int64)">
+<summary>
+ Validate that a quantity is non-negative and within bounds
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.Validate.ValidatePriceDefault(System.Decimal)">
+<summary>
+ Validate price with default max of 1,000,000
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.Validate.ValidatePrice(System.Decimal,System.Decimal)">
+<summary>
+ Validate that a price is positive and within reasonable bounds
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationTypes.Validate">
+<summary>
+ Core validation functions for common field types.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.ValidationOperators.op_GreaterGreaterEquals``3(Microsoft.FSharp.Core.FSharpResult{``0,``1},Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpResult{``2,``1}})">
+<summary>
+ Bind operator (monad, fails fast)
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.ValidationOperators.op_LessMultiplyGreater``3">
+<summary>
+ Apply operator (applicative)
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.ValidationOperators.op_LessBangGreater``3">
+<summary>
+ Map operator (functor)
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationTypes.ValidationOperators">
+<summary>
+ Infix operators for validation composition
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.ValidationResult.sequence``2(Microsoft.FSharp.Collections.FSharpList{Microsoft.FSharp.Core.FSharpResult{``0,Microsoft.FSharp.Collections.FSharpList{``1}}})">
+<summary>
+ Sequence a list of results into a result of list
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.ValidationResult.traverse``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpResult{``1,Microsoft.FSharp.Collections.FSharpList{``2}}},Microsoft.FSharp.Collections.FSharpList{``0})">
+<summary>
+ Traverse a list with a validation function, accumulating all errors
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.ValidationResult.combine``3(Microsoft.FSharp.Core.FSharpResult{``0,Microsoft.FSharp.Collections.FSharpList{``1}},Microsoft.FSharp.Core.FSharpResult{``2,Microsoft.FSharp.Collections.FSharpList{``1}})">
+<summary>
+ Combine two results, accumulating errors
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.ValidationResult.errors``2(``0)">
+<summary>
+ Lift multiple errors into a failed result
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.ValidationResult.error``2(``0)">
+<summary>
+ Lift an error into a failed result
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.ValidationResult.ok``2(``0)">
+<summary>
+ Lift a value into a successful result
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.ValidationResult.bind``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpResult{``1,``2}},Microsoft.FSharp.Core.FSharpResult{``0,``2})">
+<summary>
+ Bind for monadic composition (fails fast, doesn&apos;t accumulate)
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.ValidationResult.apply``3(Microsoft.FSharp.Core.FSharpResult{Microsoft.FSharp.Core.FSharpFunc{``0,``1},Microsoft.FSharp.Collections.FSharpList{``2}},Microsoft.FSharp.Core.FSharpResult{``0,Microsoft.FSharp.Collections.FSharpList{``2}})">
+<summary>
+ Apply a function wrapped in a Result to a value wrapped in a Result
+ Accumulates errors from both sides
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationTypes.ValidationResult.map``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Microsoft.FSharp.Core.FSharpResult{``0,``2})">
+<summary>
+ Map a function over a successful result
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationTypes.ValidationResult">
+<summary>
+ Applicative functor operators for combining validations.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationTypes">
+<summary>
+ Core validation types for Railway-Oriented Programming.
+ Provides Result-based validation with composable error handling.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Validation.TradeValidator.TradeValidationConfig.LastSequenceNumber">
+<summary>
+ Last seen sequence number (for sequence validation)
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Validation.TradeValidator.TradeValidationConfig.MaxTimestampAge">
+<summary>
+ Maximum age for timestamp
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Validation.TradeValidator.TradeValidationConfig.MaxSymbolLength">
+<summary>
+ Maximum allowed symbol length
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Validation.TradeValidator.TradeValidationConfig.MaxQuantity">
+<summary>
+ Maximum allowed quantity
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Validation.TradeValidator.TradeValidationConfig.MaxPrice">
+<summary>
+ Maximum allowed price
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.TradeValidator.TradeValidationConfig">
+<summary>
+ Configuration for trade validation
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.TradeValidator.CreateValidatedTrade(System.String,System.Decimal,System.Int64,Meridian.FSharp.Domain.Sides.AggressorSide,System.Int64,System.DateTimeOffset)">
+<summary>
+ Create a validated trade from raw values.
+ This is a smart constructor that ensures only valid trades are created.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.TradeValidator.ValidateAndTransform``1(Microsoft.FSharp.Core.FSharpFunc{Meridian.FSharp.Domain.MarketEvents.TradeEvent,``0},Meridian.FSharp.Domain.MarketEvents.TradeEvent)">
+<summary>
+ Validate a trade and transform it on success.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.TradeValidator.ValidateTrades(Meridian.FSharp.Validation.TradeValidator.TradeValidationConfig,Microsoft.FSharp.Collections.FSharpList{Meridian.FSharp.Domain.MarketEvents.TradeEvent})">
+<summary>
+ Validate a batch of trades, returning all valid trades and accumulated errors.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.TradeValidator.IsValidTrade(Meridian.FSharp.Domain.MarketEvents.TradeEvent)">
+<summary>
+ Quick validation that just checks if a trade is valid.
+ Returns true if valid, false otherwise.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.TradeValidator.ValidateTradeQuantity(Meridian.FSharp.Domain.MarketEvents.TradeEvent)">
+<summary>
+ Validate just the quantity of a trade.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.TradeValidator.ValidateTradePrice(Meridian.FSharp.Domain.MarketEvents.TradeEvent)">
+<summary>
+ Validate just the price of a trade.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.TradeValidator.ValidateTradeDefault(Meridian.FSharp.Domain.MarketEvents.TradeEvent)">
+<summary>
+ Validate a trade event with default configuration.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.TradeValidator.ValidateTrade(Meridian.FSharp.Validation.TradeValidator.TradeValidationConfig,Meridian.FSharp.Domain.MarketEvents.TradeEvent)">
+<summary>
+ Validate a trade event with the given configuration.
+ Uses applicative style to accumulate all validation errors.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.TradeValidator.TradeValidationConfigModule.CreateHistorical">
+<summary>
+ Create configuration for historical validation (more lenient)
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.TradeValidator.TradeValidationConfigModule.CreateRealTime(System.Int64)">
+<summary>
+ Create configuration for real-time validation (stricter)
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.TradeValidator.TradeValidationConfigModule.CreateDefault">
+<summary>
+ Create default configuration
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.TradeValidator.TradeValidationConfigModule">
+<summary>
+ Default validation configuration
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.TradeValidator">
+<summary>
+ Trade event validation using Railway-Oriented Programming.
+ Validates all fields of a trade event and accumulates errors.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Validation.QuoteValidator.QuoteValidationConfig.AllowCrossedQuotes">
+<summary>
+ Allow crossed quotes (bid &gt;= ask)
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Validation.QuoteValidator.QuoteValidationConfig.AllowZeroSize">
+<summary>
+ Allow zero sizes (some feeds send zero to indicate no liquidity)
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Validation.QuoteValidator.QuoteValidationConfig.MaxTimestampAge">
+<summary>
+ Maximum age for timestamp
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Validation.QuoteValidator.QuoteValidationConfig.MaxSymbolLength">
+<summary>
+ Maximum allowed symbol length
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Validation.QuoteValidator.QuoteValidationConfig.MaxSize">
+<summary>
+ Maximum allowed size
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Validation.QuoteValidator.QuoteValidationConfig.MaxPrice">
+<summary>
+ Maximum allowed price
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.QuoteValidator.QuoteValidationConfig">
+<summary>
+ Configuration for quote validation
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.QuoteValidator.GetMidPrice(Meridian.FSharp.Domain.MarketEvents.QuoteEvent)">
+<summary>
+ Calculate the mid-price from a validated quote.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.QuoteValidator.GetSpread(Meridian.FSharp.Domain.MarketEvents.QuoteEvent)">
+<summary>
+ Calculate the spread from a validated quote.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.QuoteValidator.CreateValidatedQuote(System.String,System.Decimal,System.Int64,System.Decimal,System.Int64,System.Int64,System.DateTimeOffset)">
+<summary>
+ Create a validated quote from raw values.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.QuoteValidator.ValidateQuotes(Meridian.FSharp.Validation.QuoteValidator.QuoteValidationConfig,Microsoft.FSharp.Collections.FSharpList{Meridian.FSharp.Domain.MarketEvents.QuoteEvent})">
+<summary>
+ Validate a batch of quotes, returning all valid quotes and accumulated errors.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.QuoteValidator.HasValidSpread(Meridian.FSharp.Domain.MarketEvents.QuoteEvent)">
+<summary>
+ Check if a quote has a valid (positive) spread.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.QuoteValidator.IsValidQuote(Meridian.FSharp.Domain.MarketEvents.QuoteEvent)">
+<summary>
+ Quick validation that just checks if a quote is valid.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.QuoteValidator.ValidateQuoteDefault(Meridian.FSharp.Domain.MarketEvents.QuoteEvent)">
+<summary>
+ Validate a quote event with default configuration.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.QuoteValidator.ValidateQuote(Meridian.FSharp.Validation.QuoteValidator.QuoteValidationConfig,Meridian.FSharp.Domain.MarketEvents.QuoteEvent)">
+<summary>
+ Validate a quote event with the given configuration.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.QuoteValidator.validateAskSize(Meridian.FSharp.Validation.QuoteValidator.QuoteValidationConfig,System.Int64)">
+<summary>
+ Validate ask size
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.QuoteValidator.validateBidSize(Meridian.FSharp.Validation.QuoteValidator.QuoteValidationConfig,System.Int64)">
+<summary>
+ Validate bid size
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.QuoteValidator.QuoteValidationConfigModule.CreateHistorical">
+<summary>
+ Create lenient configuration for historical data
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.QuoteValidator.QuoteValidationConfigModule.CreateStrict">
+<summary>
+ Create strict configuration for real-time validation
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.QuoteValidator.QuoteValidationConfigModule.CreateDefault">
+<summary>
+ Create default configuration
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.QuoteValidator.QuoteValidationConfigModule">
+<summary>
+ Default validation configuration
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.QuoteValidator">
+<summary>
+ Quote event validation using Railway-Oriented Programming.
+ Validates bid/ask prices, sizes, and spread integrity.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationPipeline.TradeValidationPipelineBuilder.WithSymbolValidation(System.Int32)">
+<summary>
+ Add symbol validation
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationPipeline.TradeValidationPipelineBuilder.WithQuantityValidation(System.Int64)">
+<summary>
+ Add quantity validation
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationPipeline.TradeValidationPipelineBuilder.WithPriceValidation(System.Decimal)">
+<summary>
+ Add price validation
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationPipeline.TradeValidationPipelineBuilder.WithCustomValidation(Microsoft.FSharp.Core.FSharpFunc{Meridian.FSharp.Domain.MarketEvents.TradeEvent,Microsoft.FSharp.Core.FSharpResult{Meridian.FSharp.Domain.MarketEvents.TradeEvent,Microsoft.FSharp.Collections.FSharpList{Meridian.FSharp.Validation.ValidationTypes.ValidationError}}})">
+<summary>
+ Add custom validation
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationPipeline.TradeValidationPipelineBuilder.Validate(Meridian.FSharp.Domain.MarketEvents.TradeEvent)">
+<summary>
+ Build and run the pipeline
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationPipeline.TradeValidationPipelineBuilder">
+<summary>
+ Fluent API for building validation pipelines
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationPipeline.ValidationPipeline`1">
+<summary>
+ Validation pipeline builder
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationPipeline.ValidationStage`2">
+<summary>
+ Pipeline stage for validation
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Validation.ValidationPipeline.ValidatedEvent`1.ValidationDuration">
+<summary>
+ Validation duration
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Validation.ValidationPipeline.ValidatedEvent`1.Timestamp">
+<summary>
+ Original timestamp
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Validation.ValidationPipeline.ValidatedEvent`1.Errors">
+<summary>
+ List of validation errors (if any)
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Validation.ValidationPipeline.ValidatedEvent`1.Event">
+<summary>
+ The validated event (if successful)
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationPipeline.ValidatedEvent`1">
+<summary>
+ Result of validating a market event.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationPipeline.CreateTradeValidator">
+<summary>
+ Create a new trade validation pipeline builder
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationPipeline.MarketEventValidation.ErrorsToIntegrityEvents(System.String,System.DateTimeOffset,System.Int64,Microsoft.FSharp.Collections.FSharpList{Meridian.FSharp.Validation.ValidationTypes.ValidationError})">
+<summary>
+ Convert validation errors to integrity events
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationPipeline.MarketEventValidation.PartitionByValidity(Microsoft.FSharp.Collections.FSharpList{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Partition events into valid and invalid
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationPipeline.MarketEventValidation.FilterValid(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Filter a sequence of events, keeping only valid ones
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationPipeline.MarketEventValidation.ValidateMarketEvent(Meridian.FSharp.Domain.MarketEvents.MarketEvent)">
+<summary>
+ Validate any market event
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationPipeline.MarketEventValidation.ValidateQuoteEvent(Meridian.FSharp.Validation.QuoteValidator.QuoteValidationConfig,Meridian.FSharp.Domain.MarketEvents.QuoteEvent)">
+<summary>
+ Validate a quote event and wrap result
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationPipeline.MarketEventValidation.ValidateTradeEvent(Meridian.FSharp.Validation.TradeValidator.TradeValidationConfig,Meridian.FSharp.Domain.MarketEvents.TradeEvent)">
+<summary>
+ Validate a trade event and wrap result
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationPipeline.MarketEventValidation">
+<summary>
+ Market event validation pipeline
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationPipeline.ValidationPipeline.RunCollectErrors``1(Meridian.FSharp.Validation.ValidationPipeline.ValidationPipeline{``0},``0)">
+<summary>
+ Run the pipeline and collect all errors (doesn&apos;t short-circuit)
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationPipeline.ValidationPipeline.Run``1(Meridian.FSharp.Validation.ValidationPipeline.ValidationPipeline{``0},``0)">
+<summary>
+ Run the pipeline on a value
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationPipeline.ValidationPipeline.AddPredicate``1(Microsoft.FSharp.Core.FSharpFunc{``0,System.Boolean},Microsoft.FSharp.Core.FSharpFunc{``0,Meridian.FSharp.Validation.ValidationTypes.ValidationError},Meridian.FSharp.Validation.ValidationPipeline.ValidationPipeline{``0})">
+<summary>
+ Add a predicate-based validation stage
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationPipeline.ValidationPipeline.AddStage``1(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpResult{``0,Microsoft.FSharp.Collections.FSharpList{Meridian.FSharp.Validation.ValidationTypes.ValidationError}}},Meridian.FSharp.Validation.ValidationPipeline.ValidationPipeline{``0})">
+<summary>
+ Add a validation stage to the pipeline
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Validation.ValidationPipeline.ValidationPipeline.Create``1">
+<summary>
+ Create an empty pipeline
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationPipeline.ValidationPipeline">
+<summary>
+ Pipeline operations
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Validation.ValidationPipeline">
+<summary>
+ Validation pipeline for composing multiple validators.
+ Provides a fluent API for building validation workflows.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Spread.SpreadStatistics.Count">
+<summary>
+ Number of observations
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Spread.SpreadStatistics.AvgSpreadBps">
+<summary>
+ Average spread in basis points
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Spread.SpreadStatistics.StdDevSpread">
+<summary>
+ Spread standard deviation
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Spread.SpreadStatistics.MedianSpread">
+<summary>
+ Median spread
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Spread.SpreadStatistics.AvgSpread">
+<summary>
+ Average spread
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Spread.SpreadStatistics.MaxSpread">
+<summary>
+ Maximum spread observed
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Spread.SpreadStatistics.MinSpread">
+<summary>
+ Minimum spread observed
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Calculations.Spread.SpreadStatistics">
+<summary>
+ Spread statistics for a collection of quotes.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Spread.IsSpreadAcceptable(System.Decimal,System.Decimal,System.Decimal)">
+<summary>
+ Check if spread is within acceptable bounds.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Spread.CalculateStatistics(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.QuoteEvent})">
+<summary>
+ Calculate spread statistics from a sequence of quotes.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Spread.HalfSpread(System.Decimal,System.Decimal)">
+<summary>
+ Calculate quoted half-spread (half of bid-ask spread).
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Spread.EffectiveSpreadBps(System.Decimal,System.Decimal,System.Decimal)">
+<summary>
+ Calculate effective spread in basis points.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Spread.EffectiveSpread(System.Decimal,System.Decimal,System.Decimal)">
+<summary>
+ Calculate effective spread from trade price and mid-price.
+ Effective spread = 2 * |trade price - mid price|
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Spread.RelativeSpread(System.Decimal,System.Decimal)">
+<summary>
+ Calculate the relative spread (spread as percentage of mid).
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Spread.SpreadBpsFromOrderBook(Meridian.FSharp.Domain.MarketEvents.OrderBookSnapshot)">
+<summary>
+ Calculate spread in basis points from an order book snapshot.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Spread.SpreadBpsFromQuote(Meridian.FSharp.Domain.MarketEvents.QuoteEvent)">
+<summary>
+ Calculate spread in basis points from a quote event.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Spread.SpreadBps(System.Decimal,System.Decimal)">
+<summary>
+ Calculate spread in basis points (1 bp = 0.01%).
+ Spread in bps = (ask - bid) / mid * 10000
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Spread.MidPriceFromOrderBook(Meridian.FSharp.Domain.MarketEvents.OrderBookSnapshot)">
+<summary>
+ Calculate the mid-price from an order book snapshot.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Spread.MidPriceFromQuote(Meridian.FSharp.Domain.MarketEvents.QuoteEvent)">
+<summary>
+ Calculate the mid-price from a quote event.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Spread.MidPrice(System.Decimal,System.Decimal)">
+<summary>
+ Calculate the mid-price (midpoint of bid and ask).
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Spread.FromOrderBook(Meridian.FSharp.Domain.MarketEvents.OrderBookSnapshot)">
+<summary>
+ Calculate the bid-ask spread from an order book snapshot.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Spread.FromQuote(Meridian.FSharp.Domain.MarketEvents.QuoteEvent)">
+<summary>
+ Calculate the bid-ask spread from a quote event.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Spread.Calculate(System.Decimal,System.Decimal)">
+<summary>
+ Calculate the absolute bid-ask spread.
+ Returns None if prices are invalid.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Calculations.Spread">
+<summary>
+ Spread calculation functions for order book analysis.
+ Pure functional implementations for bid-ask spread metrics.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Imbalance.ImbalanceStatistics.Count">
+<summary>
+ Number of observations
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Imbalance.ImbalanceStatistics.MaxSellPressure">
+<summary>
+ Maximum sell pressure observed
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Imbalance.ImbalanceStatistics.MaxBuyPressure">
+<summary>
+ Maximum buy pressure observed
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Imbalance.ImbalanceStatistics.SellPressurePercent">
+<summary>
+ Percentage of time with sell pressure
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Imbalance.ImbalanceStatistics.BuyPressurePercent">
+<summary>
+ Percentage of time with buy pressure
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Imbalance.ImbalanceStatistics.StdDev">
+<summary>
+ Imbalance standard deviation
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Imbalance.ImbalanceStatistics.Average">
+<summary>
+ Average imbalance
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Calculations.Imbalance.ImbalanceStatistics">
+<summary>
+ Imbalance statistics over a time period.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Imbalance.RollingAverage(System.Int32,Microsoft.FSharp.Collections.FSharpList{System.Decimal})">
+<summary>
+ Calculate rolling imbalance average.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Imbalance.CalculateStatistics(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.QuoteEvent})">
+<summary>
+ Calculate imbalance statistics from a sequence of quotes.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Imbalance.IsSignificantImbalance(System.Decimal,System.Decimal)">
+<summary>
+ Check if imbalance exceeds a threshold.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Imbalance.SignalStrength(System.Decimal)">
+<summary>
+ Imbalance signal strength (0 to 1).
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Imbalance.GetImbalanceDirection(System.Decimal)">
+<summary>
+ Calculate the imbalance direction.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Imbalance.Microprice(Meridian.FSharp.Domain.MarketEvents.OrderBookSnapshot)">
+<summary>
+ Microprice calculation (volume-weighted mid-price).
+ Gives a more accurate estimate of fair value than simple mid-price.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Imbalance.PriceWeightedImbalance(Meridian.FSharp.Domain.MarketEvents.OrderBookSnapshot)">
+<summary>
+ Calculate price-weighted imbalance.
+ Weights volume by proximity to mid-price.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Imbalance.VolumeWeightedImbalance(Meridian.FSharp.Domain.MarketEvents.OrderBookSnapshot)">
+<summary>
+ Calculate volume-weighted imbalance across all levels.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Imbalance.FromOrderBookWeighted(System.Int32,System.Decimal,Meridian.FSharp.Domain.MarketEvents.OrderBookSnapshot)">
+<summary>
+ Calculate imbalance using multiple levels of the order book.
+ Weights deeper levels less than top-of-book.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Imbalance.FromOrderBook(Meridian.FSharp.Domain.MarketEvents.OrderBookSnapshot)">
+<summary>
+ Calculate imbalance from an order book snapshot (using top levels).
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Imbalance.FromQuote(Meridian.FSharp.Domain.MarketEvents.QuoteEvent)">
+<summary>
+ Calculate imbalance from a quote event (using top-of-book sizes).
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Imbalance.Calculate(System.Int64,System.Int64)">
+<summary>
+ Calculate order book imbalance from bid and ask quantities.
+ Returns a value between -1 and +1:
+ - Positive values indicate buying pressure (more bid volume)
+ - Negative values indicate selling pressure (more ask volume)
+ - Zero indicates balanced book
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Calculations.Imbalance">
+<summary>
+ Order book imbalance calculations.
+ Measures the relative pressure between bid and ask sides.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Calculations.Aggregations.OhlcvBar">
+<summary>
+ Aggregate trades into OHLCV bars.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Aggregations.TradeStatistics.Vwap">
+<summary>
+ VWAP
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Aggregations.TradeStatistics.MinSize">
+<summary>
+ Minimum trade size
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Aggregations.TradeStatistics.MaxSize">
+<summary>
+ Maximum trade size
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Aggregations.TradeStatistics.MedianSize">
+<summary>
+ Median trade size
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Aggregations.TradeStatistics.AverageSize">
+<summary>
+ Average trade size
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Aggregations.TradeStatistics.TotalVolume">
+<summary>
+ Total volume traded
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Aggregations.TradeStatistics.TradeCount">
+<summary>
+ Total number of trades
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Calculations.Aggregations.TradeStatistics">
+<summary>
+ Calculate trade count and average size.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Aggregations.VolumeBreakdown.BuyRatio">
+<summary>
+ Buy ratio (0 to 1)
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Aggregations.VolumeBreakdown.TotalVolume">
+<summary>
+ Total volume
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Aggregations.VolumeBreakdown.UnknownVolume">
+<summary>
+ Unknown aggressor volume
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Aggregations.VolumeBreakdown.SellVolume">
+<summary>
+ Total sell volume (seller-initiated trades)
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Calculations.Aggregations.VolumeBreakdown.BuyVolume">
+<summary>
+ Total buy volume (buyer-initiated trades)
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Calculations.Aggregations.VolumeBreakdown">
+<summary>
+ Calculate buy/sell volume breakdown.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Aggregations.CreateOhlcvBars(System.Int32,System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.TradeEvent})">
+<summary>
+ Group trades by time interval and create OHLCV bars.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Aggregations.CreateOhlcvBar(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.TradeEvent})">
+<summary>
+ Create OHLCV bar from trades.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Aggregations.TradeArrivalRate(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.TradeEvent})">
+<summary>
+ Calculate trade arrival rate (trades per second).
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Aggregations.RollingVwap(System.Int32,Microsoft.FSharp.Collections.FSharpList{Meridian.FSharp.Domain.MarketEvents.TradeEvent})">
+<summary>
+ Calculate rolling VWAP.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Aggregations.PriceReturn(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.TradeEvent})">
+<summary>
+ Calculate price return from first to last trade.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Aggregations.PriceRange(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.TradeEvent})">
+<summary>
+ Calculate price range (high - low).
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Aggregations.TradeStatistics(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.TradeEvent})">
+<summary>
+ Calculate trade statistics.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Aggregations.OrderFlowImbalance(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.TradeEvent})">
+<summary>
+ Calculate Order Flow Imbalance (OFI).
+ OFI = sum of signed trade volumes, positive for buyer-initiated
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Aggregations.VolumeBreakdown(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.TradeEvent})">
+<summary>
+ Calculate volume breakdown by aggressor side.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Aggregations.TotalVolume(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.TradeEvent})">
+<summary>
+ Calculate total volume from trades.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Aggregations.Twap(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.TradeEvent})">
+<summary>
+ Calculate Time-Weighted Average Price (TWAP).
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.Aggregations.Vwap(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.TradeEvent})">
+<summary>
+ Calculate Volume-Weighted Average Price (VWAP).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Calculations.Aggregations">
+<summary>
+ Aggregation functions for market data analysis.
+ Includes VWAP, TWAP, volume analysis, and trade flow metrics.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.bookYield(System.Decimal,Microsoft.FSharp.Collections.FSharpList{System.Tuple{System.Decimal,System.Decimal}},System.Int32)">
+<summary>
+ Book yield — daily solve from end-of-day book price and current projected cash flows:
+   Current_book_price = PV of current projected cash flows
+ Clearwater uses an iterative Newton-Raphson solver internally.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.purchaseYield(System.Decimal,Microsoft.FSharp.Collections.FSharpList{System.Tuple{System.Decimal,System.Decimal}},System.Int32)">
+<summary>
+ Purchase/amortization yield — internal rate of return solving:
+   Purchase_dirty_price = Σ [ CF_i / (1 + Y/f)^(f × t_i) ]
+ cashFlows: list of (timeToPaymentYears, cashFlowAmount).
+ compoundingFrequency: 1 = annual, 2 = semi-annual, 4 = quarterly.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.newtonRaphsonYield(System.Decimal,Microsoft.FSharp.Collections.FSharpList{System.Tuple{System.Decimal,System.Decimal}},System.Int32,System.Int32)">
+<summary>
+ Newton-Raphson yield solver.
+ Finds the yield Y such that: Price = Σ [ CF_i / (1 + Y/f)^(f × t_i) ]
+ cashFlows: list of (timeToPaymentYears, cashFlowAmount).
+ Returns None if the price is non-positive, there are no cash flows, or convergence fails.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.isPutInTheMoney(System.Decimal,System.Decimal)">
+<summary>
+ Returns true when a putable bond is in-the-money:
+   Purchase_price ≤ Next_put_price → amortize to next put date and price.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.isCallInTheMoney(System.Decimal,System.Decimal)">
+<summary>
+ Returns true when a callable bond is in-the-money:
+   Purchase_price &gt; Next_call_price → amortize to next call date and price.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.repoInterest(System.Decimal,System.Decimal,System.Decimal)">
+<summary>
+ Repo / reverse-repo interest for a period:
+   Repo_interest = Principal × Repo_rate × Day-count_fraction
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.shortTermDailyAccretion(System.Decimal,System.Decimal,System.Int32)">
+<summary>
+ Straight-line daily accretion for CP, CDs, and agency discount notes:
+   Daily_accretion = (Face_value − Purchase_price) / Settlement_to_maturity_days
+ Example: purchased at 98, face 100, 90 days → 2 / 90 ≈ 0.0222 per day.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.fxRemeasurement(System.Decimal,System.Decimal)">
+<summary>
+ FX remeasurement:
+   Functional_currency_amount = Local_currency_amount × Daily_FX_rate
+ Amortization is calculated locally and then remeasured to functional currency.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.pciDailyAmortization(System.Decimal,System.Decimal,System.Int32,System.Decimal)">
+<summary>
+ PCI daily amortization/accretion:
+   Daily_amount = [Beginning_BV × Periodic_yield / Days_in_period] − Daily_interest_income
+ Step 1: Periodic total income = Beginning BV × periodic yield.
+ Step 2: Daily total income    = Periodic total income / days in period.
+ Step 3: Daily amortization    = Daily total income − daily interest income already recognized.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.inflationLinkedMarketValue(System.Decimal,System.Decimal,System.Decimal)">
+<summary>
+ Inflation-linked market value:
+   Market_value = Base_units × Inflation_factor × Quoted_price / 100
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.inflationAdjustedPrincipal(System.Decimal,System.Decimal)">
+<summary>
+ Inflation-adjusted principal (e.g. TIPS):
+   Adjusted_principal = Base_units × Inflation_factor
+ The Clearwater example: 1,000 units × 1.2 factor = 1,200 adjusted principal.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.weightedAverageLife(Microsoft.FSharp.Collections.FSharpList{System.Tuple{System.Decimal,System.Decimal}})">
+<summary>
+ Weighted Average Life:
+   WAL = Σ(Principal_payment_i × Time_to_payment_i) / Σ(Principal_payment_i)
+ principalPayments: list of (amount, timeToPaymentYears) tuples.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.amortizationAccretion(System.Decimal,System.Decimal)">
+<summary>
+ Premium amortization or discount accretion for the period:
+   Amortization_accretion = Effective_interest_income − Contractual_interest_recognized
+ Positive result → accretion (discount); negative result → amortization (premium).
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.constantYieldIncome(System.Decimal,System.Decimal)">
+<summary>
+ Constant-yield (effective-interest) income for one period:
+   Effective_interest_income = Beginning_amortized_cost × Periodic_yield
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.straightLineDailyAmount(System.Decimal,System.Decimal,System.Int32)">
+<summary>
+ Straight-line daily amortization/accretion amount:
+   Daily_amount = (Target_book_price − Starting_book_price) / Amortization_days
+ Positive result → accretion (discount); negative result → amortization (premium).
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.cleanPrice(System.Decimal,System.Decimal)">
+<summary>
+ Clean price = Dirty price − Accrued interest (quoted flat price).
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.dirtyPrice(System.Decimal,System.Decimal)">
+<summary>
+ Dirty price = Clean price + Accrued interest (full price including interest).
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.equityMarketValue(System.Decimal,System.Decimal)">
+<summary>
+ Equity or fund market value:
+   Market_value = Shares_or_units × Market_price_or_NAV
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.bondMarketValue(System.Decimal,System.Decimal,System.Decimal)">
+<summary>
+ Bond / fixed-income market value for a price quoted per 100:
+   Local_market_value = Par × Factor × Price / 100
+ Factor = 1.0 for non-factored bonds; &lt; 1.0 for amortising/prepaying pools.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.accruedInterest(System.Decimal,System.Decimal,System.DateOnly,System.DateOnly,Meridian.FSharp.Domain.DayCountConvention)">
+<summary>
+ Accrued interest from the last coupon date to the evaluation date:
+   Accrued_interest = Principal × Coupon_rate × Accrued_day-count_fraction
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.SecurityCalculations.interestCashFlow(System.Decimal,System.Decimal,System.Decimal)">
+<summary>
+ Period interest cash flow:
+   Interest_i = Outstanding_principal_i × Coupon_rate_i × Day-count_fraction_i
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Calculations.SecurityCalculations">
+<summary>
+ Core Clearwater-aligned security calculations.
+ Formulas reference the Clearwater Security Types and Calculation Reference Guide (May/June 2026),
+ Sections 2.2, 2.3, and Appendix B.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.DayCount.fractionFor(Meridian.FSharp.Domain.DayCountConvention,System.DateOnly,System.DateOnly)">
+<summary>
+ Dispatch to the appropriate day-count fraction for the given convention.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.DayCount.actualActualIsda(System.DateOnly,System.DateOnly)">
+<summary>
+ Actual/Actual (ISDA): actual days in each calendar year, weighted by year length.
+ Default for US Treasury notes and bonds.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.DayCount.thirty360(System.DateOnly,System.DateOnly)">
+<summary>
+ 30/360 (Bond Basis / US): months treated as 30 days, year as 360.
+ Default for most US corporate and municipal bonds.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.DayCount.actual365(System.DateOnly,System.DateOnly)">
+<summary>
+ Actual/365 Fixed: actual calendar days divided by 365.
+ Common for UK gilts, Australian bonds, and some money-market instruments.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Calculations.DayCount.actual360(System.DateOnly,System.DateOnly)">
+<summary>
+ Actual/360: actual calendar days divided by 360.
+ Common for money-market instruments (CP, CD, repo, T-bills).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Calculations.DayCount">
+<summary>
+ Day-count fraction calculations per ISDA and market conventions.
+ These functions delegate to the single canonical engine
+ (&lt;c&gt;Meridian.Contracts.SecurityMaster.DayCountConventions&lt;/c&gt;) so the C# and F# lanes share one
+ 30/360 and Actual/Actual implementation and can never silently diverge for the same bond.
+ Reference: Clearwater Security Types and Calculation Reference Guide (May/June 2026), Section 2.2.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Risk.RiskTypes.RiskContext.EscalateOrderNotional">
+<summary>
+ Per-order notional band above which the order escalates for governed approval.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Risk.RiskTypes.RiskContext.MaxOrderNotional">
+<summary>
+ Hard per-order notional ceiling.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Risk.RiskTypes.RiskContext.MaxSymbolConcentrationPercent">
+<summary>
+ Single-symbol concentration ceiling as a percentage of portfolio value.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Risk.RiskTypes.RiskContext.MaxGrossExposure">
+<summary>
+ Portfolio-wide gross exposure ceiling.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Risk.RiskTypes.RiskContext.SignedOrderNotional">
+<summary>
+ Signed order notional: positive for buys, negative for sells.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Risk.RiskTypes.RiskContext.OrderNotional">
+<summary>
+ Resolved notional of the order under evaluation (quantity x reference price).
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Risk.RiskTypes.RiskContext.SignedSymbolExposure">
+<summary>
+ Current signed (net) notional for the order&apos;s symbol; negative when net short.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Risk.RiskTypes.RiskContext.SymbolExposure">
+<summary>
+ Current gross market exposure for the order&apos;s symbol across the aggregated portfolio.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Risk.RiskRules.orderNotional(Meridian.FSharp.Risk.RiskTypes.RiskContext)">
+<summary>
+ Gates per-order notional: above the hard ceiling rejects outright; inside the
+ escalation band the order is parked for governed approval instead of routed.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Risk.RiskRules.symbolConcentration(Meridian.FSharp.Risk.RiskTypes.RiskContext)">
+<summary>
+ Rejects an order that would concentrate a single symbol beyond the configured
+ percentage of portfolio value. Direction-aware: reducing orders lower the projected
+ concentration, and an order that strictly reduces the symbol&apos;s exposure is always
+ permitted so an oversized position can be unwound incrementally while still above the
+ cap. Requires a positive portfolio value to be meaningful.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Risk.RiskRules.grossExposureLimit(Meridian.FSharp.Risk.RiskTypes.RiskContext)">
+<summary>
+ Rejects an order whose notional would push the portfolio-wide gross exposure over the
+ configured ceiling. Direction-aware: de-risking orders reduce the projection, and an
+ order that strictly reduces gross exposure is always permitted — when a market move or
+ a tightened threshold leaves the book already above the ceiling, the desk must still
+ be able to unwind incrementally rather than being locked out (and, at Critical
+ severity, tripping the breaker on its own de-risking attempts).
+ Missing exposure data or an unconfigured ceiling approves.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Risk.RiskRules.projectedSymbolAbsoluteExposure(Meridian.FSharp.Risk.RiskTypes.RiskContext)">
+<summary>
+ Projected gross exposure of the order&apos;s symbol after the order executes.
+ Direction-aware: the current contribution-level gross is preserved and only the net
+ component moves with the order, so a sell that reduces a long (or a buy that covers a
+ short) shrinks the projection — including orders that cross through zero — while
+ offsetting long/short lots keep contributing their full gross. Falls back to the
+ additive worst case when the signed current position is unknown.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Pipeline.Transforms.TransformPipeline">
+<summary>
+ Create a transformation pipeline.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Pipeline.Transforms.TimeGap">
+<summary>
+ Gap detection result.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Pipeline.Transforms.RateOfChangePoint">
+<summary>
+ Rate of change result.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Pipeline.Transforms.MovingAveragePoint">
+<summary>
+ Result of computing a simple moving average over trade prices.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Pipeline.Transforms.PartitionedEvents">
+<summary>
+ Partition events by type.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Pipeline.Transforms.EnrichedQuote">
+<summary>
+ Add spread calculations to quotes.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.op_BarGreaterGreater(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent},Microsoft.FSharp.Core.FSharpFunc{System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent},System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent}})">
+<summary>
+ Pipeline composition operator.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.Lag(System.Int32,System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Lag events by a specified number of positions (useful for lead/lag analysis).
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.NormalizePrices(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.TradeEvent})">
+<summary>
+ Normalize trade prices to percentage returns from the first trade.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.ThrottleBySymbol(System.Int32,System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Throttle events to at most one per specified millisecond interval per symbol.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.DetectGaps(System.Double,System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Detect time gaps in the event stream exceeding a threshold.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.RateOfChange(System.Int32,System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.TradeEvent})">
+<summary>
+ Compute Rate of Change (ROC) as percentage change over N periods.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.ExponentialMovingAverage(System.Int32,System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.TradeEvent})">
+<summary>
+ Compute Exponential Moving Average (EMA) over trade prices.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.SimpleMovingAverage(System.Int32,System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.TradeEvent})">
+<summary>
+ Compute Simple Moving Average (SMA) over trade prices.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.BufferByTime(System.Int32,System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Buffer ordered events by time window.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.BufferByCount(System.Int32,System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Buffer events by count.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.MergeStreams(Microsoft.FSharp.Collections.FSharpList{System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent}})">
+<summary>
+ Merge multiple event streams in timestamp order.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.Deduplicate(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Deduplicate events by sequence number.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.SampleAtInterval(System.Int32,System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Sample events at regular intervals.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.GroupBySymbol(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Group events by symbol.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.PartitionByType(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Partition events by their type.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.ValidateAndFilter(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Validate and filter events.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.EnrichQuotes(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.QuoteEvent})">
+<summary>
+ Enrich quotes with calculated fields.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.EnrichWithAggressor(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Enrich trades with aggressor inference based on BBO.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.FilterIntegrity(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Filter to only integrity events.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.FilterDepth(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Filter to only depth events.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.FilterQuotes(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Filter to only quote events.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.FilterTrades(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Filter to only trade events.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.FilterByTimeRange(System.DateTimeOffset,System.DateTimeOffset,System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Filter events by time range.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.FilterBySymbols(Microsoft.FSharp.Collections.FSharpSet{System.String},System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Filter events by symbol list.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.FilterBySymbol(System.String,System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Filter events by symbol.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.TransformPipelineModule.Sample(System.Int32,Meridian.FSharp.Pipeline.Transforms.TransformPipeline)">
+<summary>
+ Add sampling transform.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.TransformPipelineModule.FilterGaps(System.Double,Microsoft.FSharp.Core.FSharpFunc{Meridian.FSharp.Pipeline.Transforms.TimeGap,Microsoft.FSharp.Core.Unit},Meridian.FSharp.Pipeline.Transforms.TransformPipeline)">
+<summary>
+ Add gap detection filter (keeps events, detects gaps as side effect).
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.TransformPipelineModule.Throttle(System.Int32,Meridian.FSharp.Pipeline.Transforms.TransformPipeline)">
+<summary>
+ Add throttling per symbol.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.TransformPipelineModule.Dedupe(Meridian.FSharp.Pipeline.Transforms.TransformPipeline)">
+<summary>
+ Add deduplication.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.TransformPipelineModule.Validate(Meridian.FSharp.Pipeline.Transforms.TransformPipeline)">
+<summary>
+ Add validation filter.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.TransformPipelineModule.FilterTime(System.DateTimeOffset,System.DateTimeOffset,Meridian.FSharp.Pipeline.Transforms.TransformPipeline)">
+<summary>
+ Add time range filter.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.TransformPipelineModule.FilterSymbol(System.String,Meridian.FSharp.Pipeline.Transforms.TransformPipeline)">
+<summary>
+ Add symbol filter.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.TransformPipelineModule.Run(Meridian.FSharp.Pipeline.Transforms.TransformPipeline,System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent})">
+<summary>
+ Run the pipeline on events.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.TransformPipelineModule.Add(Microsoft.FSharp.Core.FSharpFunc{System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent},System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.MarketEvents.MarketEvent}},Meridian.FSharp.Pipeline.Transforms.TransformPipeline)">
+<summary>
+ Add a transform to the pipeline.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Pipeline.Transforms.TransformPipelineModule.Create">
+<summary>
+ Create an empty pipeline.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Pipeline.Transforms">
+<summary>
+ Pipeline transformation functions for market event streams.
+ Provides composable operators for filtering, mapping, and aggregating events.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.CashFlowInterop.CashFlowProjector.ToStateDtos(System.Collections.Generic.IEnumerable{Meridian.FSharp.Domain.CashFlowState})">
+<summary>
+ Convert a sequence of &lt;see cref=&quot;CashFlowState&quot;/&gt; values into C#-friendly DTOs.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.CashFlowInterop.CashFlowProjector.BuildLadder(System.DateTimeOffset,System.String,System.Int32,System.Collections.Generic.IEnumerable{Meridian.FSharp.CashFlowInterop.CashFlowProjectionInput})">
+ <summary>
+ Builds a time-bucketed <see cref="CashLadderInterop"/> from the supplied cash-flow inputs.
+ Only events with <see cref="CashFlowProjectionInput.DueDate"/> &gt;= <paramref name="asOf"/>
+ and matching <paramref name="currency"/> are included.
+ </summary>
+</member>
+<member name="T:Meridian.FSharp.CashFlowInterop.CashFlowProjector">
+<summary>
+ C#-facing sealed class that builds a time-bucketed cash ladder from C#-provided inputs.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.CashFlowInterop.CashLadderInterop">
+<summary>
+ C#-friendly representation of the full time-bucketed cash ladder.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.CashFlowInterop.CashLadderBucketInterop">
+<summary>
+ C#-friendly representation of a single time bucket in the cash ladder.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.CashFlowInterop.CashFlowProjectionInput">
+<summary>
+ Input record for a single cash-flow event, using C#-friendly (non-DU) fields.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.SecurityMasterInterop.SecurityMasterCommandResultWrapper.Errors">
+<summary>
+ Error messages only (kept for backward compatibility).
+</summary>
+</member>
+<member name="T:Meridian.FSharp.SecurityMasterInterop.SecurityValidationErrorDto">
+<summary>
+ C#-friendly DTO that carries both the error code and human-readable message
+ from a SecurityMaster validation failure.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.SecurityMasterInterop.NullableHelpers">
+<summary>
+ Private helpers for F# option → C# nullable conversion, mirroring the helpers in Interop.fs.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Interop.RiskInterop.CreatePortfolioContext(Meridian.Execution.Sdk.OrderRequest,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal})">
+<summary>
+ Context for the portfolio-aware rules: gross-exposure, symbol-concentration,
+ and per-order-notional gates fed from the live aggregated portfolio. Signed
+ values make the projections direction-aware so de-risking orders reduce them.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Interop.AggressorInference">
+<summary>
+ C#-friendly aggressor inference.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Interop.QuoteValidator">
+<summary>
+ C#-friendly quote validator.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Interop.TradeValidator">
+<summary>
+ C#-friendly trade validator.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Interop.AggregationFunctions">
+<summary>
+ C#-friendly aggregation functions.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Interop.ImbalanceCalculator">
+<summary>
+ C#-friendly imbalance calculator.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Interop.SpreadCalculator">
+<summary>
+ C#-friendly spread calculator.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Interop.ValidationResultWrapper`1">
+<summary>
+ C#-friendly validation result.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Interop.QuoteEventWrapper">
+<summary>
+ C#-friendly wrapper for quote events.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Interop.TradeEventWrapper">
+<summary>
+ C#-friendly wrapper for trade events.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Interop.OptionExtensions.ToNullableRef``1(Microsoft.FSharp.Core.FSharpOption{``0})">
+<summary>
+ Convert Option&lt;T&gt; to T or null for reference types.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Interop.OptionExtensions.ToNullable``1(Microsoft.FSharp.Core.FSharpOption{``0})">
+<summary>
+ Convert Option&lt;T&gt; to Nullable&lt;T&gt; for value types.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Interop.OptionExtensions.HasValue``1(Microsoft.FSharp.Core.FSharpOption{``0})">
+<summary>
+ Check if Option has a value.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Interop.OptionExtensions.GetValueOrDefault``1(Microsoft.FSharp.Core.FSharpOption{``0},``0)">
+<summary>
+ Convert Option&lt;T&gt; to T or a default value.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Interop.OptionExtensions">
+<summary>
+ Extension methods for Option types to work with C# nullable types.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Interop.OptionHelpers.toNullableRef``1(Microsoft.FSharp.Core.FSharpOption{``0})">
+<summary>
+ Convert Option&lt;T&gt; to T or null/default for reference types.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Interop.OptionHelpers.toNullable``1(Microsoft.FSharp.Core.FSharpOption{``0})">
+<summary>
+ Convert Option&lt;T&gt; to Nullable&lt;T&gt; for value types.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Interop.OptionHelpers">
+<summary>
+ Private helper functions for option conversion (for F# internal use).
+ These are needed because [&lt;Extension&gt;] methods only work for C# consumers.
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Interop">
+<summary>
+ C# interoperability helpers for the F# domain library.
+ Provides extension methods and adapters for seamless C# consumption.
+</summary>
+</member>
+</members>
+</doc>

@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Export;
+using Meridian.Identity.Auth;
 using Meridian.Storage;
 using Meridian.Storage.Export;
 using Microsoft.AspNetCore.Builder;
@@ -74,7 +75,7 @@ public static class ExportEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("PreviewExport")
+        .WithName("PreviewExport").RequirePermission(UserPermission.ExportData)
         .Produces(200);
 
         // Analysis export — wired to real AnalysisExportService
@@ -148,6 +149,7 @@ public static class ExportEndpoints
             return Results.Json(CreateExportResponse(result, profile), jsonOptions);
         })
         .WithName("ExportAnalysis")
+        .RequirePermission(UserPermission.ExportData)
         .Produces(200)
         .Produces(400)
         .Produces(503)
@@ -208,7 +210,7 @@ public static class ExportEndpoints
                 Formats = availableFormats
             }, jsonOptions);
         })
-        .WithName("GetExportFormats")
+        .WithName("GetExportFormats").RequirePermission(UserPermission.ExportData)
         .Produces<ExportFormatsResponse>(200)
         .Produces(503);
 
@@ -227,6 +229,7 @@ public static class ExportEndpoints
                 statusCode: StatusCodes.Status501NotImplemented);
         })
         .WithName("ExportQualityReport")
+        .RequirePermission(UserPermission.ExportData)
         .Produces<SpecializedExportApiResponse>(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -289,6 +292,7 @@ public static class ExportEndpoints
             return Results.Json(CreateSpecializedExportResponse(result, profile!), jsonOptions);
         })
         .WithName("ExportOrderflow")
+        .RequirePermission(UserPermission.ExportData)
         .Produces(200)
         .Produces(400)
         .Produces(503)
@@ -350,6 +354,7 @@ public static class ExportEndpoints
             return Results.Json(CreateSpecializedExportResponse(result, profile!), jsonOptions);
         })
         .WithName("ExportIntegrity")
+        .RequirePermission(UserPermission.ExportData)
         .Produces(200)
         .Produces(400)
         .Produces(503)
@@ -417,6 +422,7 @@ public static class ExportEndpoints
         // Strategy package export is canonical; the research route is retained for clients still on the old API name.
         group.MapPost(UiApiRoutes.ExportStrategyPackage, ExportStrategyPackageAsync)
         .WithName("ExportStrategyPackage")
+        .RequirePermission(UserPermission.ExportData)
         .Produces(200)
         .Produces(400)
         .Produces(503)
@@ -424,6 +430,7 @@ public static class ExportEndpoints
 
         group.MapPost(UiApiRoutes.ExportResearchPackage, ExportStrategyPackageAsync)
         .WithName("ExportResearchPackage")
+        .RequirePermission(UserPermission.ExportData)
         .Produces(200)
         .Produces(400)
         .Produces(503)

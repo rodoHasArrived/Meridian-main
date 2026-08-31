@@ -21,7 +21,7 @@ public static partial class WorkstationEndpoints
 {
     private static bool LegacyReconciliationEndpointMapEnabled => false;
 
-    private sealed record ReconciliationBreakBulkActionRequest(
+    internal sealed record ReconciliationBreakBulkActionRequest(
         IReadOnlyList<string> BreakIds,
         string Action,
         string? Actor = null,
@@ -484,7 +484,10 @@ public static partial class WorkstationEndpoints
                 return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
             }
 
-            var trustedRequest = request with { ReviewedBy = currentUser };
+            // Mirror the authoritative route: both the reviewer and the assignee are rewritten from the
+            // authenticated session so a client-supplied placeholder identity is never persisted or
+            // surfaced as the repository-derived audit actor.
+            var trustedRequest = request with { AssignedTo = currentUser, ReviewedBy = currentUser };
 
             var transition = await ReviewBreakAsync(repository, queueScope, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return transition.Status switch
@@ -539,7 +542,16 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var trustedRequest = request with { ResolvedBy = currentUser };
+            // This legacy adapter is authoritative over the caller's identity: ResolvedBy is
+            // replaced with the principal rather than believed, and ActionOrigin travels with it as
+            // part of the same identity, so it is derived rather than narrowed. Before #2673 it was
+            // the constant HumanOperator, which stamped an API-key caller as a human; deriving it
+            // keeps the browser from labelling the decision either way.
+            var trustedRequest = request with
+            {
+                ResolvedBy = currentUser,
+                ActionOrigin = EndpointAuthorization.DeriveActionOriginFromPrincipal(context)
+            };
 
             var transition = await ResolveBreakAsync(repository, queueScope, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return transition.Status switch
@@ -577,7 +589,11 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var actor = string.IsNullOrWhiteSpace(request.Actor) && TryResolveCurrentUser(context, out var currentUser) ? currentUser : request.Actor ?? "system";
+            // The authenticated session identity is authoritative for bulk mutations; the
+            // client-supplied Actor is only a fallback for callers outside a login session.
+            var actor = TryResolveCurrentUser(context, out var currentUser)
+                ? currentUser
+                : string.IsNullOrWhiteSpace(request.Actor) ? "system" : request.Actor.Trim();
             var updated = new List<ReconciliationBreakQueueItem>();
             foreach (var breakId in request.BreakIds.Distinct(StringComparer.OrdinalIgnoreCase))
             {
@@ -587,19 +603,7 @@ public static partial class WorkstationEndpoints
                     continue;
                 }
 
-                var next = item;
-                if (string.Equals(request.Action, "assign", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(request.Assignee))
-                {
-                    next = item with { AssignedTo = request.Assignee, LifecycleState = ReconciliationCaseLifecycleState.InReview, LastUpdatedAt = DateTimeOffset.UtcNow, LifecycleRationale = request.CommentTemplate ?? "Bulk assigned" };
-                }
-                else if (string.Equals(request.Action, "status", StringComparison.OrdinalIgnoreCase) && request.Status.HasValue)
-                {
-                    next = item with { Status = request.Status.Value, LastUpdatedAt = DateTimeOffset.UtcNow, LifecycleRationale = request.CommentTemplate ?? "Bulk status update" };
-                }
-                else if (string.Equals(request.Action, "comment", StringComparison.OrdinalIgnoreCase))
-                {
-                    next = item with { ResolutionNote = request.CommentTemplate, LastUpdatedAt = DateTimeOffset.UtcNow };
-                }
+                var next = ApplyLegacyBulkBreakAction(item, request, actor, DateTimeOffset.UtcNow);
 
                 await repository.SaveAsync(next, context.RequestAborted).ConfigureAwait(false);
                 updated.Add(next);
@@ -612,6 +616,59 @@ public static partial class WorkstationEndpoints
         .Produces(403)
         .Produces(501);
 
+    }
+
+    /// <summary>
+    /// Applies one legacy bulk action to a queue item, stamping the executing operator into the
+    /// attribution fields the repository's save audit derives its actor from
+    /// (<c>AssignedTo ?? ReviewedBy ?? ResolvedBy</c>). Mirrors the single-item paths: review-shaped
+    /// mutations attribute through <c>ReviewedBy</c>, terminal status changes through
+    /// <c>ResolvedBy</c>, so a bulk mutation never records without an operator identity.
+    /// </summary>
+    internal static ReconciliationBreakQueueItem ApplyLegacyBulkBreakAction(
+        ReconciliationBreakQueueItem item,
+        ReconciliationBreakBulkActionRequest request,
+        string actor,
+        DateTimeOffset now)
+    {
+        if (string.Equals(request.Action, "assign", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(request.Assignee))
+        {
+            return item with
+            {
+                AssignedTo = request.Assignee,
+                ReviewedBy = actor,
+                ReviewedAt = now,
+                LifecycleState = ReconciliationCaseLifecycleState.InReview,
+                LastUpdatedAt = now,
+                LifecycleRationale = request.CommentTemplate ?? "Bulk assigned"
+            };
+        }
+
+        if (string.Equals(request.Action, "status", StringComparison.OrdinalIgnoreCase) && request.Status.HasValue)
+        {
+            var next = item with
+            {
+                Status = request.Status.Value,
+                LastUpdatedAt = now,
+                LifecycleRationale = request.CommentTemplate ?? "Bulk status update"
+            };
+            return request.Status.Value is ReconciliationBreakQueueStatus.Resolved or ReconciliationBreakQueueStatus.Dismissed
+                ? next with { ResolvedBy = actor, ResolvedAt = now }
+                : next with { ReviewedBy = actor, ReviewedAt = now };
+        }
+
+        if (string.Equals(request.Action, "comment", StringComparison.OrdinalIgnoreCase))
+        {
+            return item with
+            {
+                ResolutionNote = request.CommentTemplate,
+                ReviewedBy = actor,
+                ReviewedAt = now,
+                LastUpdatedAt = now
+            };
+        }
+
+        return item;
     }
 
     private static async Task<IResult?> RequireStatementRunAccountAccessAsync(

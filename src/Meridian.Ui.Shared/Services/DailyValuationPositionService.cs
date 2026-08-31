@@ -1,9 +1,9 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using Meridian.Application.Accounting;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Domain;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 
@@ -244,8 +244,7 @@ public sealed class DailyValuationPositionService
                 position.CostPrice.ToString(CultureInfo.InvariantCulture)))
             .OrderBy(static value => value, StringComparer.Ordinal)
             .ToArray();
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(string.Join('\n', canonical))))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(string.Join('\n', canonical));
     }
 
     private async Task<DailyValuationPositionResolution> ResolveSecurityMasterAsync(

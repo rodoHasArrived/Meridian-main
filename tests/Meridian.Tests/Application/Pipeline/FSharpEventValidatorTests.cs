@@ -192,7 +192,7 @@ public sealed class FSharpEventValidatorTests
             ErrorCode: (ushort)1001,
             SequenceNumber: 1);
 
-        var evt = MarketEvent.Integrity(DateTimeOffset.UtcNow, "SPY", integrity);
+        var evt = MarketEvent.Integrity(DateTimeOffset.UtcNow, "SPY", integrity, source: "TEST");
 
         var result = _validator.Validate(in evt);
 
@@ -202,7 +202,7 @@ public sealed class FSharpEventValidatorTests
     [Fact]
     public void Validate_HeartbeatEvent_PassesThrough()
     {
-        var evt = MarketEvent.Heartbeat(DateTimeOffset.UtcNow);
+        var evt = MarketEvent.Heartbeat(DateTimeOffset.UtcNow, "TEST");
 
         var result = _validator.Validate(in evt);
 
@@ -254,7 +254,7 @@ public sealed class FSharpEventValidatorTests
             Aggressor: AggressorSide.Buy,
             SequenceNumber: 1);
 
-        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade);
+        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade, source: "TEST");
     }
 
     private static MarketEvent CreateQuoteEvent(string symbol, decimal bidPrice, decimal askPrice)
@@ -269,6 +269,6 @@ public sealed class FSharpEventValidatorTests
                 AskSize: 200L),
             seq: 1);
 
-        return MarketEvent.BboQuote(DateTimeOffset.UtcNow, symbol, quote);
+        return MarketEvent.BboQuote(DateTimeOffset.UtcNow, symbol, quote, source: "TEST");
     }
 }

@@ -63,6 +63,7 @@ public partial class App : System.Windows.Application
     private static bool _isFixtureMode;
     private static string[] _launchArgs = [];
     private IHost? _host;
+    private ApiClientService? _apiClientService;
 
     /// <summary>
     /// Gets the service provider for dependency injection.
@@ -198,12 +199,14 @@ public partial class App : System.Windows.Application
         WpfServices.LoggingService.Instance.LogInfo("WPF application host built");
 
         Services = _host.Services;
+        var apiClientService = Services.InitializeDesktopApiClient();
+        _apiClientService = apiClientService;
         Services.GetRequiredService<WpfServices.StrategyRunWorkspaceService>();
 
         // Desktop sign-out must also end the shared workstation API session so no request
         // can ride the old server cookies (mirrors LifecycleControlClient's subscription).
         Services.GetRequiredService<WpfServices.DesktopAuthenticationSession>().SignedOut +=
-            static (_, _) => _ = ApiClientService.Instance.SignOutAsync();
+            (_, _) => _ = apiClientService.SignOutAsync();
 
         // Provide the DI container to NavigationService so it can resolve pages
         WpfServices.NavigationService.Instance.SetServiceProvider(Services);
@@ -331,6 +334,7 @@ public partial class App : System.Windows.Application
 
         // Register shared desktop HttpClient configurations
         services.AddDesktopHttpClients();
+        services.AddDesktopApiClient();
 
         // ILogger<T> infrastructure — must be first so all services can resolve loggers
         services.AddLogging();
@@ -343,8 +347,7 @@ public partial class App : System.Windows.Application
             ?? new Meridian.Contracts.Configuration.ConnectivityProbeOptions());
 
         // Shared API infrastructure
-        services.AddSingleton<ApiClientService>(_ => ApiClientService.Instance);
-        services.AddSingleton<WpfServices.WpfRemoteWorkstationClient>(_ => WpfServices.WpfRemoteWorkstationClient.Instance);
+        services.AddSingleton<WpfServices.WpfRemoteWorkstationClient>();
         services.AddSingleton<IRemoteWorkstationClient>(sp => sp.GetRequiredService<WpfServices.WpfRemoteWorkstationClient>());
 
         // ── Fixture mode service (offline mock data) ────────────────────────
@@ -384,6 +387,17 @@ public partial class App : System.Windows.Application
         services.AddSingleton<UserProfileRegistry>(sp => new UserProfileRegistry(
             roleProfileStore: null,
             accountStore: sp.GetRequiredService<IUserAccountStore>()));
+
+        // W9-GOV-008 criterion 2. AccountingFeatureModule registers the unpartitioned in-memory
+        // fund structure, and this desktop never calls AddWorkstationSharedServices, so the
+        // multi-company refusal that guard exists for ran only for the browser workstation: the
+        // desktop started and served one shared graph to operators across companies.
+        //
+        // Registered in the composition root rather than in that feature module, because the guard
+        // reads IUserAccountStore -- registered here, a few lines up -- and the module is
+        // constructed standalone by its own tests. Putting it there made resolving IHostedService
+        // throw for want of an account store the module never owned.
+        services.AddHostedService<Meridian.Ui.Shared.Services.InMemoryFundStructureTenancyGuard>();
         services.AddSingleton<LoginSessionService>();
         services.AddSingleton<WpfServices.DesktopAuthenticationSession>();
         services.AddTransient<StartupWindowViewModel>();
@@ -741,6 +755,8 @@ public partial class App : System.Windows.Application
         WpfServices.LoggingService.Instance.LogInfo("WPF application shutdown requested");
         SafeOnExitAsync().GetAwaiter().GetResult();
         StopHostSafely();
+        _apiClientService?.Dispose();
+        _apiClientService = null;
         WpfServices.SingleInstanceService.Instance.Dispose();
         WpfServices.LoggingService.Instance.LogInfo("WPF application shutdown complete");
     }

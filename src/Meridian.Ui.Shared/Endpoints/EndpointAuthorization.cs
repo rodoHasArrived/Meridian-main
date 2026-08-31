@@ -1,3 +1,4 @@
+using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Identity;
 using Microsoft.AspNetCore.Builder;
@@ -8,6 +9,7 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// <summary>
 /// Marker metadata recorded on endpoints that attach a permission gate through
 /// <see cref="EndpointAuthorization.RequirePermission{TBuilder}"/> or
+/// <see cref="EndpointAuthorization.RequireAllPermissions{TBuilder}"/> or
 /// <see cref="EndpointAuthorization.RequireAnyPermission{TBuilder}"/>. Coverage tests inspect this
 /// metadata to prove every mapped route declares an explicit authorization requirement.
 /// </summary>
@@ -30,11 +32,194 @@ public sealed class EndpointAuthorizationMetadata
 }
 
 /// <summary>
+/// Declares that a read route is deliberately open to any authenticated workstation session,
+/// with the reason stated where reviewers and the read-declaration ratchet can see it.
+/// <para>
+/// The read surface is governed risk-based rather than uniformly: reads exposing account-scoped,
+/// position, or PII-bearing data must declare a permission via
+/// <see cref="EndpointAuthorization.RequirePermission{TBuilder}"/>, while broad workstation reads
+/// — reference data, catalogs, health — declare openness explicitly through this marker instead
+/// of by omission. A read route carrying neither is undeclared debt tracked by the ratchet.
+/// </para>
+/// </summary>
+public sealed class EndpointOpenReadMetadata
+{
+    public EndpointOpenReadMetadata(string reason)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        Reason = reason;
+    }
+
+    /// <summary>Why this read is safe for any authenticated session, e.g. "static reference data".</summary>
+    public string Reason { get; }
+}
+
+/// <summary>
+/// Declares that a route outside the safe methods changes no state -- a read whose query does not
+/// fit in a URL, not a command. Only the read-only-role method cap consults this; it does not
+/// substitute for the route's own permission, which still decides who may call it.
+/// <para>
+/// Applied per route after reading the handler, never by convention: an unmarked non-safe route
+/// stays refused for a read-only principal, so a wrong omission costs a capability while a wrong
+/// marking would reopen the legacy mutations the cap exists to close.
+/// </para>
+/// </summary>
+public sealed class EndpointNonMutatingMetadata
+{
+    public EndpointNonMutatingMetadata(string reason)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        Reason = reason;
+    }
+
+    /// <summary>Why this route changes nothing, e.g. "bounded single SELECT-family statement".</summary>
+    public string Reason { get; }
+}
+
+/// <summary>
+/// Declares that a route authenticates its caller by its own independent mechanism -- a provider
+/// HMAC signature, an opaque one-use grant token -- rather than by the ambient principal. The
+/// read-only-role method cap stands aside for it, because that cap judges commands issued *as* the
+/// ambient principal and this route's caller is never that principal.
+/// <para>
+/// Standing aside grants nothing: the route's own check still decides the request, and it runs
+/// strictly later than the cap. Without this a deployment that names a read-only anonymous role
+/// would refuse a correctly signed delivery receipt before the signature was ever examined -- the
+/// same failure the API-key and bootstrap exemptions in <c>LoginSessionMiddleware</c> already avoid,
+/// for the same reason.
+/// </para>
+/// <para>
+/// Applied per route after reading the handler, never by convention, and never to a route whose only
+/// authentication is the ambient principal.
+/// </para>
+/// </summary>
+public sealed class EndpointIndependentAuthenticationMetadata
+{
+    public EndpointIndependentAuthenticationMetadata(string reason)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        Reason = reason;
+    }
+
+    /// <summary>How this route authenticates its caller, e.g. "provider HMAC signature headers".</summary>
+    public string Reason { get; }
+}
+
+/// <summary>
+/// Declares that a mutating route is deliberately callable without any permission: the
+/// authentication bootstrap itself (login, logout, the one-use first-account seam) and the
+/// 410 Gone tombstones for retired lifecycles, which perform no action. The pre-binding
+/// mutation guard (<see cref="MutationAuthorizationGuardMiddleware"/>) stands aside for it, and
+/// the coverage suite asserts its permissionless allowlist matches these declarations
+/// one-for-one, so the runtime exemption and the tested exemption cannot drift apart.
+/// <para>
+/// Applied per route after reading the handler, never by convention. A route that
+/// authenticates its caller by its own mechanism belongs under
+/// <see cref="EndpointIndependentAuthenticationMetadata"/> instead; this marker is only for
+/// routes whose permissionless reachability is itself the design.
+/// </para>
+/// </summary>
+public sealed class EndpointPermissionlessMutationMetadata
+{
+    public EndpointPermissionlessMutationMetadata(string reason)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        Reason = reason;
+    }
+
+    /// <summary>Why this mutation is safe without any permission, e.g. "login bootstrap".</summary>
+    public string Reason { get; }
+}
+
+/// <summary>
 /// Centralized authorization helpers for workstation endpoints that rely on
 /// LoginSessionMiddleware session data instead of ad hoc caller-supplied fields.
 /// </summary>
 public static class EndpointAuthorization
 {
+    /// <summary>
+    /// True when a principal carrying <paramref name="role"/> is attempting to change state and the
+    /// role is not entitled to. A read-only role means a read-only client whichever posture
+    /// established it -- an API key with no configured role, an API key configured ReadOnly, or an
+    /// optional-mode anonymous operator -- and permission names alone cannot enforce that, because a
+    /// few legacy mutations are declared with view-grade permissions those roles hold. One definition
+    /// shared by both non-session principals, so the two cannot drift apart: they already did once,
+    /// and the anonymous path silently allowed what the key path refused.
+    /// </summary>
+    internal static bool IsReadOnlyRoleMutation(HttpContext context, UserRole role)
+    {
+        if (!IsReadOnlyRole(role))
+        {
+            return false;
+        }
+
+        var method = context.Request.Method;
+        if (HttpMethods.IsGet(method) || HttpMethods.IsHead(method) || HttpMethods.IsOptions(method))
+        {
+            return false;
+        }
+
+        return !AllowsReadOnlyRoleNonSafeMethod(context.GetEndpoint());
+    }
+
+    /// <summary>
+    /// True when the selected endpoint may be called by a read-only role despite its method, for any
+    /// of three distinct reasons: it changes no state (<see cref="EndpointNonMutatingMetadata"/>); it
+    /// authenticates its caller independently of the ambient principal
+    /// (<see cref="EndpointIndependentAuthenticationMetadata"/>), so the cap is judging the wrong
+    /// caller; or it requires the one action grant those roles legitimately hold.
+    /// </summary>
+    private static bool AllowsReadOnlyRoleNonSafeMethod(Endpoint? endpoint)
+        => endpoint is not null &&
+           (endpoint.Metadata.GetMetadata<EndpointNonMutatingMetadata>() is not null ||
+            endpoint.Metadata.GetMetadata<EndpointIndependentAuthenticationMetadata>() is not null ||
+            DeclaresReadOnlyRoleActionGrant(endpoint));
+
+    /// <summary>
+    /// True when the selected endpoint declares an action grant a read-only role legitimately holds,
+    /// so the method rule above must stand aside. <see cref="UserPermission.ExportData"/> is that
+    /// grant today: <see cref="UserRole.Analysis"/> and <see cref="UserRole.Executive"/> are granted
+    /// it outright, and the export routes are POSTs because they take a request body, not because
+    /// they mutate governed state. Enumerated rather than inferred from the permission's name -- the
+    /// exemption is a deliberate decision per grant, not a naming convention.
+    ///
+    /// <para>Read from the endpoint's own declaration rather than the request path, so the exemption
+    /// tracks what a route requires instead of what its URL looks like. Routing populates the
+    /// endpoint before this middleware runs; when it has not (no endpoint selected, or an
+    /// unroutable request) there is no declaration to defer to and the method rule applies -- the
+    /// exemption fails closed, never the protection.</para>
+    /// </summary>
+    private static bool DeclaresReadOnlyRoleActionGrant(Endpoint? endpoint)
+        => endpoint?.Metadata.GetMetadata<EndpointAuthorizationMetadata>() is { } metadata &&
+           metadata.Permissions.Contains(UserPermission.ExportData);
+
+    /// <summary>
+    /// The built-in roles whose permission sets carry no Manage, Modify, Execute or Admin permission
+    /// at all -- only view grants plus, for two of them, <see cref="UserPermission.ExportData"/>.
+    /// Restricting them to safe methods therefore takes away nothing they were meant to do once the
+    /// export exemption above is applied; it only closes the legacy routes that mutate while
+    /// declaring a view permission. Keyed on the role rather than on its name, so a role that gains a
+    /// command permission later stops being covered by this rule rather than being silently
+    /// restricted by it.
+    /// </summary>
+    private static bool IsReadOnlyRole(UserRole role)
+        => role is UserRole.ReadOnly or UserRole.Analysis or UserRole.Executive;
+
+    /// <summary>
+    /// True when the request is served by a principal that is not an operator session: an API key,
+    /// or the optional-mode anonymous actor. Both carry a role's permission snapshot without a person
+    /// behind it, so a permission check alone cannot tell them apart from a signed-in operator.
+    /// <para>
+    /// Session-owned authority must consult this rather than the snapshot. Naming a broad role in
+    /// <c>MDC_ANONYMOUS_ROLE</c> or <c>MDC_API_KEY_ROLE</c> is a deployment convenience for reaching
+    /// the read surface; it is not a grant of account administration or of another operator's scoped
+    /// assignments, and treating it as one lets an unauthenticated caller administer the deployment.
+    /// </para>
+    /// </summary>
+    internal static bool IsNonSessionPrincipal(HttpContext context)
+        => context.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey) ||
+           context.Items.ContainsKey(LoginSessionMiddleware.AnonymousPrincipalKey);
+
     public static bool HasPermission(HttpContext context, UserPermission required)
         => TryGetPermissions(context, out var permissions) &&
            (permissions & required) == required;
@@ -97,6 +282,100 @@ public static class EndpointAuthorization
         actor = string.Empty;
         return false;
     }
+
+    /// <summary>
+    /// Resolves the action origin the governance gate should judge, from the authenticated
+    /// principal and the caller's own declaration, taking whichever is narrower.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <see cref="OperationsActionOriginDto"/> decides whether the "reviewed automation may not
+    /// perform this action; a human operator is required" control applies. It arrives as an ordinary
+    /// bound member of the request DTOs and defaults to the permissive
+    /// <see cref="OperationsActionOriginDto.HumanOperator"/>, so a caller used to satisfy the gate
+    /// simply by omitting the field (#2673).
+    /// </para>
+    /// <para>
+    /// The declaration is not discarded, though — it is <b>binding when it narrows</b>. Automation
+    /// that declares itself honestly must still be refused, which is the capability the control was
+    /// written for; overwriting the body outright would make the gate unforgeable and, in the same
+    /// stroke, untriggerable for anything holding a session. So a declared non-human origin is
+    /// carried through as-is, keeping the specific kind for evidence, and only a declared
+    /// <see cref="OperationsActionOriginDto.HumanOperator"/> is re-derived.
+    /// </para>
+    /// <para>
+    /// Re-derivation goes through <see cref="DeriveActionOriginFromPrincipal"/>, which yields
+    /// <see cref="OperationsActionOriginDto.HumanOperator"/> only for a validated interactive
+    /// workstation session. An API key is a non-interactive credential by construction, which is
+    /// exactly the "service credential, scheduled job, or assistant acting with a delegated token"
+    /// case the control exists to stop.
+    /// </para>
+    /// <para>
+    /// The result is monotone: the caller's claim can only ever narrow its own privilege, never widen
+    /// it. Omitting the field no longer buys human standing that the principal does not have, and
+    /// claiming automation is still believed.
+    /// </para>
+    /// <para>
+    /// The reconciliation casework adapters are the deliberate exception and call
+    /// <see cref="DeriveActionOriginFromPrincipal"/> directly — see its remarks for why the body is
+    /// discarded outright there.
+    /// </para>
+    /// </remarks>
+    public static OperationsActionOriginDto ResolveTrustedActionOrigin(
+        HttpContext context,
+        OperationsActionOriginDto declaredOrigin)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        return declaredOrigin == OperationsActionOriginDto.HumanOperator
+            ? DeriveActionOriginFromPrincipal(context)
+            : declaredOrigin;
+    }
+
+    /// <summary>
+    /// Resolves the action origin from the authenticated principal alone, discarding whatever the
+    /// request body declared.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This is for the reconciliation break casework routes, whose bodies are legacy
+    /// browser-supplied input the server is authoritative over. Keeping a caller's declaration
+    /// there would let the browser label a casework decision, which is what those routes exist to
+    /// prevent, and two endpoint tests pin that the declared origin is discarded along with the
+    /// declared actor.
+    /// </para>
+    /// <para>
+    /// <b>Which family a route belongs to is a trust decision about that route, not something to
+    /// read off the handler.</b> Most governance-gated endpoints re-derive <c>Actor</c> as well, so
+    /// overwriting the actor does not make a route identity-authoritative in this sense. Default to
+    /// <see cref="ResolveTrustedActionOrigin"/> — the declaration is meaningful there, and
+    /// automation declaring itself honestly must still be refused.
+    /// </para>
+    /// <para>
+    /// The two differ only in whether a declared non-human origin is believed; both derive the same
+    /// way, so neither can let a non-interactive principal reach
+    /// <see cref="OperationsActionOriginDto.HumanOperator"/> and both close #2673.
+    /// </para>
+    /// </remarks>
+    public static OperationsActionOriginDto DeriveActionOriginFromPrincipal(HttpContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        return IsInteractiveOperatorSession(context)
+            ? OperationsActionOriginDto.HumanOperator
+            : OperationsActionOriginDto.AutomationAssistant;
+    }
+
+    /// <summary>
+    /// The four conditions <see cref="RequireAuthenticatedSession{TBuilder}"/> enforces, in one
+    /// place so the gate and the origin derivation cannot drift into disagreeing about what an
+    /// interactive session is.
+    /// </summary>
+    private static bool IsInteractiveOperatorSession(HttpContext context)
+        => TryResolveActor(context, out _) &&
+           TryGetPermissions(context, out _) &&
+           !context.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey) &&
+           !context.Items.ContainsKey(LoginSessionMiddleware.AnonymousPrincipalKey);
 
     public static IReadOnlyList<string> ResolveReportGroupPrincipalIds(HttpContext context)
     {
@@ -170,6 +449,28 @@ public static class EndpointAuthorization
                 EndpointHelpers.Forbidden(context.HttpContext));
         };
 
+    private static Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> RequireAll(
+        params UserPermission[] permissions)
+        => (context, next) =>
+        {
+            if (!TryGetPermissions(context.HttpContext, out _))
+            {
+                return ValueTask.FromResult<object?>(
+                    ApiProblemDetails.Unauthorized(context.HttpContext));
+            }
+
+            foreach (var permission in permissions)
+            {
+                if (!HasPermission(context.HttpContext, permission))
+                {
+                    return ValueTask.FromResult<object?>(
+                        EndpointHelpers.Forbidden(context.HttpContext));
+                }
+            }
+
+            return next(context);
+        };
+
     /// <summary>
     /// Attaches a single-permission authorization filter to the route (or group) and records
     /// <see cref="EndpointAuthorizationMetadata"/> so the requirement is discoverable in endpoint metadata.
@@ -184,6 +485,26 @@ public static class EndpointAuthorization
     }
 
     /// <summary>
+    /// Attaches one all-of authorization filter and one metadata declaration for routes that require
+    /// every listed permission. Keeping the complete requirement in a single declaration ensures
+    /// pre-binding authorization middleware evaluates the same policy as the endpoint filter.
+    /// </summary>
+    public static TBuilder RequireAllPermissions<TBuilder>(this TBuilder builder, params UserPermission[] permissions)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        ArgumentNullException.ThrowIfNull(permissions);
+        if (permissions.Length == 0)
+        {
+            throw new ArgumentException("At least one permission is required.", nameof(permissions));
+        }
+
+        var required = permissions.Distinct().ToArray();
+        builder.AddEndpointFilter(RequireAll(required));
+        builder.WithMetadata(new EndpointAuthorizationMetadata(required, requireAll: true));
+        return builder;
+    }
+
+    /// <summary>
     /// Attaches an any-of-permissions authorization filter to the route (or group) and records
     /// <see cref="EndpointAuthorizationMetadata"/> so the requirement is discoverable in endpoint metadata.
     /// Use for read routes that should accept either a view or a manage permission.
@@ -193,6 +514,161 @@ public static class EndpointAuthorization
     {
         builder.AddEndpointFilter(RequireAny(permissions));
         builder.WithMetadata(new EndpointAuthorizationMetadata(permissions, requireAll: false));
+        return builder;
+    }
+
+    /// <summary>
+    /// Requires a resolved actor and permission snapshot from a validated workstation session,
+    /// without demanding a specific business permission, and declares that requirement as metadata
+    /// (an empty permission list with
+    /// <see cref="EndpointAuthorizationMetadata.RequireAll"/> false).
+    /// <para>
+    /// For UI-state operations deliberately limited to signed-in workstation operators — workflow
+    /// presets, saved views, first-run acknowledgements, the local desktop launcher. This filter
+    /// rejects API-key and optional-auth anonymous principals. It does not itself prove record
+    /// ownership; routes that mutate shared or governed state must also declare the appropriate
+    /// permission and scope.
+    /// </para>
+    /// </summary>
+    public static TBuilder RequireAuthenticatedSession<TBuilder>(this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        builder.AddEndpointFilter((context, next) =>
+            TryResolveActor(context.HttpContext, out _) &&
+            TryGetPermissions(context.HttpContext, out _) &&
+            !context.HttpContext.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey) &&
+            !context.HttpContext.Items.ContainsKey(LoginSessionMiddleware.AnonymousPrincipalKey)
+                ? next(context)
+                : ValueTask.FromResult<object?>(ApiProblemDetails.Unauthorized(context.HttpContext)));
+        builder.WithMetadata(new EndpointAuthorizationMetadata(Array.Empty<UserPermission>(), requireAll: false));
+        return builder;
+    }
+
+    /// <summary>
+    /// Requires a validated workstation session, except that safe reads from an explicitly scoped
+    /// optional-mode local operator are also accepted. This narrow exception keeps local/demo
+    /// workspaces bootstrappable without letting an anonymous principal satisfy session-owned
+    /// mutation filters. API-key principals are always refused.
+    /// </summary>
+    public static TBuilder RequireAuthenticatedSessionOrScopedLocalOperatorRead<TBuilder>(this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        builder.AddEndpointFilter((context, next) =>
+        {
+            var httpContext = context.HttpContext;
+            var isApiKey = httpContext.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey);
+            var isAnonymous = httpContext.Items.ContainsKey(LoginSessionMiddleware.AnonymousPrincipalKey);
+            var isValidatedSession = !isApiKey && !isAnonymous;
+            var carriesLocalScope =
+                httpContext.Items.TryGetValue(LoginSessionMiddleware.CurrentTenantIdKey, out var rawTenant) &&
+                rawTenant is string tenant &&
+                !string.IsNullOrWhiteSpace(tenant) &&
+                httpContext.Items.TryGetValue(LoginSessionMiddleware.CurrentUserCompanyIdKey, out var rawCompany) &&
+                rawCompany is string company &&
+                !string.IsNullOrWhiteSpace(company);
+            var isScopedLocalOperatorRead =
+                !isApiKey &&
+                isAnonymous &&
+                (httpContext.Items.ContainsKey(LoginSessionMiddleware.DemoLocalOperatorPrincipalKey) || carriesLocalScope) &&
+                (HttpMethods.IsGet(httpContext.Request.Method) || HttpMethods.IsHead(httpContext.Request.Method));
+
+            return TryResolveActor(httpContext, out _) &&
+                   TryGetPermissions(httpContext, out _) &&
+                   (isValidatedSession || isScopedLocalOperatorRead)
+                ? next(context)
+                : ValueTask.FromResult<object?>(ApiProblemDetails.Unauthorized(httpContext));
+        });
+        builder.WithMetadata(new EndpointAuthorizationMetadata(Array.Empty<UserPermission>(), requireAll: false));
+        return builder;
+    }
+
+    /// <summary>
+    /// Requires only that the caller is an established principal -- a validated workstation session,
+    /// a validated API key, or an explicitly scoped optional-mode local operator making a safe read.
+    /// For host-wide status a monitoring client is expected to poll and every operator is expected to
+    /// see, where the payload is an aggregate with no tenant, account, or per-caller content.
+    /// <para>
+    /// Distinct from <see cref="RequireAuthenticatedSessionOrScopedLocalOperatorRead{TBuilder}"/>,
+    /// which refuses API keys on purpose because it guards UI state owned by a signed-in operator.
+    /// Host status is not that: refusing a configured key there breaks the documented monitoring path
+    /// without protecting anything, since the same aggregate is served to every session anyway.
+    /// </para>
+    /// </summary>
+    public static TBuilder RequireEstablishedPrincipalRead<TBuilder>(this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        builder.AddEndpointFilter((context, next) =>
+        {
+            var httpContext = context.HttpContext;
+            var isAnonymous = httpContext.Items.ContainsKey(LoginSessionMiddleware.AnonymousPrincipalKey);
+            var carriesLocalScope =
+                httpContext.Items.TryGetValue(LoginSessionMiddleware.CurrentTenantIdKey, out var rawTenant) &&
+                rawTenant is string tenant &&
+                !string.IsNullOrWhiteSpace(tenant) &&
+                httpContext.Items.TryGetValue(LoginSessionMiddleware.CurrentUserCompanyIdKey, out var rawCompany) &&
+                rawCompany is string company &&
+                !string.IsNullOrWhiteSpace(company);
+
+            // An anonymous principal still has to be a scoped local operator making a safe read; the
+            // widening here is for API keys, which are validated before they reach any route.
+            var isScopedLocalOperatorRead =
+                isAnonymous &&
+                (httpContext.Items.ContainsKey(LoginSessionMiddleware.DemoLocalOperatorPrincipalKey) || carriesLocalScope) &&
+                (HttpMethods.IsGet(httpContext.Request.Method) || HttpMethods.IsHead(httpContext.Request.Method));
+
+            return TryResolveActor(httpContext, out _) &&
+                   TryGetPermissions(httpContext, out _) &&
+                   (!isAnonymous || isScopedLocalOperatorRead)
+                ? next(context)
+                : ValueTask.FromResult<object?>(ApiProblemDetails.Unauthorized(httpContext));
+        });
+        builder.WithMetadata(new EndpointAuthorizationMetadata(Array.Empty<UserPermission>(), requireAll: false));
+        return builder;
+    }
+
+    /// <summary>
+    /// Marks a read route as deliberately open to any authenticated session. See
+    /// <see cref="EndpointOpenReadMetadata"/> for when this is the right declaration and when a
+    /// permission is required instead.
+    /// </summary>
+    public static TBuilder DeclareOpenRead<TBuilder>(this TBuilder builder, string reason)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        builder.WithMetadata(new EndpointOpenReadMetadata(reason));
+        return builder;
+    }
+
+    /// <summary>
+    /// Records <see cref="EndpointNonMutatingMetadata"/> on a route outside the safe methods, so the
+    /// read-only-role cap stands aside for a read that simply needs a request body.
+    /// </summary>
+    public static TBuilder DeclareNonMutating<TBuilder>(this TBuilder builder, string reason)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        builder.WithMetadata(new EndpointNonMutatingMetadata(reason));
+        return builder;
+    }
+
+    /// <summary>
+    /// Records <see cref="EndpointIndependentAuthenticationMetadata"/> on a route that authenticates
+    /// its own caller, so the read-only-role cap does not refuse it before that check can run.
+    /// </summary>
+    public static TBuilder DeclareIndependentAuthentication<TBuilder>(this TBuilder builder, string reason)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        builder.WithMetadata(new EndpointIndependentAuthenticationMetadata(reason));
+        return builder;
+    }
+
+    /// <summary>
+    /// Records <see cref="EndpointPermissionlessMutationMetadata"/> on a mutating route that is
+    /// deliberately callable without any permission, so the pre-binding mutation guard stands
+    /// aside for it with the reason stated where reviewers and the coverage suite can see it.
+    /// </summary>
+    public static TBuilder DeclarePermissionlessMutation<TBuilder>(this TBuilder builder, string reason)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        builder.WithMetadata(new EndpointPermissionlessMutationMetadata(reason));
         return builder;
     }
 
@@ -225,6 +701,26 @@ public static class EndpointAuthorization
                 Reason: "No role permissions were resolved for the current actor.");
         }
 
+        // API keys and the optional local operator are distinct principal kinds, not users whose
+        // literal names happen to be "api-key" or "local-operator". Never pass either synthetic
+        // actor through case-insensitive User-assignment lookup. Preserve only the explicit global
+        // overrides the scoped service itself recognizes.
+        var isApiKeyPrincipal = context.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey);
+        if (IsNonSessionPrincipal(context))
+        {
+            var principalLabel = isApiKeyPrincipal ? "API-key" : "Anonymous";
+            var hasGlobalOverride = HasScopedGlobalOverride(globalPermissions);
+            return new ScopedAuthorizationDecisionDto(
+                IsAllowed: hasGlobalOverride,
+                Actor: actor,
+                RequiredPermission: required,
+                ScopeKind: scopeKind,
+                ScopeId: scopeId,
+                Reason: hasGlobalOverride
+                    ? $"The {principalLabel} principal carries a global scoped-access override."
+                    : $"{principalLabel} principals cannot inherit user-scoped access assignments.");
+        }
+
         var service = context.RequestServices.GetService(typeof(IScopedAuthorizationService)) as IScopedAuthorizationService;
         if (service is null)
         {
@@ -242,6 +738,48 @@ public static class EndpointAuthorization
             .ConfigureAwait(false);
     }
 
+    public static async Task<IReadOnlySet<Guid>> AuthorizeScopedManyAsync(
+        HttpContext context,
+        UserPermission required,
+        AccessScopeKindDto scopeKind,
+        IReadOnlyCollection<Guid> scopeIds,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scopeIds);
+        var requestedScopeIds = scopeIds.ToHashSet();
+        if (requestedScopeIds.Count == 0 ||
+            !TryResolveActor(context, out var actor) ||
+            !TryGetPermissions(context, out var globalPermissions))
+        {
+            return new HashSet<Guid>();
+        }
+
+        // As with the single-scope helper, synthetic non-session principals never inherit User
+        // assignments belonging to a human with the same actor name. Only an explicit global
+        // scoped-access override admits the requested ids.
+        if (context.Items.ContainsKey(ApiKeyMiddleware.ApiKeyPrincipalKey) ||
+            context.Items.ContainsKey(LoginSessionMiddleware.AnonymousPrincipalKey))
+        {
+            return HasScopedGlobalOverride(globalPermissions)
+                ? requestedScopeIds
+                : new HashSet<Guid>();
+        }
+
+        var service = context.RequestServices.GetService(typeof(IScopedAuthorizationService)) as IScopedAuthorizationService;
+        if (service is null)
+        {
+            return new HashSet<Guid>();
+        }
+
+        var decisions = await service
+            .AuthorizeManyAsync(actor, required, scopeKind, requestedScopeIds, globalPermissions, ct)
+            .ConfigureAwait(false);
+        return decisions
+            .Where(pair => pair.Value.IsAllowed && requestedScopeIds.Contains(pair.Key))
+            .Select(pair => pair.Key)
+            .ToHashSet();
+    }
+
     public static async Task<bool> HasScopedPermissionAsync(
         HttpContext context,
         UserPermission required,
@@ -249,4 +787,8 @@ public static class EndpointAuthorization
         Guid? scopeId,
         CancellationToken ct = default)
         => (await AuthorizeScopedAsync(context, required, scopeKind, scopeId, ct).ConfigureAwait(false)).IsAllowed;
+
+    private static bool HasScopedGlobalOverride(UserPermission permissions)
+        => (permissions & UserPermission.AdminMaintenance) == UserPermission.AdminMaintenance ||
+           (permissions & UserPermission.ManageUsers) == UserPermission.ManageUsers;
 }

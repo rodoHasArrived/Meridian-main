@@ -1,6 +1,7 @@
 using System.Globalization;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
@@ -1086,7 +1087,6 @@ public static class DeterministicFingerprint
 {
     public static string Compute(string value)
     {
-        var bytes = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(value));
-        return Convert.ToHexString(bytes).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(value);
     }
 }

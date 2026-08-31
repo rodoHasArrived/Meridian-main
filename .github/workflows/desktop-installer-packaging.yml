@@ -10,6 +10,15 @@ on:
         description: Optional N-1 release tag used by installed lifecycle certification.
         required: false
         type: string
+      certify_lifecycle:
+        description: >-
+          Run the installed install/launch/repair/uninstall lifecycle certification on this
+          non-tag dispatch using a throwaway self-signed certificate. Proves the lane end to end
+          before a release exists. Never produces release evidence - a tag run with the protected
+          signing secret is the only source of that.
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -57,12 +66,13 @@ jobs:
             ${{ runner.os }}-nuget-desktop-release-preflight-
             ${{ runner.os }}-nuget-
 
-      - name: Restore WPF tests
+      - name: Restore preflight test projects
         shell: pwsh
-        run: >
-          dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj
-          /p:EnableWindowsTargeting=true
-          /p:EnableFullWpfBuild=true
+        run: |
+          dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj `
+            /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
+          dotnet restore tests/Meridian.Setup.Tests/Meridian.Setup.Tests.csproj `
+            /p:EnableWindowsTargeting=true
 
       - name: Build WPF app
         shell: pwsh
@@ -85,6 +95,21 @@ jobs:
           --results-directory artifacts/test-results/desktop-release-preflight
           /p:EnableWindowsTargeting=true
           /p:EnableFullWpfBuild=true
+
+      # Meridian.Setup.Tests targets net10.0-windows, so run-dotnet-ci-tests.py lists it under
+      # WINDOWS_ONLY_TEST_PROJECTS and the ubuntu lane skips it. That list is accepted as "wired"
+      # without checking that a Windows lane actually runs it, and nothing did: neither these
+      # tests nor InstallationTransactionTests had ever executed in CI. They gate the installer,
+      # so this is their lane.
+      - name: Run installer setup tests
+        shell: pwsh
+        run: >
+          dotnet test tests/Meridian.Setup.Tests/Meridian.Setup.Tests.csproj
+          -c Release
+          --no-restore
+          --logger "trx;LogFilePrefix=desktop-release-preflight-setup"
+          --results-directory artifacts/test-results/desktop-release-preflight
+          /p:EnableWindowsTargeting=true
 
       - name: Upload release preflight test results
         if: failure()
@@ -123,6 +148,13 @@ jobs:
         with:
           global-json-file: global.json
 
+      # `Generate release evidence manifest` below shells out to `python`; pin it rather than
+      # depending on whatever the runner image happens to expose on PATH.
+      - name: Set up Python
+        uses: actions/setup-python@v6.3.0
+        with:
+          python-version: "3.12"
+
       - name: Cache NuGet packages
         uses: actions/cache@v6.1.0
         with:
@@ -158,13 +190,35 @@ jobs:
           MDC_SIGNING_CERT_PASSWORD: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.MDC_SIGNING_CERT_PASSWORD || '' }}
         run: |
           $architecture = if ('${{ matrix.runtime }}' -eq 'win-arm64') { 'ARM64' } else { 'x64' }
+
+          # Stamp the tag into the package identity. Without this every release ships the
+          # manifest's literal 1.0.0.0 and Windows refuses to treat the next one as an update.
+          $refName = '${{ github.ref_name }}'
+          if ($refName -match '^v(\d+)\.(\d+)\.(\d+)') {
+            $env:MDC_PACKAGE_VERSION = "$($Matches[1]).$($Matches[2]).$($Matches[3]).0"
+            Write-Host "Stamping package version $env:MDC_PACKAGE_VERSION from tag $refName"
+          }
+
+          # No -EnableReadyToRun: crossgen2 cannot compile Sharpino.Lib and aborts the publish
+          # with NETSDK1096 (see the PublishReadyToRun comment in Meridian.Wpf.csproj). ReadyToRun
+          # is a startup optimization, so the package ships without it rather than not at all.
           pwsh ./build/scripts/install/install.ps1 `
             -Mode Desktop `
             -Architecture $architecture `
             -SkipInstall `
             -NoNotify `
-            -NoTrustCert `
-            -EnableReadyToRun
+            -NoTrustCert
+
+      # install.ps1 writes its build/publish transcripts under diagnostic-logs/. Without this the
+      # only pointer a failed packaging run leaves is a path inside a discarded runner.
+      - name: Upload desktop packaging diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: desktop-packaging-diagnostics-${{ matrix.runtime }}-${{ github.run_id }}
+          path: diagnostic-logs/
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Collect packaged installer artifacts
         shell: pwsh
@@ -188,7 +242,7 @@ jobs:
           try {
             Copy-Item -Path $packageFiles.FullName -Destination $releaseRoot -Force -ErrorAction Stop
           } catch {
-            throw "Failed to copy packaged installer files from $sourceRoot to $releaseRoot: $($_.Exception.Message)"
+            throw "Failed to copy packaged installer files from $sourceRoot to ${releaseRoot}: $($_.Exception.Message)"
           }
 
       - name: Generate installer SBOM
@@ -273,6 +327,12 @@ jobs:
           cache: npm
           cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
 
+      # `Generate consumer release evidence` below shells out to `python`.
+      - name: Set up Python
+        uses: actions/setup-python@v6.3.0
+        with:
+          python-version: "3.12"
+
       - name: Prepare signing certificate for a tag release
         if: startsWith(github.ref, 'refs/tags/v')
         id: signing
@@ -287,12 +347,44 @@ jobs:
           [IO.File]::WriteAllBytes($certPath, [Convert]::FromBase64String($env:MDC_SIGNING_CERT_PFX_BASE64))
           "cert_path=$certPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      - name: Build the x64 and ARM64 consumer package
+      # Meridian-Setup.exe embeds a PostgreSQL server per bundled runtime. The hosted image ships
+      # one under C:\Program Files\PostgreSQL (x64 only) — the same source publish-smoke uses.
+      # PostgreSQL publishes no Windows ARM64 server build, so the one-click consumer setup is
+      # x64-only until an ARM64 payload is supplied out of band. The ARM64 *desktop MSIX* is
+      # unaffected and is still built and certified: it does not embed a database.
+      - name: Materialize the PostgreSQL payload
+        id: pgpayload
+        shell: pwsh
+        run: |
+          # Runner PostgreSQL directories are major-only names like '17', which [version] refuses
+          # to parse; sort on the leading integer instead.
+          $postgres = Get-ChildItem 'C:\Program Files\PostgreSQL' -Directory -ErrorAction Stop |
+            Where-Object { $_.Name -match '^\d+' } |
+            Sort-Object { [int]($_.Name -replace '^(\d+).*$', '$1') } -Descending | Select-Object -First 1
+          if ($null -eq $postgres) { throw 'The hosted Windows runner has no PostgreSQL runtime to bundle.' }
+
+          $payload = 'artifacts/postgresql-payload/win-x64'
+          New-Item -ItemType Directory -Path $payload -Force | Out-Null
+          Copy-Item -Path (Join-Path $postgres.FullName '*') -Destination $payload -Recurse -Force
+
+          $bundled = @('win-x64')
+          $armPayload = 'artifacts/postgresql-payload/win-arm64/bin/postgres.exe'
+          if (Test-Path -LiteralPath $armPayload) { $bundled += 'win-arm64' }
+
+          $excluded = @('win-x64', 'win-arm64') | Where-Object { $_ -notin $bundled }
+          if ($excluded.Count -gt 0) {
+            Write-Host "::warning::Consumer setup excludes $($excluded -join ', '): no PostgreSQL server payload is available for that runtime on this runner."
+          }
+          "runtimes=$($bundled -join ',')" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Build the consumer package
         shell: pwsh
         env:
           MDC_SIGNING_CERT_PASSWORD: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.MDC_SIGNING_CERT_PASSWORD || '' }}
         run: |
           pwsh ./build/scripts/install/build-consumer-setup.ps1 `
+            -PostgreSqlPayloadRoot artifacts/postgresql-payload `
+            -Runtimes ('${{ steps.pgpayload.outputs.runtimes }}'.Split(',')) `
             -SigningCertificate '${{ steps.signing.outputs.cert_path }}' `
             -SigningCertificatePassword $env:MDC_SIGNING_CERT_PASSWORD
 
@@ -347,7 +439,10 @@ jobs:
   certify-installed-desktop:
     name: clean install lifecycle (${{ matrix.runtime }})
     needs: build-msix
-    if: startsWith(github.ref, 'refs/tags/v')
+    # Tag pushes produce release evidence. A non-tag dispatch with certify_lifecycle proves the
+    # same path against a throwaway self-signed certificate, so the lane can be shown working
+    # before any release or protected secret exists.
+    if: startsWith(github.ref, 'refs/tags/v') || inputs.certify_lifecycle
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 90
     environment:
@@ -361,9 +456,11 @@ jobs:
           - runtime: win-x64
             architecture: x64
             runner: windows-latest
+          # GitHub-hosted Windows 11 ARM64. This repository is public, so the label is available
+          # at no cost and needs no self-hosted machine.
           - runtime: win-arm64
             architecture: ARM64
-            runner: [self-hosted, Windows, ARM64]
+            runner: windows-11-arm
 
     steps:
       - name: Check out repository
@@ -383,54 +480,128 @@ jobs:
         shell: pwsh
         env:
           MDC_SIGNING_CERT_PFX_BASE64: ${{ secrets.MDC_SIGNING_CERT_PFX_BASE64 }}
+          MDC_SIGNING_CERT_PASSWORD: ${{ secrets.MDC_SIGNING_CERT_PASSWORD }}
+          IS_TAG_RELEASE: ${{ startsWith(github.ref, 'refs/tags/v') }}
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:MDC_SIGNING_CERT_PFX_BASE64)) {
-            throw "Installed lifecycle certification requires MDC_SIGNING_CERT_PFX_BASE64."
-          }
           $certPath = Join-Path $env:RUNNER_TEMP "meridian-release-signing.pfx"
-          [IO.File]::WriteAllBytes($certPath, [Convert]::FromBase64String($env:MDC_SIGNING_CERT_PFX_BASE64))
+          if ($env:IS_TAG_RELEASE -eq 'true') {
+            if ([string]::IsNullOrWhiteSpace($env:MDC_SIGNING_CERT_PFX_BASE64)) {
+              throw "Installed lifecycle certification of a tag release requires MDC_SIGNING_CERT_PFX_BASE64 in the protected desktop-release-signing environment."
+            }
+            [IO.File]::WriteAllBytes($certPath, [Convert]::FromBase64String($env:MDC_SIGNING_CERT_PFX_BASE64))
+            "cert_password=$($env:MDC_SIGNING_CERT_PASSWORD)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "self_signed=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          }
+          else {
+            # Validation only. The package built by a non-tag run is unsigned, so mint a throwaway
+            # certificate whose subject equals the package's own Identity/@Publisher (Windows
+            # rejects a package whose publisher does not match its signature) and sign it here.
+            $package = Get-ChildItem artifacts/current -Filter '*.msix' -File -Recurse | Select-Object -First 1
+            if ($null -eq $package) { throw "No MSIX was found under artifacts/current." }
+
+            Add-Type -AssemblyName System.IO.Compression.FileSystem
+            $archive = [IO.Compression.ZipFile]::OpenRead($package.FullName)
+            try {
+              $entry = $archive.GetEntry('AppxManifest.xml')
+              if ($null -eq $entry) { throw "$($package.Name) has no AppxManifest.xml." }
+              $reader = [IO.StreamReader]::new($entry.Open())
+              try { [xml]$manifest = $reader.ReadToEnd() } finally { $reader.Dispose() }
+            } finally { $archive.Dispose() }
+
+            $namespaceManager = [Xml.XmlNamespaceManager]::new($manifest.NameTable)
+            $namespaceManager.AddNamespace("foundation", "http://schemas.microsoft.com/appx/manifest/foundation/windows10")
+            $publisher = $manifest.SelectSingleNode("/foundation:Package/foundation:Identity", $namespaceManager).GetAttribute("Publisher")
+            if ([string]::IsNullOrWhiteSpace($publisher)) { throw "Package Identity has no Publisher to match." }
+            Write-Host "Minting a validation-only certificate for publisher $publisher"
+
+            $password = [Guid]::NewGuid().ToString("N")
+            $certificate = New-SelfSignedCertificate `
+              -Type Custom `
+              -Subject $publisher `
+              -KeyUsage DigitalSignature `
+              -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}") `
+              -CertStoreLocation "Cert:\CurrentUser\My"
+            Export-PfxCertificate -Cert $certificate -FilePath $certPath -Password (ConvertTo-SecureString $password -AsPlainText -Force) | Out-Null
+            Remove-Item -LiteralPath "Cert:\CurrentUser\My\$($certificate.Thumbprint)" -Force
+
+            . ./build/scripts/install/windows-sdk-tools.ps1
+            $signTool = Resolve-WindowsSdkTool -ToolName "signtool.exe"
+            & $signTool sign /fd SHA256 /f $certPath /p $password $package.FullName
+            if ($LASTEXITCODE -ne 0) { throw "Validation signing failed with exit code $LASTEXITCODE." }
+
+            "cert_password=$password" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "self_signed=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          }
           "cert_path=$certPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      - name: Download N-1 installer
+      # First-release mode is derived from repository state, never from an input. A dispatch-only
+      # input cannot help the tag push that needs it (workflow_dispatch inputs are absent on
+      # push), and a manually forced flag could skip real N-1 evidence when a predecessor does
+      # exist. An empty release list is the fact that there is nothing to update from; a failed
+      # query is not, and stays fatal.
+      - name: Resolve the N-1 installer
         id: prior
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
           CONFIGURED_PRIOR_TAG: ${{ inputs.prior_release_tag }}
         run: |
+          $current = Get-ChildItem artifacts/current -Filter '*.msix' -File -Recurse | Select-Object -First 1
+          if ($null -eq $current) { throw "Could not resolve the current ${{ matrix.runtime }} MSIX package." }
+          "current_path=$($current.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
           $priorTag = $env:CONFIGURED_PRIOR_TAG
           if ([string]::IsNullOrWhiteSpace($priorTag)) {
+            # Prereleases are excluded deliberately: the evaluation lane publishes self-signed
+            # prereleases, and certifying a production update against one would prove an upgrade
+            # path from an artifact that carries no publisher identity.
             $priorTag = gh api 'repos/${{ github.repository }}/releases?per_page=20' `
-              --jq '[.[] | select(.draft == false and .tag_name != "${{ github.ref_name }}")][0].tag_name'
+              --jq '[.[] | select(.draft == false and .prerelease == false and .tag_name != "${{ github.ref_name }}")][0].tag_name'
+            if ($LASTEXITCODE -ne 0) {
+              throw "Could not query published releases, so whether an N-1 package exists is unknown. Refusing to assume this is a first release."
+            }
           }
+
           if ([string]::IsNullOrWhiteSpace($priorTag) -or $priorTag -eq 'null') {
-            throw "No N-1 release is available for update and rollback certification."
+            Write-Host "::notice::No published predecessor exists, so this is a first release. The update and rollback legs will be recorded as not-applicable rather than skipped."
+            "first_release=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            exit 0
           }
+
           New-Item -ItemType Directory -Path artifacts/prior -Force | Out-Null
           gh release download $priorTag --repo '${{ github.repository }}' --pattern '*.msix' --dir artifacts/prior
           $architecturePattern = if ('${{ matrix.runtime }}' -eq 'win-arm64') { 'arm64' } else { 'x64' }
           $prior = Get-ChildItem artifacts/prior -Filter '*.msix' -File -Recurse |
             Where-Object Name -Match $architecturePattern | Select-Object -First 1
-          $current = Get-ChildItem artifacts/current -Filter '*.msix' -File -Recurse | Select-Object -First 1
-          if ($null -eq $prior -or $null -eq $current) {
-            throw "Could not resolve current and N-1 ${{ matrix.runtime }} MSIX packages."
+          if ($null -eq $prior) {
+            throw "Release $priorTag published no ${{ matrix.runtime }} MSIX to certify the update and rollback legs against."
           }
           "prior_path=$($prior.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          "current_path=$($current.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           "prior_tag=$priorTag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "first_release=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Certify install, launch, update, repair, rollback, and uninstall
         shell: pwsh
         env:
-          MDC_SIGNING_CERT_PASSWORD: ${{ secrets.MDC_SIGNING_CERT_PASSWORD }}
+          MDC_CERT_PASSWORD: ${{ steps.signing.outputs.cert_password }}
         run: |
-          pwsh ./build/scripts/install/certify-desktop-install-lifecycle.ps1 `
-            -CurrentPackage '${{ steps.prior.outputs.current_path }}' `
-            -PriorPackage '${{ steps.prior.outputs.prior_path }}' `
-            -SigningCertificatePfx '${{ steps.signing.outputs.cert_path }}' `
-            -SigningCertificatePassword $env:MDC_SIGNING_CERT_PASSWORD `
-            -Architecture '${{ matrix.architecture }}' `
-            -ReceiptPath artifacts/install-certification/${{ matrix.runtime }}/desktop-install-lifecycle.json
+          $arguments = @(
+            '-CurrentPackage', '${{ steps.prior.outputs.current_path }}'
+            '-SigningCertificatePfx', '${{ steps.signing.outputs.cert_path }}'
+            '-SigningCertificatePassword', $env:MDC_CERT_PASSWORD
+            '-Architecture', '${{ matrix.architecture }}'
+            '-ReceiptPath', 'artifacts/install-certification/${{ matrix.runtime }}/desktop-install-lifecycle.json'
+          )
+          if ('${{ steps.prior.outputs.first_release }}' -eq 'true') {
+            $arguments += '-FirstRelease'
+          }
+          else {
+            $arguments += @('-PriorPackage', '${{ steps.prior.outputs.prior_path }}')
+          }
+          if ('${{ steps.signing.outputs.self_signed }}' -eq 'true') {
+            $arguments += '-TrustSelfSignedRoot'
+          }
+          pwsh ./build/scripts/install/certify-desktop-install-lifecycle.ps1 @arguments
 
       - name: Upload clean-machine lifecycle evidence
         if: always()
@@ -451,11 +622,13 @@ jobs:
       contents: write
 
     steps:
+      # No merge-multiple: every runtime ships its own sbom.spdx.json, release-evidence.json and
+      # SHA256SUMS under the same names, so merging them into one directory would silently keep
+      # only the last runtime's copies and publish those as if they covered both.
       - name: Download packaged installer artifacts
         uses: actions/download-artifact@v5.0.0
         with:
           pattern: meridian-desktop-installer-*-${{ github.run_id }}
-          merge-multiple: true
           path: artifacts/release
 
       - name: Download consumer setup artifact
@@ -465,7 +638,7 @@ jobs:
           path: artifacts/release/consumer
 
       - name: Publish GitHub release assets
-        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v2
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v2
         with:
           files: |
             artifacts/release/**/*.msix

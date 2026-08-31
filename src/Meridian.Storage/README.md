@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-27
+last_reviewed: 2026-08-04
 ---
 
 # src/Meridian.Storage
@@ -142,6 +142,17 @@ maintenance distinguishes complete success, partial `CompletedWithWarnings`, tot
 no-input blocking from attempted/succeeded/failed input counts; cancelled work is not converted to
 a false terminal failure.
 
+Archive-maintenance schedule mutations persist a validated candidate snapshot before publishing it
+to readers under an in-process gate and a cross-process file lease; revision-aware replacements
+reject stale snapshots while legacy revision-zero callers retain deterministic merge compatibility.
+Retained invalid schedules are durably disabled with repair evidence, unreadable source documents
+are copied to the maintenance quarantine, and the exact legacy monthly-compression preset is
+migrated to the explicit first-Sunday expression `0 1 * * 0#1` without rewriting custom POSIX
+schedules. Due and manually triggered executions create a durable claim/outbox record in the same
+schedule snapshot that advances the occurrence. Active services renew the claim lease, restarts
+requeue an unpublished occurrence with the same execution identity, and an expired claim already
+marked running is retained as an interrupted/ambiguous failure instead of being replayed blindly.
+
 ### Market data and evidence
 
 Market data and evidence records enter through storage sinks. File-backed writes use the
@@ -190,6 +201,10 @@ Canonical symbol resolution is Storage-owned because it wraps the durable symbol
 identifier indexes. Application composition registers the Storage implementation behind
 `Meridian.Contracts.Catalog.ICanonicalSymbolRegistry` for canonicalization and Security Master seed
 workflows.
+Security Master identifier lookup preserves provider authority: a provider-bound canonical
+identifier resolves only for the exact normalized provider. The legacy primary-identifier fallback
+is available only for providerless records that have no authoritative identifier row, so an omitted
+or incorrect provider cannot select a provider-bound security.
 The optional atomic-migration capability builds the complete candidate registry and lookup caches
 off to the side, persists that candidate through `AtomicFileWriter`, and publishes it only after
 the durable replacement succeeds. Conflict, cancellation, or write failure leaves both the live
@@ -232,6 +247,11 @@ version, retained-by actor, and subject scope before append.
 The durable aggregate remains `JournalEntry` with balanced child `LedgerEntry` rows. Candidate
 journals, Asset Operations economic state, projection events, and balance snapshots are not accepted
 as alternate accounting facts.
+Retained journal aggregates are sealed at the posting transaction's deferred boundary. Parent and
+leg inserts share a transaction-scoped per-entry lock, and initial legs require a short-lived open
+marker owned by the parent transaction. A racing or later child therefore fails closed even from a
+repeatable-read snapshot that cannot observe a newly committed seal. Migration backfill holds both
+journal tables against writers until validation, sealing, and trigger installation complete.
 
 Ledger period close writes also fail closed for reviewed automation. `PostgresLedgerBookService`
 rejects assistant or automation-origin close requests before saving the period status, period-close
@@ -273,8 +293,11 @@ external GL, and customer-neutral scope values use the same trimmed durable shap
 period hydration and report filtering; it does not require a new journal column or position-balance
 table.
 `PostgresLedgerJournalStore.QueryAsync` provides the first durable journal-read seam for those
-line dimensions: callers can combine ledger-book, period, aggregate, account, date, and line-level
-dimension filters, and the store applies them against `journal_legs.dimensions` instead of
+line dimensions: callers can combine ledger-book, period, aggregate, account, posting-date,
+accounting-effective-date, and line-level dimension filters. Effective-date filters use retained
+`JournalEntryMetadata.EffectiveDate` with the UTC posting date only as a legacy fallback, so
+late-posted adjustments and reversals remain visible to period reconciliation. The store applies
+line-dimension filters against `journal_legs.dimensions` instead of
 guessing scope from account names or browser/WPF state. Empty queries fail before opening a
 connection so production journal reads stay explicitly scoped. Account and line-dimension filters
 first identify matching journal entries, then rehydrate every retained leg for those entries, so
@@ -409,8 +432,11 @@ across tenant/company boundaries.
 Governed reporting persistence stores each series revision under its immutable tenant and scope
 identity while lifecycle state advances through compare-and-swap aggregate versions. State payloads
 retain a SHA-256 checksum and are hydrated only when their indexed identity, tenant, lifecycle
-state, and checksum agree. Lifecycle audit events are appended in the same serializable transaction;
-database triggers require contiguous versions and the retained previous hash, and reject later
+state, and checksum agree. Lifecycle audit events are appended in the same serializable transaction.
+Optional immutable-array fields are canonicalized from their default value to an empty collection
+before source-generated JSON persistence and after hydration, keeping equivalent reporting state
+serializable and deterministic across callers. Database triggers require contiguous versions and
+the retained previous hash, and reject later
 updates or deletes. Restatement approval updates the request and creates the next report revision in
 one transaction, so a failed revision insert cannot leave an approved request without its draft.
 Reporting delivery persistence also keeps run and package identity separately, lists grants and

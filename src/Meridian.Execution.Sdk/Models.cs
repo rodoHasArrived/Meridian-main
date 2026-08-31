@@ -143,6 +143,13 @@ public sealed record ExecutionReport
     public decimal FilledQuantity { get; init; }
     public decimal? FillPrice { get; init; }
     public decimal? Commission { get; init; }
+
+    /// <summary>Regulatory/exchange fees for this fill, when the gateway models them.</summary>
+    public decimal? Fees { get; init; }
+
+    /// <summary>Explicit slippage cash cost for this fill, when the gateway models it.</summary>
+    public decimal? SlippageCost { get; init; }
+
     public DateTimeOffset Timestamp { get; init; } = DateTimeOffset.UtcNow;
     public string? RejectReason { get; init; }
     /// <summary>Broker-assigned order ID (may differ from the client-provided <see cref="OrderId"/>).</summary>
@@ -152,6 +159,31 @@ public sealed record ExecutionReport
     public OptionContractIdentity? OptionContract { get; init; }
     public IReadOnlyList<OrderLeg>? Legs { get; init; }
     public ExecutionDiagnostics? Diagnostics { get; init; }
+
+    /// <summary>
+    /// Broker-created child orders accompanying this acknowledgement — the take-profit and
+    /// stop-loss legs a bracket/OCO submission spawned server-side, each with its own broker
+    /// order id. Populated by gateways that parse child legs out of the submit response so the
+    /// OMS can register them as tracked orders; without this, their execution reports are
+    /// dropped as untracked and a kill-switch sweep never sees them. Null on every other report,
+    /// and omitted from serialized payloads so existing durable records keep their canonical
+    /// content hash.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<BrokerOrder>? ChildOrders { get; init; }
+
+    /// <summary>
+    /// The active gateway routed <see cref="FilledQuantity"/> as face value with prices quoted
+    /// as a percentage of par (fixed income). Stamped server-side by the OMS from the
+    /// gateway-resolved order sizing, so booking, session persistence, and restart replay all
+    /// read one authoritative classification instead of each re-deriving it. Omitted from
+    /// serialized payloads when false so existing durable fill records keep their canonical
+    /// content hash.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    public bool UsesFaceValuePercentageOfPar { get; init; }
 }
 
 /// <summary>Normalized operational diagnostics derived from broker status/reject payloads.</summary>
@@ -189,6 +221,19 @@ public sealed record OrderResult
 
     /// <summary>Approval-queue entry id when <see cref="RequiresApproval"/> is true.</summary>
     public string? EscalationId { get; init; }
+
+    /// <summary>
+    /// Pre-trade risk findings for this submission, when the risk gate produced any. Populated on
+    /// both the admitted and the rejected path so an order ticket can render the decision without
+    /// a second query — the asynchronous decision history offers no deterministic read-back for
+    /// the submission that just returned.
+    /// </summary>
+    /// <remarks>
+    /// Structured counterpart to <see cref="RiskWarnings"/>: the same breaches carrying the rule
+    /// name, severity, and stable code rather than a rendered sentence. Both are populated because
+    /// <see cref="RiskWarnings"/> is already on the wire and rendered by shipped clients.
+    /// </remarks>
+    public RiskDecisionSummary? RiskDecision { get; init; }
 }
 
 /// <summary>Current state of an order tracked by the OMS.</summary>
@@ -217,6 +262,13 @@ public sealed record OrderState
     /// orders must value these at the routed dollars, not quantity x price.
     /// </summary>
     public decimal? RoutedNotional { get; init; }
+
+    /// <summary>
+    /// The active gateway routes <see cref="Quantity"/> as face value and quotes the order price
+    /// as a percentage of par. Retained so working-order reserves and amendments use the same
+    /// economic sizing semantics as initial validation.
+    /// </summary>
+    public bool UsesFaceValuePercentageOfPar { get; init; }
 
     /// <summary>
     /// Contract multiplier for a derivative order: the notional one unit of

@@ -9,6 +9,7 @@ namespace Meridian.Wpf.ViewModels;
 public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
 {
     private readonly TradingWorkspaceShellPresentationService? _presentationService;
+    private readonly TradingSafetyCommandService? _safetyCommands;
     private bool _isStarted;
     private bool _isLoading;
     private bool _hasError;
@@ -31,7 +32,7 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
     private string _watchlistStatusText = "Watchlists and active strategies populate once paper or live runs are started.";
     private string _marketCoreText = "Live data, order book, portfolio, and accounting consequences are ready to dock below.";
     private string _riskRailText = "Risk, reconciliation, and audit surfaces become specific once an active run is selected.";
-    private string _deskActionStatusText = "Desk actions update here after a pause, stop, flatten, or alert acknowledgement.";
+    private string _deskActionStatusText = "Desk actions update here after Stop or Cancel All reports what the execution service did.";
     private string _tradingStatusSummaryText = TradingWorkspaceShellPresentationDefaults.StatusCard.SummaryText;
     private string _tradingStatusBadgeText = TradingWorkspaceShellPresentationDefaults.StatusCard.BadgeText;
     private TradingWorkspaceStatusTone _tradingStatusBadgeTone = TradingWorkspaceShellPresentationDefaults.StatusCard.BadgeTone;
@@ -67,10 +68,13 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
     private string _heroPrimaryActionId = TradingWorkspaceShellPresentationDefaults.DeskHero.PrimaryActionId;
     private string _heroSecondaryActionId = TradingWorkspaceShellPresentationDefaults.DeskHero.SecondaryActionId;
 
-    public TradingWorkspaceShellViewModel(TradingWorkspaceShellPresentationService? presentationService = null)
+    public TradingWorkspaceShellViewModel(
+        TradingWorkspaceShellPresentationService? presentationService = null,
+        TradingSafetyCommandService? safetyCommands = null)
         : base(ShellNavigationCatalog.GetWorkspaceShell("trading")!)
     {
         _presentationService = presentationService;
+        _safetyCommands = safetyCommands;
         CommandGroup = TradingWorkspaceShellPresentationService.BuildCommandGroup();
     }
 
@@ -503,7 +507,41 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
     }
 
     public void ExecuteCommandAction(string actionId)
-        => RaiseActionRequest(TradingWorkspaceShellPresentationService.CreateActionRequest(actionId, _activeRunContext));
+        => _ = ExecuteCommandActionAsync(actionId);
+
+    internal async Task ExecuteCommandActionAsync(string actionId)
+    {
+        if (!TradingSafetyCommandService.IsSafetyCommand(actionId))
+        {
+            RaiseActionRequest(TradingWorkspaceShellPresentationService.CreateActionRequest(actionId, _activeRunContext));
+            return;
+        }
+
+        DeskActionStatusText = actionId switch
+        {
+            "Stop" => "Halting the desk…",
+            "CancelAll" => "Cancelling every open order…",
+            _ => DeskActionStatusText
+        };
+
+        // Pane layout still belongs to the mapper: open the verification surface while the
+        // command runs, then report the service's own verdict — never local confirmation copy.
+        RaiseActionRequest(TradingWorkspaceShellPresentationService.CreateActionRequest(actionId, _activeRunContext));
+
+        var safetyCommands = _safetyCommands ?? new TradingSafetyCommandService();
+        SafetyCommandOutcome outcome;
+        try
+        {
+            outcome = await safetyCommands.ExecuteAsync(actionId).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            WpfLoggingService.Instance.LogError($"[TradingWorkspaceShell] Safety command '{actionId}' failed: {ex.Message}");
+            outcome = SafetyCommandOutcome.Failed(actionId is "Stop" ? "Stop" : "Cancel all");
+        }
+
+        DeskActionStatusText = outcome.Message;
+    }
 
     public void ExecuteHeroPrimaryAction()
         => RaiseActionRequest(TradingWorkspaceShellPresentationService.CreateActionRequest(_heroPrimaryActionId, _activeRunContext));

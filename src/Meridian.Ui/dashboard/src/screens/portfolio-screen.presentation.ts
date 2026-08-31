@@ -1,6 +1,6 @@
 import {
   formatNumber as formatNumberAmount,
-  formatPercent as formatPercentAmount,
+  formatRatioAsPercent as formatRatioAsPercentAmount,
   formatPrefixedCurrency,
   formatSignedCurrency as formatSignedCurrencyAmount,
   pluralizeCount
@@ -85,8 +85,9 @@ export function formatCurrencyPrecise(value: number): string {
   return formatPrefixedCurrency(value, { minimumFractionDigits: 2 });
 }
 
-export function formatPercent(value: number): string {
-  return formatPercentAmount(value * 100);
+/** Input is a fraction of 1 (0.425 -> "42.5%"), not percent units. */
+export function formatRatioAsPercent(value: number): string {
+  return formatRatioAsPercentAmount(value);
 }
 
 export function formatNumber(value: number): string {

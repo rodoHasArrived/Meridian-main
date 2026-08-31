@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using Meridian.Contracts.Lifecycle;
 
 namespace Meridian.LifecycleSupervisor;
@@ -109,6 +111,7 @@ internal sealed class LifecycleDatabaseController
         var initDb = LifecycleSupervisorPreflight.ResolveTool(binPath, "initdb.exe")
                      ?? throw new FileNotFoundException("initdb.exe was not found.");
         Directory.CreateDirectory(Path.GetDirectoryName(_dataDirectory)!);
+        GrantCurrentUserInheritableFullControl(Path.GetDirectoryName(_dataDirectory)!);
         _password = LoadOrCreateDatabasePassword();
 
         var adopted = TryReadOwnedIdentity(pgCtl);
@@ -347,7 +350,7 @@ internal sealed class LifecycleDatabaseController
         }
     }
 
-    private static async Task RunToolAsync(
+    internal static async Task RunToolAsync(
         string executable,
         IReadOnlyList<string> arguments,
         TimeSpan timeout,
@@ -382,11 +385,28 @@ internal sealed class LifecycleDatabaseController
             await TerminateToolProcessAsync(process).ConfigureAwait(false);
             throw;
         }
-        var output = await standardOutput.ConfigureAwait(false);
-        var error = await standardError.ConfigureAwait(false);
+        // pg_ctl start hands the redirected pipe write-handles to the postgres daemon it
+        // spawns, so a full drain of the tool's stdout/stderr blocks until the daemon
+        // exits — the 2026-07-28 hosted smoke receipts showed startup frozen here for the
+        // database's whole lifetime. The tool's own output is flushed before it exits;
+        // grace-bound the drain and fall back to whatever arrived. A failing tool has no
+        // surviving child, closes its pipes, and still delivers full diagnostics.
+        var output = await DrainWithGraceAsync(standardOutput).ConfigureAwait(false);
+        var error = await DrainWithGraceAsync(standardError).ConfigureAwait(false);
         if (process.ExitCode != 0)
             throw new InvalidOperationException(
                 $"{Path.GetFileName(executable)} failed with exit code {process.ExitCode}: {Sanitize(error, output)}");
+    }
+
+    private static async Task<string> DrainWithGraceAsync(Task<string> drain)
+    {
+        var completed = await Task.WhenAny(drain, Task.Delay(TimeSpan.FromSeconds(2))).ConfigureAwait(false);
+        if (completed == drain)
+            return await drain.ConfigureAwait(false);
+        _ = drain.ContinueWith(
+            static abandoned => _ = abandoned.Exception,
+            TaskContinuationOptions.OnlyOnFaulted);
+        return string.Empty;
     }
 
     private static async Task TerminateToolProcessAsync(Process process)
@@ -395,6 +415,40 @@ internal sealed class LifecycleDatabaseController
             return;
         process.Kill(entireProcessTree: true);
         await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
+    }
+
+    // On elevated Windows contexts (CI runners, admin-run installers) initdb.exe re-executes
+    // itself with a restricted token that drops the Administrators group, so a directory
+    // reachable only through group ACEs fails initdb's permission fixup with "could not
+    // change permissions ... Permission denied". An explicit current-user ACE survives token
+    // restriction, and inheritance covers the initializing directory, the renamed data
+    // directory, and the server log. Best-effort: when the grant cannot be applied, initdb's
+    // own diagnostic remains the authoritative failure.
+    internal static void GrantCurrentUserInheritableFullControl(string directory)
+    {
+        if (!OperatingSystem.IsWindows())
+            return;
+        try
+        {
+            using var identity = WindowsIdentity.GetCurrent();
+            if (identity.User is null)
+                return;
+            var info = new DirectoryInfo(directory);
+            var security = info.GetAccessControl();
+            security.AddAccessRule(new FileSystemAccessRule(
+                identity.User,
+                FileSystemRights.FullControl,
+                InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
+                PropagationFlags.None,
+                AccessControlType.Allow));
+            info.SetAccessControl(security);
+        }
+        catch (Exception ex) when (ex is IOException
+                                       or UnauthorizedAccessException
+                                       or PlatformNotSupportedException
+                                       or IdentityNotMappedException)
+        {
+        }
     }
 
     private static string Sanitize(params string[] values)

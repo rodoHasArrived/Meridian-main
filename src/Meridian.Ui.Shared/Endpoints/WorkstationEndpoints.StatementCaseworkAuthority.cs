@@ -1,6 +1,6 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
@@ -63,9 +63,11 @@ public static partial class WorkstationEndpoints
             request.ResolvedBy.Trim(),
             (request.ResolutionNote ?? string.Empty).Trim(),
             (request.OperatorRationale ?? string.Empty).Trim(),
-            OperationsActionOriginDto.HumanOperator.ToString());
-        var inputHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(material)))
-            .ToLowerInvariant();
+            // The caller's origin, re-derived at the route handler, rather than a constant. For a
+            // human session this is still "HumanOperator", so existing command ids are unchanged;
+            // only a non-human origin -- which the gate downstream refuses anyway -- differs (#2673).
+            request.ActionOrigin.ToString());
+        var inputHash = Sha256Digest.ComputeUtf8(material);
         var commandId = $"statement-legacy-resolve:{inputHash}";
         var commandBase = current;
         if (StatementCaseworkHandoffObligation.HasPending(current, commandId)
@@ -116,7 +118,7 @@ public static partial class WorkstationEndpoints
             EvidenceLinks: (commandBase.EvidenceLinks ?? [])
                 .Where(static evidence => !StatementCaseworkHandoffObligation.IsControlMarker(evidence))
                 .ToArray(),
-            ActionOrigin: OperationsActionOriginDto.HumanOperator);
+            ActionOrigin: request.ActionOrigin);
     }
 
     private static JsonSerializerOptions CreateReconciliationAuditJsonOptions()

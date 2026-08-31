@@ -326,12 +326,47 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
         return TokenStatus.Valid;
     }
 
+    private const UnixFileMode OwnerOnlyFileMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+
+    // A token file written before this change carries the umask default, and rewriting it only
+    // happens on the next refresh - which may be hours away, or never if the tokens are still
+    // valid. Tighten on read so an existing install is protected from startup rather than from
+    // whenever the next write happens to occur.
+    private void RestrictExistingTokenFile()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        try
+        {
+            var mode = File.GetUnixFileMode(_tokenPersistencePath);
+            if ((mode & ~OwnerOnlyFileMode) == UnixFileMode.None)
+            {
+                return;
+            }
+
+            File.SetUnixFileMode(_tokenPersistencePath, OwnerOnlyFileMode);
+            _log.Warning(
+                "Persisted OAuth tokens at {TokenPath} were reachable beyond their owner ({ExposedMode}); tightened to owner-only. Treat the stored access and refresh tokens as disclosed and revoke them.",
+                _tokenPersistencePath,
+                mode & ~OwnerOnlyFileMode);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or PlatformNotSupportedException)
+        {
+            _log.Warning(ex, "Could not verify permissions on persisted OAuth tokens at {TokenPath}", _tokenPersistencePath);
+        }
+    }
+
     private void LoadPersistedTokens()
     {
         try
         {
             if (!File.Exists(_tokenPersistencePath))
                 return;
+
+            RestrictExistingTokenFile();
 
             var json = File.ReadAllText(_tokenPersistencePath);
             var tokens = JsonSerializer.Deserialize<Dictionary<string, OAuthToken>>(json);
@@ -363,7 +398,10 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
             var tokens = _tokens.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
             var json = JsonSerializer.Serialize(tokens, new JsonSerializerOptions { WriteIndented = true });
 
-            await AtomicFileWriter.WriteAsync(_tokenPersistencePath, json, ct);
+            // Access and refresh tokens are bearer secrets held in cleartext here, so unlike the
+            // provider vault there is no encryption behind the file mode - the mode is the whole
+            // of the protection. Owner-only from creation, never chmod'ed after the bytes land.
+            await AtomicFileWriter.WriteAsync(_tokenPersistencePath, json, OwnerOnlyFileMode, ct);
             _log.Debug("Persisted OAuth tokens for {Count} providers", tokens.Count);
         }
         catch (Exception ex)

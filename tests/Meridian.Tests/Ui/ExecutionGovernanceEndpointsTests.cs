@@ -3,15 +3,15 @@ using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.FundStructure;
-using Meridian.Identity.Auth;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Identity;
+using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Robinhood;
-using Meridian.Identity;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
 using Xunit;
 
 namespace Meridian.Tests.Ui;
@@ -34,6 +35,8 @@ public sealed class ExecutionGovernanceEndpointsTests
     public async Task ControlsEndpoints_UpdateCircuitBreakerAndExposeAuditTrail()
     {
         var tempRoot = CreateTempRoot();
+        var oms = Substitute.For<IOrderManager>();
+        oms.GetOpenOrders().Returns(Array.Empty<OrderState>());
 
         await using var app = await CreateAppAsync(services =>
         {
@@ -41,6 +44,7 @@ public sealed class ExecutionGovernanceEndpointsTests
             services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")));
             services.AddSingleton<ExecutionAuditTrailService>();
             services.AddSingleton<ExecutionOperatorControlService>();
+            services.AddSingleton(oms);
         });
 
         var client = app.GetTestClient();
@@ -51,6 +55,8 @@ public sealed class ExecutionGovernanceEndpointsTests
             JsonContent(new { isOpen = true, reason = "manual halt" }));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await oms.Received(1).CancelAllAsync(Arg.Any<CancellationToken>());
 
         var controlsResponse = await client.GetAsync("/api/execution/controls");
         controlsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -67,6 +73,10 @@ public sealed class ExecutionGovernanceEndpointsTests
         auditEntries!.Should().Contain(entry =>
             entry.Action == "CircuitBreakerOpened" &&
             entry.Actor == "ops-user");
+        auditEntries.Should().Contain(entry =>
+            entry.Action == "CircuitBreakerCancelAll" &&
+            entry.Outcome == "Completed",
+            because: "opening the breaker is the kill switch and must sweep the open book with an audited outcome");
     }
 
     [Fact]
@@ -539,7 +549,7 @@ public sealed class ExecutionGovernanceEndpointsTests
 
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
-        UserPermission permissions = UserPermission.ExecuteTrades | UserPermission.ManageOrders)
+        UserPermission permissions = UserPermission.ViewTrades | UserPermission.ExecuteTrades | UserPermission.ManageOrders)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {

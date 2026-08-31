@@ -2,6 +2,7 @@ using System.Data.Common;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Reporting;
 
 namespace Meridian.Ui.Shared.Services;
@@ -302,7 +303,7 @@ public sealed class ReportingDeliveryDispatcher
             NormalizeRequired(transportId, nameof(transportId)).ToLowerInvariant(),
             NormalizeRequired(releaseVersion, nameof(releaseVersion)),
             NormalizeRequired(artifactManifestHash, nameof(artifactManifestHash)).ToLowerInvariant());
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical);
     }
 
     private static bool QueueRequestMatches(
@@ -802,7 +803,7 @@ public sealed class ReportingDeliveryDispatcher
             payload.ExternalAccess?.AllowPackageRead.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
             payload.ExternalAccess?.MaxUses.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
             string.Join("\u001e", artifacts));
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical);
     }
 
     private static string NormalizeErrorCode(string? code)
@@ -996,7 +997,7 @@ public sealed class SecurePortalReportingDeliveryTransport : IReportingDeliveryT
 
     internal static string BuildStableReference(string prefix, string idempotencyKey)
     {
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(idempotencyKey))).ToLowerInvariant();
+        var hash = Sha256Digest.ComputeUtf8(idempotencyKey);
         return $"{prefix}:{hash[..24]}";
     }
 }
@@ -1224,6 +1225,6 @@ public sealed class HttpRelayReportingDeliveryTransport :
             "\u001f",
             deliveryIdempotencyKey,
             attemptNumber.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical);
     }
 }

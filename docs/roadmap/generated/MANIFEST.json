@@ -6,15 +6,15 @@
   "inputs": [
     {
       "path": "docs/roadmap/data/decision-log.yml",
-      "sha256": "f1fbeb17aae7d568ec025c231dddfbfe20d89c5b1a3f8cd0ec59f8111b2252af"
+      "sha256": "0ed0019d0fb9bc8f856415a8132aa4daa07dff0d8777c3f2f6c6338645c2ba7f"
     },
     {
       "path": "docs/roadmap/data/document-index.yml",
-      "sha256": "75cb3aa15b46bf3388412fc714799492cf42eb7d500b313544c45a31a3f1b5f4"
+      "sha256": "c9451d1501395f4f4e98c2ad2f654db6f64e539f9035d442b5ea51f98b12fc5f"
     },
     {
       "path": "docs/roadmap/data/program-state.yml",
-      "sha256": "7fa2b812b3a2cfe35e3aebc317be3a06cd5719c45caa25317553d0e01aa0ae54"
+      "sha256": "8e7797a68daa6412e7784864f9d7ab1cc9201b7c4a7a3a4658aa277b33c8f8e0"
     },
     {
       "path": "docs/roadmap/data/risk-register.yml",
@@ -22,25 +22,25 @@
     },
     {
       "path": "docs/roadmap/data/roadmap-items.yml",
-      "sha256": "325d5fd96b8a0f08359256e50c73d7d17f41af950ba35a9daa23939d26ba5b21"
+      "sha256": "8d77602f803f95e2180a3b6939a2a6f10b32c59c2fe21d50506cb52ea15a299c"
     },
     {
       "path": "docs/roadmap/data/stage-gates.yml",
-      "sha256": "b8961e83ecb02ab54dfe12dc4b16b294aac9efe7015be016e0a844af82166d0a"
+      "sha256": "5857e972354938b141981b6f3f88ec8b8fdc6fa64308fbb478617dea6c2e0e2a"
     }
   ],
   "outputs": [
     {
       "path": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
-      "sha256": "111f9c4860b7898eac8b78962910c5131b938274f9b8402693c420bac28693db"
+      "sha256": "77d54cef7caa823c056c73aef5049b97b66cd590b1d5bcd95178c7d614f3d77c"
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "sha256": "e89dfb4e0c8776dee254ade4ffd1fcf6f1ea7e552b771b56becc5dd41ec2a376"
+      "sha256": "bcc866bbf8dfdef4d59b3de7a99697e6d56b467d4a5e9ff86f33e94cfb9acf07"
     },
     {
       "path": "docs/status/ROADMAP_SUMMARY.md",
-      "sha256": "111f9c4860b7898eac8b78962910c5131b938274f9b8402693c420bac28693db"
+      "sha256": "77d54cef7caa823c056c73aef5049b97b66cd590b1d5bcd95178c7d614f3d77c"
     }
   ],
   "schema": {

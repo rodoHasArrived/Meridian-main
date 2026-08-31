@@ -210,6 +210,7 @@ let ``BondTerms callable bond preserves callDate`` () =
         LegalFinalMaturity = None
         PreRefundDate = None
         MandatoryPutDate = None
+        PrincipalSchedule = []
     }
     terms.IsCallable |> should equal true
     terms.CallDate |> should equal (Some callDate)
@@ -334,7 +335,37 @@ let private createPrimaryTicker effectiveFrom = {
     IsPrimary = true
     ValidFrom = effectiveFrom
     ValidTo = None
+    Provider = None
 }
+
+[<Fact>]
+let ``Identifier source-provider metadata does not change canonical identity`` () =
+    let now = DateTimeOffset.UtcNow
+    let left = { createPrimaryTicker now with Provider = Some "XNAS" }
+    let right = { createPrimaryTicker now with Provider = Some "REFINITIV" }
+
+    SecurityIdentifier.sameIdentity left right |> should equal true
+
+[<Fact>]
+let ``ProviderSymbol snapshot rejects provider metadata that contradicts its discriminant`` () =
+    let identifier = {
+        createPrimaryTicker DateTimeOffset.UtcNow with
+            Kind = IdentifierKind.ProviderSymbol "XNAS"
+            Provider = Some "REFINITIV"
+    }
+
+    (fun () -> SecurityIdentifierSnapshot(identifier) |> ignore)
+    |> should throw typeof<ArgumentException>
+
+[<Fact>]
+let ``ProviderSymbol snapshot uses the authoritative discriminant for equivalent metadata`` () =
+    let identifier = {
+        createPrimaryTicker DateTimeOffset.UtcNow with
+            Kind = IdentifierKind.ProviderSymbol "XNAS"
+            Provider = Some " xnas "
+    }
+
+    SecurityIdentifierSnapshot(identifier).Provider |> should equal "XNAS"
 
 let private createConvertiblePreferredClassification () =
     let preferredTerms = {
@@ -376,6 +407,22 @@ let private createEquityCreateCommand classification =
         EffectiveFrom = effectiveFrom
         Provenance = createBaseProvenance effectiveFrom
     }
+
+[<Fact>]
+let ``SecurityMasterCommandFacade rejects contradictory ProviderSymbol metadata`` () =
+    let baseCommand = createEquityCreateCommand None
+    let identifier = {
+        createPrimaryTicker baseCommand.EffectiveFrom with
+            Kind = IdentifierKind.ProviderSymbol "XNAS"
+            Provider = Some "REFINITIV"
+    }
+    let result = SecurityMasterCommandFacade.Create({ baseCommand with Identifiers = [ identifier ] })
+
+    result.IsSuccess |> should equal false
+    obj.ReferenceEquals(result.Snapshot, null) |> should equal true
+    result.ErrorDetails
+    |> Array.exists (fun error -> error.Code = "identifier_provider_mismatch")
+    |> should equal true
 
 let private createSecurityRecord (classification: EquityClassification option) : SecurityMasterRecord =
     match SecurityMaster.create (createEquityCreateCommand classification) with
@@ -555,6 +602,7 @@ let ``SecurityMasterSnapshotWrapper serializes floating bond coupon details`` ()
         LegalFinalMaturity = None
         PreRefundDate = None
         MandatoryPutDate = None
+        PrincipalSchedule = []
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.Bond bondTerms }
@@ -576,6 +624,110 @@ let ``SecurityMasterSnapshotWrapper serializes floating bond coupon details`` ()
     payload.GetProperty("floorRate").GetDecimal() |> should equal 0.75m
     payload.GetProperty("dayCount").GetString() |> should equal "ACT/360"
 
+let private stepBondTerms = {
+    Maturity = DateOnly(2032, 6, 30)
+    IssueDate = Some (DateOnly(2026, 6, 30))
+    Coupon =
+        BondCouponStructure.Step(
+            [ { EffectiveDate = DateOnly(2026, 6, 30); Rate = 3.0m }
+              { EffectiveDate = DateOnly(2028, 6, 30); Rate = 4.0m } ],
+            Some "30/360")
+    IsCallable = false
+    CallDate = None
+    IssuerName = Some "Step Issuer"
+    Seniority = None
+    Subclass = BondSubclass.StepRate
+    Par = Some 1000m
+    PaymentFrequency = None
+    LegalFinalMaturity = None
+    PreRefundDate = None
+    MandatoryPutDate = None
+    PrincipalSchedule = []
+}
+
+[<Fact>]
+let ``BondTerms couponRateAsOf resolves the step rate in effect`` () =
+    // A step-rate bond has no meaningful scalar rate; the dated schedule is the coupon.
+    BondTerms.couponRate stepBondTerms |> should equal None
+    BondTerms.couponRateAsOf (DateOnly(2027, 1, 1)) stepBondTerms |> should equal (Some 3.0m)
+    BondTerms.couponRateAsOf (DateOnly(2028, 6, 30)) stepBondTerms |> should equal (Some 4.0m)
+    BondTerms.couponRateAsOf (DateOnly(2026, 1, 1)) stepBondTerms |> should equal None
+
+[<Fact>]
+let ``SecurityMasterSnapshotWrapper serializes step coupon schedules`` () =
+    let equityCommand = createEquityCreateCommand None
+    let command = { equityCommand with Kind = SecurityKind.Bond stepBondTerms }
+
+    let record =
+        match SecurityMaster.create command with
+        | Ok [ SecurityMasterEvent.SecurityCreated snapshot ] -> snapshot
+        | Ok events -> failwithf "Expected SecurityCreated event, got: %A" events
+        | Error errors -> failwithf "Expected create to succeed, got: %A" errors
+
+    let wrapper = SecurityMasterSnapshotWrapper(record)
+    use assetDocument = JsonDocument.Parse(wrapper.AssetSpecificTermsJson)
+    let payload = assetDocument.RootElement
+
+    payload.GetProperty("couponType").GetString() |> should equal "Step"
+    let steps = payload.GetProperty("stepSchedule")
+    steps.GetArrayLength() |> should equal 2
+    steps.[0].GetProperty("effectiveDate").GetString() |> should equal "2026-06-30"
+    steps.[0].GetProperty("rate").GetDecimal() |> should equal 3.0m
+    steps.[1].GetProperty("rate").GetDecimal() |> should equal 4.0m
+    payload.GetProperty("dayCount").GetString() |> should equal "30/360"
+
+[<Fact>]
+let ``SecurityMaster.create rejects an empty step-coupon schedule`` () =
+    let emptyStep = { stepBondTerms with Coupon = BondCouponStructure.Step([], Some "30/360") }
+    let equityCommand = createEquityCreateCommand None
+    let command = { equityCommand with Kind = SecurityKind.Bond emptyStep }
+
+    match SecurityMaster.create command with
+    | Error errors ->
+        errors |> List.map (fun error -> error.Code) |> should contain "bond_step_schedule_required"
+    | Ok _ -> failwith "Expected create to reject an empty step schedule"
+
+[<Fact>]
+let ``SecurityMasterSnapshotWrapper serializes inflation-linked coupon terms`` () =
+    let linkerTerms = {
+        stepBondTerms with
+            Coupon = BondCouponStructure.InflationLinked(1.25m, "CPI-U", Some 305.109m, Some 1.0432m, Some "ACT/ACT")
+            Subclass = BondSubclass.InflationLinked
+    }
+    let equityCommand = createEquityCreateCommand None
+    let command = { equityCommand with Kind = SecurityKind.Bond linkerTerms }
+
+    let record =
+        match SecurityMaster.create command with
+        | Ok [ SecurityMasterEvent.SecurityCreated snapshot ] -> snapshot
+        | Ok events -> failwithf "Expected SecurityCreated event, got: %A" events
+        | Error errors -> failwithf "Expected create to succeed, got: %A" errors
+
+    let wrapper = SecurityMasterSnapshotWrapper(record)
+    use assetDocument = JsonDocument.Parse(wrapper.AssetSpecificTermsJson)
+    let payload = assetDocument.RootElement
+
+    payload.GetProperty("couponType").GetString() |> should equal "InflationLinked"
+    payload.GetProperty("couponRate").GetDecimal() |> should equal 1.25m
+    payload.GetProperty("inflationIndex").GetString() |> should equal "CPI-U"
+    payload.GetProperty("inflationBaseIndexValue").GetDecimal() |> should equal 305.109m
+    payload.GetProperty("inflationIndexRatio").GetDecimal() |> should equal 1.0432m
+
+[<Fact>]
+let ``SecurityMaster.create rejects a non-positive inflation index ratio`` () =
+    let badLinker = {
+        stepBondTerms with
+            Coupon = BondCouponStructure.InflationLinked(1.25m, "CPI-U", Some 305.109m, Some 0m, None)
+            Subclass = BondSubclass.InflationLinked
+    }
+    let equityCommand = createEquityCreateCommand None
+    let command = { equityCommand with Kind = SecurityKind.Bond badLinker }
+
+    match SecurityMaster.create command with
+    | Error errors ->
+        errors |> List.map (fun error -> error.Code) |> should contain "bond_inflation_index_values_invalid"
+    | Ok _ -> failwith "Expected create to reject a zero index ratio"
+
 [<Fact>]
 let ``SecurityMasterSnapshotWrapper serializes structured credit terms`` () =
     let terms = {
@@ -586,6 +738,8 @@ let ``SecurityMasterSnapshotWrapper serializes structured credit terms`` () =
         CurrentFactor = Some 0.9825m
         CouponOrIndex = "SOFR+250"
         FactorSchedule = Some "monthly-trustee"
+        FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 7, 1); Factor = 0.9825m } ]
+        Maturity = Some (DateOnly(2031, 6, 15))
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
@@ -606,6 +760,37 @@ let ``SecurityMasterSnapshotWrapper serializes structured credit terms`` () =
     payload.GetProperty("collateralType").GetString() |> should equal "CLO"
     payload.GetProperty("originalFace").GetDecimal() |> should equal 1_000_000m
     payload.GetProperty("currentFactor").GetDecimal() |> should equal 0.9825m
+    payload.GetProperty("maturity").GetString() |> should equal "2031-06-15"
+
+[<Fact>]
+let ``SecurityMasterLegacyUpgrade projects StructuredCredit maturity into the Maturity module`` () =
+    // The persisted legal final maturity must reach the shared economic-terms document, not only
+    // the retained asset-specific terms: consumers of EconomicTerms (the accounting adapter among
+    // them) read maturity only from the Maturity module.
+    let terms = {
+        Tranche = "A-1"
+        PoolId = Some "POOL-2026-1"
+        CollateralType = "CLO"
+        OriginalFace = 1_000_000m
+        CurrentFactor = Some 0.9825m
+        CouponOrIndex = "SOFR+250"
+        FactorSchedule = Some "monthly-trustee"
+        FactorScheduleEntries = []
+        Maturity = Some (DateOnly(2031, 6, 15))
+    }
+    let equityCommand = createEquityCreateCommand None
+    let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
+
+    let record =
+        match SecurityMaster.create command with
+        | Ok [ SecurityMasterEvent.SecurityCreated snapshot ] -> snapshot
+        | Ok events -> failwithf "Expected SecurityCreated event, got: %A" events
+        | Error errors -> failwithf "Expected create to succeed, got: %A" errors
+
+    let definition = SecurityMasterLegacyUpgrade.toEconomicDefinition record
+    let maturityModule =
+        definition.Terms.Maturity |> Option.defaultWith (fun () -> failwith "Expected Maturity term module")
+    maturityModule.MaturityDate |> should equal (Some (DateOnly(2031, 6, 15)))
 
 [<Fact>]
 let ``SecurityMasterLegacyUpgrade maps preferred classification into term modules`` () =
@@ -1132,7 +1317,168 @@ let private registrySampleKinds : (SecurityKind * string) list =
           UnderlyingId = secId (); WarrantType = "Call"; Strike = None; Expiry = None; Multiplier = None }, "Warrant"
       SecurityKind.InvestmentFund {
           FundType = None; FundFamily = None; NavCurrency = None; DistributionPolicy = None
-          IsStableNav = None; PricingSource = None }, "InvestmentFund" ]
+          IsStableNav = None; PricingSource = None }, "InvestmentFund"
+      SecurityKind.CustomAsset {
+          CustomProfileId = "structured-credit-io-po"; ProfileVersion = 3
+          TermsJson = """{"schemaVersion":3,"customProfileId":"structured-credit-io-po","profileVersion":3,"profileFields":{}}""" }, "CustomAsset" ]
+
+let private validationErrorCodes kind =
+    let command = { createEquityCreateCommand None with Kind = kind }
+    match SecurityMaster.create command with
+    | Ok _ -> []
+    | Error errors -> errors |> List.map (fun validationError -> validationError.Code)
+
+[<Fact>]
+let ``Bond principal schedule dates outside the bond term are rejected`` () =
+    let maturity = DateOnly(2030, 6, 15)
+    let baseTerms =
+        { BondTerms.fixedRate maturity 4.5m (Some "30/360") (Some "ACME") with
+            IssueDate = Some (DateOnly(2024, 6, 15)) }
+
+    validationErrorCodes (SecurityKind.Bond { baseTerms with PrincipalSchedule = [ { PaymentDate = DateOnly(2031, 1, 1); Amount = 10m } ] })
+    |> should contain "bond_principal_schedule_date_invalid"
+
+    validationErrorCodes (SecurityKind.Bond { baseTerms with PrincipalSchedule = [ { PaymentDate = DateOnly(2020, 1, 1); Amount = 10m } ] })
+    |> should contain "bond_principal_schedule_date_invalid"
+
+    validationErrorCodes (SecurityKind.Bond { baseTerms with PrincipalSchedule = [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 10m } ] })
+    |> should not' (contain "bond_principal_schedule_date_invalid")
+
+[<Fact>]
+let ``Bond principal schedules summing to more than Par are rejected`` () =
+    let maturity = DateOnly(2030, 6, 15)
+    let baseTerms =
+        { BondTerms.fixedRate maturity 4.5m (Some "30/360") (Some "ACME") with
+            Par = Some 100m }
+
+    // Two 60s against a 100-par bond: projections would cap the second at 40, silently
+    // disagreeing with the persisted schedule.
+    validationErrorCodes (SecurityKind.Bond { baseTerms with
+                                                PrincipalSchedule =
+                                                    [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 60m }
+                                                      { PaymentDate = DateOnly(2029, 6, 15); Amount = 60m } ] })
+    |> should contain "bond_principal_schedule_exceeds_par"
+
+    validationErrorCodes (SecurityKind.Bond { baseTerms with
+                                                PrincipalSchedule =
+                                                    [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 60m }
+                                                      { PaymentDate = DateOnly(2029, 6, 15); Amount = 40m } ] })
+    |> should not' (contain "bond_principal_schedule_exceeds_par")
+
+    // Without Par there is no face to validate or project against: downstream substitutes a
+    // 100-unit basis and caps instalments, so a schedule without Par is rejected outright.
+    validationErrorCodes (SecurityKind.Bond { baseTerms with
+                                                Par = None
+                                                PrincipalSchedule = [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 500m } ] })
+    |> should contain "bond_principal_schedule_requires_par"
+
+    validationErrorCodes (SecurityKind.Bond { baseTerms with
+                                                PrincipalSchedule = [ { PaymentDate = DateOnly(2028, 6, 15); Amount = 40m } ] })
+    |> should not' (contain "bond_principal_schedule_requires_par")
+
+[<Fact>]
+let ``Structured credit factors above one are rejected`` () =
+    let baseTerms = {
+        Tranche = "A-1"
+        PoolId = None
+        CollateralType = "CLO"
+        OriginalFace = 1_000_000m
+        CurrentFactor = Some 0.9m
+        CouponOrIndex = "SOFR+250"
+        FactorSchedule = None
+        FactorScheduleEntries = []
+        Maturity = None
+    }
+
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with CurrentFactor = Some 1.5m })
+    |> should contain "structured_credit_current_factor_invalid"
+
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 7, 1); Factor = 1.2m } ] })
+    |> should contain "structured_credit_factor_schedule_invalid"
+
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 7, 1); Factor = 1.0m } ] })
+    |> should not' (contain "structured_credit_factor_schedule_invalid")
+
+    // A rising factor would GROW outstanding principal — invalid retained evidence for the
+    // factor-paydown workflow, however valid each individual factor is.
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
+                                                            FactorScheduleEntries =
+                                                                [ { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.8m }
+                                                                  { AsOfDate = DateOnly(2026, 2, 1); Factor = 0.9m } ] })
+    |> should contain "structured_credit_factor_schedule_not_monotonic"
+
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
+                                                            FactorScheduleEntries =
+                                                                [ { AsOfDate = DateOnly(2026, 2, 1); Factor = 0.7m }
+                                                                  { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.8m } ] })
+    |> should not' (contain "structured_credit_factor_schedule_not_monotonic")
+
+    // Two factors on the SAME date make the effective outstanding principal depend on input
+    // ordering — readers keep only one of them — so duplicates are rejected even when each
+    // individual factor is valid and the pair happens to be non-increasing.
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
+                                                            FactorScheduleEntries =
+                                                                [ { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.8m }
+                                                                  { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.7m } ] })
+    |> should contain "structured_credit_factor_schedule_duplicate_date"
+
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
+                                                            FactorScheduleEntries =
+                                                                [ { AsOfDate = DateOnly(2026, 1, 1); Factor = 0.8m }
+                                                                  { AsOfDate = DateOnly(2026, 2, 1); Factor = 0.7m } ] })
+    |> should not' (contain "structured_credit_factor_schedule_duplicate_date")
+
+    // A factor decline dated AFTER the legal final maturity would emit principal paydowns for a
+    // tranche that has already reached term; observations must fall on or before the retained
+    // maturity, and a record with no retained maturity keeps the unconstrained behavior.
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
+                                                            Maturity = Some (DateOnly(2026, 6, 15))
+                                                            FactorScheduleEntries =
+                                                                [ { AsOfDate = DateOnly(2026, 6, 1); Factor = 0.8m }
+                                                                  { AsOfDate = DateOnly(2026, 7, 1); Factor = 0.7m } ] })
+    |> should contain "structured_credit_factor_after_maturity"
+
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
+                                                            Maturity = Some (DateOnly(2026, 6, 15))
+                                                            FactorScheduleEntries =
+                                                                [ { AsOfDate = DateOnly(2026, 6, 1); Factor = 0.8m }
+                                                                  { AsOfDate = DateOnly(2026, 6, 15); Factor = 0.7m } ] })
+    |> should not' (contain "structured_credit_factor_after_maturity")
+
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with
+                                                            FactorScheduleEntries =
+                                                                [ { AsOfDate = DateOnly(2030, 1, 1); Factor = 0.7m } ] })
+    |> should not' (contain "structured_credit_factor_after_maturity")
+
+[<Fact>]
+let ``CustomAsset writes require the declared profile envelope in the document`` () =
+    let kindWith termsJson =
+        SecurityKind.CustomAsset {
+            CustomProfileId = "structured-credit-io-po"
+            ProfileVersion = 3
+            TermsJson = termsJson
+        }
+
+    validationErrorCodes (kindWith """{"customProfileId":"structured-credit-io-po","profileFields":{}}""")
+    |> should contain "custom_asset_profile_version_missing"
+
+    validationErrorCodes (kindWith """{"customProfileId":"structured-credit-io-po","profileVersion":3}""")
+    |> should contain "custom_asset_profile_fields_missing"
+
+    validationErrorCodes (kindWith "not-json")
+    |> should contain "custom_asset_terms_invalid"
+
+    // A JSON number is not enough: a fractional version would persist verbatim in the canonical
+    // document while the tolerant read defaults it to 1, so the write path requires an integer.
+    validationErrorCodes (kindWith """{"customProfileId":"structured-credit-io-po","profileVersion":1.5,"profileFields":{}}""")
+    |> should contain "custom_asset_profile_version_invalid"
+
+    validationErrorCodes (kindWith """{"customProfileId":"structured-credit-io-po","profileVersion":0,"profileFields":{}}""")
+    |> should contain "custom_asset_profile_version_invalid"
+
+    validationErrorCodes (kindWith """{"customProfileId":"structured-credit-io-po","profileVersion":3,"profileFields":{}}""")
+    |> List.isEmpty
+    |> should equal true
 
 [<Fact>]
 let ``AssetClassRegistry exposes a distinct, non-empty asset-class taxonomy`` () =

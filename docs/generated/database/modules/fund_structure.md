@@ -2,7 +2,7 @@
 
 # `fund_structure` schema
 
-- Relations: 13
+- Relations: 14
 - Functions/procedures: 0
 - Triggers: 0
 - Row-level security policies: 0
@@ -26,6 +26,7 @@ erDiagram
         jsonb investment_portfolio_ids
         text description
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
     fund_structure_client {
         uuid client_id PK
@@ -40,6 +41,7 @@ erDiagram
         text description
         text client_segment_kind
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
     fund_structure_fund {
         uuid fund_id PK
@@ -57,6 +59,7 @@ erDiagram
         jsonb account_ids
         text description
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
     fund_structure_fund_structure_assignment {
         uuid assignment_id PK
@@ -67,6 +70,7 @@ erDiagram
         timestamp_with_time_zone effective_to
         boolean is_primary
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
     fund_structure_fund_structure_legacy_import_receipt {
         text source_hash PK
@@ -76,11 +80,22 @@ erDiagram
     fund_structure_fund_structure_linked_account {
         uuid account_id PK
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
     fund_structure_fund_structure_schema_migrations {
         text filename PK
         text checksum
         timestamp_with_time_zone applied_at
+    }
+    fund_structure_fund_structure_tenant_quarantine {
+        uuid node_id PK
+        text node_kind
+        text reason
+        jsonb candidate_tenant_ids
+        timestamp_with_time_zone detected_at_utc
+        timestamp_with_time_zone resolved_at_utc
+        text resolved_tenant_id
+        text resolution_note
     }
     fund_structure_investment_portfolio {
         uuid investment_portfolio_id PK
@@ -99,6 +114,7 @@ erDiagram
         jsonb account_ids
         text description
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
     fund_structure_legal_entity {
         uuid entity_id PK
@@ -117,6 +133,7 @@ erDiagram
         jsonb lifecycle_events
         text description
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
     fund_structure_organization {
         uuid organization_id PK
@@ -129,6 +146,7 @@ erDiagram
         jsonb business_ids
         text description
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
     fund_structure_ownership_link {
         uuid ownership_link_id PK
@@ -141,6 +159,7 @@ erDiagram
         timestamp_with_time_zone effective_to
         text notes
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
     fund_structure_sleeve {
         uuid sleeve_id PK
@@ -155,6 +174,7 @@ erDiagram
         jsonb investment_portfolio_ids
         jsonb account_ids
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
     fund_structure_vehicle {
         uuid vehicle_id PK
@@ -170,21 +190,23 @@ erDiagram
         jsonb account_ids
         text description
         timestamp_with_time_zone updated_at
+        text tenant_id
     }
 ```
 
 | Relation | Kind | Columns | Primary key | Foreign keys | Indexes | Comment |
 | --- | --- | ---: | --- | ---: | ---: | --- |
-| `business` | table | 14 | `business_id` | 0 | 1 | - |
-| `client` | table | 12 | `client_id` | 0 | 1 | - |
-| `fund` | table | 15 | `fund_id` | 0 | 1 | - |
-| `fund_structure_assignment` | table | 8 | `assignment_id` | 0 | 2 | - |
+| `business` | table | 15 | `business_id` | 0 | 2 | - |
+| `client` | table | 13 | `client_id` | 0 | 2 | - |
+| `fund` | table | 16 | `fund_id` | 0 | 2 | - |
+| `fund_structure_assignment` | table | 9 | `assignment_id` | 0 | 3 | - |
 | `fund_structure_legacy_import_receipt` | table | 3 | `source_hash` | 0 | 1 | - |
-| `fund_structure_linked_account` | table | 2 | `account_id` | 0 | 1 | - |
+| `fund_structure_linked_account` | table | 3 | `account_id` | 0 | 2 | - |
 | `fund_structure_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
-| `investment_portfolio` | table | 16 | `investment_portfolio_id` | 0 | 1 | - |
-| `legal_entity` | table | 16 | `entity_id` | 0 | 1 | - |
-| `organization` | table | 10 | `organization_id` | 0 | 1 | - |
-| `ownership_link` | table | 10 | `ownership_link_id` | 0 | 3 | - |
-| `sleeve` | table | 12 | `sleeve_id` | 0 | 1 | - |
-| `vehicle` | table | 13 | `vehicle_id` | 0 | 1 | - |
+| `fund_structure_tenant_quarantine` | table | 8 | `node_id` | 0 | 2 | Fund-structure nodes the W9-GOV-008 tenant attribution declined to attribute: MixedOwnership for a genuinely shared ancestor whose descendants resolve to more than one tenant, Underivable for a node the fund_profile_tenancy registry cannot reach in either direction. Rows here are an operator decision, not a defect - resolving one records the chosen tenant and the reason. |
+| `investment_portfolio` | table | 17 | `investment_portfolio_id` | 0 | 2 | - |
+| `legal_entity` | table | 17 | `entity_id` | 0 | 2 | - |
+| `organization` | table | 11 | `organization_id` | 0 | 2 | - |
+| `ownership_link` | table | 11 | `ownership_link_id` | 0 | 4 | - |
+| `sleeve` | table | 13 | `sleeve_id` | 0 | 2 | - |
+| `vehicle` | table | 14 | `vehicle_id` | 0 | 2 | - |

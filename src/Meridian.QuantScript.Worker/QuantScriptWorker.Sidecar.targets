@@ -1,0 +1,36 @@
+<Project>
+  <PropertyGroup>
+    <QuantScriptWorkerProject>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)Meridian.QuantScript.Worker.csproj'))</QuantScriptWorkerProject>
+    <QuantScriptWorkerTargetFramework>net10.0</QuantScriptWorkerTargetFramework>
+    <_QuantScriptWorkerRuntimeSegment Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)/</_QuantScriptWorkerRuntimeSegment>
+    <_QuantScriptWorkerBuildDir Condition="'$(MeridianBuildIsolationKey)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)bin/$(Configuration)/$(QuantScriptWorkerTargetFramework)/$(_QuantScriptWorkerRuntimeSegment)'))</_QuantScriptWorkerBuildDir>
+    <_QuantScriptWorkerBuildDir Condition="'$(MeridianBuildIsolationKey)' != ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../artifacts/bin/$(MeridianBuildIsolationKey)/Meridian.QuantScript.Worker/$(Configuration)/$(QuantScriptWorkerTargetFramework)/$(_QuantScriptWorkerRuntimeSegment)'))</_QuantScriptWorkerBuildDir>
+  </PropertyGroup>
+
+  <Target Name="CopyQuantScriptWorkerSidecar"
+          AfterTargets="Build"
+          Condition="Exists('$(_QuantScriptWorkerBuildDir)')">
+    <PropertyGroup>
+      <_QuantScriptWorkerDestination>$(TargetDir)workers/quant-script/</_QuantScriptWorkerDestination>
+    </PropertyGroup>
+    <ItemGroup>
+      <_QuantScriptWorkerBuildFile Include="$(_QuantScriptWorkerBuildDir)/**/*"
+                                   Exclude="$(_QuantScriptWorkerBuildDir)/ref/**/*;$(_QuantScriptWorkerBuildDir)/publish/**/*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_QuantScriptWorkerBuildFile)"
+          DestinationFiles="@(_QuantScriptWorkerBuildFile->'$(_QuantScriptWorkerDestination)%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="PublishQuantScriptWorkerSidecar" AfterTargets="Publish">
+    <PropertyGroup>
+      <_QuantScriptWorkerPublishDir>$([System.IO.Path]::GetFullPath('$(PublishDir)workers/quant-script/', '$(MSBuildProjectDirectory)'))</_QuantScriptWorkerPublishDir>
+      <_QuantScriptWorkerPublishProperties>Configuration=$(Configuration);TargetFramework=$(QuantScriptWorkerTargetFramework);PublishDir=$(_QuantScriptWorkerPublishDir);PublishSingleFile=false;MeridianBuildIsolationKey=$(MeridianBuildIsolationKey)</_QuantScriptWorkerPublishProperties>
+      <_QuantScriptWorkerPublishProperties Condition="'$(RuntimeIdentifier)' != ''">$(_QuantScriptWorkerPublishProperties);RuntimeIdentifier=$(RuntimeIdentifier);SelfContained=$(SelfContained)</_QuantScriptWorkerPublishProperties>
+    </PropertyGroup>
+    <MSBuild Projects="$(QuantScriptWorkerProject)"
+             Targets="Publish"
+             BuildInParallel="false"
+             Properties="$(_QuantScriptWorkerPublishProperties)" />
+  </Target>
+</Project>

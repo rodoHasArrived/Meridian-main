@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Application.Scheduling;
 using Meridian.Contracts.Api;
@@ -33,7 +34,7 @@ public static class CronEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("ValidateCronExpression")
+        .WithName("ValidateCronExpression").RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .Produces(400)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -65,7 +66,9 @@ public static class CronEndpoints
                 if (next is null)
                     break;
                 nextRuns.Add(next.Value);
-                from = next.Value.AddMinutes(1);
+                // GetNextOccurrence is already strictly after its cursor. Reusing the occurrence
+                // preserves adjacent minute-level runs instead of skipping every other match.
+                from = next.Value;
             }
 
             return Results.Json(new
@@ -77,7 +80,7 @@ public static class CronEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetCronNextRuns")
+        .WithName("GetCronNextRuns").RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .Produces(400)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);

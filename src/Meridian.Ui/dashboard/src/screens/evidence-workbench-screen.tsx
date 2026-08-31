@@ -38,7 +38,6 @@ import type {
   EvidenceDocumentLinkKind,
   EvidenceDocumentReviewStatus,
   EvidenceRequestListKindCode,
-  EvidenceExtractionStatus,
   EvidenceVaultIntakeRequest
 } from "@/types";
 
@@ -905,8 +904,6 @@ const documentClassifications: EvidenceDocumentClassification[] = [
   "TaxAuditSupport"
 ];
 
-const extractionStatuses: EvidenceExtractionStatus[] = ["Pending", "NotExtracted", "Extracted", "NeedsReview", "Rejected"];
-const reviewStatuses: EvidenceDocumentReviewStatus[] = ["Unreviewed", "NeedsReview", "Rejected"];
 const documentReviewFilterStatuses: EvidenceDocumentReviewStatus[] = ["Unreviewed", "NeedsReview", "Accepted", "Rejected"];
 const requestListFamilyFilters: EvidenceRequestListKindCode[] = ["Close", "Audit", "Tax", "ReportPackage", "OperationalEvent"];
 const intakeSourceKinds: EvidenceDocumentIntakeSourceKind[] = [
@@ -914,9 +911,7 @@ const intakeSourceKinds: EvidenceDocumentIntakeSourceKind[] = [
   "Email",
   "Sftp",
   "Api",
-  "PortalDownload",
-  "LocalFile",
-  "ImportedFileReference"
+  "PortalDownload"
 ];
 const linkKinds: EvidenceDocumentLinkKind[] = [
   "Period",
@@ -1011,72 +1006,49 @@ function EvidenceVaultQueueFilters({
 function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidenceWorkbenchViewModel> }) {
   const [file, setFile] = useState<File | null>(null);
   const [sourceKind, setSourceKind] = useState<EvidenceDocumentIntakeSourceKind>("UploadedContent");
-  const [sourcePath, setSourcePath] = useState("");
   const [classification, setClassification] = useState<EvidenceDocumentClassification>("BankStatement");
   const [sourceChannel, setSourceChannel] = useState("upload");
-  const [actor, setActor] = useState("");
-  const [tenantId, setTenantId] = useState("");
-  const [scope, setScope] = useState("");
   const [sourceSystem, setSourceSystem] = useState("");
   const [sourceReference, setSourceReference] = useState("");
-  const [extractionStatus, setExtractionStatus] = useState<EvidenceExtractionStatus>("Pending");
-  const [reviewStatus, setReviewStatus] = useState<EvidenceDocumentReviewStatus>("Unreviewed");
   const [linkKind, setLinkKind] = useState<EvidenceDocumentLinkKind>("CloseTask");
   const [objectId, setObjectId] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
 
   const selectedSubject = vm.selectedSubjectLabel;
-  const isUpload = sourceKind === "UploadedContent";
   const isAdapterSeam = ["Email", "Sftp", "Api", "PortalDownload"].includes(sourceKind);
-  const requiresPayload = isUpload || isAdapterSeam;
-  const hasRequiredSource = requiresPayload ? Boolean(file) : sourcePath.trim().length > 0;
+  const hasRequiredSource = Boolean(file);
   const disabledReason = vm.intakeCommand.disabledReason ?? (
     hasRequiredSource
       ? null
-      : requiresPayload
-        ? "Choose a document file before retaining it."
-        : "Enter a local or imported file path before retaining it."
+      : "Choose a document file before retaining it."
   );
   const submitDisabled = vm.intakeCommand.disabled || !hasRequiredSource;
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!vm.selectedSubjectKind || !vm.selectedSubjectId || !hasRequiredSource) {
-      setFormError(isUpload
-        ? "Select an evidence subject and choose a document file before retaining it."
-        : isAdapterSeam
-          ? "Select an evidence subject and choose a document file before retaining adapter-seam metadata."
-        : "Select an evidence subject and enter a local or imported file path before retaining it.");
+      setFormError(isAdapterSeam
+        ? "Select an evidence subject and choose a document file before retaining adapter-seam metadata."
+        : "Select an evidence subject and choose a document file before retaining it.");
       return;
     }
 
     setFormError(null);
     try {
-      const contentBase64 = requiresPayload && file ? await readFileAsBase64(file) : null;
-      const retainedFileName = requiresPayload && file ? file.name : fileNameFromPath(sourcePath);
-      const sourceReferenceValue = sourceReference.trim() || (requiresPayload ? retainedFileName : sourcePath.trim());
+      const contentBase64 = file ? await readFileAsBase64(file) : null;
+      const retainedFileName = file?.name ?? "document";
+      const sourceReferenceValue = sourceReference.trim() || retainedFileName;
       const request: EvidenceVaultIntakeRequest = {
         subjectKind: vm.selectedSubjectKind,
         subjectId: vm.selectedSubjectId,
         intakeChannel: sourceChannel.trim() || defaultIntakeChannel(sourceKind),
         fileName: retainedFileName,
         contentBase64,
-        contentType: requiresPayload && file ? file.type || "application/octet-stream" : null,
+        contentType: file ? file.type || "application/octet-stream" : null,
         sourceSystem: sourceSystem.trim() || null,
         sourceReference: sourceReferenceValue,
-        receivedBy: actor.trim() || null,
         classification,
-        actor: actor.trim() || null,
-        tenantId: tenantId.trim() || null,
-        scope: scope.trim() || null,
-        extractionStatus,
         intakeChannelKind: intakeChannelKindForSource(sourceKind),
-        reviewerState: {
-          status: reviewStatus,
-          reviewer: actor.trim() || null,
-          reviewedAt: reviewStatus === "Unreviewed" ? null : new Date().toISOString(),
-          notes: reviewStatus === "Unreviewed" ? null : "Manual Evidence Workbench intake."
-        },
         objectLinks: objectId.trim()
           ? [
               {
@@ -1089,7 +1061,7 @@ function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidence
           : [],
         intakeSource: {
           sourceKind,
-          path: isUpload || isAdapterSeam ? null : sourcePath.trim(),
+          path: null,
           uri: isAdapterSeam ? sourceReferenceValue : null,
           displayName: retainedFileName
         }
@@ -1140,36 +1112,19 @@ function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidence
                   ))}
                 </Select>
               </label>
-              {requiresPayload ? (
-                <label key="uploaded-content-source" className="grid gap-1 text-xs font-medium text-muted-foreground">
-                  Document file
-                  <Input
-                    key={`${sourceKind}-file`}
-                    type="file"
-                    aria-label="Document file"
-                    disabled={vm.intakeCommand.busy}
-                    onChange={(event) => {
-                      setFile(event.currentTarget.files?.[0] ?? null);
-                      setFormError(null);
-                    }}
-                  />
-                </label>
-              ) : (
-                <label key="file-reference-source" className="grid gap-1 text-xs font-medium text-muted-foreground">
-                  Source file path
-                  <Input
-                    key="file-reference-path"
-                    aria-label="Source file path"
-                    value={sourcePath}
-                    onChange={(event) => {
-                      setSourcePath(event.currentTarget.value);
-                      setFormError(null);
-                    }}
-                    disabled={vm.intakeCommand.busy}
-                    placeholder="D:\\imports\\statement.csv"
-                  />
-                </label>
-              )}
+              <label key="uploaded-content-source" className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Document file
+                <Input
+                  key={`${sourceKind}-file`}
+                  type="file"
+                  aria-label="Document file"
+                  disabled={vm.intakeCommand.busy}
+                  onChange={(event) => {
+                    setFile(event.currentTarget.files?.[0] ?? null);
+                    setFormError(null);
+                  }}
+                />
+              </label>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="grid gap-1 text-xs font-medium text-muted-foreground">
@@ -1195,50 +1150,14 @@ function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidence
                 />
               </label>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-                Extraction status
-                <Select
-                  aria-label="Extraction status"
-                  value={extractionStatus}
-                  onChange={(event) => setExtractionStatus(event.currentTarget.value as EvidenceExtractionStatus)}
-                  disabled={vm.intakeCommand.busy}
-                >
-                  {extractionStatuses.map((value) => (
-                    <option key={value} value={value}>{formatDocumentOption(value)}</option>
-                  ))}
-                </Select>
-              </label>
-              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-                Reviewer state
-                <Select
-                  aria-label="Reviewer state"
-                  value={reviewStatus}
-                  onChange={(event) => setReviewStatus(event.currentTarget.value as EvidenceDocumentReviewStatus)}
-                  disabled={vm.intakeCommand.busy}
-                >
-                  {reviewStatuses.map((value) => (
-                    <option key={value} value={value}>{formatDocumentOption(value)}</option>
-                  ))}
-                </Select>
-              </label>
-            </div>
+            <p className="text-xs leading-5 text-muted-foreground">
+              Extraction and initial review posture are assigned by the server after intake. Record an operator decision through document review.
+            </p>
           </div>
           <div className="space-y-3">
-            <div className="grid gap-3 sm:grid-cols-3">
-              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-                Actor
-                <Input aria-label="Actor" value={actor} onChange={(event) => setActor(event.currentTarget.value)} disabled={vm.intakeCommand.busy} />
-              </label>
-              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-                Tenant
-                <Input aria-label="Tenant" value={tenantId} onChange={(event) => setTenantId(event.currentTarget.value)} disabled={vm.intakeCommand.busy} />
-              </label>
-              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-                Scope
-                <Input aria-label="Scope" value={scope} onChange={(event) => setScope(event.currentTarget.value)} disabled={vm.intakeCommand.busy} />
-              </label>
-            </div>
+            <p className="text-xs text-muted-foreground">
+              Actor, tenant, and company scope are derived from the authenticated workstation session.
+            </p>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="grid gap-1 text-xs font-medium text-muted-foreground">
                 Source system
@@ -1280,8 +1199,7 @@ function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidence
                 <Upload className="h-4 w-4" aria-hidden="true" />
                 {vm.intakeCommand.label}
               </Button>
-              {requiresPayload && file ? <span className="break-all font-mono text-xs text-muted-foreground">{file.name}</span> : null}
-              {!requiresPayload && sourcePath.trim() ? <span className="break-all font-mono text-xs text-muted-foreground">{sourcePath.trim()}</span> : null}
+              {file ? <span className="break-all font-mono text-xs text-muted-foreground">{file.name}</span> : null}
             </div>
           </div>
         </form>
@@ -1938,11 +1856,6 @@ function intakeChannelKindForSource(sourceKind: EvidenceDocumentIntakeSourceKind
     default:
       return "Upload";
   }
-}
-
-function fileNameFromPath(path: string) {
-  const segments = path.trim().split(/[\\/]/).filter(Boolean);
-  return segments.at(-1) || "document.bin";
 }
 
 function readFileAsBase64(file: File): Promise<string> {

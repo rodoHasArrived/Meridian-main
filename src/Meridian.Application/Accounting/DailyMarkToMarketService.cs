@@ -1,4 +1,5 @@
 using System.Threading;
+using Meridian.Contracts.Operations;
 using Meridian.Core.Logging;
 using Meridian.Ledger;
 using Serilog;
@@ -21,13 +22,20 @@ public sealed record MarkToMarketPosition(
 /// the ASC 820 fair-value classification of the price and <see cref="PriceAsOf"/> the date the
 /// price was observed, so downstream valuation can assess defensibility and freshness.
 /// </summary>
+/// <param name="Provenance">
+/// Where the price actually came from. A source that fabricates prices — a synthetic provider, a
+/// seeded demo feed — must declare a non-real value here so the mark, the valuation draft, and
+/// every report built on it carry the origin outward instead of presenting a model output as an
+/// observed market price.
+/// </param>
 public sealed record MarkPriceQuote(
     decimal Price,
     string Source,
     string EvidenceReference,
     FairValueLevel Level = FairValueLevel.Unclassified,
     DateOnly? PriceAsOf = null,
-    DailyPortfolioPriceConfidence Confidence = DailyPortfolioPriceConfidence.High)
+    DailyPortfolioPriceConfidence Confidence = DailyPortfolioPriceConfidence.High,
+    DataProvenance Provenance = DataProvenance.Real)
 {
     /// <summary>
     /// Compatibility constructor for callers introduced with the confidence-aware mark contract.
@@ -392,9 +400,20 @@ public sealed class DailyMarkToMarketService
                     position.Symbol, assessment.AgeDays, stalePricePolicy.MaxAgeDays);
             }
 
-            var fairValueLevel = quote.Level == FairValueLevel.Unclassified
-                ? request.Policy.DefaultFairValueLevel
-                : quote.Level;
+            // Clamped against the quote's origin so neither an optimistic source assertion nor the
+            // fund's default level can present a fabricated price as an observable market input.
+            var fairValueLevel = FairValueLevelPolicy.Resolve(
+                quote.Level,
+                request.Policy.DefaultFairValueLevel,
+                quote.Provenance);
+
+            if (quote.Provenance.IsNonReal())
+            {
+                _log.Warning(
+                    "Mark price for {Symbol} as of {AsOfDate} originates from {Provenance} source {PriceSource}; " +
+                    "retained as a {FairValueLevel} unobservable mark and marked non-real on the valuation draft",
+                    position.Symbol, asOfDate, quote.Provenance.Token(), quote.Source, fairValueLevel);
+            }
 
             marks.Add(new DailyPortfolioPriceMark(
                 position.Symbol,
@@ -413,7 +432,8 @@ public sealed class DailyMarkToMarketService
                 PriorCarryingValue: carryingValue.Amount,
                 CarryingValueSource: carryingValue.Source,
                 CarryingValueCapturedAtUtc: carryingValue.CapturedAtUtc,
-                CarryingValueEvidenceReference: carryingValue.EvidenceReference));
+                CarryingValueEvidenceReference: carryingValue.EvidenceReference,
+                Provenance: quote.Provenance));
         }
 
         var unpriced = rejected

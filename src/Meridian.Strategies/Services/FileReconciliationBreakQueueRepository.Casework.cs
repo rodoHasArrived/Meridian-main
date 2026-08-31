@@ -1,8 +1,8 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
@@ -155,8 +155,7 @@ public static class StatementCaseworkHandoffObligation
     private static string ComputeCommandKey(string commandId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(commandId);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(commandId.Trim())))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(commandId.Trim());
     }
 }
 
@@ -245,7 +244,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
             return null;
         }
 
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(payload);
     }
 
     private string ComputeCommandInputHash(ReconciliationCaseworkCommand command)
@@ -1057,8 +1056,8 @@ public sealed partial class FileReconciliationBreakQueueRepository
 
         return command.Action switch
         {
-            _ when RequiresHumanOrigin(command) && command.ActionOrigin != OperationsActionOriginDto.HumanOperator
-                => Invalid(item, "Reviewed automation cannot resolve, sign off, or reopen reconciliation cases; a human operator approval is required.", ReconciliationBreakQueueTransitionErrorCode.MaterialActionRequiresHumanOperator, ["actionOrigin"], RequestedLifecycle(command)),
+            _ when RequiresHumanOrigin(command) && !OperationsOriginGuard.IsHumanOperator(command.ActionOrigin)
+                => Invalid(item, OperationsOriginGuard.RefusalMessage("resolve, sign off, or reopen reconciliation cases"), ReconciliationBreakQueueTransitionErrorCode.MaterialActionRequiresHumanOperator, ["actionOrigin"], RequestedLifecycle(command)),
             ReconciliationCaseworkAction.Assign when string.IsNullOrWhiteSpace(command.Assignee)
                 => Invalid(item, "Assignee is required.", ReconciliationBreakQueueTransitionErrorCode.MissingActor),
             ReconciliationCaseworkAction.TransitionStatus when command.Status is null

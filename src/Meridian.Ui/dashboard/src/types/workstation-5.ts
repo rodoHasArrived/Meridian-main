@@ -250,15 +250,18 @@ export interface VerifiedOperationOutcome {
 
 export interface ReviewReconciliationBreakRequest {
   breakId: string;
-  assignedTo: string;
-  reviewedBy: string;
+  /** Session operator identity when the shell supplies one; omitted otherwise so the server records its own session actor. */
+  assignedTo?: string;
+  /** Session operator identity when the shell supplies one; the server always rewrites this from the authenticated session. */
+  reviewedBy?: string;
   reviewNote?: string;
 }
 
 export interface ResolveReconciliationBreakRequest {
   breakId: string;
   status: "Resolved" | "Dismissed";
-  resolvedBy: string;
+  /** Session operator identity when the shell supplies one; the server always rewrites this from the authenticated session. */
+  resolvedBy?: string;
   resolutionNote: string;
   operatorRationale: string;
 }
@@ -858,6 +861,23 @@ export interface AccountingTenantAdministrationProfileUpsertRequest {
   evidenceLinks?: string[] | null;
 }
 
+export interface RetainedEvidenceIdentity {
+  evidenceId: string;
+  evidenceUri: string;
+  contentHashSha256: string;
+  sourceSystem: string;
+  sourceReference: string;
+  reviewStatus: string;
+  reviewedBy: string;
+  reviewedAtUtc: string;
+  effectiveDate: string;
+  evidenceVersion: number;
+  retainedAtUtc: string;
+  retainedBy: string;
+  subjectType: string;
+  subjectId: string;
+}
+
 export interface AccountingProductionCertificationProfile {
   fundProfileId: string;
   ledgerBookId?: string | null;
@@ -885,6 +905,7 @@ export interface AccountingProductionCertificationProfile {
   workflowCertificationArtifacts?: AccountingWorkflowCertificationArtifact[];
   dimensionalCertificationArtifacts?: AccountingDimensionalCertificationArtifact[];
   tenantAdminCertificationArtifacts?: AccountingTenantAdminCertificationArtifact[];
+  retainedEvidence?: RetainedEvidenceIdentity[];
 }
 
 export interface AccountingProductionCertificationProfileUpsertRequest {

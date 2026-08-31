@@ -50,6 +50,28 @@ documents:
       - W9-SAFETY-007
       - W9-GOV-008
       - W9-INGEST-009
+  - id: DOC-W9-ACCEPTANCE-2026-08-29
+    path: docs/product/w9-operator-acceptance-2026-08-29.md
+    title: 2026-08-29 W9 operator acceptance record
+    role: readable_status
+    owner_lane: Core Team
+    roadmap_items:
+      - W9-TRUTH-001
+      - W9-DEMO-002
+      - W9-PAPER-003
+      - W9-ALPACA-004
+      - W9-REPORT-005
+      - W9-NAV-006
+      - W9-CORPACT-011
+  - id: DOC-W9-CLOSEOUT-2026-08
+    path: docs/product/w9-close-out-delivery-plan-2026-08.md
+    title: 2026-08 W9 close-out delivery plan
+    role: planning_interpretation
+    owner_lane: Core Team
+    roadmap_items:
+      - W9-SAFETY-007
+      - W9-GOV-008
+      - W9-INGEST-009
   - id: DOC-DEPTH-SLATE-2026-07
     path: docs/product/w10-depth-slate-2026-07.md
     title: 2026-07 W10 depth slate

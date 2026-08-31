@@ -4,6 +4,7 @@ using FluentAssertions;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Instruments.AssetOperations;
 using Meridian.Storage.AssetOperations;
 using Microsoft.AspNetCore.TestHost;
@@ -16,7 +17,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_MultiAssetCoverage_ShouldReturnSharedReadinessRows()
     {
-        await using var app = await CreateAppAsync();
+        await using var app = await CreateAppAsync(currentUserPermissions: UserPermission.ViewTrades);
         using var client = app.GetTestClient();
 
         var payload = await client.GetFromJsonAsync<MultiAssetCoverageSummaryDto>(
@@ -76,9 +77,13 @@ public sealed partial class WorkstationEndpointsTests
         payload.AssetPacks.Should().Contain(static pack =>
             pack.PackId == "controlled-other-asset" &&
             pack.AutomationDepth == "WideCapture" &&
-            pack.AssetClasses.Contains("Art") &&
-            pack.AssetClasses.Contains("InsurancePolicy") &&
-            pack.AssetClasses.Contains("Vehicle") &&
+            pack.AssetClasses.Contains("OtherSecurity") &&
+            pack.AssetClasses.Contains("CustomAsset") &&
+            // Art, insurance policies and vehicles are anticipated coverage, not modelled classes,
+            // so they are reported apart from what the pack actually covers today.
+            pack.PlannedAssetClasses.Contains("Art") &&
+            pack.PlannedAssetClasses.Contains("InsurancePolicy") &&
+            pack.PlannedAssetClasses.Contains("Vehicle") &&
             pack.LifecycleCoverage.Any(coverage =>
                 coverage.LifecycleEvent == "Maturity" &&
                 coverage.AccountingAutomationStatus == "ManualReviewRequired") &&

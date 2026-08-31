@@ -1,5 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
+using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
+using Meridian.Execution.PaperMatching;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Meridian.Risk;
@@ -35,6 +39,8 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
     private readonly Func<IOrderManager?>? _orderManagerAccessor;
     private readonly TimeSpan _markMaxAge;
     private readonly Func<DateTimeOffset> _clock;
+    private readonly Func<ILiveFeedAdapter?>? _liveFeedAccessor;
+    private readonly Func<bool> _paperMatchingIsAuthoritative;
 
     /// <summary>
     /// How old a quote or trade may be and still price an order. A stalled feed keeps
@@ -51,7 +57,9 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
         TradeDataCollector? trades = null,
         Func<IOrderManager?>? orderManagerAccessor = null,
         TimeSpan? markMaxAge = null,
-        Func<DateTimeOffset>? clock = null)
+        Func<DateTimeOffset>? clock = null,
+        Func<ILiveFeedAdapter?>? liveFeedAccessor = null,
+        Func<bool>? paperMatchingIsAuthoritative = null)
     {
         _aggregatePortfolio = aggregatePortfolio ?? throw new ArgumentNullException(nameof(aggregatePortfolio));
         _portfolioState = portfolioState;
@@ -65,6 +73,10 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             ? configured
             : DefaultMarkMaxAge;
         _clock = clock ?? (static () => DateTimeOffset.UtcNow);
+        _liveFeedAccessor = liveFeedAccessor;
+        // Defaults to false. A host that has not said which engine decides its fills is treated as
+        // a live one, because that is the posture where guessing wrong routes an unbounded order.
+        _paperMatchingIsAuthoritative = paperMatchingIsAuthoritative ?? (static () => false);
     }
 
     /// <summary>
@@ -85,6 +97,168 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
         return executable > 0m ? executable : null;
     }
 
+    /// <inheritdoc />
+    public decimal? TryGetTouchPrice(string symbol, OrderSide side)
+    {
+        if (string.IsNullOrWhiteSpace(symbol))
+        {
+            return null;
+        }
+
+        // In a paper composition the matcher's observation is the authority for a limit too, and
+        // for the same reason as the trigger: it carries a bar-close leg this provider has no
+        // source for, so on a bar-driven session with no quote or print a perfectly ordinary limit
+        // would otherwise be refused as unmeasurable while the engine evaluates it normally.
+        if (_paperMatchingIsAuthoritative() && _liveFeedAccessor?.Invoke() is { } feed)
+        {
+            var observed = PaperMarketObservation.Capture(feed, symbol).ResolveAggressiveReferencePrice(side);
+            if (observed is > 0m)
+            {
+                return observed;
+            }
+        }
+
+        // The raw crossing price, with none of ResolveMark's max-with-mid conservatism: that
+        // rule exists so a sell never under-measures the short it creates, but it puts a sell
+        // reference at the midpoint, which is not a price any sell can trade at.
+        if (TryGetFreshQuote(symbol, out var bbo))
+        {
+            var touch = side switch
+            {
+                OrderSide.Buy when bbo.AskPrice > 0m => bbo.AskPrice,
+                OrderSide.Sell when bbo.BidPrice > 0m => bbo.BidPrice,
+                _ => (decimal?)null
+            };
+
+            if (touch is { } crossed)
+            {
+                return crossed;
+            }
+        }
+
+        // One-sided or absent book: there is no crossing price, so the last print is the closest
+        // thing to one.
+        var lastTrade = TryGetLastTradePrice(symbol);
+        if (lastTrade is > 0m)
+        {
+            return lastTrade;
+        }
+
+        // Nothing traded and nothing crossable, so this order genuinely cannot be measured, and
+        // saying so is the correct answer rather than a shortcoming. The valuation accessor must
+        // NOT be reached for here: with a bid missing it answers with the ask — the side this
+        // order would never cross — so a sell on an ask-only 100 book reads a limit of 90 as 10%
+        // through the market. That is not merely wrong, it is wrong in the expensive direction:
+        // the rule would record a measured FAT_FINGER breach rather than FAT_FINGER_UNMEASURABLE,
+        // holding the rule Constrained and the readiness gate closed for an hour over a book that
+        // never had a bid. Null routes to the unmeasurable outcome, which is exactly the
+        // fail-closed-but-not-a-breach verdict that distinction exists for.
+        return null;
+    }
+
+    /// <summary>
+    /// Resolves the stop-trigger reference from <b>the same observation the matcher will
+    /// consume</b>, rather than reconstructing it here.
+    /// <para>
+    /// Reconstruction was the bug. Every accessor above filters its sources through
+    /// <see cref="DefaultMarkMaxAge"/>, because valuing risk off a stalled feed is how a symbol
+    /// cached before an outage measures a 1,000-share order at a price the market left behind.
+    /// The matcher applies no such filter: <see cref="PaperMarketObservation.Capture"/> takes the
+    /// feed's cached last trade, bar, and quote as they are. So a six-minute-old print at 130 with
+    /// a fresh 100 ask fires a buy stop at 125 immediately, while an age-filtered reconstruction
+    /// drops that print, falls to the 100 ask, and approves the order as resting. Reconstructing
+    /// the precedence <i>and</i> the freshness policy correctly is not something to get right
+    /// twice — so this reads the matcher's observation directly and resolves through the matcher's
+    /// own <see cref="PaperMarketObservation.ResolveStopTriggerPrice"/>.
+    /// </para>
+    /// <para>
+    /// The question this accessor answers is not "what is this worth" but "will the engine fire
+    /// this", and where the two disagree the engine is the authority. That is also why the age
+    /// filter is deliberately absent here and deliberately present everywhere else on this class.
+    /// Against a live broker the same resolution is the best available proxy, and it errs toward
+    /// the most recent print — the conservative direction for catching a wrong-side stop.
+    /// </para>
+    /// <para>
+    /// With no feed composed there is no matcher observation to share, so this falls back to the
+    /// interface default: last trade, then bar close, then touch, from the collectors.
+    /// </para>
+    /// </summary>
+    public decimal? TryGetTriggerReferencePrice(string symbol, OrderSide side)
+    {
+        if (string.IsNullOrWhiteSpace(symbol))
+        {
+            return null;
+        }
+
+        // The unfiltered, trade-preferred observation is right only where the paper matcher is the
+        // engine. Against a live broker nobody here decides whether a stop fires, and the feed
+        // cache retains prints indefinitely, so "prefer the print" turns into "prefer a price the
+        // market may have left hours ago": a stale $50 print beside a fresh $100 ask makes a buy
+        // stop at $60 look comfortably resting while the broker sees it already crossed and routes
+        // it unbounded. Agreeing with an engine that is not running is not a safety property.
+        if (_paperMatchingIsAuthoritative() && _liveFeedAccessor?.Invoke() is { } feed)
+        {
+            var observed = PaperMarketObservation.Capture(feed, symbol).ResolveStopTriggerPrice(side);
+            if (observed is > 0m)
+            {
+                return observed;
+            }
+        }
+
+        // Live posture, or no feed at all: the same precedence, but only over observations still
+        // current. A stale print loses to a fresh quote here, which is the opposite of the paper
+        // rule above and deliberately so. Bars arrive only through a feed, so with none composed
+        // the resolution is print then touch — what the matcher would resolve from the same
+        // absence.
+        return TryGetLastTradePrice(symbol) ?? TryGetTouchPrice(symbol, side);
+    }
+
+    /// <inheritdoc />
+    public decimal? TryGetLastTradePrice(string symbol)
+    {
+        if (string.IsNullOrWhiteSpace(symbol) || _trades is null)
+        {
+            return null;
+        }
+
+        // Same freshness window as every other accessor here: a timestamp far in the future is as
+        // untrustworthy as a stale one, so a bad clock cannot hold a print live indefinitely.
+        var asOf = _clock();
+        var recent = _trades.GetRecentTrades(symbol, 1);
+        if (recent.Count > 0 &&
+            recent[0].Price > 0m &&
+            recent[0].Timestamp >= asOf - _markMaxAge &&
+            recent[0].Timestamp <= asOf + _markMaxAge)
+        {
+            return recent[0].Price;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// The symbol's best bid/offer, but only while the feed that produced it is still current.
+    /// Shared by every price accessor so "current" has one definition: a timestamp far in the
+    /// future is as untrustworthy as a stale one, since a bad clock or a malformed feed record
+    /// must not hold a quote live indefinitely.
+    /// </summary>
+    private bool TryGetFreshQuote(string symbol, [NotNullWhen(true)] out BboQuotePayload? quote)
+    {
+        var asOf = _clock();
+        if (_quotes is not null &&
+            _quotes.TryGet(symbol, out var bbo) &&
+            bbo is not null &&
+            bbo.Timestamp >= asOf - _markMaxAge &&
+            bbo.Timestamp <= asOf + _markMaxAge)
+        {
+            quote = bbo;
+            return true;
+        }
+
+        quote = null;
+        return false;
+    }
+
     private decimal? ResolveMark(string symbol, OrderSide? side)
     {
         if (string.IsNullOrWhiteSpace(symbol))
@@ -98,11 +272,7 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
         // a malformed feed record must not hold a mark live indefinitely.
         var latest = asOf + _markMaxAge;
 
-        if (_quotes is not null &&
-            _quotes.TryGet(symbol, out var bbo) &&
-            bbo is not null &&
-            bbo.Timestamp >= earliest &&
-            bbo.Timestamp <= latest)
+        if (TryGetFreshQuote(symbol, out var bbo))
         {
             // Valuing an ORDER never goes below the mark, and rises to the touch it will
             // cross. A buy pays the ask, so on a bid $1 / ask $100 book a market buy is
@@ -237,7 +407,13 @@ public sealed class AggregatePortfolioExposureProvider : IPortfolioExposureProvi
             }
             else if (price > 0m)
             {
-                workingNotional = remaining * price;
+                // Scale percentage-of-par before multiplying, matching OrderNotionalResolver and the
+                // amendment resolver. Dividing the product instead lets the intermediate overflow on
+                // a notional that is representable, and this runs inside GetSnapshot() — so it would
+                // throw during portfolio validation and risk-status reads for an order the OMS has
+                // already accepted, rather than at the boundary that could still refuse it.
+                var effectivePrice = order.UsesFaceValuePercentageOfPar ? price / 100m : price;
+                workingNotional = remaining * effectivePrice;
             }
             else
             {

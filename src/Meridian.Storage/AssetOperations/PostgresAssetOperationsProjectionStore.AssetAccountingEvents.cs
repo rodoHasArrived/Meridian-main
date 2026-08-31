@@ -1,9 +1,9 @@
 using System.Data;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
 using Npgsql;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.AssetOperations;
 
@@ -343,7 +343,7 @@ public sealed partial class PostgresAssetOperationsProjectionStore
     {
         var payload = Encoding.UTF8.GetBytes(
             $"asset-accounting-event|{eventId:D}|{eventVersion}");
-        return BitConverter.ToInt64(SHA256.HashData(payload), 0);
+        return BitConverter.ToInt64(Sha256Digest.ComputeBytes(payload), 0);
     }
 
     private static void ValidateAssetAccountingReadIdentity(

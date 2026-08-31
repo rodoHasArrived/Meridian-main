@@ -653,6 +653,9 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             "alpha-fund",
             harness.LedgerBookService.Book.LedgerBookId);
         retained.Should().BeNull("generated certification markers cannot stand in for retained operator evidence");
+        harness.ProductionCertificationEvidenceAuthority.InvocationCount.Should().Be(
+            0,
+            "blank operator evidence must be rejected before consulting retained-evidence authority");
     }
 
     [Fact]
@@ -1619,6 +1622,11 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         var postingCandidateService = new TestAccountingPostingCandidateService();
         var productionCertificationProfileStore = new InMemoryAccountingProductionCertificationProfileStore();
         var tenantAdministrationProfileStore = new InMemoryAccountingTenantAdministrationProfileStore();
+        var productionCertificationEvidenceAuthority = new RecordingAccountingProductionCertificationEvidenceAuthority();
+        var productionCertificationCommandService = new AccountingProductionCertificationCommandService(
+            productionCertificationProfileStore,
+            productionCertificationEvidenceAuthority,
+            tenantAdministrationProfileStore);
         var migrationRunArtifactStore = new InMemoryAccountingMigrationRunArtifactStore();
         var migrationRunWorkerPlanStore = new InMemoryAccountingMigrationRunWorkerPlanStore();
         var services = new ServiceCollection();
@@ -1648,6 +1656,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             ledgerBookService: ledgerBookService,
             accountingProductionReadinessService: productionReadinessService,
             productionCertificationProfileStore: productionCertificationProfileStore,
+            productionCertificationCommandService: productionCertificationCommandService,
             tenantAdministrationProfileStore: tenantAdministrationProfileStore,
             migrationRunWorkerPlanStore: migrationRunWorkerPlanStore);
 
@@ -1658,6 +1667,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             configurationService,
             postingCandidateService,
             productionCertificationProfileStore,
+            productionCertificationEvidenceAuthority,
             tenantAdministrationProfileStore,
             migrationRunArtifactStore,
             migrationRunWorkerPlanStore,
@@ -1672,11 +1682,26 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         AccountingConfigurationService ConfigurationService,
         TestAccountingPostingCandidateService PostingCandidateService,
         IAccountingProductionCertificationProfileStore ProductionCertificationProfileStore,
+        RecordingAccountingProductionCertificationEvidenceAuthority ProductionCertificationEvidenceAuthority,
         IAccountingTenantAdministrationProfileStore TenantAdministrationProfileStore,
         IAccountingMigrationRunArtifactStore MigrationRunArtifactStore,
         IAccountingMigrationRunWorkerPlanWriter MigrationRunWorkerPlanStore,
         AccountingSystemIntegrationService AccountingSystemIntegrationService,
         TestLedgerBookService LedgerBookService);
+
+    private sealed class RecordingAccountingProductionCertificationEvidenceAuthority
+        : IAccountingProductionCertificationEvidenceAuthority
+    {
+        public int InvocationCount { get; private set; }
+
+        public Task<IReadOnlyList<AccountingCertificationEvidenceSource>> ResolveAsync(
+            AccountingCertificationEvidenceResolutionRequest request,
+            CancellationToken ct = default)
+        {
+            InvocationCount++;
+            return Task.FromResult<IReadOnlyList<AccountingCertificationEvidenceSource>>([]);
+        }
+    }
 
 
     private sealed record PresetExpectation(

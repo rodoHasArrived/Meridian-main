@@ -5,7 +5,7 @@ description: >
   IHistoricalDataProvider, and ISymbolSearchProvider implementations with rate
   limiting, reconnection logic, attribute decoration, DI registration, and a
   matching test scaffold.
-tools: ["read", "search", "edit", "mcp"]
+tools: Read, Glob, Grep, Edit, Write, Bash
 ---
 
 # Meridian — Provider Builder Specialist

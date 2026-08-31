@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Banking;
@@ -10,6 +9,8 @@ using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Ledger;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -1204,7 +1205,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
     private static Guid CreateDeterministicGuid(params string?[] parts)
     {
         var input = string.Join("|", parts.Select(NormalizeOptional));
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        var hash = Sha256Digest.ComputeBytesUtf8(input);
         return new Guid(hash[..16]);
     }
 

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Reporting;
 using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Shared.Streaming;
@@ -107,7 +108,7 @@ public static partial class FundStructureEndpoints
 
             return Results.Empty;
         })
-        .WithName("GetReportingRunStream")
+        .WithName("GetReportingRunStream").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Reporting;
 using Meridian.Storage.Reporting;
 using Meridian.Ui.Shared.Services;
@@ -50,7 +51,7 @@ public static partial class FundStructureEndpoints
                 context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetFundOperationsWorkspaceView")
+        .WithName("GetFundOperationsWorkspaceView").RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
         .Produces<FundOperationsWorkspaceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -62,6 +63,7 @@ public static partial class FundStructureEndpoints
                 "/api/fund-structure/reporting/runs/readiness",
                 "Legacy report-pack preview did not use the canonical server-owned run parameters and blocking readiness decision."))
         .WithName("PreviewFundReportPack")
+        .DeclarePermissionlessMutation(LegacyReportingTombstoneReason)
         .ProducesProblem(StatusCodes.Status410Gone);
 
         legacyReportingGroup.MapPost("/report-packs", (HttpContext context) =>
@@ -70,6 +72,7 @@ public static partial class FundStructureEndpoints
                 "/api/fund-structure/reporting/runs",
                 "Legacy report-pack generation bypassed certified snapshots, canonical readiness, and governed lifecycle creation."))
         .WithName("GenerateFundReportPack")
+        .DeclarePermissionlessMutation(LegacyReportingTombstoneReason)
         .ProducesProblem(StatusCodes.Status410Gone);
 
         legacyReportingGroup.MapGet("/report-packs", async (HttpContext context) =>
@@ -114,7 +117,7 @@ public static partial class FundStructureEndpoints
                 .ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetFundReportPackHistory")
+        .WithName("GetFundReportPackHistory").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<FundReportPackHistoryItemDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status410Gone);
@@ -194,7 +197,7 @@ public static partial class FundStructureEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status404NotFound);
             }
         })
-        .WithName("GetStructuredReportingExport")
+        .WithName("GetStructuredReportingExport").RequireAnyPermission(UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ApproveReporting, UserPermission.DeliverReporting, UserPermission.AdminMaintenance)
         .Produces<StructuredReportingExportPayloadDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status200OK, contentType: "application/json")
         .Produces(StatusCodes.Status200OK, contentType: "text/csv")

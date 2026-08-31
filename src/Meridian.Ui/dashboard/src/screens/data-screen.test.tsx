@@ -20,7 +20,8 @@ import type {
   ProviderConnectionRow,
   ProviderCredentialVerificationResult,
   ProviderReadinessSummary,
-  ProviderSetupResult
+  ProviderSetupResult,
+  SessionInfo
 } from "@/types";
 
 const data: DataWorkspaceResponse = {
@@ -811,7 +812,14 @@ describe("DataScreen", () => {
       requestId: "req-exchange"
     });
 
-    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/providers"] });
+    const session: SessionInfo = {
+      displayName: "Avery Chen",
+      role: "Fund operations",
+      environment: "paper",
+      activeWorkspace: "data",
+      commandCount: 3
+    };
+    renderWithRouter(<DataScreen data={data} session={session} />, { initialEntries: ["/data/providers"] });
 
     await user.click(screen.getByRole("button", { name: /configure a new data provider/i }));
     await user.selectOptions(screen.getByLabelText("Select provider type"), "plaid");
@@ -837,7 +845,7 @@ describe("DataScreen", () => {
     await user.click(screen.getByRole("button", { name: "Open secure bank connection for Chase" }));
 
     await waitFor(() => expect(createPlaidLinkToken).toHaveBeenCalledWith(expect.objectContaining({
-      userId: "operator",
+      userId: "Avery Chen",
       institutionId: "ins_3",
       institutionName: "Chase",
       products: ["Transactions", "Auth", "Identity", "Investments"],
@@ -848,7 +856,7 @@ describe("DataScreen", () => {
       publicToken: "public-sandbox-token",
       institutionId: "ins_3",
       institutionName: "Chase",
-      requestedBy: "operator",
+      requestedBy: "Avery Chen",
       accounts: [
         expect.objectContaining({
           plaidAccountId: "plaid-account-1",
