@@ -979,7 +979,10 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         catch
         {
             // The submission never reached the vendor, so the id must not stay eligible
-            // for rejection routing.
+            // for rejection routing — and the vendor-id correlation must go with it, or a
+            // later unrelated error on this marketRuleId would be translated to the dead
+            // request.
+            _marketRuleRequests.TryRemove(marketRuleId, out _);
             _dataServiceRequestIds.TryRemove(requestId, out _);
             throw;
         }
