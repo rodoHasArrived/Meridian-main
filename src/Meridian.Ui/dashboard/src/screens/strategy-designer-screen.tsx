@@ -24,6 +24,11 @@ import {
   type StrategyLegDetailFieldViewModel
 } from "@/screens/strategy-designer-screen.view-model";
 
+const SAVE_DRAFT_BLOCKER_ID = "strategy-designer-save-draft-blocker";
+const BACKTEST_BLOCKER_ID = "strategy-designer-backtest-blocker";
+const SAVE_DRAFT_BLOCKER =
+  "Saving drafts needs a canvas-to-design-document mapping that is not implemented yet, so this action would discard your work.";
+
 function cellKindBadgeVariant(kind: StrategyBuilderCellKind): "default" | "outline" | "success" | "warning" | "danger" | "research" {
   switch (kind) {
     case "governance":       return "warning";
@@ -108,21 +113,59 @@ function WorkbenchHero({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
             {vm.document.name} · {vm.document.datasetReference} · {vm.document.universe.join(", ")}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" variant="outline" aria-label="Save strategy design draft">
-            <Save className="h-4 w-4" aria-hidden="true" />
-            <span className="ml-1.5">Save draft</span>
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            aria-label={vm.backtest.runCommand.ariaLabel}
-            disabled={vm.backtest.runCommand.disabled}
-            disabledReason={vm.backtest.runCommand.disabledReason}
-          >
-            <PlayCircle className="h-4 w-4" aria-hidden="true" />
-            <span className="ml-1.5">{vm.backtest.runCommand.label}</span>
-          </Button>
+        <div className="flex flex-col items-start gap-2">
+          {/*
+            Both actions are deliberately disabled rather than bound to a handler. The workstation
+            endpoints and typed clients exist (`saveStrategyDesignerDraft`,
+            `runStrategyDesignerBacktest`), but two contract gaps block an honest wire-up:
+            the canvas holds a `StrategyBuilderDocument` and the API takes a `StrategyDesignDocument`
+            with no mapper between them, and a backtest run additionally requires governed evidence
+            references (operator acceptance, retained evidence, accounting, approvals, paper
+            validation, governed reports) that this screen cannot collect. Rendering an enabled
+            control that silently discards the operator's work — or posts empty evidence arrays into
+            a governance flow — is worse than a disabled one that says why.
+
+            A disabled native button cannot take keyboard focus and `disabledReason` reaches the DOM
+            only as `title`, so a pointer hover was the sole way to learn why. Each reason is
+            therefore also rendered as visible text and wired to its button through
+            `aria-describedby`, which keyboard and screen-reader operators can actually reach.
+          */}
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              aria-label="Save strategy design draft"
+              aria-describedby={SAVE_DRAFT_BLOCKER_ID}
+              disabled
+              disabledReason={SAVE_DRAFT_BLOCKER}
+            >
+              <Save className="h-4 w-4" aria-hidden="true" />
+              <span className="ml-1.5">Save draft</span>
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              // The unconditional evidence blocker lives in the view-model, so the status label,
+              // proof summary, aria-label, and this button all state the same reason rather than
+              // the screen overriding a command the view-model still advertised as ready.
+              aria-label={vm.backtest.runCommand.ariaLabel}
+              aria-describedby={BACKTEST_BLOCKER_ID}
+              disabled={vm.backtest.runCommand.disabled}
+              disabledReason={vm.backtest.runCommand.disabledReason}
+            >
+              <PlayCircle className="h-4 w-4" aria-hidden="true" />
+              <span className="ml-1.5">{vm.backtest.runCommand.label}</span>
+            </Button>
+          </div>
+          <p id={SAVE_DRAFT_BLOCKER_ID} className="text-xs leading-5 text-muted-foreground">
+            <span className="font-medium text-foreground">Save draft unavailable:</span> {SAVE_DRAFT_BLOCKER}
+          </p>
+          {vm.backtest.runCommand.disabledReason ? (
+            <p id={BACKTEST_BLOCKER_ID} className="text-xs leading-5 text-muted-foreground">
+              <span className="font-medium text-foreground">Run backtest proof unavailable:</span>{" "}
+              {vm.backtest.runCommand.disabledReason}
+            </p>
+          ) : null}
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

@@ -430,7 +430,4 @@ public sealed class ProviderSetupService
 
         return new string(chars.ToArray());
     }
-
-    private static string? NullIfBlank(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

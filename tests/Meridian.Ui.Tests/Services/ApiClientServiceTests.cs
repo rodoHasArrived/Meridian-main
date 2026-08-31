@@ -12,6 +12,7 @@ namespace Meridian.Ui.Tests.Services;
 /// <summary>
 /// Tests for <see cref="ApiClientService"/> HTTP communication logic.
 /// </summary>
+[Collection("ApiClientService singleton serial")]
 public sealed class ApiClientServiceTests
 {
     private readonly Mock<HttpMessageHandler> _httpHandlerMock;
@@ -139,7 +140,7 @@ public sealed class ApiClientServiceTests
     }
 
     [Fact]
-    public void GetBackfillClient_FirstCall_CreatesClient()
+    public void GetBackfillClient_ReturnsStableRoutingProxyWithSessionOwnedTimeout()
     {
         // Arrange
         var service = ApiClientService.Instance;
@@ -149,7 +150,9 @@ public sealed class ApiClientServiceTests
 
         // Assert
         client.Should().NotBeNull();
-        client.Timeout.Should().BeGreaterThan(TimeSpan.FromMinutes(1));
+        client.Timeout.Should().Be(System.Threading.Timeout.InfiniteTimeSpan,
+            "the endpoint session owns the authoritative backfill timeout");
+        service.Configuration.BackfillTimeoutMinutes.Should().Be(60);
     }
 
     [Fact]

@@ -649,13 +649,49 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             return;
         _disposed = true;
 
-        _rotation.Dispose();
-        if (_ownsProgressTracker)
-            _progressTracker.Dispose();
+        var failures = new List<Exception>();
 
-        foreach (var provider in _providers.OfType<IDisposable>())
+        CaptureDisposalFailure(
+            failures,
+            _rotation.Dispose,
+            "Failed to dispose the provider rotation strategy.");
+
+        if (_ownsProgressTracker)
         {
-            provider.Dispose();
+            CaptureDisposalFailure(
+                failures,
+                _progressTracker.Dispose,
+                "Failed to dispose the owned backfill progress tracker.");
+        }
+
+        foreach (var provider in _providers)
+        {
+            CaptureDisposalFailure(
+                failures,
+                provider.Dispose,
+                $"Failed to dispose historical provider '{provider.Name}'.");
+        }
+
+        if (failures.Count > 0)
+        {
+            throw new AggregateException(
+                "Composite historical provider disposal completed with failures.",
+                failures);
+        }
+    }
+
+    private static void CaptureDisposalFailure(
+        ICollection<Exception> failures,
+        Action dispose,
+        string message)
+    {
+        try
+        {
+            dispose();
+        }
+        catch (Exception ex)
+        {
+            failures.Add(new InvalidOperationException(message, ex));
         }
     }
 }

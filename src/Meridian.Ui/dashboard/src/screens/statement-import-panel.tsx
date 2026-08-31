@@ -109,7 +109,8 @@ function SourceSection({ viewModel }: { viewModel: StatementImportPanelViewModel
       <CardHeader>
         <CardTitle>Statement source</CardTitle>
         <CardDescription>
-          Drop a statement file, then optionally pin a connector and mapping profile. Changing the mapping profile
+          Drop a statement file and complete the commit details below — Meridian previews the file against that
+          fund account and period. Pinning a connector or mapping profile is optional; changing the mapping profile
           re-runs the preview automatically.
         </CardDescription>
       </CardHeader>
@@ -156,6 +157,13 @@ function SourceSection({ viewModel }: { viewModel: StatementImportPanelViewModel
             </Select>
           </div>
         </div>
+        {viewModel.previewRequirements.blocked ? (
+          <StatusBanner
+            tone="warning"
+            title={viewModel.previewRequirements.title}
+            detail={viewModel.previewRequirements.detail}
+          />
+        ) : null}
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"

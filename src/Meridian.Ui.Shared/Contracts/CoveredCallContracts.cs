@@ -35,7 +35,60 @@ public sealed record CoveredCallBacktestRequest(
     double RiskFreeRate = 0.04,
     decimal InitialCash = 100_000m,
     long InitialUnderlyingShares = 100,
-    string? Label = null);
+    string? Label = null)
+{
+    private IReadOnlyList<string> _operatorAcceptanceCriteria = [];
+    private IReadOnlyList<string> _retainedEvidenceReferences = [];
+    private IReadOnlyList<string> _accountingRecordReferences = [];
+    private IReadOnlyList<string> _approvalReferences = [];
+    private IReadOnlyList<string> _paperValidationReferences = [];
+    private IReadOnlyList<string> _governedReportReferences = [];
+
+    public IReadOnlyList<string> OperatorAcceptanceCriteria
+    {
+        get => _operatorAcceptanceCriteria;
+        init => _operatorAcceptanceCriteria = value ?? [];
+    }
+
+    public IReadOnlyList<string> RetainedEvidenceReferences
+    {
+        get => _retainedEvidenceReferences;
+        init => _retainedEvidenceReferences = value ?? [];
+    }
+
+    public IReadOnlyList<string> AccountingRecordReferences
+    {
+        get => _accountingRecordReferences;
+        init => _accountingRecordReferences = value ?? [];
+    }
+
+    public IReadOnlyList<string> ApprovalReferences
+    {
+        get => _approvalReferences;
+        init => _approvalReferences = value ?? [];
+    }
+
+    public IReadOnlyList<string> PaperValidationReferences
+    {
+        get => _paperValidationReferences;
+        init => _paperValidationReferences = value ?? [];
+    }
+
+    public IReadOnlyList<string> GovernedReportReferences
+    {
+        get => _governedReportReferences;
+        init => _governedReportReferences = value ?? [];
+    }
+}
+
+/// <summary>
+/// Server-resolved ownership for a covered-call run. Endpoint callers must derive this scope from
+/// the authenticated workstation session; it is never accepted from the browser request body.
+/// </summary>
+public sealed record CoveredCallRunScope(
+    string TenantId,
+    string CompanyId,
+    string Actor);
 
 /// <summary>Returned by <c>POST /api/strategies/covered-call/runs</c>.</summary>
 public sealed record CoveredCallRunHandle(string RunId, DateTimeOffset QueuedAt);

@@ -1,5 +1,5 @@
-using System.Security.Cryptography;
 using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 
@@ -627,7 +627,7 @@ public sealed partial class OperationsContinuityWorkflowService
                 .OrderBy(static blocker => blocker.Code, StringComparer.Ordinal)
                 .Select(static blocker => $"{blocker.Code}:{blocker.Message}")
         ]);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical);
     }
 
     private static string? BuildAttemptRationale(

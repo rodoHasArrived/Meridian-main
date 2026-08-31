@@ -4,13 +4,17 @@
 
 This inventory is generated from `.github/workflows/*.yml` and `.github/workflows/*.yaml` on disk.
 
-- Workflow count: `25`
+- Workflow count: `30`
 
 | Workflow File | Name | Triggers |
 |---|---|---|
+| `.github/workflows/ai-navigation-refresh.yml` | AI Navigation Refresh | schedule, workflow_dispatch |
+| `.github/workflows/branch-cleanup.yml` | Branch Cleanup | workflow_dispatch |
 | `.github/workflows/ci.yml` | CI | pull_request, push, schedule, workflow_dispatch |
 | `.github/workflows/codeql.yml` | CodeQL | pull_request, push, schedule, workflow_dispatch |
 | `.github/workflows/copilot-setup-steps.yml` | Copilot Setup Steps | workflow_dispatch, push, pull_request |
+| `.github/workflows/demo-smoke.yml` | Demo Smoke | pull_request, push, workflow_dispatch |
+| `.github/workflows/desktop-evaluation-prerelease.yml` | Desktop Evaluation Prerelease | workflow_dispatch |
 | `.github/workflows/desktop-installer-packaging.yml` | Desktop Installer Release | push, workflow_dispatch |
 | `.github/workflows/desktop-screenshot-capture.yml` | Desktop Screenshot Capture | workflow_dispatch |
 | `.github/workflows/desktop-standalone-publish.yml` | Desktop Standalone Publish | workflow_dispatch |
@@ -18,6 +22,7 @@ This inventory is generated from `.github/workflows/*.yml` and `.github/workflow
 | `.github/workflows/desktop-workflow-runner.yml` | Desktop Workflow Runner | workflow_dispatch |
 | `.github/workflows/documentation.yml` | Documentation Automation | workflow_dispatch, pull_request, push |
 | `.github/workflows/golden-path-validation.yml` | Golden Path Validation | pull_request, push, workflow_dispatch |
+| `.github/workflows/ibapi-runtime.yml` | IB API Official Runtime | workflow_dispatch, schedule |
 | `.github/workflows/ibapi-smoke.yml` | IB API Smoke Build | pull_request, push, workflow_dispatch |
 | `.github/workflows/maintenance.yml` | Maintenance | pull_request, push, schedule, workflow_dispatch |
 | `.github/workflows/meridian-ci.yml` | Meridian CI | pull_request, push, merge_group, workflow_dispatch |
@@ -29,7 +34,7 @@ This inventory is generated from `.github/workflows/*.yml` and `.github/workflow
 | `.github/workflows/robinhood-options-smoke.yml` | Robinhood Options Smoke | workflow_dispatch |
 | `.github/workflows/schema-control.yml` | PostgreSQL Schema Control | pull_request, workflow_dispatch |
 | `.github/workflows/targeted-test.yml` | Targeted Test | workflow_dispatch |
-| `.github/workflows/web-screenshot-capture.yml` | Web Screenshot Capture | workflow_dispatch |
+| `.github/workflows/web-screenshot-capture.yml` | Web Screenshot Capture | workflow_dispatch, pull_request |
 | `.github/workflows/windows-desktop-build.yml` | Windows Desktop Build | pull_request, push, workflow_dispatch |
 | `.github/workflows/wpf-dev-validation.yml` | WPF Dev Loop Validation | pull_request, push, workflow_dispatch |
 | `.github/workflows/wpf-route-validation.yml` | WPF Route Validation | pull_request, push, workflow_dispatch |

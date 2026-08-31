@@ -1,6 +1,6 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Serialization;
 using Meridian.Storage;
@@ -16,6 +16,15 @@ public interface ISecurityValidationSnapshotStore
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// File-backed retention of security-master validation snapshots.
+/// </summary>
+/// <remarks>
+/// <b>Concurrency posture: append-only.</b> <c>RecordAsync</c> appends one JSON line per snapshot
+/// through <c>AtomicFileWriter.AppendLinesAsync</c> and never rewrites an existing line, so there is
+/// no read-modify-write sequence for a cross-process lease to protect. Snapshots are evidence
+/// records: they accumulate and are never mutated in place (#2697).
+/// </remarks>
 public sealed class FileSecurityValidationSnapshotStore : ISecurityValidationSnapshotStore
 {
     private readonly string _rootDirectory;
@@ -54,7 +63,7 @@ public sealed class FileSecurityValidationSnapshotStore : ISecurityValidationSna
             Actor: string.IsNullOrWhiteSpace(request.Actor) ? null : request.Actor.Trim(),
             Reason: request.Reason.Trim(),
             RecordedAtUtc: recordedAt,
-            ReportHashSha256: Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(reportJson))).ToLowerInvariant(),
+            ReportHashSha256: Sha256Digest.ComputeUtf8(reportJson),
             Report: report,
             EvidenceLinks: request.EvidenceLinks);
 

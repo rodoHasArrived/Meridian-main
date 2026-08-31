@@ -24,7 +24,15 @@ public enum ProviderCapabilityKind : byte
     CashTransactions = 13,
     BankStatements = 14,
     ReconciliationFeed = 15,
-    FactorSchedule = 16
+    FactorSchedule = 16,
+
+    /// <summary>Provider-supplied exchange sessions, closures, and early-close calendar data.</summary>
+    TradingCalendar = 17,
+    News = 18,
+    Scanner = 19,
+    PnLStream = 20,
+    MarketRules = 21,
+    InstrumentDiscovery = 22
 }
 
 /// <summary>
@@ -220,7 +228,8 @@ public sealed record ProviderSafetyPolicy(
             ProviderCapabilityKind.AccountBalances or
             ProviderCapabilityKind.AccountPositions or
             ProviderCapabilityKind.CashTransactions or
-            ProviderCapabilityKind.BankStatements
+            ProviderCapabilityKind.BankStatements or
+            ProviderCapabilityKind.PnLStream
                 => new ProviderSafetyPolicy(
                     capability,
                     ProviderSafetyMode.NoAutomaticFailover,

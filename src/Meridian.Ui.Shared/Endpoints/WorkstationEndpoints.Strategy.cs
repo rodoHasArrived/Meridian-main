@@ -31,7 +31,7 @@ public static partial class WorkstationEndpoints
                 ? StrategyDesignerUnavailable(jsonOptions)
                 : Results.Json(service.GetTemplates(), jsonOptions);
         })
-        .WithName("GetStrategyDesignerTemplates")
+        .WithName("GetStrategyDesignerTemplates").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyDesignTemplate>>(200)
         .Produces(501);
 
@@ -42,7 +42,7 @@ public static partial class WorkstationEndpoints
                 ? StrategyDesignerUnavailable(jsonOptions)
                 : Results.Json(service.GetFieldCatalog(), jsonOptions);
         })
-        .WithName("GetStrategyDesignerFieldCatalog")
+        .WithName("GetStrategyDesignerFieldCatalog").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyDesignFieldCatalogItem>>(200)
         .Produces(501);
 
@@ -57,7 +57,7 @@ public static partial class WorkstationEndpoints
             var drafts = await repository.ListDraftsAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(drafts, jsonOptions);
         })
-        .WithName("GetStrategyDesignerDrafts")
+        .WithName("GetStrategyDesignerDrafts").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyDesignDraftSummary>>(200)
         .Produces(501);
 
@@ -74,7 +74,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound(new { error = "Strategy design draft was not found." })
                 : Results.Json(document, jsonOptions);
         })
-        .WithName("GetStrategyDesignerDraft")
+        .WithName("GetStrategyDesignerDraft").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyDesignDocument>(200)
         .Produces(404)
         .Produces(501);
@@ -108,7 +108,7 @@ public static partial class WorkstationEndpoints
                 service.BuildRunTrace(document, validation));
             return Results.Json(response, jsonOptions);
         })
-        .WithName("SaveStrategyDesignerDraft")
+        .WithName("SaveStrategyDesignerDraft").RequirePermission(UserPermission.ManageStrategies)
         .Produces<StrategyDesignDraftSaveResponse>(200)
         .Produces(400)
         .Produces(403)
@@ -130,7 +130,7 @@ public static partial class WorkstationEndpoints
             var normalized = service.Normalize(document);
             return Results.Json(service.Validate(normalized), jsonOptions);
         })
-        .WithName("ValidateStrategyDesignerDocument")
+        .WithName("ValidateStrategyDesignerDocument").DeclareNonMutating("Normalizes and validates the posted design document in memory; StrategyDesignService holds only a field catalog and templates and persists nothing.").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyDesignValidationResult>(200)
         .Produces(400)
         .Produces(501);
@@ -154,7 +154,7 @@ public static partial class WorkstationEndpoints
                 ? Results.Json(preview, jsonOptions)
                 : Results.Json(preview, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
         })
-        .WithName("PreviewStrategyDesignerDocument")
+        .WithName("PreviewStrategyDesignerDocument").DeclareNonMutating("Normalizes and previews the posted design document in memory; the preview is computed from the body and StrategyDesignService persists nothing. Saving a design is a separate route.").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyDesignPreviewResult>(200)
         .Produces(400)
         .Produces(501);
@@ -174,6 +174,20 @@ public static partial class WorkstationEndpoints
                 return Results.BadRequest(new { error = "A strategy design document is required." });
             }
 
+            if (!StrategyRunEvidenceLoop.TryCreateRequired(
+                    request.Document.DocumentId,
+                    request.OperatorAcceptanceCriteria,
+                    request.RetainedEvidenceReferences,
+                    request.AccountingRecordReferences,
+                    request.ApprovalReferences,
+                    request.PaperValidationReferences,
+                    request.GovernedReportReferences,
+                    out var evidenceLoop,
+                    out var evidenceValidationError))
+            {
+                return Results.BadRequest(new { error = evidenceValidationError });
+            }
+
             var service = context.RequestServices.GetService<StrategyDesignService>();
             if (service is null)
             {
@@ -191,6 +205,7 @@ public static partial class WorkstationEndpoints
             }
 
             var runner = context.RequestServices.GetService<IScriptRunner>();
+            var repository = context.RequestServices.GetService<IStrategyRepository>();
             if (runner is null)
             {
                 return Results.Json(
@@ -198,6 +213,18 @@ public static partial class WorkstationEndpoints
                     {
                         error = "Quant Lab is not enabled on this host. Set QuantLab:Enabled to true to enable.",
                         quantLabEnabled = false
+                    },
+                    jsonOptions,
+                    statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+
+            if (repository is null)
+            {
+                return Results.Json(
+                    new
+                    {
+                        error = "Strategy run persistence is not enabled on this host.",
+                        strategyRunPersistenceEnabled = false
                     },
                     jsonOptions,
                     statusCode: StatusCodes.Status503ServiceUnavailable);
@@ -214,8 +241,10 @@ public static partial class WorkstationEndpoints
                 static item => item.Key,
                 static item => item.Value,
                 StringComparer.OrdinalIgnoreCase);
-            var biasDisclosure = StrategyRunReadService.MapBiasDisclosure(
-                result.CapturedBacktests.FirstOrDefault()?.BiasDisclosure);
+            var capturedBacktest = result.CapturedBacktests.Count == 1
+                ? result.CapturedBacktests[0]
+                : null;
+            var biasDisclosure = StrategyRunReadService.MapBiasDisclosure(capturedBacktest?.BiasDisclosure);
             if (!result.Success)
             {
                 return Results.Json(
@@ -224,32 +253,47 @@ public static partial class WorkstationEndpoints
                     statusCode: StatusCodes.Status400BadRequest);
             }
 
-            var runId = Guid.NewGuid().ToString("N");
-            var repository = context.RequestServices.GetService<IStrategyRepository>();
-            if (repository is not null)
+            if (capturedBacktest is null)
             {
-                var entry = StrategyRunEntry
-                    .Start(
-                        document.DocumentId,
-                        document.Name,
-                        RunType.Backtest,
-                        runId,
-                        datasetReference: document.DatasetReference,
-                        feedReference: "strategy-designer:v1",
-                        engine: "QuantScript",
-                        parameterSet: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                        {
-                            ["designerDocumentId"] = document.DocumentId,
-                            ["datasetFingerprint"] = preview.Compiled.DatasetFingerprint,
-                            ["cellCount"] = document.Cells.Count.ToString(CultureInfo.InvariantCulture)
-                        })
-                    .Complete(result.CapturedBacktests.FirstOrDefault());
-                await repository.RecordRunAsync(entry, ct).ConfigureAwait(false);
+                return Results.Json(
+                    CreateBacktestResponse(
+                        document,
+                        preview,
+                        null,
+                        metrics,
+                        $"QuantScript execution captured {result.CapturedBacktests.Count} BacktestResult values; exactly one is required."),
+                    jsonOptions,
+                    statusCode: StatusCodes.Status400BadRequest);
             }
+
+            var runId = Guid.NewGuid().ToString("N");
+            var entry = (StrategyRunEntry
+                .StartWithEvidence(
+                    document.DocumentId,
+                    document.Name,
+                    RunType.Backtest,
+                    runId,
+                    datasetReference: document.DatasetReference,
+                    feedReference: "strategy-designer:v1",
+                    engine: "QuantScript",
+                    parameterSet: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        ["designerDocumentId"] = document.DocumentId,
+                        ["datasetFingerprint"] = preview.Compiled.DatasetFingerprint,
+                        ["cellCount"] = document.Cells.Count.ToString(CultureInfo.InvariantCulture)
+                    },
+                    operatorAcceptanceCriteria: evidenceLoop.OperatorAcceptanceCriteria,
+                    retainedEvidenceReferences: evidenceLoop.RetainedEvidenceReferences,
+                    accountingRecordReferences: evidenceLoop.AccountingRecordReferences,
+                    approvalReferences: evidenceLoop.ApprovalReferences,
+                    paperValidationReferences: evidenceLoop.PaperValidationReferences,
+                    governedReportReferences: evidenceLoop.GovernedReportReferences))
+                .Complete(capturedBacktest);
+            await repository.RecordRunAsync(entry, ct).ConfigureAwait(false);
 
             return Results.Json(CreateBacktestResponse(document, preview, runId, metrics, null, biasDisclosure), jsonOptions);
         })
-        .WithName("RunStrategyDesignerBacktest")
+        .WithName("RunStrategyDesignerBacktest").RequirePermission(UserPermission.ManageStrategies)
         .Produces<StrategyDesignRunBacktestResponse>(200)
         .Produces(400)
         .Produces(403)
@@ -309,7 +353,7 @@ public static partial class WorkstationEndpoints
                 ? StrategyEngineUnavailable(jsonOptions)
                 : Results.Json(registry.GetDefinitions(), jsonOptions);
         })
-        .WithName("GetStrategyEngineDefinitions")
+        .WithName("GetStrategyEngineDefinitions").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyEngineDefinition>>(200)
         .Produces(501);
 
@@ -333,7 +377,7 @@ public static partial class WorkstationEndpoints
                 ? Results.Json(result, jsonOptions)
                 : Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
         })
-        .WithName("ValidateStrategyEngineRun")
+        .WithName("ValidateStrategyEngineRun").DeclareNonMutating("Validates a posted run request against the engine registry and the supplied data availability; StrategyEngineValidationService holds only the registry and does not start or record a run.").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyEngineValidationResult>(200)
         .Produces<StrategyEngineValidationResult>(400)
         .Produces(501);
@@ -344,6 +388,62 @@ public static partial class WorkstationEndpoints
             new { error = "Strategy Engine services are not registered." },
             jsonOptions,
             statusCode: StatusCodes.Status501NotImplemented);
+
+    private static StrategyRunReadScope ResolveStrategyRunReadScope(HttpContext context)
+    {
+        var accessor = context.RequestServices.GetService<IWorkstationTenantContextAccessor>();
+        var tenantContext = accessor is not null && accessor.TryGetCurrent(out var current)
+            ? current
+            : HttpContextWorkstationTenantContextAccessor.Resolve(context);
+
+        return new StrategyRunReadScope(tenantContext.TenantId, tenantContext.CompanyId);
+    }
+
+    private static async ValueTask<object?> RequireStrategyRunReadAccessAsync(
+        EndpointFilterInvocationContext invocationContext,
+        EndpointFilterDelegate next)
+    {
+        var httpContext = invocationContext.HttpContext;
+        var runId = httpContext.Request.RouteValues["runId"]?.ToString();
+        var readService = httpContext.RequestServices.GetService<StrategyRunReadService>();
+        if (readService is null)
+        {
+            return Results.Problem(
+                "Strategy run service is not registered.",
+                statusCode: StatusCodes.Status501NotImplemented);
+        }
+
+        if (string.IsNullOrWhiteSpace(runId) ||
+            !await readService.IsRunAccessibleAsync(
+                    runId,
+                    ResolveStrategyRunReadScope(httpContext),
+                    httpContext.RequestAborted)
+                .ConfigureAwait(false))
+        {
+            return Results.NotFound();
+        }
+
+        return await next(invocationContext).ConfigureAwait(false);
+    }
+
+    private static async Task<bool> AreStrategyRunsAccessibleAsync(
+        StrategyRunReadService readService,
+        IEnumerable<string> runIds,
+        StrategyRunReadScope scope,
+        CancellationToken ct)
+    {
+        foreach (var runId in runIds
+                     .Where(static id => !string.IsNullOrWhiteSpace(id))
+                     .Distinct(StringComparer.Ordinal))
+        {
+            if (!await readService.IsRunAccessibleAsync(runId, scope, ct).ConfigureAwait(false))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     private sealed record StrategyEngineValidateRunRequest(
         StrategyEngineRunRequest RunRequest,

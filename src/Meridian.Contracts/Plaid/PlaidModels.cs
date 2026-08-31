@@ -44,6 +44,8 @@ public sealed record PlaidOptions(
     string? ClientId = null,
     string? Secret = null,
     string? WebhookBaseUrl = null,
+    string? WebhookVerificationKeyPem = null,
+    string? WebhookVerificationKeyId = null,
     bool EnableTransfers = false,
     bool EnableInvestments = true,
     IReadOnlyList<PlaidProductDto>? DefaultProducts = null,
@@ -59,6 +61,14 @@ public sealed record PlaidOptions(
             PlaidProductDto.Investments
         ]);
 
+    /// <summary>
+    /// True when an ES256 public key is configured for verifying the <c>Plaid-Verification</c>
+    /// header on inbound webhooks. When false the webhook route fails closed: an unverifiable
+    /// callback is refused rather than recorded, because the payload hash a webhook carries
+    /// authenticates nothing when the caller supplies the payload.
+    /// </summary>
+    public bool CanVerifyWebhooks => !string.IsNullOrWhiteSpace(WebhookVerificationKeyPem);
+
     public bool AllowsTransferCreation =>
         EnableTransfers &&
         (Environment is PlaidEnvironmentDto.Sandbox or PlaidEnvironmentDto.Development || EnableLiveTransfers);
@@ -70,7 +80,9 @@ public sealed record PlaidClientCredentials(
     PlaidEnvironmentDto Environment);
 
 public sealed record PlaidLinkTokenRequest(
-    string UserId,
+    // Optional client hint only: the endpoint always rewrites this with the authenticated
+    // session actor (PlaidEndpoints.ResolveActor), so browsers may omit it entirely.
+    string? UserId = null,
     Guid? MeridianAccountId = null,
     IReadOnlyList<PlaidProductDto>? Products = null,
     string? WebhookUrl = null,
@@ -119,7 +131,9 @@ public sealed record PlaidPublicTokenExchangeRequest(
     string? InstitutionId,
     string? InstitutionName,
     IReadOnlyList<PlaidAccountLinkRequest> Accounts,
-    string RequestedBy);
+    // Optional client hint only: the endpoint always rewrites this with the authenticated
+    // session actor (PlaidEndpoints.ResolveActor), so browsers may omit it entirely.
+    string? RequestedBy = null);
 
 public sealed record PlaidPublicTokenExchangeResult(
     PlaidItemDto Item,

@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Reporting;
@@ -236,9 +237,7 @@ public static class ReportingGovernanceCanonicalValidation
                 "The source and reconciliation checkpoint identities must be distinct.");
         }
 
-        var parameterHash = Convert.ToHexString(SHA256.HashData(
-                Encoding.UTF8.GetBytes(snapshot.ParametersCanonicalJson!)))
-            .ToLowerInvariant();
+        var parameterHash = Sha256Digest.ComputeUtf8(snapshot.ParametersCanonicalJson!);
         if (!StringComparer.Ordinal.Equals(snapshot.ParametersHash, parameterHash))
         {
             throw new ReportingGovernanceException(
@@ -246,6 +245,12 @@ public static class ReportingGovernanceCanonicalValidation
         }
 
         var parameters = ParseCanonicalParameters(snapshot.ParametersCanonicalJson!);
+        if (snapshot.RequiresCertifiedLedgerPresentation
+            != parameters.RequiresCertifiedLedgerPresentation)
+        {
+            throw new ReportingGovernanceException(
+                "The certified ledger-presentation requirement does not match the immutable normalized parameter receipt.");
+        }
         if (!StringComparer.Ordinal.Equals(parameters.FundId, scope.FundId)
             || !StringComparer.Ordinal.Equals(parameters.BookId, scope.BookId)
             || !StringComparer.Ordinal.Equals(parameters.PeriodId, scope.PeriodId))
@@ -343,8 +348,7 @@ public static class ReportingGovernanceCanonicalValidation
             }
         }
 
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical.ToString());
     }
 
     public static string ComputeImmutableRunFingerprint(GovernedReportingRun run)
@@ -363,8 +367,7 @@ public static class ReportingGovernanceCanonicalValidation
         AppendCanonical(canonical, run.CreatedAtUtc.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
         AppendCanonical(canonical, run.RestatementOfRunId);
         AppendCanonical(canonical, run.RestatementRequestId);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical.ToString());
     }
 
     public static string BuildInitialRunAuditNote(GovernedReportingRun run) =>
@@ -404,8 +407,7 @@ public static class ReportingGovernanceCanonicalValidation
             AppendCanonical(canonical, request.ApprovedAtUtc?.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
             AppendCanonical(canonical, request.DraftRunId);
         }
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical.ToString());
     }
 
     public static string BuildRestatementRequestAuditNote(ReportingRestatementRequest request) =>
@@ -440,8 +442,7 @@ public static class ReportingGovernanceCanonicalValidation
         {
             AppendCanonical(canonical, evidenceId);
         }
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())))
-            .ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(canonical.ToString());
     }
 
     public static string BuildReleaseAuditNote(ReportingReleaseReceipt release) =>
@@ -467,6 +468,40 @@ public static class ReportingGovernanceCanonicalValidation
         {
             throw new ReportingGovernanceException(
                 "Release requires immutable Final parameters and the final evidence appendix; Draft-certified bytes cannot be released.");
+        }
+    }
+
+    public static bool IsClientPackage(ReportingCertifiedSnapshotScope snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        RequireText(snapshot.ParametersCanonicalJson, nameof(snapshot.ParametersCanonicalJson));
+        return ParseCanonicalParameters(snapshot.ParametersCanonicalJson!).OutputFormat
+            == ReportingOutputFormatDto.ClientPackage;
+    }
+
+    public static void ValidateCompleteClientPackageRelease(
+        string runId,
+        ReportingCertifiedSnapshotScope snapshot,
+        ImmutableArray<ReportingArtifactReference> artifacts)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentNullException.ThrowIfNull(snapshot);
+        if (!IsClientPackage(snapshot))
+        {
+            return;
+        }
+
+        var normalizedRunId = runId.Trim();
+        var pdfArtifactId = $"{normalizedRunId}.pdf";
+        var workbookArtifactId = $"{normalizedRunId}.xlsx";
+        if (artifacts.IsDefaultOrEmpty
+            || artifacts.Count(artifact =>
+                StringComparer.Ordinal.Equals(artifact.ArtifactId, pdfArtifactId)) != 1
+            || artifacts.Count(artifact =>
+                StringComparer.Ordinal.Equals(artifact.ArtifactId, workbookArtifactId)) != 1)
+        {
+            throw new ReportingGovernanceException(
+                $"ClientPackage release for run '{normalizedRunId}' requires both immutable PDF and XLSX primary artifacts from the same certified package.");
         }
     }
 
@@ -524,7 +559,7 @@ public static class ReportingGovernanceCanonicalValidation
                 throw new ReportingGovernanceException(
                     "Pending restatement state must be version 1 and cannot retain approval or draft fields.");
             }
-            if (!request.ChangedLines.SequenceEqual(request.RequestedChangedLines))
+            if (!SameChangedLines(request.ChangedLines, request.RequestedChangedLines))
             {
                 throw new ReportingGovernanceException(
                     "Pending restatement changed lines must exactly match the originally requested evidence.");
@@ -567,6 +602,31 @@ public static class ReportingGovernanceCanonicalValidation
         {
             ValidateRestatementAudit(request);
         }
+    }
+
+    private static bool SameChangedLines(
+        ImmutableArray<ReportingRestatementChangedLine> left,
+        ImmutableArray<ReportingRestatementChangedLine> right)
+    {
+        if (left.Length != right.Length)
+        {
+            return false;
+        }
+
+        for (var index = 0; index < left.Length; index++)
+        {
+            var leftLine = left[index];
+            var rightLine = right[index];
+            if (!StringComparer.Ordinal.Equals(leftLine.LineKey, rightLine.LineKey)
+                || !StringComparer.Ordinal.Equals(leftLine.PreviousValue, rightLine.PreviousValue)
+                || !StringComparer.Ordinal.Equals(leftLine.CurrentValue, rightLine.CurrentValue)
+                || !leftLine.EvidenceIds.SequenceEqual(rightLine.EvidenceIds, StringComparer.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -706,6 +766,7 @@ public static class ReportingGovernanceCanonicalValidation
             release.ManifestHash,
             release.Artifacts,
             release.EvidenceIds);
+        ValidateCompleteClientPackageRelease(run.RunId, run.Snapshot, release.Artifacts);
 
         if (run.Approval is null
             || release.ReleasedAtUtc < run.Approval.ApprovedAtUtc
@@ -729,7 +790,7 @@ public static class ReportingGovernanceCanonicalValidation
         if (artifacts.IsDefaultOrEmpty
             || artifacts.Any(static artifact =>
                 string.IsNullOrWhiteSpace(artifact.ArtifactId)
-                || !IsSha256(artifact.ArtifactHash)
+                || !Sha256Digest.IsCanonical(artifact.ArtifactHash)
                 || artifact.ByteLength <= 0)
             || artifacts.Select(static artifact => artifact.ArtifactId)
                 .Distinct(StringComparer.Ordinal).Count() != artifacts.Length)
@@ -1198,10 +1259,15 @@ public static class ReportingGovernanceCanonicalValidation
         && StringComparer.Ordinal.Equals(left.TenantId, right.TenantId)
         && StringComparer.Ordinal.Equals(left.OrganizationId, right.OrganizationId)
         && StringComparer.Ordinal.Equals(left.CompanyId, right.CompanyId)
-        && left.Permissions.SequenceEqual(right.Permissions)
+        && Normalize(left.Permissions).SequenceEqual(Normalize(right.Permissions))
         && left.Origin == right.Origin
         && StringComparer.Ordinal.Equals(left.CorrelationId, right.CorrelationId)
-        && left.PrincipalIds.SequenceEqual(right.PrincipalIds, StringComparer.Ordinal);
+        && Normalize(left.PrincipalIds).SequenceEqual(
+            Normalize(right.PrincipalIds),
+            StringComparer.Ordinal);
+
+    private static ImmutableArray<T> Normalize<T>(ImmutableArray<T> values) =>
+        values.IsDefault ? ImmutableArray<T>.Empty : values;
 
     private static CanonicalParameterBinding ParseCanonicalParameters(string canonicalJson)
     {
@@ -1237,10 +1303,13 @@ public static class ReportingGovernanceCanonicalValidation
             _ = ParseEnum<ReportingAccountingBasisDto>(root, "accountingBasis");
             RequireText(RequireJsonString(root, "presentationCurrency"), "presentationCurrency");
             _ = ParseEnum<ReportingConsolidationLevelDto>(root, "consolidationLevel");
-            _ = ParseEnum<ReportingOutputFormatDto>(root, "outputFormat");
+            var outputFormat = ParseEnum<ReportingOutputFormatDto>(root, "outputFormat");
             var finality = ParseEnum<ReportingFinalityDto>(root, "finality");
             _ = root.GetProperty("includeSupportingSchedules").GetBoolean();
             var includeEvidenceAppendix = root.GetProperty("includeEvidenceAppendix").GetBoolean();
+            var requiresCertifiedLedgerPresentation =
+                root.TryGetProperty("requiresCertifiedLedgerPresentation", out var requirement)
+                && requirement.GetBoolean();
             if (root.GetProperty("templateParameters").ValueKind != JsonValueKind.Object)
             {
                 throw new ReportingGovernanceException(
@@ -1251,8 +1320,10 @@ public static class ReportingGovernanceCanonicalValidation
                 fundId,
                 bookId!,
                 periodId,
+                outputFormat,
                 finality,
-                includeEvidenceAppendix);
+                includeEvidenceAppendix,
+                requiresCertifiedLedgerPresentation);
         }
         catch (ReportingGovernanceException)
         {
@@ -1384,6 +1455,10 @@ public static class ReportingGovernanceCanonicalValidation
         AppendCanonical(target, snapshot.ReconciliationCheckpointHash);
         AppendCanonical(target, snapshot.ParametersCanonicalJson);
         AppendCanonical(target, snapshot.ParametersHash);
+        if (snapshot.RequiresCertifiedLedgerPresentation)
+        {
+            AppendCanonical(target, "requires-certified-ledger-presentation");
+        }
     }
 
     private static void AppendAuthority(StringBuilder target, ReportingAuthorityScope authority)
@@ -1436,14 +1511,9 @@ public static class ReportingGovernanceCanonicalValidation
         }
     }
 
-    private static bool IsSha256(string? value) =>
-        value is { Length: 64 }
-        && value.All(Uri.IsHexDigit)
-        && string.Equals(value, value.ToLowerInvariant(), StringComparison.Ordinal);
-
     private static void RequireSha256(string? value, string name)
     {
-        if (!IsSha256(value))
+        if (!Sha256Digest.IsCanonical(value))
         {
             throw new ReportingGovernanceException(
                 $"'{name}' must be a lowercase SHA-256 value.");
@@ -1454,6 +1524,8 @@ public static class ReportingGovernanceCanonicalValidation
         string FundId,
         string BookId,
         string PeriodId,
+        ReportingOutputFormatDto OutputFormat,
         ReportingFinalityDto Finality,
-        bool IncludeEvidenceAppendix);
+        bool IncludeEvidenceAppendix,
+        bool RequiresCertifiedLedgerPresentation);
 }

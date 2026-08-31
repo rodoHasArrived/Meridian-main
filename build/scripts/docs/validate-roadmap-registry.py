@@ -5,7 +5,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from common import Finding, build_arg_parser, emit_findings, load_data, repo_path, repo_root
+from common import (
+    Finding,
+    build_arg_parser,
+    emit_findings,
+    is_usable_sequence,
+    load_data,
+    repo_path,
+    repo_root,
+)
 
 STATUSES = {"planned", "in_progress", "ready_for_acceptance", "accepted", "done"}
 HEALTH = {"green", "yellow", "red", "on_track", "watch", "at_risk", "blocked"}
@@ -122,6 +130,27 @@ def validate(root: Path) -> list[Finding]:
                 findings.append(Finding("error", repo_path(roadmap_path), f"{item_id} is {item.get('status')} without evidence"))
             if not item.get("exit_criteria"):
                 findings.append(Finding("error", repo_path(roadmap_path), f"{item_id} must declare exit criteria"))
+            # The JSON Schema bounds `sequence` at integer >= 1, but nothing loads it, so an
+            # out-of-range or wrong-typed value would otherwise reach the renderers. They fall back
+            # to the identifier suffix rather than fail, which would silently order a generated view
+            # against its adopted rank. Reject it here, where the documented CI lane runs.
+            # Generated views sort on the wave parsed from the identifier but label with the
+            # declared `wave`. A disagreement would place an item among one wave's work while
+            # presenting it as another's, so the two must agree.
+            declared_wave = str(item.get("wave", ""))
+            identifier_wave = str(item.get("id", "")).split("-")[0]
+            if declared_wave and identifier_wave and declared_wave != identifier_wave:
+                findings.append(Finding(
+                    "error",
+                    repo_path(roadmap_path),
+                    f"{item_id} declares wave {declared_wave} but its identifier belongs to {identifier_wave}",
+                ))
+            if "sequence" in item and not is_usable_sequence(item.get("sequence")):
+                findings.append(Finding(
+                    "error",
+                    repo_path(roadmap_path),
+                    f"{item_id} has invalid sequence {item.get('sequence')!r}; expected an integer >= 1",
+                ))
 
     return findings
 

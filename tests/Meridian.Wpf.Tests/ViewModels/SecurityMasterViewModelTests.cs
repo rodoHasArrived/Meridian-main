@@ -1,4 +1,5 @@
 #if WINDOWS
+using System.Collections.Concurrent;
 using System.IO;
 using System.Text.Json;
 using System.Windows.Controls;
@@ -1154,6 +1155,216 @@ public sealed class SecurityMasterViewModelTests
         });
     }
 
+    [Fact]
+    public void LoadSelectedTrustSnapshotAsync_WhenLateFirstLoadCompletes_ShouldKeepLatestSecurity()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = CreateNavigationService();
+            var securityA = Guid.Parse("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
+            var securityB = Guid.Parse("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
+            var requests = new ConcurrentDictionary<Guid, PendingRequest<SecurityMasterTrustSnapshotDto?>>();
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient
+            {
+                SnapshotAsyncFactory = (securityId, _, token) =>
+                {
+                    var request = new PendingRequest<SecurityMasterTrustSnapshotDto?>(token);
+                    requests[securityId] = request;
+                    return request.Completion.Task;
+                }
+            };
+            using var viewModel = CreateViewModel(navigation, snapshotClient);
+            var snapshotA = CreateNamedTrustSnapshotWithPassport(securityA, "Security A");
+            var snapshotB = CreateNamedTrustSnapshotWithPassport(securityB, "Security B");
+
+            viewModel.SelectedSecurity = snapshotA.Security;
+            var loadA = viewModel.LoadSelectedTrustSnapshotAsync(securityA);
+            var requestA = await WaitForRequestAsync(requests, securityA);
+
+            viewModel.SelectedSecurity = snapshotB.Security;
+            var loadB = viewModel.LoadSelectedTrustSnapshotAsync(securityB);
+            var requestB = await WaitForRequestAsync(requests, securityB);
+
+            requestA.CancellationToken.IsCancellationRequested.Should().BeTrue();
+            requestB.Complete(snapshotB);
+            await loadB;
+
+            requestA.Complete(snapshotA);
+            await loadA;
+
+            viewModel.SelectedSecurity!.SecurityId.Should().Be(securityB);
+            viewModel.SelectedTrustSnapshot.Should().BeSameAs(snapshotB);
+            viewModel.SelectedInstrumentPassport!.SecurityId.Should().Be(securityB);
+            viewModel.StatusText.Should().Contain("Security B");
+        });
+    }
+
+    [Fact]
+    public void LoadSelectedTrustSnapshotAsync_WhenStaleLoadCompletesWhileLatestIsPending_ShouldKeepLoading()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = CreateNavigationService();
+            var securityA = Guid.Parse("aaaaaaaa-aaaa-4aaa-9aaa-aaaaaaaaaaaa");
+            var securityB = Guid.Parse("bbbbbbbb-bbbb-4bbb-9bbb-bbbbbbbbbbbb");
+            var requests = new ConcurrentDictionary<Guid, PendingRequest<SecurityMasterTrustSnapshotDto?>>();
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient
+            {
+                SnapshotAsyncFactory = (securityId, _, token) =>
+                {
+                    var request = new PendingRequest<SecurityMasterTrustSnapshotDto?>(token);
+                    requests[securityId] = request;
+                    return request.Completion.Task;
+                }
+            };
+            using var viewModel = CreateViewModel(navigation, snapshotClient);
+            var snapshotA = CreateNamedTrustSnapshotWithPassport(securityA, "Security A");
+            var snapshotB = CreateNamedTrustSnapshotWithPassport(securityB, "Security B");
+
+            viewModel.SelectedSecurity = snapshotA.Security;
+            var loadA = viewModel.LoadSelectedTrustSnapshotAsync(securityA);
+            var requestA = await WaitForRequestAsync(requests, securityA);
+
+            viewModel.SelectedSecurity = snapshotB.Security;
+            var loadB = viewModel.LoadSelectedTrustSnapshotAsync(securityB);
+            var requestB = await WaitForRequestAsync(requests, securityB);
+
+            requestA.Complete(snapshotA);
+            await loadA;
+
+            viewModel.IsTrustSnapshotLoading.Should().BeTrue();
+            viewModel.IsLoading.Should().BeTrue();
+            viewModel.SelectedTrustSnapshot.Should().BeNull();
+
+            requestB.Complete(snapshotB);
+            await loadB;
+
+            viewModel.IsTrustSnapshotLoading.Should().BeFalse();
+            viewModel.IsLoading.Should().BeFalse();
+            viewModel.SelectedTrustSnapshot.Should().BeSameAs(snapshotB);
+        });
+    }
+
+    [Fact]
+    public void LoadSelectedTrustSnapshotAsync_WhenStalePassportFails_ShouldPreserveLatestSuccess()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = CreateNavigationService();
+            var securityA = Guid.Parse("aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaa1");
+            var securityB = Guid.Parse("bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbb2");
+            var snapshotRequests = new ConcurrentDictionary<Guid, PendingRequest<SecurityMasterTrustSnapshotDto?>>();
+            var passportRequests = new ConcurrentDictionary<Guid, PendingRequest<InstrumentPassportDto?>>();
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient
+            {
+                SnapshotAsyncFactory = (securityId, _, token) =>
+                {
+                    var request = new PendingRequest<SecurityMasterTrustSnapshotDto?>(token);
+                    snapshotRequests[securityId] = request;
+                    return request.Completion.Task;
+                },
+                PassportAsyncFactory = (securityId, _, token) =>
+                {
+                    var request = new PendingRequest<InstrumentPassportDto?>(token);
+                    passportRequests[securityId] = request;
+                    return request.Completion.Task;
+                }
+            };
+            using var viewModel = CreateViewModel(navigation, snapshotClient);
+            var snapshotA = CreateNamedTrustSnapshot(securityA, "Security A");
+            var snapshotB = CreateNamedTrustSnapshotWithPassport(securityB, "Security B");
+
+            viewModel.SelectedSecurity = snapshotA.Security;
+            var loadA = viewModel.LoadSelectedTrustSnapshotAsync(securityA);
+            var snapshotRequestA = await WaitForRequestAsync(snapshotRequests, securityA);
+            snapshotRequestA.Complete(snapshotA);
+            var passportRequestA = await WaitForRequestAsync(passportRequests, securityA);
+
+            viewModel.SelectedSecurity = snapshotB.Security;
+            var loadB = viewModel.LoadSelectedTrustSnapshotAsync(securityB);
+            var snapshotRequestB = await WaitForRequestAsync(snapshotRequests, securityB);
+            snapshotRequestB.Complete(snapshotB);
+            await loadB;
+
+            passportRequestA.Fail(new InvalidOperationException("stale passport failure"));
+            await loadA;
+
+            viewModel.SelectedTrustSnapshot.Should().BeSameAs(snapshotB);
+            viewModel.SelectedInstrumentPassport!.SecurityId.Should().Be(securityB);
+            viewModel.InstrumentPassportErrorText.Should().BeEmpty();
+            viewModel.TrustSnapshotErrorText.Should().BeEmpty();
+            viewModel.StatusText.Should().Contain("Security B");
+        });
+    }
+
+    [Fact]
+    public void Dispose_CancelsSelectedSecurityLoadAndRejectsLateResult()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = CreateNavigationService();
+            var securityId = Guid.Parse("dddddddd-dddd-4ddd-8ddd-dddddddddddd");
+            PendingRequest<SecurityMasterTrustSnapshotDto?>? request = null;
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient
+            {
+                SnapshotAsyncFactory = (_, _, token) =>
+                {
+                    var pendingRequest = new PendingRequest<SecurityMasterTrustSnapshotDto?>(token);
+                    request = pendingRequest;
+                    return pendingRequest.Completion.Task;
+                }
+            };
+            var viewModel = CreateViewModel(navigation, snapshotClient);
+            var snapshot = CreateNamedTrustSnapshotWithPassport(securityId, "Disposed security");
+            viewModel.SelectedSecurity = snapshot.Security;
+
+            var load = viewModel.LoadSelectedTrustSnapshotAsync(securityId);
+            await WaitUntilAsync(() => request is not null);
+
+            viewModel.Dispose();
+            request!.CancellationToken.IsCancellationRequested.Should().BeTrue();
+            request.Complete(snapshot);
+            await load;
+
+            viewModel.SelectedTrustSnapshot.Should().BeNull();
+            viewModel.SelectedInstrumentPassport.Should().BeNull();
+            viewModel.IsTrustSnapshotLoading.Should().BeFalse();
+            viewModel.IsLoading.Should().BeFalse();
+        });
+    }
+
+    [Fact]
+    public void LoadSelectedTrustSnapshotAsync_WhenSnapshotHasSameSecurityId_ShouldNotRetriggerSelection()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = CreateNavigationService();
+            var securityId = Guid.Parse("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee");
+            var initialSnapshot = CreateNamedTrustSnapshotWithPassport(securityId, "Initial row");
+            var refreshedSnapshot = CreateNamedTrustSnapshotWithPassport(securityId, "Refreshed detail");
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient
+            {
+                SnapshotFactory = (_, _) => refreshedSnapshot
+            };
+            using var viewModel = CreateViewModel(navigation, snapshotClient);
+            viewModel.SelectedSecurity = initialSnapshot.Security;
+            var selectionChangeCount = 0;
+            viewModel.PropertyChanged += (_, args) =>
+            {
+                if (args.PropertyName == nameof(SecurityMasterViewModel.SelectedSecurity))
+                {
+                    selectionChangeCount++;
+                }
+            };
+
+            await viewModel.LoadSelectedTrustSnapshotAsync(securityId);
+
+            selectionChangeCount.Should().Be(0);
+            viewModel.SelectedSecurity.Should().BeSameAs(initialSnapshot.Security);
+            viewModel.SelectedTrustSnapshot.Should().BeSameAs(refreshedSnapshot);
+        });
+    }
+
     private static SecurityMasterViewModel CreateViewModel(
         NavigationService navigation,
         StubWorkstationSecurityMasterApiClient snapshotClient,
@@ -1187,6 +1398,53 @@ public sealed class SecurityMasterViewModelTests
 
     private static FundContextService CreateFundContextService()
         => new(Path.Combine(Path.GetTempPath(), $"fund-context-{Guid.NewGuid():N}.json"));
+
+    private static NavigationService CreateNavigationService()
+    {
+        var navigation = NavigationService.Instance;
+        navigation.ResetForTests();
+        navigation.Initialize(new Frame());
+        return navigation;
+    }
+
+    private static SecurityMasterTrustSnapshotDto CreateNamedTrustSnapshot(Guid securityId, string displayName)
+    {
+        var snapshot = CreateTrustSnapshot(securityId);
+        return snapshot with
+        {
+            Security = snapshot.Security with { DisplayName = displayName },
+            Identity = snapshot.Identity with { DisplayName = displayName }
+        };
+    }
+
+    private static SecurityMasterTrustSnapshotDto CreateNamedTrustSnapshotWithPassport(Guid securityId, string displayName)
+    {
+        var snapshot = CreateNamedTrustSnapshot(securityId, displayName);
+        return snapshot with { InstrumentPassport = CreateInstrumentPassport(snapshot) };
+    }
+
+    private static async Task<PendingRequest<T>> WaitForRequestAsync<T>(
+        ConcurrentDictionary<Guid, PendingRequest<T>> requests,
+        Guid securityId)
+    {
+        await WaitUntilAsync(() => requests.ContainsKey(securityId));
+        return requests[securityId];
+    }
+
+    private static async Task WaitUntilAsync(Func<bool> predicate)
+    {
+        for (var attempt = 0; attempt < 200; attempt++)
+        {
+            if (predicate())
+            {
+                return;
+            }
+
+            await Task.Delay(10);
+        }
+
+        throw new TimeoutException("The controllable Security Master request was not observed.");
+    }
 
     private static SecurityMasterTrustSnapshotDto CreateTrustSnapshot(
         Guid securityId,
@@ -1816,10 +2074,24 @@ public sealed class SecurityMasterViewModelTests
             ReportPackExposureCount: 0,
             Links: []);
 
+    private sealed class PendingRequest<T>(CancellationToken cancellationToken)
+    {
+        public CancellationToken CancellationToken { get; } = cancellationToken;
+
+        public TaskCompletionSource<T> Completion { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public void Complete(T result) => Completion.TrySetResult(result);
+
+        public void Fail(Exception exception) => Completion.TrySetException(exception);
+    }
+
     private sealed class StubWorkstationSecurityMasterApiClient : IWorkstationSecurityMasterApiClient
     {
         public Func<Guid, string?, SecurityMasterTrustSnapshotDto?>? SnapshotFactory { get; init; }
         public Func<Guid, string?, InstrumentPassportDto?>? PassportFactory { get; init; }
+        public Func<Guid, string?, CancellationToken, Task<SecurityMasterTrustSnapshotDto?>>? SnapshotAsyncFactory { get; init; }
+        public Func<Guid, string?, CancellationToken, Task<InstrumentPassportDto?>>? PassportAsyncFactory { get; init; }
         public int PassportRequestCount { get; private set; }
         public Guid? LastPassportSecurityId { get; private set; }
         public string? LastPassportFundProfileId { get; private set; }
@@ -1836,14 +2108,16 @@ public sealed class SecurityMasterViewModelTests
         public BulkResolveSecurityMasterConflictsRequest? LastBulkRequest { get; private set; }
 
         public Task<SecurityMasterTrustSnapshotDto?> GetTrustSnapshotAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default)
-            => Task.FromResult(SnapshotFactory?.Invoke(securityId, fundProfileId));
+            => SnapshotAsyncFactory?.Invoke(securityId, fundProfileId, ct)
+               ?? Task.FromResult(SnapshotFactory?.Invoke(securityId, fundProfileId));
 
         public Task<InstrumentPassportDto?> GetInstrumentPassportAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default)
         {
             PassportRequestCount++;
             LastPassportSecurityId = securityId;
             LastPassportFundProfileId = fundProfileId;
-            return Task.FromResult(PassportFactory?.Invoke(securityId, fundProfileId));
+            return PassportAsyncFactory?.Invoke(securityId, fundProfileId, ct)
+                   ?? Task.FromResult(PassportFactory?.Invoke(securityId, fundProfileId));
         }
 
         public Task<ApiResponse<BulkResolveSecurityMasterConflictsResult>> BulkResolveConflictsAsync(BulkResolveSecurityMasterConflictsRequest request, CancellationToken ct = default)

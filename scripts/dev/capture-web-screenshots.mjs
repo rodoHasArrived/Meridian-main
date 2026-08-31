@@ -624,8 +624,20 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     capture.name,
     "loading the route"
   );
+  // Label the frame timeout explicitly: the raw Playwright message ("page.waitForSelector:
+  // Timeout ... exceeded.") does not say which wait failed, and this is the one wait that
+  // fails when the app shell itself never mounts (e.g. the first-run activation gate has no
+  // fixture and blocks every route).
   await waitForCaptureStep(
-    page.waitForSelector(".workstation-frame", { timeout: timeoutMs }),
+    page.waitForSelector(".workstation-frame", { timeout: timeoutMs }).catch((cause) => {
+      if (cause?.name === "TimeoutError") {
+        throw new Error(
+          `App shell failed to mount: .workstation-frame did not render within ${timeoutMs}ms. `
+          + "Check shell-level screenshot fixtures (e.g. /api/workstation/first-run/) and the dev server logs."
+        );
+      }
+      throw cause;
+    }),
     pageErrors,
     capture.name,
     "waiting for the workstation frame"
@@ -940,6 +952,24 @@ async function main() {
         };
         results.push(failed);
         console.error(`::warning::Skipped ${capture.name} (${capture.path}): ${message.split(/\r?\n/)[0]}`);
+
+        // Systemic-failure circuit breaker: per-route fault isolation exists so one broken
+        // screen never blocks the rest of the catalog, but when the shared app shell itself
+        // never mounts, every remaining route is guaranteed to fail the same slow way
+        // (2 x timeoutMs each) until the CI job ceiling cancels the run. If the first few
+        // routes ALL failed to mount the shell, abort now with a pointed error instead.
+        const shellMountFailureLimit = 3;
+        if (
+          results.length >= shellMountFailureLimit
+          && results.every((result) => result.status === "failed"
+            && /App shell failed to mount/.test(String(result.error)))
+        ) {
+          throw new Error(
+            `Aborting capture run: the app shell failed to mount on the first ${results.length} route(s). `
+            + "This is a shell-level failure (activation gate, missing shell fixtures, or a dev server "
+            + "compile error), so every remaining route would fail the same way. See the manifest logs."
+          );
+        }
       }
     }
 

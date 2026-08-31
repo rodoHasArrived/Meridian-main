@@ -39,7 +39,7 @@ public static class CredentialEndpoints
 
             return Results.Json(rows, jsonOptions);
         })
-        .WithName("GetCredentialCompatibilityStatuses")
+        .WithName("GetCredentialCompatibilityStatuses").RequirePermission(UserPermission.ManageCredentials)
         .Produces(StatusCodes.Status200OK);
 
         group.MapGet(global::Meridian.Contracts.Api.UiApiRoutes.CredentialByProvider, async (
@@ -80,7 +80,7 @@ public static class CredentialEndpoints
                 }).ToArray()
             }, jsonOptions);
         })
-        .WithName("GetCredentialCompatibilityStatus")
+        .WithName("GetCredentialCompatibilityStatus").RequirePermission(UserPermission.ManageCredentials)
         .Produces(StatusCodes.Status200OK);
 
         group.MapPost(global::Meridian.Contracts.Api.UiApiRoutes.CredentialByProvider, async (
@@ -115,7 +115,7 @@ public static class CredentialEndpoints
                 warnings = result.Warnings
             }, jsonOptions);
         })
-        .WithName("SaveCredentialCompatibilityStatus")
+        .WithName("SaveCredentialCompatibilityStatus").RequirePermission(UserPermission.ManageCredentials)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapDelete(global::Meridian.Contracts.Api.UiApiRoutes.CredentialByProvider, async (
@@ -147,7 +147,7 @@ public static class CredentialEndpoints
                 warnings = result.Warnings
             }, jsonOptions);
         })
-        .WithName("DeleteCredentialCompatibilityStatus")
+        .WithName("DeleteCredentialCompatibilityStatus").RequirePermission(UserPermission.ManageCredentials)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapPost(global::Meridian.Contracts.Api.UiApiRoutes.CredentialTest, async (
@@ -193,7 +193,7 @@ public static class CredentialEndpoints
                 warnings = result.Warnings
             }, jsonOptions);
         })
-        .WithName("TestCredentialCompatibilityStatus")
+        .WithName("TestCredentialCompatibilityStatus").RequirePermission(UserPermission.ManageCredentials)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 

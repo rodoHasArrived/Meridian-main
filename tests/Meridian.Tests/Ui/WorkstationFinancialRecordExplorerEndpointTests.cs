@@ -5,13 +5,17 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
+using Meridian.Strategies.Storage;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
@@ -23,6 +27,18 @@ namespace Meridian.Tests.Ui;
 
 public sealed partial class WorkstationEndpointsTests
 {
+    // W9-GOV-008: each explorer is authorized by the family its own builder reads -- the three
+    // ledger and portfolio by the strategy permissions alone, security-instrument by those or the
+    // Security Master pair, and report-line provenance by the reporting permissions. These tests cover
+    // all four and assert payload shape, so the caller holds what an operator working the whole surface
+    // would rather than only the default ModifySecurityMaster.
+    private const UserPermission ExplorerOperatorPermissions =
+        UserPermission.ModifySecurityMaster |
+        UserPermission.ViewSecurityMaster |
+        UserPermission.ViewDirectLending |
+        UserPermission.ViewReporting |
+        UserPermission.ViewStrategies;
+
     private static readonly Guid FinancialRecordExplorerAaplSecurityId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid FinancialRecordExplorerLedgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111112");
     private static readonly Guid FinancialRecordExplorerPositionId = Guid.Parse("11111111-1111-1111-1111-111111111113");
@@ -36,10 +52,50 @@ public sealed partial class WorkstationEndpointsTests
     [InlineData("ledger")]
     [InlineData("portfolio")]
     [InlineData("security-instrument")]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorers_ShouldNotServeAnotherTenantsRun(string explorerId)
+    {
+        // A run's detail is the explorer's entire source -- the trial balance, the positions, the
+        // security references it renders. Selecting the newest qualifying run globally served one
+        // tenant's book to another whenever the other owned the newest run, and the tenant id reaching
+        // only saved-view persistence made that invisible from the call site.
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                RegisterFinancialRecordExplorerTestServices(services);
+
+                // Registered before the fixture's own current-scope registry, which resolves every
+                // fund to the calling tenant and so cannot express a foreign owner at all.
+                services.AddSingleton<IFundProfileTenancyRegistry>(
+                    new ForeignOwnerFundProfileTenancyRegistry("northwind-income", "another-tenant"));
+            },
+            currentUserPermissions: ExplorerOperatorPermissions);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-foreign-run", withBreaks: false));
+
+        using var response = await app.GetTestClient().GetAsync(
+            $"/api/workstation/financial-record-explorers/{explorerId}");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var explorer = await response.Content.ReadFromJsonAsync<FinancialRecordExplorerDto>(ServerJsonOptions);
+        explorer.Should().NotBeNull();
+        explorer!.Rows.Should().BeEmpty(
+            "the only qualifying run belongs to another tenant, so this tenant has no source-backed projection");
+        explorer.SourceState.Should().Contain(
+            "No source-backed",
+            "an empty explorer must say it has no source rather than imply the tenant's book is empty");
+    }
+
+    [Theory]
+    [InlineData("ledger")]
+    [InlineData("portfolio")]
+    [InlineData("security-instrument")]
     [InlineData("report-line-provenance")]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorers_ShouldReturnStableSharedShape(string explorerId)
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-run", withBreaks: false));
@@ -73,7 +129,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorerLedger_ShouldExposeCanonicalDimensions()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-ledger-dimensions", withBreaks: false) with
@@ -140,10 +198,207 @@ public sealed partial class WorkstationEndpointsTests
             field.Value == "acct-ops");
     }
 
+    /// <summary>
+    /// The ledger explorer answered for whichever run was newest, whatever run the screen was
+    /// showing, so an operator reading an older run's trial balance saw that run's rows under the
+    /// newest run's header, proof links and scope. It now answers for the run it is asked for.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorerLedger_ShouldAnswerForTheRequestedRun()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("explorer-ledger-run-older", withBreaks: false) with
+        {
+            FundProfileId = "fund-core"
+        });
+        await store.RecordRunAsync(BuildActivePaperRun("explorer-ledger-run-newer", withBreaks: false) with
+        {
+            FundProfileId = "fund-core"
+        });
+
+        var client = app.GetTestClient();
+
+        foreach (var runId in new[] { "explorer-ledger-run-older", "explorer-ledger-run-newer" })
+        {
+            var explorer = await client.GetFromJsonAsync<FinancialRecordExplorerDto>(
+                $"/api/workstation/financial-record-explorers/ledger?filter={Uri.EscapeDataString($"run:{runId}")}",
+                ServerJsonOptions);
+
+            explorer.Should().NotBeNull();
+            explorer!.SourceState.Should().Contain(runId);
+            explorer.Filters.Should().Contain(filter => filter.FilterId == "run" && filter.Value == runId);
+            explorer.Rows.Should().OnlyContain(row => row.SourceRunId == runId);
+            explorer.ProofActions.Should().Contain(action => action.Href.Contains(runId, StringComparison.Ordinal));
+        }
+    }
+
+    /// <summary>
+    /// The screen's run picker read run ids out of the rows, and the explorer composes its rows
+    /// from exactly one run — so it offered one option and every older run was unreachable. Each
+    /// run the caller may read is published as a system view carrying its own run filter.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorerLedger_ShouldPublishEveryReadableRunAsAView()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("explorer-ledger-view-a", withBreaks: false) with
+        {
+            FundProfileId = "fund-core"
+        });
+        await store.RecordRunAsync(BuildActivePaperRun("explorer-ledger-view-b", withBreaks: false) with
+        {
+            FundProfileId = "fund-core"
+        });
+
+        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+            "/api/workstation/financial-record-explorers/ledger",
+            ServerJsonOptions);
+
+        explorer.Should().NotBeNull();
+        var runViews = explorer!.SavedViews
+            .Select(view => view.Filters.FirstOrDefault(filter => filter.FilterId == "run")?.Value)
+            .Where(runId => !string.IsNullOrEmpty(runId))
+            .ToList();
+
+        runViews.Should().Contain(["explorer-ledger-view-a", "explorer-ledger-view-b"]);
+        explorer.SavedViews.Should().ContainSingle(view =>
+            view.IsActive && view.Filters.Any(filter => filter.FilterId == "run"));
+    }
+
+    /// <summary>
+    /// The picker is bounded so it stays a picker, but a run named explicitly must still resolve
+    /// past that bound — otherwise the explorer answers for a newer run while the screen's own
+    /// trial-balance and journal requests use the one the URL asked for, recombining evidence
+    /// from two different runs.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorerLedger_ShouldResolveARunOutsideThePickerBound()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        // One past the 50-run candidate bound, so the requested run cannot be reached through the
+        // candidate list alone. Every fixture run shares one StartedAt, so the ordering falls
+        // through to the run id ASCENDING -- making "-050" the run outside the bound and "-000"
+        // the first candidate inside it. Requesting "-000" here tests nothing.
+        for (var index = 0; index <= 50; index++)
+        {
+            await store.RecordRunAsync(BuildActivePaperRun($"explorer-ledger-bounded-{index:D3}", withBreaks: false) with
+            {
+                FundProfileId = "fund-core"
+            });
+        }
+
+        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+            $"/api/workstation/financial-record-explorers/ledger?filter={Uri.EscapeDataString("run:explorer-ledger-bounded-050")}",
+            ServerJsonOptions);
+
+        explorer.Should().NotBeNull();
+        explorer!.SavedViews.Should().HaveCountLessThanOrEqualTo(50, "the picker stays bounded");
+        explorer.SourceState.Should().Contain("explorer-ledger-bounded-050");
+        explorer.Rows.Should().OnlyContain(row => row.SourceRunId == "explorer-ledger-bounded-050");
+
+        // And the run being displayed owns the active view. Without it the client fell back to the
+        // first candidate -- a newer run -- so the picker and any link copied from it identified a
+        // different run than the rows on screen.
+        var activeRunId = explorer.SavedViews
+            .Where(view => view.IsActive)
+            .SelectMany(view => view.Filters)
+            .Where(filter => filter.FilterId == "run")
+            .Select(filter => filter.Value)
+            .ToList();
+        activeRunId.Should().ContainSingle().Which.Should().Be("explorer-ledger-bounded-050");
+    }
+
+    /// <summary>
+    /// Resolving a run past the picker's bound read the tenant's entire run history a second time
+    /// -- and reloaded the promotion lookup with it -- so the older the deep link, the more the
+    /// request cost, growing with retained history. One scan answers both questions.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorerLedger_ForARunOutsideTheBound_ShouldScanRunHistoryOnce()
+    {
+        RunHistoryScanCountingRepository? counter = null;
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                RegisterFinancialRecordExplorerTestServices(services);
+                // Registered after the fixture's own store so this decorator is the one resolved,
+                // counting the full-history reads the explorer makes while forwarding to it.
+                services.AddSingleton<IStrategyRepository>(_ =>
+                    counter = new RunHistoryScanCountingRepository(new StrategyRunStore()));
+            },
+            currentUserPermissions: ExplorerOperatorPermissions);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        for (var index = 0; index <= 50; index++)
+        {
+            await store.RecordRunAsync(BuildActivePaperRun($"explorer-ledger-scan-{index:D3}", withBreaks: false) with
+            {
+                FundProfileId = "fund-core"
+            });
+        }
+
+        counter.Should().NotBeNull();
+        counter!.Reset();
+
+        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+            $"/api/workstation/financial-record-explorers/ledger?filter={Uri.EscapeDataString("run:explorer-ledger-scan-050")}",
+            ServerJsonOptions);
+
+        // The run is genuinely outside the bound, so this is the case that used to scan twice.
+        explorer.Should().NotBeNull();
+        explorer!.SourceState.Should().Contain("explorer-ledger-scan-050");
+        counter.FullHistoryScans.Should().Be(
+            1,
+            "the candidate scan already holds the requested run, so resolving it must not re-read the history");
+    }
+
+    /// <summary>
+    /// A run id can arrive from a bookmark long after the run was pruned, or name another tenant's
+    /// run. Neither may leave the screen with nothing where a readable ledger exists, and neither
+    /// may serve the named run: the explorer resolves against the caller's own runs and names the
+    /// one it resolved.
+    /// </summary>
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorerLedger_ForAnUnreachableRun_ShouldFallBackAndSaySo()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("explorer-ledger-reachable", withBreaks: false) with
+        {
+            FundProfileId = "fund-core"
+        });
+
+        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+            $"/api/workstation/financial-record-explorers/ledger?filter={Uri.EscapeDataString("run:no-such-run")}",
+            ServerJsonOptions);
+
+        explorer.Should().NotBeNull();
+        explorer!.SourceState.Should().Contain("explorer-ledger-reachable");
+        explorer.SourceState.Should().NotContain("no-such-run");
+        explorer.Rows.Should().OnlyContain(row => row.SourceRunId == "explorer-ledger-reachable");
+    }
+
     [Fact]
     public async Task MapWorkstationEndpoints_ReportLineProvenanceExplorer_ShouldExposeEndToEndDrillThroughChain()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
         var client = app.GetTestClient();
         var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
         var delivery = app.Services.GetRequiredService<ReportPackDeliveryService>();
@@ -170,7 +425,8 @@ public sealed partial class WorkstationEndpointsTests
             "2026-03",
             new VersionedReportTemplateIdDto("board-pack", 1),
             "report.author",
-            [line]);
+            [line],
+            accessContext: BoundReportAccessContext());
         workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
         var published = workflow.Publish(
@@ -265,7 +521,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_SecurityInstrumentExplorer_ShouldExposePassportOperationsAndReportUsage()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
         var client = app.GetTestClient();
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
@@ -293,7 +551,8 @@ public sealed partial class WorkstationEndpointsTests
             "2026-03",
             new VersionedReportTemplateIdDto("board-pack", 1),
             "report.author",
-            [line]);
+            [line],
+            accessContext: BoundReportAccessContext());
         workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
         workflow.Publish(
@@ -364,7 +623,7 @@ public sealed partial class WorkstationEndpointsTests
             field.Label == "Audit Trail" &&
             field.Detail.Contains("audit event", StringComparison.OrdinalIgnoreCase));
         row.Detail.UsedIn.Select(static relationship => relationship.Label).Should().Contain(
-            ["Portfolio position", "Ledger trial balance", "Reported-line provenance", "AssetOperations reconciliation", "Accounting projection proof", "Instrument-to-posted-journal proof"]);
+            ["Portfolio position", "Ledger trial balance", "Report-line provenance", "AssetOperations reconciliation", "Accounting projection proof", "Instrument-to-posted-journal proof"]);
         row.Detail.Impacts.Select(static relationship => relationship.Label).Should().Contain(
             [
                 "Position / transaction",
@@ -419,10 +678,114 @@ public sealed partial class WorkstationEndpointsTests
             SourceEventId: FinancialRecordExplorerEventId));
     }
 
+    [Theory]
+    [InlineData("ledger")]
+    [InlineData("portfolio")]
+    public async Task MapWorkstationEndpoints_RunBackedExplorers_ForSecurityMasterOnlyOperator_ShouldRefuse(string explorerId)
+    {
+        // Ledger and portfolio build entirely from StrategyRunReadService -- trial balances, positions,
+        // run identifiers and proof links. GetRunLedger, GetRunLedgerTrialBalance and
+        // GetRunLedgerJournal serve that data directly and admit only the strategy permissions, so
+        // Security Master access alone is not a claim on strategy-run financial records.
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: UserPermission.ViewSecurityMaster | UserPermission.ModifySecurityMaster);
+
+        var response = await app.GetTestClient()
+            .GetAsync($"/api/workstation/financial-record-explorers/{explorerId}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityInstrumentExplorer_ForSecurityMasterOnlyOperator_ShouldWithholdRunIdentity()
+    {
+        // The explorer admits Security Master callers on their own basis, and that basis is not a claim
+        // on which strategy run touched an instrument. The run routes serving run id, strategy name and
+        // mode admit only ViewStrategies and ManageStrategies, so those must not arrive as scope items,
+        // as a run-addressed evidence action, or embedded in the description.
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: UserPermission.ViewSecurityMaster | UserPermission.ModifySecurityMaster);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-security-run", withBreaks: false));
+
+        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+            "/api/workstation/financial-record-explorers/security-instrument",
+            ServerJsonOptions);
+
+        explorer.Should().NotBeNull();
+        explorer!.Rows.Should().NotBeEmpty("the Security Master references themselves are what this caller is entitled to");
+
+        explorer.ScopeItems.Select(static item => item.Label).Should().NotContain(["Run", "Strategy", "Mode"]);
+        explorer.ScopeItems.Select(static item => item.Label).Should().Contain(["As of", "Source"]);
+        explorer.Description.Should().NotContain("financial-record-explorer-security-run");
+        explorer.ProofActions.Should().NotContain(static action => action.ActionId == "open-evidence");
+        explorer.ProofActions.Should().Contain(static action => action.ActionId == "open-source");
+
+        var row = explorer.Rows[0];
+        row.Detail.UsedIn.Should().NotContain(static relationship =>
+            relationship.RelationshipId == "portfolio-position" || relationship.RelationshipId == "ledger-line");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityInstrumentExplorer_ForSecurityMasterOnlyOperator_ShouldStillRead()
+    {
+        // The same caller keeps security-instrument: that explorer is the Security Master coverage
+        // surface, so a Security Master permission is one of its two bases. Splitting the run-backed
+        // explorers away must not take this one with them.
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: UserPermission.ViewSecurityMaster | UserPermission.ModifySecurityMaster);
+
+        var response = await app.GetTestClient()
+            .GetAsync("/api/workstation/financial-record-explorers/security-instrument");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityInstrumentExplorer_ForStrategyOnlyOperator_ShouldWithholdOtherFamiliesEnrichments()
+    {
+        // The rows are the Security Master references a strategy run touched, so ViewStrategies -- the
+        // set the built-in ReadOnly role carries -- admits this explorer. Admission is not a claim on
+        // what decorates each row: the passport answers to ViewSecurityMaster/ModifySecurityMaster and
+        // AssetOperations to the trading, lending, security-master and admin set, neither of which
+        // includes a strategy permission. A caller holding only ViewStrategies must see the references
+        // and nothing sourced from a family it could not fetch head-on.
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: UserPermission.ViewStrategies);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-security-run", withBreaks: false));
+
+        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+            "/api/workstation/financial-record-explorers/security-instrument",
+            ServerJsonOptions);
+
+        explorer.Should().NotBeNull();
+        explorer!.Rows.Should().Contain(
+            item => item.RecordId == $"security:{FinancialRecordExplorerAaplSecurityId:D}",
+            "the run-derived references are what a strategy permission does entitle");
+
+        // Each of these summary items is emitted only when its family produced a payload, so their
+        // absence is the assertion that nothing was loaded rather than loaded and blanked.
+        explorer.SummaryItems.Select(static item => item.Label).Should().NotContain(
+            ["Passports", "Operations", "Direct Lending", "Terms", "Cash Flows", "Reconciliations", "Accounting Projections", "Posted Journals", "Reported Usage"]);
+
+        var row = explorer.Rows.Single(item => item.RecordId == $"security:{FinancialRecordExplorerAaplSecurityId:D}");
+        row.Cells.Should().NotContain(static cell => cell.ColumnId == "trust" && cell.DisplayValue == "Trusted");
+        row.Cells.Should().NotContain(static cell => cell.ColumnId == "operations" && cell.DisplayValue == "Ready");
+    }
+
     [Fact]
     public async Task MapWorkstationEndpoints_SecurityInstrumentExplorer_ShouldRemainProjectionOnlyWithoutTypedSpine()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
         app.Services.GetRequiredService<FinancialRecordExplorerAssetAccountingEventSpineService>().ReturnSpine = false;
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
@@ -455,9 +818,42 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_SecurityInstrumentExplorer_ShouldExcludeNonCanonicalProjectionLineageWithoutTypedSpine()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
+        app.Services.GetRequiredService<FinancialRecordExplorerAssetOperationsQueryService>().ProjectionEventType =
+            "ThirdPartyUnregisteredPnLMark";
+        app.Services.GetRequiredService<FinancialRecordExplorerAssetAccountingEventSpineService>().ReturnSpine = false;
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-unregistered-lineage", withBreaks: false));
+
+        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+            "/api/workstation/financial-record-explorers/security-instrument",
+            ServerJsonOptions);
+
+        var row = explorer!.Rows.Single(item => item.RecordId == $"security:{FinancialRecordExplorerAaplSecurityId:D}");
+        row.Detail.Fields.Should().NotContain(static field =>
+            field.Label == "Source Evidence" || field.Label == "Corporate Action Evidence" || field.Label == "Role / Position");
+        row.Detail.Impacts.Should().NotContain(static impact =>
+            impact.RelationshipId == "factor-evidence" || impact.RelationshipId == "instrument-role-position" || impact.RelationshipId == "economic-projection");
+        row.Detail.UsedIn.Should().NotContain(static relationship =>
+            relationship.RelationshipId == "accounting-projection-proof");
+        explorer.RecordGraph.Nodes.Should().NotContain(static node =>
+            node.Label == "Source evidence" || node.Label == "Role / position");
+        explorer.RecordGraph.Edges.Should().NotContain(static edge =>
+            edge.Label == "supports" || edge.Label == "projects");
+        app.Services.GetRequiredService<FinancialRecordExplorerJournalStore>().LastQuery.Should().BeNull();
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ReportLineProvenanceExplorer_ShouldExcludeApprovedButUnpublishedRecords()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
         var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
         var created = workflow.Create(
             "fund-alpha",
@@ -465,7 +861,8 @@ public sealed partial class WorkstationEndpointsTests
             "2026-03",
             new VersionedReportTemplateIdDto("board-pack", 1),
             "report.author",
-            [new ReportPackLineProvenanceDto("trial-balance.cash", "position", "position-aapl", "ledger-evidence-1", RunId: "run-1", LedgerEntryId: "ledger-entry-1")]);
+            [new ReportPackLineProvenanceDto("trial-balance.cash", "position", "position-aapl", "ledger-evidence-1", RunId: "run-1", LedgerEntryId: "ledger-entry-1")],
+            accessContext: BoundReportAccessContext());
         workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
 
@@ -481,7 +878,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorerUnknownId_ShouldReturnNotFound()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
         var response = await app.GetTestClient().GetAsync("/api/workstation/financial-record-explorers/not-real");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -490,7 +889,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorerSavedViews_ShouldPersistAndReloadForExplorer()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
         var client = app.GetTestClient();
 
         var saveResponse = await client.PostAsJsonAsync(
@@ -520,7 +921,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorer_ShouldApplySavedViewOnServer()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
         var client = app.GetTestClient();
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-saved-view-query", withBreaks: false));
@@ -563,7 +966,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorer_ShouldApplyDimensionFilterOnServer()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
         var client = app.GetTestClient();
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-dimension-query", withBreaks: false) with
@@ -603,7 +1008,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorerSavedViews_ShouldNormalizeNullableFiltersAndColumns()
     {
-        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
         var client = app.GetTestClient();
 
         var saveResponse = await client.PostAsJsonAsync(
@@ -641,9 +1048,11 @@ public sealed partial class WorkstationEndpointsTests
 
         await using var alphaApp = await CreateAppAsync(
             services => RegisterFinancialRecordExplorerTestServices(services, savedViewRoot),
+            currentUserPermissions: ExplorerOperatorPermissions,
             currentUserCompanyId: "tenant-alpha");
         await using var betaApp = await CreateAppAsync(
             services => RegisterFinancialRecordExplorerTestServices(services, savedViewRoot),
+            currentUserPermissions: ExplorerOperatorPermissions,
             currentUserCompanyId: "tenant-beta");
 
         var alphaClient = alphaApp.GetTestClient();
@@ -674,6 +1083,109 @@ public sealed partial class WorkstationEndpointsTests
             view.GetProperty("label").GetString() == "Alpha-only ledger view");
     }
 
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorers_ShouldNotServeAnUnattributedRun()
+    {
+        // A run with no fund profile is attributable to no tenant, so under active tenancy it cannot
+        // become the source for all of them -- and it only takes being the newest qualifying run.
+        // Distinct from an unbound fund, which the registry means as "nobody has claimed it yet".
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                RegisterFinancialRecordExplorerTestServices(services);
+                services.AddSingleton<IFundProfileTenancyRegistry>(
+                    new ForeignOwnerFundProfileTenancyRegistry("unused-fund", "another-tenant"));
+            },
+            currentUserPermissions: ExplorerOperatorPermissions);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(
+            BuildActivePaperRun("financial-record-explorer-unattributed", withBreaks: false) with
+            {
+                FundProfileId = null,
+                FundDisplayName = null
+            });
+
+        using var response = await app.GetTestClient().GetAsync(
+            "/api/workstation/financial-record-explorers/ledger");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var explorer = await response.Content.ReadFromJsonAsync<FinancialRecordExplorerDto>(ServerJsonOptions);
+        explorer.Should().NotBeNull();
+        explorer!.Rows.Should().BeEmpty("an unattributed run is nobody's source while tenancy is enforced");
+    }
+
+    /// <summary>
+    /// Reports one fund profile as owned by a tenant other than the caller's, and every other fund as
+    /// unbound. Enough to prove the explorer refuses a foreign run without standing in for the real
+    /// registry's binding rules.
+    /// </summary>
+    private sealed class ForeignOwnerFundProfileTenancyRegistry(string fundProfileId, string ownerTenantId)
+        : IFundProfileTenancyRegistry
+    {
+        public Task<FundProfileOwnership> BindAsync(
+            string requestedFundProfileId,
+            string requestedTenantId,
+            string? requestedCompanyId = null,
+            CancellationToken ct = default)
+            => Task.FromResult(new FundProfileOwnership(requestedFundProfileId, requestedTenantId, requestedCompanyId));
+
+        public Task<FundProfileOwnership?> ResolveAsync(string requestedFundProfileId, CancellationToken ct = default)
+            => Task.FromResult<FundProfileOwnership?>(
+                string.Equals(requestedFundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase)
+                    ? new FundProfileOwnership(fundProfileId, ownerTenantId, ownerTenantId)
+                    : null);
+
+        public async Task<bool> IsAccessibleAsync(
+            string requestedFundProfileId,
+            string requestedTenantId,
+            string? requestedCompanyId = null,
+            CancellationToken ct = default)
+        {
+            var owner = await ResolveAsync(requestedFundProfileId, ct).ConfigureAwait(false);
+            return owner is null || owner.IsHeldBy(requestedTenantId);
+        }
+    }
+
+    /// <summary>
+    /// Forwards to a real store while counting the unbounded run-history reads the ledger explorer
+    /// makes. Only <c>Limit == int.MaxValue</c> is counted: that is the full-history scan, as
+    /// distinct from the bounded reads other surfaces issue in the same request.
+    /// </summary>
+    private sealed class RunHistoryScanCountingRepository(IStrategyRepository inner) : IStrategyRepository
+    {
+        private int _fullHistoryScans;
+
+        public int FullHistoryScans => Volatile.Read(ref _fullHistoryScans);
+
+        public void Reset() => Volatile.Write(ref _fullHistoryScans, 0);
+
+        public Task RecordRunAsync(StrategyRunEntry entry, CancellationToken ct = default)
+            => inner.RecordRunAsync(entry, ct);
+
+        public IAsyncEnumerable<StrategyRunEntry> GetRunsAsync(string strategyId, CancellationToken ct = default)
+            => inner.GetRunsAsync(strategyId, ct);
+
+        public Task<StrategyRunEntry?> GetLatestRunAsync(string strategyId, CancellationToken ct = default)
+            => inner.GetLatestRunAsync(strategyId, ct);
+
+        public IAsyncEnumerable<StrategyRunEntry> GetAllRunsAsync(CancellationToken ct = default)
+            => inner.GetAllRunsAsync(ct);
+
+        public Task<IReadOnlyList<StrategyRunEntry>> QueryVisibleRunsAsync(
+            StrategyRunRepositoryQuery query,
+            StrategyRunRepositoryScope? scope,
+            CancellationToken ct = default)
+        {
+            if (query.Limit == int.MaxValue)
+            {
+                Interlocked.Increment(ref _fullHistoryScans);
+            }
+
+            return inner.QueryVisibleRunsAsync(query, scope, ct);
+        }
+    }
+
     private static void RegisterFinancialRecordExplorerTestServices(IServiceCollection services)
         => RegisterFinancialRecordExplorerTestServices(
             services,
@@ -702,8 +1214,10 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<ReportPackDeliveryService>();
         services.AddSingleton<ISecurityMasterWorkbenchQueryService>(
             new FinancialRecordExplorerSecurityMasterWorkbenchQueryService(FinancialRecordExplorerAaplSecurityId));
-        services.AddSingleton<IAssetOperationsQueryService>(
+        services.AddSingleton<FinancialRecordExplorerAssetOperationsQueryService>(
             new FinancialRecordExplorerAssetOperationsQueryService(FinancialRecordExplorerAaplSecurityId));
+        services.AddSingleton<IAssetOperationsQueryService>(sp =>
+            sp.GetRequiredService<FinancialRecordExplorerAssetOperationsQueryService>());
         services.AddSingleton<FinancialRecordExplorerJournalStore>();
         services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<FinancialRecordExplorerJournalStore>());
         services.AddSingleton<FinancialRecordExplorerAssetAccountingEventSpineService>();
@@ -918,6 +1432,8 @@ public sealed partial class WorkstationEndpointsTests
     {
         private readonly DateTimeOffset _now = new(2026, 3, 22, 15, 0, 0, TimeSpan.Zero);
 
+        public string ProjectionEventType { get; set; } = AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.CorporateAction);
+
         public Task<AssetOperationsDetailDto?> GetOperationsAsync(Guid requestedSecurityId, CancellationToken ct = default)
             => Task.FromResult<AssetOperationsDetailDto?>(requestedSecurityId == securityId ? CreateDetail() : null);
 
@@ -1037,7 +1553,7 @@ public sealed partial class WorkstationEndpointsTests
             var roleId = Guid.Parse("11111111-1111-1111-1111-111111111115");
             var economicEvent = new EconomicEventReferenceDto(
                 FinancialRecordExplorerEventId,
-                AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.CorporateAction),
+                ProjectionEventType,
                 1,
                 new DateOnly(2026, 3, 22),
                 _now,
@@ -1452,4 +1968,81 @@ public sealed partial class WorkstationEndpointsTests
         public Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(string? fundProfileId = null, Guid? fundStructureNodeId = null, FundStructureNodeKindDto? fundStructureNodeKind = null, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default) => throw new NotSupportedException();
     }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReportLineProvenanceExplorer_ShouldNotServeAnotherTenantsRecords()
+    {
+        // ListRecords is not tenant-partitioned at its source -- it returns every workflow record the
+        // host retains -- and the explorer used to build from it with no access context at all, which
+        // the builder treats as the legacy unbound caller and answers unfiltered. The reporting routes
+        // serve these same records under RequireBoundScope, so the explorer must not be the way round
+        // them.
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
+        var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
+
+        var foreign = workflow.Create(
+            "fund-foreign",
+            "acct-foreign",
+            "2026-03",
+            new VersionedReportTemplateIdDto("board-pack", 1),
+            "report.author",
+            [
+                new ReportPackLineProvenanceDto(
+                    LineKey: "trial-balance.cash",
+                    SourceKind: "position",
+                    SourceId: "position-aapl",
+                    EvidenceId: "ledger-evidence-1",
+                    RunId: "run-1",
+                    LedgerEntryId: "ledger-entry-1",
+                    ReconciliationCaseId: "recon-case-1",
+                    ReportValue: "100.00",
+                    SourceSessionId: "provider-session-1",
+                    ReconciliationRunId: "recon-run-1",
+                    ProviderEventId: "provider-event-position-aapl",
+                    SecurityMasterId: "11111111-1111-1111-1111-111111111111",
+                    SecurityDefinitionId: "security-definition-1",
+                    ReconciliationOutcome: "matched",
+                    ApprovalId: "approval-1")
+            ],
+            accessContext: new ReportAccessQueryContext(
+                ActorPrincipalId: "foreign-operator",
+                CompanyId: "tenant-foreign",
+                TenantId: "tenant-foreign",
+                RequireBoundScope: true));
+        workflow.Transition(foreign.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
+        workflow.Transition(foreign.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
+        workflow.Publish(
+            foreign.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:foreign-pack",
+            "manifest-foreign-202603",
+            "vault/report-packs/manifest-foreign-202603.json",
+            BuildCompleteReportLineEvidenceLinks());
+
+        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+            "/api/workstation/financial-record-explorers/report-line-provenance",
+            ServerJsonOptions);
+
+        explorer.Should().NotBeNull();
+        explorer!.Rows.Should().BeEmpty(
+            "the only retained record is bound to another tenant, and this caller resolved tenant-test");
+    }
+
+    /// <summary>
+    /// The access context a request-serving create carries. Records made without one are legacy-shaped
+    /// -- no tenant, no company, no policy snapshot -- and the reporting routes refuse them under
+    /// RequireBoundScope, so a fixture that seeds them is not exercising what the explorer serves.
+    /// Tenant and company match <c>CreateAppAsync</c>'s defaults.
+    /// </summary>
+    private static ReportAccessQueryContext BoundReportAccessContext()
+        => new(
+            ActorPrincipalId: "ops-user",
+            CompanyId: "tenant-test",
+            TenantId: "tenant-test",
+            RequireBoundScope: true);
+
 }

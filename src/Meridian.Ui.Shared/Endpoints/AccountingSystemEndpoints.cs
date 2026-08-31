@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.Identity.Auth;
@@ -29,7 +30,7 @@ public static class AccountingSystemEndpoints
             var providers = await service.ListProvidersAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(providers, jsonOptions);
         })
-        .WithName("ListAccountingSystemProviders")
+        .WithName("ListAccountingSystemProviders").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<IReadOnlyList<AccountingSystemProviderDto>>(StatusCodes.Status200OK);
 
         group.MapPost(UiApiRoutes.AccountingSystemProductionReadiness, async (
@@ -51,7 +52,7 @@ public static class AccountingSystemEndpoints
             var result = await service.AssessAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("AssessAccountingProductionReadiness")
+        .WithName("AssessAccountingProductionReadiness").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<AccountingProductionReadinessDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden);
 
@@ -74,7 +75,7 @@ public static class AccountingSystemEndpoints
                 ? Results.NotFound(new { error = "Accounting tenant administration profile was not found." })
                 : Results.Json(result, jsonOptions);
         })
-        .WithName("GetAccountingTenantAdministrationProfile")
+        .WithName("GetAccountingTenantAdministrationProfile").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<AccountingTenantAdministrationProfileDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
@@ -98,7 +99,8 @@ public static class AccountingSystemEndpoints
             var trustedRequest = request with
             {
                 Profile = trustedProfile,
-                Actor = ResolveMutationActor(context, request.Actor)
+                Actor = ResolveMutationActor(context, request.Actor),
+                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
             };
             try
             {
@@ -113,7 +115,7 @@ public static class AccountingSystemEndpoints
                 });
             }
         })
-        .WithName("UpsertAccountingTenantAdministrationProfile")
+        .WithName("UpsertAccountingTenantAdministrationProfile").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<AccountingTenantAdministrationProfileDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -141,7 +143,7 @@ public static class AccountingSystemEndpoints
                 ? Results.NotFound(new { error = "Accounting production certification profile was not found." })
                 : Results.Json(result, jsonOptions);
         })
-        .WithName("GetAccountingProductionCertificationProfile")
+        .WithName("GetAccountingProductionCertificationProfile").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<AccountingProductionCertificationProfileDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
@@ -150,7 +152,7 @@ public static class AccountingSystemEndpoints
         group.MapPost(UiApiRoutes.AccountingSystemProductionCertificationProfile, async (
             AccountingProductionCertificationProfileUpsertRequestDto request,
             HttpContext context,
-            IAccountingProductionCertificationProfileStore store) =>
+            AccountingProductionCertificationCommandService command) =>
         {
             if (!HasAccountingCertificationAccess(context))
             {
@@ -166,11 +168,14 @@ public static class AccountingSystemEndpoints
             var trustedRequest = request with
             {
                 Profile = trustedProfile,
-                Actor = ResolveMutationActor(context, request.Actor)
+                Actor = ResolveMutationActor(context, request.Actor),
+                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
             };
             try
             {
-                var result = await store.UpsertAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
+                var result = await command
+                    .CertifyAsync(trustedRequest, trustedRequest.Actor, context.RequestAborted)
+                    .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (ArgumentException ex)
@@ -181,7 +186,7 @@ public static class AccountingSystemEndpoints
                 });
             }
         })
-        .WithName("UpsertAccountingProductionCertificationProfile")
+        .WithName("UpsertAccountingProductionCertificationProfile").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<AccountingProductionCertificationProfileDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -205,7 +210,8 @@ public static class AccountingSystemEndpoints
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
                     TenantId = tenantContext.TenantId,
-                    CompanyId = tenantContext.CompanyId
+                    CompanyId = tenantContext.CompanyId,
+                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                 };
                 var result = await service.ExecuteAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -218,7 +224,7 @@ public static class AccountingSystemEndpoints
                 });
             }
         })
-        .WithName("ExecuteAccountingMigrationRun")
+        .WithName("ExecuteAccountingMigrationRun").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<AccountingMigrationRunExecutionResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -248,7 +254,7 @@ public static class AccountingSystemEndpoints
                 tenantContext.CompanyId);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("ListAccountingMigrationRunArtifacts")
+        .WithName("ListAccountingMigrationRunArtifacts").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<AccountingMigrationRunArtifactListDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
@@ -274,7 +280,8 @@ public static class AccountingSystemEndpoints
                 var trustedRequest = request with
                 {
                     Artifact = trustedArtifact,
-                    Actor = ResolveMutationActor(context, request.Actor)
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                 };
                 var result = await store.UpsertAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -287,7 +294,7 @@ public static class AccountingSystemEndpoints
                 });
             }
         })
-        .WithName("UpsertAccountingMigrationRunArtifact")
+        .WithName("UpsertAccountingMigrationRunArtifact").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<AccountingMigrationRunArtifactDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -319,7 +326,7 @@ public static class AccountingSystemEndpoints
                 tenantContext.CompanyId);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("ListAccountingMigrationWorkerPlans")
+        .WithName("ListAccountingMigrationWorkerPlans").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<AccountingMigrationRunWorkerPlanListDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
@@ -336,7 +343,11 @@ public static class AccountingSystemEndpoints
 
             try
             {
-                EnsureHumanOrigin(request.ActionOrigin);
+                // Judge the narrower of the body's declaration and the principal's standing.
+                // ActionOrigin is bound from the request and defaults to HumanOperator, so this
+                // gate used to be satisfiable by omitting the field; declared automation is still
+                // believed and refused (#2673).
+                EnsureHumanOrigin(EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin));
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
                 _ = ResolveMutationActor(context, request.Actor);
                 var trustedPlan = request.Plan with
@@ -355,7 +366,7 @@ public static class AccountingSystemEndpoints
                 });
             }
         })
-        .WithName("UpsertAccountingMigrationWorkerPlan")
+        .WithName("UpsertAccountingMigrationWorkerPlan").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<AccountingMigrationRunWorkerPlanDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -382,7 +393,7 @@ public static class AccountingSystemEndpoints
             var result = await service.ImportAsync(previewRequest, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("PreviewAccountingSystemImport")
+        .WithName("PreviewAccountingSystemImport").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<AccountingSystemImportDetailDto>(StatusCodes.Status200OK)
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -411,7 +422,7 @@ public static class AccountingSystemEndpoints
                 .ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetLatestAccountingSystemImport")
+        .WithName("GetLatestAccountingSystemImport").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<AccountingSystemImportDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
@@ -440,7 +451,7 @@ public static class AccountingSystemEndpoints
                 .ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("GetLatestAccountingSystemReconciliation")
+        .WithName("GetLatestAccountingSystemReconciliation").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<AccountingSystemReconciliationSummaryDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
@@ -469,7 +480,7 @@ public static class AccountingSystemEndpoints
                 .ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("ListAccountingSystemMappingProfiles")
+        .WithName("ListAccountingSystemMappingProfiles").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<IReadOnlyList<ExternalGlMappingProfileDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
@@ -488,7 +499,8 @@ public static class AccountingSystemEndpoints
             var trustedRequest = request with
             {
                 TenantId = tenantContext.TenantId,
-                CompanyId = tenantContext.CompanyId
+                CompanyId = tenantContext.CompanyId,
+                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
             };
             try
             {
@@ -515,7 +527,7 @@ public static class AccountingSystemEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("UpsertAccountingSystemMappingProfile")
+        .WithName("UpsertAccountingSystemMappingProfile").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<ExternalGlMappingProfileDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status409Conflict)
@@ -550,7 +562,7 @@ public static class AccountingSystemEndpoints
                 .ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
-        .WithName("ListAccountingSystemExportPackages")
+        .WithName("ListAccountingSystemExportPackages").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<IReadOnlyList<ExternalGlExportPackageDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure);
@@ -569,7 +581,8 @@ public static class AccountingSystemEndpoints
             var trustedRequest = request with
             {
                 TenantId = tenantContext.TenantId,
-                CompanyId = tenantContext.CompanyId
+                CompanyId = tenantContext.CompanyId,
+                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
             };
             try
             {
@@ -596,7 +609,7 @@ public static class AccountingSystemEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("CreateAccountingSystemExportPackage")
+        .WithName("CreateAccountingSystemExportPackage").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<ExternalGlExportPackageDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status409Conflict)
@@ -635,7 +648,7 @@ public static class AccountingSystemEndpoints
                 });
             }
         })
-        .WithName("GetAccountingSystemExportPackageManifest")
+        .WithName("GetAccountingSystemExportPackageManifest").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageFundStructure)
         .Produces<ExternalGlExportPackageManifestDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -658,7 +671,8 @@ public static class AccountingSystemEndpoints
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
                     TenantId = tenantContext.TenantId,
-                    CompanyId = tenantContext.CompanyId
+                    CompanyId = tenantContext.CompanyId,
+                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
                 };
                 var result = await service.CertifyExportPackageAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
                 return result is null
@@ -677,7 +691,7 @@ public static class AccountingSystemEndpoints
                 return Results.Conflict(new { error = ex.Message });
             }
         })
-        .WithName("CertifyAccountingSystemExportPackage")
+        .WithName("CertifyAccountingSystemExportPackage").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<ExternalGlExportPackageDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -705,12 +719,20 @@ public static class AccountingSystemEndpoints
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin)
     {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        if (!OperationsOriginGuard.IsHumanOperator(actionOrigin))
         {
-            throw new ArgumentException("Accounting migration worker plan retention requires a human operator origin.", nameof(actionOrigin));
+            throw new ArgumentException(
+                "Accounting migration worker plan retention requires a human operator origin.",
+                nameof(actionOrigin),
+                OperationsOriginGuard.Refusal("retain accounting migration worker plans"));
         }
     }
 
+    // Type first, message second. Refusals raised by a module-specific type carry the signal as the
+    // inner exception, so both positions are checked before falling back to the canonical wording,
+    // which is what a governance rewording would otherwise silently break.
     private static bool IsReviewedAutomationOriginError(Exception ex)
-        => ex.Message.StartsWith("Reviewed automation cannot ", StringComparison.OrdinalIgnoreCase);
+        => ex is HumanOperatorRequiredException
+            || ex.InnerException is HumanOperatorRequiredException
+            || ex.Message.StartsWith("Reviewed automation cannot ", StringComparison.OrdinalIgnoreCase);
 }

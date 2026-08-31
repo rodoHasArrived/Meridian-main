@@ -314,6 +314,12 @@ public sealed record CompositionOptions
     public bool EnableCanonicalizationServices { get; init; }
 
     /// <summary>
+    /// Whether this graph owns process-wide hosted loops and workers. Desktop child graphs disable
+    /// this while retaining guards, migrations, and child-local storage/symbol initialization.
+    /// </summary>
+    public bool EnableProcessWideHostedServices { get; init; } = true;
+
+    /// <summary>
     /// Whether to enable OpenTelemetry tracing and metrics instrumentation.
     /// </summary>
     public bool EnableOpenTelemetry { get; init; }

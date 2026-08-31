@@ -16,37 +16,55 @@ namespace Meridian.Wpf.Services;
 public sealed class WpfRemoteWorkstationClient : IRemoteWorkstationClient
 {
     private static readonly Lazy<WpfRemoteWorkstationClient> _instance =
-        new(() => new WpfRemoteWorkstationClient(ApiClientService.Instance));
+        new(() => new WpfRemoteWorkstationClient(
+            ApiClientService.Instance,
+            HttpClientFactoryProvider.CreateClient));
 
     private readonly ApiClientService _apiClientService;
-    private HttpClient _healthClient;
-    private bool _disposed;
+    private readonly Func<string, HttpClient> _createClient;
+    private int _disposed;
 
     public static WpfRemoteWorkstationClient Instance => _instance.Value;
 
-    internal WpfRemoteWorkstationClient(ApiClientService apiClientService)
+    public WpfRemoteWorkstationClient(
+        ApiClientService apiClientService,
+        IHttpClientFactory httpClientFactory)
+        : this(apiClientService, GetCreateClient(httpClientFactory))
     {
-        _apiClientService = apiClientService ?? throw new ArgumentNullException(nameof(apiClientService));
-        _healthClient = CreateHealthClient(timeoutSeconds: 30);
     }
 
-    public string BaseUrl => _apiClientService.BaseUrl;
+    private WpfRemoteWorkstationClient(
+        ApiClientService apiClientService,
+        Func<string, HttpClient> createClient)
+    {
+        _apiClientService = apiClientService ?? throw new ArgumentNullException(nameof(apiClientService));
+        _createClient = createClient ?? throw new ArgumentNullException(nameof(createClient));
+    }
+
+    public string BaseUrl
+    {
+        get
+        {
+            ThrowIfDisposed();
+            return _apiClientService.BaseUrl;
+        }
+    }
 
     public void Configure(string serviceUrl, int timeoutSeconds = 30, int backfillTimeoutMinutes = 60)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(serviceUrl);
-
+        ThrowIfDisposed();
         _apiClientService.Configure(serviceUrl, timeoutSeconds, backfillTimeoutMinutes);
-
-        var oldClient = _healthClient;
-        _healthClient = CreateHealthClient(timeoutSeconds);
-        oldClient.Dispose();
     }
 
     public async Task<bool> CheckHealthEndpointAsync(CancellationToken ct = default)
     {
-        var endpoint = $"{BaseUrl.TrimEnd('/')}/healthz";
-        using var response = await _healthClient.GetAsync(endpoint, HttpCompletionOption.ResponseHeadersRead, ct)
+        ThrowIfDisposed();
+        var configuration = _apiClientService.Configuration;
+        var endpoint = $"{configuration.BaseUrl.TrimEnd('/')}/healthz";
+        using var client = _createClient(HttpClientNames.ApiClient);
+        client.Timeout = TimeSpan.FromSeconds(configuration.TimeoutSeconds);
+        using var response = await client.GetAsync(endpoint, HttpCompletionOption.ResponseHeadersRead, ct)
             .ConfigureAwait(false);
         return response.IsSuccessStatusCode;
     }
@@ -80,20 +98,14 @@ public sealed class WpfRemoteWorkstationClient : IRemoteWorkstationClient
         => _apiClientService.DeleteWithResponseAsync<T>(endpoint, ct);
 
     public void Dispose()
-    {
-        if (_disposed)
-        {
-            return;
-        }
+        => Interlocked.Exchange(ref _disposed, 1);
 
-        _healthClient.Dispose();
-        _disposed = true;
-    }
+    private void ThrowIfDisposed()
+        => ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
 
-    private static HttpClient CreateHealthClient(int timeoutSeconds)
+    private static Func<string, HttpClient> GetCreateClient(IHttpClientFactory httpClientFactory)
     {
-        var client = HttpClientFactoryProvider.CreateClient(HttpClientNames.ApiClient);
-        client.Timeout = TimeSpan.FromSeconds(timeoutSeconds > 0 ? timeoutSeconds : 30);
-        return client;
+        ArgumentNullException.ThrowIfNull(httpClientFactory);
+        return httpClientFactory.CreateClient;
     }
 }

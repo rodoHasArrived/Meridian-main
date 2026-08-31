@@ -11,6 +11,7 @@ using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
@@ -125,10 +126,8 @@ public sealed class FundLedgerViewModelTests
                     projectionService: new ReconciliationProjectionService(),
                     repository: reconciliationRepository);
                 var reconciliationReadService = new ReconciliationReadService(
-                    fundAccountService,
-                    fundAccountReadService,
                     workspaceService,
-                    strategyReconciliationService);
+                    fakeApiClient);
                 var workbenchService = new FundReconciliationWorkbenchService(
                     reconciliationReadService,
                     fundAccountService,
@@ -178,11 +177,13 @@ public sealed class FundLedgerViewModelTests
                     position.CoverageLabel == "Unresolved");
                 viewModel.SecurityCoverageText.Should().Contain("need Security Master coverage");
 
+                // Run posture now comes from the workstation API detail (BuildStrategyDetail),
+                // not an in-process recomputation over local stores.
                 viewModel.ReconciliationRuns.Should().Contain(item =>
                     item.ScopeLabel == "Strategy Run" &&
                     item.RunId == "run-fund-ops" &&
                     item.HasSecurityCoverageIssues &&
-                    item.SecurityIssueCount == 2);
+                    item.SecurityIssueCount == 1);
                 viewModel.SelectedReconciliationQueueIndex.Should().Be(0);
                 viewModel.IsOpenBreakQueueFilterSelected.Should().BeTrue();
                 viewModel.ReconciliationBreakQueueItems.Should().ContainSingle(item =>
@@ -237,7 +238,7 @@ public sealed class FundLedgerViewModelTests
 
     [Fact]
     [Trait("Category", "W4Acceptance")]
-    public void ResolveSelectedBreakAsync_RefreshesQueueAndKeepsDecisionAuditVisible()
+    public void ResolveSelectedBreakAsync_CompletedWithWarnings_RefreshesQueueAndKeepsOperatorGuidanceVisible()
     {
         WpfTestThread.Run(async () =>
         {
@@ -281,6 +282,7 @@ public sealed class FundLedgerViewModelTests
                 [
                     BuildStrategyDetail("run-fund-ops")
                 ]);
+                fakeApiClient.ResolveOutcome = BuildCompletedWithWarningsOutcome();
 
                 var fundAccountService = new InMemoryFundAccountService();
                 var fundAccountReadService = new FundAccountReadService(fundAccountService);
@@ -291,10 +293,8 @@ public sealed class FundLedgerViewModelTests
                     projectionService: new ReconciliationProjectionService(),
                     repository: reconciliationRepository);
                 var reconciliationReadService = new ReconciliationReadService(
-                    fundAccountService,
-                    fundAccountReadService,
                     workspaceService,
-                    strategyReconciliationService);
+                    fakeApiClient);
                 var workbenchService = new FundReconciliationWorkbenchService(
                     reconciliationReadService,
                     fundAccountService,
@@ -351,7 +351,14 @@ public sealed class FundLedgerViewModelTests
                 viewModel.ReconciliationAuditRows.Should().Contain(row =>
                     row.Title == "Break closed" &&
                     row.Description == "Reviewed custodian statement and matched ledger adjustment.");
-                viewModel.ReconciliationActionFeedbackText.Should().Be("Break resolved and audit note captured.");
+                viewModel.ReconciliationActionFeedbackText.Should().StartWith("Break resolved and audit note captured.");
+                viewModel.ReconciliationActionFeedbackText.Should().Contain("completed with warnings");
+                viewModel.ReconciliationActionFeedbackText.Should().Contain("supporting-evidence-stale");
+                viewModel.ReconciliationActionFeedbackText.Should().Contain(
+                    "Supporting evidence is older than the preferred review window.");
+                viewModel.ReconciliationActionFeedbackText.Should().Contain("Refresh supporting evidence");
+                viewModel.ReconciliationActionFeedbackText.Should().Contain(
+                    "Attach a current source statement before close sign-off.");
             }
             finally
             {
@@ -364,7 +371,7 @@ public sealed class FundLedgerViewModelTests
     }
 
     [Fact]
-    public void RefreshReconciliationWorkbenchAsync_PreservesRunSelection_AndLoadsAccountDetail()
+    public void RefreshReconciliationWorkbenchAsync_PreservesRunSelection_AndExcludesDesktopLocalAccountRuns()
     {
         WpfTestThread.Run(async () =>
         {
@@ -459,10 +466,8 @@ public sealed class FundLedgerViewModelTests
                     projectionService: new ReconciliationProjectionService(),
                     repository: reconciliationRepository);
                 var reconciliationReadService = new ReconciliationReadService(
-                    fundAccountService,
-                    fundAccountReadService,
                     workspaceService,
-                    strategyReconciliationService);
+                    fakeApiClient);
                 var workbenchService = new FundReconciliationWorkbenchService(
                     reconciliationReadService,
                     fundAccountService,
@@ -486,28 +491,30 @@ public sealed class FundLedgerViewModelTests
                     workspaceService);
 
                 await viewModel.LoadAsync();
-                await WaitForConditionAsync(() => viewModel.ReconciliationRunItems.Any(item => item.SourceType == FundReconciliationSourceType.AccountRun));
+                await WaitForConditionAsync(() => viewModel.ReconciliationRunItems.Any(item => item.SourceType == FundReconciliationSourceType.StrategyRun));
 
-                var accountRun = viewModel.ReconciliationRunItems.Single(item => item.SourceType == FundReconciliationSourceType.AccountRun);
+                // The locally reconciled custody account must not surface a run row: the run
+                // list is served by the workstation API, not the desktop-local JSON universe.
+                viewModel.ReconciliationRunItems.Should().NotContain(item => item.SourceType == FundReconciliationSourceType.AccountRun);
+
+                var strategyRun = viewModel.ReconciliationRunItems.Single(item => item.SourceType == FundReconciliationSourceType.StrategyRun);
                 viewModel.SelectedReconciliationQueueIndex = 1;
-                viewModel.SelectedReconciliationRun = accountRun;
+                viewModel.SelectedReconciliationRun = strategyRun;
 
                 await WaitForConditionAsync(() =>
-                    viewModel.ReconciliationDetailTitle == accountRun.PrimaryLabel &&
-                    viewModel.CanOpenSelectedReconciliationAccountWorkflow);
+                    viewModel.ReconciliationDetailTitle == strategyRun.PrimaryLabel);
 
                 await viewModel.RefreshReconciliationWorkbenchAsync();
                 await WaitForConditionAsync(() =>
-                    viewModel.SelectedReconciliationRun?.RowKey == accountRun.RowKey &&
-                    viewModel.ReconciliationDetailTitle == accountRun.PrimaryLabel &&
-                    viewModel.CanOpenSelectedReconciliationAccountWorkflow);
+                    viewModel.SelectedReconciliationRun?.RowKey == strategyRun.RowKey &&
+                    viewModel.ReconciliationDetailTitle == strategyRun.PrimaryLabel);
 
                 viewModel.SelectedReconciliationQueueIndex.Should().Be(1);
                 viewModel.SelectedReconciliationRun.Should().NotBeNull();
-                viewModel.SelectedReconciliationRun!.RowKey.Should().Be(accountRun.RowKey);
-                viewModel.ReconciliationDetailTitle.Should().Be(accountRun.PrimaryLabel);
+                viewModel.SelectedReconciliationRun!.RowKey.Should().Be(strategyRun.RowKey);
+                viewModel.ReconciliationDetailTitle.Should().Be(strategyRun.PrimaryLabel);
                 viewModel.SupportsSelectedBreakActions.Should().BeFalse();
-                viewModel.CanOpenSelectedReconciliationAccountWorkflow.Should().BeTrue();
+                viewModel.CanOpenSelectedReconciliationAccountWorkflow.Should().BeFalse();
             }
             finally
             {
@@ -574,10 +581,8 @@ public sealed class FundLedgerViewModelTests
                     projectionService: new ReconciliationProjectionService(),
                     repository: reconciliationRepository);
                 var reconciliationReadService = new ReconciliationReadService(
-                    fundAccountService,
-                    fundAccountReadService,
                     workspaceService,
-                    strategyReconciliationService);
+                    fakeApiClient);
                 var workbenchService = new FundReconciliationWorkbenchService(
                     reconciliationReadService,
                     fundAccountService,
@@ -693,10 +698,8 @@ public sealed class FundLedgerViewModelTests
                     projectionService: new ReconciliationProjectionService(),
                     repository: reconciliationRepository);
                 var reconciliationReadService = new ReconciliationReadService(
-                    fundAccountService,
-                    fundAccountReadService,
                     workspaceService,
-                    strategyReconciliationService);
+                    fakeApiClient);
                 var workbenchService = new FundReconciliationWorkbenchService(
                     reconciliationReadService,
                     fundAccountService,
@@ -1462,16 +1465,15 @@ public sealed class FundLedgerViewModelTests
                     runReadService: runReadService,
                     projectionService: new ReconciliationProjectionService(),
                     repository: reconciliationRepository);
+                var fakeApiClient = new FakeWorkstationReconciliationApiClient([], []);
                 var reconciliationReadService = new ReconciliationReadService(
-                    fundAccountService,
-                    fundAccountReadService,
                     workspaceService,
-                    strategyReconciliationService);
+                    fakeApiClient);
                 var workbenchService = new FundReconciliationWorkbenchService(
                     reconciliationReadService,
                     fundAccountService,
                     workspaceService,
-                    new FakeWorkstationReconciliationApiClient([], []));
+                    fakeApiClient);
                 var fundOperationsWorkspaceReadService = CreateFundOperationsWorkspaceReadService(
                     fundAccountService,
                     store,
@@ -1826,16 +1828,15 @@ public sealed class FundLedgerViewModelTests
                     runReadService: runReadService,
                     projectionService: new ReconciliationProjectionService(),
                     repository: reconciliationRepository);
+                var fakeApiClient = new FakeWorkstationReconciliationApiClient([], []);
                 var reconciliationReadService = new ReconciliationReadService(
-                    fundAccountService,
-                    fundAccountReadService,
                     workspaceService,
-                    strategyReconciliationService);
+                    fakeApiClient);
                 var workbenchService = new FundReconciliationWorkbenchService(
                     reconciliationReadService,
                     fundAccountService,
                     workspaceService,
-                    new FakeWorkstationReconciliationApiClient([], []));
+                    fakeApiClient);
                 var fundOperationsWorkspaceReadService = CreateFundOperationsWorkspaceReadService(
                     fundAccountService,
                     store,
@@ -2389,6 +2390,60 @@ public sealed class FundLedgerViewModelTests
         }
 
         condition().Should().BeTrue();
+    }
+
+    private static VerifiedOperationOutcome BuildCompletedWithWarningsOutcome()
+    {
+        var startedAt = new DateTimeOffset(2026, 7, 24, 16, 0, 0, TimeSpan.Zero);
+        return VerifiedOperationOutcomeValidator.ValidateAndThrow(new VerifiedOperationOutcome(
+            OperationId: "reconciliation-casework:warning-1",
+            OperationKind: "reconciliation.casework.resolve",
+            State: OperationTerminalState.CompletedWithWarnings,
+            StartedAtUtc: startedAt,
+            CompletedAtUtc: startedAt.AddSeconds(2),
+            AttemptNumber: 1,
+            CorrelationId: "warning-correlation-1",
+            InputHashSha256: new string('a', 64),
+            Postconditions:
+            [
+                new OperationPostcondition(
+                    "break-resolved",
+                    "The selected reconciliation break reached a terminal state.",
+                    OperationPostconditionState.Satisfied,
+                    Required: true,
+                    EvidenceIds: ["warning-evidence"])
+            ],
+            Evidence:
+            [
+                new OperationEvidenceReference(
+                    "warning-evidence",
+                    "reconciliation-casework",
+                    "Retained warning receipt.",
+                    Uri: "urn:reconciliation:warning-1",
+                    ContentHashSha256: new string('b', 64),
+                    CapturedAtUtc: startedAt.AddSeconds(2))
+            ],
+            Artifacts: [],
+            Issues:
+            [
+                new OperationIssue(
+                    "supporting-evidence-stale",
+                    "Supporting evidence is older than the preferred review window.",
+                    OperationIssueSeverity.Warning,
+                    EvidenceId: "warning-evidence")
+            ],
+            Recovery:
+            [
+                new OperationRecoveryAction(
+                    "refresh-support",
+                    "Refresh supporting evidence",
+                    "Attach a current source statement before close sign-off.",
+                    Retryable: true,
+                    RequiresHumanAction: true)
+                {
+                    EvidenceIds = ["warning-evidence"]
+                }
+            ]));
     }
 
     private static ReconciliationBreakQueueItem BuildBreakQueueItem(string runId)

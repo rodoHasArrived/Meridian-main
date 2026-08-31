@@ -11,10 +11,19 @@ namespace Meridian.Application.DirectLending;
 /// <summary>
 /// Background service that posts daily interest and commitment-fee accruals for all active loans.
 /// Runs once per day at the UTC midnight boundary, or immediately on startup if the current day
-/// has not yet been processed.
+/// has not yet been processed. Each batch catches up every missing accrual date since the loan's
+/// last accrual, in strict date order, so worker downtime or a temporarily blocked accounting
+/// period does not silently under-accrue interest.
 /// </summary>
 public sealed class DailyAccrualWorker : BackgroundService
 {
+    /// <summary>
+    /// Defensive upper bound on how many missed accrual dates a single batch will catch up per
+    /// loan. A larger backlog is truncated (loudly) and the remainder resumes on the next cycle,
+    /// so a very stale loan still converges without an unbounded burst of postings.
+    /// </summary>
+    internal const int MaxCatchUpDays = 366;
+
     private readonly IDirectLendingOperationsStore _operationsStore;
     private readonly IDirectLendingQueryService _queryService;
     private readonly IDirectLendingCommandService _commandService;
@@ -103,29 +112,65 @@ public sealed class DailyAccrualWorker : BackgroundService
                     continue;
                 }
 
-                var postingCheck = await CheckPostingDateAsync(loanId, accrualDate, ct).ConfigureAwait(false);
-                if (postingCheck is not null && !string.Equals(postingCheck, "Allowed", StringComparison.Ordinal))
-                {
-                    await RoutePeriodBlockedAsync(loanId, accrualDate, postingCheck, ct).ConfigureAwait(false);
-                    failed++;
-                    continue;
-                }
+                // Catch up every missing date from the day after the last accrual through today,
+                // in order. Without an accrual baseline there is no gap to reconstruct, so only
+                // today is posted.
+                var startDate = servicing.LastAccrualDate is { } lastAccrualDate
+                    ? lastAccrualDate.AddDays(1)
+                    : accrualDate;
 
-                var result = await _commandService.PostDailyAccrualAsync(
-                    loanId,
-                    new PostDailyAccrualRequest(accrualDate),
-                    ct: ct).ConfigureAwait(false);
-
-                if (result.IsSuccess)
+                var endDate = accrualDate;
+                var gapDays = endDate.DayNumber - startDate.DayNumber + 1;
+                if (gapDays > MaxCatchUpDays)
                 {
-                    posted++;
-                }
-                else
-                {
+                    endDate = startDate.AddDays(MaxCatchUpDays - 1);
                     _logger.LogWarning(
-                        "DailyAccrualWorker: accrual rejected for loan {LoanId} on {Date}: {Error}",
-                        loanId, accrualDate, result.Error?.Message);
-                    failed++;
+                        "DailyAccrualWorker: loan {LoanId} has {GapDays} unaccrued days from {StartDate} through {AccrualDate}, exceeding the {MaxCatchUpDays}-day catch-up bound; truncating this cycle at {TruncatedEndDate} and resuming the remainder next cycle.",
+                        loanId, gapDays, startDate, accrualDate, MaxCatchUpDays, endDate);
+                }
+                else if (gapDays > 1)
+                {
+                    _logger.LogInformation(
+                        "DailyAccrualWorker: loan {LoanId} is missing {GapDays} accrual days; catching up from {StartDate} through {EndDate} in order.",
+                        loanId, gapDays, startDate, endDate);
+                }
+
+                for (var date = startDate; date <= endDate; date = date.AddDays(1))
+                {
+                    if (ct.IsCancellationRequested)
+                    {
+                        break;
+                    }
+
+                    var postingCheck = await CheckPostingDateAsync(loanId, date, ct).ConfigureAwait(false);
+                    if (postingCheck is not null && !string.Equals(postingCheck, "Allowed", StringComparison.Ordinal))
+                    {
+                        await RoutePeriodBlockedAsync(loanId, date, postingCheck, ct).ConfigureAwait(false);
+                        failed++;
+
+                        // Accruals must post in strict date order, so stop this loan's catch-up at
+                        // the first blocked date. LastAccrualDate stays un-advanced and the same
+                        // date is retried on the next cycle once the period reopens.
+                        break;
+                    }
+
+                    var result = await _commandService.PostDailyAccrualAsync(
+                        loanId,
+                        new PostDailyAccrualRequest(date),
+                        ct: ct).ConfigureAwait(false);
+
+                    if (result.IsSuccess)
+                    {
+                        posted++;
+                    }
+                    else
+                    {
+                        _logger.LogWarning(
+                            "DailyAccrualWorker: accrual rejected for loan {LoanId} on {Date}: {Error}; halting catch-up for this loan until the next cycle.",
+                            loanId, date, result.Error?.Message);
+                        failed++;
+                        break;
+                    }
                 }
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)

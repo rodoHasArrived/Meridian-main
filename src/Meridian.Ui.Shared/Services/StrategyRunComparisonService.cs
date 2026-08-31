@@ -15,13 +15,30 @@ public sealed class StrategyRunComparisonService
         _readService = readService ?? throw new ArgumentNullException(nameof(readService));
     }
 
-    public async Task<IReadOnlyList<StrategyRunComparison>> CompareRunsAsync(
+    public Task<IReadOnlyList<StrategyRunComparison>> CompareRunsAsync(
         RunComparisonRequest request,
+        CancellationToken ct = default) =>
+        CompareRunsCoreAsync(request, scope: null, ct);
+
+    public Task<IReadOnlyList<StrategyRunComparison>> CompareRunsAsync(
+        RunComparisonRequest request,
+        StrategyRunReadScope scope,
         CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return CompareRunsCoreAsync(request, scope, ct);
+    }
+
+    private async Task<IReadOnlyList<StrategyRunComparison>> CompareRunsCoreAsync(
+        RunComparisonRequest request,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var comparison = await _readService.CompareRunsAsync(request.RunIds, ct).ConfigureAwait(false);
+        var comparison = scope is null
+            ? await _readService.CompareRunsAsync(request.RunIds, ct).ConfigureAwait(false)
+            : await _readService.CompareRunsAsync(request.RunIds, scope, ct).ConfigureAwait(false);
         if (comparison.Count == 0)
             return comparison;
 
@@ -46,14 +63,33 @@ public sealed class StrategyRunComparisonService
             .ToArray();
     }
 
-    public async Task<StrategyRunDiff?> BuildDiffAsync(
+    public Task<StrategyRunDiff?> BuildDiffAsync(
         RunDiffRequest request,
+        CancellationToken ct = default) =>
+        BuildDiffCoreAsync(request, scope: null, ct);
+
+    public Task<StrategyRunDiff?> BuildDiffAsync(
+        RunDiffRequest request,
+        StrategyRunReadScope scope,
         CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return BuildDiffCoreAsync(request, scope, ct);
+    }
+
+    private async Task<StrategyRunDiff?> BuildDiffCoreAsync(
+        RunDiffRequest request,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var baseDetail = await _readService.GetRunDetailAsync(request.BaseRunId, ct).ConfigureAwait(false);
-        var targetDetail = await _readService.GetRunDetailAsync(request.TargetRunId, ct).ConfigureAwait(false);
+        var baseDetail = scope is null
+            ? await _readService.GetRunDetailAsync(request.BaseRunId, ct).ConfigureAwait(false)
+            : await _readService.GetRunDetailAsync(request.BaseRunId, scope, ct).ConfigureAwait(false);
+        var targetDetail = scope is null
+            ? await _readService.GetRunDetailAsync(request.TargetRunId, ct).ConfigureAwait(false)
+            : await _readService.GetRunDetailAsync(request.TargetRunId, scope, ct).ConfigureAwait(false);
         if (baseDetail is null || targetDetail is null)
             return null;
 
@@ -89,9 +125,13 @@ public sealed class StrategyRunComparisonService
                 "Modified"))
             .ToArray();
 
-        var comparisonRows = await _readService
-            .CompareRunsAsync([baseDetail.Summary.RunId, targetDetail.Summary.RunId], ct)
-            .ConfigureAwait(false);
+        var comparisonRows = scope is null
+            ? await _readService
+                .CompareRunsAsync([baseDetail.Summary.RunId, targetDetail.Summary.RunId], ct)
+                .ConfigureAwait(false)
+            : await _readService
+                .CompareRunsAsync([baseDetail.Summary.RunId, targetDetail.Summary.RunId], scope, ct)
+                .ConfigureAwait(false);
         var baseComparison = comparisonRows.FirstOrDefault(row =>
             string.Equals(row.RunId, baseDetail.Summary.RunId, StringComparison.Ordinal));
         var targetComparison = comparisonRows.FirstOrDefault(row =>

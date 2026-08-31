@@ -1488,7 +1488,11 @@ describe("ReportingScreen", () => {
   });
 
   it("renders private-capital fund event report readiness from the shared workbench projection", () => {
-    renderWithRouter(<ReportingScreen data={withPrivateCapitalReportReview()} />, { initialEntries: ["/reporting/report-builder"] });
+    const privateCapitalData = withPrivateCapitalReportReview();
+    renderWithRouter(
+      <ReportingScreen data={privateCapitalData} accounting={privateCapitalData} />,
+      { initialEntries: ["/reporting/report-builder"] }
+    );
 
     const readiness = screen.getByRole("region", { name: "Private-capital report readiness" });
     expect(within(readiness).getByText("Fund event ledger and capital account subledger")).toBeInTheDocument();
@@ -3516,8 +3520,15 @@ describe("ReportingScreen", () => {
       target: { value: "Portfolio" }
     });
     fireEvent.change(screen.getByLabelText("Reporting schedule output format"), {
-      target: { value: "Xlsx" }
+      target: { value: "ClientPackage" }
     });
+    expect(screen.getByLabelText("Reporting schedule Pdf format")).toBeChecked();
+    expect(screen.getByLabelText("Reporting schedule Pdf format")).toBeDisabled();
+    expect(screen.getByLabelText("Reporting schedule Xlsx format")).toBeChecked();
+    expect(screen.getByLabelText("Reporting schedule Xlsx format")).toBeDisabled();
+    expect(screen.getByLabelText("Reporting schedule Csv format")).not.toBeChecked();
+    expect(screen.getByLabelText("Reporting schedule Csv format")).toBeDisabled();
+    expect(screen.getByText(/Client Package delivery always includes PDF and XLSX together/i)).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Reporting schedule finality"), {
       target: { value: "Final" }
     });
@@ -3553,7 +3564,6 @@ describe("ReportingScreen", () => {
     fireEvent.change(screen.getByLabelText("Reporting schedule delivery note"), {
       target: { value: "Email link pack." }
     });
-    fireEvent.click(screen.getByLabelText("Reporting schedule Xlsx format"));
     fireEvent.click(screen.getByRole("button", { name: "Save reporting schedule" }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
@@ -3615,7 +3625,7 @@ describe("ReportingScreen", () => {
         accountingBasis: "Statutory",
         presentationCurrency: "EUR",
         consolidationLevel: "Portfolio",
-        outputFormat: "Xlsx",
+        outputFormat: "ClientPackage",
         finality: "Final",
         includeSupportingSchedules: false,
         includeEvidenceAppendix: true,
@@ -3627,7 +3637,7 @@ describe("ReportingScreen", () => {
           recipientPrincipalId: "compliance-reviewers",
           recipientPrincipalKind: "Group",
           deliveryMode: "EmailLink",
-          formats: ["Pdf", "Csv"],
+          formats: ["Pdf", "Xlsx"],
           note: "Email link pack."
         }
       ]
@@ -3667,7 +3677,7 @@ describe("ReportingScreen", () => {
             distributionId: "board-reporting-committee",
             recipientPrincipalId: "board-reviewers",
             recipientPrincipalKind: "Group",
-            formats: ["Pdf", "Xlsx", "Csv"],
+            formats: ["Pdf", "Xlsx"],
             deliveryMode: "SecurePortal",
             note: "Board portal pack."
           },
@@ -3675,7 +3685,7 @@ describe("ReportingScreen", () => {
             distributionId: "compliance-archive",
             recipientPrincipalId: "company-alpha",
             recipientPrincipalKind: "Company",
-            formats: ["Pdf", "Csv"],
+            formats: ["Pdf", "Xlsx"],
             deliveryMode: "EmailLink",
             note: "Email link archive."
           }
@@ -3687,6 +3697,9 @@ describe("ReportingScreen", () => {
 
     fireEvent.change(screen.getByLabelText("Reporting schedule ID"), {
       target: { value: "sched-multi-target" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule output format"), {
+      target: { value: "ClientPackage" }
     });
     fireEvent.change(screen.getByLabelText("Reporting schedule delivery note"), {
       target: { value: "Board portal pack." }
@@ -3718,7 +3731,6 @@ describe("ReportingScreen", () => {
     fireEvent.change(screen.getByLabelText("Reporting schedule delivery note"), {
       target: { value: "Email link archive." }
     });
-    fireEvent.click(screen.getByLabelText("Reporting schedule Xlsx format"));
     await user.click(screen.getByRole("button", { name: "Save reporting schedule" }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
@@ -3736,7 +3748,7 @@ describe("ReportingScreen", () => {
           recipientPrincipalId: "board-reviewers",
           recipientPrincipalKind: "Group",
           deliveryMode: "SecurePortal",
-          formats: ["Pdf", "Xlsx", "Csv"],
+          formats: ["Pdf", "Xlsx"],
           note: "Board portal pack."
         },
         {
@@ -3744,7 +3756,7 @@ describe("ReportingScreen", () => {
           recipientPrincipalId: "company-alpha",
           recipientPrincipalKind: "Company",
           deliveryMode: "EmailLink",
-          formats: ["Pdf", "Csv"],
+          formats: ["Pdf", "Xlsx"],
           note: "Email link archive."
         }
       ]
@@ -4638,8 +4650,13 @@ describe("ReportingScreen", () => {
             reportId: "11111111-1111-1111-1111-111111111111",
             distributionId: "board-reporting-committee",
             deliveryMode: "SecurePortal",
-            secureLink: null,
-            portalRoute: null,
+            // Deliberately malformed: ReportPackDeliveryPackageDto declares both as non-nullable
+            // strings, so a conforming server cannot send this. The delivery-history view still has
+            // a suppression branch for a package with no usable link, and this exercises it. Cast
+            // locally rather than widening the shared type, which would stop the strict gate from
+            // catching real drift against the shared read model.
+            secureLink: null as unknown as string,
+            portalRoute: null as unknown as string,
             formats: ["Pdf", "Csv"],
             deliveryAccessSummary: "Access is retained through the governed distribution record.",
             deliveryChannelSummary: "SecurePortal delivery to Board reporting committee via Board portal.",

@@ -1721,10 +1721,16 @@ public sealed class LedgerIntegrationTests
         var taxArtifact = pack.Artifacts.Single(artifact => artifact.Name == "tax-lot-realized-gains.csv");
         taxArtifact.Content.Should().Contain("SaleDate,AccountName,Symbol,FinancialAccountId,ReliefMethod,LotId");
         taxArtifact.Content.Should().Contain("RealizedGainOrLoss,DisallowedWashSaleLoss,RecognizedGainOrLoss");
-        // Non-wash-sale row still nets recognized == realized (100), with zero disallowed.
-        taxArtifact.Content.Should().Contain("2026-05-15,Assets:Investments:AAPL,AAPL,broker-1,Hifo,lot-high,2026-02-10,5,100,600,500,100,0,100");
-        // Wash-sale row: full 200 loss disallowed, recognized loss zero.
-        taxArtifact.Content.Should().Contain("2026-05-20,Assets:Investments:AAPL,AAPL,broker-1,Fifo,lot-wash,2026-01-05,10,100,800,1000,-200,200,0");
+        taxArtifact.Content.Should().Contain("TaxCharacter,HoldingPeriodExtendedByWashSale");
+        taxArtifact.Content.Should().Contain("ShortTermRecognizedGainOrLoss,LongTermRecognizedGainOrLoss");
+        // Non-wash-sale row still nets recognized == realized (100), with zero disallowed. Held
+        // 2026-02-10 to 2026-05-15 (94 days), so the recognized gain routes to the short-term column.
+        taxArtifact.Content.Should().Contain(
+            "2026-05-15,Assets:Investments:AAPL,AAPL,broker-1,Hifo,lot-high,2026-02-10,2026-02-10,94,ShortTerm,false,5,100,600,500,100,0,100,100,0");
+        // Wash-sale row: full 200 loss disallowed, recognized loss zero — so both character columns
+        // are zero even though the parcel itself is short-term.
+        taxArtifact.Content.Should().Contain(
+            "2026-05-20,Assets:Investments:AAPL,AAPL,broker-1,Fifo,lot-wash,2026-01-05,2026-01-05,135,ShortTerm,false,10,100,800,1000,-200,200,0,0,0");
         pack.Signature.Algorithm.Should().Be("SHA256");
         pack.Signature.PayloadChecksumSha256.Should().HaveLength(64);
         pack.Signature.SignedBy.Should().Be("controller");

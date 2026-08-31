@@ -27,6 +27,7 @@ public sealed class ConfigEnvironmentOverride
         ["MDC_DATA_ROOT"] = "DataRoot",
         ["MDC_COMPRESS"] = "Compress",
         ["MDC_DATASOURCE"] = "DataSource",
+        ["MDC_SYMBOLS"] = "Symbols",
         ["MDC_SYNTHETIC_MODE"] = "Synthetic:Enabled",
 
         // Alpaca settings
@@ -211,6 +212,7 @@ public sealed class ConfigEnvironmentOverride
             "DataRoot" => config with { DataRoot = value },
             "Compress" => config with { Compress = ParseBool(value) },
             "DataSource" => config with { DataSource = ParseDataSource(value) },
+            "Symbols" => config with { Symbols = ParseSymbols(value, config.Symbols) },
             "Synthetic" => ApplySyntheticOverride(config, parts.Skip(1).ToArray(), value),
             "Alpaca" => ApplyAlpacaOverride(config, parts.Skip(1).ToArray(), value),
             "IB" => ApplyIbOverride(config, parts.Skip(1).ToArray(), value),
@@ -394,6 +396,64 @@ public sealed class ConfigEnvironmentOverride
             $"Valid values: {string.Join(", ", Enum.GetNames<DataSourceKind>())}.",
             configPath: null,
             fieldName: "DataSource");
+    }
+
+    private static SymbolConfig[] ParseSymbols(string value, SymbolConfig[]? configured)
+    {
+        // MDC_SYMBOLS changes *which* symbols are collected, not *how*. Constructing bare
+        // SymbolConfig records would silently re-apply the record defaults — SubscribeDepth = true
+        // among them — and so undo a configuration that deliberately disabled depth, such as the
+        // generated Docker template. SubscriptionOrchestrator registers each symbol with
+        // MarketDepthCollector and takes an ownership lease before the client returns -1, and its
+        // non-positive return path releases neither, so re-enabling depth here would leave a
+        // phantom subscription for any provider that cannot serve it.
+        //
+        // The list is replaced wholesale, so the first configured symbol supplies the posture the
+        // new entries inherit. With nothing configured, collect trades and leave depth off: the
+        // environment cannot know whether the selected provider advertises Level2Book.
+        //
+        // Only the collection toggles are inherited. Copying the whole record would carry
+        // per-symbol contract identity — LocalSymbol, ConId, Strike, expiry — onto unrelated
+        // tickers, so the contract fields stay at their STK/SMART/USD defaults, which is what a
+        // comma-separated ticker list can actually express. Anything needing those fields belongs
+        // in JSON, as the reference states.
+        var first = configured is { Length: > 0 } ? configured[0] : null;
+        var subscribeTrades = first?.SubscribeTrades ?? true;
+        var subscribeDepth = first?.SubscribeDepth ?? false;
+        var depthLevels = first?.DepthLevels ?? 10;
+
+        // SymbolConfigValidator matches ^[A-Z0-9\-\.\/]+$, so a lowercase ticker typed into the
+        // environment would otherwise fail validation rather than subscribe. Character validity
+        // is deliberately left to that validator instead of being restated here.
+        // Deduplicated case-insensitively because uppercasing merges spellings the operator wrote
+        // as distinct: "SPY,spy" becomes two identical entries, and per-symbol validation accepts
+        // both. SubscriptionOrchestrator.ApplyAsync then builds its desired set with
+        // ToDictionary(..., StringComparer.OrdinalIgnoreCase), which throws on the duplicate key
+        // and aborts collector startup. Dropping the repeat is the reading that matches intent —
+        // naming a ticker twice means subscribing to it, not failing to start.
+        var symbols = value
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(symbol => symbol.ToUpperInvariant())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Select(symbol => new SymbolConfig(
+                symbol,
+                SubscribeTrades: subscribeTrades,
+                SubscribeDepth: subscribeDepth,
+                DepthLevels: depthLevels))
+            .ToArray();
+
+        // Same fail-closed contract as MDC_DATASOURCE: a variable the operator deliberately set
+        // must not resolve to "subscribe to nothing" in silence.
+        if (symbols.Length == 0)
+        {
+            throw new Meridian.Core.Exceptions.ConfigurationException(
+                $"MDC_SYMBOLS was set to '{value}' but contains no symbols. " +
+                "Expected a comma-separated list such as 'SPY,QQQ'.",
+                configPath: null,
+                fieldName: "Symbols");
+        }
+
+        return symbols;
     }
 
     private static bool IsSensitiveVariable(string envVar)

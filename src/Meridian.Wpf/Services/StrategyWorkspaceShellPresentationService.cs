@@ -19,6 +19,7 @@ public sealed class StrategyWorkspaceShellPresentationService : IWorkspaceScoped
     private readonly WorkstationOperatingContextService? _operatingContextService;
     private readonly WorkspaceShellContextService _shellContextService;
     private readonly WorkstationWorkflowSummaryService? _workflowSummaryService;
+    private readonly DesktopAuthenticationSession? _authenticationSession;
     private readonly PromotionService? _promotionService;
     private bool _started;
 
@@ -30,7 +31,8 @@ public sealed class StrategyWorkspaceShellPresentationService : IWorkspaceScoped
         WorkstationOperatingContextService? operatingContextService,
         WorkspaceShellContextService shellContextService,
         WorkstationWorkflowSummaryService? workflowSummaryService = null,
-        PromotionService? promotionService = null)
+        PromotionService? promotionService = null,
+        DesktopAuthenticationSession? authenticationSession = null)
     {
         _runService = runService ?? throw new ArgumentNullException(nameof(runService));
         _briefingService = briefingService ?? throw new ArgumentNullException(nameof(briefingService));
@@ -39,6 +41,7 @@ public sealed class StrategyWorkspaceShellPresentationService : IWorkspaceScoped
         _operatingContextService = operatingContextService;
         _shellContextService = shellContextService ?? throw new ArgumentNullException(nameof(shellContextService));
         _workflowSummaryService = workflowSummaryService;
+        _authenticationSession = authenticationSession;
         _promotionService = promotionService;
     }
 
@@ -283,6 +286,9 @@ public sealed class StrategyWorkspaceShellPresentationService : IWorkspaceScoped
                     Id = "PromoteToPaper",
                     Label = "Promote to Paper",
                     Description = "Promote the selected run",
+                    DisabledReason = canPromoteActiveRun
+                        ? string.Empty
+                        : "Select a completed run that is eligible for paper promotion.",
                     ShortcutHint = "Review",
                     Glyph = "\uE8FB",
                     IsEnabled = canPromoteActiveRun
@@ -292,6 +298,9 @@ public sealed class StrategyWorkspaceShellPresentationService : IWorkspaceScoped
                     Id = "OpenTradingCockpit",
                     Label = "Open Trading Cockpit",
                     Description = "Open the selected run in trading",
+                    DisabledReason = canOpenTradingCockpit
+                        ? string.Empty
+                        : "Select a run before opening it in the trading cockpit.",
                     ShortcutHint = "Handoff",
                     Glyph = "\uE9F5",
                     IsEnabled = canOpenTradingCockpit
@@ -448,6 +457,7 @@ public sealed class StrategyWorkspaceShellPresentationService : IWorkspaceScoped
         {
             var summary = await _workflowSummaryService
                 .GetAsync(
+                    DesktopWorkflowReadScopeResolver.Resolve(_authenticationSession),
                     hasOperatingContext: _operatingContextService?.CurrentContext is not null || _fundContextService.CurrentFundProfile is not null,
                     operatingContextDisplayName: _operatingContextService?.CurrentContext?.DisplayName,
                     fundProfileId: _fundContextService.CurrentFundProfile?.FundProfileId,

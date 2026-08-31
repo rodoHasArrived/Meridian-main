@@ -36,12 +36,18 @@ public interface ISecurityMasterImportService
     /// </summary>
     /// <param name="fileContent">The raw file content (CSV or JSON)</param>
     /// <param name="fileExtension">File extension (csv or json)</param>
+    /// <param name="actor">
+    /// The operator or workload on whose authority the import runs, recorded as the author of every
+    /// security it creates. Callers resolve this from their authenticated session — an import file
+    /// carries no identity of its own, so no default is offered here.
+    /// </param>
     /// <param name="progress">Optional progress reporter</param>
     /// <param name="ct">Cancellation token</param>
     /// <returns>Import result with statistics and errors</returns>
     Task<SecurityMasterImportResult> ImportAsync(
         string fileContent,
         string fileExtension,
+        string actor,
         IProgress<SecurityMasterImportProgress>? progress = null,
         CancellationToken ct = default);
 }
@@ -86,9 +92,11 @@ public sealed class SecurityMasterImportService : ISecurityMasterImportService, 
     public async Task<SecurityMasterImportResult> ImportAsync(
         string fileContent,
         string fileExtension,
+        string actor,
         IProgress<SecurityMasterImportProgress>? progress = null,
         CancellationToken ct = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(actor);
         ct.ThrowIfCancellationRequested();
 
         var startedAtUtc = DateTimeOffset.UtcNow;
@@ -101,16 +109,23 @@ public sealed class SecurityMasterImportService : ISecurityMasterImportService, 
         {
             if (normalizedFileExtension.Equals(".csv", StringComparison.OrdinalIgnoreCase))
             {
-                requests = _csvParser.Parse(fileContent, out var parseErrors)
+                requests = _csvParser.Parse(fileContent, out var parseErrors, actor)
                     .ToList();
                 errors = parseErrors.ToList();
             }
             else if (normalizedFileExtension.Equals(".json", StringComparison.OrdinalIgnoreCase))
             {
-                requests = JsonSerializer.Deserialize(
+                // A JSON import file carries a full CreateSecurityRequest, UpdatedBy included, so the
+                // file itself would otherwise choose who the golden record credits for the write.
+                // Restamp every row with the importing actor. SourceSystem is left as the file
+                // declares it: that names the upstream SOURCE the rows came from, which conflict
+                // detection and source precedence key on, and is not the actor's to assert.
+                requests = (JsonSerializer.Deserialize(
                     fileContent,
                     SecurityMasterJsonContext.Default.ListCreateSecurityRequest)
-                    ?? new List<CreateSecurityRequest>();
+                    ?? new List<CreateSecurityRequest>())
+                    .Select(request => request with { UpdatedBy = actor })
+                    .ToList();
                 errors = new List<string>();
             }
             else
@@ -165,21 +180,22 @@ public sealed class SecurityMasterImportService : ISecurityMasterImportService, 
                     imported++;
                     _logger.LogDebug("Imported security {Ticker}", request.Identifiers.FirstOrDefault()?.Value ?? "?");
                 }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    // Cancellation is not an import outcome. Counting it as a failed row would report
+                    // a partial import as a completed one with failures the operator never caused.
+                    throw;
+                }
+                catch (Exception ex) when (SecurityMasterIngestFailureClassifier.IsAlreadyMastered(ex))
+                {
+                    skipped++;
+                    _logger.LogDebug("Skipped security already mastered: {Message}", ex.Message);
+                }
                 catch (Exception ex)
                 {
-                    // Check if it's a duplicate (409 or similar)
-                    if (ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase) ||
-                        ex.Message.Contains("duplicate", StringComparison.OrdinalIgnoreCase))
-                    {
-                        skipped++;
-                        _logger.LogDebug("Skipped duplicate security: {Message}", ex.Message);
-                    }
-                    else
-                    {
-                        failed++;
-                        errors.Add($"Security {request.Identifiers.FirstOrDefault()?.Value ?? "?"}: {ex.Message}");
-                        _logger.LogError(ex, "Failed to import security");
-                    }
+                    failed++;
+                    errors.Add($"Security {request.Identifiers.FirstOrDefault()?.Value ?? "?"}: {ex.Message}");
+                    _logger.LogError(ex, "Failed to import security");
                 }
 
                 UpdateActiveImport(

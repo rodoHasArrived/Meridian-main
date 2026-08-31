@@ -21,7 +21,13 @@ type AssetFamily =
     | PartnershipEquity
     | MoneyMarket
     | RepurchaseAgreement
+    /// Structured CASH vehicles — sweep programs and the like. Distinct from
+    /// <see cref="SecuritizedCredit"/>: this family is a cash-equivalent, and conflating the two
+    /// put cash sweeps into the securitized fixed-income accounting slice.
     | StructuredCash
+    /// Securitized credit tranches — MBS, ABS, CLO, CMBS, CDO, IO/PO strips. The canonical
+    /// family for the `StructuredCredit` asset class (ADR-022).
+    | SecuritizedCredit
     | ListedDerivative
     | PrivateLoan
     | OtherFamily of string
@@ -103,6 +109,7 @@ module SecurityClassification =
         | AssetFamily.MoneyMarket -> "MoneyMarket"
         | AssetFamily.RepurchaseAgreement -> "RepurchaseAgreement"
         | AssetFamily.StructuredCash -> "StructuredCash"
+        | AssetFamily.SecuritizedCredit -> "SecuritizedCredit"
         | AssetFamily.ListedDerivative -> "ListedDerivative"
         | AssetFamily.PrivateLoan -> "PrivateLoan"
         | AssetFamily.OtherFamily value -> value

@@ -12,6 +12,39 @@ public static class ComplianceEndpoints
 {
     public static WebApplication MapComplianceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        app.MapPost("/api/compliance/approval-requests", (
+            HttpContext http,
+            ComplianceApprovalRequestCommand request,
+            [FromServices] IComplianceApprovalStore approvals) =>
+        {
+            var actor = BuildActorContext(http);
+            var result = approvals.CreateRequest(actor, request);
+            return Results.Json(result, statusCode: StatusCodes.Status201Created, options: jsonOptions);
+        })
+        .RequirePermission(UserPermission.ManageCompliance);
+
+        app.MapPost("/api/compliance/approval-requests/{approvalRequestId}/decisions", (
+            HttpContext http,
+            string approvalRequestId,
+            ComplianceApprovalDecisionCommand request,
+            [FromServices] IComplianceApprovalStore approvals) =>
+        {
+            try
+            {
+                var actor = BuildActorContext(http);
+                return Results.Ok(approvals.RecordDecision(approvalRequestId, actor, request.Approved));
+            }
+            catch (KeyNotFoundException)
+            {
+                return Results.NotFound(new { error = "Compliance approval request was not found." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .RequirePermission(UserPermission.ManageCompliance);
+
         app.MapPost("/api/compliance/actions/evaluate", (
             HttpContext http,
             ComplianceActionRequest request,
@@ -28,11 +61,11 @@ public static class ComplianceEndpoints
             var evt = auditLog.Append(actor, request);
             return Results.Json(new { allowed = true, reason = decision.Reason, auditEventId = evt.EventId, hash = evt.Hash }, options: jsonOptions);
         })
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
+        .RequirePermission(UserPermission.ManageCompliance);
 
         app.MapGet("/api/compliance/audit/extract", ([FromServices] ImmutableAuditLogService auditLog) =>
             Results.Ok(new { integrityValid = auditLog.VerifyIntegrity(), events = auditLog.GetAll() }))
-            .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
+            .RequirePermission(UserPermission.ManageCompliance);
 
         app.MapGet("/api/compliance/controls/attestation", ([FromServices] ImmutableAuditLogService auditLog) =>
             Results.Ok(new
@@ -47,19 +80,48 @@ public static class ComplianceEndpoints
                 },
                 integrityValid = auditLog.VerifyIntegrity()
             }))
-            .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
+            .RequirePermission(UserPermission.ManageCompliance);
 
-        app.MapPost("/api/compliance/access-reviews/run", (
+        app.MapPost("/api/compliance/access-reviews/assess", async (
+            HttpContext http,
             AccessReviewRunRequest request,
-            [FromServices] AccessReviewService reviews) =>
+            [FromServices] AccessReviewService reviews,
+            CancellationToken ct) =>
         {
-            var result = reviews.ReviewDormantPermissions(request.ActorId, request.ReviewedBy, request.CurrentRoles, request.LastUsedAtUtc);
+            var reviewer = BuildActorContext(http).ActorId;
+            var result = await reviews.AssessDormantPermissionsAsync(
+                request.ActorId,
+                reviewer,
+                request.LastUsedAtUtc,
+                ct).ConfigureAwait(false);
             return Results.Ok(result);
         })
-        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
+        .RequirePermission(UserPermission.ManageCompliance);
+
+        app.MapPost("/api/compliance/access-reviews/run", async (
+            HttpContext http,
+            AccessReviewRunRequest request,
+            [FromServices] AccessReviewService reviews,
+            CancellationToken ct) =>
+        {
+            var reviewer = BuildActorContext(http).ActorId;
+            var result = await reviews.ApplyDormantPermissionRemediationAsync(
+                request.ActorId,
+                reviewer,
+                request.LastUsedAtUtc,
+                ct).ConfigureAwait(false);
+            return Results.Ok(result);
+        })
+        // Deliberately NOT ManageCompliance, unlike every other route on this surface. This one
+        // removes roles from the account named in the body, and it decides dormancy from the
+        // caller's own LastUsedAtUtc rather than from authoritative activity data, so a caller can
+        // strip every role from any account -- an administrator included -- by supplying an old
+        // date. That is user administration however it is labelled, so it keeps the gate it had
+        // before the compliance surface was split out.
+        .RequirePermission(UserPermission.ManageUsers);
 
         app.MapGet("/api/compliance/access-reviews", ([FromServices] AccessReviewService reviews) => Results.Ok(reviews.GetReviews()))
-            .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
+            .RequirePermission(UserPermission.ManageCompliance);
 
         return app;
     }
@@ -85,4 +147,6 @@ public static class ComplianceEndpoints
     }
 }
 
-public sealed record AccessReviewRunRequest(string ActorId, string ReviewedBy, string[] CurrentRoles, DateTimeOffset LastUsedAtUtc);
+public sealed record ComplianceApprovalDecisionCommand(bool Approved);
+
+public sealed record AccessReviewRunRequest(string ActorId, DateTimeOffset LastUsedAtUtc);

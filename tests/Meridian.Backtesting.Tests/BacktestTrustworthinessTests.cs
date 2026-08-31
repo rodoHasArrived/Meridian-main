@@ -294,7 +294,7 @@ public sealed class BacktestTrustworthinessTests : IDisposable
                 Source: "test",
                 SequenceNumber: seq++);
 
-            var evt = MarketEvent.HistoricalBar(bar.ToTimestampUtc(), symbol, bar, seq, "test");
+            var evt = MarketEvent.HistoricalBar(bar.ToTimestampUtc(), symbol, bar, "test", seq);
             writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
         }
     }

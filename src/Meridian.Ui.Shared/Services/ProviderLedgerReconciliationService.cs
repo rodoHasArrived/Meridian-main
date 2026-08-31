@@ -12,6 +12,7 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FSharp.Ledger;
 using Meridian.ProviderSdk;
@@ -19,6 +20,7 @@ using Meridian.Storage.Archival;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -47,6 +49,7 @@ public sealed partial class ProviderLedgerReconciliationService
     private readonly IOperatorOverridesStore? _operatorOverridesStore;
     private readonly ISecurityMasterConflictService? _securityMasterConflictService;
     private readonly ILedgerBookService? _ledgerBookService;
+    private readonly IFundProfileTenancyRegistry? _fundProfileTenancyRegistry;
     private readonly ILogger<ProviderLedgerReconciliationService> _logger;
 
     public ProviderLedgerReconciliationService(
@@ -60,7 +63,8 @@ public sealed partial class ProviderLedgerReconciliationService
         IReconciliationBreakQueueRepository? breakQueueRepository = null,
         IOperatorOverridesStore? operatorOverridesStore = null,
         ISecurityMasterConflictService? securityMasterConflictService = null,
-        ILedgerBookService? ledgerBookService = null)
+        ILedgerBookService? ledgerBookService = null,
+        IFundProfileTenancyRegistry? fundProfileTenancyRegistry = null)
     {
         _brokerageSync = brokerageSync ?? throw new ArgumentNullException(nameof(brokerageSync));
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
@@ -73,12 +77,53 @@ public sealed partial class ProviderLedgerReconciliationService
         _operatorOverridesStore = operatorOverridesStore;
         _securityMasterConflictService = securityMasterConflictService;
         _ledgerBookService = ledgerBookService;
+        _fundProfileTenancyRegistry = fundProfileTenancyRegistry;
     }
 
     public async Task<ProviderLedgerReconciliationDetailDto> RunAsync(
         Guid accountId,
         ProviderLedgerReconciliationRequestDto? request = null,
         CancellationToken ct = default)
+        => await RunInternalAsync(
+                accountId,
+                accessScope: null,
+                verifiedLedgerBook: null,
+                request,
+                ct)
+            .ConfigureAwait(false);
+
+    public async Task<ProviderLedgerReconciliationDetailDto> RunAsync(
+        Guid accountId,
+        ReconciliationBreakQueueScope accessScope,
+        ProviderLedgerReconciliationRequestDto? request = null,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(accessScope);
+        request ??= new ProviderLedgerReconciliationRequestDto();
+        var operationId = NormalizeOperationId(request.OperationId);
+        request = request with { OperationId = operationId };
+        var authority = await VerifyAuthoritativeScopeAsync(accountId, accessScope, ct)
+            .ConfigureAwait(false);
+        if (!authority.IsVerified)
+        {
+            return BuildAuthorityFailureDetail(
+                accountId,
+                operationId,
+                ComputeRequestHash(accountId, accessScope, request),
+                authority.ErrorCode!,
+                authority.Error!);
+        }
+
+        return await RunInternalAsync(accountId, accessScope, authority.LedgerBook, request, ct)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<ProviderLedgerReconciliationDetailDto> RunInternalAsync(
+        Guid accountId,
+        ReconciliationBreakQueueScope? accessScope,
+        LedgerBookDto? verifiedLedgerBook,
+        ProviderLedgerReconciliationRequestDto? request,
+        CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         request ??= new ProviderLedgerReconciliationRequestDto();
@@ -90,8 +135,8 @@ public sealed partial class ProviderLedgerReconciliationService
         }
 
         var operationId = NormalizeOperationId(request.OperationId);
-        var requestHash = ComputeRequestHash(accountId, request);
-        var operationLockKey = $"{accountId:N}:{ComputeSha256(operationId)}";
+        var requestHash = ComputeRequestHash(accountId, accessScope, request);
+        var operationLockKey = $"{accountId:N}:{Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(operationId)}";
         var operationGate = OperationLocks.GetOrAdd(operationLockKey, static _ => new SemaphoreSlim(1, 1));
         await operationGate.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -131,7 +176,14 @@ public sealed partial class ProviderLedgerReconciliationService
 
             try
             {
-                return await RunCoreAsync(accountId, request, activeIntent, ct).ConfigureAwait(false);
+                return await RunCoreAsync(
+                        accountId,
+                        accessScope,
+                        verifiedLedgerBook,
+                        request,
+                        activeIntent,
+                        ct)
+                    .ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -171,6 +223,8 @@ public sealed partial class ProviderLedgerReconciliationService
 
     private async Task<ProviderLedgerReconciliationDetailDto> RunCoreAsync(
         Guid accountId,
+        ReconciliationBreakQueueScope? accessScope,
+        LedgerBookDto? verifiedLedgerBook,
         ProviderLedgerReconciliationRequestDto request,
         ProviderLedgerReconciliationRunIntent activeIntent,
         CancellationToken ct)
@@ -183,7 +237,7 @@ public sealed partial class ProviderLedgerReconciliationService
         var lifecycle = new BreakLifecycleContext(
             CreatedAt: createdAt,
             AmountTolerance: tolerance,
-            DefaultOwner: NormalizeOwner(request.DefaultBreakOwner) ?? "fund-accounting",
+            DefaultOwner: NormalizeOptional(request.DefaultBreakOwner) ?? "fund-accounting",
             SignedOffBreakKeys: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
             SignedOffBy: null,
             PreviousBreaksByKey: BuildPreviousBreakMap(previousLatest));
@@ -194,7 +248,11 @@ public sealed partial class ProviderLedgerReconciliationService
         string? ledgerScopeError = null;
         try
         {
-            ledgerScope = await ResolvePrimaryLedgerScopeAsync(accountId, internalSnapshot?.AsOfDate, ct)
+            ledgerScope = await ResolvePrimaryLedgerScopeAsync(
+                    accountId,
+                    internalSnapshot?.AsOfDate,
+                    verifiedLedgerBook,
+                    ct)
                 .ConfigureAwait(false);
             if (ledgerScope.Period is null || !ledgerScope.AsOfDate.HasValue)
             {
@@ -496,6 +554,7 @@ public sealed partial class ProviderLedgerReconciliationService
 
         var inputHash = ComputeOperationInputHash(
             accountId,
+            accessScope,
             request,
             providerProjection,
             internalSnapshot,
@@ -574,6 +633,7 @@ public sealed partial class ProviderLedgerReconciliationService
         {
             casework = await SeedBreakQueueCasesAsync(
                     provisionalDetail,
+                    accessScope,
                     request,
                     ledgerScope,
                     ledgerScopeError,
@@ -688,6 +748,19 @@ public sealed partial class ProviderLedgerReconciliationService
         return await JsonSerializer
             .DeserializeAsync<ProviderLedgerReconciliationDetailDto>(stream, JsonOptions, ct)
             .ConfigureAwait(false);
+    }
+
+    public async Task<ProviderLedgerReconciliationDetailDto?> GetLatestAsync(
+        Guid accountId,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(accessScope);
+        var authority = await VerifyAuthoritativeScopeAsync(accountId, accessScope, ct)
+            .ConfigureAwait(false);
+        return authority.IsVerified
+            ? await GetLatestAsync(accountId, ct).ConfigureAwait(false)
+            : null;
     }
 
     private static ProviderShadowBookComparisonDto BuildShadowBookComparison(
@@ -1070,6 +1143,7 @@ public sealed partial class ProviderLedgerReconciliationService
 
     private async Task<ProviderCaseworkPersistenceResult> SeedBreakQueueCasesAsync(
         ProviderLedgerReconciliationDetailDto detail,
+        ReconciliationBreakQueueScope? accessScope,
         ProviderLedgerReconciliationRequestDto request,
         ProviderLedgerScope? ledgerScope,
         string? ledgerScopeError,
@@ -1079,9 +1153,20 @@ public sealed partial class ProviderLedgerReconciliationService
             + (detail.CorporateActionReadiness?.EvidenceCandidates.Count(static candidate =>
                 candidate.Status is ProviderLedgerReconciliationCheckStatusDto.Break or ProviderLedgerReconciliationCheckStatusDto.Blocked) ?? 0)
             + (detail.SecurityMasterPassports?.Count(IsStaleResolvedSecurityMasterPassport) ?? 0);
-        if (caseCount == 0)
+        if (accessScope is null)
         {
-            return new ProviderCaseworkPersistenceResult(0, 0, IsSatisfied: true, IsBlocked: false, [], null);
+            if (caseCount == 0)
+            {
+                return new ProviderCaseworkPersistenceResult(0, 0, IsSatisfied: true, IsBlocked: false, [], null);
+            }
+
+            return new ProviderCaseworkPersistenceResult(
+                caseCount,
+                0,
+                IsSatisfied: false,
+                IsBlocked: true,
+                [],
+                "Provider-ledger reconciliation requires an authoritative tenant and company scope before casework can be retained.");
         }
 
         if (ledgerScope is null || ledgerScope.Period is null || !ledgerScope.AsOfDate.HasValue)
@@ -1093,6 +1178,65 @@ public sealed partial class ProviderLedgerReconciliationService
                 IsBlocked: true,
                 [],
                 ledgerScopeError ?? "Exact primary ledger-book, accounting-period, and as-of scope is unavailable.");
+        }
+
+        if (_fundProfileTenancyRegistry is null)
+        {
+            return new ProviderCaseworkPersistenceResult(
+                caseCount,
+                0,
+                IsSatisfied: false,
+                IsBlocked: true,
+                [],
+                "The authoritative fund-profile tenancy registry is unavailable.");
+        }
+
+        FundProfileOwnership? ownership;
+        try
+        {
+            ownership = await _fundProfileTenancyRegistry
+                .ResolveAsync(ledgerScope.Book.FundProfileId, ct)
+                .ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Provider-ledger reconciliation could not verify ownership for fund profile {FundProfileId}",
+                ledgerScope.Book.FundProfileId);
+            return new ProviderCaseworkPersistenceResult(
+                caseCount,
+                0,
+                IsSatisfied: false,
+                IsBlocked: true,
+                [],
+                "The authoritative fund-profile owner could not be verified.");
+        }
+
+        if (ownership is null
+            || !ownership.IsHeldBy(accessScope.TenantId)
+            || string.IsNullOrWhiteSpace(ownership.CompanyId)
+            || !string.Equals(
+                ownership.CompanyId.Trim(),
+                accessScope.CompanyId,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return new ProviderCaseworkPersistenceResult(
+                caseCount,
+                0,
+                IsSatisfied: false,
+                IsBlocked: true,
+                [],
+                "The provider-ledger fund profile is not owned by the authenticated tenant and company.");
+        }
+
+        if (caseCount == 0)
+        {
+            return new ProviderCaseworkPersistenceResult(0, 0, IsSatisfied: true, IsBlocked: false, [], null);
         }
 
         if (_breakQueueRepository is null)
@@ -1113,7 +1257,8 @@ public sealed partial class ProviderLedgerReconciliationService
             ct.ThrowIfCancellationRequested();
             items.Add(ApplyLedgerPeriodScope(
                 BuildBreakQueueItem(detail, breakRow, request, ledgerScope.Book),
-                ledgerScope));
+                ledgerScope,
+                accessScope));
         }
 
         if (detail.CorporateActionReadiness?.EvidenceCandidates.Count > 0)
@@ -1129,7 +1274,8 @@ public sealed partial class ProviderLedgerReconciliationService
                 ledgerEffectsByCandidateId.TryGetValue(candidate.CandidateId, out var ledgerEffect);
                 items.Add(ApplyLedgerPeriodScope(
                     BuildCorporateActionCandidateCase(detail, candidate, ledgerEffect, request, ledgerScope.Book),
-                    ledgerScope));
+                    ledgerScope,
+                    accessScope));
             }
         }
 
@@ -1140,7 +1286,8 @@ public sealed partial class ProviderLedgerReconciliationService
                 ct.ThrowIfCancellationRequested();
                 items.Add(ApplyLedgerPeriodScope(
                     BuildStaleSecurityMasterPassportCase(detail, passport, request, ledgerScope.Book),
-                    ledgerScope));
+                    ledgerScope,
+                    accessScope));
             }
         }
 
@@ -1148,11 +1295,17 @@ public sealed partial class ProviderLedgerReconciliationService
         foreach (var item in items)
         {
             ct.ThrowIfCancellationRequested();
-            var existing = await _breakQueueRepository.GetByIdAsync(item.BreakId, ct).ConfigureAwait(false);
+            var existing = await _breakQueueRepository
+                .GetByIdAsync(accessScope, item.BreakId, ct)
+                .ConfigureAwait(false);
             if (existing is null)
             {
-                await _breakQueueRepository.CreateIfMissingAsync(item, ct).ConfigureAwait(false);
-                existing = await _breakQueueRepository.GetByIdAsync(item.BreakId, ct).ConfigureAwait(false);
+                await _breakQueueRepository
+                    .CreateIfMissingAsync(accessScope, item, ct)
+                    .ConfigureAwait(false);
+                existing = await _breakQueueRepository
+                    .GetByIdAsync(accessScope, item.BreakId, ct)
+                    .ConfigureAwait(false);
             }
 
             if (existing is null)
@@ -1192,6 +1345,8 @@ public sealed partial class ProviderLedgerReconciliationService
             && string.Equals(existing.SourceSystem, candidate.SourceSystem, StringComparison.Ordinal)
             && string.Equals(existing.SourceReference, candidate.SourceReference, StringComparison.Ordinal)
             && string.Equals(existing.SourceFingerprint, candidate.SourceFingerprint, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(existing.TenantId, candidate.TenantId, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(existing.CompanyId, candidate.CompanyId, StringComparison.OrdinalIgnoreCase)
             && existing.LedgerBookId == candidate.LedgerBookId
             && string.Equals(existing.AccountingPeriodId, candidate.AccountingPeriodId, StringComparison.Ordinal)
             && existing.AsOfDate == candidate.AsOfDate;
@@ -1199,23 +1354,32 @@ public sealed partial class ProviderLedgerReconciliationService
     private async Task<ProviderLedgerScope> ResolvePrimaryLedgerScopeAsync(
         Guid accountId,
         DateOnly? asOfDate,
+        LedgerBookDto? verifiedLedgerBook,
         CancellationToken ct)
     {
         var service = _ledgerBookService ?? throw new InvalidOperationException(
             "Provider-ledger reconciliation cannot create close/report casework without ILedgerBookService.");
-        var books = await service.ListBooksAsync(
-                new LedgerBookQuery(
-                    FundStructureNodeId: accountId,
-                    AccountingBasis: AccountingBasisKindDto.Primary),
-                ct)
-            .ConfigureAwait(false);
-        if (books.Count != 1)
+        LedgerBookDto book;
+        if (verifiedLedgerBook is null)
         {
-            throw new InvalidOperationException(
-                $"Provider-ledger reconciliation requires exactly one primary ledger book for fund account '{accountId:D}', but found {books.Count}.");
-        }
+            var books = await service.ListBooksAsync(
+                    new LedgerBookQuery(
+                        FundStructureNodeId: accountId,
+                        AccountingBasis: AccountingBasisKindDto.Primary),
+                    ct)
+                .ConfigureAwait(false);
+            if (books.Count != 1)
+            {
+                throw new InvalidOperationException(
+                    $"Provider-ledger reconciliation requires exactly one primary ledger book for fund account '{accountId:D}', but found {books.Count}.");
+            }
 
-        var book = books[0];
+            book = books[0];
+        }
+        else
+        {
+            book = verifiedLedgerBook;
+        }
         if (book.LedgerBookId == Guid.Empty
             || book.FundStructureNodeId != accountId
             || book.AccountingBasis != AccountingBasisKindDto.Primary
@@ -1253,12 +1417,102 @@ public sealed partial class ProviderLedgerReconciliationService
         return new ProviderLedgerScope(book, period, asOfDate);
     }
 
+    private async Task<ProviderLedgerAuthorityVerification> VerifyAuthoritativeScopeAsync(
+        Guid accountId,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct)
+    {
+        if (_ledgerBookService is null || _fundProfileTenancyRegistry is null)
+        {
+            return ProviderLedgerAuthorityVerification.Failed(
+                "PROVIDER_RECONCILIATION_AUTHORITY_UNAVAILABLE",
+                "Provider-ledger reconciliation authority requires the ledger-book service and fund-profile tenancy registry.");
+        }
+
+        AccountSummaryDto? account;
+        IReadOnlyList<LedgerBookDto> books;
+        FundProfileOwnership? ownership;
+        try
+        {
+            account = await _fundAccountService.GetAccountAsync(accountId, ct).ConfigureAwait(false);
+            if (account is null
+                || !account.IsActive
+                || !account.FundId.HasValue
+                || account.FundId.Value == Guid.Empty)
+            {
+                return ProviderLedgerAuthorityVerification.Failed(
+                    "PROVIDER_RECONCILIATION_ACCOUNT_NOT_AUTHORIZED",
+                    "Provider-ledger reconciliation requires an active account bound to a canonical fund.");
+            }
+
+            books = await _ledgerBookService
+                .ListBooksAsync(
+                    new LedgerBookQuery(
+                        FundStructureNodeId: accountId,
+                        AccountingBasis: AccountingBasisKindDto.Primary),
+                    ct)
+                .ConfigureAwait(false);
+            var fundProfileId = account.FundId.Value.ToString("D");
+            var matchingBooks = books
+                .Where(book =>
+                    book.FundStructureNodeId == accountId
+                    && book.AccountingBasis == AccountingBasisKindDto.Primary
+                    && string.Equals(
+                        book.FundProfileId?.Trim(),
+                        fundProfileId,
+                        StringComparison.OrdinalIgnoreCase))
+                .DistinctBy(static book => book.LedgerBookId)
+                .ToArray();
+            if (matchingBooks.Length != 1)
+            {
+                return ProviderLedgerAuthorityVerification.Failed(
+                    "PROVIDER_RECONCILIATION_LEDGER_SCOPE_NOT_AUTHORIZED",
+                    "Provider-ledger reconciliation requires exactly one primary ledger book bound to the account's canonical fund.");
+            }
+
+            ownership = await _fundProfileTenancyRegistry
+                .ResolveAsync(fundProfileId, ct)
+                .ConfigureAwait(false);
+            if (ownership is null
+                || !ownership.IsHeldBy(accessScope.TenantId)
+                || string.IsNullOrWhiteSpace(ownership.CompanyId)
+                || !string.Equals(
+                    ownership.CompanyId.Trim(),
+                    accessScope.CompanyId,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return ProviderLedgerAuthorityVerification.Failed(
+                    "PROVIDER_RECONCILIATION_FUND_NOT_AUTHORIZED",
+                    "The provider-ledger fund is not owned by the authenticated tenant and company.");
+            }
+
+            return ProviderLedgerAuthorityVerification.Verified(matchingBooks[0]);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Provider-ledger reconciliation authority verification failed for account {AccountId}",
+                accountId);
+            return ProviderLedgerAuthorityVerification.Failed(
+                "PROVIDER_RECONCILIATION_AUTHORITY_UNAVAILABLE",
+                "Provider-ledger reconciliation authority could not be verified.");
+        }
+    }
+
     private static ReconciliationBreakQueueItem ApplyLedgerPeriodScope(
         ReconciliationBreakQueueItem item,
-        ProviderLedgerScope scope)
+        ProviderLedgerScope scope,
+        ReconciliationBreakQueueScope accessScope)
     {
         var scopedFingerprint = ComputeQueueSourceFingerprint(
             item.SourceFingerprint,
+            accessScope.TenantId,
+            accessScope.CompanyId,
             scope.Book.FundProfileId,
             scope.Book.LedgerBookId,
             scope.Book.AccountingBasis,
@@ -1269,6 +1523,8 @@ public sealed partial class ProviderLedgerReconciliationService
         var hasExactScope = scope.Period is not null && scope.AsOfDate.HasValue;
         return item with
         {
+            TenantId = accessScope.TenantId,
+            CompanyId = accessScope.CompanyId,
             AccountingPeriodId = scope.Period?.PeriodId.ToString("D"),
             AsOfDate = scope.AsOfDate,
             SourceFingerprint = scopedFingerprint,
@@ -1296,7 +1552,7 @@ public sealed partial class ProviderLedgerReconciliationService
     {
         var summary = detail.Summary;
         var signedOff = breakRow.SignOffState == ProviderLedgerReconciliationBreakSignOffStateDto.SignedOff;
-        var signedOffBy = NormalizeOwner(breakRow.SignedOffBy);
+        var signedOffBy = NormalizeOptional(breakRow.SignedOffBy);
         var signedOffAt = breakRow.SignedOffAt ?? (signedOff ? summary.CreatedAt : null);
         var status = signedOff
             ? ReconciliationBreakQueueStatus.Resolved
@@ -1304,7 +1560,7 @@ public sealed partial class ProviderLedgerReconciliationService
         var isSecurityMasterIdentityCase = IsSecurityMasterIdentityBreak(breakRow);
         var signoffRole = isSecurityMasterIdentityCase ? "Security Master steward" : "Fund accounting";
         var assignedTo = isSecurityMasterIdentityCase
-            ? NormalizeOwner(request.DefaultBreakOwner) ?? "security-master-steward"
+            ? NormalizeOptional(request.DefaultBreakOwner) ?? "security-master-steward"
             : breakRow.Owner;
         var signoffStatus = signedOff
             ? "signed-off"
@@ -1374,7 +1630,7 @@ public sealed partial class ProviderLedgerReconciliationService
             ToleranceBand: breakRow.Tolerance,
             RequiredSignoffRole: signoffRole,
             SignoffStatus: signoffStatus,
-            FundAccountId: ledgerBook.FundProfileId,
+            FundAccountId: summary.AccountId.ToString("D"),
             ExplainabilitySummary: BuildExplainabilitySummary(summary, breakRow, passport),
             RoutingTarget: latestRoute,
             RoutingDetail: breakRow.CheckId,
@@ -1403,7 +1659,10 @@ public sealed partial class ProviderLedgerReconciliationService
             BreakExplanation: explanation,
             LedgerBookId: ledgerBook.LedgerBookId,
             Measures: BuildProviderBreakMeasures(breakRow, ledgerBook.BaseCurrency),
-            BlockedOutputs: blockedOutputs);
+            BlockedOutputs: blockedOutputs)
+        {
+            FundProfileId = ledgerBook.FundProfileId
+        };
     }
 
     private static ProviderSecurityMasterPassportDto? FindPassportForBreak(
@@ -1472,7 +1731,7 @@ public sealed partial class ProviderLedgerReconciliationService
             Status: ReconciliationBreakQueueStatus.Open,
             Variance: 0m,
             Reason: reason,
-            AssignedTo: NormalizeOwner(request.DefaultBreakOwner) ?? "security-master-steward",
+            AssignedTo: NormalizeOptional(request.DefaultBreakOwner) ?? "security-master-steward",
             DetectedAt: candidate.ObservedAt,
             LastUpdatedAt: summary.CreatedAt,
             Severity: severity,
@@ -1480,7 +1739,7 @@ public sealed partial class ProviderLedgerReconciliationService
             ToleranceProfileId: $"provider-corporate-actions:{summary.ProviderId ?? candidate.ProviderId}",
             RequiredSignoffRole: "Security Master steward",
             SignoffStatus: "pending-signoff",
-            FundAccountId: ledgerBook.FundProfileId,
+            FundAccountId: summary.AccountId.ToString("D"),
             ExplainabilitySummary: BuildCorporateActionCandidateExplainability(summary, candidate, ledgerEffect),
             RoutingTarget: latestRoute,
             RoutingDetail: candidate.CandidateId,
@@ -1512,7 +1771,10 @@ public sealed partial class ProviderLedgerReconciliationService
                 "The provider corporate-action candidate does not contain an authoritative expected and actual value pair.",
                 "The provider corporate-action candidate does not contain an authoritative expected and actual quantity pair.",
                 "The provider corporate-action candidate does not contain an authoritative expected and actual cost-basis pair."),
-            BlockedOutputs: ["accounting-close", "certified-reporting"]);
+            BlockedOutputs: ["accounting-close", "certified-reporting"])
+        {
+            FundProfileId = ledgerBook.FundProfileId
+        };
     }
 
     private static ReconciliationBreakQueueItem BuildStaleSecurityMasterPassportCase(
@@ -1547,7 +1809,7 @@ public sealed partial class ProviderLedgerReconciliationService
             Status: ReconciliationBreakQueueStatus.Open,
             Variance: 0m,
             Reason: reason,
-            AssignedTo: NormalizeOwner(request.DefaultBreakOwner) ?? "security-master-steward",
+            AssignedTo: NormalizeOptional(request.DefaultBreakOwner) ?? "security-master-steward",
             DetectedAt: passport.ProviderSyncedAt,
             LastUpdatedAt: summary.CreatedAt,
             Severity: ReconciliationBreakSeverity.Medium,
@@ -1555,7 +1817,7 @@ public sealed partial class ProviderLedgerReconciliationService
             ToleranceProfileId: "security-master-provider-freshness",
             RequiredSignoffRole: "Security Master steward",
             SignoffStatus: "pending-signoff",
-            FundAccountId: ledgerBook.FundProfileId,
+            FundAccountId: summary.AccountId.ToString("D"),
             ExplainabilitySummary: BuildStaleSecurityMasterPassportExplainability(summary, passport),
             RoutingTarget: latestRoute,
             RoutingDetail: passport.SecurityId?.ToString("D") ?? passport.Symbol,
@@ -1587,7 +1849,10 @@ public sealed partial class ProviderLedgerReconciliationService
                 "A stale Security Master passport is identity evidence and does not contain an authoritative expected and actual value pair.",
                 "A stale Security Master passport is identity evidence and does not contain an authoritative expected and actual quantity pair.",
                 "A stale Security Master passport is identity evidence and does not contain an authoritative expected and actual cost-basis pair."),
-            BlockedOutputs: ["accounting-close", "certified-reporting"]);
+            BlockedOutputs: ["accounting-close", "certified-reporting"])
+        {
+            FundProfileId = ledgerBook.FundProfileId
+        };
     }
 
     private static string BuildCorporateActionCandidateCaseId(
@@ -1717,7 +1982,7 @@ public sealed partial class ProviderLedgerReconciliationService
                 .Append('|');
         }
 
-        return ComputeSha256(builder.ToString());
+        return Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     private static ReconciliationBreakCategory MapCorporateActionCandidateCategory(
@@ -2074,482 +2339,6 @@ public sealed partial class ProviderLedgerReconciliationService
             evidenceLink: "/workstation/settings/providers");
     }
 
-    private async Task AddSecurityCoverageChecksAsync(
-        Guid runId,
-        BreakLifecycleContext lifecycle,
-        FundAccountBrokerageSyncActivityDto providerProjection,
-        string? requestedBy,
-        List<ProviderLedgerReconciliationCheckDto> checks,
-        List<ProviderLedgerReconciliationBreakDto> breaks,
-        List<ProviderSecurityMasterPassportDto> securityMasterPassports,
-        DateTimeOffset observedAt,
-        int providerStaleAfterMinutes,
-        CancellationToken ct)
-    {
-        var positions = providerProjection.Positions
-            .Where(static position => !string.IsNullOrWhiteSpace(position.Symbol))
-            .GroupBy(static position => position.Symbol.Trim().ToUpperInvariant(), StringComparer.OrdinalIgnoreCase)
-            .Select(static group => group.First())
-            .ToArray();
-        IReadOnlyList<SecurityMasterConflict> openIdentifierConflicts = _securityMasterConflictService is null
-            ? Array.Empty<SecurityMasterConflict>()
-            : await _securityMasterConflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
-
-        foreach (var position in positions)
-        {
-            ct.ThrowIfCancellationRequested();
-            var symbol = position.Symbol.Trim().ToUpperInvariant();
-            var checkId = $"security-master:{symbol}";
-
-            if (position.Security is not null)
-            {
-                var overrideHistory = await GetSecurityMasterOverrideHistoryAsync(position.Security.SecurityId, ct)
-                    .ConfigureAwait(false);
-                if (AddInactiveSecurityMasterBreak(
-                    runId,
-                    lifecycle,
-                    providerProjection,
-                    position,
-                    position.Security,
-                    checks,
-                    breaks,
-                    securityMasterPassports,
-                    checkId,
-                    symbol,
-                    observedAt,
-                    providerStaleAfterMinutes,
-                    overrideHistory,
-                    openIdentifierConflicts))
-                {
-                    continue;
-                }
-
-                securityMasterPassports.Add(BuildSecurityMasterPassport(
-                    providerProjection,
-                    position,
-                    position.Security,
-                    validation: null,
-                    status: MapPassportStatus(position.Security),
-                    confidenceScore: position.Security.IsInferredMatch ? 85m : 100m,
-                    resolutionSource: "provider-position",
-                    reason: "Provider position already carries a resolved Security Master reference.",
-                    observedAt: observedAt,
-                    providerStaleAfterMinutes: providerStaleAfterMinutes,
-                    overrideHistory: overrideHistory,
-                    openIdentifierConflicts: openIdentifierConflicts));
-                AddMatched(
-                    checks,
-                    checkId,
-                    $"Security Master identity for {symbol}",
-                    ReconciliationBreakCategory.ClassificationGap,
-                    "security-master",
-                    "provider-sync",
-                    null,
-                    null,
-                    "Provider position already carries a resolved Security Master reference.");
-                continue;
-            }
-
-            var resolved = _securityReferenceLookup is null
-                ? null
-                : await _securityReferenceLookup
-                    .GetByCanonicalAsync(
-                        new SecurityReferenceLookupRequest(
-                            IdentifierKind: SecurityIdentifierKind.Ticker.ToString(),
-                            IdentifierValue: symbol,
-                            Symbol: symbol,
-                            Currency: position.Currency,
-                            AssetClass: position.AssetClass,
-                            Source: "provider-ledger-reconciliation"),
-                        ct)
-                    .ConfigureAwait(false);
-
-            if (resolved is not null)
-            {
-                var overrideHistory = await GetSecurityMasterOverrideHistoryAsync(resolved.SecurityId, ct)
-                    .ConfigureAwait(false);
-                if (AddInactiveSecurityMasterBreak(
-                    runId,
-                    lifecycle,
-                    providerProjection,
-                    position,
-                    resolved,
-                    checks,
-                    breaks,
-                    securityMasterPassports,
-                    checkId,
-                    symbol,
-                    observedAt,
-                    providerStaleAfterMinutes,
-                    overrideHistory,
-                    openIdentifierConflicts))
-                {
-                    continue;
-                }
-
-                securityMasterPassports.Add(BuildSecurityMasterPassport(
-                    providerProjection,
-                    position,
-                    resolved,
-                    validation: null,
-                    status: MapPassportStatus(resolved),
-                    confidenceScore: resolved.IsInferredMatch ? 80m : 90m,
-                    resolutionSource: "security-master-lookup",
-                    reason: "Provider position resolved through the shared Security Master lookup.",
-                    observedAt: observedAt,
-                    providerStaleAfterMinutes: providerStaleAfterMinutes,
-                    overrideHistory: overrideHistory,
-                    openIdentifierConflicts: openIdentifierConflicts));
-                AddMatched(
-                    checks,
-                    checkId,
-                    $"Security Master identity for {symbol}",
-                    ReconciliationBreakCategory.ClassificationGap,
-                    "security-master",
-                    "provider-sync",
-                    null,
-                    null,
-                    "Provider position resolved through the shared Security Master lookup.");
-                continue;
-            }
-
-            var code = "SM_PROVIDER_POSITION_SECURITY_UNRESOLVED";
-            var reason = $"Provider position '{symbol}' could not be resolved to a Security Master record.";
-            var severity = ReconciliationBreakSeverity.High;
-            if (_securityValidationGate is not null)
-            {
-                var validation = await _securityValidationGate
-                    .ValidateSymbolAsync(
-                        symbol,
-                        SecurityValidationWorkflowDto.ReconciliationBreakIntake,
-                        workflowReference: runId.ToString("N"),
-                        actor: string.IsNullOrWhiteSpace(requestedBy) ? DefaultActor : requestedBy.Trim(),
-                        persistSnapshot: false,
-                        ct)
-                    .ConfigureAwait(false);
-
-                if (validation.IsResolved && !validation.IsBlocked)
-                {
-                    var overrideHistory = await GetSecurityMasterOverrideHistoryAsync(validation.SecurityId, ct)
-                        .ConfigureAwait(false);
-                    securityMasterPassports.Add(BuildSecurityMasterPassport(
-                        providerProjection,
-                        position,
-                        security: null,
-                        validation: validation,
-                        status: ProviderSecurityMasterPassportStatusDto.Resolved,
-                        confidenceScore: 80m,
-                        resolutionSource: "security-validation-gate",
-                        reason: "Security Master validation accepted the provider position.",
-                        observedAt: observedAt,
-                        providerStaleAfterMinutes: providerStaleAfterMinutes,
-                        overrideHistory: overrideHistory,
-                        openIdentifierConflicts: openIdentifierConflicts));
-                    AddMatched(
-                        checks,
-                        checkId,
-                        $"Security Master identity for {symbol}",
-                        ReconciliationBreakCategory.ClassificationGap,
-                        "security-master",
-                        "provider-sync",
-                        null,
-                        null,
-                        "Security Master validation accepted the provider position.");
-                    continue;
-                }
-
-                var issue = validation.Report.Issues.FirstOrDefault();
-                if (issue is not null)
-                {
-                    code = issue.Code;
-                    reason = $"Security Master validation {issue.Code}: {issue.Message}";
-                    severity = MapSecurityValidationSeverity(issue.Severity);
-                }
-
-                securityMasterPassports.Add(BuildSecurityMasterPassport(
-                    providerProjection,
-                    position,
-                    security: null,
-                    validation: validation,
-                    status: validation.IsBlocked || validation.Report.HasBlockingIssues
-                        ? ProviderSecurityMasterPassportStatusDto.Blocked
-                        : ProviderSecurityMasterPassportStatusDto.Unresolved,
-                    confidenceScore: 0m,
-                    resolutionSource: "security-validation-gate",
-                    reason: reason,
-                    observedAt: observedAt,
-                    providerStaleAfterMinutes: providerStaleAfterMinutes,
-                    overrideHistory: [],
-                    openIdentifierConflicts: openIdentifierConflicts));
-            }
-            else
-            {
-                securityMasterPassports.Add(BuildSecurityMasterPassport(
-                    providerProjection,
-                    position,
-                    security: null,
-                    validation: null,
-                    status: ProviderSecurityMasterPassportStatusDto.Unresolved,
-                    confidenceScore: 0m,
-                    resolutionSource: "unresolved",
-                    reason: reason,
-                    observedAt: observedAt,
-                    providerStaleAfterMinutes: providerStaleAfterMinutes,
-                    overrideHistory: [],
-                    openIdentifierConflicts: openIdentifierConflicts));
-            }
-
-            AddBreak(
-                runId,
-                lifecycle,
-                checks,
-                breaks,
-                checkId,
-                $"Security Master identity for {symbol}",
-                ProviderLedgerReconciliationCheckStatusDto.Break,
-                code,
-                ReconciliationBreakCategory.ClassificationGap,
-                severity,
-                "security-master",
-                "provider-sync",
-                null,
-                null,
-                reason,
-                symbol,
-                "/workstation/data/security-master");
-        }
-    }
-
-    private static bool AddInactiveSecurityMasterBreak(
-        Guid runId,
-        BreakLifecycleContext lifecycle,
-        FundAccountBrokerageSyncActivityDto providerProjection,
-        FundAccountBrokeragePositionDto position,
-        WorkstationSecurityReference security,
-        List<ProviderLedgerReconciliationCheckDto> checks,
-        List<ProviderLedgerReconciliationBreakDto> breaks,
-        List<ProviderSecurityMasterPassportDto> securityMasterPassports,
-        string checkId,
-        string symbol,
-        DateTimeOffset observedAt,
-        int providerStaleAfterMinutes,
-        IReadOnlyList<string> overrideHistory,
-        IReadOnlyList<SecurityMasterConflict> openIdentifierConflicts)
-    {
-        if (security.Status == SecurityStatusDto.Active)
-        {
-            return false;
-        }
-
-        var reason = $"Security Master reference for provider position '{symbol}' is {security.Status}; active approved Security Master status is required for ledger posting and close readiness.";
-        securityMasterPassports.Add(BuildSecurityMasterPassport(
-            providerProjection,
-            position,
-            security,
-            validation: null,
-            status: ProviderSecurityMasterPassportStatusDto.Blocked,
-            confidenceScore: 0m,
-            resolutionSource: "security-master-status",
-            reason: reason,
-            observedAt: observedAt,
-            providerStaleAfterMinutes: providerStaleAfterMinutes,
-            overrideHistory: overrideHistory,
-            openIdentifierConflicts: openIdentifierConflicts));
-
-        AddBreak(
-            runId,
-            lifecycle,
-            checks,
-            breaks,
-            checkId,
-            $"Security Master identity for {symbol}",
-            ProviderLedgerReconciliationCheckStatusDto.Blocked,
-            "SM_SECURITY_NOT_ACTIVE",
-            ReconciliationBreakCategory.ClassificationGap,
-            ReconciliationBreakSeverity.Critical,
-            "active-security-master",
-            "provider-sync",
-            null,
-            null,
-            reason,
-            symbol,
-            "/workstation/data/security-master");
-        return true;
-    }
-
-    private static string BuildProviderCapabilityBlockReason(
-        ProviderCapabilityKind capability,
-        ProviderRouteResult result)
-    {
-        var reason = string.IsNullOrWhiteSpace(result.PolicyGate)
-            ? $"Provider capability '{capability}' is not routable for provider-ledger reconciliation."
-            : result.PolicyGate;
-        var skipped = result.SkippedCandidates
-            .Where(static item => !string.IsNullOrWhiteSpace(item))
-            .Take(3)
-            .ToArray();
-
-        return skipped.Length == 0
-            ? reason
-            : $"{reason} Skipped: {string.Join(" ", skipped)}";
-    }
-
-    private static ProviderSecurityMasterPassportDto BuildSecurityMasterPassport(
-        FundAccountBrokerageSyncActivityDto providerProjection,
-        FundAccountBrokeragePositionDto position,
-        WorkstationSecurityReference? security,
-        SecurityValidationGateResultDto? validation,
-        ProviderSecurityMasterPassportStatusDto status,
-        decimal confidenceScore,
-        string resolutionSource,
-        string reason,
-        DateTimeOffset observedAt,
-        int providerStaleAfterMinutes,
-        IReadOnlyList<string> overrideHistory,
-        IReadOnlyList<SecurityMasterConflict> openIdentifierConflicts)
-    {
-        var issues = validation?.Report.Issues ?? [];
-        var securityId = security?.SecurityId ?? validation?.SecurityId;
-        var openConflictSummaries = FormatOpenIdentifierConflicts(securityId, openIdentifierConflicts);
-        var identifierConflicts = issues
-            .Where(static issue =>
-                issue.Code.Contains("CONFLICT", StringComparison.OrdinalIgnoreCase)
-                || issue.Title.Contains("conflict", StringComparison.OrdinalIgnoreCase)
-                || issue.AffectedFields.Any(static field => field.Contains("identifier", StringComparison.OrdinalIgnoreCase)))
-            .Select(static issue => issue.Code)
-            .Concat(openConflictSummaries)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        var freshnessMinutes = Math.Max(0, (int)Math.Floor((observedAt - providerProjection.SyncedAt).TotalMinutes));
-        var providerEvidenceStale = providerProjection.Status.IsStale || freshnessMinutes > providerStaleAfterMinutes;
-        var issueCodes = issues
-            .Select(static issue => issue.Code)
-            .Where(static code => !string.IsNullOrWhiteSpace(code))
-            .Concat(providerEvidenceStale ? ["PROVIDER_EVIDENCE_STALE"] : [])
-            .Concat(openConflictSummaries.Length > 0 ? ["SM_IDENTIFIER_CONFLICT"] : [])
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        var adjustedConfidenceScore = confidenceScore;
-        if (providerEvidenceStale && adjustedConfidenceScore > 70m)
-        {
-            adjustedConfidenceScore = 70m;
-        }
-
-        if (openConflictSummaries.Length > 0 && adjustedConfidenceScore > 60m)
-        {
-            adjustedConfidenceScore = 60m;
-        }
-
-        var reasonParts = new List<string> { reason };
-        if (providerEvidenceStale)
-        {
-            reasonParts.Add("Provider evidence is stale for this reconciliation run.");
-        }
-
-        if (openConflictSummaries.Length > 0)
-        {
-            reasonParts.Add($"{openConflictSummaries.Length} open Security Master identifier conflict(s) involve this resolved instrument.");
-        }
-
-        return new ProviderSecurityMasterPassportDto(
-            Symbol: position.Symbol.Trim().ToUpperInvariant(),
-            ProviderId: providerProjection.Link.ProviderId,
-            ExternalAccountId: providerProjection.Link.ExternalAccountId,
-            ProviderSyncedAt: providerProjection.SyncedAt,
-            ProviderIsStale: providerEvidenceStale,
-            AssetClass: position.AssetClass,
-            Currency: position.Currency,
-            PositionId: position.PositionId,
-            SecurityId: securityId,
-            SecurityDisplayName: security?.DisplayName,
-            SecurityStatus: security?.Status,
-            Status: status,
-            ConfidenceScore: adjustedConfidenceScore,
-            ResolutionSource: resolutionSource,
-            IdentifierConflicts: identifierConflicts,
-            ValidationIssueCodes: issueCodes,
-            OverrideHistory: overrideHistory,
-            ObservedAt: observedAt,
-            FreshnessMinutes: freshnessMinutes,
-            Reason: string.Join(" ", reasonParts));
-    }
-
-    private static string[] FormatOpenIdentifierConflicts(
-        Guid? securityId,
-        IReadOnlyList<SecurityMasterConflict> openIdentifierConflicts)
-    {
-        var resolvedSecurityId = securityId.GetValueOrDefault();
-        if (resolvedSecurityId == Guid.Empty || openIdentifierConflicts.Count == 0)
-        {
-            return [];
-        }
-
-        return openIdentifierConflicts
-            .Where(conflict =>
-                conflict.SecurityId == resolvedSecurityId &&
-                string.Equals(conflict.Status, "Open", StringComparison.OrdinalIgnoreCase))
-            .OrderBy(static conflict => conflict.DetectedAt)
-            .Select(static conflict =>
-                $"conflict={conflict.ConflictId:N}; kind={conflict.ConflictKind}; field={conflict.FieldPath}; providers={conflict.ProviderA}/{conflict.ProviderB}")
-            .ToArray();
-    }
-
-    private async Task<IReadOnlyList<string>> GetSecurityMasterOverrideHistoryAsync(
-        Guid? securityId,
-        CancellationToken ct)
-    {
-        var resolvedSecurityId = securityId.GetValueOrDefault();
-        if (_operatorOverridesStore is null || resolvedSecurityId == Guid.Empty)
-        {
-            return [];
-        }
-
-        var overrides = await _operatorOverridesStore.GetAsync(resolvedSecurityId, ct).ConfigureAwait(false);
-        if (overrides is null || overrides.AuditTrail.Count == 0)
-        {
-            return [];
-        }
-
-        return overrides.AuditTrail
-            .OrderByDescending(static entry => entry.OccurredAt)
-            .Take(10)
-            .Select(FormatOverrideHistory)
-            .ToArray();
-    }
-
-    private static string FormatOverrideHistory(SecurityOverrideAuditEntryDto entry)
-    {
-        var parts = new List<string>
-        {
-            entry.EventType,
-            entry.ApprovalStatus.ToString(),
-            $"actor={entry.Actor}",
-            $"at={entry.OccurredAt:O}"
-        };
-
-        if (!string.IsNullOrWhiteSpace(entry.Reviewer))
-        {
-            parts.Add($"reviewer={entry.Reviewer.Trim()}");
-        }
-
-        if (entry.ReviewedAt.HasValue)
-        {
-            parts.Add($"reviewedAt={entry.ReviewedAt.Value:O}");
-        }
-
-        if (!string.IsNullOrWhiteSpace(entry.ReasonCode))
-        {
-            parts.Add($"reason={entry.ReasonCode.Trim()}");
-        }
-
-        if (!string.IsNullOrWhiteSpace(entry.Comment))
-        {
-            parts.Add($"comment={entry.Comment.Trim()}");
-        }
-
-        return string.Join("; ", parts);
-    }
-
     private static void AddAmountCheck(
         Guid runId,
         BreakLifecycleContext lifecycle,
@@ -2738,9 +2527,6 @@ public sealed partial class ProviderLedgerReconciliationService
             NormalizeBreakIdPart(code),
             NormalizeBreakIdPart(string.IsNullOrWhiteSpace(symbol) ? "account" : symbol));
 
-    private static string? NormalizeOwner(string? owner)
-        => string.IsNullOrWhiteSpace(owner) ? null : owner.Trim();
-
     private sealed record BreakLifecycleContext(
         DateTimeOffset CreatedAt,
         decimal AmountTolerance,
@@ -2753,6 +2539,19 @@ public sealed partial class ProviderLedgerReconciliationService
         LedgerBookDto Book,
         LedgerPeriodDto? Period,
         DateOnly? AsOfDate);
+
+    private sealed record ProviderLedgerAuthorityVerification(
+        bool IsVerified,
+        LedgerBookDto? LedgerBook,
+        string? ErrorCode,
+        string? Error)
+    {
+        public static ProviderLedgerAuthorityVerification Verified(LedgerBookDto ledgerBook)
+            => new(true, ledgerBook, null, null);
+
+        public static ProviderLedgerAuthorityVerification Failed(string errorCode, string error)
+            => new(false, null, errorCode, error);
+    }
 
     private sealed record ProviderCaseworkPersistenceResult(
         int RequiredCount,

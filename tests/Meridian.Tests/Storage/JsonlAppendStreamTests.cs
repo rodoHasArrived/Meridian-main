@@ -1,6 +1,8 @@
 using System.IO.Compression;
 using System.Security.Cryptography;
+using System.Text.Json;
 using FluentAssertions;
+using Meridian.Core.Serialization;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
@@ -93,6 +95,34 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
     }
 
     [Fact]
+    public async Task AppendStream_ReopenTruncatesTornTailBeforeReplayingEvents()
+    {
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var batchOptions = new JsonlBatchOptions { BatchSize = 100, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+
+        await using (var first = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions))
+        {
+            await first.AppendAsync(CreateTestEvent("MSFT", 1));
+        }
+
+        var dayFile = Directory.GetFiles(TestDataRoot, "*.jsonl", SearchOption.AllDirectories).Should().ContainSingle().Subject;
+        await File.AppendAllTextAsync(dayFile, "{\"incomplete\":");
+
+        await using (var replay = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions))
+        {
+            await replay.AppendAsync(CreateTestEvent("MSFT", 2));
+        }
+
+        var lines = await File.ReadAllLinesAsync(dayFile);
+        lines.Where(line => !string.IsNullOrWhiteSpace(line)).Should().HaveCount(2);
+        foreach (var line in lines.Where(line => !string.IsNullOrWhiteSpace(line)))
+        {
+            JsonSerializer.Deserialize<MarketEvent>(line, MarketDataJsonContext.HighPerformanceOptions)
+                .Should().NotBeNull("replayed events must not be concatenated to a torn JSONL tail");
+        }
+    }
+
+    [Fact]
     public async Task CompressedAppendStream_ConcatenatedGzipMembersRoundTrip()
     {
         var options = new StorageOptions { RootPath = TestDataRoot, Compress = true };
@@ -107,6 +137,32 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
         var dayFile = Directory.GetFiles(TestDataRoot, "*.jsonl.gz", SearchOption.AllDirectories).Should().ContainSingle().Subject;
         var lines = await ReadGzipLinesAsync(dayFile);
         lines.Should().HaveCount(2, "each flush appends a gzip member and readers decode concatenated members");
+    }
+
+    [Fact]
+    public async Task CompressedAppendStream_RefusesToAppendAfterATornGzipMember()
+    {
+        var options = new StorageOptions { RootPath = TestDataRoot, Compress = true };
+        var batchOptions = new JsonlBatchOptions { BatchSize = 100, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+
+        await using (var first = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot, ".jsonl.gz"), batchOptions))
+        {
+            await first.AppendAsync(CreateTestEvent("TLT", 1));
+        }
+
+        var dayFile = Directory.GetFiles(TestDataRoot, "*.jsonl.gz", SearchOption.AllDirectories).Should().ContainSingle().Subject;
+        await using (var corruptTail = new FileStream(dayFile, FileMode.Append, FileAccess.Write, FileShare.Read))
+        {
+            await corruptTail.WriteAsync(new byte[] { 0x1f, 0x8b, 0x08, 0x00 });
+        }
+        var lengthBeforeReplay = new FileInfo(dayFile).Length;
+
+        await using var replay = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot, ".jsonl.gz"), batchOptions);
+        await replay.AppendAsync(CreateTestEvent("TLT", 2));
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => replay.FlushAsync());
+        new FileInfo(dayFile).Length.Should().Be(lengthBeforeReplay,
+            "WAL replay must not be appended after an unreadable gzip member");
     }
 
     [Fact]
@@ -166,7 +222,7 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
             AggressorSide.Buy,
             sequence);
 
-        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade, sequence, "TEST");
+        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade, "TEST", sequence);
     }
 
     private sealed class TestStoragePolicy : IStoragePolicy

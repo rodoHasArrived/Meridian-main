@@ -287,7 +287,11 @@ public sealed record AccountingTenantAdministrationProfileDto(
     bool DimensionMappingStudioConfigured = false,
     bool ImplementationSandboxConfigured = false,
     IReadOnlyList<AccountingApprovalQueueConfigurationDto>? ApprovalQueueConfigurations = null,
-    IReadOnlyList<AccountingDimensionMappingConfigurationDto>? DimensionMappingConfigurations = null)
+    IReadOnlyList<AccountingDimensionMappingConfigurationDto>? DimensionMappingConfigurations = null,
+    string? FundProfileId = null,
+    Guid? LedgerBookId = null,
+    IReadOnlyList<AccountingTenantAdminCertificationArtifactDto>? CertificationArtifacts = null,
+    IReadOnlyList<RetainedEvidenceIdentityDto>? RetainedEvidence = null)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];
@@ -297,6 +301,12 @@ public sealed record AccountingTenantAdministrationProfileDto(
 
     public IReadOnlyList<AccountingDimensionMappingConfigurationDto> DimensionMappingConfigurations { get; init; } =
         DimensionMappingConfigurations ?? [];
+
+    public IReadOnlyList<AccountingTenantAdminCertificationArtifactDto> CertificationArtifacts { get; init; } =
+        CertificationArtifacts ?? [];
+
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } =
+        RetainedEvidence ?? [];
 }
 
 public sealed record AccountingTenantAdministrationProfileUpsertRequestDto(
@@ -304,10 +314,14 @@ public sealed record AccountingTenantAdministrationProfileUpsertRequestDto(
     string Actor,
     string? CorrelationId = null,
     IReadOnlyList<string>? EvidenceLinks = null,
-    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
+    IReadOnlyList<RetainedEvidenceIdentityDto>? RetainedEvidence = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
+
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } =
+        RetainedEvidence ?? [];
 }
 
 public enum AccountingCertificationArtifactStatusDto

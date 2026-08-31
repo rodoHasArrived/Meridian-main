@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Meridian.Ledger;
 
 namespace Meridian.FinancialOperations.FundAdministration;
@@ -60,6 +61,7 @@ public sealed class FundAdministrationControlService
     {
         ArgumentNullException.ThrowIfNull(template);
         RequireActor(actor);
+        var definition = DescribeJournalTemplate(template);
 
         lock (_gate)
         {
@@ -78,7 +80,7 @@ public sealed class FundAdministrationControlService
                     // sides, amounts, factors, dimensions, required parameters, or book scope produces a
                     // distinct (hashed) registration event — recurring schedules resolve the current
                     // template at materialization, so the chain must preserve which version was approved.
-                    ["definition"] = DescribeJournalTemplate(template),
+                    ["definition"] = definition,
                 });
         }
 
@@ -87,9 +89,14 @@ public sealed class FundAdministrationControlService
 
     private static string DescribeJournalTemplate(JournalTemplate template)
     {
-        var lines = string.Join(";", template.Lines.Select(line =>
-            $"{line.Account.Name}:{line.Account.AccountType}:{line.Account.FinancialAccountId}" +
-            $"|{line.Side}|p={line.AmountParameter}|f={line.FixedAmount}|x={line.Factor}|d={line.Dimensions}|m={line.Memo}"));
+        var lines = string.Join(";", template.Lines.Select((line, index) =>
+        {
+            ArgumentNullException.ThrowIfNull(line, $"{nameof(template)}.{nameof(template.Lines)}[{index}]");
+            ArgumentNullException.ThrowIfNull(line.Account, $"{nameof(template)}.{nameof(template.Lines)}[{index}].{nameof(line.Account)}");
+
+            return $"{line.Account.Name}:{line.Account.AccountType}:{line.Account.FinancialAccountId}" +
+                   $"|{line.Side}|p={line.AmountParameter}|f={line.FixedAmount}|x={line.Factor}|d={line.Dimensions}|m={line.Memo}";
+        }));
         var requiredParameters = string.Join(",", template.RequiredParameters);
         return $"book={template.LedgerBook};params={requiredParameters};lines={lines}";
     }
@@ -399,18 +406,22 @@ public sealed class FundAdministrationControlService
         return template;
     }
 
-    // Captures the approved template shape (per node: key, type, code template, name template, parent)
-    // into the governance event's attributes, which the event log hashes — so which hierarchy/codes/
-    // parents were approved is recorded tamper-evidently, not just the template id and node count.
+    // Captures the approved template shape in a complete, deterministic JSON representation. JSON
+    // preserves field boundaries even when values contain delimiters, while the sorted attributes
+    // make the descriptor stable for logically identical attribute maps.
     private static string DescribeOnboardingNodes(OnboardingTemplate template)
-        => string.Join(";", template.Nodes.Select(node =>
-            $"{node.Key}|{node.NodeType}|{node.CodeTemplate}|{node.NameTemplate}|{node.ParentKey ?? string.Empty}" +
-            $"|ccy={node.BaseCurrency ?? string.Empty}|attrs={DescribeAttributes(node.Attributes)}"));
-
-    private static string DescribeAttributes(IReadOnlyDictionary<string, string> attributes)
-        => string.Join(",", attributes
-            .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
-            .Select(static pair => $"{pair.Key}={pair.Value}"));
+        => JsonSerializer.Serialize(template.Nodes.Select(node => new
+        {
+            node.Key,
+            node.NodeType,
+            node.CodeTemplate,
+            node.NameTemplate,
+            node.ParentKey,
+            node.BaseCurrency,
+            Attributes = node.Attributes
+                .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                .Select(static pair => new { pair.Key, pair.Value }),
+        }));
 
     /// <summary>
     /// Applies a registered onboarding template, producing a concrete structure plan and recording the

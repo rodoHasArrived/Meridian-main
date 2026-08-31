@@ -1,9 +1,8 @@
-using System.Security.Cryptography;
-using System.Text;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Instruments.AssetOperations;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Strategies.Services;
 
@@ -26,7 +25,7 @@ public sealed record SecurityMasterAccountingEventRequest(
     DateOnly PeriodEnd,
     IReadOnlyList<SecurityMasterAccountingSecurity> Securities,
     IReadOnlyList<SecurityMasterAccountingPosition> Positions,
-    IReadOnlyList<SecurityFactorScheduleEntry>? FactorSchedule = null,
+    IReadOnlyList<SecurityFactorObservation>? FactorSchedule = null,
     IReadOnlyList<SecurityActualCashActivity>? ActualActivity = null,
     decimal AmountTolerance = 0.01m);
 
@@ -69,9 +68,35 @@ public sealed record SecurityMasterAccountingPosition(
     decimal ParAmount,
     decimal? CarryingPrice = null,
     Guid? PositionId = null,
-    long PositionVersion = 1);
+    long PositionVersion = 1)
+{
+    /// <summary>
+    /// The durable book position's ORIGINAL face, when it differs from the current outstanding
+    /// balance. Factor paydowns are computed against original face (factors are relative to it),
+    /// while coupon accruals bill the current balance in <see cref="ParAmount"/> — folding the
+    /// original face into ParAmount would overstate expected interest by the paid-down portion.
+    /// </summary>
+    public decimal? OriginalFaceAmount { get; init; }
 
-public sealed record SecurityFactorScheduleEntry(
+    /// <summary>
+    /// True when the source position is a SHORT exposure. <see cref="ParAmount"/> always carries
+    /// the absolute magnitude, so without this flag a short would be indistinguishable from a
+    /// long holding and would generate long-side income and receivable events for a liability.
+    /// </summary>
+    public bool IsShort { get; init; }
+}
+
+/// <summary>
+/// One reconciliation-period factor OBSERVATION for a factor-based security: the prior→current
+/// factor pair with its source and evidence lineage, as expected paydown generation consumes it.
+/// This is deliberately NOT a factor-schedule term shape — the canonical dated factor schedule is
+/// <see cref="Meridian.FSharp.Domain.FactorScheduleEntry"/> on <c>StructuredCreditTerms</c>
+/// (declared as <c>factorScheduleEntries</c> and read by <c>StructuredCashFlowTermsResolver</c>);
+/// the source adapter derives these observations FROM that canonical schedule, pairing each factor
+/// with its ordered predecessor and attaching provenance/evidence. Formerly named
+/// <c>SecurityFactorScheduleEntry</c>, which misread as a third, incompatible schedule shape.
+/// </summary>
+public sealed record SecurityFactorObservation(
     Guid SecurityId,
     DateOnly AsOfDate,
     decimal PriorFactor,
@@ -153,6 +178,23 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
 
         foreach (var position in request.Positions)
         {
+            // SHORT positions fail closed BEFORE any generation: the position magnitudes are
+            // absolute, so running a short through the long-side generators would manufacture
+            // positive interest-income, coupon-receipt, and principal-receipt events for what is
+            // actually a liability. Until short-liability accounting exists, the short surfaces
+            // as an explicit completeness break instead of silently booking long-side events.
+            if (position.IsShort)
+            {
+                issues.Add(CreateIssue(
+                    "SM_SHORT_POSITION_UNSUPPORTED",
+                    "security-master",
+                    position.Symbol,
+                    position.AccountId,
+                    $"Position '{position.Symbol}' is a short exposure; short-liability accounting is not supported by the Security Master accounting-event slice, so no expected events were generated.",
+                    ReconciliationBreakSeverity.High));
+                continue;
+            }
+
             var security = ResolveSecurity(position, securities, securitiesBySymbol);
             if (security is null)
             {
@@ -189,14 +231,19 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
                     ReconciliationBreakSeverity.High));
             }
 
+            // Coupon-coverage completeness gates COUPON accrual generation only. Factor paydowns
+            // are principal events driven by the factor schedule alone: a canonical
+            // StructuredCredit legitimately carries no coupon rate, day count, or payment
+            // frequency in its economic terms, and skipping its paydowns for missing accrual
+            // inputs would silently drop principal events (and posting candidates) the record's
+            // retained factor evidence fully supports. The coverage issues still surface.
             var coverageIssues = ValidateFixedIncomeCoverage(security, position.AccountId);
             issues.AddRange(coverageIssues);
-            if (coverageIssues.Any(static issue => issue.Severity >= ReconciliationBreakSeverity.High))
+            if (!coverageIssues.Any(static issue => issue.Severity >= ReconciliationBreakSeverity.High))
             {
-                continue;
+                GenerateFixedCouponEvents(request, security, position, events, accruals, previews);
             }
 
-            GenerateFixedCouponEvents(request, security, position, events, accruals, previews);
             if (RequiresFactorSchedule(security) &&
                 GetFactorScheduleCoverageStatus(request, security.SecurityId) is { } factorScheduleStatus)
             {
@@ -229,16 +276,28 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         IReadOnlyDictionary<Guid, SecurityMasterAccountingSecurity> securities,
         IReadOnlyDictionary<string, SecurityMasterAccountingSecurity> securitiesBySymbol)
     {
-        if (position.SecurityId is Guid securityId && securities.TryGetValue(securityId, out var securityById))
+        if (position.SecurityId is Guid securityId)
         {
-            return securityById;
+            // An IDENTIFIED position resolves by id or not at all: falling back to the symbol map
+            // when the id has no accounting record would borrow ANOTHER security's terms and
+            // accounting rule whenever two listings share a ticker — generating incorrect accruals
+            // instead of the SECURITY_ACCOUNTING_RULE_MISSING completeness break the caller records.
+            return securities.TryGetValue(securityId, out var securityById) ? securityById : null;
         }
 
         return securitiesBySymbol.TryGetValue(position.Symbol, out var securityBySymbol) ? securityBySymbol : null;
     }
 
+    /// <summary>
+    /// The gate for this first accounting slice. The canonical producer
+    /// (<c>SecurityMasterAccountingEventSourceAdapter</c>) now emits only the declared
+    /// <see cref="SecurityAccountingInstrumentClasses"/> values, resolved from the catalog rather
+    /// than inferred from classification prose; the remaining spellings stay accepted as read
+    /// tolerance for securities supplied by other adapters or by older callers.
+    /// </summary>
     private static bool IsFixedIncome(string assetClass) =>
-        assetClass.Equals("Bond", StringComparison.OrdinalIgnoreCase) ||
+        assetClass.Equals(SecurityAccountingInstrumentClasses.Bond, StringComparison.OrdinalIgnoreCase) ||
+        assetClass.Equals(SecurityAccountingInstrumentClasses.AssetBackedSecurity, StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("CertificateOfDeposit", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("CommercialPaper", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("TreasuryBill", StringComparison.OrdinalIgnoreCase) ||
@@ -246,7 +305,6 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         assetClass.Equals("MortgageBackedSecurity", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("Mbs", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("AssetBacked", StringComparison.OrdinalIgnoreCase) ||
-        assetClass.Equals("AssetBackedSecurity", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("Abs", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("Loan", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("AmortizingLoan", StringComparison.OrdinalIgnoreCase);
@@ -279,7 +337,7 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         SecurityMasterAccountingEventRequest request,
         Guid securityId)
     {
-        var entries = (request.FactorSchedule ?? Array.Empty<SecurityFactorScheduleEntry>())
+        var entries = (request.FactorSchedule ?? Array.Empty<SecurityFactorObservation>())
             .Where(entry => entry.SecurityId == securityId)
             .ToArray();
         if (entries.Length == 0)
@@ -287,9 +345,12 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
             return FactorScheduleCoverageIssue.Missing;
         }
 
+        // Period end is EXCLUSIVE (the production adapter supplies the next month's first day,
+        // matching the coupon window), so a month-boundary observation counts toward exactly one
+        // period's coverage.
         var hasPeriodFactor = entries.Any(entry =>
             entry.AsOfDate >= request.PeriodStart &&
-            entry.AsOfDate <= request.PeriodEnd);
+            entry.AsOfDate < request.PeriodEnd);
         if (hasPeriodFactor)
         {
             return null;
@@ -411,9 +472,13 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         events.Add(accrualEvent);
         previews.Add(CreateInterestAccrualPreview(security, position, accrualEvent));
 
+        // The period end is EXCLUSIVE (the adapter's ResolvePeriod supplies the next month's
+        // first day), matching the factor-schedule filtering: an inclusive comparison would emit
+        // a first-of-month coupon in this period AND again next period, where the same date is
+        // that run's PeriodStart — duplicate expected cash events and journal previews.
         if (terms.NextCouponDate is DateOnly couponDate &&
             couponDate >= request.PeriodStart &&
-            couponDate <= request.PeriodEnd)
+            couponDate < request.PeriodEnd)
         {
             var couponAmount = RoundMoney(position.ParAmount * NormalizeRate(terms.CouponRate.Value) / terms.PaymentFrequencyPerYear!.Value);
             if (couponAmount > 0m)
@@ -444,8 +509,19 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         List<ExpectedJournalPreviewDto> previews,
         List<SecurityMasterAccountingIssueDto> issues)
     {
-        var factors = (request.FactorSchedule ?? Array.Empty<SecurityFactorScheduleEntry>())
-            .Where(entry => entry.SecurityId == security.SecurityId && entry.AsOfDate >= request.PeriodStart && entry.AsOfDate <= request.PeriodEnd)
+        // UNCHANGED observations (prior == current) are factor COVERAGE, not paydowns: no
+        // principal moved, so there is nothing to project, post, or attribute — and therefore no
+        // durable position identity to demand. They are filtered BEFORE the identity precondition
+        // so a period whose only observation is an unchanged factor does not fail closed on
+        // FACTOR_PAYDOWN_POSITION_REQUIRED for an event that does not exist. (Handing an unchanged
+        // row to the projector would also fail closed on the evidence requirement when the
+        // schedule carries no optional evidence pointer.)
+        // Period end is EXCLUSIVE, matching the coupon window and the production adapter's
+        // schedule trim: an adapter that supplies the full retained schedule must not have a
+        // next-month-first-day row generate the same paydown in both adjacent runs.
+        var factors = (request.FactorSchedule ?? Array.Empty<SecurityFactorObservation>())
+            .Where(entry => entry.SecurityId == security.SecurityId && entry.AsOfDate >= request.PeriodStart && entry.AsOfDate < request.PeriodEnd)
+            .Where(static entry => entry.CurrentFactor != entry.PriorFactor)
             .OrderBy(static entry => entry.AsOfDate)
             .ToArray();
         var positionId = position.PositionId.GetValueOrDefault();
@@ -469,7 +545,9 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
                 positionId,
                 projectedPositionVersion,
                 projectedPositionVersion,
-                position.ParAmount,
+                // Paydowns are relative to ORIGINAL face; ParAmount carries the current
+                // outstanding balance that coupon accruals bill.
+                position.OriginalFaceAmount ?? position.ParAmount,
                 factor.PriorFactor,
                 factor.CurrentFactor,
                 security.Currency,
@@ -518,7 +596,15 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
                 EvidenceLinks = economicEvent.EvidenceLinks
             };
             events.Add(expectedEvent);
-            previews.Add(CreatePrincipalPaydownPreview(security, position, expectedEvent));
+            // The journal preview needs the security's accounting rule for its ledger accounts;
+            // without one the EXPECTED paydown event still surfaces (the retained factor evidence
+            // fully supports the principal event itself) alongside the already-recorded
+            // SECURITY_ACCOUNTING_RULE_MISSING issue, but no preview is fabricated from a missing
+            // classification — previously this dereferenced the absent rule and crashed the run.
+            if (security.AccountingRule is not null)
+            {
+                previews.Add(CreatePrincipalPaydownPreview(security, position, expectedEvent));
+            }
         }
     }
 
@@ -806,7 +892,6 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
 
     private static string Hash(string value)
     {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(value));
-        return Convert.ToHexString(bytes).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(value);
     }
 }

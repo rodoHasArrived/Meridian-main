@@ -96,8 +96,10 @@ export function validateProviderIntegrationSetupDraft(
       .map((capability) => capability?.capability)
       .filter((capability): capability is NonNullable<typeof capability> => Boolean(capability))
   );
+  const undeclaredCapabilities = new Set<string>();
   for (const capability of Array.isArray(connection.enabledCapabilities) ? connection.enabledCapabilities : []) {
-    if (!declaredCapabilities.has(capability)) {
+    if (!declaredCapabilities.has(capability) && !undeclaredCapabilities.has(capability)) {
+      undeclaredCapabilities.add(capability);
       issues.push({
         field: "connection.enabledCapabilities",
         label: "Connection enabled capabilities",

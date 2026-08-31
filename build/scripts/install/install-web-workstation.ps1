@@ -1383,11 +1383,18 @@ if (-not $SkipDashboardBuild) {
 }
 
 $workstationAssetSource = $dashboardBundle
-if (-not (Test-Path -LiteralPath (Join-Path $workstationAssetSource "index.html")) -and
-    $SkipDashboardBuild -and
-    (Test-Path -LiteralPath (Join-Path $targetBundle "index.html"))) {
-    Write-Warn "Built workstation bundle was not found under the repo; reusing the installed workstation assets."
-    $workstationAssetSource = $targetBundle
+$publishedBundle = Join-Path $publishRoot "wwwroot\workstation"
+if (-not (Test-Path -LiteralPath (Join-Path $workstationAssetSource "index.html")) -and $SkipDashboardBuild) {
+    if (Test-Path -LiteralPath (Join-Path $publishedBundle "index.html")) {
+        # A clean checkout has no generated repo bundle; the published artifact being
+        # installed carries its own wwwroot/workstation and is the exact asset truth.
+        Write-Warn "Built workstation bundle was not found under the repo; using the published host's workstation assets."
+        $workstationAssetSource = $publishedBundle
+    }
+    elseif (Test-Path -LiteralPath (Join-Path $targetBundle "index.html")) {
+        Write-Warn "Built workstation bundle was not found under the repo; reusing the installed workstation assets."
+        $workstationAssetSource = $targetBundle
+    }
 }
 
 Assert-RequiredPath -Path (Join-Path $workstationAssetSource "index.html") -Description "Built workstation index.html"
@@ -1538,7 +1545,12 @@ Invoke-Step -Name "Create launcher script" -Action {
         dataRoot = $dataRootPath
         httpPort = $Port
         databasePort = 54329
-        startupTimeoutSeconds = 60
+        # First boot of an installed workstation self-extracts the compressed single-file
+        # host and runs first migrations before /readyz can answer; the supervisor's
+        # readiness deadline must cover that, not only warm restarts. The deadline stays a
+        # hard fail-closed ceiling and readiness still completes as soon as the host is
+        # Ready.
+        startupTimeoutSeconds = 300
         shutdownTimeoutSeconds = 45
         databaseTimeoutSeconds = 60
     }

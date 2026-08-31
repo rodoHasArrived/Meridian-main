@@ -1,4 +1,4 @@
-import { BookCheck, Landmark, Network, Paperclip, RefreshCcw, Search, ShieldCheck, Table2, UserCheck, WalletCards, X } from "lucide-react";
+import { BookCheck, Copy, Landmark, Network, Paperclip, RefreshCcw, Search, ShieldCheck, UserCheck, WalletCards, X } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import "@/styles/accounting-screen.css";
@@ -16,8 +16,7 @@ import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
 import { CoveragePassportDrillIn } from "@/components/meridian/coverage-passport-drill-in";
-import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "@/components/accounting/TrialBalanceRowDetail";
-import { ReconciliationComparisonPanel, TrialBalanceTable } from "@/components/accounting";
+import { ReconciliationComparisonPanel } from "@/components/accounting";
 import {
   approveAndPostDailyValuationBatch,
   approveOperationsContinuityWorkflow,
@@ -42,14 +41,21 @@ import {
   saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization";
 import { accountingToolingBadgeVariant, accountingToolingBorderClass, cashFlowBadgeClass, cashFlowTextClass, reportingBadgeClass } from "@/screens/accounting-screen.styles";
 import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
 import { CapitalAccountWorkbenchPanel } from "@/screens/accounting-screen.capital-account-workbench-panel";
+import { AccountingPostedLedgerSection } from "@/screens/accounting-screen.posted-ledger-panel";
+import { CorporateActionsPanel } from "@/screens/accounting-screen.corporate-actions-panel";
 import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, CloseCommandCenterPanel } from "@/screens/accounting-screen.close-cockpit-panels";
 import { SecuritySchedulesPanel } from "@/screens/accounting-screen.security-master-panels";
-import { AccountingTaskModeLauncher } from "@/screens/accounting-screen.task-modes";
 import { CalibrationSummaryPanel } from "@/screens/accounting-screen.calibration-panel";
+import {
+  focusManualJournalCell,
+  handleManualJournalCellKeyDown,
+  ManualJournalDimensionsInspector,
+  ManualJournalHealthBar,
+  ManualJournalValidationNavigator
+} from "@/screens/accounting-screen.journal-entry-enhancements";
 import {
   InstrumentPassportPanel,
   ReferenceDataWorkbenchPanel,
@@ -62,6 +68,10 @@ import {
   TradingParametersPanel,
   reconciliationQueueColumns,
 } from "@/screens/accounting-screen.operations-panels";
+import { BankingPaymentApprovalsPanel } from "@/screens/accounting-screen.payment-approvals";
+import { BreakAuditRebuildCheck } from "@/screens/accounting-screen.break-audit-rebuild";
+import { ReconciliationReadinessPanel } from "@/screens/accounting-screen.reconciliation-readiness";
+import { StatementRunDetailTabs } from "@/screens/accounting-screen.statement-run-detail";
 import {
   ChartAccountPathBuilder,
   ConfigureActivationRail,
@@ -95,8 +105,6 @@ import type {
   AccountingConfigurationViewModel,
   AccountingRulesStudioPromotionReadinessViewModel,
   ManualJournalEntryWorkbenchViewModel,
-  CorporateActionsViewState,
-  CorporateActionRowViewModel,
   ReconciliationBreakRowViewModel,
   ReconciliationStatementRunRowViewModel,
   ReconciliationBreakDetailViewModel,
@@ -124,6 +132,7 @@ import type {
   OperationsContinuityWorkflowSummary,
   OperationsTimelineEntry,
   PrivateCapitalCloseCockpit,
+  SessionInfo,
 } from "@/types";
 import {
   approvalBlockedReason,
@@ -143,6 +152,7 @@ import {
 interface AccountingScreenProps {
   data: AccountingWorkspaceResponse | null;
   multiAssetCoverage?: MultiAssetCoverageSummary | null;
+  session?: SessionInfo | null;
 }
 
 const SECURITY_MASTER_DRILL_IN_TAB_IDS = ["identity", "reference", "schedules", "lots", "passport", "evidence"] as const;
@@ -216,22 +226,6 @@ const reconciliationBreakColumns: DenseDataTableColumn<ReconciliationBreakRowVie
 ];
 
 // trialBalanceColumns moved to components/accounting/TrialBalanceRowDetail.tsx for reuse by trial-balance-screen.tsx.
-
-const corporateActionColumns: DenseDataTableColumn<CorporateActionRowViewModel>[] = [
-  {
-    id: "eventType",
-    label: "Event type",
-    render: (row) => (
-      <span className="block min-w-0">
-        <span className="block font-semibold text-foreground">{row.eventTypeLabel}</span>
-        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.corpActId}</span>
-      </span>
-    )
-  },
-  { id: "exDate", label: "Ex-date", render: (row) => <span className="font-mono text-muted-foreground">{row.exDateLabel}</span> },
-  { id: "payDate", label: "Pay date", render: (row) => <span className="font-mono text-muted-foreground">{row.payDateLabel}</span> },
-  { id: "amount", label: "Amount", align: "right", render: (row) => <span className="font-mono tabular-nums text-foreground">{row.amountLabel}</span> }
-];
 
 const accountingSystemStatusVariant = {
   Matched: "success",
@@ -1630,6 +1624,7 @@ function AccountingCaseWorkbench({
                 <AccountingValue label="Raw category" value={selectedBreakDetail?.rawCategoryLabel ?? "No category"} />
                 <AccountingValue label="Audit packet" value={detailActions?.auditPacketLabel ?? "Open after selecting a break"} />
               </div>
+              <BreakAuditRebuildCheck breakId={selectedBreak?.breakId ?? null} />
             </TechnicalDetails>
           </CardContent>
         </Card>
@@ -1638,9 +1633,10 @@ function AccountingCaseWorkbench({
   );
 }
 
-export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenProps) {
+export function AccountingScreen({ data, multiAssetCoverage, session = null }: AccountingScreenProps) {
   const { pathname, search, hash } = useLocation();
   const navigate = useNavigate();
+  const operatorIdentity = session?.displayName.trim() || null;
   const workstream = resolveAccountingWorkstream(pathname);
   const taskMode = buildAccountingTaskMode(pathname);
   const sectionVisibility = buildAccountingSectionVisibility(taskMode, hash);
@@ -1653,7 +1649,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const workspace = workspaceForPath(pathname);
   const closeWorkflowQuery = useMemo(() => parseCloseWorkflowQuery(search), [search]);
   const [accountingSystemReconciliation, setAccountingSystemReconciliation] = useState<AccountingSystemReconciliationSummary | null>(null);
-  const reconciliation = useAccountingReconciliationViewModel(data, workstream, undefined, accountingSystemReconciliation);
+  const reconciliation = useAccountingReconciliationViewModel(data, workstream, undefined, accountingSystemReconciliation, operatorIdentity);
   const selectedBreakPrimaryFields = reconciliation.selectedDetail?.fields.filter((field) => [
     "Variance",
     "Owner",
@@ -1671,8 +1667,6 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const resolveDialog = useReconciliationResolveDialogViewModel(reconciliation.resolveBreak);
   const selectedReconciliation = reconciliation.selectedReconciliation;
   const selectedReconciliationDetail = reconciliation.detailView;
-  const selectedReconciliationOpenBreakLabel = `${selectedReconciliation?.openBreakCount ?? 0} open break${selectedReconciliation?.openBreakCount === 1 ? "" : "s"}`;
-  const selectedReconciliationOpenBreakTone = (selectedReconciliation?.openBreakCount ?? 0) === 0 ? "success" : "warning";
   const cashFlow = useAccountingCashFlowViewModel(data?.cashFlow ?? null, pathname, workstream);
   const reporting = useAccountingReportingViewModel(data?.reporting ?? null);
   const configuration = useAccountingConfigurationViewModel(undefined, sectionVisibility.showConfiguration);
@@ -1707,7 +1701,6 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const [closeWorkflow, setCloseWorkflow] = useState<OperationsContinuityWorkflow | null>(null);
   const [closeWorkflowLoading, setCloseWorkflowLoading] = useState(false);
   const [closeWorkflowError, setCloseWorkflowError] = useState<string | null>(null);
-  const [ledgerExplorer, setLedgerExplorer] = useState<FinancialRecordExplorerDto | null>(null);
   const [securityInstrumentExplorer, setSecurityInstrumentExplorer] = useState<FinancialRecordExplorerDto | null>(null);
   const securityInstrumentExplorerView = useMemo(() => {
     if (!securityInstrumentExplorer) {
@@ -1870,27 +1863,6 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     : null;
 
   useEffect(() => {
-    if (!sectionVisibility.showLedgerExplorer) {
-      return;
-    }
-
-    let cancelled = false;
-    void getFinancialRecordExplorer("ledger").then((explorer) => {
-      if (!cancelled) {
-        setLedgerExplorer(explorer);
-      }
-    }).catch(() => {
-      if (!cancelled) {
-        setLedgerExplorer(null);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [sectionVisibility.showLedgerExplorer]);
-
-  useEffect(() => {
     if (!sectionVisibility.showSecurityMaster) {
       return;
     }
@@ -1911,17 +1883,14 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     };
   }, [sectionVisibility.showSecurityMaster]);
 
+  // Only the security-instrument explorer remains in Accounting; the ledger explorer moved
+  // to the Strategy workspace with the run-scoped ledger it serves.
   async function saveAccountingExplorerView(
-    explorerId: "ledger" | "security-instrument",
+    explorerId: "security-instrument",
     request: FinancialRecordExplorerSavedViewSaveRequestDto
   ) {
     await saveFinancialRecordExplorerView(explorerId, request);
-    const refreshed = await getFinancialRecordExplorer(explorerId);
-    if (explorerId === "ledger") {
-      setLedgerExplorer(refreshed);
-    } else {
-      setSecurityInstrumentExplorer(refreshed);
-    }
+    setSecurityInstrumentExplorer(await getFinancialRecordExplorer(explorerId));
   }
   const reconciliationBreakTableColumns: DenseDataTableColumn<ReconciliationBreakRowViewModel>[] = [
     ...reconciliationBreakColumns,
@@ -2419,7 +2388,6 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                 />
               ) : null}
               <AccountingCloseReportPackagePanel view={closeReportPackage} />
-              <AccountingTaskModeLauncher />
             </div>
           </TechnicalDetails>
         </>
@@ -2541,6 +2509,10 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         <AccountingApprovalsWorkstream />
       ) : null}
 
+      {sectionVisibility.showApprovals ? (
+        <BankingPaymentApprovalsPanel />
+      ) : null}
+
       {sectionVisibility.showExceptionWorkbench ? (
         <OperationalExceptionWorkbenchPanel view={reconciliation.exceptionWorkbench} />
       ) : null}
@@ -2568,21 +2540,23 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                 <AccountingValue label="Close readiness" value={data.controlCenter.closeReadiness} />
                 <AccountingValue label="SLA breach count" value={String(data.controlCenter.slaBreachCount)} />
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="space-y-1">
-                  <span className="text-xs text-muted-foreground">Portfolio filter</span>
-                  <select className="w-full rounded border bg-background px-2 py-1 text-sm">
-                    {data.controlCenter.portfolioFilterOptions.map((option) => <option key={option}>{option}</option>)}
-                  </select>
-                </label>
-                <label className="space-y-1">
-                  <span className="text-xs text-muted-foreground">Account filter</span>
-                  <select className="w-full rounded border bg-background px-2 py-1 text-sm">
-                    <option>all-accounts</option>
-                    {data.controlCenter.accountFilterOptions.map((option) => <option key={option}>{option}</option>)}
-                  </select>
-                </label>
+              <div
+                className="grid gap-3 sm:grid-cols-2"
+                role="group"
+                aria-label="Operations control center scope"
+              >
+                <AccountingValue
+                  label="Portfolio coverage"
+                  value={data.controlCenter.portfolioFilterOptions.join(", ") || "All portfolios"}
+                />
+                <AccountingValue
+                  label="Account coverage"
+                  value={data.controlCenter.accountFilterOptions.join(", ") || "All accounts"}
+                />
               </div>
+              <p className="text-xs text-muted-foreground">
+                Control-center measures are aggregate service results. Meridian does not present a selector until the service supplies per-scope measures.
+              </p>
               <div className="grid gap-2 sm:grid-cols-2">
                 {data.controlCenter.trendSnapshots.map((snapshot) => (
                   <div key={snapshot.metric} className="rounded border border-border/70 px-2 py-1">
@@ -2695,6 +2669,10 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
           </div>
         <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
           <div className="xl:col-span-2">
+            <ReconciliationReadinessPanel />
+          </div>
+
+          <div className="xl:col-span-2">
             <ReconciliationComparisonPanel view={reconciliation.comparisonView} />
           </div>
 
@@ -2758,28 +2736,12 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                 ariaLabel={reconciliation.statementRunsView.tableLabel}
                 caption={reconciliation.statementRunsView.tableCaption}
               />
-              <Tabs
-                id={reconciliation.statementRunsView.detailPanelId}
-                aria-label="Statement run detail tabs"
-                tabs={reconciliation.statementRunsView.tabs.map((tab) => ({
-                  ariaLabel: tab.ariaLabel,
-                  count: tab.badgeLabel,
-                  disabled: tab.disabled,
-                  id: tab.id,
-                  label: tab.label
-                }))}
-              >
-                {reconciliation.statementRunsView.tabs.map((tab) => (
-                  <TabPanel key={tab.id}>
-                    <StatusBanner
-                      role={tab.disabled ? "status" : undefined}
-                      tone={tab.disabled ? "warning" : "info"}
-                      title={tab.label}
-                      detail={tab.disabledReason ?? tab.description}
-                    />
-                  </TabPanel>
-                ))}
-              </Tabs>
+              <StatementRunDetailTabs
+                panelId={reconciliation.statementRunsView.detailPanelId}
+                runId={reconciliation.selectedRunId}
+                tabs={reconciliation.statementRunsView.tabs}
+                onRunReconciled={() => void reconciliation.refreshStatementRuns()}
+              />
               <p className="text-xs text-muted-foreground">
                 Matching, tolerance, validation, and case-state decisions remain in reconciliation services; this view shows service-reviewed results.
               </p>
@@ -2897,365 +2859,130 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         </section>
       ) : null}
 
-      {sectionVisibility.showLedgerExplorer && selectedReconciliation ? (
-        <FinancialRecordExplorerShell
-          explorerLabel="Financial Record Explorer"
-          title="Ledger Explorer"
-          titleId="accounting-ledger-explorer-title"
-          description="Filter accounting ledger records, inspect dense trial-balance rows, and drill into journals, ledger lines, source documents, approvals, reconciliations, report usage, and audit history without leaving the Accounting workspace."
-          scopeItems={[
-            { id: "workspace", label: "Workspace", value: "Accounting" },
-            { id: "record-set", label: "Record set", value: "Journal entries and ledger detail" },
-            { id: "run", label: "Reconciliation run", value: selectedReconciliation.strategyName },
-            { id: "run-id", label: "Run ID", value: selectedReconciliation.runId }
-          ]}
-          savedViews={[
-            {
-              id: "controller-review",
-              label: "Controller review",
-              detail: "Default ledger explorer view for trial balance, proof drawer, approvals, and report usage.",
-              active: true
-            },
-            {
-              id: "exceptions",
-              label: "Exceptions",
-              detail: "Focuses the ledger grid on unreconciled accounts, blockers, and missing evidence."
-            },
-            {
-              id: "report-usage",
-              label: "Report usage",
-              detail: "Keeps journal, ledger line, and report export proof paths visible together."
-            }
-          ]}
-          summaryItems={[
-            { id: "rows", label: "Rows", value: reconciliation.trialBalanceView.filteredRowCountLabel },
-            { id: "basis", label: "Basis", value: reconciliation.trialBalanceView.basisOptions.find((option) => option.isSelected)?.label ?? "Primary" },
-            { id: "breaks", label: "Open breaks", value: selectedReconciliationOpenBreakLabel, tone: selectedReconciliationOpenBreakTone },
-            { id: "reconciliation", label: "Reconciliation", value: selectedReconciliation.reconciliationStatus, tone: selectedReconciliationOpenBreakTone }
-          ]}
-          appliedFilters={[
-            { id: "account", label: "GL account", value: reconciliation.trialBalanceView.accountFilterValue.trim() || "All accounts" },
-            { id: "basis-filter", label: "Accounting basis", value: reconciliation.trialBalanceView.basisOptions.find((option) => option.isSelected)?.label ?? "Primary" },
-            { id: "run-filter", label: "Run", value: selectedReconciliation.runId }
-          ]}
-          actions={[
-            {
-              id: "evidence",
-              label: reconciliation.detailActions?.evidencePacketLabel ?? "Open evidence packet",
-              href: reconciliation.detailActions?.evidencePacketHref,
-              ariaLabel: reconciliation.detailActions?.evidencePacketAriaLabel
-            },
-            {
-              id: "audit",
-              label: reconciliation.detailActions?.auditPacketLabel ?? "Review audit packet",
-              href: reconciliation.detailActions?.auditPacketHref,
-              ariaLabel: reconciliation.detailActions?.auditPacketAriaLabel
-            }
-          ]}
-          explorer={ledgerExplorer}
-          onSaveView={(request) => saveAccountingExplorerView("ledger", request)}
-        >
-        <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-          <Card aria-labelledby="trial-balance-title" aria-describedby="trial-balance-description" className="panel-surface">
-            <CardHeader>
-              <CardTitle id="trial-balance-title">{reconciliation.trialBalanceView.title}</CardTitle>
-              <CardDescription id="trial-balance-description">{reconciliation.trialBalanceView.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <span className="sr-only" aria-live="polite">{reconciliation.trialBalanceView.statusAnnouncement}</span>
-              <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Accounting basis">
-                {reconciliation.trialBalanceView.basisOptions.map((option) => (
-                  <Button
-                    key={option.id}
-                    type="button"
-                    size="sm"
-                    variant={option.isSelected ? "default" : "outline"}
-                    aria-pressed={option.isSelected}
-                    aria-label={`${option.label} basis, ${option.rowCountLabel}. ${option.description}`}
-                    onClick={() => reconciliation.selectAccountingBasis(option.id)}
-                  >
-                    <span>{option.label}</span>
-                    <span className="ml-2 font-mono text-[10px] opacity-75">{option.rowCount}</span>
-                  </Button>
+      {sectionVisibility.showLedgerExplorer ? <AccountingPostedLedgerSection workstream={workstream} /> : null}
+
+      {/*
+        The strategy-run ledger explorer moved to the Strategy workspace
+        (/strategy/run-ledger). A run's simulated ledger is a run artifact; keeping it here
+        put it under the name operators read as the fund's book of record. The Accounting
+        ledger surface above now renders the posted journal. Reporting exports and Transaction
+        Lab stayed — both are accounting work, not run evidence, and only shared the removed
+        container. Transaction Lab in particular previews the accounting effect of a proposed
+        transaction, and this is its only entry point anywhere in the workstation.
+      */}
+      {sectionVisibility.showLedgerExplorer ? (
+        <Card className="panel-surface">
+          <CardHeader>
+            <CardTitle>{reconciliation.transactionLabView.title}</CardTitle>
+            <CardDescription>{reconciliation.transactionLabView.description}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-start justify-between gap-3">
+              <p
+                role={reconciliation.transactionLabView.statusRole}
+                className={cn(
+                  "flex-1 rounded-md border px-3 py-2 text-sm",
+                  reconciliation.transactionLabView.statusTone === "default" ? "border-border/70 bg-secondary/25 text-muted-foreground" : "",
+                  reconciliation.transactionLabView.statusTone === "success" ? "border-success/30 bg-success/10 text-success" : "",
+                  reconciliation.transactionLabView.statusTone === "warning" ? "border-warning/30 bg-warning/10 text-warning" : "",
+                  reconciliation.transactionLabView.statusTone === "danger" ? "border-danger/30 bg-danger/10 text-danger" : ""
+                )}
+              >
+                {reconciliation.transactionLabView.statusText}
+              </p>
+              <Badge variant={reconciliation.transactionLabView.statusTone === "default" ? "outline" : reconciliation.transactionLabView.statusTone} dot>
+                {reconciliation.transactionLabView.requestSummaryLabel}
+              </Badge>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+              <div className="rounded-md border border-border/70 bg-background px-3 py-2">
+                <span className="block text-muted-foreground">Expected projection</span>
+                <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.journalLineCountLabel}</span>
+              </div>
+              <div className="rounded-md border border-border/70 bg-background px-3 py-2">
+                <span className="block text-muted-foreground">Projected accounting effect</span>
+                <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.ledgerImpactLabel}</span>
+              </div>
+              <div className="rounded-md border border-border/70 bg-background px-3 py-2">
+                <span className="block text-muted-foreground">Reconciliation</span>
+                <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.reconciliationLabel}</span>
+              </div>
+              <div className="rounded-md border border-border/70 bg-background px-3 py-2">
+                <span className="block text-muted-foreground">Evidence</span>
+                <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.evidenceLabel}</span>
+              </div>
+            </div>
+            {reconciliation.transactionLabView.impactRows.length > 0 ? (
+              <div className="mt-3 space-y-2" aria-label="Transaction Lab projected trial-balance effect">
+                {reconciliation.transactionLabView.impactRows.map((row) => (
+                  <div key={row.id} className="flex items-center justify-between gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm">
+                    <span className="min-w-0 truncate text-foreground">{row.label}</span>
+                    <Badge variant={row.tone === "default" ? "outline" : row.tone}>{row.value}</Badge>
+                  </div>
                 ))}
               </div>
-              <div className="mb-4 rounded-md border border-border/70 bg-secondary/15 p-3">
-                <FormRow
-                  label={reconciliation.trialBalanceView.accountFilterLabel}
-                  labelFor="ledger-account-filter"
-                >
-                  <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
-                    <div className="relative min-w-0 flex-1">
-                      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-                      <Input
-                        id="ledger-account-filter"
-                        type="search"
-                        value={reconciliation.trialBalanceView.accountFilterValue}
-                        onChange={(event) => reconciliation.updateLedgerAccountFilter(event.target.value)}
-                        placeholder={reconciliation.trialBalanceView.accountFilterPlaceholder}
-                        className="pl-9"
-                      />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs text-muted-foreground">{reconciliation.trialBalanceView.filteredRowCountLabel}</span>
-                      {reconciliation.trialBalanceView.accountFilterValue.trim() ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => reconciliation.updateLedgerAccountFilter("")}
-                        >
-                          {reconciliation.trialBalanceView.clearAccountFilterLabel}
-                        </Button>
-                      ) : null}
-                    </div>
-                  </div>
-                </FormRow>
-                {reconciliation.trialBalanceView.accountFilterOptions.length > 0 ? (
-                  <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="General Ledger account shortcuts">
-                    {reconciliation.trialBalanceView.accountFilterOptions.map((option) => (
-                      <Button
-                        key={option.id}
-                        type="button"
-                        size="sm"
-                        variant={option.isSelected ? "secondary" : "outline"}
-                        aria-pressed={option.isSelected}
-                        aria-label={`${option.label}, ${option.detail}, ${option.rowCountLabel}`}
-                        onClick={() => reconciliation.updateLedgerAccountFilter(option.label)}
-                      >
-                        <span className="truncate">{option.label}</span>
-                        <span className="ml-2 font-mono text-[10px] opacity-75">{option.rowCount}</span>
-                      </Button>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-              {reconciliation.trialBalanceView.hasRows ? (
-                <div className="grid gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.75fr)]">
-                  {reconciliation.trialBalanceView.rows.length > DENSE_VIRTUALIZATION_THRESHOLD ? (
-                    <DenseDataTable
-                      columns={trialBalanceColumns}
-                      rows={reconciliation.trialBalanceView.rows}
-                      getRowId={(line) => line.rowId}
-                      getRowAriaLabel={(line) => line.ariaLabel}
-                      getRowSelectAriaLabel={(line) => line.selectAriaLabel}
-                      getRowAriaControls={(line) => line.detailPanelId}
-                      getRowAriaExpanded={(line) => line.isExpanded}
-                      selectedRowId={reconciliation.trialBalanceView.selectedRowId}
-                      onRowSelect={(line) => reconciliation.selectTrialBalanceRow(line.rowId)}
-                      emptyText={reconciliation.trialBalanceView.emptyDetail}
-                      ariaLabel={reconciliation.trialBalanceView.tableLabel}
-                    />
-                  ) : (
-                    <TrialBalanceTable
-                      rows={reconciliation.trialBalanceView.rows}
-                      selectedRowId={reconciliation.trialBalanceView.selectedRowId}
-                      caption={reconciliation.trialBalanceView.tableLabel}
-                      onRowSelect={(line) => reconciliation.selectTrialBalanceRow(line.rowId)}
-                    />
-                  )}
-                  {reconciliation.trialBalanceView.selectedDetail ? (
-                    <AccountingTrialBalanceSelectedDetailPanel
-                      panelId={reconciliation.trialBalanceView.detailPanelId}
-                      detail={reconciliation.trialBalanceView.selectedDetail}
-                    />
-                  ) : (
-                    <aside
-                      id={reconciliation.trialBalanceView.detailPanelId}
-                      role="region"
-                      aria-label={reconciliation.trialBalanceView.detailEmptyAriaLabel}
-                      data-selected-source="Selected from trial balance"
-                      className="row-detail-panel h-fit min-w-0"
-                    >
-                      <div className="eyebrow-label">Trial-balance detail</div>
-                      <h3 className="mt-1 text-sm font-semibold text-foreground">{reconciliation.trialBalanceView.detailEmptyTitle}</h3>
-                      <p className="mt-2 text-sm leading-6 text-muted-foreground">{reconciliation.trialBalanceView.detailEmptyText}</p>
-                    </aside>
-                  )}
-                </div>
-              ) : (
-                <div
-                  role={reconciliation.trialBalanceView.state === "error" ? "alert" : "status"}
-                  className={cn(
-                    "rounded-lg border px-4 py-4",
-                    reconciliation.trialBalanceView.state === "error"
-                      ? "border-danger/35 bg-danger/10 text-danger"
-                      : "border-border/70 bg-secondary/25 text-muted-foreground"
-                  )}
-                >
-                  <div className="text-sm font-semibold text-foreground">{reconciliation.trialBalanceView.emptyTitle}</div>
-                  <p className="mt-2 text-sm leading-6">
-                    {reconciliation.trialBalanceView.errorText ?? reconciliation.trialBalanceView.loadingText ?? reconciliation.trialBalanceView.emptyDetail}
-                  </p>
-                  {reconciliation.trialBalanceView.errorDetails.length > 0 ? (
-                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
-                      {reconciliation.trialBalanceView.errorDetails.map((detail) => (
-                        <li key={detail}>{detail}</li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </div>
-              )}
-              {reconciliation.trialBalanceView.loadingText && reconciliation.trialBalanceView.hasRows ? (
-                <p role="status" className="mt-3 text-sm text-muted-foreground">
-                  {reconciliation.trialBalanceView.loadingText}
-                </p>
-              ) : null}
-              {reconciliation.trialBalanceView.errorText && reconciliation.trialBalanceView.hasRows ? (
-                <StatusBanner
-                  role="alert"
-                  className="mt-3"
-                  tone="danger"
-                  title={reconciliation.trialBalanceView.errorText}
-                  detail={reconciliation.trialBalanceView.errorDetails.length > 0 ? (
-                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
-                      {reconciliation.trialBalanceView.errorDetails.map((detail) => (
-                        <li key={detail}>{detail}</li>
-                      ))}
-                    </ul>
-                  ) : null}
-                />
-              ) : null}
-            </CardContent>
-          </Card>
-          <Card className="panel-surface">
-            <CardHeader>
-              <CardTitle>{reconciliation.trialBalanceView.basisBridge.title}</CardTitle>
-              <CardDescription>{reconciliation.trialBalanceView.basisBridge.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div role="region" aria-label={reconciliation.trialBalanceView.basisBridge.tableLabel}>
-                {reconciliation.trialBalanceView.basisBridge.hasRows ? (
-                  <div className="space-y-2">
-                    {reconciliation.trialBalanceView.basisBridge.rows.map((row) => (
-                      <div key={row.rowId} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2" aria-label={row.ariaLabel}>
-                        <div className="flex items-start justify-between gap-3">
-                          <span className="min-w-0">
-                            <span className="block truncate text-sm font-semibold text-foreground">{row.accountLabel}</span>
-                            <span className="mt-1 block text-xs text-muted-foreground">{row.sourceLabel}</span>
-                          </span>
-                          <Badge variant={row.varianceTone}>{row.varianceLabel}</Badge>
-                        </div>
-                        <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
-                          <span className="font-mono tabular-nums">Primary {row.primaryBalanceLabel}</span>
-                          <span className="font-mono tabular-nums">{row.comparisonBalanceLabel}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-sm leading-6 text-muted-foreground">
-                    {reconciliation.trialBalanceView.basisBridge.emptyText}
-                  </p>
+            ) : null}
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-3 w-full"
+              disabled={!reconciliation.transactionLabView.canPreview}
+              disabledReason={reconciliation.transactionLabView.disabledReason}
+              busy={reconciliation.transactionLabView.busy}
+              busyLabel={reconciliation.transactionLabView.previewButtonLabel}
+              aria-label={reconciliation.transactionLabView.previewButtonAriaLabel}
+              onClick={() => void reconciliation.runTransactionLabPreview()}
+            >
+              {reconciliation.transactionLabView.previewButtonLabel}
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {sectionVisibility.showLedgerExplorer ? (
+        <Card className="panel-surface">
+          <CardHeader>
+            <CardTitle>Reporting exports</CardTitle>
+            <CardDescription>Entry points for report and export handoff using existing export infrastructure.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-center gap-2">
+            <Button asChild>
+              <a href={reporting.backendLinks[0].href} target="_blank" rel="noreferrer" aria-label={reporting.backendLinks[0].ariaLabel}>
+                {reporting.backendLinks[0].label}
+              </a>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!reporting.exportCanRun}
+              disabledReason={reporting.exportDisabledReason}
+              busy={reporting.exportBusy}
+              busyLabel={reporting.exportButtonLabel}
+              aria-label={reporting.exportAriaLabel}
+              onClick={() => void reporting.runExport()}
+            >
+              {reporting.exportButtonLabel}
+            </Button>
+            <Button asChild variant="outline">
+              <a href={reporting.backendLinks[1].href} target="_blank" rel="noreferrer" aria-label={reporting.backendLinks[1].ariaLabel}>
+                {reporting.backendLinks[1].label}
+              </a>
+            </Button>
+            {reporting.exportStatusText ? (
+              <p
+                role={reporting.exportStatusRole}
+                className={cn(
+                  "w-full rounded-lg border px-3 py-2 text-sm",
+                  reporting.exportStatusTone === "success" ? "border-success/30 bg-success/10 text-success" : "",
+                  reporting.exportStatusTone === "danger" ? "border-danger/30 bg-danger/10 text-danger" : "",
+                  reporting.exportStatusTone === "neutral" ? "border-border/70 bg-secondary/25 text-muted-foreground" : ""
                 )}
-              </div>
-              <div className="border-t border-border/70 pt-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground">{reconciliation.transactionLabView.title}</h3>
-                    <p className="mt-1 text-sm leading-6 text-muted-foreground">{reconciliation.transactionLabView.description}</p>
-                  </div>
-                  <Badge variant={reconciliation.transactionLabView.statusTone === "default" ? "outline" : reconciliation.transactionLabView.statusTone} dot>
-                    {reconciliation.transactionLabView.requestSummaryLabel}
-                  </Badge>
-                </div>
-                <p
-                  role={reconciliation.transactionLabView.statusRole}
-                  className={cn(
-                    "mt-3 rounded-md border px-3 py-2 text-sm",
-                    reconciliation.transactionLabView.statusTone === "default" ? "border-border/70 bg-secondary/25 text-muted-foreground" : "",
-                    reconciliation.transactionLabView.statusTone === "success" ? "border-success/30 bg-success/10 text-success" : "",
-                    reconciliation.transactionLabView.statusTone === "warning" ? "border-warning/30 bg-warning/10 text-warning" : "",
-                    reconciliation.transactionLabView.statusTone === "danger" ? "border-danger/30 bg-danger/10 text-danger" : ""
-                  )}
-                >
-                  {reconciliation.transactionLabView.statusText}
-                </p>
-                <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                  <div className="rounded-md border border-border/70 bg-background px-3 py-2">
-                    <span className="block text-muted-foreground">Expected projection</span>
-                    <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.journalLineCountLabel}</span>
-                  </div>
-                  <div className="rounded-md border border-border/70 bg-background px-3 py-2">
-                    <span className="block text-muted-foreground">Projected accounting effect</span>
-                    <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.ledgerImpactLabel}</span>
-                  </div>
-                  <div className="rounded-md border border-border/70 bg-background px-3 py-2">
-                    <span className="block text-muted-foreground">Reconciliation</span>
-                    <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.reconciliationLabel}</span>
-                  </div>
-                  <div className="rounded-md border border-border/70 bg-background px-3 py-2">
-                    <span className="block text-muted-foreground">Evidence</span>
-                    <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.evidenceLabel}</span>
-                  </div>
-                </div>
-                {reconciliation.transactionLabView.impactRows.length > 0 ? (
-                  <div className="mt-3 space-y-2" aria-label="Transaction Lab projected trial-balance effect">
-                    {reconciliation.transactionLabView.impactRows.map((row) => (
-                      <div key={row.id} className="flex items-center justify-between gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm">
-                        <span className="min-w-0 truncate text-foreground">{row.label}</span>
-                        <Badge variant={row.tone === "default" ? "outline" : row.tone}>{row.value}</Badge>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="mt-3 w-full"
-                  disabled={!reconciliation.transactionLabView.canPreview}
-                  disabledReason={reconciliation.transactionLabView.disabledReason}
-                  busy={reconciliation.transactionLabView.busy}
-                  busyLabel={reconciliation.transactionLabView.previewButtonLabel}
-                  aria-label={reconciliation.transactionLabView.previewButtonAriaLabel}
-                  onClick={() => void reconciliation.runTransactionLabPreview()}
-                >
-                  {reconciliation.transactionLabView.previewButtonLabel}
-                </Button>
-              </div>
-              <div className="border-t border-border/70 pt-4">
-                <h3 className="text-sm font-semibold text-foreground">Reporting exports</h3>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">Entry points for report/export handoff using existing export infrastructure.</p>
-              </div>
-              <Button asChild>
-                <a href={reporting.backendLinks[0].href} target="_blank" rel="noreferrer" aria-label={reporting.backendLinks[0].ariaLabel}>
-                  {reporting.backendLinks[0].label}
-                </a>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={!reporting.exportCanRun}
-                disabledReason={reporting.exportDisabledReason}
-                busy={reporting.exportBusy}
-                busyLabel={reporting.exportButtonLabel}
-                aria-label={reporting.exportAriaLabel}
-                onClick={() => void reporting.runExport()}
               >
-                {reporting.exportButtonLabel}
-              </Button>
-              <Button asChild variant="outline">
-                <a href={reporting.backendLinks[1].href} target="_blank" rel="noreferrer" aria-label={reporting.backendLinks[1].ariaLabel}>
-                  {reporting.backendLinks[1].label}
-                </a>
-              </Button>
-              {reporting.exportStatusText ? (
-                <p
-                  role={reporting.exportStatusRole}
-                  className={cn(
-                    "rounded-lg border px-3 py-2 text-sm",
-                    reporting.exportStatusTone === "success" ? "border-success/30 bg-success/10 text-success" : "",
-                    reporting.exportStatusTone === "danger" ? "border-danger/30 bg-danger/10 text-danger" : "",
-                    reporting.exportStatusTone === "neutral" ? "border-border/70 bg-secondary/25 text-muted-foreground" : ""
-                  )}
-                >
-                  {reporting.exportStatusText}
-                </p>
-              ) : null}
-            </CardContent>
-          </Card>
-        </div>
-        </FinancialRecordExplorerShell>
+                {reporting.exportStatusText}
+              </p>
+            ) : null}
+          </CardContent>
+        </Card>
       ) : null}
 
       {sectionVisibility.showReporting ? (
@@ -4043,85 +3770,6 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   );
 }
 
-function CorporateActionsPanel({
-  view,
-  onSelect
-}: {
-  view: CorporateActionsViewState;
-  onSelect: (rowId: string) => void;
-}) {
-  return (
-    <Card className="panel-surface">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Table2 className="h-4 w-4 text-primary" />
-          Corporate actions
-        </CardTitle>
-        <CardDescription>
-          Dividends, splits, spin-offs, and other corporate events for <span className="font-mono">{view.securityId}</span>.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <span className="sr-only" aria-live="polite">{view.statusAnnouncement}</span>
-        {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
-        {view.errorText && (
-          <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            <div>{view.errorText}</div>
-            {view.errorDetails.length > 0 ? (
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
-                {view.errorDetails.map((detail) => (
-                  <li key={detail}>{detail}</li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-        )}
-        {!view.loadingText && !view.errorText && (
-          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)]">
-            <DenseDataTable
-              columns={corporateActionColumns}
-              rows={view.rows}
-              getRowId={(row) => row.rowId}
-              getRowAriaLabel={(row) => row.ariaLabel}
-              getRowSelectAriaLabel={(row) => row.selectAriaLabel}
-              getRowAriaControls={(row) => row.detailPanelId}
-              getRowAriaExpanded={(row) => row.isExpanded}
-              onRowSelect={(row) => onSelect(row.rowId)}
-              selectedRowId={view.selectedRowId}
-              emptyText={view.emptyText}
-              ariaLabel={view.tableLabel}
-              caption={view.tableCaption}
-            />
-            <div
-              id={view.detailPanelId}
-              data-selected-source="Selected from corporate actions"
-              className="row-detail-panel h-fit min-w-0"
-            >
-              {view.selectedDetail ? (
-                <EntitySummary
-                  eyebrow={view.selectedDetail.eyebrow}
-                  title={view.selectedDetail.title}
-                  subtitle={view.selectedDetail.subtitle}
-                  description={view.selectedDetail.description}
-                  ariaLabel={view.selectedDetail.ariaLabel}
-                  status={<Badge variant={view.selectedDetail.statusLabel === "Pay date scheduled" ? "success" : "warning"}>{view.selectedDetail.statusLabel}</Badge>}
-                  fields={view.selectedDetail.fields.map((field) => ({ label: field.label, value: field.value }))}
-                />
-              ) : (
-                <div role="region" aria-label={view.detailEmptyAriaLabel}>
-                  <div className="eyebrow-label">Corporate action detail</div>
-                  <h3 className="mt-2 text-sm font-semibold text-foreground">{view.detailEmptyTitle}</h3>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
 function AccountingHighlight({
   icon: Icon,
   title,
@@ -4846,6 +4494,51 @@ function ManualJournalLineBadges({ badges }: { badges: ReturnType<ManualJournalE
 }
 
 function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWorkbenchViewModel }) {
+  // While an amount input holds unparseable text, its raw string is kept here (keyed
+  // `${lineId}:${side}`) and mirrored back as the controlled value. Mirroring what the DOM
+  // reports means React never rewrites the node, so the user's in-progress text survives while
+  // the inline error shows - and the unparseable text is never coerced into the draft as zero.
+  // A key's presence is also the invalid marker; a successful parse clears the line's keys.
+  const [amountDrafts, setAmountDrafts] = useState<Readonly<Record<string, string>>>({});
+  // Pending raw text belongs to one revision of one draft. Switching drafts, refreshing, or
+  // applying a server result replaces the rows, so stale mirrors must not survive to mask the
+  // committed amount of a freshly mounted line. Local line edits leave these fields untouched.
+  const draftIdentity = `${view.draft?.journalEntryId ?? ""}:${view.draft?.version ?? 0}:${view.draft?.updatedAtUtc ?? ""}`;
+  useEffect(() => {
+    setAmountDrafts({});
+  }, [draftIdentity]);
+  const hasInvalidAmountEdits = Object.keys(amountDrafts).length > 0;
+  const invalidAmountReason = "Correct the flagged amount entries before continuing.";
+  const handleAmountChange = (lineId: string, side: "Debit" | "Credit", input: HTMLInputElement) => {
+    const amount = parseJournalAmount(input.value, input.validity.badInput);
+    setAmountDrafts((current) => {
+      if (amount === null) {
+        return { ...current, [`${lineId}:${side}`]: input.value };
+      }
+      const debitKey = `${lineId}:Debit`;
+      const creditKey = `${lineId}:Credit`;
+      if (!(debitKey in current) && !(creditKey in current)) {
+        return current;
+      }
+      const next = { ...current };
+      delete next[debitKey];
+      delete next[creditKey];
+      return next;
+    });
+    if (amount === null) {
+      return;
+    }
+    view.updateLine(lineId, { side, amount });
+  };
+  const handleAmountBlur = (lineId: string, side: "Debit" | "Credit", input: HTMLInputElement) => {
+    // React swallows the badInput -> genuinely-empty transition (the node reports "" in both
+    // states, so no change event fires when the user clears bad text); re-evaluate on blur so a
+    // cleared field commits as zero and drops its error instead of staying flagged forever. The
+    // guard keeps ordinary blurs from re-running updateLine and voiding a fresh validation pass.
+    if (`${lineId}:${side}` in amountDrafts) {
+      handleAmountChange(lineId, side, input);
+    }
+  };
   if (!view.available) {
     return (
       <section className="workspace-section-band" aria-labelledby="manual-je-heading">
@@ -4872,7 +4565,6 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
     );
   }
 
-  const selectedLine = view.draft.lines.find((line) => line.lineId === view.selectedLineId) ?? view.draft.lines[0] ?? null;
   const nextLineSide = view.draft.totalDebits <= view.draft.totalCredits ? "Debit" : "Credit";
   const evidenceAttachments = view.draft.evidenceAttachments ?? [];
   const attachmentUris = new Set(evidenceAttachments.map((attachment) => attachment.uri));
@@ -4882,10 +4574,6 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
     ...evidenceAttachments.map((attachment) => attachment.uri),
     ...retainedEvidenceLinks
   ]).size;
-  const selectedAccountLabel = selectedLine
-    ? view.accountOptions.find((option) => option.value === selectedLine.accountPath)?.label ?? "Not selected"
-    : "Not selected";
-
   return (
     <section className="workspace-section-band" aria-labelledby="manual-je-heading">
       <div className="workspace-section-subheader">
@@ -4902,21 +4590,6 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
             <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
             Refresh
           </Button>
-          <Button size="sm" variant="outline" busy={view.validateBusy} onClick={() => void view.validate()}>
-            Validate
-          </Button>
-          <Button size="sm" variant="outline" busy={view.saveBusy} onClick={() => void view.save()}>
-            Save draft
-          </Button>
-          <Button
-            size="sm"
-            busy={view.submitBusy}
-            disabled={!view.canSubmit}
-            disabledReason={view.submitDisabledReason}
-            onClick={() => void view.submit()}
-          >
-            Submit approval
-          </Button>
         </div>
       </div>
 
@@ -4925,6 +4598,8 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
           {view.errorText}
         </div>
       ) : null}
+
+      <ManualJournalHealthBar view={view} hasInvalidAmountEdits={hasInvalidAmountEdits} invalidAmountReason={invalidAmountReason} />
 
       <div className="grid gap-4 xl:grid-cols-[minmax(14rem,0.28fr)_minmax(0,1fr)]">
         <div className="space-y-4">
@@ -4979,6 +4654,7 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
               <label>
                 <span>Date</span>
                 <input
+                  id="manual-je-header-accountingDate"
                   type="date"
                   value={view.draft.accountingDate}
                   onChange={(event) => view.updateHeader("accountingDate", event.target.value)}
@@ -4987,6 +4663,7 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
               <label>
                 <span>Prepared by</span>
                 <input
+                  id="manual-je-header-preparedBy"
                   readOnly
                   value={view.draft.preparedBy || "Current operator"}
                 />
@@ -4994,21 +4671,22 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
               <label className="md:col-span-2 xl:col-span-1">
                 <span>Memo</span>
                 <input
+                  id="manual-je-header-memo"
                   value={view.draft.memo}
                   onChange={(event) => view.updateHeader("memo", event.target.value)}
                 />
               </label>
               <label>
                 <span>Fund profile</span>
-                <input className="font-mono" value={view.draft.fundProfileId} onChange={(event) => view.updateHeader("fundProfileId", event.target.value)} />
+                <input id="manual-je-header-fundProfileId" className="font-mono" value={view.draft.fundProfileId} onChange={(event) => view.updateHeader("fundProfileId", event.target.value)} />
               </label>
               <label>
                 <span>Period</span>
-                <input className="font-mono" value={view.draft.periodId ?? ""} onChange={(event) => view.updateHeader("periodId", event.target.value)} />
+                <input id="manual-je-header-periodId" className="font-mono" value={view.draft.periodId ?? ""} onChange={(event) => view.updateHeader("periodId", event.target.value)} />
               </label>
               <label>
                 <span>Currency</span>
-                <input className="font-mono" value={view.draft.currency} onChange={(event) => view.updateHeader("currency", event.target.value.toUpperCase())} />
+                <input id="manual-je-header-currency" className="font-mono" value={view.draft.currency} onChange={(event) => view.updateHeader("currency", event.target.value.toUpperCase())} />
               </label>
             </div>
 
@@ -5023,6 +4701,10 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                 <div><dt className="text-muted-foreground">Record version</dt><dd className="mt-1 font-mono text-foreground">{view.draft.version}</dd></div>
               </dl>
             </TechnicalDetails>
+
+            <p className="accounting-journal-keyboard-hint" id="manual-je-keyboard-hint">
+              Keyboard: Arrow Up or Down and Enter move within a column; Ctrl+Enter inserts a line beneath the current row.
+            </p>
 
             <div className="accounting-journal-table-wrap">
               <table className="accounting-journal-table">
@@ -5040,9 +4722,26 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                     const badges = view.getLineBadges(line.lineId);
                     const isDebit = line.side === "Debit";
                     return (
-                      <tr key={line.lineId} className={cn(line.lineId === view.selectedLineId && "is-selected")}>
+                      <tr
+                        key={line.lineId}
+                        id={`manual-je-line-${line.lineId}`}
+                        className={cn(line.lineId === view.selectedLineId && "is-selected")}
+                        tabIndex={-1}
+                      >
                         <td>
-                          <select value={line.accountPath} onChange={(event) => view.updateLine(line.lineId, { accountPath: event.target.value })} onFocus={() => view.selectLine(line.lineId)} aria-label={`GL account for line ${line.lineId}`}>
+                          <select
+                            id={`manual-je-account-${line.lineId}`}
+                            value={line.accountPath}
+                            onChange={(event) => view.updateLine(line.lineId, { accountPath: event.target.value })}
+                            onFocus={() => view.selectLine(line.lineId)}
+                            onKeyDown={(event) => {
+                              if (event.ctrlKey && event.key === "Enter") {
+                                handleManualJournalCellKeyDown(event, view, line.lineId, "account", line.side);
+                              }
+                            }}
+                            aria-label={`GL account for line ${line.lineId}`}
+                            aria-describedby="manual-je-keyboard-hint"
+                          >
                             <option value="">Select GL account</option>
                             {view.accountOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                           </select>
@@ -5050,23 +4749,39 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                         </td>
                         <td>
                           <input
+                            id={`manual-je-debit-${line.lineId}`}
                             aria-label={`Debit amount for line ${line.lineId}`}
+                            aria-describedby="manual-je-keyboard-hint"
                             className="text-right font-mono"
                             type="number"
-                            value={isDebit ? line.amount : 0}
-                            onChange={(event) => view.updateLine(line.lineId, { side: "Debit", amount: parseJournalAmount(event.target.value) })}
+                            value={amountDrafts[`${line.lineId}:Debit`] ?? (isDebit ? line.amount : 0)}
+                            aria-invalid={`${line.lineId}:Debit` in amountDrafts || undefined}
+                            onChange={(event) => handleAmountChange(line.lineId, "Debit", event.target)}
+                            onBlur={(event) => handleAmountBlur(line.lineId, "Debit", event.target)}
                             onFocus={() => view.selectLine(line.lineId)}
+                            onKeyDown={(event) => handleManualJournalCellKeyDown(event, view, line.lineId, "debit", "Debit")}
                           />
+                          {`${line.lineId}:Debit` in amountDrafts ? (
+                            <p id={`manual-je-debit-error-${line.lineId}`} className="mt-1 text-right text-[11px] text-danger" role="alert">Enter a valid amount.</p>
+                          ) : null}
                         </td>
                         <td>
                           <input
+                            id={`manual-je-credit-${line.lineId}`}
                             aria-label={`Credit amount for line ${line.lineId}`}
+                            aria-describedby={`${line.lineId}:Credit` in amountDrafts ? `manual-je-keyboard-hint manual-je-credit-error-${line.lineId}` : "manual-je-keyboard-hint"}
                             className="text-right font-mono"
                             type="number"
-                            value={isDebit ? 0 : line.amount}
-                            onChange={(event) => view.updateLine(line.lineId, { side: "Credit", amount: parseJournalAmount(event.target.value) })}
+                            value={amountDrafts[`${line.lineId}:Credit`] ?? (isDebit ? 0 : line.amount)}
+                            aria-invalid={`${line.lineId}:Credit` in amountDrafts || undefined}
+                            onChange={(event) => handleAmountChange(line.lineId, "Credit", event.target)}
+                            onBlur={(event) => handleAmountBlur(line.lineId, "Credit", event.target)}
                             onFocus={() => view.selectLine(line.lineId)}
+                            onKeyDown={(event) => handleManualJournalCellKeyDown(event, view, line.lineId, "credit", "Credit")}
                           />
+                          {`${line.lineId}:Credit` in amountDrafts ? (
+                            <p id={`manual-je-credit-error-${line.lineId}`} className="mt-1 text-right text-[11px] text-danger" role="alert">Enter a valid amount.</p>
+                          ) : null}
                         </td>
                         <td>
                           <button
@@ -5078,24 +4793,42 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                             <span className="block truncate font-mono text-[11px] text-muted-foreground">{line.securityId || "No Security Master reference"}</span>
                           </button>
                           <input
+                            id={`manual-je-description-${line.lineId}`}
                             className="mt-2"
                             aria-label={`Description for line ${line.lineId}`}
+                            aria-describedby="manual-je-keyboard-hint"
                             value={line.description ?? ""}
                             onChange={(event) => view.updateLine(line.lineId, { description: event.target.value })}
                             onFocus={() => view.selectLine(line.lineId)}
+                            onKeyDown={(event) => handleManualJournalCellKeyDown(event, view, line.lineId, "description", line.side)}
                           />
                         </td>
                         <td>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            aria-label={`Remove journal line ${line.lineId}`}
-                            disabled={view.draft.lines.length <= 2}
-                            disabledReason={view.draft.lines.length <= 2 ? "A balanced journal entry needs at least two lines." : null}
-                            onClick={() => view.removeLine(line.lineId)}
-                          >
-                            <X className="h-3.5 w-3.5" aria-hidden="true" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              aria-label={`Duplicate journal line ${line.lineId}`}
+                              onClick={() => {
+                                const duplicateId = view.duplicateLine(line.lineId);
+                                if (duplicateId) {
+                                  focusManualJournalCell(duplicateId, "account");
+                                }
+                              }}
+                            >
+                              <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              aria-label={`Remove journal line ${line.lineId}`}
+                              disabled={view.draft.lines.length <= 2}
+                              disabledReason={view.draft.lines.length <= 2 ? "A balanced journal entry needs at least two lines." : null}
+                              onClick={() => view.removeLine(line.lineId)}
+                            >
+                              <X className="h-3.5 w-3.5" aria-hidden="true" />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -5351,85 +5084,8 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,0.55fr)_minmax(0,0.45fr)]">
-            <div className="rounded-md border border-border/70 bg-secondary/20 p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h4 className="text-sm font-semibold text-foreground">Validation</h4>
-                  <Badge variant={view.validationIsCurrent ? "success" : "warning"} dot>
-                    {view.validationIsCurrent ? "Current" : "Required"}
-                  </Badge>
-                </div>
-                <div className="mt-3 space-y-2">
-                  {view.validationIssues.length > 0 ? view.validationIssues.map((issue) => (
-                    <div key={issue.id} className={cn("rounded border px-3 py-2 text-sm", issue.tone === "danger" ? "border-danger/30 bg-danger/10 text-danger" : issue.tone === "warning" ? "border-warning/30 bg-warning/10 text-warning" : "border-border/70 bg-background/50 text-muted-foreground")}>
-                      <div className="font-semibold">{issue.label}</div>
-                      <div className="mt-1">{issue.message}</div>
-                      <div className="mt-1 text-xs">{issue.detail}</div>
-                    </div>
-                  )) : (
-                    <p className="rounded border border-border/70 bg-background/50 px-3 py-2 text-sm text-muted-foreground">
-                      {view.validationIsCurrent
-                        ? "Validation is current for this draft and no issues were returned."
-                        : "Validation has not completed for the current draft. Use Validate before approval submission."}
-                    </p>
-                  )}
-                </div>
-            </div>
-            <div className="rounded-md border border-border/70 bg-secondary/20 p-3">
-                <h4 className="text-sm font-semibold text-foreground">Selected line</h4>
-                {selectedLine ? (
-                  <div className="mt-3 space-y-3 text-sm">
-                    <dl className="grid gap-2">
-                      <div><dt className="text-xs text-muted-foreground">GL account</dt><dd className="text-foreground">{selectedAccountLabel}</dd></div>
-                      <div><dt className="text-xs text-muted-foreground">Security</dt><dd className="break-all text-foreground">{selectedLine.securityDisplayName || "No Security Master reference"}</dd></div>
-                    </dl>
-                    <TechnicalDetails label="Line system details">
-                      <dl className="grid gap-2 text-xs">
-                        <div><dt className="text-muted-foreground">Line ID</dt><dd className="mt-1 break-all font-mono text-foreground">{selectedLine.lineId}</dd></div>
-                        <div><dt className="text-muted-foreground">GL path</dt><dd className="mt-1 break-all font-mono text-foreground">{selectedLine.accountPath || "Not selected"}</dd></div>
-                        <div><dt className="text-muted-foreground">Security ID</dt><dd className="mt-1 break-all font-mono text-foreground">{selectedLine.securityId || "Not selected"}</dd></div>
-                      </dl>
-                    </TechnicalDetails>
-                    <div className="rounded border border-border/70 bg-background/50 p-2">
-                      <label className="space-y-1 text-sm">
-                        <span className="text-xs font-semibold uppercase text-muted-foreground">Security Master picker</span>
-                        <div className="flex gap-2">
-                          <input
-                            className="min-h-9 min-w-0 flex-1 rounded border border-border bg-background px-2"
-                            value={view.securitySearchQuery}
-                            placeholder="Ticker, ISIN, CUSIP, FIGI, name"
-                            onChange={(event) => view.updateSecuritySearchQuery(event.target.value)}
-                          />
-                          <Button size="icon" variant="outline" busy={view.securitySearchBusy} aria-label="Search Security Master" onClick={() => void view.searchSecurityMaster()}>
-                            <Search className="h-3.5 w-3.5" aria-hidden="true" />
-                          </Button>
-                        </div>
-                      </label>
-                      <p role="status" className={cn("mt-2 text-xs", view.securitySearchErrorText ? "text-danger" : "text-muted-foreground")}>{view.securitySearchStatusText}</p>
-                      <div className="mt-2 space-y-2">
-                        {view.securitySearchResults.map((security) => (
-                          <button
-                            key={security.securityId}
-                            type="button"
-                            className="w-full rounded border border-border/70 bg-secondary/30 px-3 py-2 text-left hover:border-primary/50 hover:bg-primary/10"
-                            onClick={() => view.selectSecurity(selectedLine.lineId, security)}
-                          >
-                            <span className="block font-semibold text-foreground">{security.displayName}</span>
-                            <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{security.securityId} / {security.classification.assetClass} / {security.classification.primaryIdentifierValue}</span>
-                          </button>
-                        ))}
-                      </div>
-                      {selectedLine.securityId ? (
-                        <Button className="mt-2" size="sm" variant="ghost" onClick={() => view.clearSecurity(selectedLine.lineId)}>
-                          <X className="h-3.5 w-3.5" aria-hidden="true" />
-                          Clear security
-                        </Button>
-                      ) : null}
-                    </div>
-                  </div>
-                ) : (
-                  <p className="mt-3 text-sm text-muted-foreground">Select a line to inspect attribution.</p>
-                )}
-            </div>
+            <ManualJournalValidationNavigator view={view} />
+            <ManualJournalDimensionsInspector view={view} />
           </div>
         </div>
       </div>
@@ -5437,9 +5093,21 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
   );
 }
 
-function parseJournalAmount(value: string): number {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
+/**
+ * Parses a journal amount from a number input. Returns null (never a silent zero) when the field
+ * holds unparseable text - the DOM reports that via validity.badInput with an empty value - so a
+ * pasted "1,234.00" can never post a line as zero. A genuinely cleared field still parses as 0.
+ */
+function parseJournalAmount(value: string, badInput: boolean): number | null {
+  if (badInput) {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (trimmed.length === 0) {
+    return 0;
+  }
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationViewModel }) {

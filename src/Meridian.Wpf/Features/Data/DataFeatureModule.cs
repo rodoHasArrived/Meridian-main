@@ -73,6 +73,8 @@ public sealed class DataFeatureModule : IDesktopFeatureModule
         services.AddTransient<DataWorkspaceShellViewModel>();
         services.AddTransient<DataWorkspaceShellPage>();
         services.AddTransient<DataCalendarService>();
+        services.TryAddSingleton<ProviderDataReadModelService>();
+        services.AddTransient<ProviderDataProjectionViewModel>();
         services.AddTransient<SecurityMasterViewModel>();
         services.AddTransient<QualityArchivePage>();
         services.AddTransient<ClusterStatusPage>();

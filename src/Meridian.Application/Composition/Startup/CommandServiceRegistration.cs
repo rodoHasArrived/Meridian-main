@@ -64,16 +64,20 @@ internal static class CommandServiceRegistration
             sp.GetServices<Meridian.Workflow.Runbooks.IRunbookStepHandler>()));
         services.AddStatementReconciliationServices(dataRoot);
         // Reconcile CLI statement imports against Meridian's own retained account records (positions +
-        // cash) instead of the fail-closed empty book, matching the browser workstation graph. The
-        // file-backed fund-account and position stores read retained governance/position data under the
-        // CLI data root; a run whose FundAccountId is a Meridian fund-account GUID reconciles, while a
-        // non-GUID label or missing retained data fails closed to breaks. Replace (not TryAdd) so this
-        // wins over the empty default AddStatementReconciliationServices registers via TryAddSingleton.
+        // cash + journal-projected ledger transactions) instead of the fail-closed empty book, matching
+        // the browser workstation graph. The file-backed fund-account and position stores read retained
+        // governance/position data under the CLI data root; a run whose FundAccountId is a Meridian
+        // fund-account GUID reconciles, while a non-GUID label or missing retained data fails closed to
+        // breaks. The ledger-transaction source projects posted journals only when this graph composes a
+        // durable ILedgerJournalStore (Postgres); without one it fails closed to an empty population and
+        // transaction breaks keep the informational classification. Replace (not TryAdd) so this wins
+        // over the empty default AddStatementReconciliationServices registers via TryAddSingleton.
         services.TryAddSingleton<IPositionSnapshotStore>(sp => new JsonlPositionSnapshotStore(
             sp.GetRequiredService<StorageOptions>(),
             NullLogger<JsonlPositionSnapshotStore>.Instance));
         services.TryAddSingleton<IAccountQueryService>(_ => new InMemoryFundAccountService(
             Path.Combine(dataRoot, "governance", "fund-accounts.json")));
+        services.TryAddSingleton<IInternalLedgerTransactionSource, LedgerJournalInternalTransactionSource>();
         services.Replace(ServiceDescriptor.Singleton<IInternalReconciliationPopulationProvider, RetainedInternalReconciliationPopulationProvider>());
         // Normalize cross-currency statement lines using the operator-maintained FX rate table under the
         // data root (reconciliation/fx-rates.json), matching the workstation graph, instead of the

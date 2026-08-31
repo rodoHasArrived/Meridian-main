@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Meridian.Execution.Sdk;
 
 namespace Meridian.Execution.Models;
@@ -20,6 +21,45 @@ public sealed record ExecutionPosition(
     decimal UnrealisedPnl,
     decimal RealisedPnl) : IPosition
 {
+    /// <summary>
+    /// Signed quantity attributed to each owning fund account. Carried through from the
+    /// fills so a shared execution book can still be read per fund.
+    /// </summary>
+    /// <remarks>
+    /// Never serialized. The general execution reads — <c>/api/execution/positions</c>,
+    /// <c>/api/execution/portfolio</c>, and the account-position routes — return this record
+    /// directly with no fund-account scope check, so emitting the map would hand every
+    /// authenticated execution reader the fund ids and exact signed holdings of funds they
+    /// are not authorized to see. Attribution is consumed in-process by
+    /// <c>AggregatePortfolioService</c>; the scoped aggregate routes do their own
+    /// authorization before projecting per-fund figures.
+    /// </remarks>
+    [JsonIgnore]
+    public IReadOnlyDictionary<string, decimal> OwnerQuantities { get; init; } =
+        new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Contract multiplier; 1 for outright instruments, 100 for equity options.</summary>
+    public decimal ContractMultiplier { get; init; } = 1m;
+
+    private readonly decimal? _exactQuantity;
+
+    /// <summary>
+    /// Signed quantity before the whole-share rounding <see cref="Quantity"/> applies.
+    /// Falls back to <see cref="Quantity"/> when a producer did not carry a fractional
+    /// size, so positions that only ever hold whole shares are unaffected.
+    /// </summary>
+    /// <remarks>
+    /// Not serialized: <see cref="Quantity"/> remains the wire contract, and emitting a
+    /// second quantity would give clients two fields to disagree about. Consumed in-process
+    /// by fund-ownership attribution, which must not round.
+    /// </remarks>
+    [JsonIgnore]
+    public decimal ExactQuantity
+    {
+        get => _exactQuantity ?? Quantity;
+        init => _exactQuantity = value;
+    }
+
     /// <summary>True when this is a short (negative) position.</summary>
     public bool IsShort => Quantity < 0;
 

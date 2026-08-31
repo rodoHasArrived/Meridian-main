@@ -40,20 +40,25 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
             return new BrokerStatementValidationResult(false, errors, 0);
         }
 
-        if (new FileInfo(request.SourcePath).Length > MaximumStatementBytes)
+        if (!File.Exists(request.EffectiveParsePath))
         {
-            errors.Add($"Flex report exceeds the {MaximumStatementBytes}-byte limit.");
+            errors.Add("Canonical statement artifact not found.");
             return new BrokerStatementValidationResult(false, errors, 0);
         }
 
         XDocument document;
         try
         {
-            document = await LoadDocumentAsync(request.SourcePath, ct).ConfigureAwait(false);
+            var snapshots = await BrokerStatementSourceSnapshot
+                .CaptureAsync(request, MaximumStatementBytes, ct)
+                .ConfigureAwait(false);
+            document = await LoadDocumentAsync(snapshots.ParseArtifact.Content, ct).ConfigureAwait(false);
         }
-        catch (XmlException ex)
+        catch (Exception ex) when (ex is XmlException or InvalidDataException)
         {
-            errors.Add($"Source file is not well-formed XML: {ex.Message}");
+            errors.Add(ex is XmlException
+                ? $"Source file is not well-formed XML: {ex.Message}"
+                : ex.Message);
             return new BrokerStatementValidationResult(false, errors, 0);
         }
 
@@ -109,26 +114,45 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        EnsureBoundedFile(request.SourcePath);
-        var sourceFileHash = string.IsNullOrWhiteSpace(request.SourceFileHash)
-            ? await HashFileAsync(request.SourcePath, ct).ConfigureAwait(false)
-            : request.SourceFileHash.Trim().ToUpperInvariant();
-        var duplicateKey = StatementDuplicateKey.Create(
-            request.FundAccountId,
-            request.StatementPeriodStart,
-            request.StatementPeriodEnd,
-            sourceFileHash);
+        var snapshots = await BrokerStatementSourceSnapshot
+            .CaptureAsync(request, MaximumStatementBytes, ct)
+            .ConfigureAwait(false);
+        var sourceFileHash = snapshots.Source.Sha256;
+        var canonicalArtifactHash = snapshots.ParseArtifact.Sha256;
+        var compatibleDuplicateKeys = request.AccountingScope is null
+            ? StatementDuplicateKey.CreateCompatibleKeys(
+                request.FundAccountId,
+                request.StatementPeriodStart,
+                request.StatementPeriodEnd,
+                sourceFileHash,
+                canonicalArtifactHash)
+            : StatementDuplicateKey.CreateCompatibleKeys(
+                request.FundAccountId,
+                request.StatementPeriodStart,
+                request.StatementPeriodEnd,
+                sourceFileHash,
+                canonicalArtifactHash,
+                request.AccountingScope);
+        var duplicateKey = compatibleDuplicateKeys[0];
 
-        if (await store.ImportExistsByDuplicateKeyAsync(duplicateKey, ct).ConfigureAwait(false))
-            throw new InvalidOperationException(
-                "Statement already imported (fund account, statement period, and source file hash match).");
+        foreach (var candidate in compatibleDuplicateKeys)
+        {
+            if (await store.ImportExistsByDuplicateKeyAsync(candidate, ct).ConfigureAwait(false))
+            {
+                throw new StatementAlreadyImportedException(candidate);
+            }
+        }
 
-        var document = await LoadDocumentAsync(request.SourcePath, ct).ConfigureAwait(false);
+        var document = await LoadDocumentAsync(snapshots.ParseArtifact.Content, ct).ConfigureAwait(false);
         if (!string.Equals(document.Root?.Name.LocalName, "FlexQueryResponse", StringComparison.Ordinal))
             throw new InvalidDataException("Root element is not FlexQueryResponse; not an IB Flex Query report.");
 
         var importId = duplicateKey;
-        var normalizedRequest = request.WithSourceFileHash(sourceFileHash);
+        var normalizedRequest = request with
+        {
+            SourceFileHash = sourceFileHash,
+            CanonicalArtifactHash = canonicalArtifactHash
+        };
         var rows = ParseRows(document, importId).ToList();
         if (rows.Count > MaximumStatementRows)
         {
@@ -183,19 +207,20 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
             ToleranceProfileId = normalizedRequest.ToleranceProfileId,
             ImportedBy = normalizedRequest.ImportedBy,
             SourceFileHash = sourceFileHash,
-            DuplicateKey = duplicateKey
+            CanonicalArtifactHash = canonicalArtifactHash,
+            DuplicateKey = duplicateKey,
+            AccountingScope = normalizedRequest.AccountingScope
         };
 
         if (!await store.TrySaveImportAsync(import, rows, ct).ConfigureAwait(false))
         {
-            throw new InvalidOperationException(
-                "Statement already imported (fund account, statement period, and source file hash match).");
+            throw new StatementAlreadyImportedException(duplicateKey);
         }
 
         return new BrokerStatementImportResult(import, rows);
     }
 
-    private static async Task<XDocument> LoadDocumentAsync(string path, CancellationToken ct)
+    private static async Task<XDocument> LoadDocumentAsync(byte[] content, CancellationToken ct)
     {
         // DTD processing stays disabled: Flex reports never carry DTDs, and prohibiting them
         // blocks XXE-style payloads in operator-supplied files.
@@ -209,28 +234,9 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
             MaxCharactersFromEntities = 0
         };
 
-        using var reader = XmlReader.Create(File.OpenRead(path), settings);
+        await using var stream = new MemoryStream(content, writable: false);
+        using var reader = XmlReader.Create(stream, settings);
         return await XDocument.LoadAsync(reader, LoadOptions.None, ct).ConfigureAwait(false);
-    }
-
-    private static void EnsureBoundedFile(string path)
-    {
-        if (new FileInfo(path).Length > MaximumStatementBytes)
-        {
-            throw new InvalidDataException($"Flex report exceeds the {MaximumStatementBytes}-byte limit.");
-        }
-    }
-
-    private static async Task<string> HashFileAsync(string path, CancellationToken ct)
-    {
-        await using var stream = new FileStream(
-            path,
-            FileMode.Open,
-            FileAccess.Read,
-            FileShare.Read,
-            bufferSize: 64 * 1024,
-            options: FileOptions.Asynchronous | FileOptions.SequentialScan);
-        return Convert.ToHexString(await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false));
     }
 
     private static IEnumerable<CanonicalStatementRow> ParseRows(XDocument document, string importId)
@@ -423,6 +429,9 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
         return null;
     }
 
+    // Deliberately NOT routed through Sha256Digest (which lowercases): element hashes become
+    // persisted per-row identities on CanonicalStatementRow, so changing the casing would
+    // detach retained statement rows from their identities (#2691).
     private static string HashElement(XElement element) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(element.ToString(SaveOptions.DisableFormatting))));
 }
@@ -454,7 +463,7 @@ public sealed class RoutingBrokerStatementService(
         if (IbFlexBrokerStatementService.IsIbFlexSource(request.Broker))
             return ibFlexService;
 
-        if (string.Equals(Path.GetExtension(request.SourcePath), ".xml", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(Path.GetExtension(request.EffectiveParsePath), ".xml", StringComparison.OrdinalIgnoreCase))
             return ibFlexService;
 
         return csvService;

@@ -1,6 +1,6 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Strategies.Services;
@@ -637,7 +637,7 @@ public sealed class StrategyDesignService
             string.Join(",", document.Universe ?? Array.Empty<string>()),
             string.Join(",", fieldRefs),
             document.Version);
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(seed))).ToLowerInvariant();
+        var hash = Sha256Digest.ComputeUtf8(seed);
         return $"strategy-design:{hash[..16]}";
     }
 

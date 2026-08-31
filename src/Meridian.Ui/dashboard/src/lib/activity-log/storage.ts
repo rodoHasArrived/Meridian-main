@@ -1,7 +1,6 @@
-// Durable, bounded persistence for the action-history drawer, following the
-// meridian.workstation.<feature>.vN localStorage convention. Undo thunks are
-// in-memory only and never persisted; a reloaded reversible-but-idle entry is
-// downgraded to `expired` (history only) on load.
+// Bounded, session-scoped persistence for the action-history drawer. Undo
+// thunks are in-memory only and never persisted; a reloaded reversible-but-idle
+// entry is downgraded to `expired` (history only) on load.
 import type { ActivityEntry, ActivityTone, ActivityUndoStatus } from "./types";
 
 export const ACTIVITY_LOG_STORAGE_KEY = "meridian.workstation.activity.v1";
@@ -29,7 +28,7 @@ function resolveStorage(storage?: StorageLike | null): StorageLike | null {
     return null;
   }
   try {
-    return window.localStorage;
+    return window.sessionStorage;
   } catch {
     return null;
   }

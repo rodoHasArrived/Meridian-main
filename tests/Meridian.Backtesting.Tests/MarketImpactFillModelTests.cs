@@ -24,7 +24,7 @@ public sealed class MarketImpactFillModelTests
         long volume = 100_000L) =>
         MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, symbol,
             new HistoricalBar(symbol, DateOnly.FromDateTime(DateTime.Today),
-                open, high, low, close, volume, "test"));
+                open, high, low, close, volume, "test"), source: "TEST");
 
     private static Order MakeMarketOrder(string symbol, long quantity, bool allowPartialFills = true) =>
         new(Guid.NewGuid(), symbol, OrderType.Market, quantity,
@@ -274,7 +274,7 @@ public sealed class MarketImpactFillModelTests
         var lob = new LOBSnapshot(DateTimeOffset.UtcNow, "SPY",
             Bids: [new OrderBookLevel(OrderBookSide.Bid, 0, 409m, 500L)],
             Asks: [new OrderBookLevel(OrderBookSide.Ask, 0, 410m, 500L)]);
-        var evt = MarketEvent.L2Snapshot(DateTimeOffset.UtcNow, "SPY", lob);
+        var evt = MarketEvent.L2Snapshot(DateTimeOffset.UtcNow, "SPY", lob, source: "TEST");
 
         var result = model.TryFill(order, evt);
 

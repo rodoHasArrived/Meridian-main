@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Meridian.Workflow</name>
+    </assembly>
+    <members>
+        <member name="T:Meridian.Workflow.DesignModule">
+            <summary>Physical module marker for the Workflow bounded context.</summary>
+        </member>
+        <member name="T:Meridian.Workflow.EnvironmentDesign.EnvironmentDesignerService">
+            <summary>
+            Local-first environment designer service with draft, validation, publish, and rollback support.
+            This admin-oriented service is intentionally optimized for deterministic correctness rather than hot-path throughput.
+            </summary>
+        </member>
+    </members>
+</doc>

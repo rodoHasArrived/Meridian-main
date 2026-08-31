@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
@@ -23,7 +24,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(service.Get(), jsonOptions);
         })
-        .WithName("GetWorkstationFeatureCapabilities")
+        .WithName("GetWorkstationFeatureCapabilities").RequireAuthenticatedSessionOrScopedLocalOperatorRead()
         .Produces<FeatureCapabilitySettingsResponse>(200)
         .Produces(501);
 
@@ -50,7 +51,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound(new { error = $"Feature capability '{capabilityKey}' was not found." })
                 : Results.Json(response, jsonOptions);
         })
-        .WithName("SetWorkstationFeatureCapability")
+        .WithName("SetWorkstationFeatureCapability").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<FeatureCapabilitySettingsResponse>(200)
         .Produces(403)
         .Produces(404)

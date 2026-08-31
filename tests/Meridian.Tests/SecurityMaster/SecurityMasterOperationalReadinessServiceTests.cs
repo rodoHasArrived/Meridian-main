@@ -168,6 +168,35 @@ public sealed class SecurityMasterOperationalReadinessServiceTests
     }
 
     [Fact]
+    public async Task GetReadinessAsync_ActiveSupersededProfile_KeepsGovernedProfileCoverage()
+    {
+        // When a replacement profile is approved with a FUTURE effective date, governance marks
+        // the currently effective predecessor Superseded immediately — but that predecessor stays
+        // the only version write-time validation accepts until the transition date. Coverage must
+        // honor the same effective-window predicate the catalog applies instead of re-filtering
+        // to Approved, or every governed asset class reports a false profile-missing Blocker for
+        // the whole transition gap.
+        var supersededCatalog = new Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog(
+            Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault()
+                .GetProfiles()
+                .Select(static profile => profile with
+                {
+                    Status = Meridian.Contracts.SecurityMaster.SecurityAssetProfileStatusDto.Superseded
+                })
+                .ToArray());
+        var service = new SecurityMasterOperationalReadinessService(assetProfileCatalog: supersededCatalog);
+
+        var result = await service.GetReadinessAsync(new SecurityMasterOperationalReadinessRequest(AssetClass: "CustomAsset"));
+
+        var row = result.AssetClasses.Should().ContainSingle().Subject;
+        row.EvidenceRequirements.Should().Contain(static requirement =>
+            requirement.Category == "Governance" &&
+            requirement.Status == "Ready",
+            "the active Superseded predecessor is the selectable governed profile until its replacement activates");
+        row.Blockers.Should().NotContain(static blocker => blocker.Code.Contains("profile-missing"));
+    }
+
+    [Fact]
     public async Task GetReadinessAsync_ShouldKeepGovernedCustomAssetsReviewGated()
     {
         var service = new SecurityMasterOperationalReadinessService();
@@ -175,7 +204,11 @@ public sealed class SecurityMasterOperationalReadinessServiceTests
         var result = await service.GetReadinessAsync(new SecurityMasterOperationalReadinessRequest(AssetClass: "CustomAsset"));
 
         var row = result.AssetClasses.Should().ContainSingle().Subject;
-        row.DisplayName.Should().Contain("MBS");
+        // ADR-022: CustomAsset is the profile-backed home for private/other assets; securitized
+        // products (MBS/ABS/CLO/CMBS) belong in StructuredCredit and must no longer be advertised
+        // as CustomAsset's identity.
+        row.DisplayName.Should().Contain("Profile-backed");
+        row.DisplayName.Should().NotContain("MBS");
         row.EvidenceRequirements.Should().Contain(static requirement =>
             requirement.Category == "Governance" &&
             requirement.Status == "Ready");

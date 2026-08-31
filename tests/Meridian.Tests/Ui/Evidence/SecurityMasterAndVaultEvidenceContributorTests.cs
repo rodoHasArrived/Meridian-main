@@ -1,10 +1,17 @@
 using FluentAssertions;
+using Meridian.Backtesting.Sdk;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Storage.Export;
+using Meridian.Strategies.Models;
+using Meridian.Strategies.Services;
+using Meridian.Strategies.Storage;
+using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -73,6 +80,11 @@ public sealed class SecurityMasterAndVaultEvidenceContributorTests
             "payment-intent",
             sp => new PaymentIntentEvidenceContributor(sp),
             new EvidenceSubjectDto("payment:alpha:1", "payment-intent", "l", "w", null, "p")
+        },
+        {
+            "journal-entry",
+            sp => new JournalEntryEvidenceContributor(sp),
+            new EvidenceSubjectDto(Guid.NewGuid().ToString("D"), "journal-entry", "l", "w", null, "p")
         }
     };
 
@@ -93,6 +105,76 @@ public sealed class SecurityMasterAndVaultEvidenceContributorTests
             "a missing backend service must degrade the contribution, not fabricate evidence");
         contribution.Warnings.Should().ContainSingle()
             .Which.Should().Contain("not registered");
+    }
+
+    [Fact]
+    public async Task ContributeAsync_ScopedStrategyRunWithMatchingRequestScope_ProjectsEvidence()
+    {
+        var contributor = await CreateStrategyRunContributorAsync(
+            tenantParameter: "tenant-alpha",
+            companyParameter: "company-alpha",
+            requestTenant: "tenant-alpha",
+            requestCompany: "company-alpha");
+        var subject = StrategyRunSubject();
+
+        var contribution = await contributor.ContributeAsync(Context(subject));
+
+        contribution.Nodes.Should().Contain(
+            node => node.Kind == "strategy-run-detail",
+            "matching trusted scope should project the run; warnings: {0}",
+            string.Join(" | ", contribution.Warnings));
+        contribution.RequiredEvidenceIds.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task ContributeAsync_ScopedStrategyRunWithForeignRequestScope_ReturnsNotFoundShape()
+    {
+        var contributor = await CreateStrategyRunContributorAsync(
+            tenantParameter: "tenant-alpha",
+            companyParameter: "company-alpha",
+            requestTenant: "tenant-foreign",
+            requestCompany: "company-foreign");
+        var subject = StrategyRunSubject();
+
+        var contribution = await contributor.ContributeAsync(Context(subject));
+
+        contribution.Nodes.Should().BeEmpty();
+        contribution.Edges.Should().BeEmpty();
+        contribution.RequiredEvidenceIds.Should().BeEmpty();
+        contribution.Warnings.Should().ContainSingle()
+            .Which.Should().Be("Strategy run 'covered-call-run' was not found.");
+    }
+
+    [Fact]
+    public async Task ContributeAsync_StrategyRunWithIncompleteDeclaredScope_FailsClosed()
+    {
+        var contributor = await CreateStrategyRunContributorAsync(
+            tenantParameter: "tenant-alpha",
+            companyParameter: null,
+            requestTenant: "tenant-alpha",
+            requestCompany: "company-alpha");
+        var subject = StrategyRunSubject();
+
+        var contribution = await contributor.ContributeAsync(Context(subject));
+
+        contribution.Nodes.Should().BeEmpty();
+        contribution.Warnings.Should().ContainSingle()
+            .Which.Should().Be("Strategy run 'covered-call-run' was not found.");
+    }
+
+    [Fact]
+    public async Task ContributeAsync_LegacyUnscopedStrategyRun_PreservesCompatibilityWithoutRequestScope()
+    {
+        var contributor = await CreateStrategyRunContributorAsync(
+            tenantParameter: null,
+            companyParameter: null,
+            requestTenant: null,
+            requestCompany: null);
+        var subject = StrategyRunSubject();
+
+        var contribution = await contributor.ContributeAsync(Context(subject));
+
+        contribution.Nodes.Should().Contain(node => node.Kind == "strategy-run-detail");
     }
 
     // ── Export contributor ────────────────────────────────────────────────────
@@ -217,7 +299,8 @@ public sealed class SecurityMasterAndVaultEvidenceContributorTests
     public async Task ContributeAsync_VaultLookupSubject_ReturnsGuidanceWarningWithoutTouchingStore()
     {
         var store = new Mock<IEvidenceArtifactStore>(MockBehavior.Strict);
-        var contributor = new EvidenceVaultEvidenceContributor(Provider(store.Object));
+        var contributor = new EvidenceVaultEvidenceContributor(
+            ProviderWithScope(store.Object, "tenant-alpha", "company-alpha"));
         var subject = new EvidenceSubjectDto("lookup", "evidence-vault", "Vault", "data", null, "evidence");
 
         var contribution = await contributor.ContributeAsync(Context(subject));
@@ -232,16 +315,21 @@ public sealed class SecurityMasterAndVaultEvidenceContributorTests
     {
         var store = new Mock<IEvidenceArtifactStore>();
         store
-            .Setup(s => s.TryGetVaultIdentityAsync("vault-404", It.IsAny<CancellationToken>()))
+            .Setup(s => s.TryGetVaultIdentityAsync(
+                "vault-404",
+                "tenant-alpha",
+                "company-alpha",
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync((EvidenceVaultIdentityDto?)null);
-        var contributor = new EvidenceVaultEvidenceContributor(Provider(store.Object));
+        var contributor = new EvidenceVaultEvidenceContributor(
+            ProviderWithScope(store.Object, "tenant-alpha", "company-alpha"));
         var subject = new EvidenceSubjectDto("vault-404", "evidence-vault", "Vault", "data", null, "evidence");
 
         var contribution = await contributor.ContributeAsync(Context(subject));
 
         contribution.Nodes.Should().BeEmpty();
         contribution.Warnings.Should().ContainSingle()
-            .Which.Should().Be("Evidence vault 'vault-404' was not found.");
+            .Which.Should().Be("No accessible Evidence Vault record was found.");
     }
 
     [Fact]
@@ -259,6 +347,8 @@ public sealed class SecurityMasterAndVaultEvidenceContributorTests
             SchemaVersion: 1,
             StorageKind: "file")
         {
+            TenantId = "tenant-alpha",
+            Scope = "company-alpha",
             Artifacts =
             [
                 MakeVaultArtifact("b", retainedAt),
@@ -267,9 +357,14 @@ public sealed class SecurityMasterAndVaultEvidenceContributorTests
         };
         var store = new Mock<IEvidenceArtifactStore>();
         store
-            .Setup(s => s.TryGetVaultIdentityAsync("vault-1", It.IsAny<CancellationToken>()))
+            .Setup(s => s.TryGetVaultIdentityAsync(
+                "vault-1",
+                "tenant-alpha",
+                "company-alpha",
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(identity);
-        var contributor = new EvidenceVaultEvidenceContributor(Provider(store.Object));
+        var contributor = new EvidenceVaultEvidenceContributor(
+            ProviderWithScope(store.Object, "tenant-alpha", "company-alpha"));
         var subject = new EvidenceSubjectDto("vault-1", "evidence-vault", "Vault", "data", null, "evidence");
 
         var contribution = await contributor.ContributeAsync(Context(subject));
@@ -297,11 +392,109 @@ public sealed class SecurityMasterAndVaultEvidenceContributorTests
     private static EvidenceContributionContext Context(EvidenceSubjectDto subject) =>
         new(subject, new CancellationTokenSource(TimeSpan.FromSeconds(5)).Token);
 
+    private static EvidenceSubjectDto StrategyRunSubject() =>
+        new(
+            "covered-call-run",
+            EvidenceSubjectResolver.StrategyRunKind,
+            "Covered call run",
+            "strategy",
+            null,
+            "evidence");
+
+    private static async Task<StrategyRunEvidenceContributor> CreateStrategyRunContributorAsync(
+        string? tenantParameter,
+        string? companyParameter,
+        string? requestTenant,
+        string? requestCompany)
+    {
+        var parameters = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (tenantParameter is not null)
+        {
+            parameters["workstationTenantId"] = tenantParameter;
+        }
+
+        if (companyParameter is not null)
+        {
+            parameters["workstationCompanyId"] = companyParameter;
+        }
+
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(StrategyRunEntry.Start(
+            "covered-call-strategy",
+            "Covered Call",
+            RunType.Backtest,
+            "covered-call-run",
+            parameterSet: parameters));
+        var services = new ServiceCollection();
+        services.AddSingleton(new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService()));
+        if (requestTenant is not null || requestCompany is not null)
+        {
+            AddRequestScope(services, requestTenant, requestCompany);
+        }
+
+        return new StrategyRunEvidenceContributor(services.BuildServiceProvider());
+    }
+
     private static IServiceProvider Provider<T>(T service) where T : class
     {
         var services = new ServiceCollection();
         services.AddSingleton(service);
         return services.BuildServiceProvider();
+    }
+
+    private static IServiceProvider ProviderWithScope<T>(
+        T service,
+        string? tenantId,
+        string? companyId)
+        where T : class
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(service);
+        AddRequestScope(services, tenantId, companyId);
+        return services.BuildServiceProvider();
+    }
+
+    private static void AddRequestScope(
+        IServiceCollection services,
+        string? tenantId,
+        string? companyId)
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.Items[LoginSessionMiddleware.CurrentUserKey] = "evidence-controller";
+        if (tenantId is not null)
+        {
+            httpContext.Items[LoginSessionMiddleware.CurrentTenantIdKey] = tenantId;
+        }
+
+        if (companyId is not null)
+        {
+            httpContext.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = companyId;
+        }
+
+        var httpContextAccessor = new HttpContextAccessor { HttpContext = httpContext };
+        services.AddSingleton<IHttpContextAccessor>(httpContextAccessor);
+        services.AddSingleton<IWorkstationTenantContextAccessor>(
+            new FixedWorkstationTenantContextAccessor(new WorkstationTenantContext(
+                tenantId,
+                companyId,
+                "evidence-controller",
+                null,
+                UserPermission.None)));
+    }
+
+    private sealed class FixedWorkstationTenantContextAccessor(WorkstationTenantContext context)
+        : IWorkstationTenantContextAccessor
+    {
+        public bool TryGetCurrent(out WorkstationTenantContext current)
+        {
+            current = context;
+            return !string.IsNullOrWhiteSpace(current.Actor) || current.HasTenantScope;
+        }
+
+        public WorkstationTenantContext GetRequired() => context;
     }
 
     private static SecurityMasterConflictEvidenceContributor CreateConflictContributor(

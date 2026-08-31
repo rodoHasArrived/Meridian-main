@@ -120,16 +120,51 @@ public sealed class FirstRunExperienceService(
             return new ActivationOutcomeDto(item.Key, item.Label, item.Action, item.Route, completedAt != default, completedAt == default ? null : completedAt);
         }).ToArray();
         var kit = StarterKits.FirstOrDefault(item => item.Id == state.StarterKitId);
-        var recommendations = new[]
-        {
-            new RecommendedActionDto("Open your desk", kit?.DefaultRoute ?? "/portfolio", "See the workspace configured for your goal."),
-            new RecommendedActionDto(sample ? "Review the sample statement" : "Add starting data", "/accounting/statement-import", "Import and validate a statement or holdings file."),
-            new RecommendedActionDto("Run a report", "/reporting/run", "Produce a useful result and keep the evidence.")
-        };
+        var recommendations = BuildRecommendations(state.DataChoice, kit?.DefaultRoute ?? "/portfolio", sample);
         var sampleWorkspace = sample
             ? DemoTenantBlueprint.BuildSampleWorkspace(state.ReconciliationLoaded ?? true, state.StrategyLoaded ?? true)
             : null;
         return new FirstRunStatusDto(state.IsComplete, state.Goal, state.StarterKitId, state.DataChoice, workspace, StarterKits, outcomes, recommendations, sampleWorkspace);
+    }
+
+    /// <summary>
+    /// Turns the starting-data choice the user made during setup into the next steps the Ready
+    /// screen offers. Setup promises "Meridian will guide the next step" for the upload and
+    /// provider choices, so those choices lead the list with the surface that actually completes
+    /// them rather than with a desk that is still empty.
+    /// </summary>
+    private static IReadOnlyList<RecommendedActionDto> BuildRecommendations(string? dataChoice, string deskRoute, bool sample)
+    {
+        var openDesk = new RecommendedActionDto("Open your desk", deskRoute, "See the workspace configured for your goal.");
+        var runReport = new RecommendedActionDto("Run a report", "/reporting/run", "Produce a useful result and keep the evidence.");
+
+        return dataChoice?.Trim().ToLowerInvariant() switch
+        {
+            "provider" => new[]
+            {
+                new RecommendedActionDto("Connect a data provider", "/settings/providers", "Add provider credentials so your desk shows your own data. Paper and read-only options come first."),
+                openDesk,
+                runReport
+            },
+            "upload" => new[]
+            {
+                new RecommendedActionDto("Import your statement or holdings file", "/accounting/statement-import", "Upload the file you chose during setup and validate it before anything posts."),
+                openDesk,
+                runReport
+            },
+            "skip" => new[]
+            {
+                openDesk,
+                new RecommendedActionDto("Add starting data when you are ready", "/accounting/statement-import", "Import a statement or holdings file, or connect a provider from Settings."),
+                runReport
+            },
+            _ => new[]
+            {
+                openDesk,
+                new RecommendedActionDto(sample ? "Review the sample statement" : "Add starting data", "/accounting/statement-import", "Import and validate a statement or holdings file."),
+                runReport
+            }
+        };
     }
 
     private async Task<FirstRunState> ReadAsync(string username, CancellationToken ct)
@@ -168,7 +203,9 @@ public sealed class FirstRunExperienceService(
             version = SamplePackVersion,
             label = "Sample · Paper",
             generatedAtUtc = DateTimeOffset.UtcNow,
-            workspace = DemoTenantBlueprint.BuildSampleWorkspace(),
+            workspace = DemoTenantBlueprint.BuildSampleWorkspace(
+                provisioning?.ReconciliationLoaded ?? true,
+                provisioning?.StrategyRunLoaded ?? true),
             provisioning
         };
         return AtomicFileWriter.WriteAsync(SamplePath(username), JsonSerializer.Serialize(pack, _json), ct);

@@ -44,6 +44,15 @@ export function formatNumber(value: NullableNumber, options: NumberFormatOptions
   return value.toLocaleString(FORMAT_LOCALE, { minimumFractionDigits, maximumFractionDigits });
 }
 
+// PERCENT UNITS: the workstation carries percent-like values in two different units,
+// and picking the wrong helper is a silent 100x error in financial output. Read the
+// producing field before choosing:
+//   - `formatPercent`        takes PERCENT units  (42.5 -> "42.5%")
+//   - `formatRatioAsPercent` takes FRACTION units (0.425 -> "42.5%")
+// A `…Percent` suffix on a field name is NOT reliable evidence of its unit — see
+// `maxDrawdownPercent`, which arrives as a fraction from the walk-forward path and
+// as percent units from the live-metrics path.
+
 /** Percent display for values already expressed in percent units, e.g. 42.5 -> "42.5%". */
 export function formatPercent(value: NullableNumber, options: NumberFormatOptions = {}): string {
   const { fallback = DEFAULT_FALLBACK } = options;
@@ -52,6 +61,16 @@ export function formatPercent(value: NullableNumber, options: NumberFormatOption
   }
 
   return `${formatNumber(value, options)}%`;
+}
+
+/** Percent display for values expressed as a fraction of 1, e.g. 0.425 -> "42.5%". */
+export function formatRatioAsPercent(value: NullableNumber, options: NumberFormatOptions = {}): string {
+  const { fallback = DEFAULT_FALLBACK } = options;
+  if (!isRenderable(value)) {
+    return fallback;
+  }
+
+  return formatPercent(value * 100, options);
 }
 
 /** Symbol-style currency via Intl, e.g. "$1,234.56"; unknown codes render as "CODE 1,234.56". */

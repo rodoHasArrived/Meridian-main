@@ -1,5 +1,7 @@
+using Meridian.Execution.Logging;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Execution.Sdk;
 
 namespace Meridian.Execution;
 
@@ -40,7 +42,7 @@ public sealed class SecurityMasterGate : ISecurityMasterGate
             return new SecurityMasterGateResult(true);
         }
 
-        _logger.LogWarning("Security Master gate: symbol '{Symbol}' not found or inactive", symbol);
+        _logger.LogWarning("Security Master gate: symbol '{Symbol}' not found or inactive", LogSanitizer.Sanitize(symbol));
         return new SecurityMasterGateResult(
             false,
             $"Symbol '{symbol}' is not registered as an active security in the Security Master.");

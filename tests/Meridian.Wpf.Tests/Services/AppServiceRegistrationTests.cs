@@ -48,8 +48,8 @@ public sealed class AppServiceRegistrationTests
             serviceProvider.GetRequiredService<WorkspaceService>().Should().BeSameAs(WorkspaceService.Instance);
             serviceProvider.GetRequiredService<WorkspaceStateTokenStore>().Should().NotBeNull();
             serviceProvider.GetRequiredService<ConnectionService>().Should().BeSameAs(ConnectionService.Instance);
-            serviceProvider.GetRequiredService<IRemoteWorkstationClient>().Should().BeSameAs(WpfRemoteWorkstationClient.Instance);
-            serviceProvider.GetRequiredService<WpfRemoteWorkstationClient>().Should().BeSameAs(WpfRemoteWorkstationClient.Instance);
+            var remoteWorkstationClient = serviceProvider.GetRequiredService<WpfRemoteWorkstationClient>();
+            serviceProvider.GetRequiredService<IRemoteWorkstationClient>().Should().BeSameAs(remoteWorkstationClient);
             serviceProvider.GetRequiredService<LoggingService>().Should().BeSameAs(LoggingService.Instance);
             serviceProvider.GetRequiredService<StatusService>().Should().BeSameAs(StatusService.Instance);
             serviceProvider.GetRequiredService<StrategyRunWorkspaceService>().Should().NotBeNull();

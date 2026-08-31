@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 193,
-    "warning": 193
+    "total": 226,
+    "warning": 226
   },
   "failed": false,
   "findings": [
@@ -279,6 +279,16 @@
     },
     {
       "details": {
+        "schema": "fund_accounts",
+        "table": "fund_account_legacy_import_receipt"
+      },
+      "message": "Business table fund_accounts.fund_account_legacy_import_receipt does not have a table comment.",
+      "object": "fund_accounts.fund_account_legacy_import_receipt",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
         "schema": "fund_structure",
         "table": "business"
       },
@@ -314,6 +324,26 @@
       },
       "message": "Business table fund_structure.fund_structure_assignment does not have a table comment.",
       "object": "fund_structure.fund_structure_assignment",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "fund_structure_legacy_import_receipt"
+      },
+      "message": "Business table fund_structure.fund_structure_legacy_import_receipt does not have a table comment.",
+      "object": "fund_structure.fund_structure_legacy_import_receipt",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "fund_structure_linked_account"
+      },
+      "message": "Business table fund_structure.fund_structure_linked_account does not have a table comment.",
+      "object": "fund_structure.fund_structure_linked_account",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -500,6 +530,26 @@
     {
       "details": {
         "schema": "ledger",
+        "table": "journal_entry_integrity_seals"
+      },
+      "message": "Business table ledger.journal_entry_integrity_seals does not have a table comment.",
+      "object": "ledger.journal_entry_integrity_seals",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "journal_entry_open_postings"
+      },
+      "message": "Business table ledger.journal_entry_open_postings does not have a table comment.",
+      "object": "ledger.journal_entry_open_postings",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
         "table": "journal_legs"
       },
       "message": "Business table ledger.journal_legs does not have a table comment.",
@@ -574,6 +624,16 @@
       },
       "message": "Business table ledger.tax_lots does not have a table comment.",
       "object": "ledger.tax_lots",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "wash_sale_deferrals"
+      },
+      "message": "Business table ledger.wash_sale_deferrals does not have a table comment.",
+      "object": "ledger.wash_sale_deferrals",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -739,6 +799,56 @@
     },
     {
       "details": {
+        "schema": "reporting",
+        "table": "reporting_run_create_claims"
+      },
+      "message": "Business table reporting.reporting_run_create_claims does not have a table comment.",
+      "object": "reporting.reporting_run_create_claims",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_run_snapshots"
+      },
+      "message": "Business table reporting.reporting_run_snapshots does not have a table comment.",
+      "object": "reporting.reporting_run_snapshots",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_schedule_snapshots"
+      },
+      "message": "Business table reporting.reporting_schedule_snapshots does not have a table comment.",
+      "object": "reporting.reporting_schedule_snapshots",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_statement_reconciliation_document_revisions"
+      },
+      "message": "Business table reporting.reporting_statement_reconciliation_document_revisions does not have a table comment.",
+      "object": "reporting.reporting_statement_reconciliation_document_revisions",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_statement_reconciliation_documents"
+      },
+      "message": "Business table reporting.reporting_statement_reconciliation_documents does not have a table comment.",
+      "object": "reporting.reporting_statement_reconciliation_documents",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
         "schema": "security_master",
         "table": "accounting_period_lock"
       },
@@ -824,6 +934,96 @@
       },
       "message": "Business table security_master.commodity_projection does not have a table comment.",
       "object": "security_master.commodity_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_action_canonical_sources"
+      },
+      "message": "Business table security_master.corporate_action_canonical_sources does not have a table comment.",
+      "object": "security_master.corporate_action_canonical_sources",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_action_case_conflicts"
+      },
+      "message": "Business table security_master.corporate_action_case_conflicts does not have a table comment.",
+      "object": "security_master.corporate_action_case_conflicts",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_action_case_evidence"
+      },
+      "message": "Business table security_master.corporate_action_case_evidence does not have a table comment.",
+      "object": "security_master.corporate_action_case_evidence",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_action_case_transitions"
+      },
+      "message": "Business table security_master.corporate_action_case_transitions does not have a table comment.",
+      "object": "security_master.corporate_action_case_transitions",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_action_command_receipts"
+      },
+      "message": "Business table security_master.corporate_action_command_receipts does not have a table comment.",
+      "object": "security_master.corporate_action_command_receipts",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_action_processing_cases"
+      },
+      "message": "Business table security_master.corporate_action_processing_cases does not have a table comment.",
+      "object": "security_master.corporate_action_processing_cases",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_action_processing_options"
+      },
+      "message": "Business table security_master.corporate_action_processing_options does not have a table comment.",
+      "object": "security_master.corporate_action_processing_options",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_action_restatement_obligations"
+      },
+      "message": "Business table security_master.corporate_action_restatement_obligations does not have a table comment.",
+      "object": "security_master.corporate_action_restatement_obligations",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_action_source_proposals"
+      },
+      "message": "Business table security_master.corporate_action_source_proposals does not have a table comment.",
+      "object": "security_master.corporate_action_source_proposals",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -1184,6 +1384,16 @@
       },
       "message": "Business table security_master.security_events does not have a table comment.",
       "object": "security_master.security_events",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "security_field_provenance"
+      },
+      "message": "Business table security_master.security_field_provenance does not have a table comment.",
+      "object": "security_master.security_field_provenance",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -1555,6 +1765,20 @@
     {
       "details": {
         "columns": [
+          "replacement_tax_lot_record_id"
+        ],
+        "constraint": "wash_sale_deferrals_replacement_tax_lot_record_id_fkey",
+        "schema": "ledger",
+        "table": "wash_sale_deferrals"
+      },
+      "message": "Foreign key ledger.wash_sale_deferrals.wash_sale_deferrals_replacement_tax_lot_record_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.wash_sale_deferrals.wash_sale_deferrals_replacement_tax_lot_record_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
           "job_id",
           "tenant_id"
         ],
@@ -1585,6 +1809,36 @@
     {
       "details": {
         "columns": [
+          "tenant_id",
+          "previous_content_hash_sha256"
+        ],
+        "constraint": "fk_reporting_statement_revision_previous_blob",
+        "schema": "reporting",
+        "table": "reporting_statement_reconciliation_document_revisions"
+      },
+      "message": "Foreign key reporting.reporting_statement_reconciliation_document_revisions.fk_reporting_statement_revision_previous_blob is not covered by a left-prefix index.",
+      "object": "reporting.reporting_statement_reconciliation_document_revisions.fk_reporting_statement_revision_previous_blob",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "tenant_id",
+          "content_hash_sha256"
+        ],
+        "constraint": "fk_reporting_statement_document_blob",
+        "schema": "reporting",
+        "table": "reporting_statement_reconciliation_documents"
+      },
+      "message": "Foreign key reporting.reporting_statement_reconciliation_documents.fk_reporting_statement_document_blob is not covered by a left-prefix index.",
+      "object": "reporting.reporting_statement_reconciliation_documents.fk_reporting_statement_document_blob",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
           "source_event_id"
         ],
         "constraint": "cash_transaction_source_event_id_fkey",
@@ -1593,6 +1847,62 @@
       },
       "message": "Foreign key security_master.cash_transaction.cash_transaction_source_event_id_fkey is not covered by a left-prefix index.",
       "object": "security_master.cash_transaction.cash_transaction_source_event_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "accepted_corp_act_id"
+        ],
+        "constraint": "corporate_action_source_proposals_accepted_corp_act_id_fkey",
+        "schema": "security_master",
+        "table": "corporate_action_source_proposals"
+      },
+      "message": "Foreign key security_master.corporate_action_source_proposals.corporate_action_source_proposals_accepted_corp_act_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.corporate_action_source_proposals.corporate_action_source_proposals_accepted_corp_act_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "supersedes_proposal_id"
+        ],
+        "constraint": "corporate_action_source_proposals_supersedes_proposal_id_fkey",
+        "schema": "security_master",
+        "table": "corporate_action_source_proposals"
+      },
+      "message": "Foreign key security_master.corporate_action_source_proposals.corporate_action_source_proposals_supersedes_proposal_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.corporate_action_source_proposals.corporate_action_source_proposals_supersedes_proposal_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "initial_case_id"
+        ],
+        "constraint": "fk_corporate_action_source_initial_case",
+        "schema": "security_master",
+        "table": "corporate_action_source_proposals"
+      },
+      "message": "Foreign key security_master.corporate_action_source_proposals.fk_corporate_action_source_initial_case is not covered by a left-prefix index.",
+      "object": "security_master.corporate_action_source_proposals.fk_corporate_action_source_initial_case",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "supersedes_corp_act_id"
+        ],
+        "constraint": "fk_corporate_actions_superseded_action",
+        "schema": "security_master",
+        "table": "corporate_actions"
+      },
+      "message": "Foreign key security_master.corporate_actions.fk_corporate_actions_superseded_action is not covered by a left-prefix index.",
+      "object": "security_master.corporate_actions.fk_corporate_actions_superseded_action",
       "rule_id": "foreign-key-must-be-indexed",
       "severity": "warning"
     },
@@ -2089,13 +2399,63 @@
     {
       "details": {
         "schema": "reporting",
+        "table": "reporting_run_create_claims"
+      },
+      "message": "Table reporting.reporting_run_create_claims is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_run_create_claims",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_run_snapshots"
+      },
+      "message": "Table reporting.reporting_run_snapshots is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_run_snapshots",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_schedule_snapshots"
+      },
+      "message": "Table reporting.reporting_schedule_snapshots is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_schedule_snapshots",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
         "table": "reporting_schema_migrations"
       },
       "message": "Table reporting.reporting_schema_migrations is in an RLS-required schema but row-level security is disabled.",
       "object": "reporting.reporting_schema_migrations",
       "rule_id": "schema-rls-required",
       "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_statement_reconciliation_document_revisions"
+      },
+      "message": "Table reporting.reporting_statement_reconciliation_document_revisions is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_statement_reconciliation_document_revisions",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_statement_reconciliation_documents"
+      },
+      "message": "Table reporting.reporting_statement_reconciliation_documents is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_statement_reconciliation_documents",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
     }
   ],
-  "fingerprint": "f736697d4a1273ea781433c94cd3158a9bcd2b6f9a3cee39ed4e3b306577c85d"
+  "fingerprint": "ce3a5ae6ddd68e1a96a87b77697b0e2add3a06d787beec723711f0f7323bed05"
 }

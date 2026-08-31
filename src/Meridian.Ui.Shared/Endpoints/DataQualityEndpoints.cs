@@ -1,3 +1,5 @@
+using Meridian.Identity.Auth;
+using System.Globalization;
 using System.Text.Json;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Contracts.Api;
@@ -7,6 +9,8 @@ using Meridian.Application.DataQuality;
 using Meridian.Ui.Shared.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -22,40 +26,27 @@ public static class DataQualityEndpoints
     };
 
     /// <summary>
-    /// Wraps a synchronous handler with consistent error handling and JSON serialization.
-    /// </summary>
-    private static IResult HandleSync(Func<IResult> handler)
-    {
-        try
-        {
-            return handler();
-        }
-        catch (Exception ex)
-        {
-            return Results.Problem(ex.Message);
-        }
-    }
-
-    /// <summary>
-    /// Wraps an async handler with consistent error handling and JSON serialization.
-    /// </summary>
-    private static async Task<IResult> HandleAsync(Func<Task<IResult>> handler, CancellationToken ct = default)
-    {
-        try
-        {
-            return await handler();
-        }
-        catch (Exception ex)
-        {
-            return Results.Problem(ex.Message);
-        }
-    }
-
-    /// <summary>
     /// Parses an optional date string, defaulting to today (UTC).
     /// </summary>
-    private static DateOnly ParseDateOrToday(string? date) =>
-        date != null ? DateOnly.Parse(date) : DateOnly.FromDateTime(DateTime.UtcNow);
+    private static DateOnly ParseDateOrToday(string? date, string field = "date") =>
+        date is null ? DateOnly.FromDateTime(DateTime.UtcNow) : ParseDate(date, field);
+
+    private static DateOnly ParseDate(string value, string field)
+    {
+        if (DateOnly.TryParseExact(
+                value,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var parsed))
+        {
+            return parsed;
+        }
+
+        throw new DataQualityRequestValidationException(
+            field,
+            $"{field} must use the yyyy-MM-dd format.");
+    }
 
     /// <summary>
     /// Returns the result as JSON using the shared serializer options.
@@ -67,6 +58,7 @@ public static class DataQualityEndpoints
     /// </summary>
     public static void MapDataQualityEndpoints(this WebApplication app, DataQualityMonitoringService qualityService)
     {
+        var guard = CreateGuard(app);
         var compositeService = app.Services.GetService(typeof(ICompositeDataQualityReadService))
             as ICompositeDataQualityReadService;
         var remediationService = app.Services.GetService(typeof(IDataQualityGapRemediationService))
@@ -75,7 +67,7 @@ public static class DataQualityEndpoints
         // ==================== DASHBOARD ====================
 
         app.MapGet(UiApiRoutes.QualityDashboard, (CancellationToken ct) =>
-            HandleAsync(async () =>
+            guard.HandleAsync(async () =>
             {
                 var legacy = ToResponse(qualityService.GetDashboard());
                 var composite = compositeService is null
@@ -83,26 +75,26 @@ public static class DataQualityEndpoints
                     : await compositeService.GetDashboardAsync(ct).ConfigureAwait(false);
                 var response = legacy with { Composite = composite };
                 return Results.Json(response, QualityApiJsonContext.Default.QualityDashboardResponse);
-            }, ct));
+            }, ct)).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityMetrics, () =>
-            HandleSync(() => Json(qualityService.GetRealTimeMetrics())));
+            guard.HandleSync(() => Json(qualityService.GetRealTimeMetrics()))).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // ==================== COMPLETENESS ====================
 
         app.MapGet(UiApiRoutes.QualityCompleteness, (string? date) =>
-            HandleSync(() =>
+            guard.HandleSync(() =>
             {
                 var targetDate = ParseDateOrToday(date);
                 return Json(qualityService.Completeness.GetScoresForDate(targetDate));
-            }));
+            })).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityCompletenessBySymbol, (string symbol, string? date) =>
-            HandleSync(() =>
+            guard.HandleSync(() =>
             {
                 if (date != null)
                 {
-                    var targetDate = DateOnly.Parse(date);
+                    var targetDate = ParseDate(date, nameof(date));
                     var score = qualityService.Completeness.GetScore(symbol, targetDate);
                     return score != null
                         ? Json(score)
@@ -110,44 +102,44 @@ public static class DataQualityEndpoints
                 }
 
                 return Json(qualityService.Completeness.GetScoresForSymbol(symbol));
-            }));
+            })).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityCompletenessSummary, () =>
-            HandleSync(() => Json(qualityService.Completeness.GetSummary())));
+            guard.HandleSync(() => Json(qualityService.Completeness.GetSummary()))).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityCompletenessLow, (string? date, double? threshold) =>
-            HandleSync(() =>
+            guard.HandleSync(() =>
             {
                 var targetDate = ParseDateOrToday(date);
                 return Json(qualityService.Completeness.GetLowCompletenessSymbols(targetDate, threshold ?? 0.8));
-            }));
+            })).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // ==================== GAP ANALYSIS ====================
 
         app.MapGet(UiApiRoutes.QualityGaps, (string? date, int? count) =>
-            HandleSync(() =>
+            guard.HandleSync(() =>
             {
                 if (date != null)
                 {
-                    var targetDate = DateOnly.Parse(date);
+                    var targetDate = ParseDate(date, nameof(date));
                     return Json(qualityService.GapAnalyzer.GetGapsForDate(targetDate).Select(ToResponse).ToArray());
                 }
 
                 return Json(qualityService.GapAnalyzer.GetRecentGaps(count ?? 100).Select(ToResponse).ToArray());
-            }));
+            })).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityGapsBySymbol, (string symbol, string? date) =>
-            HandleSync(() =>
+            guard.HandleSync(() =>
             {
                 var targetDate = ParseDateOrToday(date);
                 return Json(qualityService.GapAnalyzer.AnalyzeGaps(symbol, targetDate));
-            }));
+            })).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapPost(UiApiRoutes.QualityGapsBySymbol, (
             string symbol,
             QualityGapRemediationRequest request,
             CancellationToken ct) =>
-            HandleAsync(async () =>
+            guard.HandleAsync(async () =>
             {
                 if (compositeService is null || remediationService is null)
                 {
@@ -202,60 +194,63 @@ public static class DataQualityEndpoints
                         QualityApiJsonContext.Default.QualityGapRemediationResponse,
                         statusCode: StatusCodes.Status502BadGateway)
                 };
-            }, ct));
+            }, ct)).RequirePermission(UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityGapsTimeline, (string symbol, string? date) =>
-            HandleSync(() =>
+            guard.HandleSync(() =>
             {
                 var targetDate = ParseDateOrToday(date);
                 var analysis = qualityService.GapAnalyzer.AnalyzeGaps(symbol, targetDate);
                 return Json(new { symbol, date = targetDate, timeline = analysis.Timeline });
-            }));
+            })).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityGapsStatistics, (string? date) =>
-            HandleSync(() =>
+            guard.HandleSync(() =>
             {
-                var targetDate = date != null ? DateOnly.Parse(date) : (DateOnly?)null;
+                var targetDate = date != null ? ParseDate(date, nameof(date)) : (DateOnly?)null;
                 return Json(qualityService.GapAnalyzer.GetStatistics(targetDate));
-            }));
+            })).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // ==================== SEQUENCE ERRORS ====================
 
         app.MapGet(UiApiRoutes.QualityErrors, (string? date, int? count) =>
-            HandleSync(() =>
+            guard.HandleSync(() =>
             {
                 if (date != null)
                 {
-                    var targetDate = DateOnly.Parse(date);
+                    var targetDate = ParseDate(date, nameof(date));
                     return Json(qualityService.SequenceTracker.GetErrorsForDate(targetDate));
                 }
 
                 return Json(qualityService.SequenceTracker.GetRecentErrors(count ?? 100));
-            }));
+            })).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityErrorsBySymbol, (string symbol, string? date, int? count) =>
-            HandleSync(() =>
+            guard.HandleSync(() =>
             {
-                var targetDate = date != null ? DateOnly.Parse(date) : (DateOnly?)null;
+                var targetDate = date != null ? ParseDate(date, nameof(date)) : (DateOnly?)null;
                 return Json(qualityService.SequenceTracker.GetSummary(symbol, targetDate));
-            }));
+            })).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityErrorsStatistics, () =>
-            HandleSync(() => Json(qualityService.SequenceTracker.GetStatistics())));
+            guard.HandleSync(() => Json(qualityService.SequenceTracker.GetStatistics()))).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityErrorsTopSymbols, (int? count) =>
-            HandleSync(() => Json(qualityService.SequenceTracker.GetSymbolsWithMostErrors(count ?? 10))));
+            guard.HandleSync(() => Json(qualityService.SequenceTracker
+                .GetSymbolsWithMostErrors(count ?? 10)
+                .Select(entry => new QualityTopErrorSymbolResponse(entry.Symbol, entry.ErrorCount))
+                .ToArray()))).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // ==================== ANOMALIES ====================
 
         app.MapGet(UiApiRoutes.QualityAnomalies, (string? date, string? type, string? severity, int? count) =>
-            HandleSync(() =>
+            guard.HandleSync(() =>
             {
                 IReadOnlyList<DataAnomaly> anomalies;
 
                 if (date != null)
                 {
-                    var targetDate = DateOnly.Parse(date);
+                    var targetDate = ParseDate(date, nameof(date));
                     anomalies = qualityService.AnomalyDetector.GetAnomaliesForDate(targetDate);
                 }
                 else if (type != null && Enum.TryParse<AnomalyType>(type, true, out var anomalyType))
@@ -272,93 +267,96 @@ public static class DataQualityEndpoints
                 }
 
                 return Json(anomalies.Select(ToResponse).ToArray());
-            }));
+            })).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityAnomaliesBySymbol, (string symbol, int? count) =>
-            HandleSync(() => Json(qualityService.AnomalyDetector.GetAnomalies(symbol, count ?? 100).Select(ToResponse).ToArray())));
+            guard.HandleSync(() => Json(qualityService.AnomalyDetector.GetAnomalies(symbol, count ?? 100).Select(ToResponse).ToArray()))).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityAnomaliesUnacknowledged, (int? count) =>
-            HandleSync(() => Json(qualityService.AnomalyDetector.GetUnacknowledgedAnomalies(count ?? 100).Select(ToResponse).ToArray())));
+            guard.HandleSync(() => Json(qualityService.AnomalyDetector.GetUnacknowledgedAnomalies(count ?? 100).Select(ToResponse).ToArray()))).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapPost(UiApiRoutes.QualityAnomaliesAcknowledge, (string anomalyId) =>
-            HandleSync(() =>
+            guard.HandleSync(() =>
             {
                 var success = qualityService.AnomalyDetector.AcknowledgeAnomaly(anomalyId);
                 return success
                     ? Json(new QualityAnomalyAcknowledgementResponse(Acknowledged: true))
                     : Results.NotFound($"Anomaly {anomalyId} not found");
-            }));
+            })).RequirePermission(UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityAnomaliesStatistics, () =>
-            HandleSync(() => Json(qualityService.AnomalyDetector.GetStatistics())));
+            guard.HandleSync(() => Json(qualityService.AnomalyDetector.GetStatistics()))).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityAnomaliesStale, () =>
-            HandleSync(() => Json(qualityService.AnomalyDetector.GetStaleSymbols())));
+            guard.HandleSync(() => Json(qualityService.AnomalyDetector.GetStaleSymbols()))).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // ==================== LATENCY ====================
 
         app.MapGet(UiApiRoutes.QualityLatency, () =>
-            HandleSync(() => Json(qualityService.LatencyHistogram.GetAllDistributions())));
+            guard.HandleSync(() => Json(qualityService.LatencyHistogram.GetAllDistributions()))).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityLatencyBySymbol, (string symbol, string? provider) =>
-            HandleSync(() =>
+            guard.HandleSync(() =>
             {
                 var distribution = qualityService.LatencyHistogram.GetDistribution(symbol, provider);
                 return distribution != null
                     ? Json(distribution)
                     : Results.NotFound($"No latency data for {symbol}");
-            }));
+            })).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityLatencyHistogram, (string symbol, string? provider) =>
-            HandleSync(() => Json(new { symbol, provider, buckets = qualityService.LatencyHistogram.GetBuckets(symbol, provider) })));
+            guard.HandleSync(() => Json(new { symbol, provider, buckets = qualityService.LatencyHistogram.GetBuckets(symbol, provider) }))).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityLatencyStatistics, () =>
-            HandleSync(() => Json(ToResponse(qualityService.LatencyHistogram.GetStatistics()))));
+            guard.HandleSync(() => Json(ToResponse(qualityService.LatencyHistogram.GetStatistics())))).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityLatencyHigh, (double? thresholdMs) =>
-            HandleSync(() => Json(qualityService.LatencyHistogram.GetHighLatencySymbols(thresholdMs ?? 100))));
+            guard.HandleSync(() => Json(qualityService.LatencyHistogram
+                .GetHighLatencySymbols(thresholdMs ?? 100)
+                .Select(entry => new QualityHighLatencySymbolResponse(entry.Symbol, entry.P99Ms))
+                .ToArray()))).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // ==================== CROSS-PROVIDER COMPARISON ====================
 
         app.MapGet(UiApiRoutes.QualityComparison, (string symbol, string? date, string? eventType) =>
-            HandleSync(() =>
+            guard.HandleSync(() =>
             {
                 var targetDate = ParseDateOrToday(date);
                 return Json(ToResponse(qualityService.CrossProvider.Compare(symbol, targetDate, eventType ?? "Trade")));
-            }));
+            })).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityComparisonDiscrepancies, (string? date, int? count) =>
-            HandleSync(() =>
+            guard.HandleSync(() =>
             {
                 if (date != null)
                 {
-                    var targetDate = DateOnly.Parse(date);
+                    var targetDate = ParseDate(date, nameof(date));
                     return Json(qualityService.CrossProvider.GetDiscrepanciesForDate(targetDate));
                 }
 
                 return Json(qualityService.CrossProvider.GetRecentDiscrepancies(count ?? 100));
-            }));
+            })).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityComparisonStatistics, () =>
-            HandleSync(() => Json(qualityService.CrossProvider.GetStatistics())));
+            guard.HandleSync(() => Json(qualityService.CrossProvider.GetStatistics()))).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // ==================== REPORTS ====================
 
         app.MapGet(UiApiRoutes.QualityReportsDaily, async (string? date, CancellationToken ct) =>
-            await HandleAsync(async () =>
+            await guard.HandleAsync(async () =>
             {
                 var targetDate = ParseDateOrToday(date);
                 var report = await qualityService.GenerateDailyReportAsync(targetDate, null, ct);
                 return Json(report);
-            }));
+            }, ct)).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityReportsWeekly, async (string? weekStart, CancellationToken ct) =>
-            await HandleAsync(async () =>
+            await guard.HandleAsync(async () =>
             {
                 DateOnly start;
                 if (weekStart != null)
                 {
-                    start = DateOnly.Parse(weekStart);
+                    start = ParseDate(weekStart, nameof(weekStart));
                 }
                 else
                 {
@@ -369,10 +367,10 @@ public static class DataQualityEndpoints
 
                 var report = await qualityService.GenerateWeeklyReportAsync(start, null, ct);
                 return Json(report);
-            }));
+            }, ct)).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapPost(UiApiRoutes.QualityReportsExport, async (ReportExportRequest request, CancellationToken ct) =>
-            await HandleAsync(async () =>
+            await guard.HandleAsync(async () =>
             {
                 var targetDate = ParseDateOrToday(request.Date);
                 var format = Enum.TryParse<ReportExportFormat>(request.Format, true, out var f)
@@ -382,12 +380,12 @@ public static class DataQualityEndpoints
                 var filePath = await qualityService.ExportReportAsync(report, format, ct);
 
                 return Results.Ok(new { filePath, format = format.ToString() });
-            }));
+            }, ct)).RequirePermission(UserPermission.ManageStorage);
 
         // ==================== HEALTH ====================
 
         app.MapGet(UiApiRoutes.QualityHealth, () =>
-            HandleSync(() =>
+            guard.HandleSync(() =>
             {
                 var metrics = qualityService.GetRealTimeMetrics();
                 var status = metrics.OverallHealthScore switch
@@ -408,19 +406,19 @@ public static class DataQualityEndpoints
                     anomaliesLast5Min = metrics.AnomaliesLast5Minutes,
                     timestamp = metrics.Timestamp
                 });
-            }));
+            })).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityHealthBySymbol, (string symbol) =>
-            HandleSync(() =>
+            guard.HandleSync(() =>
             {
                 var health = qualityService.GetSymbolHealth(symbol);
                 return health != null
                     ? Json(health)
                     : Results.NotFound($"No health data for {symbol}");
-            }));
+            })).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         app.MapGet(UiApiRoutes.QualityHealthUnhealthy, () =>
-            HandleSync(() => Json(qualityService.GetUnhealthySymbols())));
+            guard.HandleSync(() => Json(qualityService.GetUnhealthySymbols()))).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
     }
 
     private static QualityDashboardResponse ToResponse(DataQualityDashboard dashboard) =>
@@ -503,7 +501,11 @@ public static class DataQualityEndpoints
             SymbolsWithErrors: statistics.SymbolsWithErrors,
             AverageGapSize: statistics.AverageGapSize,
             MaxGapSize: statistics.MaxGapSize,
-            CalculatedAt: statistics.CalculatedAt);
+            CalculatedAt: statistics.CalculatedAt)
+        {
+            LifetimeTotalErrors = statistics.LifetimeTotalErrors,
+            LifetimeErrorRate = statistics.LifetimeErrorRate
+        };
 
     private static QualityAnomalyStatisticsResponse ToResponse(AnomalyStatistics statistics) =>
         new(
@@ -610,20 +612,23 @@ public static class DataQualityEndpoints
     /// </summary>
     public static void MapSlaEndpoints(this WebApplication app, DataFreshnessSlaMonitor slaMonitor)
     {
+        var guard = CreateGuard(app);
         app.MapGet(UiApiRoutes.SlaStatus, () =>
-            HandleSync(() => Json(slaMonitor.GetSnapshot())));
+            guard.HandleSync(() => Json(slaMonitor.GetSnapshot())))
+            .RequireAnyPermission(SlaReadPermissions);
 
         app.MapGet(UiApiRoutes.SlaStatusBySymbol, (string symbol) =>
-            HandleSync(() =>
+            guard.HandleSync(() =>
             {
                 var status = slaMonitor.GetSymbolStatus(symbol);
                 return status != null
                     ? Json(status)
                     : Results.NotFound($"No SLA data for {symbol}");
-            }));
+            }))
+            .RequireAnyPermission(SlaReadPermissions);
 
         app.MapGet(UiApiRoutes.SlaViolations, () =>
-            HandleSync(() =>
+            guard.HandleSync(() =>
             {
                 var snapshot = slaMonitor.GetSnapshot();
                 var violations = snapshot.SymbolStatuses
@@ -636,10 +641,11 @@ public static class DataQualityEndpoints
                     totalViolations = snapshot.TotalViolations,
                     violations
                 });
-            }));
+            }))
+            .RequireAnyPermission(SlaReadPermissions);
 
         app.MapGet(UiApiRoutes.SlaHealth, () =>
-            HandleSync(() =>
+            guard.HandleSync(() =>
             {
                 var snapshot = slaMonitor.GetSnapshot();
                 var status = snapshot.OverallFreshnessScore switch
@@ -662,17 +668,91 @@ public static class DataQualityEndpoints
                     isMarketOpen = snapshot.IsMarketOpen,
                     timestamp = snapshot.Timestamp
                 });
-            }));
+            }))
+            .RequireAnyPermission(SlaReadPermissions);
 
         app.MapGet(UiApiRoutes.SlaMetrics, () =>
-            HandleSync(() => Json(new
+            guard.HandleSync(() => Json(new
             {
                 totalViolations = slaMonitor.TotalViolations,
                 currentViolations = slaMonitor.CurrentViolations,
                 totalRecoveries = slaMonitor.TotalRecoveries,
                 isMarketOpen = slaMonitor.IsMarketOpen(),
                 timestamp = DateTimeOffset.UtcNow
-            })));
+            })))
+            .RequireAnyPermission(SlaReadPermissions);
+    }
+
+    // Data-freshness SLA state: which feeds are late, by how much, and per symbol. It answers the
+    // operator watching live feeds, the one watching historical coverage, and the one watching system
+    // health -- the three permissions whose surfaces this monitor reports on. There is no SLA mutation
+    // to mirror, so the set is named here rather than borrowed from a sibling route.
+    private static readonly UserPermission[] SlaReadPermissions =
+    [
+        UserPermission.ViewMarketData,
+        UserPermission.ViewHistoricalData,
+        UserPermission.ViewDiagnostics
+    ];
+
+    private static DataQualityEndpointGuard CreateGuard(WebApplication app)
+        => new(app.Services
+            .GetRequiredService<ILoggerFactory>()
+            .CreateLogger("Meridian.Ui.Shared.Endpoints.DataQualityEndpoints"));
+
+    private sealed class DataQualityEndpointGuard(ILogger logger)
+    {
+        private const string SafeFailureDetail =
+            "The data-quality request could not be completed. Retry or contact an administrator.";
+
+        public IResult HandleSync(Func<IResult> handler)
+        {
+            try
+            {
+                return handler();
+            }
+            catch (DataQualityRequestValidationException exception)
+            {
+                return ApiProblemDetails.Validation(null, exception.Field, exception.Message);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "Data-quality endpoint failed.");
+                return ApiProblemDetails.Internal(null, SafeFailureDetail);
+            }
+        }
+
+        public async Task<IResult> HandleAsync(
+            Func<Task<IResult>> handler,
+            CancellationToken ct = default)
+        {
+            try
+            {
+                return await handler().ConfigureAwait(false);
+            }
+            catch (DataQualityRequestValidationException exception)
+            {
+                return ApiProblemDetails.Validation(null, exception.Field, exception.Message);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "Data-quality endpoint failed.");
+                return ApiProblemDetails.Internal(null, SafeFailureDetail);
+            }
+        }
+    }
+
+    private sealed class DataQualityRequestValidationException(string field, string message)
+        : Exception(message)
+    {
+        public string Field { get; } = field;
     }
 }
 

@@ -15,7 +15,7 @@ public sealed class ConservativeFillModelTests
 {
     private static MarketEvent MakeBarEvent(string symbol, decimal open, decimal high, decimal low, decimal close, long volume = 100_000L) =>
         MarketEvent.HistoricalBar(DateTimeOffset.UtcNow, symbol, new HistoricalBar(
-            symbol, DateOnly.FromDateTime(DateTime.Today), open, high, low, close, volume, "test"));
+            symbol, DateOnly.FromDateTime(DateTime.Today), open, high, low, close, volume, "test"), source: "TEST");
 
     private static BarMidpointFillModel CreateModel(FillConservatism conservatism = FillConservatism.Conservative) =>
         new(new FixedCommissionModel(0m), slippageBasisPoints: 0m, conservatism: conservatism);

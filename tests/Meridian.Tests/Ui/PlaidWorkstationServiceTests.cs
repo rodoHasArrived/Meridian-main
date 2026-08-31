@@ -121,7 +121,7 @@ public sealed class PlaidWorkstationServiceTests
             "operator"));
         var pending = await fixture.Banking.InitiatePaymentAsync(
             fixture.EntityId,
-            new InitiatePaymentRequest(42m, DateOnly.FromDateTime(DateTime.UtcNow), "wire-1", "Plaid transfer test"));
+            new InitiatePaymentRequest(42m, DateOnly.FromDateTime(DateTime.UtcNow), "wire-1", "Plaid transfer test", "USD"));
 
         var blocked = await fixture.Service.CreateSandboxTransferAsync(new PlaidTransferRequest(
             "item-1",

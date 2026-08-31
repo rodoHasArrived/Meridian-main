@@ -12,9 +12,23 @@ namespace Meridian.Execution.Adapters;
 /// </summary>
 public sealed class LiveMarketDataCache : ILiveFeedAdapter
 {
-    private readonly ConcurrentDictionary<string, Trade> _lastTrades = new(StringComparer.OrdinalIgnoreCase);
-    private readonly ConcurrentDictionary<string, BboQuotePayload> _lastQuotes = new(StringComparer.OrdinalIgnoreCase);
-    private readonly ConcurrentDictionary<string, LOBSnapshot> _lastOrderBooks = new(StringComparer.OrdinalIgnoreCase);
+    /// <summary>
+    /// All last-known fields for one symbol in a single immutable record. Every update swaps
+    /// the whole record atomically, so a reader that takes one reference gets a view in which
+    /// no field is newer than a field written before it — the guarantee the paper-matching
+    /// envelope depends on (#2676). Storing the fields in separate dictionaries let a reader
+    /// pair a pre-update quote with a post-update trade.
+    /// </summary>
+    private sealed record SymbolMarketState(
+        BboQuotePayload? Quote,
+        Trade? Trade,
+        HistoricalBar? Bar,
+        LOBSnapshot? OrderBook)
+    {
+        public static readonly SymbolMarketState Empty = new(null, null, null, null);
+    }
+
+    private readonly ConcurrentDictionary<string, SymbolMarketState> _states = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, byte> _subscribedSymbols = new(StringComparer.OrdinalIgnoreCase);
 
     /// <inheritdoc/>
@@ -34,7 +48,7 @@ public sealed class LiveMarketDataCache : ILiveFeedAdapter
         ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
         ArgumentNullException.ThrowIfNull(trade);
         _subscribedSymbols.TryAdd(symbol, 0);
-        _lastTrades[symbol] = trade;
+        Mutate(symbol, trade, static (state, value) => state with { Trade = value });
     }
 
     /// <summary>Records the most recent best-bid/offer quote for a symbol.</summary>
@@ -43,7 +57,7 @@ public sealed class LiveMarketDataCache : ILiveFeedAdapter
         ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
         ArgumentNullException.ThrowIfNull(quote);
         _subscribedSymbols.TryAdd(symbol, 0);
-        _lastQuotes[symbol] = quote;
+        Mutate(symbol, quote, static (state, value) => state with { Quote = value });
     }
 
     /// <summary>Records the most recent Level-2 order book snapshot for a symbol.</summary>
@@ -52,20 +66,52 @@ public sealed class LiveMarketDataCache : ILiveFeedAdapter
         ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
         ArgumentNullException.ThrowIfNull(snapshot);
         _subscribedSymbols.TryAdd(symbol, 0);
-        _lastOrderBooks[symbol] = snapshot;
+        Mutate(symbol, snapshot, static (state, value) => state with { OrderBook = value });
+    }
+
+    /// <summary>Records the most recent completed bar for a symbol.</summary>
+    public void RecordBar(string symbol, HistoricalBar bar)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
+        ArgumentNullException.ThrowIfNull(bar);
+        _subscribedSymbols.TryAdd(symbol, 0);
+        Mutate(symbol, bar, static (state, value) => state with { Bar = value });
     }
 
     /// <inheritdoc/>
-    public Trade? GetLastTrade(string symbol) =>
-        _lastTrades.TryGetValue(symbol, out var trade) ? trade : null;
+    public Trade? GetLastTrade(string symbol) => GetState(symbol).Trade;
 
     /// <inheritdoc/>
-    public BboQuotePayload? GetLastQuote(string symbol) =>
-        _lastQuotes.TryGetValue(symbol, out var quote) ? quote : null;
+    public BboQuotePayload? GetLastQuote(string symbol) => GetState(symbol).Quote;
 
     /// <inheritdoc/>
-    public LOBSnapshot? GetLastOrderBook(string symbol) =>
-        _lastOrderBooks.TryGetValue(symbol, out var snapshot) ? snapshot : null;
+    public LOBSnapshot? GetLastOrderBook(string symbol) => GetState(symbol).OrderBook;
+
+    /// <inheritdoc/>
+    public HistoricalBar? GetLastBar(string symbol) => GetState(symbol).Bar;
+
+    /// <summary>
+    /// Atomic override of the interface default: all three fields come from one state
+    /// reference, so the snapshot can never pair a pre-update quote with a post-update trade.
+    /// </summary>
+    public MarketDataSnapshot GetSnapshot(string symbol)
+    {
+        var state = GetState(symbol);
+        return new MarketDataSnapshot(state.Quote, state.Trade, state.Bar);
+    }
+
+    private SymbolMarketState GetState(string symbol) =>
+        _states.TryGetValue(symbol, out var state) ? state : SymbolMarketState.Empty;
+
+    // AddOrUpdate retries its compare-and-swap until the update wins, so two writers
+    // mutating different fields of the same symbol both land: the loser re-reads the
+    // winner's record and reapplies its own field on top.
+    private void Mutate<T>(string symbol, T value, Func<SymbolMarketState, T, SymbolMarketState> update) =>
+        _states.AddOrUpdate(
+            symbol,
+            static (_, arg) => arg.update(SymbolMarketState.Empty, arg.value),
+            static (_, existing, arg) => arg.update(existing, arg.value),
+            (value, update));
 
     /// <summary>
     /// Returns the best available reference price for a symbol: last trade price first,

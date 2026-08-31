@@ -395,6 +395,80 @@ public sealed class OptionsChainServiceTests
         result.Should().BeNull();
     }
 
+    [Fact]
+    public async Task FetchChainSnapshotAsync_WhenProviderTimesOutWithTaskCanceledException_FallsBack()
+    {
+        var expiry = new DateOnly(2026, 3, 21);
+        var fallbackChain = CreateChainSnapshot("AAPL", expiry);
+        var primary = new StubOptionsChainProvider(
+            "alpaca-options",
+            "Alpaca Options",
+            priority: 1,
+            chainException: new TaskCanceledException("provider timeout"));
+        var fallback = new StubOptionsChainProvider(
+            "synthetic",
+            "Synthetic Options",
+            priority: 200,
+            chain: fallbackChain);
+        var sut = new OptionsChainService(
+            _collector,
+            _logger,
+            _healthSourceMock.Object,
+            new IOptionsChainProvider[] { primary, fallback });
+
+        var result = await sut.FetchChainSnapshotAsync("AAPL", expiry);
+
+        result.Should().BeSameAs(fallbackChain);
+    }
+
+    [Fact]
+    public async Task FetchChainSnapshotAsync_WhenCallerCancelsAfterPrimaryStarts_PropagatesWithoutFallback()
+    {
+        var expiry = new DateOnly(2026, 3, 21);
+        using var cancellation = new CancellationTokenSource();
+        var primaryEntered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var fallbackCalls = 0;
+        var logger = new RecordingLogger<OptionsChainService>();
+        var primary = new StubOptionsChainProvider(
+            "alpaca-options",
+            "Alpaca Options",
+            priority: 1,
+            chainHandler: async token =>
+            {
+                primaryEntered.TrySetResult(true);
+                await Task.Delay(Timeout.InfiniteTimeSpan, token);
+                return null;
+            });
+        var fallback = new StubOptionsChainProvider(
+            "synthetic",
+            "Synthetic Options",
+            priority: 200,
+            chainHandler: _ =>
+            {
+                Interlocked.Increment(ref fallbackCalls);
+                return Task.FromResult<OptionChainSnapshot?>(CreateChainSnapshot("AAPL", expiry));
+            });
+        var sut = new OptionsChainService(
+            _collector,
+            logger,
+            _healthSourceMock.Object,
+            new IOptionsChainProvider[] { primary, fallback });
+
+        var run = sut.FetchChainSnapshotAsync("AAPL", expiry, ct: cancellation.Token);
+        await primaryEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await cancellation.CancelAsync();
+
+        var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+        {
+            _ = await run;
+        });
+
+        exception.CancellationToken.Should().Be(cancellation.Token);
+        Volatile.Read(ref fallbackCalls).Should().Be(0);
+        logger.Entries.Should().NotContain(entry =>
+            entry.Message.Contains("trying fallback provider", StringComparison.OrdinalIgnoreCase));
+    }
+
     #region FetchOptionQuoteAsync Tests
 
     [Fact]
@@ -657,7 +731,8 @@ public sealed class OptionsChainServiceTests
         IReadOnlyList<DateOnly>? expirations = null,
         OptionChainSnapshot? chain = null,
         OptionQuote? quote = null,
-        Exception? chainException = null) : IOptionsChainProvider
+        Exception? chainException = null,
+        Func<CancellationToken, Task<OptionChainSnapshot?>>? chainHandler = null) : IOptionsChainProvider
     {
         public string ProviderId { get; } = providerId;
         public string ProviderDisplayName { get; } = providerDisplayName;
@@ -674,6 +749,9 @@ public sealed class OptionsChainServiceTests
 
         public Task<OptionChainSnapshot?> GetChainSnapshotAsync(string underlyingSymbol, DateOnly expiration, int? strikeRange = null, CancellationToken ct = default)
         {
+            if (chainHandler is not null)
+                return chainHandler(ct);
+
             if (chainException is not null)
                 throw chainException;
 

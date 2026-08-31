@@ -26,6 +26,10 @@ import {
 import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 import { buildReportingHubModel, formatReportingFamilyLabel } from "@/lib/reporting-hub";
+import {
+  normalizeReportingWorkspace,
+  type ReportingWorkspacePayload
+} from "@/lib/reporting-workspace";
 import { workstationRouteWithQuery } from "@/lib/workspace";
 import {
   hasRetainedReportingAsOfDate,
@@ -48,6 +52,12 @@ import {
 } from "@/screens/reporting-screen.view-model";
 import { ReportingPrivateCapitalReadinessPanel } from "@/screens/reporting-screen.private-capital-readiness";
 import {
+  buildClientPackageScheduleFormatSelection,
+  clientPackageScheduleArtifactFormats,
+  updateScheduleArtifactFormatDraft,
+  updateScheduleRunParameterDraft
+} from "@/screens/reporting-screen.client-package";
+import {
   ReportingBrandingAccessPanel,
   buildDefaultReportBrandingDraft,
   buildReportBrandingOverride,
@@ -58,8 +68,7 @@ import type { ExportsReportRunDraftState } from "@/screens/reporting-screen.expo
 import {
   buildDefaultReportRunParameterDraft,
   validateAndBuildReportingRunParameters,
-  type ReportRunParameterDraftField,
-  type ReportRunParameterDraftState
+  type ReportRunParameterDraftField
 } from "@/screens/report-run-parameters-screen.view-model";
 import { ReportingDeliveryHistoryPanel } from "@/screens/reporting-screen.delivery-history";
 import {
@@ -88,6 +97,8 @@ import { ReportingStarterKitChooser } from "@/screens/reporting-screen.starter-k
 import {
   ReportingBackendReference,
   ReportingCommandStatusView,
+  ReportingCutMetric,
+  ReportingHighlight,
   type ReportingCommandStatus
 } from "@/screens/reporting-screen.shared-components";
 import {
@@ -115,7 +126,8 @@ import {
 } from "@/screens/reporting-screen.report-writer-helpers";
 
 interface ReportingScreenProps {
-  data: AccountingWorkspaceResponse | null;
+  data: ReportingWorkspacePayload | null;
+  accounting?: AccountingWorkspaceResponse | null;
   onRefreshLivePortfolioViews?: () => Promise<void> | void;
 }
 
@@ -204,12 +216,14 @@ const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
   }
 ];
 
-export function ReportingScreen({ data, onRefreshLivePortfolioViews }: ReportingScreenProps) {
+export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews }: ReportingScreenProps) {
   const { pathname, search } = useLocation();
-  const vm = useReportingScreenViewModel(data?.reporting ?? null, undefined, pathname);
+  const reportingData = normalizeReportingWorkspace(data);
+  const accountingData = accounting ?? null;
+  const vm = useReportingScreenViewModel(reportingData, undefined, pathname);
   const hubModel = useMemo(
-    () => buildReportingHubModel(vm.runStatusRows, vm.templateRows, data?.reporting?.dailyWork ?? []),
-    [data?.reporting?.dailyWork, vm.runStatusRows, vm.templateRows]
+    () => buildReportingHubModel(vm.runStatusRows, vm.templateRows, reportingData?.dailyWork ?? []),
+    [reportingData?.dailyWork, vm.runStatusRows, vm.templateRows]
   );
   // Watch the most recent run over the report-run SSE stream. This is additive — the 30s
   // reporting poll is unchanged and remains the source of truth for the rendered rows. When the
@@ -233,10 +247,10 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   const [templateLifecycleStatus, setTemplateLifecycleStatus] = useState<ReportingCommandStatus | null>(null);
   const [scheduleActionStatus, setScheduleActionStatus] = useState<ReportingCommandStatus | null>(null);
   const [starterKitStatus, setStarterKitStatus] = useState<ReportingCommandStatus | null>(null);
-  const [scheduleDraft, setScheduleDraft] = useState<ReportingScheduleDraftState>(() => buildDefaultReportingScheduleDraft(data?.reporting ?? null));
+  const [scheduleDraft, setScheduleDraft] = useState<ReportingScheduleDraftState>(() => buildDefaultReportingScheduleDraft(reportingData));
   const [livePortfolioRefreshStatus, setLivePortfolioRefreshStatus] = useState<ReportingCommandStatus | null>(null);
-  const [brandingDraft, setBrandingDraft] = useState<ReportBrandingDraftState>(() => buildDefaultReportBrandingDraft(data?.reporting ?? null));
-  const reportWriterDatasetSources = data?.reporting.reportWriterDatasetSources ?? [];
+  const [brandingDraft, setBrandingDraft] = useState<ReportBrandingDraftState>(() => buildDefaultReportBrandingDraft(reportingData));
+  const reportWriterDatasetSources = reportingData?.reportWriterDatasetSources ?? [];
   const {
     writerDraftStatus,
     writerPreviewStatus,
@@ -270,13 +284,13 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     buildRenderRequest: buildRenderReportTemplateRequest
   });
   const livePortfolioRefreshInFlight = useRef(false);
-  const livePortfolioViews = data?.reporting.livePortfolioViews ?? [];
+  const livePortfolioViews = reportingData?.livePortfolioViews ?? [];
   const shouldAutoRefreshLivePortfolioViews = livePortfolioViews.some((view) => view.isMarketTickLinked || view.state === "LiveLinked");
   const runningTemplateLifecycleActionId = templateLifecycleStatus?.state === "running" ? templateLifecycleStatus.id : null;
   const runningScheduleActionId = scheduleActionStatus?.state === "running" ? scheduleActionStatus.id : null;
   const runningStarterKitId = starterKitStatus?.state === "running" ? starterKitStatus.id : null;
   const isRefreshingLivePortfolioViews = livePortfolioRefreshStatus?.state === "running";
-  const scheduleDistributionOptions = data?.reporting.reportPackDistributions ?? [];
+  const scheduleDistributionOptions = reportingData?.reportPackDistributions ?? [];
   const isDailyReportingCockpitLanding = vm.taskMode.id === "daily-reporting-cockpit";
   const isReportBuilderTaskMode = vm.taskMode.id === "report-builder";
   const isSchedulesTaskMode = vm.taskMode.id === "schedules";
@@ -325,7 +339,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   const writerGrids = writerTemplateRows.flatMap((template) => template.writerGrids);
   const governanceScopeUnavailable = isGovernanceTaskMode && !vm.accessAudit.isAvailable;
   const latestRetainedAsOfDate = vm.runStatusRows.find((run) => hasRetainedReportingAsOfDate(run.asOfDateLabel))?.asOfDateLabel ?? null;
-  const reportPackWorkflowRecord = [...(data?.reporting.workflowRecords ?? [])]
+  const reportPackWorkflowRecord = [...(reportingData?.workflowRecords ?? [])]
     .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0] ?? null;
   const reportPackPeriodToken = reportPackWorkflowRecord?.period.match(/^\d{4}-\d{2}/)?.[0] ?? null;
   const reportPackWorkflowRun = reportPackWorkflowRecord
@@ -603,23 +617,11 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   }
 
   function updateScheduleRunParameters(field: ReportRunParameterDraftField, value: string | boolean) {
-    setScheduleDraft((current) => ({
-      ...current,
-      runParameters: {
-        ...current.runParameters,
-        [field]: value
-      } as ReportRunParameterDraftState
-    }));
+    setScheduleDraft((current) => updateScheduleRunParameterDraft(current, field, value));
   }
 
   function toggleScheduleDraftFormat(format: ReportingScheduleArtifactFormat, isSelected: boolean) {
-    setScheduleDraft((current) => ({
-      ...current,
-      formats: {
-        ...current.formats,
-        [format]: isSelected
-      }
-    }));
+    setScheduleDraft((current) => updateScheduleArtifactFormatDraft(current, format, isSelected));
   }
 
   function stageScheduleDraftDeliveryTarget() {
@@ -773,7 +775,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     }));
   }
 
-  if (!data) {
+  if (!reportingData) {
     return (
       <Card
         role={vm.loadingState.role}
@@ -899,7 +901,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
       </section>
       ) : null}
 
-      {isDeliveryEvidenceTaskMode && data.reporting.reportLineProvenanceExplorer ? (
+      {isDeliveryEvidenceTaskMode && reportingData.reportLineProvenanceExplorer ? (
         <FinancialRecordExplorerShell
           className="report-line-provenance-explorer"
           explorerLabel="Report-line provenance"
@@ -910,13 +912,13 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           savedViews={[]}
           summaryItems={[]}
           appliedFilters={[]}
-          explorer={data.reporting.reportLineProvenanceExplorer}
+          explorer={reportingData.reportLineProvenanceExplorer}
         >
           {null}
         </FinancialRecordExplorerShell>
       ) : null}
 
-      {isReportBuilderTaskMode && (data.reporting.portfolioCuts ?? []).length > 0 ? (
+      {isReportBuilderTaskMode && (reportingData.portfolioCuts ?? []).length > 0 ? (
         <section role="region" aria-label="Portfolio reporting cuts">
           <Card className="panel-surface">
             <CardHeader>
@@ -926,7 +928,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             </CardHeader>
             <CardContent>
               <div role="list" aria-label="Portfolio reporting cut rows" className="grid gap-3 lg:grid-cols-3">
-                {(data.reporting.portfolioCuts ?? []).slice(0, 6).map((cut) => (
+                {(reportingData.portfolioCuts ?? []).slice(0, 6).map((cut) => (
                   <div
                     key={cut.cutId}
                     role="listitem"
@@ -959,7 +961,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {isReportBuilderTaskMode && (data.reporting.livePortfolioViews ?? []).length > 0 ? (
+      {isReportBuilderTaskMode && (reportingData.livePortfolioViews ?? []).length > 0 ? (
         <section role="region" aria-label="Live portfolio views">
           <Card className="panel-surface">
             <CardHeader>
@@ -989,7 +991,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             </CardHeader>
             <CardContent>
               <div role="list" aria-label="Live portfolio view rows" className="grid gap-3 lg:grid-cols-3">
-                {(data.reporting.livePortfolioViews ?? []).slice(0, 6).map((view) => (
+                {(reportingData.livePortfolioViews ?? []).slice(0, 6).map((view) => (
                   <div
                     key={view.viewId}
                     role="listitem"
@@ -1078,7 +1080,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {isReportBuilderTaskMode && (data.reporting.pnlSlices ?? []).length > 0 ? (
+      {isReportBuilderTaskMode && (reportingData.pnlSlices ?? []).length > 0 ? (
         <section role="region" aria-label="P&L slicing">
           <Card className="panel-surface">
             <CardHeader>
@@ -1088,7 +1090,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             </CardHeader>
             <CardContent>
               <div role="list" aria-label="P&L slice rows" className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                {(data.reporting.pnlSlices ?? []).map((slice) => (
+                {(reportingData.pnlSlices ?? []).map((slice) => (
                   <div
                     key={slice.sliceId}
                     role="listitem"
@@ -1133,7 +1135,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {isReportBuilderTaskMode && (data.reporting.analyticsRows ?? []).length > 0 ? (
+      {isReportBuilderTaskMode && (reportingData.analyticsRows ?? []).length > 0 ? (
         <section role="region" aria-label="Top-N and contribution analytics">
           <Card className="panel-surface">
             <CardHeader>
@@ -1143,7 +1145,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             </CardHeader>
             <CardContent>
               <div role="list" aria-label="Top-N and contribution analytics rows" className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {(data.reporting.analyticsRows ?? []).map((row) => (
+                {(reportingData.analyticsRows ?? []).map((row) => (
                   <div
                     key={row.analyticsId}
                     role="listitem"
@@ -1205,7 +1207,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {isReportBuilderTaskMode && (data.reporting.crossFundConsolidations ?? []).length > 0 ? (
+      {isReportBuilderTaskMode && (reportingData.crossFundConsolidations ?? []).length > 0 ? (
         <section role="region" aria-label="Cross-fund consolidations">
           <Card className="panel-surface">
             <CardHeader>
@@ -1215,7 +1217,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             </CardHeader>
             <CardContent>
               <div role="list" aria-label="Cross-fund consolidation rows" className="grid gap-3 lg:grid-cols-3">
-                {(data.reporting.crossFundConsolidations ?? []).slice(0, 6).map((row) => (
+                {(reportingData.crossFundConsolidations ?? []).slice(0, 6).map((row) => (
                   <div
                     key={row.consolidationId}
                     role="listitem"
@@ -1262,7 +1264,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {isExportsTaskMode && (data.reporting.structuredExports ?? []).length > 0 ? (
+      {isExportsTaskMode && (reportingData.structuredExports ?? []).length > 0 ? (
         <section role="region" aria-label="Structured reporting exports">
           <Card className="panel-surface">
             <CardHeader>
@@ -1272,7 +1274,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             </CardHeader>
             <CardContent>
               <div role="list" aria-label="Structured export rows" className="grid gap-3 lg:grid-cols-3">
-                {(data.reporting.structuredExports ?? []).map((structuredExport) => (
+                {(reportingData.structuredExports ?? []).map((structuredExport) => (
                   <div
                     key={structuredExport.exportId}
                     role="listitem"
@@ -1442,7 +1444,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
 
       {isReportBuilderTaskMode ? (
       <ReportingBrandingAccessPanel
-        themes={data.reporting.brandingThemes ?? []}
+        themes={reportingData.brandingThemes ?? []}
         draft={brandingDraft}
         onDraftChange={updateBrandingDraft}
       />
@@ -1701,7 +1703,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
       ) : null}
 
       {isReportBuilderTaskMode ? (
-        <ReportingPrivateCapitalReadinessPanel data={data} />
+        <ReportingPrivateCapitalReadinessPanel data={accountingData} />
       ) : null}
 
       {isSchedulesTaskMode || isDeliveryEvidenceTaskMode ? (
@@ -1728,7 +1730,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
 
         {isSchedulesTaskMode || isDeliveryEvidenceTaskMode ? (
         <ReportingDeliveryHistoryPanel
-          deliveryAttempts={data.reporting.deliveryAttempts ?? []}
+          deliveryAttempts={reportingData.deliveryAttempts ?? []}
         />
         ) : null}
       </section>
@@ -2430,15 +2432,6 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   );
 }
 
-function ReportingHighlight({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="rounded-lg border border-border/70 bg-secondary/35 p-4">
-      <div className="font-semibold">{title}</div>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
-    </div>
-  );
-}
-
 function ReportingExportStatusPanel({
   status,
   className
@@ -2494,15 +2487,6 @@ function ReportingExportStatusPanel({
           ))}
         </dl>
       ) : null}
-    </div>
-  );
-}
-
-function ReportingCutMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
-      <dd className="mt-1 break-words font-mono text-xs text-foreground">{value}</dd>
     </div>
   );
 }
@@ -2612,6 +2596,12 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
     ?? (template
       ? { name: template.templateId, version: parseReportTemplateVersion(template.version) ?? 1 }
       : { name: templateId, version: 1 });
+  const runParameters = buildDefaultReportRunParameterDraft({
+    fundProfileId: reporting?.selectedFundProfileId ?? reporting?.fundProfileId,
+    asOfDate: nextAsOfDate,
+    parameters: schedule?.runParameters
+  });
+  const isClientPackage = runParameters.outputFormat === "ClientPackage";
 
   return {
     scheduleId,
@@ -2628,14 +2618,13 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
     recipientPrincipalId: normalizeDraftText(firstTarget?.recipientPrincipalId, ""),
     recipientPrincipalKind: normalizeReportingScheduleRecipientPrincipalKind(firstTarget?.recipientPrincipalKind),
     deliveryNote: normalizeDraftText(firstTarget?.note ?? distribution?.pendingSummary, ""),
-    formats: buildScheduleFormatSelection(firstTarget?.formats),
-    deliveryTargets: (schedule?.deliveryTargets ?? []).map(normalizeScheduleDraftTarget),
+    formats: isClientPackage
+      ? buildClientPackageScheduleFormatSelection()
+      : buildScheduleFormatSelection(firstTarget?.formats),
+    deliveryTargets: (schedule?.deliveryTargets ?? [])
+      .map((target) => normalizeScheduleDraftTarget(target, isClientPackage)),
     templateVersion: retainedTemplate.version,
-    runParameters: buildDefaultReportRunParameterDraft({
-      fundProfileId: reporting?.selectedFundProfileId ?? reporting?.fundProfileId,
-      asOfDate: nextAsOfDate,
-      parameters: schedule?.runParameters
-    })
+    runParameters
   };
 }
 
@@ -2775,7 +2764,9 @@ function buildReportingScheduleDeliveryTargets(
       recipientPrincipalId,
       recipientPrincipalKind,
       deliveryMode: normalizeReportingScheduleDeliveryMode(target.deliveryMode),
-      formats: reportingScheduleArtifactFormats.filter((format) => target.formats[format]),
+      formats: draft.runParameters.outputFormat === "ClientPackage"
+        ? [...clientPackageScheduleArtifactFormats]
+        : reportingScheduleArtifactFormats.filter((format) => target.formats[format]),
       note: note || null
     });
   }
@@ -2791,7 +2782,7 @@ function buildCurrentScheduleDraftTarget(draft: ReportingScheduleDraftState): Re
     recipientPrincipalKind: draft.recipientPrincipalKind,
     note: draft.deliveryNote,
     formats: reportingScheduleArtifactFormats.filter((format) => draft.formats[format])
-  });
+  }, draft.runParameters.outputFormat === "ClientPackage");
 }
 
 function normalizeScheduleDraftTarget(target: {
@@ -2801,14 +2792,16 @@ function normalizeScheduleDraftTarget(target: {
   recipientPrincipalKind?: string | null;
   note?: string | null;
   formats?: readonly GovernanceReportArtifactFormat[] | null;
-}): ReportingScheduleDraftTarget {
+}, isClientPackage = false): ReportingScheduleDraftTarget {
   return {
     distributionId: normalizeIdentifierToken(target.distributionId, "board-reporting-committee"),
     deliveryMode: normalizeReportingScheduleDeliveryMode(target.deliveryMode),
     recipientPrincipalId: normalizeDraftText(target.recipientPrincipalId, ""),
     recipientPrincipalKind: normalizeReportingScheduleRecipientPrincipalKind(target.recipientPrincipalKind),
     deliveryNote: normalizeDraftText(target.note, ""),
-    formats: buildScheduleFormatSelection(target.formats)
+    formats: isClientPackage
+      ? buildClientPackageScheduleFormatSelection()
+      : buildScheduleFormatSelection(target.formats)
   };
 }
 

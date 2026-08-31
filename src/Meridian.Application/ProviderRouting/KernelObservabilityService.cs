@@ -1,12 +1,12 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Application.Monitoring;
 using Meridian.ProviderSdk;
 using Microsoft.Extensions.Hosting;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.ProviderRouting;
 
@@ -178,7 +178,7 @@ public sealed class KernelObservabilityService
     private static string ComputeHash<T>(T payload)
     {
         var json = JsonSerializer.Serialize(payload, HashJsonOptions);
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(json));
+        var bytes = Sha256Digest.ComputeBytesUtf8(json);
         return Convert.ToHexString(bytes);
     }
 }

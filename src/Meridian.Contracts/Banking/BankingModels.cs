@@ -20,7 +20,12 @@ public sealed record InitiatePaymentRequest(
     decimal Amount,
     DateOnly EffectiveDate,
     string? ExternalRef,
-    string? Notes);
+    string? Notes,
+    /// <summary>
+    /// Recognized three-letter currency code. This trailing nullable member preserves transport
+    /// compatibility with older clients; banking services require it for every new intent.
+    /// </summary>
+    string? Currency = null);
 
 /// <summary>A payment that is awaiting an approval decision.</summary>
 public sealed record PendingPaymentDto(
@@ -35,7 +40,29 @@ public sealed record PendingPaymentDto(
     string? ReviewedBy,
     string? ReviewNotes,
     DateTimeOffset InitiatedAt,
-    DateTimeOffset? ReviewedAt);
+    DateTimeOffset? ReviewedAt,
+    /// <summary>
+    /// Normalized recognized three-letter currency code. Null identifies a legacy intent that must
+    /// be remediated before bank evidence or transfer authorization can proceed.
+    /// </summary>
+    string? Currency = null,
+    /// <summary>Human operator who repaired a legacy missing-currency intent.</summary>
+    string? CurrencyRemediatedBy = null,
+    /// <summary>Retained explanation for the legacy currency repair.</summary>
+    string? CurrencyRemediationReason = null,
+    /// <summary>When the legacy currency repair was retained.</summary>
+    DateTimeOffset? CurrencyRemediatedAt = null);
+
+/// <summary>
+/// Governed repair request for a legacy Pending payment whose currency was never retained.
+/// The command is compare-and-set: it cannot alter economics, replace an existing currency, or
+/// repair a payment after a review decision.
+/// </summary>
+public sealed record RemediatePaymentCurrencyRequest(
+    string Currency,
+    string Reason,
+    string? RemediatedBy,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 /// <summary>Approve a pending payment request.</summary>
 public sealed record ApprovePaymentRequest(
@@ -58,7 +85,12 @@ public sealed record RecordPaymentBankEvidenceRequest(
     string? Currency = null,
     string? ExternalRef = null,
     string? RecordedBy = null,
-    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
+    /// <summary>
+    /// Caller-stable idempotency key for this bank evidence item. The key is unique within the
+    /// pending payment and must be reused only with identical evidence input.
+    /// </summary>
+    string? EvidenceId = null);
 
 // ---------------------------------------------------------------------------
 // Bank transaction records
@@ -82,7 +114,13 @@ public sealed record BankTransactionDto(
     string? ExternalRef,
     DateTimeOffset RecordedAt,
     bool IsVoided,
-    string? RecordedBy = null);
+    string? RecordedBy = null,
+    /// <summary>Payment intent this evidence proves; null for generic bank transactions.</summary>
+    Guid? PendingPaymentId = null,
+    /// <summary>Caller-stable evidence id, scoped to <see cref="PendingPaymentId"/>.</summary>
+    string? EvidenceId = null,
+    /// <summary>SHA-256 hash of the canonical payment-evidence input used for replay checks.</summary>
+    string? CanonicalInputHash = null);
 
 // ---------------------------------------------------------------------------
 // Bank transaction seeding (development / demo use)

@@ -37,6 +37,10 @@ type Identifier = {
     IsPrimary: bool
     ValidFrom: DateTimeOffset
     ValidTo: DateTimeOffset option
+    /// Optional source/provider namespace retained as identifier metadata. Identifier identity
+    /// continues to use the ProviderSymbol discriminant only, so adding source metadata to an
+    /// exchange-standard identifier does not change duplicate or expiry semantics.
+    Provider: string option
 }
 
 [<RequireQualifiedAccess>]
@@ -48,6 +52,18 @@ module SecurityIdentifier =
         match identifier.Kind with
         | IdentifierKind.ProviderSymbol provider -> Some provider
         | _ -> None
+
+    /// ProviderSymbol carries its identity namespace in the discriminant. When the optional
+    /// provider metadata is also populated, it may repeat that namespace but must not contradict
+    /// it. Provider metadata on every other identifier kind remains independent provenance.
+    let providerMetadataMatchesKind identifier =
+        match identifier.Kind, identifier.Provider with
+        | IdentifierKind.ProviderSymbol authoritativeProvider, Some metadataProvider ->
+            String.Equals(
+                normalizeValue authoritativeProvider,
+                normalizeValue metadataProvider,
+                StringComparison.Ordinal)
+        | _ -> true
 
     let kindName identifier =
         match identifier.Kind with

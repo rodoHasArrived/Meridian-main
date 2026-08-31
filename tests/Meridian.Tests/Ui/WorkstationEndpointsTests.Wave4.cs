@@ -5,12 +5,12 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
-using Meridian.Identity.Auth;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -1001,6 +1001,71 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task LedgerCloseManagementEndpoints_AccountingUserCannotConfigureSignOffOrHardCloseAsController()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.ManageDirectLending,
+            currentUserRole: UserRole.Accounting,
+            currentUserRoleProfileName: "accounting-ops");
+        var client = app.GetTestClient();
+        var ledgerBookId = Guid.NewGuid();
+
+        using var startResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.OperationsContinuity,
+            new OperationsStartWorkflowRequestDto(
+                Guid.NewGuid(),
+                "2026-08",
+                SecurityMasterSnapshotId: null,
+                BrokerSource: "custodian",
+                Actor: "local-actor",
+                LedgerBookId: ledgerBookId));
+        startResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var start = await startResponse.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
+        var workflowId = start!.Workflow!.WorkflowId;
+        var taskId = start.Workflow.CloseChecklist[0].TaskId;
+
+        using var configureResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementPeriodPlanConfiguration,
+            new UpsertClosePeriodPlanConfigurationRequestDto(
+                workflowId,
+                TaskConfigurations:
+                [
+                    new CloseTaskConfigurationDto(
+                        taskId,
+                        RequiredApprovalCount: 1,
+                        RequiredApprovalRole: "CFO")
+                ],
+                Actor: "payload-actor",
+                EvidenceLinks: [$"evidence:close-plan:{workflowId:D}:2026-08:book:{ledgerBookId:D}:configuration-approval"]));
+        configureResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        using var signOffResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementTaskSignOffs,
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                taskId,
+                "CFO",
+                ManualJournalEntryStatusDto.Approved,
+                "accounting-user",
+                "Attempted elevated CFO sign-off.",
+                EvidenceLinks: [$"evidence:close-task:{taskId}:CFO:2026-08:book:{ledgerBookId:D}:cfo-signoff"]));
+        signOffResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        using var hardCloseResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementPeriodLock,
+            new LockClosePeriodRequestDto(
+                workflowId,
+                start.Workflow.Version,
+                "accounting-user",
+                "Attempted to self-assert Controller authority for hard close.",
+                "report-pack-2026-08",
+                [$"evidence:close-package:{workflowId:D}:2026-08:book:{ledgerBookId:D}:period-lock"],
+                ControllerRole: "Fund Controller"));
+        hardCloseResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task LedgerCloseManagementEndpoints_ConfigureClosePlanMaterialitySignOffsAndDependencies()
     {
         var fundAccountId = Guid.NewGuid();
@@ -1011,7 +1076,8 @@ public sealed partial class WorkstationEndpointsTests
                 RegisterOperationsContinuityServices(services);
                 RegisterScopedCloseAccessServices(services, ledgerBookId, fundAccountId, "2026-08");
             },
-            currentUserPermissions: UserPermission.AdminMaintenance);
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserRole: UserRole.Controller);
         var client = app.GetTestClient();
 
         using var startResponse = await client.PostAsJsonAsync(
@@ -1138,13 +1204,35 @@ public sealed partial class WorkstationEndpointsTests
     {
         var fundAccountId = Guid.NewGuid();
         var ledgerBookId = Guid.NewGuid();
+        var postingWorkbench =
+            Substitute.For<IAccountingClosePostingWorkbench, IAccountingCloseMutationGate>();
+        var consistencyLease = Substitute.For<IAsyncDisposable>();
+        consistencyLease.DisposeAsync().Returns(ValueTask.CompletedTask);
+        ((IAccountingCloseMutationGate)postingWorkbench)
+            .AcquireAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(ValueTask.FromResult(consistencyLease));
+        postingWorkbench.EvaluateAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new ClosePostingGateDto(
+                "period-close-posting:endpoint-blockers",
+                "Post closing entries",
+                ClosePostingGateStateDto.Posted,
+                true,
+                0m,
+                0,
+                "Closing entries are already posted."));
         await using var app = await CreateAppAsync(
             services =>
             {
                 RegisterOperationsContinuityServices(services);
                 RegisterScopedCloseAccessServices(services, ledgerBookId, fundAccountId, "2026-09");
+                services.AddSingleton<IAccountingClosePostingWorkbench>(postingWorkbench);
             },
-            currentUserPermissions: UserPermission.AdminMaintenance);
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserRole: UserRole.Controller);
         var client = app.GetTestClient();
 
         using var startResponse = await client.PostAsJsonAsync(
@@ -1302,7 +1390,7 @@ public sealed partial class WorkstationEndpointsTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task LedgerCloseManagementEndpoints_MissingLedgerOrOwnershipService_FailsClosed(bool registerLedger)
+    public async Task LedgerCloseManagementEndpoints_MissingLedgerOrOwnershipAuthority_FailsClosed(bool registerLedger)
     {
         var workflowId = Guid.NewGuid();
         var ledgerBookId = Guid.NewGuid();
@@ -1323,6 +1411,7 @@ public sealed partial class WorkstationEndpointsTests
                 if (registerLedger)
                 {
                     services.AddSingleton(BuildScopedCloseLedger(ledgerBookId, fundAccountId));
+                    services.AddSingleton(Substitute.For<IFundProfileTenancyRegistry>());
                 }
             },
             currentUserPermissions: UserPermission.AdminMaintenance,
@@ -1426,7 +1515,8 @@ public sealed partial class WorkstationEndpointsTests
         lockResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         reopenResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         await service.Received(1).LockClosePeriodScopedAsync(
-            Arg.Any<LockClosePeriodRequestDto>(),
+            Arg.Is<LockClosePeriodRequestDto>(request =>
+                request.ControllerRole == "Controller"),
             "ops-user",
             "tenant-alpha",
             "tenant-alpha",
@@ -2105,6 +2195,62 @@ public sealed partial class WorkstationEndpointsTests
         historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var history = await historyResponse.Content.ReadFromJsonAsync<IReadOnlyList<AccountingReportPackageBundleDto>>(ServerJsonOptions);
         history.Should().ContainSingle(row => row.FinancialStatements.PackageId == package.FinancialStatements.PackageId);
+    }
+
+    [Fact]
+    public async Task LedgerAccountingReportPackageEndpoints_RequireAuthenticatedTenantScope()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserCompanyId: null);
+        var client = app.GetTestClient();
+        var ledgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
+        using var buildResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackage,
+            new AccountingReportPackageRequestDto(
+                FundProfileId: "fund-tenant-bypass",
+                PeriodId: "2026-12",
+                Actor: "browser-user",
+                LedgerBookId: ledgerBookId,
+                BeginningCapital: 100_000m,
+                Contributions: 25_000m,
+                Distributions: 5_000m,
+                RealizedGainLoss: 10_000m,
+                Nav: 130_000m,
+                EvidenceLinks:
+                [
+                    $"evidence:ledger:trial-balance:2026-12:book:{ledgerBookId:D}",
+                    $"evidence:reconciliation:gl-tie-out:2026-12:book:{ledgerBookId:D}",
+                    $"evidence:report-render:financial-statements:2026-12:book:{ledgerBookId:D}",
+                    $"evidence:nav:support-package:2026-12:book:{ledgerBookId:D}"
+                ],
+                TenantId: "spoofed-tenant",
+                CompanyId: "spoofed-company"),
+            ServerJsonOptions);
+
+        buildResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        using var certifyResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackageCertification,
+            new CertifyAccountingReportPackageRequestDto(
+                PackageId: "acct-report-fund-tenant-bypass-2026-12",
+                Actor: "browser-user",
+                Notes: "Attempt to certify without tenant scope.",
+                TenantId: "spoofed-tenant",
+                CompanyId: "spoofed-company"),
+            ServerJsonOptions);
+
+        certifyResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        using var historyResponse = await client.GetAsync(
+            $"{UiApiRoutes.LedgerReportsAccountingPackages}?fundProfileId=fund-tenant-bypass&periodId=2026-12&ledgerBookId={ledgerBookId:D}");
+        historyResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        using var exportResponse = await client.GetAsync(
+            "/api/ledger/reports/accounting-packages/acct-report-fund-tenant-bypass-2026-12/exports/financial-statements");
+        exportResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]

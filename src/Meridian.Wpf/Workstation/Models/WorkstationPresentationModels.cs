@@ -169,7 +169,10 @@ public sealed record WorkstationCommandModel(
     WorkstationActionPostureModel? Posture = null,
     string EvidenceSourceText = "",
     string TargetText = "",
-    string GroupLabel = "");
+    string GroupLabel = "")
+{
+    public string AutomationId => WorkspaceCommandAutomation.ResolveId("WorkstationCommand", Id, Label);
+}
 
 public sealed class WorkstationCommandGroupModel
 {
@@ -191,10 +194,27 @@ public static class WorkstationCommandMapper
             command.Glyph,
             command.Tone,
             command.IsEnabled,
-            command.IsEnabled ? string.Empty : command.Description,
+            ResolveDisabledReason(command),
             IsBusy: false,
             ConfirmationText: string.Empty,
             command.ShortcutHint);
+    }
+
+    /// <summary>
+    /// Prefers the command's explicit disabled reason and falls back to its description, which
+    /// keeps commands that predate <see cref="WorkspaceCommandItem.DisabledReason"/> rendering the
+    /// same copy they rendered before the field existed.
+    /// </summary>
+    private static string ResolveDisabledReason(WorkspaceCommandItem command)
+    {
+        if (command.IsEnabled)
+        {
+            return string.Empty;
+        }
+
+        return string.IsNullOrWhiteSpace(command.DisabledReason)
+            ? command.Description
+            : command.DisabledReason;
     }
 
     public static WorkstationCommandGroupModel FromWorkspaceCommandGroup(WorkspaceCommandGroup commandGroup)

@@ -1,7 +1,7 @@
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Storage.Archival;
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -238,6 +238,6 @@ public static class QualityTrendResultHash
                 .Append(value.ToString("R", CultureInfo.InvariantCulture));
         }
 
-        return Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString())));
+        return Sha256Digest.ComputeUtf8(canonical.ToString());
     }
 }

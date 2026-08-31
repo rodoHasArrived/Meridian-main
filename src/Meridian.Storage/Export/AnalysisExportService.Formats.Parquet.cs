@@ -13,6 +13,7 @@ public sealed partial class AnalysisExportService
         List<SourceFile> sourceFiles,
         ExportRequest request,
         ExportProfile profile,
+        OutputArtifactSnapshot? outputSnapshot,
         CancellationToken ct)
     {
         var exportedFiles = new List<ExportedFile>();
@@ -23,36 +24,53 @@ public sealed partial class AnalysisExportService
             var outputPath = Path.Combine(
                 request.OutputDirectory,
                 $"{symbol}_{DateTime.UtcNow:yyyyMMdd}.parquet");
+            EnsureExportArtifactMayBeWritten(outputPath, request.OverwriteExisting);
+            var stagedPath = CreateExportArtifactStagingPath(outputPath);
 
-            // Collect all records first to determine schema
-            var records = new List<Dictionary<string, object?>>();
-            long recordCount = 0;
-
-            foreach (var sourceFile in group)
+            try
             {
-                await foreach (var record in ReadJsonlRecordsAsync(sourceFile.Path, ct))
+                // Collect all records first to determine schema
+                var records = new List<Dictionary<string, object?>>();
+                long recordCount = 0;
+
+                foreach (var sourceFile in group)
                 {
-                    records.Add(record);
-                    recordCount++;
+                    await foreach (var record in ReadJsonlRecordsAsync(sourceFile.Path, ct))
+                    {
+                        records.Add(record);
+                        recordCount++;
+                    }
                 }
+
+                if (records.Count is > 0)
+                    await WriteParquetFileAsync(stagedPath, records, ct);
+                else
+                    await WriteEmptyParquetFileAsync(stagedPath, ct);
+
+                var sizeBytes = new FileInfo(stagedPath).Length;
+                var checksum = await ComputeChecksumAsync(stagedPath, ct);
+                ct.ThrowIfCancellationRequested();
+                CommitStagedExportArtifact(
+                    stagedPath,
+                    outputPath,
+                    request.OverwriteExisting,
+                    outputSnapshot);
+
+                exportedFiles.Add(new ExportedFile
+                {
+                    Path = outputPath,
+                    RelativePath = Path.GetFileName(outputPath),
+                    Symbol = symbol,
+                    Format = "parquet",
+                    SizeBytes = sizeBytes,
+                    RecordCount = recordCount,
+                    ChecksumSha256 = checksum
+                });
             }
-
-            if (records.Count is > 0)
-                await WriteParquetFileAsync(outputPath, records, ct);
-            else
-                await WriteEmptyParquetFileAsync(outputPath, ct);
-
-            var fileInfo = new FileInfo(outputPath);
-            exportedFiles.Add(new ExportedFile
+            finally
             {
-                Path = outputPath,
-                RelativePath = Path.GetFileName(outputPath),
-                Symbol = symbol,
-                Format = "parquet",
-                SizeBytes = fileInfo.Length,
-                RecordCount = recordCount,
-                ChecksumSha256 = await ComputeChecksumAsync(outputPath, ct)
-            });
+                DeleteStagedExportArtifact(stagedPath);
+            }
         }
 
         return exportedFiles;

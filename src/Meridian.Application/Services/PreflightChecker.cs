@@ -565,7 +565,7 @@ public sealed class PreflightChecker
                 new CredentialRequirement("POLYGON__APIKEY", new[] { "POLYGON_API_KEY", "MDC_POLYGON_API_KEY" })
             }, "docs/providers/data-sources.md"),
             ["IB"] = new("Interactive Brokers", Array.Empty<CredentialRequirement>(),
-                "docs/providers/interactive-brokers-setup.md"),
+                "docs/operators/provider-onboarding-interactive-brokers.md"),
             ["NYSE"] = new("NYSE Direct", new[]
             {
                 new CredentialRequirement("NYSE__APIKEY", new[] { "NYSE_API_KEY", "MDC_NYSE_API_KEY" })

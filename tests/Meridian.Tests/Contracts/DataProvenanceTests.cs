@@ -27,8 +27,8 @@ public sealed class DataProvenanceTests
     }
 
     [Theory]
-    [InlineData(null, DataProvenance.Real)]
-    [InlineData("", DataProvenance.Real)]
+    [InlineData(null, DataProvenance.Simulated)]
+    [InlineData("", DataProvenance.Simulated)]
     [InlineData("real", DataProvenance.Real)]
     [InlineData("live", DataProvenance.Real)]
     [InlineData("seeded", DataProvenance.Seeded)]
@@ -70,5 +70,23 @@ public sealed class DataProvenanceTests
         var badge = DataProvenanceBadge.TryCreate(DataProvenance.Simulated, "Random-walk simulator; no real fills.");
 
         badge!.Detail.Should().Be("Random-walk simulator; no real fills.");
+    }
+
+    [Theory]
+    [InlineData("synthetic", true)]
+    [InlineData("daily-close:AAPL:2026-08-18:synthetic", true)]
+    [InlineData("workstation://valuation/daily-close:MSFT:2026-08-18:backtest", true)]
+    [InlineData("vendor:demo", true)]
+    [InlineData("Sample Custodian", false)]
+    [InlineData("fixture-bank", false)]
+    [InlineData("vendor:synthetic-desk", false)]
+    [InlineData("https://vendor.example/prices", false)]
+    [InlineData(null, false)]
+    [InlineData("", false)]
+    public void CarriesSimulatedOriginToken_MatchesBareTokensAndColonDelimitedSegments(
+        string? value,
+        bool expected)
+    {
+        DataProvenanceExtensions.CarriesSimulatedOriginToken(value).Should().Be(expected);
     }
 }

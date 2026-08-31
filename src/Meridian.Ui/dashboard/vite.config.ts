@@ -1,4 +1,5 @@
 import path from "node:path";
+import { readFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
@@ -154,10 +155,23 @@ function writeDevelopmentFixtureResponse(req: IncomingMessage, res: ServerRespon
 const apiBaseUrl = resolveMeridianApiBaseUrl();
 const appRoot = path.resolve(__dirname);
 
+// Read at config time, in Node, so package.json never enters the client module graph. A
+// default `import packageJson from "../package.json"` in application code inlines the whole
+// manifest into the emitted chunk -- every dependency name and pinned version, and every npm
+// script body -- to render one version string (#2684). Injecting the single field keeps the
+// manifest out of the bundle by construction rather than relying on JSON tree-shaking, and
+// stops a dependency bump or script rename from rewriting the committed bundle.
+const { version: appVersion } = JSON.parse(
+  readFileSync(path.resolve(__dirname, "package.json"), "utf8")
+) as { version: string };
+
 export default defineConfig({
   root: appRoot,
   base: "/workstation/",
   plugins: [react()],
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion)
+  },
   server: {
     hmr: resolveViteHmrConfig(),
     proxy: createMeridianApiProxy(apiBaseUrl)

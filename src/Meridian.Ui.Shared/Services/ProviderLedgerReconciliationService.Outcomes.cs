@@ -19,6 +19,8 @@ using Meridian.Storage.Archival;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging;
+using Meridian.Contracts.Integrity;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -39,7 +41,7 @@ public sealed partial class ProviderLedgerReconciliationService
             "{accountId}",
             summary.AccountId.ToString("D"),
             StringComparison.Ordinal);
-        var caseworkHash = ComputeSha256(string.Join("\n", casework.CaseIds.Order(StringComparer.Ordinal)));
+        var caseworkHash = Sha256Digest.ComputeUtf8(string.Join("\n", casework.CaseIds.Order(StringComparer.Ordinal)));
         var evidence = new List<OperationEvidenceReference>
         {
             new(
@@ -405,6 +407,77 @@ public sealed partial class ProviderLedgerReconciliationService
             "OPERATION_ID_REQUEST_CONFLICT",
             "The supplied operation id is already bound to a different reconciliation request. Use a new operation id for changed request input.");
 
+    private static ProviderLedgerReconciliationDetailDto BuildAuthorityFailureDetail(
+        Guid accountId,
+        string operationId,
+        string requestHash,
+        string issueCode,
+        string message)
+    {
+        var completedAt = DateTimeOffset.UtcNow;
+        var evidenceId = "authoritative-access-scope";
+        var outcome = VerifiedOperationOutcomeValidator.ValidateAndThrow(new VerifiedOperationOutcome(
+            OperationId: operationId,
+            OperationKind: OperationKind,
+            State: OperationTerminalState.Blocked,
+            StartedAtUtc: completedAt,
+            CompletedAtUtc: completedAt,
+            AttemptNumber: 1,
+            CorrelationId: accountId.ToString("D"),
+            InputHashSha256: requestHash,
+            Postconditions:
+            [
+                new OperationPostcondition(
+                    "authoritative-scope-verified",
+                    "The account, primary ledger book, fund profile, tenant, and company resolve to one existing authority.",
+                    OperationPostconditionState.NotSatisfied,
+                    Required: true,
+                    EvidenceIds: [evidenceId])
+            ],
+            Evidence:
+            [
+                new OperationEvidenceReference(
+                    evidenceId,
+                    "authorization-preflight",
+                    "Server-resolved provider-ledger reconciliation authority preflight.",
+                    Uri: $"urn:sha256:{requestHash}",
+                    ContentHashSha256: requestHash,
+                    CapturedAtUtc: completedAt)
+            ],
+            Artifacts: [],
+            Issues:
+            [
+                new OperationIssue(
+                    issueCode,
+                    message,
+                    OperationIssueSeverity.Error,
+                    EvidenceId: evidenceId)
+                {
+                    IsBlocking = true
+                }
+            ],
+            Recovery:
+            [
+                new OperationRecoveryAction(
+                    "resolve-authority-and-retry",
+                    "Resolve authority and retry",
+                    "Bind the account to its canonical fund, primary ledger book, and existing tenant/company owner before retrying.",
+                    Retryable: true,
+                    RequiresHumanAction: true)
+                {
+                    EvidenceIds = [evidenceId]
+                }
+            ]));
+
+        return new ProviderLedgerReconciliationDetailDto(
+            BuildFailureSummary(accountId, Guid.NewGuid(), completedAt),
+            Checks: [],
+            Breaks: [],
+            Warnings: [message],
+            EvidenceLinks: [$"urn:sha256:{requestHash}"],
+            Outcome: outcome);
+    }
+
     private ProviderLedgerReconciliationDetailDto BuildInputConflictDetail(
         Guid accountId,
         ProviderLedgerReconciliationRunIntent intent,
@@ -535,22 +608,28 @@ public sealed partial class ProviderLedgerReconciliationService
         return normalized;
     }
 
-    private static string ComputeRequestHash(Guid accountId, ProviderLedgerReconciliationRequestDto request)
+    private static string ComputeRequestHash(
+        Guid accountId,
+        ReconciliationBreakQueueScope? accessScope,
+        ProviderLedgerReconciliationRequestDto request)
     {
         var builder = new StringBuilder();
         AppendCanonical(builder, "schema", "provider-ledger-request.v1");
         AppendCanonical(builder, "accountId", accountId);
+        AppendCanonical(builder, "tenantId", accessScope?.TenantId);
+        AppendCanonical(builder, "companyId", accessScope?.CompanyId);
         AppendCanonical(builder, "amountTolerance", Math.Abs(request.AmountTolerance));
         AppendCanonical(builder, "providerStaleAfterMinutes", Math.Max(1, request.ProviderStaleAfterMinutes));
-        AppendCanonical(builder, "requestedBy", NormalizeOwner(request.RequestedBy) ?? DefaultActor);
-        AppendCanonical(builder, "defaultBreakOwner", NormalizeOwner(request.DefaultBreakOwner) ?? "fund-accounting");
+        AppendCanonical(builder, "requestedBy", NormalizeOptional(request.RequestedBy) ?? DefaultActor);
+        AppendCanonical(builder, "defaultBreakOwner", NormalizeOptional(request.DefaultBreakOwner) ?? "fund-accounting");
         AppendCanonical(builder, "signedOffBreakCount", request.SignedOffBreakKeys?.Count ?? 0);
-        AppendCanonical(builder, "signedOffBy", NormalizeOwner(request.SignedOffBy));
-        return ComputeSha256(builder.ToString());
+        AppendCanonical(builder, "signedOffBy", NormalizeOptional(request.SignedOffBy));
+        return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     private static string ComputeOperationInputHash(
         Guid accountId,
+        ReconciliationBreakQueueScope? accessScope,
         ProviderLedgerReconciliationRequestDto request,
         FundAccountBrokerageSyncActivityDto? provider,
         AccountBalanceSnapshotDto? ledger,
@@ -563,7 +642,7 @@ public sealed partial class ProviderLedgerReconciliationService
     {
         var builder = new StringBuilder();
         AppendCanonical(builder, "schema", "provider-ledger-input.v1");
-        AppendCanonical(builder, "requestHash", ComputeRequestHash(accountId, request));
+        AppendCanonical(builder, "requestHash", ComputeRequestHash(accountId, accessScope, request));
         AppendCanonical(builder, "provider.present", provider is not null);
         if (provider is not null)
         {
@@ -741,7 +820,7 @@ public sealed partial class ProviderLedgerReconciliationService
         AppendCanonical(builder, "scope.periodStart", scope?.Period?.StartDate);
         AppendCanonical(builder, "scope.periodEnd", scope?.Period?.EndDate);
         AppendCanonical(builder, "scope.asOfDate", scope?.AsOfDate);
-        return ComputeSha256(builder.ToString());
+        return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     private static void AppendCanonical(StringBuilder builder, string key, object? value)
@@ -775,9 +854,6 @@ public sealed partial class ProviderLedgerReconciliationService
             IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture) ?? "<null>",
             _ => value.ToString()?.Trim() ?? "<null>"
         };
-
-    private static string ComputeSha256(string value)
-        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
 
     private async Task<ProviderLedgerReconciliationRunIntent?> ReadRunIntentAsync(
         Guid accountId,
@@ -909,7 +985,7 @@ public sealed partial class ProviderLedgerReconciliationService
             $"{intent.AttemptNumber:D4}.json");
 
     private string BuildOperationDirectory(Guid accountId, string operationId)
-        => Path.Combine(BuildAccountDirectory(accountId), "operations", ComputeSha256(operationId));
+        => Path.Combine(BuildAccountDirectory(accountId), "operations", Sha256Digest.ComputeUtf8(operationId));
 
     private static string ToFileUri(string path)
         => new Uri(Path.GetFullPath(path)).AbsoluteUri;

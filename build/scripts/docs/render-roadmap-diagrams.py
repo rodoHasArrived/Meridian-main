@@ -3,7 +3,13 @@
 
 from __future__ import annotations
 
-from common import build_arg_parser, load_data, repo_root, write_text_if_changed
+from common import (
+    build_arg_parser,
+    load_data,
+    repo_root,
+    roadmap_item_sort_key,
+    write_text_if_changed,
+)
 
 
 def main() -> int:
@@ -13,7 +19,7 @@ def main() -> int:
     items = load_data(root / "docs" / "roadmap" / "data" / "roadmap-items.yml").get("items", [])
     lines = ["flowchart LR"]
     previous = None
-    for item in sorted(items, key=lambda entry: entry.get("id", "")):
+    for item in sorted(items, key=roadmap_item_sort_key):
         node = item.get("id", "").replace("-", "_")
         label = f"{item.get('id')}\\n{item.get('wave')} - {item.get('status')} / {item.get('health')}"
         lines.append(f'  {node}["{label}"]')

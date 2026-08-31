@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Application.Scheduling;
 using Meridian.Core.Scheduling;
@@ -36,7 +37,8 @@ public static class ArchiveMaintenanceEndpoints
         app.MapPut("/api/maintenance/schedules/{scheduleId}", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
             string scheduleId,
-            UpdateMaintenanceScheduleRequest req) =>
+            UpdateMaintenanceScheduleRequest req,
+            CancellationToken ct) =>
         {
             return await EndpointHelpers.GuardAsync(async () =>
             {
@@ -75,32 +77,40 @@ public static class ArchiveMaintenanceEndpoints
                 if (req.Options != null)
                     schedule.Options = MapOptions(req.Options);
 
-                schedule = await scheduleManager.UpdateScheduleAsync(schedule);
+                schedule = await scheduleManager.UpdateScheduleAsync(schedule, ct);
                 return Results.Json(schedule, JsonOptions);
             },
             "Failed to update schedule",
             mapException: ex => ex switch
             {
                 ArgumentException aex => Results.BadRequest(aex.Message),
+                ArchiveMaintenanceScheduleConcurrencyException conflict => Results.Conflict(new
+                {
+                    error = conflict.Message,
+                    conflict.ScheduleId,
+                    conflict.ExpectedRevision,
+                    conflict.ActualRevision
+                }),
                 _ => null
             },
             includeExceptionMessage: true);
-        });
+        }).RequirePermission(UserPermission.AdminMaintenance);
 
         app.MapDelete("/api/maintenance/schedules/{scheduleId}", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
-            string scheduleId) =>
+            string scheduleId,
+            CancellationToken ct) =>
         {
             return await EndpointHelpers.GuardAsync(async () =>
             {
-                var deleted = await scheduleManager.DeleteScheduleAsync(scheduleId);
+                var deleted = await scheduleManager.DeleteScheduleAsync(scheduleId, ct);
                 return deleted
                     ? Results.Ok(new { message = $"Schedule '{scheduleId}' deleted" })
                     : Results.NotFound($"Schedule '{scheduleId}' not found");
             },
             "Failed to delete schedule",
             includeExceptionMessage: true);
-        });
+        }).RequirePermission(UserPermission.AdminMaintenance);
 
         // ==================== SCHEDULE CONTROL ====================
         // NOTE: POST /schedules/{id}/enable and POST /schedules/{id}/disable are registered
@@ -108,27 +118,31 @@ public static class ArchiveMaintenanceEndpoints
 
         app.MapPost("/api/maintenance/schedules/{scheduleId}/trigger", async (
             ScheduledArchiveMaintenanceService maintenanceService,
-            string scheduleId) =>
+            string scheduleId,
+            CancellationToken ct) =>
         {
             return await EndpointHelpers.GuardAsync(async () =>
             {
-                var execution = await maintenanceService.TriggerScheduleAsync(scheduleId);
+                var execution = await maintenanceService.TriggerScheduleAsync(scheduleId, ct);
                 return Results.Json(execution, JsonOptions);
             },
             "Failed to trigger schedule",
             mapException: ex => ex switch
             {
                 KeyNotFoundException => Results.NotFound($"Schedule '{scheduleId}' not found"),
+                InvalidOperationException => Results.Conflict(
+                    $"Schedule '{scheduleId}' already has an execution queued or running"),
                 _ => null
             },
             includeExceptionMessage: true);
-        });
+        }).RequirePermission(UserPermission.AdminMaintenance);
 
         // ==================== IMMEDIATE EXECUTION ====================
 
         app.MapPost("/api/maintenance/execute", async (
             ScheduledArchiveMaintenanceService maintenanceService,
-            ExecuteMaintenanceRequest req) =>
+            ExecuteMaintenanceRequest req,
+            CancellationToken ct) =>
         {
             return await EndpointHelpers.GuardAsync(async () =>
             {
@@ -140,13 +154,14 @@ public static class ArchiveMaintenanceEndpoints
                 var execution = await maintenanceService.ExecuteMaintenanceAsync(
                     taskType,
                     options,
-                    req.TargetPaths);
+                    req.TargetPaths,
+                    ct);
 
                 return Results.Json(execution, JsonOptions);
             },
             "Maintenance execution failed",
             includeExceptionMessage: true);
-        });
+        }).RequirePermission(UserPermission.AdminMaintenance);
 
         app.MapPost("/api/maintenance/executions/{executionId}/cancel", async (
             ScheduledArchiveMaintenanceService maintenanceService,
@@ -161,7 +176,7 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to cancel execution",
             includeExceptionMessage: true);
-        });
+        }).RequirePermission(UserPermission.AdminMaintenance);
 
         // ==================== EXECUTION HISTORY ====================
 
@@ -176,7 +191,8 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to get executions",
             includeExceptionMessage: true);
-        });
+        })
+        .RequirePermission(UserPermission.AdminMaintenance);
 
         app.MapGet("/api/maintenance/executions/{executionId}", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
@@ -191,7 +207,8 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to get execution",
             includeExceptionMessage: true);
-        });
+        })
+        .RequirePermission(UserPermission.AdminMaintenance);
 
         app.MapGet("/api/maintenance/schedules/{scheduleId}/executions", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
@@ -205,7 +222,8 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to get schedule executions",
             includeExceptionMessage: true);
-        });
+        })
+        .RequirePermission(UserPermission.AdminMaintenance);
 
         app.MapGet("/api/maintenance/executions/failed", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
@@ -218,7 +236,8 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to get failed executions",
             includeExceptionMessage: true);
-        });
+        })
+        .RequirePermission(UserPermission.AdminMaintenance);
 
         // ==================== STATISTICS & SUMMARIES ====================
 
@@ -231,7 +250,8 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to get schedule summary",
             includeExceptionMessage: true);
-        });
+        })
+        .RequirePermission(UserPermission.AdminMaintenance);
 
         app.MapGet("/api/maintenance/schedules/{scheduleId}/summary", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
@@ -245,7 +265,8 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to get schedule summary",
             includeExceptionMessage: true);
-        });
+        })
+        .RequirePermission(UserPermission.AdminMaintenance);
 
         app.MapGet("/api/maintenance/statistics", async (
             ArchiveMaintenanceScheduleManager scheduleManager,
@@ -270,7 +291,8 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to get statistics",
             includeExceptionMessage: true);
-        });
+        })
+        .RequirePermission(UserPermission.AdminMaintenance);
 
         // ==================== SERVICE STATUS ====================
 
@@ -283,7 +305,8 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to get service status",
             includeExceptionMessage: true);
-        });
+        })
+        .RequirePermission(UserPermission.AdminMaintenance);
 
         // ==================== CRON VALIDATION ====================
 
@@ -323,7 +346,7 @@ public static class ArchiveMaintenanceEndpoints
                 _ => null
             },
             includeExceptionMessage: true);
-        });
+        }).RequirePermission(UserPermission.AdminMaintenance);
 
         // ==================== PRESETS ====================
 
@@ -362,7 +385,7 @@ public static class ArchiveMaintenanceEndpoints
                         name = "monthly-compression",
                         displayName = "Monthly Compression",
                         description = "Run on first Sunday of month at 1 AM UTC for optimal compression",
-                        cronExpression = "0 1 1-7 * 0",
+                        cronExpression = "0 1 * * 0#1",
                         taskType = "Compression"
                     },
                     new
@@ -379,7 +402,8 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to get presets",
             includeExceptionMessage: true);
-        });
+        })
+        .DeclareOpenRead("Hardcoded schedule templates; carries no deployment, account or tenant state.");
 
         // ==================== TASK TYPES ====================
 
@@ -400,7 +424,8 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to get task types",
             includeExceptionMessage: true);
-        });
+        })
+        .DeclareOpenRead("MaintenanceTaskType enumeration with static descriptions; carries no deployment, account or tenant state.");
 
         // ==================== CLEANUP ====================
 
@@ -420,7 +445,7 @@ public static class ArchiveMaintenanceEndpoints
             },
             "Failed to cleanup history",
             includeExceptionMessage: true);
-        });
+        }).RequirePermission(UserPermission.AdminMaintenance);
     }
 
     private static MaintenanceTaskOptions MapOptions(MaintenanceOptionsDto? dto)

@@ -1,6 +1,7 @@
 using System.Globalization;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Execution.Services;
 
@@ -57,7 +58,7 @@ public sealed class BrokerageExecutionReconciliationService
         foreach (var brokerOrder in brokerOrders)
         {
             ct.ThrowIfCancellationRequested();
-            var clientOrderId = NormalizeId(brokerOrder.ClientOrderId);
+            var clientOrderId = NormalizeOptional(brokerOrder.ClientOrderId);
             if (clientOrderId is null)
             {
                 breaks.Add(CreateBreak(
@@ -255,9 +256,6 @@ public sealed class BrokerageExecutionReconciliationService
             Description: description,
             LocalValue: localOrder is null ? null : DescribeOrder(localOrder),
             BrokerValue: DescribeOrder(brokerOrder));
-
-    private static string? NormalizeId(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string DescribeOrder(OrderState order) =>
         $"{order.Status} {order.Side} {FormatDecimal(order.Quantity)} {order.Symbol}";

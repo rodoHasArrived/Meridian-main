@@ -15,6 +15,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
     private readonly CashFinancingReadService _cashFinancingReadService;
     private readonly WorkspaceShellContextService _shellContextService;
     private readonly WorkstationWorkflowSummaryService? _workflowSummaryService;
+    private readonly DesktopAuthenticationSession? _authenticationSession;
     private readonly TradingOperatorReadinessService? _operatorReadinessService;
     private bool _started;
 
@@ -25,7 +26,8 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         CashFinancingReadService cashFinancingReadService,
         WorkspaceShellContextService shellContextService,
         WorkstationWorkflowSummaryService? workflowSummaryService = null,
-        TradingOperatorReadinessService? operatorReadinessService = null)
+        TradingOperatorReadinessService? operatorReadinessService = null,
+        DesktopAuthenticationSession? authenticationSession = null)
     {
         _runService = runService ?? throw new ArgumentNullException(nameof(runService));
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
@@ -33,6 +35,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         _cashFinancingReadService = cashFinancingReadService ?? throw new ArgumentNullException(nameof(cashFinancingReadService));
         _shellContextService = shellContextService ?? throw new ArgumentNullException(nameof(shellContextService));
         _workflowSummaryService = workflowSummaryService;
+        _authenticationSession = authenticationSession;
         _operatorReadinessService = operatorReadinessService;
     }
 
@@ -161,11 +164,16 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         return actionId switch
         {
             "SwitchContext" => new(actionId, null, PaneDropAction.Replace, null, false, true, null),
-            "Pause" => new(actionId, "PositionBlotter", PaneDropAction.SplitRight, null, false, false, "Pause queued. Review blotter and risk rail before resuming."),
-            "Stop" => new(actionId, "RunRisk", PaneDropAction.SplitBelow, null, false, false, "Stop requested. Existing positions remain visible for review."),
-            "Flatten" => new(actionId, "OrderBook", PaneDropAction.FloatWindow, null, false, false, "Flatten review opened. Use the blotter and order book to verify exit posture."),
-            "CancelAll" => new(actionId, "PositionBlotter", PaneDropAction.FloatWindow, null, false, false, "Cancel-all review opened. Confirm open orders in the blotter."),
-            "AcknowledgeRisk" => new(actionId, "RunRisk", PaneDropAction.SplitRight, null, false, false, "Risk acknowledgement captured locally for this workstation session."),
+            // The safety commands carry no confirmation text of their own. This mapper owns pane
+            // layout; what the desk action achieved comes back from IExecutionSafetyControlClient
+            // and is the only thing an operator should be shown. The previous copy - "Cancel-all
+            // review opened", "Pause queued", "Risk acknowledgement captured" - narrated actions
+            // that never reached any service.
+            "Pause" => new(actionId, "PositionBlotter", PaneDropAction.SplitRight, null, false, false, null),
+            "Stop" => new(actionId, "RunRisk", PaneDropAction.SplitBelow, null, false, false, null),
+            "Flatten" => new(actionId, "OrderBook", PaneDropAction.FloatWindow, null, false, false, null),
+            "CancelAll" => new(actionId, "PositionBlotter", PaneDropAction.FloatWindow, null, false, false, null),
+            "AcknowledgeRisk" => new(actionId, "RunRisk", PaneDropAction.SplitRight, null, false, false, null),
             "LiveData" => new(actionId, "LiveData", PaneDropAction.Replace, null, true, false, null),
             "PositionBlotter" => new(actionId, "PositionBlotter", PaneDropAction.SplitRight, null, false, false, null),
             "RunPortfolio" => CreatePortfolioActionRequest(activeRun),
@@ -537,14 +545,25 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         {
             PrimaryCommands =
             [
-                new WorkspaceCommandItem { Id = "Pause", Label = "Pause", Description = "Pause trading", ShortcutHint = "Desk", Glyph = "\uE769", Tone = WorkspaceTone.Primary },
-                new WorkspaceCommandItem { Id = "Stop", Label = "Stop", Description = "Stop trading", ShortcutHint = "Desk", Glyph = "\uE71A", Tone = WorkspaceTone.Secondary },
-                new WorkspaceCommandItem { Id = "Flatten", Label = "Flatten", Description = "Flatten positions", ShortcutHint = "Risk", Glyph = "\uE9F5", Tone = WorkspaceTone.Danger }
+                // Pause is disabled rather than wired: no execution service exposes a pause
+                // distinct from halting, and the exit criterion permits only "invokes the real
+                // shared service" or "disabled with an explicit not-wired state". An enabled
+                // control that quietly does nothing is the third option the criterion forbids.
+                new WorkspaceCommandItem { Id = "Pause", Label = "Pause", Description = "Pause trading", DisabledReason = "Pause is not wired to an execution service. Use Stop to halt the desk.", ShortcutHint = "Desk", Glyph = "\uE769", Tone = WorkspaceTone.Primary, IsEnabled = false },
+                new WorkspaceCommandItem { Id = "Stop", Label = "Stop", Description = "Halt the desk: open the circuit breaker and sweep the open book", ShortcutHint = "Desk", Glyph = "\uE71A", Tone = WorkspaceTone.Secondary },
+                // Flatten is disabled rather than wired: every close route the execution API
+                // exposes takes a single position key, and a command-bar Flatten has no selection
+                // to supply. Looping the client over a position list would rebuild, client-side,
+                // the partial sweep that reports success without establishing it.
+                new WorkspaceCommandItem { Id = "Flatten", Label = "Flatten", Description = "Flatten positions", DisabledReason = "Flatten-all is not wired: the execution API closes one position at a time. Close positions from the blotter, or use Stop to halt the desk.", ShortcutHint = "Risk", Glyph = "\uE9F5", Tone = WorkspaceTone.Danger, IsEnabled = false }
             ],
             SecondaryCommands =
             [
-                new WorkspaceCommandItem { Id = "CancelAll", Label = "Cancel All", Description = "Cancel staged orders", Glyph = "\uE711" },
-                new WorkspaceCommandItem { Id = "AcknowledgeRisk", Label = "Acknowledge Risk", Description = "Acknowledge current risk posture", Glyph = "\uE73E" },
+                new WorkspaceCommandItem { Id = "CancelAll", Label = "Cancel All", Description = "Cancel every open order through the shared kill-switch sweep", Glyph = "\uE711" },
+                // Acknowledgement has no durable home: the old copy said it was "captured locally
+                // for this workstation session", which is an enabled safety control admitting it
+                // changes nothing.
+                new WorkspaceCommandItem { Id = "AcknowledgeRisk", Label = "Acknowledge Risk", Description = "Acknowledge current risk posture", DisabledReason = "Risk acknowledgement is not wired to a durable service, so an acknowledgement here would not be recorded.", Glyph = "\uE73E", IsEnabled = false },
                 new WorkspaceCommandItem { Id = "LiveData", Label = "Live Data", Description = "Open live data", Glyph = "\uE9D2" },
                 new WorkspaceCommandItem { Id = "RunPortfolio", Label = "Portfolio", Description = "Open run or account portfolio", Glyph = "\uE8B5" },
                 new WorkspaceCommandItem { Id = "PositionBlotter", Label = "Blotter", Description = "Open position blotter", Glyph = "\uE8A5" },
@@ -591,6 +610,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         {
             var summary = await _workflowSummaryService
                 .GetAsync(
+                    DesktopWorkflowReadScopeResolver.Resolve(_authenticationSession),
                     hasOperatingContext: _operatingContextService?.CurrentContext is not null || _fundContextService.CurrentFundProfile is not null,
                     operatingContextDisplayName: _operatingContextService?.CurrentContext?.DisplayName,
                     fundProfileId: _fundContextService.CurrentFundProfile?.FundProfileId,

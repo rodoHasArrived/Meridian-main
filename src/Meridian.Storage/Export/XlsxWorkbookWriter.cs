@@ -9,6 +9,11 @@ namespace Meridian.Storage.Export;
 /// </summary>
 public static class XlsxWorkbookWriter
 {
+    // ZIP stores timestamps without a time-zone offset. A fixed in-range DOS timestamp keeps
+    // otherwise identical workbooks byte-for-byte stable across repeated renders.
+    private static readonly DateTimeOffset DeterministicEntryTimestamp =
+        new(2000, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
     public static byte[] CreateWorkbook(IReadOnlyList<XlsxWorksheet> worksheets, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(worksheets);
@@ -181,7 +186,9 @@ public static class XlsxWorkbookWriter
 
     private static void WriteTextEntry(ZipArchive archive, string path, string content)
     {
-        var entry = archive.CreateEntry(path);
+        var entry = archive.CreateEntry(path, CompressionLevel.Optimal);
+        entry.LastWriteTime = DeterministicEntryTimestamp;
+        entry.ExternalAttributes = 0;
         using var stream = entry.Open();
         using var writer = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
         writer.Write(content);

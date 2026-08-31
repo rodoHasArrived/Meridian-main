@@ -129,7 +129,27 @@ class GenerateApiContractCoverageDashboardTests(unittest.TestCase):
             self.assertEqual(0, payload["summary"]["documented_endpoint_count"])
             self.assertEqual(1, payload["summary"]["undocumented_endpoint_count"])
 
-    def test_hand_written_docs_still_count_as_documentation(self) -> None:
+    def test_reference_docs_count_as_documentation(self) -> None:
+        # The counterweight to the generated-report case above: a hand-written document does
+        # count. It has to be reference documentation now -- the corpus became an allowlist of
+        # contract-describing roots in #2703, because subtracting prose never converged.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._build_repo_with_endpoint(root)
+            (root / "docs" / "reference").mkdir()
+            (root / "docs" / "reference" / "desktop-launch-api.md").write_text(
+                "The desktop launch handshake calls `/api/auth/desktop-launch/{ticket}`.\n",
+                encoding="utf-8",
+            )
+
+            payload = api_contract_coverage.build_dashboard(root)
+
+            self.assertEqual(1, payload["summary"]["documented_endpoint_count"])
+            self.assertEqual(0, payload["summary"]["undocumented_endpoint_count"])
+
+    def test_a_non_reference_root_does_not_count_as_documentation(self) -> None:
+        # The same sentence in a development guide no longer moves the score. Naming a route is
+        # not describing it, and no syntactic rule reliably told the two apart (#2703).
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self._build_repo_with_endpoint(root)
@@ -141,8 +161,8 @@ class GenerateApiContractCoverageDashboardTests(unittest.TestCase):
 
             payload = api_contract_coverage.build_dashboard(root)
 
-            self.assertEqual(1, payload["summary"]["documented_endpoint_count"])
-            self.assertEqual(0, payload["summary"]["undocumented_endpoint_count"])
+            self.assertEqual(0, payload["summary"]["documented_endpoint_count"])
+            self.assertEqual(1, payload["summary"]["undocumented_endpoint_count"])
 
     def test_coverage_is_stable_when_a_prior_report_is_present(self) -> None:
         """The score must not depend on whether a previous run left a report behind."""

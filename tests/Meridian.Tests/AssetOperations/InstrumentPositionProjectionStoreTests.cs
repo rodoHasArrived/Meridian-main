@@ -75,7 +75,7 @@ public sealed class PostgresInstrumentPositionProjectionStoreTests : IAsyncLifet
         _options = new AssetOperationsOptions
         {
             ConnectionString = _server.ConnectionString,
-            Schema = PostgresTestSchema.NewSchemaName("asset_position")
+            Schema = _server.CreateSchemaName("asset_position")
         };
     }
 
@@ -159,6 +159,7 @@ public sealed class PostgresInstrumentPositionProjectionStoreTests : IAsyncLifet
         }
 
         var originalPosition = projection.BookPositions.Single();
+        var conflictingLedgerBookId = Guid.NewGuid();
         var conflicting = projection with
         {
             BookPositions =
@@ -166,7 +167,14 @@ public sealed class PostgresInstrumentPositionProjectionStoreTests : IAsyncLifet
                 originalPosition with
                 {
                     Version = originalPosition.Version + 1,
-                    BookContext = originalPosition.BookContext with { LedgerBookId = Guid.NewGuid() }
+                    BookContext = originalPosition.BookContext with
+                    {
+                        LedgerBookId = conflictingLedgerBookId,
+                        Dimensions = originalPosition.BookContext.Dimensions! with
+                        {
+                            BookId = conflictingLedgerBookId.ToString("D")
+                        }
+                    }
                 }
             ],
             PositionEconomicStates = [],
@@ -267,10 +275,16 @@ public sealed class PostgresInstrumentPositionProjectionStoreTests : IAsyncLifet
         await replayWithStaleExpectedVersion.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*stale*");
 
+        var staleState = advanced.State with { Version = 3 };
+        var stalePosition = advanced.Position with
+        {
+            Version = 3,
+            CurrentEconomicState = staleState
+        };
         var stale = () => store.UpsertAsync(
             advanced.Role,
-            advanced.Position with { Version = 3 },
-            advanced.State with { Version = 3 },
+            stalePosition,
+            staleState,
             expectedVersion: 1,
             InstrumentPositionProjectionFixture.Approval);
         await stale.Should().ThrowAsync<InvalidOperationException>()
@@ -374,6 +388,7 @@ public sealed class PostgresInstrumentPositionProjectionStoreTests : IAsyncLifet
         {
             PositionId = Guid.Parse("a3000000-aaaa-4000-8000-000000000099"),
             Version = 1,
+            PositionSide = $"{initial.Position.PositionSide} ",
             CurrentEconomicState = null,
             OriginEvent = initial.Position.OriginEvent! with
             {

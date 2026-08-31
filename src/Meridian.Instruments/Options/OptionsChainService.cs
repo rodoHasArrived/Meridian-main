@@ -368,7 +368,11 @@ public sealed class OptionsChainService
                     new KeyValuePair<string, object?>("provider", providerId),
                     new KeyValuePair<string, object?>("reason", "empty"));
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
             {
                 var retriable = ex is TimeoutException || ex is HttpRequestException || ex is TaskCanceledException;
                 var reason = $"{providerId} failed ({ex.GetType().Name}): {ex.Message}";

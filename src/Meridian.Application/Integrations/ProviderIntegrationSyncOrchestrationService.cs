@@ -1,10 +1,10 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Integrations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.Integrations;
 
@@ -479,8 +479,7 @@ public sealed class ProviderIntegrationSyncOrchestrationService
             capability.ToString(),
             discriminator,
             requestedAt.UtcDateTime.ToString("O", CultureInfo.InvariantCulture));
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
-        return $"run-due-{Convert.ToHexString(hash)[..24].ToLowerInvariant()}";
+        return $"run-due-{Sha256Digest.ComputeUtf8(input)[..24]}";
     }
 
     private static IReadOnlyList<JsonElement> ExtractRecords(JsonElement responseBody, string recordsPath)

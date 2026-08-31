@@ -151,6 +151,30 @@ public sealed record QualitySymbolHealthResponse(
     IReadOnlyList<string> ActiveIssues);
 
 /// <summary>
+/// One symbol whose p99 ingest latency exceeds the requested threshold.
+/// </summary>
+/// <remarks>
+/// The tracker returns these as a <c>ValueTuple</c>. Tuple members are fields, and this
+/// endpoint group serializes with the default <c>IncludeFields = false</c>, so returning the
+/// tuple directly emitted an empty object per element. Projecting through a named record is
+/// how every other payload in this group already crosses the wire.
+/// </remarks>
+public sealed record QualityHighLatencySymbolResponse(
+    string Symbol,
+    double P99Ms);
+
+/// <summary>
+/// One symbol ranked by retained sequence-error count.
+/// </summary>
+/// <remarks>
+/// Projected from a <c>ValueTuple</c> for the same reason as
+/// <see cref="QualityHighLatencySymbolResponse"/>.
+/// </remarks>
+public sealed record QualityTopErrorSymbolResponse(
+    string Symbol,
+    int ErrorCount);
+
+/// <summary>
 /// Completeness summary returned inside the dashboard.
 /// </summary>
 public sealed record QualityCompletenessSummaryResponse(
@@ -191,7 +215,26 @@ public sealed record QualitySequenceErrorStatisticsResponse(
     int SymbolsWithErrors,
     double AverageGapSize,
     long MaxGapSize,
-    DateTimeOffset CalculatedAt);
+    DateTimeOffset CalculatedAt)
+{
+    /// <summary>
+    /// Number of error records currently retained after per-stream caps and retention cleanup.
+    /// This additive alias preserves the existing meaning of <see cref="TotalErrors"/>.
+    /// </summary>
+    public long RetainedTotalErrors => TotalErrors;
+
+    /// <summary>
+    /// Error rate calculated from retained records. This additive alias preserves the existing
+    /// meaning of <see cref="ErrorRate"/>.
+    /// </summary>
+    public double RetainedErrorRate => ErrorRate;
+
+    /// <summary>Total errors detected over the lifetime of the tracker generation.</summary>
+    public long LifetimeTotalErrors { get; init; }
+
+    /// <summary>Lifetime errors as a percentage of all checked events.</summary>
+    public double LifetimeErrorRate { get; init; }
+}
 
 /// <summary>
 /// Anomaly statistics payload returned by the dashboard.

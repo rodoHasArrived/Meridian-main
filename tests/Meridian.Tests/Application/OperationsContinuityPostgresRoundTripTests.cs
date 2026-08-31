@@ -1,16 +1,22 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
+using Meridian.Storage.Ledger;
 using Meridian.Tests.Storage;
+using Moq;
 
 namespace Meridian.Tests.Application;
 
 [Trait("Category", "Integration")]
 public sealed class OperationsContinuityPostgresRoundTripTests
 {
+    private static readonly Guid SecurityId = Guid.Parse("D3B32FA8-A6FD-4571-ACDA-56D5D6F6C92C");
+
     [LedgerDatabaseFact]
     public async Task PostgresOperationsContinuityStore_ShouldRejectBookScopedWorkflowWhenTenantCannotBeResolved()
     {
@@ -81,15 +87,19 @@ public sealed class OperationsContinuityPostgresRoundTripTests
             "operations_continuity_audit"
         ]);
 
-        var openPeriod = await database.SavePeriodAsync(Guid.NewGuid(), "Open");
+        var openContext = await CreateLedgerContextAsync(database, "posted", "Open");
+        var openPeriod = openContext.Period;
         var fundAccountId = Guid.NewGuid();
         var workflow = await CreateLedgerValidatedWorkflowAsync(
             service,
             fundAccountId,
-            "2026-05-postgres-happy");
+            openPeriod.PeriodId.ToString("D"),
+            openContext.Book.LedgerBookId);
         var journalCandidate = CreateJournalCandidate(
             openPeriod.PeriodId,
             fundAccountId,
+            openContext.Book.LedgerBookId,
+            openPeriod.Version,
             "postgres-fixture-posting");
 
         var posted = await service.PostLedgerEntriesAsync(
@@ -105,8 +115,9 @@ public sealed class OperationsContinuityPostgresRoundTripTests
                 EvidenceLinks: EvidenceLinks(),
                 JournalCandidate: journalCandidate));
 
-        posted.Success.Should().BeTrue(posted.ErrorMessage);
+        posted.Success.Should().BeTrue(DescribeFailure(posted));
         posted.Workflow!.LedgerPostingState.Should().Be(OperationsLedgerPostingStateDto.Complete);
+        posted.Workflow.LedgerBookId.Should().Be(openContext.Book.LedgerBookId);
         posted.Workflow.Gates
             .Single(static gate => gate.GateKey == OperationsGateKeyDto.LedgerPosting)
             .Status.Should().Be(OperationsGateStatusDto.Passed);
@@ -127,12 +138,21 @@ public sealed class OperationsContinuityPostgresRoundTripTests
         journalEntry.Entry.JournalEntryId.Should().Be(journalCandidate.JournalEntryId!.Value);
         journalEntry.AggregateId.Should().Be(fundAccountId);
         journalEntry.Entry.IsBalanced.Should().BeTrue();
+        journalEntry.Entry.Metadata.LedgerBook.Should().Be(openContext.Book.LedgerBookId.ToString("D"));
+        journalEntry.Entry.Metadata.Tags.Should().ContainKey("securityMasterLineage");
+        journalEntry.Entry.Metadata.ActivityType.Should().Be("interest");
+        journalEntry.Entry.Metadata.IdempotencyKey.Should().Be(journalCandidate.IdempotencyKey);
+        journalEntry.Entry.Metadata.FundEventId.Should().BeNull();
+        journalEntry.Entry.Metadata.FundEventType.Should().BeNull(
+            "a generic source event type must not be reclassified as private-capital fund-event metadata");
 
-        var hardClosedPeriod = await database.SavePeriodAsync(Guid.NewGuid(), "HardClosed");
+        var rejectedContext = await CreateLedgerContextAsync(database, "rejected", "HardClosed");
+        var hardClosedPeriod = rejectedContext.Period;
         var rejectedWorkflow = await CreateLedgerValidatedWorkflowAsync(
             service,
             Guid.NewGuid(),
-            "2026-05-postgres-rejected");
+            hardClosedPeriod.PeriodId.ToString("D"),
+            rejectedContext.Book.LedgerBookId);
         var rejectedVersion = rejectedWorkflow.Version;
 
         var rejected = await service.PostLedgerEntriesAsync(
@@ -149,6 +169,8 @@ public sealed class OperationsContinuityPostgresRoundTripTests
                 JournalCandidate: CreateJournalCandidate(
                     hardClosedPeriod.PeriodId,
                     rejectedWorkflow.FundAccountId,
+                    rejectedContext.Book.LedgerBookId,
+                    hardClosedPeriod.Version,
                     "postgres-fixture-rejected")));
 
         rejected.Success.Should().BeFalse();
@@ -169,17 +191,39 @@ public sealed class OperationsContinuityPostgresRoundTripTests
     }
 
     private static OperationsContinuityWorkflowService CreateService(LedgerPostgresTestDatabase database)
-        => new(
+    {
+        var securityMaster = new Mock<ISecurityMasterQueryService>(MockBehavior.Strict);
+        var emptyObject = JsonSerializer.SerializeToElement(new { });
+        securityMaster
+            .Setup(service => service.GetByIdAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SecurityDetailDto(
+                SecurityId,
+                "Equity",
+                SecurityStatusDto.Active,
+                "PostgreSQL fixture security",
+                "USD",
+                emptyObject,
+                emptyObject,
+                [],
+                [],
+                1,
+                DateTimeOffset.Parse("2026-05-01T00:00:00Z"),
+                null));
+
+        return new OperationsContinuityWorkflowService(
             database.OperationsStore,
             database.OperationsStore,
             database.StatusDerivation,
             ledgerJournalStore: null,
-            transactionalCommitStore: database.OperationsStore);
+            transactionalCommitStore: database.OperationsStore,
+            securityMasterQueryService: securityMaster.Object);
+    }
 
     private static async Task<OperationsContinuityWorkflowDto> CreateLedgerValidatedWorkflowAsync(
         OperationsContinuityWorkflowService service,
         Guid fundAccountId,
-        string periodId)
+        string periodId,
+        Guid ledgerBookId)
     {
         var start = RequireSuccess(await service.StartWorkflowAsync(
             new OperationsStartWorkflowRequestDto(
@@ -190,7 +234,8 @@ public sealed class OperationsContinuityPostgresRoundTripTests
                 Actor: "ops-user",
                 Rationale: "Start PostgreSQL round-trip workflow.",
                 CorrelationId: $"start-{periodId}",
-                EvidenceLinks: EvidenceLinks())));
+                EvidenceLinks: EvidenceLinks(),
+                LedgerBookId: ledgerBookId)));
 
         var imported = RequireSuccess(await service.ImportBrokerDataAsync(
             start.WorkflowId,
@@ -258,13 +303,14 @@ public sealed class OperationsContinuityPostgresRoundTripTests
     private static OperationsLedgerJournalCandidateDto CreateJournalCandidate(
         Guid periodId,
         Guid aggregateId,
+        Guid ledgerBookId,
+        long expectedLedgerVersion,
         string description)
     {
         var journalEntryId = Guid.NewGuid();
         var timestamp = DateTimeOffset.Parse("2026-05-15T16:00:00Z");
-        var securityId = Guid.Parse("D3B32FA8-A6FD-4571-ACDA-56D5D6F6C92C");
-        var idempotencyKey = $"{securityId:N}:postgres:20260515:AccrueInterestIncome:test-source-hash";
-        var provenance = $"security-master:{securityId:N};snapshot:test-source-hash;approved:true;status:active";
+        var idempotencyKey = $"{SecurityId:N}:postgres:20260515:AccrueInterestIncome:test-source-hash";
+        var provenance = $"security-master:{SecurityId:N};snapshot:test-source-hash;approved:true;status:active";
 
         return new OperationsLedgerJournalCandidateDto(
             journalEntryId,
@@ -279,14 +325,7 @@ public sealed class OperationsContinuityPostgresRoundTripTests
                     "Cash",
                     LedgerAccountType.Asset.ToString(),
                     Debit: 125m,
-                    Credit: 0m,
-                    Symbol: "POSTGRES",
-                    SecurityId: securityId,
-                    SecurityMasterApproved: true,
-                    SecurityMasterProvenance: provenance,
-                    LedgerMappingReference: $"ledger-map:POSTGRES:{securityId:N}",
-                    SecurityMasterApprovalReference: "sm-approval:postgres-controller",
-                    SecurityMasterStatus: SecurityStatusDto.Active),
+                    Credit: 0m),
                 new OperationsLedgerJournalLineDto(
                     Guid.NewGuid(),
                     "Interest Income",
@@ -294,10 +333,10 @@ public sealed class OperationsContinuityPostgresRoundTripTests
                     Debit: 0m,
                     Credit: 125m,
                     Symbol: "POSTGRES",
-                    SecurityId: securityId,
+                    SecurityId: SecurityId,
                     SecurityMasterApproved: true,
                     SecurityMasterProvenance: provenance,
-                    LedgerMappingReference: $"ledger-map:POSTGRES:{securityId:N}",
+                    LedgerMappingReference: $"ledger-map:postgres-interest-income:{SecurityId:N}",
                     SecurityMasterApprovalReference: "sm-approval:postgres-controller",
                     SecurityMasterStatus: SecurityStatusDto.Active)
             ],
@@ -315,16 +354,66 @@ public sealed class OperationsContinuityPostgresRoundTripTests
             Metadata: new OperationsJournalEntryMetadataDto(
                 ActivityType: "interest",
                 Symbol: "POSTGRES",
-                SecurityId: securityId,
-                LedgerBook: "legacy",
+                SecurityId: SecurityId,
+                LedgerBook: ledgerBookId.ToString("D"),
                 Tags: new Dictionary<string, string>
                 {
                     ["fixture"] = "operations-continuity-postgres"
                 }),
             IdempotencyKey: idempotencyKey,
             SecurityMasterProvenance: provenance,
-            ExpectedLedgerVersion: 1);
+            ExpectedLedgerVersion: expectedLedgerVersion);
     }
+
+    private static async Task<(LedgerBookRecord Book, LedgerAccountingPeriod Period)> CreateLedgerContextAsync(
+        LedgerPostgresTestDatabase database,
+        string scenario,
+        string periodStatus)
+    {
+        var fundProfileId = $"fund-operations-continuity-{scenario}";
+        var recordedAt = DateTimeOffset.Parse("2026-05-01T00:00:00Z");
+        var tenancy = new PostgresFundProfileTenancyRegistry(database.Options);
+        await tenancy.BindAsync(
+            fundProfileId,
+            "tenant-operations-continuity",
+            "company-operations-continuity");
+
+        var book = await database.JournalStore.SaveLedgerBookAsync(new LedgerBookRecord(
+            Guid.NewGuid(),
+            fundProfileId,
+            Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund,
+            $"Operations Continuity {scenario} book",
+            "USD",
+            recordedAt,
+            recordedAt));
+
+        var period = await database.JournalStore.SavePeriodAsync(
+            new LedgerAccountingPeriod(
+                Guid.NewGuid(),
+                book.LedgerBookId,
+                2026,
+                5,
+                $"2026-05-{scenario}",
+                new DateOnly(2026, 5, 1),
+                new DateOnly(2026, 5, 31),
+                periodStatus,
+                recordedAt,
+                string.Equals(periodStatus, "Open", StringComparison.Ordinal)
+                    ? null
+                    : DateTimeOffset.Parse("2026-05-31T23:59:59Z"),
+                Version: 0),
+            expectedVersion: 0);
+
+        return (book, period);
+    }
+
+    private static string DescribeFailure(OperationsTransitionResultDto result)
+        => string.Join(
+            "; ",
+            new[] { result.ErrorMessage }
+                .Concat(result.Blockers.Select(static blocker => $"{blocker.Code}: {blocker.Message}"))
+                .Where(static message => !string.IsNullOrWhiteSpace(message)));
 
     private static IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks() =>
     [
@@ -357,4 +446,5 @@ public sealed class OperationsContinuityPostgresRoundTripTests
         chain.Should().HaveCount(timeline.Count);
         byPreviousHash.Should().BeEmpty();
     }
+
 }

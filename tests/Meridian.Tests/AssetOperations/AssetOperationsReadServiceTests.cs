@@ -510,6 +510,93 @@ public sealed class AssetOperationsReadServiceTests
             timelineEvent.LedgerReference == $"security-master:{securityId:D}");
     }
 
+    [Theory]
+    [InlineData("30/360")]
+    [InlineData(null)]
+    public async Task GetOperationsAsync_ForBondWithoutReference_ShouldUseSecurityMasterPrincipalSchedule(
+        string? dayCountConvention)
+    {
+        var securityId = Guid.NewGuid();
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var issueYear = today.Month < 3 ? today.Year : today.Year + 1;
+        var issueDate = new DateOnly(issueYear, 3, 1);
+        var firstPayment = issueDate.AddMonths(3);
+        var secondPayment = issueDate.AddMonths(9);
+        var maturity = issueDate.AddYears(1);
+        var securityMaster = Substitute.For<ISecurityMasterQueryService>();
+        securityMaster.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(
+                securityId,
+                "Bond",
+                "Meridian Contractual Sinker",
+                JsonSerializer.SerializeToElement(new
+                {
+                    issueDate,
+                    maturityDate = maturity,
+                    par = 100m,
+                    couponRate = 6m,
+                    paymentFrequency = "SemiAnnual",
+                    dayCountConvention,
+                    principalSchedule = new object[]
+                    {
+                        new { paymentDate = firstPayment, amount = 30m },
+                        new { paymentDate = secondPayment, amount = 20m }
+                    }
+                })));
+        var service = new AssetOperationsReadService(securityMasterQueryService: securityMaster);
+
+        var detail = await service.GetOperationsAsync(securityId);
+
+        detail.Should().NotBeNull();
+        detail!.ProjectedCashFlows
+            .Where(static flow => flow.FlowType == "PrincipalRepayment")
+            .Select(static flow => (flow.DueDate, flow.Amount))
+            .Should().Equal((firstPayment, 30m), (secondPayment, 20m));
+        detail.ProjectedCashFlows.Single(static flow => flow.FlowType == "Maturity")
+            .Should().Match<AssetProjectedCashFlowDto>(flow =>
+                flow.DueDate == maturity && flow.Amount == 50m);
+        detail.ProjectedCashFlows.Single(flow =>
+                flow.FlowType == "Coupon" && flow.DueDate == issueDate.AddMonths(6))
+            .Amount.Should().Be(2.55m);
+    }
+
+    [Fact]
+    public async Task GetOperationsAsync_IssueDatePrincipal_ShouldReduceFirstCouponBalance()
+    {
+        var securityId = Guid.NewGuid();
+        var issueDate = new DateOnly(DateOnly.FromDateTime(DateTime.UtcNow.Date).Year + 1, 3, 1);
+        var maturity = issueDate.AddYears(1);
+        var securityMaster = Substitute.For<ISecurityMasterQueryService>();
+        securityMaster.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(BuildSecurity(
+                securityId,
+                "Bond",
+                "Meridian Issue-Date Sinker",
+                JsonSerializer.SerializeToElement(new
+                {
+                    issueDate,
+                    maturityDate = maturity,
+                    par = 100m,
+                    couponRate = 6m,
+                    paymentFrequency = "SemiAnnual",
+                    dayCountConvention = "30/360",
+                    principalSchedule = new object[]
+                    {
+                        new { paymentDate = issueDate, amount = 10m }
+                    }
+                })));
+        var service = new AssetOperationsReadService(securityMasterQueryService: securityMaster);
+
+        var detail = await service.GetOperationsAsync(securityId);
+
+        detail.Should().NotBeNull();
+        detail!.ProjectedCashFlows.Single(flow =>
+                flow.FlowType == "Coupon" && flow.DueDate == issueDate.AddMonths(6))
+            .Amount.Should().Be(2.7m);
+        detail.ProjectedCashFlows.Single(static flow => flow.FlowType == "Maturity")
+            .Amount.Should().Be(90m);
+    }
+
     [Fact]
     public async Task GetOperationsAsync_ForCustomAsset_ShouldGenerateGovernedProfileAndCloseEvidenceObligations()
     {

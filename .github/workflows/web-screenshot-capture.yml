@@ -11,17 +11,32 @@ on:
         description: Path to the routes configuration file.
         required: false
         default: "scripts/dev/web-screenshot-routes.json"
+  # Dispatch is a publish path and always captures from the default branch, so
+  # it can only ever report on what has already merged. Every route that broke
+  # in the 2026-08-26 run broke in a pull request that this workflow never saw.
+  # The pull_request lane below renders the proposed commit instead, so a route
+  # a change stops rendering fails on the change rather than after it.
+  pull_request:
+    paths:
+      - "src/Meridian.Ui/dashboard/**"
+      - "scripts/dev/capture-web-screenshots.mjs"
+      - "scripts/dev/web-screenshot-routes.json"
+      - "scripts/dev/web-screenshot-fixtures.json"
+      - "scripts/dev/validate-screenshot-captures.py"
+      - ".github/workflows/web-screenshot-capture.yml"
 
 permissions:
   contents: write
   pull-requests: write
 
 concurrency:
-  # The workflow always checks out the default branch and writes the fixed
+  # A dispatch always checks out the default branch and writes the fixed
   # automation/web-screenshot-capture branch, so every dispatch must share one
   # concurrency lane. Otherwise duplicate dispatches can queue and reopen a
-  # screenshot PR from the same base after the first PR merges.
-  group: web-screenshot-capture
+  # screenshot PR from the same base after the first PR merges. Pull-request
+  # validation publishes nothing, so each PR takes its own lane instead --
+  # sharing the publish lane would let an ordinary PR cancel a refresh run.
+  group: web-screenshot-capture-${{ github.event.pull_request.number || 'dispatch' }}
   cancel-in-progress: true
 
 env:
@@ -32,6 +47,9 @@ env:
 jobs:
   capture-web-screenshots:
     name: Capture Web Workstation Screenshots
+    # Publish path only. This job writes the automation branch and opens the
+    # refresh PR, so it stays on dispatch and never runs for a pull request.
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     timeout-minutes: 50
 
@@ -226,3 +244,147 @@ jobs:
           add-paths: |
             ${{ steps.validate_output_dir.outputs.safe_output_dir }}/*.png
           delete-branch: true
+
+  validate-pull-request-screenshots:
+    name: Validate Web Workstation Screenshots (pull request)
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    # Validation only. This job renders the proposed commit and reports; it
+    # writes no branch and opens no PR, so it drops the write scopes the
+    # workflow grants the publish job above.
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out pull request head
+        uses: actions/checkout@v6.0.2
+        with:
+          # The pull request's own commit, not the merge ref. This job answers
+          # "does this change still render", and the merge ref would fold in
+          # base commits the author never proposed -- so a route broken on the
+          # base would be reported against their change.
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
+
+      - name: Install dashboard dependencies
+        # Use a clean, lockfile-pinned install (matching ci.yml) so the capture
+        # run is reproducible and cannot silently drift the dependency tree.
+        run: npm ci --prefix src/Meridian.Ui/dashboard --include=optional
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('src/Meridian.Ui/dashboard/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Install Playwright system dependencies
+        run: npx --prefix src/Meridian.Ui/dashboard playwright install-deps chromium
+
+      - name: Install Playwright browser
+        # Deliberately a copy of the publish job's install step rather than a
+        # shared composite action: the publish path is the one that currently
+        # works, and this lane was added without touching it. Keep the two in
+        # step when either changes.
+        run: |
+          set -euo pipefail
+          install_attempts="${PLAYWRIGHT_INSTALL_ATTEMPTS:-2}"
+          install_timeout_seconds="${PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS:-720}"
+
+          run_playwright_install() {
+            set +e
+            timeout "$install_timeout_seconds" npx --prefix src/Meridian.Ui/dashboard playwright install chromium
+            install_exit_code=$?
+            set -e
+            return "$install_exit_code"
+          }
+
+          attempt=1
+          while [ "$attempt" -le "$install_attempts" ]; do
+            echo "[INFO] Installing Playwright Chromium browser (attempt ${attempt}/${install_attempts}; timeout ${install_timeout_seconds}s)."
+            if run_playwright_install; then
+              echo "[INFO] Playwright Chromium browser install completed."
+              exit 0
+            else
+              install_exit_code=$?
+            fi
+
+            if [ "$attempt" -eq "$install_attempts" ]; then
+              if [ "$install_exit_code" -eq 124 ]; then
+                echo "::error::Playwright Chromium browser install timed out after ${install_timeout_seconds}s on attempt ${attempt}."
+              else
+                echo "::error::Playwright Chromium browser install failed with exit code ${install_exit_code} on attempt ${attempt}."
+              fi
+              exit "$install_exit_code"
+            fi
+
+            if [ "$install_exit_code" -eq 124 ]; then
+              echo "::warning::Playwright Chromium browser install timed out after ${install_timeout_seconds}s on attempt ${attempt}; retrying."
+            else
+              echo "::warning::Playwright Chromium browser install failed with exit code ${install_exit_code} on attempt ${attempt}; retrying."
+            fi
+
+            attempt=$((attempt + 1))
+          done
+
+      - name: Capture web screenshots
+        id: capture_web
+        # The dispatch inputs do not exist on a pull_request event, so this lane
+        # uses the catalog's own defaults. Nothing here is operator-supplied,
+        # which is also why it needs no output-directory sanitisation.
+        env:
+          OUTPUT_DIR: docs/screenshots/web
+          ROUTES_CONFIG: scripts/dev/web-screenshot-routes.json
+        run: |
+          if [ -d "$OUTPUT_DIR" ]; then
+            find "$OUTPUT_DIR" -maxdepth 1 -type f -name '*.png' -delete
+          fi
+          node scripts/dev/capture-web-screenshots.mjs \
+            --output-dir "$OUTPUT_DIR" \
+            --config "$ROUTES_CONFIG"
+
+      - name: Validate web screenshot captures
+        if: ${{ steps.capture_web.outcome == 'success' }}
+        env:
+          OUTPUT_DIR: docs/screenshots/web
+          ROUTES_CONFIG: scripts/dev/web-screenshot-routes.json
+        run: >
+          python scripts/dev/validate-screenshot-captures.py
+          --surface web
+          --output-dir "$OUTPUT_DIR"
+          --web-routes "$ROUTES_CONFIG"
+          --manifest artifacts/web-screenshots/manifest.json
+          --require-fresh
+
+      - name: Upload rendered screenshots
+        # Uploaded even on failure: the PNGs that did render are how a reviewer
+        # tells a broken route from a broken harness.
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: web-screenshots-pr${{ github.event.pull_request.number }}-${{ github.run_number }}
+          path: docs/screenshots/web/*.png
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload capture manifest
+        # Per-route pass/fail status, browser render errors, and the tail of the
+        # dev-server logs -- what makes a failed capture diagnosable without a
+        # re-run.
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: web-screenshots-pr${{ github.event.pull_request.number }}-manifest-${{ github.run_number }}
+          path: artifacts/web-screenshots/manifest.json
+          if-no-files-found: warn
+          retention-days: 14

@@ -85,7 +85,73 @@ public sealed class DirectLendingServicerStatementServiceTests
         (await service.GetBatchAsync(imported.BatchId)).Should().NotBeNull();
     }
 
-    private static CreateLoanRequest BuildCreateRequest(string symbol) =>
+    [Fact]
+    public async Task ApplyAsync_ChargePenalty_UsesAuthoritativeOutstandingPrincipalInsteadOfReportedPenalty()
+    {
+        var directLending = new InMemoryDirectLendingService();
+        var loan = await directLending.CreateLoanAsync(BuildCreateRequest("DL-ACME-2028", prepaymentPenaltyRate: 0.02m));
+        await directLending.ActivateLoanAsync(loan.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await directLending.BookDrawdownAsync(
+            loan.LoanId,
+            new BookDrawdownRequest(100_000m, new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 24), "wire-1"));
+
+        var service = new DirectLendingServicerStatementService(directLending);
+        var request = new ServicerStatementImportRequestDto(
+            ServicerStatementKind.Remittance,
+            "Northwind Servicer",
+            new DateOnly(2026, 4, 30),
+            "csv",
+            "penalty.csv",
+            "rowId,kind,securitySymbol,statementDate,effectiveDate,grossAmount,penaltyAmount,currency,applyMode\n" +
+            "PEN-1,Remittance,DL-ACME-2028,2026-04-30,2026-04-30,2500.00,2500.00,USD,ChargePenalty",
+            FundAccountId: "fund-direct-lending",
+            CashAccountId: "cash-operating");
+
+        var imported = await service.ImportAsync(request);
+        var applied = await service.ApplyAsync(imported.BatchId, new ServicerStatementApplyRequestDto(["PEN-1"]));
+        var servicing = await directLending.GetServicingStateAsync(loan.LoanId);
+
+        applied.AppliedRowCount.Should().Be(1);
+        servicing!.Balances.PenaltyAccruedUnpaid.Should().Be(2_000m);
+    }
+
+    [Fact]
+    public async Task ApplyAsync_ChargesPenaltyBeforePrincipalPaymentRegardlessOfRowOrder()
+    {
+        var directLending = new InMemoryDirectLendingService();
+        var loan = await directLending.CreateLoanAsync(BuildCreateRequest("DL-ACME-2028", prepaymentPenaltyRate: 0.02m));
+        await directLending.ActivateLoanAsync(loan.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await directLending.BookDrawdownAsync(
+            loan.LoanId,
+            new BookDrawdownRequest(100_000m, new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 24), "wire-1"));
+
+        var service = new DirectLendingServicerStatementService(directLending);
+        var request = new ServicerStatementImportRequestDto(
+            ServicerStatementKind.Remittance,
+            "Northwind Servicer",
+            new DateOnly(2026, 4, 30),
+            "csv",
+            "remittance-with-penalty.csv",
+            "rowId,kind,securitySymbol,statementDate,effectiveDate,grossAmount,principalAmount,penaltyAmount,currency,applyMode\n" +
+            "PAY-1,Remittance,DL-ACME-2028,2026-04-30,2026-04-30,10000.00,10000.00,,USD,ApplyPrincipalPayment\n" +
+            "PEN-1,Remittance,DL-ACME-2028,2026-04-30,2026-04-30,2500.00,,2500.00,USD,ChargePenalty",
+            FundAccountId: "fund-direct-lending",
+            CashAccountId: "cash-operating");
+
+        var imported = await service.ImportAsync(request);
+        var applied = await service.ApplyAsync(
+            imported.BatchId,
+            new ServicerStatementApplyRequestDto(["PAY-1", "PEN-1"]));
+        var servicing = await directLending.GetServicingStateAsync(loan.LoanId);
+        var retainedBatch = await service.GetBatchAsync(imported.BatchId);
+
+        applied.AppliedRowCount.Should().Be(2);
+        servicing!.Balances.PrincipalOutstanding.Should().Be(90_000m);
+        servicing.Balances.PenaltyAccruedUnpaid.Should().Be(2_000m);
+        retainedBatch!.Rows.Should().ContainSingle(row => row.RowId == "PEN-1" && row.PenaltyAmount == 2_500m);
+    }
+
+    private static CreateLoanRequest BuildCreateRequest(string symbol, decimal? prepaymentPenaltyRate = null) =>
         new(
             LoanId: Guid.NewGuid(),
             FacilityName: "Acme Unitranche",
@@ -109,5 +175,6 @@ public sealed class DirectLendingServicerStatementServiceTests
                 DefaultRateSpreadBps: 200m,
                 PrepaymentAllowed: true,
                 CovenantsJson: "{}",
+                PrepaymentPenaltyRate: prepaymentPenaltyRate,
                 SecurityMasterReference: new DirectLendingSecurityMasterReferenceDto(Guid.NewGuid(), symbol, "unit-test", "approval", "ledger-map")));
 }

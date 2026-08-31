@@ -1,5 +1,16 @@
 namespace Meridian.Domain.Reconciliation;
 
+/// <summary>
+/// Exact accounting authority bound to a retained statement import. The source account remains on
+/// the statement request; this scope identifies the reporting fund profile, ledger book, ledger
+/// period, and as-of date that may consume the statement during close and certified reporting.
+/// </summary>
+public sealed record StatementAccountingScope(
+    string FundProfileId,
+    Guid LedgerBookId,
+    Guid AccountingPeriodId,
+    DateOnly AsOfDate);
+
 public sealed record CanonicalStatementImport(
     string ImportId,
     string Broker,
@@ -20,7 +31,9 @@ public sealed record CanonicalStatementImport(
     public string ToleranceProfileId { get; init; } = string.Empty;
     public string ImportedBy { get; init; } = "system";
     public string SourceFileHash { get; init; } = SourceChecksum;
+    public string CanonicalArtifactHash { get; init; } = SourceChecksum;
     public string DuplicateKey { get; init; } = string.Empty;
+    public StatementAccountingScope? AccountingScope { get; init; }
 }
 
 public sealed record StatementSourceRowReference(
@@ -221,4 +234,24 @@ public sealed record ReconciliationBreakRecord(
     string Status)
 {
     public string? EvidenceLink { get; init; }
+
+    /// <summary>
+    /// Optional machine-readable classification qualifying how the break should be governed.
+    /// <see langword="null"/> for an ordinary break. See <see cref="ReconciliationBreakClassifications"/>.
+    /// </summary>
+    public string? Classification { get; init; }
+}
+
+/// <summary>
+/// Machine-readable break classifications carried on <see cref="ReconciliationBreakRecord.Classification"/>.
+/// </summary>
+public static class ReconciliationBreakClassifications
+{
+    /// <summary>
+    /// Statement transaction matching ran against an empty internal ledger-transaction population, so
+    /// every statement movement is structurally unmatched. Breaks carrying this classification are
+    /// informational only: they stay visible for operator review but must not block close outputs.
+    /// </summary>
+    public const string InternalTransactionPopulationUnavailable =
+        "internal-transaction-population-unavailable";
 }

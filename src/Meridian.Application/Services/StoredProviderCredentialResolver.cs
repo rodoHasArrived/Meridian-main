@@ -2,6 +2,7 @@ using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Infrastructure.DataSources;
 
 namespace Meridian.Application.Services;
 
@@ -89,40 +90,15 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
 
     private static string? ResolveProviderId(Type providerType)
     {
-        var name = providerType.Name;
-        if (name.Contains("Alpaca", StringComparison.OrdinalIgnoreCase))
+        for (var candidate = providerType; candidate is not null; candidate = candidate.BaseType)
         {
-            return "alpaca";
-        }
+            var declaredProviderId = candidate.GetDataSourceAttribute()?.Id;
+            if (string.IsNullOrWhiteSpace(declaredProviderId))
+            {
+                continue;
+            }
 
-        if (name.Contains("Polygon", StringComparison.OrdinalIgnoreCase))
-        {
-            return "polygon";
-        }
-
-        if (name.Contains("Finnhub", StringComparison.OrdinalIgnoreCase))
-        {
-            return "finnhub";
-        }
-
-        if (name.Contains("Tiingo", StringComparison.OrdinalIgnoreCase))
-        {
-            return "tiingo";
-        }
-
-        if (name.Contains("AlphaVantage", StringComparison.OrdinalIgnoreCase))
-        {
-            return "alphavantage";
-        }
-
-        if (name.Contains("NasdaqDataLink", StringComparison.OrdinalIgnoreCase))
-        {
-            return "nasdaqdatalink";
-        }
-
-        if (name.Contains("OpenFigi", StringComparison.OrdinalIgnoreCase))
-        {
-            return "openfigi";
+            return ProviderCredentialCatalog.Find(declaredProviderId)?.ProviderId;
         }
 
         return null;

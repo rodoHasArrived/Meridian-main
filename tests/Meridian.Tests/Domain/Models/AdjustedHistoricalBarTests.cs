@@ -289,4 +289,56 @@ public class AdjustedHistoricalBarTests
         bar.SequenceNumber.Should().Be(12345);
         bar.Volume.Should().Be(50000000); // Adjusted volume
     }
+
+    // ------------------------------------------------------------------ //
+    //  Adjustment-regime carrying (IsAdjusted)                            //
+    // ------------------------------------------------------------------ //
+
+    [Fact]
+    public void ToHistoricalBar_PreferAdjustedWithAdjustmentData_MarksBarAsAdjusted()
+    {
+        var adjustedBar = new AdjustedHistoricalBar(
+            "AAPL", new DateOnly(2024, 6, 15), 180.00m, 182.00m, 179.00m, 181.00m, 25_000_000,
+            Source: "alpaca",
+            AdjustedOpen: 90.00m, AdjustedHigh: 91.00m, AdjustedLow: 89.50m, AdjustedClose: 90.50m);
+
+        var bar = adjustedBar.ToHistoricalBar(preferAdjusted: true);
+
+        bar.IsAdjusted.Should().BeTrue("the conversion applied the adjusted values and must say so");
+    }
+
+    [Fact]
+    public void ToHistoricalBar_UnadjustedPathWithAdjustmentData_MarksBarAsUnadjusted()
+    {
+        var adjustedBar = new AdjustedHistoricalBar(
+            "AAPL", new DateOnly(2024, 6, 15), 180.00m, 182.00m, 179.00m, 181.00m, 25_000_000,
+            Source: "alpaca",
+            AdjustedOpen: 90.00m, AdjustedHigh: 91.00m, AdjustedLow: 89.50m, AdjustedClose: 90.50m);
+
+        var bar = adjustedBar.ToHistoricalBar(preferAdjusted: false);
+
+        bar.IsAdjusted.Should().BeFalse(
+            "when adjustment data exists, the base OHLCV values are raw prices by construction");
+    }
+
+    [Fact]
+    public void ToHistoricalBar_WithoutAdjustmentData_LeavesRegimeUnknown()
+    {
+        var adjustedBar = new AdjustedHistoricalBar(
+            "AAPL", new DateOnly(2024, 6, 15), 180.00m, 182.00m, 179.00m, 181.00m, 25_000_000,
+            Source: "finnhub");
+
+        var bar = adjustedBar.ToHistoricalBar(preferAdjusted: true);
+
+        bar.IsAdjusted.Should().BeNull(
+            "a provider that never declared its regime must not be labeled either way");
+    }
+
+    [Fact]
+    public void HistoricalBar_DefaultRegime_IsHonestlyUnknown()
+    {
+        var bar = new HistoricalBar("SPY", new DateOnly(2024, 1, 3), 100m, 101m, 99m, 100.5m, 1_000);
+
+        bar.IsAdjusted.Should().BeNull();
+    }
 }

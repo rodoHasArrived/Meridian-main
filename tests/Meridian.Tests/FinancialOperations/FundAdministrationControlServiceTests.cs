@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.FinancialOperations.FundAdministration;
 using Meridian.Ledger;
+using System.Text.Json;
 using Xunit;
 
 namespace Meridian.Tests.FinancialOperations;
@@ -160,6 +161,26 @@ public sealed class FundAdministrationControlServiceTests
     }
 
     [Fact]
+    public void RegisterJournalTemplate_MalformedReplacement_PreservesApprovedTemplateAndAuditTrail()
+    {
+        var service = new FundAdministrationControlService();
+        var approvedTemplate = FeeTemplate();
+        service.RegisterJournalTemplate(approvedTemplate, "controller");
+        var malformedReplacement = new JournalTemplate(
+            "fee",
+            "Malformed Fee Accrual",
+            "An invalid replacement.",
+            [new JournalTemplateLine(null!, JournalTemplateSide.Debit, "fee")]);
+
+        var act = () => service.RegisterJournalTemplate(malformedReplacement, "controller");
+
+        act.Should().Throw<ArgumentNullException>();
+        service.RegisteredJournalTemplates.Should().ContainSingle().Which.Should().BeSameAs(approvedTemplate);
+        service.EventLog.EventsOfKind(FundAdministrationEventKind.JournalTemplateRegistered).Should().ContainSingle();
+        service.EventLog.VerifyIntegrity().Should().BeTrue();
+    }
+
+    [Fact]
     public void ApplyOnboardingTemplate_ResolvesPlaceholdersAndRecords()
     {
         var service = new FundAdministrationControlService();
@@ -214,9 +235,41 @@ public sealed class FundAdministrationControlServiceTests
         var registered = service.EventLog.EventsOfKind(FundAdministrationEventKind.OnboardingTemplateRegistered)
             .Should().ContainSingle().Which;
         registered.Attributes["nodeCount"].Should().Be("2");
-        registered.Attributes["nodes"].Should().Contain("port|Portfolio|{fundCode}-MAIN|{fundName} Main|org");
-        registered.Attributes["nodes"].Should().Contain("ccy=USD", "the base currency is part of the approved definition");
+        using var descriptor = JsonDocument.Parse(registered.Attributes["nodes"]);
+        var portfolio = descriptor.RootElement[1];
+        portfolio.GetProperty("Key").GetString().Should().Be("port");
+        portfolio.GetProperty("NodeType").GetString().Should().Be(OnboardingTemplateNode.Types.Portfolio);
+        portfolio.GetProperty("BaseCurrency").GetString().Should().Be("USD");
         service.EventLog.VerifyIntegrity().Should().BeTrue();
+    }
+
+    [Fact]
+    public void RegisterOnboardingTemplate_UsesUnambiguousCompleteNodeDescriptor()
+    {
+        var first = RegisterAndGetNodeDescriptor(new OnboardingTemplate(
+            "first",
+            "First",
+            "First template.",
+            [new OnboardingTemplateNode("typeB", "key|typeA", "CODE", "NAME", BaseCurrency: "USD", Attributes: new Dictionary<string, string> { ["strategy"] = "Long" })],
+            "admin",
+            At));
+        var second = RegisterAndGetNodeDescriptor(new OnboardingTemplate(
+            "second",
+            "Second",
+            "Second template.",
+            [new OnboardingTemplateNode("typeA|typeB", "key", "CODE", "NAME", BaseCurrency: "EUR", Attributes: new Dictionary<string, string> { ["strategy"] = "Short" })],
+            "admin",
+            At));
+
+        first.Should().NotBe(second, "the descriptor must distinguish every applied node field and field boundary");
+
+        static string RegisterAndGetNodeDescriptor(OnboardingTemplate template)
+        {
+            var service = new FundAdministrationControlService();
+            service.RegisterOnboardingTemplate(template, "admin");
+            return service.EventLog.EventsOfKind(FundAdministrationEventKind.OnboardingTemplateRegistered)
+                .Should().ContainSingle().Which.Attributes["nodes"];
+        }
     }
 
     [Fact]

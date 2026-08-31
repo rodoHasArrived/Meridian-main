@@ -122,6 +122,22 @@ class MarkdownGenerationLintTests(unittest.TestCase):
         self.assertIn("`docs/old/stale.md`", rendered)
         self.assertNotIn(r".claude\skills\demo.md", rendered)
 
+    def test_health_dashboard_ignores_repository_scratch_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "README.md").write_text("# Repository\n", encoding="utf-8")
+            scratch = root / ".tmp" / "review-worktree"
+            scratch.mkdir(parents=True)
+            (scratch / "README.md").write_text("# Duplicate repository\n", encoding="utf-8")
+            artifacts = root / ".artifacts" / "production-audit"
+            artifacts.mkdir(parents=True)
+            (artifacts / "README.md").write_text("# Generated audit output\n", encoding="utf-8")
+
+            metrics = generate_health_dashboard.analyse(root)
+
+            self.assertEqual(1, metrics.total_files)
+            self.assertEqual(["README.md"], [item.path for item in metrics.all_files])
+
 
 if __name__ == "__main__":
     unittest.main()

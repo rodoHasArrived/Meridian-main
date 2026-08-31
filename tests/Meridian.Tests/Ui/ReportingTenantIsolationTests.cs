@@ -5,6 +5,7 @@ using Meridian.Identity.Auth;
 using Meridian.Reporting;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;
+using IReportingScheduleStore = Meridian.Reporting.IReportingScheduleStore;
 
 namespace Meridian.Tests.Ui;
 
@@ -149,6 +150,104 @@ public sealed class ReportingTenantIsolationTests
     }
 
     [Fact]
+    public async Task HostedBridge_ReadinessTracksTheDeliveryWorkerLifecycle()
+    {
+        var readiness = new ReportingDeliveryWorkerReadinessState();
+        var scheduleService = CreateScheduleService(new StubReportingScheduleStore([]));
+        var queue = new RecordingScheduledHandoffQueue();
+        using var worker = new ReportingSecureDistributionHostedService(
+            scheduleService,
+            queue.QueueAsync,
+            NullLogger<ReportingSecureDistributionHostedService>.Instance,
+            readiness: readiness);
+
+        readiness.IsReady.Should().BeFalse();
+        using var startup = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await worker.StartAsync(startup.Token);
+        try
+        {
+            SpinWait.SpinUntil(
+                    () => readiness.IsReady,
+                    TimeSpan.FromSeconds(5))
+                .Should().BeTrue(
+                    "readiness is earned only after a successful secure distribution cycle");
+        }
+        finally
+        {
+            using var shutdown = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            await worker.StopAsync(shutdown.Token);
+        }
+
+        readiness.IsReady.Should().BeFalse(
+            "a stopped delivery worker cannot satisfy deployment readiness");
+    }
+
+    [Fact]
+    public void ScheduledClientPackageEmailHandoff_GrantsOneUsePerPrimaryArtifact()
+    {
+        var accessPolicy = new ReportAccessPolicyDto(
+            ReportAccessModeDto.CompanyWide,
+            CompanyId: "company-shared");
+        ReportingScheduleDeliveryTargetDto[] targets =
+        [
+            new(
+                "client-package-email",
+                [
+                    GovernanceReportArtifactFormatDto.Pdf,
+                    GovernanceReportArtifactFormatDto.Xlsx
+                ],
+                ReportPackDeliveryModeDto.EmailLink,
+                RecipientPrincipalId: "recipient-a",
+                RecipientPrincipalKind: ReportAccessPrincipalKindDto.User)
+        ];
+        var parameters = BuildExactRunParameters() with
+        {
+            OutputFormat = ReportingOutputFormatDto.ClientPackage
+        };
+        var schedule = new ReportingScheduleRecordDto(
+            "client-package-schedule",
+            "investor-monthly-statement",
+            "0 8 1 * *",
+            parameters.AsOfDate,
+            FixedNow.AddDays(1),
+            2,
+            "operator-a",
+            ReportingScheduleStateDto.Active,
+            FixedNow,
+            FixedNow,
+            RunParameters: parameters,
+            TenantId: "tenant-a",
+            CompanyId: "company-shared",
+            AccessPolicySnapshot: accessPolicy,
+            DeliveryTargets: targets,
+            AccessPolicySnapshotHash:
+                ReportingScheduleService.ComputeAccessPolicySnapshotHash(accessPolicy),
+            DeliveryTargetsSnapshotHash:
+                ReportingScheduleService.ComputeDeliveryTargetsSnapshotHash(targets));
+        var manifest = BuildRunSnapshot(
+                "client-package-run",
+                "tenant-a",
+                "company-shared")
+            .Manifest with
+        {
+            Trigger = ReportingRunTrigger.Scheduled,
+            ScheduleId = schedule.ScheduleId,
+            ResolvedParameters = parameters
+        };
+
+        var handoff = ReportingScheduleService
+            .BuildReleaseDeliveryHandoffs(schedule, manifest)
+            .Should()
+            .ContainSingle()
+            .Subject;
+
+        handoff.ArtifactIds.Should().Equal(
+            "client-package-run.pdf",
+            "client-package-run.xlsx");
+        handoff.GrantMaxUses.Should().Be(2);
+    }
+
+    [Fact]
     public async Task HostedBridge_UnreleasedHandoffCreatesNoJob_ThenReleasedArtifactQueuesExactlyOnce()
     {
         var handoff = BuildReleaseHandoff();
@@ -164,7 +263,8 @@ public sealed class ReportingTenantIsolationTests
 
         unreleased.Attempted.Should().Be(1);
         unreleased.Enqueued.Should().Be(0);
-        unreleased.Failed.Should().Be(1);
+        unreleased.AwaitingRelease.Should().Be(1);
+        unreleased.Failed.Should().Be(0);
         queue.CreatedJobCount.Should().Be(0);
         scheduleService.ListPendingReleaseHandoffsForWorker().Should().ContainSingle();
 
@@ -760,7 +860,11 @@ public sealed class ReportingTenantIsolationTests
             readinessService: readiness,
             certificationService: certification,
             governanceCoordinator: governance);
-        var parameters = BuildExactRunParameters();
+        var parameters = BuildExactRunParameters() with
+        {
+            PeriodId = "55555555-5555-5555-5555-555555555555",
+            OutputFormat = ReportingOutputFormatDto.ClientPackage
+        };
         var request = new ReportingScheduleUpsertRequestDto(
             "private-month-end",
             draft.Definition.TemplateId.Name,
@@ -774,7 +878,10 @@ public sealed class ReportingTenantIsolationTests
             [
                 new ReportingScheduleDeliveryTargetDto(
                     "fund-operations",
-                    [GovernanceReportArtifactFormatDto.Pdf],
+                    [
+                        GovernanceReportArtifactFormatDto.Pdf,
+                        GovernanceReportArtifactFormatDto.Xlsx
+                    ],
                     ReportPackDeliveryModeDto.SecurePortal,
                     RecipientPrincipalId: "operator-a",
                     RecipientPrincipalKind: ReportAccessPrincipalKindDto.User)
@@ -803,7 +910,7 @@ public sealed class ReportingTenantIsolationTests
             },
             ownerScope);
         unavailableFormat.Should().Throw<InvalidDataException>()
-            .WithMessage("*exact primary output is Pdf*");
+            .WithMessage("*exact primary outputs are Pdf, Xlsx*");
 
         var retainedSchedule = service.Upsert(request, ownerScope);
         var incompleteScope = Scope("operator-b", "tenant-b", "company-b");
@@ -826,7 +933,9 @@ public sealed class ReportingTenantIsolationTests
         invalidActivation.Should().Throw<InvalidDataException>()
             .WithMessage("*immutable run-parameter snapshot*");
 
-        var result = await service.RunDueAsync(FixedNow, CancellationToken.None);
+        var workerResult = await service.RunDueForWorkerAsync(FixedNow, CancellationToken.None);
+        workerResult.Failures.Should().BeEmpty();
+        var result = workerResult.Result;
 
         var runResult = result.Runs.Should().ContainSingle().Subject;
         governance.CurrentRun.Should().NotBeNull();
@@ -902,12 +1011,12 @@ public sealed class ReportingTenantIsolationTests
             governanceCoordinator: restartedGovernance);
         var recovered = await recoveredService.RunDueForWorkerAsync(FixedNow, CancellationToken.None);
         recovered.Result.Runs.Should().ContainSingle(run => run.Run.RunId == governed.RunId);
-        recovered.Failures.Should().ContainSingle(failure =>
-            failure.ScheduleId == incompleteDraft.ScheduleId
-            && failure.TenantId == "tenant-b"
-            && failure.CompanyId == "company-b"
-            && failure.ErrorType == nameof(InvalidDataException)
-            && failure.FailureRecordingErrorType == null);
+        var recoveredFailure = recovered.Failures.Should().ContainSingle().Subject;
+        recoveredFailure.ScheduleId.Should().Be(incompleteDraft.ScheduleId);
+        recoveredFailure.TenantId.Should().Be("tenant-b");
+        recoveredFailure.CompanyId.Should().Be("company-b");
+        recoveredFailure.ErrorType.Should().Be(nameof(InvalidDataException));
+        recoveredFailure.FailureRecordingErrorType.Should().BeNull();
         runStore.ListRuns(10).Should().ContainSingle(snapshot => snapshot.Manifest.RunId == governed.RunId);
         var retainedFailure = recoveredService.ListSchedules(incompleteScope)
             .Should().ContainSingle().Subject;
@@ -942,8 +1051,12 @@ public sealed class ReportingTenantIsolationTests
         handoff.State.Should().Be(ReportingScheduledReleaseHandoffStateDto.PendingRelease);
         handoff.HandoffId.Should().HaveLength(64);
         handoff.DistributionId.Should().Be($"scheduled:{handoff.HandoffId}");
-        handoff.RequestedFormats.Should().Equal(GovernanceReportArtifactFormatDto.Pdf);
-        handoff.ArtifactIds.Should().Equal($"{governed.RunId}.pdf");
+        handoff.RequestedFormats.Should().Equal(
+            GovernanceReportArtifactFormatDto.Pdf,
+            GovernanceReportArtifactFormatDto.Xlsx);
+        handoff.ArtifactIds.Should().Equal(
+            $"{governed.RunId}.pdf",
+            $"{governed.RunId}.xlsx");
         handoff.Destination.Should().BeEmpty(
             "the recipient directory owns external destination resolution after release");
 
@@ -1095,7 +1208,7 @@ public sealed class ReportingTenantIsolationTests
     }
 
     [Fact]
-    public void ReportWriterGridRead_CrossTenantAdminIsDeniedBeforeArtifactLookup()
+    public void ReportWriterGridRead_CrossTenantAdminDoesNotDiscloseForeignRun()
     {
         var snapshot = BuildRunSnapshot("tenant-a-grid", "tenant-a", "company-shared");
         var orchestration = new ReportingOrchestrationService(
@@ -1108,8 +1221,56 @@ public sealed class ReportingTenantIsolationTests
 
         var read = () => service.GetGrid(snapshot.Manifest.RunId, "any-grid", tenantBAdmin);
 
-        read.Should().Throw<UnauthorizedAccessException>()
-            .WithMessage("*another tenant or company*");
+        read.Should().Throw<KeyNotFoundException>()
+            .WithMessage("*was not found*");
+    }
+
+    [Fact]
+    public void ReportWriterGridRead_SameRunIdAcrossTenants_UsesBoundTenantLookup()
+    {
+        const string runId = "shared-run-grid";
+        var tenantAGrid = new ReportWriterGridRenderDto(
+            "tenant-a-grid",
+            "Tenant A grid",
+            ReportWriterGridKindDto.Detail,
+            [],
+            [],
+            []);
+        var tenantBGrid = tenantAGrid with
+        {
+            GridId = "tenant-b-grid",
+            Title = "Tenant B grid"
+        };
+        var tenantABase = BuildRunSnapshot(runId, "tenant-a", "company-shared");
+        var tenantBBase = BuildRunSnapshot(runId, "tenant-b", "company-shared");
+        var tenantASnapshot = tenantABase with
+        {
+            Manifest = tenantABase.Manifest with
+            {
+                RenderedReportWriterGrids = [tenantAGrid]
+            }
+        };
+        var tenantBSnapshot = tenantBBase with
+        {
+            Manifest = tenantBBase.Manifest with
+            {
+                RenderedReportWriterGrids = [tenantBGrid]
+            }
+        };
+        var orchestration = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(),
+            new DeterministicReportingSectionRenderer(),
+            () => FixedNow,
+            new StubReportingRunStore([tenantASnapshot, tenantBSnapshot]));
+        var service = new ReportWriterGridArtifactService(orchestration);
+
+        var grid = service.GetGrid(
+            runId,
+            tenantAGrid.GridId,
+            Scope("admin-a", "tenant-a", "company-shared", isAdmin: true));
+
+        grid.GridId.Should().Be(tenantAGrid.GridId);
+        grid.Title.Should().Be(tenantAGrid.Title);
     }
 
     [Fact]
@@ -1356,11 +1517,25 @@ public sealed class ReportingTenantIsolationTests
         public IReadOnlyList<ReportingRunSnapshot> ListRuns(int limit = 25) =>
             runs.Take(limit).ToArray();
 
-        public ReportingOutputManifest? GetManifest(string runId) =>
-            runs.FirstOrDefault(run => string.Equals(
-                run.Manifest.RunId,
-                runId,
-                StringComparison.Ordinal))?.Manifest;
+        public ReportingOutputManifest? GetManifest(string runId)
+        {
+            var matches = runs
+                .Where(run => string.Equals(
+                    run.Manifest.RunId,
+                    runId,
+                    StringComparison.Ordinal))
+                .Take(2)
+                .ToArray();
+            return matches.Length == 1 ? matches[0].Manifest : null;
+        }
+
+        public ReportingOutputManifest? GetManifest(string tenantId, string runId) =>
+            runs.FirstOrDefault(run =>
+                string.Equals(run.Manifest.RunId, runId, StringComparison.Ordinal)
+                && string.Equals(
+                    run.Manifest.OperationalScope?.TenantId,
+                    tenantId,
+                    StringComparison.Ordinal))?.Manifest;
 
         public IReadOnlyList<ReportingRunAuditEntry> GetAudit(string runId) =>
             runs.FirstOrDefault(run => string.Equals(
@@ -1430,7 +1605,7 @@ public sealed class ReportingTenantIsolationTests
             }
             if (!_releasedArtifacts.TryGetValue(command.RunId, out var released))
             {
-                throw new InvalidOperationException("The governed run is not released.");
+                throw new ReportingRunAwaitingReleaseException(command.RunId);
             }
             if (command.ArtifactIds is not { Count: > 0 }
                 || command.ArtifactIds.Any(artifactId => !released.Contains(artifactId)))
@@ -1524,25 +1699,27 @@ public sealed class ReportingTenantIsolationTests
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var checkpointId = "reconciliation-month-end-a";
-            var checkpointHash = new string('c', 64);
-            return ValueTask.FromResult(new ReportingReconciliationEvidenceReceipt(
-                source.TenantId,
-                source.OrganizationId,
-                source.CompanyId,
-                source.FundId,
-                source.LedgerBookId,
-                source.AccountingPeriodId,
-                source.AccountingBasis,
-                source.AsOfDate,
-                source.CheckpointId,
-                source.CheckpointHash,
-                checkpointId,
-                checkpointHash,
-                FixedNow,
-                HasOpenBreaks: false,
-                EvidenceIds: ImmutableArray.Create(
-                    $"reconciliation-checkpoint:{checkpointId}:{checkpointHash}")));
+            return ValueTask.FromResult(ReportingReconciliationEvidenceValidation.CreateReceipt(
+                source,
+                new ReportingReconciliationCompletionEvidence(
+                    $"hard-close-{source.CheckpointId}",
+                    new string('c', 64),
+                    FixedNow,
+                    HasOpenBreaks: false,
+                    [$"close:{source.CheckpointId}"],
+                    CloseWorkflowCompletion: new ReportingCloseWorkflowCompletionEvidence(
+                        "22222222-2222-2222-2222-222222222222",
+                        11,
+                        "33333333-3333-3333-3333-333333333333",
+                        source.LedgerBookId,
+                        source.AccountingPeriodId,
+                        "close-approval-month-end-a",
+                        new string('d', 64),
+                        new string('e', 64),
+                        "close-package-month-end-a",
+                        new string('f', 64),
+                        "44444444-4444-4444-4444-444444444444",
+                        new string('a', 64)))));
         }
     }
 

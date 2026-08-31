@@ -93,29 +93,10 @@ public static class ReportingArtifactDeclaration
             "application/json",
             ReportingDeclaredArtifactKind.Manifest));
 
-        artifacts.Add(output switch
+        foreach (var primaryOutput in BuildPrimaryOutputs(normalizedRunId, output))
         {
-            ReportingOutputFormatDto.Xlsx => new ReportingDeclaredArtifact(
-                $"{normalizedRunId}.xlsx",
-                $"{normalizedRunId}.xlsx",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                ReportingDeclaredArtifactKind.PrimaryOutput),
-            ReportingOutputFormatDto.Csv => new ReportingDeclaredArtifact(
-                $"{normalizedRunId}.csv",
-                $"{normalizedRunId}.csv",
-                "text/csv",
-                ReportingDeclaredArtifactKind.PrimaryOutput),
-            ReportingOutputFormatDto.EvidenceVault => new ReportingDeclaredArtifact(
-                $"{normalizedRunId}.evidence-vault.json",
-                $"{normalizedRunId}.evidence-vault.json",
-                "application/vnd.meridian.reporting-evidence+json",
-                ReportingDeclaredArtifactKind.PrimaryOutput),
-            _ => new ReportingDeclaredArtifact(
-                $"{normalizedRunId}.pdf",
-                $"{normalizedRunId}.pdf",
-                "application/pdf",
-                ReportingDeclaredArtifactKind.PrimaryOutput)
-        });
+            artifacts.Add(primaryOutput);
+        }
 
         if (includePreview)
         {
@@ -182,6 +163,46 @@ public static class ReportingArtifactDeclaration
 
         return built;
     }
+
+    private static IEnumerable<ReportingDeclaredArtifact> BuildPrimaryOutputs(
+        string normalizedRunId,
+        ReportingOutputFormatDto output)
+    {
+        if (output == ReportingOutputFormatDto.ClientPackage)
+        {
+            yield return Pdf(normalizedRunId);
+            yield return Xlsx(normalizedRunId);
+            yield break;
+        }
+
+        yield return output switch
+        {
+            ReportingOutputFormatDto.Xlsx => Xlsx(normalizedRunId),
+            ReportingOutputFormatDto.Csv => new ReportingDeclaredArtifact(
+                $"{normalizedRunId}.csv",
+                $"{normalizedRunId}.csv",
+                "text/csv",
+                ReportingDeclaredArtifactKind.PrimaryOutput),
+            ReportingOutputFormatDto.EvidenceVault => new ReportingDeclaredArtifact(
+                $"{normalizedRunId}.evidence-vault.json",
+                $"{normalizedRunId}.evidence-vault.json",
+                "application/vnd.meridian.reporting-evidence+json",
+                ReportingDeclaredArtifactKind.PrimaryOutput),
+            _ => Pdf(normalizedRunId)
+        };
+    }
+
+    private static ReportingDeclaredArtifact Pdf(string normalizedRunId) => new(
+        $"{normalizedRunId}.pdf",
+        $"{normalizedRunId}.pdf",
+        "application/pdf",
+        ReportingDeclaredArtifactKind.PrimaryOutput);
+
+    private static ReportingDeclaredArtifact Xlsx(string normalizedRunId) => new(
+        $"{normalizedRunId}.xlsx",
+        $"{normalizedRunId}.xlsx",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ReportingDeclaredArtifactKind.PrimaryOutput);
 
     private static string NormalizeFileToken(string value)
     {

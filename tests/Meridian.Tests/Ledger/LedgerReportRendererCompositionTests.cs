@@ -89,6 +89,21 @@ public sealed class LedgerReportRendererCompositionTests
     }
 
     [Fact]
+    public void SharedExportService_BuildsThePrimaryPdfAndXlsxAsOneRendererBackedPackage()
+    {
+        var renderer = new TrackingBinaryRenderer();
+        var exportService = new LedgerClientReportExportService(renderer);
+
+        var package = exportService.BuildClientDocumentPackage(
+            LedgerReportPackTestData.BuildContributionPack());
+
+        package.Pdf.Should().Equal(TrackingBinaryRenderer.PdfBytes);
+        package.Workbook.Should().Equal(TrackingBinaryRenderer.WorkbookBytes);
+        renderer.PdfRenderCount.Should().Be(1);
+        renderer.WorkbookRenderCount.Should().Be(1);
+    }
+
+    [Fact]
     public void SharedExportService_WithoutRenderer_DegradesToPlainTextFallback()
     {
         var exportService = new LedgerClientReportExportService(renderer: null);
@@ -99,5 +114,29 @@ public sealed class LedgerReportRendererCompositionTests
             LedgerReportPackTestData.BuildContributionPack(),
             LedgerReportPackTestData.BuildScheduledExport());
         artifacts.Should().Contain(a => a.Name == "scheduled-export-financials.pdf");
+    }
+
+    private sealed class TrackingBinaryRenderer : ILedgerReportBinaryRenderer
+    {
+        internal static readonly byte[] PdfBytes = "%PDF-tracked"u8.ToArray();
+        internal static readonly byte[] WorkbookBytes = [(byte)'P', (byte)'K', 1, 2, 3];
+
+        internal int PdfRenderCount { get; private set; }
+
+        internal int WorkbookRenderCount { get; private set; }
+
+        public byte[] RenderPdf(LedgerFinancialReportPack reportPack)
+        {
+            ArgumentNullException.ThrowIfNull(reportPack);
+            PdfRenderCount++;
+            return PdfBytes;
+        }
+
+        public byte[] RenderWorkbook(LedgerFinancialReportPack reportPack)
+        {
+            ArgumentNullException.ThrowIfNull(reportPack);
+            WorkbookRenderCount++;
+            return WorkbookBytes;
+        }
     }
 }

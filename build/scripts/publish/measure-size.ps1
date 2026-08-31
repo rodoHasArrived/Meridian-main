@@ -4,9 +4,7 @@ param(
         "src/Meridian/bin/Debug/net10.0",
         "src/Meridian/bin/Release/net10.0",
         "src/Meridian.Ui/dashboard/node_modules",
-        "src/Meridian.Ui/dashboard/dist",
         "src/Meridian.Ui/wwwroot/workstation",
-        "wwwroot/workstation",
         "artifacts/publish",
         "src",
         "tests"
