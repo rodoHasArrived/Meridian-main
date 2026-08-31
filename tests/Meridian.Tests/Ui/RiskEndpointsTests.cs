@@ -9,6 +9,7 @@ using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Meridian.PortfolioRecords.Accounts;
+using Meridian.Risk;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -243,6 +244,83 @@ public sealed class RiskEndpointsTests
         var denyAfter = await client.PostAsync(
             $"/api/risk/escalations/{escalationId}/deny", JsonContent(new { reason = "too late" }));
         denyAfter.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task RiskEscalations_ChainedApprovalRetainsOriginalSubmitterForSegregationOfDuties()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
+            services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
+            services.AddSingleton<IExecutionGateway>(_ => new Meridian.Execution.PaperTradingGateway(
+                NullLogger<Meridian.Execution.PaperTradingGateway>.Instance,
+                options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true }));
+            services.AddSingleton(new RiskEscalationQueueService(
+                NullLogger<RiskEscalationQueueService>.Instance,
+                options: new RiskEscalationQueueOptions(
+                    Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json"))));
+            services.AddSingleton<IRiskValidator>(sp => new Meridian.Risk.CompositeRiskValidator(
+                [
+                    new EscalatingRule("order-notional", "band A"),
+                    new EscalatingRule("desk-review", "band B")
+                ],
+                NullLogger<Meridian.Risk.CompositeRiskValidator>.Instance,
+                escalationQueue: sp.GetRequiredService<RiskEscalationQueueService>()));
+            services.AddSingleton<IOrderManager>(sp => new OrderManagementSystem(
+                sp.GetRequiredService<IExecutionGateway>(),
+                NullLogger<OrderManagementSystem>.Instance,
+                riskValidator: sp.GetRequiredService<IRiskValidator>(),
+                portfolioState: sp.GetRequiredService<PaperTradingPortfolio>()));
+        }, includeExecutionEndpoints: true);
+
+        var client = app.GetTestClient();
+        var submit = new HttpRequestMessage(HttpMethod.Post, "/api/execution/orders/submit")
+        {
+            Content = JsonContent(new
+            {
+                symbol = "AAPL",
+                side = 0,
+                type = 1,
+                timeInForce = 0,
+                quantity = 10,
+                limitPrice = 100m
+            })
+        };
+        submit.Headers.Add("X-Test-User", "submitter");
+
+        var parkedResponse = await client.SendAsync(submit);
+        parkedResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
+        var parked = JsonSerializer.Deserialize<OrderResult>(
+            await parkedResponse.Content.ReadAsStringAsync(), JsonOptions());
+
+        var approveFirst = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"/api/risk/escalations/{parked!.EscalationId}/approve")
+        {
+            Content = JsonContent(new { reason = "first independent review" })
+        };
+        approveFirst.Headers.Add("X-Test-User", "risk-desk");
+        var firstApprovalResponse = await client.SendAsync(approveFirst);
+        firstApprovalResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var firstApproval = JsonSerializer.Deserialize<RiskEscalationApprovalResponse>(
+            await firstApprovalResponse.Content.ReadAsStringAsync(), JsonOptions());
+        firstApproval!.ReleaseResult!.RequiresApproval.Should().BeTrue("the second rule still requires its own decision");
+
+        var queue = app.Services.GetRequiredService<RiskEscalationQueueService>();
+        var second = queue.TryGet(firstApproval.ReleaseResult.EscalationId!);
+        second!.Actor.Should().Be("submitter", "an approver cannot replace the submitting actor during a chained release");
+
+        var selfApproveSecond = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"/api/risk/escalations/{second.EscalationId}/approve")
+        {
+            Content = JsonContent(new { reason = "submitter must not approve a later exception" })
+        };
+        selfApproveSecond.Headers.Add("X-Test-User", "submitter");
+
+        (await client.SendAsync(selfApproveSecond)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -636,6 +714,14 @@ public sealed class RiskEndpointsTests
             PortfolioValue: 100_000m,
             SymbolExposures: new Dictionary<string, Meridian.Risk.SymbolExposure>(StringComparer.OrdinalIgnoreCase),
             AsOf: DateTimeOffset.UtcNow);
+    }
+
+    private sealed class EscalatingRule(string ruleName, string reason) : IRiskRule
+    {
+        public string RuleName => ruleName;
+
+        public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default) =>
+            Task.FromResult(RiskValidationResult.Escalated(reason));
     }
 
     private sealed class StaticPositionTracker : IPositionTracker

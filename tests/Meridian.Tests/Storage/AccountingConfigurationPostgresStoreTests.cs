@@ -1,5 +1,9 @@
+using System.Globalization;
 using FluentAssertions;
 using Meridian.Contracts.Ledger;
+using Npgsql;
+using Meridian.Storage.Ledger;
+using Meridian.Ui.Shared.Services;
 
 namespace Meridian.Tests.Storage;
 
@@ -284,6 +288,87 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    public async Task AuditStore_AppendIsIdempotentOnTheEventId()
+    {
+        // audit_event_id is the primary key, so a repeat raised a unique violation and the append
+        // threw. That matters because the repeat is what RecoverPendingAuditAsync does after a
+        // crash between a mutation and its audit -- so the one path written to complete an
+        // interrupted audit was the path that could not run twice.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var auditEvent = AuditEvent("configuration.activate");
+
+        await database.AccountingConfigurationStore.AppendAsync(auditEvent);
+        await database.AccountingConfigurationStore.AppendAsync(auditEvent);
+
+        (await database.AccountingConfigurationStore.ListAsync("fund-alpha")).Should().ContainSingle();
+
+        // The chain still advances afterwards: the repeat consumed no sequence.
+        await database.AccountingConfigurationStore.AppendAsync(AuditEvent("chart.upsert"));
+        (await database.AccountingConfigurationStore.ListAsync("fund-alpha")).Should().HaveCount(2);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AuditStore_RefusesTwoDifferentEventsSharingOneId()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var first = AuditEvent("configuration.activate");
+        await database.AccountingConfigurationStore.AppendAsync(first);
+
+        var collision = async () => await database.AccountingConfigurationStore
+            .AppendAsync(first with { Action = "chart.upsert" });
+
+        (await collision.Should().ThrowAsync<InvalidOperationException>())
+            .Which.Message.Should().Contain("different content");
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AuditStore_RefusesToAppendOntoAChainWrittenByANewerSchema()
+    {
+        // The head records schema_version so a build that cannot implement a chain's hashing rules
+        // refuses rather than guesses. The file posture already did; here the column was selected by
+        // nobody, so a v2 chain would have been checked with v1 rules -- reporting EventMutated over
+        // events nobody touched, or, worse, accepting and laying a v1 link on a v2 history that no
+        // build could ever verify again.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        await database.AccountingConfigurationStore.AppendAsync(AuditEvent("configuration.activate"));
+
+        await database.SetAuditChainSchemaVersionAsync(AccountingAuditChainState.CurrentSchemaVersion + 1);
+
+        var append = async () => await database.AccountingConfigurationStore
+            .AppendAsync(AuditEvent("chart.upsert"));
+
+        var refusal = await append.Should().ThrowAsync<AccountingAuditChainIntegrityException>();
+        refusal.Which.Verification.Status.Should()
+            .Be(AccountingAuditChainStatus.UnsupportedSchemaVersion);
+
+        // Nothing was written, and the events that were already there are untouched.
+        (await database.AccountingConfigurationStore.ListAsync("fund-alpha")).Should().ContainSingle();
+
+        // Restoring the supported version lets the chain continue, so the refusal is a gate rather
+        // than a permanent stop.
+        await database.SetAuditChainSchemaVersionAsync(AccountingAuditChainState.CurrentSchemaVersion);
+        await database.AccountingConfigurationStore.AppendAsync(AuditEvent("chart.upsert"));
+        (await database.AccountingConfigurationStore.ListAsync("fund-alpha")).Should().HaveCount(2);
+    }
+
+    private static AccountingActionAuditEventDto AuditEvent(string action)
+        => new(
+            AuditEventId: Guid.NewGuid(),
+            RecordedAtUtc: DateTimeOffset.Parse("2026-06-01T12:00:00Z"),
+            Actor: "ops-user",
+            Action: action,
+            FundProfileId: "fund-alpha",
+            LedgerBookId: null,
+            CorrelationId: "postgres-audit-test",
+            BeforeHash: "before",
+            AfterHash: "after",
+            ValidationIssues: [],
+            EvidenceLinks: ["wpf://accounting/configure"],
+            CompanyId: "company-alpha",
+            ReportGroupPrincipalIds: ["Accounting"],
+            TenantId: "tenant-alpha");
+
+    [LedgerDatabaseFact]
     public async Task AuditStore_FiltersAccountingActionEventsByTenantAndCompany()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -341,6 +426,420 @@ public sealed class AccountingConfigurationPostgresStoreTests
             item.CompanyId == "company-shared");
         beta.Should().NotContain(item => item.TenantId == "tenant-alpha");
         company.Should().HaveCount(2);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AnEventRecordedFinerThanAMicrosecond_DoesNotMakeTheNextAppendReportTampering()
+    {
+        // Fifteenth Codex review round asked whether the audit chain survives a sub-microsecond
+        // RecordedAtUtc: AccountingAuditChain truncates to microseconds when it digests, while
+        // timestamptz holds microseconds and PostgreSQL rounds a finer TEXT literal rather than
+        // truncating it. VerifyChainHeadAsync recomputes the payload digest from the retained row
+        // before every append, so a row holding a different instant than the one that was hashed
+        // would report its predecessor as mutated and stop the chain permanently.
+        //
+        // It holds, because Npgsql truncates the same way when it encodes the parameter, so
+        // PostgreSQL never sees a finer value. That is a property of the driver rather than of any
+        // code here, which is exactly why it is worth pinning: a protocol or driver change that
+        // started sending text literals would reintroduce it silently.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var store = database.AccountingConfigurationStore;
+
+        // Ticks ending in 7: finer than a microsecond, and rounds up rather than down.
+        var roundsUp = new DateTimeOffset(
+            DateTime.SpecifyKind(DateTime.Parse("2026-06-01T12:00:00.0000000Z").AddTicks(1234567), DateTimeKind.Utc));
+        var first = AuditEvent(recordedAtUtc: roundsUp);
+        await store.AppendAsync(first);
+
+        var appendNext = async () => await store.AppendAsync(AuditEvent());
+
+        await appendNext.Should().NotThrowAsync(
+            "the digest recorded for an event must name the instant the row actually holds");
+        var retained = (await store.ListAsync("fund-alpha"))
+            .Should().ContainSingle(item => item.AuditEventId == first.AuditEventId).Subject;
+        retained.RecordedAtUtc.Should().Be(
+            AccountingAuditChain.ToRetainedPrecision(roundsUp),
+            "the row must hold the instant that was hashed, not one PostgreSQL rounded up to");
+    }
+
+    [LedgerDatabaseFact]
+    public async Task ARetriedAppendOfAnEventRecordedFinerThanAMicrosecond_StaysIdempotent()
+    {
+        // The same invariant on the path recovery actually takes: RecoverPendingAuditAsync replays
+        // the append from the marker's copy of the event, which still carries the full tick, and
+        // AppendAsync decides "already retained" by recomputing the digest from the row. A digest
+        // that disagreed with the row would read as two events claiming one identity, and recovery
+        // would fail on the one path written to complete it.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var store = database.AccountingConfigurationStore;
+        var declared = AuditEvent(recordedAtUtc: new DateTimeOffset(
+            DateTime.SpecifyKind(DateTime.Parse("2026-06-01T12:00:00.0000000Z").AddTicks(9999999), DateTimeKind.Utc)));
+
+        await store.AppendAsync(declared);
+        var replay = async () => await store.AppendAsync(declared);
+
+        await replay.Should().NotThrowAsync(
+            "replaying the declared event is what recovery does, and it is the same event");
+        (await store.ListAsync("fund-alpha")).Should().ContainSingle();
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AMarkerLeftByAMutationThisStoreRetained_IsClearedRatherThanRaised()
+    {
+        // Fifteenth Codex review round. AfterHash was taken over the workspace as it stood in
+        // memory, carrying a derived RulesStudio this store never persists and GetAsync rebuilds as
+        // null, so it could never match a reload. Recovery's already-audited check then raised on
+        // every interrupted mutation -- and since every mutation runs recovery first, one crash
+        // blocked the scope permanently. The file posture round-trips the whole DTO as JSON, which
+        // is why the same test on it passes either way; only a store that drops a derived field can
+        // see this.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var store = database.AccountingConfigurationStore;
+        using var markerRoot = new TempDirectory();
+        var markers = new FileAccountingAuditPendingMarkerStore(
+            Path.Combine(markerRoot.Path, "pending-audit.json"));
+
+        // Both sides landed and only the clear was lost.
+        await CreateService(store, markers).UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            "fund-alpha",
+            new ChartOfAccountsNodeDto("node-one", "assets.node-one", "Cash", "Asset"),
+            Actor: "operator@example.test"));
+        var declared = (await store.ListAsync("fund-alpha")).Should().ContainSingle().Subject;
+        await markers.WriteAsync(new AccountingAuditPendingMarker(declared, DateTimeOffset.UtcNow));
+
+        var recovery = await CreateService(store, markers).RecoverPendingAuditAsync();
+
+        recovery.Outcome.Should().Be(AccountingAuditRecoveryOutcome.AlreadyAudited);
+        (await markers.ReadAsync()).Should().BeNull("a resolved marker must not re-fire");
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AMutationFollowingAnInterruptedOne_IsNotBlockedByTheRecoveryItRunsFirst()
+    {
+        // The consequence that makes the digest mismatch severe rather than cosmetic: every
+        // mutation resolves any outstanding marker before starting, so a recovery that can never
+        // succeed is a permanent block on the whole scope, not a one-off failed recovery.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var store = database.AccountingConfigurationStore;
+        using var markerRoot = new TempDirectory();
+        var markers = new FileAccountingAuditPendingMarkerStore(
+            Path.Combine(markerRoot.Path, "pending-audit.json"));
+
+        await CreateService(store, markers).UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            "fund-alpha",
+            new ChartOfAccountsNodeDto("node-one", "assets.node-one", "Cash", "Asset"),
+            Actor: "operator@example.test"));
+        var declared = (await store.ListAsync("fund-alpha")).Should().ContainSingle().Subject;
+        await markers.WriteAsync(new AccountingAuditPendingMarker(declared, DateTimeOffset.UtcNow));
+
+        var nextMutation = async () => await CreateService(store, markers).UpsertChartNodeAsync(
+            new UpsertChartOfAccountsNodeRequest(
+                "fund-alpha",
+                new ChartOfAccountsNodeDto("node-two", "assets.node-two", "Bank", "Asset"),
+                Actor: "operator@example.test"));
+
+        await nextMutation.Should().NotThrowAsync();
+        var workspace = await store.GetAsync("fund-alpha");
+        workspace!.ChartOfAccounts.Should().HaveCount(2);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AnEventEditedInTheMiddleOfTheChain_StopsTheNextAppend()
+    {
+        // Seventeenth Codex review round. VerifyChainHeadAsync read only the newest chained row, so
+        // an edit anywhere earlier passed and the append added another valid-looking successor: each
+        // entry hash binds to its predecessor's ENTRY hash, never to that predecessor's current
+        // payload, so checking the tail cannot see historical mutation. The file posture already
+        // verified every link on every append, which made AppendAsync's claim that the two postures
+        // carry identical tamper-evidence false.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var store = database.AccountingConfigurationStore;
+
+        var first = AuditEvent();
+        await store.AppendAsync(first);
+        await store.AppendAsync(AuditEvent());
+        await store.AppendAsync(AuditEvent());
+
+        // Edit the FIRST event, leaving its payload_hash and the whole tail untouched.
+        await ExecuteAsync(
+            database,
+            "update {0}.accounting_action_audit_events set actor = 'intruder@example.test' where audit_event_id = @id;",
+            ("id", first.AuditEventId));
+
+        var appendNext = async () => await store.AppendAsync(AuditEvent());
+
+        var refusal = await appendNext.Should().ThrowAsync<AccountingAuditChainIntegrityException>();
+        refusal.Which.Verification.Status.Should().Be(AccountingAuditChainStatus.EventMutated);
+        refusal.Which.Verification.FailedSequence.Should().Be(
+            AccountingAuditChainState.FirstSequence,
+            "an operator needs the row that broke, not the end of the chain");
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AnEventDeletedFromTheMiddleOfTheChain_StopsTheNextAppend()
+    {
+        // The other shape of the same gap. Every surviving link still digests and binds correctly,
+        // so nothing but a scan of the sequence itself can see that one is missing.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var store = database.AccountingConfigurationStore;
+
+        await store.AppendAsync(AuditEvent());
+        var second = AuditEvent();
+        await store.AppendAsync(second);
+        await store.AppendAsync(AuditEvent());
+
+        await ExecuteAsync(
+            database,
+            "delete from {0}.accounting_action_audit_events where audit_event_id = @id;",
+            ("id", second.AuditEventId));
+
+        var appendNext = async () => await store.AppendAsync(AuditEvent());
+
+        var refusal = await appendNext.Should().ThrowAsync<AccountingAuditChainIntegrityException>();
+        refusal.Which.Verification.Status.Should().Be(AccountingAuditChainStatus.BrokenSequence);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AnUntouchedChain_StillAppends()
+    {
+        // The control the two tests above need: verifying every link must not make an intact chain
+        // refuse. Four appends, each verifying everything before it.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var store = database.AccountingConfigurationStore;
+
+        var append = async () =>
+        {
+            for (var i = 0; i < 4; i++)
+            {
+                await store.AppendAsync(AuditEvent());
+            }
+        };
+
+        await append.Should().NotThrowAsync();
+        (await store.ListAsync("fund-alpha")).Should().HaveCount(4);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AnEventRetainedOutsideTheChain_StopsTheNextAppend()
+    {
+        // Eighteenth Codex review round. The scan filters on `chain_sequence is not null`, so a row
+        // inserted with that column left null -- by an instance predating the chain migration, or by
+        // any other writer -- was simply omitted: every link still verified, the append still
+        // extended the chain, and ListAsync went on serving that event as ordinary audit history
+        // with nothing protecting it. Every link binding correctly says nothing about an event no
+        // link points at, which is what AccountingAuditChainStatus.UnlinkedEvent exists to name and
+        // what the file posture already checked by counting.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var store = database.AccountingConfigurationStore;
+
+        await store.AppendAsync(AuditEvent());
+        await store.AppendAsync(AuditEvent());
+
+        // An event that exists but is in no link's reach.
+        await ExecuteAsync(
+            database,
+            """
+            insert into {0}.accounting_action_audit_events (
+                audit_event_id, recorded_at_utc, actor, action, fund_profile_id,
+                before_hash, after_hash,
+                validation_issues, evidence_links, report_group_principal_ids)
+            values (@id, now(), 'intruder@example.test', 'chart.upsert', 'fund-alpha',
+                repeat('0', 64), repeat('1', 64),
+                '[]'::jsonb, '[]'::jsonb, '[]'::jsonb);
+            """,
+            ("id", Guid.NewGuid()));
+
+        var appendNext = async () => await store.AppendAsync(AuditEvent());
+
+        var refusal = await appendNext.Should().ThrowAsync<AccountingAuditChainIntegrityException>();
+        refusal.Which.Verification.Status.Should().Be(AccountingAuditChainStatus.UnlinkedEvent);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AMarkerFromAMutationCarryingPaddedOptionalText_IsClearedRatherThanRaised()
+    {
+        // Seventeenth Codex review round. ReplaceChartAsync writes ParentPath, Symbol and
+        // FinancialAccountId through AddTextOrNull, which trims and nulls blank text, while the
+        // digest hashed the original strings -- so a padded value reloaded as something AfterHash
+        // never covered, and recovery raised on it forever. Same permanent-block shape as the
+        // RulesStudio divergence, reached through a different field.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var store = database.AccountingConfigurationStore;
+        using var markerRoot = new TempDirectory();
+        var markers = new FileAccountingAuditPendingMarkerStore(
+            Path.Combine(markerRoot.Path, "pending-audit.json"));
+
+        await CreateService(store, markers).UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            "fund-alpha",
+            new ChartOfAccountsNodeDto(
+                "node-padded",
+                "assets.node-padded",
+                "Cash",
+                "Asset",
+                ParentPath: "  assets  ",
+                Symbol: "   ",
+                FinancialAccountId: "  FA-1  "),
+            Actor: "operator@example.test"));
+        var declared = (await store.ListAsync("fund-alpha")).Should().ContainSingle().Subject;
+        await markers.WriteAsync(new AccountingAuditPendingMarker(declared, DateTimeOffset.UtcNow));
+
+        var recovery = await CreateService(store, markers).RecoverPendingAuditAsync();
+
+        recovery.Outcome.Should().Be(AccountingAuditRecoveryOutcome.AlreadyAudited);
+        (await markers.ReadAsync()).Should().BeNull("a resolved marker must not re-fire");
+    }
+
+    [Fact]
+    public async Task AMarkerFromAMutationCarryingNoncanonicalDimensionKeys_IsClearedRatherThanRaised()
+    {
+        // Codex review finding on PR #2871. ReplaceRulesAsync persists rule payloads as jsonb,
+        // which canonicalizes object key order (length first, then bytewise), so a rule scoped by
+        // ExternalGlDimensions inserted in any other order reloads with its dictionary enumerated
+        // differently than the digest hashed -- and recovery raised on it forever. Same
+        // permanent-block shape as the padded-text divergence above, reached through key order
+        // inside a nested map the top-level collection ordering cannot see.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var store = database.AccountingConfigurationStore;
+        using var markerRoot = new TempDirectory();
+        var markers = new FileAccountingAuditPendingMarkerStore(
+            Path.Combine(markerRoot.Path, "pending-audit.json"));
+
+        await CreateService(store, markers).UpsertPostingRuleAsync(new UpsertPostingRuleRequest(
+            "fund-alpha",
+            new PostingRuleDto(
+                "rule-dimensions",
+                "Dimension-scoped rule",
+                "InterestAccrual",
+                "template-interest",
+                Scope: new LedgerDimensionSetDto(ExternalGlDimensions: new Dictionary<string, string>
+                {
+                    // jsonb stores these as "cc", "book", "region"; insertion order deliberately differs.
+                    ["region"] = "emea",
+                    ["cc"] = "cc-100",
+                    ["book"] = "primary",
+                })),
+            Actor: "operator@example.test"));
+        var declared = (await store.ListAsync("fund-alpha")).Should().ContainSingle().Subject;
+        await markers.WriteAsync(new AccountingAuditPendingMarker(declared, DateTimeOffset.UtcNow));
+
+        var recovery = await CreateService(store, markers).RecoverPendingAuditAsync();
+
+        recovery.Outcome.Should().Be(AccountingAuditRecoveryOutcome.AlreadyAudited);
+        (await markers.ReadAsync()).Should().BeNull("a resolved marker must not re-fire");
+    }
+
+    [Fact]
+    public async Task AMarkerFromAMutationWhoseTestCaseDisplayOrderInvertsIdOrder_IsClearedRatherThanRaised()
+    {
+        // Control for a Codex round-23 finding on PR #2871, kept because it pins the property the
+        // finding questioned. LoadRuleTestCasesAsync reloads rows ordered by display_name then
+        // test_case_id, while the mutation ordered the in-memory collection it hashed differently
+        // -- but the digest orders RuleTestCases by TestCaseId itself, inside Durable, on both the
+        // save side and the recovery side, so the store's row order never reaches the hash. Two
+        // cases whose display-name order inverts their id order make the reload order genuinely
+        // different from id order; recovery must still clear.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var store = database.AccountingConfigurationStore;
+        using var markerRoot = new TempDirectory();
+        var markers = new FileAccountingAuditPendingMarkerStore(
+            Path.Combine(markerRoot.Path, "pending-audit.json"));
+
+        var service = CreateService(store, markers);
+        await service.UpsertRuleTestCaseAsync(new UpsertAccountingRuleTestCaseRequest(
+            "fund-alpha",
+            TestCase("case-b", "Alpha check"),
+            Actor: "operator@example.test"));
+        await service.UpsertRuleTestCaseAsync(new UpsertAccountingRuleTestCaseRequest(
+            "fund-alpha",
+            TestCase("case-a", "Zulu check"),
+            Actor: "operator@example.test"));
+
+        // Reload order is display-name first: (Alpha, case-b) then (Zulu, case-a) -- id order inverted.
+        var declared = (await store.ListAsync("fund-alpha"))
+            .OrderByDescending(static item => item.RecordedAtUtc)
+            .First();
+        await markers.WriteAsync(new AccountingAuditPendingMarker(declared, DateTimeOffset.UtcNow));
+
+        var recovery = await CreateService(store, markers).RecoverPendingAuditAsync();
+
+        recovery.Outcome.Should().Be(AccountingAuditRecoveryOutcome.AlreadyAudited);
+        (await markers.ReadAsync()).Should().BeNull("a resolved marker must not re-fire");
+    }
+
+    private static AccountingRuleTestCaseDto TestCase(string testCaseId, string displayName)
+        => new(
+            testCaseId,
+            displayName,
+            new RuleDryRunRequestDto(
+                "fund-alpha",
+                "InterestAccrual",
+                100m,
+                "USD",
+                new DateOnly(2026, 6, 30),
+                "controller"));
+
+    private static async Task ExecuteAsync(
+        LedgerPostgresTestDatabase database,
+        string commandTemplate,
+        params (string Name, object Value)[] parameters)
+    {
+        await using var connection = new NpgsqlConnection(database.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = string.Format(
+            CultureInfo.InvariantCulture,
+            commandTemplate,
+            "\"" + database.Options.SchemaName + "\"");
+        foreach (var (name, value) in parameters)
+        {
+            command.Parameters.AddWithValue(name, value);
+        }
+
+        await command.ExecuteNonQueryAsync();
+    }
+
+    private static AccountingConfigurationService CreateService(
+        PostgresAccountingConfigurationStore store,
+        IAccountingAuditPendingMarkerStore markers)
+        => new(store, store, ledgerBookService: null, pendingAuditMarkers: markers);
+
+    private static AccountingActionAuditEventDto AuditEvent(DateTimeOffset? recordedAtUtc = null)
+        => new(
+            Guid.NewGuid(),
+            recordedAtUtc ?? DateTimeOffset.UtcNow,
+            Actor: "operator@example.test",
+            Action: "chart.upsert",
+            FundProfileId: "fund-alpha",
+            LedgerBookId: null,
+            CorrelationId: null,
+            BeforeHash: new string('0', 64),
+            AfterHash: new string('1', 64),
+            ValidationIssues: [],
+            EvidenceLinks: []);
+
+    private sealed class TempDirectory : IDisposable
+    {
+        public TempDirectory()
+        {
+            Path = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(),
+                "meridian-accounting-pg-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(Path);
+        }
+
+        public string Path { get; }
+
+        public void Dispose()
+        {
+            try
+            {
+                Directory.Delete(Path, recursive: true);
+            }
+            catch (IOException)
+            {
+                // A leaked temp directory must never fail a test run.
+            }
+        }
     }
 
     private static AccountingConfigurationWorkspaceDto BuildScopedWorkspace(

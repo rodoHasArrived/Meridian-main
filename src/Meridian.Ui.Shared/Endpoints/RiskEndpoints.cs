@@ -356,19 +356,30 @@ public static class RiskEndpoints
 
                 carriedTokens.Add(approved.EscalationId);
 
-                var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    [RiskEscalationQueueService.ApprovalMetadataKey] = RiskEscalationQueueService.JoinTokens(carriedTokens),
-                    ["actor"] = actor,
-                    ["correlationId"] = $"risk-escalation-{approved.EscalationId}"
-                };
+                var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 if (approved.Request.Metadata is not null)
                 {
                     foreach (var (key, value) in approved.Request.Metadata)
                     {
-                        metadata.TryAdd(key, value);
+                        metadata[key] = value;
                     }
                 }
+
+                // "actor" names the operator performing this release: it feeds ReleasedBy
+                // and the queue's consumption-time segregation check, so it must be the
+                // approver, never the submitter. The original submitter travels under
+                // SubmitterMetadataKey instead, so a rule that escalates again during this
+                // release re-parks under the submitter's identity — otherwise the submitter
+                // could approve a later stage of their own order while the independent
+                // approver is refused as a false self-release.
+                metadata[RiskEscalationQueueService.ApprovalMetadataKey] =
+                    RiskEscalationQueueService.JoinTokens(carriedTokens);
+                metadata["actor"] = actor;
+                if (!string.IsNullOrWhiteSpace(approved.Actor))
+                {
+                    metadata[RiskEscalationQueueService.SubmitterMetadataKey] = approved.Actor;
+                }
+                metadata["correlationId"] = $"risk-escalation-{approved.EscalationId}";
 
                 var releaseRequest = approved.Request with { Metadata = metadata };
                 try
