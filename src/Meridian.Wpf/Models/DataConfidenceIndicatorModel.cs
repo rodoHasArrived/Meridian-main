@@ -43,20 +43,24 @@ public sealed record DataConfidenceIndicatorModel(
     string SourceName,
     DataConfidenceReconciliationStatus ReconciliationStatus,
     string? Notes,
-    string Explanation,
     string? ExplanationRoute = null,
     string? ProviderStatus = null)
 {
+    /// <summary>
+    /// Computed from the current field values rather than captured at construction: a
+    /// record <c>with</c> update must never leave the tooltip and accessible text
+    /// describing the fields the update replaced.
+    /// </summary>
+    public string Explanation
+        => BuildExplanation(ConfidenceLevel, ReconciliationStatus, SourceName, FreshnessTimestamp, Notes);
+
     public static DataConfidenceIndicatorModel Unknown(string sourceName = "Not reported", string? notes = null)
         => new(
             DataConfidenceLevel.Unknown,
             FreshnessTimestamp: null,
             Normalize(sourceName, "Not reported"),
             DataConfidenceReconciliationStatus.Unknown,
-            notes,
-            string.IsNullOrWhiteSpace(notes)
-                ? "Source confidence has not been reported for this value."
-                : $"Source confidence has not been reported for this value. Notes: {notes.Trim()}");
+            notes);
 
     public static DataConfidenceIndicatorModel FromEvidence(
         EvidenceStatusDto status,
@@ -93,7 +97,6 @@ public sealed record DataConfidenceIndicatorModel(
             source,
             reconciliationStatus,
             evidenceNotes,
-            BuildExplanation(confidence, reconciliationStatus, source, freshness.AsOf, evidenceNotes),
             explanationRoute);
     }
 
@@ -166,8 +169,13 @@ public sealed record DataConfidenceIndicatorModel(
             || HasDegradedStream(provider.Streams);
         // Only genuine received-at fields feed the freshness instant: the route populates
         // LastHeartbeat from a stored metrics-snapshot timestamp when it has no live
-        // diagnostics, and a snapshot time is not evidence that data arrived.
-        var asOf = provider.LastMessageReceivedAt ?? provider.LastHeartbeatReceivedAt;
+        // diagnostics, and a snapshot time is not evidence that data arrived. Subscription
+        // traffic outranks the wire timestamps when the provider tracks it — the transport
+        // advances LastMessageReceivedAt for control frames too, so fresh control traffic
+        // must not mask stale subscribed data.
+        var asOf = provider.LastSubscriptionMessageAt
+            ?? provider.LastMessageReceivedAt
+            ?? provider.LastHeartbeatReceivedAt;
 
         return FromProviderCore(
             Normalize(provider.Name, "Provider"),
@@ -206,7 +214,6 @@ public sealed record DataConfidenceIndicatorModel(
             sourceName,
             reconciliationStatus,
             providerNotes,
-            BuildExplanation(confidence, reconciliationStatus, sourceName, asOf, providerNotes),
             explanationRoute,
             status);
     }

@@ -234,6 +234,48 @@ public sealed class DataConfidenceIndicatorModelTests
     }
 
     [Fact]
+    public void FromProviderStatus_ControlTrafficDoesNotMaskSubscriptionStaleness()
+    {
+        // The transport advances LastMessageReceivedAt for control frames too, so fresh
+        // wire traffic must not present stale subscribed data as Current; the contract's
+        // LastSubscriptionMessageAt is authoritative when the provider tracks it.
+        var model = DataConfidenceIndicatorModel.FromProviderStatus(
+            new Meridian.Contracts.Api.ProviderStatusResponse(
+                ProviderId: "polygon",
+                Name: "Polygon.io",
+                ProviderType: "MarketData",
+                IsConnected: true,
+                IsEnabled: true,
+                Priority: 1,
+                ActiveSubscriptions: 3,
+                LastHeartbeat: null,
+                ConnectionState: "Streaming",
+                LastMessageReceivedAt: DateTimeOffset.UtcNow,
+                LastSubscriptionMessageAt: DateTimeOffset.UtcNow.AddHours(-6)),
+            freshnessWindow: TimeSpan.FromMinutes(15));
+
+        model.ConfidenceLabel.Should().Be(DataConfidenceLabels.Stale);
+        model.Tone.Should().Be(WorkspaceTone.Warning);
+    }
+
+    [Fact]
+    public void WithUpdatedFields_TheExplanationDescribesTheCurrentValues()
+    {
+        // Explanation is computed from the record's current fields: a `with` update must
+        // never leave the tooltip and accessible text describing the replaced values.
+        var updated = DataConfidenceIndicatorModel.Unknown() with
+        {
+            ConfidenceLevel = DataConfidenceLevel.Current,
+            Notes = "Feed restored."
+        };
+
+        updated.Explanation.Should().Contain(DataConfidenceLabels.Current);
+        updated.Explanation.Should().Contain("Feed restored.");
+        updated.Explanation.Should().NotContain(DataConfidenceLabels.Unknown + " value",
+            "the pre-update confidence level must not survive in the explanation");
+    }
+
+    [Fact]
     public void FromProviderStatus_ReconnectingLegacyProvider_ReadsAsDegraded()
     {
         var model = DataConfidenceIndicatorModel.FromProviderStatus(new ProviderStatusInfo
