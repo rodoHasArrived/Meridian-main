@@ -871,9 +871,18 @@ coverage for instruments the system cannot hold. The fix is a second parity guar
 list (`:249-252`), so `candidateIds` is empty and the filter rejects every group: the built-in overlap
 rule can never fire. Two overlaps stand today — `DirectLoan` claimed by both `private-loan-credit` and
 `mortgage-facility-intercompany`, and `CreditFacility` by three packs — so `FindByAssetClass` returns
-an ambiguous set for them while an identical claim from a new pack would be rejected as Critical. The
-rule is asymmetric between incumbents and newcomers, which is the opposite of what a registry guard
-should be.
+an ambiguous set for them while an identical claim from a new pack would be rejected as Critical.
+
+The asymmetry between incumbents and newcomers is the observation worth keeping; **calling it "the
+opposite of what a registry guard should be" overstated it, and that phrasing is withdrawn here
+rather than only in the entries derived from it.** Read as grandfathering it is a defensible choice:
+the built-in overlaps ship deliberately, `FindByAssetClass` returns a collection by design, and
+`AssetPackRegistry_ValidateAll_ShouldAcceptBuiltInPacks` depends on the filter that produces the
+asymmetry. What is genuinely wrong is not that incumbents are exempt but that **nothing records why
+they are** — the exemption is a side effect of `candidateIds` being empty on the built-in path
+(`:249-252`), not a stated policy, so a reader cannot tell a grandfathered overlap from an
+unnoticed one. Fix that by making the allowance explicit, and extend the rule along the *planned*
+axis for candidates; do not remove the candidate filter.
 
 ### N5 — The pack registry's "contract schema" is one shared prose object, not a per-pack contract
 
@@ -886,18 +895,34 @@ one pack's contract from another's. `InferLifecycleEvent` (`:464-500`) then deri
 mapping by substring-matching those English journal-template names, so a template renamed for clarity
 can silently re-route to a different lifecycle event.
 
-Read as documentation-as-code the registry is useful. Read as the extensibility seam its docstring
-claims — "introducing asset packs without changing core ledger contracts" — it enforces nothing an
-asset pack could get wrong. Worth either promoting the fields to structured, per-pack, checkable
-values, or restating the type as descriptive metadata so no future work mistakes it for a gate.
+Read as documentation-as-code the registry is useful. **Scope this to the three shared objects,
+though — an earlier version of this item said the seam "enforces nothing an asset pack could get
+wrong", and that is false of the type as a whole.** `ValidateDescriptor` rejects a great deal a pack
+can get wrong: claimed and planned classes absent from the catalog, unsupported lifecycle and
+valuation values, missing lifecycle coverage, required capture policy and accounting-automation
+status, journal-template entity scopes, unsupported template lifecycle events, and invalid admission
+policies (`SecurityAssetPackRegistry.cs:537-772`). Those checks do distinguish one pack from another
+and do fail a bad candidate.
+
+What cannot distinguish packs is the narrower set this item is actually about: `ContractSchema`,
+`ValidationRules` and `ReportingTaxonomy` are shared prose objects, identical across packs, so no
+check over them can tell a well-formed pack from a malformed one. The remedy belongs to those three —
+promote them to structured, per-pack, checkable values, or restate *them* as descriptive metadata —
+and not to the registry type, which would discard working enforcement.
 
 ### N6 — Projection fan-out writes to every asset class on every upsert
 
 `UpsertProjectionCoreAsync` runs all 11 registered writers for every record
 (`PostgresSecurityMasterStore.cs:386-389`), and each writer whose class does not match issues a
-delete instead of returning (`:392-402`). A single equity upsert therefore issues roughly seventeen
-`DELETE` statements — four for the bond tables, one per remaining projected class — against rows that
-by construction cannot exist. The registry design is right (adding a class is one additive line); the
+delete instead of returning (`:392-402`). A single equity upsert therefore issues **thirteen** fan-out
+`DELETE` statements against rows that by construction cannot exist: the bond writer's non-match branch
+calls `DeleteBondProjectionTablesAsync`, which loops four tables (`:461-473`), and the other nine
+non-matching writers delete one row each. `ReplaceIdentifiersAsync` and `ReplaceAliasesAsync` add two
+more for unrelated reasons, bringing the whole operation to fifteen. An earlier version of this item
+said "roughly seventeen"; the count is corrected here because it is the number sizing the
+bulk-ingest argument. Worth noting how the miscount happens, since the code invites it: the bond
+delete helper contains **one** `delete from` statement executed **four** times, so counting
+statements in the source undercounts, and counting tables without reading the loop overcounts. The registry design is right (adding a class is one additive line); the
 per-record cost is what bulk vendor ingest will feel. A `record.AssetClass`-keyed lookup plus a
 targeted cleanup on observed class *change* would keep the registry and drop the amplification.
 
@@ -2016,9 +2041,26 @@ the skip branch never fires for a re-used stream today.
 The CSV parser mints `Guid.NewGuid()` per row (`SecurityMasterCsvParser.cs:146-148`) and Polygon's
 `MapToCreateRequest` does the same (`PolygonSecurityMasterIngestProvider.cs:156-157`), so re-importing
 either source opens a *new* stream and never raises the version conflict at all. Those paths have no
-duplicate detection to misclassify — they have no idempotency in the first place, and a re-import
-silently mints a second golden record for the same instrument, which the identifier-conflict machinery
-then has to adjudicate. So the typed outcome grounded in the stream conflict serves the JSON import
+duplicate detection to misclassify — they have no idempotency in the first place.
+
+**What happens next is not a silent second golden record, and an earlier version of this item said it
+was.** Migration 001 puts a unique index on the *raw* primary identifier —
+`ux_securities_primary_identifier on securities (primary_identifier_kind, primary_identifier_value)`
+(`001_security_master.sql:42-43`) — so a repeated row whose raw primary kind and value are unchanged
+is rejected at the projection insert. But `ExecuteCreateAsync` appends the event stream *before*
+upserting the projection (`SecurityMasterService.cs:323-324`), so the real outcome is worse in a
+different way: **an orphaned event stream for a security that never reaches the projection, followed
+by a unique-constraint failure** — and, since the classifier change, a PostgreSQL `23505` reported to
+the operator as a `Skipped` row. Two defects, not one, and the regression plan has to cover the
+partial write rather than a duplicate record.
+
+The second-record path is real but narrower, and belongs to P1's normalization gap rather than here:
+the index is over the **raw** value, so a case or punctuation variant slips past it, inserts cleanly,
+and *does* produce two golden records for one instrument — which the identifier-conflict machinery
+then has to adjudicate. Keep the two cases separate in any test suite; they fail differently and are
+fixed by different changes.
+
+So the typed outcome grounded in the stream conflict serves the JSON import
 branch (and deterministic-id Edgar races), while CSV and provider ingests need an idempotency key
 before any outcome type can help them. A regression suite built only on the version conflict would
 never exercise their repeated-record behaviour.
@@ -2268,9 +2310,15 @@ Read as a delta on the standing lists above.
    from trusted ingest metadata or a fixed workflow identifier, per the constraints above. Preserve
    workload identities for unattended ingests rather than replacing them with a principal, and preserve
    the workbench chain that already does this correctly.
-5. **Make the pack-overlap rule symmetric across incumbents, candidates, and planned classes
-   (N4, P3).** Still among the cheapest durable items in this document, and the planned-coverage axis
-   means deferring it now schedules a three-way ownership dispute for the day `CreditFacility` lands.
+5. **Extend the pack-overlap rule's planned-coverage axis, keeping it candidate-scoped (N4, P3).**
+   Still among the cheapest durable items in this document, and the planned axis means deferring it
+   now schedules a three-way ownership dispute for the day `CreditFacility` lands. **Do not make the
+   rule symmetric**, which an earlier version of this entry called for: the candidate filter at
+   `SecurityAssetPackRegistry.cs:289` is deliberate, and dropping it rejects the shipped registry —
+   `DirectLoan` legitimately belongs to two built-in packs and
+   `AssetPackRegistry_ValidateAll_ShouldAcceptBuiltInPacks` requires that registry to stay valid.
+   Treating incumbent overlap as an error needs a uniqueness or routing contract that does not exist
+   (`FindByAssetClass` returns a collection by design), and that decision is not part of this item.
 6. **Key the projection fan-out by asset class (N6).** Unchanged in importance, and cheaper than
    previously filed: the writers already carry the key.
 7. **Retire the remaining classify-from-prose sites and the swallowed cancellations (P4).** Three
