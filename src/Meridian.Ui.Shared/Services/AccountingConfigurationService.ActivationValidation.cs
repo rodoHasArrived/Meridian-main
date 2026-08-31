@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Meridian.Contracts.Banking;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
@@ -966,12 +967,39 @@ public sealed partial class AccountingConfigurationService
     /// <para>This narrows what the digest covers, and deliberately so: a hash over fields no store
     /// retains is not a claim anyone can check later, which is the opposite of what an audit
     /// before/after pair is for.</para>
+    ///
+    /// <para><b>Hashed as canonical JSON</b> — every object's properties in ordinal key order,
+    /// recursively — because JSON object member order is one more thing a store may not round-trip.
+    /// PostgreSQL's <c>jsonb</c> canonicalizes key order (length first, then bytewise), and the
+    /// posting-rule and rule-test payloads it holds as <c>jsonb</c> carry real dictionaries —
+    /// <c>LedgerDimensionSetDto.ExternalGlDimensions</c> — whose reloaded enumeration order is the
+    /// stored order, not the insertion order the digest hashed. <see cref="Durable"/> orders the
+    /// top-level collections but cannot see into nested maps, so a rule scoped by dimensions
+    /// inserted in a noncanonical order digested differently after reload, and recovery matched
+    /// neither hash — the same permanent block, reached through key order (Codex review finding on
+    /// PR #2871). Sorting keys at every level makes the digest a function of content alone on both
+    /// sides of the reload; array order stays significant, which is why <see cref="Durable"/> still
+    /// orders the collections.</para>
     /// </remarks>
     private static string Hash(AccountingConfigurationWorkspaceDto workspace)
     {
-        var json = JsonSerializer.Serialize(Durable(workspace));
-        return Sha256Digest.ComputeUtf8(json);
+        var canonical = CanonicalizeJson(JsonSerializer.SerializeToNode(Durable(workspace)));
+        return Sha256Digest.ComputeUtf8(canonical?.ToJsonString() ?? "null");
     }
+
+    /// <summary>
+    /// Rebuilds a JSON tree with every object's properties in ordinal key order, recursively, so
+    /// two trees carrying the same content digest alike whatever member order their producers used.
+    /// </summary>
+    private static JsonNode? CanonicalizeJson(JsonNode? node)
+        => node switch
+        {
+            JsonObject jsonObject => new JsonObject(jsonObject
+                .OrderBy(static property => property.Key, StringComparer.Ordinal)
+                .Select(static property => KeyValuePair.Create(property.Key, CanonicalizeJson(property.Value)))),
+            JsonArray jsonArray => new JsonArray([.. jsonArray.Select(static item => CanonicalizeJson(item))]),
+            _ => node?.DeepClone(),
+        };
 
     /// <summary>
     /// Projects a workspace onto the shape every <see cref="IAccountingConfigurationStore"/> posture

@@ -451,6 +451,49 @@ public sealed class AccountingAuditAtomicityTests : IDisposable
     }
 
     [Fact]
+    public async Task AMarkerFromAMutationWhoseDimensionsReloadInJsonbKeyOrder_IsClearedRatherThanRaised()
+    {
+        // Codex review finding on PR #2871. PostgreSQL holds posting-rule payloads as jsonb, which
+        // canonicalizes object key order (length first, then bytewise), so ExternalGlDimensions
+        // reloads enumerated in stored order rather than the order the mutation inserted. Durable
+        // orders the top-level collections but cannot see into nested maps, so the digest hashed
+        // the insertion order, the reload digested differently, and recovery matched neither hash
+        // -- the same permanent block as the RulesStudio and padded-text divergences, reached
+        // through key order. The wrapper models exactly the reload the PostgreSQL store performs;
+        // the live-database proof is in AccountingConfigurationPostgresStoreTests.
+        var fileStore = new FileAccountingConfigurationStore(SnapshotPath);
+        var store = new JsonbKeyOrderReloadingStore(fileStore);
+        var markers = new FileAccountingAuditPendingMarkerStore(
+            FileAccountingAuditPendingMarkerStore.MarkerPathFor(SnapshotPath));
+
+        await new AccountingConfigurationService(store, fileStore, ledgerBookService: null, pendingAuditMarkers: markers)
+            .UpsertPostingRuleAsync(new UpsertPostingRuleRequest(
+                "fund-alpha",
+                new PostingRuleDto(
+                    "rule-dimensions",
+                    "Dimension-scoped rule",
+                    "InterestAccrual",
+                    "template-one",
+                    Scope: new LedgerDimensionSetDto(ExternalGlDimensions: new Dictionary<string, string>
+                    {
+                        // jsonb stores these as "cc", "book", "region"; insertion order deliberately differs.
+                        ["region"] = "emea",
+                        ["cc"] = "cc-100",
+                        ["book"] = "primary",
+                    })),
+                Actor: "operator@example.test"));
+        var declared = (await fileStore.ListAsync("fund-alpha")).Should().ContainSingle().Subject;
+        await markers.WriteAsync(new AccountingAuditPendingMarker(declared, DateTimeOffset.UtcNow));
+
+        var recovery = await new AccountingConfigurationService(
+                store, fileStore, ledgerBookService: null, pendingAuditMarkers: markers)
+            .RecoverPendingAuditAsync();
+
+        recovery.Outcome.Should().Be(AccountingAuditRecoveryOutcome.AlreadyAudited);
+        (await markers.ReadAsync()).Should().BeNull("a resolved marker must not re-fire");
+    }
+
+    [Fact]
     public async Task AnInMemoryAuditStore_RefusesASecondEventClaimingARetainedId()
     {
         // The other half of the contract the interface now states: same id, different content is
@@ -494,6 +537,58 @@ public sealed class AccountingAuditAtomicityTests : IDisposable
             AfterHash: afterHash ?? new string('1', 64),
             ValidationIssues: [],
             EvidenceLinks: []);
+
+    /// <summary>
+    /// Reloads workspaces the way the PostgreSQL store does: jsonb canonicalizes object key order
+    /// (length first, then bytewise), so nested dictionaries come back enumerated in stored order
+    /// rather than the order the mutation inserted them in.
+    /// </summary>
+    private sealed class JsonbKeyOrderReloadingStore(FileAccountingConfigurationStore inner) : IAccountingConfigurationStore
+    {
+        public async Task<AccountingConfigurationWorkspaceDto?> GetAsync(
+            string fundProfileId,
+            Guid? ledgerBookId = null,
+            CancellationToken ct = default,
+            string? tenantId = null,
+            string? companyId = null)
+        {
+            var workspace = await inner.GetAsync(fundProfileId, ledgerBookId, ct, tenantId, companyId);
+            return workspace is null
+                ? null
+                : workspace with
+                {
+                    PostingRules =
+                    [
+                        .. workspace.PostingRules.Select(static rule => rule.Scope is null
+                            ? rule
+                            : rule with
+                            {
+                                Scope = rule.Scope with
+                                {
+                                    ExternalGlDimensions = JsonbKeyOrder(rule.Scope.ExternalGlDimensions),
+                                },
+                            })
+                    ],
+                };
+        }
+
+        public Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default)
+            => inner.SaveAsync(workspace, ct);
+
+        private static IReadOnlyDictionary<string, string> JsonbKeyOrder(
+            IReadOnlyDictionary<string, string> dimensions)
+        {
+            var reordered = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var pair in dimensions
+                .OrderBy(static pair => pair.Key.Length)
+                .ThenBy(static pair => pair.Key, StringComparer.Ordinal))
+            {
+                reordered[pair.Key] = pair.Value;
+            }
+
+            return reordered;
+        }
+    }
 
     /// <summary>An audit store that can be made to fail its next append, on demand.</summary>
     private sealed class FailableAuditStore(FileAccountingConfigurationStore inner) : IAccountingActionAuditStore
