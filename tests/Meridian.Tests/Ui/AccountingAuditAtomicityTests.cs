@@ -424,6 +424,49 @@ public sealed class AccountingAuditAtomicityTests : IDisposable
             "the marker holds the only copy of the event that was actually declared");
     }
 
+    [Fact]
+    public async Task RecoveryAgainstAnInMemoryAuditStore_DoesNotDuplicateTheReplayedEvent()
+    {
+        // Twenty-first Codex review round. Recovery establishes "is the retained event the one that
+        // was declared?" by REPLAYING the append and letting the store decide -- which only works if
+        // every store is idempotent on the id. Two of the three were; InMemoryAccountingActionAuditStore
+        // appended unconditionally, so the replay duplicated the event and the marker was then
+        // cleared over a history carrying it twice. The interface never stated the requirement,
+        // which is how the third implementation drifted from it.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var audit = new InMemoryAccountingActionAuditStore();
+        var markers = new FileAccountingAuditPendingMarkerStore(
+            FileAccountingAuditPendingMarkerStore.MarkerPathFor(SnapshotPath));
+
+        await CreateService(store, audit, markers).UpsertChartNodeAsync(ChartRequest());
+        var declared = (await audit.ListAsync("fund-alpha")).Should().ContainSingle().Subject;
+        await markers.WriteAsync(new AccountingAuditPendingMarker(declared, DateTimeOffset.UtcNow));
+
+        var recovery = await CreateService(store, audit, markers).RecoverPendingAuditAsync();
+
+        recovery.Outcome.Should().Be(AccountingAuditRecoveryOutcome.AlreadyAudited);
+        (await audit.ListAsync("fund-alpha")).Should().ContainSingle(
+            "replaying an event the store already retains must write nothing");
+        (await markers.ReadAsync()).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task AnInMemoryAuditStore_RefusesASecondEventClaimingARetainedId()
+    {
+        // The other half of the contract the interface now states: same id, different content is
+        // two events claiming one identity, and appending it silently is what leaves history that
+        // can never be reconciled.
+        var audit = new InMemoryAccountingActionAuditStore();
+        var first = AuditEvent(afterHash: new string('a', 64));
+        await audit.AppendAsync(first);
+
+        var collide = async () => await audit.AppendAsync(first with { AfterHash = new string('b', 64) });
+
+        (await collide.Should().ThrowAsync<InvalidOperationException>())
+            .WithMessage("*already retained with different content*");
+        (await audit.ListAsync("fund-alpha")).Should().ContainSingle();
+    }
+
     private static AccountingConfigurationService CreateService(
         FileAccountingConfigurationStore store,
         IAccountingActionAuditStore audit,

@@ -605,6 +605,75 @@ public sealed class FileAccountingAuditChainTests : IDisposable
     }
 
     [Fact]
+    public async Task VerifyAuditChainAsync_RefusesToResumeAFirstAppendOverAChangedHistory()
+    {
+        // Twenty-first Codex review round. The genesis comparison added last round is guarded on
+        // `state is not null` -- and state is null for exactly the append that ESTABLISHES the
+        // genesis. So a crash between the pending anchor line and the snapshot left the one case
+        // the boundary exists to protect unchecked: if the unchained history then changed, the
+        // retry redeclared the same sequence over it and founded the chain on events nobody had
+        // verified, while verification still reported a benign InterruptedAppend.
+        var (store, anchor) = await SeedUnchainedHistoryAsync();
+        await anchor.DeclareAsync(
+            AccountingAuditChainState.FirstSequence,
+            new string('a', 64),
+            AccountingAuditChainState.FirstSequence,
+            preChainEventCount: ReadEvents().Count);
+
+        // The unchained history moves before the retry.
+        MutateSnapshot(snapshot => snapshot["auditEvents"]!.AsArray().RemoveAt(0));
+
+        var verification = await store.VerifyAuditChainAsync();
+
+        verification.Status.Should().Be(AccountingAuditChainStatus.AnchorMismatch);
+        verification.IsValid.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task VerifyAuditChainAsync_StillResumesAFirstAppendOverAnUnchangedHistory()
+    {
+        // The control: checking the boundary must not turn an ordinary interrupted first append
+        // into a tamper report. Same setup, nothing touched in between.
+        var (store, anchor) = await SeedUnchainedHistoryAsync();
+        await anchor.DeclareAsync(
+            AccountingAuditChainState.FirstSequence,
+            new string('a', 64),
+            AccountingAuditChainState.FirstSequence,
+            preChainEventCount: ReadEvents().Count);
+
+        var verification = await store.VerifyAuditChainAsync();
+
+        verification.Status.Should().Be(AccountingAuditChainStatus.InterruptedAppend);
+    }
+
+    /// <summary>
+    /// A snapshot holding two audit events that no chain covers and no anchor records — the state a
+    /// store is in immediately before its very first chained append.
+    /// </summary>
+    /// <remarks>
+    /// Built by appending through the store and then stripping what that added, rather than by
+    /// hand-writing a snapshot: it keeps the event shape whatever the DTO currently is. The anchor
+    /// journal is deleted outright because <c>EnsureAdvances</c> refuses to move a head backwards,
+    /// so a journal left over from the seeding appends would reject the declaration under test.
+    /// </remarks>
+    private async Task<(FileAccountingConfigurationStore Store, FileAccountingAuditChainAnchor Anchor)>
+        SeedUnchainedHistoryAsync()
+    {
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        await store.AppendAsync(AuditEvent("post-journal"));
+        await store.AppendAsync(AuditEvent("close-period"));
+
+        var anchor = new FileAccountingAuditChainAnchor(
+            FileAccountingAuditChainAnchor.AnchorPathFor(SnapshotPath));
+        File.Delete(anchor.AnchorPath);
+        MutateSnapshot(snapshot => snapshot.Remove("auditChain"));
+
+        ReadChain().Should().BeNull("the scenario under test is a store that has never chained");
+        ReadEvents().Should().HaveCount(2);
+        return (store, anchor);
+    }
+
+    [Fact]
     public async Task VerifyAuditChainAsync_AcceptsAChainWhoseGenesisMatchesItsAnchor()
     {
         // The control the test above needs: binding the boundary must not make an untouched store

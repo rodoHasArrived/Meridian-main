@@ -284,7 +284,7 @@ public static class AccountingAuditChain
             return links;
         }
 
-        return VerifyAnchor(state, anchor) ?? links;
+        return VerifyAnchor(state, auditEvents.Count, anchor) ?? links;
     }
 
     /// <summary>
@@ -428,6 +428,7 @@ public static class AccountingAuditChain
     /// </summary>
     private static AccountingAuditChainVerification? VerifyAnchor(
         AccountingAuditChainState? state,
+        int retainedEventCount,
         AccountingAuditChainAnchorRecord? anchor)
     {
         var head = state?.Head;
@@ -486,6 +487,28 @@ public static class AccountingAuditChain
         if (anchor.Phase == AccountingAuditChainAnchorPhase.Pending
             && anchor.Sequence == expectedNextSequence)
         {
+            // Before calling it an interrupted append: the boundary the declaration was made over
+            // has to still be the boundary. With no chain state the comparison above did not run --
+            // `state` is null for exactly the first append, which is the one that establishes the
+            // genesis -- so every retained event is still unchained, and the anchor's declared
+            // pre-chain count is what that number must be. Without this, a crash between the
+            // pending line and the snapshot left a window where the unchained history could gain or
+            // lose an event and the retry would redeclare the same sequence over it, founding the
+            // chain on a history nobody verified (Codex review finding on PR #2871).
+            if (state is null && anchor.PreChainEventCount != retainedEventCount)
+            {
+                return new AccountingAuditChainVerification(
+                    AccountingAuditChainStatus.AnchorMismatch,
+                    linksChecked,
+                    preChainEventCount,
+                    $"An append at sequence {anchor.Sequence.ToString(CultureInfo.InvariantCulture)} was "
+                    + $"declared over {anchor.PreChainEventCount.ToString(CultureInfo.InvariantCulture)} "
+                    + "unchained events, but "
+                    + $"{retainedEventCount.ToString(CultureInfo.InvariantCulture)} are retained now; "
+                    + "the history it was declared over is not the history it would chain.",
+                    anchor.Sequence);
+            }
+
             return new AccountingAuditChainVerification(
                 AccountingAuditChainStatus.InterruptedAppend,
                 linksChecked,

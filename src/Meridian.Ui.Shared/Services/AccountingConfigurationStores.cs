@@ -58,6 +58,29 @@ public sealed class InMemoryAccountingActionAuditStore :
     public Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(auditEvent);
+
+        // Idempotent on the id and content-validating, as IAccountingActionAuditStore requires and
+        // as the file and PostgreSQL stores already were. This one appended unconditionally, so
+        // recovery -- which replays the append to establish whether the declared event is the one
+        // already retained -- duplicated it instead, and then cleared the marker over a history
+        // carrying the same event twice (Codex review finding on PR #2871).
+        var retained = _events.FirstOrDefault(item => item.AuditEventId == auditEvent.AuditEventId);
+        if (retained is not null)
+        {
+            if (!string.Equals(
+                    AccountingAuditChain.ComputePayloadHash(retained),
+                    AccountingAuditChain.ComputePayloadHash(auditEvent),
+                    StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    $"Audit event '{auditEvent.AuditEventId.ToString("D", CultureInfo.InvariantCulture)}' "
+                    + "is already retained with different content.");
+            }
+
+            return Task.CompletedTask;
+        }
+
         _events.Add(auditEvent);
         return Task.CompletedTask;
     }
