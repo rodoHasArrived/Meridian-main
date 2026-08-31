@@ -104,6 +104,54 @@ public abstract class JsonFileSnapshotStore<TSnapshot> where TSnapshot : class
         return UpdateSnapshotAsync(snapshot => (update(snapshot), true), ct);
     }
 
+    /// <summary>
+    /// Runs a read-modify-write cycle with hooks either side of the snapshot write, all inside the
+    /// store gate. Stores whose durability depends on ordering a second write against the snapshot
+    /// write — a write-ahead head kept outside the snapshot, an outbox marker — use this so the two
+    /// writes cannot interleave with another cycle, and so a crash leaves a known ordering rather
+    /// than an ambiguous one.
+    /// </summary>
+    /// <param name="update">
+    /// Produces the replacement snapshot and the cycle's result. Async so a store can consult state
+    /// it holds outside the snapshot (a head journal, an outbox) while still under the gate, rather
+    /// than reading it beforehand and racing its own write.
+    /// </param>
+    /// <param name="beforeWrite">Runs after the replacement is produced, before it is persisted.</param>
+    /// <param name="afterWrite">Runs once the replacement is durably persisted.</param>
+    protected async Task<TResult> UpdateSnapshotAsync<TResult>(
+        Func<TSnapshot, CancellationToken, Task<(TSnapshot Snapshot, TResult Result)>> update,
+        Func<TSnapshot, TResult, CancellationToken, Task>? beforeWrite,
+        Func<TSnapshot, TResult, CancellationToken, Task>? afterWrite,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(update);
+
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var current = await LoadSnapshotAsync(ct).ConfigureAwait(false);
+            var (replacement, result) = await update(current, ct).ConfigureAwait(false);
+
+            if (beforeWrite is not null)
+            {
+                await beforeWrite(replacement, result, ct).ConfigureAwait(false);
+            }
+
+            await WriteSnapshotAsync(replacement, ct).ConfigureAwait(false);
+
+            if (afterWrite is not null)
+            {
+                await afterWrite(replacement, result, ct).ConfigureAwait(false);
+            }
+
+            return result;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     /// <summary>Loads the snapshot without taking the gate. For use inside derived-class flows
     /// that manage their own locking; most stores should use the gated helpers instead.</summary>
     protected async Task<TSnapshot> LoadSnapshotAsync(CancellationToken ct = default)

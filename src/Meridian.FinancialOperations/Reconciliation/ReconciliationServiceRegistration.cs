@@ -120,6 +120,10 @@ public static class ReconciliationServiceRegistration
         services.TryAddSingleton<IIbFlexWebServiceClient>(_ => new IbFlexWebServiceClient(
             new HttpClient { Timeout = TimeSpan.FromMinutes(2) }));
 
+        // One shared ingress bound (PRD-010) so the connectors and the import service refuse the same
+        // payload, and a deployment that needs a larger cap raises it in one place rather than per seam.
+        services.TryAddSingleton(StatementIngressLimits.Default);
+
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, CsvStatementConnector>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, OfxStatementConnector>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, IbFlexStatementConnector>());
@@ -133,7 +137,8 @@ public static class ReconciliationServiceRegistration
             sp.GetRequiredService<StatementConnectorRegistry>(),
             sp.GetRequiredService<StatementMappingProfileCatalog>(),
             sp.GetRequiredService<IStatementRunWorkflowService>(),
-            resolveDataRoot(sp)));
+            resolveDataRoot(sp),
+            sp.GetRequiredService<StatementIngressLimits>()));
         services.TryAddSingleton<IStatementImportCommitService>(sp =>
             sp.GetRequiredService<StatementImportService>());
 

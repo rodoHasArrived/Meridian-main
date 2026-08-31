@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "c67b3c00bdb6e9df62c3823d4040a8e2a28a0151fc26c22733ac1f9e36ee57eb",
+      "fingerprint": "39535715b49940779cb7bf099433c7bf91e905434f27fd1ae847c55109a7f67c",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -1039,6 +1039,18 @@
         "Meridian.Contracts.Integrity.Sha256Digest",
         "Meridian.Contracts.Integrity.Sha256DigestComparison",
         "Meridian.Contracts.Ledger.AccountingActionAuditEventDto",
+        "Meridian.Contracts.Ledger.AccountingAuditChain",
+        "Meridian.Contracts.Ledger.AccountingAuditChainAnchorPhase",
+        "Meridian.Contracts.Ledger.AccountingAuditChainAnchorRecord",
+        "Meridian.Contracts.Ledger.AccountingAuditChainIntegrityException",
+        "Meridian.Contracts.Ledger.AccountingAuditChainLink",
+        "Meridian.Contracts.Ledger.AccountingAuditChainState",
+        "Meridian.Contracts.Ledger.AccountingAuditChainStatus",
+        "Meridian.Contracts.Ledger.AccountingAuditChainVerification",
+        "Meridian.Contracts.Ledger.AccountingAuditPendingMarker",
+        "Meridian.Contracts.Ledger.AccountingAuditRecoveryException",
+        "Meridian.Contracts.Ledger.AccountingAuditRecoveryOutcome",
+        "Meridian.Contracts.Ledger.AccountingAuditRecoveryResult",
         "Meridian.Contracts.Ledger.AccountingBasisKindDto",
         "Meridian.Contracts.Ledger.AccountingBasisProjectionItemDto",
         "Meridian.Contracts.Ledger.AccountingBasisProjectionSetDto",
@@ -1134,6 +1146,7 @@
         "Meridian.Contracts.Ledger.FinancialStatementPackageDto",
         "Meridian.Contracts.Ledger.GeneratedPostingLineDto",
         "Meridian.Contracts.Ledger.IAccountingActionAuditStore",
+        "Meridian.Contracts.Ledger.IAccountingAuditPendingMarkerStore",
         "Meridian.Contracts.Ledger.IAccountingConfigurationService",
         "Meridian.Contracts.Ledger.IAccountingConfigurationStore",
         "Meridian.Contracts.Ledger.ICapitalAccountWorkbenchService",
@@ -1680,12 +1693,23 @@
         "Meridian.Contracts.StrategyEngine.StrategyEngineValidationFinding",
         "Meridian.Contracts.StrategyEngine.StrategyEngineValidationResult",
         "Meridian.Contracts.StrategyEngine.StrategyEngineValidationSeverity",
+        "Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment",
         "Meridian.Contracts.Tenancy.FundProfileOwnership",
         "Meridian.Contracts.Tenancy.FundScopedWriteTenantDecision",
         "Meridian.Contracts.Tenancy.FundScopedWriteTenantGate",
+        "Meridian.Contracts.Tenancy.FundScopeTenantAuthority",
+        "Meridian.Contracts.Tenancy.IAuthoritativeScopeFanOutService",
         "Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry",
         "Meridian.Contracts.Tenancy.IFundScopeTenantAccessor",
+        "Meridian.Contracts.Tenancy.IScopeAssignmentProvider",
+        "Meridian.Contracts.Tenancy.ScopeAssignmentProviderResult",
+        "Meridian.Contracts.Tenancy.ScopeFanOutIdentifier",
+        "Meridian.Contracts.Tenancy.ScopeFanOutRequest",
+        "Meridian.Contracts.Tenancy.ScopeFanOutResult",
         "Meridian.Contracts.Tenancy.TenantReadPredicate",
+        "Meridian.Contracts.Tenancy.TenantScopeEnforcementMode",
+        "Meridian.Contracts.Tenancy.TenantScopeEnforcementOptions",
+        "Meridian.Contracts.Tenancy.TenantScopeRejectedException",
         "Meridian.Contracts.Text.TextPrimitives",
         "Meridian.Contracts.Treasury.MmfDetailDto",
         "Meridian.Contracts.Treasury.MmfFundFamilyDto",
@@ -3119,7 +3143,7 @@
         "src/Meridian.Contracts/AccountingSystem",
         "src/Meridian.Contracts/Ledger"
       ],
-      "fingerprint": "0ea12fd423c232450c9aea6fa2bc52ab74a768aadff5ba001a49567c3e89f560",
+      "fingerprint": "b20833fa207635a9e8c3d265406aa629473713a8f74e72ad71aab265bf0ef444",
       "id": "ledger-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.AccountingSystem",
@@ -3192,6 +3216,18 @@
         "Meridian.Contracts.AccountingSystem.AccountingWorkflowCertificationLaneKindDto",
         "Meridian.Contracts.AccountingSystem.CertifyAccountingSystemExportPackageRequestDto",
         "Meridian.Contracts.Ledger.AccountingActionAuditEventDto",
+        "Meridian.Contracts.Ledger.AccountingAuditChain",
+        "Meridian.Contracts.Ledger.AccountingAuditChainAnchorPhase",
+        "Meridian.Contracts.Ledger.AccountingAuditChainAnchorRecord",
+        "Meridian.Contracts.Ledger.AccountingAuditChainIntegrityException",
+        "Meridian.Contracts.Ledger.AccountingAuditChainLink",
+        "Meridian.Contracts.Ledger.AccountingAuditChainState",
+        "Meridian.Contracts.Ledger.AccountingAuditChainStatus",
+        "Meridian.Contracts.Ledger.AccountingAuditChainVerification",
+        "Meridian.Contracts.Ledger.AccountingAuditPendingMarker",
+        "Meridian.Contracts.Ledger.AccountingAuditRecoveryException",
+        "Meridian.Contracts.Ledger.AccountingAuditRecoveryOutcome",
+        "Meridian.Contracts.Ledger.AccountingAuditRecoveryResult",
         "Meridian.Contracts.Ledger.AccountingBasisKindDto",
         "Meridian.Contracts.Ledger.AccountingBasisProjectionItemDto",
         "Meridian.Contracts.Ledger.AccountingBasisProjectionSetDto",
@@ -3287,6 +3323,7 @@
         "Meridian.Contracts.Ledger.FinancialStatementPackageDto",
         "Meridian.Contracts.Ledger.GeneratedPostingLineDto",
         "Meridian.Contracts.Ledger.IAccountingActionAuditStore",
+        "Meridian.Contracts.Ledger.IAccountingAuditPendingMarkerStore",
         "Meridian.Contracts.Ledger.IAccountingConfigurationService",
         "Meridian.Contracts.Ledger.IAccountingConfigurationStore",
         "Meridian.Contracts.Ledger.ICapitalAccountWorkbenchService",
@@ -3731,7 +3768,7 @@
       ]
     }
   ],
-  "fingerprint": "80117d1509e202d4ee251f14af873552e92f7e11965f2a4155bc049148f36069",
+  "fingerprint": "6614eeb9b4af84b10a4c136f22f1ef61ee85d54946554419d53b725bbe3e3562",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5116,13 +5153,25 @@
         "all-contracts",
         "ledger-contracts"
       ],
-      "fingerprint": "bf273658599386adf53d0b33d63fc8319d607c0587de20b5b0c4c456c8abd9b6",
+      "fingerprint": "73fde20b03e3777888c226a425bf9ef46c7de40852f88cd7cd83aa27e3800d43",
       "mapped_schemas": [
         "ledger"
       ],
       "namespace": "Meridian.Contracts.Ledger",
       "object_ids": [
         "Meridian.Contracts.Ledger.AccountingActionAuditEventDto",
+        "Meridian.Contracts.Ledger.AccountingAuditChain",
+        "Meridian.Contracts.Ledger.AccountingAuditChainAnchorPhase",
+        "Meridian.Contracts.Ledger.AccountingAuditChainAnchorRecord",
+        "Meridian.Contracts.Ledger.AccountingAuditChainIntegrityException",
+        "Meridian.Contracts.Ledger.AccountingAuditChainLink",
+        "Meridian.Contracts.Ledger.AccountingAuditChainState",
+        "Meridian.Contracts.Ledger.AccountingAuditChainStatus",
+        "Meridian.Contracts.Ledger.AccountingAuditChainVerification",
+        "Meridian.Contracts.Ledger.AccountingAuditPendingMarker",
+        "Meridian.Contracts.Ledger.AccountingAuditRecoveryException",
+        "Meridian.Contracts.Ledger.AccountingAuditRecoveryOutcome",
+        "Meridian.Contracts.Ledger.AccountingAuditRecoveryResult",
         "Meridian.Contracts.Ledger.AccountingBasisKindDto",
         "Meridian.Contracts.Ledger.AccountingBasisProjectionItemDto",
         "Meridian.Contracts.Ledger.AccountingBasisProjectionSetDto",
@@ -5218,6 +5267,7 @@
         "Meridian.Contracts.Ledger.FinancialStatementPackageDto",
         "Meridian.Contracts.Ledger.GeneratedPostingLineDto",
         "Meridian.Contracts.Ledger.IAccountingActionAuditStore",
+        "Meridian.Contracts.Ledger.IAccountingAuditPendingMarkerStore",
         "Meridian.Contracts.Ledger.IAccountingConfigurationService",
         "Meridian.Contracts.Ledger.IAccountingConfigurationStore",
         "Meridian.Contracts.Ledger.ICapitalAccountWorkbenchService",
@@ -5939,16 +5989,27 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "5739aeca19679861576be6c1466e7cd35a9e7b51dead397be98f01ac50aac210",
+      "fingerprint": "c4e4171355460e31a0da42566654bee1efd81fdb98ba441d7d43ac325f947f1a",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Tenancy",
       "object_ids": [
+        "Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment",
         "Meridian.Contracts.Tenancy.FundProfileOwnership",
         "Meridian.Contracts.Tenancy.FundScopedWriteTenantDecision",
         "Meridian.Contracts.Tenancy.FundScopedWriteTenantGate",
+        "Meridian.Contracts.Tenancy.FundScopeTenantAuthority",
+        "Meridian.Contracts.Tenancy.IAuthoritativeScopeFanOutService",
         "Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry",
         "Meridian.Contracts.Tenancy.IFundScopeTenantAccessor",
-        "Meridian.Contracts.Tenancy.TenantReadPredicate"
+        "Meridian.Contracts.Tenancy.IScopeAssignmentProvider",
+        "Meridian.Contracts.Tenancy.ScopeAssignmentProviderResult",
+        "Meridian.Contracts.Tenancy.ScopeFanOutIdentifier",
+        "Meridian.Contracts.Tenancy.ScopeFanOutRequest",
+        "Meridian.Contracts.Tenancy.ScopeFanOutResult",
+        "Meridian.Contracts.Tenancy.TenantReadPredicate",
+        "Meridian.Contracts.Tenancy.TenantScopeEnforcementMode",
+        "Meridian.Contracts.Tenancy.TenantScopeEnforcementOptions",
+        "Meridian.Contracts.Tenancy.TenantScopeRejectedException"
       ]
     },
     {
@@ -146108,6 +146169,981 @@
     },
     {
       "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "19c75859b3d04757855b3fe13c0ebd4fab41338b0c42b212ef86811beaf3eab4",
+      "full_name": "Meridian.Contracts.Ledger.AccountingAuditChain",
+      "id": "Meridian.Contracts.Ledger.AccountingAuditChain",
+      "kind": "class",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [],
+      "name": "AccountingAuditChain",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.AccountingAuditChain",
+      "references": [],
+      "source": {
+        "line": 159,
+        "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
+      },
+      "sources": [
+        {
+          "line": 159,
+          "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "Pending",
+          "source_line": 61,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Committed",
+          "source_line": 64,
+          "value": null
+        }
+      ],
+      "fingerprint": "8a157747db25b009264776de889f283120155d24d7b3514e8273431b2d5d8d82",
+      "full_name": "Meridian.Contracts.Ledger.AccountingAuditChainAnchorPhase",
+      "id": "Meridian.Contracts.Ledger.AccountingAuditChainAnchorPhase",
+      "kind": "enum",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [],
+      "name": "AccountingAuditChainAnchorPhase",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.AccountingAuditChainAnchorPhase",
+      "references": [],
+      "source": {
+        "line": 58,
+        "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
+      },
+      "sources": [
+        {
+          "line": 58,
+          "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "c6bde275598303c7f22cbf9710e0b2a2d5ea7b4f3300580d4ba9fc2adc066bf1",
+      "full_name": "Meridian.Contracts.Ledger.AccountingAuditChainAnchorRecord",
+      "id": "Meridian.Contracts.Ledger.AccountingAuditChainAnchorRecord",
+      "kind": "record",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AnchorHash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 75,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EntryHash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 71,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Phase",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "AccountingAuditChainAnchorPhase",
+          "source_line": 72,
+          "type": "AccountingAuditChainAnchorPhase"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PreviousAnchorHash",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 74,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RecordedAtUtc",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 73,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SchemaVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 69,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Sequence",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "long",
+          "source_line": 70,
+          "type": "long"
+        }
+      ],
+      "name": "AccountingAuditChainAnchorRecord",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.AccountingAuditChainAnchorRecord",
+      "references": [
+        "Meridian.Contracts.Ledger.AccountingAuditChainAnchorPhase"
+      ],
+      "source": {
+        "line": 68,
+        "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
+      },
+      "sources": [
+        {
+          "line": 68,
+          "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "Exception"
+      ],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "2b2044efc7ee687da4a2cd50ba425c82b4881385f60936a0c940d10e56e078b1",
+      "full_name": "Meridian.Contracts.Ledger.AccountingAuditChainIntegrityException",
+      "id": "Meridian.Contracts.Ledger.AccountingAuditChainIntegrityException",
+      "kind": "class",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Verification",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "AccountingAuditChainVerification",
+          "source_line": 141,
+          "type": "AccountingAuditChainVerification"
+        }
+      ],
+      "name": "AccountingAuditChainIntegrityException",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.AccountingAuditChainIntegrityException",
+      "references": [
+        "Meridian.Contracts.Ledger.AccountingAuditChainVerification"
+      ],
+      "source": {
+        "line": 133,
+        "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
+      },
+      "sources": [
+        {
+          "line": 133,
+          "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "1a995999e77d4d0e315260a0b5122720e4b06906cefb6d55e90da0a3c5192f6f",
+      "full_name": "Meridian.Contracts.Ledger.AccountingAuditChainLink",
+      "id": "Meridian.Contracts.Ledger.AccountingAuditChainLink",
+      "kind": "record",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AuditEventId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 20,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EntryHash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 23,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PayloadHash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 21,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PreviousHash",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 22,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Sequence",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "long",
+          "source_line": 19,
+          "type": "long"
+        }
+      ],
+      "name": "AccountingAuditChainLink",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.AccountingAuditChainLink",
+      "references": [],
+      "source": {
+        "line": 18,
+        "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
+      },
+      "sources": [
+        {
+          "line": 18,
+          "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "d974e18a816f21725a8371fe9e1f16ecbf430870225220c61128397224c9fea7",
+      "full_name": "Meridian.Contracts.Ledger.AccountingAuditChainState",
+      "id": "Meridian.Contracts.Ledger.AccountingAuditChainState",
+      "kind": "record",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "GenesisSequence",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "long",
+          "source_line": 40,
+          "type": "long"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "AccountingAuditChainLink",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Links",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<AccountingAuditChainLink>",
+          "source_line": 42,
+          "type": "IReadOnlyList<AccountingAuditChainLink>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PreChainEventCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 41,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SchemaVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 39,
+          "type": "int"
+        }
+      ],
+      "name": "AccountingAuditChainState",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.AccountingAuditChainState",
+      "references": [
+        "Meridian.Contracts.Ledger.AccountingAuditChainLink"
+      ],
+      "source": {
+        "line": 38,
+        "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
+      },
+      "sources": [
+        {
+          "line": 38,
+          "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "Valid",
+          "source_line": 80,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "UnsupportedSchemaVersion",
+          "source_line": 83,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "BrokenSequence",
+          "source_line": 86,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "MissingEvent",
+          "source_line": 89,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "EventMutated",
+          "source_line": 92,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "BrokenLink",
+          "source_line": 95,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "AnchorMismatch",
+          "source_line": 101,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "AnchorMissing",
+          "source_line": 104,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "InterruptedAppend",
+          "source_line": 110,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "UnlinkedEvent",
+          "source_line": 118,
+          "value": null
+        }
+      ],
+      "fingerprint": "27cea055035b7455b62be641e407d465f2f796923437026d89bca41af84d0a5f",
+      "full_name": "Meridian.Contracts.Ledger.AccountingAuditChainStatus",
+      "id": "Meridian.Contracts.Ledger.AccountingAuditChainStatus",
+      "kind": "enum",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [],
+      "name": "AccountingAuditChainStatus",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.AccountingAuditChainStatus",
+      "references": [],
+      "source": {
+        "line": 78,
+        "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
+      },
+      "sources": [
+        {
+          "line": 78,
+          "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "89c5b55bbbd4bd8457ee1ad4184f8dff1a0d3b5f673282579bbe705f7dc0faa5",
+      "full_name": "Meridian.Contracts.Ledger.AccountingAuditChainVerification",
+      "id": "Meridian.Contracts.Ledger.AccountingAuditChainVerification",
+      "kind": "record",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Detail",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 126,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FailedSequence",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "long?",
+          "source_line": 127,
+          "type": "long?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LinksChecked",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 124,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PreChainEventCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 125,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Status",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "AccountingAuditChainStatus",
+          "source_line": 123,
+          "type": "AccountingAuditChainStatus"
+        }
+      ],
+      "name": "AccountingAuditChainVerification",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.AccountingAuditChainVerification",
+      "references": [
+        "Meridian.Contracts.Ledger.AccountingAuditChainStatus"
+      ],
+      "source": {
+        "line": 122,
+        "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
+      },
+      "sources": [
+        {
+          "line": 122,
+          "path": "src/Meridian.Contracts/Ledger/AccountingAuditChain.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "ac86a1a4d9b809f0144144a97df577c317c63c8d418415a5d02edb91fc6a149b",
+      "full_name": "Meridian.Contracts.Ledger.AccountingAuditPendingMarker",
+      "id": "Meridian.Contracts.Ledger.AccountingAuditPendingMarker",
+      "kind": "record",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AuditEvent",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "AccountingActionAuditEventDto",
+          "source_line": 23,
+          "type": "AccountingActionAuditEventDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DeclaredAtUtc",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 24,
+          "type": "DateTimeOffset"
+        }
+      ],
+      "name": "AccountingAuditPendingMarker",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.AccountingAuditPendingMarker",
+      "references": [
+        "Meridian.Contracts.Ledger.AccountingActionAuditEventDto"
+      ],
+      "source": {
+        "line": 22,
+        "path": "src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs"
+      },
+      "sources": [
+        {
+          "line": 22,
+          "path": "src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "Exception"
+      ],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "1e2534367d5f4fffe54613847466d901b4511d69fd2cec9cae567c9fd6c7f33a",
+      "full_name": "Meridian.Contracts.Ledger.AccountingAuditRecoveryException",
+      "id": "Meridian.Contracts.Ledger.AccountingAuditRecoveryException",
+      "kind": "class",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AuditEventId",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "Guid",
+          "source_line": 66,
+          "type": "Guid"
+        }
+      ],
+      "name": "AccountingAuditRecoveryException",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.AccountingAuditRecoveryException",
+      "references": [],
+      "source": {
+        "line": 58,
+        "path": "src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs"
+      },
+      "sources": [
+        {
+          "line": 58,
+          "path": "src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "Nothing",
+          "source_line": 30,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "AlreadyAudited",
+          "source_line": 33,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "AuditReplayed",
+          "source_line": 36,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "MutationDiscarded",
+          "source_line": 39,
+          "value": null
+        }
+      ],
+      "fingerprint": "0ac6ed21727016dea7b3a8683fea4bd5c098b86881c18fbf2b88a53ac750e20a",
+      "full_name": "Meridian.Contracts.Ledger.AccountingAuditRecoveryOutcome",
+      "id": "Meridian.Contracts.Ledger.AccountingAuditRecoveryOutcome",
+      "kind": "enum",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [],
+      "name": "AccountingAuditRecoveryOutcome",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.AccountingAuditRecoveryOutcome",
+      "references": [],
+      "source": {
+        "line": 27,
+        "path": "src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs"
+      },
+      "sources": [
+        {
+          "line": 27,
+          "path": "src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "result",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "ce8efd3bd9626dcfef6af855cd68354793d449b269b7533e1cc370cccf0155f5",
+      "full_name": "Meridian.Contracts.Ledger.AccountingAuditRecoveryResult",
+      "id": "Meridian.Contracts.Ledger.AccountingAuditRecoveryResult",
+      "kind": "record",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AuditEventId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Guid?",
+          "source_line": 45,
+          "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Detail",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 46,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Outcome",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "AccountingAuditRecoveryOutcome",
+          "source_line": 44,
+          "type": "AccountingAuditRecoveryOutcome"
+        }
+      ],
+      "name": "AccountingAuditRecoveryResult",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.AccountingAuditRecoveryResult",
+      "references": [
+        "Meridian.Contracts.Ledger.AccountingAuditRecoveryOutcome"
+      ],
+      "source": {
+        "line": 43,
+        "path": "src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs"
+      },
+      "sources": [
+        {
+          "line": 43,
+          "path": "src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
       "classification": "enum",
       "containing_type": null,
       "contract_sets": [
@@ -162108,6 +163144,44 @@
         {
           "line": 1157,
           "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "0c12dc3f6f9fff7b4d39e6d1e9ed0318a75125f573577e478110b0ba9628f0fa",
+      "full_name": "Meridian.Contracts.Ledger.IAccountingAuditPendingMarkerStore",
+      "id": "Meridian.Contracts.Ledger.IAccountingAuditPendingMarkerStore",
+      "kind": "interface",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [],
+      "name": "IAccountingAuditPendingMarkerStore",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.IAccountingAuditPendingMarkerStore",
+      "references": [],
+      "source": {
+        "line": 73,
+        "path": "src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs"
+      },
+      "sources": [
+        {
+          "line": 73,
+          "path": "src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs"
         }
       ],
       "type_parameters": []
@@ -232819,6 +233893,246 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
+      "fingerprint": "8b018337a61efc4e1f68c9dd116c4605ad95e5c6e93c7387f216b62a45ebf8d9",
+      "full_name": "Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment",
+      "id": "Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountingBasis",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 28,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AuthorityId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 19,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CompanyId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 18,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CustodyAccountId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 25,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FinancialAccountId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 23,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FunctionalCurrency",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 29,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FundProfileId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 22,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Jurisdiction",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 30,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LedgerBookId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 26,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PeriodId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 27,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PortfolioId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 24,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ResolvedAsOfUtc",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 20,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StructureNodeId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 21,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TenantId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 17,
+          "type": "string"
+        }
+      ],
+      "name": "AuthoritativeScopeAssignment",
+      "namespace": "Meridian.Contracts.Tenancy",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment",
+      "references": [],
+      "source": {
+        "line": 16,
+        "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+      },
+      "sources": [
+        {
+          "line": 16,
+          "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
       "fingerprint": "3fe561dff910baaa0a12b3320f7e09ef0b5615fd4a2b21c279282ddebe72e0e2",
       "full_name": "Meridian.Contracts.Tenancy.FundProfileOwnership",
       "id": "Meridian.Contracts.Tenancy.FundProfileOwnership",
@@ -232972,6 +234286,72 @@
     },
     {
       "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "768d279760f0b676648614c1ec56de27c518d9946aea0520e23ec20b42466e31",
+      "full_name": "Meridian.Contracts.Tenancy.FundScopeTenantAuthority",
+      "id": "Meridian.Contracts.Tenancy.FundScopeTenantAuthority",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "FundScopeTenantAuthority",
+      "namespace": "Meridian.Contracts.Tenancy",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Tenancy.FundScopeTenantAuthority",
+      "references": [],
+      "source": {
+        "line": 28,
+        "path": "src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs"
+      },
+      "sources": [
+        {
+          "line": 28,
+          "path": "src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "f1bad5a458ccf6dd13d6dc9abf4250c63cac489f1b7b24ec1c2749c1882877d7",
+      "full_name": "Meridian.Contracts.Tenancy.IAuthoritativeScopeFanOutService",
+      "id": "Meridian.Contracts.Tenancy.IAuthoritativeScopeFanOutService",
+      "kind": "interface",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "IAuthoritativeScopeFanOutService",
+      "namespace": "Meridian.Contracts.Tenancy",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Tenancy.IAuthoritativeScopeFanOutService",
+      "references": [],
+      "source": {
+        "line": 121,
+        "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+      },
+      "sources": [
+        {
+          "line": 121,
+          "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
       "classification": "service_contract",
       "containing_type": null,
       "contract_sets": [
@@ -233038,6 +234418,335 @@
     },
     {
       "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "14e9df192299cf633f203a5e168bc47ac3023a1ee19d2aeb10d5933a2d4c6032",
+      "full_name": "Meridian.Contracts.Tenancy.IScopeAssignmentProvider",
+      "id": "Meridian.Contracts.Tenancy.IScopeAssignmentProvider",
+      "kind": "interface",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "IScopeAssignmentProvider",
+      "namespace": "Meridian.Contracts.Tenancy",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Tenancy.IScopeAssignmentProvider",
+      "references": [],
+      "source": {
+        "line": 149,
+        "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+      },
+      "sources": [
+        {
+          "line": 149,
+          "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "result",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "85e78c443118b0ea8bce7e3c6ac8287241c395a84c04b623c630d92abeb54749",
+      "full_name": "Meridian.Contracts.Tenancy.ScopeAssignmentProviderResult",
+      "id": "Meridian.Contracts.Tenancy.ScopeAssignmentProviderResult",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Blockers",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 171,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsAuthoritative",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 169,
+          "type": "bool"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "AuthoritativeScopeAssignment",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Scopes",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<AuthoritativeScopeAssignment>",
+          "source_line": 170,
+          "type": "IReadOnlyList<AuthoritativeScopeAssignment>"
+        }
+      ],
+      "name": "ScopeAssignmentProviderResult",
+      "namespace": "Meridian.Contracts.Tenancy",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Tenancy.ScopeAssignmentProviderResult",
+      "references": [
+        "Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment"
+      ],
+      "source": {
+        "line": 168,
+        "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+      },
+      "sources": [
+        {
+          "line": 168,
+          "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "c37715402e223dafb90d061bf96311fb0730a1ae1538edf56636afb99ab820ad",
+      "full_name": "Meridian.Contracts.Tenancy.ScopeFanOutIdentifier",
+      "id": "Meridian.Contracts.Tenancy.ScopeFanOutIdentifier",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IdentifierType",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 66,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Value",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 66,
+          "type": "string"
+        }
+      ],
+      "name": "ScopeFanOutIdentifier",
+      "namespace": "Meridian.Contracts.Tenancy",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Tenancy.ScopeFanOutIdentifier",
+      "references": [],
+      "source": {
+        "line": 66,
+        "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+      },
+      "sources": [
+        {
+          "line": 66,
+          "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "request",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "1b7d3355c51a5b9640008af9cb7cb914a9e51861f4e1389b7eba7e0843633610",
+      "full_name": "Meridian.Contracts.Tenancy.ScopeFanOutRequest",
+      "id": "Meridian.Contracts.Tenancy.ScopeFanOutRequest",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EffectiveDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 81,
+          "type": "DateOnly"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "ScopeFanOutIdentifier",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Identifiers",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<ScopeFanOutIdentifier>",
+          "source_line": 80,
+          "type": "IReadOnlyList<ScopeFanOutIdentifier>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 79,
+          "type": "Guid"
+        }
+      ],
+      "name": "ScopeFanOutRequest",
+      "namespace": "Meridian.Contracts.Tenancy",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Tenancy.ScopeFanOutRequest",
+      "references": [
+        "Meridian.Contracts.Tenancy.ScopeFanOutIdentifier"
+      ],
+      "source": {
+        "line": 78,
+        "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+      },
+      "sources": [
+        {
+          "line": 78,
+          "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "result",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "1cdc75b5e8da411f35738b516691b2e1e3749430aa84e63f00fa2eba36edb4ed",
+      "full_name": "Meridian.Contracts.Tenancy.ScopeFanOutResult",
+      "id": "Meridian.Contracts.Tenancy.ScopeFanOutResult",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Blockers",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 100,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsAuthoritative",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 98,
+          "type": "bool"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "AuthoritativeScopeAssignment",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Scopes",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<AuthoritativeScopeAssignment>",
+          "source_line": 99,
+          "type": "IReadOnlyList<AuthoritativeScopeAssignment>"
+        }
+      ],
+      "name": "ScopeFanOutResult",
+      "namespace": "Meridian.Contracts.Tenancy",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Tenancy.ScopeFanOutResult",
+      "references": [
+        "Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment"
+      ],
+      "source": {
+        "line": 97,
+        "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+      },
+      "sources": [
+        {
+          "line": 97,
+          "path": "src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
       "classification": "class",
       "containing_type": null,
       "contract_sets": [
@@ -233046,7 +234755,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "e7726e53ec2a260443b4cbf0a39ab7e9939ba1686ce28b99a9c37e74c58fdb5d",
+      "fingerprint": "683d4c179b7a2f1df3fef1f796f1850675bbf91c806bc096af701fd351e96467",
       "full_name": "Meridian.Contracts.Tenancy.TenantReadPredicate",
       "id": "Meridian.Contracts.Tenancy.TenantReadPredicate",
       "kind": "class",
@@ -233058,13 +234767,159 @@
       "qualified_name": "Meridian.Contracts.Tenancy.TenantReadPredicate",
       "references": [],
       "source": {
-        "line": 22,
+        "line": 31,
         "path": "src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs"
       },
       "sources": [
         {
-          "line": 22,
+          "line": 31,
           "path": "src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [
+        {
+          "explicit_value": true,
+          "name": "DeploymentBoundary",
+          "source_line": 18,
+          "value": "0"
+        },
+        {
+          "explicit_value": true,
+          "name": "FailClosed",
+          "source_line": 25,
+          "value": "1"
+        }
+      ],
+      "fingerprint": "61401e88d8ab40d95bba1c12ae35c344d1b53ea31f95f21698d99ccaf33908ae",
+      "full_name": "Meridian.Contracts.Tenancy.TenantScopeEnforcementMode",
+      "id": "Meridian.Contracts.Tenancy.TenantScopeEnforcementMode",
+      "kind": "enum",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "TenantScopeEnforcementMode",
+      "namespace": "Meridian.Contracts.Tenancy",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Tenancy.TenantScopeEnforcementMode",
+      "references": [],
+      "source": {
+        "line": 6,
+        "path": "src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs"
+      },
+      "sources": [
+        {
+          "line": 6,
+          "path": "src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "configuration",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "85bef1eabac38ec21d321adb81ad550a465d7bc4d0be287402aa063093927253",
+      "full_name": "Meridian.Contracts.Tenancy.TenantScopeEnforcementOptions",
+      "id": "Meridian.Contracts.Tenancy.TenantScopeEnforcementOptions",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Mode",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "TenantScopeEnforcementMode",
+          "source_line": 38,
+          "type": "TenantScopeEnforcementMode"
+        }
+      ],
+      "name": "TenantScopeEnforcementOptions",
+      "namespace": "Meridian.Contracts.Tenancy",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Tenancy.TenantScopeEnforcementOptions",
+      "references": [
+        "Meridian.Contracts.Tenancy.TenantScopeEnforcementMode"
+      ],
+      "source": {
+        "line": 38,
+        "path": "src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs"
+      },
+      "sources": [
+        {
+          "line": 38,
+          "path": "src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "Exception"
+      ],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "12f0759dd069a4ff2ee11a9352753f29684ebd124adbe74fba5dc07965a75ac1",
+      "full_name": "Meridian.Contracts.Tenancy.TenantScopeRejectedException",
+      "id": "Meridian.Contracts.Tenancy.TenantScopeRejectedException",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReadDescription",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "string",
+          "source_line": 110,
+          "type": "string"
+        }
+      ],
+      "name": "TenantScopeRejectedException",
+      "namespace": "Meridian.Contracts.Tenancy",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Tenancy.TenantScopeRejectedException",
+      "references": [],
+      "source": {
+        "line": 101,
+        "path": "src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs"
+      },
+      "sources": [
+        {
+          "line": 101,
+          "path": "src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs"
         }
       ],
       "type_parameters": []
