@@ -842,6 +842,31 @@ public sealed class RiskEscalationQueueServiceTests
     }
 
     [Fact]
+    public void Park_RecoversTheSubmitterFromAnyValidTokenAmongBogusOnes()
+    {
+        var queue = CreateQueue();
+        var original = queue.Park(CreateOrder(), "first rule", ruleName: "OrderNotional", actor: "trader-alice");
+        queue.Approve(original.EscalationId, actor: "risk-officer-bob", reason: "cleared");
+
+        // Token order is caller-supplied: a bogus value ahead of the real consumed token
+        // must not defeat recovery when consumption itself scans every token.
+        var resubmission = CreateOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = "bogus-token," + original.EscalationId,
+                ["actor"] = "risk-officer-bob"
+            }
+        };
+        queue.TryConsumeApproval(resubmission).Should().NotBeNull();
+
+        var second = queue.Park(resubmission, "second rule", ruleName: "PortfolioNotional", actor: "risk-officer-bob");
+
+        second.Actor.Should().Be("trader-alice");
+        second.Request.Metadata.Should().Contain(RiskEscalationQueueService.SubmitterMetadataKey, "trader-alice");
+    }
+
+    [Fact]
     public void Park_LaterStageResubmissionWithOnlyThatStagesToken_StillBindsToTheOriginalSubmitter()
     {
         var queue = CreateQueue();

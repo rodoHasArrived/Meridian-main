@@ -697,11 +697,12 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
     /// park was anonymous.
     /// </summary>
     /// <summary>
-    /// Upper bound on the upstream walk in <see cref="TryRecoverChainSubmitter"/>. Genuine
-    /// chains are short (one hop per escalating rule stage) and reference chronology makes
-    /// cycles impossible through the API, but a snapshot is still external input.
+    /// Upper bound on entries examined by <see cref="TryRecoverChainSubmitter"/>'s search.
+    /// Genuine chains are short (one hop per escalating rule stage) and reference
+    /// chronology makes cycles impossible through the API, but a snapshot is still
+    /// external input.
     /// </summary>
-    private const int MaxChainRecoveryDepth = 16;
+    private const int MaxChainRecoveryDepth = 32;
 
     private bool TryRecoverChainSubmitter(OrderRequest request, out string? submitter)
     {
@@ -712,35 +713,45 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
             return false;
         }
 
-        // A direct resubmission at a later stage carries only that stage's token, so the
-        // first link may be an intermediate chained entry rather than the root. Walk
-        // upstream — every hop fingerprint-verified against this order — until a chain
-        // root (its actor is the submitter by construction) or an entry whose binding
-        // carries server-written provenance. An unverifiable hop walks further or fails
-        // the whole recovery: a mis-bound legacy actor must never be adopted.
-        var nextId = linkedApprovals[0];
-        for (var depth = 0; depth < MaxChainRecoveryDepth; depth++)
+        // Token order and content are caller-supplied on a direct resubmission (and were
+        // frozen from caller input on legacy entries), so no single index can be trusted:
+        // a bogus value ahead of the real consumed token must not defeat recovery when
+        // consumption itself scans every token. The search explores every supplied link —
+        // and every link of each verified upstream hop — fingerprint-verifying each entry
+        // against this order, until a chain root (its actor is the submitter by
+        // construction) or an entry whose binding carries server-written provenance. An
+        // unverified entry is inert rather than misleading, the visited set makes
+        // fabricated cycles terminate, and the budget bounds work on hostile snapshots;
+        // exhaustion fails closed.
+        var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var pending = new Stack<string>();
+        for (var i = linkedApprovals.Count - 1; i >= 0; i--)
         {
-            if (!_entries.TryGetValue(nextId, out var linked) ||
+            pending.Push(linkedApprovals[i]);
+        }
+
+        var budget = MaxChainRecoveryDepth;
+        while (pending.Count > 0 && budget-- > 0)
+        {
+            var escalationId = pending.Pop();
+            if (!visited.Add(escalationId) ||
+                !_entries.TryGetValue(escalationId, out var linked) ||
                 !FingerprintMatches(linked.Request, request))
             {
-                return false;
+                continue;
             }
 
             var linkedTokens = ReadLinkedApprovalIds(linked.Request);
-            if (linkedTokens.Count == 0)
+            if (linkedTokens.Count == 0 || linked.SubmitterProvenance is not null)
             {
                 submitter = linked.Actor;
                 return true;
             }
 
-            if (linked.SubmitterProvenance is not null)
+            for (var i = linkedTokens.Count - 1; i >= 0; i--)
             {
-                submitter = linked.Actor;
-                return true;
+                pending.Push(linkedTokens[i]);
             }
-
-            nextId = linkedTokens[0];
         }
 
         return false;
