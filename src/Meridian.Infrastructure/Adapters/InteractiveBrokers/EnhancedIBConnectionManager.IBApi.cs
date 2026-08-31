@@ -804,120 +804,250 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public void RequestScanner(int requestId, IBScannerRequest request)
     {
         TrackDataServiceRequest(requestId);
-        ThrowIfNotConnected();
-        var subscription = new ScannerSubscription
+        try
         {
-            Instrument = request.Instrument,
-            LocationCode = request.LocationCode,
-            ScanCode = request.ScanCode,
-            NumberOfRows = request.NumberOfRows,
-            AbovePrice = request.AbovePrice,
-            AboveVolume = request.AboveVolume
-        };
-        _clientSocket.reqScannerSubscription(requestId, subscription, [], []);
+            ThrowIfNotConnected();
+            var subscription = new ScannerSubscription
+            {
+                Instrument = request.Instrument,
+                LocationCode = request.LocationCode,
+                ScanCode = request.ScanCode,
+                NumberOfRows = request.NumberOfRows,
+                AbovePrice = request.AbovePrice,
+                AboveVolume = request.AboveVolume
+            };
+            _clientSocket.reqScannerSubscription(requestId, subscription, [], []);
+        }
+        catch
+        {
+            // The submission never reached the vendor, so the id must not stay eligible
+            // for rejection routing.
+            _dataServiceRequestIds.TryRemove(requestId, out _);
+            throw;
+        }
     }
 
     public void RequestContractDetails(int requestId, SymbolConfig contract)
     {
         TrackDataServiceRequest(requestId);
-        ThrowIfNotConnected();
-        _clientSocket.reqContractDetails(requestId, ContractFactory.Create(contract));
+        try
+        {
+            ThrowIfNotConnected();
+            _clientSocket.reqContractDetails(requestId, ContractFactory.Create(contract));
+        }
+        catch
+        {
+            // The submission never reached the vendor, so the id must not stay eligible
+            // for rejection routing.
+            _dataServiceRequestIds.TryRemove(requestId, out _);
+            throw;
+        }
     }
 
     public void RequestOptionChain(int requestId, SymbolConfig underlying)
     {
         TrackDataServiceRequest(requestId);
-        ThrowIfNotConnected();
-        if (underlying.ConId is not int conId || conId <= 0)
-            throw new ArgumentException("IB option-chain requests require the resolved underlying ConId.", nameof(underlying));
-        _clientSocket.reqSecDefOptParams(requestId, underlying.Symbol, string.Empty, ContractFactory.ResolveSecType(underlying), conId);
+        try
+        {
+            ThrowIfNotConnected();
+            if (underlying.ConId is not int conId || conId <= 0)
+                throw new ArgumentException("IB option-chain requests require the resolved underlying ConId.", nameof(underlying));
+            _clientSocket.reqSecDefOptParams(requestId, underlying.Symbol, string.Empty, ContractFactory.ResolveSecType(underlying), conId);
+        }
+        catch
+        {
+            // The submission never reached the vendor, so the id must not stay eligible
+            // for rejection routing.
+            _dataServiceRequestIds.TryRemove(requestId, out _);
+            throw;
+        }
     }
 
     public void RequestHistoricalNews(int requestId, int conId, string providerCodes, DateTimeOffset start, DateTimeOffset end, int maximumResults)
     {
         TrackDataServiceRequest(requestId);
-        ThrowIfNotConnected();
-        _clientSocket.reqHistoricalNews(requestId, conId, providerCodes,
-            start.UtcDateTime.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture),
-            end.UtcDateTime.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture), maximumResults, []);
+        try
+        {
+            ThrowIfNotConnected();
+            _clientSocket.reqHistoricalNews(requestId, conId, providerCodes,
+                start.UtcDateTime.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture),
+                end.UtcDateTime.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture), maximumResults, []);
+        }
+        catch
+        {
+            // The submission never reached the vendor, so the id must not stay eligible
+            // for rejection routing.
+            _dataServiceRequestIds.TryRemove(requestId, out _);
+            throw;
+        }
     }
 
     public void RequestNewsArticle(int requestId, string providerCode, string articleId)
     {
         TrackDataServiceRequest(requestId);
-        ThrowIfNotConnected();
-        _clientSocket.reqNewsArticle(requestId, providerCode, articleId, []);
+        try
+        {
+            ThrowIfNotConnected();
+            _clientSocket.reqNewsArticle(requestId, providerCode, articleId, []);
+        }
+        catch
+        {
+            // The submission never reached the vendor, so the id must not stay eligible
+            // for rejection routing.
+            _dataServiceRequestIds.TryRemove(requestId, out _);
+            throw;
+        }
     }
 
     public void RequestFundamentals(int requestId, SymbolConfig contract, string reportType)
     {
         TrackDataServiceRequest(requestId);
-        ThrowIfNotConnected();
-        _clientSocket.reqFundamentalData(requestId, ContractFactory.Create(contract), reportType, []);
+        try
+        {
+            ThrowIfNotConnected();
+            _clientSocket.reqFundamentalData(requestId, ContractFactory.Create(contract), reportType, []);
+        }
+        catch
+        {
+            // The submission never reached the vendor, so the id must not stay eligible
+            // for rejection routing.
+            _dataServiceRequestIds.TryRemove(requestId, out _);
+            throw;
+        }
     }
 
     public void RequestDividendEarnings(int requestId, SymbolConfig contract)
     {
         TrackDataServiceRequest(requestId);
-        ThrowIfNotConnected();
-        _clientSocket.reqMktData(requestId, ContractFactory.Create(contract), "456,258", false, false, []);
+        try
+        {
+            ThrowIfNotConnected();
+            _clientSocket.reqMktData(requestId, ContractFactory.Create(contract), "456,258", false, false, []);
+        }
+        catch
+        {
+            // The submission never reached the vendor, so the id must not stay eligible
+            // for rejection routing.
+            _dataServiceRequestIds.TryRemove(requestId, out _);
+            throw;
+        }
     }
 
     public void RequestTickByTick(int requestId, SymbolConfig contract, string tickType, int numberOfTicks, bool ignoreSize)
     {
         TrackDataServiceRequest(requestId);
-        ThrowIfNotConnected();
-        _clientSocket.reqTickByTickData(requestId, ContractFactory.Create(contract), tickType, numberOfTicks, ignoreSize);
+        try
+        {
+            ThrowIfNotConnected();
+            _clientSocket.reqTickByTickData(requestId, ContractFactory.Create(contract), tickType, numberOfTicks, ignoreSize);
+        }
+        catch
+        {
+            // The submission never reached the vendor, so the id must not stay eligible
+            // for rejection routing.
+            _dataServiceRequestIds.TryRemove(requestId, out _);
+            throw;
+        }
     }
 
     public void RequestPnl(int requestId, string account, string? modelCode)
     {
         TrackDataServiceRequest(requestId);
-        ThrowIfNotConnected();
-        _clientSocket.reqPnL(requestId, account, modelCode ?? string.Empty);
+        try
+        {
+            ThrowIfNotConnected();
+            _clientSocket.reqPnL(requestId, account, modelCode ?? string.Empty);
+        }
+        catch
+        {
+            // The submission never reached the vendor, so the id must not stay eligible
+            // for rejection routing.
+            _dataServiceRequestIds.TryRemove(requestId, out _);
+            throw;
+        }
     }
 
     public void RequestMarketRule(int requestId, int marketRuleId)
     {
         TrackDataServiceRequest(requestId);
-        ThrowIfNotConnected();
-        _marketRuleRequests[marketRuleId] = requestId;
-        _clientSocket.reqMarketRule(marketRuleId);
+        try
+        {
+            ThrowIfNotConnected();
+            _marketRuleRequests[marketRuleId] = requestId;
+            _clientSocket.reqMarketRule(marketRuleId);
+        }
+        catch
+        {
+            // The submission never reached the vendor, so the id must not stay eligible
+            // for rejection routing.
+            _dataServiceRequestIds.TryRemove(requestId, out _);
+            throw;
+        }
     }
 
     public void RequestDepthExchanges(int requestId)
     {
         TrackDataServiceRequest(requestId);
-        ThrowIfNotConnected();
-        _depthExchangeRequests.Enqueue(requestId);
-        _clientSocket.reqMktDepthExchanges();
+        try
+        {
+            ThrowIfNotConnected();
+            _depthExchangeRequests.Enqueue(requestId);
+            _clientSocket.reqMktDepthExchanges();
+        }
+        catch
+        {
+            // The submission never reached the vendor, so the id must not stay eligible
+            // for rejection routing.
+            _dataServiceRequestIds.TryRemove(requestId, out _);
+            throw;
+        }
     }
 
     /// <summary>Starts a correlated, five-second real-time bar stream.</summary>
     public void RequestRealTimeBars(int requestId, IBRealTimeBarRequest request)
     {
         TrackDataServiceRequest(requestId);
-        ThrowIfNotConnected();
+        try
+        {
+            ThrowIfNotConnected();
 #if IBAPI_VENDOR
-        _clientSocket.reqRealTimeBars(requestId, ContractFactory.Create(request.Contract), 5, request.WhatToShow, request.UseRegularTradingHours, []);
+            _clientSocket.reqRealTimeBars(requestId, ContractFactory.Create(request.Contract), 5, request.WhatToShow, request.UseRegularTradingHours, []);
 #else
-        throw new NotSupportedException("Real-time bars require the official Interactive Brokers vendor SDK.");
+            throw new NotSupportedException("Real-time bars require the official Interactive Brokers vendor SDK.");
 #endif
+        }
+        catch
+        {
+            // The submission never reached the vendor, so the id must not stay eligible
+            // for rejection routing.
+            _dataServiceRequestIds.TryRemove(requestId, out _);
+            throw;
+        }
     }
 
     /// <summary>Requests a bounded historical-tick page with explicit time bounds.</summary>
     public void RequestHistoricalTicks(int requestId, IBHistoricalTickRequest request)
     {
         TrackDataServiceRequest(requestId);
-        ThrowIfNotConnected();
+        try
+        {
+            ThrowIfNotConnected();
 #if IBAPI_VENDOR
-        _clientSocket.reqHistoricalTicks(requestId, ContractFactory.Create(request.Contract),
-            request.Start?.UtcDateTime.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture) ?? string.Empty,
-            request.End?.UtcDateTime.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture) ?? string.Empty,
-            request.NumberOfTicks, request.WhatToShow, request.UseRegularTradingHours ? 1 : 0, false, []);
+            _clientSocket.reqHistoricalTicks(requestId, ContractFactory.Create(request.Contract),
+                request.Start?.UtcDateTime.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture) ?? string.Empty,
+                request.End?.UtcDateTime.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture) ?? string.Empty,
+                request.NumberOfTicks, request.WhatToShow, request.UseRegularTradingHours ? 1 : 0, false, []);
 #else
-        throw new NotSupportedException("Historical ticks require the official Interactive Brokers vendor SDK.");
+            throw new NotSupportedException("Historical ticks require the official Interactive Brokers vendor SDK.");
 #endif
+        }
+        catch
+        {
+            // The submission never reached the vendor, so the id must not stay eligible
+            // for rejection routing.
+            _dataServiceRequestIds.TryRemove(requestId, out _);
+            throw;
+        }
     }
 
     /// <summary>Cancels the associated vendor stream when its request lifetime ends.</summary>
@@ -1044,8 +1174,25 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         // order and other non-data-service ids, and a colliding id must not reject an unrelated
         // data request. Membership is tested without removal because IB routes non-terminal
         // per-request notices through error() as well.
-        if (id > 0 && _dataServiceRequestIds.ContainsKey(id))
-            RequestRejected?.Invoke(this, (id, errorCode.ToString(CultureInfo.InvariantCulture), errorMsg));
+        //
+        // Market rules are the exception on both counts: reqMarketRule sends the vendor only its
+        // marketRuleId, so a failure comes back under that id, not the data-service request id —
+        // translate it through the in-flight map, which this failure consumes just as the payload
+        // would. While such a request is in flight, an unrelated error on the same small vendor id
+        // would mis-route here; the alternative leaves every market-rule failure stuck in
+        // Requested, which is the worse trade.
+        if (id > 0)
+        {
+            if (_marketRuleRequests.TryRemove(id, out var marketRuleRequestId))
+            {
+                _dataServiceRequestIds.TryRemove(marketRuleRequestId, out _);
+                RequestRejected?.Invoke(this, (marketRuleRequestId, errorCode.ToString(CultureInfo.InvariantCulture), errorMsg));
+            }
+            else if (_dataServiceRequestIds.ContainsKey(id))
+            {
+                RequestRejected?.Invoke(this, (id, errorCode.ToString(CultureInfo.InvariantCulture), errorMsg));
+            }
+        }
     }
 
     public void connectionClosed()
@@ -1223,6 +1370,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     {
         RecordMessageReceived();
         if (!_depthExchangeRequests.TryDequeue(out var requestId)) return;
+        _dataServiceRequestIds.TryRemove(requestId, out _);
         var values = depthMktDataDescriptions.Select(value => new ProviderDepthExchangeDescription(
             value.Exchange, value.SecType, value.ListingExch, value.ServiceDataType, value.AggGroup != 0)).ToArray();
         DepthExchangesReceived?.Invoke(this, (requestId, values));
@@ -1234,6 +1382,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public void newsArticle(int requestId, int articleType, string articleText)
     {
         RecordMessageReceived();
+        _dataServiceRequestIds.TryRemove(requestId, out _);
         NewsArticleReceived?.Invoke(this, (requestId, new ProviderNewsArticlePayload(articleType, articleText)));
     }
 
@@ -1255,6 +1404,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public void fundamentalData(int reqId, string data)
     {
         RecordMessageReceived();
+        _dataServiceRequestIds.TryRemove(reqId, out _);
         FundamentalReportReceived?.Invoke(this, (reqId, new ProviderFundamentalReport(data)));
     }
 
@@ -1275,11 +1425,14 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     {
         RecordMessageReceived();
         if (_marketRuleRequests.TryRemove(marketRuleId, out var requestId))
+        {
+            _dataServiceRequestIds.TryRemove(requestId, out _);
             MarketRuleReceived?.Invoke(this, (requestId, priceIncrements.Select(value =>
                 new ProviderMarketRuleIncrement(
                     (decimal)value.LowEdge,
                     (decimal)value.Increment,
                     ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow))).ToArray()));
+        }
     }
 
     public void pnl(int reqId, string account, string modelCode, double dailyPnL, double unrealizedPnL, double realizedPnL)
