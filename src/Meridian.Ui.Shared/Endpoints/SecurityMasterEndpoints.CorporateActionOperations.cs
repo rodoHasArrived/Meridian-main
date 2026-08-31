@@ -346,9 +346,11 @@ public static partial class SecurityMasterEndpoints
             {
                 var cases = await service.ListCasesAsync(
                     scope.TenantId, scope.CompanyId, securityId, state, take ?? 100, ct).ConfigureAwait(false);
+                // Narrowly scoped cases are listed now that the full-scope command path exists:
+                // their server-resolved scope is displayed as record data, and every mutation on
+                // them requires an exact full-scope assertion at the write boundary.
                 return Results.Json(
-                    cases.Where(static item => !HasNarrowCorporateActionScope(item.Scope))
-                        .Select(item => ApplyCallerActionAvailability(item, context)).ToArray(),
+                    cases.Select(item => ApplyCallerActionAvailability(item, context)).ToArray(),
                     jsonOptions);
             }
             catch (CorporateActionOperationException exception)
@@ -377,15 +379,13 @@ public static partial class SecurityMasterEndpoints
             {
                 var processingCase = await service.GetCaseAsync(
                     caseId, scope.TenantId, scope.CompanyId, ct).ConfigureAwait(false);
+                // Narrowly scoped cases are readable now that the full-scope command path exists:
+                // the server-resolved scope is record data the caller must echo exactly on every
+                // mutation, so displaying it never lets a caller assert an assignment.
                 return processingCase is null
                     ? CorporateActionProblem(
                         context,
                         new CorporateActionNotFoundException("Corporate-action processing case", caseId))
-                    : HasNarrowCorporateActionScope(processingCase.Scope)
-                        ? CorporateActionProblem(
-                            context,
-                            new CorporateActionScopeMismatchException(
-                                "This case has a narrow scope that this endpoint cannot authoritatively resolve."))
                     : Results.Json(ApplyCallerActionAvailability(processingCase, context), jsonOptions);
             }
             catch (CorporateActionOperationException exception)
@@ -602,6 +602,78 @@ public static partial class SecurityMasterEndpoints
         .ProducesProblem(StatusCodes.Status409Conflict)
         .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        group.MapPost(UiApiRoutes.SecurityMasterCorporateActionCaseAccountingProjection, async (
+            Guid caseId,
+            AttachCorporateActionAccountingProjectionRequestDto request,
+            HttpContext context,
+            [FromServices] ICorporateActionCaseAccountingService service,
+            CancellationToken ct) =>
+            await ExecuteScopedCaseCommandAsync(
+                caseId, request.CaseId, request.TenantId, request.CompanyId, context,
+                trusted => service.AttachProjectionAsync(request with
+                {
+                    TenantId = trusted.TenantId,
+                    CompanyId = trusted.CompanyId,
+                    Actor = trusted.Actor,
+                    CorrelationId = trusted.CorrelationId,
+                    Authority = ResolveTransitionAuthority(context),
+                }, ct), jsonOptions).ConfigureAwait(false))
+        .WithName("AttachCorporateActionCaseAccountingProjection")
+        .RequirePermission(UserPermission.PrepareCorporateActionAccounting)
+        .RequireWorkstationTenantCompanyScope()
+        .Produces<CorporateActionAccountingProjectionMutationResultDto>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        group.MapPost(UiApiRoutes.SecurityMasterCorporateActionCaseAccountingApproval, async (
+            Guid caseId,
+            ApproveCorporateActionCaseAccountingRequestDto request,
+            HttpContext context,
+            [FromServices] ICorporateActionCaseAccountingService service,
+            CancellationToken ct) =>
+            await ExecuteScopedCaseCommandAsync(
+                caseId, request.CaseId, request.TenantId, request.CompanyId, context,
+                trusted => service.ApproveAsync(request with
+                {
+                    TenantId = trusted.TenantId,
+                    CompanyId = trusted.CompanyId,
+                    Actor = trusted.Actor,
+                    CorrelationId = trusted.CorrelationId,
+                    Authority = ResolveAccountingDecisionAuthority(context),
+                }, ct), jsonOptions).ConfigureAwait(false))
+        .WithName("ApproveCorporateActionCaseAccounting")
+        .RequirePermission(UserPermission.ApproveCorporateActionAccounting)
+        .RequireWorkstationTenantCompanyScope()
+        .Produces<CorporateActionAccountingApprovalResultDto>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        group.MapPost(UiApiRoutes.SecurityMasterCorporateActionCaseAccountingPosting, async (
+            Guid caseId,
+            PostCorporateActionCaseAccountingRequestDto request,
+            HttpContext context,
+            [FromServices] ICorporateActionCaseAccountingService service,
+            CancellationToken ct) =>
+            await ExecuteScopedCaseCommandAsync(
+                caseId, request.CaseId, request.TenantId, request.CompanyId, context,
+                trusted => service.PostAsync(request with
+                {
+                    TenantId = trusted.TenantId,
+                    CompanyId = trusted.CompanyId,
+                    Actor = trusted.Actor,
+                    CorrelationId = trusted.CorrelationId,
+                    Authority = ResolveAccountingDecisionAuthority(context),
+                }, ct), jsonOptions).ConfigureAwait(false))
+        .WithName("PostCorporateActionCaseAccounting")
+        .RequirePermission(UserPermission.PostCorporateActionAccounting)
+        .RequireWorkstationTenantCompanyScope()
+        .Produces<CorporateActionAccountingPostingResultDto>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 
     private static async Task<IResult> AcceptSourceProposalAsync(
@@ -723,8 +795,7 @@ public static partial class SecurityMasterEndpoints
             {
                 ActionAvailability = ApplyCallerActionAvailability(entry.ActionAvailability, context),
             }).ToArray(),
-            Cases = inbox.Cases.Where(static item => !HasNarrowCorporateActionScope(item.Scope))
-                .Select(item => ApplyCallerActionAvailability(item, context)).ToArray(),
+            Cases = inbox.Cases.Select(item => ApplyCallerActionAvailability(item, context)).ToArray(),
         };
 
     private static CorporateActionSourceProposalDto ApplyCallerActionAvailability(
@@ -849,11 +920,15 @@ public static partial class SecurityMasterEndpoints
                 CanResolveConflict = availability.CanResolveConflict && canResolve,
                 CanManageOptions = availability.CanManageOptions && canPrepare,
                 CanTransition = availability.CanTransition && authorizedTargets.Length > 0,
-                // Approval uses its own exact evidence/projection command; this generic surface
-                // never advertises approval, even to a Controller.
-                CanApproveAccounting = false,
+                // Approval and posting use their own exact evidence/projection commands with
+                // dedicated downstream permissions; the read model advertises them only when the
+                // durable binding supports them AND the caller holds the governed capability.
+                CanApproveAccounting = availability.CanApproveAccounting
+                    && EndpointAuthorization.HasPermission(context, UserPermission.ApproveCorporateActionAccounting),
                 AllowedTransitionTargets = authorizedTargets,
                 Blockers = blockers,
+                CanPostAccounting = availability.CanPostAccounting
+                    && EndpointAuthorization.HasPermission(context, UserPermission.PostCorporateActionAccounting),
             },
         };
     }
@@ -865,6 +940,11 @@ public static partial class SecurityMasterEndpoints
             EndpointAuthorization.HasPermission(context, UserPermission.PrepareCorporateActionAccounting),
             EndpointAuthorization.HasPermission(context, UserPermission.OverrideCorporateActionPolicy),
             EndpointAuthorization.HasPermission(context, UserPermission.ReopenCorporateActionCase));
+
+    private static CorporateActionAccountingDecisionAuthorityDto ResolveAccountingDecisionAuthority(HttpContext context) =>
+        new(
+            EndpointAuthorization.HasPermission(context, UserPermission.ApproveCorporateActionAccounting),
+            EndpointAuthorization.HasPermission(context, UserPermission.PostCorporateActionAccounting));
 
     private static bool TryResolveCorporateActionScope(
         HttpContext context,
@@ -917,6 +997,8 @@ public static partial class SecurityMasterEndpoints
             CorporateActionProblemCodes.PolicyMissing or
             CorporateActionProblemCodes.ProjectionStale or
             CorporateActionProblemCodes.PeriodLocked or
+            CorporateActionProblemCodes.JournalUnbalanced or
+            CorporateActionProblemCodes.MakerCheckerRequired or
             CorporateActionProblemCodes.ReconciliationIncomplete or
             CorporateActionProblemCodes.ValidationFailed or
             CorporateActionProblemCodes.DownstreamAuthorityRequired or

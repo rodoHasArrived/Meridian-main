@@ -2,7 +2,7 @@
 
 **Status:** active guidance
 **Owner:** accounting-and-ledger
-**Reviewed:** 2026-08-25
+**Reviewed:** 2026-08-31
 
 ## Definition
 
@@ -119,23 +119,60 @@ blocker. Canonical accept and reject commands return the typed
 retired unscoped inbox-apply route remains a `410 Gone` tombstone. This hard boundary is not an
 operator-configurable feature toggle and must remain closed until trusted fan-out authority exists.
 
-The endpoints also reject caller-supplied narrow scope on acceptance and hide or deny mutations for
-narrowly scoped cases. These controls are deliberate fail-closed boundaries, not a claim that
-tenant/company scope is sufficient for posting.
+The endpoints still reject caller-supplied narrow scope on acceptance: assignments are read from
+the record, never asserted. Post-acceptance, narrowly scoped cases are readable, and every
+mutation on one requires a full-scope assertion that exactly matches the stored, server-resolved
+scope — the assertion proves the caller acts on the record it read; it cannot resolve or widen an
+assignment.
 
 Production composition registers the deterministic corporate-action accounting projector and the
 Asset Accounting Event Spine mapper as singleton services. Registration makes the pure preparation
-boundary available to governed workflows; it does not make a Corporate Action Case posting-ready
-and does not create a posting call site.
+boundary available to governed workflows; it does not by itself make a Corporate Action Case
+posting-ready.
 
-The current implementation deliberately stops before workflow orchestration. A safe production
-orchestrator still needs authoritative, versioned dependencies for the exact case and election,
-position and lot snapshots, basis-specific policy decision, promoted accounting rule pack,
-retained evidence, ledger book, and accounting period. Once those inputs are supplied, the mapper
-can produce a spine request and a deterministic posting idempotency key. The existing Asset
-Accounting Event Spine remains the only route to candidate preparation, policy and evidence
-validation, maker-checker approval, optimistic-concurrency checks, and durable posting. Neither
-the projector nor the mapper can append a journal directly.
+## Approval and Posting Lane
+
+The approval and posting half of the lifecycle is a dedicated governed command path
+(`ICorporateActionCaseAccountingService`), deliberately separate from the generic case transition
+command, which can prepare a case through `ReadyForApproval` but can never grant `Approved` or
+`Posted`:
+
+1. **Attach projection** (`AccountingReview`, requires `PrepareCorporateActionAccounting`). The
+   preparer drives the Asset Accounting Event Spine to an exact `Drafted` candidate through the
+   existing ledger endpoints, then attaches a durable exact-version projection binding to the
+   case. The binding is verified against the retained spine snapshot (drafted-candidate
+   fingerprint, balanced generated journals, promoted rule pack with a selected rule, exact
+   ledger-book/period/basis/fund/currency congruence with the case scope, expected period
+   version) and is bound to the resulting case version — any later content mutation makes it
+   stale. Attaching supersedes the previous binding and voids any unconsumed approval.
+2. **ReadyForApproval** (generic transition, `PrepareCorporateActionAccounting`). The durable
+   store's transactional guard admits the transition only when the current binding targets the
+   exact case version, is balanced, policy-covered, lot-resolved, and matches the exact scope;
+   otherwise it refuses with `corporate_action_projection_stale` and the other typed codes.
+3. **Approve** (`ReadyForApproval → Approved`, requires `ApproveCorporateActionAccounting`).
+   Maker-checker: the approver must be independent of the preparer retained on the binding, and
+   must supply typed approval evidence (reference plus SHA-256). A governed return
+   `Approved → AccountingReview` withdraws the candidate and voids the approval, audit-preserved.
+4. **Post** (`Approved → Posted`, requires `PostCorporateActionAccounting` — granted to no
+   built-in role; deployments assign it through an audited custom-role policy). Posting is
+   refused with typed problem codes without exact scope, approved policy coverage, an open
+   accounting period at the exact expected version, balanced journals, valid lot resolution,
+   retained evidence, and the required maker-checker approval; the posting operator must be the
+   approving operator so the spine's retained approval evidence attests one maker-checker act.
+   The command executes the durable journal through the spine posting authority (which
+   independently re-enforces maker≠checker, period posture, balanced lines, and lot authority),
+   then records the immutable journal identity, ledger book, period, balanced amounts, currency,
+   and Posted status on the case. A failed attempt leaves the case recoverable in `Approved`; a
+   crash between the spine commit and the case record is recovered idempotently on retry, and a
+   spine event posted outside the case's approval is refused rather than adopted.
+
+Journals and posted lot effects stay immutable. `Posted → RestatementRequired` opens the governed
+correction lane; corrections add reversal, rebook, or restatement lineage through the spine onto a
+fresh exact-version binding — a superseded binding can never be posted twice.
+
+The Asset Accounting Event Spine remains the only route to candidate preparation, policy and
+evidence validation, maker-checker approval, optimistic-concurrency checks, and durable posting.
+Neither the projector nor the mapper can append a journal directly.
 
 ## Future Expansion Notes
 
