@@ -1,0 +1,98 @@
+<!-- @dsCard group="Documentation" viewport="1100x760" name="Keyboard Map" subtitle="Every documented shortcut by context, plus a live keydown tester" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:22px;background:var(--bg,#ECEFF3);font-family:var(--font-body);color:var(--text-primary);">
+<div id="root"></div>
+<script type="text/babel">
+const { Kbd, Eyebrow } = window.MeridianDesignSystem_4f61be;
+const { useState, useEffect } = React;
+
+const MAP = [
+  ["Global", [["Command palette", "Cmd K"], ["Search", "/"], ["Dismiss / close", "Esc"], ["Confirm action", "Enter"]]],
+  ["Navigate", [["Go to Dashboard", "G D"], ["Go to Trading Desk", "G T"], ["Go to Alerting", "G A"], ["Next row", "J"], ["Previous row", "K"]]],
+  ["Tables", [["Move selection", "↑ ↓"], ["Open row", "Enter"], ["Column manager", "C"], ["Export", "Cmd E"]]],
+  ["Alerts", [["Acknowledge", "A"], ["Silence 1h", "S"]]],
+  ["Trading", [["Show blotter", "B"], ["Show fills", "F"]]],
+];
+
+function Caps({ combo }) {
+  return (
+    <span style={{ display: "inline-flex", gap: 4 }}>
+      {combo.split(" ").map((k, i) => <Kbd key={i}>{k}</Kbd>)}
+    </span>
+  );
+}
+
+function Panel({ title, children }) {
+  return (
+    <div style={{ background: "var(--bg-light)", border: "1px solid var(--border)", borderRadius: 2, padding: 16 }}>
+      <Eyebrow>{title}</Eyebrow>
+      <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>{children}</div>
+    </div>
+  );
+}
+
+function Demo() {
+  const [last, setLast] = useState(null);
+  useEffect(() => {
+    const h = (e) => {
+      const parts = [];
+      if (e.metaKey) parts.push("Cmd");
+      if (e.ctrlKey) parts.push("Ctrl");
+      if (e.altKey) parts.push("Alt");
+      if (e.shiftKey) parts.push("Shift");
+      const k = e.key === " " ? "Space" : e.key.length === 1 ? e.key.toUpperCase() : e.key;
+      if (!["Meta", "Control", "Alt", "Shift"].includes(e.key)) parts.push(k);
+      if (parts.length) setLast(parts.join(" "));
+      if (e.key === "/" || (e.key === " " && e.target === document.body)) e.preventDefault();
+    };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, []);
+
+  return (
+    <div style={{ maxWidth: 1040, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
+        <h1 style={{ font: "600 20px var(--font-display)", margin: 0 }}>Keyboard Map</h1>
+        <span style={{ fontFamily: "var(--font-data)", fontSize: 12, color: "var(--text-muted)" }}>documented operator shortcuts</span>
+      </div>
+
+      <div style={{ background: "var(--bg-light)", border: "1px solid var(--accent)", borderRadius: 2, padding: "14px 16px",
+        display: "flex", alignItems: "center", gap: 14, boxShadow: "inset 0 0 0 1px color-mix(in srgb,var(--accent) 22%,transparent)" }}>
+        <Eyebrow>Live tester</Eyebrow>
+        <span style={{ fontFamily: "var(--font-data)", fontSize: 13, color: "var(--text-secondary)" }}>
+          Press any key combination:
+        </span>
+        <span style={{ minHeight: 24, display: "inline-flex", alignItems: "center" }}>
+          {last ? <Caps combo={last} /> : <span style={{ color: "var(--text-muted)", fontSize: 13 }}>waiting…</span>}
+        </span>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 12 }}>
+        {MAP.map(([group, rows]) => (
+          <Panel key={group} title={group}>
+            {rows.map(([label, combo]) => (
+              <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>{label}</span>
+                <Caps combo={combo} />
+              </div>
+            ))}
+          </Panel>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

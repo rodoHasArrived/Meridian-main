@@ -20,12 +20,28 @@ public sealed class LedgerAmountProvenanceService
         _breakQueueRepository = breakQueueRepository;
     }
 
-    public async Task<LedgerAmountProvenanceDetailDto?> GetAsync(
+    [Obsolete(
+        "Authoritative ledger-amount provenance requires an authenticated tenant and company scope. " +
+        "Use GetAsync(Guid, string, ReconciliationBreakQueueScope, CancellationToken).")]
+    public Task<LedgerAmountProvenanceDetailDto?> GetAsync(
         Guid reportId,
         string scopeKey,
         CancellationToken ct = default)
     {
-        if (_reportPackRepository is null || string.IsNullOrWhiteSpace(scopeKey))
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult<LedgerAmountProvenanceDetailDto?>(null);
+    }
+
+    public async Task<LedgerAmountProvenanceDetailDto?> GetAsync(
+        Guid reportId,
+        string scopeKey,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(accessScope);
+        if (_reportPackRepository is null ||
+            _breakQueueRepository is null ||
+            string.IsNullOrWhiteSpace(scopeKey))
         {
             return null;
         }
@@ -74,6 +90,7 @@ public sealed class LedgerAmountProvenanceService
             accountName,
             symbol,
             securityEvidenceIds,
+            accessScope,
             ct).ConfigureAwait(false);
         var providerCaseEvidence = relatedCases
             .Where(static item => IsProviderEvidenceCase(item))
@@ -156,14 +173,12 @@ public sealed class LedgerAmountProvenanceService
         string accountName,
         string? symbol,
         IReadOnlyList<string> securityEvidenceIds,
+        ReconciliationBreakQueueScope accessScope,
         CancellationToken ct)
     {
-        if (_breakQueueRepository is null)
-        {
-            return [];
-        }
-
-        var items = await _breakQueueRepository.GetAllAsync(null, ct).ConfigureAwait(false);
+        var items = await _breakQueueRepository!
+            .GetAllAsync(accessScope, status: null, ct)
+            .ConfigureAwait(false);
         return items
             .Where(item =>
                 Contains(item.BreakId, scopeKey) ||

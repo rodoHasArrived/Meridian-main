@@ -17,6 +17,7 @@ public sealed class WorkstationWorkflowSummaryFinancialOperationsTests
         var service = CreateSummaryService(new StubOperationsContinuityWorkflowService([]));
 
         var summary = await service.GetAsync(
+            WorkstationWorkflowReadScope.All,
             hasOperatingContext: true,
             operatingContextDisplayName: "Northwind Income",
             fundProfileId: "northwind-income",
@@ -71,6 +72,7 @@ public sealed class WorkstationWorkflowSummaryFinancialOperationsTests
         var service = CreateSummaryService(new StubOperationsContinuityWorkflowService([workflow]));
 
         var summary = await service.GetAsync(
+            WorkstationWorkflowReadScope.All,
             hasOperatingContext: true,
             operatingContextDisplayName: "Northwind Income",
             fundProfileId: "northwind-income",
@@ -104,6 +106,7 @@ public sealed class WorkstationWorkflowSummaryFinancialOperationsTests
         var service = CreateSummaryService(new StubOperationsContinuityWorkflowService([workflow]));
 
         var summary = await service.GetAsync(
+            WorkstationWorkflowReadScope.All,
             hasOperatingContext: true,
             operatingContextDisplayName: "Northwind Income",
             fundProfileId: "northwind-income",
@@ -141,6 +144,7 @@ public sealed class WorkstationWorkflowSummaryFinancialOperationsTests
         var service = CreateSummaryService(new StubOperationsContinuityWorkflowService([workflow]));
 
         var summary = await service.GetAsync(
+            WorkstationWorkflowReadScope.All,
             hasOperatingContext: true,
             operatingContextDisplayName: "Northwind Income",
             fundProfileId: "northwind-income",
@@ -179,6 +183,7 @@ public sealed class WorkstationWorkflowSummaryFinancialOperationsTests
         var service = CreateSummaryService(new StubOperationsContinuityWorkflowService([workflow]));
 
         var summary = await service.GetAsync(
+            WorkstationWorkflowReadScope.All,
             hasOperatingContext: true,
             operatingContextDisplayName: "Northwind Income",
             fundProfileId: "northwind-income",
@@ -234,6 +239,7 @@ public sealed class WorkstationWorkflowSummaryFinancialOperationsTests
         var service = CreateSummaryService(new StubOperationsContinuityWorkflowService([workflow]));
 
         var summary = await service.GetAsync(
+            WorkstationWorkflowReadScope.All,
             hasOperatingContext: true,
             operatingContextDisplayName: "Northwind Income",
             fundProfileId: "northwind-income",
@@ -268,6 +274,7 @@ public sealed class WorkstationWorkflowSummaryFinancialOperationsTests
         var service = CreateSummaryService(new StubOperationsContinuityWorkflowService([workflow]));
 
         var summary = await service.GetAsync(
+            WorkstationWorkflowReadScope.All,
             hasOperatingContext: true,
             operatingContextDisplayName: "Northwind Income",
             fundProfileId: "northwind-income",

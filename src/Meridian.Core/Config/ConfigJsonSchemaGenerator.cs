@@ -100,6 +100,29 @@ public sealed class ConfigJsonSchemaGenerator
             }
         };
 
+        properties["SecurityMasterWorkbench"] = AllowNull(new JsonObject
+        {
+            ["$ref"] = "#/$defs/SecurityMasterWorkbenchOptions"
+        });
+
+        _definitions["SecurityMasterWorkbenchOptions"] = new JsonObject
+        {
+            ["type"] = "object",
+            ["additionalProperties"] = false,
+            ["properties"] = new JsonObject
+            {
+                ["SourcePrecedence"] = new JsonObject
+                {
+                    ["type"] = "array",
+                    ["items"] = CreateTypedSchema("string")
+                },
+                ["GoldenCopySource"] = AllowNull(CreateTypedSchema("string")),
+                ["RequireIndependentReviewer"] = CreateTypedSchema("boolean"),
+                ["MaxBulkResolveBatch"] = CreateTypedSchema("integer"),
+                ["RequireGovernedTermAmendments"] = CreateTypedSchema("boolean")
+            }
+        };
+
         properties["PaperTrading"] = AllowNull(new JsonObject
         {
             ["$ref"] = "#/$defs/PaperTradingHostOptions"
@@ -117,7 +140,30 @@ public sealed class ConfigJsonSchemaGenerator
                     ["additionalProperties"] = false,
                     ["properties"] = new JsonObject
                     {
+                        ["AllowScaffoldMarketFills"] = CreateTypedSchema("boolean"),
                         ["ScaffoldMarketFillPrice"] = CreateTypedSchema("number")
+                    }
+                },
+                ["Costs"] = new JsonObject
+                {
+                    ["type"] = "object",
+                    ["additionalProperties"] = false,
+                    ["properties"] = new JsonObject
+                    {
+                        ["CommissionKind"] = new JsonObject
+                        {
+                            ["type"] = "string",
+                            ["enum"] = new JsonArray(
+                                "PerShare",
+                                "BasisPointsOfNotional",
+                                "FixedPerOrder")
+                        },
+                        ["CommissionRate"] = CreateTypedSchema("number"),
+                        ["CommissionMinimum"] = CreateTypedSchema("number"),
+                        ["CommissionMaximum"] = AllowNull(CreateTypedSchema("number")),
+                        ["FeePerOrder"] = CreateTypedSchema("number"),
+                        ["FeeBasisPoints"] = CreateTypedSchema("number"),
+                        ["SlippageBasisPoints"] = CreateTypedSchema("number")
                     }
                 },
                 ["Sessions"] = new JsonObject
@@ -393,6 +439,9 @@ public sealed class ConfigJsonSchemaGenerator
             // Extension-data catch-alls preserve unmodeled sections at runtime; they are
             // not declared configuration surface and must not appear in the schema.
             .Where(p => p.GetCustomAttribute<JsonExtensionDataAttribute>() is null)
+            // Ignored members may support in-process compatibility aliases, but they are
+            // not accepted by the JSON configuration contract.
+            .Where(p => p.GetCustomAttribute<JsonIgnoreAttribute>() is null)
             .OrderBy(p => p.Name, StringComparer.Ordinal);
 
     private string GetDefinitionName(Type type)

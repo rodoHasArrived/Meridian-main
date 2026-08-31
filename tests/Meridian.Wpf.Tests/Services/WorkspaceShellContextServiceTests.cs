@@ -16,7 +16,7 @@ public sealed class WorkspaceShellContextServiceTests
         var detector = CreateDetector();
         detector.SetFixtureMode(false);
         detector.UpdateBackendReachability(true);
-        NotificationService.Instance.ClearHistory();
+        var notificationService = CreateNotificationService();
 
         var statusService = Substitute.For<IStatusService>();
         statusService.GetStatusAsync(Arg.Any<CancellationToken>())
@@ -26,7 +26,7 @@ public sealed class WorkspaceShellContextServiceTests
         var service = new WorkspaceShellContextService(
             fundContext,
             detector,
-            NotificationService.Instance,
+            notificationService,
             statusService);
 
         var context = await service.CreateAsync(new WorkspaceShellContextInput
@@ -55,8 +55,8 @@ public sealed class WorkspaceShellContextServiceTests
         var detector = CreateDetector();
         detector.SetFixtureMode(true);
         detector.UpdateBackendReachability(true);
-        NotificationService.Instance.ClearHistory();
-        NotificationService.Instance.ShowNotification("Backfill warning", "Provider queue is stale", Meridian.Ui.Services.NotificationType.Warning);
+        var notificationService = CreateNotificationService();
+        notificationService.ShowNotification("Backfill warning", "Provider queue is stale", Meridian.Ui.Services.NotificationType.Warning);
 
         var statusService = Substitute.For<IStatusService>();
         statusService.GetStatusAsync(Arg.Any<CancellationToken>())
@@ -66,7 +66,7 @@ public sealed class WorkspaceShellContextServiceTests
         var service = new WorkspaceShellContextService(
             fundContext,
             detector,
-            NotificationService.Instance,
+            notificationService,
             statusService);
 
         var context = await service.CreateAsync(new WorkspaceShellContextInput
@@ -85,9 +85,98 @@ public sealed class WorkspaceShellContextServiceTests
         context.Badges.Should().ContainSingle(b => b.Label == "Environment" && b.Value == "Demo data" && b.Tone == WorkspaceTone.Info);
         context.Badges.Should().ContainSingle(b => b.Label == "Freshness" && b.Tone == WorkspaceTone.Warning);
         context.Badges.Should().ContainSingle(b => b.Label == "Alerts" && b.Value.Contains("1 unread") && b.Tone == WorkspaceTone.Warning);
+    }
 
-        NotificationService.Instance.ClearHistory();
+    [Fact]
+    public async Task CreateAsync_WhenBackendReportsSeededProvenance_EnvironmentBadgeNeverReadsLive()
+    {
+        var detector = CreateDetector();
         detector.SetFixtureMode(false);
+        detector.UpdateBackendReachability(true);
+        detector.ReportServerDataProvenance("seeded");
+        var notificationService = CreateNotificationService();
+
+        var statusService = Substitute.For<IStatusService>();
+        statusService.GetStatusAsync(Arg.Any<CancellationToken>())
+            .Returns(new StatusResponse { IsConnected = true });
+
+        var fundContext = await CreateFundContextAsync();
+        var service = new WorkspaceShellContextService(
+            fundContext,
+            detector,
+            notificationService,
+            statusService);
+
+        var context = await service.CreateAsync(new WorkspaceShellContextInput
+        {
+            WorkspaceTitle = "Portfolio",
+            WorkspaceSubtitle = "Shell",
+            PrimaryScopeLabel = "Fund"
+        });
+
+        context.Badges.Should().ContainSingle(b => b.Label == "Environment" && b.Value == "SEEDED data" && b.Tone == WorkspaceTone.Warning);
+        context.Badges.Should().NotContain(b => b.Label == "Environment" && b.Value == "Live");
+    }
+
+    [Fact]
+    public async Task CreateAsync_WhenBackendReportsUnknownProvenanceToken_FailsClosedToSimulated()
+    {
+        var detector = CreateDetector();
+        detector.SetFixtureMode(false);
+        detector.UpdateBackendReachability(true);
+        detector.ReportServerDataProvenance("mystery-token");
+        var notificationService = CreateNotificationService();
+
+        var statusService = Substitute.For<IStatusService>();
+        statusService.GetStatusAsync(Arg.Any<CancellationToken>())
+            .Returns(new StatusResponse { IsConnected = true });
+
+        var fundContext = await CreateFundContextAsync();
+        var service = new WorkspaceShellContextService(
+            fundContext,
+            detector,
+            notificationService,
+            statusService);
+
+        var context = await service.CreateAsync(new WorkspaceShellContextInput
+        {
+            WorkspaceTitle = "Trading",
+            WorkspaceSubtitle = "Shell",
+            PrimaryScopeLabel = "Fund"
+        });
+
+        context.Badges.Should().ContainSingle(b => b.Label == "Environment" && b.Value == "SIMULATED data" && b.Tone == WorkspaceTone.Warning);
+    }
+
+    [Fact]
+    public async Task CreateAsync_WhenServerProvenanceClears_EnvironmentReturnsToLive()
+    {
+        var detector = CreateDetector();
+        detector.SetFixtureMode(false);
+        detector.UpdateBackendReachability(true);
+        detector.ReportServerDataProvenance("seeded");
+        detector.ReportServerDataProvenance("real");
+        var notificationService = CreateNotificationService();
+
+        var statusService = Substitute.For<IStatusService>();
+        statusService.GetStatusAsync(Arg.Any<CancellationToken>())
+            .Returns(new StatusResponse { IsConnected = true });
+
+        var fundContext = await CreateFundContextAsync();
+        var service = new WorkspaceShellContextService(
+            fundContext,
+            detector,
+            notificationService,
+            statusService);
+
+        var context = await service.CreateAsync(new WorkspaceShellContextInput
+        {
+            WorkspaceTitle = "Accounting",
+            WorkspaceSubtitle = "Shell",
+            PrimaryScopeLabel = "Fund"
+        });
+
+        context.Badges.Should().ContainSingle(b => b.Label == "Environment" && b.Value == "Live" && b.Tone == WorkspaceTone.Success);
     }
 
     [Fact]
@@ -96,7 +185,7 @@ public sealed class WorkspaceShellContextServiceTests
         var detector = CreateDetector();
         detector.SetFixtureMode(false);
         detector.UpdateBackendReachability(true);
-        NotificationService.Instance.ClearHistory();
+        var notificationService = CreateNotificationService();
 
         var statusService = Substitute.For<IStatusService>();
         statusService.GetStatusAsync(Arg.Any<CancellationToken>())
@@ -107,7 +196,7 @@ public sealed class WorkspaceShellContextServiceTests
         var service = new WorkspaceShellContextService(
             fundContext,
             detector,
-            NotificationService.Instance,
+            notificationService,
             statusService,
             operatingContextService);
 
@@ -152,6 +241,12 @@ public sealed class WorkspaceShellContextServiceTests
 
     private static FixtureModeDetector CreateDetector()
         => (FixtureModeDetector)Activator.CreateInstance(typeof(FixtureModeDetector), nonPublic: true)!;
+
+    // Use a per-test NotificationService instead of the process-wide singleton so unread-alert
+    // assertions cannot be perturbed by notifications raised on the shared instance by other
+    // tests (the WPF test dispatcher thread keeps pumping leftover UI work between tests).
+    private static NotificationService CreateNotificationService()
+        => (NotificationService)Activator.CreateInstance(typeof(NotificationService), nonPublic: true)!;
 
     private static async Task<WorkstationOperatingContextService> CreateOperatingContextServiceAsync(FundContextService fundContext)
     {

@@ -75,6 +75,7 @@ namespace Meridian.Core.Serialization;
 // Configuration types
 [JsonSerializable(typeof(List<string>))]
 [JsonSerializable(typeof(AppConfig))]
+[JsonSerializable(typeof(PipelineRuntimeConfig))]
 [JsonSerializable(typeof(FeatureCapabilityOptions))]
 [JsonSerializable(typeof(Dictionary<string, bool>))]
 [JsonSerializable(typeof(StorageConfig))]
@@ -92,6 +93,7 @@ namespace Meridian.Core.Serialization;
 [JsonSerializable(typeof(SymbolRegistry))]
 [JsonSerializable(typeof(SymbolRegistryEntry))]
 [JsonSerializable(typeof(List<SymbolRegistryEntry>))]
+[JsonSerializable(typeof(ProviderSymbolMetadata))]
 [JsonSerializable(typeof(SymbolAlias))]
 [JsonSerializable(typeof(List<SymbolAlias>))]
 [JsonSerializable(typeof(SymbolIdentifiers))]
@@ -106,6 +108,7 @@ namespace Meridian.Core.Serialization;
 [JsonSerializable(typeof(SymbolMappingConfig[]))]
 [JsonSerializable(typeof(List<SymbolMappingConfig>))]
 [JsonSerializable(typeof(BackfillConfig))]
+[JsonSerializable(typeof(AutoGapRemediationConfig))]
 [JsonSerializable(typeof(BackfillJobsConfig))]
 [JsonSerializable(typeof(ScheduledBackfillConfig))]
 [JsonSerializable(typeof(DefaultScheduleConfig))]
@@ -381,7 +384,8 @@ public static class JsonBenchmarkUtilities
         return MarketEvent.Trade(
             DateTimeOffset.UtcNow,
             "SPY",
-            new Trade(
+            source: "BENCH",
+            trade: new Trade(
                 Timestamp: DateTimeOffset.UtcNow,
                 Symbol: "SPY",
                 Price: 450.25m,
@@ -404,7 +408,8 @@ public static class JsonBenchmarkUtilities
             yield return MarketEvent.Trade(
                 DateTimeOffset.UtcNow,
                 symbol,
-                new Trade(
+                source: "BENCH",
+                trade: new Trade(
                     Timestamp: DateTimeOffset.UtcNow,
                     Symbol: symbol,
                     Price: 100m + (i % 100) * 0.01m,

@@ -6,6 +6,7 @@ using System.Text.Json;
 using Meridian.Core.Logging;
 using Meridian.Core.Config;
 using Meridian.Infrastructure.Http;
+using Meridian.Storage.Archival;
 using Serilog;
 
 namespace Meridian.Application.Config.Credentials;
@@ -237,7 +238,7 @@ public sealed class CredentialTestingService : IAsyncDisposable
             Warnings: warnings
         );
 
-        await PersistStatusAsync();
+        await PersistStatusAsync(ct).ConfigureAwait(false);
         return summary;
     }
 
@@ -495,8 +496,12 @@ public sealed class CredentialTestingService : IAsyncDisposable
             var statuses = _statusCache.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
             var json = JsonSerializer.Serialize(statuses, new JsonSerializerOptions { WriteIndented = true });
 
-            await File.WriteAllTextAsync(_statusPersistencePath, json);
+            await AtomicFileWriter.WriteAsync(_statusPersistencePath, json, ct).ConfigureAwait(false);
             _log.Debug("Persisted credential status for {Count} providers", statuses.Count);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {

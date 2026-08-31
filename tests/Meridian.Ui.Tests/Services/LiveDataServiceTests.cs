@@ -7,6 +7,7 @@ namespace Meridian.Ui.Tests.Services;
 /// Tests for <see cref="LiveDataService"/> — singleton lifecycle, API method contracts,
 /// cancellation support, and DTO model validation.
 /// </summary>
+[Collection("ApiClientService singleton serial")]
 public sealed class LiveDataServiceTests
 {
     // ── Singleton ────────────────────────────────────────────────────

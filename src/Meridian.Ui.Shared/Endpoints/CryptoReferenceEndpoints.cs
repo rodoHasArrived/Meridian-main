@@ -26,7 +26,7 @@ public static class CryptoReferenceEndpoints
             var reference = await service.GetReferenceAsync(securityId, ct).ConfigureAwait(false);
             return reference is null ? Results.NotFound() : Results.Json(reference, jsonOptions);
         })
-        .WithName("GetCryptoReference")
+        .WithName("GetCryptoReference").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<CryptoReferenceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden)
@@ -40,7 +40,7 @@ public static class CryptoReferenceEndpoints
             var results = await service.GetByNetworkAsync(network, ct).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
-        .WithName("GetCryptoByNetwork")
+        .WithName("GetCryptoByNetwork").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<CryptoReferenceDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden);
@@ -53,7 +53,7 @@ public static class CryptoReferenceEndpoints
             var results = await service.GetByBaseCurrencyAsync(baseCurrency, ct).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
-        .WithName("GetCryptoByBaseCurrency")
+        .WithName("GetCryptoByBaseCurrency").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<CryptoReferenceDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden);

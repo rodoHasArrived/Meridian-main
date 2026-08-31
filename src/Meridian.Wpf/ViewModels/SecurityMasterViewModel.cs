@@ -26,7 +26,7 @@ namespace Meridian.Wpf.ViewModels;
 /// Wraps <see cref="SecurityMasterWorkstationDto"/>-backed search and detail
 /// surfaced by the <c>/api/workstation/security-master</c> endpoints.
 /// </summary>
-public sealed class SecurityMasterViewModel : BindableBase, IDisposable
+public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 {
     private const string AllAssetClassesFilterLabel = "All asset classes";
     private const string AllProvidersFilterLabel = "All providers";
@@ -42,11 +42,18 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private readonly WpfServices.NavigationService _navigationService;
     private readonly ISmQueryService _queryService;
     private readonly ISmService _service;
+    private readonly WpfServices.DesktopAuthenticationSession? _authenticationSession;
     private readonly bool _hasPolygonApiKey;
+    private readonly object _selectedSecurityLoadGate = new();
     private bool _isRefreshingSearchWorkspaceFilters;
+    private bool _suppressSelectedSecurityLoadCancellation;
+    private bool _disposed;
     private CancellationTokenSource? _cts;
     private CancellationTokenSource? _workflowCts;
+    private CancellationTokenSource? _selectedSecurityLoadCts;
     private Task? _workflowPollingTask;
+    private int _selectedSecurityLoadRevision;
+    private Guid? _selectedSecurityLoadTargetId;
 
     private readonly SecurityMasterSearchSectionViewModel _searchSection = new(AllAssetClassesFilterLabel, AllProvidersFilterLabel);
     private readonly SecurityMasterConflictSectionViewModel _conflictSection = new();
@@ -172,11 +179,23 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         get => _selectedSecurity;
         set
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             var previousSecurityId = _selectedSecurity?.SecurityId;
             if (SetProperty(ref _selectedSecurity, value))
             {
                 if (value is null || previousSecurityId != value.SecurityId)
                 {
+                    if (!_suppressSelectedSecurityLoadCancellation && CancelSelectedSecurityLoad())
+                    {
+                        IsLoading = false;
+                        IsTrustSnapshotLoading = false;
+                        RefreshSelectedTrustSnapshotCommand?.NotifyCanExecuteChanged();
+                    }
+
                     ClearSelectedSecurityAssuranceState();
                 }
 
@@ -1515,7 +1534,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         WpfServices.FundContextService fundContextService,
         WpfServices.NavigationService navigationService,
         ISmQueryService queryService,
-        ISmService service)
+        ISmService service,
+        WpfServices.DesktopAuthenticationSession? authenticationSession = null)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
@@ -1528,6 +1548,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _queryService = queryService;
         _service = service;
+        _authenticationSession = authenticationSession;
+        if (authenticationSession?.CurrentActor is { Length: > 0 } sessionActor)
+        {
+            // Pre-fills the operator text box only. Governed writes resolve their actor through
+            // DesktopAuthenticationSession.TryGetAuthenticatedActor, which validates the session.
+            _conflictOperatorText = sessionActor;
+        }
         _hasPolygonApiKey = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("POLYGON_API_KEY"));
 
         _passportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient);
@@ -1605,7 +1632,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void OnCreateNew()
     {
-        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService, _service);
+        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService, _service, _authenticationSession);
         WireEditVmEvents();
         IsEditPanelVisible = true;
     }
@@ -1633,7 +1660,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             {
                 await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService, _service);
+                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService, _service, _authenticationSession);
                     EditVm.LoadForEdit(detail);
                     WireEditVmEvents();
                     IsEditPanelVisible = true;
@@ -2193,6 +2220,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     // ── Lifecycle ───────────────────────────────────────────────────────────
     public void Stop()
     {
+        CancelSelectedSecurityLoad();
+        IsLoading = false;
+        IsTrustSnapshotLoading = false;
+
         _cts?.Cancel();
         _cts?.Dispose();
         _cts = null;
@@ -2201,6 +2232,119 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         _workflowCts?.Dispose();
         _workflowCts = null;
         _workflowPollingTask = null;
+    }
+
+    private bool TryBeginSelectedSecurityLoad(
+        Guid securityId,
+        CancellationToken ct,
+        out int loadRevision,
+        out CancellationTokenSource loadCts)
+    {
+        loadCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        CancellationTokenSource? previousLoadCts;
+        lock (_selectedSecurityLoadGate)
+        {
+            if (_disposed)
+            {
+                loadRevision = 0;
+                loadCts.Dispose();
+                return false;
+            }
+
+            if (_selectedSecurityLoadCts is not null && _selectedSecurityLoadTargetId == securityId)
+            {
+                loadRevision = _selectedSecurityLoadRevision;
+                loadCts.Dispose();
+                return false;
+            }
+
+            loadRevision = ++_selectedSecurityLoadRevision;
+            previousLoadCts = _selectedSecurityLoadCts;
+            _selectedSecurityLoadCts = loadCts;
+            _selectedSecurityLoadTargetId = securityId;
+        }
+
+        CancelAndDisposeSelectedSecurityLoad(previousLoadCts);
+        return true;
+    }
+
+    private bool CancelSelectedSecurityLoad()
+    {
+        CancellationTokenSource? loadCts;
+        lock (_selectedSecurityLoadGate)
+        {
+            _selectedSecurityLoadRevision++;
+            loadCts = _selectedSecurityLoadCts;
+            _selectedSecurityLoadCts = null;
+            _selectedSecurityLoadTargetId = null;
+        }
+
+        CancelAndDisposeSelectedSecurityLoad(loadCts);
+        return loadCts is not null;
+    }
+
+    private bool CanCommitSelectedSecurityLoad(
+        Guid securityId,
+        int loadRevision,
+        CancellationToken loadToken)
+    {
+        lock (_selectedSecurityLoadGate)
+        {
+            return !_disposed &&
+                   !loadToken.IsCancellationRequested &&
+                   loadRevision == _selectedSecurityLoadRevision &&
+                   _selectedSecurityLoadTargetId == securityId;
+        }
+    }
+
+    private bool CanCompleteSelectedSecurityLoad(
+        Guid securityId,
+        int loadRevision,
+        CancellationTokenSource loadCts)
+    {
+        lock (_selectedSecurityLoadGate)
+        {
+            return !_disposed &&
+                   loadRevision == _selectedSecurityLoadRevision &&
+                   ReferenceEquals(_selectedSecurityLoadCts, loadCts) &&
+                   _selectedSecurityLoadTargetId == securityId;
+        }
+    }
+
+    private void CompleteSelectedSecurityLoad(
+        int loadRevision,
+        CancellationTokenSource loadCts)
+    {
+        lock (_selectedSecurityLoadGate)
+        {
+            if (loadRevision == _selectedSecurityLoadRevision &&
+                ReferenceEquals(_selectedSecurityLoadCts, loadCts))
+            {
+                _selectedSecurityLoadCts = null;
+                _selectedSecurityLoadTargetId = null;
+            }
+        }
+
+        loadCts.Dispose();
+    }
+
+    private static void CancelAndDisposeSelectedSecurityLoad(CancellationTokenSource? loadCts)
+    {
+        if (loadCts is null)
+        {
+            return;
+        }
+
+        try
+        {
+            loadCts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // The superseded load already completed and disposed its source.
+        }
+
+        loadCts.Dispose();
     }
 
     // ── Search ──────────────────────────────────────────────────────────────
@@ -2236,11 +2380,11 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         _cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         var linked = _cts.Token;
 
-        IsLoading = true;
         Results.Clear();
         SelectedSecurity = null;
         HistoryText = string.Empty;
         ClearSelectedSecurityAssuranceState();
+        IsLoading = true;
         StatusText = "Searching…";
 
         try
@@ -2248,9 +2392,9 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             var endpoint = $"/api/workstation/security-master/securities" +
                            $"?query={Uri.EscapeDataString(query)}&take=50&activeOnly={ActiveOnly}";
 
-            var results = await ApiClientService.Instance
-                .GetAsync<SecurityMasterWorkstationDto[]>(endpoint, linked)
-                .ConfigureAwait(false);
+            var results = (await ApiClientService.Instance
+                .GetWithResponseAsync<SecurityMasterWorkstationDto[]>(endpoint, linked)
+                .ConfigureAwait(false)).DataOrLoggedNull("Search security master securities");
 
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
@@ -2294,22 +2438,59 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             return;
         }
 
-        IsLoading = true;
-        IsTrustSnapshotLoading = true;
-        TrustSnapshotErrorText = string.Empty;
-        InstrumentPassportErrorText = string.Empty;
-        StatusText = "Loading selected security trust snapshot...";
+        if (!TryBeginSelectedSecurityLoad(securityId, ct, out var loadRevision, out var loadCts))
+        {
+            return;
+        }
 
+        var loadToken = loadCts.Token;
         try
         {
-            await _fundContextService.LoadAsync(ct).ConfigureAwait(false);
+            if (!CanCommitSelectedSecurityLoad(securityId, loadRevision, loadToken))
+            {
+                return;
+            }
+
+            IsLoading = true;
+            IsTrustSnapshotLoading = true;
+            TrustSnapshotErrorText = string.Empty;
+            InstrumentPassportErrorText = string.Empty;
+            StatusText = "Loading selected security trust snapshot...";
+
+            await _fundContextService.LoadAsync(loadToken).ConfigureAwait(false);
             var fundProfileId = GetCurrentFundProfileId();
             var snapshot = await _workstationSecurityMasterApiClient
-                .GetTrustSnapshotAsync(securityId, fundProfileId, ct)
+                .GetTrustSnapshotAsync(securityId, fundProfileId, loadToken)
                 .ConfigureAwait(false);
+
+            if (!CanCommitSelectedSecurityLoad(securityId, loadRevision, loadToken))
+            {
+                return;
+            }
+
+            if (snapshot is not null &&
+                (snapshot.SecurityId != securityId || snapshot.Security.SecurityId != securityId))
+            {
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    if (!CanCommitSelectedSecurityLoad(securityId, loadRevision, loadToken))
+                    {
+                        return;
+                    }
+
+                    TrustSnapshotErrorText = "Selected security trust snapshot identity did not match the current selection.";
+                    StatusText = "Selected security trust snapshot identity did not match the current selection.";
+                });
+                return;
+            }
 
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
+                if (!CanCommitSelectedSecurityLoad(securityId, loadRevision, loadToken))
+                {
+                    return;
+                }
+
                 if (snapshot is null)
                 {
                     ClearSelectedSecurityAssuranceState();
@@ -2324,19 +2505,40 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                     : string.Concat("Loaded trust snapshot and instrument passport for ", snapshot.Security.DisplayName, ".");
             });
 
-            if (snapshot?.InstrumentPassport is null)
+            if (snapshot?.InstrumentPassport is null &&
+                CanCommitSelectedSecurityLoad(securityId, loadRevision, loadToken))
             {
-                await LoadInstrumentPassportAsync(securityId, fundProfileId, snapshot?.Security.DisplayName, ct).ConfigureAwait(false);
+                await LoadInstrumentPassportAsync(
+                        securityId,
+                        fundProfileId,
+                        snapshot?.Security.DisplayName,
+                        loadRevision,
+                        loadToken)
+                    .ConfigureAwait(false);
             }
         }
         catch (OperationCanceledException)
         {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            _loggingService.LogDebug(
+                "Security Master operation cancelled.",
+                ("view", GetType().Name));
         }
         catch (Exception ex)
         {
+            if (!CanCommitSelectedSecurityLoad(securityId, loadRevision, loadToken))
+            {
+                return;
+            }
+
             _loggingService.LogError($"Security Master trust snapshot load failed for {securityId}", ex);
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
+                if (!CanCommitSelectedSecurityLoad(securityId, loadRevision, loadToken))
+                {
+                    return;
+                }
+
                 TrustSnapshotErrorText = "Failed to load selected security trust snapshot.";
                 StatusText = "Failed to load selected security trust snapshot.";
                 _notificationService.ShowNotification("Security Master", "Trust snapshot load failed.", NotificationType.Error);
@@ -2344,9 +2546,24 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         }
         finally
         {
-            IsLoading = false;
-            IsTrustSnapshotLoading = false;
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => RefreshSelectedTrustSnapshotCommand.NotifyCanExecuteChanged());
+            try
+            {
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    if (!CanCompleteSelectedSecurityLoad(securityId, loadRevision, loadCts))
+                    {
+                        return;
+                    }
+
+                    IsLoading = false;
+                    IsTrustSnapshotLoading = false;
+                    RefreshSelectedTrustSnapshotCommand.NotifyCanExecuteChanged();
+                });
+            }
+            finally
+            {
+                CompleteSelectedSecurityLoad(loadRevision, loadCts);
+            }
         }
     }
 
@@ -2354,16 +2571,33 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         Guid securityId,
         string? fundProfileId,
         string? displayName,
-        CancellationToken ct)
+        int loadRevision,
+        CancellationToken loadToken)
     {
         try
         {
             var passport = await _workstationSecurityMasterApiClient
-                .GetInstrumentPassportAsync(securityId, fundProfileId, ct)
+                .GetInstrumentPassportAsync(securityId, fundProfileId, loadToken)
                 .ConfigureAwait(false);
+
+            if (!CanCommitSelectedSecurityLoad(securityId, loadRevision, loadToken))
+            {
+                return;
+            }
 
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
+                if (!CanCommitSelectedSecurityLoad(securityId, loadRevision, loadToken))
+                {
+                    return;
+                }
+
+                if (passport is not null && passport.SecurityId != securityId)
+                {
+                    InstrumentPassportErrorText = "Instrument passport identity did not match the current selection.";
+                    return;
+                }
+
                 ApplyInstrumentPassport(passport);
                 StatusText = passport is null
                     ? string.Concat("Loaded trust snapshot for ", SecurityMasterTextHelpers.FirstNonEmpty(displayName, securityId.ToString("D")), ".")
@@ -2376,9 +2610,19 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         }
         catch (Exception ex)
         {
+            if (!CanCommitSelectedSecurityLoad(securityId, loadRevision, loadToken))
+            {
+                return;
+            }
+
             _loggingService.LogError($"Security Master instrument passport load failed for {securityId}", ex);
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
+                if (!CanCommitSelectedSecurityLoad(securityId, loadRevision, loadToken))
+                {
+                    return;
+                }
+
                 ApplyInstrumentPassport(null);
                 InstrumentPassportErrorText = "Instrument passport failed to load.";
                 StatusText = string.Concat(
@@ -2617,7 +2861,19 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void SyncLegacySelectionStateFromSnapshot(SecurityMasterTrustSnapshotDto snapshot)
     {
-        SelectedSecurity = snapshot.Security;
+        if (SelectedSecurity?.SecurityId != snapshot.Security.SecurityId)
+        {
+            _suppressSelectedSecurityLoadCancellation = true;
+            try
+            {
+                SelectedSecurity = snapshot.Security;
+            }
+            finally
+            {
+                _suppressSelectedSecurityLoadCancellation = false;
+            }
+        }
+
         _selectedEconomicDefinition = null;
         _selectedTradingParameters = null;
         _latestHistoryEvent = snapshot.History
@@ -2775,6 +3031,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         }
         catch (OperationCanceledException)
         {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            _loggingService.LogDebug(
+                "Security Master operation cancelled.",
+                ("view", GetType().Name));
         }
         catch (Exception ex)
         {
@@ -3195,7 +3455,20 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             _ => 9
         };
 
-    public void Dispose() => Stop();
+    public void Dispose()
+    {
+        lock (_selectedSecurityLoadGate)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+        }
+
+        Stop();
+    }
 
     // ── Navigation parameter handling ───────────────────────────────────────
     private object? _parameter;
@@ -3256,7 +3529,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                     CorporateActions.Add(action);
             });
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            _loggingService.LogDebug(
+                "Security Master operation cancelled.",
+                ("view", GetType().Name));
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to load corporate actions", ex);
@@ -3324,9 +3603,9 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 SubscriptionPricePerShare: null,
                 RightsPerShare: null);
 
-            var result = await ApiClientService.Instance
-                .PostAsync<CorporateActionDto>($"/api/workstation/security-master/securities/{securityId}/corporate-actions", dto, ct)
-                .ConfigureAwait(false);
+            var result = (await ApiClientService.Instance
+                .PostWithResponseAsync<CorporateActionDto>($"/api/workstation/security-master/securities/{securityId}/corporate-actions", dto, ct)
+                .ConfigureAwait(false)).DataOrLoggedNull("Record corporate action");
 
             if (result is not null)
             {
@@ -3347,7 +3626,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 _notificationService.ShowNotification("Corporate Actions", "Failed to record corporate action.", NotificationType.Error);
             }
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            _loggingService.LogDebug(
+                "Security Master operation cancelled.",
+                ("view", GetType().Name));
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to record corporate action", ex);
@@ -3450,6 +3735,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         }
         catch (OperationCanceledException)
         {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            _loggingService.LogDebug(
+                "Security Master operation cancelled.",
+                ("view", GetType().Name));
         }
         catch (Exception ex)
         {
@@ -4031,93 +4320,5 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             _loggingService.LogError("Failed to resolve Security Master conflict", ex);
             _notificationService.ShowNotification("Security Master", "Conflict resolution failed.", NotificationType.Error);
         }
-    }
-
-    // ── Bulk Import ──────────────────────────────────────────────────────────
-    private async Task OnImportFromFile(CancellationToken ct = default)
-    {
-        var openDialog = new Microsoft.Win32.OpenFileDialog
-        {
-            Filter = "CSV/JSON Files|*.csv;*.json",
-            DefaultExt = ".csv",
-            Title = "Import Securities"
-        };
-
-        if (openDialog.ShowDialog() != true)
-            return;
-
-        try
-        {
-            IsImporting = true;
-            ImportTotal = 0;
-            ImportProcessed = 0;
-            ImportImported = 0;
-            ImportFailed = 0;
-            IsImportResultVisible = false;
-
-            var fileContent = await System.IO.File.ReadAllTextAsync(openDialog.FileName, ct).ConfigureAwait(false);
-            var fileExtension = System.IO.Path.GetExtension(openDialog.FileName);
-
-            var progress = new Progress<SecurityMasterImportProgress>(p =>
-            {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    ImportTotal = p.Total;
-                    ImportProcessed = p.Processed;
-                    ImportImported = p.Imported;
-                    ImportFailed = p.Failed;
-                    RaisePropertyChanged(nameof(ImportStatus));
-                });
-            });
-
-            var result = await _importService.ImportAsync(fileContent, fileExtension, progress, ct).ConfigureAwait(false);
-
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                ImportTotal = result.Imported + result.Skipped + result.Failed;
-                ImportImported = result.Imported;
-                ImportFailed = result.Failed;
-
-                var summary = $"Imported {result.Imported} securities, Skipped {result.Skipped}, Failed {result.Failed}.";
-                if (result.Errors.Any())
-                {
-                    summary += $"\r\nErrors:\r\n{string.Join("\r\n", result.Errors.Take(10))}";
-                    if (result.Errors.Count > 10)
-                        summary += $"\r\n... and {result.Errors.Count - 10} more errors.";
-                }
-
-                ImportResultSummary = summary;
-                IsImportResultVisible = true;
-                RaisePropertyChanged(nameof(ImportStatus));
-
-                _notificationService.ShowNotification(
-                    "Security Master Import",
-                    $"Import completed: {result.Imported} imported, {result.Failed} failed.",
-                    result.Failed == 0 ? NotificationType.Success : NotificationType.Warning);
-            });
-
-            // Refresh search results
-            _ = SearchAsync();
-            _ = RefreshOperatorWorkflowAsync();
-        }
-        catch (OperationCanceledException)
-        {
-            _notificationService.ShowNotification("Security Master Import", "Import cancelled.", NotificationType.Info);
-        }
-        catch (Exception ex)
-        {
-            _loggingService.LogError("Security Master import failed", ex);
-            _notificationService.ShowNotification("Security Master Import", $"Import failed: {ex.Message}", NotificationType.Error);
-        }
-        finally
-        {
-            IsImporting = false;
-        }
-    }
-
-    private void OnCloseImportResult()
-    {
-        IsImportResultVisible = false;
-        ImportResultSummary = string.Empty;
     }
 }

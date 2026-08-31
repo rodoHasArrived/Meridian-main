@@ -2,8 +2,13 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
+using Meridian.PortfolioRecords.FundAccounts;
+using Meridian.Reporting;
 using Meridian.Strategies.Services;
+using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -11,6 +16,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
 using Xunit;
 
 namespace Meridian.Tests.Ui;
@@ -18,6 +24,10 @@ namespace Meridian.Tests.Ui;
 public sealed class LedgerAmountProvenanceServiceTests
 {
     private static readonly Guid AaplSecurityId = Guid.Parse("35D27D8E-4460-4B17-92B8-6E5F53773D1D");
+    private static readonly ReconciliationBreakQueueScope TestScope =
+        new("tenant-test", "company-test");
+    private static readonly ReconciliationBreakQueueScope ForeignScope =
+        new("tenant-foreign", "company-foreign");
 
     [Fact]
     public async Task GetAsync_BuildsLedgerAmountDrilldownFromReportPackLineage()
@@ -31,7 +41,9 @@ public sealed class LedgerAmountProvenanceServiceTests
             var breakRepository = new FileReconciliationBreakQueueRepository(
                 root,
                 NullLogger<FileReconciliationBreakQueueRepository>.Instance);
-            await breakRepository.CreateIfMissingAsync(new ReconciliationBreakQueueItem(
+            await breakRepository.CreateIfMissingAsync(
+                TestScope,
+                new ReconciliationBreakQueueItem(
                 BreakId: "case-aapl-001",
                 RunId: "provider-ledger-run",
                 StrategyName: "Provider ledger reconciliation",
@@ -56,11 +68,15 @@ public sealed class LedgerAmountProvenanceServiceTests
                 CustodianId: "alpaca",
                 UpstreamSyncCursor: "alpaca|PA-LEDGER|provider-position-aapl",
                 LastUpstreamSyncAt: snapshot.GeneratedAt.AddMinutes(-6),
-                Team: "Accounting"));
+                Team: "Accounting")
+                {
+                    TenantId = TestScope.TenantId,
+                    CompanyId = TestScope.CompanyId
+                });
 
             var service = new LedgerAmountProvenanceService(reportRepository, breakRepository);
 
-            var detail = await service.GetAsync(reportId, "Securities:AAPL");
+            var detail = await service.GetAsync(reportId, "Securities:AAPL", TestScope);
 
             detail.Should().NotBeNull();
             detail!.ReportId.Should().Be(reportId);
@@ -139,11 +155,24 @@ public sealed class LedgerAmountProvenanceServiceTests
     public async Task GetAsync_WhenScopeKeyHasNoLedgerLine_ReturnsNull()
     {
         var reportId = Guid.NewGuid();
-        var service = new LedgerAmountProvenanceService(new InMemoryReportPackRepository(BuildSnapshot(reportId)));
+        var root = CreateTempRoot();
+        try
+        {
+            var breakRepository = new FileReconciliationBreakQueueRepository(
+                root,
+                NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+            var service = new LedgerAmountProvenanceService(
+                new InMemoryReportPackRepository(BuildSnapshot(reportId)),
+                breakRepository);
 
-        var detail = await service.GetAsync(reportId, "Cash");
+            var detail = await service.GetAsync(reportId, "Cash", TestScope);
 
-        detail.Should().BeNull();
+            detail.Should().BeNull();
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
     }
 
     [Fact]
@@ -157,7 +186,9 @@ public sealed class LedgerAmountProvenanceServiceTests
             var breakRepository = new FileReconciliationBreakQueueRepository(
                 root,
                 NullLogger<FileReconciliationBreakQueueRepository>.Instance);
-            await breakRepository.CreateIfMissingAsync(new ReconciliationBreakQueueItem(
+            await breakRepository.CreateIfMissingAsync(
+                TestScope,
+                new ReconciliationBreakQueueItem(
                 BreakId: "case-provider-factor-aapl",
                 RunId: "provider-ledger-run",
                 StrategyName: "Provider corporate-action evidence",
@@ -179,11 +210,15 @@ public sealed class LedgerAmountProvenanceServiceTests
                 ExternalAccountId: "PA-LEDGER",
                 CustodianId: "alpaca",
                 UpstreamSyncCursor: "alpaca|PA-LEDGER|factor-aapl-20260501",
-                LastUpstreamSyncAt: snapshot.GeneratedAt.AddMinutes(-6)));
+                LastUpstreamSyncAt: snapshot.GeneratedAt.AddMinutes(-6))
+                {
+                    TenantId = TestScope.TenantId,
+                    CompanyId = TestScope.CompanyId
+                });
 
             var service = new LedgerAmountProvenanceService(new InMemoryReportPackRepository(snapshot), breakRepository);
 
-            var detail = await service.GetAsync(reportId, "Securities:AAPL");
+            var detail = await service.GetAsync(reportId, "Securities:AAPL", TestScope);
 
             detail.Should().NotBeNull();
             var providerEvidence = detail!.Evidence.Should().ContainSingle(item =>
@@ -222,7 +257,9 @@ public sealed class LedgerAmountProvenanceServiceTests
             var breakRepository = new FileReconciliationBreakQueueRepository(
                 root,
                 NullLogger<FileReconciliationBreakQueueRepository>.Instance);
-            await breakRepository.CreateIfMissingAsync(new ReconciliationBreakQueueItem(
+            await breakRepository.CreateIfMissingAsync(
+                TestScope,
+                new ReconciliationBreakQueueItem(
                 BreakId: "case-provider-amortization-aapl",
                 RunId: "provider-ledger-run",
                 StrategyName: "Provider corporate-action evidence",
@@ -244,11 +281,15 @@ public sealed class LedgerAmountProvenanceServiceTests
                 ExternalAccountId: "PA-LEDGER",
                 CustodianId: "alpaca",
                 UpstreamSyncCursor: "alpaca|PA-LEDGER|amortization-aapl-20260501",
-                LastUpstreamSyncAt: snapshot.GeneratedAt.AddMinutes(-6)));
+                LastUpstreamSyncAt: snapshot.GeneratedAt.AddMinutes(-6))
+                {
+                    TenantId = TestScope.TenantId,
+                    CompanyId = TestScope.CompanyId
+                });
 
             var service = new LedgerAmountProvenanceService(new InMemoryReportPackRepository(snapshot), breakRepository);
 
-            var detail = await service.GetAsync(reportId, "Securities:AAPL");
+            var detail = await service.GetAsync(reportId, "Securities:AAPL", TestScope);
 
             detail.Should().NotBeNull();
             var providerEvidence = detail!.Evidence.Should().ContainSingle(item =>
@@ -284,7 +325,9 @@ public sealed class LedgerAmountProvenanceServiceTests
             var breakRepository = new FileReconciliationBreakQueueRepository(
                 root,
                 NullLogger<FileReconciliationBreakQueueRepository>.Instance);
-            await breakRepository.CreateIfMissingAsync(new ReconciliationBreakQueueItem(
+            await breakRepository.CreateIfMissingAsync(
+                TestScope,
+                new ReconciliationBreakQueueItem(
                 BreakId: "case-aapl-signed-off",
                 RunId: "provider-ledger-run",
                 StrategyName: "Provider ledger reconciliation",
@@ -321,11 +364,15 @@ public sealed class LedgerAmountProvenanceServiceTests
                         "SignedOff",
                         "Approved for close package.",
                         signedOffAt)
-                ]));
+                ])
+                {
+                    TenantId = TestScope.TenantId,
+                    CompanyId = TestScope.CompanyId
+                });
 
             var service = new LedgerAmountProvenanceService(new InMemoryReportPackRepository(snapshot), breakRepository);
 
-            var detail = await service.GetAsync(reportId, "Securities:AAPL");
+            var detail = await service.GetAsync(reportId, "Securities:AAPL", TestScope);
 
             detail.Should().NotBeNull();
             var relatedCase = detail!.Reconciliation.RelatedCases.Should().NotBeNull().And
@@ -356,7 +403,9 @@ public sealed class LedgerAmountProvenanceServiceTests
             var breakRepository = new FileReconciliationBreakQueueRepository(
                 root,
                 NullLogger<FileReconciliationBreakQueueRepository>.Instance);
-            await breakRepository.CreateIfMissingAsync(new ReconciliationBreakQueueItem(
+            await breakRepository.CreateIfMissingAsync(
+                TestScope,
+                new ReconciliationBreakQueueItem(
                 BreakId: $"security-master:override:{AaplSecurityId:N}",
                 RunId: "security-master-overrides",
                 StrategyName: "Security Master exception casework",
@@ -376,11 +425,15 @@ public sealed class LedgerAmountProvenanceServiceTests
                 RoutingDetail: AaplSecurityId.ToString("D"),
                 RecommendedAction: "Approve, reject, or remove the operator override before report publication.",
                 Team: "Security Master",
-                UpstreamSyncCursor: $"security-master-override:{AaplSecurityId:N}:Pending"));
+                UpstreamSyncCursor: $"security-master-override:{AaplSecurityId:N}:Pending")
+                {
+                    TenantId = TestScope.TenantId,
+                    CompanyId = TestScope.CompanyId
+                });
 
             var service = new LedgerAmountProvenanceService(new InMemoryReportPackRepository(snapshot), breakRepository);
 
-            var detail = await service.GetAsync(reportId, "Securities:AAPL");
+            var detail = await service.GetAsync(reportId, "Securities:AAPL", TestScope);
 
             detail.Should().NotBeNull();
             detail!.SecurityMaster.Should().NotBeNull();
@@ -400,6 +453,63 @@ public sealed class LedgerAmountProvenanceServiceTests
         {
             DeleteTempRoot(root);
         }
+    }
+
+    [Fact]
+    public async Task GetAsync_ScopesRelatedCasesToAuthenticatedTenantAndCompany()
+    {
+        var reportId = Guid.NewGuid();
+        var snapshot = BuildSnapshot(reportId);
+        var root = CreateTempRoot();
+        try
+        {
+            var breakRepository = new FileReconciliationBreakQueueRepository(
+                root,
+                NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+            await breakRepository.CreateIfMissingAsync(
+                TestScope,
+                BuildScopedCase(snapshot, "case-aapl-owned", TestScope));
+            await breakRepository.CreateIfMissingAsync(
+                ForeignScope,
+                BuildScopedCase(snapshot, "case-aapl-foreign", ForeignScope));
+            var service = new LedgerAmountProvenanceService(
+                new InMemoryReportPackRepository(snapshot),
+                breakRepository);
+
+            var owned = await service.GetAsync(reportId, "Securities:AAPL", TestScope);
+            var foreign = await service.GetAsync(reportId, "Securities:AAPL", ForeignScope);
+
+            owned.Should().NotBeNull();
+            owned!.Reconciliation.RelatedCaseIds.Should().ContainSingle()
+                .Which.Should().Be("case-aapl-owned");
+            foreign.Should().NotBeNull();
+            foreign!.Reconciliation.RelatedCaseIds.Should().ContainSingle()
+                .Which.Should().Be("case-aapl-foreign");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task GetAsync_UnscopedCompatibilityAndMissingCaseworkStore_FailClosed()
+    {
+        var reportId = Guid.NewGuid();
+        var snapshot = BuildSnapshot(reportId);
+        var serviceWithoutStore = new LedgerAmountProvenanceService(
+            new InMemoryReportPackRepository(snapshot));
+
+#pragma warning disable CS0618 // Explicitly verifies the retained compatibility surface fails closed.
+        var unscoped = await serviceWithoutStore.GetAsync(reportId, "Securities:AAPL");
+#pragma warning restore CS0618
+        var scopedWithoutStore = await serviceWithoutStore.GetAsync(
+            reportId,
+            "Securities:AAPL",
+            TestScope);
+
+        unscoped.Should().BeNull();
+        scopedWithoutStore.Should().BeNull();
     }
 
     [Fact]
@@ -431,21 +541,97 @@ public sealed class LedgerAmountProvenanceServiceTests
         detail.Warnings.Should().NotContain("No retained provider-event pointer is attached to this ledger amount.");
     }
 
-    private static async Task<WebApplication> CreateEndpointAppAsync(FundReportPackSnapshotDto snapshot)
+    [Fact]
+    public async Task Endpoint_GetLedgerProvenance_RequiresTenantAndCompanyScope()
+    {
+        var reportId = Guid.NewGuid();
+        await using var app = await CreateEndpointAppAsync(
+            BuildSnapshot(reportId, includeProviderEvent: true),
+            includeTenantCompanyScope: false);
+
+        var response = await app.GetTestClient().GetAsync(
+            $"/api/fund-structure/report-packs/{reportId:D}/ledger-provenance?scopeKey={Uri.EscapeDataString("Securities:AAPL")}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    private static async Task<WebApplication> CreateEndpointAppAsync(
+        FundReportPackSnapshotDto snapshot,
+        bool includeTenantCompanyScope = true)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
             EnvironmentName = Environments.Development
         });
         builder.WebHost.UseTestServer();
-        builder.Services.AddSingleton<IGovernanceReportPackRepository>(new InMemoryReportPackRepository(snapshot));
+        var reportRepository = new InMemoryReportPackRepository(snapshot);
+        var queueRoot = CreateTempRoot();
+        var breakRepository = new FileReconciliationBreakQueueRepository(
+            queueRoot,
+            NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        var securityMaster = new NullSecurityMasterQueryService();
+        var fundGuard = Substitute.For<IFundProfileTenantGuard>();
+        fundGuard.EvaluateAsync(
+                Arg.Any<WorkstationTenantContext>(),
+                "fund-ops",
+                Arg.Any<CancellationToken>())
+            .Returns(FundProfileTenantDecision.Allow("owned by the test tenant"));
+
+        builder.Services.AddSingleton<IGovernanceReportPackRepository>(reportRepository);
+        builder.Services.AddSingleton<IReconciliationBreakQueueRepository>(breakRepository);
+        builder.Services.AddSingleton(new FundOperationsWorkspaceReadService(
+            new InMemoryFundAccountService(),
+            new StrategyRunStore(),
+            new PortfolioReadService(),
+            new NavAttributionService(securityMaster),
+            new ReportGenerationService(securityMaster),
+            reportPackRepository: reportRepository));
         builder.Services.AddSingleton<LedgerAmountProvenanceService>();
+        builder.Services.AddSingleton(fundGuard);
 
         var app = builder.Build();
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "reporting-test-operator";
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ViewReporting;
+            if (includeTenantCompanyScope)
+            {
+                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = TestScope.TenantId;
+                context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = TestScope.CompanyId;
+            }
+            await next();
+        });
         app.MapFundStructureEndpoints(new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        app.Lifetime.ApplicationStopped.Register(() => DeleteTempRoot(queueRoot));
         await app.StartAsync();
         return app;
     }
+
+    private static ReconciliationBreakQueueItem BuildScopedCase(
+        FundReportPackSnapshotDto snapshot,
+        string breakId,
+        ReconciliationBreakQueueScope scope)
+        => new(
+            BreakId: breakId,
+            RunId: "provider-ledger-run",
+            StrategyName: "Provider ledger reconciliation",
+            Category: ReconciliationBreakCategory.AmountMismatch,
+            Status: ReconciliationBreakQueueStatus.Open,
+            Variance: 25m,
+            Reason: "AAPL securities value differs from retained provider evidence.",
+            AssignedTo: "fund-accounting",
+            DetectedAt: snapshot.GeneratedAt.AddMinutes(-10),
+            LastUpdatedAt: snapshot.GeneratedAt.AddMinutes(-5),
+            Severity: ReconciliationBreakSeverity.High,
+            ExceptionRoute: "accounting/reconciliation/provider-ledger",
+            FundAccountId: "fund-ops",
+            ExplainabilitySummary: "account=Securities, symbol=AAPL, variance=25",
+            RoutingDetail: "Securities:AAPL",
+            Team: "Accounting")
+        {
+            TenantId = scope.TenantId,
+            CompanyId = scope.CompanyId
+        };
 
     private static FundReportPackSnapshotDto BuildSnapshot(
         Guid reportId,

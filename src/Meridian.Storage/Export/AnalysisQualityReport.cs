@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
+using System.Globalization;
 using Meridian.Core.Logging;
 using Meridian.Core.Serialization;
 using Meridian.Storage.Archival;
@@ -634,14 +635,18 @@ public sealed class AnalysisQualityReportGenerator
         CancellationToken ct)
     {
         var sb = new StringBuilder();
-        sb.AppendLine("Severity,Category,Description,Impact,Resolution");
+        AppendCsvRow(sb, "Severity", "Category", "Description", "Impact", "Resolution");
         foreach (var issue in report.Issues)
         {
-            sb.AppendLine($"{issue.Severity},{EscapeCsv(issue.Category)}," +
-                         $"{EscapeCsv(issue.Description)},{EscapeCsv(issue.Impact)}," +
-                         $"{EscapeCsv(issue.Resolution)}");
+            AppendCsvRow(
+                sb,
+                issue.Severity.ToString(),
+                issue.Category,
+                issue.Description,
+                issue.Impact,
+                issue.Resolution);
         }
-        await AtomicFileWriter.WriteAsync(path, sb.ToString(), ct);
+        await AtomicFileWriter.WriteAsync(path, sb.ToString(), ct).ConfigureAwait(false);
     }
 
     private static async Task ExportOutliersToCsvAsync(
@@ -650,17 +655,23 @@ public sealed class AnalysisQualityReportGenerator
         CancellationToken ct)
     {
         var sb = new StringBuilder();
-        sb.AppendLine("File,Symbol,Timestamp,Field,Value,ZScore,ExpectedRange");
+        AppendCsvRow(sb, "File", "Symbol", "Timestamp", "Field", "Value", "ZScore", "ExpectedRange");
         foreach (var file in report.FileAnalyses)
         {
             foreach (var outlier in file.Outliers)
             {
-                sb.AppendLine($"{Path.GetFileName(file.FilePath)},{file.Symbol}," +
-                             $"{outlier.Timestamp:O},{outlier.FieldName},{outlier.Value:F4}," +
-                             $"{outlier.ZScore:F2},{outlier.ExpectedRange}");
+                AppendCsvRow(
+                    sb,
+                    Path.GetFileName(file.FilePath),
+                    file.Symbol,
+                    outlier.Timestamp?.ToString("O", CultureInfo.InvariantCulture),
+                    outlier.FieldName,
+                    outlier.Value.ToString("F4", CultureInfo.InvariantCulture),
+                    outlier.ZScore.ToString("F2", CultureInfo.InvariantCulture),
+                    outlier.ExpectedRange);
             }
         }
-        await AtomicFileWriter.WriteAsync(path, sb.ToString(), ct);
+        await AtomicFileWriter.WriteAsync(path, sb.ToString(), ct).ConfigureAwait(false);
     }
 
     private static async Task ExportGapsToCsvAsync(
@@ -669,27 +680,28 @@ public sealed class AnalysisQualityReportGenerator
         CancellationToken ct)
     {
         var sb = new StringBuilder();
-        sb.AppendLine("File,Symbol,StartTime,EndTime,Duration,GapType,EstimatedMissing");
+        AppendCsvRow(sb, "File", "Symbol", "StartTime", "EndTime", "Duration", "GapType", "EstimatedMissing");
         foreach (var file in report.FileAnalyses)
         {
             foreach (var gap in file.Gaps)
             {
-                sb.AppendLine($"{Path.GetFileName(file.FilePath)},{file.Symbol}," +
-                             $"{gap.StartTime:O},{gap.EndTime:O}," +
-                             $"{gap.Duration.TotalMinutes:F1},{gap.GapType}," +
-                             $"{gap.EstimatedMissingRecords}");
+                AppendCsvRow(
+                    sb,
+                    Path.GetFileName(file.FilePath),
+                    file.Symbol,
+                    gap.StartTime.ToString("O", CultureInfo.InvariantCulture),
+                    gap.EndTime.ToString("O", CultureInfo.InvariantCulture),
+                    gap.Duration.TotalMinutes.ToString("F1", CultureInfo.InvariantCulture),
+                    gap.GapType.ToString(),
+                    gap.EstimatedMissingRecords.ToString(CultureInfo.InvariantCulture));
             }
         }
-        await AtomicFileWriter.WriteAsync(path, sb.ToString(), ct);
+        await AtomicFileWriter.WriteAsync(path, sb.ToString(), ct).ConfigureAwait(false);
     }
 
-    private static string EscapeCsv(string? value)
+    private static void AppendCsvRow(StringBuilder builder, params string?[] values)
     {
-        if (string.IsNullOrEmpty(value))
-            return "";
-        if (value.Contains(',') || value.Contains('"') || value.Contains('\n'))
-            return $"\"{value.Replace("\"", "\"\"")}\"";
-        return value;
+        builder.AppendLine(string.Join(",", values.Select(SpreadsheetFormulaGuard.EscapeCsvCell)));
     }
 }
 

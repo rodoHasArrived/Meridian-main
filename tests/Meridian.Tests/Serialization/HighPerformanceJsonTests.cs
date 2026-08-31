@@ -3,6 +3,7 @@ using FluentAssertions;
 using Meridian.Core.Serialization;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.Workstation;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using Xunit;
@@ -33,7 +34,7 @@ public class HighPerformanceJsonTests
                 SequenceNumber: 12345,
                 StreamId: "ALPACA",
                 Venue: "NYSE"
-            ));
+            ), source: "TEST");
 
         // Act
         var json = HighPerformanceJson.Serialize(evt);
@@ -53,7 +54,7 @@ public class HighPerformanceJsonTests
         var evt = MarketEvent.Trade(
             ts,
             "SPY",
-            new Trade(ts, "SPY", 450.25m, 100, AggressorSide.Buy, 12345, "TEST", "NYSE"));
+            new Trade(ts, "SPY", 450.25m, 100, AggressorSide.Buy, 12345, "TEST", "NYSE"), source: "TEST");
 
         // Act
         var jsonString = HighPerformanceJson.Serialize(evt);
@@ -72,7 +73,7 @@ public class HighPerformanceJsonTests
         var originalEvent = MarketEvent.Trade(
             ts,
             "SPY",
-            new Trade(ts, "SPY", 450.25m, 100, AggressorSide.Buy, 12345, "ALPACA", "NYSE"));
+            new Trade(ts, "SPY", 450.25m, 100, AggressorSide.Buy, 12345, "ALPACA", "NYSE"), source: "TEST");
 
         var json = HighPerformanceJson.Serialize(originalEvent);
 
@@ -93,7 +94,7 @@ public class HighPerformanceJsonTests
         var originalEvent = MarketEvent.Trade(
             ts,
             "QQQ",
-            new Trade(ts, "QQQ", 350.50m, 200, AggressorSide.Sell, 67890, "TEST", "NASDAQ"));
+            new Trade(ts, "QQQ", 350.50m, 200, AggressorSide.Sell, 67890, "TEST", "NASDAQ"), source: "TEST");
 
         var jsonBytes = HighPerformanceJson.SerializeToUtf8Bytes(originalEvent);
 
@@ -183,7 +184,7 @@ public class HighPerformanceJsonTests
         var evt = MarketEvent.Trade(
             ts,
             "SPY",
-            new Trade(ts, "SPY", 450.25m, 100, AggressorSide.Buy, 12345, "TEST", "NYSE"));
+            new Trade(ts, "SPY", 450.25m, 100, AggressorSide.Buy, 12345, "TEST", "NYSE"), source: "TEST");
 
         // Act
         var json = JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions);
@@ -201,13 +202,41 @@ public class HighPerformanceJsonTests
         var evt = MarketEvent.Trade(
             ts,
             "SPY",
-            new Trade(ts, "SPY", 450.25m, 100, AggressorSide.Buy, 12345, "TEST", "NYSE"));
+            new Trade(ts, "SPY", 450.25m, 100, AggressorSide.Buy, 12345, "TEST", "NYSE"), source: "TEST");
 
         // Act
         var json = JsonSerializer.Serialize(evt, MarketDataJsonContext.PrettyPrintOptions);
 
         // Assert
         json.Should().Contain("\n");
+    }
+
+    [Fact]
+    public void SecurityMasterJsonContext_ShouldCoverPassportWorkbenchCommandDtos()
+    {
+        Type[] workbenchDtos =
+        [
+            typeof(SecurityMasterEditOrigin),
+            typeof(SecurityMasterRevisionStateDto),
+            typeof(UpdateSecurityFieldRequest),
+            typeof(ResolveSourceConflictRequest),
+            typeof(SubmitSecurityMasterRevisionRequest),
+            typeof(ApproveSecurityMasterRevisionRequest),
+            typeof(PublishSecurityMasterRevisionRequest),
+            typeof(SecurityMasterEditResultDto),
+            typeof(SecurityMasterConflictResolutionDto),
+            typeof(SecurityMasterPublishResultDto),
+            typeof(RestatementCandidateDto),
+            typeof(SecurityMasterConflictAuthorityDecision),
+            typeof(SecurityMasterRevisionPublishedEvent),
+        ];
+
+        foreach (var dto in workbenchDtos)
+        {
+            SecurityMasterJsonContext.Default.GetTypeInfo(dto)
+                .Should()
+                .NotBeNull($"{dto.Name} must stay in the ADR-014 source-generated Security Master JSON context");
+        }
     }
 
     [Fact]

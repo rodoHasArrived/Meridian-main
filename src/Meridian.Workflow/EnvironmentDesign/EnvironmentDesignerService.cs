@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -7,6 +6,7 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
 using Meridian.Entities.FundStructure;
 using Meridian.Storage.Archival;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Workflow.EnvironmentDesign;
 
@@ -1676,7 +1676,7 @@ public sealed partial class EnvironmentDesignerService :
 
     private static Guid CreateStableGuid(string value)
     {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(value));
+        var bytes = Sha256Digest.ComputeBytesUtf8(value);
         Span<byte> guidBytes = stackalloc byte[16];
         bytes[..16].CopyTo(guidBytes);
         return new Guid(guidBytes);

@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Identity.Auth;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -13,14 +14,20 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class StorageEndpointTests
+public sealed class StorageEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
+    private readonly EndpointTestFixture _fixture;
     private readonly HttpClient _client;
 
     public StorageEndpointTests(EndpointTestFixture fixture)
     {
-        _client = fixture.Client;
+        _fixture = fixture;
+        // Storage and storage-quality reads describe the state of the stored market data and
+        // require one of ViewHistoricalData / ViewDiagnostics / ManageStorage (W9-GOV-008).
+        _client = fixture.CreatePermittedClient(UserPermission.ViewHistoricalData);
     }
+
+    public void Dispose() => _client.Dispose();
 
     #region Storage Endpoints
 
@@ -89,15 +96,32 @@ public sealed class StorageEndpointTests
     [Fact]
     public async Task SymbolMappings_ReturnsJson()
     {
-        var response = await _client.GetAsync("/api/symbols/mappings");
+        using var client = _fixture.CreatePermittedClient(UserPermission.ViewConfig);
+        var response = await client.GetAsync("/api/symbols/mappings");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
     }
 
     [Fact]
+    public async Task CanonicalSymbolRegistry_ReturnsAdditiveIdentityAndMigrationContract()
+    {
+        using var client = _fixture.CreatePermittedClient(UserPermission.ViewConfig);
+        var response = await client.GetAsync("/api/symbols/registry");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        document.RootElement.TryGetProperty("registryVersion", out _).Should().BeTrue();
+        document.RootElement.TryGetProperty("resolutionMode", out _).Should().BeTrue();
+        document.RootElement.TryGetProperty("recentMismatches", out _).Should().BeTrue();
+        document.RootElement.TryGetProperty("migrations", out _).Should().BeTrue();
+        document.RootElement.TryGetProperty("symbols", out _).Should().BeTrue();
+    }
+
+    [Fact]
     public async Task AddSymbolMapping_ReturnsOk()
     {
+        using var client = _fixture.CreatePermittedClient(UserPermission.ModifyConfig);
         var payload = new
         {
             canonicalSymbol = "BRK.B"
@@ -105,7 +129,7 @@ public sealed class StorageEndpointTests
         var content = new StringContent(
             JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync("/api/symbols/mappings", content);
+        var response = await client.PostAsync("/api/symbols/mappings", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -113,7 +137,8 @@ public sealed class StorageEndpointTests
     [Fact]
     public async Task DeleteSymbolMapping_ForUnknown_Returns404()
     {
-        var response = await _client.DeleteAsync("/api/symbols/mappings/DOESNOTEXIST999");
+        using var client = _fixture.CreatePermittedClient(UserPermission.ModifyConfig);
+        var response = await client.DeleteAsync("/api/symbols/mappings/DOESNOTEXIST999");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }

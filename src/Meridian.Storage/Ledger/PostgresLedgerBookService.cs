@@ -1,8 +1,11 @@
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
+using static Meridian.Contracts.Ledger.LedgerDimensionTags;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Storage.Ledger;
 
@@ -364,9 +367,25 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
                 ? now
                 : current.ClosedAt
         };
-        var saved = await _store
-            .SavePeriodAsync(updated, current.Version, closeEvent, ct)
-            .ConfigureAwait(false);
+        LedgerAccountingPeriod saved;
+        if (string.Equals(targetStatus, HardClosedStatus, StringComparison.Ordinal))
+        {
+            if (_store is not IAtomicLedgerPeriodCloseStore atomicCloseStore)
+            {
+                throw new LedgerBookValidationException(
+                    "Hard-close requires a ledger store that can recheck temporary-account balances and persist the period transition atomically.");
+            }
+
+            saved = await atomicCloseStore
+                .SaveHardClosedPeriodAsync(updated, current.Version, closeEvent, ct)
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            saved = await _store
+                .SavePeriodAsync(updated, current.Version, closeEvent, ct)
+                .ConfigureAwait(false);
+        }
 
         var requiredRole = NormalizeOptional(request.RequiredSignoffRole) ?? "Fund Controller";
         var toleranceProfile = NormalizeOptional(request.ToleranceProfileId) ?? "standard-recon-tolerance";
@@ -391,12 +410,82 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         return new LedgerPeriodCloseResultDto(MapPeriod(saved, book), summary, workItem);
     }
 
-    private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
+    public async Task<LedgerPeriodReopenResultDto> ReopenPeriodAsync(
+        Guid periodId,
+        ReopenLedgerPeriodRequest request,
+        CancellationToken ct = default)
     {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(request);
+        EnsureHumanOrigin(request.ActionOrigin, "reopen ledger periods");
+
+        var current = await _store.GetPeriodAsync(periodId, ct).ConfigureAwait(false)
+            ?? throw new LedgerBookNotFoundException($"Ledger period '{periodId}' was not found.");
+        var book = await RequireBookAsync(RequireLedgerBookId(current), ct).ConfigureAwait(false);
+        if (!string.Equals(current.Status, HardClosedStatus, StringComparison.Ordinal))
+        {
+            throw new LedgerPeriodTransitionException(
+                $"Cannot reopen period '{current.Label}' from {current.Status}; only a hard-closed period can enter governed restatement.");
+        }
+
+        var actor = RequireText(request.ReopenedBy, nameof(request.ReopenedBy));
+        var role = RequireText(request.Role, nameof(request.Role));
+        if (!string.Equals(role, "Controller", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(role, "Fund Controller", StringComparison.OrdinalIgnoreCase))
         {
             throw new LedgerBookValidationException(
-                $"Reviewed automation cannot {action}; a human operator approval is required.");
+                "Governed period reopen requires Controller or Fund Controller authority.");
+        }
+
+        var reason = RequireText(request.Reason, nameof(request.Reason));
+        var approvalReference = RequireText(request.ApprovalReference, nameof(request.ApprovalReference));
+        var evidence = request.EvidenceLinks
+            .Where(static link => !string.IsNullOrWhiteSpace(link))
+            .Select(static link => link.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (evidence.Length == 0 || !HasScopedRestatementEvidence(evidence, current, book, approvalReference))
+        {
+            throw new LedgerBookValidationException(
+                "Governed period reopen requires retained restatement/reversal evidence referencing the period, ledger book, and approval.");
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var reopenEvent = new PeriodCloseEventRecord(
+            Guid.NewGuid(),
+            current.PeriodId,
+            current.Status,
+            SoftClosedStatus,
+            actor,
+            $"Governed restatement reopen: {reason} | approval: {approvalReference}",
+            now);
+        var saved = await _store.SavePeriodAsync(
+                current with
+                {
+                    Status = SoftClosedStatus,
+                    ClosedAt = null
+                },
+                current.Version,
+                reopenEvent,
+                ct)
+            .ConfigureAwait(false);
+
+        return new LedgerPeriodReopenResultDto(
+            MapPeriod(saved, book),
+            current.Status,
+            actor,
+            now,
+            approvalReference,
+            evidence);
+    }
+
+    private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
+    {
+        if (!OperationsOriginGuard.IsHumanOperator(actionOrigin))
+        {
+            throw new LedgerBookValidationException(
+                OperationsOriginGuard.RefusalMessage(action),
+                OperationsOriginGuard.Refusal(action));
         }
     }
 
@@ -409,7 +498,6 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         var isValid = (period.Status, targetStatus) switch
         {
             (OpenStatus, SoftClosedStatus) => true,
-            (OpenStatus, HardClosedStatus) => true,
             (SoftClosedStatus, HardClosedStatus) => true,
             _ => false
         };
@@ -421,10 +509,28 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         }
     }
 
+    private static bool HasScopedRestatementEvidence(
+        IReadOnlyList<string> evidence,
+        LedgerAccountingPeriod period,
+        LedgerBookRecord book,
+        string approvalReference)
+    {
+        return evidence.Any(link =>
+            ContainsIdentifier(link, period.PeriodId) &&
+            ContainsIdentifier(link, book.LedgerBookId) &&
+            (link.Contains("restatement", StringComparison.OrdinalIgnoreCase) ||
+             link.Contains("reversal", StringComparison.OrdinalIgnoreCase) ||
+             link.Contains("reopen", StringComparison.OrdinalIgnoreCase)) &&
+            (link.Contains(approvalReference, StringComparison.OrdinalIgnoreCase) ||
+             link.Contains("approval", StringComparison.OrdinalIgnoreCase)));
+    }
+
     private async Task<LedgerPeriodFinancials> BuildFinancialsAsync(LedgerAccountingPeriod period, CancellationToken ct)
     {
-        var entries = await _store.GetByPeriodAsync(period.PeriodId, ct).ConfigureAwait(false);
-        return CalculateFinancials(entries);
+        var ledger = await _store
+            .HydrateLedgerPeriodAsync(RequireLedgerBookId(period), period.PeriodId, ct: ct)
+            .ConfigureAwait(false);
+        return CalculateFinancials(ledger);
     }
 
     private async Task<decimal?> CalculatePeriodVarianceAsync(
@@ -646,21 +752,23 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         return parts.Count == 0 ? "ledger-book-rollout" : string.Join(";", parts);
     }
 
-    private static LedgerPeriodFinancials CalculateFinancials(IReadOnlyList<LedgerJournalEntryRecord> entries)
+    private static LedgerPeriodFinancials CalculateFinancials(Meridian.Ledger.Ledger ledger)
     {
+        ArgumentNullException.ThrowIfNull(ledger);
+
         var totals = new Dictionary<string, AccountAccumulator>(StringComparer.Ordinal);
         var totalDebits = 0m;
         var totalCredits = 0m;
 
-        foreach (var entry in entries)
+        foreach (var entry in ledger.Journal)
         {
-            var entryDimensions = BuildDimensions(entry.Entry.Metadata);
-            foreach (var line in entry.Entry.Lines)
+            var entryDimensions = BuildDimensions(entry.Metadata);
+            foreach (var line in entry.Lines)
             {
                 totalDebits += line.Debit;
                 totalCredits += line.Credit;
 
-                var dimensions = BuildDimensions(line.Dimensions) ?? BuildDimensions(entry.Entry.Metadata, line.EntryId) ?? entryDimensions;
+                var dimensions = BuildDimensions(line.Dimensions) ?? BuildDimensions(entry.Metadata, line.EntryId) ?? entryDimensions;
                 var key = BuildAccumulatorKey(line.Account, dimensions);
                 if (!totals.TryGetValue(key, out var accumulator))
                 {
@@ -675,7 +783,10 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         var trialBalance = totals.Values
             .Select(static accumulator =>
             {
-                var balance = CalculateNetBalance(accumulator.Account, accumulator.Debits, accumulator.Credits);
+                var balance = Meridian.Ledger.Ledger.CalculateNetBalance(
+                    accumulator.Account,
+                    accumulator.Debits,
+                    accumulator.Credits);
                 return new LedgerPeriodTrialBalanceLineDto(
                     accumulator.Account.Name,
                     accumulator.Account.AccountType.ToString(),
@@ -705,11 +816,6 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         return new LedgerPeriodFinancials(trialBalance, totalDebits, totalCredits, netIncome);
     }
 
-    private static decimal CalculateNetBalance(LedgerAccount account, decimal debits, decimal credits)
-        => account.AccountType is LedgerAccountType.Asset or LedgerAccountType.Expense
-            ? debits - credits
-            : credits - debits;
-
     private static LedgerDimensionSetDto? EnsureBookDimensions(
         LedgerDimensionSetDto? dimensions,
         LedgerBookRecord book)
@@ -727,6 +833,9 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
     {
         var tags = metadata.Tags;
         var externalGlDimensions = ExtractExternalGlDimensions(tags);
+        var positionId = Guid.TryParse(FirstTag(tags, "positionId"), out var parsedPositionId)
+            ? parsedPositionId
+            : (Guid?)null;
         var dimensionSet = new LedgerDimensionSetDto(
             FundId: FirstTag(tags, "fundId", "fundProfileId"),
             EntityId: FirstTag(tags, "entityId", "legalEntityId"),
@@ -745,7 +854,10 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             AccountId: metadata.FinancialAccountId ?? FirstTag(tags, "accountId"),
             CustomerId: FirstTag(tags, "customerId"),
             VendorId: FirstTag(tags, "vendorId"),
-            ProjectId: metadata.ProjectId ?? FirstTag(tags, "projectId"));
+            ProjectId: metadata.ProjectId ?? FirstTag(tags, "projectId"))
+        {
+            PositionId = positionId
+        };
 
         return HasAnyDimension(dimensionSet) ? dimensionSet : null;
     }
@@ -775,7 +887,10 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             AccountId: dimensions.AccountId,
             CustomerId: dimensions.CustomerId,
             VendorId: dimensions.VendorId,
-            ProjectId: dimensions.ProjectId);
+            ProjectId: dimensions.ProjectId)
+        {
+            PositionId = dimensions.PositionId
+        };
 
         return HasAnyDimension(dimensionSet) ? dimensionSet : null;
     }
@@ -791,6 +906,9 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
 
         var instrumentId = Guid.TryParse(FirstTag(tags, prefix + "instrumentId"), out var parsedInstrumentId)
             ? parsedInstrumentId
+            : (Guid?)null;
+        var positionId = Guid.TryParse(FirstTag(tags, prefix + "positionId"), out var parsedPositionId)
+            ? parsedPositionId
             : (Guid?)null;
         var dimensionSet = new LedgerDimensionSetDto(
             FundId: FirstTag(tags, prefix + "fundId"),
@@ -810,98 +928,12 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             AccountId: FirstTag(tags, prefix + "accountId"),
             CustomerId: FirstTag(tags, prefix + "customerId"),
             VendorId: FirstTag(tags, prefix + "vendorId"),
-            ProjectId: FirstTag(tags, prefix + "projectId"));
+            ProjectId: FirstTag(tags, prefix + "projectId"))
+        {
+            PositionId = positionId
+        };
 
         return HasAnyDimension(dimensionSet) ? dimensionSet : null;
-    }
-
-    private static bool HasAnyDimension(LedgerDimensionSetDto dimensions)
-        => !string.IsNullOrWhiteSpace(dimensions.FundId)
-           || !string.IsNullOrWhiteSpace(dimensions.EntityId)
-           || !string.IsNullOrWhiteSpace(dimensions.SleeveId)
-           || !string.IsNullOrWhiteSpace(dimensions.StrategyId)
-           || !string.IsNullOrWhiteSpace(dimensions.InvestorId)
-           || !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId)
-           || dimensions.InstrumentId.HasValue
-           || !string.IsNullOrWhiteSpace(dimensions.TaxLotId)
-           || !string.IsNullOrWhiteSpace(dimensions.CostCenterId)
-           || !string.IsNullOrWhiteSpace(dimensions.CounterpartyId)
-           || dimensions.ExternalGlDimensions.Count > 0
-           || !string.IsNullOrWhiteSpace(dimensions.OrganizationId)
-           || !string.IsNullOrWhiteSpace(dimensions.PortfolioId)
-           || !string.IsNullOrWhiteSpace(dimensions.BookId)
-           || !string.IsNullOrWhiteSpace(dimensions.AccountId)
-           || !string.IsNullOrWhiteSpace(dimensions.CustomerId)
-           || !string.IsNullOrWhiteSpace(dimensions.VendorId)
-           || !string.IsNullOrWhiteSpace(dimensions.ProjectId);
-
-    private static IReadOnlyDictionary<string, string> ExtractExternalGlDimensions(
-        IReadOnlyDictionary<string, string>? tags)
-        => ExtractExternalGlDimensions(tags, prefix: null);
-
-    private static IReadOnlyDictionary<string, string> ExtractExternalGlDimensions(
-        IReadOnlyDictionary<string, string>? tags,
-        string? prefix)
-    {
-        if (tags is null || tags.Count == 0)
-        {
-            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var pair in tags)
-        {
-            var key = NormalizeOptional(pair.Key);
-            var value = NormalizeOptional(pair.Value);
-            if (key is null || value is null)
-            {
-                continue;
-            }
-
-            var scopedKey = prefix is null
-                ? key
-                : StripPrefix(key, prefix);
-            if (scopedKey is null)
-            {
-                continue;
-            }
-
-            var dimensionKey = StripPrefix(scopedKey, "externalGl.")
-                               ?? StripPrefix(scopedKey, "externalGl:")
-                               ?? StripPrefix(scopedKey, "gl.")
-                               ?? StripPrefix(scopedKey, "gl:");
-            if (!string.IsNullOrWhiteSpace(dimensionKey))
-            {
-                result[dimensionKey] = value;
-            }
-        }
-
-        return result;
-    }
-
-    private static string? StripPrefix(string value, string prefix)
-        => value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
-            ? NormalizeOptional(value[prefix.Length..])
-            : null;
-
-    private static string? FirstTag(
-        IReadOnlyDictionary<string, string>? tags,
-        params string[] keys)
-    {
-        if (tags is null || tags.Count == 0)
-        {
-            return null;
-        }
-
-        foreach (var key in keys)
-        {
-            if (tags.TryGetValue(key, out var value))
-            {
-                return NormalizeOptional(value);
-            }
-        }
-
-        return null;
     }
 
     private static string BuildAccumulatorKey(LedgerAccount account, LedgerDimensionSetDto? dimensions)
@@ -923,7 +955,7 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         var externalGl = dimensions.ExternalGlDimensions
             .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
             .Select(static pair => $"{pair.Key.Trim()}={pair.Value.Trim()}");
-        return string.Join(
+        var key = string.Join(
             "\u001e",
             dimensions.FundId ?? string.Empty,
             dimensions.EntityId ?? string.Empty,
@@ -943,6 +975,10 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             dimensions.VendorId ?? string.Empty,
             dimensions.ProjectId ?? string.Empty,
             string.Join("\u001d", externalGl));
+
+        return dimensions.PositionId.HasValue
+            ? $"{key}\u001epositionId={dimensions.PositionId.Value:D}"
+            : key;
     }
 
     private static LedgerBookDto MapBook(LedgerBookRecord record)
@@ -1015,9 +1051,6 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
 
         return value.Trim();
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private sealed class AccountAccumulator
     {

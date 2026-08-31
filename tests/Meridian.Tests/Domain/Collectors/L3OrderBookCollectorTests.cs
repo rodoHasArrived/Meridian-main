@@ -24,7 +24,7 @@ public class L3OrderBookCollectorTests
     public L3OrderBookCollectorTests()
     {
         _publisher = new TestMarketEventPublisher();
-        _collector = new L3OrderBookCollector(_publisher, requireExplicitSubscription: false);
+        _collector = new L3OrderBookCollector(_publisher, "TEST", requireExplicitSubscription: false);
     }
 
     // ─── helpers ──────────────────────────────────────────────────────────────
@@ -63,7 +63,7 @@ public class L3OrderBookCollectorTests
     {
         using var listener = ActivityTestListenerFactory.CreateForMeridianSource();
         var publisher = new ActivityCapturingPublisher();
-        var collector = new L3OrderBookCollector(publisher, requireExplicitSubscription: false);
+        var collector = new L3OrderBookCollector(publisher, "TEST", requireExplicitSubscription: false);
 
         collector.OnOrderAdd(MakeAdd("A1", "AAPL", OrderSide.Buy, 185m, 100, 1));
 
@@ -341,7 +341,7 @@ public class L3OrderBookCollectorTests
     [Fact]
     public void WithExplicitSubscription_IgnoresUnregisteredSymbol()
     {
-        var collector = new L3OrderBookCollector(_publisher, requireExplicitSubscription: true);
+        var collector = new L3OrderBookCollector(_publisher, "TEST", requireExplicitSubscription: true);
 
         collector.OnOrderAdd(MakeAdd("A1", "AAPL", OrderSide.Buy, 185m, 100, 1));
 
@@ -351,7 +351,7 @@ public class L3OrderBookCollectorTests
     [Fact]
     public void WithExplicitSubscription_ProcessesRegisteredSymbol()
     {
-        var collector = new L3OrderBookCollector(_publisher, requireExplicitSubscription: true);
+        var collector = new L3OrderBookCollector(_publisher, "TEST", requireExplicitSubscription: true);
         collector.RegisterSubscription("AAPL");
 
         collector.OnOrderAdd(MakeAdd("A1", "AAPL", OrderSide.Buy, 185m, 100, 1));

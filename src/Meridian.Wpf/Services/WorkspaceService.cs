@@ -16,6 +16,7 @@ using WorkspaceCategory = Meridian.Ui.Services.WorkspaceCategory;
 using WorkspaceEventArgs = Meridian.Ui.Services.WorkspaceEventArgs;
 using WorkspacePage = Meridian.Ui.Services.WorkspacePage;
 using WorkspaceTemplate = Meridian.Ui.Services.WorkspaceTemplate;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Wpf.Services;
 
@@ -272,8 +273,13 @@ public sealed class WorkspaceService
                 await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // Initialization is resilient: fall through to defaults rather than blocking startup.
+            LoggingService.Instance.LogDebug(
+                "Failed to initialize workspaces.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
         finally
         {
@@ -312,8 +318,13 @@ public sealed class WorkspaceService
         {
             throw;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // Workspace persistence is best-effort; disk failures must not crash the caller.
+            LoggingService.Instance.LogDebug(
+                "Failed to persist workspaces.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
 
         return Task.CompletedTask;
@@ -491,7 +502,7 @@ public sealed class WorkspaceService
 
                 state.SavedAt = DateTime.UtcNow;
                 _lastSession = state;
-                var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
+                var normalizedFundProfileId = NormalizeOptional(fundProfileId);
                 if (!string.IsNullOrWhiteSpace(normalizedFundProfileId))
                 {
                     LastSelectedFundProfileId = normalizedFundProfileId;
@@ -505,8 +516,13 @@ public sealed class WorkspaceService
                 await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
                 await SaveWorkspaceStateTokenCoreAsync(state, normalizedFundProfileId, ct).ConfigureAwait(false);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // Session-state persistence is best-effort; disk failures must not crash the caller.
+                LoggingService.Instance.LogDebug(
+                    "Failed to persist workspace session state.",
+                    ("exception", ex.GetType().Name),
+                    ("message", ex.Message));
             }
         }, ct);
 
@@ -524,7 +540,7 @@ public sealed class WorkspaceService
                 return null;
             }
 
-            return BuildWorkspaceStateToken(state, workspaceId, NormalizeFundProfileId(fundProfileId));
+            return BuildWorkspaceStateToken(state, workspaceId, NormalizeOptional(fundProfileId));
         }, ct);
 
     public Task<WorkspaceStateRestoreResult?> RestoreWorkspaceStateTokenAsync(
@@ -554,7 +570,7 @@ public sealed class WorkspaceService
     public SessionState? GetLastSessionState(string? fundProfileId)
         => WithStateLock(() =>
         {
-            var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
+            var normalizedFundProfileId = NormalizeOptional(fundProfileId);
             if (string.IsNullOrWhiteSpace(normalizedFundProfileId))
             {
                 if (_lastSession is not null)
@@ -591,7 +607,7 @@ public sealed class WorkspaceService
         => WithStateLockAsync(async () =>
         {
             await EnsureInitializedAsync(ct).ConfigureAwait(false);
-            LastSelectedFundProfileId = NormalizeFundProfileId(fundProfileId);
+            LastSelectedFundProfileId = NormalizeOptional(fundProfileId);
             await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
         }, ct);
 
@@ -672,8 +688,13 @@ public sealed class WorkspaceService
                     return workspace;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // Workspace creation is best-effort here; failures surface as a null result.
+                LoggingService.Instance.LogDebug(
+                    "Failed to create workspace.",
+                    ("exception", ex.GetType().Name),
+                    ("message", ex.Message));
             }
 
             return null;
@@ -807,12 +828,9 @@ public sealed class WorkspaceService
         addOwner(owners, "GovernanceShell", "accounting");
     }
 
-    private static string? NormalizeFundProfileId(string? fundProfileId)
-        => string.IsNullOrWhiteSpace(fundProfileId) ? null : fundProfileId.Trim();
-
     private static IReadOnlyList<string> GetEquivalentSessionScopeKeys(string? scopeKey)
     {
-        var normalizedScopeKey = NormalizeFundProfileId(scopeKey);
+        var normalizedScopeKey = NormalizeOptional(scopeKey);
         if (string.IsNullOrWhiteSpace(normalizedScopeKey))
         {
             return Array.Empty<string>();
@@ -1384,7 +1402,7 @@ public sealed class WorkspaceService
 
     private static string BuildRawWorkspaceLayoutKey(string workspaceId, string? fundProfileId)
     {
-        var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
+        var normalizedFundProfileId = NormalizeOptional(fundProfileId);
         return string.IsNullOrWhiteSpace(normalizedFundProfileId)
             ? workspaceId
             : $"{workspaceId}::{normalizedFundProfileId}";

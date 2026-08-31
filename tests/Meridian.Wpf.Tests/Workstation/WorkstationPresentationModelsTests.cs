@@ -34,6 +34,74 @@ public sealed class WorkstationPresentationModelsTests
     }
 
     [Fact]
+    public void FromWorkspaceCommand_WhenDisabledReasonIsSet_ShouldPreferItOverDescription()
+    {
+        var command = new WorkspaceCommandItem
+        {
+            Id = "PostJournal",
+            Label = "Post journal",
+            Description = "Post the staged journal entries.",
+            DisabledReason = "Close the prior period before posting.",
+            IsEnabled = false
+        };
+
+        var mapped = WorkstationCommandMapper.FromWorkspaceCommand(command);
+
+        mapped.DisabledReason.Should().Be("Close the prior period before posting.");
+    }
+
+    [Fact]
+    public void FromWorkspaceCommand_WhenCommandIsEnabled_ShouldNotPublishADisabledReason()
+    {
+        var command = new WorkspaceCommandItem
+        {
+            Id = "PostJournal",
+            Label = "Post journal",
+            Description = "Post the staged journal entries.",
+            DisabledReason = "Close the prior period before posting.",
+            IsEnabled = true
+        };
+
+        var mapped = WorkstationCommandMapper.FromWorkspaceCommand(command);
+
+        mapped.DisabledReason.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void AutomationId_ShouldPreferTheDeclaredCommandId()
+    {
+        var command = new WorkspaceCommandItem { Id = "PostJournal", Label = "Post journal" };
+
+        command.AutomationId.Should().Be("PostJournal");
+        WorkstationCommandMapper.FromWorkspaceCommand(command).AutomationId.Should().Be("PostJournal");
+    }
+
+    [Fact]
+    public void AutomationId_WhenCommandIdIsMissing_ShouldNormalizeTheLabel()
+    {
+        var command = new WorkspaceCommandItem { Label = "Post journal (staged)" };
+
+        command.AutomationId.Should().Be("WorkspaceCommandPostjournalstaged");
+        WorkstationCommandMapper.FromWorkspaceCommand(command).AutomationId
+            .Should().Be("WorkstationCommandPostjournalstaged");
+    }
+
+    [Fact]
+    public void AutomationId_WhenIdAndLabelAreMissing_ShouldStayStableRatherThanEmpty()
+    {
+        new WorkspaceCommandItem().AutomationId.Should().Be("WorkspaceCommandAction");
+    }
+
+    [Fact]
+    public void AutomationId_ShouldNotChangeWhenDisplayCopyChanges()
+    {
+        var before = new WorkspaceCommandItem { Id = "PostJournal", Label = "Post journal" };
+        var after = new WorkspaceCommandItem { Id = "PostJournal", Label = "Post journal entries" };
+
+        after.AutomationId.Should().Be(before.AutomationId);
+    }
+
+    [Fact]
     public void WorkstationStateFactories_ShouldCreateExpectedStateKinds()
     {
         WorkstationStateModel.Ready("Ready", "Usable").Kind.Should().Be(WorkstationStateKind.Ready);

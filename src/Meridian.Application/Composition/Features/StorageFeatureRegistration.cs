@@ -19,6 +19,8 @@ using Meridian.Instruments.Options;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Application.SecurityMaster;
+using Meridian.Application.SecurityMaster.CashFlow;
+using Meridian.Application.Tenancy;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Meridian.Contracts.DirectLending;
@@ -54,6 +56,7 @@ using Meridian.Storage.Integrations;
 using Meridian.Storage.MoneyMarket;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Ledger;
+using Meridian.Ledger;
 using Meridian.Storage.Maintenance;
 using Meridian.Storage.Policies;
 using Meridian.Storage.Query;
@@ -63,6 +66,7 @@ using Meridian.Workflow.EnvironmentDesign;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Meridian.Application.Composition.Features;
@@ -74,6 +78,10 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
+        // Unified persistence config must resolve before any per-domain in-memory-vs-Postgres
+        // decision below reads the per-domain variables.
+        MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+
         SecurityMasterStartup.EnsureEnvironmentDefaults();
         AssetOperationsStartup.EnsureEnvironmentDefaults();
         DirectLendingStartup.EnsureEnvironmentDefaults();
@@ -82,10 +90,12 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         var securityMasterOptions = CreateSecurityMasterOptions();
         var assetOperationsOptions = CreateAssetOperationsOptions();
         var directLendingOptions = CreateDirectLendingOptions();
-        var ledgerOptions = CreateLedgerOptions();
+        var ledgerOptions = CreateLedgerOptions(
+            ProductionServiceRegistrationPolicy.IsProductionComposition(services));
 
         services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
         services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();
+        services.TryAddSingleton<DatabaseMigrationReadinessReceipt>();
         services.AddStatementReconciliationServices();
 
         // StorageOptions - configured from AppConfig or defaults
@@ -103,8 +113,10 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             new FileProviderIntegrationManifestStore(sp.GetRequiredService<StorageOptions>().RootPath));
         services.TryAddSingleton<ProviderIntegrationTemplateCatalog>();
         services.TryAddSingleton<ProviderIntegrationDryRunService>();
-        services.TryAddSingleton<IProviderIntegrationHttpTransport>(_ =>
-            new ProviderIntegrationHttpClientTransport(new HttpClient()));
+        services.TryAddSingleton<IProviderIntegrationHttpTransport>(sp =>
+            new ProviderIntegrationHttpClientTransport(
+                new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }),
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<ProviderIntegrationHttpClientTransport>>()));
         services.TryAddSingleton<ProviderIntegrationRestDryRunService>();
         services.TryAddSingleton<ProviderIntegrationOpenApiImportService>();
         services.TryAddSingleton<ProviderIntegrationSetupService>();
@@ -131,7 +143,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 new PostgresScopedAccessAssignmentStore(sp.GetRequiredService<ScopedAccessStoreOptions>()));
             services.TryAddSingleton<IScopedAccessAssignmentStore>(sp =>
                 sp.GetRequiredService<PostgresScopedAccessAssignmentStore>());
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, ScopedAccessAssignmentStoreMigrationHostedService>());
+            if (options.EnableProcessWideHostedServices)
+            {
+                services.TryAddEnumerable(
+                    ServiceDescriptor.Singleton<IHostedService, ScopedAccessAssignmentStoreMigrationHostedService>());
+            }
         }
         else
         {
@@ -139,7 +155,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             {
                 var storageOptions = sp.GetRequiredService<StorageOptions>();
                 var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "user-access-assignments.json");
-                return new FileScopedAccessAssignmentStore(persistencePath);
+                return new FileScopedAccessAssignmentStore(
+                    persistencePath,
+                    sp.GetService<ILogger<FileScopedAccessAssignmentStore>>());
             });
         }
         services.TryAddSingleton<IAccessScopeLineageProvider, FundStructureAccessScopeLineageProvider>();
@@ -172,6 +190,17 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<IFileMaintenanceService, FileMaintenanceService>();
         services.AddSingleton<IQualityTrendStore, FileQualityTrendStore>();
         services.AddSingleton<IDataQualityService, DataQualityService>();
+        services.TryAddSingleton<IDataQualityScoringService>(sp => new DataQualityScoringService(
+            sp.GetRequiredService<StorageOptions>(),
+            sp.GetRequiredService<ILogger<DataQualityScoringService>>(),
+            sp.GetService<ISourceRegistry>(),
+            sp.GetService<IMetadataTagService>()));
+        services.TryAddSingleton<Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer>(sp =>
+            new Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer(
+                sp.GetRequiredService<StorageOptions>().RootPath));
+        services.TryAddSingleton<DataQualityMonitor>(sp => new DataQualityMonitor(
+            sp.GetRequiredService<Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer>(),
+            sp.GetRequiredService<StorageOptions>().RootPath));
         services.AddSingleton<IStorageSearchService, StorageSearchService>();
         services.AddSingleton<ITierMigrationService, TierMigrationService>();
         services.AddSingleton<IAuditChainService, AuditChainService>();
@@ -194,6 +223,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<PostgresLedgerJournalStore>();
             services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+            services.AddSingleton<IGovernedLedgerPostingTarget, DurableLedgerPostingTarget>();
+            services.AddSingleton(sp => new DurableAutomatedJournalPoster(
+                sp.GetRequiredService<IGovernedLedgerPostingTarget>()));
+            services.AddSingleton<IAutomatedJournalPostingTarget>(sp =>
+                sp.GetRequiredService<DurableAutomatedJournalPoster>());
             services.AddSingleton<PostgresAccountingConfigurationStore>();
             services.AddSingleton<IAccountingConfigurationStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
             services.AddSingleton<IAccountingActionAuditStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
@@ -215,7 +249,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<AnalysisExportService>(sp =>
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
-            return new AnalysisExportService(storageOptions.RootPath);
+            return new AnalysisExportService(storageOptions);
         });
 
         services.AddSingleton<RateLimiter>(sp => new RateLimiter(5, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(0.5)));
@@ -228,6 +262,15 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton(securityMasterOptions);
             services.AddSingleton<IValidateOptions<SecurityMasterOptions>, SecurityMasterOptionsValidator>();
             services.AddSingleton<ISecurityMasterEventStore, PostgresSecurityMasterEventStore>();
+            services.AddSingleton<ICorporateActionOperationsStore, PostgresCorporateActionOperationsStore>();
+            services.AddSingleton<ICorporateActionOperationsService>(sp => new CorporateActionOperationsService(
+                sp.GetRequiredService<ICorporateActionOperationsStore>(),
+                sp.GetRequiredService<ISecurityMasterEventStore>(),
+                sp.GetRequiredService<ISecurityMasterStore>(),
+                sp.GetRequiredService<ICorporateActionRestatementTrigger>(),
+                // Resolved optionally on purpose: the scope authority is composed only where the
+                // holdings and tenancy stores exist, and acceptance fails closed without it.
+                sp.GetService<ICorporateActionScopeFanOutGate>()));
             services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
             services.AddSingleton<IBondReferenceProjectionStore, PostgresBondReferenceProjectionStore>();
@@ -242,6 +285,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IMoneyMarketFundReferenceProjectionStore, PostgresMoneyMarketFundReferenceProjectionStore>();
             services.AddSingleton<ICertificateOfDepositReferenceProjectionStore, PostgresCertificateOfDepositReferenceProjectionStore>();
             services.AddSingleton<IOperatorOverridesStore, PostgresOperatorOverridesStore>();
+            services.AddSingleton<ISecurityFieldProvenanceStore, PostgresSecurityFieldProvenanceStore>();
             services.AddSingleton<SecurityMasterMigrationRunner>();
             services.AddSingleton<SecurityMasterAggregateRebuilder>();
             services.AddSingleton<SecurityMasterProjectionCache>();
@@ -274,16 +318,39 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ICertificateOfDepositReferenceService, CertificateOfDepositProjectionService>();
             services.AddSingleton<ISecurityResolver, SecurityResolver>();
             services.AddHostedService<SecurityMasterProjectionWarmupService>();
-            services.AddSingleton<IPolygonCorporateActionFetcher, PolygonCorporateActionFetcher>();
-            services.AddSingleton<PolygonCorporateActionFetcher>(sp => (PolygonCorporateActionFetcher)sp.GetRequiredService<IPolygonCorporateActionFetcher>());
-            services.AddHostedService<PolygonCorporateActionFetcher>(sp => sp.GetRequiredService<PolygonCorporateActionFetcher>());
+            if (options.EnableHttpClientFactory)
+            {
+                services.AddSingleton<IPolygonCorporateActionFetcher, PolygonCorporateActionFetcher>();
+                services.AddSingleton<PolygonCorporateActionFetcher>(
+                    sp => (PolygonCorporateActionFetcher)sp.GetRequiredService<IPolygonCorporateActionFetcher>());
+                if (options.EnableProcessWideHostedServices)
+                {
+                    services.AddHostedService<PolygonCorporateActionFetcher>(
+                        sp => sp.GetRequiredService<PolygonCorporateActionFetcher>());
+                }
+            }
             services.AddSingleton<ITradingParametersBackfillService, TradingParametersBackfillService>();
 
             // Security Master bulk import services
             services.AddSingleton<SecurityMasterCsvParser>();
             services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
             services.AddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
-            services.AddSingleton<ISecurityMasterConflictService, SecurityMasterConflictService>();
+
+            // Migrate-on-read upcaster pipeline for asset-specific-terms payloads, shared by the
+            // projection store (queryable schema_version column + read normalization). Registering the
+            // composed pipeline (v0 stamping + cross-family economic-terms v2 -> v1 flattening) rather
+            // than the bare v0->current upcaster keeps the store's schema_version promotion consistent
+            // with the mapping guard: a v2 economic-terms document is flattened to the accepted legacy
+            // version instead of being promoted as an unsupported version the guard would reject.
+            services.AddSingleton<
+                Meridian.Contracts.Schema.ISchemaUpcaster<Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms>,
+                Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline>();
+
+            // Durable audit/versioning spine: the golden-record conflict store and the governed
+            // revision-lifecycle store are Postgres-backed so resolutions and approval state survive
+            // process recycles and are consistent across instances.
+            services.AddSingleton<ISecurityMasterConflictService, PostgresSecurityMasterConflictService>();
+            services.AddSingleton<ISecurityMasterRevisionStore, PostgresSecurityMasterRevisionStore>();
 
             // Clearwater-model extensions: pricing hierarchy, cash flow, entitlements, data quality
             services.AddSingleton<ISecurityMasterPricingStore, PostgresSecurityMasterPricingStore>();
@@ -291,6 +358,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IDataVendorEntitlementStore, PostgresDataVendorEntitlementStore>();
             services.AddSingleton<ISecurityMasterQualityReportStore, PostgresSecurityMasterQualityReportStore>();
             services.AddSingleton<ISecurityMasterPricingService, SecurityMasterPricingService>();
+            services.AddSingleton<IStructuredCashFlowLedgerBridge, StructuredCashFlowLedgerBridge>();
+            services.AddSingleton<ISecurityMasterAmortizationLedgerBridge, SecurityMasterAmortizationLedgerBridge>();
             services.AddSingleton<ISecurityMasterCashFlowService, SecurityMasterCashFlowService>();
             services.AddSingleton<IDataVendorEntitlementService, DataVendorEntitlementService>();
             services.AddSingleton<ISecurityMasterDataQualityService, SecurityMasterDataQualityService>();
@@ -312,16 +381,21 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver, SecurityMasterHistoricalSymbolTimelineResolver>();
 
             // Corporate-action ingest: fan-out, consensus scoring, staged apply, and the
-            // inbox snapshot the workbench polls for staged proposals.
+            // durable proposal inbox polled by the workbench.
             services.AddSingleton<CorporateActionIngestOrchestrator>();
-            services.AddSingleton<CorporateActionInboxState>();
         }
 
         if (AssetOperationsStartup.IsConfigured())
         {
             services.AddSingleton(assetOperationsOptions);
             services.AddSingleton<AssetOperationsMigrationRunner>();
-            services.AddSingleton<IAssetOperationsProjectionStore, PostgresAssetOperationsProjectionStore>();
+            services.AddSingleton<PostgresAssetOperationsProjectionStore>();
+            services.AddSingleton<IAssetOperationsProjectionStore>(sp =>
+                sp.GetRequiredService<PostgresAssetOperationsProjectionStore>());
+            services.AddSingleton<IInstrumentPositionProjectionStore>(sp =>
+                sp.GetRequiredService<PostgresAssetOperationsProjectionStore>());
+            services.AddSingleton<IAssetAccountingEventProjectionStore>(sp =>
+                sp.GetRequiredService<PostgresAssetOperationsProjectionStore>());
         }
 
         // Register null/stub implementations as fallbacks when Security Master is not configured.
@@ -349,9 +423,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
         services.TryAddSingleton<ISecurityValidationService, NullSecurityValidationService>();
         services.TryAddSingleton<ICorporateActionCommandService, NullCorporateActionCommandService>();
+        services.TryAddSingleton<ICorporateActionOperationsService, NullCorporateActionOperationsService>();
         services.TryAddSingleton<ICorporateActionRestatementTrigger, NullCorporateActionRestatementTrigger>();
         services.TryAddSingleton<ISecurityMasterEventStore, NullSecurityMasterEventStore>();
         services.TryAddSingleton<IOperatorOverridesStore, NullOperatorOverridesStore>();
+        services.TryAddSingleton<ISecurityFieldProvenanceStore, NullSecurityFieldProvenanceStore>();
         services.TryAddSingleton<ISecurityMasterPricingService, NullSecurityMasterPricingService>();
         services.TryAddSingleton<ISecurityMasterCashFlowService, NullSecurityMasterCashFlowService>();
         services.TryAddSingleton<IDataVendorEntitlementService, NullDataVendorEntitlementService>();
@@ -359,10 +435,20 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IUflProjectionRebuilder, NullUflProjectionRebuilder>();
         // Passport Workbench conflict-authority policy is storage-independent (pure precedence logic).
         services.TryAddSingleton<ISecurityMasterConflictAuthorityPolicy, SecurityMasterConflictAuthorityPolicy>();
-        services.TryAddSingleton<IAssetOperationsProjectionStore, InMemoryAssetOperationsProjectionStore>();
+        if (!AssetOperationsStartup.IsConfigured())
+        {
+            services.TryAddSingleton<InMemoryAssetOperationsProjectionStore>();
+            services.TryAddSingleton<IAssetOperationsProjectionStore>(sp =>
+                sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
+            services.TryAddSingleton<IInstrumentPositionProjectionStore>(sp =>
+                sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
+            services.TryAddSingleton<IAssetAccountingEventProjectionStore>(sp =>
+                sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
+        }
         services.TryAddSingleton<AssetObligationProjectionService>();
         services.TryAddSingleton<IAssetOperationsCommandService, AssetOperationsProjectionCommandService>();
         services.TryAddSingleton<IAssetOperationsQueryService, AssetOperationsReadService>();
+        services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
 
         if (DirectLendingStartup.IsConfigured())
         {
@@ -379,12 +465,35 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IAccrualLedgerService, AccrualLedgerService>();
             services.AddSingleton<IDirectLendingCommandService, PostgresDirectLendingCommandService>();
             services.AddSingleton<IDirectLendingService, PostgresDirectLendingService>();
-            services.AddHostedService<DirectLendingOutboxDispatcher>();
-            services.AddHostedService<DailyAccrualWorker>();
+            if (options.EnableProcessWideHostedServices)
+            {
+                services.AddHostedService<DirectLendingOutboxDispatcher>();
+                services.AddHostedService<DailyAccrualWorker>();
+            }
         }
 
         var useInMemoryGovernanceServices = IsInMemoryGovernanceProfileEnabled();
         EnsureGovernancePersistenceProfile(useInMemoryGovernanceServices);
+
+        // Authoritative multi-tenant scope fan-out. Composed only where every input authority is:
+        // custodied holdings say who holds the security, the fund-profile tenancy registry says who
+        // owns the holding fund, and the security master supplies the identifiers the two are joined
+        // on. A deployment missing any of them cannot enumerate an affected set, so the gate is left
+        // unregistered rather than registered in a state where it could only ever refuse — that
+        // keeps the read-side decision posture honest instead of offering controls that never work.
+        if (SecurityMasterStartup.IsConfigured()
+            && FundAccountsStartup.IsConfigured()
+            && LedgerStartup.IsConfigured())
+        {
+            services.AddSingleton<IScopeAssignmentProvider>(sp => new FundAccountHoldingScopeAssignmentProvider(
+                sp.GetService<IFundAccountStore>(),
+                sp.GetService<IFundProfileTenancyRegistry>(),
+                sp.GetRequiredService<ILogger<FundAccountHoldingScopeAssignmentProvider>>()));
+            services.TryAddSingleton<IAuthoritativeScopeFanOutService, AuthoritativeScopeFanOutService>();
+            services.TryAddSingleton<ICorporateActionScopeFanOutGate>(sp => new CorporateActionScopeFanOutGate(
+                sp.GetRequiredService<IAuthoritativeScopeFanOutService>(),
+                sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>()));
+        }
 
         // Fund accounts and governance structure.
         if (FundAccountsStartup.IsConfigured())
@@ -522,17 +631,24 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 
             return new FundOperationsPersistenceOptions { DomainModes = domainModes };
         });
-        services.AddSingleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundStructure));
-        services.AddSingleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundAccounts));
-        services.AddSingleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.DirectLending));
-        services.AddSingleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.Banking));
-        services.AddSingleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.MoneyMarket));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, ProjectionReconciliationHostedService>());
+        if (!ProductionServiceRegistrationPolicy.IsProductionComposition(services))
+        {
+            services.AddSingleton<IDomainProjectionReconciliationJob>(
+                _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundStructure));
+            services.AddSingleton<IDomainProjectionReconciliationJob>(
+                _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundAccounts));
+            services.AddSingleton<IDomainProjectionReconciliationJob>(
+                _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.DirectLending));
+            services.AddSingleton<IDomainProjectionReconciliationJob>(
+                _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.Banking));
+            services.AddSingleton<IDomainProjectionReconciliationJob>(
+                _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.MoneyMarket));
+            if (options.EnableProcessWideHostedServices)
+            {
+                services.TryAddEnumerable(
+                    ServiceDescriptor.Singleton<IHostedService, ProjectionReconciliationHostedService>());
+            }
+        }
         return services;
     }
 
@@ -552,7 +668,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 
         throw new InvalidOperationException(
             "Production-safe startup requires persistence-backed governance domain services. " +
-            $"Configure {string.Join(", ", missing)} or set MERIDIAN_USE_INMEMORY_GOVERNANCE=true only for local/dev fixture scenarios.");
+            $"Configure {string.Join(", ", missing)} (or set {MeridianDatabaseEnvironment.UnifiedVariable} to cover all store domains at once), " +
+            "or set MERIDIAN_USE_INMEMORY_GOVERNANCE=true only for local/dev fixture scenarios.");
     }
 
     private static bool IsInMemoryGovernanceProfileEnabled()
@@ -609,12 +726,14 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             Schema = Environment.GetEnvironmentVariable(AssetOperationsStartup.SchemaVariable) ?? AssetOperationsStartup.DefaultSchema
         };
 
-    private static LedgerJournalStoreOptions CreateLedgerOptions()
+    private static LedgerJournalStoreOptions CreateLedgerOptions(bool requireGovernedProductionWrites)
         => new()
         {
             ConnectionString = Environment.GetEnvironmentVariable(LedgerStartup.ConnectionStringVariable) ?? string.Empty,
             SchemaName = Environment.GetEnvironmentVariable(LedgerStartup.SchemaVariable) ?? LedgerStartup.DefaultSchema,
-            EnablePeriodLocking = ParseBool("MERIDIAN_LEDGER_ENABLE_PERIOD_LOCKING", true)
+            EnablePeriodLocking = ParseBool("MERIDIAN_LEDGER_ENABLE_PERIOD_LOCKING", true),
+            RequireGovernedPostingCommand = requireGovernedProductionWrites,
+            RequireExpectedVersion = requireGovernedProductionWrites
         };
 
     private static bool IsScopedAccessPostgresConfigured()

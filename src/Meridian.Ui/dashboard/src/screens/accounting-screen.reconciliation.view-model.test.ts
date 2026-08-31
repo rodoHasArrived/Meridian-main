@@ -136,8 +136,32 @@ describe("accounting-screen reconciliation view model", () => {
     expect(state.cases[0]).toMatchObject({
       id: "run-42:cash",
       ownerLabel: "Unassigned",
+      slaLabel: "Review required · assign owner · set sign-off role",
       routeHref: "/accounting/ledger"
     });
+  });
+
+  it("fails exception urgency closed when nominal SLA state lacks ownership, evidence, and sign-off policy", () => {
+    const openBreak: ReconciliationBreakQueueItem = {
+      ...breakQueue[0],
+      slaState: "OnTrack",
+      slaBadgeLabel: "OnTrack",
+      evidenceCount: 0,
+      requiredSignoffRole: null
+    };
+
+    const state = buildReconciliationBreakQueueState({
+      breakQueue: [openBreak],
+      selectedBreakId: openBreak.breakId,
+      loading: false,
+      loadError: null,
+      action: null,
+      actionError: null
+    });
+    const urgency = state.selectedDetail?.fields.find((field) => field.label === "Urgency");
+
+    expect(urgency?.value).toBe("Review required · assign owner · attach evidence · set sign-off role");
+    expect(urgency?.value).not.toContain("OnTrack");
   });
 
   it("derives statement run rows and detail tabs from endpoint supplied counts", () => {
@@ -179,12 +203,12 @@ describe("accounting-screen reconciliation view model", () => {
       brokerCustodianLabel: "Northern Trust",
       accountLabel: "Fund A - Prime",
       periodLabel: "2026-04",
-      statusLabel: "ReviewRequired",
+      statusLabel: "Review required",
       validationIssueCountLabel: "4",
       matchCountLabel: "24",
       breakCountLabel: "2",
       caseCountLabel: "1",
-      importedAtLabel: "2026-05-01T00:04:00Z",
+      importedAtLabel: "May 1, 00:04 UTC",
       unavailableReason: null
     });
     expect(state.tabs.map((tab) => tab.label)).toEqual([
@@ -197,6 +221,178 @@ describe("accounting-screen reconciliation view model", () => {
       "Evidence"
     ]);
     expect(state.tabs.every((tab) => !tab.disabled)).toBe(true);
+  });
+
+  it("reports match counts as not reported on rows derived from the queue", () => {
+    // With no statement runs the desk synthesizes rows from the reconciliation queue, which carries
+    // no match totals. Printing the placeholder zeros would tell an operator the statement matched
+    // nothing, when the truth is that Meridian has no match data for the run.
+    const state = buildReconciliationStatementRunsViewState({
+      statementRuns: [],
+      fallbackQueue: reconciliationQueue,
+      selectedRunId: null,
+      loading: false,
+      error: null
+    });
+
+    expect(state.rows.length).toBeGreaterThan(0);
+    expect(state.rows[0].matchCountLabel).toBe("—");
+    expect(state.rows[0].unavailableReason).toContain("Match counts");
+    expect(state.rows[0].ariaLabel).toContain("match counts not reported");
+    expect(state.rows[0].ariaLabel).not.toContain("0 matches");
+  });
+
+  it("keeps break and case counts on derived rows, since the queue does report those", () => {
+    const state = buildReconciliationStatementRunsViewState({
+      statementRuns: [],
+      fallbackQueue: reconciliationQueue,
+      selectedRunId: null,
+      loading: false,
+      error: null
+    });
+
+    expect(state.rows[0].breakCountLabel).not.toBe("—");
+    expect(state.rows[0].caseCountLabel).not.toBe("—");
+  });
+
+  it("does not credit the reconciliation service for totals it never supplied", () => {
+    const state = buildReconciliationStatementRunsViewState({
+      statementRuns: [],
+      fallbackQueue: reconciliationQueue,
+      selectedRunId: null,
+      loading: false,
+      error: null
+    });
+
+    for (const id of ["positions", "cash", "transactions"]) {
+      const tab = state.tabs.find((entry) => entry.id === id);
+      expect(tab?.badgeLabel).toBeNull();
+      expect(tab?.description).toContain("not reported");
+      expect(tab?.description).not.toContain("supplied by the reconciliation service");
+    }
+  });
+
+  it("still shows reported match counts when the service supplies a run", () => {
+    const state = buildReconciliationStatementRunsViewState({
+      statementRuns: [
+        {
+          runId: "statement-run-1",
+          importId: "import-1",
+          startedAtUtc: "2026-05-01T00:00:00Z",
+          completedAtUtc: "2026-05-01T00:03:00Z",
+          positionMatches: 8,
+          cashMatches: 3,
+          transactionMatches: 13,
+          openExceptionCount: 2
+        }
+      ],
+      fallbackQueue: reconciliationQueue,
+      selectedRunId: null,
+      loading: false,
+      error: null
+    });
+
+    expect(state.rows[0].matchCountLabel).toBe("24");
+    expect(state.rows[0].unavailableReason ?? "").not.toContain("Match counts");
+    expect(state.tabs.find((entry) => entry.id === "positions")?.badgeLabel).toBe("8");
+    expect(state.tabs.find((entry) => entry.id === "positions")?.description).toContain(
+      "supplied by the reconciliation service"
+    );
+  });
+
+  it("reports a genuine zero as zero, not as unreported", () => {
+    // A service-reported run that truly matched nothing must still read 0 -- the point of the
+    // change is to separate that fact from "we do not know".
+    const state = buildReconciliationStatementRunsViewState({
+      statementRuns: [
+        {
+          runId: "statement-run-zero",
+          importId: "import-zero",
+          startedAtUtc: "2026-05-01T00:00:00Z",
+          completedAtUtc: "2026-05-01T00:03:00Z",
+          positionMatches: 0,
+          cashMatches: 0,
+          transactionMatches: 0,
+          openExceptionCount: 4
+        }
+      ],
+      fallbackQueue: reconciliationQueue,
+      selectedRunId: null,
+      loading: false,
+      error: null
+    });
+
+    expect(state.rows[0].matchCountLabel).toBe("0");
+    expect(state.rows[0].ariaLabel).toContain("0 matches");
+    expect(state.tabs.find((entry) => entry.id === "cash")?.badgeLabel).toBe("0");
+  });
+
+  it("selects the first available statement run when the requested run is not in the statement list", () => {
+    const state = buildReconciliationStatementRunsViewState({
+      statementRuns: [
+        {
+          runId: "statement-run-1",
+          importId: "import-1",
+          startedAtUtc: "2026-05-01T00:00:00Z",
+          completedAtUtc: "2026-05-01T00:03:00Z",
+          positionMatches: 8,
+          cashMatches: 3,
+          transactionMatches: 13,
+          openExceptionCount: 2,
+          brokerCustodian: "Northern Trust",
+          account: "Fund A - Prime",
+          period: "2026-04",
+          status: "ReviewRequired"
+        }
+      ],
+      fallbackQueue: reconciliationQueue,
+      selectedRunId: "run-42",
+      loading: false,
+      error: null
+    });
+
+    expect(state.rows[0]).toMatchObject({
+      runId: "statement-run-1",
+      isSelected: true
+    });
+    expect(state.tabs.every((tab) => !tab.disabled)).toBe(true);
+    expect(state.tabs[0].ariaLabel).toContain("statement run statement-run-1");
+  });
+
+  it("orders statement runs by the latest retained service timestamp", () => {
+    const state = buildReconciliationStatementRunsViewState({
+      statementRuns: [
+        {
+          runId: "older-run",
+          importId: "older-import",
+          startedAtUtc: "2026-05-01T00:00:00Z",
+          completedAtUtc: "2026-05-01T00:03:00Z",
+          importedAtUtc: "2026-05-01T00:04:00Z",
+          positionMatches: 1,
+          cashMatches: 0,
+          transactionMatches: 0,
+          openExceptionCount: 0
+        },
+        {
+          runId: "newer-run",
+          importId: "newer-import",
+          startedAtUtc: "2026-05-02T00:00:00Z",
+          completedAtUtc: "2026-05-02T00:03:00Z",
+          importedAtUtc: "2026-05-02T00:04:00Z",
+          positionMatches: 1,
+          cashMatches: 0,
+          transactionMatches: 0,
+          openExceptionCount: 0
+        }
+      ],
+      fallbackQueue: [],
+      selectedRunId: null,
+      loading: false,
+      error: null
+    });
+
+    expect(state.rows.map((row) => row.runId)).toEqual(["newer-run", "older-run"]);
+    expect(state.rows[0].isSelected).toBe(true);
   });
 
   it("derives the compact reconciliation comparison from statement and cash-flow evidence", () => {
@@ -582,7 +778,7 @@ describe("accounting-screen reconciliation view model", () => {
     expect(buildReconciliationDetailViewState(reconciliationQueue[0])).toMatchObject({
       eyebrow: "Reconciliation detail",
       title: "Paper Index Mean Reversion",
-      description: "run-42 is currently BreaksOpen.",
+      description: "Current reconciliation status: Breaks open.",
       ariaLabel: "Reconciliation detail for Paper Index Mean Reversion",
       narrativeLabel: "Reconciliation narrative for Paper Index Mean Reversion",
       fields: [

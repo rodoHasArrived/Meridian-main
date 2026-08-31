@@ -20,6 +20,7 @@ import {
   buildTrustStripState,
   type AppShellTrustStripState
 } from "@/app-shell.trust-strip";
+import type { DataProvenanceKind } from "@/app-shell.data-provenance-badge";
 import { buildWorkflowContinuityViewModel } from "@/app-shell.workflow-continuity-view-model";
 import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
 import type { AppShellWorkflowContinuityViewModel } from "@/app-shell.workflow-continuity-types";
@@ -50,6 +51,8 @@ export type {
 } from "@/app-shell.command-palette";
 export { buildDevelopmentFixtureNoticeViewModel } from "@/app-shell.development-fixture-notice";
 export type { DevelopmentFixtureNoticeStep, DevelopmentFixtureNoticeViewModel } from "@/app-shell.development-fixture-notice";
+export { buildDataProvenanceBadgeViewModel, normalizeDataProvenance } from "@/app-shell.data-provenance-badge";
+export type { DataProvenanceBadgeViewModel, DataProvenanceKind } from "@/app-shell.data-provenance-badge";
 export type { AppShellLinkedContextItem } from "@/app-shell.linked-context";
 export type { AppShellRouteFocusState } from "@/app-shell.route-focus";
 export type { ShellStatusItem, ShellStatusPanel, ShellStatusTone } from "@/app-shell.status-panel";
@@ -85,6 +88,7 @@ export type {
 
 export interface AppShellViewState {
   activeWorkspace: WorkspaceSummary;
+  location: AppShellLocation;
   statusPanel: ShellStatusPanel | null;
   canRenderRoutes: boolean;
   routeFocus: AppShellRouteFocusState;
@@ -92,6 +96,10 @@ export interface AppShellViewState {
   workflowContinuity: AppShellWorkflowContinuityViewModel;
   commandPaletteTrigger: AppShellCommandPaletteTriggerState;
 }
+
+export type AppShellLocation =
+  | { kind: "home" }
+  | { kind: "workspace"; workspaceKey: WorkspaceKey };
 
 export interface AppShellWorkspacePayload {
   session: SessionInfo | null;
@@ -119,6 +127,7 @@ export interface BuildAppShellViewStateOptions {
   workflowError?: string | null;
   workspaceErrors: WorkspaceErrorMap;
   usingDevelopmentFixtures?: boolean;
+  dataProvenance?: DataProvenanceKind;
   payload: AppShellWorkspacePayload;
 }
 
@@ -134,9 +143,11 @@ export function buildAppShellViewState({
   workflowError = null,
   workspaceErrors,
   usingDevelopmentFixtures = false,
+  dataProvenance,
   payload
 }: BuildAppShellViewStateOptions): AppShellViewState {
   const activeWorkspace = getWorkspaceForPath(pathname);
+  const location = resolveAppShellLocation(pathname);
   const failedItems = buildShellFailureItems(workspaceErrors, workflowError);
   const hasAnyPayload = Boolean(
     payload.session
@@ -153,6 +164,7 @@ export function buildAppShellViewState({
 
   return {
     activeWorkspace,
+    location,
     statusPanel: buildShellStatusPanel({
       loading,
       error,
@@ -165,6 +177,7 @@ export function buildAppShellViewState({
       loading,
       bootstrapFailed,
       usingDevelopmentFixtures,
+      dataProvenance,
       workspaceErrors,
       session: payload.session,
       data: payload.data
@@ -186,6 +199,13 @@ export function buildAppShellViewState({
     ),
     commandPaletteTrigger: buildCommandPaletteTriggerState(commandPaletteOpen)
   };
+}
+
+export function resolveAppShellLocation(pathname: string): AppShellLocation {
+  const normalized = pathname.split(/[?#]/, 1)[0]?.replace(/\/+$/, "") || "/";
+  return normalized === "/"
+    ? { kind: "home" }
+    : { kind: "workspace", workspaceKey: normalizeWorkspacePath(pathname) };
 }
 
 export function getWorkspaceForPath(pathname: string): WorkspaceSummary {

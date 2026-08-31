@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -47,6 +48,9 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
     }
 
     public string ProviderId => "twelvedata";
+
+    public CorporateActionProviderReleaseStatusDto ReleaseStatus =>
+        CorporateActionProviderReleaseStatusDto.ReviewOnly;
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<CorporateActionCommand>> FetchAsync(
@@ -186,7 +190,7 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
         Guid securityId,
         string? currency)
     {
-        if (!DateOnly.TryParse(dividend.ExDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var exDate) ||
+        if (!ProviderDateParsing.TryParseProviderDate(dividend.ExDate, out var exDate) ||
             dividend.Amount is not > 0m)
         {
             return null;
@@ -210,7 +214,7 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
         TwelveDataSplit split,
         Guid securityId)
     {
-        if (!DateOnly.TryParse(split.Date, CultureInfo.InvariantCulture, DateTimeStyles.None, out var exDate))
+        if (!ProviderDateParsing.TryParseProviderDate(split.Date, out var exDate))
         {
             return null;
         }

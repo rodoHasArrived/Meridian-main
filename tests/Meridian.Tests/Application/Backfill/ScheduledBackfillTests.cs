@@ -417,9 +417,13 @@ public class BackfillScheduleTests
         var schedule = BackfillSchedulePresets.MonthlyDeepBackfill("Monthly Test");
 
         // Assert
-        schedule.CronExpression.Should().Be("0 1 1-7 * 0");
+        schedule.CronExpression.Should().Be("0 1 * * 0#1");
         schedule.LookbackDays.Should().Be(365);
         schedule.Priority.Should().Be(BackfillPriority.Deferred);
+        schedule.CalculateNextExecution(
+                new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero))
+            .Should()
+            .Be(new DateTimeOffset(2025, 1, 5, 1, 0, 0, TimeSpan.Zero));
     }
 
     #endregion

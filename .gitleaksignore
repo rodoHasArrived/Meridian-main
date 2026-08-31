@@ -1,0 +1,22 @@
+# Historical false positives retained as exact Gitleaks fingerprints.
+# Each entry is scoped to one commit, path, detector, and line.
+647ed65a04ddbba1f88e63eae5971b0b49c07847:src/Meridian.Ui/dashboard/src/screens/data-screen.corporate-action-inbox.test.tsx:generic-api-key:289
+647ed65a04ddbba1f88e63eae5971b0b49c07847:src/Meridian.Ui/dashboard/src/screens/data-screen.corporate-action-inbox.view-model.test.ts:generic-api-key:360
+647ed65a04ddbba1f88e63eae5971b0b49c07847:src/Meridian.Ui/wwwroot/workstation/assets/data-screen-CKFMbD6r.js:generic-api-key:4
+7e1c97dbac1041a1cc07e2234e995bf723d15d85:src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:finnhub-access-token:30
+a1ce798c5a55bb92d6b3623c6babf86d5bf774cb:tests/Meridian.Wpf.Tests/ViewModels/AccountingConfigureViewModelTests.cs:generic-api-key:151
+c2dbe69657a46bc9437b990c66c7992160053347:docs/reference/provider-validation-matrix.md:generic-api-key:36
+de3c86d05d09f2228992baebd8020c42f8d2f624:src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs:plaid-client-id:212
+ed075b94e370eda83a939af0160aa9edd9173997:tests/Meridian.Tests/Infrastructure/Providers/IBBrokerageGatewayTests.cs:generic-api-key:217
+910b5a75644e8aba0097a7a096c322bcb71f2576:tests/Meridian.Tests/Infrastructure/Providers/IBBrokerageGatewayTests.cs:generic-api-key:217
+291259ead576ebb104bdfb8bf031cf32566ae49b:docs/docfx/api/Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.yml:finnhub-access-token:71
+7bac817140e97be1c3635dba9bb0926a62fca056:src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:finnhub-access-token:31
+753b0b532130095da8ed96c46113b4db7b4c3322:docs/reference/api-reference.md:curl-auth-header:122
+753b0b532130095da8ed96c46113b4db7b4c3322:tests/Meridian.Tests/Application/Config/ConfigValidationPipelineTests.cs:generic-api-key:131
+753b0b532130095da8ed96c46113b4db7b4c3322:tests/Meridian.Tests/Application/Config/ConfigValidationPipelineTests.cs:generic-api-key:305
+753b0b532130095da8ed96c46113b4db7b4c3322:tests/Meridian.Tests/Infrastructure/Providers/PolygonSubscriptionTests.cs:generic-api-key:211
+753b0b532130095da8ed96c46113b4db7b4c3322:tests/Meridian.Tests/Infrastructure/Providers/PolygonSubscriptionTests.cs:generic-api-key:236
+753b0b532130095da8ed96c46113b4db7b4c3322:tests/Meridian.Tests/Infrastructure/Providers/PolygonSubscriptionTests.cs:generic-api-key:248
+753b0b532130095da8ed96c46113b4db7b4c3322:tests/Meridian.Tests/Infrastructure/Providers/PolygonMarketDataClientTests.cs:generic-api-key:149
+753b0b532130095da8ed96c46113b4db7b4c3322:tests/Meridian.Tests/Infrastructure/Providers/PolygonMarketDataClientTests.cs:generic-api-key:194
+03bc2829376d3f08763c828b5b572ba4a3b56656:tests/Meridian.Tests/Infrastructure/Etl/SftpCapabilityServiceTests.cs:generic-api-key:187

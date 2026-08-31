@@ -1,3 +1,4 @@
+using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Storage.Packaging;
 using Microsoft.AspNetCore.Builder;
@@ -32,52 +33,53 @@ public static class PackagingEndpoints
         // POST /api/packaging/create
         app.MapPost("/api/packaging/create", async (PackageRequest request, CancellationToken ct) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
-                var options = new PackageOptions
+                try
                 {
-                    Name = request.Name ?? $"market-data-{DateTime.UtcNow:yyyyMMdd}",
-                    Description = request.Description,
-                    OutputDirectory = packagesRoot,
-                    Symbols = request.Symbols,
-                    EventTypes = request.EventTypes,
-                    StartDate = request.StartDate,
-                    EndDate = request.EndDate,
-                    Format = ParseFormat(request.Format),
-                    CompressionLevel = ParseCompression(request.CompressionLevel),
-                    IncludeQualityReport = request.IncludeQualityReport ?? true,
-                    IncludeDataDictionary = request.IncludeDataDictionary ?? true,
-                    IncludeLoaderScripts = request.IncludeLoaderScripts ?? true,
-                    VerifyChecksums = request.VerifyChecksums ?? true,
-                    Tags = request.Tags,
-                    CustomMetadata = request.CustomMetadata
-                };
-
-                if (!string.IsNullOrWhiteSpace(request.OutputDirectory))
-                {
-                    if (!TryResolvePathWithinBase(request.OutputDirectory, packagesRoot, out var resolvedOutputDirectory))
+                    var options = new PackageOptions
                     {
-                        return Results.BadRequest(new { error = "Invalid OutputDirectory: path must stay within the packages root." });
+                        Name = request.Name ?? $"market-data-{DateTime.UtcNow:yyyyMMdd}",
+                        Description = request.Description,
+                        OutputDirectory = packagesRoot,
+                        Symbols = request.Symbols,
+                        EventTypes = request.EventTypes,
+                        StartDate = request.StartDate,
+                        EndDate = request.EndDate,
+                        Format = ParseFormat(request.Format),
+                        CompressionLevel = ParseCompression(request.CompressionLevel),
+                        IncludeQualityReport = request.IncludeQualityReport ?? true,
+                        IncludeDataDictionary = request.IncludeDataDictionary ?? true,
+                        IncludeLoaderScripts = request.IncludeLoaderScripts ?? true,
+                        VerifyChecksums = request.VerifyChecksums ?? true,
+                        Tags = request.Tags,
+                        CustomMetadata = request.CustomMetadata
+                    };
+
+                    if (!string.IsNullOrWhiteSpace(request.OutputDirectory))
+                    {
+                        if (!TryResolvePathWithinBase(request.OutputDirectory, packagesRoot, out var resolvedOutputDirectory))
+                        {
+                            return Results.BadRequest(new { error = "Invalid OutputDirectory: path must stay within the packages root." });
+                        }
+
+                        options.OutputDirectory = resolvedOutputDirectory;
                     }
 
-                    options.OutputDirectory = resolvedOutputDirectory;
+                    var result = await packager.CreatePackageAsync(options, ct);
+
+                    return result.Success
+                        ? Results.Json(result, s_jsonOptions)
+                        : Results.BadRequest(new { error = result.Error, warnings = result.Warnings });
                 }
-
-                var result = await packager.CreatePackageAsync(options, ct);
-
-                return result.Success
-                    ? Results.Json(result, s_jsonOptions)
-                    : Results.BadRequest(new { error = result.Error, warnings = result.Warnings });
-            }
-            catch (OperationCanceledException)
-            {
-                return Results.StatusCode(499); // Client Closed Request
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Package creation failed: {ex.Message}");
-            }
-        });
+                catch (OperationCanceledException)
+                {
+                    return Results.StatusCode(499); // Client Closed Request
+                }
+            },
+            "Package creation failed",
+            includeExceptionMessage: true);
+        }).RequirePermission(UserPermission.ManageStorage);
 
         // ==================== PACKAGE IMPORT ====================
 
@@ -85,47 +87,48 @@ public static class PackagingEndpoints
         // POST /api/packaging/import
         app.MapPost("/api/packaging/import", async (ImportRequest request, CancellationToken ct) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
-                if (string.IsNullOrWhiteSpace(request.PackagePath))
+                try
                 {
-                    return Results.BadRequest(new { error = "PackagePath is required" });
-                }
+                    if (string.IsNullOrWhiteSpace(request.PackagePath))
+                    {
+                        return Results.BadRequest(new { error = "PackagePath is required" });
+                    }
 
-                if (!TryResolvePathWithinBase(request.PackagePath, packagesRoot, out var packagePath))
+                    if (!TryResolvePathWithinBase(request.PackagePath, packagesRoot, out var packagePath))
+                    {
+                        return Results.BadRequest(new { error = "Invalid PackagePath: path must stay within the packages root." });
+                    }
+
+                    string? resolvedDestinationDirectory = null;
+                    if (!string.IsNullOrWhiteSpace(request.DestinationDirectory) &&
+                        !TryResolvePathWithinBase(request.DestinationDirectory, resolvedDataRoot, out resolvedDestinationDirectory))
+                    {
+                        return Results.BadRequest(new { error = "Invalid DestinationDirectory: path must stay within the storage root." });
+                    }
+
+                    var result = await packager.ImportPackageAsync(
+                        packagePath,
+                        string.IsNullOrWhiteSpace(request.DestinationDirectory)
+                            ? resolvedDataRoot
+                            : resolvedDestinationDirectory!,
+                        request.ValidateChecksums ?? true,
+                        request.MergeWithExisting ?? false,
+                        ct);
+
+                    return result.Success
+                        ? Results.Json(result, s_jsonOptions)
+                        : Results.BadRequest(new { error = result.Error, validationErrors = result.ValidationErrors });
+                }
+                catch (OperationCanceledException)
                 {
-                    return Results.BadRequest(new { error = "Invalid PackagePath: path must stay within the packages root." });
+                    return Results.StatusCode(499);
                 }
-
-                string? resolvedDestinationDirectory = null;
-                if (!string.IsNullOrWhiteSpace(request.DestinationDirectory) &&
-                    !TryResolvePathWithinBase(request.DestinationDirectory, resolvedDataRoot, out resolvedDestinationDirectory))
-                {
-                    return Results.BadRequest(new { error = "Invalid DestinationDirectory: path must stay within the storage root." });
-                }
-
-                var result = await packager.ImportPackageAsync(
-                    packagePath,
-                    string.IsNullOrWhiteSpace(request.DestinationDirectory)
-                        ? resolvedDataRoot
-                        : resolvedDestinationDirectory!,
-                    request.ValidateChecksums ?? true,
-                    request.MergeWithExisting ?? false,
-                    ct);
-
-                return result.Success
-                    ? Results.Json(result, s_jsonOptions)
-                    : Results.BadRequest(new { error = result.Error, validationErrors = result.ValidationErrors });
-            }
-            catch (OperationCanceledException)
-            {
-                return Results.StatusCode(499);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Package import failed: {ex.Message}");
-            }
-        });
+            },
+            "Package import failed",
+            includeExceptionMessage: true);
+        }).RequirePermission(UserPermission.ManageStorage);
 
         // ==================== PACKAGE VALIDATION ====================
 
@@ -133,7 +136,7 @@ public static class PackagingEndpoints
         // POST /api/packaging/validate
         app.MapPost("/api/packaging/validate", async (ValidateRequest request, CancellationToken ct) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 if (string.IsNullOrWhiteSpace(request.PackagePath))
                 {
@@ -156,12 +159,10 @@ public static class PackagingEndpoints
                     missingFiles = result.MissingFiles,
                     error = result.Error
                 }, s_jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Package validation failed: {ex.Message}");
-            }
-        });
+            },
+            "Package validation failed",
+            includeExceptionMessage: true);
+        }).RequirePermission(UserPermission.ManageStorage);
 
         // ==================== PACKAGE CONTENTS ====================
 
@@ -169,7 +170,7 @@ public static class PackagingEndpoints
         // GET /api/packaging/contents?path={packagePath}
         app.MapGet("/api/packaging/contents", async (string path, CancellationToken ct) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 if (string.IsNullOrWhiteSpace(path))
                 {
@@ -184,28 +185,25 @@ public static class PackagingEndpoints
                 var contents = await packager.ListPackageContentsAsync(packagePath, ct);
 
                 return Results.Json(contents, s_jsonOptions);
-            }
-            catch (FileNotFoundException)
+            },
+            "Failed to read package",
+            mapException: ex => ex switch
             {
-                return Results.NotFound(new { error = $"Package not found: {path}" });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to read package: {ex.Message}");
-            }
-        });
+                FileNotFoundException => Results.NotFound(new { error = $"Package not found: {path}" }),
+                InvalidOperationException ioex => Results.BadRequest(new { error = ioex.Message }),
+                _ => null
+            },
+            includeExceptionMessage: true);
+        })
+        .RequireAnyPermission(UserPermission.ExportData, UserPermission.ManageStorage);
 
         // ==================== LIST PACKAGES ====================
 
         // List available packages in the packages directory.
         // GET /api/packaging/list
-        app.MapGet("/api/packaging/list", (string? directory) =>
+        app.MapGet("/api/packaging/list", async (string? directory) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var packagesDir = packagesRoot;
                 if (!string.IsNullOrWhiteSpace(directory))
@@ -238,20 +236,19 @@ public static class PackagingEndpoints
                     .ToArray();
 
                 return Results.Json(new { packages }, s_jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to list packages: {ex.Message}");
-            }
-        });
+            },
+            "Failed to list packages",
+            includeExceptionMessage: true);
+        })
+        .RequireAnyPermission(UserPermission.ExportData, UserPermission.ManageStorage);
 
         // ==================== DELETE PACKAGE ====================
 
         // Delete a package file.
         // DELETE /api/packaging/{fileName}
-        app.MapDelete("/api/packaging/{fileName}", (string fileName, string? directory) =>
+        app.MapDelete("/api/packaging/{fileName}", async (string fileName, string? directory) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 if (fileName.IndexOfAny([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar]) >= 0)
                 {
@@ -277,21 +274,19 @@ public static class PackagingEndpoints
                 File.Delete(fullPath);
 
                 return Results.Ok(new { message = $"Package deleted: {fileName}" });
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to delete package: {ex.Message}");
-            }
-        });
+            },
+            "Failed to delete package",
+            includeExceptionMessage: true);
+        }).RequirePermission(UserPermission.ManageStorage);
 
         // ==================== PACKAGE DOWNLOAD ====================
 
         //
         // Download a package file.
         // GET /api/packaging/download/{fileName}
-        app.MapGet("/api/packaging/download/{fileName}", (string fileName, string? directory) =>
+        app.MapGet("/api/packaging/download/{fileName}", async (string fileName, string? directory) =>
         {
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 if (fileName.IndexOfAny([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar]) >= 0)
                 {
@@ -322,12 +317,11 @@ public static class PackagingEndpoints
                         : "application/octet-stream";
 
                 return Results.File(fullPath, contentType, fileName);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Failed to download package: {ex.Message}");
-            }
-        });
+            },
+            "Failed to download package",
+            includeExceptionMessage: true);
+        })
+        .RequireAnyPermission(UserPermission.ExportData, UserPermission.ManageStorage);
     }
 
     private static PackageFormat ParseFormat(string? format)

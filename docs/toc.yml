@@ -1,19 +1,12 @@
 - name: Documentation Home
   href: README.md
 
-- name: API Reference
-  href: docfx/api/toc.yml
-  homepage: docfx/api/index.md
-
-- name: User Guide
-  href: HELP.md
-
-- name: Get Started
+- name: Start
   items:
-    - name: Contributor Onboarding
+    - name: Start Here
       href: start/README.md
-    - name: First-Day Local Run Commands
-      href: start/README.md
+    - name: Command Reference
+      href: HELP.md
 
 - name: Product
   items:
@@ -21,6 +14,8 @@
       href: product/README.md
     - name: Meridian Design Document
       href: product/meridian-design-document.md
+    - name: Implementation and Readiness Tracker
+      href: product/implementation-todo-list.md
     - name: Current Roadmap Summary
       href: roadmap/generated/ROADMAP_SUMMARY.md
 
@@ -28,23 +23,33 @@
   items:
     - name: Engineering Documentation
       href: engineering/README.md
-    - name: Architecture and Modules
+    - name: Architecture
       href: architecture/README.md
-    - name: Core Extensibility Model
-      href: architecture/core-extensibility-model.md
-    - name: Source Module Registry
+    - name: Domain Dictionary
+      href: domain/README.md
+    - name: Architectural Decisions
+      href: adr/README.md
+    - name: Development Guides
+      href: development/README.md
+    - name: Testing Guidance
+      href: testing/README.md
+    - name: Source Documentation Mesh
       href: source/README.md
 
 - name: Operations
   items:
     - name: Operator Documentation
       href: operators/README.md
-    - name: Provider Setup and Degradation Calibration
-      href: operators/README.md
-    - name: Operator Runbook
-      href: operators/README.md
-    - name: Workstation Launch and Packaging
-      href: operators/README.md
+    - name: Browser Workstation Installer
+      href: operators/browser-workstation-installer.md
+    - name: Deployment and Packaging
+      href: operators/deployment-packaging.md
+    - name: Provider Credentials
+      href: operators/provider-credentials.md
+    - name: Reconciliation Operations
+      href: operators/reconciliation-operations.md
+    - name: Failover and Recovery
+      href: operators/failover-and-recovery.md
 
 - name: Reference
   items:
@@ -56,8 +61,6 @@
       href: reference/environment-variables.md
     - name: Data Dictionary
       href: reference/data-dictionary.md
-    - name: Data Uniformity
-      href: reference/data-uniformity.md
     - name: Reconciliation Break Taxonomy
       href: reference/reconciliation-break-taxonomy.md
     - name: Provider Capability Matrix
@@ -66,6 +69,18 @@
       href: reference/provider-validation-matrix.md
     - name: Provider Validation Evidence Schema
       href: reference/provider-validation-evidence-schema.md
+    - name: DocFX API Site
+      href: docfx/api/toc.yml
+      homepage: docfx/api/index.md
+
+- name: Security
+  items:
+    - name: Security Documentation
+      href: security/README.md
+    - name: Current Threat Model
+      href: security/threat-model-current-state.md
+    - name: Known Vulnerabilities
+      href: security/known-vulnerabilities.md
 
 - name: AI
   items:
@@ -78,7 +93,7 @@
     - name: Repo Navigation
       href: ai/navigation/README.md
 
-- name: Roadmap and Source Ownership
+- name: Registries and Generated Documentation
   items:
     - name: Roadmap Registry
       href: roadmap/README.md
@@ -88,20 +103,16 @@
       href: roadmap/generated/ROADMAP_SUMMARY.md
     - name: Source Registry Data
       href: source/data/source-modules.yml
-    - name: Generated Source Docs Policy
-      href: source/README.md
     - name: Generated Documentation Rules
       href: generated/README.md
+    - name: Automation-Owned Status
+      href: status/README.md
 
-- name: Archive
+- name: Documentation Governance
   items:
+    - name: Documentation Ownership
+      href: documentation-ownership.md
+    - name: Current Folder Inventory
+      href: documentation-inventory.md
     - name: Archive Index
       href: ../archive/docs/README.md
-    - name: Archived Plans
-      href: ../archive/docs/plans/README.md
-    - name: Archived Summaries
-      href: ../archive/docs/summaries/README.md
-    - name: Archived Design Docs
-      href: ../archive/docs/design/README.md
-    - name: Archived Audit Outputs
-      href: ../archive/docs/assessments/README.md

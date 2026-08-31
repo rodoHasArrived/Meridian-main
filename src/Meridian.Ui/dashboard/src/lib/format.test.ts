@@ -6,7 +6,9 @@ import {
   formatNumber,
   formatPercent,
   formatPrefixedCurrency,
-  formatSignedCurrency
+  formatRatioAsPercent,
+  formatSignedCurrency,
+  pluralizeCount
 } from "@/lib/format";
 
 describe("formatNumber", () => {
@@ -35,6 +37,25 @@ describe("formatPercent", () => {
 
   it("renders the fallback for non-finite values", () => {
     expect(formatPercent(null, { fallback: "Not measured" })).toBe("Not measured");
+  });
+});
+
+describe("formatRatioAsPercent", () => {
+  it("scales fraction-unit values into percent display", () => {
+    expect(formatRatioAsPercent(0.425)).toBe("42.5%");
+    expect(formatRatioAsPercent(1)).toBe("100%");
+    expect(formatRatioAsPercent(0)).toBe("0%");
+  });
+
+  it("differs from formatPercent by exactly 100x for the same input", () => {
+    expect(formatPercent(0.425)).toBe("0.43%");
+    expect(formatRatioAsPercent(0.425)).toBe("42.5%");
+  });
+
+  it("honours fraction digit bounds and the fallback", () => {
+    expect(formatRatioAsPercent(0.12345, { maximumFractionDigits: 1 })).toBe("12.3%");
+    expect(formatRatioAsPercent(null, { fallback: "Unavailable" })).toBe("Unavailable");
+    expect(formatRatioAsPercent(Number.NaN, { fallback: "Unavailable" })).toBe("Unavailable");
   });
 });
 
@@ -125,5 +146,24 @@ describe("formatAmountWithCode", () => {
 
   it("renders the fallback for non-finite values", () => {
     expect(formatAmountWithCode(Number.NaN, "USD", { fallback: "-" })).toBe("-");
+  });
+});
+
+describe("pluralizeCount", () => {
+  it("uses the singular noun for exactly one and appends 's' otherwise", () => {
+    expect(pluralizeCount(1, "item")).toBe("1 item");
+    expect(pluralizeCount(0, "item")).toBe("0 items");
+    expect(pluralizeCount(3, "item")).toBe("3 items");
+  });
+
+  it("honours an explicit plural for irregular nouns", () => {
+    expect(pluralizeCount(1, "entry", { plural: "entries" })).toBe("1 entry");
+    expect(pluralizeCount(2, "entry", { plural: "entries" })).toBe("2 entries");
+    expect(pluralizeCount(2, "anomaly", { plural: "anomalies" })).toBe("2 anomalies");
+  });
+
+  it("localizes the count when requested", () => {
+    expect(pluralizeCount(1234, "row", { localizeCount: true })).toBe("1,234 rows");
+    expect(pluralizeCount(1234, "row")).toBe("1234 rows");
   });
 });

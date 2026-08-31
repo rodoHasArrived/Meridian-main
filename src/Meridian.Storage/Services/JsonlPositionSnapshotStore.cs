@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Domain;
+using Meridian.Core.IO;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
@@ -11,12 +12,18 @@ namespace Meridian.Storage.Services;
 /// <summary>
 /// JSONL-backed implementation of <see cref="IPositionSnapshotStore"/>.
 /// <para>
-/// Path convention: <c>{StorageRoot}/portfolios/{runId}/{accountId}/snapshots.jsonl</c>
+/// Owned path convention:
+/// <c>{StorageRoot}/portfolios/owned/{tenant}/{company}/{fund}/{book}/{entity}/{runId}/{accountId}/snapshots.jsonl</c>.
+/// Legacy unowned snapshots retain <c>{StorageRoot}/portfolios/{runId}/{accountId}/snapshots.jsonl</c>
+/// and are never returned by an owned lookup.
 /// This path falls under <c>StorageOptions.RootPath</c> so the
 /// <see cref="LifecyclePolicyEngine"/> automatically picks it up for tiered-storage
 /// lifecycle enforcement (ADR-002).  Each snapshot is a single JSON line appended
-/// atomically (ADR-007) — position snapshots are idempotent (latest wins), so
-/// recovery simply reads to the last successfully written line.
+/// atomically (ADR-007). A per-partition file lock serializes the conditional
+/// same-timestamp check and append across store instances and cooperating processes.
+/// Recovery streams the file and selects the greatest recorded <c>AsOf</c> timestamp
+/// rather than trusting append order, so a delayed writer cannot make an older
+/// observation authoritative.
 /// </para>
 /// </summary>
 [ImplementsAdr("ADR-007", "WAL/atomic write pattern for crash-safe position snapshot persistence")]
@@ -24,28 +31,43 @@ namespace Meridian.Storage.Services;
 [ImplementsAdr("ADR-014", "Serialisation via ExecutionSnapshotJsonContext — no reflection")]
 public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
 {
-    private readonly string _rootPath;
+    private readonly RootedPathGuard _pathGuard;
     private readonly ILogger<JsonlPositionSnapshotStore> _logger;
 
-    // Per-file write locks prevent concurrent writers corrupting the same JSONL file.
+    // Per-instance locks avoid spinning multiple local callers on the cross-process lock file.
     private readonly System.Collections.Concurrent.ConcurrentDictionary<string, SemaphoreSlim> _fileLocks =
         new(StringComparer.OrdinalIgnoreCase);
 
     public JsonlPositionSnapshotStore(StorageOptions options, ILogger<JsonlPositionSnapshotStore> logger)
     {
         ArgumentNullException.ThrowIfNull(options);
-        _rootPath = options.RootPath;
+        _pathGuard = new RootedPathGuard(options.RootPath);
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     // ─── IPositionSnapshotStore ──────────────────────────────────────────────
 
     /// <inheritdoc />
-    public async Task SaveSnapshotAsync(AccountSnapshotRecord snapshot, CancellationToken ct = default)
+    public async Task SaveSnapshotAsync(
+        AccountSnapshotRecord snapshot,
+        CancellationToken ct = default)
+    {
+        _ = await SaveSnapshotConditionallyAsync(snapshot, ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<PositionSnapshotSaveOutcome> SaveSnapshotConditionallyAsync(
+        AccountSnapshotRecord snapshot,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
+        ArgumentException.ThrowIfNullOrWhiteSpace(snapshot.RunId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(snapshot.AccountId);
 
-        var path = GetSnapshotPath(snapshot.RunId, snapshot.AccountId);
+        var ownerScope = GetOwnerScope(snapshot);
+        var path = ownerScope is null
+            ? GetSnapshotPath(snapshot.RunId, snapshot.AccountId)
+            : GetSnapshotPath(snapshot.RunId, snapshot.AccountId, ownerScope);
         EnsureDirectory(path);
 
         var json = JsonSerializer.Serialize(snapshot, SnapshotJsonContext.Default.AccountSnapshotRecord);
@@ -54,10 +76,25 @@ public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
         await fileLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            await using var partitionLock = await AcquirePartitionLockAsync(path, ct).ConfigureAwait(false);
+            var existingOutcome = await InspectLogicalTimestampAsync(path, snapshot, ownerScope, ct)
+                .ConfigureAwait(false);
+            if (existingOutcome.HasValue)
+            {
+                _logger.LogDebug(
+                    "Skipped equivalent position snapshot for run={RunId} account={AccountId} asOf={AsOf}",
+                    snapshot.RunId,
+                    snapshot.AccountId,
+                    snapshot.AsOf.ToUniversalTime());
+                return existingOutcome.Value;
+            }
+
+            _pathGuard.EnsurePath(path);
             await AtomicFileWriter.AppendLinesAsync(path, [json], ct).ConfigureAwait(false);
 
             _logger.LogDebug("Saved position snapshot for run={RunId} account={AccountId} to {Path}",
                 snapshot.RunId, snapshot.AccountId, path);
+            return PositionSnapshotSaveOutcome.Appended;
         }
         finally
         {
@@ -78,20 +115,34 @@ public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
         if (!File.Exists(path))
             return null;
 
-        // Read the last non-empty line (latest snapshot — idempotent storage).
-        string? lastLine = null;
-        await foreach (var line in ReadLinesReverseAsync(path, ct))
-        {
-            if (!string.IsNullOrWhiteSpace(line))
-            {
-                lastLine = line;
-                break;
-            }
-        }
+        return await ReadLatestAsync(
+                path,
+                snapshot => IsInUnownedScope(snapshot, runId, accountId),
+                ct)
+            .ConfigureAwait(false);
+    }
 
-        return lastLine is null
-            ? null
-            : TryDeserialize(lastLine);
+    /// <inheritdoc />
+    public async Task<AccountSnapshotRecord?> GetLatestSnapshotAsync(
+        string runId,
+        string accountId,
+        PositionSnapshotOwnerScope ownerScope,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(accountId);
+        ArgumentNullException.ThrowIfNull(ownerScope);
+        ValidateOwnerScope(ownerScope);
+
+        var path = GetSnapshotPath(runId, accountId, ownerScope);
+        if (!File.Exists(path))
+            return null;
+
+        return await ReadLatestAsync(
+                path,
+                snapshot => IsInOwnedScope(snapshot, runId, accountId, ownerScope),
+                ct)
+            .ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -117,7 +168,7 @@ public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
                 continue;
 
             var snapshot = TryDeserialize(line);
-            if (snapshot is null)
+            if (snapshot is null || !IsInUnownedScope(snapshot, runId, accountId))
                 continue;
 
             if (snapshot.AsOf >= from && snapshot.AsOf <= to)
@@ -125,28 +176,247 @@ public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
         }
     }
 
+    /// <inheritdoc />
+    public async IAsyncEnumerable<AccountSnapshotRecord> GetSnapshotHistoryAsync(
+        string runId,
+        string accountId,
+        PositionSnapshotOwnerScope ownerScope,
+        DateTimeOffset from,
+        DateTimeOffset to,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(accountId);
+        ArgumentNullException.ThrowIfNull(ownerScope);
+        ValidateOwnerScope(ownerScope);
+
+        var path = GetSnapshotPath(runId, accountId, ownerScope);
+        if (!File.Exists(path))
+            yield break;
+
+        await foreach (var line in ReadLinesForwardAsync(path, ct))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
+
+            var snapshot = TryDeserialize(line);
+            if (snapshot is not null &&
+                IsInOwnedScope(snapshot, runId, accountId, ownerScope) &&
+                snapshot.AsOf >= from &&
+                snapshot.AsOf <= to)
+            {
+                yield return snapshot;
+            }
+        }
+    }
+
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
-    private string GetSnapshotPath(string runId, string accountId)
+    private async Task<PositionSnapshotSaveOutcome?> InspectLogicalTimestampAsync(
+        string path,
+        AccountSnapshotRecord proposed,
+        PositionSnapshotOwnerScope? ownerScope,
+        CancellationToken ct)
     {
-        var safeRunId = SanitisePathSegment(runId);
-        var safeAccountId = SanitisePathSegment(accountId);
-        return Path.Combine(_rootPath, "portfolios", safeRunId, safeAccountId, "snapshots.jsonl");
+        if (!File.Exists(path))
+            return null;
+
+        var proposedAsOf = proposed.AsOf.ToUniversalTime();
+        var foundEquivalent = false;
+        await foreach (var line in ReadLinesForwardAsync(path, ct))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
+
+            var retained = TryDeserialize(line);
+            if (retained is null || retained.AsOf.ToUniversalTime() != proposedAsOf)
+                continue;
+
+            var isSameScope = ownerScope is null
+                ? IsInUnownedScope(retained, proposed.RunId, proposed.AccountId)
+                : IsInOwnedScope(retained, proposed.RunId, proposed.AccountId, ownerScope);
+            if (!isSameScope)
+                continue;
+
+            if (!PositionSnapshotEquivalence.AreEquivalent(retained, proposed))
+            {
+                throw new PositionSnapshotConflictException(
+                    proposed.RunId,
+                    proposed.AccountId,
+                    proposedAsOf);
+            }
+
+            foundEquivalent = true;
+        }
+
+        return foundEquivalent
+            ? PositionSnapshotSaveOutcome.EquivalentAlreadyExists
+            : null;
     }
 
-    private static void EnsureDirectory(string filePath)
+    private async Task<AccountSnapshotRecord?> ReadLatestAsync(
+        string path,
+        Func<AccountSnapshotRecord, bool> isInScope,
+        CancellationToken ct)
     {
+        AccountSnapshotRecord? latest = null;
+        await foreach (var line in ReadLinesForwardAsync(path, ct))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
+
+            var snapshot = TryDeserialize(line);
+            if (snapshot is null || !isInScope(snapshot))
+                continue;
+
+            if (latest is null || snapshot.AsOf.ToUniversalTime() > latest.AsOf.ToUniversalTime())
+            {
+                latest = snapshot;
+                continue;
+            }
+
+            if (snapshot.AsOf.ToUniversalTime() == latest.AsOf.ToUniversalTime() &&
+                !PositionSnapshotEquivalence.AreEquivalent(snapshot, latest))
+            {
+                throw new PositionSnapshotConflictException(
+                    snapshot.RunId,
+                    snapshot.AccountId,
+                    snapshot.AsOf);
+            }
+        }
+
+        return latest;
+    }
+
+    private async Task<FileStream> AcquirePartitionLockAsync(
+        string snapshotPath,
+        CancellationToken ct)
+    {
+        var lockPath = snapshotPath + ".lock";
+        var retryDelay = TimeSpan.FromMilliseconds(5);
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            _pathGuard.EnsurePath(lockPath);
+            try
+            {
+                return new FileStream(
+                    lockPath,
+                    FileMode.OpenOrCreate,
+                    FileAccess.ReadWrite,
+                    FileShare.None,
+                    bufferSize: 1,
+                    FileOptions.Asynchronous);
+            }
+            catch (IOException) when (!ct.IsCancellationRequested)
+            {
+                await Task.Delay(retryDelay, ct).ConfigureAwait(false);
+                if (retryDelay < TimeSpan.FromMilliseconds(100))
+                    retryDelay += retryDelay;
+            }
+        }
+    }
+
+    private string GetSnapshotPath(string runId, string accountId)
+        => _pathGuard.ResolvePath(
+            "portfolios",
+            runId,
+            accountId,
+            "snapshots.jsonl");
+
+    private string GetSnapshotPath(
+        string runId,
+        string accountId,
+        PositionSnapshotOwnerScope ownerScope)
+        => _pathGuard.ResolvePath(
+            "portfolios",
+            "owned",
+            ownerScope.TenantId,
+            ownerScope.CompanyId,
+            ownerScope.FundProfileId,
+            ownerScope.LedgerBookId.ToString("N"),
+            ownerScope.EntityId,
+            runId,
+            accountId,
+            "snapshots.jsonl");
+
+    private static PositionSnapshotOwnerScope? GetOwnerScope(AccountSnapshotRecord snapshot)
+    {
+        var ownershipFields = new[]
+        {
+            snapshot.TenantId,
+            snapshot.CompanyId,
+            snapshot.FundProfileId,
+            snapshot.EntityId
+        };
+        var populatedCount = ownershipFields.Count(static value => !string.IsNullOrWhiteSpace(value));
+        if (populatedCount == 0 && !snapshot.LedgerBookId.HasValue)
+            return null;
+        if (populatedCount != ownershipFields.Length ||
+            !snapshot.LedgerBookId.HasValue ||
+            snapshot.LedgerBookId.Value == Guid.Empty)
+        {
+            throw new InvalidOperationException(
+                "Position snapshot ownership must include tenant, company, fund profile, ledger book, and entity together.");
+        }
+
+        var ownerScope = new PositionSnapshotOwnerScope(
+            snapshot.TenantId!,
+            snapshot.CompanyId!,
+            snapshot.FundProfileId!,
+            snapshot.LedgerBookId.Value,
+            snapshot.EntityId!);
+        ValidateOwnerScope(ownerScope);
+        return ownerScope;
+    }
+
+    private static void ValidateOwnerScope(PositionSnapshotOwnerScope ownerScope)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(ownerScope.TenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(ownerScope.CompanyId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(ownerScope.FundProfileId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(ownerScope.EntityId);
+        if (ownerScope.LedgerBookId == Guid.Empty)
+            throw new ArgumentException("Position snapshot ledger-book owner is required.", nameof(ownerScope));
+    }
+
+    private static bool IsOwnedBy(AccountSnapshotRecord snapshot, PositionSnapshotOwnerScope ownerScope)
+        => string.Equals(snapshot.TenantId?.Trim(), ownerScope.TenantId.Trim(), StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(snapshot.CompanyId?.Trim(), ownerScope.CompanyId.Trim(), StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(snapshot.FundProfileId?.Trim(), ownerScope.FundProfileId.Trim(), StringComparison.OrdinalIgnoreCase) &&
+           snapshot.LedgerBookId == ownerScope.LedgerBookId &&
+           string.Equals(snapshot.EntityId?.Trim(), ownerScope.EntityId.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsInUnownedScope(AccountSnapshotRecord snapshot, string runId, string accountId)
+        => string.Equals(snapshot.RunId?.Trim(), runId.Trim(), StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(snapshot.AccountId?.Trim(), accountId.Trim(), StringComparison.OrdinalIgnoreCase) &&
+           string.IsNullOrWhiteSpace(snapshot.TenantId) &&
+           string.IsNullOrWhiteSpace(snapshot.CompanyId) &&
+           string.IsNullOrWhiteSpace(snapshot.FundProfileId) &&
+           !snapshot.LedgerBookId.HasValue &&
+           string.IsNullOrWhiteSpace(snapshot.EntityId);
+
+    private static bool IsInOwnedScope(
+        AccountSnapshotRecord snapshot,
+        string runId,
+        string accountId,
+        PositionSnapshotOwnerScope ownerScope)
+        => string.Equals(snapshot.RunId?.Trim(), runId.Trim(), StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(snapshot.AccountId?.Trim(), accountId.Trim(), StringComparison.OrdinalIgnoreCase) &&
+           IsOwnedBy(snapshot, ownerScope);
+
+    private void EnsureDirectory(string filePath)
+    {
+        _pathGuard.EnsurePath(filePath);
         var dir = Path.GetDirectoryName(filePath);
         if (!string.IsNullOrEmpty(dir))
+        {
             Directory.CreateDirectory(dir);
-    }
-
-    private static string SanitisePathSegment(string segment)
-    {
-        // Replace path separators and other invalid characters.
-        foreach (var c in Path.GetInvalidFileNameChars())
-            segment = segment.Replace(c, '_');
-        return segment;
+            _pathGuard.EnsurePath(filePath);
+        }
     }
 
     private AccountSnapshotRecord? TryDeserialize(string json)
@@ -165,11 +435,16 @@ public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
     /// <summary>
     /// Streams lines from a file in forward (oldest-first) order.
     /// </summary>
-    private static async IAsyncEnumerable<string> ReadLinesForwardAsync(
+    private async IAsyncEnumerable<string> ReadLinesForwardAsync(
         string path,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        _pathGuard.EnsurePath(path);
+        using var stream = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete);
         using var reader = new StreamReader(stream, Encoding.UTF8);
 
         string? line;
@@ -177,18 +452,6 @@ public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
             yield return line;
     }
 
-    /// <summary>
-    /// Streams lines from a file in reverse (newest-first) order by reading blocks from the end.
-    /// </summary>
-    private static async IAsyncEnumerable<string> ReadLinesReverseAsync(
-        string path,
-        [EnumeratorCancellation] CancellationToken ct)
-    {
-        // Read all lines then reverse — acceptable because snapshot files are small.
-        var lines = await File.ReadAllLinesAsync(path, Encoding.UTF8, ct).ConfigureAwait(false);
-        for (int i = lines.Length - 1; i >= 0; i--)
-            yield return lines[i];
-    }
 }
 
 /// <summary>

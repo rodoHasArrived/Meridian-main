@@ -7,6 +7,7 @@ import {
   upsertStatementMappingProfile
 } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
+import { ACTIVATION_OUTCOME_KEYS, recordActivationOutcome } from "@/lib/first-run/activation";
 import type {
   StatementColumnConfidence,
   StatementConnectorDescriptor,
@@ -61,6 +62,7 @@ export const DEFAULT_STATEMENT_IMPORT_COMMIT_FORM: StatementImportCommitFormStat
 export type StatementImportCommitFormErrors = Partial<Record<StatementImportCommitFormField | "file", string>>;
 
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const STATEMENT_IMPORT_PREVIEW_DEBOUNCE_MS = 200;
 
 export function validateStatementImportCommitForm(
   form: StatementImportCommitFormState,
@@ -96,6 +98,78 @@ export function validateStatementImportCommitForm(
   }
 
   return errors;
+}
+
+/** Human labels for the commit fields, so blocked-preview messages can name them. */
+export const STATEMENT_IMPORT_COMMIT_FIELD_LABELS: Record<StatementImportCommitFormField, string> = {
+  sourceKind: "Source kind",
+  sourceInstitution: "Source institution",
+  fundAccountId: "Fund account",
+  externalAccountId: "External account",
+  periodStart: "Period start",
+  periodEnd: "Period end",
+  toleranceProfileId: "Tolerance profile"
+};
+
+/** Order the fields the way the Commit import form lays them out, so the list reads as a path. */
+const STATEMENT_IMPORT_COMMIT_FIELD_ORDER: StatementImportCommitFormField[] = [
+  "sourceKind",
+  "sourceInstitution",
+  "fundAccountId",
+  "externalAccountId",
+  "periodStart",
+  "periodEnd",
+  "toleranceProfileId"
+];
+
+export interface StatementImportPreviewRequirements {
+  /** True when a file is selected but the commit form still holds the preview back. */
+  blocked: boolean;
+  missingFields: StatementImportCommitFormField[];
+  missingLabels: string[];
+  title: string;
+  detail: string;
+}
+
+/**
+ * Explains why a selected statement has not been previewed yet.
+ *
+ * The preview request carries the commit form's account and period, so the panel cannot parse a
+ * file until those are supplied. That dependency used to be invisible: dropping a file with the
+ * form still blank cleared the preview and its error and left no message at all, while the commit
+ * button reported "Preview the statement before committing" -- a loop with no way out. This names
+ * the fields the preview is waiting on so the user can act.
+ */
+export function buildStatementImportPreviewRequirements(
+  form: StatementImportCommitFormState,
+  file: File | null
+): StatementImportPreviewRequirements {
+  const errors = validateStatementImportCommitForm(form, file);
+  const missingFields = STATEMENT_IMPORT_COMMIT_FIELD_ORDER.filter((field) => field in errors);
+  const blocked = file !== null && missingFields.length > 0;
+  const missingLabels = missingFields.map((field) => STATEMENT_IMPORT_COMMIT_FIELD_LABELS[field]);
+
+  return {
+    blocked,
+    missingFields,
+    missingLabels,
+    title: blocked ? "Preview is waiting on the commit details" : "",
+    detail: blocked
+      ? `Meridian reads ${file?.name ?? "the statement"} against a fund account and reporting period, so it cannot preview until you complete ${formatFieldList(missingLabels)} under Commit import below.`
+      : ""
+  };
+}
+
+function formatFieldList(labels: string[]): string {
+  if (labels.length === 0) {
+    return "the commit details";
+  }
+
+  if (labels.length === 1) {
+    return labels[0];
+  }
+
+  return `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1]}`;
 }
 
 export interface StatementMappingProfileFieldDraft {
@@ -256,6 +330,8 @@ export interface StatementImportPanelViewModel {
   selectedKind: string | null;
   selectedKindSummary: StatementKindSummary | null;
   selectKind: (kind: string) => void;
+  /** Why a selected file has not been previewed yet; blocked is false once nothing is missing. */
+  previewRequirements: StatementImportPreviewRequirements;
   selectFile: (file: File | null) => void;
   selectConnector: (connectorId: string) => void;
   selectProfile: (profileId: string) => void;
@@ -283,6 +359,7 @@ export interface StatementImportPanelViewModel {
   commitError: ApiErrorDisplay | null;
   commitResult: StatementImportCommitResult | null;
   commitOutcome: StatementImportCommitOutcome | null;
+  commitDisabledReason: string | null;
   canCommit: boolean;
   commit: () => Promise<void>;
 }
@@ -366,8 +443,8 @@ export function useStatementImportPanelViewModel(
     };
   }, [services]);
 
-  const runPreview = useCallback(async (args: { file: File | null; connectorId: string; profileId: string }) => {
-    if (!args.file) {
+  const runPreview = useCallback(async (args: { file: File; connectorId: string; profileId: string }) => {
+    if (Object.keys(validateStatementImportCommitForm(commitFormRef.current, args.file)).length > 0) {
       previewRevisionRef.current += 1;
       setPreview(null);
       setPreviewError(null);
@@ -386,7 +463,12 @@ export function useStatementImportPanelViewModel(
         file: args.file,
         connectorId: args.connectorId || undefined,
         mappingProfileId: args.profileId || undefined,
-        externalAccountId: commitFormRef.current.externalAccountId.trim() || undefined
+        externalAccountId: commitFormRef.current.externalAccountId.trim(),
+        sourceKind: commitFormRef.current.sourceKind,
+        sourceInstitution: commitFormRef.current.sourceInstitution.trim(),
+        fundAccountId: commitFormRef.current.fundAccountId.trim(),
+        periodStart: commitFormRef.current.periodStart.trim(),
+        periodEnd: commitFormRef.current.periodEnd.trim()
       });
       if (previewRevisionRef.current !== revision || !mountedRef.current) {
         return;
@@ -414,12 +496,44 @@ export function useStatementImportPanelViewModel(
     }
   }, [services]);
 
+  useEffect(() => {
+    const pendingRevision = previewRevisionRef.current + 1;
+    previewRevisionRef.current = pendingRevision;
+    setPreview(null);
+    setPreviewError(null);
+    setPreviewBusy(false);
+    setSelectedKind(null);
+
+    if (!selectedFile || Object.keys(validateStatementImportCommitForm(commitForm, selectedFile)).length > 0) {
+      return;
+    }
+
+    const previewFile = selectedFile;
+    const timer = window.setTimeout(() => {
+      if (previewRevisionRef.current !== pendingRevision) {
+        return;
+      }
+
+      void runPreview({
+        file: previewFile,
+        connectorId: selectedConnectorId,
+        profileId: selectedProfileId
+      });
+    }, STATEMENT_IMPORT_PREVIEW_DEBOUNCE_MS);
+
+    return () => {
+      window.clearTimeout(timer);
+      if (previewRevisionRef.current === pendingRevision) {
+        previewRevisionRef.current += 1;
+      }
+    };
+  }, [commitForm, runPreview, selectedConnectorId, selectedFile, selectedProfileId]);
+
   const selectFile = useCallback((file: File | null) => {
     setSelectedFile(file);
     setCommitResult(null);
     setCommitError(null);
-    void runPreview({ file, connectorId: selectedConnectorId, profileId: selectedProfileId });
-  }, [runPreview, selectedConnectorId, selectedProfileId]);
+  }, []);
 
   const selectConnector = useCallback((connectorId: string) => {
     setSelectedConnectorId(connectorId);
@@ -430,13 +544,21 @@ export function useStatementImportPanelViewModel(
       setSelectedProfileId(nextProfileId);
     }
 
-    void runPreview({ file: selectedFile, connectorId, profileId: nextProfileId });
-  }, [connectors, runPreview, selectedFile, selectedProfileId]);
+    // The connector is the institution, so fill that blocking field in rather than making the user
+    // retype what they just picked. Only ever fills a blank: a value the user typed is theirs.
+    // Fund account and period are deliberately not guessed -- a wrong one misfiles the statement.
+    if (connector?.displayName) {
+      setCommitForm((current) => (
+        current.sourceInstitution.trim()
+          ? current
+          : { ...current, sourceInstitution: connector.displayName }
+      ));
+    }
+  }, [connectors, selectedProfileId]);
 
   const selectProfile = useCallback((profileId: string) => {
     setSelectedProfileId(profileId);
-    void runPreview({ file: selectedFile, connectorId: selectedConnectorId, profileId });
-  }, [runPreview, selectedConnectorId, selectedFile]);
+  }, []);
 
   const applyProfileSuggestion = selectProfile;
 
@@ -564,7 +686,6 @@ export function useStatementImportPanelViewModel(
       setProfileDraft(buildStatementMappingProfileDraft(saved));
       setProfileSaveMessage(`Saved mapping profile ${saved.displayName}.`);
       setSelectedProfileId(saved.profileId);
-      void runPreview({ file: selectedFile, connectorId: selectedConnectorId, profileId: saved.profileId });
     } catch (error) {
       if (!mountedRef.current) {
         return;
@@ -576,7 +697,7 @@ export function useStatementImportPanelViewModel(
         setProfileSaveBusy(false);
       }
     }
-  }, [profileDraft, profileSaveBusy, runPreview, selectedConnectorId, selectedFile, services]);
+  }, [profileDraft, profileSaveBusy, services]);
 
   const updateCommitForm = useCallback((field: StatementImportCommitFormField, value: string) => {
     setCommitForm((current) => ({ ...current, [field]: value }));
@@ -593,6 +714,53 @@ export function useStatementImportPanelViewModel(
     setCommitError(null);
   }, []);
 
+  const issues = preview?.issues ?? [];
+  const hasBlockingIssues = issues.some((issue) => issue.severity === "Error");
+  const kindSummaries = preview?.kindSummaries ?? [];
+  const selectedKindSummary = useMemo(
+    () => kindSummaries.find((summary) => summary.kind === selectedKind) ?? null,
+    [kindSummaries, selectedKind]
+  );
+
+  const previewRequirements = useMemo(
+    () => buildStatementImportPreviewRequirements(commitForm, selectedFile),
+    [commitForm, selectedFile]
+  );
+
+  const commitDisabledReason = useMemo(() => {
+    if (!selectedFile) {
+      return "Select a statement file before committing the import.";
+    }
+
+    // Report the field that actually holds things up rather than asking for a preview the panel
+    // is itself refusing to run.
+    if (previewRequirements.blocked) {
+      return `Complete ${previewRequirements.missingLabels.join(", ")} below so Meridian can preview the statement.`;
+    }
+
+    if (commitBusy) {
+      return "Statement import is already being committed.";
+    }
+
+    if (previewBusy) {
+      return "Wait for the statement preview to finish before committing.";
+    }
+
+    if (previewError) {
+      return "Resolve the statement preview failure before committing.";
+    }
+
+    if (!preview) {
+      return "Preview the statement before committing.";
+    }
+
+    if (hasBlockingIssues || preview.status !== "ReadyToImport") {
+      return "Resolve preview errors before committing the statement import.";
+    }
+
+    return null;
+  }, [commitBusy, hasBlockingIssues, preview, previewBusy, previewError, previewRequirements, selectedFile]);
+
   const commit = useCallback(async () => {
     if (commitBusy) {
       return;
@@ -604,6 +772,14 @@ export function useStatementImportPanelViewModel(
       setCommitError({
         summary: "Fix the highlighted fields before committing the statement import.",
         details: Object.values(errors)
+      });
+      return;
+    }
+
+    if (commitDisabledReason) {
+      setCommitError({
+        summary: commitDisabledReason,
+        details: []
       });
       return;
     }
@@ -630,6 +806,9 @@ export function useStatementImportPanelViewModel(
       }
 
       setCommitResult(result);
+      // A duplicate commit still means this statement's data is in the workspace, so both
+      // outcomes satisfy the "import sample or real data" activation step.
+      void recordActivationOutcome(ACTIVATION_OUTCOME_KEYS.dataImported);
     } catch (error) {
       if (!mountedRef.current) {
         return;
@@ -641,7 +820,7 @@ export function useStatementImportPanelViewModel(
         setCommitBusy(false);
       }
     }
-  }, [commitBusy, commitForm, selectedConnectorId, selectedFile, selectedProfileId, services]);
+  }, [commitBusy, commitDisabledReason, commitForm, selectedConnectorId, selectedFile, selectedProfileId, services]);
 
   const selectedConnector = useMemo(
     () => connectors.find((entry) => entry.connectorId === selectedConnectorId) ?? null,
@@ -660,14 +839,6 @@ export function useStatementImportPanelViewModel(
     ));
     return normalized.length > 0 ? normalized.join(",") : "*";
   }, [connectors, selectedConnector]);
-
-  const issues = preview?.issues ?? [];
-  const hasBlockingIssues = issues.some((issue) => issue.severity === "Error");
-  const kindSummaries = preview?.kindSummaries ?? [];
-  const selectedKindSummary = useMemo(
-    () => kindSummaries.find((summary) => summary.kind === selectedKind) ?? null,
-    [kindSummaries, selectedKind]
-  );
 
   const commitOutcome: StatementImportCommitOutcome | null = commitResult
     ? (commitResult.duplicate ? "duplicate" : "committed")
@@ -692,6 +863,7 @@ export function useStatementImportPanelViewModel(
     selectedKind,
     selectedKindSummary,
     selectKind: setSelectedKind,
+    previewRequirements,
     selectFile,
     selectConnector,
     selectProfile,
@@ -719,7 +891,8 @@ export function useStatementImportPanelViewModel(
     commitError,
     commitResult,
     commitOutcome,
-    canCommit: Boolean(selectedFile) && !commitBusy && !previewBusy,
+    commitDisabledReason,
+    canCommit: commitDisabledReason === null,
     commit
   };
 }

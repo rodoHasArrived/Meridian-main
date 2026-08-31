@@ -1,11 +1,14 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
+using static Meridian.Contracts.Ledger.LedgerDimensionTags;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.AccountingClose;
 
@@ -1364,12 +1367,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
            reference[index] is '/' or ':' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}' or ' ' or '\t' or '\r' or '\n';
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
-    {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
-        {
-            throw new InvalidOperationException($"Reviewed automation cannot {action}; a human operator must perform this accounting report action.");
-        }
-    }
+        => OperationsOriginGuard.RequireHumanOperator(actionOrigin, action);
 
     private async Task SavePackageAsync(AccountingReportPackageBundleDto bundle, CancellationToken ct)
     {
@@ -1702,7 +1700,12 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             certificationState,
             generatedAtUtc.ToString("O"),
             string.Join(",", evidenceLinks.Order(StringComparer.OrdinalIgnoreCase)));
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
+        if (dimensions.PositionId.HasValue)
+        {
+            payload += $"|positionId={dimensions.PositionId.Value:D}";
+        }
+
+        return Sha256Digest.ComputeUtf8(payload);
     }
 
     private static ReportExportArtifactManifestDto BuildExportArtifactManifest(
@@ -1793,7 +1796,10 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             AccountId: dimensions?.AccountId,
             CustomerId: dimensions?.CustomerId,
             VendorId: dimensions?.VendorId,
-            ProjectId: dimensions?.ProjectId);
+            ProjectId: dimensions?.ProjectId)
+        {
+            PositionId = dimensions?.PositionId
+        };
     }
 
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildReportDimensionScopeIssues(
@@ -2006,6 +2012,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                && MatchesDimensionValue(normalized.InvestorId, filter.InvestorId)
                && MatchesDimensionValue(normalized.CapitalAccountId, filter.CapitalAccountId)
                && MatchesDimensionGuid(normalized.InstrumentId, filter.InstrumentId)
+               && MatchesDimensionGuid(normalized.PositionId, filter.PositionId)
                && MatchesDimensionValue(normalized.TaxLotId, filter.TaxLotId)
                && MatchesDimensionValue(normalized.CostCenterId, filter.CostCenterId)
                && MatchesDimensionValue(normalized.CounterpartyId, filter.CounterpartyId)
@@ -2073,8 +2080,11 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             AccountId: NormalizeOptional(dimensions.AccountId),
             CustomerId: NormalizeOptional(dimensions.CustomerId),
             VendorId: NormalizeOptional(dimensions.VendorId),
-            ProjectId: NormalizeOptional(dimensions.ProjectId));
-        return HasAnyDimensionScope(normalized) ? normalized : null;
+            ProjectId: NormalizeOptional(dimensions.ProjectId))
+        {
+            PositionId = dimensions.PositionId
+        };
+        return HasAnyDimension(normalized) ? normalized : null;
     }
 
     private static bool HasExplicitDimensionScope(
@@ -2088,26 +2098,6 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         return !MatchesDimensionScope(filter, dimensions) || !MatchesDimensionScope(dimensions, filter);
     }
 
-    private static bool HasAnyDimensionScope(LedgerDimensionSetDto dimensions)
-        => dimensions.FundId is not null
-           || dimensions.EntityId is not null
-           || dimensions.SleeveId is not null
-           || dimensions.StrategyId is not null
-           || dimensions.InvestorId is not null
-           || dimensions.CapitalAccountId is not null
-           || dimensions.InstrumentId.HasValue
-           || dimensions.TaxLotId is not null
-           || dimensions.CostCenterId is not null
-           || dimensions.CounterpartyId is not null
-           || dimensions.OrganizationId is not null
-           || dimensions.PortfolioId is not null
-           || dimensions.BookId is not null
-           || dimensions.AccountId is not null
-           || dimensions.CustomerId is not null
-           || dimensions.VendorId is not null
-           || dimensions.ProjectId is not null
-           || dimensions.ExternalGlDimensions.Count > 0;
-
     private static IReadOnlyList<string> BuildScopedDimensionKeys(LedgerDimensionSetDto dimensions)
     {
         var keys = new List<string>();
@@ -2120,6 +2110,11 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         if (dimensions.InstrumentId.HasValue)
         {
             keys.Add("instrumentId");
+        }
+
+        if (dimensions.PositionId.HasValue)
+        {
+            keys.Add("positionId");
         }
 
         AddDimensionKey(keys, "taxLotId", dimensions.TaxLotId);
@@ -2174,7 +2169,12 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             string.Join(";", dimensions.ExternalGlDimensions
                 .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
                 .Select(static pair => $"{NormalizeOptional(pair.Key)}={NormalizeOptional(pair.Value)}")));
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)))[..12].ToLowerInvariant();
+        if (dimensions.PositionId.HasValue)
+        {
+            payload += $"|positionId={dimensions.PositionId.Value:D}";
+        }
+
+        return Sha256Digest.ComputeUtf8(payload)[..12];
     }
 
     private static bool MatchesTenantScope(
@@ -2209,9 +2209,6 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
 
         return $"tenant-{Sanitize(normalizedTenantId ?? "default")}-company-{Sanitize(normalizedCompanyId ?? "default")}";
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string RequireText(string? value, string label)
         => string.IsNullOrWhiteSpace(value)

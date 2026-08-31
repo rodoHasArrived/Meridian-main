@@ -5,6 +5,7 @@ import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuit
 import type { AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
 
 const workflowViewModel: AppShellWorkflowContinuityViewModel = {
+  mode: "matched",
   title: "Market Data To Paper",
   summary: "Continue quote validation before paper trading.",
   primaryOperatorFlowLabel: "Primary operator workflow",
@@ -135,7 +136,7 @@ const workflowViewModel: AppShellWorkflowContinuityViewModel = {
 };
 
 describe("WorkflowContinuityDock", () => {
-  it("keeps collapsed header focus on the decision action before support workflow links", async () => {
+  it("keeps the collapsed dock to operating context plus on-demand flow details", async () => {
     const user = userEvent.setup();
 
     render(
@@ -145,16 +146,18 @@ describe("WorkflowContinuityDock", () => {
     );
 
     expect(screen.queryByRole("navigation", { name: "Market Data To Paper workflow steps" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Current route /data/quotes")).toHaveTextContent("/data/quotes");
+    expect(screen.queryByText("/data/quotes?symbol=MSFT")).not.toBeInTheDocument();
     expect(screen.queryByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).not.toBeInTheDocument();
-
-    await user.tab();
-    expect(screen.getByRole("link", { name: "Open provider posture" })).toHaveFocus();
+    // The decision brief renders as the masthead status pill, not a dock banner.
+    expect(screen.queryByRole("link", { name: "Open provider posture" })).not.toBeInTheDocument();
 
     await user.tab();
     expect(screen.getByText("Flow details").closest("summary")).toHaveFocus();
 
     await user.keyboard("{Enter}");
     expect(screen.getByText("Primary operator workflow")).toBeInTheDocument();
+    expect(screen.getByText("/data/quotes?symbol=MSFT")).toBeInTheDocument();
     expect(screen.getByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Market Data To Paper workflow steps" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Price alerts, next workflow step, Waiting" })).toHaveAttribute(

@@ -28,6 +28,7 @@ env:
 jobs:
   dotnet:
     name: verify-fast (restore/build/test)
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
@@ -39,12 +40,12 @@ jobs:
           fetch-depth: 1
 
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v5.2.0
+        uses: actions/setup-dotnet@v5.4.0
         with:
           global-json-file: global.json
 
       - name: Cache NuGet packages
-        uses: actions/cache@v5.0.5
+        uses: actions/cache@v6.1.0
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
@@ -59,6 +60,9 @@ jobs:
 
       - name: Validate warning suppression inventory
         run: python3 build/scripts/ci/check-warning-suppressions.py
+
+      - name: Enforce no-new-god-file ratchet
+        run: python3 build/scripts/ci/check-file-size.py
 
       - name: Build web workstation lane
         run: |
@@ -143,6 +147,20 @@ jobs:
         run: |
           python3 build/scripts/docs/run-docs-automation.py --scripts check-ai-handoff-strict,prompt-route-linter,handoff-packet-generator,check-handoff-packet-schema,check-ai-routing-parity --json-output docs/status/docs-automation-summary.json --summary-output docs/status/docs-automation-summary.md
 
+      # docs/generated/repository-structure.md is a function of the whole repo tree, and the
+      # doc-health/workflow-drift artifacts are derived from it. documentation.yml owns the full
+      # drift check but its triggers are path-filtered to the docs subsystem, so a PR that adds a
+      # file anywhere else merges green and then reds the weekly Production Certification run.
+      # These three generators cost ~1.5s combined, so gating them here is close to free.
+      - name: Reject whole-repo generated documentation drift
+        run: |
+          python3 build/scripts/docs/run-docs-automation.py --scripts generate-structure-docs,generate-health-dashboard,generate-workflow-manifest
+          # The automation profile runs generate-structure-docs in structure mode only, so the
+          # workflows overview it also owns needs its own invocation. Adding a workflow file
+          # otherwise merges green here and reds the documentation lane.
+          python3 build/scripts/docs/generate-structure-docs.py --workflows-only
+          git diff --exit-code -- docs/generated/repository-structure.md docs/generated/workflows-overview.md docs/status/doc-health-dashboard.json docs/status/doc-health-dashboard.md docs/status/workflow-drift-report.md
+
       - name: Enforce mode escalation policy
         run: |
           python3 build/scripts/docs/check-mode-escalation.py --route-json docs/status/prompt-route-lint-report.json --summary-json docs/status/docs-automation-summary.json --summary
@@ -176,13 +194,15 @@ jobs:
           fetch-depth: 0
 
       - name: Run gitleaks
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_CONFIG: .gitleaks.toml
+          GITLEAKS_VERSION: "8.25.1"
 
   browser-workstation:
     name: verify-fast (browser workstation)
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
@@ -211,23 +231,37 @@ jobs:
       - name: Lint dashboard source
         run: npm --prefix src/Meridian.Ui/dashboard run lint
 
+      - name: Enforce TypeScript strict on dashboard source
+        run: npm --prefix src/Meridian.Ui/dashboard run typecheck:strict
+
       - name: Run dashboard tests
         run: npm --prefix src/Meridian.Ui/dashboard run test
 
       - name: Build dashboard bundle
         run: npm --prefix src/Meridian.Ui/dashboard run build
 
+      - name: Workstation bundle freshness gate (PRD-018)
+        run: |
+          if [ -n "$(git status --porcelain -- src/Meridian.Ui/wwwroot/workstation)" ]; then
+            echo "The tracked workstation bundle lags src/Meridian.Ui/dashboard." >&2
+            echo "Run: npm --prefix src/Meridian.Ui/dashboard run build" >&2
+            echo "then commit the regenerated src/Meridian.Ui/wwwroot/workstation tree." >&2
+            git status --porcelain -- src/Meridian.Ui/wwwroot/workstation >&2
+            exit 1
+          fi
+
       - name: Upload browser workstation artifacts
         if: always()
         uses: actions/upload-artifact@v7.0.1
         with:
           name: ci-browser-workstation-${{ github.run_number }}-${{ github.run_attempt }}
-          path: src/Meridian.Ui/dashboard/dist
+          path: src/Meridian.Ui/wwwroot/workstation
           if-no-files-found: ignore
           retention-days: 14
 
   source-doc-determinism:
     name: verify-docs (roadmap/source docs)
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -239,7 +273,7 @@ jobs:
           fetch-depth: 1
 
       - name: Set up Python
-        uses: actions/setup-python@v6.2.0
+        uses: actions/setup-python@v6.3.0
         with:
           python-version: "3.12"
 
@@ -274,12 +308,12 @@ jobs:
           fetch-depth: 1
 
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v5.2.0
+        uses: actions/setup-dotnet@v5.4.0
         with:
           global-json-file: global.json
 
       - name: Cache NuGet packages
-        uses: actions/cache@v5.0.5
+        uses: actions/cache@v6.1.0
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-full-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}

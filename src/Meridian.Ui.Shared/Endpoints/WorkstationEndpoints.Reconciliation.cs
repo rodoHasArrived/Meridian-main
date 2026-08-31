@@ -1,7 +1,10 @@
 using System.Text.Json;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.FundStructure;
+using Meridian.Identity;
 using Meridian.Identity.Auth;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
@@ -16,7 +19,9 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 public static partial class WorkstationEndpoints
 {
-    private sealed record ReconciliationBreakBulkActionRequest(
+    private static bool LegacyReconciliationEndpointMapEnabled => false;
+
+    internal sealed record ReconciliationBreakBulkActionRequest(
         IReadOnlyList<string> BreakIds,
         string Action,
         string? Actor = null,
@@ -26,6 +31,12 @@ public static partial class WorkstationEndpoints
 
     private static void MapReconciliationEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
+        if (!LegacyReconciliationEndpointMapEnabled)
+        {
+            throw new InvalidOperationException(
+                "The duplicate reconciliation endpoint mapper is retired. MapWorkstationEndpoints owns the authoritative reconciliation routes.");
+        }
+
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationRuns), async (
             ReconciliationRunRequest request,
             HttpContext context,
@@ -122,7 +133,14 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            return Results.Json(await service.ListStatementRunsAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            return Results.Json(
+                await service.ListStatementRunsAsync(accessScope, context.RequestAborted).ConfigureAwait(false),
+                jsonOptions);
         })
         .WithName("ListStatementRuns")
         .Produces<IReadOnlyList<StatementRunSummaryDto>>(200)
@@ -130,34 +148,15 @@ public static partial class WorkstationEndpoints
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRuns), async (
             StatementRunCreateDto request,
-            HttpContext context,
-            [FromServices] IReconciliationApiService? service) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (service is null)
-            {
-                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var trustedRequest = request with { ImportedBy = currentUser };
-            var detail = await service.CreateStatementRunAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions, statusCode: StatusCodes.Status201Created);
-        })
+            HttpContext context) =>
+            await CreateStatementRunAsync(request, context, jsonOptions).ConfigureAwait(false))
         .WithName("CreateStatementRun")
         .Produces<StatementRunDto>(201)
         .Produces(401)
         .Produces(403)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunById), async (
             string runId,
@@ -169,7 +168,14 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var detail = await service.GetStatementRunAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var detail = await service
+                .GetStatementRunAsync(runId, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions);
         })
         .WithName("GetStatementRun")
@@ -187,7 +193,14 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var validation = await service.GetStatementRunValidationAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var validation = await service
+                .GetStatementRunValidationAsync(runId, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return validation is null ? Results.NotFound() : Results.Json(validation, jsonOptions);
         })
         .WithName("GetStatementRunValidation")
@@ -205,7 +218,14 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var breaks = await service.ListStatementRunBreaksAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var breaks = await service
+                .ListStatementRunBreaksAsync(runId, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return breaks is null ? Results.NotFound() : Results.Json(breaks, jsonOptions);
         })
         .WithName("ListStatementRunBreaks")
@@ -234,8 +254,15 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var trustedRequest = request with { Actor = currentUser };
-            var detail = await service.ReconcileStatementRunAsync(runId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            var detail = await service
+                .ReconcileStatementRunAsync(runId, trustedRequest, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions);
         })
         .WithName("ReconcileStatementRun")
@@ -249,7 +276,11 @@ public static partial class WorkstationEndpoints
         {
             if (service is null)
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            return Results.Json(await service.ListOpenExceptionsAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+                return EndpointHelpers.Forbidden();
+            return Results.Json(
+                await service.ListOpenExceptionsAsync(accessScope, context.RequestAborted).ConfigureAwait(false),
+                jsonOptions);
         })
         .WithName("ListStatementExceptions")
         .Produces<IReadOnlyList<StatementRunExceptionDto>>(200);
@@ -262,7 +293,14 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var breaks = await service.ListOpenStatementBreaksAsync(context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var breaks = await service
+                .ListOpenStatementBreaksAsync(accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(breaks, jsonOptions);
         })
         .WithName("ListOpenStatementBreaks")
@@ -277,7 +315,14 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var cases = await service.ListOpenCasesAsync(context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var cases = await service
+                .ListOpenCasesAsync(accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(cases, jsonOptions);
         })
         .WithName("ListOpenReconciliationCases")
@@ -292,7 +337,14 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var queueStatus = await service.ListQueueStatusAsync(context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var queueStatus = await service
+                .ListQueueStatusAsync(accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(queueStatus, jsonOptions);
         })
         .WithName("ListReconciliationQueueStatus")
@@ -313,8 +365,12 @@ public static partial class WorkstationEndpoints
             [FromServices] IReconciliationApiService? statementService,
             [FromServices] IReconciliationBreakQueueRepository? repository) =>
         {
-            await EnsureBreakQueueSeededAsync(readService, reconciliationService, statementService, repository, context.RequestAborted).ConfigureAwait(false);
-            var items = await GetBreakQueueItemsAsync(repository, status, fundAccountId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var items = await GetBreakQueueItemsAsync(repository, queueScope, status, fundAccountId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
             items = items
                 .Where(item => string.IsNullOrWhiteSpace(team) || string.Equals(item.Team, team, StringComparison.OrdinalIgnoreCase))
                 .Where(item => string.IsNullOrWhiteSpace(assignee) || string.Equals(item.AssignedTo, assignee, StringComparison.OrdinalIgnoreCase))
@@ -333,13 +389,17 @@ public static partial class WorkstationEndpoints
             [FromServices] IReconciliationApiService? statementService,
             [FromServices] IReconciliationBreakQueueRepository? repository) =>
         {
-            await EnsureBreakQueueSeededAsync(readService, reconciliationService, statementService, repository, context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             if (repository is null)
             {
                 return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var item = await repository.GetByIdAsync(breakId, context.RequestAborted).ConfigureAwait(false);
+            var item = await repository.GetByIdAsync(queueScope, breakId, context.RequestAborted).ConfigureAwait(false);
             return item is null ? Results.NotFound() : Results.Json(item, jsonOptions);
         })
         .WithName("GetReconciliationBreakQueueItem")
@@ -353,10 +413,14 @@ public static partial class WorkstationEndpoints
             [FromServices] IReconciliationApiService? statementService,
             [FromServices] IReconciliationBreakQueueRepository? repository) =>
         {
+            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var asOf = DateTimeOffset.UtcNow;
-            await EnsureBreakQueueSeededAsync(readService, reconciliationService, statementService, repository, context.RequestAborted).ConfigureAwait(false);
             var ledgerBookId = ParseOptionalGuid(context.Request.Query["ledgerBookId"].FirstOrDefault());
-            var items = await GetBreakQueueItemsAsync(repository, status: null, fundAccountId: null, ledgerBookId: ledgerBookId, ct: context.RequestAborted).ConfigureAwait(false);
+            var items = await GetBreakQueueItemsAsync(repository, queueScope, status: null, fundAccountId: null, ledgerBookId: ledgerBookId, ct: context.RequestAborted).ConfigureAwait(false);
             var summary = BuildReconciliationCalibrationSummary(items, asOf);
             return Results.Json(summary, jsonOptions);
         })
@@ -371,13 +435,17 @@ public static partial class WorkstationEndpoints
             [FromServices] IReconciliationApiService? statementService,
             [FromServices] IReconciliationBreakQueueRepository? repository) =>
         {
-            await EnsureBreakQueueSeededAsync(readService, reconciliationService, statementService, repository, context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             if (repository is null)
             {
                 return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var history = await repository.GetAuditHistoryAsync(breakId, context.RequestAborted).ConfigureAwait(false);
+            var history = await repository.GetAuditHistoryAsync(queueScope, breakId, context.RequestAborted).ConfigureAwait(false);
             return history.Count == 0
                 ? Results.NotFound()
                 : Results.Json(history, jsonOptions);
@@ -406,15 +474,22 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
+            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase))
             {
                 return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
             }
 
-            var trustedRequest = request with { ReviewedBy = currentUser };
+            // Mirror the authoritative route: both the reviewer and the assignee are rewritten from the
+            // authenticated session so a client-supplied placeholder identity is never persisted or
+            // surfaced as the repository-derived audit actor.
+            var trustedRequest = request with { AssignedTo = currentUser, ReviewedBy = currentUser };
 
-            await EnsureBreakQueueSeededAsync(readService, reconciliationService, statementService, repository, context.RequestAborted).ConfigureAwait(false);
-            var transition = await ReviewBreakAsync(repository, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            var transition = await ReviewBreakAsync(repository, queueScope, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return transition.Status switch
             {
                 ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
@@ -462,10 +537,23 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var trustedRequest = request with { ResolvedBy = currentUser };
+            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
 
-            await EnsureBreakQueueSeededAsync(readService, reconciliationService, statementService, repository, context.RequestAborted).ConfigureAwait(false);
-            var transition = await ResolveBreakAsync(repository, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            // This legacy adapter is authoritative over the caller's identity: ResolvedBy is
+            // replaced with the principal rather than believed, and ActionOrigin travels with it as
+            // part of the same identity, so it is derived rather than narrowed. Before #2673 it was
+            // the constant HumanOperator, which stamped an API-key caller as a human; deriving it
+            // keeps the browser from labelling the decision either way.
+            var trustedRequest = request with
+            {
+                ResolvedBy = currentUser,
+                ActionOrigin = EndpointAuthorization.DeriveActionOriginFromPrincipal(context)
+            };
+
+            var transition = await ResolveBreakAsync(repository, queueScope, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return transition.Status switch
             {
                 ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
@@ -496,29 +584,26 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var actor = string.IsNullOrWhiteSpace(request.Actor) && TryResolveCurrentUser(context, out var currentUser) ? currentUser : request.Actor ?? "system";
+            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            // The authenticated session identity is authoritative for bulk mutations; the
+            // client-supplied Actor is only a fallback for callers outside a login session.
+            var actor = TryResolveCurrentUser(context, out var currentUser)
+                ? currentUser
+                : string.IsNullOrWhiteSpace(request.Actor) ? "system" : request.Actor.Trim();
             var updated = new List<ReconciliationBreakQueueItem>();
             foreach (var breakId in request.BreakIds.Distinct(StringComparer.OrdinalIgnoreCase))
             {
-                var item = await repository.GetByIdAsync(breakId, context.RequestAborted).ConfigureAwait(false);
+                var item = await repository.GetByIdAsync(queueScope, breakId, context.RequestAborted).ConfigureAwait(false);
                 if (item is null)
                 {
                     continue;
                 }
 
-                var next = item;
-                if (string.Equals(request.Action, "assign", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(request.Assignee))
-                {
-                    next = item with { AssignedTo = request.Assignee, LifecycleState = ReconciliationCaseLifecycleState.InReview, LastUpdatedAt = DateTimeOffset.UtcNow, LifecycleRationale = request.CommentTemplate ?? "Bulk assigned" };
-                }
-                else if (string.Equals(request.Action, "status", StringComparison.OrdinalIgnoreCase) && request.Status.HasValue)
-                {
-                    next = item with { Status = request.Status.Value, LastUpdatedAt = DateTimeOffset.UtcNow, LifecycleRationale = request.CommentTemplate ?? "Bulk status update" };
-                }
-                else if (string.Equals(request.Action, "comment", StringComparison.OrdinalIgnoreCase))
-                {
-                    next = item with { ResolutionNote = request.CommentTemplate, LastUpdatedAt = DateTimeOffset.UtcNow };
-                }
+                var next = ApplyLegacyBulkBreakAction(item, request, actor, DateTimeOffset.UtcNow);
 
                 await repository.SaveAsync(next, context.RequestAborted).ConfigureAwait(false);
                 updated.Add(next);
@@ -531,5 +616,168 @@ public static partial class WorkstationEndpoints
         .Produces(403)
         .Produces(501);
 
+    }
+
+    /// <summary>
+    /// Applies one legacy bulk action to a queue item, stamping the executing operator into the
+    /// attribution fields the repository's save audit derives its actor from
+    /// (<c>AssignedTo ?? ReviewedBy ?? ResolvedBy</c>). Mirrors the single-item paths: review-shaped
+    /// mutations attribute through <c>ReviewedBy</c>, terminal status changes through
+    /// <c>ResolvedBy</c>, so a bulk mutation never records without an operator identity.
+    /// </summary>
+    internal static ReconciliationBreakQueueItem ApplyLegacyBulkBreakAction(
+        ReconciliationBreakQueueItem item,
+        ReconciliationBreakBulkActionRequest request,
+        string actor,
+        DateTimeOffset now)
+    {
+        if (string.Equals(request.Action, "assign", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(request.Assignee))
+        {
+            return item with
+            {
+                AssignedTo = request.Assignee,
+                ReviewedBy = actor,
+                ReviewedAt = now,
+                LifecycleState = ReconciliationCaseLifecycleState.InReview,
+                LastUpdatedAt = now,
+                LifecycleRationale = request.CommentTemplate ?? "Bulk assigned"
+            };
+        }
+
+        if (string.Equals(request.Action, "status", StringComparison.OrdinalIgnoreCase) && request.Status.HasValue)
+        {
+            var next = item with
+            {
+                Status = request.Status.Value,
+                LastUpdatedAt = now,
+                LifecycleRationale = request.CommentTemplate ?? "Bulk status update"
+            };
+            return request.Status.Value is ReconciliationBreakQueueStatus.Resolved or ReconciliationBreakQueueStatus.Dismissed
+                ? next with { ResolvedBy = actor, ResolvedAt = now }
+                : next with { ReviewedBy = actor, ReviewedAt = now };
+        }
+
+        if (string.Equals(request.Action, "comment", StringComparison.OrdinalIgnoreCase))
+        {
+            return item with
+            {
+                ResolutionNote = request.CommentTemplate,
+                ReviewedBy = actor,
+                ReviewedAt = now,
+                LastUpdatedAt = now
+            };
+        }
+
+        return item;
+    }
+
+    private static async Task<IResult?> RequireStatementRunAccountAccessAsync(
+        StatementRunCreateDto request,
+        IAccountQueryService? accounts,
+        HttpContext context)
+    {
+        // The retained-book provider treats FundAccountId as an authority to load internal positions
+        // and cash. Resolve it server-side before importing so a reconciliation mutator cannot select
+        // another account and receive its unmatched internal records as breaks.
+        if (accounts is null || !Guid.TryParse(request.FundAccountId, out var accountId))
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        var account = await accounts.GetAccountAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+        if (account is null || !account.IsActive || !IsStatementSourceBoundToAccount(request, account))
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        if (EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
+        {
+            return null;
+        }
+
+        // Do not fall back to a broad role permission when scoped authorization is unavailable.
+        // This route returns account-level reconciliation evidence, so the absence of the scoped
+        // authorizer must fail closed rather than silently grant every reconciliation mutator access.
+        if (context.RequestServices.GetService<IScopedAuthorizationService>() is null)
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        var allowed = await EndpointAuthorization.HasScopedPermissionAsync(
+            context,
+            UserPermission.ManageDirectLending,
+            AccessScopeKindDto.Account,
+            accountId,
+            context.RequestAborted).ConfigureAwait(false);
+        return allowed ? null : EndpointHelpers.Forbidden();
+    }
+
+    private static async Task<IResult> CreateStatementRunAsync(
+        StatementRunCreateDto request,
+        HttpContext context,
+        JsonSerializerOptions jsonOptions)
+    {
+        if (!HasReconciliationMutationPermission(context))
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        if (!TryResolveCurrentUser(context, out var currentUser))
+        {
+            return Results.Unauthorized();
+        }
+
+        var service = context.RequestServices.GetService<IReconciliationApiService>();
+        if (service is null)
+        {
+            return Results.Problem(
+                "Reconciliation API service is not registered.",
+                statusCode: StatusCodes.Status501NotImplemented);
+        }
+
+        var accounts = context.RequestServices.GetService<IAccountQueryService>();
+        var accountGuard = await RequireStatementRunAccountAccessAsync(request, accounts, context).ConfigureAwait(false);
+        if (accountGuard is not null)
+        {
+            return accountGuard;
+        }
+
+        var trustedRequest = request with { ImportedBy = currentUser };
+        if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        var detail = await service
+            .CreateStatementRunAsync(trustedRequest, accessScope, context.RequestAborted)
+            .ConfigureAwait(false);
+        return detail is null
+            ? Results.NotFound()
+            : Results.Json(detail, jsonOptions, statusCode: StatusCodes.Status201Created);
+    }
+
+    private static bool IsStatementSourceBoundToAccount(StatementRunCreateDto request, AccountSummaryDto account)
+    {
+        var externalAccountId = request.ExternalAccountId?.Trim();
+        var sourceInstitution = request.SourceInstitution?.Trim();
+        if (string.IsNullOrWhiteSpace(externalAccountId) || string.IsNullOrWhiteSpace(sourceInstitution))
+        {
+            return false;
+        }
+
+        var externalAccountMatches = new[]
+        {
+            account.AccountCode,
+            account.CustodianDetails?.SubAccountNumber,
+            account.BankDetails?.AccountNumber,
+            account.BankDetails?.Iban
+        }.Any(candidate => string.Equals(candidate?.Trim(), externalAccountId, StringComparison.OrdinalIgnoreCase));
+        var institutionMatches = new[]
+        {
+            account.Institution,
+            account.BankDetails?.BankName
+        }.Any(candidate => string.Equals(candidate?.Trim(), sourceInstitution, StringComparison.OrdinalIgnoreCase));
+
+        return externalAccountMatches && institutionMatches;
     }
 }

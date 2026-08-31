@@ -28,15 +28,22 @@ public sealed class TradeDataCollector
         public SymbolId Symbol { get; }
         public string? StreamId { get; }
         public string? Venue { get; }
+        public DateOnly? SequenceSessionDate { get; }
 
-        public StreamKey(SymbolId symbol, string? streamId, string? venue)
+        public StreamKey(
+            SymbolId symbol,
+            string? streamId,
+            string? venue,
+            DateOnly? sequenceSessionDate = null)
         {
             Symbol = symbol;
             StreamId = streamId;
             Venue = venue is null ? null : venue.ToUpperInvariant();
+            SequenceSessionDate = sequenceSessionDate;
         }
     }
-    // Per-stream rolling state (one entry per unique symbol+stream+venue combination)
+    // Per-stream rolling state. Providers can explicitly override the state scope when their
+    // published trade identity or venue is narrower than the documented sequence domain.
     private readonly ConcurrentDictionary<StreamKey, SymbolTradeState> _stateBySymbol = new();
 
     // Per-symbol recent trade ring buffer (capped at MaxRecentTrades)
@@ -114,6 +121,27 @@ public sealed class TradeDataCollector
         var symbol = update.Symbol;
         using var publishActivity = MarketEventIngressTracing.StartCollectorActivity("trade-collector", "trade", symbol);
 
+        // -------- Provenance validation --------
+        // The collector is a shared singleton serving every active adapter, so provenance
+        // must arrive per event. A sourceless update is rejected loudly rather than being
+        // silently attributed to a default vendor; the integrity event itself carries the
+        // honest UNKNOWN sentinel because no provider identity exists to stamp.
+        if (MarketDataSources.IsMissing(update.Source))
+        {
+            var integrity = IntegrityEvent.MissingSource(
+                update.Timestamp,
+                symbol,
+                "trade",
+                update.SequenceNumber,
+                update.StreamId,
+                update.Venue);
+
+            _publisher.TryPublish(MarketEvent.Integrity(update.Timestamp, symbol, integrity, MarketDataSources.Unknown));
+            return;
+        }
+
+        var source = update.Source!;
+
         // -------- Symbol format validation --------
         if (!IsValidSymbolFormat(symbol, out var symbolValidationReason))
         {
@@ -125,7 +153,7 @@ public sealed class TradeDataCollector
                 update.StreamId,
                 update.Venue);
 
-            _publisher.TryPublish(MarketEvent.Integrity(update.Timestamp, symbol, integrity));
+            _publisher.TryPublish(MarketEvent.Integrity(update.Timestamp, symbol, integrity, source));
             return;
         }
 
@@ -141,47 +169,56 @@ public sealed class TradeDataCollector
                 update.StreamId,
                 update.Venue);
 
-            _publisher.TryPublish(MarketEvent.Integrity(update.Timestamp, symbol, integrity));
+            _publisher.TryPublish(MarketEvent.Integrity(update.Timestamp, symbol, integrity, source));
             return;
         }
 
         var symbolId = new SymbolId(symbol);
-        var streamKey = BuildStreamKey(symbolId, update.StreamId, update.Venue);
+        var streamKey = BuildSequenceStreamKey(symbolId, update);
         var state = _stateBySymbol.GetOrAdd(streamKey, _ => new SymbolTradeState(_rollingWindows));
 
         // -------- Integrity / continuity --------
         // Rules:
-        //  - SequenceNumber must be strictly increasing per symbol stream.
+        //  - A SequenceNumber of 0 means the provider does not sequence this stream
+        //    (repo convention shared with MarketDepthCollector and the quality monitors):
+        //    continuity checks are skipped and no sequence is fabricated.
+        //  - Otherwise SequenceNumber must be strictly increasing per symbol stream.
         //  - If we detect out-of-order or gap, emit IntegrityEvent.
         //  - For gaps, we still accept the trade (configurable), but flag IsStale in stats.
         //  - For out-of-order or duplicates, we reject the trade (do not advance stats).
 
-        var sequenceCheck = state.CheckAndAdvanceSequence(seq);
-        if (sequenceCheck.IsOutOfOrder)
+        if (seq > 0)
         {
-            var integrity = IntegrityEvent.OutOfOrder(
-                update.Timestamp,
-                symbol,
-                last: sequenceCheck.Last,
-                received: seq,
-                streamId: update.StreamId,
-                venue: update.Venue);
+            var sequenceCheck = state.CheckAndAdvanceSequence(seq);
+            if (sequenceCheck.IsOutOfOrder)
+            {
+                var integrity = IntegrityEvent.OutOfOrder(
+                    update.Timestamp,
+                    symbol,
+                    last: sequenceCheck.Last,
+                    received: seq,
+                    streamId: update.StreamId,
+                    venue: update.Venue);
 
-            _publisher.TryPublish(MarketEvent.Integrity(update.Timestamp, symbol, integrity));
-            return;
-        }
+                _publisher.TryPublish(MarketEvent.Integrity(update.Timestamp, symbol, integrity, source));
+                return;
+            }
 
-        if (sequenceCheck.IsGap)
-        {
-            var integrity = IntegrityEvent.SequenceGap(
-                update.Timestamp,
-                symbol,
-                expectedNext: sequenceCheck.Expected,
-                received: seq,
-                streamId: update.StreamId,
-                venue: update.Venue);
+            // Gap inference is only meaningful when the provider's sequence domain is dense.
+            // Feeds with sparse-but-increasing sequences (e.g. Polygon's per-ticker "q")
+            // still get out-of-order/duplicate protection above, but a jump is not data loss.
+            if (sequenceCheck.IsGap && update.SequenceIsContiguous)
+            {
+                var integrity = IntegrityEvent.SequenceGap(
+                    update.Timestamp,
+                    symbol,
+                    expectedNext: sequenceCheck.Expected,
+                    received: seq,
+                    streamId: update.StreamId,
+                    venue: update.Venue);
 
-            _publisher.TryPublish(MarketEvent.Integrity(update.Timestamp, symbol, integrity));
+                _publisher.TryPublish(MarketEvent.Integrity(update.Timestamp, symbol, integrity, source));
+            }
         }
 
         // -------- Aggressor inference (optional) --------
@@ -234,11 +271,11 @@ public sealed class TradeDataCollector
 
         // Stamp the exchange timestamp so latency metrics are available after canonicalization.
         // update.Timestamp is the exchange-reported execution time.
-        _publisher.TryPublish(MarketEvent.Trade(trade.Timestamp, trade.Symbol, trade)
+        _publisher.TryPublish(MarketEvent.Trade(trade.Timestamp, trade.Symbol, trade, source)
             .StampReceiveTime(exchangeTs: update.Timestamp));
 
         // -------- OrderFlow statistics --------
-        _publisher.TryPublish(MarketEvent.OrderFlow(update.Timestamp, symbol, stats));
+        _publisher.TryPublish(MarketEvent.OrderFlow(update.Timestamp, symbol, stats, source));
     }
 
     /// <summary>
@@ -287,8 +324,21 @@ public sealed class TradeDataCollector
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-    private static StreamKey BuildStreamKey(SymbolId symbol, string? streamId, string? venue)
-        => new(symbol, streamId, venue);
+    private static StreamKey BuildStreamKey(
+        SymbolId symbol,
+        string? streamId,
+        string? venue,
+        DateOnly? sequenceSessionDate = null)
+        => new(symbol, streamId, venue, sequenceSessionDate);
+
+    private static StreamKey BuildSequenceStreamKey(SymbolId symbol, MarketTradeUpdate update)
+        => string.IsNullOrWhiteSpace(update.SequenceStreamId)
+            ? BuildStreamKey(symbol, update.StreamId, update.Venue)
+            : BuildStreamKey(
+                symbol,
+                update.SequenceStreamId,
+                venue: null,
+                update.SequenceSessionDate);
 
     // =========================
     // Per-symbol state

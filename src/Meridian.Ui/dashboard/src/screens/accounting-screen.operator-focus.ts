@@ -1,4 +1,5 @@
 import { buildOperatorFocusCandidate, type OperatorFocusCandidate } from "@/app-shell.operator-focus";
+import { pluralizeCount } from "@/lib/format";
 import {
   normalizeLocalWorkstationRoute,
   WORKSTATION_ROUTE_CATALOG,
@@ -10,6 +11,7 @@ import type {
   ReconciliationBreakQueueItem,
   WorkspaceWorkflowSummary
 } from "@/types";
+import { financeBreakLabel } from "@/screens/accounting-screen.reconciliation.view-model";
 
 export interface AccountingOperatorFocusInput {
   accounting: AccountingWorkspaceResponse | null;
@@ -111,7 +113,7 @@ function buildOperatorFocusCandidateFromBreak(
 
   return buildOperatorFocusCandidate({
     id: `break:${item.breakId}`,
-    label: `${item.category} break ${item.status === "Open" ? "open" : "in review"}`,
+    label: financeBreakLabel(item.category),
     detail: item.recommendedAction ?? item.explainabilitySummary ?? item.reason,
     route: normalizeLocalWorkstationRoute(item.routingTarget) ?? WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
     workspaceLabel: "Accounting",
@@ -161,5 +163,5 @@ function normalizeWorkflowText(value: string | null | undefined): string {
 }
 
 function formatAccountingFocusCount(count: number, singular: string, plural = `${singular}s`): string {
-  return `${count} ${count === 1 ? singular : plural}`;
+  return pluralizeCount(count, singular, { plural });
 }

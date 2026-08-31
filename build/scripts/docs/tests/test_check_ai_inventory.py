@@ -603,14 +603,14 @@ class CheckAiInventoryTests(unittest.TestCase):
 
             self.assertFalse(any(finding.kind == "ui-platform-policy" for finding in findings))
 
-    def test_check_catalog_drift_reports_stale_operator_surface_language(self) -> None:
+    def test_check_catalog_drift_reports_stale_deferred_wpf_operator_surface_language(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_required_docs(root, "Shared AI documentation docs/ai/")
             write_ui_platform_policy_docs(root)
             write(
                 root / ".github" / "prompts" / "sample.prompt.yml",
-                "Meridian includes browser workstation and retained WPF support.\n",
+                "Meridian includes browser workstation operator surfaces; WPF product work is deferred.\n",
             )
 
             inventory = check_ai_inventory.collect_inventory(root)
@@ -624,14 +624,14 @@ class CheckAiInventoryTests(unittest.TestCase):
                 )
             )
 
-    def test_check_catalog_drift_allows_active_operator_surface_language(self) -> None:
+    def test_check_catalog_drift_allows_retained_wpf_operator_surface_language(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_required_docs(root, "Shared AI documentation docs/ai/")
             write_ui_platform_policy_docs(root)
             write(
                 root / ".github" / "prompts" / "sample.prompt.yml",
-                "Meridian includes active browser workstation and WPF desktop operator surfaces.\n",
+                "Meridian includes browser workstation and retained WPF support.\n",
             )
 
             inventory = check_ai_inventory.collect_inventory(root)

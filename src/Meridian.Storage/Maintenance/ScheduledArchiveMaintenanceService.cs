@@ -21,10 +21,15 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
     private readonly StorageOptions _storageOptions;
     private readonly Channel<MaintenanceExecution> _executionQueue;
     private readonly ConcurrentDictionary<string, CancellationTokenSource> _runningExecutions = new();
+    private readonly ConcurrentDictionary<string, byte> _explicitCancellations = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, string> _outstandingScheduleExecutions = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, ArchiveMaintenanceExecutionClaim> _executionClaims = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, MaintenanceExecution> _activeExecutions = new(StringComparer.Ordinal);
+    private readonly string _leaseOwner = $"{Environment.ProcessId}:{Guid.NewGuid():N}";
     private readonly DateTimeOffset _startTime = DateTimeOffset.UtcNow;
+    private static readonly TimeSpan s_executionLeaseDuration = TimeSpan.FromMinutes(5);
 
-    private MaintenanceExecution? _currentExecution;
-    private bool _isRunning;
+    private volatile bool _isRunning;
 
     public event EventHandler<MaintenanceExecution>? ExecutionStarted;
     public event EventHandler<MaintenanceExecution>? ExecutionCompleted;
@@ -32,7 +37,9 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
 
     public bool IsRunning => _isRunning;
     public int QueuedExecutions => _executionQueue.Reader.Count;
-    public MaintenanceExecution? CurrentExecution => _currentExecution;
+    public MaintenanceExecution? CurrentExecution => _activeExecutions.Values
+        .OrderBy(execution => execution.StartedAt)
+        .FirstOrDefault();
 
     public ScheduledArchiveMaintenanceService(
         ILogger<ScheduledArchiveMaintenanceService> logger,
@@ -56,14 +63,24 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
         _isRunning = true;
         _logger.LogInformation("Archive maintenance scheduler started");
 
-        // Start the scheduler task and executor task
-        var schedulerTask = RunSchedulerLoopAsync(stoppingToken);
-        var executorTask = RunExecutorLoopAsync(stoppingToken);
-
-        await Task.WhenAll(schedulerTask, executorTask);
-
-        _isRunning = false;
-        _logger.LogInformation("Archive maintenance scheduler stopped");
+        try
+        {
+            var schedulerTask = RunSchedulerLoopAsync(stoppingToken);
+            var executorTask = RunExecutorLoopAsync(stoppingToken);
+            var leaseHeartbeatTask = RunLeaseHeartbeatLoopAsync(stoppingToken);
+            await Task.WhenAll(schedulerTask, executorTask, leaseHeartbeatTask).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            // Normal hosted-service shutdown.
+        }
+        finally
+        {
+            _executionQueue.Writer.TryComplete();
+            await ReleaseQueuedClaimsForRestartAsync().ConfigureAwait(false);
+            _isRunning = false;
+            _logger.LogInformation("Archive maintenance scheduler stopped");
+        }
     }
 
     private async Task RunSchedulerLoopAsync(CancellationToken ct)
@@ -72,18 +89,8 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
         {
             try
             {
-                // Check for due schedules every minute
-                await Task.Delay(TimeSpan.FromMinutes(1), ct);
-
-                var dueSchedules = _scheduleManager.GetDueSchedules(DateTimeOffset.UtcNow);
-                foreach (var schedule in dueSchedules)
-                {
-                    _logger.LogInformation(
-                        "Maintenance schedule '{Name}' is due for execution",
-                        schedule.Name);
-
-                    await QueueExecutionFromScheduleAsync(schedule, ct);
-                }
+                await PollDueSchedulesAsync(DateTimeOffset.UtcNow, ct).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromMinutes(1), ct).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -116,52 +123,353 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
         }
     }
 
-    private async Task QueueExecutionFromScheduleAsync(ArchiveMaintenanceSchedule schedule, CancellationToken ct)
+    private async Task RunLeaseHeartbeatLoopAsync(CancellationToken ct)
     {
+        while (!ct.IsCancellationRequested)
+        {
+            try
+            {
+                await Task.Delay(TimeSpan.FromMinutes(1), ct).ConfigureAwait(false);
+                await _scheduleManager
+                    .RenewExecutionLeasesAsync(
+                        _outstandingScheduleExecutions,
+                        DateTimeOffset.UtcNow,
+                        _leaseOwner,
+                        s_executionLeaseDuration,
+                        ct)
+                    .ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error renewing durable maintenance execution leases");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Claims and queues schedules due at the supplied instant. Exposed internally so focused
+    /// scheduler tests can exercise repeated polls without waiting for the production interval.
+    /// </summary>
+    internal async Task PollDueSchedulesAsync(DateTimeOffset asOf, CancellationToken ct)
+    {
+        await _scheduleManager
+            .RenewExecutionLeasesAsync(
+                _outstandingScheduleExecutions,
+                asOf,
+                _leaseOwner,
+                s_executionLeaseDuration,
+                ct)
+            .ConfigureAwait(false);
+
+        foreach (var pendingScheduleId in _scheduleManager.GetPendingExecutionScheduleIds())
+        {
+            if (!_outstandingScheduleExecutions.TryAdd(pendingScheduleId, string.Empty))
+                continue;
+
+            try
+            {
+                var recovered = await _scheduleManager
+                    .TryLeasePendingExecutionAsync(
+                        pendingScheduleId,
+                        asOf,
+                        _leaseOwner,
+                        s_executionLeaseDuration,
+                        ct)
+                    .ConfigureAwait(false);
+                if (recovered is null)
+                {
+                    _outstandingScheduleExecutions.TryRemove(pendingScheduleId, out _);
+                    continue;
+                }
+
+                if (recovered.Execution.State == ArchiveMaintenanceClaimState.Interrupted)
+                {
+                    await FinalizeInterruptedClaimAsync(recovered, ct).ConfigureAwait(false);
+                    continue;
+                }
+
+                await QueueExecutionFromClaimAsync(recovered, ct).ConfigureAwait(false);
+            }
+            catch
+            {
+                _outstandingScheduleExecutions.TryRemove(pendingScheduleId, out _);
+                throw;
+            }
+        }
+
+        var dueSchedules = _scheduleManager.GetDueSchedules(asOf);
+        foreach (var dueSchedule in dueSchedules)
+        {
+            if (!_outstandingScheduleExecutions.TryAdd(dueSchedule.ScheduleId, string.Empty))
+            {
+                _logger.LogDebug(
+                    "Skipped due maintenance schedule {ScheduleId} because an execution is already queued or running",
+                    dueSchedule.ScheduleId);
+                continue;
+            }
+
+            try
+            {
+                var claimed = await _scheduleManager
+                    .TryClaimDueScheduleAsync(
+                        dueSchedule.ScheduleId,
+                        asOf,
+                        _leaseOwner,
+                        s_executionLeaseDuration,
+                        ct)
+                    .ConfigureAwait(false);
+                if (claimed is null)
+                {
+                    _outstandingScheduleExecutions.TryRemove(dueSchedule.ScheduleId, out _);
+                    continue;
+                }
+
+                _logger.LogInformation(
+                    "Maintenance schedule '{Name}' is due for execution",
+                    claimed.Schedule.Name);
+
+                await QueueExecutionFromClaimAsync(claimed, ct).ConfigureAwait(false);
+            }
+            catch
+            {
+                _outstandingScheduleExecutions.TryRemove(dueSchedule.ScheduleId, out _);
+                throw;
+            }
+        }
+    }
+
+    private async Task<MaintenanceExecution> QueueExecutionFromClaimAsync(
+        ArchiveMaintenanceClaim claimed,
+        CancellationToken ct)
+    {
+        var schedule = claimed.Schedule;
+        var durableClaim = claimed.Execution;
         var execution = new MaintenanceExecution
         {
+            ExecutionId = durableClaim.ExecutionId,
             ScheduleId = schedule.ScheduleId,
-            ScheduleName = schedule.Name,
-            TaskType = schedule.TaskType,
-            ManualTrigger = false
+            ScheduleName = durableClaim.ScheduleName,
+            TaskType = durableClaim.TaskType,
+            ManualTrigger = durableClaim.ManualTrigger,
+            StartedAt = durableClaim.CreatedAt
         };
 
-        await _scheduleManager.ExecutionHistory.RecordExecutionAsync(execution, ct).ConfigureAwait(false);
+        _outstandingScheduleExecutions[schedule.ScheduleId] = execution.ExecutionId;
+        _executionClaims[execution.ExecutionId] = durableClaim;
 
-        await _executionQueue.Writer.WriteAsync(execution, ct);
+        var historyRecorded = false;
+        try
+        {
+            await _scheduleManager.ExecutionHistory.RecordExecutionAsync(execution, ct).ConfigureAwait(false);
+            historyRecorded = true;
+
+            await _executionQueue.Writer.WriteAsync(execution, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _outstandingScheduleExecutions.TryRemove(schedule.ScheduleId, out _);
+            _executionClaims.TryRemove(execution.ExecutionId, out _);
+            var cancelledManualPublication =
+                ex is OperationCanceledException && durableClaim.ManualTrigger;
+
+            if (historyRecorded)
+            {
+                execution.Status = cancelledManualPublication
+                    ? MaintenanceExecutionStatus.Cancelled
+                    : MaintenanceExecutionStatus.Pending;
+                execution.CompletedAt = cancelledManualPublication ? DateTimeOffset.UtcNow : null;
+                execution.ErrorMessage = ex is OperationCanceledException
+                    ? cancelledManualPublication
+                        ? "Manual execution queueing was cancelled"
+                        : "Execution queueing was cancelled; the durable claim remains pending"
+                    : "Execution could not be queued; the durable claim remains pending";
+
+                try
+                {
+                    await _scheduleManager.ExecutionHistory
+                        .UpdateExecutionAsync(execution, CancellationToken.None)
+                        .ConfigureAwait(false);
+                }
+                catch (Exception historyException)
+                {
+                    _logger.LogError(
+                        historyException,
+                        "Failed to finalize unqueued maintenance execution {ExecutionId}",
+                        execution.ExecutionId);
+                }
+            }
+
+            try
+            {
+                if (cancelledManualPublication)
+                {
+                    if (!historyRecorded)
+                    {
+                        execution.Status = MaintenanceExecutionStatus.Cancelled;
+                        execution.CompletedAt = DateTimeOffset.UtcNow;
+                        execution.ErrorMessage = "Manual execution queueing was cancelled";
+                        await _scheduleManager.ExecutionHistory
+                            .RecordExecutionAsync(execution, CancellationToken.None)
+                            .ConfigureAwait(false);
+                    }
+
+                    await _scheduleManager
+                        .UpdateScheduleAfterExecutionAsync(
+                            schedule.ScheduleId,
+                            execution,
+                            CancellationToken.None)
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    await _scheduleManager
+                        .ReleaseExecutionForRetryAsync(
+                            schedule.ScheduleId,
+                            execution.ExecutionId,
+                            _leaseOwner,
+                            execution.ErrorMessage ?? "Execution publication failed; retry is pending.",
+                            CancellationToken.None)
+                        .ConfigureAwait(false);
+                }
+            }
+            catch (Exception releaseException)
+            {
+                _logger.LogError(
+                    releaseException,
+                    "Failed to release durable maintenance claim {ExecutionId} for retry",
+                    execution.ExecutionId);
+            }
+
+            throw;
+        }
 
         _logger.LogDebug(
             "Queued maintenance execution {ExecutionId} for schedule '{ScheduleName}'",
             execution.ExecutionId, schedule.Name);
+
+        return execution;
+    }
+
+    private async Task FinalizeInterruptedClaimAsync(
+        ArchiveMaintenanceClaim claimed,
+        CancellationToken ct)
+    {
+        var retainedHistory = _scheduleManager.ExecutionHistory.GetExecution(
+            claimed.Execution.ExecutionId);
+        var hasTerminalHistory = retainedHistory is not null
+            && string.Equals(
+                retainedHistory.ScheduleId,
+                claimed.Schedule.ScheduleId,
+                StringComparison.Ordinal)
+            && retainedHistory.CompletedAt.HasValue
+            && IsTerminal(retainedHistory.Status);
+        var execution = hasTerminalHistory
+            ? retainedHistory!
+            : new MaintenanceExecution
+            {
+                ExecutionId = claimed.Execution.ExecutionId,
+                ScheduleId = claimed.Schedule.ScheduleId,
+                ScheduleName = claimed.Execution.ScheduleName,
+                TaskType = claimed.Execution.TaskType,
+                ManualTrigger = claimed.Execution.ManualTrigger,
+                StartedAt = claimed.Execution.CreatedAt,
+                CompletedAt = DateTimeOffset.UtcNow,
+                Status = MaintenanceExecutionStatus.Failed,
+                ErrorMessage = claimed.Execution.LastError
+                    ?? "A prior process stopped during this maintenance execution; its outcome is ambiguous and it was not replayed."
+            };
+
+        try
+        {
+            if (!hasTerminalHistory)
+            {
+                await _scheduleManager.ExecutionHistory
+                    .RecordExecutionAsync(execution, ct)
+                    .ConfigureAwait(false);
+            }
+            await _scheduleManager
+                .UpdateScheduleAfterExecutionAsync(
+                    claimed.Schedule.ScheduleId,
+                    execution,
+                    CancellationToken.None)
+                .ConfigureAwait(false);
+            if (execution.Status is MaintenanceExecutionStatus.Completed or
+                MaintenanceExecutionStatus.CompletedWithWarnings)
+            {
+                ExecutionCompleted?.Invoke(this, execution);
+            }
+            else
+            {
+                ExecutionFailed?.Invoke(this, execution);
+            }
+        }
+        finally
+        {
+            ReleaseOutstandingSchedule(execution);
+        }
+    }
+
+    private static bool IsTerminal(MaintenanceExecutionStatus status)
+    {
+        return status is MaintenanceExecutionStatus.Completed
+            or MaintenanceExecutionStatus.CompletedWithWarnings
+            or MaintenanceExecutionStatus.Failed
+            or MaintenanceExecutionStatus.TimedOut
+            or MaintenanceExecutionStatus.Cancelled;
     }
 
     private async Task RunMaintenanceExecutionAsync(MaintenanceExecution execution, CancellationToken ct)
     {
         var executionCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         _runningExecutions[execution.ExecutionId] = executionCts;
-        _currentExecution = execution;
-
-        execution.Status = MaintenanceExecutionStatus.Running;
-        await _scheduleManager.ExecutionHistory.UpdateExecutionAsync(execution, ct).ConfigureAwait(false);
-
-        ExecutionStarted?.Invoke(this, execution);
-
-        _logger.LogInformation(
-            "Starting maintenance execution {ExecutionId} ({TaskType})",
-            execution.ExecutionId, execution.TaskType);
+        _activeExecutions[execution.ExecutionId] = execution;
 
         try
         {
-            // Get schedule for options
+            if (execution.ScheduleId is not null)
+            {
+                var markedRunning = await _scheduleManager
+                    .MarkExecutionRunningAsync(
+                        execution.ScheduleId,
+                        execution.ExecutionId,
+                        DateTimeOffset.UtcNow,
+                        _leaseOwner,
+                        s_executionLeaseDuration,
+                        ct)
+                    .ConfigureAwait(false);
+                if (!markedRunning)
+                {
+                    throw new InvalidOperationException(
+                        $"Durable maintenance claim '{execution.ExecutionId}' is no longer executable.");
+                }
+            }
+
+            execution.Status = MaintenanceExecutionStatus.Running;
+            await _scheduleManager.ExecutionHistory.UpdateExecutionAsync(execution, ct).ConfigureAwait(false);
+
+            ExecutionStarted?.Invoke(this, execution);
+
+            _logger.LogInformation(
+                "Starting maintenance execution {ExecutionId} ({TaskType})",
+                execution.ExecutionId, execution.TaskType);
+
+            _executionClaims.TryGetValue(execution.ExecutionId, out var durableClaim);
             var schedule = execution.ScheduleId != null
                 ? _scheduleManager.GetSchedule(execution.ScheduleId)
                 : null;
 
-            var options = schedule?.Options ?? new MaintenanceTaskOptions();
-            var targetPaths = schedule?.TargetPaths.ToArray() ?? new[] { _storageOptions.RootPath };
+            var options = durableClaim?.Options ?? schedule?.Options ?? new MaintenanceTaskOptions();
+            var retainedTargetPaths = durableClaim?.TargetPaths ?? schedule?.TargetPaths;
+            var targetPaths = retainedTargetPaths is { Count: > 0 }
+                ? retainedTargetPaths.ToArray()
+                : new[] { _storageOptions.RootPath };
 
             // Set timeout
-            var timeout = schedule?.MaxDuration ?? TimeSpan.FromHours(2);
+            var timeout = durableClaim?.MaxDuration ?? schedule?.MaxDuration ?? TimeSpan.FromHours(2);
             executionCts.CancelAfter(timeout);
 
             var result = await ExecuteMaintenanceTaskAsync(
@@ -192,11 +500,11 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
                 execution.IssuesFound,
                 execution.IssuesResolved);
 
-            ExecutionCompleted?.Invoke(this, execution);
         }
         catch (OperationCanceledException)
         {
             execution.Status = ct.IsCancellationRequested
+                || _explicitCancellations.ContainsKey(execution.ExecutionId)
                 ? MaintenanceExecutionStatus.Cancelled
                 : MaintenanceExecutionStatus.TimedOut;
             execution.CompletedAt = DateTimeOffset.UtcNow;
@@ -208,7 +516,6 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
                 "Maintenance execution {ExecutionId} {Status}",
                 execution.ExecutionId, execution.Status);
 
-            ExecutionFailed?.Invoke(this, execution);
         }
         catch (Exception ex)
         {
@@ -221,18 +528,90 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
                 "Maintenance execution {ExecutionId} failed",
                 execution.ExecutionId);
 
-            ExecutionFailed?.Invoke(this, execution);
         }
         finally
         {
             _runningExecutions.TryRemove(execution.ExecutionId, out _);
-            _currentExecution = null;
-            await _scheduleManager.ExecutionHistory.UpdateExecutionAsync(execution, ct).ConfigureAwait(false);
-
-            // Update schedule with execution results
-            if (execution.ScheduleId != null)
+            _activeExecutions.TryRemove(execution.ExecutionId, out _);
+            _explicitCancellations.TryRemove(execution.ExecutionId, out _);
+            try
             {
-                await _scheduleManager.UpdateScheduleAfterExecutionAsync(execution.ScheduleId, execution, ct).ConfigureAwait(false);
+                await _scheduleManager.ExecutionHistory
+                    .UpdateExecutionAsync(execution, CancellationToken.None)
+                    .ConfigureAwait(false);
+
+                // Update schedule with execution results. Finalization is intentionally
+                // non-cancellable: the execution has already reached a terminal state.
+                if (execution.ScheduleId != null)
+                {
+                    await _scheduleManager
+                        .UpdateScheduleAfterExecutionAsync(
+                            execution.ScheduleId,
+                            execution,
+                            CancellationToken.None)
+                        .ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                _executionClaims.TryRemove(execution.ExecutionId, out _);
+                ReleaseOutstandingSchedule(execution);
+                executionCts.Dispose();
+            }
+        }
+
+        if (execution.Status is MaintenanceExecutionStatus.Completed or
+            MaintenanceExecutionStatus.CompletedWithWarnings)
+        {
+            ExecutionCompleted?.Invoke(this, execution);
+        }
+        else
+        {
+            ExecutionFailed?.Invoke(this, execution);
+        }
+    }
+
+    private void ReleaseOutstandingSchedule(MaintenanceExecution execution)
+    {
+        if (execution.ScheduleId is null)
+            return;
+
+        if (_outstandingScheduleExecutions.TryGetValue(execution.ScheduleId, out var executionId)
+            && string.Equals(executionId, execution.ExecutionId, StringComparison.Ordinal))
+        {
+            _outstandingScheduleExecutions.TryRemove(execution.ScheduleId, out _);
+        }
+    }
+
+    private async Task ReleaseQueuedClaimsForRestartAsync()
+    {
+        foreach (var (scheduleId, executionId) in _outstandingScheduleExecutions.ToArray())
+        {
+            if (_runningExecutions.ContainsKey(executionId))
+                continue;
+
+            try
+            {
+                await _scheduleManager
+                    .ReleaseExecutionForRetryAsync(
+                        scheduleId,
+                        executionId,
+                        _leaseOwner,
+                        "The host stopped before this queued execution started; the durable claim is pending restart recovery.",
+                        CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Failed to release queued maintenance claim {ExecutionId} during shutdown",
+                    executionId);
+            }
+            finally
+            {
+                _executionClaims.TryRemove(executionId, out _);
+                _outstandingScheduleExecutions.TryRemove(scheduleId, out _);
             }
         }
     }
@@ -392,8 +771,8 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
         var defragOptions = new DefragOptions(
             MinFileSizeBytes: options.MinFileSizeBytes,
             MaxFilesPerMerge: options.MaxFilesPerMerge,
-            PreserveOriginals: options.DryRun,
-            MaxFileAge: TimeSpan.FromDays(options.FileAgeDaysThreshold)
+            MaxFileAge: TimeSpan.FromDays(options.FileAgeDaysThreshold),
+            DryRun: options.DryRun
         );
 
         var result = await _fileMaintenanceService.DefragmentAsync(defragOptions, ct);
@@ -804,19 +1183,21 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
 
         var executionCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         _runningExecutions[execution.ExecutionId] = executionCts;
-        _currentExecution = execution;
-
-        execution.Status = MaintenanceExecutionStatus.Running;
-        await _scheduleManager.ExecutionHistory.UpdateExecutionAsync(execution, ct).ConfigureAwait(false);
-
-        ExecutionStarted?.Invoke(this, execution);
+        _activeExecutions[execution.ExecutionId] = execution;
 
         try
         {
+            execution.Status = MaintenanceExecutionStatus.Running;
+            await _scheduleManager.ExecutionHistory.UpdateExecutionAsync(execution, ct).ConfigureAwait(false);
+            ExecutionStarted?.Invoke(this, execution);
+
+            var effectiveTargetPaths = targetPaths is { Length: > 0 }
+                ? targetPaths
+                : new[] { _storageOptions.RootPath };
             var result = await ExecuteMaintenanceTaskAsync(
                 taskType,
                 options ?? new MaintenanceTaskOptions(),
-                targetPaths ?? new[] { _storageOptions.RootPath },
+                effectiveTargetPaths,
                 execution,
                 executionCts.Token);
 
@@ -833,21 +1214,44 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
 
             execution.CompletedAt = DateTimeOffset.UtcNow;
 
-            ExecutionCompleted?.Invoke(this, execution);
+        }
+        catch (OperationCanceledException)
+        {
+            execution.Status = MaintenanceExecutionStatus.Cancelled;
+            execution.CompletedAt = DateTimeOffset.UtcNow;
+            execution.ErrorMessage = "Execution was cancelled";
         }
         catch (Exception ex)
         {
             execution.Status = MaintenanceExecutionStatus.Failed;
             execution.CompletedAt = DateTimeOffset.UtcNow;
             execution.ErrorMessage = ex.Message;
-
-            ExecutionFailed?.Invoke(this, execution);
         }
         finally
         {
             _runningExecutions.TryRemove(execution.ExecutionId, out _);
-            _currentExecution = null;
-            await _scheduleManager.ExecutionHistory.UpdateExecutionAsync(execution, ct).ConfigureAwait(false);
+            _activeExecutions.TryRemove(execution.ExecutionId, out _);
+            _explicitCancellations.TryRemove(execution.ExecutionId, out _);
+            try
+            {
+                await _scheduleManager.ExecutionHistory
+                    .UpdateExecutionAsync(execution, CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                executionCts.Dispose();
+            }
+        }
+
+        if (execution.Status is MaintenanceExecutionStatus.Completed or
+            MaintenanceExecutionStatus.CompletedWithWarnings)
+        {
+            ExecutionCompleted?.Invoke(this, execution);
+        }
+        else
+        {
+            ExecutionFailed?.Invoke(this, execution);
         }
 
         return execution;
@@ -855,35 +1259,59 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
 
     public async Task<MaintenanceExecution> TriggerScheduleAsync(string scheduleId, CancellationToken ct = default)
     {
-        var schedule = _scheduleManager.GetSchedule(scheduleId)
-            ?? throw new KeyNotFoundException($"Schedule '{scheduleId}' not found");
-
-        var execution = new MaintenanceExecution
+        if (!_outstandingScheduleExecutions.TryAdd(scheduleId, string.Empty))
         {
-            ScheduleId = schedule.ScheduleId,
-            ScheduleName = schedule.Name,
-            TaskType = schedule.TaskType,
-            ManualTrigger = true
-        };
+            throw new InvalidOperationException(
+                $"Schedule '{scheduleId}' already has an execution queued or running");
+        }
 
-        await _scheduleManager.ExecutionHistory.RecordExecutionAsync(execution, ct).ConfigureAwait(false);
+        MaintenanceExecution execution;
+        try
+        {
+            var claimed = await _scheduleManager
+                .TryClaimManualScheduleAsync(
+                    scheduleId,
+                    DateTimeOffset.UtcNow,
+                    _leaseOwner,
+                    s_executionLeaseDuration,
+                    ct)
+                .ConfigureAwait(false);
+            if (claimed is null)
+            {
+                throw new InvalidOperationException(
+                    $"Schedule '{scheduleId}' already has an execution queued or running");
+            }
 
-        await _executionQueue.Writer.WriteAsync(execution, ct);
+            execution = await QueueExecutionFromClaimAsync(claimed, ct).ConfigureAwait(false);
+        }
+        catch
+        {
+            _outstandingScheduleExecutions.TryRemove(scheduleId, out _);
+            throw;
+        }
 
         _logger.LogInformation(
             "Manually triggered maintenance schedule '{Name}' (ID: {ScheduleId})",
-            schedule.Name, scheduleId);
+            execution.ScheduleName, scheduleId);
 
         return execution;
     }
 
     public Task<bool> CancelExecutionAsync(string executionId)
     {
-        if (_runningExecutions.TryRemove(executionId, out var cts))
+        if (_runningExecutions.TryGetValue(executionId, out var cts))
         {
-            cts.Cancel();
-            _logger.LogInformation("Cancelled maintenance execution {ExecutionId}", executionId);
-            return Task.FromResult(true);
+            try
+            {
+                _explicitCancellations[executionId] = 0;
+                cts.Cancel();
+                _logger.LogInformation("Cancelled maintenance execution {ExecutionId}", executionId);
+                return Task.FromResult(true);
+            }
+            catch (ObjectDisposedException)
+            {
+                _explicitCancellations.TryRemove(executionId, out _);
+            }
         }
 
         return Task.FromResult(false);
@@ -899,7 +1327,7 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
         return new MaintenanceServiceStatus(
             IsRunning: _isRunning,
             QueuedExecutions: QueuedExecutions,
-            CurrentExecution: _currentExecution,
+            CurrentExecution: CurrentExecution,
             NextScheduledExecution: summary.NextDueSchedule,
             ActiveSchedules: summary.EnabledSchedules,
             TotalExecutionsToday: executionsToday,

@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Identity;
@@ -43,11 +44,12 @@ public sealed class AppServiceRegistrationTests
             using var serviceProvider = services.BuildServiceProvider();
 
             serviceProvider.GetRequiredService<ConfigService>().Should().BeSameAs(ConfigService.Instance);
+            serviceProvider.GetRequiredService<ICanonicalSymbolRegistry>().Should().NotBeNull();
             serviceProvider.GetRequiredService<WorkspaceService>().Should().BeSameAs(WorkspaceService.Instance);
             serviceProvider.GetRequiredService<WorkspaceStateTokenStore>().Should().NotBeNull();
             serviceProvider.GetRequiredService<ConnectionService>().Should().BeSameAs(ConnectionService.Instance);
-            serviceProvider.GetRequiredService<IRemoteWorkstationClient>().Should().BeSameAs(WpfRemoteWorkstationClient.Instance);
-            serviceProvider.GetRequiredService<WpfRemoteWorkstationClient>().Should().BeSameAs(WpfRemoteWorkstationClient.Instance);
+            var remoteWorkstationClient = serviceProvider.GetRequiredService<WpfRemoteWorkstationClient>();
+            serviceProvider.GetRequiredService<IRemoteWorkstationClient>().Should().BeSameAs(remoteWorkstationClient);
             serviceProvider.GetRequiredService<LoggingService>().Should().BeSameAs(LoggingService.Instance);
             serviceProvider.GetRequiredService<StatusService>().Should().BeSameAs(StatusService.Instance);
             serviceProvider.GetRequiredService<StrategyRunWorkspaceService>().Should().NotBeNull();

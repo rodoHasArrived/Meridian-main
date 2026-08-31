@@ -18,7 +18,11 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_DataUploadTemplates_ShouldExposeSourceUploadCatalogInDataBootstrap()
     {
-        await using var app = await CreateAppAsync();
+        // The data workspace endpoint requires a backing read service; without one it returns
+        // 503 instead of fabricated fallback data.
+        await using var app = await CreateAppAsync(
+            services => RegisterRunReadServices(services),
+            currentUserPermissions: UserPermission.ViewHistoricalData);
         var client = app.GetTestClient();
 
         var catalog = await client.GetFromJsonAsync<DataUploadTemplateCatalogDto>(

@@ -9,22 +9,21 @@
   min-height: 100vh;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  background: var(--ws-page-bg, #DEE3EA);
-  color: var(--ws-text, #22272E);
-  font-family: var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif);
+  background: var(--theme-bg-canvas, var(--ws-page-bg, #DEE3EA));
+  color: var(--theme-primary-text, var(--ws-text, #22272E));
+  font-family: var(--theme-font-body, var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif));
 }
 
 /* Skip link -------------------------------------------------------------------- */
 .skip-link {
   position: fixed;
-  left: 0.75rem;
+  left: -100vw;
   top: 0.75rem;
   z-index: 1000;
-  transform: translateY(-150%);
   border: 1px solid var(--ws-accent, #2F6F8F);
   border-radius: var(--radius-button, 2px);
-  background: var(--ws-masthead-bg, #171A1F);
-  color: var(--ws-masthead-fg, #F4F6F8);
+  background: var(--theme-topbar-bg, var(--ws-masthead-bg, #171A1F));
+  color: var(--theme-topbar-text, var(--ws-masthead-fg, #F4F6F8));
   padding: 0.5rem 0.75rem;
   font-size: 0.8125rem;
   font-weight: 600;
@@ -32,7 +31,7 @@
 }
 
 .skip-link:focus {
-  transform: translateY(0);
+  left: 0.75rem;
   outline: none;
   box-shadow: 0 0 0 2px rgba(47, 111, 143, 0.35), var(--shadow-menu, 0 2px 6px rgba(0, 0, 0, 0.18));
 }
@@ -41,13 +40,19 @@
 .workstation-masthead {
   display: grid;
   min-height: 48px;
-  grid-template-columns: max-content minmax(220px, 1fr) minmax(300px, auto) auto;
+  /* The 1fr and auto tracks carry no floor on purpose. A track floor wins over the
+     child's own `min-width: 0`, so a 220px/300px minimum here made the row's minimum
+     width exceed the viewport on ordinary laptop widths and spilled the last column
+     past the right edge — the single-row layout holds until the 980px stack, so
+     nothing rescued it in between. Without floors the tracks shrink and their
+     contents ellipsize instead. */
+  grid-template-columns: max-content minmax(0, 1fr) minmax(0, auto) minmax(0, auto);
   gap: 0.75rem;
   align-items: center;
   padding: 0 1rem;
-  background: var(--ws-masthead-bg, #171A1F);
+  background: var(--theme-topbar-bg, var(--ws-masthead-bg, #171A1F));
   border-bottom: 1px solid var(--topbar-border, #262B31);
-  color: var(--ws-masthead-fg, #F4F6F8);
+  color: var(--theme-topbar-text, var(--ws-masthead-fg, #F4F6F8));
 }
 
 .workstation-brand-group {
@@ -78,10 +83,10 @@
 }
 
 .workstation-brand .name {
-  font-family: var(--font-display, "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, sans-serif);
+  font-family: var(--theme-font-display, var(--font-display, "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, sans-serif));
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--ws-masthead-fg, #F4F6F8);
+  color: var(--theme-topbar-text, var(--ws-masthead-fg, #F4F6F8));
   white-space: nowrap;
 }
 
@@ -117,7 +122,7 @@
 
 .workstation-nav-toggle:hover {
   border-color: #3A424B;
-  color: var(--ws-masthead-fg, #F4F6F8);
+  color: var(--theme-topbar-text, var(--ws-masthead-fg, #F4F6F8));
 }
 
 /* The rail is always visible on desktop, so the drawer toggle collapses away there. */
@@ -178,24 +183,82 @@
   border-radius: var(--radius-chip, 2px);
   color: #8A929B;
   font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   white-space: nowrap;
 }
 
 /* Trust strip (build / mode / source / provider posture) ------------------------ */
 .workstation-trust-strip {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.375rem;
+  position: relative;
+  display: block;
   min-width: 0;
+  justify-self: end;
+}
+
+.workstation-trust-details {
+  position: relative;
+}
+
+/* Clipping the summary is safe for the dropdown: the menu is a sibling inside
+   `.workstation-trust-details`, not a descendant of the summary. */
+.workstation-trust-summary {
+  display: inline-flex;
+  min-height: 2rem;
+  max-width: min(28rem, 34vw);
   overflow: hidden;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--topbar-border, #262B31);
+  border-radius: 2px;
+  padding: 0.25rem 0.5rem;
+  color: #EAF0F6;
+  cursor: pointer;
+  list-style: none;
+  white-space: nowrap;
+}
+
+.workstation-trust-summary::-webkit-details-marker {
+  display: none;
+}
+
+.workstation-trust-summary:focus-visible {
+  outline: 2px solid rgba(47, 111, 143, 0.55);
+  outline-offset: 2px;
+}
+
+.workstation-trust-summary .workstation-trust-value {
+  max-width: 20rem;
+}
+
+.workstation-trust-chevron {
+  flex: none;
+  transition: transform 140ms ease;
+}
+
+.workstation-trust-details[open] .workstation-trust-chevron {
+  transform: rotate(180deg);
+}
+
+.workstation-trust-menu {
+  position: absolute;
+  z-index: 60;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  display: grid;
+  width: min(28rem, calc(100vw - 2rem));
+  gap: 0.375rem;
+  border: 1px solid var(--ws-border, #CBD3DC);
+  border-radius: 3px;
+  background: var(--ws-surface, #FFFFFF);
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.2);
+  padding: 0.5rem;
 }
 
 .workstation-trust-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr);
+  align-items: start;
+  gap: 0.2rem 0.5rem;
   min-width: 0;
   min-height: 22px;
   padding: 0 0.45rem;
@@ -204,9 +267,9 @@
   background: #0F1216;
   color: #AEB7C0;
   font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   text-decoration: none;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 a.workstation-trust-item:hover,
@@ -225,11 +288,18 @@ a.workstation-trust-item:focus-visible {
 }
 
 .workstation-trust-value {
-  max-width: 8.5rem;
+  max-width: 100%;
   overflow: hidden;
   color: #EAF0F6;
   font-weight: 600;
   text-overflow: ellipsis;
+}
+
+.workstation-trust-detail {
+  grid-column: 2;
+  color: var(--ws-text-muted, #59636F);
+  font-size: 0.75rem;
+  line-height: 1.35;
 }
 
 .workstation-trust-item-ready {
@@ -261,6 +331,63 @@ a.workstation-trust-item:focus-visible {
   min-width: 0;
 }
 
+/* Decision-brief status pill — the masthead handle for the cross-workspace
+   break queue. Replaces the per-route decision-brief banner. */
+.masthead-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 280px;
+  min-height: 28px;
+  padding: 0 0.625rem;
+  border-radius: 2px;
+  border: 1px solid var(--topbar-border, #262B31);
+  color: var(--ws-masthead-fg, #F4F6F8);
+  font-size: 0.75rem;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.masthead-status-pill:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.masthead-status-pill-dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: #8A93A0;
+}
+
+.masthead-status-pill-status {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.masthead-status-pill-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.75;
+}
+
+.masthead-status-pill-blocked .masthead-status-pill-dot { background: #D95F5F; }
+.masthead-status-pill-blocked .masthead-status-pill-status { color: #E8A0A0; }
+.masthead-status-pill-review .masthead-status-pill-dot { background: #D9B24A; }
+.masthead-status-pill-review .masthead-status-pill-status { color: #D9C27A; }
+.masthead-status-pill-ready .masthead-status-pill-dot { background: #4CAF7E; }
+.masthead-status-pill-ready .masthead-status-pill-status { color: #9FD0A5; }
+
+@media (max-width: 900px) {
+  .masthead-status-pill-title {
+    display: none;
+  }
+}
+
 .workstation-session-card {
   display: inline-flex;
   align-items: center;
@@ -275,14 +402,29 @@ a.workstation-trust-item:focus-visible {
   font-size: 0.6875rem;
 }
 
+/* The environment badge is the one part of the session card that must never shrink:
+   it is how an operator tells PAPER from LIVE. The name and role give way first. */
+.workstation-session-card > :first-child {
+  flex: none;
+}
+
+/* `min-width: 0` is what lets these ellipsize at all. As flex items they default to
+   `min-width: auto`, which refuses to shrink below the text's own width, so the
+   overflow rules below would never fire and the card would push past the masthead. */
 .workstation-session-name {
   color: #EAF0F6;
   white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .workstation-session-role {
   color: #8A929B;
   white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ── Shell body (nav rail + workbench) ──────────────────────────────────────── */
@@ -290,7 +432,7 @@ a.workstation-trust-item:focus-visible {
   min-height: 0;
   display: grid;
   grid-template-columns: 14rem minmax(0, 1fr);
-  background: var(--ws-page-bg, #DEE3EA);
+  background: var(--theme-bg-canvas, var(--ws-page-bg, #DEE3EA));
 }
 
 .workstation-nav-sheet-dialog {
@@ -301,7 +443,7 @@ a.workstation-trust-item:focus-visible {
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  background: var(--ws-page-bg, #DEE3EA);
+  background: var(--theme-bg-canvas, var(--ws-page-bg, #DEE3EA));
 }
 
 .workbench-scroll {
@@ -475,8 +617,16 @@ a.workstation-trust-item:focus-visible {
   }
 
   .workstation-trust-strip {
-    justify-content: flex-start;
-    flex-wrap: wrap;
+    justify-self: stretch;
+  }
+
+  .workstation-trust-summary {
+    max-width: 100%;
+  }
+
+  .workstation-trust-menu {
+    right: auto;
+    left: 0;
   }
 
   .workstation-search {

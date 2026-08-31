@@ -2,7 +2,9 @@ using Meridian.Contracts.Workstation;
 using Meridian.Contracts.Ledger;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Evidence;
@@ -23,6 +25,7 @@ public sealed class EvidenceSubjectResolver
     public const string PaymentIntentKind = "payment-intent";
     public const string ReportPackDeliveryKind = "report-pack-delivery";
     public const string EvidenceVaultKind = "evidence-vault";
+    public const string JournalEntryKind = "journal-entry";
 
     private static readonly HashSet<string> SupportedKinds = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -39,7 +42,8 @@ public sealed class EvidenceSubjectResolver
         PrivateCapitalFundEventKind,
         PaymentIntentKind,
         ReportPackDeliveryKind,
-        EvidenceVaultKind
+        EvidenceVaultKind,
+        JournalEntryKind
     };
 
     private readonly IServiceProvider _services;
@@ -110,7 +114,14 @@ public sealed class EvidenceSubjectResolver
         var runService = _services.GetService<StrategyRunReadService>();
         if (runService is not null)
         {
-            var runs = await runService.GetRunsAsync(ct: ct).ConfigureAwait(false);
+            var scope = ResolveStrategyRunReadScope();
+            var runs = scope is null
+                ? await runService.GetRunsAsync(ct: ct).ConfigureAwait(false)
+                : await runService.GetRunsAsync(
+                    strategyId: null,
+                    runType: null,
+                    scope: scope,
+                    ct: ct).ConfigureAwait(false);
             subjects.AddRange(runs.Take(100).Select(run => new EvidenceSubjectDto(
                 SubjectId: run.RunId,
                 SubjectKind: StrategyRunKind,
@@ -224,7 +235,10 @@ public sealed class EvidenceSubjectResolver
                 return null;
             }
 
-            var run = await runService.GetRunDetailAsync(subjectId, ct).ConfigureAwait(false);
+            var scope = ResolveStrategyRunReadScope();
+            var run = scope is null
+                ? await runService.GetRunDetailAsync(subjectId, ct).ConfigureAwait(false)
+                : await runService.GetRunDetailAsync(subjectId, scope, ct).ConfigureAwait(false);
             return run is null
                 ? null
                 : new EvidenceSubjectDto(
@@ -249,6 +263,11 @@ public sealed class EvidenceSubjectResolver
         if (string.Equals(subjectKind, ReportPackDeliveryKind, StringComparison.OrdinalIgnoreCase))
         {
             return ResolveReportPackDeliverySubject(subjectId);
+        }
+
+        if (string.Equals(subjectKind, JournalEntryKind, StringComparison.OrdinalIgnoreCase))
+        {
+            return await ResolveJournalEntrySubjectAsync(subjectId, ledgerBookId, ct).ConfigureAwait(false);
         }
 
         return subjectKind.ToLowerInvariant() switch
@@ -317,6 +336,21 @@ public sealed class EvidenceSubjectResolver
                 PageTag: "EvidenceWorkbench"),
             _ => null
         };
+    }
+
+    private StrategyRunReadScope? ResolveStrategyRunReadScope()
+    {
+        var httpContext = _services.GetService<IHttpContextAccessor>()?.HttpContext;
+        if (httpContext is null)
+        {
+            return null;
+        }
+
+        var trustedScope = HttpContextWorkstationTenantContextAccessor.Resolve(httpContext);
+        return string.IsNullOrWhiteSpace(trustedScope.TenantId)
+            || string.IsNullOrWhiteSpace(trustedScope.CompanyId)
+                ? null
+                : new StrategyRunReadScope(trustedScope.TenantId, trustedScope.CompanyId);
     }
 
     private EvidenceSubjectDto? ResolveReportPackDeliverySubject(string subjectId)
@@ -412,6 +446,73 @@ public sealed class EvidenceSubjectResolver
             Route: BuildAccountingJournalEntriesRoute("paymentIntentId", workflow.PaymentIntentId, workflow.LedgerBookId),
             PageTag: "AccountingJournalEntries",
             LedgerBookId: workflow.LedgerBookId);
+    }
+
+    private async Task<EvidenceSubjectDto?> ResolveJournalEntrySubjectAsync(string subjectId, Guid? ledgerBookId, CancellationToken ct)
+    {
+        var service = _services.GetService<IManualJournalEntryWorkbenchService>();
+        if (service is null)
+        {
+            return null;
+        }
+
+        ledgerBookId ??= TryResolveLedgerBookId(subjectId);
+        var canonicalSubjectId = StripQueryScope(subjectId);
+        if (!Guid.TryParse(canonicalSubjectId, out var journalEntryId))
+        {
+            return null;
+        }
+
+        var draft = await FindManualJournalEntryDraftAsync(service, journalEntryId, ledgerBookId, ct).ConfigureAwait(false);
+        if (draft is null)
+        {
+            return null;
+        }
+
+        if (ledgerBookId.HasValue && draft.LedgerBookId.HasValue && draft.LedgerBookId.Value != ledgerBookId.Value)
+        {
+            return null;
+        }
+
+        return new EvidenceSubjectDto(
+            SubjectId: draft.JournalEntryId.ToString("D"),
+            SubjectKind: JournalEntryKind,
+            Label: $"Journal entry {draft.Status}",
+            Workspace: "Accounting",
+            Route: BuildJournalEntryDetailRoute(draft.JournalEntryId, draft.LedgerBookId ?? ledgerBookId),
+            PageTag: "AccountingJournalEntries",
+            LedgerBookId: draft.LedgerBookId ?? ledgerBookId);
+    }
+
+    internal static async Task<ManualJournalEntryDraftDto?> FindManualJournalEntryDraftAsync(
+        IManualJournalEntryWorkbenchService service,
+        Guid journalEntryId,
+        Guid? ledgerBookId,
+        CancellationToken ct)
+    {
+        var fundProfileIds = await service.ListFundProfileIdsAsync(ct).ConfigureAwait(false);
+        var workbenches = fundProfileIds.Count == 0
+            ? [await service.GetWorkbenchAsync(fundProfileId: null, ledgerBookId: ledgerBookId, ct: ct).ConfigureAwait(false)]
+            : await Task.WhenAll(fundProfileIds.Select(fundProfileId =>
+                service.GetWorkbenchAsync(fundProfileId, ledgerBookId: ledgerBookId, ct: ct))).ConfigureAwait(false);
+        return workbenches
+            .SelectMany(static workbench => workbench.Drafts)
+            .FirstOrDefault(draft => draft.JournalEntryId == journalEntryId);
+    }
+
+    private static string BuildJournalEntryDetailRoute(Guid journalEntryId, Guid? ledgerBookId)
+    {
+        var query = new List<string>
+        {
+            $"journalEntryId={Uri.EscapeDataString(journalEntryId.ToString("D"))}"
+        };
+
+        if (ledgerBookId.HasValue)
+        {
+            query.Add($"ledgerBookId={Uri.EscapeDataString(ledgerBookId.Value.ToString("D"))}");
+        }
+
+        return $"/accounting/journal-entries/detail?{string.Join("&", query)}";
     }
 
     private static string BuildAccountingJournalEntriesRoute(string key, string value, Guid? ledgerBookId)
@@ -557,26 +658,7 @@ public sealed class EvidenceSubjectResolver
         => mode is StrategyRunMode.Paper or StrategyRunMode.Live ? "Trading" : "Strategy";
 
     private IReadOnlyList<ReportPackDeliveryAttemptDto> ListReportPackDeliveryAttempts(int limit)
-    {
-        var service = _services.GetService<ReportPackDeliveryService>();
-        if (service is not null)
-        {
-            return service.ListAttempts(limit);
-        }
-
-        var store = _services.GetService<IReportPackDeliveryRecordStore>();
-        if (store is null)
-        {
-            return [];
-        }
-
-        return store.Load()
-            .OrderByDescending(static attempt => attempt.AttemptedAtUtc)
-            .ThenBy(static attempt => attempt.ReportId)
-            .ThenBy(static attempt => attempt.DistributionId, StringComparer.OrdinalIgnoreCase)
-            .Take(Math.Clamp(limit, 1, 500))
-            .ToArray();
-    }
+        => ReportingDeliveryReadModelSecurity.ListVisibleAttempts(_services, limit).Attempts;
 
     private static string? TryResolveFundProfileIdFromFundEventId(string fundEventId)
     {

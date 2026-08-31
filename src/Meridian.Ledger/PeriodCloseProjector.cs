@@ -2,8 +2,9 @@ namespace Meridian.Ledger;
 
 /// <summary>
 /// Projects period-close closing entries: zeroes every revenue and expense balance and
-/// rolls the resulting net income into retained earnings, scoped per financial account.
-/// A close without these entries is status-only; this projector makes the roll real.
+/// rolls the resulting net income into retained earnings, scoped per financial account and
+/// per dimensional accounting scope (entity, sleeve, ...). A close without these entries is
+/// status-only; this projector makes the roll real without collapsing dimension-split balances.
 /// </summary>
 public static class PeriodCloseProjector
 {
@@ -12,20 +13,28 @@ public static class PeriodCloseProjector
         ArgumentNullException.ThrowIfNull(input);
 
         var lines = new List<PeriodCloseLine>();
-        var journalLines = new List<(LedgerAccount account, decimal debit, decimal credit)>();
+        var journalLines = new List<(LedgerAccount account, decimal debit, decimal credit, LedgerLineDimensionSet? dimensions)>();
         var netIncomeByScope = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+        // Retained-earnings roll is grouped by (financial-account scope + dimensional scope) so
+        // the same revenue/expense account across two entities closes to two dimension-scoped
+        // retained-earnings lines rather than one aggregate.
+        var rollByScope = new Dictionary<string, PeriodCloseRollScope>(StringComparer.Ordinal);
 
         var temporaryAccounts = input.TrialBalance
-            .Where(static pair =>
-                pair.Key.AccountType is LedgerAccountType.Revenue or LedgerAccountType.Expense &&
-                pair.Value != 0m)
-            .OrderBy(static pair => pair.Key.AccountType)
-            .ThenBy(static pair => pair.Key.Name, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(static pair => pair.Key.Symbol, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(static pair => pair.Key.FinancialAccountId, StringComparer.OrdinalIgnoreCase);
+            .Where(static row =>
+                row.Account.AccountType is LedgerAccountType.Revenue or LedgerAccountType.Expense &&
+                row.Balance != 0m)
+            .OrderBy(static row => row.Account.AccountType)
+            .ThenBy(static row => row.Account.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static row => row.Account.Symbol, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static row => row.Account.FinancialAccountId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static row => DimensionKey(row.Dimensions), StringComparer.Ordinal);
 
-        foreach (var (account, balance) in temporaryAccounts)
+        foreach (var row in temporaryAccounts)
         {
+            var account = row.Account;
+            var balance = row.Balance;
+
             // Normal-balance semantics: revenue balances are credits - debits, expense
             // balances are debits - credits. Closing flips each account to zero.
             var closesWithDebit = account.AccountType == LedgerAccountType.Revenue
@@ -35,27 +44,38 @@ public static class PeriodCloseProjector
             var debit = closesWithDebit ? amount : 0m;
             var credit = closesWithDebit ? 0m : amount;
 
-            lines.Add(new PeriodCloseLine(account, balance, debit, credit));
-            journalLines.Add((account, debit, credit));
+            lines.Add(new PeriodCloseLine(account, balance, debit, credit, row.Dimensions));
+            journalLines.Add((account, debit, credit, row.Dimensions));
 
-            var scope = account.FinancialAccountId ?? PeriodCloseProjection.DefaultScope;
+            var financialScope = account.FinancialAccountId ?? PeriodCloseProjection.DefaultScope;
             var signedContribution = account.AccountType == LedgerAccountType.Revenue ? balance : -balance;
-            netIncomeByScope[scope] = netIncomeByScope.GetValueOrDefault(scope) + signedContribution;
+            netIncomeByScope[financialScope] = netIncomeByScope.GetValueOrDefault(financialScope) + signedContribution;
+
+            var rollKey = FormattableString.Invariant($"{financialScope}|{DimensionKey(row.Dimensions)}");
+            if (!rollByScope.TryGetValue(rollKey, out var roll))
+            {
+                roll = new PeriodCloseRollScope(financialScope, row.Dimensions, 0m);
+                rollByScope[rollKey] = roll;
+            }
+
+            rollByScope[rollKey] = roll with { NetIncome = roll.NetIncome + signedContribution };
         }
 
-        // Roll each scope's net income into retained earnings so the balancing side of the
-        // close lands on the same financial account as the temporary activity it closes.
-        foreach (var (scope, netIncome) in netIncomeByScope.OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase))
+        // Roll each (financial-account, dimensional) scope's net income into retained earnings so the
+        // balancing side of the close lands on the same financial account and dimensions as the
+        // temporary activity it closes.
+        foreach (var roll in rollByScope.Values.OrderBy(static scope => scope.FinancialScope, StringComparer.OrdinalIgnoreCase)
+                     .ThenBy(static scope => DimensionKey(scope.Dimensions), StringComparer.Ordinal))
         {
-            if (netIncome == 0m)
+            if (roll.NetIncome == 0m)
                 continue;
 
-            var retainedEarnings = scope.Length == 0
+            var retainedEarnings = roll.FinancialScope.Length == 0
                 ? LedgerAccounts.RetainedEarnings
-                : LedgerAccounts.RetainedEarningsFor(scope);
-            journalLines.Add(netIncome > 0m
-                ? (retainedEarnings, 0m, netIncome)
-                : (retainedEarnings, -netIncome, 0m));
+                : LedgerAccounts.RetainedEarningsFor(roll.FinancialScope);
+            journalLines.Add(roll.NetIncome > 0m
+                ? (retainedEarnings, 0m, roll.NetIncome, roll.Dimensions)
+                : (retainedEarnings, -roll.NetIncome, 0m, roll.Dimensions));
         }
 
         return new PeriodCloseProjection(input, lines, journalLines, netIncomeByScope);
@@ -63,6 +83,8 @@ public static class PeriodCloseProjector
 
     /// <summary>
     /// Convenience overload that snapshots the ledger's trial balance as of the close time.
+    /// The in-memory trial balance is dimension-flat, so the projected closing entries carry
+    /// no dimensional scope.
     /// </summary>
     public static PeriodCloseProjection ProjectFrom(
         Ledger ledger,
@@ -77,4 +99,12 @@ public static class PeriodCloseProjector
             ledger.TrialBalanceAsOf(closedAtUtc),
             closedBy));
     }
+
+    private sealed record PeriodCloseRollScope(
+        string FinancialScope,
+        LedgerLineDimensionSet? Dimensions,
+        decimal NetIncome);
+
+    private static string DimensionKey(LedgerLineDimensionSet? dimensions)
+        => LedgerLineDimensionSetFields.BuildScopeKey(dimensions);
 }

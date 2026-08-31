@@ -39,6 +39,16 @@ This bucket stores historical audits, evaluations, investigations, cleanup findi
 | [audit-results-full.json](audit-results-full.json) | `docs/audits/audit-results-full.json` | Point-in-time combined audit output; rerun the owning audit before treating findings as current. |
 | [prompt-generation-results.json](prompt-generation-results.json) | `docs/audits/prompt-generation-results.json` | Point-in-time prompt-generation audit output; rerun the owning generator/audit before treating findings as current. |
 
+## Standalone Assessments
+
+Point-in-time reviews authored directly into this bucket (no former active path). Source material
+for prioritization only; revalidate against the current checkout and roadmap registry before acting.
+
+| Assessment | Date | Scope |
+| --- | --- | --- |
+| [Adversarial Program Review](adversarial-program-review-2026-07-21.md) | 2026-07-21 | High-level program functionality and end-user value across onboarding, browser workstation, ingestion/providers/reconciliation, accounting/ledger/reporting, and trading/execution/backtesting. |
+| [Adversarial Program Review (Follow-up)](adversarial-program-review-2026-07-26.md) | 2026-07-26 | Follow-up whole-program review: re-tests the 2026-07-21 findings (crediting remediated items), then adds first-mile/onboarding breakage, deployment-envelope and observability gaps, trust-chain enforcement gaps, and a refreshed prioritized improvement list. |
+
 ## Use Current Guidance Instead
 
 - [Documentation Inventory](../../../docs/documentation-inventory.md)

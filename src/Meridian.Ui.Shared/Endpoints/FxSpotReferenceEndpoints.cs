@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Instruments.FxSpot;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FxSpot;
+using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,7 @@ public static class FxSpotReferenceEndpoints
             var reference = await service.GetReferenceAsync(securityId, ct).ConfigureAwait(false);
             return reference is null ? Results.NotFound() : Results.Json(reference, jsonOptions);
         })
-        .WithName("GetFxSpotReference")
+        .WithName("GetFxSpotReference").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<FxSpotReferenceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -34,7 +35,7 @@ public static class FxSpotReferenceEndpoints
             var reference = await service.GetByPairCodeAsync(pairCode, ct).ConfigureAwait(false);
             return reference is null ? Results.NotFound() : Results.Json(reference, jsonOptions);
         })
-        .WithName("GetFxSpotByPairCode")
+        .WithName("GetFxSpotByPairCode").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<FxSpotReferenceDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -46,7 +47,7 @@ public static class FxSpotReferenceEndpoints
             var pairs = await service.GetByCurrencyAsync(currency, ct).ConfigureAwait(false);
             return Results.Json(pairs, jsonOptions);
         })
-        .WithName("GetFxSpotByCurrency")
+        .WithName("GetFxSpotByCurrency").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<FxSpotReferenceDto>>(StatusCodes.Status200OK);
     }
 }

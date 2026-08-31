@@ -57,8 +57,8 @@ public sealed record LedgerReportPackRequest
         LockedPeriod = lockedPeriod;
         SourceRunId = string.IsNullOrWhiteSpace(sourceRunId) ? null : sourceRunId.Trim();
         SourceSessionId = string.IsNullOrWhiteSpace(sourceSessionId) ? null : sourceSessionId.Trim();
-        ReconciliationEvidenceLinks = NormalizeEvidenceLinks(reconciliationEvidenceLinks);
-        ApprovalEvidenceLinks = NormalizeEvidenceLinks(approvalEvidenceLinks);
+        ReconciliationEvidenceLinks = LedgerEvidenceLinks.Normalize(reconciliationEvidenceLinks);
+        ApprovalEvidenceLinks = LedgerEvidenceLinks.Normalize(approvalEvidenceLinks);
         LineDimensions = lineDimensions;
     }
 
@@ -91,11 +91,4 @@ public sealed record LedgerReportPackRequest
     public IReadOnlyList<string> ApprovalEvidenceLinks { get; }
 
     public LedgerLineDimensionSet? LineDimensions { get; }
-
-    private static IReadOnlyList<string> NormalizeEvidenceLinks(IReadOnlyList<string>? links)
-        => links?
-            .Select(static link => link.Trim())
-            .Where(static link => link.Length > 0)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray() ?? [];
 }

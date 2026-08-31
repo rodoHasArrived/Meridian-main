@@ -4,18 +4,28 @@ using Meridian.Execution.Sdk;
 using Meridian.Execution.Serialization;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Execution.Services;
 
 /// <summary>
 /// Configuration for persisted execution operator controls.
 /// </summary>
-public sealed record ExecutionOperatorControlOptions(string RootDirectory)
+public sealed record ExecutionOperatorControlOptions(
+    string RootDirectory,
+    bool FailClosedOnMissingOrCorruptSnapshot = false)
 {
     public static ExecutionOperatorControlOptions Default { get; } = new(
         Path.Combine(AppContext.BaseDirectory, "data", "execution", "controls"));
 
     public string SnapshotPath => Path.Combine(RootDirectory, "controls.json");
+
+    /// <summary>
+    /// Marker recording a circuit-breaker trip that was demanded but could not be written
+    /// into the snapshot. It is independent of the snapshot on purpose: the snapshot write
+    /// is exactly what failed, so the halt needs somewhere else to survive a restart.
+    /// </summary>
+    public string PendingTripPath => Path.Combine(RootDirectory, "pending-circuit-breaker-trip.txt");
 }
 
 /// <summary>
@@ -64,7 +74,8 @@ public sealed record ExecutionControlSnapshot(
     decimal? DefaultMaxPositionSize,
     IReadOnlyDictionary<string, decimal> SymbolPositionLimits,
     IReadOnlyList<ExecutionManualOverride> ManualOverrides,
-    DateTimeOffset AsOf);
+    DateTimeOffset AsOf,
+    long Version = 0);
 
 /// <summary>
 /// Manual override creation request.
@@ -115,11 +126,31 @@ public sealed class ExecutionOperatorControlService
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly ILogger<ExecutionOperatorControlService> _logger;
     private readonly Lock _lock = new();
+    private readonly SemaphoreSlim _mutationGate = new(1, 1);
 
     private ExecutionCircuitBreakerState _circuitBreaker = new(false);
     private decimal? _defaultMaxPositionSize;
     private Dictionary<string, decimal> _symbolPositionLimits = new(StringComparer.OrdinalIgnoreCase);
     private Dictionary<string, ExecutionManualOverride> _manualOverrides = new(StringComparer.OrdinalIgnoreCase);
+    private long _version;
+
+    /// <summary>
+    /// Absolute quantity already working in orders that would reduce the given symbol's position
+    /// for the given fund account, excluding the order being evaluated.
+    /// <para>
+    /// Set by the composition that owns the open book — the gate itself cannot see working orders.
+    /// Close-only admission compares settled position against <em>committed</em> reduction, not
+    /// against this one order alone: two 10-share sells against a 10-share long each pass in
+    /// isolation and together leave the account short 10, reopening risk behind the kill switch.
+    /// </para>
+    /// <para>
+    /// An unset probe means working reductions cannot be established, so close-only refuses. That
+    /// is the same fail-closed posture the rest of this exception takes, and it is why production
+    /// compositions wire it: a host that does not is telling the gate it cannot answer the
+    /// question, and under an open breaker that is not a reason to route.
+    /// </para>
+    /// </summary>
+    public Func<string, Guid?, decimal>? WorkingReductionQuantityProbe { get; set; }
 
     public ExecutionOperatorControlService(
         ExecutionOperatorControlOptions? options,
@@ -132,6 +163,7 @@ public sealed class ExecutionOperatorControlService
         _auditTrail = auditTrail;
 
         LoadSnapshot();
+        ApplyPendingTripMarker();
 
         if (_defaultMaxPositionSize is null && brokerageConfiguration?.MaxPositionSize > 0m)
         {
@@ -170,20 +202,34 @@ public sealed class ExecutionOperatorControlService
         string? correlationId = null,
         CancellationToken ct = default)
     {
-        ExecutionControlSnapshot snapshot;
-
-        lock (_lock)
-        {
-            _circuitBreaker = new ExecutionCircuitBreakerState(
+        var (_, snapshot, _) = await MutateAndPersistAsync(
+            () =>
+            {
+                _circuitBreaker = new ExecutionCircuitBreakerState(
                 IsOpen: isOpen,
                 Reason: string.IsNullOrWhiteSpace(reason) ? null : reason,
                 ChangedBy: NormalizeActor(changedBy),
                 ChangedAt: DateTimeOffset.UtcNow);
-            PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
-            snapshot = BuildSnapshotLocked();
-        }
+                return true;
+            },
+            shouldPersist: null,
+            ct).ConfigureAwait(false);
 
-        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+        // Immediately after the snapshot commit and before the audit write: an audit
+        // failure or a cancelled request must not leave a superseded marker on disk, or
+        // the next restart would reopen the breaker an operator just durably closed.
+        //
+        // Marker removal is part of the close decision, not bookkeeping after it. A marker
+        // that survives will reopen the breaker on the next restart, so reporting a
+        // successful close while it is still there would promise a state the next start
+        // silently revokes.
+        if (!ClearPendingTripMarker())
+        {
+            throw new InvalidOperationException(
+                $"The circuit breaker decision was persisted, but the pending-trip marker at "
+                + $"'{_options.PendingTripPath}' could not be removed; a restart would reopen the breaker. "
+                + "Remove the marker before relying on this state.");
+        }
 
         await RecordAuditAsync(
             isOpen ? "CircuitBreakerOpened" : "CircuitBreakerClosed",
@@ -193,7 +239,7 @@ public sealed class ExecutionOperatorControlService
             {
                 ["isOpen"] = isOpen.ToString()
             },
-            NormalizeOptionalToken(correlationId),
+            NormalizeOptional(correlationId),
             null,
             null,
             ct).ConfigureAwait(false);
@@ -215,15 +261,14 @@ public sealed class ExecutionOperatorControlService
             maxPositionSize = null;
         }
 
-        ExecutionControlSnapshot snapshot;
-        lock (_lock)
-        {
-            _defaultMaxPositionSize = maxPositionSize;
-            PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
-            snapshot = BuildSnapshotLocked();
-        }
-
-        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+        var (_, snapshot, _) = await MutateAndPersistAsync(
+            () =>
+            {
+                _defaultMaxPositionSize = maxPositionSize;
+                return true;
+            },
+            shouldPersist: null,
+            ct).ConfigureAwait(false);
 
         await RecordAuditAsync(
             "DefaultPositionLimitUpdated",
@@ -259,24 +304,22 @@ public sealed class ExecutionOperatorControlService
         }
 
         var normalizedSymbol = symbol.Trim().ToUpperInvariant();
-        ExecutionControlSnapshot snapshot;
-
-        lock (_lock)
-        {
-            if (maxPositionSize.HasValue)
+        var (_, snapshot, _) = await MutateAndPersistAsync(
+            () =>
             {
-                _symbolPositionLimits[normalizedSymbol] = maxPositionSize.Value;
-            }
-            else
-            {
-                _symbolPositionLimits.Remove(normalizedSymbol);
-            }
+                if (maxPositionSize.HasValue)
+                {
+                    _symbolPositionLimits[normalizedSymbol] = maxPositionSize.Value;
+                }
+                else
+                {
+                    _symbolPositionLimits.Remove(normalizedSymbol);
+                }
 
-            PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
-            snapshot = BuildSnapshotLocked();
-        }
-
-        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+                return true;
+            },
+            shouldPersist: null,
+            ct).ConfigureAwait(false);
 
         await RecordAuditAsync(
             "SymbolPositionLimitUpdated",
@@ -321,19 +364,18 @@ public sealed class ExecutionOperatorControlService
             CreatedBy: NormalizeActor(request.CreatedBy),
             CreatedAt: DateTimeOffset.UtcNow,
             ExpiresAt: request.ExpiresAt,
-            Symbol: NormalizeOptionalToken(request.Symbol),
-            StrategyId: NormalizeOptionalToken(request.StrategyId),
-            RunId: NormalizeOptionalToken(request.RunId));
+            Symbol: NormalizeOptional(request.Symbol),
+            StrategyId: NormalizeOptional(request.StrategyId),
+            RunId: NormalizeOptional(request.RunId));
 
-        ExecutionControlSnapshot snapshot;
-        lock (_lock)
-        {
-            PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
-            _manualOverrides[overrideEntry.OverrideId] = overrideEntry;
-            snapshot = BuildSnapshotLocked();
-        }
-
-        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+        await MutateAndPersistAsync(
+            () =>
+            {
+                _manualOverrides[overrideEntry.OverrideId] = overrideEntry;
+                return true;
+            },
+            shouldPersist: null,
+            ct).ConfigureAwait(false);
 
         await RecordAuditAsync(
             action: "ManualOverrideCreated",
@@ -348,7 +390,7 @@ public sealed class ExecutionOperatorControlService
                 ["runId"] = overrideEntry.RunId ?? string.Empty,
                 ["expiresAt"] = overrideEntry.ExpiresAt?.ToString("O") ?? string.Empty
             },
-            correlationId: NormalizeOptionalToken(request.CorrelationId),
+            correlationId: NormalizeOptional(request.CorrelationId),
             runId: overrideEntry.RunId,
             symbol: overrideEntry.Symbol,
             ct: ct).ConfigureAwait(false);
@@ -368,26 +410,15 @@ public sealed class ExecutionOperatorControlService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(overrideId);
 
-        ExecutionManualOverride? removed = null;
-        ExecutionControlSnapshot snapshot;
+        var (removed, _, persisted) = await MutateAndPersistAsync(
+            () => _manualOverrides.Remove(overrideId, out var existing) ? existing : null,
+            static value => value is not null,
+            ct).ConfigureAwait(false);
 
-        lock (_lock)
-        {
-            PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
-            if (_manualOverrides.Remove(overrideId, out var existing))
-            {
-                removed = existing;
-            }
-
-            snapshot = BuildSnapshotLocked();
-        }
-
-        if (removed is null)
+        if (!persisted || removed is null)
         {
             return false;
         }
-
-        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
 
         await RecordAuditAsync(
             action: "ManualOverrideCleared",
@@ -401,7 +432,7 @@ public sealed class ExecutionOperatorControlService
                 ["strategyId"] = removed.StrategyId ?? string.Empty,
                 ["runId"] = removed.RunId ?? string.Empty
             },
-            correlationId: NormalizeOptionalToken(correlationId),
+            correlationId: NormalizeOptional(correlationId),
             runId: removed.RunId,
             symbol: removed.Symbol,
             ct: ct).ConfigureAwait(false);
@@ -423,7 +454,7 @@ public sealed class ExecutionOperatorControlService
 
             var forceBlock = _manualOverrides.Values.FirstOrDefault(overrideEntry =>
                 string.Equals(overrideEntry.Kind, ExecutionManualOverrideKinds.ForceBlockOrders, StringComparison.OrdinalIgnoreCase) &&
-                OverrideMatchesOrder(overrideEntry, request, runId));
+                OverrideMatchesTarget(overrideEntry, ManualOverrideTarget.ForOrder(request, runId)));
 
             if (forceBlock is not null)
             {
@@ -437,15 +468,32 @@ public sealed class ExecutionOperatorControlService
             var bypassOverride = TryResolveManualOverrideLocked(
                 requestedOverrideId,
                 ExecutionManualOverrideKinds.BypassOrderControls,
-                request.Symbol,
-                request.StrategyId,
-                runId);
+                ManualOverrideTarget.ForOrder(request, runId));
 
-            if (_circuitBreaker.IsOpen && bypassOverride is null)
+            if (_circuitBreaker.IsOpen)
             {
-                return ExecutionControlDecision.Rejected(
-                    _circuitBreaker.Reason ?? "Execution circuit breaker is open.",
-                    "CIRCUIT_BREAKER_OPEN");
+                if (bypassOverride is null)
+                {
+                    return ExecutionControlDecision.Rejected(
+                        _circuitBreaker.Reason ?? "Execution circuit breaker is open.",
+                        "CIRCUIT_BREAKER_OPEN");
+                }
+
+                // Close-only. A bypass override exists so an operator can flatten a book the kill
+                // switch just halted, and revoking it outright would trap the desk in exactly the
+                // positions the halt was raised over. But the kill switch is also supposed to block
+                // new submissions, and an unrestricted bypass let an override admit fresh risk while
+                // the breaker was open — the book refilling behind the sweep that emptied it.
+                //
+                // The narrow exception is the one the override is actually for: an order that moves
+                // an existing position toward flat, and no further.
+                if (!ReducesExistingPosition(request, portfolioState))
+                {
+                    return ExecutionControlDecision.Rejected(
+                        $"Execution circuit breaker is open: manual override {bypassOverride.OverrideId} admits only orders that "
+                        + $"reduce an existing {request.Symbol} position. Clear the breaker to open or increase risk.",
+                        "CIRCUIT_BREAKER_CLOSE_ONLY");
+                }
             }
 
             var limit = ResolvePositionLimitLocked(request.Symbol);
@@ -455,7 +503,11 @@ public sealed class ExecutionOperatorControlService
                 var normalizedSymbol = request.Symbol.Trim().ToUpperInvariant();
                 if (portfolioState?.Positions.TryGetValue(normalizedSymbol, out var existingPosition) == true)
                 {
-                    currentQuantity = existingPosition.Quantity;
+                    // Unrounded: IPosition.Quantity is whole shares, and the order delta
+                    // below is decimal. Fractional and broker-native notional fills are real,
+                    // so rounding the held side lets a 0.9-share position plus a 0.2-share
+                    // buy read as 0.2 against a 1-share cap and approve a 1.1-share position.
+                    currentQuantity = existingPosition.ExactQuantity;
                 }
 
                 var signedDelta = request.Side == OrderSide.Buy ? request.Quantity : -request.Quantity;
@@ -471,6 +523,125 @@ public sealed class ExecutionOperatorControlService
 
             return ExecutionControlDecision.Approved(bypassOverride?.OverrideId);
         }
+    }
+
+    /// <summary>
+    /// Whether an order moves an existing position toward flat without crossing through it.
+    /// <para>
+    /// This is the one door left open in a halted desk, so it refuses anything it cannot establish
+    /// is a reduction. It measures the position that actually backs the order, not merely a
+    /// position in the same symbol.
+    /// </para>
+    /// </summary>
+    private bool ReducesExistingPosition(OrderRequest request, IPortfolioState? portfolioState)
+    {
+        if (portfolioState is null)
+        {
+            return false;
+        }
+
+        // A multi-leg package's parent fields are not what routes. The gateway replaces the parent
+        // symbol with the legs, so a parent that reads as a close can carry legs that open fresh
+        // option exposure. Verifying each leg against its own position is real work this gate does
+        // not do, so packages are refused rather than approximated.
+        if (request.Legs is { Count: > 0 })
+        {
+            return false;
+        }
+
+        // An explicit opening intent settles the question regardless of what the arithmetic below
+        // would say: SellToOpen against a long is a new short, not a reduction.
+        if (request.PositionIntent is Sdk.PositionIntent.BuyToOpen or Sdk.PositionIntent.SellToOpen)
+        {
+            return false;
+        }
+
+        // Broker-native notional orders route a dollar amount and the gateway discards Quantity, so
+        // comparing Quantity with a share count compares two different things: a placeholder
+        // quantity would pass while the routed dollars crossed through flat into a short. Converting
+        // requires an authoritative price this gate does not have, so they are refused.
+        if (BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is not null)
+        {
+            return false;
+        }
+
+        var normalizedSymbol = request.Symbol.Trim().ToUpperInvariant();
+        if (!portfolioState.Positions.TryGetValue(normalizedSymbol, out var position))
+        {
+            return false;
+        }
+
+        var held = ResolveOwnedQuantity(position, request.FundAccountId);
+        if (held == 0m)
+        {
+            return false;
+        }
+
+        var opposesPosition = held > 0m
+            ? request.Side == OrderSide.Sell
+            : request.Side == OrderSide.Buy;
+
+        if (!opposesPosition)
+        {
+            return false;
+        }
+
+        var probe = WorkingReductionQuantityProbe;
+        if (probe is null)
+        {
+            return false;
+        }
+
+        decimal alreadyWorking;
+        try
+        {
+            alreadyWorking = Math.Abs(probe(normalizedSymbol, request.FundAccountId));
+        }
+        catch (Exception exception)
+        {
+            // A probe that throws has established nothing. Refusing is the same answer as an
+            // absent probe, and it keeps a faulting book from admitting an unbounded close.
+            _logger.LogWarning(
+                exception,
+                "Close-only admission refused: the working-reduction probe failed for {Symbol}",
+                normalizedSymbol);
+            return false;
+        }
+
+        return Math.Abs(request.Quantity) + alreadyWorking <= Math.Abs(held);
+    }
+
+    /// <summary>
+    /// The signed quantity backing this order: the requesting fund's share when the order names a
+    /// fund account, and the aggregate otherwise.
+    /// <para>
+    /// A shared execution book nets several funds' positions onto one symbol. Measuring a
+    /// fund-scoped close against that aggregate lets fund B sell against fund A's long and acquire
+    /// a new short, and conversely stops two funds with offsetting holdings from closing at all
+    /// because the net reads flat. A named fund with no attributed quantity holds nothing here, so
+    /// it reduces nothing — deliberately not falling back to the aggregate, which is the very
+    /// number that would be wrong.
+    /// </para>
+    /// </summary>
+    internal static decimal ResolveOwnedQuantity(IPosition position, Guid? fundAccountId)
+    {
+        // Unrounded, for the reason the position-limit gate gives: a fractional holding rounded to
+        // zero would read as flat and refuse a legitimate close.
+        if (fundAccountId is not { } fundAccount)
+        {
+            return position.ExactQuantity;
+        }
+
+        var owner = fundAccount.ToString("D");
+        foreach (var pair in position.OwnerQuantities)
+        {
+            if (string.Equals(pair.Key, owner, StringComparison.OrdinalIgnoreCase))
+            {
+                return pair.Value;
+            }
+        }
+
+        return 0m;
     }
 
     /// <summary>
@@ -502,9 +673,7 @@ public sealed class ExecutionOperatorControlService
             var livePromotionOverride = TryResolveManualOverrideLocked(
                 manualOverrideId,
                 ExecutionManualOverrideKinds.AllowLivePromotion,
-                symbol: null,
-                strategyId: strategyId,
-                runId: runId);
+                new ManualOverrideTarget(Symbol: null, StrategyId: strategyId, RunId: runId));
 
             return livePromotionOverride is null
                 ? LivePromotionControlDecision.Rejected(
@@ -517,6 +686,7 @@ public sealed class ExecutionOperatorControlService
     {
         if (!File.Exists(_options.SnapshotPath))
         {
+            EnterFailClosedStateIfRequired("Execution control snapshot is missing.");
             return;
         }
 
@@ -526,22 +696,185 @@ public sealed class ExecutionOperatorControlService
             var snapshot = JsonSerializer.Deserialize(json, ExecutionJsonContext.Default.ExecutionControlSnapshot);
             if (snapshot is null)
             {
+                throw new JsonException("Execution control snapshot deserialized to null.");
+            }
+
+            ApplySnapshotLocked(snapshot);
+        }
+        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
+        {
+            _logger.LogError(ex, "Failed to load execution control snapshot from {Path}", _options.SnapshotPath);
+            EnterFailClosedStateIfRequired("Execution control snapshot is unreadable or corrupt.");
+        }
+    }
+
+    /// <summary>
+    /// Durably records a circuit-breaker trip whose snapshot write failed, so a restart
+    /// before the retry succeeds still comes up halted. Best-effort by nature — the caller
+    /// already holds an in-memory fail-closed latch — but a snapshot write can fail for
+    /// reasons a small independent marker survives. Returns whether the marker landed.
+    /// </summary>
+    public async Task<bool> TryRecordPendingCircuitBreakerTripAsync(string? reason, CancellationToken ct = default)
+    {
+        try
+        {
+            Directory.CreateDirectory(_options.RootDirectory);
+            await AtomicFileWriter
+                .WriteAsync(
+                    _options.PendingTripPath,
+                    string.IsNullOrWhiteSpace(reason) ? "Critical risk rule demanded a halt." : reason,
+                    ct)
+                .ConfigureAwait(false);
+            return true;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogCritical(
+                exception,
+                "A demanded circuit-breaker trip could not be durably recorded; the halt survives only in memory");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Opens the breaker at startup when a previous process recorded a trip it could not
+    /// persist. The snapshot on disk is still the stale pre-trip one, so without this the
+    /// halt would silently disappear across a restart.
+    /// </summary>
+    private void ApplyPendingTripMarker()
+    {
+        string reason;
+        try
+        {
+            if (!File.Exists(_options.PendingTripPath))
+            {
                 return;
             }
 
-            _circuitBreaker = snapshot.CircuitBreaker;
-            _defaultMaxPositionSize = snapshot.DefaultMaxPositionSize;
-            _symbolPositionLimits = new Dictionary<string, decimal>(
-                snapshot.SymbolPositionLimits,
-                StringComparer.OrdinalIgnoreCase);
-            _manualOverrides = snapshot.ManualOverrides.ToDictionary(
-                static entry => entry.OverrideId,
-                StringComparer.OrdinalIgnoreCase);
+            reason = File.ReadAllText(_options.PendingTripPath).Trim();
         }
-        catch (Exception ex) when (ex is IOException or JsonException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            _logger.LogWarning(ex, "Failed to load execution control snapshot from {Path}", _options.SnapshotPath);
+            // The marker exists but is unreadable: its very presence is the halt signal.
+            _logger.LogError(exception, "Pending circuit-breaker trip marker could not be read; halting anyway");
+            reason = string.Empty;
         }
+
+        if (_circuitBreaker.IsOpen)
+        {
+            return;
+        }
+
+        _circuitBreaker = new ExecutionCircuitBreakerState(
+            IsOpen: true,
+            Reason: string.IsNullOrWhiteSpace(reason)
+                ? "A circuit-breaker trip from a previous process was never durably committed."
+                : reason,
+            ChangedBy: "risk-engine/pending-trip-recovery",
+            ChangedAt: DateTimeOffset.UtcNow);
+        _logger.LogCritical(
+            "Execution circuit breaker opened at startup: a previous process demanded a halt that never reached the snapshot");
+    }
+
+    /// <summary>
+    /// Clears the pending-trip marker once an explicit breaker decision has been durably
+    /// written — the snapshot is authoritative again, in either direction.
+    /// </summary>
+    private bool ClearPendingTripMarker()
+    {
+        try
+        {
+            if (File.Exists(_options.PendingTripPath))
+            {
+                File.Delete(_options.PendingTripPath);
+            }
+
+            return true;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            _logger.LogError(exception, "Pending circuit-breaker trip marker could not be cleared");
+            return false;
+        }
+    }
+
+    private void EnterFailClosedStateIfRequired(string reason)
+    {
+        if (!_options.FailClosedOnMissingOrCorruptSnapshot)
+        {
+            return;
+        }
+
+        _circuitBreaker = new ExecutionCircuitBreakerState(
+            IsOpen: true,
+            Reason: reason,
+            ChangedBy: "system",
+            ChangedAt: DateTimeOffset.UtcNow);
+        _defaultMaxPositionSize = null;
+        _symbolPositionLimits = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+        _manualOverrides = new Dictionary<string, ExecutionManualOverride>(StringComparer.OrdinalIgnoreCase);
+        _version = 0;
+    }
+
+    private async Task<(T Result, ExecutionControlSnapshot Snapshot, bool Persisted)> MutateAndPersistAsync<T>(
+        Func<T> mutation,
+        Func<T, bool>? shouldPersist,
+        CancellationToken ct)
+    {
+        await _mutationGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            ExecutionControlSnapshot previous;
+            ExecutionControlSnapshot next;
+            T result;
+            lock (_lock)
+            {
+                PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
+                previous = BuildSnapshotLocked();
+                result = mutation();
+                if (shouldPersist is not null && !shouldPersist(result))
+                {
+                    return (result, previous, false);
+                }
+
+                _version = checked(_version + 1);
+                PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
+                next = BuildSnapshotLocked();
+            }
+
+            try
+            {
+                await PersistSnapshotAsync(next, ct).ConfigureAwait(false);
+            }
+            catch
+            {
+                lock (_lock)
+                {
+                    ApplySnapshotLocked(previous);
+                }
+
+                throw;
+            }
+
+            return (result, next, true);
+        }
+        finally
+        {
+            _mutationGate.Release();
+        }
+    }
+
+    private void ApplySnapshotLocked(ExecutionControlSnapshot snapshot)
+    {
+        _circuitBreaker = snapshot.CircuitBreaker;
+        _defaultMaxPositionSize = snapshot.DefaultMaxPositionSize;
+        _symbolPositionLimits = new Dictionary<string, decimal>(
+            snapshot.SymbolPositionLimits,
+            StringComparer.OrdinalIgnoreCase);
+        _manualOverrides = snapshot.ManualOverrides.ToDictionary(
+            static entry => entry.OverrideId,
+            StringComparer.OrdinalIgnoreCase);
+        _version = snapshot.Version;
     }
 
     private async Task PersistSnapshotAsync(ExecutionControlSnapshot snapshot, CancellationToken ct)
@@ -587,7 +920,8 @@ public sealed class ExecutionOperatorControlService
             ManualOverrides: _manualOverrides.Values
                 .OrderByDescending(static entry => entry.CreatedAt)
                 .ToArray(),
-            AsOf: DateTimeOffset.UtcNow);
+            AsOf: DateTimeOffset.UtcNow,
+            Version: _version);
     }
 
     private void PurgeExpiredOverridesLocked(DateTimeOffset now)
@@ -607,9 +941,7 @@ public sealed class ExecutionOperatorControlService
     private ExecutionManualOverride? TryResolveManualOverrideLocked(
         string? overrideId,
         string requiredKind,
-        string? symbol,
-        string? strategyId,
-        string? runId)
+        ManualOverrideTarget target)
     {
         if (string.IsNullOrWhiteSpace(overrideId) ||
             !_manualOverrides.TryGetValue(overrideId, out var overrideEntry))
@@ -622,9 +954,7 @@ public sealed class ExecutionOperatorControlService
             return null;
         }
 
-        if (!MatchesOptionalTarget(overrideEntry.Symbol, symbol) ||
-            !MatchesOptionalTarget(overrideEntry.StrategyId, strategyId) ||
-            !MatchesOptionalTarget(overrideEntry.RunId, runId))
+        if (!OverrideMatchesTarget(overrideEntry, target))
         {
             return null;
         }
@@ -640,10 +970,10 @@ public sealed class ExecutionOperatorControlService
             : _defaultMaxPositionSize;
     }
 
-    private static bool OverrideMatchesOrder(ExecutionManualOverride overrideEntry, OrderRequest request, string? runId) =>
-        MatchesOptionalTarget(overrideEntry.Symbol, request.Symbol) &&
-        MatchesOptionalTarget(overrideEntry.StrategyId, request.StrategyId) &&
-        MatchesOptionalTarget(overrideEntry.RunId, runId);
+    private static bool OverrideMatchesTarget(ExecutionManualOverride overrideEntry, ManualOverrideTarget target) =>
+        MatchesOptionalTarget(overrideEntry.Symbol, target.Symbol) &&
+        MatchesOptionalTarget(overrideEntry.StrategyId, target.StrategyId) &&
+        MatchesOptionalTarget(overrideEntry.RunId, target.RunId);
 
     private static bool MatchesOptionalTarget(string? configuredTarget, string? actualTarget)
     {
@@ -661,6 +991,12 @@ public sealed class ExecutionOperatorControlService
     private static string NormalizeActor(string? actor) =>
         string.IsNullOrWhiteSpace(actor) ? "operator" : actor.Trim();
 
-    private static string? NormalizeOptionalToken(string? token) =>
-        string.IsNullOrWhiteSpace(token) ? null : token.Trim();
+    private readonly record struct ManualOverrideTarget(
+        string? Symbol,
+        string? StrategyId,
+        string? RunId)
+    {
+        public static ManualOverrideTarget ForOrder(OrderRequest request, string? runId) =>
+            new(request.Symbol, request.StrategyId, runId);
+    }
 }

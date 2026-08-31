@@ -10,7 +10,9 @@ namespace Meridian.Storage.Services;
 /// resolution interface that accepts any known identifier (canonical, alias, ISIN,
 /// FIGI, SEDOL, CUSIP, provider-specific ticker) and resolves it to the canonical name.
 /// </summary>
-public sealed class CanonicalSymbolRegistry : ICanonicalSymbolRegistry
+public sealed class CanonicalSymbolRegistry :
+    ICanonicalSymbolRegistry,
+    ICanonicalSymbolRegistryMigrationWriter
 {
     private readonly ISymbolRegistryService _registryService;
 
@@ -61,16 +63,18 @@ public sealed class CanonicalSymbolRegistry : ICanonicalSymbolRegistry
 
         var normalized = symbol.Trim();
 
-        // Fast path: check provider-specific mappings first
         if (!string.IsNullOrWhiteSpace(provider))
         {
             var registry = _registryService.GetRegistry();
-            var upperProvider = provider.ToUpperInvariant();
-            if (registry.ProviderMappings.TryGetValue(upperProvider, out var mappings) &&
-                mappings.TryGetValue(normalized, out var canonical))
-            {
+            var resolution = ResolveProviderScoped(
+                registry,
+                normalized,
+                NormalizeProvider(provider),
+                out var canonical);
+            if (resolution == ProviderScopedResolution.Resolved)
                 return canonical;
-            }
+            if (resolution == ProviderScopedResolution.Ambiguous)
+                return null;
         }
 
         // Fall back to generic resolution
@@ -88,8 +92,9 @@ public sealed class CanonicalSymbolRegistry : ICanonicalSymbolRegistry
         var entry = ToRegistryEntry(definition);
         await _registryService.RegisterSymbolAsync(entry, ct);
 
-        // Update the resolver cache with all known identifiers for this symbol
-        IndexDefinition(definition);
+        // Registration is merge-safe; rebuild from the persisted merged state so learned
+        // information cannot evict Security Master identifiers or provider overrides.
+        RebuildResolverCache();
 
     }
 
@@ -103,6 +108,31 @@ public sealed class CanonicalSymbolRegistry : ICanonicalSymbolRegistry
 
         RebuildResolverCache();
 
+        return count;
+    }
+
+    /// <inheritdoc />
+    public async Task<int> ApplyMigrationAsync(
+        string migrationId,
+        string fingerprint,
+        IEnumerable<CanonicalSymbolDefinition> definitions,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(migrationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(fingerprint);
+        ArgumentNullException.ThrowIfNull(definitions);
+
+        var entries = definitions.Select(ToRegistryEntry).ToArray();
+        if (_registryService is not ISymbolRegistryMigrationWriter migrationWriter)
+        {
+            throw new InvalidOperationException(
+                "The configured symbol registry store does not support atomic startup migrations.");
+        }
+
+        var count = await migrationWriter
+            .ApplyMigrationAsync(migrationId, fingerprint, entries, ct)
+            .ConfigureAwait(false);
+        RebuildResolverCache();
         return count;
     }
 
@@ -159,26 +189,80 @@ public sealed class CanonicalSymbolRegistry : ICanonicalSymbolRegistry
 
         var normalized = symbol.Trim();
 
-        // Check provider-specific mappings first (highest priority for disambiguation)
         var registry = _registryService.GetRegistry();
-        if (registry.ProviderMappings.TryGetValue(provider, out var providerMap) &&
-            providerMap.TryGetValue(normalized, out var canonical))
-        {
+        var providerKey = NormalizeProvider(provider);
+        var resolution = ResolveProviderScoped(registry, normalized, providerKey, out var canonical);
+        if (resolution == ProviderScopedResolution.Resolved)
             return canonical;
-        }
-
-        // Check ProviderSymbols on individual entries for this provider
-        foreach (var (canonicalName, entry) in registry.Symbols)
-        {
-            if (entry.ProviderSymbols.TryGetValue(provider, out var providerSymbol) &&
-                string.Equals(providerSymbol, normalized, StringComparison.OrdinalIgnoreCase))
-            {
-                return canonicalName;
-            }
-        }
+        if (resolution == ProviderScopedResolution.Ambiguous)
+            return null;
 
         // Fall back to general resolution (cache, alias index, fuzzy match)
         return ResolveToCanonical(normalized);
+    }
+
+    /// <inheritdoc />
+    public string? GetProviderSymbol(string symbolOrIdentifier, string provider)
+    {
+        if (string.IsNullOrWhiteSpace(symbolOrIdentifier) || string.IsNullOrWhiteSpace(provider))
+            return null;
+
+        var normalizedProvider = NormalizeProvider(provider);
+        var normalizedSymbol = symbolOrIdentifier.Trim();
+        var resolution = ResolveProviderScoped(
+            _registryService.GetRegistry(),
+            normalizedSymbol,
+            normalizedProvider,
+            out var canonical);
+        if (resolution == ProviderScopedResolution.Ambiguous)
+            return null;
+        canonical ??= ResolveToCanonical(normalizedSymbol);
+        return canonical is null
+            ? null
+            : _registryService.GetProviderSymbol(canonical, normalizedProvider);
+    }
+
+    /// <inheritdoc />
+    public async Task SetProviderSymbolAsync(
+        string canonical,
+        string provider,
+        string providerSymbol,
+        string source = SymbolMappingSources.Operator,
+        bool isOverride = true,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(canonical);
+        ArgumentException.ThrowIfNullOrWhiteSpace(provider);
+        ArgumentException.ThrowIfNullOrWhiteSpace(providerSymbol);
+
+        var resolvedCanonical = ResolveToCanonical(canonical) ?? canonical.Trim().ToUpperInvariant();
+        await _registryService.AddProviderMappingAsync(
+            resolvedCanonical,
+            NormalizeProvider(provider),
+            providerSymbol.Trim(),
+            source,
+            isOverride,
+            ct).ConfigureAwait(false);
+        RebuildResolverCache();
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> RemoveProviderSymbolAsync(
+        string canonical,
+        string provider,
+        CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(canonical) || string.IsNullOrWhiteSpace(provider))
+            return false;
+
+        var resolvedCanonical = ResolveToCanonical(canonical) ?? canonical.Trim().ToUpperInvariant();
+        var removed = await _registryService.RemoveProviderMappingAsync(
+            resolvedCanonical,
+            NormalizeProvider(provider),
+            ct).ConfigureAwait(false);
+        if (removed)
+            RebuildResolverCache();
+        return removed;
     }
 
     /// <inheritdoc />
@@ -240,6 +324,7 @@ public sealed class CanonicalSymbolRegistry : ICanonicalSymbolRegistry
         _resolverCache.Clear();
 
         var registry = _registryService.GetRegistry();
+        var aliasCandidates = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var (canonical, entry) in registry.Symbols)
         {
@@ -247,19 +332,20 @@ public sealed class CanonicalSymbolRegistry : ICanonicalSymbolRegistry
             _resolverCache[canonical] = canonical;
 
             // Index all aliases
-            foreach (var alias in entry.Aliases)
+            foreach (var alias in entry.Aliases.Where(IsGenericResolvableAlias))
             {
-                _resolverCache.TryAdd(alias.Alias, canonical);
+                AddResolverCandidate(aliasCandidates, alias.Alias, canonical);
             }
 
             // Index all industry identifiers
             IndexIdentifiers(entry.Identifiers, canonical);
 
-            // Index all provider symbols
-            foreach (var (_, providerSymbol) in entry.ProviderSymbols)
-            {
-                _resolverCache.TryAdd(providerSymbol, canonical);
-            }
+        }
+
+        foreach (var (alias, canonicals) in aliasCandidates)
+        {
+            if (canonicals.Count == 1)
+                _resolverCache.TryAdd(alias, canonicals.Single());
         }
 
         // Also include the top-level alias index
@@ -268,13 +354,25 @@ public sealed class CanonicalSymbolRegistry : ICanonicalSymbolRegistry
             _resolverCache.TryAdd(alias, canonical);
         }
 
-        // Include provider mapping entries
-        foreach (var (_, mappings) in registry.ProviderMappings)
+        // Provider-aware lookup remains scoped. A provider symbol is safe in the generic
+        // cache only when every provider that uses that spelling points to one security.
+        // This prevents dictionary iteration order from choosing a security when two
+        // providers reuse the same ticker for different instruments.
+        var providerSymbolCandidates = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var entry in registry.Symbols.Values)
+        {
+            foreach (var providerSymbol in entry.ProviderSymbols.Values)
+                AddResolverCandidate(providerSymbolCandidates, providerSymbol, entry.Canonical);
+        }
+        foreach (var mappings in registry.ProviderMappings.Values)
         {
             foreach (var (providerSymbol, canonical) in mappings)
-            {
-                _resolverCache.TryAdd(providerSymbol, canonical);
-            }
+                AddResolverCandidate(providerSymbolCandidates, providerSymbol, canonical);
+        }
+        foreach (var (providerSymbol, canonicals) in providerSymbolCandidates)
+        {
+            if (canonicals.Count == 1)
+                _resolverCache.TryAdd(providerSymbol, canonicals.Single());
         }
 
         // Include identifier index entries
@@ -288,30 +386,21 @@ public sealed class CanonicalSymbolRegistry : ICanonicalSymbolRegistry
             _resolverCache.TryAdd(sedol, canonical);
     }
 
-    /// <summary>
-    /// Indexes all identifiers for a single definition into the resolver cache.
-    /// </summary>
-    private void IndexDefinition(CanonicalSymbolDefinition definition)
+    private static void AddResolverCandidate(
+        Dictionary<string, HashSet<string>> candidates,
+        string symbol,
+        string canonical)
     {
-        var canonical = definition.Canonical;
+        if (string.IsNullOrWhiteSpace(symbol) || string.IsNullOrWhiteSpace(canonical))
+            return;
 
-        _resolverCache[canonical] = canonical;
-
-        foreach (var alias in definition.Aliases)
+        if (!candidates.TryGetValue(symbol.Trim(), out var canonicals))
         {
-            _resolverCache.TryAdd(alias, canonical);
+            canonicals = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            candidates[symbol.Trim()] = canonicals;
         }
 
-        if (!string.IsNullOrEmpty(definition.Isin))
-            _resolverCache.TryAdd(definition.Isin, canonical);
-        if (!string.IsNullOrEmpty(definition.Figi))
-            _resolverCache.TryAdd(definition.Figi, canonical);
-        if (!string.IsNullOrEmpty(definition.CompositeFigi))
-            _resolverCache.TryAdd(definition.CompositeFigi, canonical);
-        if (!string.IsNullOrEmpty(definition.Sedol))
-            _resolverCache.TryAdd(definition.Sedol, canonical);
-        if (!string.IsNullOrEmpty(definition.Cusip))
-            _resolverCache.TryAdd(definition.Cusip, canonical);
+        canonicals.Add(canonical.Trim());
     }
 
     private void IndexIdentifiers(SymbolIdentifiers identifiers, string canonical)
@@ -365,15 +454,51 @@ public sealed class CanonicalSymbolRegistry : ICanonicalSymbolRegistry
             })
             .ToList();
 
+        foreach (var alias in definition.AliasDefinitions)
+        {
+            var provider = string.IsNullOrWhiteSpace(alias.Provider)
+                ? null
+                : NormalizeProvider(alias.Provider);
+            if (aliases.Any(existing =>
+                    existing.Alias.Equals(alias.Alias, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(existing.Provider, provider, StringComparison.OrdinalIgnoreCase)))
+                continue;
+
+            aliases.Add(new SymbolAlias
+            {
+                Alias = alias.Alias,
+                Source = alias.Source,
+                Provider = provider,
+                Type = "ticker",
+                IsActive = alias.IsActive,
+                ValidFrom = alias.ValidFrom?.UtcDateTime,
+                ValidTo = alias.ValidTo?.UtcDateTime
+            });
+        }
+
         return new SymbolRegistryEntry
         {
             Canonical = definition.Canonical,
+            SecurityId = definition.SecurityId,
             DisplayName = definition.DisplayName,
             AssetClass = definition.AssetClass,
             Exchange = definition.Exchange,
             Currency = definition.Currency,
             Country = definition.Country,
             Aliases = aliases,
+            ProviderSymbols = definition.ProviderSymbols.ToDictionary(
+                static pair => NormalizeProvider(pair.Key),
+                static pair => pair.Value.Symbol,
+                StringComparer.OrdinalIgnoreCase),
+            ProviderSymbolMetadata = definition.ProviderSymbols.ToDictionary(
+                static pair => NormalizeProvider(pair.Key),
+                static pair => new ProviderSymbolMetadata
+                {
+                    Source = pair.Value.Source,
+                    IsOverride = pair.Value.IsOverride,
+                    UpdatedAt = pair.Value.UpdatedAt ?? DateTimeOffset.UtcNow
+                },
+                StringComparer.OrdinalIgnoreCase),
             Identifiers = new SymbolIdentifiers
             {
                 Isin = definition.Isin,
@@ -401,8 +526,28 @@ public sealed class CanonicalSymbolRegistry : ICanonicalSymbolRegistry
         return new CanonicalSymbolDefinition
         {
             Canonical = entry.Canonical,
+            SecurityId = entry.SecurityId,
             DisplayName = entry.DisplayName,
             Aliases = aliases,
+            AliasDefinitions = entry.Aliases.Select(alias => new CanonicalSymbolAliasDefinition(
+                alias.Alias,
+                Source: alias.Source,
+                Provider: alias.Provider,
+                ValidFrom: alias.ValidFrom is null ? null : new DateTimeOffset(DateTime.SpecifyKind(alias.ValidFrom.Value, DateTimeKind.Utc)),
+                ValidTo: alias.ValidTo is null ? null : new DateTimeOffset(DateTime.SpecifyKind(alias.ValidTo.Value, DateTimeKind.Utc)),
+                IsActive: alias.IsActive)).ToArray(),
+            ProviderSymbols = entry.ProviderSymbols.ToDictionary(
+                static pair => NormalizeProvider(pair.Key),
+                pair =>
+                {
+                    var metadata = entry.ProviderSymbolMetadata.GetValueOrDefault(pair.Key);
+                    return new ProviderSymbolDefinition(
+                        pair.Value,
+                        metadata?.Source ?? SymbolMappingSources.Registry,
+                        metadata?.IsOverride ?? false,
+                        metadata?.UpdatedAt);
+                },
+                StringComparer.OrdinalIgnoreCase),
             AssetClass = entry.AssetClass,
             Exchange = entry.Exchange,
             Currency = entry.Currency,
@@ -456,4 +601,55 @@ public sealed class CanonicalSymbolRegistry : ICanonicalSymbolRegistry
 
         return "ticker";
     }
+
+    private static string NormalizeProvider(string provider) => provider.Trim().ToLowerInvariant();
+
+    private static ProviderScopedResolution ResolveProviderScoped(
+        SymbolRegistry registry,
+        string providerSymbol,
+        string provider,
+        out string? canonical)
+    {
+        if (registry.ProviderMappings.TryGetValue(provider, out var providerMap) &&
+            providerMap.TryGetValue(providerSymbol, out canonical))
+        {
+            return ProviderScopedResolution.Resolved;
+        }
+
+        canonical = null;
+        foreach (var (candidateCanonical, entry) in registry.Symbols)
+        {
+            var matchesCurrentSymbol = entry.ProviderSymbols.TryGetValue(provider, out var currentSymbol)
+                && string.Equals(currentSymbol, providerSymbol, StringComparison.OrdinalIgnoreCase);
+            var matchesScopedAlias = entry.Aliases.Any(alias =>
+                alias.IsActive
+                && string.Equals(alias.Provider, provider, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(alias.Alias, providerSymbol, StringComparison.OrdinalIgnoreCase));
+            if (!matchesCurrentSymbol && !matchesScopedAlias)
+                continue;
+
+            if (canonical is not null &&
+                !canonical.Equals(candidateCanonical, StringComparison.OrdinalIgnoreCase))
+            {
+                canonical = null;
+                return ProviderScopedResolution.Ambiguous;
+            }
+
+            canonical = candidateCanonical;
+        }
+
+        return canonical is null
+            ? ProviderScopedResolution.NotFound
+            : ProviderScopedResolution.Resolved;
+    }
+
+    private enum ProviderScopedResolution : byte
+    {
+        NotFound,
+        Resolved,
+        Ambiguous
+    }
+
+    private static bool IsGenericResolvableAlias(SymbolAlias alias)
+        => alias.IsActive && string.IsNullOrWhiteSpace(alias.Provider);
 }

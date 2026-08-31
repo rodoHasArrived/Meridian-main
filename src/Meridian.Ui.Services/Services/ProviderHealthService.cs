@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Serilog;
 using Timer = System.Timers.Timer;
 
 namespace Meridian.Ui.Services;
@@ -243,8 +244,10 @@ public sealed class ProviderHealthService : IDisposable
         }
         else
         {
-            // Generate mock data for demo
-            GenerateMockHealthData();
+            // The health API is unreachable or returned an error. Never substitute fabricated
+            // health data: mark any previously observed providers as unknown/stale and surface
+            // the failure, leaving last-known metrics and timestamps untouched.
+            MarkHealthDataUnavailable(response.StatusCode, response.ErrorMessage);
         }
 
         HealthUpdated?.Invoke(this, new HealthUpdateEventArgs
@@ -253,87 +256,30 @@ public sealed class ProviderHealthService : IDisposable
         });
     }
 
-    private void GenerateMockHealthData()
+    /// <summary>
+    /// Records that the provider health API could not be reached. Existing entries keep their
+    /// last-known metrics and <see cref="ProviderHealthData.LastUpdated"/> timestamps (so staleness
+    /// is visible) but are flagged with an Unknown lifecycle state and the underlying failure.
+    /// No providers, metrics, or history points are invented.
+    /// </summary>
+    private void MarkHealthDataUnavailable(int statusCode, string? errorMessage)
     {
-        var providers = new[]
+        Log.Warning(
+            "Provider health API request failed with status {StatusCode}: {Error}. Marking cached provider health as unknown instead of substituting mock data.",
+            statusCode,
+            errorMessage);
+
+        var detail = string.IsNullOrWhiteSpace(errorMessage)
+            ? $"HTTP {statusCode}"
+            : errorMessage!.Length > 200 ? errorMessage[..200] : errorMessage;
+        var failureKind = $"health-api-unavailable: {detail}";
+
+        foreach (var providerId in _providerHealth.Keys)
         {
-            ("alpaca", "Alpaca Markets", true, 95.2, 45.0, 99.8, 0),
-            ("polygon", "Polygon.io", true, 88.5, 62.0, 97.2, 2),
-            ("ib", "Interactive Brokers", false, 72.1, 120.0, 94.5, 5),
-            ("nyse", "NYSE", true, 91.0, 55.0, 98.1, 1)
-        };
-
-        foreach (var (id, name, connected, stability, latency, completeness, reconnects) in providers)
-        {
-            var metrics = new HealthMetrics
+            if (_providerHealth.TryGetValue(providerId, out var existing))
             {
-                ConnectionStabilityScore = stability,
-                AverageLatencyMs = latency,
-                LatencyP99Ms = latency * 2.5,
-                LatencyConsistencyScore = Math.Max(0, 100 - latency / 2),
-                DataCompletenessPercent = completeness,
-                ReconnectsLastHour = reconnects,
-                ReconnectionScore = CalculateReconnectionScore(reconnects),
-                UptimePercent = stability,
-                MessagesPerSecond = connected ? 1500 + new Random().Next(500) : 0,
-                ErrorsLastHour = reconnects * 2
-            };
-
-            var breakdown = new HealthScoreBreakdown
-            {
-                ConnectionStability = new ScoreComponent { Weight = 30, Score = stability, WeightedScore = stability * 0.3 },
-                LatencyConsistency = new ScoreComponent { Weight = 25, Score = metrics.LatencyConsistencyScore, WeightedScore = metrics.LatencyConsistencyScore * 0.25 },
-                DataCompleteness = new ScoreComponent { Weight = 25, Score = completeness, WeightedScore = completeness * 0.25 },
-                ReconnectionFrequency = new ScoreComponent { Weight = 20, Score = metrics.ReconnectionScore, WeightedScore = metrics.ReconnectionScore * 0.2 }
-            };
-
-            var healthData = new ProviderHealthData
-            {
-                ProviderId = id,
-                ProviderName = name,
-                IsConnected = connected,
-                LastUpdated = DateTime.UtcNow,
-                OverallScore = breakdown.ConnectionStability.WeightedScore +
-                               breakdown.LatencyConsistency.WeightedScore +
-                               breakdown.DataCompleteness.WeightedScore +
-                               breakdown.ReconnectionFrequency.WeightedScore,
-                Metrics = metrics,
-                Breakdown = breakdown
-            };
-
-            _providerHealth[id] = healthData;
-
-            // Update history with some variation
-            var history = _healthHistory.GetOrAdd(id, _ =>
-            {
-                var list = new List<HealthHistoryPoint>();
-                // Generate historical data
-                var rnd = new Random();
-                for (int i = 24; i >= 0; i--)
-                {
-                    list.Add(new HealthHistoryPoint
-                    {
-                        Timestamp = DateTime.UtcNow.AddHours(-i),
-                        OverallScore = healthData.OverallScore + rnd.Next(-5, 6),
-                        LatencyMs = latency + rnd.Next(-10, 20),
-                        CompletenessPercent = Math.Min(100, completeness + rnd.Next(-2, 2))
-                    });
-                }
-                return list;
-            });
-
-            lock (history)
-            {
-                history.Add(new HealthHistoryPoint
-                {
-                    Timestamp = DateTime.UtcNow,
-                    OverallScore = healthData.OverallScore,
-                    LatencyMs = latency,
-                    CompletenessPercent = completeness
-                });
-
-                var cutoff = DateTime.UtcNow.AddHours(-24);
-                history.RemoveAll(h => h.Timestamp < cutoff);
+                existing.LifecycleState = "Unknown";
+                existing.LastFailureKind = failureKind;
             }
         }
     }

@@ -1,6 +1,7 @@
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Configuration;
 using Meridian.DataIntegration.Credentials;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.DataIntegration.AccountingSystem.QuickBooks;
 
@@ -46,7 +47,7 @@ public sealed class QuickBooksOnlineProviderCredentialConnectionStore : IQuickBo
             refreshToken.Trim(),
             realmId.Trim(),
             NormalizeEnvironment(read.Environment),
-            NullIfWhiteSpace(read.Get(CompanyNameField)));
+            NormalizeOptional(read.Get(CompanyNameField)));
     }
 
     public async Task<AccountingSystemConnectionMetadataDto> GetMetadataAsync(CancellationToken ct = default)
@@ -64,8 +65,8 @@ public sealed class QuickBooksOnlineProviderCredentialConnectionStore : IQuickBo
         return new AccountingSystemConnectionMetadataDto(
             QuickBooksOnlineAccountingProvider.Id,
             NormalizeEnvironment(status.Environment),
-            NullIfWhiteSpace(realmId),
-            NullIfWhiteSpace(companyName),
+            NormalizeOptional(realmId),
+            NormalizeOptional(companyName),
             HasLocalConfig: hasConfig,
             HasRefreshToken: !string.IsNullOrWhiteSpace(read?.Get(RefreshTokenField)),
             LastConnectedAtUtc: status.LastSuccessfulAt,
@@ -139,7 +140,4 @@ public sealed class QuickBooksOnlineProviderCredentialConnectionStore : IQuickBo
                 : "selected company";
         return $"Read-only QuickBooks Online evidence is configured for {selectedCompany}; posting/export remains disabled.";
     }
-
-    private static string? NullIfWhiteSpace(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

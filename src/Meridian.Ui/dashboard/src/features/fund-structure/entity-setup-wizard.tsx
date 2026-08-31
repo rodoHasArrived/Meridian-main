@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { createFundStructureSetupDraft, validateFundStructureSetupDraft, type FundStructureSetupDraft, type FundStructureSetupPreview, type FundStructureSetupResult } from "@/lib/api";
 
 const legalEntityTypes = ["Fund", "ManagementCompany", "GeneralPartner", "LimitedPartner", "Vehicle", "Custodian", "Broker", "Counterparty", "Other"] as const;
@@ -74,16 +75,34 @@ export function EntitySetupWizard() {
   const [result, setResult] = useState<FundStructureSetupResult | null>(null);
   const [status, setStatus] = useState("Validate the setup draft before review and create.");
   const [busy, setBusy] = useState(false);
+  const [validatedDraftSignature, setValidatedDraftSignature] = useState<string | null>(null);
   const draft = useMemo(() => buildDraft(fields), [fields]);
+  const draftSignature = useMemo(() => JSON.stringify(draft), [draft]);
   const blockingCount = preview?.validationSummary.issues.filter((issue) => issue.isBlocking).length ?? 0;
+  const validationIsCurrent = preview?.validationSummary.isValid === true && validatedDraftSignature === draftSignature;
+  const createDisabledReason = busy
+    ? "Validation or creation is in progress."
+    : !preview
+      ? "Validate the current draft before creating the entity graph."
+      : validatedDraftSignature !== draftSignature
+        ? "The draft changed after validation. Validate it again before creating records."
+        : !preview.validationSummary.isValid
+          ? "Resolve blocking validation issues before creating records."
+          : null;
 
   const update = (key: keyof DraftFields) => (event: ChangeEvent<HTMLInputElement>) => {
     setFields((current) => ({ ...current, [key]: event.target.value }));
+    setPreview(null);
     setResult(null);
+    setValidatedDraftSignature(null);
+    setStatus("Draft changed. Validate it again before review and create.");
   };
   const updateSelect = (key: keyof DraftFields) => (event: ChangeEvent<HTMLSelectElement>) => {
     setFields((current) => ({ ...current, [key]: event.target.value }));
+    setPreview(null);
     setResult(null);
+    setValidatedDraftSignature(null);
+    setStatus("Draft changed. Validate it again before review and create.");
   };
 
   async function validate() {
@@ -91,19 +110,32 @@ export function EntitySetupWizard() {
     try {
       const response = await validateFundStructureSetupDraft(draft);
       setPreview(response);
+      setValidatedDraftSignature(response.validationSummary.isValid ? draftSignature : null);
       setStatus(response.validationSummary.isValid ? "Draft is valid. Review the graph preview." : `Resolve ${response.validationSummary.issues.length} setup issue(s).`);
+    } catch {
+      setPreview(null);
+      setValidatedDraftSignature(null);
+      setStatus("Validation could not be completed. No records can be created until the shared setup workflow responds.");
     } finally {
       setBusy(false);
     }
   }
 
   async function create() {
+    if (!validationIsCurrent) {
+      setStatus("Validate the current draft before creating records.");
+      return;
+    }
+
     setBusy(true);
     try {
       const response = await createFundStructureSetupDraft(draft);
       setResult(response);
       setPreview({ nodes: response.graph.nodes, ownershipLinks: [], validationSummary: response.validationSummary });
       setStatus(`Created ${response.businessLane.name} and ${response.investmentPortfolio.name}.`);
+    } catch {
+      setResult(null);
+      setStatus("Creation failed. The validated draft remains available for review and retry.");
     } finally {
       setBusy(false);
     }
@@ -120,40 +152,54 @@ export function EntitySetupWizard() {
               </CardTitle>
               <CardDescription>Shared /api/fund-structure workflow for organization, lane, fund, entity, vehicle, portfolio, ownership, and account handoff setup.</CardDescription>
             </div>
-            <Badge variant={blockingCount > 0 ? "warning" : "success"}>{blockingCount} blockers</Badge>
+            <Badge variant={!preview ? "outline" : blockingCount > 0 ? "warning" : "success"}>
+              {!preview ? "Not validated" : `${blockingCount} blockers`}
+            </Badge>
           </div>
         </CardHeader>
         <CardContent className="space-y-4 p-4">
-          <div className="grid gap-3 md:grid-cols-3">
-            <Field label="Organization code" value={fields.organizationCode} onChange={update("organizationCode")} />
-            <Field label="Organization name" value={fields.organizationName} onChange={update("organizationName")} />
-            <Field label="Base currency" value={fields.baseCurrency} onChange={update("baseCurrency")} />
-            <Field label="Business code" value={fields.businessCode} onChange={update("businessCode")} />
-            <Field label="Business name" value={fields.businessName} onChange={update("businessName")} />
-            <Field label="Requested by" value={fields.requestedBy} onChange={update("requestedBy")} />
-            <Field label="Fund code" value={fields.clientOrFundCode} onChange={update("clientOrFundCode")} />
-            <Field label="Fund name" value={fields.clientOrFundName} onChange={update("clientOrFundName")} />
-            <Field label="Jurisdiction" value={fields.jurisdiction} onChange={update("jurisdiction")} />
-            <SelectField label="Entity type" value={fields.legalEntityType} values={legalEntityTypes} onChange={updateSelect("legalEntityType")} />
-            <SelectField label="Legal form" value={fields.legalForm} values={legalForms} onChange={updateSelect("legalForm")} />
-            <SelectField label="Lifecycle status" value={fields.lifecycleStatus} values={lifecycleStatuses} onChange={updateSelect("lifecycleStatus")} />
-            <Field label="Legal entity code" value={fields.legalEntityCode} onChange={update("legalEntityCode")} />
-            <Field label="Legal entity name" value={fields.legalEntityName} onChange={update("legalEntityName")} />
-            <Field label="Registration number" value={fields.registrationNumber} onChange={update("registrationNumber")} />
-            <Field label="Beneficial owner" value={fields.beneficialOwnerName} onChange={update("beneficialOwnerName")} />
-            <Field label="Owner percent" value={fields.beneficialOwnerPercent} onChange={update("beneficialOwnerPercent")} />
-            <SelectField label="Lifecycle event" value={fields.lifecycleEventKind} values={lifecycleEventKinds} onChange={updateSelect("lifecycleEventKind")} />
-            <Field label="Lifecycle summary" value={fields.lifecycleEventSummary} onChange={update("lifecycleEventSummary")} />
-            <Field label="Vehicle code" value={fields.vehicleCode} onChange={update("vehicleCode")} />
-            <Field label="Vehicle name" value={fields.vehicleName} onChange={update("vehicleName")} />
-            <Field label="Portfolio code" value={fields.portfolioCode} onChange={update("portfolioCode")} />
-            <Field label="Portfolio name" value={fields.portfolioName} onChange={update("portfolioName")} />
-            <Field label="Account handoff code" value={fields.accountCode} onChange={update("accountCode")} />
-            <Field label="Account handoff name" value={fields.accountDisplayName} onChange={update("accountDisplayName")} />
-          </div>
+          <fieldset className="space-y-3 rounded-sm border border-border/70 p-3">
+            <legend className="px-1 text-sm font-semibold text-foreground">Organization and fund</legend>
+            <div className="grid gap-3 md:grid-cols-3">
+              <Field label="Organization code" value={fields.organizationCode} onChange={update("organizationCode")} />
+              <Field label="Organization name" value={fields.organizationName} onChange={update("organizationName")} />
+              <Field label="Base currency" value={fields.baseCurrency} onChange={update("baseCurrency")} />
+              <Field label="Business code" value={fields.businessCode} onChange={update("businessCode")} />
+              <Field label="Business name" value={fields.businessName} onChange={update("businessName")} />
+              <Field label="Requested by" value={fields.requestedBy} onChange={update("requestedBy")} />
+              <Field label="Fund code" value={fields.clientOrFundCode} onChange={update("clientOrFundCode")} />
+              <Field label="Fund name" value={fields.clientOrFundName} onChange={update("clientOrFundName")} />
+            </div>
+          </fieldset>
+          <fieldset className="space-y-3 rounded-sm border border-border/70 p-3">
+            <legend className="px-1 text-sm font-semibold text-foreground">Legal entity</legend>
+            <div className="grid gap-3 md:grid-cols-3">
+              <Field label="Jurisdiction" value={fields.jurisdiction} onChange={update("jurisdiction")} />
+              <SelectField label="Entity type" value={fields.legalEntityType} values={legalEntityTypes} onChange={updateSelect("legalEntityType")} />
+              <SelectField label="Legal form" value={fields.legalForm} values={legalForms} onChange={updateSelect("legalForm")} />
+              <SelectField label="Lifecycle status" value={fields.lifecycleStatus} values={lifecycleStatuses} onChange={updateSelect("lifecycleStatus")} />
+              <Field label="Legal entity code" value={fields.legalEntityCode} onChange={update("legalEntityCode")} />
+              <Field label="Legal entity name" value={fields.legalEntityName} onChange={update("legalEntityName")} />
+              <Field label="Registration number" value={fields.registrationNumber} onChange={update("registrationNumber")} />
+              <Field label="Beneficial owner" value={fields.beneficialOwnerName} onChange={update("beneficialOwnerName")} />
+              <Field label="Owner percent" value={fields.beneficialOwnerPercent} onChange={update("beneficialOwnerPercent")} />
+            </div>
+          </fieldset>
+          <TechnicalDetails label="Advanced structure and handoff">
+            <div className="grid gap-3 md:grid-cols-3">
+              <SelectField label="Lifecycle event" value={fields.lifecycleEventKind} values={lifecycleEventKinds} onChange={updateSelect("lifecycleEventKind")} />
+              <Field label="Lifecycle summary" value={fields.lifecycleEventSummary} onChange={update("lifecycleEventSummary")} />
+              <Field label="Vehicle code" value={fields.vehicleCode} onChange={update("vehicleCode")} />
+              <Field label="Vehicle name" value={fields.vehicleName} onChange={update("vehicleName")} />
+              <Field label="Portfolio code" value={fields.portfolioCode} onChange={update("portfolioCode")} />
+              <Field label="Portfolio name" value={fields.portfolioName} onChange={update("portfolioName")} />
+              <Field label="Account handoff code" value={fields.accountCode} onChange={update("accountCode")} />
+              <Field label="Account handoff name" value={fields.accountDisplayName} onChange={update("accountDisplayName")} />
+            </div>
+          </TechnicalDetails>
           <div className="flex flex-wrap gap-2">
             <Button type="button" variant="secondary" onClick={validate} disabled={busy}>{busy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <ShieldAlert className="h-4 w-4" />} Validate draft</Button>
-            <Button type="button" onClick={create} disabled={busy || (preview !== null && !preview.validationSummary.isValid)}>{busy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} Review and create</Button>
+            <Button type="button" onClick={create} disabled={createDisabledReason !== null} disabledReason={createDisabledReason ?? undefined}>{busy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} Review and create</Button>
           </div>
           <p className="text-sm text-muted-foreground" role="status">{status}</p>
         </CardContent>

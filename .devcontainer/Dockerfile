@@ -1,12 +1,12 @@
 # =============================================================================
 # Dev Container – Dockerfile
 # =============================================================================
-# Extends the official .NET 9 devcontainer base image with Node 20 and Python
+# Extends the official .NET 10 devcontainer base image with Node 20 and Python
 # 3.  Heavy tooling (dotnet restore, npm ci) is deferred to the
 # onCreateCommand in devcontainer.json so the image layer stays cacheable.
 # =============================================================================
 
-FROM mcr.microsoft.com/devcontainers/dotnet:9.0
+FROM mcr.microsoft.com/devcontainers/dotnet:10.0
 
 # Install Node.js 20.x (LTS)
 ARG NODE_VERSION=20

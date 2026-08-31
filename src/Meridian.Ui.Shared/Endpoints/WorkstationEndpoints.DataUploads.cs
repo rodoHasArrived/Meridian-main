@@ -1,5 +1,5 @@
+using Meridian.Identity.Auth;
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -26,7 +27,7 @@ public static partial class WorkstationEndpoints
         {
             return Results.Json(BuildDataUploadTemplateCatalog(), jsonOptions);
         })
-        .WithName("GetWorkstationDataUploadTemplates")
+        .WithName("GetWorkstationDataUploadTemplates").DeclareOpenRead("Built-in upload-template schema catalog; carries no tenant or deployment state.")
         .Produces<DataUploadTemplateCatalogDto>(200);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationDataUploadPreview), async (
@@ -130,7 +131,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(response, jsonOptions);
         })
-        .WithName("PreviewWorkstationDataUpload")
+        .WithName("PreviewWorkstationDataUpload").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<DataUploadPreviewResultDto>(200)
         .ProducesValidationProblem()
         .Produces(403);
@@ -283,11 +284,13 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(response, jsonOptions);
         })
-        .WithName("ImportWorkstationBankStatement")
+        .WithName("ImportWorkstationBankStatement").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
         .Produces<BankStatementImportResultDto>(200)
         .ProducesValidationProblem()
         .Produces(403)
         .Produces(501);
+
+        MapDataUploadWorkbookEndpoints(group, jsonOptions);
     }
 
     private static DataUploadTemplateCatalogDto BuildDataUploadTemplateCatalog()
@@ -538,7 +541,10 @@ public static partial class WorkstationEndpoints
                     SetupChecklist = BuildDataUploadSetupChecklist(template.TemplateId),
                     MappingGuidance = BuildDataUploadMappingGuidance(template.TemplateId)
                 })
-                .ToArray()
+                .ToArray(),
+            WorkbookFileName = OnboardingWorkbookFileName,
+            WorkbookAcceptedFileExtensions = OnboardingWorkbookAcceptedExtensions,
+            WorkbookMaxFileBytes = DataUploadWorkbookMaxFileBytes
         };
 
     private static IReadOnlyList<string> BuildDataUploadSourceKinds(string templateId)
@@ -753,7 +759,7 @@ public static partial class WorkstationEndpoints
 
     private static string BuildDataUploadId(byte[] fileBytes)
     {
-        var hash = Convert.ToHexString(SHA256.HashData(fileBytes))[..12].ToLowerInvariant();
+        var hash = Sha256Digest.Compute(fileBytes)[..12];
         return "UP-" + DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture) + "-" + hash;
     }
 

@@ -86,9 +86,13 @@ public sealed class ThemeService : ThemeServiceBase
             // Update system colors for window chrome
             UpdateWindowChrome(theme);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // Fall back to programmatic theming if resource dictionaries aren't available
+            LoggingService.Instance.LogDebug(
+                "Resource-dictionary theming failed; applying programmatic theme.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
             ApplyProgrammaticTheme(theme);
         }
     }

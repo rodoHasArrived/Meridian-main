@@ -42,7 +42,7 @@
         "artifacts/ci-summary/"
       ],
       "timeoutMinutes": 45,
-      "pathTriggerNotes": "Covers solution restore, formatting, warning-suppression inventory, web-workstation .NET build, and non-integration .NET tests.",
+      "pathTriggerNotes": "Covers solution restore, formatting, warning-suppression inventory, file-size ratchet, web-workstation .NET build, and non-integration .NET tests.",
       "requiredCheckRole": "evidence"
     },
     {
@@ -56,7 +56,7 @@
         "artifacts/ci-summary/"
       ],
       "timeoutMinutes": 25,
-      "pathTriggerNotes": "Covers lockfile-strict dashboard install, tests, and production bundle build.",
+      "pathTriggerNotes": "Covers lockfile-strict dashboard install, generated UI route/catalog drift checks, lint, strict typecheck, tests, and production bundle build.",
       "requiredCheckRole": "evidence"
     },
     {
@@ -108,7 +108,7 @@
       "id": "targeted-test",
       "displayName": "Curated Hosted Lane Validation",
       "runner": "ubuntu-latest or windows-latest",
-      "localCommand": "gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter=\"FullyQualifiedName~<TestClassOrMethod>\"",
+      "localCommand": "python build/scripts/ci/dispatch-targeted-test.py --ref <branch> --mode dotnet-filtered --dotnet-project tests/Meridian.Tests/Meridian.Tests.csproj --dotnet-filter \"FullyQualifiedName~<TestClassOrMethod>\" --wait",
       "hostedMode": "dotnet-filtered,browser-workstation,docs-source,wpf-dev-loop,wpf-route,desktop-smoke",
       "artifacts": [
         "artifacts/test-results/targeted-dotnet/",
@@ -143,10 +143,12 @@
       "hostedMode": "publish-smoke,desktop-installer-release",
       "artifacts": [
         "artifacts/publish/",
-        "artifacts/release/"
+        "artifacts/release/",
+        "artifacts/publish/publish-smoke/release-evidence.json",
+        "artifacts/release/<runtime>/release-evidence.json"
       ],
       "timeoutMinutes": 75,
-      "pathTriggerNotes": "Manual publish smoke or tag/manual desktop installer packaging.",
+      "pathTriggerNotes": "Manual publish smoke or tag/manual desktop installer packaging with release evidence manifests.",
       "requiredCheckRole": "release-evidence"
     },
     {

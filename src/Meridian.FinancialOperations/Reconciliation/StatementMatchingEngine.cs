@@ -120,7 +120,7 @@ public sealed class StatementMatchingEngine
                 1.00m,
                 [CashExactRuleId],
                 CashVariance(statement, internalCash),
-                new StatementMatchTolerance(tolerance.CashBalance),
+                new StatementMatchTolerance(Amount: tolerance.CashBalance),
                 "Exact cash match on account, currency, statement ending balance, and internal cash balance."),
             results);
 
@@ -138,7 +138,7 @@ public sealed class StatementMatchingEngine
                 ConfidenceFromVariance(Abs(statement.EndingBalance - internalCash.Balance), tolerance.CashBalance),
                 [CashToleranceRuleId],
                 CashVariance(statement, internalCash),
-                new StatementMatchTolerance(tolerance.CashBalance),
+                new StatementMatchTolerance(Amount: tolerance.CashBalance),
                 "Cash balance matched inside configured balance tolerance."),
             results);
 
@@ -156,7 +156,7 @@ public sealed class StatementMatchingEngine
                 0.60m,
                 [CashCandidateRuleId],
                 CashVariance(statement, internalCash),
-                new StatementMatchTolerance(tolerance.CashBalance),
+                new StatementMatchTolerance(Amount: tolerance.CashBalance),
                 "Cash candidate shares account and currency but exceeds configured balance tolerance."),
             results);
 
@@ -174,7 +174,10 @@ public sealed class StatementMatchingEngine
             request.InternalLedgerTransactions,
             matchedStatements,
             matchedInternal,
-            (statement, internalTransaction) => HasSameExternalTransactionId(statement, internalTransaction),
+            (statement, internalTransaction) => HasSameExternalTransactionId(statement, internalTransaction)
+                && SameTransactionIdentity(statement, internalTransaction)
+                && statement.Quantity == internalTransaction.Quantity
+                && statement.NetAmount == internalTransaction.NetAmount,
             (statement, internalTransaction) => CreateTransactionResult(
                 statement,
                 internalTransaction,
@@ -183,7 +186,7 @@ public sealed class StatementMatchingEngine
                 [TransactionExternalIdRuleId],
                 TransactionVariance(statement, internalTransaction),
                 TransactionTolerance(tolerance),
-                "Exact transaction match on external transaction ID."),
+                "Exact transaction match on external transaction ID and transaction details."),
             results);
 
         MatchStage(
@@ -374,7 +377,7 @@ public sealed class StatementMatchingEngine
                 statement.EvidenceReference,
                 null,
                 new StatementMatchVariance(Amount: statement.EndingBalance),
-                new StatementMatchTolerance(tolerance.CashBalance),
+                new StatementMatchTolerance(Amount: tolerance.CashBalance),
                 "Broker statement cash balance did not match any internal cash balance."));
         }
 
@@ -388,7 +391,7 @@ public sealed class StatementMatchingEngine
                 null,
                 internalItem.EvidenceReference,
                 new StatementMatchVariance(Amount: -internalItem.Balance),
-                new StatementMatchTolerance(tolerance.CashBalance),
+                new StatementMatchTolerance(Amount: tolerance.CashBalance),
                 "Internal cash balance did not match any broker statement cash balance."));
         }
     }
@@ -493,8 +496,10 @@ public sealed class StatementMatchingEngine
         && statement.AsOfDate == internalPosition.AsOfDate;
 
     private static bool SameCashIdentity(NormalizedStatementCashBalance statement, InternalCashBalance internalCash) =>
-        SameText(statement.Account, internalCash.Account)
-        && SameText(statement.Currency, internalCash.Currency);
+        statement.IsForStatementPeriodEnd
+        && SameText(statement.Account, internalCash.Account)
+        && SameText(statement.Currency, internalCash.Currency)
+        && statement.AsOfDate == internalCash.AsOfDate;
 
     private static bool SameTransactionIdentity(NormalizedStatementTransaction statement, InternalLedgerTransaction internalTransaction) =>
         SameText(statement.Account, internalTransaction.Account)
@@ -612,7 +617,9 @@ public sealed record NormalizedStatementCashBalance(
     string Account,
     string Currency,
     decimal EndingBalance,
-    string EvidenceReference) : IStatementMatchItem
+    string EvidenceReference,
+    DateOnly AsOfDate,
+    bool IsForStatementPeriodEnd = true) : IStatementMatchItem
 {
     string IStatementMatchItem.MatchId => CashBalanceId;
 }
@@ -650,7 +657,8 @@ public sealed record InternalCashBalance(
     string Account,
     string Currency,
     decimal Balance,
-    string EvidenceReference) : IStatementMatchItem
+    string EvidenceReference,
+    DateOnly AsOfDate) : IStatementMatchItem
 {
     string IStatementMatchItem.MatchId => CashBalanceId;
 }

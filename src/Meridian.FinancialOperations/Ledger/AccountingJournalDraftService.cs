@@ -1,8 +1,8 @@
 using Meridian.Contracts.Ledger;
-using System.Security.Cryptography;
-using System.Text;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Ledger;
 
@@ -66,8 +66,6 @@ public sealed record AccountingJournalDraftResult(
 
 public sealed class AccountingJournalDraftService : IAccountingJournalDraftService
 {
-    private const decimal BalanceTolerance = 0.000001m;
-
     private readonly IAccountingPolicyService _accountingPolicyService;
     private readonly IAccountingBasisProjectionService _projectionService;
 
@@ -153,7 +151,7 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
         ValidateTreasuryContext(treasuryContext, request, issues);
         var (draftEntry, totalDebits, totalCredits) = BuildDraftEntry(request, issues, evidenceLinks, treasuryContext);
         var imbalance = totalDebits - totalCredits;
-        var isBalanced = Math.Abs(imbalance) <= BalanceTolerance;
+        var isBalanced = LedgerJournalConstruction.IsBalanced(totalDebits, totalCredits);
 
         if (!isBalanced)
         {
@@ -491,6 +489,7 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
         AddTag(tags, prefix + "investorId", dimensions.InvestorId);
         AddTag(tags, prefix + "capitalAccountId", dimensions.CapitalAccountId);
         AddTag(tags, prefix + "instrumentId", dimensions.InstrumentId?.ToString("D"));
+        AddTag(tags, prefix + "positionId", dimensions.PositionId?.ToString("D"));
         AddTag(tags, prefix + "taxLotId", dimensions.TaxLotId);
         AddTag(tags, prefix + "costCenterId", dimensions.CostCenterId);
         AddTag(tags, prefix + "counterpartyId", dimensions.CounterpartyId);
@@ -523,35 +522,7 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
     }
 
     private static LedgerLineDimensionSet? ToLedgerLineDimensions(LedgerDimensionSetDto? dimensions)
-    {
-        if (dimensions is null)
-        {
-            return null;
-        }
-
-        return new LedgerLineDimensionSet(
-            FundId: NormalizeOptional(dimensions.FundId),
-            EntityId: NormalizeOptional(dimensions.EntityId),
-            SleeveId: NormalizeOptional(dimensions.SleeveId),
-            StrategyId: NormalizeOptional(dimensions.StrategyId),
-            InvestorId: NormalizeOptional(dimensions.InvestorId),
-            CapitalAccountId: NormalizeOptional(dimensions.CapitalAccountId),
-            InstrumentId: dimensions.InstrumentId,
-            TaxLotId: NormalizeOptional(dimensions.TaxLotId),
-            CostCenterId: NormalizeOptional(dimensions.CostCenterId),
-            CounterpartyId: NormalizeOptional(dimensions.CounterpartyId),
-            ExternalGlDimensions: dimensions.ExternalGlDimensions
-                .Where(static item => !string.IsNullOrWhiteSpace(item.Key) && !string.IsNullOrWhiteSpace(item.Value))
-                .OrderBy(static item => item.Key, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(static item => item.Key.Trim(), static item => item.Value.Trim(), StringComparer.OrdinalIgnoreCase),
-            OrganizationId: NormalizeOptional(dimensions.OrganizationId),
-            PortfolioId: NormalizeOptional(dimensions.PortfolioId),
-            BookId: NormalizeOptional(dimensions.BookId),
-            AccountId: NormalizeOptional(dimensions.AccountId),
-            CustomerId: NormalizeOptional(dimensions.CustomerId),
-            VendorId: NormalizeOptional(dimensions.VendorId),
-            ProjectId: NormalizeOptional(dimensions.ProjectId));
-    }
+        => LedgerJournalConstruction.ToLedgerLineDimensions(dimensions);
 
     private static AccountingPostingCommandDto BuildPostingCommand(
         AccountingJournalDraftRequest request,
@@ -629,7 +600,7 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
             NormalizeOptional(ruleId),
             effectiveDate.ToString("yyyy-MM-dd"),
             NormalizeOptional(idempotencyKey));
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        var hash = Sha256Digest.ComputeBytesUtf8(input);
         return new Guid(hash[..16]);
     }
 
@@ -784,9 +755,6 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
             .Order(StringComparer.OrdinalIgnoreCase)
             .ToList();
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static void AddLineIssue(
         List<AccountingConfigurationValidationIssueDto> issues,

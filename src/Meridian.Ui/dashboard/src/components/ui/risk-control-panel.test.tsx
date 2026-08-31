@@ -1,5 +1,6 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { StrictMode } from "react";
 import { RiskControlPanel } from "@/components/ui/risk-control-panel";
 import * as api from "@/lib/api";
 import { createApiErrorFromResponseBody } from "@/lib/api-errors";
@@ -30,12 +31,31 @@ vi.mock("@/lib/api", async () => {
         recentViolations: ["Observed 50 orders in the last minute."]
       }
     ]),
-    getRiskRuleConfig: vi.fn().mockResolvedValue({
-      ruleName: "DrawdownCircuitBreaker",
-      defaultMaxPositionSize: null,
-      symbolPositionLimits: null,
-      maxDrawdownPercent: 5,
-      maxOrdersPerMinute: null
+    getRiskRuleConfig: vi.fn().mockImplementation((ruleName: string) => {
+      if (ruleName === "FatFinger") {
+        return Promise.resolve({
+          ruleName: "FatFinger",
+          maxOrderQuantity: 1000,
+          maxPriceDeviationPercent: 5,
+          maxDrawdownPercent: null,
+          maxOrdersPerMinute: null
+        });
+      }
+      if (ruleName === "PriceCollar") {
+        return Promise.resolve({
+          ruleName: "PriceCollar",
+          priceCollarPercent: 3,
+          maxDrawdownPercent: null,
+          maxOrdersPerMinute: null
+        });
+      }
+      return Promise.resolve({
+        ruleName: "DrawdownCircuitBreaker",
+        defaultMaxPositionSize: null,
+        symbolPositionLimits: null,
+        maxDrawdownPercent: 5,
+        maxOrdersPerMinute: null
+      });
     }),
     updateRiskRuleConfig: vi.fn().mockResolvedValue({
       ruleName: "DrawdownCircuitBreaker",
@@ -61,6 +81,12 @@ describe("RiskControlPanel", () => {
     expect(screen.getByText("OrderRateThrottle")).toBeInTheDocument();
     expect(screen.getByText(/Rule violation timeline/i)).toBeInTheDocument();
 
+    expect(screen.getByText("Fat-finger limits")).toBeInTheDocument();
+    expect(screen.getByLabelText("Maximum order quantity")).toBeInTheDocument();
+    expect(screen.getByLabelText("Maximum price deviation percent")).toBeInTheDocument();
+    expect(screen.getByText("Price collar")).toBeInTheDocument();
+    expect(screen.getByLabelText("Price collar percent")).toBeInTheDocument();
+
     const input = screen.getByLabelText("Drawdown threshold percent");
     expect(input).toHaveAttribute("aria-describedby", "risk-drawdown-threshold-help risk-control-status");
     await user.clear(input);
@@ -76,6 +102,19 @@ describe("RiskControlPanel", () => {
     expect(await screen.findByRole("status")).toHaveTextContent("Drawdown threshold saved.");
     expect(input).toHaveValue("6");
     expect(document.getElementById("risk-control-status")).toHaveTextContent("Drawdown threshold saved.");
+  });
+
+  it("settles on loaded risk controls under React StrictMode", async () => {
+    render(
+      <StrictMode>
+        <RiskControlPanel />
+      </StrictMode>
+    );
+
+    expect(await screen.findByText("PositionLimit")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Trading risk controls" })).toHaveAttribute("aria-busy", "false");
+    expect(screen.queryByText("Loading risk rules...")).not.toBeInTheDocument();
+    expect(screen.queryByText("Loading rule violations...")).not.toBeInTheDocument();
   });
 
   it("renders structured API error details when a risk update fails", async () => {

@@ -50,6 +50,58 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
     }
 
     [Fact]
+    public async Task GetCommandCenterAsync_WhenBlockedQueueRowIsOutsideDecisionDisplayLimit_ShouldBlockCloseSupport()
+    {
+        var workflow = CreateWorkflow(
+            closeChecklist: Enumerable.Range(1, 12)
+                .Select(index => new OperationsCloseChecklistTaskDto(
+                    $"review-task-{index}",
+                    OperationsGateKeyDto.BrokerIngest,
+                    $"Review task {index}",
+                    "controller",
+                    "Review retained evidence.",
+                    0,
+                    null,
+                    DateOnly.Parse("2026-06-04"),
+                    "In progress",
+                    null,
+                    $"evidence:review-task-{index}",
+                    "/workstation/accounting/operations-continuity",
+                    true,
+                    null,
+                    null))
+                .ToArray(),
+            evidencePackages:
+            [
+                new OperationsEvidencePackageSummaryDto(
+                    "retained-support",
+                    "Retained support evidence",
+                    EvidenceStatusDto.Missing,
+                    false,
+                    "Retained source support is missing.",
+                    "/workstation/reporting/evidence",
+                    0,
+                    1,
+                    0,
+                    [])
+            ]);
+        var service = CreateService(workflow);
+
+        var commandCenter = await service.GetCommandCenterAsync(
+            fundAccountId: workflow.FundAccountId,
+            periodId: workflow.PeriodId);
+
+        commandCenter.QueueRows.Should().HaveCount(13);
+        commandCenter.QueueRows.Last().QueueId.Should().Be("evidence-package:retained-support");
+        commandCenter.QueueRows.Last().IsBlocked.Should().BeTrue();
+        commandCenter.CloseSupportDecision.Should().NotBeNull();
+        commandCenter.CloseSupportDecision!.Decisions.Should().HaveCount(12);
+        commandCenter.CloseSupportDecision.IsReady.Should().BeFalse();
+        commandCenter.CloseSupportDecision.Status.Should().Be("Blocked");
+        commandCenter.CloseSupportDecision.Summary.Should().Be("1 close-support decision(s) block completion.");
+    }
+
+    [Fact]
     public async Task GetCommandCenterAsync_WhenApprovalHistoryAndPeriodLockEvidenceMissing_ShouldPreserveEvidencePackageCapabilities()
     {
         var workflow = CreateWorkflow(evidencePackages:
@@ -1137,7 +1189,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
 
     private sealed class StubPrivateCapitalCloseCockpitService(PrivateCapitalCloseCockpitDto cockpit) : IPrivateCapitalCloseCockpitService
     {
-        public Task<PrivateCapitalCloseCockpitDto> GetCockpitAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default)
+        public Task<PrivateCapitalCloseCockpitDto> GetCockpitAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null)
             => Task.FromResult(cockpit);
     }
 }

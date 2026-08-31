@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Meridian.Ui.Services;
@@ -28,20 +29,57 @@ public sealed class NotificationService
     public static NotificationService Instance => _instance.Value;
 
     public Task NotifyErrorAsync(string title, string message, Exception? exception = null)
-        => Task.CompletedTask;
+    {
+        Discarded(NotificationType.Error, title, message);
+        return Task.CompletedTask;
+    }
 
     public Task NotifyWarningAsync(string title, string message)
-        => Task.CompletedTask;
+    {
+        Discarded(NotificationType.Warning, title, message);
+        return Task.CompletedTask;
+    }
 
     public Task NotifyAsync(string title, string message, NotificationType type = NotificationType.Info)
-        => Task.CompletedTask;
+    {
+        Discarded(type, title, message);
+        return Task.CompletedTask;
+    }
 
     public Task NotifyBackfillCompleteAsync(bool success, int symbolCount, int barsWritten, TimeSpan duration)
-        => Task.CompletedTask;
+    {
+        Discarded(
+            success ? NotificationType.Success : NotificationType.Error,
+            "Backfill complete",
+            $"success={success}, symbols={symbolCount}, bars={barsWritten}, duration={duration}");
+        return Task.CompletedTask;
+    }
 
     public Task NotifyScheduledJobAsync(string jobName, bool started, bool success = true)
-        => Task.CompletedTask;
+    {
+        Discarded(
+            success ? NotificationType.Info : NotificationType.Error,
+            "Scheduled job",
+            $"{jobName}: started={started}, success={success}");
+        return Task.CompletedTask;
+    }
 
     public Task NotifyStorageWarningAsync(double usedPercent, long freeSpaceBytes)
-        => Task.CompletedTask;
+    {
+        Discarded(
+            NotificationType.Warning,
+            "Storage warning",
+            $"used={usedPercent:0.##}%, free={freeSpaceBytes} bytes");
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Records that a notification was dropped because no real notification surface is wired.
+    /// Without this trace, hosts that forget to register a concrete
+    /// <see cref="Contracts.INotificationService"/> silently lose every notification with no
+    /// diagnostic signal. Kept at debug level so a correctly wired host pays nothing.
+    /// </summary>
+    private static void Discarded(NotificationType type, string title, string message)
+        => Debug.WriteLine(
+            $"[NotificationService] Discarded (no notification surface wired) {type}: {title} - {message}");
 }

@@ -4,12 +4,15 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.Ledger;
+using Meridian.Storage.Ledger;
 using Meridian.Strategies.Services;
 
 namespace Meridian.Ui.Shared.Services;
 
-public sealed class FinancialRecordExplorerReadService
+public sealed partial class FinancialRecordExplorerReadService
 {
     public const string LedgerExplorerId = "ledger";
     public const string PortfolioExplorerId = "portfolio";
@@ -32,6 +35,9 @@ public sealed class FinancialRecordExplorerReadService
     private readonly ISecurityMasterWorkbenchQueryService? _securityMasterWorkbenchQueryService;
     private readonly IAssetOperationsQueryService? _assetOperationsQueryService;
     private readonly DirectLendingOperationsReadService? _directLendingOperationsReadService;
+    private readonly ILedgerJournalStore? _ledgerJournalStore;
+    private readonly IAssetAccountingEventSpineService? _assetAccountingEventSpineService;
+    private readonly IFundProfileTenancyRegistry? _tenancyRegistry;
 
     public FinancialRecordExplorerReadService(
         IFinancialRecordExplorerSavedViewStore savedViewStore,
@@ -40,7 +46,10 @@ public sealed class FinancialRecordExplorerReadService
         ReportPackDeliveryService? reportPackDeliveryService = null,
         ISecurityMasterWorkbenchQueryService? securityMasterWorkbenchQueryService = null,
         IAssetOperationsQueryService? assetOperationsQueryService = null,
-        DirectLendingOperationsReadService? directLendingOperationsReadService = null)
+        DirectLendingOperationsReadService? directLendingOperationsReadService = null,
+        ILedgerJournalStore? ledgerJournalStore = null,
+        IAssetAccountingEventSpineService? assetAccountingEventSpineService = null,
+        IFundProfileTenancyRegistry? tenancyRegistry = null)
     {
         _savedViewStore = savedViewStore ?? throw new ArgumentNullException(nameof(savedViewStore));
         _runReadService = runReadService;
@@ -49,6 +58,9 @@ public sealed class FinancialRecordExplorerReadService
         _securityMasterWorkbenchQueryService = securityMasterWorkbenchQueryService;
         _assetOperationsQueryService = assetOperationsQueryService;
         _directLendingOperationsReadService = directLendingOperationsReadService;
+        _ledgerJournalStore = ledgerJournalStore;
+        _assetAccountingEventSpineService = assetAccountingEventSpineService;
+        _tenancyRegistry = tenancyRegistry;
     }
 
     public static bool IsKnownExplorerId(string explorerId)
@@ -70,18 +82,50 @@ public sealed class FinancialRecordExplorerReadService
         string tenantId,
         FinancialRecordExplorerQueryDto? query,
         CancellationToken ct = default)
+        => await GetExplorerAsync(explorerId, tenantId, query, FinancialRecordExplorerReadScope.All, ct).ConfigureAwait(false);
+
+    public async Task<FinancialRecordExplorerDto?> GetExplorerAsync(
+        string explorerId,
+        string tenantId,
+        FinancialRecordExplorerQueryDto? query,
+        FinancialRecordExplorerReadScope scope,
+        CancellationToken ct = default)
+        => await GetExplorerAsync(explorerId, tenantId, companyId: null, query, scope, ct: ct).ConfigureAwait(false);
+
+    /// <summary>
+    /// The explorer for one tenant, with <paramref name="companyId"/> completing the fund-ownership
+    /// scope used to choose which strategy run may be its source. Request-serving callers pass both;
+    /// the in-process overloads above pass no company and fall back to tenant-only ownership.
+    /// </summary>
+    public async Task<FinancialRecordExplorerDto?> GetExplorerAsync(
+        string explorerId,
+        string tenantId,
+        string? companyId,
+        FinancialRecordExplorerQueryDto? query,
+        FinancialRecordExplorerReadScope scope,
+        ReportAccessQueryContext? reportAccess = null,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentNullException.ThrowIfNull(scope);
         var normalized = NormalizeExplorerId(explorerId);
+        var fundScope = new FundOwnershipScope(tenantId, companyId);
         return normalized switch
         {
-            LedgerExplorerId => await BuildLedgerExplorerAsync(tenantId, query, ct).ConfigureAwait(false),
-            PortfolioExplorerId => await BuildPortfolioExplorerAsync(tenantId, query, ct).ConfigureAwait(false),
-            SecurityInstrumentExplorerId => await BuildSecurityInstrumentExplorerAsync(tenantId, query, ct).ConfigureAwait(false),
-            ReportLineProvenanceExplorerId => await BuildReportLineProvenanceExplorerAsync(tenantId, query, ct).ConfigureAwait(false),
+            LedgerExplorerId => await BuildLedgerExplorerAsync(tenantId, fundScope, query, ct).ConfigureAwait(false),
+            PortfolioExplorerId => await BuildPortfolioExplorerAsync(tenantId, fundScope, query, ct).ConfigureAwait(false),
+            SecurityInstrumentExplorerId => await BuildSecurityInstrumentExplorerAsync(tenantId, fundScope, query, scope, reportAccess, ct).ConfigureAwait(false),
+            ReportLineProvenanceExplorerId => await BuildReportLineProvenanceExplorerAsync(tenantId, query, reportAccess, ct).ConfigureAwait(false),
             _ => null
         };
     }
+
+    /// <summary>
+    /// The tenant/company pair a strategy run's fund profile must be owned by for its detail to be
+    /// used as an explorer source.
+    /// </summary>
+    private readonly record struct FundOwnershipScope(string TenantId, string? CompanyId);
+
 
     public async Task<FinancialRecordExplorerSelectedRecordDto?> GetRecordAsync(
         string explorerId,
@@ -94,10 +138,32 @@ public sealed class FinancialRecordExplorerReadService
         string recordId,
         string tenantId,
         CancellationToken ct = default)
+        => await GetRecordAsync(explorerId, recordId, tenantId, FinancialRecordExplorerReadScope.All, ct).ConfigureAwait(false);
+
+    public async Task<FinancialRecordExplorerSelectedRecordDto?> GetRecordAsync(
+        string explorerId,
+        string recordId,
+        string tenantId,
+        FinancialRecordExplorerReadScope scope,
+        CancellationToken ct = default)
+        => await GetRecordAsync(explorerId, recordId, tenantId, companyId: null, scope, ct: ct).ConfigureAwait(false);
+
+    public async Task<FinancialRecordExplorerSelectedRecordDto?> GetRecordAsync(
+        string explorerId,
+        string recordId,
+        string tenantId,
+        string? companyId,
+        FinancialRecordExplorerReadScope scope,
+        ReportAccessQueryContext? reportAccess = null,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(recordId);
 
-        var explorer = await GetExplorerAsync(explorerId, tenantId, ct).ConfigureAwait(false);
+        // The record view is one row of the same explorer, so it carries the same enrichments and
+        // must be projected the same way; routing it through the unscoped overload would withhold a
+        // family from the list and hand it back on the drill-in -- or serve a foreign tenant's row
+        // that the list itself refused.
+        var explorer = await GetExplorerAsync(explorerId, tenantId, companyId, query: null, scope, reportAccess, ct).ConfigureAwait(false);
         return explorer?.Rows
             .FirstOrDefault(row => string.Equals(row.RecordId, recordId, StringComparison.OrdinalIgnoreCase))
             ?.Detail;
@@ -151,6 +217,7 @@ public sealed class FinancialRecordExplorerReadService
 
     private async Task<FinancialRecordExplorerDto> BuildLedgerExplorerAsync(
         string tenantId,
+        FundOwnershipScope fundScope,
         FinancialRecordExplorerQueryDto? query,
         CancellationToken ct)
     {
@@ -159,21 +226,31 @@ public sealed class FinancialRecordExplorerReadService
         {
             return CreateBlockedExplorer(
                 LedgerExplorerId,
-                "Ledger Explorer",
-                "Explore retained trial-balance records and their proof links.",
+                "Strategy Run Ledger Explorer",
+                "Explore the selected strategy run's simulated trial-balance records and their proof links. This is a run artifact, not the posted journal.",
                 "Strategy run read service is not registered.");
         }
 
-        var source = await TryLoadLatestRunDetailAsync(
+        // The run the caller asked for, carried on the explorer's own filter channel. Without it
+        // this surface answered for the newest run whatever the screen was showing, so an operator
+        // reading an older run's trial balance saw that run's rows under the newest run's header,
+        // proof links and scope.
+        var requestedRunId = ReadRequestedRunId(query);
+        var candidateSet = await LoadLedgerRunCandidatesAsync(readService, fundScope, requestedRunId, ct)
+            .ConfigureAwait(false);
+        var candidates = candidateSet.Candidates;
+        var source = await TryLoadLedgerRunDetailAsync(
             readService,
-            detail => detail.Ledger?.TrialBalance.Count > 0,
+            fundScope,
+            candidates,
+            candidateSet.Requested,
             ct).ConfigureAwait(false);
         if (source is null)
         {
             return await CreateEmptyExplorerAsync(
                 LedgerExplorerId,
-                "Ledger Explorer",
-                "Explore retained trial-balance records and their proof links.",
+                "Strategy Run Ledger Explorer",
+                "Explore the selected strategy run's simulated trial-balance records and their proof links. This is a run artifact, not the posted journal.",
                 "No source-backed ledger projection is available.",
                 tenantId,
                 ct).ConfigureAwait(false);
@@ -187,12 +264,15 @@ public sealed class FinancialRecordExplorerReadService
 
         return await CreateExplorerAsync(
             LedgerExplorerId,
-            "Ledger Explorer",
-            "Explore retained trial-balance records and their proof links.",
+            "Strategy Run Ledger Explorer",
+            "Explore the selected strategy run's simulated trial-balance records and their proof links. This is a run artifact, not the posted journal.",
             $"Source-backed ledger projection from run {run.RunId}.",
-            BuildScope(run, ledger.AsOf, ledger.LedgerReference),
+            [
+                new("Ledger source", "Strategy run (simulation) — not the posted journal"),
+                .. BuildScope(run, ledger.AsOf, ledger.LedgerReference)
+            ],
             BuildLedgerSummary(run, ledger, rows.Length),
-            BuildSystemViews(LedgerExplorerId, "Trial balance", "Accounts with retained ledger balances."),
+            BuildLedgerRunViews(IncludeResolvedRun(candidates, run), run.RunId),
             BuildLedgerFilters(run, ledger),
             [
                 new("accountName", "Account", Width: 220),
@@ -215,6 +295,7 @@ public sealed class FinancialRecordExplorerReadService
 
     private async Task<FinancialRecordExplorerDto> BuildPortfolioExplorerAsync(
         string tenantId,
+        FundOwnershipScope fundScope,
         FinancialRecordExplorerQueryDto? query,
         CancellationToken ct)
     {
@@ -230,6 +311,7 @@ public sealed class FinancialRecordExplorerReadService
 
         var source = await TryLoadLatestRunDetailAsync(
             readService,
+            fundScope,
             detail => detail.Portfolio?.Positions.Count > 0,
             ct).ConfigureAwait(false);
         if (source is null)
@@ -276,7 +358,10 @@ public sealed class FinancialRecordExplorerReadService
 
     private async Task<FinancialRecordExplorerDto> BuildSecurityInstrumentExplorerAsync(
         string tenantId,
+        FundOwnershipScope fundScope,
         FinancialRecordExplorerQueryDto? query,
+        FinancialRecordExplorerReadScope scope,
+        ReportAccessQueryContext? reportAccess,
         CancellationToken ct)
     {
         var readService = _runReadService;
@@ -291,6 +376,7 @@ public sealed class FinancialRecordExplorerReadService
 
         var source = await TryLoadLatestRunDetailAsync(
             readService,
+            fundScope,
             detail => CollectSecurityReferences(detail).Count > 0,
             ct).ConfigureAwait(false);
         if (source is null)
@@ -306,17 +392,27 @@ public sealed class FinancialRecordExplorerReadService
 
         var run = source.Summary;
         var references = CollectSecurityReferences(source);
-        var reportRecords = _reportPackWorkflowService?.ListRecords(200) ?? [];
-        var directLendingOperations = _directLendingOperationsReadService is null
-            ? null
-            : await _directLendingOperationsReadService.GetOperationsAsync(ct: ct).ConfigureAwait(false);
+        // Each enrichment is loaded only for a caller entitled to its family. Reaching this explorer
+        // means holding a Security Master, operations or strategy permission; none of those is a claim
+        // on report-pack usage or direct-lending operations, and the enrichment builder already takes
+        // both as arguments, so withholding them is a matter of not fetching them.
+        // Permission decides whether the family is loaded at all; the access context decides which of
+        // its records this caller may see. Both are needed -- ListRecords returns every tenant's
+        // workflow records, so a Reporting-entitled caller would otherwise be enriched with another
+        // tenant's report-pack usage.
+        var reportRecords = scope.Reporting
+            ? _reportPackWorkflowService?.ListAccessibleRecords(200, reportAccess) ?? []
+            : [];
+        var directLendingOperations = scope.DirectLending && _directLendingOperationsReadService is not null
+            ? await _directLendingOperationsReadService.GetOperationsAsync(ct: ct).ConfigureAwait(false)
+            : null;
         var enrichedRows = new List<(FinancialRecordExplorerRowDto Row, SecurityInstrumentEnrichment Enrichment)>(references.Count);
         for (var index = 0; index < references.Count; index++)
         {
             ct.ThrowIfCancellationRequested();
             var reference = references[index];
-            var enrichment = await BuildSecurityInstrumentEnrichmentAsync(reference, reportRecords, directLendingOperations, ct).ConfigureAwait(false);
-            enrichedRows.Add((BuildSecurityRow(run, source, reference, index, enrichment), enrichment));
+            var enrichment = await BuildSecurityInstrumentEnrichmentAsync(reference, reportRecords, directLendingOperations, scope, ct).ConfigureAwait(false);
+            enrichedRows.Add((BuildSecurityRow(run, source, reference, index, enrichment, scope.Strategy), enrichment));
         }
 
         var rows = enrichedRows.Select(static entry => entry.Row).ToArray();
@@ -324,11 +420,12 @@ public sealed class FinancialRecordExplorerReadService
         var passportCount = enrichments.Count(static enrichment => enrichment.Passport is not null);
         var operationsCount = enrichments.Count(static enrichment => enrichment.Readiness is not null);
         var directLendingCount = enrichments.Count(static enrichment => enrichment.DirectLendingHealth.Count > 0);
-        var reportLineUsageCount = enrichments.Sum(static enrichment => enrichment.ReportLineUsages.Count);
+        var reportedLineUsageCount = enrichments.Sum(static enrichment => enrichment.ReportLineUsages.Count);
         var termCount = enrichments.Sum(static enrichment => enrichment.Operations?.TermsHistory.Count ?? 0);
         var cashFlowCount = enrichments.Sum(static enrichment => enrichment.Operations?.ProjectedCashFlows.Count ?? 0);
         var reconciliationCount = enrichments.Sum(static enrichment => enrichment.Operations?.ReconciliationResults.Count ?? 0);
-        var journalImpactCount = enrichments.Sum(static enrichment => enrichment.Operations?.LedgerProjections.Count ?? 0);
+        var accountingProjectionCount = enrichments.Sum(static enrichment => enrichment.Operations?.LedgerProjections.Count ?? 0);
+        var postedJournalCount = enrichments.Sum(static enrichment => enrichment.InstrumentJournalProofs.Count(static proof => proof.Journal is not null));
         var evidenceCount = enrichments.Sum(static enrichment => CountSecurityEvidenceAnchors(enrichment));
         var auditCount = enrichments.Sum(static enrichment => CountSecurityAuditEvents(enrichment));
         var summaryItems = new List<FinancialRecordExplorerSummaryItemDto>
@@ -367,14 +464,19 @@ public sealed class FinancialRecordExplorerReadService
             summaryItems.Add(new("Reconciliations", reconciliationCount.ToString(CultureInfo.InvariantCulture), "AssetOperations reconciliation results available.", FinancialRecordExplorerTone.Info));
         }
 
-        if (journalImpactCount > 0)
+        if (accountingProjectionCount > 0)
         {
-            summaryItems.Add(new("Journal Impacts", journalImpactCount.ToString(CultureInfo.InvariantCulture), "Ledger or journal projection rows available.", FinancialRecordExplorerTone.Info));
+            summaryItems.Add(new("Accounting Projections", accountingProjectionCount.ToString(CultureInfo.InvariantCulture), "Projected accounting-effect rows are available; they are not posted journals.", FinancialRecordExplorerTone.Info));
         }
 
-        if (reportLineUsageCount > 0)
+        if (postedJournalCount > 0)
         {
-            summaryItems.Add(new("Report Usage", reportLineUsageCount.ToString(CultureInfo.InvariantCulture), "Retained report-line provenance rows reference these instruments.", FinancialRecordExplorerTone.Info));
+            summaryItems.Add(new("Posted Journals", postedJournalCount.ToString(CultureInfo.InvariantCulture), "Durable posted journals resolved by exact ledger-book and source-event scope.", FinancialRecordExplorerTone.Success));
+        }
+
+        if (reportedLineUsageCount > 0)
+        {
+            summaryItems.Add(new("Reported Usage", reportedLineUsageCount.ToString(CultureInfo.InvariantCulture), "Published or restated report lines with retained publication evidence reference these instruments.", FinancialRecordExplorerTone.Success));
         }
 
         if (evidenceCount > 0)
@@ -391,8 +493,14 @@ public sealed class FinancialRecordExplorerReadService
             SecurityInstrumentExplorerId,
             "Security & Instrument Explorer",
             "Explore Security Master references used by retained accounting and portfolio records.",
-            $"Source-backed Security Master references from run {run.RunId}.",
-            BuildScope(run, source.Portfolio?.AsOf ?? source.Ledger?.AsOf ?? run.LastUpdatedAt, "Security Master"),
+            scope.Strategy
+                ? $"Source-backed Security Master references from run {run.RunId}."
+                : "Source-backed Security Master references retained by portfolio and ledger records.",
+            BuildScope(
+                run,
+                source.Portfolio?.AsOf ?? source.Ledger?.AsOf ?? run.LastUpdatedAt,
+                "Security Master",
+                scope.Strategy),
             summaryItems,
             BuildSystemViews(SecurityInstrumentExplorerId, "Security references", "Instrument references used by portfolio and ledger records."),
             BuildSecurityFilters(references),
@@ -407,16 +515,16 @@ public sealed class FinancialRecordExplorerReadService
                 new("operations", "Operations", Width: 140),
                 new("directLending", "Direct Lending", Width: 150),
                 new("cashFlow", "Cash Flow", Width: 120),
-                new("ledger", "Ledger / Journal", Width: 140),
+                new("ledger", "Accounting Projection", Width: 160),
                 new("terms", "Terms / Obligations", Width: 170),
-                new("reportUsage", "Report Usage", Width: 170),
+                new("reportUsage", "Reported Usage", Width: 170),
                 new("evidence", "Evidence", Width: 140),
                 new("auditTrail", "Audit Trail", Width: 140),
                 new("identifier", "Identifier", Width: 160),
                 new("source", "Source", Width: 120)
             ],
             rows,
-            BuildExplorerProofActions(run, UiApiRoutes.WorkstationSecurityMasterSearch),
+            BuildExplorerProofActions(run, UiApiRoutes.WorkstationSecurityMasterSearch, scope.Strategy),
             tenantId,
             query,
             ct).ConfigureAwait(false);
@@ -425,6 +533,7 @@ public sealed class FinancialRecordExplorerReadService
     private async Task<FinancialRecordExplorerDto> BuildReportLineProvenanceExplorerAsync(
         string tenantId,
         FinancialRecordExplorerQueryDto? query,
+        ReportAccessQueryContext? reportAccess,
         CancellationToken ct)
     {
         var workflowService = _reportPackWorkflowService;
@@ -433,7 +542,7 @@ public sealed class FinancialRecordExplorerReadService
             return CreateBlockedExplorer(
                 ReportLineProvenanceExplorerId,
                 "Report-Line Provenance Explorer",
-                "Drill from governed report lines into retained source records, reconciliations, journals, approvals, delivery history, and restatement evidence.",
+                "Drill from reported lines into retained source records, reconciliations, ledger provenance, approvals, delivery history, and restatement evidence.",
                 "Report pack workflow service is not registered.");
         }
 
@@ -442,27 +551,34 @@ public sealed class FinancialRecordExplorerReadService
             "Report lines",
             "Governed report lines with retained source provenance.");
         var savedViews = await LoadSavedViewsAsync(tenantId, ReportLineProvenanceExplorerId, systemViews, ct).ConfigureAwait(false);
-        var deliveryService = _reportPackDeliveryService;
         var explorer = BuildReportLineProvenanceExplorer(
-            workflowService.ListRecords(200),
-            deliveryService?.ListAttempts(500),
-            savedViews);
+            workflowService.ListAccessibleRecords(200, reportAccess),
+            _reportPackDeliveryService?.ListAttempts(500),
+            savedViews: savedViews,
+            accessContext: reportAccess);
         return ApplyExplorerQuery(explorer, query);
     }
 
     public static FinancialRecordExplorerDto BuildReportLineProvenanceExplorer(
         IReadOnlyList<ReportPackWorkflowRecordDto> workflowRecords,
         IReadOnlyList<ReportPackDeliveryAttemptDto>? deliveryAttempts = null,
-        IReadOnlyList<FinancialRecordExplorerSavedViewDto>? savedViews = null)
+        IReadOnlyList<FinancialRecordExplorerSavedViewDto>? savedViews = null,
+        ReportAccessQueryContext? accessContext = null)
     {
         ArgumentNullException.ThrowIfNull(workflowRecords);
 
-        var records = workflowRecords
-            .Where(static record => record.LineProvenance is { Count: > 0 })
+        var authorizedRecords = accessContext is null
+            ? workflowRecords
+            : ReportPackRunReadService.FilterWorkflowRecords(workflowRecords, accessContext);
+        var records = authorizedRecords
+            .Where(static record => IsAuthoritativelyReported(record) && record.LineProvenance is { Count: > 0 })
             .OrderByDescending(static record => record.UpdatedAt)
             .ThenBy(static record => record.ReportId)
             .ToArray();
-        var attempts = deliveryAttempts ?? [];
+        // Unbound (null) context = the legacy tenant-level endpoint: sanitized attempts, matching the unfiltered records above.
+        var attempts = accessContext is null
+            ? (deliveryAttempts ?? []).Select(ReportingDeliveryReadModelSecurity.SanitizeAttempt).ToArray()
+            : ReportingDeliveryReadModelSecurity.FilterVisibleAttempts(deliveryAttempts ?? [], accessContext, records);
         var rows = records
             .SelectMany(record => record.LineProvenance!
                 .Select((line, index) => BuildReportLineProvenanceRow(record, line, attempts, index)))
@@ -474,13 +590,13 @@ public sealed class FinancialRecordExplorerReadService
                 "Report lines",
                 "Governed report lines with retained source provenance.");
         var sourceState = rows.Length == 0
-            ? "No governed report-line provenance is available from the report-pack workflow service."
-            : $"{rows.Length} governed report line(s) across {records.Length} report pack(s) retain instrument, position or transaction, reconciliation, journal, report, evidence, and audit drill-through links.";
+            ? "No published or restated report-line provenance with retained publication evidence is available."
+            : $"{rows.Length} reported line(s) across {records.Length} evidenced report pack(s) retain instrument, position or transaction, reconciliation, ledger provenance, approval, report, evidence, and audit drill-through links.";
 
         return new FinancialRecordExplorerDto(
             ReportLineProvenanceExplorerId,
             "Report-Line Provenance Explorer",
-            "Drill from governed report lines into retained instruments, positions or transactions, reconciliations, journals, reports, evidence, and audit links.",
+            "Drill from published or restated report lines into retained instruments, positions or transactions, reconciliations, ledger provenance, reports, evidence, and audit links.",
             sourceState,
             IsBlocked: false,
             BlockedReason: string.Empty,
@@ -497,7 +613,7 @@ public sealed class FinancialRecordExplorerReadService
                 new("instrument", "Instrument", Width: 160),
                 new("activity", "Position / Transaction", Width: 190),
                 new("reconciliation", "Reconciliation", Width: 140),
-                new("journal", "Journal", Width: 120),
+                new("journal", "Ledger Reference", Width: 140),
                 new("approval", "Approval", Width: 120),
                 new("delivery", "Delivery", Width: 140),
                 new("restatement", "Restatement", Width: 140)
@@ -508,15 +624,245 @@ public sealed class FinancialRecordExplorerReadService
             RecordGraph: BuildReportLineProvenanceGraph(rows));
     }
 
+    /// <summary>
+    /// The most recent run this tenant owns that satisfies <paramref name="predicate"/>, or null.
+    /// <para>
+    /// The tenant filter is the point: a run's detail is the explorer's entire source -- the trial
+    /// balance, the positions, the security references it renders. Selecting the newest qualifying run
+    /// globally served one tenant's book to another whenever the other owned the newest run, and the
+    /// tenant id reaching only saved-view persistence made that invisible from the call site.
+    /// </para>
+    /// <para>
+    /// Ownership is asked of the registry rather than compared here, so this agrees with every other
+    /// fund-scoped read: an unbound fund is accessible (trust-on-first-use, first owner wins), and only
+    /// a fund bound to another tenant is refused. A run with no fund profile is not attributable to any
+    /// tenant, so it is skipped rather than shown to all of them. With no registry in the composition
+    /// there is no tenancy to enforce and every run qualifies, which is the single-company deployment.
+    /// </para>
+    /// </summary>
+    /// <summary>How many runs the ledger explorer's run picker will offer. A picker, not a report.</summary>
+    private const int LedgerRunCandidateLimit = 50;
+
+    /// <summary>
+    /// The run the caller asked the ledger explorer to answer for, read from the explorer's own
+    /// <c>run</c> filter. Null when the caller named none, which means "whichever run is newest".
+    /// </summary>
+    private static string? ReadRequestedRunId(FinancialRecordExplorerQueryDto? query)
+    {
+        var requested = query?.Filters?
+            .FirstOrDefault(filter =>
+                string.Equals(filter?.FilterId, "run", StringComparison.OrdinalIgnoreCase))?
+            .Value?
+            .Trim();
+
+        return string.IsNullOrEmpty(requested) ? null : requested;
+    }
+
+    /// <summary>
+    /// One pass over the tenant's run history: the bounded picker list, and the run the caller
+    /// named when it is one they may read. <see cref="Requested"/> may also appear in
+    /// <see cref="Candidates"/> — it is only absent from the list when it sits past the bound.
+    /// </summary>
+    private readonly record struct LedgerRunCandidateSet(
+        IReadOnlyList<StrategyRunSummary> Candidates,
+        StrategyRunSummary? Requested);
+
+    /// <summary>
+    /// The runs this caller may pick between, newest first.
+    /// <para>
+    /// Read from the run summaries alone: a run that retained a ledger names it in
+    /// <see cref="StrategyRunSummary.LedgerReference"/>, so the list costs no detail reads. A run
+    /// whose ledger turns out to hold no lines still selects — the explorer's empty state says so,
+    /// which is honest, where omitting it would silently deny an operator a run they own.
+    /// </para>
+    /// <para>
+    /// A run named explicitly is carried out of this same pass even when it sits past the bound.
+    /// Resolving it separately meant reading the tenant's entire run history a second time — and
+    /// reloading the promotion lookup with it — so an older deep link grew more expensive the more
+    /// run history the tenant retained.
+    /// </para>
+    /// </summary>
+    private async Task<LedgerRunCandidateSet> LoadLedgerRunCandidatesAsync(
+        StrategyRunReadService readService,
+        FundOwnershipScope fundScope,
+        string? requestedRunId,
+        CancellationToken ct)
+    {
+        var readScope = new StrategyRunReadScope(fundScope.TenantId, fundScope.CompanyId);
+        var runs = await readService
+            .GetRunsAsync(strategyId: null, runType: null, readScope, ct)
+            .ConfigureAwait(false);
+
+        var candidates = new List<StrategyRunSummary>();
+        StrategyRunSummary? requested = null;
+        foreach (var run in runs)
+        {
+            if (string.IsNullOrWhiteSpace(run.LedgerReference))
+            {
+                continue;
+            }
+
+            var isRequested = requestedRunId is not null
+                && string.Equals(run.RunId, requestedRunId, StringComparison.OrdinalIgnoreCase);
+
+            // Past the bound only the run the caller named is still worth an ownership check.
+            // Nothing else can enter the picker, and each check is its own read.
+            if (candidates.Count >= LedgerRunCandidateLimit && !isRequested)
+            {
+                continue;
+            }
+
+            if (!await IsRunOwnedByScopeAsync(run, fundScope, ct).ConfigureAwait(false))
+            {
+                continue;
+            }
+
+            if (isRequested)
+            {
+                requested = run;
+            }
+
+            if (candidates.Count < LedgerRunCandidateLimit)
+            {
+                candidates.Add(run);
+            }
+
+            if (candidates.Count >= LedgerRunCandidateLimit && (requestedRunId is null || requested is not null))
+            {
+                break;
+            }
+        }
+
+        return new LedgerRunCandidateSet(candidates, requested);
+    }
+
+    /// <summary>
+    /// The run detail the ledger explorer renders: the requested run when it is one this caller may
+    /// read and it carries lines, and otherwise the newest run that does.
+    /// <para>
+    /// The fallback is deliberate rather than an error. A run id can arrive from a bookmarked URL
+    /// long after the run was pruned, and the alternative — refusing outright — leaves the screen
+    /// with nothing at all where a usable ledger exists. The explorer names the run it resolved in
+    /// its scope, source state and proof links, so the substitution is visible.
+    /// </para>
+    /// </summary>
+    private async Task<StrategyRunDetail?> TryLoadLedgerRunDetailAsync(
+        StrategyRunReadService readService,
+        FundOwnershipScope fundScope,
+        IReadOnlyList<StrategyRunSummary> candidates,
+        StrategyRunSummary? requestedRun,
+        CancellationToken ct)
+    {
+        var readScope = new StrategyRunReadScope(fundScope.TenantId, fundScope.CompanyId);
+        // Resolved by its own ownership check rather than by membership of the candidate list. The
+        // list is bounded so the picker stays a picker, and a tenant with more retained runs than
+        // that bound would otherwise have a perfectly valid deep link fall through to a newer run
+        // -- while the screen's own trial-balance and journal requests still used the run the URL
+        // asked for, recombining evidence from two different runs.
+        if (requestedRun is not null)
+        {
+            var detail = await readService.GetRunDetailAsync(requestedRun.RunId, readScope, ct).ConfigureAwait(false);
+            if (detail?.Ledger?.TrialBalance.Count > 0)
+            {
+                return detail;
+            }
+        }
+
+        foreach (var run in candidates)
+        {
+            var detail = await readService.GetRunDetailAsync(run.RunId, readScope, ct).ConfigureAwait(false);
+            if (detail?.Ledger?.TrialBalance.Count > 0)
+            {
+                return detail;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// The picker list, guaranteed to contain the run actually being displayed.
+    /// <para>
+    /// A run resolved from outside the bound is not in the candidate list, so no view carried its
+    /// filter and none was marked active. The client then fell back to the first candidate — a
+    /// newer run — and used that run's filter for the picker and for any link copied from it, so
+    /// an older run's rows were shown under a different run's identity. The requested run takes
+    /// the last slot rather than extending the list, keeping the picker bounded.
+    /// </para>
+    /// </summary>
+    private static IReadOnlyList<StrategyRunSummary> IncludeResolvedRun(
+        IReadOnlyList<StrategyRunSummary> candidates,
+        StrategyRunSummary resolved)
+    {
+        if (candidates.Any(run => string.Equals(run.RunId, resolved.RunId, StringComparison.OrdinalIgnoreCase)))
+        {
+            return candidates;
+        }
+
+        var bounded = candidates.Take(Math.Max(0, LedgerRunCandidateLimit - 1)).ToList();
+        bounded.Add(resolved);
+        return bounded;
+    }
+
+    /// <summary>
+    /// One system view per run the caller may pick, so the client has the actual list of runs
+    /// rather than having to infer it from the rows of whichever single run it was handed.
+    /// </summary>
+    private static IReadOnlyList<FinancialRecordExplorerSavedViewDto> BuildLedgerRunViews(
+        IReadOnlyList<StrategyRunSummary> candidates,
+        string activeRunId)
+        => candidates
+            .Select(run => new FinancialRecordExplorerSavedViewDto(
+                $"system-{LedgerExplorerId}-run-{run.RunId}",
+                DescribeLedgerRun(run),
+                $"Simulated trial balance retained by run {run.RunId}.",
+                IsSystem: true,
+                IsActive: string.Equals(run.RunId, activeRunId, StringComparison.OrdinalIgnoreCase),
+                Filters: [new("run", "Run", run.RunId, Tone: FinancialRecordExplorerTone.Info)],
+                SearchText: string.Empty,
+                ColumnIds: []))
+            .ToArray();
+
+    /// <summary>Names a run the way an operator picking between them needs to read it.</summary>
+    private static string DescribeLedgerRun(StrategyRunSummary run)
+    {
+        var name = string.IsNullOrWhiteSpace(run.StrategyName) ? run.StrategyId : run.StrategyName;
+        var started = run.StartedAt.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+        return string.IsNullOrWhiteSpace(name)
+            ? $"{run.RunId} · {started}"
+            : $"{name} · {run.Mode} · {started}";
+    }
+
     private async Task<StrategyRunDetail?> TryLoadLatestRunDetailAsync(
         StrategyRunReadService readService,
+        FundOwnershipScope fundScope,
         Func<StrategyRunDetail, bool> predicate,
         CancellationToken ct)
     {
-        var runs = await readService.GetRunsAsync(new StrategyRunHistoryQuery(Limit: 100), ct).ConfigureAwait(false);
+        // Scoped, and unclamped. Two separate reasons for one call.
+        //
+        // Scoped, because the read service enforces the tenant and company a run was stamped with when
+        // it is given one, and that is a stronger claim than fund ownership: a run explicitly retained
+        // for another tenant is foreign even when its fund profile has no registry record yet, and the
+        // fund-ownership check below cannot see that. Passing the scope also carries through to the
+        // detail read, so the row set and the payload agree about who the caller is.
+        //
+        // Unclamped, because the query-shaped overload clamps any requested limit to 500 rows, so a
+        // bounded scan cannot see past the newest 500 runs however wide it asks -- and a tenant whose
+        // newest own run sits behind that many others would be told it has no source at all. This
+        // overload is the one the accounting workspace already uses over the same runs.
+        var readScope = new StrategyRunReadScope(fundScope.TenantId, fundScope.CompanyId);
+        var runs = await readService
+            .GetRunsAsync(strategyId: null, runType: null, readScope, ct)
+            .ConfigureAwait(false);
         foreach (var run in runs)
         {
-            var detail = await readService.GetRunDetailAsync(run.RunId, ct).ConfigureAwait(false);
+            if (!await IsRunOwnedByScopeAsync(run, fundScope, ct).ConfigureAwait(false))
+            {
+                continue;
+            }
+
+            var detail = await readService.GetRunDetailAsync(run.RunId, readScope, ct).ConfigureAwait(false);
             if (detail is not null && predicate(detail))
             {
                 return detail;
@@ -524,6 +870,71 @@ public sealed class FinancialRecordExplorerReadService
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Whether this run may be used as an explorer source for the calling scope.
+    /// <para>
+    /// The presence of a registry is what decides the posture. Without one there is no tenancy to
+    /// enforce -- the single-company deployment, and the in-process callers -- so every run qualifies.
+    /// With one, tenancy is being enforced, and two kinds of run are refused: a fund profile bound to
+    /// another tenant, and a run carrying no fund profile at all, which is attributable to nobody and
+    /// so must not become everybody's source.
+    /// </para>
+    /// <para>
+    /// An <em>unbound</em> fund still qualifies, because that is what
+    /// <see cref="IFundProfileTenancyRegistry"/> means by unbound: ownership is established on first
+    /// authoritative use, so a fund nobody has claimed is reachable by the tenant about to claim it.
+    /// That is a different thing from a run with no fund at all, which no claim can ever attach to.
+    /// </para>
+    /// </summary>
+    private async Task<bool> IsRunOwnedByScopeAsync(
+        StrategyRunSummary run,
+        FundOwnershipScope fundScope,
+        CancellationToken ct)
+    {
+        // No registry means no tenancy to enforce -- the single-company deployment and the in-process
+        // callers -- so every run qualifies.
+        if (_tenancyRegistry is null)
+        {
+            return true;
+        }
+
+        // With a registry present, tenancy is being enforced, and a run carrying no fund profile is
+        // attributable to nobody. Admitting it would hand a legacy run's trial balance, positions and
+        // security references to every tenant on the host -- and it only takes being the newest
+        // qualifying run to become the source for all of them.
+        if (string.IsNullOrWhiteSpace(run.FundProfileId))
+        {
+            return false;
+        }
+
+        var ownership = await _tenancyRegistry
+            .ResolveAsync(run.FundProfileId.Trim(), ct)
+            .ConfigureAwait(false);
+        if (ownership is null)
+        {
+            return true;
+        }
+
+        if (!ownership.IsHeldBy(fundScope.TenantId))
+        {
+            return false;
+        }
+
+        // Company is compared only when the caller resolved one. An in-process caller has no company
+        // scope to compare, and refusing every run for it would make the legacy overloads useless
+        // without closing anything -- the tenant test above has already refused a foreign owner.
+        if (string.IsNullOrWhiteSpace(fundScope.CompanyId))
+        {
+            return true;
+        }
+
+        return !string.IsNullOrWhiteSpace(ownership.CompanyId) &&
+               string.Equals(
+                   ownership.CompanyId.Trim(),
+                   fundScope.CompanyId.Trim(),
+                   StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task<FinancialRecordExplorerDto> CreateExplorerAsync(
@@ -857,18 +1268,28 @@ public sealed class FinancialRecordExplorerReadService
             .ToArray()
             ?? [];
 
+    // includeRunIdentity is true for the run-backed explorers, whose callers hold a strategy permission
+    // by construction. The security-instrument explorer also admits Security Master callers, and the
+    // run's id, strategy name and mode are not part of that basis -- the run routes serving them admit
+    // only the strategy permissions.
     private static IReadOnlyList<FinancialRecordExplorerScopeItemDto> BuildScope(
         StrategyRunSummary run,
         DateTimeOffset asOf,
-        string source)
-        =>
-        [
-            new("Run", run.RunId),
-            new("Strategy", run.StrategyName),
-            new("Mode", run.Mode.ToString()),
-            new("As of", asOf.ToString("u", CultureInfo.InvariantCulture)),
-            new("Source", source)
-        ];
+        string source,
+        bool includeRunIdentity = true)
+    {
+        var items = new List<FinancialRecordExplorerScopeItemDto>(5);
+        if (includeRunIdentity)
+        {
+            items.Add(new("Run", run.RunId));
+            items.Add(new("Strategy", run.StrategyName));
+            items.Add(new("Mode", run.Mode.ToString()));
+        }
+
+        items.Add(new("As of", asOf.ToString("u", CultureInfo.InvariantCulture)));
+        items.Add(new("Source", source));
+        return items;
+    }
 
     private static IReadOnlyList<FinancialRecordExplorerSummaryItemDto> BuildLedgerSummary(
         StrategyRunSummary run,
@@ -989,7 +1410,8 @@ public sealed class FinancialRecordExplorerReadService
                 new("accountId", DisplayDimension(line.Dimensions?.AccountId), line.Dimensions?.AccountId ?? string.Empty),
                 new("source", ledger.LedgerReference)
             ],
-            detail);
+            detail,
+            SourceRunId: run.RunId);
     }
 
     private static void AddDimensionFilters(
@@ -1011,9 +1433,14 @@ public sealed class FinancialRecordExplorerReadService
         AddDimensionFilter(filters, "investor", "Investor", dimensions.Select(static value => value.InvestorId));
         AddDimensionFilter(filters, "capital-account", "Capital Account", dimensions.Select(static value => value.CapitalAccountId));
         AddDimensionFilter(filters, "instrument", "Instrument", dimensions.Select(static value => value.InstrumentId?.ToString("D")));
+        AddDimensionFilter(filters, "position", "Position", dimensions.Select(static value => value.PositionId?.ToString("D")));
         AddDimensionFilter(filters, "tax-lot", "Tax Lot", dimensions.Select(static value => value.TaxLotId));
         AddDimensionFilter(filters, "cost-center", "Cost Center", dimensions.Select(static value => value.CostCenterId));
         AddDimensionFilter(filters, "counterparty", "Counterparty", dimensions.Select(static value => value.CounterpartyId));
+        AddDimensionFilter(filters, "organization", "Organization", dimensions.Select(static value => value.OrganizationId));
+        AddDimensionFilter(filters, "customer", "Customer", dimensions.Select(static value => value.CustomerId));
+        AddDimensionFilter(filters, "vendor", "Vendor", dimensions.Select(static value => value.VendorId));
+        AddDimensionFilter(filters, "project", "Project", dimensions.Select(static value => value.ProjectId));
 
         var externalGlDimensions = dimensions
             .SelectMany(static value => value.ExternalGlDimensions)
@@ -1064,9 +1491,14 @@ public sealed class FinancialRecordExplorerReadService
         AddDimensionField(fields, "Investor", dimensions.InvestorId);
         AddDimensionField(fields, "Capital Account", dimensions.CapitalAccountId);
         AddDimensionField(fields, "Instrument", dimensions.InstrumentId?.ToString("D"));
+        AddDimensionField(fields, "Position", dimensions.PositionId?.ToString("D"));
         AddDimensionField(fields, "Tax Lot", dimensions.TaxLotId);
         AddDimensionField(fields, "Cost Center", dimensions.CostCenterId);
         AddDimensionField(fields, "Counterparty", dimensions.CounterpartyId);
+        AddDimensionField(fields, "Organization", dimensions.OrganizationId);
+        AddDimensionField(fields, "Customer", dimensions.CustomerId);
+        AddDimensionField(fields, "Vendor", dimensions.VendorId);
+        AddDimensionField(fields, "Project", dimensions.ProjectId);
 
         foreach (var pair in dimensions.ExternalGlDimensions
             .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
@@ -1151,462 +1583,6 @@ public sealed class FinancialRecordExplorerReadService
             detail);
     }
 
-    private static FinancialRecordExplorerRowDto BuildSecurityRow(
-        StrategyRunSummary run,
-        StrategyRunDetail detail,
-        WorkstationSecurityReference reference,
-        int index,
-        SecurityInstrumentEnrichment enrichment)
-    {
-        var recordId = reference.SecurityId == Guid.Empty
-            ? $"security:{run.RunId}:{index}"
-            : $"security:{reference.SecurityId:D}";
-        var href = reference.SecurityId == Guid.Empty
-            ? UiApiRoutes.WorkstationSecurityMasterSearch
-            : UiApiRoutes.WithParam(UiApiRoutes.WorkstationSecurityMasterById, "securityId", reference.SecurityId.ToString("D"));
-        var usedIn = BuildSecurityUsedIn(detail, reference, href, enrichment);
-        var fields = BuildSecurityFields(reference, enrichment);
-        var proofActions = BuildSecurityProofActions(reference, href, enrichment);
-        var impacts = BuildSecurityImpacts(reference, href, enrichment);
-        var trustCell = BuildTrustCell(enrichment.Passport);
-        var identifierConfidenceCell = BuildIdentifierConfidenceCell(enrichment.Passport);
-        var operationsCell = BuildAssetOperationsCell(enrichment.Readiness);
-        var directLendingCell = BuildDirectLendingCell(enrichment);
-        var cashFlowCell = BuildCashFlowCell(enrichment.Operations);
-        var ledgerCell = BuildLedgerCell(enrichment.Operations);
-        var termsCell = BuildTermsCell(enrichment.Operations);
-        var reportUsageCell = BuildReportUsageCell(reference, enrichment);
-        var evidenceCell = BuildEvidenceCell(reference, enrichment);
-        var auditTrailCell = BuildAuditTrailCell(reference, enrichment);
-        var selected = new FinancialRecordExplorerSelectedRecordDto(
-            recordId,
-            "Security instrument",
-            reference.DisplayName,
-            $"{reference.AssetClass} - {reference.Currency}",
-            reference.ResolutionReason ?? "Security reference retained by source-backed portfolio or ledger records.",
-            ToneFromCoverage(reference.CoverageStatus),
-            Fields: fields,
-            ProofActions: proofActions,
-            UsedIn: usedIn,
-            Impacts: impacts,
-            FullRecordHref: href);
-
-        return new FinancialRecordExplorerRowDto(
-            recordId,
-            "security-instrument",
-            reference.DisplayName,
-            reference.LookupSource ?? "Security Master",
-            reference.CoverageStatus.ToString(),
-            ToneFromCoverage(reference.CoverageStatus),
-            Cells:
-            [
-                new("security", reference.DisplayName, LinkHref: href),
-                new("assetClass", reference.AssetClass),
-                new("currency", reference.Currency),
-                new("status", reference.Status.ToString()),
-                new("coverage", reference.CoverageStatus.ToString(), Tone: ToneFromCoverage(reference.CoverageStatus)),
-                trustCell,
-                identifierConfidenceCell,
-                operationsCell,
-                directLendingCell,
-                cashFlowCell,
-                ledgerCell,
-                termsCell,
-                reportUsageCell,
-                evidenceCell,
-                auditTrailCell,
-                new("identifier", reference.PrimaryIdentifier ?? reference.MatchedIdentifierValue ?? "-"),
-                new("source", reference.LookupSource ?? "Security Master")
-            ],
-            selected);
-    }
-
-    private async Task<SecurityInstrumentEnrichment> BuildSecurityInstrumentEnrichmentAsync(
-        WorkstationSecurityReference reference,
-        IReadOnlyList<ReportPackWorkflowRecordDto> reportRecords,
-        DirectLendingOperationsReadModelDto? directLendingOperations,
-        CancellationToken ct)
-    {
-        var reportLineUsages = CollectSecurityReportLineUsages(reference, reportRecords);
-        if (reference.SecurityId == Guid.Empty)
-        {
-            return new(null, null, null, [], reportLineUsages);
-        }
-
-        InstrumentPassportDto? passport = null;
-        if (_securityMasterWorkbenchQueryService is not null)
-        {
-            passport = await _securityMasterWorkbenchQueryService
-                .GetInstrumentPassportAsync(reference.SecurityId, fundProfileId: null, ct)
-                .ConfigureAwait(false);
-        }
-
-        AssetOperationsDetailDto? operations = null;
-        AssetOperationsReadinessDto? readiness = null;
-        if (_assetOperationsQueryService is not null)
-        {
-            operations = await _assetOperationsQueryService
-                .GetOperationsAsync(reference.SecurityId, ct)
-                .ConfigureAwait(false);
-            readiness = operations?.Readiness;
-            if (readiness is null)
-            {
-                readiness = await _assetOperationsQueryService
-                    .GetReadinessAsync(reference.SecurityId, ct)
-                    .ConfigureAwait(false);
-            }
-        }
-
-        var directLendingHealth = directLendingOperations?.LoanHealth
-            .Where(health => health.SecurityId == reference.SecurityId)
-            .ToArray() ?? [];
-
-        return new(passport, operations, readiness, directLendingHealth, reportLineUsages);
-    }
-
-    private static IReadOnlyList<FinancialRecordExplorerSummaryItemDto> BuildSecurityFields(
-        WorkstationSecurityReference reference,
-        SecurityInstrumentEnrichment enrichment)
-    {
-        var fields = new List<FinancialRecordExplorerSummaryItemDto>
-        {
-            new("Instrument Identity", BuildInstrumentIdentityLabel(reference), BuildInstrumentIdentityDetail(reference), ToneFromCoverage(reference.CoverageStatus)),
-            new("Identifier Map", BuildIdentifierMapSummary(reference, enrichment.Passport), BuildIdentifierMapDetail(reference, enrichment.Passport), ToneFromIdentifierMap(reference, enrichment.Passport)),
-            new("Asset Class", reference.AssetClass),
-            new("Sub Type", reference.SubType ?? "None"),
-            new("Currency", reference.Currency),
-            new("Status", reference.Status.ToString()),
-            new("Primary Identifier", reference.PrimaryIdentifier ?? "None"),
-            new("Matched Provider", reference.MatchedProvider ?? "None"),
-            new("Accounting Classification", BuildAccountingClassificationSummary(reference, enrichment.Operations), BuildAccountingClassificationDetail(reference, enrichment.Operations), ToneFromCoverage(reference.CoverageStatus)),
-            new("Coverage", reference.CoverageStatus.ToString(), Tone: ToneFromCoverage(reference.CoverageStatus))
-        };
-
-        if (enrichment.Passport is not null)
-        {
-            var passport = enrichment.Passport;
-            fields.Add(new(
-                "Trust Posture",
-                BuildTrustPostureLabel(passport.TrustPosture),
-                passport.TrustPosture.Summary,
-                ToneFromTrustPosture(passport.TrustPosture.Tone)));
-            fields.Add(new(
-                "Identifier Confidence",
-                BuildIdentifierConfidenceLabel(passport),
-                BuildIdentifierConfidenceDetail(passport),
-                ToneFromIdentifierConfidence(passport)));
-            fields.Add(new(
-                "Conflict Posture",
-                passport.TrustPosture.HasOpenConflicts
-                    ? $"{passport.TrustPosture.OpenConflictCount.ToString(CultureInfo.InvariantCulture)} open conflict{Plural(passport.TrustPosture.OpenConflictCount)}"
-                    : "No open conflicts",
-                BuildTrustConflictDetail(passport.TrustPosture),
-                passport.TrustPosture.HasOpenConflicts ? FinancialRecordExplorerTone.Warning : FinancialRecordExplorerTone.Success));
-        }
-
-        if (enrichment.Operations is not null)
-        {
-            fields.Add(new(
-                "Terms / Obligations",
-                BuildTermsObligationsSummary(enrichment.Operations),
-                BuildTermsObligationsDetail(enrichment.Operations),
-                ToneFromTerms(enrichment.Operations)));
-        }
-
-        if (enrichment.Readiness is not null)
-        {
-            fields.Add(new(
-                "AssetOperations Readiness",
-                enrichment.Readiness.Status,
-                BuildReadinessDetail(enrichment.Readiness),
-                ToneFromAssetOperationsReadiness(enrichment.Readiness)));
-        }
-
-        if (enrichment.DirectLendingHealth.Count > 0)
-        {
-            fields.Add(new(
-                "Direct Lending Operations",
-                BuildDirectLendingSummary(enrichment),
-                BuildDirectLendingDetail(enrichment),
-                ToneFromDirectLending(enrichment)));
-        }
-
-        if (enrichment.Operations is not null)
-        {
-            fields.Add(new(
-                "Projected Cash Flows",
-                BuildCashFlowSummary(enrichment.Operations),
-                BuildCashFlowDetail(enrichment.Operations),
-                ToneFromCashFlows(enrichment.Operations)));
-            fields.Add(new(
-                "Ledger Projection",
-                BuildLedgerProjectionSummary(enrichment.Operations),
-                BuildLedgerProjectionDetail(enrichment.Operations),
-                ToneFromLedgerProjections(enrichment.Operations)));
-            fields.Add(new(
-                "Ledger / Journal Impact",
-                BuildJournalImpactSummary(enrichment.Operations),
-                BuildJournalImpactDetail(enrichment.Operations),
-                ToneFromLedgerProjections(enrichment.Operations)));
-            fields.Add(new(
-                "Reconciliation",
-                BuildReconciliationSummary(enrichment.Operations),
-                BuildReconciliationDetail(enrichment.Operations),
-                ToneFromReconciliationResults(enrichment.Operations)));
-        }
-
-        if (enrichment.ReportLineUsages.Count > 0)
-        {
-            fields.Add(new(
-                "Report Usage",
-                $"{enrichment.ReportLineUsages.Count.ToString(CultureInfo.InvariantCulture)} retained line{Plural(enrichment.ReportLineUsages.Count)}",
-                BuildReportLineUsageDetail(enrichment.ReportLineUsages),
-                FinancialRecordExplorerTone.Info));
-        }
-
-        fields.Add(new(
-            "Evidence",
-            BuildSecurityEvidenceSummary(enrichment),
-            BuildSecurityEvidenceDetail(enrichment),
-            ToneFromSecurityEvidence(enrichment)));
-        fields.Add(new(
-            "Audit Trail",
-            BuildSecurityAuditSummary(enrichment),
-            BuildSecurityAuditDetail(enrichment),
-            ToneFromSecurityAudit(enrichment)));
-
-        return fields;
-    }
-
-    private static IReadOnlyList<FinancialRecordExplorerProofActionDto> BuildSecurityProofActions(
-        WorkstationSecurityReference reference,
-        string securityHref,
-        SecurityInstrumentEnrichment enrichment)
-    {
-        var actions = new List<FinancialRecordExplorerProofActionDto>
-        {
-            new(
-                "open-security-master",
-                "Open Security Master",
-                "Open the retained Security Master record.",
-                securityHref,
-                reference.SecurityId != Guid.Empty,
-                "Security reference is not resolved.",
-                ToneFromCoverage(reference.CoverageStatus))
-        };
-
-        if (reference.SecurityId != Guid.Empty)
-        {
-            actions.Add(new(
-                "open-instrument-passport",
-                "Open instrument passport",
-                "Open Security Master passport and trust evidence for this instrument.",
-                BuildInstrumentPassportHref(reference.SecurityId),
-                enrichment.Passport is not null,
-                "Security Master passport evidence is not available.",
-                enrichment.Passport is null ? FinancialRecordExplorerTone.Warning : ToneFromTrustPosture(enrichment.Passport.TrustPosture.Tone)));
-            actions.Add(new(
-                "open-asset-operations",
-                "Open AssetOperations",
-                "Open operations readiness, projected cash-flow, and ledger-projection evidence.",
-                BuildAssetOperationsHref(reference.SecurityId),
-                enrichment.Readiness is not null,
-                "AssetOperations readiness evidence is not available.",
-                ToneFromAssetOperationsReadiness(enrichment.Readiness)));
-            actions.Add(new(
-                "open-direct-lending-operations",
-                "Open direct-lending operations",
-                "Open retained direct-lending loan health, collateral, covenant/status, servicing, evidence, journal, reconciliation, and close-blocker posture.",
-                BuildDirectLendingHref(enrichment),
-                enrichment.DirectLendingHealth.Count > 0,
-                "No direct-lending operations posture references this instrument.",
-                ToneFromDirectLending(enrichment)));
-            actions.Add(new(
-                "open-position-transaction",
-                "Open position/transaction",
-                "Open the retained position or transaction rows that reference this instrument.",
-                BuildSecurityPositionTransactionHref(reference, enrichment),
-                HasSecurityPositionTransaction(reference, enrichment),
-                "No retained position, transaction, or provider-event route references this instrument.",
-                HasSecurityPositionTransaction(reference, enrichment) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning));
-            actions.Add(new(
-                "open-reconciliation",
-                "Open reconciliation",
-                "Open the reconciliation result or run linked to this instrument.",
-                BuildSecurityReconciliationHref(enrichment),
-                HasSecurityReconciliation(enrichment),
-                "No retained reconciliation result or run references this instrument.",
-                HasSecurityReconciliation(enrichment) ? ToneFromSecurityReconciliation(enrichment) : FinancialRecordExplorerTone.Warning));
-            actions.Add(new(
-                "open-journal-impact",
-                "Open journal impact",
-                "Open the ledger journal or projected journal impact linked to this instrument.",
-                BuildSecurityJournalHref(enrichment),
-                HasSecurityJournal(enrichment),
-                "No retained ledger or journal impact references this instrument.",
-                HasSecurityJournal(enrichment) ? ToneFromSecurityJournal(enrichment) : FinancialRecordExplorerTone.Warning));
-        }
-
-        if (enrichment.ReportLineUsages.Count > 0)
-        {
-            actions.Add(new(
-                "open-report-line-provenance",
-                "Open report-line provenance",
-                "Open retained report-line provenance rows that reference this security.",
-                BuildSecurityReportLineHref(reference, enrichment),
-                true,
-                string.Empty,
-                FinancialRecordExplorerTone.Info));
-        }
-
-        actions.Add(new(
-            "open-evidence",
-            "Open evidence",
-            "Open the retained evidence packet for this instrument's proof chain.",
-            BuildSecurityEvidenceHref(reference, enrichment),
-            HasSecurityEvidence(enrichment),
-            "No retained evidence packet references this instrument.",
-            HasSecurityEvidence(enrichment) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning));
-        actions.Add(new(
-            "open-audit-trail",
-            "Open audit trail",
-            "Open the retained audit graph for this instrument's proof chain.",
-            BuildSecurityAuditHref(reference, enrichment),
-            HasSecurityAudit(enrichment),
-            "No retained audit event references this instrument.",
-            HasSecurityAudit(enrichment) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning));
-
-        return actions;
-    }
-
-    private static IReadOnlyList<FinancialRecordExplorerRelationshipDto> BuildSecurityImpacts(
-        WorkstationSecurityReference reference,
-        string securityHref,
-        SecurityInstrumentEnrichment enrichment)
-    {
-        var impacts = new List<FinancialRecordExplorerRelationshipDto>
-        {
-            new("instrument-coverage", "Instrument coverage", $"Coverage state is {reference.CoverageStatus}.", securityHref, ToneFromCoverage(reference.CoverageStatus))
-        };
-        var positionTransactionHref = BuildSecurityPositionTransactionHref(reference, enrichment);
-        impacts.Add(new(
-            "position-transaction",
-            "Position / transaction",
-            HasSecurityPositionTransaction(reference, enrichment)
-                ? "Retained position, transaction, or provider-event evidence references this instrument."
-                : "No retained position, transaction, or provider-event evidence references this instrument.",
-            positionTransactionHref,
-            HasSecurityPositionTransaction(reference, enrichment) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning));
-
-        if (enrichment.Passport is not null)
-        {
-            var passportHref = BuildInstrumentPassportHref(enrichment.Passport.SecurityId);
-            impacts.Add(new(
-                "instrument-passport",
-                "Instrument passport",
-                enrichment.Passport.TrustPosture.Summary,
-                passportHref,
-                ToneFromTrustPosture(enrichment.Passport.TrustPosture.Tone)));
-
-            if (enrichment.Passport.TrustPosture.HasOpenConflicts)
-            {
-                impacts.Add(new(
-                    "security-master-conflicts",
-                    "Conflict blockers",
-                    $"{enrichment.Passport.TrustPosture.OpenConflictCount.ToString(CultureInfo.InvariantCulture)} Security Master conflict{Plural(enrichment.Passport.TrustPosture.OpenConflictCount)} require steward review.",
-                    passportHref,
-                FinancialRecordExplorerTone.Warning));
-            }
-        }
-
-        if (enrichment.Readiness is not null)
-        {
-            var assetHref = BuildAssetOperationsHref(enrichment.Readiness.SecurityId);
-            impacts.Add(new(
-                "asset-operations-readiness",
-                "AssetOperations readiness",
-                BuildReadinessDetail(enrichment.Readiness),
-                assetHref,
-                ToneFromAssetOperationsReadiness(enrichment.Readiness)));
-
-            if (enrichment.Readiness.MissingCapabilities.Count > 0 || enrichment.Readiness.Warnings.Count > 0)
-            {
-                impacts.Add(new(
-                    "asset-operations-validation-blockers",
-                    "Validation blockers",
-                    BuildReadinessBlockerDetail(enrichment.Readiness),
-                    assetHref,
-                    FinancialRecordExplorerTone.Warning));
-            }
-        }
-
-        impacts.Add(new(
-            "direct-lending-operations",
-            "Direct-lending operations",
-            enrichment.DirectLendingHealth.Count > 0
-                ? BuildDirectLendingDetail(enrichment)
-                : "No direct-lending operations read model references this instrument.",
-            BuildDirectLendingHref(enrichment),
-            ToneFromDirectLending(enrichment)));
-
-        if (enrichment.Operations is not null)
-        {
-            var assetHref = BuildAssetOperationsHref(enrichment.Operations.Subject.SecurityId);
-            impacts.Add(new(
-                "terms-obligations",
-                "Terms / obligations",
-                BuildTermsObligationsDetail(enrichment.Operations),
-                assetHref,
-                ToneFromTerms(enrichment.Operations)));
-            impacts.Add(new(
-                "projected-cash-flows",
-                "Projected cash flows",
-                BuildCashFlowDetail(enrichment.Operations),
-                assetHref,
-                ToneFromCashFlows(enrichment.Operations)));
-            impacts.Add(new(
-                "reconciliation",
-                "Reconciliation",
-                BuildReconciliationDetail(enrichment.Operations),
-                BuildSecurityReconciliationHref(enrichment),
-                ToneFromReconciliationResults(enrichment.Operations)));
-            impacts.Add(new(
-                "ledger-projection",
-                "Ledger projection",
-                BuildLedgerProjectionDetail(enrichment.Operations),
-                assetHref,
-                ToneFromLedgerProjections(enrichment.Operations)));
-            impacts.Add(new(
-                "journal",
-                "Journal",
-                BuildJournalImpactDetail(enrichment.Operations),
-                BuildSecurityJournalHref(enrichment),
-                ToneFromLedgerProjections(enrichment.Operations)));
-        }
-
-        impacts.Add(new(
-            "report-line",
-            "Report line",
-            enrichment.ReportLineUsages.Count > 0
-                ? BuildReportLineUsageDetail(enrichment.ReportLineUsages)
-                : "No retained report-line provenance references this instrument.",
-            BuildSecurityReportLineHref(reference, enrichment),
-            enrichment.ReportLineUsages.Count > 0 ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning));
-        impacts.Add(new(
-            "evidence",
-            "Evidence",
-            BuildSecurityEvidenceDetail(enrichment),
-            BuildSecurityEvidenceHref(reference, enrichment),
-            ToneFromSecurityEvidence(enrichment)));
-        impacts.Add(new(
-            "audit-event",
-            "Audit event",
-            BuildSecurityAuditDetail(enrichment),
-            BuildSecurityAuditHref(reference, enrichment),
-            ToneFromSecurityAudit(enrichment)));
-
-        return impacts;
-    }
 
     private static FinancialRecordExplorerCellDto BuildTrustCell(InstrumentPassportDto? passport)
     {
@@ -1701,8 +1677,8 @@ public sealed class FinancialRecordExplorerReadService
             : new(
                 "reportUsage",
                 BuildReportUsageSummary(enrichment.ReportLineUsages),
-                BuildReportLineUsageDetail(enrichment.ReportLineUsages),
-                FinancialRecordExplorerTone.Info,
+                BuildReportedLineUsageDetail(enrichment.ReportLineUsages),
+                FinancialRecordExplorerTone.Success,
                 BuildSecurityReportLineHref(reference, enrichment));
 
     private static FinancialRecordExplorerCellDto BuildEvidenceCell(
@@ -1901,28 +1877,27 @@ public sealed class FinancialRecordExplorerReadService
         return $"{latest.MatchStatus} reconciliation result compares {expected} expected to {actual} actual.";
     }
 
-    private static string BuildJournalImpactSummary(AssetOperationsDetailDto operations)
+    private static string BuildProjectedAccountingEffectSummary(AssetOperationsDetailDto operations)
     {
         var count = operations.LedgerProjections.Count;
         return count == 0
-            ? "No journal"
-            : $"{count.ToString(CultureInfo.InvariantCulture)} journal impact{Plural(count)}";
+            ? "No projected effect"
+            : $"{count.ToString(CultureInfo.InvariantCulture)} projected effect{Plural(count)}";
     }
 
-    private static string BuildJournalImpactDetail(AssetOperationsDetailDto operations)
+    private static string BuildProjectedAccountingEffectDetail(AssetOperationsDetailDto operations)
     {
         var latest = operations.LedgerProjections
             .OrderByDescending(static projection => projection.AccountingDate)
             .FirstOrDefault();
         if (latest is null)
         {
-            return "No retained journal or ledger impact is available.";
+            return "No retained projected accounting effect is available.";
         }
 
-        var reference = HasText(latest.LedgerReferenceId)
-            ? $" Journal reference {latest.LedgerReferenceId}."
-            : string.Empty;
-        return $"{latest.ProjectionType} {latest.Status} on {latest.AccountingDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} for {latest.LedgerBasis}.{reference}";
+        var debit = latest.DebitAmount ?? 0m;
+        var credit = latest.CreditAmount ?? 0m;
+        return $"{latest.ProjectionType} {latest.Status} on {latest.AccountingDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} for {latest.LedgerBasis}; projected debit {FormatAmountCurrency(debit, latest.Currency)} and projected credit {FormatAmountCurrency(credit, latest.Currency)}. This is not a posted journal.";
     }
 
     private static string BuildReportUsageSummary(IReadOnlyList<SecurityReportLineUsage> usages)
@@ -2014,6 +1989,7 @@ public sealed class FinancialRecordExplorerReadService
 
     private static int CountSecurityEvidenceAnchors(SecurityInstrumentEnrichment enrichment)
         => enrichment.ReportLineUsages.Count(static usage => HasText(usage.Line.EvidenceId)) +
+           enrichment.InstrumentJournalProofs.Sum(static proof => proof.Lineage.TriggerEvent.EvidenceLinks.Count) +
            (enrichment.Operations?.ActualActivity.Count(static activity => HasText(activity.EvidenceLink)) ?? 0) +
            (enrichment.Operations?.ReconciliationResults.Count(static result => HasText(result.EvidenceLink)) ?? 0) +
            (enrichment.Operations?.TermsHistory.Count(static terms => HasText(terms.TermsHash)) ?? 0);
@@ -2021,6 +1997,7 @@ public sealed class FinancialRecordExplorerReadService
     private static int CountSecurityAuditEvents(SecurityInstrumentEnrichment enrichment)
         => (enrichment.Operations?.WorkflowAudit.Count ?? 0) +
            (enrichment.Passport?.LifecycleEvents.Count ?? 0) +
+           enrichment.InstrumentJournalProofs.Count(static proof => proof.Journal is not null) +
            enrichment.ReportLineUsages.Count(static usage => HasText(usage.Line.EvidenceId));
 
     private static bool HasSecurityPositionTransaction(
@@ -2039,10 +2016,7 @@ public sealed class FinancialRecordExplorerReadService
                HasText(usage.Line.ReconciliationCaseId));
 
     private static bool HasSecurityJournal(SecurityInstrumentEnrichment enrichment)
-        => enrichment.Operations?.LedgerProjections.Count > 0 ||
-           enrichment.ReportLineUsages.Any(static usage =>
-               HasText(usage.Line.RunId) ||
-               HasText(usage.Line.LedgerEntryId));
+        => enrichment.InstrumentJournalProofs.Any(static proof => proof.Journal is not null);
 
     private static bool HasSecurityEvidence(SecurityInstrumentEnrichment enrichment)
         => CountSecurityEvidenceAnchors(enrichment) > 0;
@@ -2064,9 +2038,9 @@ public sealed class FinancialRecordExplorerReadService
     }
 
     private static FinancialRecordExplorerTone ToneFromSecurityJournal(SecurityInstrumentEnrichment enrichment)
-        => enrichment.Operations is not null && enrichment.Operations.LedgerProjections.Count > 0
-            ? ToneFromLedgerProjections(enrichment.Operations)
-            : FinancialRecordExplorerTone.Info;
+        => enrichment.InstrumentJournalProofs.Any(static proof => proof.Journal is not null)
+            ? FinancialRecordExplorerTone.Success
+            : FinancialRecordExplorerTone.Warning;
 
     private static string BuildSecurityPositionTransactionHref(
         WorkstationSecurityReference reference,
@@ -2090,26 +2064,6 @@ public sealed class FinancialRecordExplorerReadService
 
         var securityId = enrichment.Operations?.Subject.SecurityId ?? Guid.Empty;
         return securityId == Guid.Empty ? string.Empty : BuildAssetOperationsHref(securityId);
-    }
-
-    private static string BuildSecurityJournalHref(SecurityInstrumentEnrichment enrichment)
-    {
-        var reportLineHref = enrichment.ReportLineUsages
-            .Select(static usage => BuildReportLineJournalHref(usage.Line))
-            .FirstOrDefault(HasText);
-        if (HasText(reportLineHref))
-        {
-            return reportLineHref!;
-        }
-
-        var ledgerReference = enrichment.Operations?.LedgerProjections
-            .Select(static projection => projection.LedgerReferenceId)
-            .FirstOrDefault(HasText);
-        return HasText(ledgerReference)
-            ? UiApiRoutes.WithQuery(
-                UiApiRoutes.LedgerManualJournalEntryWorkbench,
-                $"ledgerEntryId={Uri.EscapeDataString(ledgerReference!)}")
-            : string.Empty;
     }
 
     private static string BuildSecurityReportLineHref(
@@ -2327,7 +2281,7 @@ public sealed class FinancialRecordExplorerReadService
         return $"{latest.ProjectionType} {latest.Status} on {latest.AccountingDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} for {FormatAmountCurrency(amount, latest.Currency)}.";
     }
 
-    private static string BuildReportLineUsageDetail(IReadOnlyList<SecurityReportLineUsage> usages)
+    private static string BuildReportedLineUsageDetail(IReadOnlyList<SecurityReportLineUsage> usages)
     {
         var lineKeys = usages
             .Select(static usage => usage.Line.LineKey)
@@ -2335,9 +2289,18 @@ public sealed class FinancialRecordExplorerReadService
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Take(3)
             .ToArray();
-        return lineKeys.Length == 0
-            ? "Retained report-line provenance references this security."
-            : $"Lines: {string.Join(", ", lineKeys)}.";
+        var publicationIds = usages
+            .Select(static usage => usage.Record.Publication?.ManifestId)
+            .Where(HasText)
+            .Distinct(StringComparer.Ordinal)
+            .Take(3)
+            .ToArray();
+        var lines = lineKeys.Length == 0
+            ? "Published or restated report-line provenance references this security."
+            : $"Reported lines: {string.Join(", ", lineKeys)}.";
+        return publicationIds.Length == 0
+            ? lines
+            : $"{lines} Publication manifests: {string.Join(", ", publicationIds!)}.";
     }
 
     private static InstrumentPassportProviderConfidenceDto? SelectBestProviderConfidence(InstrumentPassportDto passport)
@@ -2350,7 +2313,7 @@ public sealed class FinancialRecordExplorerReadService
         IReadOnlyList<ReportPackWorkflowRecordDto> records)
     {
         var usages = new List<SecurityReportLineUsage>();
-        foreach (var record in records)
+        foreach (var record in records.Where(static record => IsAuthoritativelyReported(record)))
         {
             foreach (var line in record.LineProvenance ?? [])
             {
@@ -2375,10 +2338,7 @@ public sealed class FinancialRecordExplorerReadService
                 return true;
             }
 
-            if (string.Equals(line.SecurityMasterId, reference.SecurityId.ToString("D"), StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
+            return false;
         }
 
         var candidateIdentifiers = new[]
@@ -2398,9 +2358,6 @@ public sealed class FinancialRecordExplorerReadService
 
     private static string BuildInstrumentPassportHref(Guid securityId)
         => UiApiRoutes.WithParam(UiApiRoutes.WorkstationSecurityMasterInstrumentPassport, "securityId", securityId.ToString("D"));
-
-    private static string BuildAssetOperationsHref(Guid securityId)
-        => UiApiRoutes.WithParam(UiApiRoutes.WorkstationAssetOperations, "securityId", securityId.ToString("D"));
 
     private static string BuildReportLineProvenanceHref()
         => UiApiRoutes.WithParam(UiApiRoutes.WorkstationFinancialRecordExplorer, "explorerId", ReportLineProvenanceExplorerId);
@@ -2459,12 +2416,12 @@ public sealed class FinancialRecordExplorerReadService
 
         return
         [
-            new("Report lines", rowCount.ToString(CultureInfo.InvariantCulture), "Governed report lines with retained provenance.", rowCount > 0 ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning),
+            new("Reported lines", rowCount.ToString(CultureInfo.InvariantCulture), "Published or restated report lines with retained publication evidence and provenance.", rowCount > 0 ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning),
             new("Instruments", lines.Count(static line => HasText(line.SecurityMasterId) || HasText(line.SecurityDefinitionId)).ToString(CultureInfo.InvariantCulture), "Lines linked to retained Security Master or instrument definition evidence."),
             new("Positions / transactions", lines.Count(static line => HasText(line.ProviderEventId) || HasText(line.SourceSessionId) || ContainsToken(line.SourceKind, "position") || ContainsToken(line.SourceKind, "transaction")).ToString(CultureInfo.InvariantCulture), "Lines linked to provider positions, transactions, source sessions, or retained source rows."),
             new("Source records", DistinctNonEmptyCount(lines.Select(static line => line.SourceId)).ToString(CultureInfo.InvariantCulture), "Distinct retained source records linked to report lines."),
             new("Reconciliations", lines.Count(static line => HasText(line.ReconciliationRunId) || HasText(line.ReconciliationCaseId)).ToString(CultureInfo.InvariantCulture), "Lines linked to reconciliation runs or break cases."),
-            new("Journals", lines.Count(static line => HasText(line.LedgerEntryId) || HasText(line.RunId)).ToString(CultureInfo.InvariantCulture), "Lines with ledger or journal drill-through evidence."),
+            new("Ledger references", lines.Count(static line => HasText(line.LedgerEntryId)).ToString(CultureInfo.InvariantCulture), "Line-level ledger provenance references; these are not promoted to posted journals without durable resolution."),
             new("Approvals", approvalCount.ToString(CultureInfo.InvariantCulture), "Line-level and workflow approval evidence retained by the report-pack workflow."),
             new("Deliveries", scopedDeliveries.Length.ToString(CultureInfo.InvariantCulture), "Retained report-pack delivery attempts and packages.", scopedDeliveries.Length > 0 ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning),
             new("Audit links", lines.Count(static line => HasText(line.EvidenceId)).ToString(CultureInfo.InvariantCulture), "Lines with retained evidence ids that route to audit packets."),
@@ -2510,15 +2467,14 @@ public sealed class FinancialRecordExplorerReadService
         int index)
     {
         var reportHref = UiApiRoutes.WithParam(
-            UiApiRoutes.ReportingPackWorkflowDeliveries,
+            UiApiRoutes.FundReportPackById,
             "reportId",
-            record.ReportId.ToString("D"));
+            record.ReportId.ToString("D", CultureInfo.InvariantCulture));
         var sourceHref = BuildReportLineSourceHref(line);
         var instrumentHref = BuildReportLineInstrumentHref(line);
         var activityHref = BuildReportLineActivityHref(line, sourceHref);
         var auditHref = BuildReportLineAuditHref(line);
         var reconciliationHref = BuildReportLineReconciliationHref(line);
-        var journalHref = BuildReportLineJournalHref(line);
         var approvalHref = BuildReportLineApprovalHref(line);
         var deliveries = deliveryAttempts
             .Where(attempt => attempt.ReportId == record.ReportId)
@@ -2529,6 +2485,10 @@ public sealed class FinancialRecordExplorerReadService
         var deliveryGraphHref = latestDelivery is null
             ? string.Empty
             : BuildReportLineDeliveryGraphHref(record.ReportId, latestDelivery.AttemptId);
+        // Legacy workflow records do not carry an immutable governed-run identifier. Do not
+        // reinterpret the legacy GUID as a canonical run/package id; the latest retained delivery
+        // evidence remains navigable while canonical distribution history stays unbound.
+        var deliveryHistoryHref = deliveryGraphHref;
         var changedLines = record.Restatement?.ChangedLines
             .Where(changedLine => IsSameLineKey(changedLine.LineKey, line.LineKey))
             .ToArray() ?? [];
@@ -2536,8 +2496,13 @@ public sealed class FinancialRecordExplorerReadService
         var recordId = $"report-line:{record.ReportId:N}:{Slugify(line.LineKey)}:{index}";
         var reportLabel = $"{record.Period} - {record.TemplateId.Name} v{record.TemplateId.Version}";
         var deliveryLabel = latestDelivery is null
-            ? "Not delivered"
+            ? "No canonical distribution binding"
             : $"{latestDelivery.State} #{latestDelivery.AttemptNumber}";
+        var deliveryReferenceSummary = latestDelivery is null
+            ? "Create a new certified governed run before distribution."
+            : ReportingDeliveryReadModelSecurity.IsSafeRetainedEvidenceHref(latestDelivery.DeliveryReference)
+                ? latestDelivery.DeliveryReference.Trim()
+                : "Legacy delivery reference retained without navigable credentials.";
         var restatementLabel = changedLines.Length == 0
             ? "No change"
             : $"{changedLines.Length} changed line{Plural(changedLines.Length)}";
@@ -2555,7 +2520,7 @@ public sealed class FinancialRecordExplorerReadService
             "Report line",
             line.LineKey,
             reportLabel,
-            "Governed report line with retained instrument, position or transaction, reconciliation, journal, report, evidence, and audit drill-through links.",
+            "Published or restated report line with retained instrument, position or transaction, reconciliation, ledger provenance, report, evidence, and audit drill-through links.",
             tone,
             Fields:
             [
@@ -2565,10 +2530,10 @@ public sealed class FinancialRecordExplorerReadService
                 new("Position / transaction", BuildReportLineActivityLabel(line), activityHref, HasText(activityHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
                 new("Evidence id", line.EvidenceId),
                 new("Reconciliation", BuildReportLineReconciliationLabel(line), reconciliationHref, HasText(reconciliationHref) ? ToneFromReconciliationOutcome(line.ReconciliationOutcome) : FinancialRecordExplorerTone.Warning),
-                new("Journal", EmptyFallback(line.LedgerEntryId, "No journal link"), journalHref, HasText(journalHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
+                new("Ledger provenance", EmptyFallback(line.LedgerEntryId, "No ledger reference"), "A report-line ledger reference is provenance only; it is not a resolved posted journal.", HasText(line.LedgerEntryId) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Default),
                 new("Approval", EmptyFallback(line.ApprovalId, "No line approval"), approvalHref, HasText(approvalHref) ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning),
                 new("Evidence and audit links", line.EvidenceId, auditHref, HasText(auditHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
-                new("Delivery history", deliveryLabel, latestDelivery?.DeliveryReference ?? "No retained delivery attempt", latestDelivery is null ? FinancialRecordExplorerTone.Warning : ToneFromDeliveryState(latestDelivery.State)),
+                new("Delivery history", deliveryLabel, deliveryReferenceSummary, latestDelivery is null ? FinancialRecordExplorerTone.Warning : ToneFromDeliveryState(latestDelivery.State)),
                 new("Restatement", restatementLabel, record.Restatement?.ReasonCode ?? "No restatement on this line", changedLines.Length > 0 ? FinancialRecordExplorerTone.Warning : FinancialRecordExplorerTone.Default),
                 new("Updated", record.UpdatedAt.ToString("u", CultureInfo.InvariantCulture))
             ],
@@ -2577,16 +2542,14 @@ public sealed class FinancialRecordExplorerReadService
                 instrumentHref,
                 activityHref,
                 reconciliationHref,
-                journalHref,
                 approvalHref,
-                reportHref,
+                deliveryHistoryHref,
                 auditHref,
                 deliveryGraphHref,
                 restatementHref,
-                deliveries.Length,
                 changedLines.Length),
-            UsedIn: BuildReportLineUsedIn(record, reportHref, deliveryGraphHref, restatementHref, latestDelivery, changedLines),
-            Impacts: BuildReportLineImpacts(line, sourceHref, instrumentHref, activityHref, reconciliationHref, journalHref, approvalHref, reportHref, auditHref, deliveryGraphHref, restatementHref, changedLines.Length),
+            UsedIn: BuildReportLineUsedIn(record, reportHref, deliveryHistoryHref, deliveryGraphHref, restatementHref, latestDelivery, changedLines),
+            Impacts: BuildReportLineImpacts(line, sourceHref, instrumentHref, activityHref, reconciliationHref, approvalHref, deliveryHistoryHref, auditHref, deliveryGraphHref, restatementHref, changedLines.Length),
             FullRecordHref: sourceHref);
 
         return new FinancialRecordExplorerRowDto(
@@ -2605,9 +2568,9 @@ public sealed class FinancialRecordExplorerReadService
                 new("instrument", BuildReportLineInstrumentLabel(line), LinkHref: instrumentHref, Tone: HasText(instrumentHref) ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning),
                 new("activity", BuildReportLineActivityLabel(line), LinkHref: activityHref, Tone: HasText(activityHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
                 new("reconciliation", BuildReportLineReconciliationLabel(line), LinkHref: reconciliationHref, Tone: HasText(reconciliationHref) ? ToneFromReconciliationOutcome(line.ReconciliationOutcome) : FinancialRecordExplorerTone.Warning),
-                new("journal", EmptyFallback(line.LedgerEntryId, "-"), LinkHref: journalHref, Tone: HasText(journalHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
+                new("journal", EmptyFallback(line.LedgerEntryId, "-"), Tone: HasText(line.LedgerEntryId) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Default),
                 new("approval", EmptyFallback(line.ApprovalId, "-"), LinkHref: approvalHref, Tone: HasText(approvalHref) ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning),
-                new("delivery", deliveryLabel, LinkHref: reportHref, Tone: latestDelivery is null ? FinancialRecordExplorerTone.Warning : ToneFromDeliveryState(latestDelivery.State)),
+                new("delivery", deliveryLabel, LinkHref: deliveryHistoryHref, Tone: latestDelivery is null ? FinancialRecordExplorerTone.Info : ToneFromDeliveryState(latestDelivery.State)),
                 new("restatement", restatementLabel, LinkHref: restatementHref, Tone: changedLines.Length > 0 ? FinancialRecordExplorerTone.Warning : FinancialRecordExplorerTone.Default)
             ],
             detail);
@@ -2617,15 +2580,23 @@ public sealed class FinancialRecordExplorerReadService
         StrategyRunDetail detail,
         WorkstationSecurityReference reference,
         string href,
-        SecurityInstrumentEnrichment enrichment)
+        SecurityInstrumentEnrichment enrichment,
+        bool includeRunIdentity)
     {
         var relationships = new List<FinancialRecordExplorerRelationshipDto>();
-        if (detail.Portfolio?.Positions.Any(position => IsSameSecurity(position.Security, reference)) == true)
+
+        // Both of these say that a particular run's portfolio or ledger touched this security, and the
+        // second addresses the trial balance by run id. That is run identity, and the routes behind
+        // them admit only the strategy permissions, so a Security Master-only caller is not offered a
+        // link it would be refused.
+        if (includeRunIdentity &&
+            detail.Portfolio?.Positions.Any(position => IsSameSecurity(position.Security, reference)) == true)
         {
             relationships.Add(new("portfolio-position", "Portfolio position", "Referenced by retained portfolio position rows.", UiApiRoutes.WorkstationPortfolio));
         }
 
-        if (detail.Ledger?.TrialBalance.Any(line => IsSameSecurity(line.Security, reference)) == true)
+        if (includeRunIdentity &&
+            detail.Ledger?.TrialBalance.Any(line => IsSameSecurity(line.Security, reference)) == true)
         {
             relationships.Add(new("ledger-line", "Ledger trial balance", "Referenced by retained ledger trial-balance rows.", UiApiRoutes.WithParam(UiApiRoutes.RunsLedgerTrialBalance, "runId", detail.Summary.RunId)));
         }
@@ -2635,9 +2606,9 @@ public sealed class FinancialRecordExplorerReadService
             relationships.Add(new(
                 "report-line-provenance",
                 "Report-line provenance",
-                $"{enrichment.ReportLineUsages.Count.ToString(CultureInfo.InvariantCulture)} retained report line{Plural(enrichment.ReportLineUsages.Count)} reference this security.",
+                $"{enrichment.ReportLineUsages.Count.ToString(CultureInfo.InvariantCulture)} published or restated report line{Plural(enrichment.ReportLineUsages.Count)} with publication evidence reference this security.",
                 BuildReportLineProvenanceHref(),
-                FinancialRecordExplorerTone.Info));
+                FinancialRecordExplorerTone.Success));
         }
 
         if (enrichment.Operations?.ReconciliationResults.Count > 0)
@@ -2649,6 +2620,8 @@ public sealed class FinancialRecordExplorerReadService
                 BuildAssetOperationsHref(enrichment.Operations.Subject.SecurityId),
                 ToneFromReconciliationResults(enrichment.Operations)));
         }
+
+        AppendInstrumentJournalProofUsedIn(relationships, reference, enrichment);
 
         if (relationships.Count == 0)
         {
@@ -2662,10 +2635,10 @@ public sealed class FinancialRecordExplorerReadService
         =>
         [
             new(
-                "open-report-pack-workflows",
-                "Open report-pack workflows",
-                "Open governed report-pack workflow records.",
-                UiApiRoutes.ReportingPackWorkflows,
+                "open-reporting-runs",
+                "Open governed reporting runs",
+                "Open canonical governed reporting run records.",
+                UiApiRoutes.ReportingRuns,
                 rowCount > 0,
                 rowCount > 0 ? string.Empty : "No report-line provenance is available.",
                 rowCount > 0 ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
@@ -2687,13 +2660,11 @@ public sealed class FinancialRecordExplorerReadService
         string instrumentHref,
         string activityHref,
         string reconciliationHref,
-        string journalHref,
         string approvalHref,
         string deliveryHistoryHref,
         string auditHref,
         string deliveryGraphHref,
         string restatementHref,
-        int deliveryCount,
         int restatementLineCount)
         =>
         [
@@ -2730,14 +2701,6 @@ public sealed class FinancialRecordExplorerReadService
                 HasText(reconciliationHref) ? string.Empty : "No reconciliation run or break case was retained.",
                 HasText(reconciliationHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
             new(
-                "open-journal",
-                "Open journal",
-                "Open the ledger journal or manual journal workbench evidence for this report line.",
-                journalHref,
-                HasText(journalHref),
-                HasText(journalHref) ? string.Empty : "No journal or ledger entry was retained.",
-                HasText(journalHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
-            new(
                 "open-approval-evidence",
                 "Open approval evidence",
                 "Open retained approval evidence for this report line.",
@@ -2756,11 +2719,11 @@ public sealed class FinancialRecordExplorerReadService
             new(
                 "open-delivery-history",
                 "Open delivery history",
-                "Open retained report-pack delivery history for this line's report.",
+                "Open retained delivery evidence for the latest legacy report-pack attempt.",
                 deliveryHistoryHref,
-                deliveryCount > 0,
-                deliveryCount > 0 ? string.Empty : "No retained delivery attempts exist for this report pack.",
-                deliveryCount > 0 ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning),
+                HasText(deliveryHistoryHref),
+                HasText(deliveryHistoryHref) ? string.Empty : "No retained legacy delivery evidence exists; create a certified governed run before distribution.",
+                HasText(deliveryHistoryHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
             new(
                 "open-delivery-evidence-graph",
                 "Open delivery evidence graph",
@@ -2782,6 +2745,7 @@ public sealed class FinancialRecordExplorerReadService
     private static IReadOnlyList<FinancialRecordExplorerRelationshipDto> BuildReportLineUsedIn(
         ReportPackWorkflowRecordDto record,
         string reportHref,
+        string deliveryHistoryHref,
         string deliveryGraphHref,
         string restatementHref,
         ReportPackDeliveryAttemptDto? latestDelivery,
@@ -2791,8 +2755,10 @@ public sealed class FinancialRecordExplorerReadService
         {
             new(
                 $"report-pack:{record.ReportId:D}",
-                record.Publication is null ? "Report pack workflow" : "Published report pack",
-                $"{record.TemplateId.Name} v{record.TemplateId.Version} for {record.Period} is {record.State}.",
+                record.State == ReportPackWorkflowStateDto.Restated
+                    ? "Restated report pack (read-only)"
+                    : "Published report pack (read-only)",
+                $"{record.TemplateId.Name} v{record.TemplateId.Version} for {record.Period} is retained with publication manifest {record.Publication!.ManifestId} and evidence hash {record.Publication.EvidenceHash}.",
                 reportHref,
                 ToneFromReportPackState(record.State))
         };
@@ -2803,7 +2769,7 @@ public sealed class FinancialRecordExplorerReadService
                 $"report-delivery:{latestDelivery.AttemptId:D}",
                 "Delivery history",
                 $"{latestDelivery.Recipient} delivery attempt #{latestDelivery.AttemptNumber} is {latestDelivery.State}.",
-                reportHref,
+                deliveryHistoryHref,
                 ToneFromDeliveryState(latestDelivery.State)));
             relationships.Add(new(
                 $"delivery-graph:{latestDelivery.AttemptId:D}",
@@ -2832,7 +2798,6 @@ public sealed class FinancialRecordExplorerReadService
         string instrumentHref,
         string activityHref,
         string reconciliationHref,
-        string journalHref,
         string approvalHref,
         string deliveryHistoryHref,
         string auditHref,
@@ -2857,7 +2822,7 @@ public sealed class FinancialRecordExplorerReadService
             "position-transaction",
             "Position / transaction",
             HasText(activityHref)
-                ? $"{BuildReportLineActivityLabel(line)} feeds reconciliation before journal support."
+                ? $"{BuildReportLineActivityLabel(line)} feeds reconciliation and reported-line provenance."
                 : "No retained provider position, transaction, source session, or source route was retained.",
             activityHref,
             HasText(activityHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning));
@@ -2869,14 +2834,15 @@ public sealed class FinancialRecordExplorerReadService
                 : "No reconciliation run or break case was retained.",
             reconciliationHref,
             HasText(reconciliationHref) ? ToneFromReconciliationOutcome(line.ReconciliationOutcome) : FinancialRecordExplorerTone.Warning));
-        relationships.Add(new(
-            "journal",
-            "Journal",
-            HasText(journalHref)
-                ? $"Ledger entry {EmptyFallback(line.LedgerEntryId, line.RunId ?? "retained")} supports this line."
-                : "No ledger journal route was retained.",
-            journalHref,
-            HasText(journalHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning));
+        if (HasText(line.LedgerEntryId))
+        {
+            relationships.Add(new(
+                "ledger-reference",
+                "Ledger provenance reference",
+                $"Report provenance retains ledger reference {line.LedgerEntryId}; no durable journal association was resolved by this read model.",
+                string.Empty,
+                FinancialRecordExplorerTone.Info));
+        }
         relationships.Add(new(
             "approval",
             "Approval",
@@ -2940,13 +2906,6 @@ public sealed class FinancialRecordExplorerReadService
                 line.FinancialRecordExplorerId!);
             var query = $"lineKey={Uri.EscapeDataString(line.LineKey)}&sourceId={Uri.EscapeDataString(line.SourceId)}&evidenceId={Uri.EscapeDataString(line.EvidenceId)}";
             return UiApiRoutes.WithQuery(route, query);
-        }
-
-        if (HasText(line.RunId) && HasText(line.LedgerEntryId))
-        {
-            return UiApiRoutes.WithQuery(
-                UiApiRoutes.WithParam(UiApiRoutes.RunsLedgerJournal, "runId", line.RunId!),
-                $"ledgerEntryId={Uri.EscapeDataString(line.LedgerEntryId!)}");
         }
 
         if (HasText(line.RunId))
@@ -3052,23 +3011,6 @@ public sealed class FinancialRecordExplorerReadService
             : string.Empty;
     }
 
-    private static string BuildReportLineJournalHref(ReportPackLineProvenanceDto line)
-    {
-        if (HasText(line.RunId))
-        {
-            var route = UiApiRoutes.WithParam(UiApiRoutes.RunsLedgerJournal, "runId", line.RunId!);
-            return HasText(line.LedgerEntryId)
-                ? UiApiRoutes.WithQuery(route, $"ledgerEntryId={Uri.EscapeDataString(line.LedgerEntryId!)}")
-                : route;
-        }
-
-        return HasText(line.LedgerEntryId)
-            ? UiApiRoutes.WithQuery(
-                UiApiRoutes.LedgerManualJournalEntryWorkbench,
-                $"ledgerEntryId={Uri.EscapeDataString(line.LedgerEntryId!)}")
-            : string.Empty;
-    }
-
     private static string BuildReportLineApprovalHref(ReportPackLineProvenanceDto line)
         => HasText(line.ApprovalId)
             ? BuildEvidenceSubjectRoute(
@@ -3090,7 +3032,7 @@ public sealed class FinancialRecordExplorerReadService
         var route = changedLines
             .SelectMany(static line => line.EvidenceLinks ?? [])
             .Select(static link => link.Route)
-            .FirstOrDefault(HasText);
+            .FirstOrDefault(ReportingDeliveryReadModelSecurity.IsSafeRetainedEvidenceHref);
         if (HasText(route))
         {
             return route!.Trim();
@@ -3117,14 +3059,25 @@ public sealed class FinancialRecordExplorerReadService
                 ? line.ReconciliationRunId!.Trim()
                 : EmptyFallback(line.ReconciliationCaseId, "No reconciliation");
 
+    // The evidence action addresses the packet by run id, so it is itself run identity and is withheld
+    // from a caller admitted on the Security Master basis alone rather than offered and refused later.
     private static IReadOnlyList<FinancialRecordExplorerProofActionDto> BuildExplorerProofActions(
         StrategyRunSummary run,
-        string primaryHref)
-        =>
-        [
-            new("open-source", "Open source record", "Open the source-backed projection used by this explorer.", primaryHref),
-            new("open-evidence", "Evidence packet", "Open the retained evidence packet for the source run.", UiApiRoutes.WithParam(UiApiRoutes.WithParam(UiApiRoutes.WorkstationEvidenceSubjectPacket, "subjectKind", "run"), "subjectId", run.RunId), !string.IsNullOrWhiteSpace(run.AuditReference), "Run does not expose an audit reference.", !string.IsNullOrWhiteSpace(run.AuditReference) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning)
-        ];
+        string primaryHref,
+        bool includeRunIdentity = true)
+    {
+        var actions = new List<FinancialRecordExplorerProofActionDto>(2)
+        {
+            new("open-source", "Open source record", "Open the source-backed projection used by this explorer.", primaryHref)
+        };
+
+        if (includeRunIdentity)
+        {
+            actions.Add(new("open-evidence", "Evidence packet", "Open the retained evidence packet for the source run.", UiApiRoutes.WithParam(UiApiRoutes.WithParam(UiApiRoutes.WorkstationEvidenceSubjectPacket, "subjectKind", "run"), "subjectId", run.RunId), !string.IsNullOrWhiteSpace(run.AuditReference), "Run does not expose an audit reference.", !string.IsNullOrWhiteSpace(run.AuditReference) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning));
+        }
+
+        return actions;
+    }
 
     private static FinancialRecordExplorerRecordGraphDto BuildGraph(IReadOnlyList<FinancialRecordExplorerRowDto> rows)
     {
@@ -3173,7 +3126,6 @@ public sealed class FinancialRecordExplorerReadService
             var instrument = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "instrument");
             var activity = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "position-transaction");
             var reconciliation = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "reconciliation");
-            var journal = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "journal");
             var report = row.Detail.UsedIn.FirstOrDefault(static relationship => relationship.RelationshipId.StartsWith("report-pack:", StringComparison.OrdinalIgnoreCase));
             var evidence = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "evidence-audit-links");
             var evidencePacket = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "evidence") ?? evidence;
@@ -3186,9 +3138,7 @@ public sealed class FinancialRecordExplorerReadService
             var reconciliationNodeId = AddRelationshipGraphNode(nodes, row.RecordId, reconciliation, "reconciliation");
             AddGraphEdge(edges, activityNodeId, reconciliationNodeId, "reconciles", reconciliation?.Tone ?? FinancialRecordExplorerTone.Info);
 
-            var journalNodeId = AddRelationshipGraphNode(nodes, row.RecordId, journal, "journal");
-            AddGraphEdge(edges, reconciliationNodeId, journalNodeId, "posts", journal?.Tone ?? FinancialRecordExplorerTone.Info);
-            AddGraphEdge(edges, journalNodeId, row.RecordId, "reports", row.Tone);
+            AddGraphEdge(edges, reconciliationNodeId, row.RecordId, "reported", row.Tone);
 
             var reportNodeId = AddRelationshipGraphNode(nodes, row.RecordId, report, "report-pack");
             AddGraphEdge(edges, row.RecordId, reportNodeId, "included in", report?.Tone ?? row.Tone);
@@ -3230,6 +3180,7 @@ public sealed class FinancialRecordExplorerReadService
             var reportLine = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "report-line");
             var evidence = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "evidence");
             var audit = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "audit-event");
+            AppendInstrumentJournalProofGraph(nodes, edges, row, journal);
 
             var positionTransactionNodeId = AddRelationshipGraphNode(nodes, row.RecordId, positionTransaction, "position-transaction");
             AddGraphEdge(edges, row.RecordId, positionTransactionNodeId, "referenced by", positionTransaction?.Tone ?? FinancialRecordExplorerTone.Info);
@@ -3246,14 +3197,27 @@ public sealed class FinancialRecordExplorerReadService
             var reconciliationNodeId = AddRelationshipGraphNode(nodes, row.RecordId, reconciliation, "reconciliation");
             AddGraphEdge(edges, operationsNodeId, reconciliationNodeId, "reconciles", reconciliation?.Tone ?? FinancialRecordExplorerTone.Info);
 
-            var journalNodeId = AddRelationshipGraphNode(nodes, row.RecordId, journal, "journal");
-            AddGraphEdge(edges, reconciliationNodeId, journalNodeId, "posts", journal?.Tone ?? FinancialRecordExplorerTone.Info);
+            string? journalNodeId = null;
+            if (journal is not null)
+            {
+                journalNodeId = AddRelationshipGraphNode(nodes, row.RecordId, journal, "journal");
+                AddGraphEdge(edges, reconciliationNodeId, journalNodeId, "posts", journal.Tone);
+            }
 
-            var reportLineNodeId = AddRelationshipGraphNode(nodes, row.RecordId, reportLine, "report-line");
-            AddGraphEdge(edges, journalNodeId, reportLineNodeId, "reports", reportLine?.Tone ?? FinancialRecordExplorerTone.Info);
+            string? reportLineNodeId = null;
+            if (reportLine is not null)
+            {
+                reportLineNodeId = AddRelationshipGraphNode(nodes, row.RecordId, reportLine, "report-line");
+                AddGraphEdge(
+                    edges,
+                    journalNodeId ?? reconciliationNodeId,
+                    reportLineNodeId,
+                    "reported",
+                    reportLine.Tone);
+            }
 
             var evidenceNodeId = AddRelationshipGraphNode(nodes, row.RecordId, evidence, "evidence");
-            AddGraphEdge(edges, reportLineNodeId, evidenceNodeId, "retains evidence", evidence?.Tone ?? FinancialRecordExplorerTone.Info);
+            AddGraphEdge(edges, reportLineNodeId ?? reconciliationNodeId, evidenceNodeId, "retains evidence", evidence?.Tone ?? FinancialRecordExplorerTone.Info);
 
             var auditNodeId = AddRelationshipGraphNode(nodes, row.RecordId, audit, "audit-event");
             AddGraphEdge(edges, evidenceNodeId, auditNodeId, "audits", audit?.Tone ?? FinancialRecordExplorerTone.Info);
@@ -3518,6 +3482,95 @@ public sealed class FinancialRecordExplorerReadService
             _ => FinancialRecordExplorerTone.Default
         };
 
+    private static bool IsAuthoritativelyReported(ReportPackWorkflowRecordDto record)
+    {
+        if (record.State is not (ReportPackWorkflowStateDto.Published or ReportPackWorkflowStateDto.Restated) ||
+            record.Publication is not { } publication ||
+            record.LineProvenance is not { Count: > 0 })
+        {
+            return false;
+        }
+
+        var publicationIsComplete =
+            HasText(publication.ManifestId) &&
+            HasText(publication.RetainedManifestPath) &&
+            HasText(publication.EvidenceHash) &&
+            HasText(publication.SignedOffBy) &&
+            HasText(publication.SignedOffRole) &&
+            HasText(publication.SignOffContext) &&
+            publication.SignedOffAt != default &&
+            Meridian.Contracts.Operations.OperationsOriginGuard.IsHumanOperator(publication.ActionOrigin) &&
+            HasCompleteReportEvidence(publication.EvidenceLinks) &&
+            record.AuditTrail.Any(static audit =>
+                audit.ToState == ReportPackWorkflowStateDto.Approved &&
+                HasText(audit.Actor) &&
+                audit.At != default) &&
+            record.AuditTrail.Any(static audit =>
+                audit.ToState == ReportPackWorkflowStateDto.Published &&
+                HasText(audit.Actor) &&
+                audit.At != default) &&
+            record.LineProvenance.All(line => EnumerateReportLineEvidencePointers(line)
+                .All(pointer => publication.EvidenceLinks.Any(link =>
+                    string.Equals(link.EvidenceId, pointer, StringComparison.OrdinalIgnoreCase))));
+        if (!publicationIsComplete)
+        {
+            return false;
+        }
+
+        if (record.State == ReportPackWorkflowStateDto.Published)
+        {
+            return true;
+        }
+
+        return record.Restatement is { } restatement &&
+               HasText(restatement.ReasonCode) &&
+               HasText(restatement.Approver) &&
+               restatement.PriorVersionReportId != Guid.Empty &&
+               restatement.ChangedLines.Count > 0 &&
+               restatement.ChangedLines.All(static line =>
+                   HasText(line.LineKey) &&
+                   HasText(line.PreviousValue) &&
+                   HasText(line.CurrentValue) &&
+                   HasCompleteReportEvidence(line.EvidenceLinks)) &&
+               HasCompleteReportEvidence(restatement.EvidenceLinks) &&
+               record.AuditTrail.Any(static audit =>
+                   audit.ToState == ReportPackWorkflowStateDto.Restated &&
+                   HasText(audit.Actor) &&
+                   audit.At != default);
+    }
+
+    private static bool HasCompleteReportEvidence(IReadOnlyList<ReportPackEvidenceLinkDto>? evidenceLinks)
+        => evidenceLinks is { Count: > 0 } &&
+           evidenceLinks.All(static evidence =>
+               HasText(evidence.EvidenceId) &&
+               HasText(evidence.Label) &&
+               HasText(evidence.Source));
+
+    private static IEnumerable<string> EnumerateReportLineEvidencePointers(ReportPackLineProvenanceDto line)
+    {
+        yield return line.EvidenceId;
+        yield return line.SourceId;
+
+        foreach (var pointer in new[]
+                 {
+                     line.RunId,
+                     line.SourceSessionId,
+                     line.LedgerEntryId,
+                     line.ReconciliationCaseId,
+                     line.ReconciliationRunId,
+                     line.ProviderEventId,
+                     line.SecurityMasterId,
+                     line.SecurityDefinitionId,
+                     line.ApprovalId
+                 })
+        {
+            if (HasText(pointer))
+            {
+                yield return pointer!;
+            }
+        }
+    }
+
     private static FinancialRecordExplorerTone ToneFromDeliveryState(ReportPackDeliveryStateDto state)
         => state switch
         {
@@ -3568,7 +3621,8 @@ public sealed class FinancialRecordExplorerReadService
         AssetOperationsDetailDto? Operations,
         AssetOperationsReadinessDto? Readiness,
         IReadOnlyList<DirectLendingOperationsLoanHealthDto> DirectLendingHealth,
-        IReadOnlyList<SecurityReportLineUsage> ReportLineUsages);
+        IReadOnlyList<SecurityReportLineUsage> ReportLineUsages,
+        IReadOnlyList<InstrumentJournalProof> InstrumentJournalProofs);
 
     private sealed record SecurityReportLineUsage(
         ReportPackWorkflowRecordDto Record,

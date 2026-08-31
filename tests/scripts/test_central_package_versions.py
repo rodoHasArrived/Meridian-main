@@ -74,21 +74,42 @@ class CentralPackageVersionTests(unittest.TestCase):
         self.assertEqual(self.versions["Snappier"], "1.3.1")
 
     def test_nuget_audit_suppression_is_advisory_specific(self) -> None:
+        """Every suppression must name one advisory and carry its accepted-risk metadata.
+
+        This previously pinned the exact GHSA-xhg6-9j5j-w4vf entry, so removing a suppression
+        whose advisory no longer applies — the outcome the policy wants — failed the suite. Assert
+        the property that must always hold instead; no suppressions at all is valid and preferred.
+        """
         root = ET.parse(BUILD_PROPS).getroot()
         advisory_suppressions = [
-            item.attrib["Include"]
-            for item in root.findall(".//MeridianNuGetAuditSuppression")
+            item for item in root.findall(".//MeridianNuGetAuditSuppression")
         ]
         suppressions = [
             item.attrib["Include"]
             for item in root.findall(".//NuGetAuditSuppress")
         ]
 
-        self.assertEqual(
-            ["https://github.com/advisories/GHSA-xhg6-9j5j-w4vf"],
-            advisory_suppressions,
-        )
-        self.assertEqual(["@(MeridianNuGetAuditSuppression)"], suppressions)
+        for item in advisory_suppressions:
+            include = item.attrib["Include"]
+            self.assertRegex(
+                include,
+                r"^https://github\.com/advisories/GHSA-[\w-]+$",
+                "a suppression must name exactly one advisory by URL, never a package or wildcard",
+            )
+            for field in ("Owner", "Justification", "RatchetPlan"):
+                element = item.find(field)
+                self.assertIsNotNone(element, f"{include} is missing {field}")
+                self.assertTrue(
+                    (element.text or "").strip(),
+                    f"{include} has an empty {field}",
+                )
+
+        # The indirection exists so suppressions can only be added through the documented item,
+        # and must stay wired whenever any suppression exists.
+        if advisory_suppressions:
+            self.assertEqual(["@(MeridianNuGetAuditSuppression)"], suppressions)
+        else:
+            self.assertEqual([], suppressions)
 
     def test_all_project_package_references_have_central_versions(self) -> None:
         missing: list[str] = []

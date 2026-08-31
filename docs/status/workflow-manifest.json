@@ -61,6 +61,68 @@
       }
     },
     {
+      "id": "postgresql-schema-control",
+      "owners": [
+        "@storage-platform",
+        "@developer-experience"
+      ],
+      "requiredPrerequisites": [
+        "Python 3.10+ available on PATH",
+        "Disposable PostgreSQL 16 database",
+        "Schema-control Python requirements installed"
+      ],
+      "executionCommands": [
+        {
+          "shell": "bash",
+          "command": "python3 build/scripts/schema-control.py inventory --base-ref origin/main"
+        },
+        {
+          "shell": "bash",
+          "command": "python3 build/scripts/schema-control.py verify --database-url \"$DATABASE_URL\" --base-ref origin/main"
+        },
+        {
+          "shell": "bash",
+          "command": "gh workflow run schema-control.yml --ref <branch> -f mode=snapshot"
+        }
+      ],
+      "expectedArtifacts": [
+        "database/manifest/catalog.json",
+        "database/manifest/contracts.json",
+        "database/manifest/dependencies.json",
+        "database/manifest/migrations.json",
+        "database/manifest/policies.json",
+        "docs/generated/database"
+      ],
+      "validationChecks": [
+        {
+          "name": "static migration inventory passes",
+          "command": "python3 build/scripts/schema-control.py inventory --base-ref origin/main"
+        },
+        {
+          "name": "generated schema artifacts match a migrated candidate database",
+          "command": "python3 build/scripts/schema-control.py verify --database-url \"$DATABASE_URL\" --base-ref origin/main"
+        }
+      ],
+      "artifactPolicy": {
+        "ownerLane": "PostgreSQL Schema Control",
+        "refreshTrigger": "SQL migration, public contract, schema registry, policy, or schema-control tooling change",
+        "retention": {
+          "policy": "replace-in-place",
+          "maxAgeDays": 30,
+          "retainLatest": 1
+        },
+        "canonicalOutputRoots": [
+          "database/manifest",
+          "docs/generated/database"
+        ],
+        "driftChecks": {
+          "enforceMissing": true,
+          "enforceFreshness": true,
+          "enforceCanonicalPaths": true
+        }
+      }
+    },
+    {
       "id": "desktop-screenshot-catalog",
       "owners": [
         "@desktop-shell",
@@ -394,6 +456,10 @@
         "windows-latest runner when running WPF or desktop modes"
       ],
       "executionCommands": [
+        {
+          "shell": "pwsh",
+          "command": "python build/scripts/ci/dispatch-targeted-test.py --ref <branch> --mode dotnet-filtered --dotnet-project tests/Meridian.Tests/Meridian.Tests.csproj --dotnet-filter=\"FullyQualifiedName~<TestClassOrMethod>\" --wait"
+        },
         {
           "shell": "pwsh",
           "command": "gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter=\"FullyQualifiedName~<TestClassOrMethod>\""

@@ -1,6 +1,6 @@
-import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, Network, PauseCircle, PlayCircle, PlusCircle, RadioTower, RotateCcw, Settings, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
+import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
@@ -11,9 +11,19 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
+import { GuardrailPanelBody } from "@/components/ui/guardrail-utilization";
 import { Input } from "@/components/ui/input";
-import { RiskControlPanel } from "@/components/ui/risk-control-panel";
+import { OrderStatusBanner } from "@/components/ui/order-status-banner";
 import { Select } from "@/components/ui/select";
+import { TechnicalDetails } from "@/components/ui/technical-details";
+import { TradingRiskControls } from "@/components/ui/trading-risk-controls";
+import {
+  promotionEvaluationPanelTone,
+  promotionEvaluationTextTone,
+  promotionOutcomeTone,
+  riskTone,
+  wiringTone
+} from "@/screens/trading-screen.tones";
 import {
   Sheet,
   SheetBody,
@@ -25,14 +35,20 @@ import {
 } from "@/components/ui/sheet";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { WorkspaceFilterBar, WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
-import { MetricCard, type MetricCardTone } from "@/components/data/concrete";
-import { SeverityBadge } from "@/components/operations";
+import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
+import { StatStrip } from "@/components/meridian/stat-strip";
+import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { cn } from "@/lib/utils";
+import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import {
+  AcceptanceStatusCard,
+  acceptanceTone,
+  mapAcceptanceGate,
+  type CockpitAcceptanceItem
+} from "@/screens/trading-screen.acceptance-panel";
 import {
   formatReadinessStatusValue,
-  mapReadinessStatusLevel,
   useExecutionEvidenceViewModel,
   usePaperSessionsViewModel,
   useSessionReplayControlsViewModel,
@@ -43,14 +59,12 @@ import {
   usePromotionGateViewModel,
   useTradingReadinessViewModel,
   useTradingScreenShellViewModel,
-  type AcceptanceLevel,
   type OrderPreview,
   type OrderPreviewEffect,
   type OrderPreviewLevel,
   type OrderPreviewWarning,
   type PaperSessionDetailPanel,
   type PaperSessionReplayPanel,
-  type PromotionOutcomeLevel,
   type TradingLoadingState,
   type TradingBlotterDetail,
   type TradingDataTone,
@@ -58,96 +72,21 @@ import {
   type TradingOrderRow,
   type TradingPositionRow,
   type TradingWorkflowCommandState,
-  type TradingConfirmViewModel,
-  type TradingReadinessWorkItemRow,
-  type TradingReadinessState,
-  type TradingReadinessSummaryRow,
-  type TradingReadinessWarningRow
+  type TradingConfirmViewModel
 } from "@/screens/trading-screen.view-model";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingAcceptanceGate, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
+import { LIVE_GOVERNED_APPROVAL_SERVICES, useGovernedApprovalsViewModel } from "@/screens/trading-screen.governed-approvals";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
   fundAccountId?: string | null;
 }
 
-const riskTone: Record<TradingWorkspaceResponse["risk"]["state"], string> = {
-  Healthy: "text-success",
-  Observe: "text-warning",
-  Constrained: "text-danger"
-};
-
-const wiringTone: Record<TradingWorkspaceResponse["brokerage"]["connection"], string> = {
-  Connected: "text-success",
-  Degraded: "text-warning",
-  Disconnected: "text-danger"
-};
-
-interface CockpitAcceptanceItem {
-  label: string;
-  value: string;
-  detail: string;
-  level: AcceptanceLevel;
-}
-
-const promotionOutcomeTone: Record<PromotionOutcomeLevel, string> = {
-  success: "text-success",
-  warning: "text-warning",
-  danger: "text-danger"
-};
-
-const promotionEvaluationPanelTone = {
-  success: "border-success/30 bg-success/10 text-success",
-  warning: "border-warning/30 bg-warning/10 text-warning",
-  danger: "border-danger/30 bg-danger/10 text-danger"
-} as const;
-
-const promotionEvaluationTextTone = {
-  success: "text-success",
-  warning: "text-warning"
-} as const;
-
 const promotionChecklistDotTone = {
   ready: "bg-success",
   blocked: "bg-danger",
   review: "bg-warning"
 } as const;
-
-const acceptanceTone: Record<AcceptanceLevel, string> = {
-  ready: "border-success/30 bg-success/10 text-success",
-  review: "border-warning/30 bg-warning/10 text-warning",
-  atRisk: "border-danger/30 bg-danger/10 text-danger"
-};
-
-const acceptanceLabel: Record<AcceptanceLevel, string> = {
-  ready: "Ready",
-  review: "Review",
-  atRisk: "At risk"
-};
-
-// Concrete severity vocabulary: acceptance levels collapse onto the design system's
-// canonical operator severities (ready · review · action · blocked · info). `atRisk`
-// maps to the brick-red "blocked" severity used by SeverityBadge.
-const acceptanceStatus: Record<AcceptanceLevel, string> = {
-  ready: "ready",
-  review: "review",
-  atRisk: "blocked"
-};
-
-// `MetricSnapshot` tone → Concrete MetricCard left-accent tone.
-const metricCardTone: Record<TradingWorkspaceResponse["metrics"][number]["tone"], MetricCardTone> = {
-  default: "neutral",
-  success: "success",
-  warning: "warning",
-  danger: "danger"
-};
-
-const workItemTone: Record<string, string> = {
-  Info: "border-border/70 bg-secondary/25 text-muted-foreground",
-  Success: "border-success/30 bg-success/10 text-success",
-  Warning: "border-warning/30 bg-warning/10 text-warning",
-  Critical: "border-danger/30 bg-danger/10 text-danger"
-};
 
 const dataToneClass: Record<TradingDataTone, string> = {
   default: "text-foreground",
@@ -165,32 +104,64 @@ const dataTonePanelClass: Record<TradingDataTone, string> = {
   muted: "border-border/70 bg-secondary/20"
 };
 
-type TradingTaskViewId =
-  | "overview"
-  | "posture"
-  | "exceptions"
-  | "actions"
-  | "history";
+type TradingRouteViewId = "overview" | "orders" | "positions" | "risk";
 
-interface TradingTaskView {
-  id: TradingTaskViewId;
+interface TradingRouteTab {
+  id: string;
   label: string;
-  href: string;
-  sectionId: string;
+  route: string;
+  view: TradingRouteViewId | null;
 }
 
-const tradingTaskViews: TradingTaskView[] = [
-  { id: "overview", label: "Overview", href: "#trading-overview", sectionId: "trading-overview" },
-  { id: "posture", label: "Readiness", href: "#trading-posture", sectionId: "trading-posture" },
-  { id: "exceptions", label: "Exceptions", href: "#trading-exceptions", sectionId: "trading-exceptions" },
-  { id: "actions", label: "Order Actions", href: "#trading-actions", sectionId: "trading-actions" },
-  { id: "history", label: "Paper Sessions", href: "#trading-history", sectionId: "trading-history" }
+/**
+ * Route-scoped views: each Trading sub-route renders its focused tool and the
+ * workspace root renders the acceptance/session overview. The tab strip and
+ * the sidebar sub-navigation share this taxonomy, so there is exactly one
+ * navigation system for the workspace.
+ */
+const tradingRouteTabs: TradingRouteTab[] = [
+  { id: "overview", label: "Overview", route: WORKSTATION_ROUTE_CATALOG.trading, view: "overview" },
+  { id: "orders", label: "Orders", route: WORKSTATION_ROUTE_CATALOG.tradingOrders, view: "orders" },
+  { id: "positions", label: "Positions", route: WORKSTATION_ROUTE_CATALOG.tradingPositions, view: "positions" },
+  { id: "risk", label: "Risk", route: WORKSTATION_ROUTE_CATALOG.tradingRisk, view: "risk" },
+  { id: "readiness", label: "Readiness", route: WORKSTATION_ROUTE_CATALOG.tradingReadiness, view: null }
 ];
 
-function resolveTradingTaskViewId(hash: string): TradingTaskViewId {
-  const normalizedHash = hash.replace(/^#/, "");
-  return tradingTaskViews.find((view) => view.sectionId === normalizedHash)?.id ?? "overview";
+export function resolveTradingRouteView(pathname: string): TradingRouteViewId {
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments.includes("positions")) {
+    return "positions";
+  }
+
+  if (segments.includes("risk")) {
+    return "risk";
+  }
+
+  if (segments.includes("orders")) {
+    return "orders";
+  }
+
+  return "overview";
 }
+
+const tradingRouteViewCopy: Record<TradingRouteViewId, { title: string; description: string }> = {
+  overview: {
+    title: "Trading overview",
+    description: "Paper cockpit acceptance, session workflows, and promotion evidence. Orders, positions, and risk have focused routes."
+  },
+  orders: {
+    title: "Orders blotter",
+    description: "Working orders, recent fills, and order actions for the active paper session."
+  },
+  positions: {
+    title: "Position book",
+    description: "Open positions with marks, exposure, and unrealized P&L."
+  },
+  risk: {
+    title: "Risk guardrails",
+    description: "Guardrail posture, execution controls, and adapter health."
+  }
+};
 
 function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTableColumn<TradingPositionRow>[] {
   return [
@@ -260,15 +231,15 @@ function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTabl
       srLabel: "Row actions",
       align: "right",
       render: (position) => (
-        <button
-          type="button"
+        <Button
+          size="sm"
+          variant="destructive"
           onClick={() => confirmVm.openConfirm({ kind: "close-position", positionKey: position.positionKey, symbol: position.symbol })}
-          className="rounded-sm px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           aria-label={position.closeAriaLabel}
           title={position.closeTitleLabel}
         >
           {position.closeActionLabel}
-        </button>
+        </Button>
       )
     }
   ];
@@ -335,15 +306,15 @@ function buildOrderColumns(confirmVm: TradingConfirmViewModel): DenseDataTableCo
       srLabel: "Row actions",
       align: "right",
       render: (order) => (
-        <button
-          type="button"
+        <Button
+          size="sm"
+          variant="destructive"
           onClick={() => confirmVm.openConfirm({ kind: "cancel-order", orderId: order.orderId })}
-          className="rounded-sm px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           aria-label={order.cancelAriaLabel}
           title={order.cancelTitleLabel}
         >
           {order.cancelActionLabel}
-        </button>
+        </Button>
       )
     }
   ];
@@ -455,7 +426,7 @@ function TradingLoadingPanel({ state }: { state: TradingLoadingState }) {
 }
 
 export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: TradingScreenProps) {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const shellVm = useTradingScreenShellViewModel({ pathname, data });
   const blotterVm = useTradingBlotterViewModel(data);
   const fundAccountId = normalizeFundAccountGuid(operatingFundAccountId)
@@ -463,6 +434,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null, fundAccountId });
   const executionEvidence = useExecutionEvidenceViewModel();
 
+  const governedApprovals = useGovernedApprovalsViewModel(LIVE_GOVERNED_APPROVAL_SERVICES);
   const orderTicket = useOrderTicketViewModel({
     fundAccountId,
     positions: data?.positions ?? [],
@@ -470,7 +442,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
     onOrderAccepted: async () => {
       await Promise.all([
         executionEvidence.refresh(),
-        tradingReadiness.refresh()
+        tradingReadiness.refresh(),
+        governedApprovals.refresh()
       ]);
     }
   });
@@ -496,19 +469,36 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   });
   const sessionReplay = useSessionReplayControlsViewModel();
   const promotionGate = usePromotionGateViewModel();
-  const [activeTaskView, setActiveTaskView] = React.useState<TradingTaskViewId>(() => (
-    typeof window === "undefined" ? "overview" : resolveTradingTaskViewId(window.location.hash)
-  ));
+  const navigate = useNavigate();
+  const routeView = resolveTradingRouteView(pathname);
+  const [sessionCloseTarget, setSessionCloseTarget] = React.useState<string | null>(null);
+  const [sessionCloseAcknowledged, setSessionCloseAcknowledged] = React.useState(false);
+  const sessionCloseBusy = paperSessions.busyCommand?.kind === "closing"
+    && paperSessions.busyCommand.sessionId === sessionCloseTarget;
 
-  React.useEffect(() => {
-    const updateActiveTaskView = () => {
-      setActiveTaskView(resolveTradingTaskViewId(window.location.hash));
-    };
+  function openSessionCloseConfirmation(sessionId: string) {
+    setSessionCloseTarget(sessionId);
+    setSessionCloseAcknowledged(false);
+  }
 
-    updateActiveTaskView();
-    window.addEventListener("hashchange", updateActiveTaskView);
-    return () => window.removeEventListener("hashchange", updateActiveTaskView);
-  }, []);
+  function cancelSessionCloseConfirmation() {
+    if (sessionCloseBusy) {
+      return;
+    }
+
+    setSessionCloseTarget(null);
+    setSessionCloseAcknowledged(false);
+  }
+
+  async function confirmSessionClose() {
+    if (!sessionCloseTarget || !sessionCloseAcknowledged || sessionCloseBusy) {
+      return;
+    }
+
+    await paperSessions.closeSession(sessionCloseTarget);
+    setSessionCloseTarget(null);
+    setSessionCloseAcknowledged(false);
+  }
 
   async function refreshSessionEvidence() {
     await Promise.all([
@@ -533,126 +523,100 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
     promotionApprovedBy: promotionGate.form.approvedBy,
     promotionApprovalReason: promotionGate.form.approvalReason
   });
-  const tradingTaskFields = [
-    { id: "positions", label: "Positions", value: String(data.positions.length) },
-    { id: "orders", label: "Orders", value: String(data.openOrders.length) },
-    { id: "fills", label: "Fills", value: String(data.fills.length) },
-    { id: "sessions", label: "Sessions", value: String(paperSessions.sessions.length) }
-  ];
-  const tradingTaskTabs = tradingTaskViews.map((view) => ({
-    id: view.id,
-    label: view.label,
-    selected: activeTaskView === view.id,
-    panelId: view.sectionId,
-    href: view.href
+  const routeTabs = tradingRouteTabs.map((tab) => ({
+    id: tab.id,
+    label: tab.label,
+    selected: tab.view === routeView
   }));
+  const showOverview = routeView === "overview";
+  const showOrders = routeView === "orders";
+  const showPositions = routeView === "positions";
+  const showRisk = routeView === "risk";
+  const routeCopy = tradingRouteViewCopy[routeView];
+  const readinessStatus = tradingReadiness.readiness?.overallStatus ?? null;
+  const sourceTone: OperationalTrustTone = data.brokerage.connection === "Connected"
+    ? "ready"
+    : data.brokerage.connection === "Degraded"
+      ? "review"
+      : "blocked";
+  const completenessCount = data.positions.length + data.openOrders.length + data.fills.length;
+  const readinessTone: OperationalTrustTone = readinessStatus === "Ready"
+    ? "ready"
+    : readinessStatus === "Blocked"
+      ? "blocked"
+      : readinessStatus
+        ? "review"
+        : "unknown";
 
   return (
-    <div className="space-y-8">
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {data.metrics.map((metric) => (
-          <MetricCard
-            key={metric.id}
-            label={metric.label}
-            value={metric.value}
-            delta={metric.delta}
-            tone={metricCardTone[metric.tone]}
-          />
-        ))}
-      </section>
+    <div className="space-y-5">
+      <StatStrip metrics={data.metrics} label="Trading headline metrics" />
 
       <section
         id="trading-overview"
         role="region"
         aria-label="Execution cockpit context"
-        className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
+        className="flex flex-wrap items-end justify-between gap-3"
       >
         <div className="min-w-0">
-          <div className="eyebrow-label">Trading lane</div>
-          <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
-            {shellVm.route.title}
+          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
+            {routeCopy.title}
           </h2>
-          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
-            {shellVm.route.description}
+          <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
+            {routeCopy.description}
           </p>
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          {shellVm.headerChips.map((chip) => (
-            <CockpitChip key={chip.label} label={chip.label} value={chip.value} />
-          ))}
-        </div>
+        <WorkspaceTabStrip
+          label="Trading routes"
+          tabs={routeTabs}
+          onSelect={(id) => {
+            const tab = tradingRouteTabs.find((candidate) => candidate.id === id);
+            if (tab) {
+              // Preserve the querystring: the operating scope (symbol, fund
+              // account) is threaded through search params across the shell.
+              navigate({ pathname: tab.route, search });
+            }
+          }}
+        />
       </section>
 
-      <WorkspaceFilterBar
-        label="Trading task navigator"
-        searchLabel="Trading tasks"
-        searchValue={tradingTaskViews.find((view) => view.id === activeTaskView)?.label ?? "Overview"}
-        fields={tradingTaskFields}
-        actions={
-          <WorkspaceTabStrip
-            label="Trading sub-task screens"
-            tabs={tradingTaskTabs}
-          />
-        }
+      <OperationalTrustSummary
+        label="Trading data confidence"
+        source={{
+          value: `${data.brokerage.provider} · ${data.brokerage.environment}`,
+          detail: data.brokerage.connection,
+          tone: sourceTone
+        }}
+        scope={{
+          value: fundAccountId ?? data.brokerage.account ?? "All loaded accounts",
+          detail: fundAccountId ? "Operating fund account" : "Brokerage account scope",
+          tone: fundAccountId || data.brokerage.account ? "ready" : "unknown"
+        }}
+        freshness={{
+          value: data.brokerage.lastHeartbeat || "Unavailable",
+          detail: "Latest brokerage heartbeat",
+          tone: sourceTone
+        }}
+        completeness={{
+          value: `${data.positions.length} positions · ${data.openOrders.length} orders · ${data.fills.length} fills`,
+          detail: `${completenessCount} execution records loaded`,
+          tone: completenessCount > 0 ? "ready" : "review"
+        }}
+        blocker={readinessStatus ? {
+          value: formatReadinessStatusValue(readinessStatus),
+          detail: "Operator readiness posture",
+          tone: readinessTone
+        } : undefined}
       />
 
+      {showOverview ? (
       <section id="trading-posture" className="workspace-section-band" aria-labelledby="trading-posture-heading">
         <div className="workspace-section-subheader">
           <div className="min-w-0">
             <p className="eyebrow-label">Posture</p>
             <h3 id="trading-posture-heading" className="workspace-section-title">Trading readiness posture</h3>
-            <p className="workspace-section-summary">Route context, acceptance status, and workflow state stay grouped for monitoring.</p>
           </div>
-          <a className="workspace-section-jump" href="#trading-actions">Act</a>
         </div>
-
-      <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
-        <Card className="panel-surface">
-          <CardHeader>
-            <div className="eyebrow-label">Trading Lane</div>
-            <CardTitle className="flex items-center gap-2">
-              <RadioTower className="h-5 w-5 text-primary" />
-              {shellVm.route.title}
-            </CardTitle>
-            <CardDescription>{shellVm.route.description}</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-3">
-            <TradingHighlight
-              icon={ClipboardList}
-              title="Blotter management"
-              description="Working and partial orders stay visible so you can act on fill progress without context-switching."
-            />
-            <TradingHighlight
-              icon={Wallet}
-              title="Position exposure"
-              description="Live exposure, marks, and unrealized P&L for every open position in the active paper session."
-            />
-            <TradingHighlight
-              icon={ShieldCheck}
-              title="Guardrail state"
-              description="Paper thresholds and drawdown limits are evaluated on every order and surfaced here for review."
-            />
-          </CardContent>
-        </Card>
-
-        <Card className="panel-surface-strong bg-panel-strong">
-          <CardHeader>
-            <div className="eyebrow-label">Route Context</div>
-            <CardTitle>Current workstream</CardTitle>
-            <CardDescription>
-              Deep links under{" "}
-              <code className="rounded-sm bg-background/70 px-1 py-0.5 text-xs text-foreground">{shellVm.route.pathname}</code>{" "}
-              reuse the same prefetched cockpit payload.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <KeyValueRow label="Open positions" value={String(data.positions.length)} />
-            <KeyValueRow label="Working orders" value={String(data.openOrders.length)} />
-            <KeyValueRow label="Completed fills" value={String(data.fills.length)} />
-            <KeyValueRow label="Risk state" value={data.risk.state} />
-          </CardContent>
-        </Card>
-      </section>
 
       <AcceptanceStatusCard
         items={cockpitAcceptance}
@@ -682,15 +646,15 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         ))}
       </div>
       </section>
+      ) : null}
 
+      {showRisk ? (
       <section id="trading-exceptions" className="workspace-section-band" aria-labelledby="trading-exceptions-heading">
         <div className="workspace-section-subheader">
           <div className="min-w-0">
             <p className="eyebrow-label">Exceptions</p>
             <h3 id="trading-exceptions-heading" className="workspace-section-title">Risk and adapter exceptions</h3>
-            <p className="workspace-section-summary">Business guardrails and brokerage wiring are separated from platform diagnostics.</p>
           </div>
-          <a className="workspace-section-jump" href="#trading-actions">Actions</a>
         </div>
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <Card className="panel-surface">
@@ -716,11 +680,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 <AlertTriangle className="h-4 w-4" />
                 Active guardrails
               </div>
-              <ul className="list-disc space-y-1 pl-6 text-sm text-foreground">
-                {data.risk.activeGuardrails.map((guardrail) => (
-                  <li key={guardrail}>{guardrail}</li>
-                ))}
-              </ul>
+              <GuardrailPanelBody
+                guardrails={data.risk.guardrails}
+                activeGuardrails={data.risk.activeGuardrails}
+              />
             </div>
             <div className="mt-3 rounded-xl border border-border/70 bg-background/80 p-4">
               <div className="mb-2 flex items-center justify-between gap-3">
@@ -757,24 +720,24 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 </p>
               )}
               {executionEvidence.controlsPanel ? (
-                <dl
-                  aria-label={executionEvidence.controlsPanel.ariaLabel}
-                  className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2"
-                >
-                  {executionEvidence.controlsPanel.rows.map((row) => (
-                    <div key={row.id} className="rounded-md border border-border/60 bg-secondary/20 px-2.5 py-2">
-                      <dt>{row.label}:</dt>
-                      <dd className="mt-1 break-words font-mono text-foreground">{row.value}</dd>
-                    </div>
-                  ))}
-                </dl>
+                <TechnicalDetails label="Audit details">
+                  <dl
+                    aria-label={executionEvidence.controlsPanel.ariaLabel}
+                    className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2"
+                  >
+                    {executionEvidence.controlsPanel.rows.map((row) => (
+                      <div key={row.id} className="rounded-md border border-border/60 bg-secondary/20 px-2.5 py-2">
+                        <dt>{row.label}:</dt>
+                        <dd className="mt-1 break-words font-mono text-foreground">{row.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </TechnicalDetails>
               ) : (
                 <p className="text-xs text-muted-foreground">{executionEvidence.controlsEmptyText}</p>
               )}
             </div>
-            <div className="mt-3">
-              <RiskControlPanel />
-            </div>
+            <TradingRiskControls governedApprovals={governedApprovals} />
           </CardContent>
         </Card>
 
@@ -799,17 +762,11 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         </Card>
       </section>
       </section>
+      ) : null}
 
-      <section id="trading-actions" className="workspace-section-band" aria-labelledby="trading-actions-heading">
-        <div className="workspace-section-subheader">
-          <div className="min-w-0">
-            <p className="eyebrow-label">Actions</p>
-            <h3 id="trading-actions-heading" className="workspace-section-title">Blotter actions and selected detail</h3>
-            <p className="workspace-section-summary">Selectable rows, order actions, and linked detail panels remain visually paired.</p>
-          </div>
-          <a className="workspace-section-jump" href="#trading-history">History</a>
-        </div>
-      <section className="grid gap-4 xl:grid-cols-2">
+      {showPositions ? (
+      <section id="trading-actions" className="workspace-section-band" aria-label="Position book and selected detail">
+      <section className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <Card className="panel-surface">
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -840,10 +797,20 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               onRowSelect={(position) => blotterVm.selectPosition(position.id)}
               emptyText={blotterVm.positionEmptyText}
             />
-            <TradingBlotterDetailPanel id={blotterVm.positionDetailId} detail={blotterVm.selectedPosition} emptyText={blotterVm.positionEmptyText} selectedSourceLabel="Selected from live positions" />
           </CardContent>
         </Card>
 
+        <div className="min-w-0 xl:sticky xl:top-4">
+          <TradingBlotterDetailPanel id={blotterVm.positionDetailId} detail={blotterVm.selectedPosition} emptyText={blotterVm.positionEmptyText} selectedSourceLabel="Selected from live positions" />
+        </div>
+      </section>
+      </section>
+      ) : null}
+
+      {showOrders ? (
+      <section id="trading-actions" className="workspace-section-band" aria-label="Order blotter and selected detail">
+      <section className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="min-w-0 space-y-4">
         <Card className="panel-surface">
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
@@ -854,7 +821,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               <div className="panel-action-zone">
                 <Button
                   size="sm"
-                  variant="outline"
+                  variant="destructive"
                   onClick={() => confirmVm.openConfirm({ kind: "cancel-all" })}
                   disabled={blotterVm.cancelAllDisabled}
                   disabledReason={blotterVm.cancelAllDisabledReason}
@@ -954,7 +921,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                         min={0}
                         step={0.01}
                         value={orderTicket.controls.limitPrice.value}
-                        onChange={(e) => orderTicket.updateField(orderTicket.controls.limitPrice.field, e.target.value)}
+                        onChange={(e) => orderTicket.controls.limitPrice && orderTicket.updateField(orderTicket.controls.limitPrice.field, e.target.value)}
                         aria-label={orderTicket.controls.limitPrice.ariaLabel}
                         aria-describedby={orderTicket.controls.limitPrice.describedBy}
                         error={orderTicket.controls.limitPrice.invalid}
@@ -1036,13 +1003,12 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               </form>
             </CardContent>
           )}
-          {!orderTicket.open && orderTicket.successText && (
-            <CardContent className="border-b border-border/60 pb-4">
-              <div role="status" className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 shrink-0" />
-                {orderTicket.successText}
-              </div>
-            </CardContent>
+          {!orderTicket.open && (
+            <OrderStatusBanner
+              successText={orderTicket.successText}
+              parkedText={orderTicket.parkedText}
+              riskWarnings={orderTicket.riskWarnings}
+            />
           )}
           <CardContent className="space-y-3">
             <DenseDataTable
@@ -1059,28 +1025,25 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               onRowSelect={(order) => blotterVm.selectOrder(order.id)}
               emptyText={blotterVm.orderEmptyText}
             />
-            <TradingBlotterDetailPanel id={blotterVm.orderDetailId} detail={blotterVm.selectedOrder} emptyText={blotterVm.orderEmptyText} selectedSourceLabel="Selected from open orders" />
           </CardContent>
         </Card>
-      </section>
 
-      <Card className="panel-surface">
-        <CardHeader>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <CandlestickChart className="h-4 w-4 text-primary" />
-                Recent fills
-              </CardTitle>
-              <CardDescription className="mt-2">
-                Select a fill to inspect execution venue, price, and linked order context.
-              </CardDescription>
+        <Card className="panel-surface">
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <CandlestickChart className="h-4 w-4 text-primary" />
+                  Recent fills
+                </CardTitle>
+                <CardDescription className="mt-2">
+                  Select a fill to inspect execution venue, price, and linked order context.
+                </CardDescription>
+              </div>
+              <CockpitChip label="Rows" value={String(blotterVm.fillRows.length)} />
             </div>
-            <CockpitChip label="Rows" value={String(blotterVm.fillRows.length)} />
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(260px,0.42fr)]">
+          </CardHeader>
+          <CardContent className="space-y-3">
             <DenseDataTable
               ariaLabel={blotterVm.fillsTableLabel}
               caption="Select a fill to update the fill detail status window."
@@ -1095,18 +1058,24 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               onRowSelect={(fill) => blotterVm.selectFill(fill.id)}
               emptyText={blotterVm.fillEmptyText}
             />
-            <TradingBlotterDetailPanel id={blotterVm.fillDetailId} detail={blotterVm.selectedFill} emptyText={blotterVm.fillEmptyText} selectedSourceLabel="Selected from recent fills" />
-          </div>
-        </CardContent>
-      </Card>
-      </section>
+          </CardContent>
+        </Card>
+        </div>
 
+        <div className="min-w-0 space-y-4 xl:sticky xl:top-4">
+          <TradingBlotterDetailPanel id={blotterVm.orderDetailId} detail={blotterVm.selectedOrder} emptyText={blotterVm.orderEmptyText} selectedSourceLabel="Selected from open orders" />
+          <TradingBlotterDetailPanel id={blotterVm.fillDetailId} detail={blotterVm.selectedFill} emptyText={blotterVm.fillEmptyText} selectedSourceLabel="Selected from recent fills" />
+        </div>
+      </section>
+      </section>
+      ) : null}
+
+      {showOverview ? (
       <section id="trading-history" className="workspace-section-band" aria-labelledby="trading-history-heading">
         <div className="workspace-section-subheader">
           <div className="min-w-0">
             <p className="eyebrow-label">History</p>
             <h3 id="trading-history-heading" className="workspace-section-title">Paper session history and execution evidence</h3>
-            <p className="workspace-section-summary">Session restore, replay verification, and audit events are kept in the same history band.</p>
           </div>
           <a className="workspace-section-jump" href="#trading-posture">Posture</a>
         </div>
@@ -1279,8 +1248,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                       {session.isActive && (
                         <Button
                           size="sm"
-                          variant="outline"
-                          onClick={() => { void paperSessions.closeSession(session.sessionId); }}
+                          variant="destructive"
+                          onClick={() => openSessionCloseConfirmation(session.sessionId)}
                           disabled={!session.canClose}
                           disabledReason={session.closeDisabledReason}
                           aria-label={session.closeAriaLabel}
@@ -1338,6 +1307,13 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">{entry.message}</p>
                       <p className="mt-1 font-mono text-[11px] text-muted-foreground">{entry.metadataText}</p>
+                      {entry.technicalMetadataText ? (
+                        <TechnicalDetails label="Execution references" className="mt-2">
+                          <p className="break-all font-mono text-[11px] text-muted-foreground">
+                            {entry.technicalMetadataText}
+                          </p>
+                        </TechnicalDetails>
+                      ) : null}
                     </div>
                   ))}
                 </div>
@@ -1349,6 +1325,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         {/* Strategy lifecycle controls — moved to sheet; trigger in Workflow Tools strip */}
       </section>
       </section>
+      ) : null}
 
       {/* ---- Strategy Controls Sheet ---- */}
       <Sheet open={shellVm.strategySheetOpen} onOpenChange={(open) => shellVm.setWorkflowPanelOpen("strategy", open)}>
@@ -1397,7 +1374,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               </Button>
               <Button
                 size="sm"
-                variant="outline"
+                variant="destructive"
                 aria-label={strategyLifecycle.stopAriaLabel}
                 onClick={strategyLifecycle.openStopConfirm}
                 disabled={!strategyLifecycle.canStop}
@@ -1817,6 +1794,14 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       </Sheet>
 
       <ConfirmActionDialog vm={confirmVm} />
+      <SessionCloseConfirmationDialog
+        sessionId={sessionCloseTarget}
+        acknowledged={sessionCloseAcknowledged}
+        busy={sessionCloseBusy}
+        onAcknowledgedChange={setSessionCloseAcknowledged}
+        onCancel={cancelSessionCloseConfirmation}
+        onConfirm={confirmSessionClose}
+      />
     </div>
   );
 }
@@ -1961,7 +1946,7 @@ function buildCockpitAcceptance({
       ? {
           label: "Promotion review",
           value: "Ready",
-          detail: `${readinessPromotion!.approvalStatus} by ${readinessPromotion!.approvedBy}: ${readinessPromotion!.reason}. Audit ${readinessPromotion!.auditReference}.`,
+          detail: `${readinessPromotion!.approvalStatus} by ${formatTradingOperatorLabel(readinessPromotion!.approvedBy)}: ${readinessPromotion!.reason}. Audit evidence retained.`,
           level: "ready"
         }
       : readinessPromotion
@@ -1988,7 +1973,7 @@ function buildCockpitAcceptance({
         ? {
             label: "Promotion review",
             value: "Ready",
-            detail: `${latestPromotion!.decision} by ${latestPromotion!.approvedBy}: ${latestPromotion!.approvalReason ?? latestPromotion!.reviewNotes}. Audit ${latestPromotion!.auditReference}.`,
+            detail: `${latestPromotion!.decision} by ${formatTradingOperatorLabel(latestPromotion!.approvedBy)}: ${latestPromotion!.approvalReason ?? latestPromotion!.reviewNotes}. Audit evidence retained.`,
             level: "ready"
           }
         : latestPromotion && latestPromotionHasRationale
@@ -2007,212 +1992,21 @@ function buildCockpitAcceptance({
   ];
 }
 
-function mapAcceptanceGate(gate: TradingAcceptanceGate): CockpitAcceptanceItem {
-  return {
-    label: gate.label,
-    value: formatReadinessStatusValue(gate.status),
-    detail: gate.detail,
-    level: mapReadinessStatusLevel(gate.status)
-  };
-}
+function formatTradingOperatorLabel(value: string | null | undefined): string {
+  const normalized = value?.trim() ?? "";
+  if (!normalized) {
+    return "Unknown operator";
+  }
 
-function AcceptanceStatusCard({
-  items,
-  readinessVm
-}: {
-  items: CockpitAcceptanceItem[];
-  readinessVm: TradingReadinessState & { refresh: () => Promise<void> };
-}) {
-  const readyCount = items.filter((item) => item.level === "ready").length;
-  const totalCount = items.length;
-  const hasAtRisk = items.some((item) => item.level === "atRisk");
-  const overallLevel: AcceptanceLevel = readyCount === totalCount ? "ready" : hasAtRisk ? "atRisk" : "review";
+  if (/^fixture[-_:]/i.test(normalized)) {
+    return "Paper operator";
+  }
 
-  return (
-    <Card className="panel-surface">
-      <CardHeader>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <div className="eyebrow-label">Operator Acceptance</div>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ShieldCheck className="h-4 w-4 text-primary" />
-              Paper cockpit readiness
-            </CardTitle>
-            <CardDescription>
-              Session, replay, audit, and promotion signals for the current paper workflow.
-            </CardDescription>
-          </div>
-          <div className="panel-action-zone">
-            <Button asChild size="sm" variant="secondary">
-              <Link to="/trading/readiness">Open console</Link>
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <Link to={readinessVm.evidenceAction.href} aria-label={readinessVm.evidenceAction.ariaLabel}>
-                <Network className="h-4 w-4" />
-                {readinessVm.evidenceAction.label}
-              </Link>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => { void readinessVm.refresh(); }}
-              disabled={readinessVm.refreshDisabled}
-              disabledReason={readinessVm.refreshDisabledReason}
-              busy={readinessVm.refreshing}
-              busyLabel={readinessVm.refreshBusyLabel}
-              aria-label={readinessVm.refreshAriaLabel}
-            >
-              <RotateCcw className={cn("h-4 w-4", readinessVm.refreshing && "animate-spin")} />
-              {readinessVm.refreshButtonLabel}
-            </Button>
-            <SeverityBadge status={acceptanceStatus[overallLevel]} label={`${readyCount}/${totalCount} ready`} />
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="sr-only" aria-live="polite">{readinessVm.statusAnnouncement}</div>
-        {readinessVm.summaryRows.length > 0 && (
-          <div className="grid gap-2 md:grid-cols-4" aria-label={readinessVm.summaryLabel}>
-            {readinessVm.summaryRows.map((row) => (
-              <ReadinessSummaryPill key={row.id} row={row} />
-            ))}
-          </div>
-        )}
-        {readinessVm.errorText && (
-          <div role="alert" className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
-            {readinessVm.errorText}
-          </div>
-        )}
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {items.map((item) => (
-            <AcceptanceRow key={item.label} item={item} />
-          ))}
-        </div>
-        {readinessVm.hasOperatorAttention && (
-          <OperatorWorkItemList
-            summaryText={readinessVm.workItemSummaryText}
-            listLabel={readinessVm.workItemListLabel}
-            primaryKind={readinessVm.primaryWorkItemKind}
-            workItems={readinessVm.visibleWorkItems}
-            workItemOverflowLabel={readinessVm.workItemOverflowLabel}
-            warnings={readinessVm.visibleWarnings}
-            warningOverflowLabel={readinessVm.warningOverflowLabel}
-          />
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function ReadinessSummaryPill({ row }: { row: TradingReadinessSummaryRow }) {
-  return (
-    <div className={cn("data-grid-surface border border-l-[3px] px-3 py-2", acceptanceTone[row.level])} aria-label={row.ariaLabel}>
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{row.label}</p>
-      <p className="mt-1 break-words font-mono text-xs font-semibold text-foreground">{row.label}: {row.value}</p>
-    </div>
-  );
-}
-
-function AcceptanceRow({ item }: { item: CockpitAcceptanceItem }) {
-  return (
-    <div className={cn("data-grid-surface border border-l-[3px] px-4 py-3", acceptanceTone[item.level])}>
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{item.label}</p>
-          <p className="mt-1 font-mono text-sm font-semibold">{item.value}</p>
-        </div>
-        <SeverityBadge status={acceptanceStatus[item.level]} label={acceptanceLabel[item.level]} />
-      </div>
-      <p className="mt-2 text-xs leading-5 text-foreground/80">{item.detail}</p>
-    </div>
-  );
-}
-
-function OperatorWorkItemList({
-  summaryText,
-  listLabel,
-  primaryKind,
-  workItems,
-  workItemOverflowLabel,
-  warnings,
-  warningOverflowLabel
-}: {
-  summaryText: string;
-  listLabel: string;
-  primaryKind: string | null;
-  workItems: TradingReadinessWorkItemRow[];
-  workItemOverflowLabel: string | null;
-  warnings: TradingReadinessWarningRow[];
-  warningOverflowLabel: string | null;
-}) {
-  return (
-    <div className="panel-surface p-4" role="region" aria-label={listLabel}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Operator work items</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {summaryText}
-          </p>
-        </div>
-        {primaryKind && (
-          <span className="rounded-sm border border-border/70 px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            {primaryKind}
-          </span>
-        )}
-      </div>
-
-      {workItems.length > 0 && (
-        <ul className="mt-3 grid gap-2 md:grid-cols-2">
-          {workItems.map((item) => (
-            <li
-              key={item.workItemId}
-              aria-label={item.ariaLabel}
-              className={cn("rounded-lg border px-3 py-2 text-sm", workItemTone[item.tone] ?? workItemTone.Info)}
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-semibold text-foreground">{item.label}</span>
-                <SeverityBadge status={item.tone} label={item.tone} />
-              </div>
-              <p className="mt-1 text-xs leading-5 text-foreground/80">{item.detail}</p>
-              {item.metadataText && (
-                <p className="mt-2 font-mono text-[11px] text-foreground/70">
-                  {item.metadataText}
-                </p>
-              )}
-              {item.action && (
-                <div className="mt-3">
-                  <Button asChild size="sm" variant="outline" className="bg-background/40">
-                    <Link to={item.action.href} aria-label={item.action.ariaLabel}>
-                      <Settings className="h-3.5 w-3.5" aria-hidden="true" />
-                      <span>{item.action.label}</span>
-                    </Link>
-                  </Button>
-                  <span className="sr-only">{item.action.detail}</span>
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-      {workItemOverflowLabel && (
-        <p className="mt-3 font-mono text-[11px] text-muted-foreground">{workItemOverflowLabel}</p>
-      )}
-
-      {warnings.length > 0 && (
-        <ul className="mt-3 space-y-1 text-xs text-warning">
-          {warnings.map((warning) => (
-            <li key={warning.id} aria-label={warning.ariaLabel} className="flex gap-2">
-              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-              <span>{warning.text}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-      {warningOverflowLabel && (
-        <p className="mt-3 font-mono text-[11px] text-warning/90">{warningOverflowLabel}</p>
-      )}
-    </div>
-  );
+  const words = normalized.replace(/[._:-]+/g, " ").replace(/\s+/g, " ").trim();
+  return words
+    .split(" ")
+    .map((word) => word ? `${word.charAt(0).toUpperCase()}${word.slice(1)}` : word)
+    .join(" ");
 }
 
 function PaperSessionDetailPanelView({ detail }: { detail: PaperSessionDetailPanel }) {
@@ -2378,6 +2172,7 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
                 {vm.cancelButtonLabel}
               </Button>
               <Button
+                variant={vm.confirmButtonVariant}
                 onClick={() => { void vm.executeConfirm(); }}
                 disabled={!vm.canConfirm}
                 disabledReason={vm.confirmDisabledReason}
@@ -2396,6 +2191,76 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
             </Button>
           </div>
         )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function SessionCloseConfirmationDialog({
+  sessionId,
+  acknowledged,
+  busy,
+  onAcknowledgedChange,
+  onCancel,
+  onConfirm
+}: {
+  sessionId: string | null;
+  acknowledged: boolean;
+  busy: boolean;
+  onAcknowledgedChange: (acknowledged: boolean) => void;
+  onCancel: () => void;
+  onConfirm: () => Promise<void>;
+}) {
+  const titleId = "paper-session-close-title";
+  const descriptionId = "paper-session-close-description";
+  const acknowledgementId = "paper-session-close-acknowledgement";
+
+  return (
+    <Dialog open={sessionId !== null} onOpenChange={(open) => { if (!open) onCancel(); }}>
+      <DialogContent
+        className="sm:max-w-md"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
+      >
+        <DialogHeader>
+          <DialogTitle id={titleId}>Close paper session {sessionId}</DialogTitle>
+          <DialogDescription id={descriptionId}>
+            Closing stops further execution for this paper session. It does not cancel working orders or flatten open positions.
+          </DialogDescription>
+        </DialogHeader>
+        <label
+          htmlFor={acknowledgementId}
+          className="flex items-start gap-3 rounded-md border border-danger/30 bg-danger/10 px-3 py-3 text-sm"
+        >
+          <input
+            id={acknowledgementId}
+            type="checkbox"
+            checked={acknowledged}
+            disabled={busy}
+            onChange={(event) => onAcknowledgedChange(event.target.checked)}
+            className="mt-1 h-4 w-4 accent-danger"
+          />
+          <span>
+            <span className="block font-medium text-foreground">I reviewed open orders and positions</span>
+            <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+              Confirm any remaining exposure is intentional before closing the session.
+            </span>
+          </span>
+        </label>
+        <div className="panel-action-zone pt-2">
+          <Button variant="outline" onClick={onCancel} disabled={busy}>Keep session open</Button>
+          <Button
+            variant="destructive"
+            onClick={() => { void onConfirm(); }}
+            disabled={!acknowledged || busy}
+            disabledReason={!acknowledged ? "Review open orders and positions before closing this session." : undefined}
+            busy={busy}
+            busyLabel="Closing paper session"
+            aria-label={sessionId ? `Confirm close paper session ${sessionId}` : "Confirm close paper session"}
+          >
+            Close session
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -2466,18 +2331,6 @@ function KeyValueRow({ label, value, tone }: { label: string; value: string; ton
     <div className="data-grid-surface flex items-center justify-between gap-4 px-3 py-2">
       <span className="text-muted-foreground">{label}</span>
       <span className={cn("font-mono text-foreground", tone)}>{value}</span>
-    </div>
-  );
-}
-
-function TradingHighlight({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) {
-  return (
-    <div className="workspace-header-card p-4">
-      <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-        <Icon className="h-4 w-4 text-primary shrink-0" />
-        {title}
-      </div>
-      <p className="mt-2 text-xs leading-5 text-muted-foreground">{description}</p>
     </div>
   );
 }

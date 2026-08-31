@@ -23,6 +23,8 @@ This layer should expose AI/tooling access without mixing MCP mechanics into UI 
 
 - `Meridian.Mcp.csproj` - minimal MCP host project.
 - `Tools/RepoEditTools.cs` - preview/apply wrappers for deterministic scoped repo edits.
+- `Tools/ToolProcessRunner.cs` and `Tools/ToolProcessExecution.cs` - bounded tool execution and
+  operating-system process containment.
 - Tool, resource, and prompt entrypoints for MCP clients.
 
 ## Important workflows
@@ -43,6 +45,17 @@ The repo edit tools expose a thin MCP wrapper over `build/scripts/ai/ai-edit-too
 The MCP layer validates JSON arguments, resolves plan paths through `RepoPathService`, and keeps all
 rewrite policy in the CLI. It must not bypass the CLI guardrails or write directly to repository
 files.
+
+Repository-edit subprocesses run inside a kill-on-close Job Object on Windows and a dedicated
+process group on Linux. Windows child creation uses an explicit standard-handle allowlist. Linux
+startup verifies the `setsid` process group before releasing the edit tool and keeps that group
+identity pinned until parent cleanup. Cancellation, deadline expiry, and a root-process exit
+terminate the containment boundary before bounded output draining, preventing an ordinary
+descendant from continuing a repository mutation. Linux hosts must provide the util-linux `setsid`
+executable and `/bin/sh`; startup fails closed when either containment prerequisite is unavailable.
+The Linux boundary is process-group based rather than cgroup based, so repository-edit tools must
+not deliberately create a new session or otherwise detach themselves from the inherited process
+group.
 
 ## Diagrams
 
@@ -67,6 +80,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 ```bash
 dotnet run --project src/Meridian.Mcp/Meridian.Mcp.csproj -- --help
 dotnet build src/Meridian.Mcp/Meridian.Mcp.csproj
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ToolProcessRunnerTests"
 python -m unittest build.scripts.ai.tests.test_ai_edit_tool
 ```
 

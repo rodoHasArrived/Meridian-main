@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Application.Monitoring;
@@ -15,6 +14,7 @@ using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.StrategyEngine;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Collectors;
 using Meridian.Execution.Models;
@@ -41,6 +41,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -55,7 +56,6 @@ public static partial class WorkstationEndpoints
     private const string WorkstationStructuredXlsxContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private const string WorkstationApiRoutePrefix = "/api/workstation";
     private const string PortfolioApiRoutePrefix = "/api/portfolio";
-
     public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("/api/workstation")
@@ -66,35 +66,51 @@ public static partial class WorkstationEndpoints
         {
             return await BuildSessionPayloadAsync(context).ConfigureAwait(false);
         })
-        .WithName("GetWorkstationSession");
+        .WithName("GetWorkstationSession").RequireAuthenticatedSessionOrScopedLocalOperatorRead();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationResearch), async (HttpContext context) =>
         {
-            return await BuildStrategyPayloadAsync(context).ConfigureAwait(false);
+            var payload = await BuildStrategyPayloadAsync(context).ConfigureAwait(false);
+            return payload is null
+                ? StrategyReadServiceUnavailable()
+                : Results.Ok(payload);
         })
-        .WithName("GetWorkstationResearch");
+        .WithName("GetWorkstationResearch").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .Produces<WorkstationStrategyPayload>(200)
+        .Produces(503);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStrategy), async (HttpContext context) =>
         {
-            return await BuildStrategyPayloadAsync(context).ConfigureAwait(false);
+            var payload = await BuildStrategyPayloadAsync(context).ConfigureAwait(false);
+            return payload is null
+                ? StrategyReadServiceUnavailable()
+                : Results.Ok(payload);
         })
-        .WithName("GetWorkstationStrategy");
+        .WithName("GetWorkstationStrategy").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .Produces<WorkstationStrategyPayload>(200)
+        .Produces(503);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationResearchBriefing), async (HttpContext context) =>
         {
             var briefing = await BuildStrategyBriefingAsync(context).ConfigureAwait(false);
-            return Results.Json(ToResearchBriefingDto(briefing), jsonOptions);
+            return briefing is null
+                ? StrategyReadServiceUnavailable()
+                : Results.Json(ToResearchBriefingDto(briefing), jsonOptions);
         })
-        .WithName("GetWorkstationResearchBriefing")
-        .Produces<ResearchBriefingDto>(200);
+        .WithName("GetWorkstationResearchBriefing").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .Produces<ResearchBriefingDto>(200)
+        .Produces(503);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStrategyBriefing), async (HttpContext context) =>
         {
             var briefing = await BuildStrategyBriefingAsync(context).ConfigureAwait(false);
-            return Results.Json(briefing, jsonOptions);
+            return briefing is null
+                ? StrategyReadServiceUnavailable()
+                : Results.Json(briefing, jsonOptions);
         })
-        .WithName("GetWorkstationStrategyBriefing")
-        .Produces<StrategyBriefingDto>(200);
+        .WithName("GetWorkstationStrategyBriefing").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .Produces<StrategyBriefingDto>(200)
+        .Produces(503);
 
         // Governed Security Master write surface lives under /api/security-master (not /api/workstation),
         // so it maps its own tenant-scoped group directly on the app.
@@ -108,8 +124,10 @@ public static partial class WorkstationEndpoints
         MapFinancialRecordExplorerEndpoints(group, jsonOptions);
         MapFamilyOfficeEndpoints(group);
         MapDataUploadEndpoints(group, jsonOptions);
+        MapDataOperationsAssuranceEndpoints(group);
         MapStatementConnectorEndpoints(group, jsonOptions);
         MapProviderIntegrationEndpoints(group, jsonOptions);
+        MapIBResultEndpoints(group, jsonOptions);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowSummary), async (
             bool? hasOperatingContext,
@@ -132,17 +150,26 @@ public static partial class WorkstationEndpoints
                     fundProfileId: fundProfileId,
                     fundAccountId: fundAccountId,
                     fundDisplayName: fundDisplayName,
-                    ct: context.RequestAborted)
+                    // The browser sends a fund account, not a fund profile, so the run load is not
+                    // narrowed by the query alone. The resolved request tenant is what bounds it.
+                    tenantId: HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId,
+                    companyId: EndpointAuthorization.ResolveCompanyId(context),
+                    ct: context.RequestAborted, readScope: WorkstationWorkflowReadScope.ForRequest(context))
                 .ConfigureAwait(false);
             return Results.Json(summary, jsonOptions);
         })
-        .WithName("GetWorkstationWorkflowSummary")
+        .WithName("GetWorkstationWorkflowSummary").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage, UserPermission.AdminMaintenance, UserPermission.ViewConfig, UserPermission.ModifyConfig)
         .Produces<OperatorWorkflowHomeSummary>(200)
         .Produces(403)
         .Produces(501)
-        // No route-level read permission to defer to, so the ownership gate always evaluates the
-        // fundProfileId query value (SEC-005 slice 3b).
-        .RequireFundProfileTenantScope();
+        // Admission is the union of the projection's family sets, plus the permissions of every card the
+        // projection adds unconditionally: reporting, portfolio and settings. Portfolio's ViewTrades and
+        // reporting's pair are already family sets, but the settings card had no representative here, so
+        // a ViewConfig-only operator was refused a summary the desktop lane composed for it in-process.
+        // The ownership gate takes the same set (SEC-005 slice 3b) -- it skips its check for callers
+        // lacking the permissions handed to it, so a wider declaration with a narrower gate would stop
+        // checking fund ownership for exactly the callers the widening admitted.
+        .RequireFundProfileTenantScope(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.ViewReporting, UserPermission.ManageReporting, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage, UserPermission.AdminMaintenance, UserPermission.ViewConfig, UserPermission.ModifyConfig);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowLibrary), (HttpContext context) =>
         {
@@ -155,49 +182,10 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(service.GetLibrary(), jsonOptions);
         })
-        .WithName("GetWorkstationWorkflowLibrary")
+        .WithName("GetWorkstationWorkflowLibrary").DeclareOpenRead("Static workflow catalog from WorkflowRegistry; carries no deployment, account or tenant state.")
         .Produces<WorkflowLibraryDto>(200);
 
-        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationCollateralIngest), (
-            IReadOnlyList<CollateralInputRow> rows,
-            HttpContext context) =>
-        {
-            if (!HasOperationsContinuityMutationPermission(context))
-            {
-                return Results.Forbid();
-            }
-
-            const int maxRowsPerRequest = 1_000;
-            if (rows.Count > maxRowsPerRequest)
-            {
-                return Results.BadRequest(new { error = $"A maximum of {maxRowsPerRequest} collateral rows can be ingested per request." });
-            }
-
-            var buffer = context.RequestServices.GetService<CollateralIngestionBuffer>();
-            if (buffer is null)
-            {
-                return Results.Accepted(value: new { ingested = 0, buffered = false });
-            }
-
-            var ingested = 0;
-            foreach (var row in rows)
-            {
-                if (!buffer.TryIngest(row))
-                {
-                    return Results.StatusCode(StatusCodes.Status429TooManyRequests);
-                }
-
-                ingested++;
-            }
-
-            return Results.Accepted(value: new { ingested, buffered = true });
-        })
-        .WithName("IngestCollateralRows")
-        .Produces(202)
-        .Produces(400)
-        .Produces(403)
-        .Produces(429)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        MapCollateralEndpoints(group, jsonOptions);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationWorkflowPresets), async (HttpContext context) =>
         {
@@ -210,7 +198,7 @@ public static partial class WorkstationEndpoints
             var library = await service.GetLibraryAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(library, jsonOptions);
         })
-        .WithName("GetWorkstationWorkflowPresets")
+        .WithName("GetWorkstationWorkflowPresets").RequireAuthenticatedSessionOrScopedLocalOperatorRead()
         .Produces<WorkflowPresetLibraryDto>(200)
         .Produces(501);
 
@@ -236,7 +224,7 @@ public static partial class WorkstationEndpoints
                 ? Results.Json(result.Preset, jsonOptions)
                 : Results.BadRequest(new { error = result.Error });
         })
-        .WithName("SaveWorkstationWorkflowPreset")
+        .WithName("SaveWorkstationWorkflowPreset").RequireAuthenticatedSession()
         .Produces<WorkflowPresetDto>(200)
         .Produces(400)
         .Produces(501);
@@ -268,7 +256,7 @@ public static partial class WorkstationEndpoints
                 ? Results.Json(result.Preset, jsonOptions)
                 : Results.BadRequest(new { error = result.Error });
         })
-        .WithName("UpdateWorkstationWorkflowPreset")
+        .WithName("UpdateWorkstationWorkflowPreset").RequireAuthenticatedSession()
         .Produces<WorkflowPresetDto>(200)
         .Produces(400)
         .Produces(501);
@@ -294,7 +282,7 @@ public static partial class WorkstationEndpoints
                 ? Results.Json(result.Preset, jsonOptions)
                 : Results.BadRequest(new { error = result.Error });
         })
-        .WithName("PinWorkstationWorkflowPreset")
+        .WithName("PinWorkstationWorkflowPreset").RequireAuthenticatedSession()
         .Produces<WorkflowPresetDto>(200)
         .Produces(400)
         .Produces(404)
@@ -318,7 +306,7 @@ public static partial class WorkstationEndpoints
                 ? Results.Json(result.Preset, jsonOptions)
                 : Results.BadRequest(new { error = result.Error });
         })
-        .WithName("MarkWorkstationWorkflowPresetUsed")
+        .WithName("MarkWorkstationWorkflowPresetUsed").RequireAuthenticatedSession()
         .Produces<WorkflowPresetDto>(200)
         .Produces(400)
         .Produces(404)
@@ -337,60 +325,67 @@ public static partial class WorkstationEndpoints
                 ? Results.NoContent()
                 : Results.NotFound(new { error = $"Workflow preset '{presetId}' was not found." });
         })
-        .WithName("DeleteWorkstationWorkflowPreset")
+        .WithName("DeleteWorkstationWorkflowPreset").RequireAuthenticatedSession()
         .Produces(204)
         .Produces(404)
         .Produces(501);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationTrading), async (Guid? fundAccountId, HttpContext context) =>
         {
-            return await BuildTradingPayloadAsync(context, fundAccountId).ConfigureAwait(false);
+            var payload = await BuildTradingPayloadAsync(context, fundAccountId).ConfigureAwait(false);
+            return payload is null
+                ? WorkstationServiceUnavailable(
+                    "Trading data is unavailable: no execution portfolio state, order manager, or strategy run read service is registered.")
+                : Results.Ok(payload);
         })
-        .WithName("GetWorkstationTrading");
+        .WithName("GetWorkstationTrading").RequirePermission(UserPermission.ViewTrades)
+        .Produces<WorkstationTradingPayload>(200)
+        .Produces(403)
+        .Produces(503)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationTradingReadiness), async (Guid? fundAccountId, HttpContext context) =>
         {
             var readiness = await GetTradingOperatorReadinessAsync(fundAccountId, context).ConfigureAwait(false);
             return Results.Json(readiness, jsonOptions);
         })
-        .WithName("GetWorkstationTradingReadiness")
-        .Produces<TradingOperatorReadinessDto>(200);
+        .WithName("GetWorkstationTradingReadiness").RequirePermission(UserPermission.ViewTrades)
+        .Produces<TradingOperatorReadinessDto>(200)
+        .Produces(403)
+        .RequireWorkstationTenantCompanyScope();
 
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationCollateralExposure), (HttpContext context) =>
-        {
-            if (!HasOperationsContinuityReadPermission(context))
-            {
-                return Results.Forbid();
-            }
-
-            var service = context.RequestServices.GetRequiredService<CollateralExposureService>();
-            var buffer = context.RequestServices.GetService<CollateralIngestionBuffer>();
-            var rows = buffer?.DrainBatch(5_000) ?? [];
-            return Results.Json(BuildCollateralExposureSnapshot(service, rows), jsonOptions);
-        })
-        .WithName("GetWorkstationCollateralExposure")
-        .Produces<ExposureSnapshotDto>(200)
-        .Produces(403);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationOperatorInbox), async (Guid? fundAccountId, HttpContext context) =>
         {
             var inbox = await BuildOperatorInboxAsync(fundAccountId, context).ConfigureAwait(false);
             return Results.Json(inbox, jsonOptions);
         })
-        .WithName("GetWorkstationOperatorInbox")
-        .Produces<OperatorInboxDto>(200);
+        .WithName("GetWorkstationOperatorInbox").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .Produces<OperatorInboxDto>(200)
+        .Produces(403)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationDataOperations), async (HttpContext context) =>
         {
-            return await BuildDataPayloadAsync(context).ConfigureAwait(false);
+            var payload = await BuildDataPayloadAsync(context).ConfigureAwait(false);
+            return payload is null
+                ? DataReadServicesUnavailable()
+                : Results.Ok(payload);
         })
-        .WithName("GetWorkstationDataOperations");
+        .WithName("GetWorkstationDataOperations").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage)
+        .Produces<WorkstationDataPayload>(200)
+        .Produces(503);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationData), async (HttpContext context) =>
         {
-            return await BuildDataPayloadAsync(context).ConfigureAwait(false);
+            var payload = await BuildDataPayloadAsync(context).ConfigureAwait(false);
+            return payload is null
+                ? DataReadServicesUnavailable()
+                : Results.Ok(payload);
         })
-        .WithName("GetWorkstationData");
+        .WithName("GetWorkstationData").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage)
+        .Produces<WorkstationDataPayload>(200)
+        .Produces(503);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationDataQuery), async (DataQueryRequest request, HttpContext context) =>
         {
@@ -418,7 +413,7 @@ public static partial class WorkstationEndpoints
                 .ConfigureAwait(false);
             return Results.Ok(result);
         })
-        .WithName("PostWorkstationDataQuery")
+        .WithName("PostWorkstationDataQuery").RequirePermission(UserPermission.ViewHistoricalData).DeclareNonMutating("SqlStatementGuard admits one SELECT-family statement with no embedded semicolon and a blocked-keyword list, so this is a read whose query does not fit in a URL.")
         .Produces<DataQueryResult>(200)
         .Produces(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -432,94 +427,42 @@ public static partial class WorkstationEndpoints
                     statusCode: StatusCodes.Status503ServiceUnavailable)
                 : Results.Ok(estimate);
         })
-        .WithName("GetWorkstationDataReplacementCost")
+        .WithName("GetWorkstationDataReplacementCost").RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage)
         .Produces<DataReplacementCostEstimate>(200)
         .Produces(503);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationGovernance), async (HttpContext context) =>
         {
-            return await BuildAccountingPayloadAsync(context).ConfigureAwait(false);
+            var payload = await BuildAccountingPayloadAsync(context).ConfigureAwait(false);
+            return payload is null
+                ? StrategyReadServiceUnavailable()
+                : Results.Ok(payload);
         })
-        .WithName("GetWorkstationGovernance");
+        .WithName("GetWorkstationGovernance").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .Produces<WorkstationAccountingPayload>(200)
+        .Produces(503)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationAccounting), async (HttpContext context) =>
         {
-            return await BuildAccountingPayloadAsync(context).ConfigureAwait(false);
+            var payload = await BuildAccountingPayloadAsync(context).ConfigureAwait(false);
+            return payload is null
+                ? StrategyReadServiceUnavailable()
+                : Results.Ok(payload);
         })
-        .WithName("GetWorkstationAccounting");
+        .WithName("GetWorkstationAccounting").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .Produces<WorkstationAccountingPayload>(200)
+        .Produces(503)
+        .RequireWorkstationTenantCompanyScope();
 
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationReporting), async (HttpContext context) =>
-        {
-            return await BuildAccountingPayloadAsync(context).ConfigureAwait(false);
-        })
-        .WithName("GetWorkstationReporting");
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationReportingStructuredExport), (
-            string exportId,
-            string? format,
-            HttpContext context) =>
-        {
-            var service = context.RequestServices.GetService<ReportPackRunReadService>()
-                ?? new ReportPackRunReadService(new DefaultReportingTemplateCatalog());
-            try
-            {
-                var payload = service.GetStructuredReportingExport(
-                    exportId,
-                    BuildReportAccessQueryContext(context));
-                ApplyWorkstationStructuredExportAuditHeaders(context, payload);
-
-                if (IsWorkstationStructuredCsvRequest(format))
-                {
-                    var fileName = $"{payload.Export.ExportId}-{payload.Export.AsOf.UtcDateTime:yyyyMMddHHmmss}.csv";
-                    return Results.File(
-                        BuildWorkstationStructuredExportCsv(payload),
-                        "text/csv",
-                        fileName);
-                }
-
-                if (IsWorkstationStructuredXlsxRequest(format))
-                {
-                    var fileName = $"{payload.Export.ExportId}-{payload.Export.AsOf.UtcDateTime:yyyyMMddHHmmss}.xlsx";
-                    return Results.File(
-                        BuildWorkstationStructuredExportXlsx(payload),
-                        WorkstationStructuredXlsxContentType,
-                        fileName);
-                }
-
-                if (IsWorkstationStructuredJsonRequest(format))
-                {
-                    var fileName = $"{payload.Export.ExportId}-{payload.Export.AsOf.UtcDateTime:yyyyMMddHHmmss}.json";
-                    return Results.File(
-                        JsonSerializer.SerializeToUtf8Bytes(payload, jsonOptions),
-                        "application/json",
-                        fileName);
-                }
-
-                return Results.Json(payload, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return Results.Problem(ex.Message, statusCode: StatusCodes.Status404NotFound);
-            }
-        })
-        .WithName("GetWorkstationStructuredReportingExport")
-        .Produces<StructuredReportingExportPayloadDto>(200)
-        .Produces(200, contentType: "application/json")
-        .Produces(200, contentType: "text/csv")
-        .Produces(200, contentType: WorkstationStructuredXlsxContentType)
-        .Produces(400)
-        .Produces(404);
+        MapReportingAuthorityEndpoints(group, jsonOptions);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationPortfolio), async (HttpContext context) =>
         {
             var payload = await BuildPortfolioPayloadAsync(context).ConfigureAwait(false);
             return Results.Json(payload, jsonOptions);
         })
-        .WithName("GetWorkstationPortfolio")
+        .WithName("GetWorkstationPortfolio").RequirePermission(UserPermission.ViewTrades)
         .Produces<WorkstationPortfolioPayload>(200);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationPortfolioSummary), async (string? fundAccountId, string? strategyId, string? entity, HttpContext context) =>
@@ -527,7 +470,7 @@ public static partial class WorkstationEndpoints
             var payload = await BuildPortfolioSummaryPayloadAsync(context, fundAccountId, strategyId, entity).ConfigureAwait(false);
             return Results.Json(payload, jsonOptions);
         })
-        .WithName("GetWorkstationPortfolioSummary")
+        .WithName("GetWorkstationPortfolioSummary").RequirePermission(UserPermission.ViewTrades)
         .Produces<WorkstationPortfolioSummaryPayload>(200);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationPortfolioMultiAssetCoverage), async (string? fundAccountId, string? entity, string? assetClass, HttpContext context) =>
@@ -535,8 +478,9 @@ public static partial class WorkstationEndpoints
             var payload = await BuildMultiAssetCoveragePayloadAsync(context, fundAccountId, entity, assetClass).ConfigureAwait(false);
             return Results.Json(payload, jsonOptions);
         })
-        .WithName("GetWorkstationPortfolioMultiAssetCoverage")
-        .Produces<MultiAssetCoverageSummaryDto>(200);
+        .WithName("GetWorkstationPortfolioMultiAssetCoverage").RequirePermission(UserPermission.ViewTrades)
+        .Produces<MultiAssetCoverageSummaryDto>(200)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationAssetOperations), async (Guid securityId, HttpContext context) =>
         {
@@ -545,7 +489,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(payload, jsonOptions);
         })
-        .WithName("GetWorkstationAssetOperations")
+        .WithName("GetWorkstationAssetOperations").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<AssetOperationsDetailDto>(200)
         .Produces(404);
 
@@ -579,7 +523,7 @@ public static partial class WorkstationEndpoints
             var workflows = await service.ListAsync(fundAccountId, periodId, parsedStatus, context.RequestAborted, ledgerBookId: ledgerBookId).ConfigureAwait(false);
             return Results.Json(workflows, jsonOptions);
         })
-        .WithName("GetOperationsContinuitySummary");
+        .WithName("GetOperationsContinuitySummary").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalPolicyMatrix), (HttpContext context) =>
         {
@@ -596,7 +540,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(service.GetMatrix(), jsonOptions);
         })
-        .WithName("GetOperationsContinuityApprovalPolicyMatrix")
+        .WithName("GetOperationsContinuityApprovalPolicyMatrix").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<OperationsApprovalPolicyMatrixDto>(200)
         .Produces(403);
 
@@ -639,7 +583,7 @@ public static partial class WorkstationEndpoints
                 });
             }
         })
-        .WithName("UpsertOperationsContinuityApprovalPolicyRule")
+        .WithName("UpsertOperationsContinuityApprovalPolicyRule").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<OperationsApprovalPolicyRuleUpsertResultDto>(200)
         .Produces(400)
         .Produces(401)
@@ -664,7 +608,7 @@ public static partial class WorkstationEndpoints
             var calendar = await service.GetCalendarAsync(fundAccountId, periodId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(calendar, jsonOptions);
         })
-        .WithName("GetOperationsContinuityCloseCalendar")
+        .WithName("GetOperationsContinuityCloseCalendar").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<OperationsCloseCalendarDto>(200)
         .Produces(403);
 
@@ -687,12 +631,21 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Private-capital close cockpit service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var cockpit = await service
-                .GetCockpitAsync(fundProfileId, ledgerBookId, fundAccountId, periodId, entityId, context.RequestAborted)
+                .GetCockpitAsync(
+                    fundProfileId,
+                    ledgerBookId,
+                    fundAccountId,
+                    periodId,
+                    entityId,
+                    context.RequestAborted,
+                    tenantContext.TenantId,
+                    tenantContext.CompanyId)
                 .ConfigureAwait(false);
             return Results.Json(cockpit, jsonOptions);
         })
-        .WithName("GetOperationsPrivateCapitalCloseCockpit")
+        .WithName("GetOperationsPrivateCapitalCloseCockpit").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<PrivateCapitalCloseCockpitDto>(200)
         .Produces(403)
         .RequireFundProfileTenantScope(
@@ -741,7 +694,7 @@ public static partial class WorkstationEndpoints
                 });
             }
         })
-        .WithName("UpsertOperationsContinuityCloseCalendarItem")
+        .WithName("UpsertOperationsContinuityCloseCalendarItem").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<OperationsCloseCalendarItemUpsertResultDto>(200)
         .Produces(400)
         .Produces(401)
@@ -776,7 +729,7 @@ public static partial class WorkstationEndpoints
             var result = await service.StartWorkflowAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
-        .WithName("StartOperationsContinuityWorkflow")
+        .WithName("StartOperationsContinuityWorkflow").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<OperationsTransitionResultDto>(200)
         .Produces<OperationsTransitionResultDto>(400)
         .Produces<OperationsTransitionResultDto>(409)
@@ -799,7 +752,7 @@ public static partial class WorkstationEndpoints
             var workflow = await service.GetAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
             return workflow is null ? Results.NotFound() : Results.Json(workflow, jsonOptions);
         })
-        .WithName("GetOperationsContinuityDetail");
+        .WithName("GetOperationsContinuityDetail").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityCloseReadiness), async (Guid workflowId, HttpContext context) =>
         {
@@ -819,7 +772,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(workflow.CloseReadiness, jsonOptions);
         })
-        .WithName("GetOperationsContinuityCloseReadiness")
+        .WithName("GetOperationsContinuityCloseReadiness").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<OperationsCloseReadinessDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
@@ -846,7 +799,7 @@ public static partial class WorkstationEndpoints
             var timeline = await service.GetTimelineAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(timeline, jsonOptions);
         })
-        .WithName("GetOperationsContinuityTimeline");
+        .WithName("GetOperationsContinuityTimeline").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityBrokerImport), async (
             Guid workflowId,
@@ -878,7 +831,7 @@ public static partial class WorkstationEndpoints
             var result = await service.ImportBrokerDataAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
-        .WithName("ImportOperationsContinuityBrokerData")
+        .WithName("ImportOperationsContinuityBrokerData").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<OperationsTransitionResultDto>(200)
         .Produces<OperationsTransitionResultDto>(400)
         .Produces<OperationsTransitionResultDto>(409)
@@ -915,7 +868,7 @@ public static partial class WorkstationEndpoints
             var result = await service.NormalizeBrokerTransactionsAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
-        .WithName("NormalizeOperationsContinuityBrokerTransactions")
+        .WithName("NormalizeOperationsContinuityBrokerTransactions").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<OperationsTransitionResultDto>(200)
         .Produces<OperationsTransitionResultDto>(400)
         .Produces<OperationsTransitionResultDto>(409)
@@ -952,7 +905,7 @@ public static partial class WorkstationEndpoints
             var result = await service.RefreshGatePostureAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
-        .WithName("RefreshOperationsContinuityGatePosture");
+        .WithName("RefreshOperationsContinuityGatePosture").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuitySecurityMasterResolve), async (
             Guid workflowId,
@@ -984,7 +937,7 @@ public static partial class WorkstationEndpoints
             var result = await service.ResolveSecurityMasterMappingsAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
-        .WithName("ResolveOperationsContinuitySecurityMasterMappings");
+        .WithName("ResolveOperationsContinuitySecurityMasterMappings").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuitySecurityMasterOverrideApprove), async (
             Guid workflowId,
@@ -1013,11 +966,11 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser, OverrideId = overrideId };
+            var trustedRequest = request with { Actor = currentUser, OverrideId = overrideId, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.ApproveSecurityMasterOverrideAsync(workflowId, overrideId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
-        .WithName("ApproveOperationsContinuitySecurityMasterOverride")
+        .WithName("ApproveOperationsContinuitySecurityMasterOverride").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ModifySecurityMaster)
         .Produces<OperationsTransitionResultDto>(200)
         .Produces<OperationsTransitionResultDto>(400)
         .Produces<OperationsTransitionResultDto>(409)
@@ -1054,7 +1007,7 @@ public static partial class WorkstationEndpoints
             var result = await service.BuildLedgerDraftAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
-        .WithName("BuildOperationsContinuityLedgerDraft");
+        .WithName("BuildOperationsContinuityLedgerDraft").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerValidate), async (
             Guid workflowId,
@@ -1086,7 +1039,7 @@ public static partial class WorkstationEndpoints
             var result = await service.ValidateLedgerDraftAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
-        .WithName("ValidateOperationsContinuityLedgerDraft");
+        .WithName("ValidateOperationsContinuityLedgerDraft").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerPost), async (
             Guid workflowId,
@@ -1114,11 +1067,11 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser };
+            var trustedRequest = request with { Actor = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.PostLedgerEntriesAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
-        .WithName("PostOperationsContinuityLedgerEntries")
+        .WithName("PostOperationsContinuityLedgerEntries").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<OperationsTransitionResultDto>(200)
         .Produces<OperationsTransitionResultDto>(400)
         .Produces<OperationsTransitionResultDto>(409)
@@ -1145,6 +1098,11 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = context.RequestServices.GetService<IOperationsContinuityReconciliationBridge>();
             if (service is null)
             {
@@ -1152,10 +1110,13 @@ public static partial class WorkstationEndpoints
             }
 
             var trustedRequest = request with { Actor = currentUser };
-            var result = await service.RunReconciliationAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            var result = await service
+                .RunReconciliationAsync(workflowId, trustedRequest, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
-        .WithName("RunOperationsContinuityReconciliation");
+        .WithName("RunOperationsContinuityReconciliation").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityReconciliationBreakAssign), async (
             Guid workflowId,
@@ -1184,11 +1145,11 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser };
+            var trustedRequest = request with { Actor = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.AssignBreakCaseAsync(workflowId, breakId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
-        .WithName("AssignOperationsContinuityReconciliationBreak");
+        .WithName("AssignOperationsContinuityReconciliationBreak").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityReconciliationBreakResolve), async (
             Guid workflowId,
@@ -1217,11 +1178,20 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser };
+            var trustedRequest = request with
+            {
+                Actor = currentUser,
+                // Narrower of the caller's declaration and the principal's standing: hardcoding
+                // HumanOperator stamped an API-key caller as a human, and discarded automation
+                // that declared itself (#2673).
+                ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin),
+                ApprovalActor = NormalizeOptional(request.ApprovalActor),
+                ApprovalReference = NormalizeOptional(request.ApprovalReference)
+            };
             var result = await service.ResolveBreakCaseAsync(workflowId, breakId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
-        .WithName("ResolveOperationsContinuityReconciliationBreak");
+        .WithName("ResolveOperationsContinuityReconciliationBreak").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalSubmit), async (
             Guid workflowId,
@@ -1249,11 +1219,11 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser };
+            var trustedRequest = request with { Actor = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.SubmitForApprovalAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
-        .WithName("SubmitOperationsContinuityApproval");
+        .WithName("SubmitOperationsContinuityApproval").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalApprove), async (
             Guid workflowId,
@@ -1281,11 +1251,11 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser };
+            var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.ApproveWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
-        .WithName("ApproveOperationsContinuityWorkflow");
+        .WithName("ApproveOperationsContinuityWorkflow").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalReject), async (
             Guid workflowId,
@@ -1313,11 +1283,11 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser };
+            var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.RejectWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
-        .WithName("RejectOperationsContinuityWorkflow")
+        .WithName("RejectOperationsContinuityWorkflow").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<OperationsTransitionResultDto>(200)
         .Produces<OperationsTransitionResultDto>(400)
         .Produces<OperationsTransitionResultDto>(409)
@@ -1350,11 +1320,11 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser };
+            var trustedRequest = request with { Actor = currentUser, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.CloseWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
-        .WithName("CloseOperationsContinuityWorkflow");
+        .WithName("CloseOperationsContinuityWorkflow").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityReopen), async (
             Guid workflowId,
@@ -1382,11 +1352,11 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser, IsGovernedAdmin = HasGovernedWorkflowReopenPermission(context) };
+            var trustedRequest = request with { Actor = currentUser, IsGovernedAdmin = HasGovernedWorkflowReopenPermission(context), ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) };
             var result = await service.ReopenWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
-        .WithName("ReopenOperationsContinuityWorkflow")
+        .WithName("ReopenOperationsContinuityWorkflow").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<OperationsTransitionResultDto>(200)
         .Produces<OperationsTransitionResultDto>(400)
         .Produces<OperationsTransitionResultDto>(409)
@@ -1409,7 +1379,7 @@ public static partial class WorkstationEndpoints
             var workflow = await service.GetAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
             return workflow is null ? Results.NotFound() : Results.Json(workflow.BreakCases, jsonOptions);
         })
-        .WithName("GetOperationsContinuityBreaks");
+        .WithName("GetOperationsContinuityBreaks").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityLedgerPreview), async (Guid workflowId, HttpContext context) =>
         {
@@ -1427,7 +1397,7 @@ public static partial class WorkstationEndpoints
             var workflow = await service.GetAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
             return workflow is null ? Results.NotFound() : Results.Json(workflow.LedgerPreview, jsonOptions);
         })
-        .WithName("GetOperationsContinuityLedgerPreview");
+        .WithName("GetOperationsContinuityLedgerPreview").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityChecklist), async (Guid workflowId, HttpContext context) =>
         {
@@ -1445,7 +1415,7 @@ public static partial class WorkstationEndpoints
             var checklist = await service.GetChecklistAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(checklist, jsonOptions);
         })
-        .WithName("GetOperationsContinuityChecklist");
+        .WithName("GetOperationsContinuityChecklist").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityChecklistAcknowledge), async (
             Guid workflowId,
@@ -1474,8 +1444,7 @@ public static partial class WorkstationEndpoints
             return OperationsTransitionResult(result, jsonOptions);
         })
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
-        .WithName("AcknowledgeOperationsContinuityChecklistTask");
-
+        .WithName("AcknowledgeOperationsContinuityChecklistTask").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationRuns), async (ReconciliationRunRequest request, HttpContext context) =>
         {
@@ -1491,17 +1460,12 @@ public static partial class WorkstationEndpoints
             }
 
             var detail = await service.RunAsync(request, context.RequestAborted).ConfigureAwait(false);
-            if (detail is not null)
-            {
-                await PublishProviderLedgerBreakQueueAsync(context.RequestServices, detail, context.RequestAborted).ConfigureAwait(false);
-            }
-
             return detail is null
                 ? Results.NotFound()
                 : Results.Json(detail, jsonOptions);
         })
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
-        .WithName("CreateReconciliationRun")
+        .WithName("CreateReconciliationRun").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<ReconciliationRunDetail>(200)
         .Produces(404)
         .Produces(429);
@@ -1524,7 +1488,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(detail, jsonOptions);
         })
-        .WithName("GetReconciliationRun")
+        .WithName("GetReconciliationRun").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<ReconciliationRunDetail>(200)
         .Produces(404);
 
@@ -1541,9 +1505,10 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(detail, jsonOptions);
         })
-        .WithName("GetLatestRunReconciliation")
+        .WithName("GetLatestRunReconciliation").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<ReconciliationRunDetail>(200)
-        .Produces(404);
+        .Produces(404)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsReconciliationHistory), async (string runId, HttpContext context) =>
         {
@@ -1558,9 +1523,10 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(history, jsonOptions);
         })
-        .WithName("GetRunReconciliationHistory")
+        .WithName("GetRunReconciliationHistory").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<ReconciliationRunSummary>>(200)
-        .Produces(404);
+        .Produces(404)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRuns), async (
             HttpContext context,
@@ -1571,42 +1537,32 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            return Results.Json(await service.ListStatementRunsAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
-        })
-        .WithName("ListStatementRuns")
-        .Produces<IReadOnlyList<StatementRunSummaryDto>>(200)
-        .Produces(501);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRuns), async (
-            StatementRunCreateDto request,
-            HttpContext context,
-            [FromServices] IReconciliationApiService? service) =>
-        {
-            if (!HasReconciliationMutationPermission(context))
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
             {
                 return EndpointHelpers.Forbidden();
             }
 
-            if (service is null)
-            {
-                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            if (!TryResolveCurrentUser(context, out var currentUser))
-            {
-                return Results.Unauthorized();
-            }
-
-            var trustedRequest = request with { ImportedBy = currentUser };
-            var detail = await service.CreateStatementRunAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions, statusCode: StatusCodes.Status201Created);
+            return Results.Json(
+                await service.ListStatementRunsAsync(accessScope, context.RequestAborted).ConfigureAwait(false),
+                jsonOptions);
         })
-        .WithName("CreateStatementRun")
+        .WithName("ListStatementRuns").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .Produces<IReadOnlyList<StatementRunSummaryDto>>(200)
+        .Produces(403)
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRuns), async (
+            StatementRunCreateDto request,
+            HttpContext context) =>
+            await CreateStatementRunAsync(request, context, jsonOptions).ConfigureAwait(false))
+        .WithName("CreateStatementRun").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<StatementRunDto>(201)
         .Produces(401)
         .Produces(403)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunById), async (
             string runId,
@@ -1618,13 +1574,22 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var detail = await service.GetStatementRunAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var detail = await service
+                .GetStatementRunAsync(runId, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions);
         })
-        .WithName("GetStatementRun")
+        .WithName("GetStatementRun").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<StatementRunDto>(200)
+        .Produces(403)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunValidation), async (
             string runId,
@@ -1636,13 +1601,22 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var validation = await service.GetStatementRunValidationAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var validation = await service
+                .GetStatementRunValidationAsync(runId, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return validation is null ? Results.NotFound() : Results.Json(validation, jsonOptions);
         })
-        .WithName("GetStatementRunValidation")
+        .WithName("GetStatementRunValidation").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<StatementRunValidationDto>(200)
+        .Produces(403)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunBreaks), async (
             string runId,
@@ -1654,13 +1628,22 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var breaks = await service.ListStatementRunBreaksAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var breaks = await service
+                .ListStatementRunBreaksAsync(runId, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return breaks is null ? Results.NotFound() : Results.Json(breaks, jsonOptions);
         })
-        .WithName("ListStatementRunBreaks")
+        .WithName("ListStatementRunBreaks").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<StatementRunBreakDto>>(200)
+        .Produces(403)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunReconcile), async (
             string runId,
@@ -1683,21 +1666,24 @@ public static partial class WorkstationEndpoints
                 return Results.Unauthorized();
             }
 
-            var trustedRequest = request with { Actor = currentUser };
-            var detail = await service.ReconcileStatementRunAsync(runId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            if (detail is not null)
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
             {
-                await PublishStatementBreakQueueAsync(context.RequestServices, service, context.RequestAborted).ConfigureAwait(false);
+                return EndpointHelpers.Forbidden();
             }
 
+            var trustedRequest = request with { Actor = currentUser };
+            var detail = await service
+                .ReconcileStatementRunAsync(runId, trustedRequest, accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions);
         })
-        .WithName("ReconcileStatementRun")
+        .WithName("ReconcileStatementRun").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<StatementRunDto>(200)
         .Produces(401)
         .Produces(403)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementExceptions), async (HttpContext context) =>
         {
@@ -1707,12 +1693,21 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var exceptions = await service.ListOpenExceptionsAsync(context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var exceptions = await service
+                .ListOpenExceptionsAsync(accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(exceptions, jsonOptions);
         })
-        .WithName("ListStatementExceptions")
+        .WithName("ListStatementExceptions").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<StatementRunExceptionDto>>(200)
-        .Produces(501);
+        .Produces(403)
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementBreaks), async (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IReconciliationApiService>();
@@ -1721,12 +1716,21 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var breaks = await service.ListOpenStatementBreaksAsync(context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var breaks = await service
+                .ListOpenStatementBreaksAsync(accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(breaks, jsonOptions);
         })
-        .WithName("ListOpenStatementBreaks")
+        .WithName("ListOpenStatementBreaks").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<StatementBreakDto>>(200)
-        .Produces(501);
+        .Produces(403)
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationOpenCases), async (HttpContext context) =>
         {
@@ -1736,12 +1740,21 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var cases = await service.ListOpenCasesAsync(context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var cases = await service
+                .ListOpenCasesAsync(accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(cases, jsonOptions);
         })
-        .WithName("ListOpenReconciliationCases")
+        .WithName("ListOpenReconciliationCases").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<ReconciliationCaseSummaryDto>>(200)
-        .Produces(501);
+        .Produces(403)
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationQueueStatus), async (HttpContext context) =>
         {
@@ -1751,12 +1764,21 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var queueStatus = await service.ListQueueStatusAsync(context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var accessScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var queueStatus = await service
+                .ListQueueStatusAsync(accessScope, context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(queueStatus, jsonOptions);
         })
-        .WithName("ListReconciliationQueueStatus")
+        .WithName("ListReconciliationQueueStatus").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<ReconciliationQueueAccountStatusDto>>(200)
-        .Produces(501);
+        .Produces(403)
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope();
 
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakQueue), async (string? status, string? fundAccountId, Guid? ledgerBookId, HttpContext context) =>
@@ -1766,52 +1788,90 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var items = await GetBreakQueueItemsAsync(context.RequestServices, status, fundAccountId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
+            if (repository is null)
+            {
+                return Results.Problem(
+                    "Reconciliation break queue repository is not registered.",
+                    statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var items = await GetBreakQueueItemsAsync(repository, queueScope, status, fundAccountId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(items, jsonOptions);
         })
-        .WithName("GetReconciliationBreakQueue")
-        .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(200);
+        .WithName("GetReconciliationBreakQueue").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(200)
+        .Produces(501);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakQueueById), async (string breakId, HttpContext context) =>
         {
+            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
             if (repository is null)
             {
                 return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var item = await repository.GetByIdAsync(breakId, context.RequestAborted).ConfigureAwait(false);
+            var item = await repository.GetByIdAsync(queueScope, breakId, context.RequestAborted).ConfigureAwait(false);
             return item is null ? Results.NotFound() : Results.Json(item, jsonOptions);
         })
-        .WithName("GetReconciliationBreakQueueItem")
+        .WithName("GetReconciliationBreakQueueItem").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<ReconciliationBreakQueueItem>(200)
         .Produces(404);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationCalibrationSummary), async (HttpContext context) =>
         {
+            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var asOf = DateTimeOffset.UtcNow;
             var ledgerBookId = ParseOptionalGuid(context.Request.Query["ledgerBookId"].FirstOrDefault());
-            var items = await GetBreakQueueItemsAsync(context.RequestServices, status: null, fundAccountId: null, ledgerBookId: ledgerBookId, ct: context.RequestAborted).ConfigureAwait(false);
+            var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
+            if (repository is null)
+            {
+                return Results.Problem(
+                    "Reconciliation break queue repository is not registered.",
+                    statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var items = await GetBreakQueueItemsAsync(repository, queueScope, status: null, fundAccountId: null, ledgerBookId: ledgerBookId, ct: context.RequestAborted).ConfigureAwait(false);
             var summary = BuildReconciliationCalibrationSummary(items, asOf);
             return Results.Json(summary, jsonOptions);
         })
-        .WithName("GetReconciliationCalibrationSummary")
-        .Produces<ReconciliationCalibrationSummaryDto>(200);
+        .WithName("GetReconciliationCalibrationSummary").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .Produces<ReconciliationCalibrationSummaryDto>(200)
+        .Produces(501);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakAudit), async (string breakId, HttpContext context) =>
         {
+            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
             if (repository is null)
             {
                 return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var history = await repository.GetAuditHistoryAsync(breakId, context.RequestAborted).ConfigureAwait(false);
+            var history = await repository.GetAuditHistoryAsync(queueScope, breakId, context.RequestAborted).ConfigureAwait(false);
             return history.Count == 0
                 ? Results.NotFound()
                 : Results.Json(history, jsonOptions);
         })
-        .WithName("GetReconciliationBreakAudit")
+        .WithName("GetReconciliationBreakAudit").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<ReconciliationBreakQueueAuditEvent>>(200)
         .Produces(404)
         .Produces(501);
@@ -1838,20 +1898,25 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var transition = await ReviewBreakAsync(context.RequestServices, request with
+            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
             {
-                ReviewedBy = ResolveCurrentActor(context)
+                return EndpointHelpers.Forbidden();
+            }
+
+            // Authentication proves the executing operator. Rewrite the client-supplied assignee the
+            // same way as the reviewer: the browser lane hardcodes a placeholder assignee, the queue's
+            // assignee filter must answer "my breaks", and the repository derives the audit actor from
+            // AssignedTo ?? ReviewedBy ?? ResolvedBy — so neither identity may pass through verbatim.
+            var reviewActor = ResolveCurrentActor(context);
+            var transition = await ReviewBreakAsync(context.RequestServices, queueScope, request with
+            {
+                AssignedTo = reviewActor,
+                ReviewedBy = reviewActor
             }, context.RequestAborted).ConfigureAwait(false);
-            return transition.Status switch
-            {
-                ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
-                ReconciliationBreakQueueTransitionStatus.NotFound => Results.NotFound(),
-                _ => Results.BadRequest(new { error = transition.Error ?? "Illegal transition." })
-            };
+            return Results.Json(ToReconciliationCaseworkOperationResult(transition), jsonOptions);
         })
-        .WithName("ReviewReconciliationBreak")
-        .Produces<ReconciliationBreakQueueItem>(200)
+        .WithName("ReviewReconciliationBreak").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
+        .Produces<ReconciliationCaseworkOperationResult>(200)
         .Produces(400)
         .Produces(401)
         .Produces(403)
@@ -1883,30 +1948,49 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var transition = await ResolveBreakAsync(context.RequestServices, request with
+            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
             {
-                ResolvedBy = ResolveCurrentActor(context)
-            }, context.RequestAborted).ConfigureAwait(false);
-            return transition.Status switch
+                return EndpointHelpers.Forbidden();
+            }
+
+            try
             {
-                ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
-                ReconciliationBreakQueueTransitionStatus.NotFound => Results.NotFound(),
-                _ => Results.BadRequest(new { error = transition.Error ?? "Illegal transition." })
-            };
+                var transition = await ResolveBreakAsync(
+                    context.RequestServices,
+                    queueScope,
+                    request with
+                    {
+                        ResolvedBy = ResolveCurrentActor(context),
+                        // Derived from the principal, discarding the body: this is the statement
+                        // legacy-resolve adapter, which is authoritative over the caller's identity
+                        // like the rest of the reconciliation casework routes. Before #2673 the
+                        // origin was left as the browser sent it. See DeriveActionOriginFromPrincipal.
+                        ActionOrigin = EndpointAuthorization.DeriveActionOriginFromPrincipal(context)
+                    },
+                    context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(ToReconciliationCaseworkOperationResult(transition), jsonOptions);
+            }
+            catch (StatementReconciliationCaseworkHandoffException exception)
+            {
+                return Results.Problem(
+                    detail: $"{exception.Code}: {exception.Message}",
+                    statusCode: StatusCodes.Status503ServiceUnavailable,
+                    title: "Statement reconciliation casework handoff failed");
+            }
         })
-        .WithName("ResolveReconciliationBreak")
-        .Produces<ReconciliationBreakQueueItem>(200)
+        .WithName("ResolveReconciliationBreak").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
+        .Produces<ReconciliationCaseworkOperationResult>(200)
         .Produces(400)
         .Produces(401)
         .Produces(403)
-        .Produces(404);
+        .Produces(404)
+        .Produces(503);
 
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakAssign), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.Assign }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("AssignReconciliationBreakCase")
-        .Produces<ReconciliationBreakQueueItem>(200)
+        .WithName("AssignReconciliationBreakCase").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
+        .Produces<ReconciliationCaseworkOperationResult>(200)
         .Produces(400)
         .Produces(403)
         .Produces(404)
@@ -1914,58 +1998,86 @@ public static partial class WorkstationEndpoints
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakTransition), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.TransitionStatus }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("TransitionReconciliationBreakCase")
-        .Produces<ReconciliationBreakQueueItem>(200)
+        .WithName("TransitionReconciliationBreakCase").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
+        .Produces<ReconciliationCaseworkOperationResult>(200)
+        .Produces(400)
+        .Produces(403)
+        .Produces(404)
+        .Produces(409);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakWaive), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
+            await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.Waive }, context, jsonOptions).ConfigureAwait(false))
+        .WithName("WaiveReconciliationBreakCase").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
+        .Produces<ReconciliationCaseworkOperationResult>(200)
+        .Produces(400)
+        .Produces(403)
+        .Produces(404)
+        .Produces(409);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakSupersede), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
+            await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.Supersede }, context, jsonOptions).ConfigureAwait(false))
+        .WithName("SupersedeReconciliationBreakCase").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
+        .Produces<ReconciliationCaseworkOperationResult>(200)
         .Produces(400)
         .Produces(403)
         .Produces(404)
         .Produces(409);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationCaseTaxonomy), () => Results.Json(FileReconciliationBreakQueueRepository.Taxonomy, jsonOptions))
-        .WithName("GetReconciliationCaseTaxonomy")
+        .WithName("GetReconciliationCaseTaxonomy").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<ReconciliationTaxonomySnapshot>(200);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakComments), async (string breakId, HttpContext context) =>
         {
+            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
             if (repository is null)
             {
                 return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var item = await repository.GetByIdAsync(breakId, context.RequestAborted).ConfigureAwait(false);
+            var item = await repository.GetByIdAsync(queueScope, breakId, context.RequestAborted).ConfigureAwait(false);
             return item is null ? Results.NotFound() : Results.Json(item.Comments ?? [], jsonOptions);
         })
-        .WithName("GetReconciliationBreakComments")
+        .WithName("GetReconciliationBreakComments").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<ReconciliationCaseComment>>(200)
         .Produces(404)
         .Produces(501);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakRebuiltSnapshot), async (string breakId, HttpContext context) =>
         {
+            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
             if (repository is null)
             {
                 return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var item = await repository.RebuildSnapshotFromAuditAsync(breakId, context.RequestAborted).ConfigureAwait(false);
+            var item = await repository.RebuildSnapshotFromAuditAsync(queueScope, breakId, context.RequestAborted).ConfigureAwait(false);
             return item is null ? Results.NotFound() : Results.Json(item, jsonOptions);
         })
-        .WithName("RebuildReconciliationBreakSnapshot")
+        .WithName("RebuildReconciliationBreakSnapshot").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<ReconciliationBreakQueueItem>(200)
         .Produces(404)
         .Produces(501);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakComments), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.AddComment }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("AddReconciliationBreakComment")
-        .Produces<ReconciliationBreakQueueItem>(200);
+        .WithName("AddReconciliationBreakComment").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
+        .Produces<ReconciliationCaseworkOperationResult>(200);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakComment), async (string breakId, string commentId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.EditComment, CommentId = commentId }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("EditReconciliationBreakComment")
-        .Produces<ReconciliationBreakQueueItem>(200);
+        .WithName("EditReconciliationBreakComment").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
+        .Produces<ReconciliationCaseworkOperationResult>(200);
 
         group.MapDelete(WorkstationSubroute(UiApiRoutes.ReconciliationBreakComment), async (
             string breakId,
@@ -1990,45 +2102,50 @@ public static partial class WorkstationEndpoints
                     CommentId: commentId),
                 context,
                 jsonOptions).ConfigureAwait(false))
-        .WithName("DeleteReconciliationBreakComment")
-        .Produces<ReconciliationBreakQueueItem>(200);
+        .WithName("DeleteReconciliationBreakComment").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
+        .Produces<ReconciliationCaseworkOperationResult>(200);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakRootCause), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.SetRootCause }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("SetReconciliationBreakRootCause")
-        .Produces<ReconciliationBreakQueueItem>(200);
+        .WithName("SetReconciliationBreakRootCause").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
+        .Produces<ReconciliationCaseworkOperationResult>(200);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakResolution), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.SetResolution }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("SetReconciliationBreakResolution")
-        .Produces<ReconciliationBreakQueueItem>(200);
+        .WithName("SetReconciliationBreakResolution").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
+        .Produces<ReconciliationCaseworkOperationResult>(200);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakSignOff), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.SignOff }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("SignOffReconciliationBreakCase")
-        .Produces<ReconciliationBreakQueueItem>(200);
+        .WithName("SignOffReconciliationBreakCase").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
+        .Produces<ReconciliationCaseworkOperationResult>(200);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakReopen), async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.Reopen }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("ReopenReconciliationBreakCase")
-        .Produces<ReconciliationBreakQueueItem>(200);
+        .WithName("ReopenReconciliationBreakCase").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
+        .Produces<ReconciliationCaseworkOperationResult>(200);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakBulkDryRun), async (ReconciliationBulkCaseworkRequest request, HttpContext context) =>
             await ApplyReconciliationBulkEndpointAsync(request with { DryRun = true }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("DryRunReconciliationBreakBulkAction")
+        .WithName("DryRunReconciliationBreakBulkAction").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<ReconciliationBulkCaseworkResult>(200);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakBulkExecute), async (ReconciliationBulkCaseworkRequest request, HttpContext context) =>
             await ApplyReconciliationBulkEndpointAsync(request with { DryRun = false }, context, jsonOptions).ConfigureAwait(false))
-        .WithName("ExecuteReconciliationBreakBulkAction")
+        .WithName("ExecuteReconciliationBreakBulkAction").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<ReconciliationBulkCaseworkResult>(200);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakBulkStatus), async (string bulkActionId, HttpContext context) =>
         {
+            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
             var result = repository is null
                 ? null
-                : await repository.GetBulkCaseworkResultAsync(bulkActionId, context.RequestAborted).ConfigureAwait(false);
+                : await repository.GetBulkCaseworkResultAsync(queueScope, bulkActionId, context.RequestAborted).ConfigureAwait(false);
 
             return Results.Json(new
             {
@@ -2040,20 +2157,25 @@ public static partial class WorkstationEndpoints
                 resultEndpoint = $"/api/workstation/reconciliation/break-queue/bulk/{Uri.EscapeDataString(bulkActionId)}/result"
             }, jsonOptions);
         })
-        .WithName("GetReconciliationBreakBulkActionStatus");
+        .WithName("GetReconciliationBreakBulkActionStatus").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakBulkResult), async (string bulkActionId, HttpContext context) =>
         {
+            if (!TryResolveReconciliationBreakQueueScope(context, out var queueScope))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
             if (repository is null)
             {
                 return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var result = await repository.GetBulkCaseworkResultAsync(bulkActionId, context.RequestAborted).ConfigureAwait(false);
+            var result = await repository.GetBulkCaseworkResultAsync(queueScope, bulkActionId, context.RequestAborted).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
         })
-        .WithName("GetReconciliationBreakBulkActionResult")
+        .WithName("GetReconciliationBreakBulkActionResult").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<ReconciliationBulkCaseworkResult>(200)
         .Produces(404)
         .Produces(501);
@@ -2066,14 +2188,19 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var summary = await readService.GetLedgerSummaryAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var summary = await readService.GetLedgerSummaryAsync(
+                    runId,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return summary is null
                 ? Results.NotFound()
                 : Results.Json(summary, jsonOptions);
         })
-        .WithName("GetRunLedger")
+        .WithName("GetRunLedger").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<LedgerSummary>(200)
-        .Produces(404);
+        .Produces(404)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsContinuity), async (string runId, HttpContext context) =>
         {
@@ -2083,7 +2210,11 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run continuity service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var detail = await continuityService.GetRunContinuityAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var detail = await continuityService.GetRunContinuityAsync(
+                    runId,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return detail is null
                 ? Results.NotFound()
                 : Results.Json(new StrategyRunContinuityDto(
@@ -2093,10 +2224,11 @@ public static partial class WorkstationEndpoints
                     detail.Reconciliation,
                     detail.ContinuityStatus), jsonOptions);
         })
-        .WithName("GetRunContinuity")
+        .WithName("GetRunContinuity").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyRunContinuityDto>(200)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsReviewPacket), async (string runId, Guid? fundAccountId, HttpContext context) =>
         {
@@ -2106,7 +2238,12 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run review packet service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var packet = await reviewPacketService.GetAsync(runId, fundAccountId, context.RequestAborted).ConfigureAwait(false);
+            var packet = await reviewPacketService.GetAsync(
+                    runId,
+                    ResolveStrategyRunReadScope(context),
+                    fundAccountId,
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return packet is null
                 ? Results.NotFound()
                 : Results.Json(packet, jsonOptions);
@@ -2114,7 +2251,10 @@ public static partial class WorkstationEndpoints
         .WithName("GetRunReviewPacket")
         .Produces<StrategyRunReviewPacketDto>(200)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope()
+        .RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsEquityCurve), async (string runId, HttpContext context) =>
         {
@@ -2124,15 +2264,20 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var curve = await readService.GetEquityCurveAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var curve = await readService.GetEquityCurveAsync(
+                    runId,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return curve is null
                 ? Results.NotFound()
                 : Results.Json(curve, jsonOptions);
         })
-        .WithName("GetRunEquityCurve")
+        .WithName("GetRunEquityCurve").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<EquityCurveSummary>(200)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsFills), async (string runId, string? symbol, HttpContext context) =>
         {
@@ -2142,7 +2287,11 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var summary = await readService.GetFillsAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var summary = await readService.GetFillsAsync(
+                    runId,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             if (summary is null)
             {
                 return Results.NotFound();
@@ -2163,10 +2312,11 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(summary, jsonOptions);
         })
-        .WithName("GetRunFills")
+        .WithName("GetRunFills").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<RunFillSummary>(200)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsAttribution), async (string runId, HttpContext context) =>
         {
@@ -2176,15 +2326,20 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var attribution = await readService.GetAttributionAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var attribution = await readService.GetAttributionAsync(
+                    runId,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return attribution is null
                 ? Results.NotFound()
                 : Results.Json(attribution, jsonOptions);
         })
-        .WithName("GetRunAttribution")
+        .WithName("GetRunAttribution").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<RunAttributionSummary>(200)
         .Produces(404)
-        .Produces(501);
+        .Produces(501)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsLedgerTrialBalance), async (
             string runId,
@@ -2215,7 +2370,11 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var summary = await readService.GetLedgerSummaryAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var summary = await readService.GetLedgerSummaryAsync(
+                    runId,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             if (summary is null)
             {
                 return Results.NotFound();
@@ -2235,7 +2394,7 @@ public static partial class WorkstationEndpoints
                     sleeveId,
                     strategyId,
                     portfolioId,
-                    NormalizeOptionalDimensionValue(ledgerBookId) ?? NormalizeOptionalDimensionValue(bookId),
+                    NormalizeOptional(ledgerBookId) ?? NormalizeOptional(bookId),
                     accountId,
                     investorId,
                     capitalAccountId,
@@ -2251,9 +2410,10 @@ public static partial class WorkstationEndpoints
                 .ToArray();
             return Results.Json(lines, jsonOptions);
         })
-        .WithName("GetRunLedgerTrialBalance")
+        .WithName("GetRunLedgerTrialBalance").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<LedgerTrialBalanceLine>>(200)
-        .Produces(404);
+        .Produces(404)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsLedgerJournal), async (
             string runId,
@@ -2285,7 +2445,11 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var summary = await readService.GetLedgerSummaryAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var summary = await readService.GetLedgerSummaryAsync(
+                    runId,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             if (summary is null)
             {
                 return Results.NotFound();
@@ -2310,7 +2474,7 @@ public static partial class WorkstationEndpoints
                 sleeveId,
                 strategyId,
                 portfolioId,
-                NormalizeOptionalDimensionValue(ledgerBookId) ?? NormalizeOptionalDimensionValue(bookId),
+                NormalizeOptional(ledgerBookId) ?? NormalizeOptional(bookId),
                 accountId,
                 investorId,
                 capitalAccountId,
@@ -2326,9 +2490,10 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(entries.ToArray(), jsonOptions);
         })
-        .WithName("GetRunLedgerJournal")
+        .WithName("GetRunLedgerJournal").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<LedgerJournalLine>>(200)
-        .Produces(404);
+        .Produces(404)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterSearch), async (
             string? query,
@@ -2349,7 +2514,7 @@ public static partial class WorkstationEndpoints
             var results = await queryService.SearchAsync(request, ct).ConfigureAwait(false);
             return Results.Json(results.Select(MapToWorkstationSecurity).ToArray(), jsonOptions);
         })
-        .WithName("SearchSecurityMasterWorkstation")
+        .WithName("SearchSecurityMasterWorkstation").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<SecurityMasterWorkstationDto>>(200)
         .Produces(400);
 
@@ -2363,7 +2528,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(MapToWorkstationSecurity(detail), jsonOptions);
         })
-        .WithName("GetSecurityMasterWorkstationSecurity")
+        .WithName("GetSecurityMasterWorkstationSecurity").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<SecurityMasterWorkstationDto>(200)
         .Produces(404);
 
@@ -2384,7 +2549,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(history, jsonOptions);
         })
-        .WithName("GetSecurityMasterWorkstationSecurityHistory")
+        .WithName("GetSecurityMasterWorkstationSecurityHistory").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<SecurityMasterEventEnvelope>>(200)
         .Produces(404);
 
@@ -2398,7 +2563,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(MapToIdentityDrillIn(detail), jsonOptions);
         })
-        .WithName("GetSecurityMasterWorkstationIdentityDrillIn")
+        .WithName("GetSecurityMasterWorkstationIdentityDrillIn").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<SecurityIdentityDrillInDto>(200)
         .Produces(404);
 
@@ -2412,7 +2577,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(MapToEconomicDefinitionSummary(record), jsonOptions);
         })
-        .WithName("GetSecurityMasterWorkstationEconomicDefinition")
+        .WithName("GetSecurityMasterWorkstationEconomicDefinition").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<SecurityEconomicDefinitionSummaryDto>(200)
         .Produces(404);
 
@@ -2443,7 +2608,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(snapshot, jsonOptions);
         })
-        .WithName("GetSecurityMasterWorkstationTrustSnapshot")
+        .WithName("GetSecurityMasterWorkstationTrustSnapshot").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<SecurityMasterTrustSnapshotDto>(200)
         .Produces(403)
         .Produces(404)
@@ -2476,7 +2641,7 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(passport, jsonOptions);
         })
-        .WithName("GetSecurityMasterWorkstationInstrumentPassport")
+        .WithName("GetSecurityMasterWorkstationInstrumentPassport").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<InstrumentPassportDto>(200)
         .Produces(403)
         .Produces(404)
@@ -2503,7 +2668,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(result, jsonOptions);
         })
-        .WithName("BulkResolveSecurityMasterWorkstationConflicts")
+        .WithName("BulkResolveSecurityMasterWorkstationConflicts").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<BulkResolveSecurityMasterConflictsRequest>("application/json")
         .Produces<BulkResolveSecurityMasterConflictsResult>(200)
         .Produces(403)
@@ -2513,15 +2678,13 @@ public static partial class WorkstationEndpoints
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.RunsCompare), async (RunComparisonRequest request, HttpContext context) =>
         {
-            var comparisonService = context.RequestServices.GetService<StrategyRunComparisonService>();
-            if (comparisonService is null)
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
             {
-                var readService = context.RequestServices.GetService<StrategyRunReadService>();
-                if (readService is null)
-                    return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-
-                comparisonService = new StrategyRunComparisonService(readService);
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
+            var comparisonService = context.RequestServices.GetService<StrategyRunComparisonService>()
+                ?? new StrategyRunComparisonService(readService);
 
             if (request.RunIds is not { Count: >= 2 })
             {
@@ -2533,7 +2696,22 @@ public static partial class WorkstationEndpoints
                 return Results.BadRequest(new { error = $"A maximum of {MaxRunComparisonRequestIds} run IDs can be compared per request." });
             }
 
-            var comparison = await comparisonService.CompareRunsAsync(request, context.RequestAborted).ConfigureAwait(false);
+            var scope = ResolveStrategyRunReadScope(context);
+            if (!await AreStrategyRunsAccessibleAsync(
+                    readService,
+                    request.RunIds,
+                    scope,
+                    context.RequestAborted)
+                .ConfigureAwait(false))
+            {
+                return Results.NotFound(new { error = "One or more run IDs were not found." });
+            }
+
+            var comparison = await comparisonService.CompareRunsAsync(
+                    request,
+                    scope,
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             if (request.Modes is { Count: > 0 })
             {
                 var parsedModes = ParseModes(request.Modes);
@@ -2546,24 +2724,36 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(comparison, jsonOptions);
         })
-        .WithName("CompareRuns")
+        .WithName("CompareRuns").DeclareNonMutating("Compares retained strategy runs and returns the comparison; the handler resolves the caller read scope, checks the runs are accessible, and calls StrategyRunComparisonService.CompareRunsAsync, which holds only StrategyRunReadService.").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyRunComparison>>(200)
         .Produces(400)
         .Produces(501);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.RunsDiff), async (RunDiffRequest request, HttpContext context) =>
         {
-            var comparisonService = context.RequestServices.GetService<StrategyRunComparisonService>();
-            if (comparisonService is null)
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
             {
-                var readService = context.RequestServices.GetService<StrategyRunReadService>();
-                if (readService is null)
-                    return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-
-                comparisonService = new StrategyRunComparisonService(readService);
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+            var comparisonService = context.RequestServices.GetService<StrategyRunComparisonService>()
+                ?? new StrategyRunComparisonService(readService);
+            var scope = ResolveStrategyRunReadScope(context);
+            if (!await AreStrategyRunsAccessibleAsync(
+                    readService,
+                    [request.BaseRunId, request.TargetRunId],
+                    scope,
+                    context.RequestAborted)
+                .ConfigureAwait(false))
+            {
+                return Results.NotFound(new { error = "One or both run IDs not found." });
             }
 
-            var diff = await comparisonService.BuildDiffAsync(request, context.RequestAborted).ConfigureAwait(false);
+            var diff = await comparisonService.BuildDiffAsync(
+                    request,
+                    scope,
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             if (diff is null)
             {
                 return Results.NotFound(new { error = "One or both run IDs not found." });
@@ -2571,7 +2761,7 @@ public static partial class WorkstationEndpoints
 
             return Results.Json(diff, jsonOptions);
         })
-        .WithName("DiffRuns")
+        .WithName("DiffRuns").DeclareNonMutating("Diffs two retained strategy runs and returns the result; same read path as CompareRuns, through StrategyRunComparisonService.BuildDiffAsync.").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<StrategyRunDiff>(200)
         .Produces(404)
         .Produces(501);
@@ -2591,12 +2781,19 @@ public static partial class WorkstationEndpoints
                 runType = parsed;
             }
 
-            var runs = await readService.GetRunsAsync(strategyId, runType, context.RequestAborted).ConfigureAwait(false);
+            var runs = await readService.GetRunsAsync(
+                    strategyId,
+                    runType,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(runs, jsonOptions);
         })
         .WithName("GetStrategyRuns")
         .WithTags("Strategies")
-        .Produces<IReadOnlyList<StrategyRunSummary>>(200);
+        .Produces<IReadOnlyList<StrategyRunSummary>>(200)
+        .RequireWorkstationTenantCompanyScope()
+        .RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunHistory), async (
             string? mode,
@@ -2618,11 +2815,12 @@ public static partial class WorkstationEndpoints
                         Status: status,
                         StrategyId: strategyId,
                         Limit: Math.Clamp(limit ?? 50, 1, 500)),
+                    ResolveStrategyRunReadScope(context),
                     context.RequestAborted)
                 .ConfigureAwait(false);
             return Results.Json(runs, jsonOptions);
         })
-        .WithName("GetWorkstationRunHistory")
+        .WithName("GetWorkstationRunHistory").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyRunSummary>>(200)
         .Produces(501);
 
@@ -2646,10 +2844,14 @@ public static partial class WorkstationEndpoints
                 StrategyId: strategyId,
                 Limit: Math.Clamp(limit ?? 100, 1, 500));
 
-            var timeline = await readService.GetMergedTimelineAsync(query, context.RequestAborted).ConfigureAwait(false);
+            var timeline = await readService.GetMergedTimelineAsync(
+                    query,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(timeline, jsonOptions);
         })
-        .WithName("GetWorkstationMergedRunTimeline")
+        .WithName("GetWorkstationMergedRunTimeline").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyRunTimelineEntry>>(200)
         .Produces(501);
 
@@ -2673,12 +2875,16 @@ public static partial class WorkstationEndpoints
                 StrategyId: strategyId,
                 Limit: Math.Clamp(limit ?? 100, 1, 500));
 
-            var timeline = await readService.GetLineageTimelineAsync(query, context.RequestAborted).ConfigureAwait(false);
+            var timeline = await readService.GetLineageTimelineAsync(
+                    query,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(
                 timeline.Where(static entry => entry.EventType != StrategyRunLineageEventType.ReplayVerified).ToArray(),
                 jsonOptions);
         })
-        .WithName("GetWorkstationRunLineageTimeline")
+        .WithName("GetWorkstationRunLineageTimeline").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategyRunLineageTimelineEntry>>(200)
         .Produces(501);
 
@@ -2690,10 +2896,14 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var sweeps = await readService.GetSweepResultGroupsAsync(limit ?? 25, context.RequestAborted).ConfigureAwait(false);
+            var sweeps = await readService.GetSweepResultGroupsAsync(
+                    limit ?? 25,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(sweeps, jsonOptions);
         })
-        .WithName("GetWorkstationSweepResults")
+        .WithName("GetWorkstationSweepResults").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<IReadOnlyList<StrategySweepResultGroup>>(200)
         .Produces(501);
 
@@ -2724,14 +2934,32 @@ public static partial class WorkstationEndpoints
                 return Results.BadRequest(new { error = $"A maximum of {MaxRunComparisonRequestIds} run IDs can be compared per request." });
             }
 
-            var comparison = await readService.GetRunComparisonDtosAsync(runIds, ct: context.RequestAborted).ConfigureAwait(false);
+            var scope = ResolveStrategyRunReadScope(context);
+            if (!await AreStrategyRunsAccessibleAsync(
+                    readService,
+                    runIds,
+                    scope,
+                    context.RequestAborted)
+                .ConfigureAwait(false))
+            {
+                return Results.NotFound(new { error = "One or more run IDs were not found." });
+            }
+
+            var comparison = await readService.GetRunComparisonDtosAsync(
+                    runIds,
+                    scope,
+                    ct: context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(comparison, jsonOptions);
         })
         .WithName("CompareStrategyRuns")
         .WithTags("Strategies")
         .Produces<IReadOnlyList<RunComparisonDto>>(200)
         .Produces(400)
-        .Produces(501);
+        .Produces(404)
+        .Produces(501)
+        .RequireWorkstationTenantCompanyScope()
+        .RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies);
 
         // --- Portfolio cash-flow projections ---
 
@@ -2761,53 +2989,14 @@ public static partial class WorkstationEndpoints
                 ? Results.NotFound()
                 : Results.Json(summary, jsonOptions);
         })
-        .WithName("GetPortfolioCashFlows")
+        .WithName("GetPortfolioCashFlows").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<RunCashFlowSummary>(200)
         .Produces(404)
         .Produces(501);
 
-        // --- Cross-strategy aggregate portfolio ---
-
-        portfolioGroup.MapGet(PortfolioSubroute(UiApiRoutes.PortfolioAggregate), (HttpContext context) =>
-        {
-            var aggregator = context.RequestServices.GetService<IAggregatePortfolioService>();
-            if (aggregator is null)
-                return Results.Problem("Aggregate portfolio service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
-
-            var positions = aggregator.GetAggregatedPositions();
-            return Results.Json(positions, jsonOptions);
-        })
-        .WithName("GetPortfolioAggregate")
-        .Produces<IReadOnlyList<AggregatedPosition>>(200)
-        .Produces(503);
-
-        portfolioGroup.MapGet(PortfolioSubroute(UiApiRoutes.PortfolioExposure), (HttpContext context) =>
-        {
-            var aggregator = context.RequestServices.GetService<IAggregatePortfolioService>();
-            if (aggregator is null)
-                return Results.Problem("Aggregate portfolio service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
-
-            var report = aggregator.GetCrossStrategyExposure();
-            return Results.Json(report, jsonOptions);
-        })
-        .WithName("GetPortfolioExposure")
-        .Produces<CrossStrategyExposureReport>(200)
-        .Produces(503);
-
-        portfolioGroup.MapGet(PortfolioSubroute(UiApiRoutes.PortfolioSymbolExposure), (string symbol, HttpContext context) =>
-        {
-            var aggregator = context.RequestServices.GetService<IAggregatePortfolioService>();
-            if (aggregator is null)
-                return Results.Problem("Aggregate portfolio service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
-
-            var net = aggregator.GetNetPositionForSymbol(symbol);
-            return Results.Json(net, jsonOptions);
-        })
-        .WithName("GetPortfolioSymbolExposure")
-        .Produces<NetSymbolPosition>(200)
-        .Produces(503);
+        MapCrossStrategyPortfolioRoutes(portfolioGroup, jsonOptions);
         app.MapGet("/workstation", (IWebHostEnvironment environment) => ServeWorkstationIndex(environment))
-            .ExcludeFromDescription();
+            .DeclareOpenRead("Browser workstation shell HTML; it carries no operator data, and the session middleware redirects an unauthenticated caller to /login before it is served. Every governed read the loaded shell then makes is declared on its own route.").ExcludeFromDescription();
 
         app.MapGet("/workstation/{*path}", (string? path, IWebHostEnvironment environment) =>
         {
@@ -2842,749 +3031,8 @@ public static partial class WorkstationEndpoints
                 _ => "application/octet-stream"
             };
             return Results.File(filePath, contentType);
-        }).ExcludeFromDescription();
+        }).DeclareOpenRead("Browser workstation shell fallback and its static assets from wwwroot/workstation; same shell and same reasoning as /workstation.").ExcludeFromDescription();
     }
-
-    private static ExposureSnapshotDto BuildCollateralExposureSnapshot(
-        CollateralExposureService service,
-        IReadOnlyList<CollateralInputRow> rows)
-    {
-        var sourceRows = rows.Count == 0 ? BuildFallbackCollateralRows() : rows;
-        var snapshots = service.BuildSnapshots(sourceRows);
-        var breaches = service.EvaluateBreaches(snapshots);
-        var breachDtos = breaches.Select(static breach => new ThresholdBreachDto(
-            breach.Counterparty,
-            breach.Severity.ToString(),
-            breach.CoverageRatio,
-            breach.Severity == ThresholdSeverity.HardBreach ? breach.HardBreachLevel : breach.EarlyWarningLevel,
-            DateTimeOffset.UtcNow,
-            breach.Message)).ToArray();
-
-        var counterpartyDtos = snapshots.Select(static snapshot => new CounterpartyExposureDto(
-            snapshot.Counterparty,
-            snapshot.NetExposure,
-            snapshot.GrossExposure,
-            snapshot.CollateralBalance,
-            snapshot.HaircutAdjustedCollateral,
-            new MarginRequirementDto(0m, snapshot.RequiredCollateral, snapshot.RequiredCollateral),
-            snapshot.HaircutAdjustedCollateral >= snapshot.RequiredCollateral,
-            snapshot.ProductDecomposition.Select(static product => new ProductExposureDto(
-                product.ProductType,
-                product.NetExposure,
-                product.GrossExposure)).ToArray())).ToArray();
-
-        var calls = breaches
-            .Where(static breach => breach.Severity == ThresholdSeverity.HardBreach)
-            .Select(static breach => new CollateralCallDto(
-                $"call-{NormalizeOperatorInboxToken(breach.Counterparty)}",
-                breach.Counterparty,
-                Math.Max(0m, breach.HardBreachLevel - breach.CoverageRatio),
-                0m,
-                DateTimeOffset.UtcNow.AddDays(1),
-                "Open",
-                breach.Message))
-            .ToArray();
-
-        var trend = Enumerable.Range(0, 12)
-            .Select(index => new ExposureTrendPointDto(
-                DateTimeOffset.UtcNow.AddHours(index - 11),
-                snapshots.Sum(static snapshot => snapshot.NetExposure),
-                snapshots.Count == 0 ? 0m : snapshots.Average(static snapshot => snapshot.CollateralCoverageRatio)))
-            .ToArray();
-
-        return new ExposureSnapshotDto(
-            DateTimeOffset.UtcNow,
-            rows.Count == 0 ? "micro-batch fixture" : "micro-batch buffer",
-            counterpartyDtos,
-            breachDtos,
-            calls,
-            trend);
-    }
-
-    private static IReadOnlyList<CollateralInputRow> BuildFallbackCollateralRows() =>
-    [
-        new(
-            DateTimeOffset.UtcNow,
-            "Prime-A",
-            "Equity Swap",
-            1_000_000m,
-            -250_000m,
-            50_000m,
-            "cash",
-            200_000m,
-            100_000m)
-    ];
-
-    private static string WorkstationSubroute(string route)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(route);
-        return route.StartsWith(WorkstationApiRoutePrefix, StringComparison.Ordinal)
-            ? route[WorkstationApiRoutePrefix.Length..]
-            : route;
-    }
-
-    private static string PortfolioSubroute(string route)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(route);
-        return route.StartsWith(PortfolioApiRoutePrefix, StringComparison.Ordinal)
-            ? route[PortfolioApiRoutePrefix.Length..]
-            : route;
-    }
-
-    // PR-03: returns typed DTO instead of anonymous object
-    private static async Task<WorkstationSessionPayload> BuildSessionPayloadAsync(HttpContext context)
-    {
-        var readService = context.RequestServices.GetService<StrategyRunReadService>();
-        if (readService is null)
-        {
-            return new WorkstationSessionPayload(
-                DisplayName: "Meridian Operator",
-                Role: "Strategy Lead",
-                Environment: "paper",
-                ActiveWorkspace: "strategy",
-                CommandCount: 6,
-                LatestRun: null,
-                WorkspaceSummary: new WorkstationSessionWorkspaceSummary(0, 0, 0, 0, 0));
-        }
-
-        var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
-        var latest = runs.FirstOrDefault();
-        var latestDetail = latest is null
-            ? null
-            : await readService.GetRunDetailAsync(latest.RunId, context.RequestAborted).ConfigureAwait(false);
-        var activeRuns = runs.Count(static run => run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused);
-        var reviewRuns = runs.Count(static run => run.Promotion?.RequiresReview == true || run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled);
-
-        return new WorkstationSessionPayload(
-            DisplayName: BuildDisplayName(latest),
-            Role: BuildRole(latest),
-            Environment: MapEnvironment(latest),
-            ActiveWorkspace: MapWorkspace(latest),
-            CommandCount: Math.Max(6, runs.Length + activeRuns + reviewRuns),
-            LatestRun: latest is null ? null : BuildRunDigest(latest, latestDetail),
-            WorkspaceSummary: new WorkstationSessionWorkspaceSummary(
-                TotalRuns: runs.Length,
-                ActiveRuns: activeRuns,
-                ReviewRuns: reviewRuns,
-                LedgerCoverage: runs.Count(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
-                PortfolioCoverage: runs.Count(static run => !string.IsNullOrWhiteSpace(run.PortfolioId))));
-    }
-
-    // PR-03: returns typed DTO instead of anonymous object
-    private static async Task<WorkstationStrategyPayload> BuildStrategyPayloadAsync(HttpContext context)
-    {
-        var readService = context.RequestServices.GetService<StrategyRunReadService>();
-        if (readService is null)
-        {
-            return BuildStrategyFallbackPayload();
-        }
-
-        var runs = (await readService
-                .GetRunsAsync(new StrategyRunHistoryQuery(Limit: 6), context.RequestAborted)
-                .ConfigureAwait(false))
-            .ToArray();
-        var runDetails = await Task.WhenAll(
-                runs.Select(run => readService.GetRunDetailAsync(run.RunId, context.RequestAborted)))
-            .ConfigureAwait(false);
-
-        if (runs.Length == 0)
-        {
-            return new WorkstationStrategyPayload(
-                Metrics:
-                [
-                    new WorkstationMetricCard("active-runs", "Active Runs", "0", "0%", "success"),
-                    new WorkstationMetricCard("queued-runs", "Queued Promotions", "0", "0%", "default"),
-                    new WorkstationMetricCard("review-runs", "Needs Review", "0", "0%", "warning"),
-                    new WorkstationMetricCard("winning-runs", "Positive P&L", "0", "0%", "default")
-                ],
-                Runs: Array.Empty<WorkstationStrategyRunCard>(),
-                Comparisons: Array.Empty<WorkstationModeComparisonGroup>(),
-                Timeline: Array.Empty<WorkstationTimelineCard>(),
-                Workspace: new WorkstationStrategyWorkspaceSummary(0, null, null, false, false, 0),
-                PlotTool: BuildStrategyPlotToolPayload(Array.Empty<StrategyRunSummary>(), selectedRunIds: Array.Empty<string>()));
-        }
-
-        var activeRuns = runs.Count(static run => run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused);
-        var queuedPromotions = runs.Count(static run => run.Promotion is { RequiresReview: true } &&
-            run.Promotion.State is StrategyRunPromotionState.CandidateForPaper or StrategyRunPromotionState.CandidateForLive);
-        var reviewRuns = runs.Count(static run => run.Promotion?.RequiresReview == true || run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled);
-        var winningRuns = runs.Count(static run => (run.NetPnl ?? 0m) > 0m);
-        var latestRun = runs[0];
-
-        return new WorkstationStrategyPayload(
-            Metrics:
-            [
-                new WorkstationMetricCard("active-runs", "Active Runs", activeRuns.ToString(CultureInfo.InvariantCulture), activeRuns == 0 ? "0%" : $"+{activeRuns}", "success"),
-                new WorkstationMetricCard("queued-runs", "Queued Promotions", queuedPromotions.ToString(CultureInfo.InvariantCulture), queuedPromotions == 0 ? "0%" : $"+{queuedPromotions}", "default"),
-                new WorkstationMetricCard("review-runs", "Needs Review", reviewRuns.ToString(CultureInfo.InvariantCulture), reviewRuns == 0 ? "0%" : $"-{reviewRuns}", "warning"),
-                new WorkstationMetricCard("winning-runs", "Positive P&L", winningRuns.ToString(CultureInfo.InvariantCulture), winningRuns == 0 ? "0%" : $"+{winningRuns}", "default")
-            ],
-            Runs: runs
-                .Zip(runDetails, static (run, detail) => BuildStrategyRunCard(run, detail))
-                .ToArray(),
-            Comparisons: BuildModeComparisons(runs),
-            Timeline: runs.Select(BuildTimelineCard).ToArray(),
-            Workspace: new WorkstationStrategyWorkspaceSummary(
-                TotalRuns: runs.Length,
-                LatestRunId: latestRun.RunId,
-                LatestStrategyName: latestRun.StrategyName,
-                HasLedgerCoverage: runs.Any(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
-                HasPortfolioCoverage: runs.Any(static run => !string.IsNullOrWhiteSpace(run.PortfolioId)),
-                PromotionCandidates: queuedPromotions),
-            PlotTool: BuildStrategyPlotToolPayload(runs, selectedRunIds: Array.Empty<string>()));
-    }
-
-    private static async Task<StrategyBriefingDto> BuildStrategyBriefingAsync(HttpContext context)
-    {
-        var readService = context.RequestServices.GetService<StrategyRunReadService>();
-        if (readService is null)
-        {
-            return BuildStrategyBriefingFallback();
-        }
-
-        var runs = (await readService
-                .GetRunsAsync(new StrategyRunHistoryQuery(Limit: 10), context.RequestAborted)
-                .ConfigureAwait(false))
-            .ToArray();
-        var details = await Task.WhenAll(
-                runs.Select(run => readService.GetRunDetailAsync(run.RunId, context.RequestAborted)))
-            .ConfigureAwait(false);
-
-        return BuildStrategyBriefingFromRuns(runs, details);
-    }
-
-    private static StrategyBriefingDto BuildStrategyBriefingFromRuns(
-        IReadOnlyList<StrategyRunSummary> runs,
-        IReadOnlyList<StrategyRunDetail?> details)
-    {
-        var activeRuns = runs.Count(static run => run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused);
-        var promotionCandidates = runs.Count(static run => run.Promotion is { RequiresReview: true } &&
-            run.Promotion.State is StrategyRunPromotionState.CandidateForPaper or StrategyRunPromotionState.CandidateForLive);
-        var positivePnlRuns = runs.Count(static run => (run.NetPnl ?? 0m) > 0m);
-        var latestRun = runs.FirstOrDefault();
-        var alertItems = BuildBriefingAlerts(runs, details);
-
-        return new StrategyBriefingDto(
-            Workspace: new StrategyBriefingWorkspaceSummary(
-                TotalRuns: runs.Count,
-                ActiveRuns: activeRuns,
-                PromotionCandidates: promotionCandidates,
-                PositivePnlRuns: positivePnlRuns,
-                LatestRunId: latestRun?.RunId,
-                LatestStrategyName: latestRun?.StrategyName,
-                HasLedgerCoverage: runs.Any(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
-                HasPortfolioCoverage: runs.Any(static run => !string.IsNullOrWhiteSpace(run.PortfolioId)),
-                Summary: latestRun is null
-                    ? "Start a backtest or restore a saved run to populate the Market Briefing."
-                    : $"{activeRuns} active Strategy session(s), {promotionCandidates} promotion candidate(s), and {alertItems.Count} alert(s) on the desk."),
-            InsightFeed: BuildBriefingInsightFeed(runs, details, alertItems.Count),
-            Watchlists: Array.Empty<WorkstationWatchlist>(),
-            RecentRuns: runs
-                .Zip(details, static (run, detail) => BuildBriefingRun(run, detail))
-                .Take(6)
-                .ToArray(),
-            SavedComparisons: BuildSavedComparisons(runs),
-            Alerts: alertItems,
-            WhatChanged: BuildWhatChangedItems(runs));
-    }
-
-    private static StrategyBriefingDto BuildStrategyBriefingFallback()
-    {
-        var generatedAt = DateTimeOffset.UtcNow;
-        return new StrategyBriefingDto(
-            Workspace: new StrategyBriefingWorkspaceSummary(
-                TotalRuns: 24,
-                ActiveRuns: 6,
-                PromotionCandidates: 3,
-                PositivePnlRuns: 17,
-                LatestRunId: "run-strategy-001",
-                LatestStrategyName: "Mean Reversion FX",
-                HasLedgerCoverage: true,
-                HasPortfolioCoverage: true,
-                Summary: "Strategy is organized around briefing context first, then run studio drill-ins."),
-            InsightFeed: new InsightFeed(
-                FeedId: "strategy-market-briefing",
-                Title: "Pinned Insights",
-                Summary: "A compact market briefing with pinned Strategy tiles, saved comparisons, and promotion posture.",
-                GeneratedAt: generatedAt,
-                Widgets:
-                [
-                    new InsightWidget(
-                        WidgetId: "insight-meanrev-fx",
-                        Title: "Mean Reversion FX",
-                        Subtitle: "Paper run · Running",
-                        Headline: "+4.2%",
-                        Tone: "success",
-                        Summary: "Primary paper candidate with steady fill quality and stable financing.",
-                        RunId: "run-strategy-001",
-                        DrillInRoute: RunRoute(UiApiRoutes.RunsEquityCurve, "run-strategy-001")),
-                    new InsightWidget(
-                        WidgetId: "insight-index-carry",
-                        Title: "Index Carry Basket",
-                        Subtitle: "Backtest · Completed",
-                        Headline: "+2.8%",
-                        Tone: "default",
-                        Summary: "Pinned chart compares carry spread compression against basket returns.",
-                        RunId: "run-strategy-014",
-                        DrillInRoute: RunRoute(UiApiRoutes.RunsEquityCurve, "run-strategy-014")),
-                    new InsightWidget(
-                        WidgetId: "insight-vol-breakout",
-                        Title: "Volatility Breakout",
-                        Subtitle: "Backtest · Needs review",
-                        Headline: "-0.9%",
-                        Tone: "warning",
-                        Summary: "Transaction-cost preview deteriorated after the most recent parameter sweep.",
-                        RunId: "run-strategy-022",
-                        DrillInRoute: RunRoute(UiApiRoutes.RunsEquityCurve, "run-strategy-022"))
-                ]),
-            Watchlists:
-            [
-                new WorkstationWatchlist(
-                    WatchlistId: "wl-tech",
-                    Name: "Tech Giants",
-                    Symbols: ["AAPL", "MSFT", "NVDA", "AMZN", "META"],
-                    SymbolCount: 5,
-                    IsPinned: true,
-                    SortOrder: 0,
-                    AccentColor: "#4CAF50",
-                    Summary: "Pinned for cross-run spread checks and financing sensitivity."),
-                new WorkstationWatchlist(
-                    WatchlistId: "wl-macro",
-                    Name: "Macro FX",
-                    Symbols: ["EURUSD", "USDJPY", "GBPUSD", "AUDUSD"],
-                    SymbolCount: 4,
-                    IsPinned: true,
-                    SortOrder: 1,
-                    AccentColor: "#2196F3",
-                    Summary: "Monitored for carry baskets and mean-reversion entry timing.")
-            ],
-            RecentRuns:
-            [
-                new StrategyBriefingRun(
-                    RunId: "run-strategy-001",
-                    StrategyName: "Mean Reversion FX",
-                    Mode: StrategyRunMode.Paper,
-                    Status: StrategyRunStatus.Running,
-                    Dataset: "FX Majors",
-                    WindowLabel: "90d",
-                    ReturnLabel: "+4.2%",
-                    SharpeLabel: "1.41",
-                    LastUpdatedLabel: "2m ago",
-                    Notes: "Primary paper candidate with stable fill quality and healthy depth coverage.",
-                    PromotionState: StrategyRunPromotionState.CandidateForLive,
-                    NetPnl: 4200m,
-                    TotalReturn: 0.042m,
-                    FinalEquity: 104200m,
-                    DrillIn: new StrategyRunDrillInLinks(
-                        EquityCurve: RunRoute(UiApiRoutes.RunsEquityCurve, "run-strategy-001"),
-                        Fills: RunRoute(UiApiRoutes.RunsFills, "run-strategy-001"),
-                        Attribution: RunRoute(UiApiRoutes.RunsAttribution, "run-strategy-001"),
-                        Ledger: RunRoute(UiApiRoutes.RunsLedger, "run-strategy-001"),
-                        CashFlows: RunRoute(UiApiRoutes.PortfolioCashFlows, "run-strategy-001"),
-                        Continuity: RunRoute(UiApiRoutes.RunsContinuity, "run-strategy-001")))
-            ],
-            SavedComparisons:
-            [
-                new StrategySavedComparison(
-                    ComparisonId: "cmp-meanrev-fx",
-                    StrategyName: "Mean Reversion FX",
-                    ModeSummary: "Backtest -> Paper",
-                    Summary: "Saved compare lane tracks readiness from completed backtest into paper execution.",
-                    AnchorRunId: "run-strategy-001",
-                    Modes:
-                    [
-                        new StrategySavedComparisonMode(
-                            RunId: "run-strategy-001",
-                            Mode: StrategyRunMode.Paper,
-                            Status: StrategyRunStatus.Running,
-                            NetPnl: 4200m,
-                            TotalReturn: 0.042m,
-                            DrillIn: new StrategyRunDrillInLinks(
-                                EquityCurve: RunRoute(UiApiRoutes.RunsEquityCurve, "run-strategy-001"),
-                                Fills: RunRoute(UiApiRoutes.RunsFills, "run-strategy-001"),
-                                Attribution: RunRoute(UiApiRoutes.RunsAttribution, "run-strategy-001"),
-                                Ledger: RunRoute(UiApiRoutes.RunsLedger, "run-strategy-001"),
-                                CashFlows: RunRoute(UiApiRoutes.PortfolioCashFlows, "run-strategy-001"),
-                                Continuity: RunRoute(UiApiRoutes.RunsContinuity, "run-strategy-001")))
-                    ])
-            ],
-            Alerts:
-            [
-                new StrategyBriefingAlert(
-                    AlertId: "alert-promotion-review",
-                    Title: "Promotion review due",
-                    Summary: "Mean Reversion FX is running in paper and is queued for live promotion review.",
-                    Tone: "warning",
-                    RunId: "run-strategy-001",
-                    ActionLabel: "Review run"),
-                new StrategyBriefingAlert(
-                    AlertId: "alert-cost-preview",
-                    Title: "Execution costs widened",
-                    Summary: "Volatility Breakout now shows a weaker transaction-cost preview than the prior saved comparison.",
-                    Tone: "default",
-                    RunId: "run-strategy-022",
-                    ActionLabel: "Open comparison")
-            ],
-            WhatChanged:
-            [
-                new StrategyWhatChangedItem(
-                    ChangeId: "change-paper-ready",
-                    Title: "Paper lane updated",
-                    Summary: "Mean Reversion FX stayed profitable and kept full ledger continuity after the latest refresh.",
-                    Category: "paper",
-                    Timestamp: generatedAt.AddMinutes(-2),
-                    RelativeTime: "2m ago",
-                    RunId: "run-strategy-001"),
-                new StrategyWhatChangedItem(
-                    ChangeId: "change-backtest-failed",
-                    Title: "Backtest needs review",
-                    Summary: "Volatility Breakout completed with weaker returns and is now flagged for review.",
-                    Category: "review",
-                    Timestamp: generatedAt.AddMinutes(-18),
-                    RelativeTime: "18m ago",
-                    RunId: "run-strategy-022")
-            ]);
-    }
-
-    private static ResearchBriefingDto ToResearchBriefingDto(StrategyBriefingDto briefing)
-        => new(
-            Workspace: new ResearchBriefingWorkspaceSummary(
-                TotalRuns: briefing.Workspace.TotalRuns,
-                ActiveRuns: briefing.Workspace.ActiveRuns,
-                PromotionCandidates: briefing.Workspace.PromotionCandidates,
-                PositivePnlRuns: briefing.Workspace.PositivePnlRuns,
-                LatestRunId: briefing.Workspace.LatestRunId,
-                LatestStrategyName: briefing.Workspace.LatestStrategyName,
-                HasLedgerCoverage: briefing.Workspace.HasLedgerCoverage,
-                HasPortfolioCoverage: briefing.Workspace.HasPortfolioCoverage,
-                Summary: briefing.Workspace.Summary),
-            InsightFeed: briefing.InsightFeed,
-            Watchlists: briefing.Watchlists,
-            RecentRuns: briefing.RecentRuns
-                .Select(static run => new ResearchBriefingRun(
-                    RunId: run.RunId,
-                    StrategyName: run.StrategyName,
-                    Mode: run.Mode,
-                    Status: run.Status,
-                    Dataset: run.Dataset,
-                    WindowLabel: run.WindowLabel,
-                    ReturnLabel: run.ReturnLabel,
-                    SharpeLabel: run.SharpeLabel,
-                    LastUpdatedLabel: run.LastUpdatedLabel,
-                    Notes: run.Notes,
-                    PromotionState: run.PromotionState,
-                    NetPnl: run.NetPnl,
-                    TotalReturn: run.TotalReturn,
-                    FinalEquity: run.FinalEquity,
-                    DrillIn: ToResearchDrillInLinks(run.DrillIn)))
-                .ToArray(),
-            SavedComparisons: briefing.SavedComparisons
-                .Select(static comparison => new ResearchSavedComparison(
-                    ComparisonId: comparison.ComparisonId,
-                    StrategyName: comparison.StrategyName,
-                    ModeSummary: comparison.ModeSummary,
-                    Summary: comparison.Summary,
-                    AnchorRunId: comparison.AnchorRunId,
-                    Modes: comparison.Modes
-                        .Select(static mode => new ResearchSavedComparisonMode(
-                            RunId: mode.RunId,
-                            Mode: mode.Mode,
-                            Status: mode.Status,
-                            NetPnl: mode.NetPnl,
-                            TotalReturn: mode.TotalReturn,
-                            DrillIn: ToResearchDrillInLinks(mode.DrillIn)))
-                        .ToArray()))
-                .ToArray(),
-            Alerts: briefing.Alerts
-                .Select(static alert => new ResearchBriefingAlert(
-                    AlertId: alert.AlertId,
-                    Title: alert.Title,
-                    Summary: alert.Summary,
-                    Tone: alert.Tone,
-                    RunId: alert.RunId,
-                    ActionLabel: alert.ActionLabel))
-                .ToArray(),
-            WhatChanged: briefing.WhatChanged
-                .Select(static item => new ResearchWhatChangedItem(
-                    ChangeId: item.ChangeId,
-                    Title: item.Title,
-                    Summary: item.Summary,
-                    Category: item.Category,
-                    Timestamp: item.Timestamp,
-                    RelativeTime: item.RelativeTime,
-                    RunId: item.RunId))
-                .ToArray());
-
-    private static ResearchRunDrillInLinks ToResearchDrillInLinks(StrategyRunDrillInLinks links)
-        => new(
-            EquityCurve: links.EquityCurve,
-            Fills: links.Fills,
-            Attribution: links.Attribution,
-            Ledger: links.Ledger,
-            CashFlows: links.CashFlows,
-            Continuity: links.Continuity);
-
-    // PR-03: returns typed DTO
-    private static WorkstationStrategyPayload BuildStrategyFallbackPayload()
-    {
-        var fallbackCoverage = new WorkstationSecurityCoveragePayload(
-            PortfolioResolved: 0,
-            PortfolioMissing: 0,
-            LedgerResolved: 0,
-            LedgerMissing: 0,
-            HasIssues: false,
-            Tone: "default",
-            Summary: "Security Master coverage not yet evaluated.",
-            ResolvedReferences: Array.Empty<WorkstationSecurityCoverageReferencePayload>(),
-            MissingReferences: Array.Empty<WorkstationSecurityCoverageGapPayload>());
-
-        return new WorkstationStrategyPayload(
-            Metrics:
-            [
-                new WorkstationMetricCard("active-runs", "Active Runs", "24", "+8%", "success"),
-                new WorkstationMetricCard("queued-runs", "Queued Promotions", "3", "0%", "default"),
-                new WorkstationMetricCard("review-runs", "Needs Review", "2", "-1%", "warning"),
-                new WorkstationMetricCard("winning-runs", "Positive P&L", "17", "+4%", "default")
-            ],
-            Runs:
-            [
-                new WorkstationStrategyRunCard(
-                    Id: "run-strategy-001",
-                    StrategyName: "Mean Reversion FX",
-                    Engine: "Meridian Native",
-                    Mode: "paper",
-                    Status: "Running",
-                    Dataset: "FX Majors",
-                    Window: "90d",
-                    Pnl: "+4.2%",
-                    Sharpe: "1.41",
-                    LastUpdated: "2m ago",
-                    Notes: "Primary paper candidate with stable fill quality and healthy depth coverage.",
-                    PromotionState: null,
-                    LedgerReference: null,
-                    PortfolioId: null,
-                    NetPnl: 4200m,
-                    TotalReturn: 0.042m,
-                    FinalEquity: 104200m,
-                    SecurityCoverage: fallbackCoverage,
-                    DrillIn: new WorkstationRunDrillInLinks(
-                        EquityCurve: RunRoute(UiApiRoutes.RunsEquityCurve, "run-strategy-001"),
-                        Fills: RunRoute(UiApiRoutes.RunsFills, "run-strategy-001"),
-                        Attribution: RunRoute(UiApiRoutes.RunsAttribution, "run-strategy-001"),
-                        Ledger: null,
-                        CashFlows: RunRoute(UiApiRoutes.PortfolioCashFlows, "run-strategy-001"),
-                        Continuity: RunRoute(UiApiRoutes.RunsContinuity, "run-strategy-001"),
-                        Comparison: UiApiRoutes.RunsCompare))
-            ],
-            Comparisons: Array.Empty<WorkstationModeComparisonGroup>(),
-            Timeline: Array.Empty<WorkstationTimelineCard>(),
-            Workspace: new WorkstationStrategyWorkspaceSummary(1, "run-strategy-001", "Mean Reversion FX", false, false, 0),
-            PlotTool: BuildStrategyFallbackPlotToolPayload());
-    }
-
-    // PR-03: returns typed DTO instead of anonymous object
-    private static async Task<WorkstationTradingPayload> BuildTradingPayloadAsync(HttpContext context, Guid? fundAccountId = null)
-    {
-        var readService = context.RequestServices.GetService<StrategyRunReadService>();
-        var portfolio = context.RequestServices.GetService<IPortfolioState>();
-        var oms = context.RequestServices.GetService<IOrderManager>();
-        var brokerageConfiguration = context.RequestServices.GetService<BrokerageConfiguration>();
-        var quoteCollector = context.RequestServices.GetService<QuoteCollector>();
-        var tradeCollector = context.RequestServices.GetService<TradeDataCollector>();
-
-        // When neither execution layer nor strategy run service is active, use fixture data
-        if (portfolio is null && oms is null && readService is null)
-        {
-            return BuildTradingFallbackPayload();
-        }
-
-        // Resolve the most relevant paper run (for run-level metadata)
-        StrategyRunSummary? run = null;
-        if (readService is not null)
-        {
-            var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
-            run = runs.FirstOrDefault(static candidate => candidate.Mode == StrategyRunMode.Paper) ?? runs.FirstOrDefault();
-        }
-
-        var brokerageValidation = BrokerageValidationEvaluator.Evaluate(brokerageConfiguration);
-
-        // --- Metrics (prefer live data, fall back to run-level metrics) ---
-        var realisedPnl = portfolio?.RealisedPnl ?? run?.NetPnl ?? 0m;
-        var unrealisedPnl = portfolio?.UnrealisedPnl ?? 0m;
-        var totalPnl = realisedPnl + unrealisedPnl;
-        var openOrderCount = oms?.GetOpenOrders().Count ?? 0;
-        var pnlTone = totalPnl >= 0m ? "success" : "warning";
-
-        // --- Positions (live execution layer when available) — PR-03: typed rows ---
-        // Live marks (BBO mid → last trade → cost basis) drive MarkPrice, UnrealizedPnl,
-        // and Exposure so operators see real-time PnL as quotes update.
-        WorkstationTradingPositionRow[] positions;
-        if (portfolio is not null && portfolio.Positions.Count > 0)
-        {
-            positions = portfolio.Positions.Values.Select(pos =>
-            {
-                var mark = ResolveLiveMark(pos.Symbol, quoteCollector, tradeCollector);
-                var hasMark = mark.HasValue && mark.Value > 0m;
-                var effectiveMark = hasMark ? mark!.Value : pos.AverageCostBasis;
-                var liveUnrealized = (effectiveMark - pos.AverageCostBasis) * pos.Quantity;
-                var liveExposure = Math.Abs(pos.Quantity * effectiveMark);
-
-                return new WorkstationTradingPositionRow(
-                    PositionKey: pos.Symbol,
-                    Symbol: pos.Symbol,
-                    Side: pos.Quantity >= 0 ? "Long" : "Short",
-                    Quantity: Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
-                    AveragePrice: pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
-                    MarkPrice: hasMark ? effectiveMark.ToString("F2", CultureInfo.InvariantCulture) : "—",
-                    DayPnl: "—",
-                    UnrealizedPnl: FormatCurrency(hasMark ? liveUnrealized : pos.UnrealizedPnl),
-                    Exposure: hasMark ? FormatCurrency(liveExposure) : "—");
-            }).ToArray();
-        }
-        else
-        {
-            // No live positions yet — show an informational placeholder row
-            positions =
-            [
-                new WorkstationTradingPositionRow("—", "—", "—", "—", "—", "—", "—", "—", "No open positions")
-            ];
-        }
-
-        // --- Open orders (live OMS when available) — PR-03: typed rows ---
-        WorkstationTradingOrderRow[] openOrders;
-        if (oms is not null)
-        {
-            openOrders = oms.GetOpenOrders().Select(static order => new WorkstationTradingOrderRow(
-                OrderId: order.OrderId.ToString(),
-                Symbol: order.Symbol,
-                Side: order.Side.ToString(),
-                Type: order.Type.ToString(),
-                Quantity: order.Quantity.ToString(CultureInfo.InvariantCulture),
-                LimitPrice: order.LimitPrice.HasValue ? order.LimitPrice.Value.ToString("F2", CultureInfo.InvariantCulture) : "—",
-                Status: order.Status.ToString(),
-                SubmittedAt: order.CreatedAt.ToString("HH:mm:ss", CultureInfo.InvariantCulture) + " UTC")).ToArray();
-        }
-        else
-        {
-            openOrders = [];
-        }
-
-        // --- Risk state (derived from live portfolio when available) ---
-        var riskState = "Healthy";
-        var riskSummary = "Portfolio and order-book exposure are within configured paper thresholds.";
-        IReadOnlyList<string> activeGuardrails =
-        [
-            "Single-name concentration cap set at 30% notional.",
-            "Auto-throttle activates above 70% intraday buying power.",
-            "Strategy promotion to live blocked while state is Observe or Constrained."
-        ];
-        var grossExposure = 0m;
-        var netExposureValue = 0m;
-
-        if (portfolio is not null)
-        {
-            foreach (var pos in portfolio.Positions.Values)
-            {
-                var mark = ResolveLiveMark(pos.Symbol, quoteCollector, tradeCollector);
-                var px = mark.HasValue && mark.Value > 0m ? mark.Value : pos.AverageCostBasis;
-                grossExposure += Math.Abs(pos.Quantity * px);
-                netExposureValue += pos.Quantity * px;
-            }
-            var drawdownPct = portfolio.PortfolioValue > 0m
-                ? totalPnl / portfolio.PortfolioValue
-                : 0m;
-
-            if (drawdownPct < -0.05m)
-            {
-                riskState = "Constrained";
-                riskSummary = "Portfolio has breached the 5% drawdown threshold. Promotion to live is blocked.";
-            }
-            else if (drawdownPct < -0.02m)
-            {
-                riskState = "Observe";
-                riskSummary = "Exposure nearing guardrail limits. Monitoring intraday drawdown closely.";
-            }
-        }
-        else if (run is not null && run.NetPnl.HasValue && run.NetPnl < 0m)
-        {
-            riskState = "Observe";
-            riskSummary = "Strategy is running at a loss. Monitoring active.";
-        }
-
-        var runtimeRisk = await ResolveRuntimeRiskDescriptorAsync(context).ConfigureAwait(false);
-        if (runtimeRisk is not null)
-        {
-            riskState = runtimeRisk.State;
-            riskSummary = runtimeRisk.Summary;
-            activeGuardrails = runtimeRisk.ActiveGuardrails;
-        }
-
-        var maxDrawdownDisplay = portfolio is not null && portfolio.PortfolioValue > 0m
-            ? FormatPercent(totalPnl / portfolio.PortfolioValue)
-            : "—";
-
-        var buyingPowerUsedDisplay = portfolio is not null && portfolio.BuyingPower > 0m
-            ? FormatPercent(grossExposure / portfolio.BuyingPower)
-            : "—";
-
-        // --- Fills (completed orders from OMS) — PR-03: typed rows ---
-        WorkstationTradingFillRow[] fills;
-        if (oms is not null)
-        {
-            fills = oms.GetCompletedOrders(20).Select(static order => new WorkstationTradingFillRow(
-                FillId: order.OrderId.ToString(),
-                OrderId: order.OrderId.ToString(),
-                Symbol: order.Symbol,
-                Side: order.Side.ToString(),
-                Quantity: order.FilledQuantity.ToString(CultureInfo.InvariantCulture),
-                Price: order.AverageFillPrice.HasValue
-                    ? order.AverageFillPrice.Value.ToString("F2", CultureInfo.InvariantCulture)
-                    : "—",
-                Venue: "Paper",
-                Timestamp: (order.LastUpdatedAt ?? order.CreatedAt).ToString("HH:mm:ss", CultureInfo.InvariantCulture) + " UTC")).ToArray();
-        }
-        else
-        {
-            fills = Array.Empty<WorkstationTradingFillRow>();
-        }
-
-        var readiness = await GetTradingOperatorReadinessAsync(fundAccountId, context).ConfigureAwait(false);
-
-        // PR-03: return typed DTO
-        return new WorkstationTradingPayload(
-            Metrics:
-            [
-                new WorkstationMetricCard("trading-net-pnl", "Net P&L", FormatCurrency(totalPnl), totalPnl >= 0m ? "+session" : "-session", pnlTone),
-                new WorkstationMetricCard("trading-open-orders", "Open Orders", openOrderCount.ToString(CultureInfo.InvariantCulture), openOrderCount == 0 ? "0" : $"+{openOrderCount}", "default"),
-                new WorkstationMetricCard("trading-cash", "Cash", portfolio is not null ? FormatCurrency(portfolio.Cash) : "—", "0%", "default"),
-                new WorkstationMetricCard("trading-portfolio-value", "Portfolio Value", portfolio is not null ? FormatCurrency(portfolio.PortfolioValue) : "—", "0%", "default")
-            ],
-            Positions: positions,
-            OpenOrders: openOrders,
-            Fills: fills,
-            Risk: new WorkstationTradingRiskState(
-                State: riskState,
-                Summary: riskSummary,
-                NetExposure: portfolio is not null ? FormatCurrency(netExposureValue) : "—",
-                GrossExposure: portfolio is not null ? FormatCurrency(grossExposure) : "—",
-                Var95: "—",
-                MaxDrawdown: maxDrawdownDisplay,
-                BuyingPowerUsed: buyingPowerUsedDisplay,
-                ActiveGuardrails: activeGuardrails),
-            Brokerage: new WorkstationTradingBrokerageState(
-                Provider: brokerageValidation.GatewayDisplayName,
-                Account: run is not null && !string.IsNullOrWhiteSpace(run.PortfolioId) ? run.PortfolioId : "—",
-                Environment: run?.Mode == StrategyRunMode.Live ? "live" : "paper",
-                Connection: portfolio is not null ? "Connected" : "Disconnected",
-                LastHeartbeat: portfolio is not null ? "live" : "—",
-                OrderIngress: oms is not null ? "healthy" : "—",
-                FillFeed: portfolio is not null ? "healthy" : "—",
-                Notes: [BuildTradingBrokerageNotes(run, portfolio is not null, brokerageConfiguration)]),
-            Readiness: readiness,
-            Comparisons: run is null ? Array.Empty<WorkstationModeComparisonGroup>() : BuildModeComparisons([run]),
-            DrillIn: run is null ? null : BuildRunDrillInLinks(run));
-    }
-
 
     private static Task<TradingOperatorReadinessDto> GetTradingOperatorReadinessAsync(
         Guid? fundAccountId,
@@ -3598,347 +3046,10 @@ public static partial class WorkstationEndpoints
             readinessService = new TradingOperatorReadinessService(context.RequestServices, logger);
         }
 
-        return readinessService.GetAsync(fundAccountId, context.RequestAborted);
-    }
-
-    private static async Task<OperatorInboxDto> BuildOperatorInboxAsync(Guid? fundAccountId, HttpContext context)
-    {
-        var asOf = DateTimeOffset.UtcNow;
-        var readiness = await GetTradingOperatorReadinessAsync(fundAccountId, context).ConfigureAwait(false);
-        var workItems = readiness.WorkItems
-            .Select(AttachOperatorNavigation)
-            .ToList();
-
-        await AddRunReviewPacketWorkItemsAsync(context, fundAccountId, workItems, asOf).ConfigureAwait(false);
-        await AddReconciliationBreakWorkItemsAsync(context, workItems, asOf).ConfigureAwait(false);
-        var operatorInbox = context.RequestServices.GetService<IOperatorInboxService>();
-        if (operatorInbox is not null)
-        {
-            var contributedItems = await operatorInbox.GetItemsAsync(context.RequestAborted).ConfigureAwait(false);
-            workItems.AddRange(contributedItems.Select(AttachOperatorNavigation));
-        }
-
-        PreferCanonicalReconciliationBreakWorkItems(workItems);
-
-        var items = workItems
-            .GroupBy(static item => item.WorkItemId, StringComparer.OrdinalIgnoreCase)
-            .Select(static group => group
-                .OrderByDescending(static item => item.Tone)
-                .ThenByDescending(static item => item.CreatedAt)
-                .First())
-            .Select(item => OperatorInboxPriorityScoringService.ApplyScore(item, asOf))
-            .OrderByDescending(static item => item.PriorityScore)
-            .ThenByDescending(static item => item.Tone)
-            .ThenBy(static item => item.CreatedAt)
-            .ThenBy(static item => item.WorkItemId, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-        RecordOperatorInboxContinuityMetrics(items);
-
-        var criticalCount = items.Count(static item => item.Tone == OperatorWorkItemToneDto.Critical);
-        var warningCount = items.Count(static item => item.Tone == OperatorWorkItemToneDto.Warning);
-        var reviewCount = criticalCount + warningCount;
-
-        return new OperatorInboxDto(
-            AsOf: asOf,
-            Items: items,
-            CriticalCount: criticalCount,
-            WarningCount: warningCount,
-            ReviewCount: reviewCount,
-            Summary: BuildOperatorInboxSummary(items, criticalCount, warningCount, readiness.PortfolioLedgerWorkflowStatus));
-    }
-
-    private static void PreferCanonicalReconciliationBreakWorkItems(List<OperatorWorkItemDto> workItems)
-    {
-        var canonicalRunIds = workItems
-            .Where(static item =>
-                item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
-                item.WorkItemId.StartsWith("reconciliation-break-", StringComparison.OrdinalIgnoreCase) &&
-                !string.IsNullOrWhiteSpace(item.RunId))
-            .Select(static item => item.RunId!)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        if (canonicalRunIds.Count == 0)
-        {
-            return;
-        }
-
-        workItems.RemoveAll(item =>
-            item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
-            !item.WorkItemId.StartsWith("reconciliation-break-", StringComparison.OrdinalIgnoreCase) &&
-            !string.IsNullOrWhiteSpace(item.RunId) &&
-            canonicalRunIds.Contains(item.RunId));
-    }
-
-    private static void RecordOperatorInboxContinuityMetrics(IReadOnlyList<OperatorWorkItemDto> items)
-    {
-        foreach (var item in items)
-        {
-            if (item.Tone is not (OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical))
-            {
-                continue;
-            }
-
-            if (string.IsNullOrWhiteSpace(item.Workspace)
-                || string.IsNullOrWhiteSpace(item.TargetRoute)
-                || string.IsNullOrWhiteSpace(item.TargetPageTag))
-            {
-                var failureKind = string.IsNullOrWhiteSpace(item.WorkItemId)
-                    ? "missing-navigation"
-                    : item.WorkItemId;
-                PrometheusMetrics.RecordRunContinuityUnresolvedBlockerLinkage("operator-inbox", failureKind);
-            }
-        }
-    }
-
-    private static async Task AddRunReviewPacketWorkItemsAsync(
-        HttpContext context,
-        Guid? fundAccountId,
-        List<OperatorWorkItemDto> workItems,
-        DateTimeOffset asOf)
-    {
-        var readService = context.RequestServices.GetService<StrategyRunReadService>();
-        var reviewPacketService = context.RequestServices.GetService<StrategyRunReviewPacketService>();
-        if (readService is null || reviewPacketService is null)
-        {
-            return;
-        }
-
-        try
-        {
-            var runs = await readService
-                .GetRunsAsync(new StrategyRunHistoryQuery(Limit: 6), context.RequestAborted)
-                .ConfigureAwait(false);
-
-            var reviewRuns = runs
-                .Where(ShouldSurfaceRunReviewWorkItems)
-                .OrderByDescending(GetRunReviewTimestamp)
-                .ToArray();
-            var latestReviewRunId = reviewRuns.FirstOrDefault()?.RunId;
-
-            foreach (var run in reviewRuns)
-            {
-                var packet = await reviewPacketService
-                    .GetAsync(run.RunId, fundAccountId, context.RequestAborted)
-                    .ConfigureAwait(false);
-                if (packet is null)
-                {
-                    continue;
-                }
-
-                var isLatestReviewRun = string.Equals(run.RunId, latestReviewRunId, StringComparison.OrdinalIgnoreCase);
-                var hasStalePromotionAttention = HasStalePromotionAttention(packet);
-                workItems.AddRange(packet.WorkItems
-                    .Where(item =>
-                        item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical &&
-                        (isLatestReviewRun ||
-                         item.Kind != OperatorWorkItemKindDto.PromotionReview ||
-                         !hasStalePromotionAttention))
-                    .Select(AttachOperatorNavigation));
-            }
-        }
-        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch
-        {
-            workItems.Add(BuildRunReviewPacketUnavailableWorkItem(asOf));
-        }
-    }
-
-    private static bool HasStalePromotionAttention(StrategyRunReviewPacketDto packet)
-        => packet.Continuity?.ContinuityStatus.HasCashFlow == true &&
-           packet.WorkItems.Any(static item =>
-            item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
-            item.WorkItemId.StartsWith("continuity-promotion-target-run-missing-", StringComparison.OrdinalIgnoreCase) &&
-            item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical);
-
-    private static bool ShouldSurfaceRunReviewWorkItems(StrategyRunSummary run)
-        => run.Promotion?.RequiresReview == true ||
-           run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled;
-
-    private static DateTimeOffset GetRunReviewTimestamp(StrategyRunSummary run)
-        => run.CompletedAt ?? run.LastUpdatedAt;
-
-    private static OperatorWorkItemDto BuildRunReviewPacketUnavailableWorkItem(DateTimeOffset asOf)
-        => new(
-            WorkItemId: "run-review-packets-unavailable",
-            Kind: OperatorWorkItemKindDto.PromotionReview,
-            Label: "Run review packets unavailable",
-            Detail: "Trading readiness is still available, but run review-packet work items could not be loaded. Review run-read service health before accepting promotion queue coverage.",
-            Tone: OperatorWorkItemToneDto.Warning,
-            CreatedAt: asOf,
-            Workspace: "Trading",
-            TargetRoute: UiApiRoutes.WorkstationOperatorInbox,
-            TargetPageTag: "TradingShell");
-
-    private static async Task AddReconciliationBreakWorkItemsAsync(
-        HttpContext context,
-        List<OperatorWorkItemDto> workItems,
-        DateTimeOffset asOf)
-    {
-        try
-        {
-            var reconciliationBreaks = await GetBreakQueueItemsAsync(
-                context.RequestServices,
-                status: null,
-                fundAccountId: null,
-                ledgerBookId: null,
-                ct: context.RequestAborted).ConfigureAwait(false);
-            workItems.AddRange(reconciliationBreaks
-                .Where(static item => item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview)
-                .Select(MapReconciliationBreakWorkItem));
-        }
-        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch
-        {
-            workItems.Add(BuildReconciliationBreakQueueUnavailableWorkItem(asOf));
-        }
-    }
-
-    private static OperatorWorkItemDto BuildReconciliationBreakQueueUnavailableWorkItem(DateTimeOffset asOf)
-        => new(
-            WorkItemId: "reconciliation-break-queue-unavailable",
-            Kind: OperatorWorkItemKindDto.ReconciliationBreak,
-            Label: "Reconciliation queue unavailable",
-            Detail: "Trading readiness is still available, but reconciliation break work items could not be loaded. Review storage health before accepting accounting queue coverage.",
-            Tone: OperatorWorkItemToneDto.Warning,
-            CreatedAt: asOf,
-            Workspace: "Accounting",
-            TargetRoute: UiApiRoutes.ReconciliationBreakQueue,
-            TargetPageTag: "AccountingShell");
-
-    private static OperatorWorkItemDto AttachOperatorNavigation(OperatorWorkItemDto item)
-    {
-        var navigation = ResolveOperatorNavigation(item.Kind, item.FundAccountId);
-        return item with
-        {
-            Workspace = item.Workspace ?? navigation.Workspace,
-            TargetRoute = item.TargetRoute ?? navigation.TargetRoute,
-            TargetPageTag = item.TargetPageTag ?? navigation.TargetPageTag
-        };
-    }
-
-    private static OperatorWorkItemDto MapReconciliationBreakWorkItem(ReconciliationBreakQueueItem item)
-    {
-        var tone = item.Severity switch
-        {
-            ReconciliationBreakSeverity.Critical => OperatorWorkItemToneDto.Critical,
-            ReconciliationBreakSeverity.High or ReconciliationBreakSeverity.Medium => OperatorWorkItemToneDto.Warning,
-            _ => OperatorWorkItemToneDto.Info
-        };
-        var assignment = string.IsNullOrWhiteSpace(item.AssignedTo)
-            ? "unassigned"
-            : $"assigned to {item.AssignedTo}";
-        var status = item.Status == ReconciliationBreakQueueStatus.InReview
-            ? "in review"
-            : "open";
-        var routeDetail = BuildReconciliationRoutingDetail(item);
-
-        return new OperatorWorkItemDto(
-            WorkItemId: BuildOperatorInboxScopedId("reconciliation-break", item.BreakId),
-            Kind: OperatorWorkItemKindDto.ReconciliationBreak,
-            Label: item.Status == ReconciliationBreakQueueStatus.InReview
-                ? "Reconciliation break in review"
-                : "Reconciliation break requires review",
-            Detail: $"{item.StrategyName}: {item.Reason} The break is {status} and {assignment}. {routeDetail}",
-            Tone: tone,
-            CreatedAt: item.DetectedAt,
-            RunId: item.RunId,
-            AuditReference: item.BreakId,
-            Workspace: "Accounting",
-            TargetRoute: UiApiRoutes.ReconciliationBreakQueue,
-            TargetPageTag: "AccountingShell");
-    }
-
-    private static string BuildReconciliationRoutingDetail(ReconciliationBreakQueueItem item)
-    {
-        var exceptionRoute = string.IsNullOrWhiteSpace(item.ExceptionRoute)
-            ? "operations-triage"
-            : item.ExceptionRoute;
-        var toleranceProfileId = string.IsNullOrWhiteSpace(item.ToleranceProfileId)
-            ? "standard-recon-tolerance"
-            : item.ToleranceProfileId;
-        var requiredSignoffRole = string.IsNullOrWhiteSpace(item.RequiredSignoffRole)
-            ? "Operations reviewer"
-            : item.RequiredSignoffRole;
-        var signoffStatus = string.IsNullOrWhiteSpace(item.SignoffStatus)
-            ? "pending-signoff"
-            : item.SignoffStatus;
-        var toleranceBand = item.ToleranceBand.HasValue
-            ? $" ({item.ToleranceBand.Value.ToString("0.##", CultureInfo.InvariantCulture)} tolerance)"
-            : string.Empty;
-
-        return $"Exception route: {exceptionRoute}; tolerance profile {toleranceProfileId}{toleranceBand}; sign-off {signoffStatus} by {requiredSignoffRole}.";
-    }
-
-    private static (string Workspace, string TargetRoute, string TargetPageTag) ResolveOperatorNavigation(
-        OperatorWorkItemKindDto kind,
-        Guid? fundAccountId)
-        => kind switch
-        {
-            OperatorWorkItemKindDto.SecurityMasterCoverage => (
-                "Data",
-                UiApiRoutes.WorkstationSecurityMasterSearch,
-                "DataShell"),
-            OperatorWorkItemKindDto.ReconciliationBreak => (
-                "Accounting",
-                UiApiRoutes.ReconciliationBreakQueue,
-                "AccountingShell"),
-            OperatorWorkItemKindDto.LedgerPeriodClose => (
-                "Accounting",
-                UiApiRoutes.ReconciliationBreakQueue,
-                "FundReconciliation"),
-            OperatorWorkItemKindDto.ReportPackApproval => (
-                "Reporting",
-                UiApiRoutes.FundReportPacks,
-                "ReportingShell"),
-            OperatorWorkItemKindDto.BrokerageSync => (
-                "Trading",
-                fundAccountId.HasValue
-                    ? UiApiRoutes.WithParam(UiApiRoutes.FundAccountBrokerageSyncStatus, "accountId", fundAccountId.Value.ToString())
-                    : UiApiRoutes.FundAccountBrokerageSyncAccounts,
-                "AccountPortfolio"),
-            _ => (
-                "Trading",
-                UiApiRoutes.WorkstationTradingReadiness,
-                "TradingShell")
-        };
-
-    private static string BuildOperatorInboxSummary(
-        IReadOnlyCollection<OperatorWorkItemDto> items,
-        int criticalCount,
-        int warningCount,
-        PortfolioLedgerWorkflowStatusSnapshotDto? statusSnapshot)
-    {
-        if (items.Count == 0)
-        {
-            return "No operator work items are open.";
-        }
-
-        if (criticalCount > 0)
-        {
-            return $"{criticalCount} critical and {warningCount} warning work item(s) need review. {statusSnapshot?.Summary}".Trim();
-        }
-
-        if (warningCount > 0)
-        {
-            return $"{warningCount} warning work item(s) need review. {statusSnapshot?.Summary}".Trim();
-        }
-
-        return $"{items.Count} informational work item(s) are available. {statusSnapshot?.Summary}".Trim();
-    }
-
-    private static string BuildOperatorInboxScopedId(string prefix, string scope)
-    {
-        var normalizedPrefix = NormalizeOperatorInboxToken(prefix);
-        var normalizedScope = NormalizeOperatorInboxToken(scope);
-        return string.IsNullOrEmpty(normalizedScope)
-            ? normalizedPrefix
-            : $"{normalizedPrefix}-{normalizedScope}";
+        return readinessService.GetAsync(
+            fundAccountId,
+            ResolveStrategyRunReadScope(context),
+            context.RequestAborted);
     }
 
     private static string NormalizeOperatorInboxToken(string value)
@@ -4005,104 +3116,9 @@ public static partial class WorkstationEndpoints
         return "Paper gateway not active. Start a paper session to see live position and order data.";
     }
 
-    // PR-03: returns typed DTO
-    private static WorkstationTradingPayload BuildTradingFallbackPayload()
-    {
-        return new WorkstationTradingPayload(
-            Metrics:
-            [
-                new WorkstationMetricCard("trading-net-pnl", "Net P&L", "+$3,918", "+2.4%", "success"),
-                new WorkstationMetricCard("trading-open-orders", "Open Orders", "5", "+1", "default"),
-                new WorkstationMetricCard("trading-fills", "Fills Today", "27", "+7", "success"),
-                new WorkstationMetricCard("trading-risk-state", "Risk State", "Healthy", "0%", "success")
-            ],
-            Positions:
-            [
-                new WorkstationTradingPositionRow("AAPL", "AAPL", "Long", "300", "188.22", "189.30", "+$324", "+$1,126", "$56,790"),
-                new WorkstationTradingPositionRow("MSFT", "MSFT", "Long", "150", "416.10", "414.80", "-$195", "-$195", "$62,220")
-            ],
-            OpenOrders:
-            [
-                new WorkstationTradingOrderRow("PO-24812", "AMZN", "Buy", "Limit", "100", "184.00", "Working", "09:35:12 ET"),
-                new WorkstationTradingOrderRow("PO-24814", "QQQ", "Sell", "Stop", "40", "442.30", "Pending Routing", "09:36:48 ET")
-            ],
-            Fills:
-            [
-                new WorkstationTradingFillRow("FL-90071", "PO-24810", "AAPL", "Buy", "50", "188.12", "NASDAQ", "09:33:04 ET"),
-                new WorkstationTradingFillRow("FL-90077", "PO-24811", "MSFT", "Sell", "25", "414.88", "IEX", "09:34:26 ET")
-            ],
-            Risk: new WorkstationTradingRiskState(
-                State: "Healthy",
-                Summary: "Portfolio and order-book exposure are within configured paper thresholds.",
-                NetExposure: "$119,010",
-                GrossExposure: "$156,432",
-                Var95: "$9,874",
-                MaxDrawdown: "-0.9%",
-                BuyingPowerUsed: "44%",
-                ActiveGuardrails:
-                [
-                    "Daily loss guard set to -$12,000.",
-                    "Max position notional guard set to $120,000.",
-                    "Kill-switch can be engaged manually from Accounting review."
-                ]),
-            Brokerage: new WorkstationTradingBrokerageState(
-                Provider: "Interactive Brokers",
-                Account: "DU1009034",
-                Environment: "paper",
-                Connection: "Connected",
-                LastHeartbeat: "1s ago",
-                OrderIngress: "healthy (p50 19ms)",
-                FillFeed: "healthy (p50 31ms)",
-                Notes: ["Paper execution routing is synchronized with run-level reconciliation wiring."]),
-            Readiness: BuildTradingFallbackReadiness(),
-            Comparisons: Array.Empty<WorkstationModeComparisonGroup>(),
-            DrillIn: null);
-    }
-
-    private static TradingOperatorReadinessDto BuildTradingFallbackReadiness()
-    {
-        var asOf = DateTimeOffset.UtcNow;
-        return new TradingOperatorReadinessDto(
-            AsOf: asOf,
-            ActiveSession: null,
-            Sessions: Array.Empty<TradingPaperSessionReadinessDto>(),
-            Replay: null,
-            Controls: new TradingControlReadinessDto(
-                CircuitBreakerOpen: false,
-                CircuitBreakerReason: null,
-                CircuitBreakerChangedBy: null,
-                CircuitBreakerChangedAt: null,
-                ManualOverrideCount: 0,
-                SymbolLimitCount: 0,
-                DefaultMaxPositionSize: null),
-            Promotion: null,
-            TrustGate: new TradingTrustGateReadinessDto(
-                GateId: "dk1-trust-gate",
-                Status: "Blocked",
-                ReadyForOperatorReview: false,
-                OperatorSignoffRequired: true,
-                OperatorSignoffStatus: "missing",
-                GeneratedAt: asOf,
-                PacketPath: null,
-                SourceSummary: null,
-                RequiredSampleCount: 0,
-                ReadySampleCount: 0,
-                ValidatedEvidenceDocumentCount: 0,
-                RequiredOwners: Array.Empty<string>(),
-                Blockers: ["Trading readiness service is unavailable in fallback mode."],
-                Detail: "Trading readiness is unavailable in fallback mode."),
-            BrokerageSync: null,
-            WorkItems: Array.Empty<OperatorWorkItemDto>(),
-            Warnings: ["Trading readiness service is unavailable in fallback mode."])
-        {
-            OverallStatus = TradingAcceptanceGateStatusDto.Blocked,
-            ReadyForPaperOperation = false,
-            SnapshotMaterializedAt = asOf,
-            SnapshotVersion = "fallback-unavailable"
-        };
-    }
-
-    private static async Task<WorkstationDataPayload> BuildDataPayloadAsync(HttpContext context)
+    // Returns null when neither the strategy run read service nor the configuration store is
+    // registered so the route can respond 503 instead of serving fabricated provider/backfill data.
+    private static async Task<WorkstationDataPayload?> BuildDataPayloadAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         var configStore = context.RequestServices.GetService<Meridian.Application.UI.ConfigStore>();
@@ -4114,7 +3130,7 @@ public static partial class WorkstationEndpoints
 
         if (readService is null && configStore is null)
         {
-            return BuildDataFallbackPayload(kernelObservability);
+            return null;
         }
 
         var runs = readService is not null
@@ -4126,17 +3142,19 @@ public static partial class WorkstationEndpoints
         // --- Providers (real data from metrics store when available) ---
         var metricsStatus = configStore?.TryLoadProviderMetrics();
         var healthyProviderCount = metricsStatus?.HealthyProviders ?? 0;
+        // Routing connections, bindings and trust snapshots follow connectionRows: their direct
+        // /api/provider-routing reads require ManageCredentials, which the Data workspace does not admit.
         var canManageCredentials = HasPermission(context, UserPermission.ManageCredentials);
         var connectionRows = canManageCredentials && providerConnectionLifecycle is not null
             ? await providerConnectionLifecycle.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false)
             : [];
-        var routingConnections = routingConnectionService is not null
+        var routingConnections = canManageCredentials && routingConnectionService is not null
             ? await routingConnectionService.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false)
             : [];
-        var routingBindings = routingBindingService is not null
+        var routingBindings = canManageCredentials && routingBindingService is not null
             ? await routingBindingService.GetBindingsAsync(context.RequestAborted).ConfigureAwait(false)
             : [];
-        var trustSnapshots = routingTrustService is not null
+        var trustSnapshots = canManageCredentials && routingTrustService is not null
             ? await routingTrustService.GetTrustSnapshotsAsync(context.RequestAborted).ConfigureAwait(false)
             : [];
         var providers = BuildWorkstationDataProviderRecords(
@@ -4276,9 +3294,6 @@ public static partial class WorkstationEndpoints
         => string.IsNullOrWhiteSpace(requested) ||
            string.Equals(actual, requested.Trim(), StringComparison.OrdinalIgnoreCase);
 
-    private static string? NormalizeOptionalDimensionValue(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
     private static IReadOnlyDictionary<string, string> BuildExternalGlDimensionFilter(IQueryCollection query)
     {
         var dimensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -4296,8 +3311,8 @@ public static partial class WorkstationEndpoints
             }
         }
 
-        var externalGlDimensionKey = NormalizeOptionalDimensionValue(query["externalGlDimensionKey"].FirstOrDefault());
-        var externalGlDimensionValue = NormalizeOptionalDimensionValue(query["externalGlDimensionValue"].FirstOrDefault());
+        var externalGlDimensionKey = NormalizeOptional(query["externalGlDimensionKey"].FirstOrDefault());
+        var externalGlDimensionValue = NormalizeOptional(query["externalGlDimensionValue"].FirstOrDefault());
         if (externalGlDimensionKey is not null && externalGlDimensionValue is not null)
         {
             dimensions[externalGlDimensionKey] = externalGlDimensionValue;
@@ -4331,632 +3346,6 @@ public static partial class WorkstationEndpoints
 
         return true;
     }
-
-    private static WorkstationDataPayload BuildDataFallbackPayload(KernelObservabilitySnapshot? kernelObservability = null)
-    {
-        var interactiveBrokers = BuildFallbackDataProviderRecord(
-            providerId: "interactivebrokers",
-            displayName: "Interactive Brokers",
-            status: "Healthy",
-            capability: "Execution + fills",
-            latency: "21ms p50",
-            note: "Paper adapter routing is available.",
-            trustScore: "100%",
-            signalSource: "Provider baseline health snapshot",
-            reasonCode: "HEALTHY_BASELINE",
-            recommendedAction: "Continue monitoring provider health; no DK1 action is required.",
-            gateImpact: "Normal operation");
-        var polygon = BuildFallbackDataProviderRecord(
-            providerId: "polygon",
-            displayName: "Polygon",
-            status: "Healthy",
-            capability: "Streaming equities",
-            latency: "16ms p50",
-            note: "Realtime subscriptions are steady.",
-            trustScore: "100%",
-            signalSource: "Provider baseline health snapshot",
-            reasonCode: "HEALTHY_BASELINE",
-            recommendedAction: "Continue monitoring provider health; no DK1 action is required.",
-            gateImpact: "Normal operation");
-        var databento = BuildFallbackDataProviderRecord(
-            providerId: "databento",
-            displayName: "Databento",
-            status: "Warning",
-            capability: "Historical replay",
-            latency: "69ms p50",
-            note: "Replay queue is elevated but within tolerance.",
-            trustScore: "86%",
-            signalSource: "Latency monitor",
-            reasonCode: "LATENCY_REGRESSION",
-            recommendedAction: "Delay operator promotion actions; review latency trend and compare against baseline window.",
-            gateImpact: "Watch");
-
-        return new WorkstationDataPayload(
-            Metrics:
-            [
-                new WorkstationMetricCard("providers-healthy", "Providers Healthy", "4", "0", "success"),
-                new WorkstationMetricCard("backfills-running", "Backfills Running", "2", "+1", "default"),
-                new WorkstationMetricCard("exports-ready", "Exports Ready", "3", "+1", "success"),
-                new WorkstationMetricCard("ops-review", "Needs Review", "1", "+1", "warning"),
-                new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), FormatKernelJumpAlertDelta(kernelObservability), GetKernelJumpAlertTone(kernelObservability))
-            ],
-            Providers: [interactiveBrokers, polygon, databento],
-            Backfills:
-            [
-                new WorkstationDataBackfillRecord("BF-1038", "US equities / 30d", "Databento", "Running", "58%", "3m ago"),
-                new WorkstationDataBackfillRecord("BF-1040", "FX majors / 14d", "Polygon", "Queued", "0%", "6m ago")
-            ],
-            Exports:
-            [
-                new WorkstationDataExportRecord("EX-2196", "python-pandas", "strategy pack", "Ready", "118k", "7m ago"),
-                new WorkstationDataExportRecord("EX-2198", "postgresql", "ops warehouse", "Attention", "42k", "9m ago")
-            ],
-            UploadTemplates: BuildDataUploadTemplateCatalog(),
-            KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
-    }
-
-    private static WorkstationDataProviderRecord[] BuildWorkstationDataProviderRecords(
-        ProviderMetricsStatus? metricsStatus,
-        IReadOnlyList<ProviderConnectionRowDto> connectionRows,
-        IReadOnlyList<ProviderConnectionDto> routingConnections,
-        IReadOnlyList<ProviderBindingDto> routingBindings,
-        IReadOnlyList<ProviderTrustSnapshotDto> trustSnapshots,
-        bool exposeConnectionSummaries)
-    {
-        var metricLookup = metricsStatus?.Providers.ToDictionary(
-            static metric => NormalizeProviderKey(metric.ProviderId),
-            static metric => metric,
-            StringComparer.OrdinalIgnoreCase)
-            ?? new Dictionary<string, ProviderMetrics>(StringComparer.OrdinalIgnoreCase);
-        var connectionLookup = connectionRows.ToDictionary(
-            static connection => NormalizeProviderKey(connection.ProviderId),
-            static connection => connection,
-            StringComparer.OrdinalIgnoreCase);
-        var routingLookup = routingConnections
-            .GroupBy(static connection => NormalizeProviderKey(connection.ProviderFamilyId), StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(
-                static group => group.Key,
-                static group => (IReadOnlyList<ProviderConnectionDto>)group.ToArray(),
-                StringComparer.OrdinalIgnoreCase);
-        var trustLookup = trustSnapshots
-            .GroupBy(static snapshot => NormalizeProviderKey(snapshot.ProviderFamilyId), StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(
-                static group => group.Key,
-                static group => (IReadOnlyList<ProviderTrustSnapshotDto>)group.ToArray(),
-                StringComparer.OrdinalIgnoreCase);
-        var bindingLookup = routingBindings
-            .GroupBy(static binding => NormalizeProviderKey(binding.ConnectionId), StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(static group => group.Key, static group => (IReadOnlyList<ProviderBindingDto>)group.ToArray(), StringComparer.OrdinalIgnoreCase);
-
-        var providerIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var providerId in metricLookup.Keys)
-        {
-            providerIds.Add(providerId);
-        }
-
-        foreach (var providerId in connectionLookup.Keys)
-        {
-            providerIds.Add(providerId);
-        }
-
-        foreach (var providerId in routingLookup.Keys)
-        {
-            providerIds.Add(providerId);
-        }
-
-        foreach (var providerId in trustLookup.Keys)
-        {
-            providerIds.Add(providerId);
-        }
-
-        return providerIds
-            .Select(providerId =>
-            {
-                metricLookup.TryGetValue(providerId, out var metrics);
-                connectionLookup.TryGetValue(providerId, out var connection);
-                routingLookup.TryGetValue(providerId, out var routingConnectionsForProvider);
-                trustLookup.TryGetValue(providerId, out var trustSnapshotsForProvider);
-
-                var routingConnection = SelectRepresentativeRoutingConnection(routingConnectionsForProvider);
-                var trustSnapshot = SelectRepresentativeTrustSnapshot(trustSnapshotsForProvider, routingConnection?.ConnectionId);
-                var bindings = ResolveRoutingBindings(bindingLookup, routingConnectionsForProvider);
-                var rationale = metrics is not null
-                    ? BuildProviderTrustRationale(metrics)
-                    : BuildProviderTrustRationaleFromConnection(connection, routingConnection, trustSnapshot);
-                connection ??= exposeConnectionSummaries
-                    ? BuildMetricsConnectionSummary(metrics, rationale)
-                    : null;
-                var displayName = ResolveDataProviderDisplayName(providerId, connection, routingConnection, metrics);
-                var capability = ResolveDataProviderCapability(connection, routingConnection, metrics);
-                var latency = metrics is not null ? $"{metrics.AverageLatencyMs:F0}ms p50" : "Latency not reported";
-                var note = BuildDataProviderNote(metrics, connection, trustSnapshot, rationale);
-                return new WorkstationDataProviderRecord(
-                    ProviderId: connection?.ProviderId ?? providerId,
-                    DisplayName: displayName,
-                    Status: connection is not null ? connection.Health.ToString() : rationale.Status,
-                    Capability: capability,
-                    Latency: latency,
-                    Note: note,
-                    TrustScore: trustSnapshot is not null ? FormatScore(NormalizeScore(trustSnapshot.Score)) : rationale.TrustScore,
-                    SignalSource: trustSnapshot is not null && trustSnapshot.Signals.Length > 0
-                        ? string.Join(", ", trustSnapshot.Signals)
-                        : rationale.SignalSource,
-                    ReasonCode: rationale.ReasonCode,
-                    RecommendedAction: connection?.RecommendedAction ?? rationale.RecommendedAction,
-                    GateImpact: rationale.GateImpact,
-                    ConnectionSummary: connection,
-                    RoutingSummary: new WorkstationDataProviderRoutingSummary(
-                        ConnectionId: routingConnection?.ConnectionId,
-                        ProviderFamilyId: routingConnection?.ProviderFamilyId ?? connection?.ProviderId,
-                        ProductionReady: routingConnection?.ProductionReady,
-                        CertificationFresh: trustSnapshot?.IsCertificationFresh,
-                        BindingCount: bindings.Count,
-                        FallbackRouteCount: bindings.Sum(static binding => binding.FailoverConnectionIds.Length),
-                        HealthStatus: trustSnapshot?.HealthStatus ?? connection?.Health.ToString()),
-                    Diagnostics: BuildWorkstationProviderDiagnostics(
-                        providerId,
-                        connection,
-                        routingConnection,
-                        trustSnapshot,
-                        bindings,
-                        metrics,
-                        rationale));
-            })
-            .OrderBy(static provider => provider.DisplayName, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-    }
-
-    private static ProviderConnectionRowDto? BuildMetricsConnectionSummary(
-        ProviderMetrics? metrics,
-        ProviderTrustRationalePayload rationale)
-    {
-        if (metrics is null)
-        {
-            return null;
-        }
-
-        var health = metrics.IsConnected
-            ? ProviderContinuityHealthDto.Healthy
-            : ProviderContinuityHealthDto.Degraded;
-        return new ProviderConnectionRowDto(
-            ProviderId: metrics.ProviderId,
-            DisplayName: metrics.ProviderId,
-            Capability: ProviderConnectionCapabilityDto.Data,
-            CredentialState: ProviderCredentialStateDto.NotRequired,
-            CredentialSource: ProviderCredentialSourceDto.None,
-            VerificationState: metrics.IsConnected
-                ? ProviderVerificationStateDto.Verified
-                : ProviderVerificationStateDto.Failed,
-            Health: health,
-            FallbackActive: !metrics.IsConnected && metrics.ConnectionFailures > 0,
-            LastVerifiedAt: null,
-            LastSuccessfulAt: metrics.IsConnected ? metrics.Timestamp : null,
-            LastFailureAt: !metrics.IsConnected && metrics.ConnectionFailures > 0 ? metrics.Timestamp : null,
-            LastError: metrics.IsConnected ? null : rationale.RecommendedAction,
-            MaskedKeyPreview: null,
-            Environment: null,
-            ExternalAccountId: null,
-            AffectedWorkflows: ["Data"],
-            RecommendedAction: rationale.RecommendedAction,
-            ActionHref: "/settings/integrations");
-    }
-
-    private static WorkstationDataProviderRecord BuildFallbackDataProviderRecord(
-        string providerId,
-        string displayName,
-        string status,
-        string capability,
-        string latency,
-        string note,
-        string trustScore,
-        string signalSource,
-        string reasonCode,
-        string recommendedAction,
-        string gateImpact)
-        => new(
-            ProviderId: providerId,
-            DisplayName: displayName,
-            Status: status,
-            Capability: capability,
-            Latency: latency,
-            Note: note,
-            TrustScore: trustScore,
-            SignalSource: signalSource,
-            ReasonCode: reasonCode,
-            RecommendedAction: recommendedAction,
-            GateImpact: gateImpact,
-            ConnectionSummary: null,
-            RoutingSummary: new WorkstationDataProviderRoutingSummary(
-                ConnectionId: null,
-                ProviderFamilyId: providerId,
-                ProductionReady: null,
-                CertificationFresh: null,
-                BindingCount: 0,
-                FallbackRouteCount: 0,
-                HealthStatus: status),
-            Diagnostics:
-            [
-                new WorkstationDataProviderDiagnostic("provider-health", "Provider health", status == "Healthy" ? "pass" : "warning", status == "Healthy" ? "Pass" : "Review", note),
-                new WorkstationDataProviderDiagnostic("trust-state", "Trust state", status == "Healthy" ? "pass" : "warning", trustScore, $"{signalSource}. {recommendedAction}")
-            ]);
-
-    private static IReadOnlyList<ProviderBindingDto> ResolveRoutingBindings(
-        IReadOnlyDictionary<string, IReadOnlyList<ProviderBindingDto>> bindingLookup,
-        IReadOnlyList<ProviderConnectionDto>? routingConnections)
-    {
-        if (routingConnections is null || routingConnections.Count == 0)
-        {
-            return [];
-        }
-
-        var bindings = new List<ProviderBindingDto>();
-        foreach (var routingConnection in routingConnections)
-        {
-            if (bindingLookup.TryGetValue(NormalizeProviderKey(routingConnection.ConnectionId), out var connectionBindings))
-            {
-                bindings.AddRange(connectionBindings);
-            }
-        }
-
-        return bindings
-            .DistinctBy(static binding => binding.BindingId, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-    }
-
-    private static ProviderConnectionDto? SelectRepresentativeRoutingConnection(
-        IReadOnlyList<ProviderConnectionDto>? routingConnections)
-    {
-        if (routingConnections is null || routingConnections.Count == 0)
-        {
-            return null;
-        }
-
-        return routingConnections
-            .OrderByDescending(static connection => connection.Enabled)
-            .ThenByDescending(static connection => connection.ProductionReady)
-            .ThenBy(static connection => connection.ConnectionId, StringComparer.OrdinalIgnoreCase)
-            .FirstOrDefault();
-    }
-
-    private static ProviderTrustSnapshotDto? SelectRepresentativeTrustSnapshot(
-        IReadOnlyList<ProviderTrustSnapshotDto>? trustSnapshots,
-        string? preferredConnectionId)
-    {
-        if (trustSnapshots is null || trustSnapshots.Count == 0)
-        {
-            return null;
-        }
-
-        if (!string.IsNullOrWhiteSpace(preferredConnectionId))
-        {
-            var exactMatch = trustSnapshots.FirstOrDefault(snapshot =>
-                snapshot.ConnectionId.Equals(preferredConnectionId, StringComparison.OrdinalIgnoreCase));
-            if (exactMatch is not null)
-            {
-                return exactMatch;
-            }
-        }
-
-        return trustSnapshots
-            .OrderByDescending(static snapshot => snapshot.IsHealthy)
-            .ThenByDescending(static snapshot => snapshot.IsProductionReady)
-            .ThenByDescending(static snapshot => snapshot.Score)
-            .ThenBy(static snapshot => snapshot.ConnectionId, StringComparer.OrdinalIgnoreCase)
-            .FirstOrDefault();
-    }
-
-    private static string ResolveDataProviderDisplayName(
-        string providerId,
-        ProviderConnectionRowDto? connection,
-        ProviderConnectionDto? routingConnection,
-        ProviderMetrics? metrics)
-        => connection?.DisplayName
-           ?? routingConnection?.DisplayName
-           ?? metrics?.ProviderId
-           ?? providerId;
-
-    private static string ResolveDataProviderCapability(
-        ProviderConnectionRowDto? connection,
-        ProviderConnectionDto? routingConnection,
-        ProviderMetrics? metrics)
-    {
-        if (connection is not null)
-        {
-            return connection.Capability switch
-            {
-                ProviderConnectionCapabilityDto.DataAndBrokerage => "Data + Brokerage",
-                ProviderConnectionCapabilityDto.Brokerage => "Brokerage",
-                ProviderConnectionCapabilityDto.AccountingSystem => "Accounting System",
-                _ => "Data"
-            };
-        }
-
-        return metrics?.ProviderType
-            ?? routingConnection?.ConnectionType
-            ?? "Provider";
-    }
-
-    private static string BuildDataProviderNote(
-        ProviderMetrics? metrics,
-        ProviderConnectionRowDto? connection,
-        ProviderTrustSnapshotDto? trustSnapshot,
-        ProviderTrustRationalePayload rationale)
-    {
-        if (metrics is not null)
-        {
-            return metrics.IsConnected
-                ? $"Active subscriptions: {metrics.ActiveSubscriptions}. Quality score: {rationale.TrustScore}."
-                : $"Provider disconnected. Last seen: {metrics.Timestamp:HH:mm} UTC.";
-        }
-
-        if (connection?.LastError is { Length: > 0 } error)
-        {
-            return error;
-        }
-
-        if (trustSnapshot is not null && trustSnapshot.Signals.Length > 0)
-        {
-            return $"Trust signals: {string.Join(", ", trustSnapshot.Signals)}.";
-        }
-
-        return rationale.RecommendedAction;
-    }
-
-    private static ProviderTrustRationalePayload BuildProviderTrustRationaleFromConnection(
-        ProviderConnectionRowDto? connection,
-        ProviderConnectionDto? routingConnection,
-        ProviderTrustSnapshotDto? trustSnapshot)
-    {
-        if (connection is null)
-        {
-            if (trustSnapshot is not null)
-            {
-                var trustScore = FormatScore(NormalizeScore(trustSnapshot.Score));
-                return new ProviderTrustRationalePayload(
-                    Status: trustSnapshot.IsHealthy ? "Healthy" : "Warning",
-                    TrustScore: trustScore,
-                    SignalSource: trustSnapshot.Signals.Length > 0 ? string.Join(", ", trustSnapshot.Signals) : "Provider trust snapshot",
-                    ReasonCode: trustSnapshot.IsHealthy ? "TRUST_SNAPSHOT_HEALTHY" : "TRUST_SNAPSHOT_REVIEW",
-                    RecommendedAction: trustSnapshot.IsHealthy
-                        ? "Provider trust snapshot is healthy."
-                        : "Inspect routing trust signals before routing new workflow traffic.",
-                    GateImpact: trustSnapshot.IsHealthy ? "Normal operation" : "Health gate needs review");
-            }
-
-            return new ProviderTrustRationalePayload(
-                Status: "Warning",
-                TrustScore: "Not reported",
-                SignalSource: "Provider center bootstrap",
-                ReasonCode: "PROVIDER_SUMMARY_PENDING",
-                RecommendedAction: routingConnection?.Enabled == false
-                    ? "Enable the routing connection before selecting this provider."
-                    : "Configure provider credentials and routing before relying on this workflow.",
-                GateImpact: routingConnection?.Enabled == false ? "Disabled for routing" : "No routing gate loaded");
-        }
-
-        return connection.Health switch
-        {
-            ProviderContinuityHealthDto.Healthy => new ProviderTrustRationalePayload(
-                Status: "Healthy",
-                TrustScore: trustSnapshot is not null ? FormatScore(NormalizeScore(trustSnapshot.Score)) : "100%",
-                SignalSource: trustSnapshot is not null && trustSnapshot.Signals.Length > 0 ? string.Join(", ", trustSnapshot.Signals) : "Provider connection continuity health",
-                ReasonCode: "CONNECTION_HEALTHY",
-                RecommendedAction: connection.RecommendedAction,
-                GateImpact: "Normal operation"),
-            ProviderContinuityHealthDto.Degraded => new ProviderTrustRationalePayload(
-                Status: "Degraded",
-                TrustScore: trustSnapshot is not null ? FormatScore(NormalizeScore(trustSnapshot.Score)) : "70%",
-                SignalSource: trustSnapshot is not null && trustSnapshot.Signals.Length > 0 ? string.Join(", ", trustSnapshot.Signals) : "Provider connection continuity health",
-                ReasonCode: "CONNECTION_DEGRADED",
-                RecommendedAction: connection.RecommendedAction,
-                GateImpact: "Degraded"),
-            ProviderContinuityHealthDto.Blocked => new ProviderTrustRationalePayload(
-                Status: "Blocked",
-                TrustScore: trustSnapshot is not null ? FormatScore(NormalizeScore(trustSnapshot.Score)) : "40%",
-                SignalSource: trustSnapshot is not null && trustSnapshot.Signals.Length > 0 ? string.Join(", ", trustSnapshot.Signals) : "Provider connection continuity health",
-                ReasonCode: "CONNECTION_BLOCKED",
-                RecommendedAction: connection.RecommendedAction,
-                GateImpact: "Critical"),
-            _ => new ProviderTrustRationalePayload(
-                Status: "Warning",
-                TrustScore: trustSnapshot is not null ? FormatScore(NormalizeScore(trustSnapshot.Score)) : "80%",
-                SignalSource: trustSnapshot is not null && trustSnapshot.Signals.Length > 0 ? string.Join(", ", trustSnapshot.Signals) : "Provider connection continuity health",
-                ReasonCode: "CONNECTION_REVIEW",
-                RecommendedAction: connection.RecommendedAction,
-                GateImpact: "Watch")
-        };
-    }
-
-    private static IReadOnlyList<WorkstationDataProviderDiagnostic> BuildWorkstationProviderDiagnostics(
-        string providerId,
-        ProviderConnectionRowDto? connection,
-        ProviderConnectionDto? routingConnection,
-        ProviderTrustSnapshotDto? trustSnapshot,
-        IReadOnlyList<ProviderBindingDto> bindings,
-        ProviderMetrics? metrics,
-        ProviderTrustRationalePayload rationale)
-    {
-        var diagnostics = new List<WorkstationDataProviderDiagnostic>();
-        var hasCredentials = connection is not null &&
-            connection.CredentialState is not ProviderCredentialStateDto.Missing and not ProviderCredentialStateDto.Partial;
-
-        diagnostics.Add(new WorkstationDataProviderDiagnostic(
-            Id: "credential-presence",
-            Label: "Credential presence",
-            Status: !hasCredentials ? "warning" : "pass",
-            StatusLabel: !hasCredentials ? "Review" : "Pass",
-            Detail: connection is null
-                ? "No provider credential summary is loaded for this provider."
-                : connection.CredentialState switch
-                {
-                    ProviderCredentialStateDto.NotRequired => "No credentials are required for this provider.",
-                    ProviderCredentialStateDto.Missing => "Required credential fields are missing.",
-                    ProviderCredentialStateDto.Partial => "Credential setup is incomplete.",
-                    ProviderCredentialStateDto.Invalid => "Stored credentials are invalid and must be replaced.",
-                    _ => $"Credential state: {connection.CredentialState}."
-                }));
-
-        diagnostics.Add(new WorkstationDataProviderDiagnostic(
-            Id: "credential-verification",
-            Label: "Credential verification",
-            Status: connection is null
-                ? "pending"
-                : connection.VerificationState is ProviderVerificationStateDto.Verified or ProviderVerificationStateDto.NotRequired ? "pass"
-                : connection.VerificationState == ProviderVerificationStateDto.Failed ? "fail" : "warning",
-            StatusLabel: connection is null
-                ? "Pending"
-                : connection.VerificationState is ProviderVerificationStateDto.Verified or ProviderVerificationStateDto.NotRequired ? "Pass"
-                : connection.VerificationState == ProviderVerificationStateDto.Failed ? "Fail" : "Review",
-            Detail: connection?.LastError
-                ?? (connection is null
-                    ? "Verification requires a provider credential summary."
-                    : connection.VerificationState == ProviderVerificationStateDto.Verified
-                        ? $"Verified at {FormatProviderTimestamp(connection.LastVerifiedAt)}."
-                        : $"Verification state: {connection.VerificationState}.")));
-
-        diagnostics.Add(new WorkstationDataProviderDiagnostic(
-            Id: "provider-health",
-            Label: "Provider health",
-            Status: rationale.Status switch
-            {
-                "Healthy" => "pass",
-                "Blocked" or "Degraded" => "fail",
-                _ => "warning"
-            },
-            StatusLabel: rationale.Status,
-            Detail: metrics is not null
-                ? $"Latency {metrics.AverageLatencyMs:F0}ms p50; dropped messages {metrics.MessagesDropped}; subscriptions {metrics.ActiveSubscriptions}."
-                : rationale.RecommendedAction));
-
-        diagnostics.Add(new WorkstationDataProviderDiagnostic(
-            Id: "routing-readiness",
-            Label: "Routing readiness",
-            Status: routingConnection is null
-                ? "pending"
-                : !routingConnection.Enabled || !routingConnection.ProductionReady
-                    ? "warning"
-                    : "pass",
-            StatusLabel: routingConnection is null
-                ? "Pending"
-                : routingConnection.ProductionReady ? "Pass" : "Review",
-            Detail: routingConnection is null
-                ? "No routing connection is configured for this provider yet."
-                : $"Bindings {bindings.Count}; fallback routes {bindings.Sum(static binding => binding.FailoverConnectionIds.Length)}; production ready {routingConnection.ProductionReady}."));
-
-        diagnostics.Add(new WorkstationDataProviderDiagnostic(
-            Id: "trust-state",
-            Label: "Trust state",
-            Status: trustSnapshot is null
-                ? rationale.Status == "Healthy" ? "pass" : "warning"
-                : trustSnapshot.IsHealthy ? "pass" : "warning",
-            StatusLabel: trustSnapshot?.HealthStatus ?? rationale.TrustScore,
-            Detail: trustSnapshot is not null
-                ? trustSnapshot.Signals.Length > 0
-                    ? string.Join(", ", trustSnapshot.Signals)
-                    : "Trust snapshot is available with no active signals."
-                : $"{rationale.SignalSource}. {rationale.RecommendedAction}"));
-
-        return diagnostics;
-    }
-
-    private static string NormalizeProviderKey(string providerId)
-        => providerId.Trim().ToLowerInvariant();
-
-    private static string FormatProviderTimestamp(DateTimeOffset? value)
-        => value?.ToString("MMM dd, yyyy HH:mm 'UTC'", CultureInfo.InvariantCulture) ?? "Never";
-
-    private static ProviderTrustRationalePayload BuildProviderTrustRationale(ProviderMetrics metrics)
-    {
-        var trustScore = NormalizeScore(metrics.DataQualityScore);
-        var successRate = NormalizeScore(metrics.ConnectionSuccessRate);
-        var gateImpact = BuildProviderGateImpact(trustScore);
-
-        if (!metrics.IsConnected)
-        {
-            return new ProviderTrustRationalePayload(
-                Status: "Degraded",
-                TrustScore: FormatScore(trustScore),
-                SignalSource: "Provider quote/trade stream health telemetry",
-                ReasonCode: "PROVIDER_STREAM_DEGRADED",
-                RecommendedAction: "Verify provider connectivity and entitlements, then monitor for recovery before promotion decisions.",
-                GateImpact: gateImpact);
-        }
-
-        if (metrics.ConnectionFailures > 0 && (metrics.ConnectionAttempts == 0 || successRate < 0.75d))
-        {
-            return new ProviderTrustRationalePayload(
-                Status: "Degraded",
-                TrustScore: FormatScore(trustScore),
-                SignalSource: "Provider reconnect monitor",
-                ReasonCode: "RECONNECT_INSTABILITY",
-                RecommendedAction: "Keep run in observation mode; require a stable reconnect window before trusting parity-sensitive outputs.",
-                GateImpact: gateImpact);
-        }
-
-        if (metrics.MessagesDropped > 0)
-        {
-            return new ProviderTrustRationalePayload(
-                Status: "Degraded",
-                TrustScore: FormatScore(trustScore),
-                SignalSource: "Missing data completeness checker",
-                ReasonCode: "DATA_COMPLETENESS_GAP",
-                RecommendedAction: "Trigger targeted backfill or replay and block trust sign-off for impacted symbols or windows.",
-                GateImpact: gateImpact);
-        }
-
-        if (metrics.AverageLatencyMs >= 250d)
-        {
-            return new ProviderTrustRationalePayload(
-                Status: "Warning",
-                TrustScore: FormatScore(trustScore),
-                SignalSource: "Latency monitor",
-                ReasonCode: "LATENCY_REGRESSION",
-                RecommendedAction: "Delay operator promotion actions; review latency trend and compare against baseline window.",
-                GateImpact: gateImpact);
-        }
-
-        if (trustScore < 0.90d)
-        {
-            return new ProviderTrustRationalePayload(
-                Status: trustScore < 0.80d ? "Degraded" : "Warning",
-                TrustScore: FormatScore(trustScore),
-                SignalSource: "Cross-provider parity comparator",
-                ReasonCode: "PARITY_DRIFT_DETECTED",
-                RecommendedAction: "Re-run the parity packet and treat results as non-promotable until drift is explained or corrected.",
-                GateImpact: gateImpact);
-        }
-
-        return new ProviderTrustRationalePayload(
-            Status: "Healthy",
-            TrustScore: FormatScore(trustScore),
-            SignalSource: "Provider baseline health snapshot",
-            ReasonCode: "HEALTHY_BASELINE",
-            RecommendedAction: "Continue monitoring provider health; no DK1 action is required.",
-            GateImpact: gateImpact);
-    }
-
-    private static double NormalizeScore(double value)
-    {
-        if (double.IsNaN(value) || double.IsInfinity(value))
-        {
-            return 0d;
-        }
-
-        var normalized = value > 1d ? value / 100d : value;
-        return Math.Clamp(normalized, 0d, 1d);
-    }
-
-    private static string FormatScore(double score)
-        => $"{(score * 100d).ToString("0", CultureInfo.InvariantCulture)}%";
-
-    private static string BuildProviderGateImpact(double trustScore)
-        => trustScore >= 0.90d
-            ? "Normal operation"
-            : trustScore >= 0.80d
-                ? "Watch"
-                : trustScore >= 0.70d
-                    ? "Degraded"
-                    : "Critical";
 
     // PR-03: returns typed DTO instead of anonymous object
     private static async Task<WorkstationPortfolioPayload> BuildPortfolioPayloadAsync(HttpContext context)
@@ -5037,6 +3426,7 @@ public static partial class WorkstationEndpoints
         var riskState = "Healthy";
         var riskSummary = "Portfolio exposure is within configured paper thresholds.";
         IReadOnlyList<string> activeGuardrails = [];
+        IReadOnlyList<WorkstationRiskGuardrail> guardrails = [];
 
         if (portfolio is not null)
         {
@@ -5066,6 +3456,7 @@ public static partial class WorkstationEndpoints
             riskState = runtimeRisk.State;
             riskSummary = runtimeRisk.Summary;
             activeGuardrails = runtimeRisk.ActiveGuardrails;
+            guardrails = runtimeRisk.Guardrails;
         }
 
         var risk = new WorkstationTradingRiskState(
@@ -5080,7 +3471,8 @@ public static partial class WorkstationEndpoints
             BuyingPowerUsed: portfolio is not null && portfolio.BuyingPower > 0m
                 ? FormatPercent(grossExposure / portfolio.BuyingPower)
                 : "—",
-            ActiveGuardrails: activeGuardrails);
+            ActiveGuardrails: activeGuardrails,
+            Guardrails: guardrails);
 
         // --- Brokerage state ---
         var brokerageValidation = BrokerageValidationEvaluator.Evaluate(brokerageConfiguration);
@@ -5164,8 +3556,14 @@ public static partial class WorkstationEndpoints
             service = new MultiAssetCoverageReadService(new SecurityMasterOperationalReadinessService());
         }
 
+        if (!TryResolveReconciliationBreakQueueScope(context, out var scope))
+        {
+            throw new InvalidOperationException(
+                "A tenant- and company-scoped workstation request context is required.");
+        }
+
         return await service
-            .GetCoverageAsync(fundAccountId, entity, assetClass, context.RequestAborted)
+            .GetCoverageAsync(fundAccountId, entity, assetClass, scope, context.RequestAborted)
             .ConfigureAwait(false);
     }
 
@@ -5178,304 +3576,6 @@ public static partial class WorkstationEndpoints
         return await service.GetOperationsAsync(securityId, context.RequestAborted).ConfigureAwait(false);
     }
 
-    private static async Task<WorkstationAccountingPayload> BuildAccountingPayloadAsync(HttpContext context)
-    {
-        var readService = context.RequestServices.GetService<StrategyRunReadService>();
-        var kernelObservability = context.RequestServices.GetService<KernelObservabilityService>()?.GetSnapshot();
-        var requestedLedgerBookId = ParseOptionalGuid(context.Request.Query["ledgerBookId"].FirstOrDefault());
-        var manualJournalWorkbench = await BuildManualJournalWorkbenchPayloadAsync(context).ConfigureAwait(false);
-        if (readService is null)
-        {
-            return BuildAccountingFallbackPayload(kernelObservability, manualJournalWorkbench, requestedLedgerBookId);
-        }
-
-        var allRuns = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
-        var runs = allRuns.Take(6).ToArray();
-        if (runs.Length == 0)
-        {
-            var reporting = BuildReportingPayload(context);
-            // PR-03: return typed DTO
-            return new WorkstationAccountingPayload(
-                Metrics:
-                [
-                    new WorkstationMetricCard("open-breaks", "Open Breaks", "0", "0%", "success"),
-                    new WorkstationMetricCard("timing-drift", "Timing Drift", "0", "0%", "default"),
-                    new WorkstationMetricCard("security-gaps", "Security Gaps", "0", "0%", "success"),
-                    new WorkstationMetricCard("audit-ready", "Audit Ready", "0", "0%", "default"),
-                    new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), "0%", GetKernelJumpAlertTone(kernelObservability))
-                ],
-                ReconciliationQueue: Array.Empty<WorkstationAccountingRunRecord>(),
-                BreakQueue: Array.Empty<ReconciliationBreakQueueItem>(),
-                Workspace: new WorkstationAccountingWorkspaceSummary(0, 0, 0, 0, 0),
-                CashFlow: BuildAccountingWorkspaceCashFlowSummary(Array.Empty<StrategyRunDetail?>()),
-                Reporting: reporting,
-                ControlCenter: BuildAccountingControlCenterPayload(Array.Empty<ReconciliationBreakQueueItem>(), reporting),
-                KernelObservability: BuildKernelObservabilityPayload(kernelObservability),
-                ManualJournalWorkbench: manualJournalWorkbench);
-        }
-
-        var reconciliationService = context.RequestServices.GetService<IReconciliationRunService>();
-        var detailTasks = runs.Select(run => readService.GetRunDetailAsync(run.RunId, context.RequestAborted));
-        var reconciliationTasks = reconciliationService is null
-            ? runs.Select(_ => Task.FromResult<ReconciliationRunDetail?>(null))
-            : runs.Select(run => reconciliationService.GetLatestForRunAsync(run.RunId, context.RequestAborted));
-
-        var details = await Task.WhenAll(detailTasks).ConfigureAwait(false);
-        var reconciliations = await Task.WhenAll(reconciliationTasks).ConfigureAwait(false);
-        await SeedBreakQueueAsync(context.RequestServices, runs, reconciliations, context.RequestAborted).ConfigureAwait(false);
-
-        var openBreaks = reconciliations.Sum(static detail => detail?.Summary.OpenBreakCount ?? 0);
-        var timingDriftRuns = reconciliations.Count(static detail => detail?.Summary.HasTimingDrift == true);
-        var runsWithBreaks = reconciliations.Count(static detail => (detail?.Summary.BreakCount ?? 0) > 0);
-        var runsWithSecurityIssues = details.Count(static detail =>
-            (detail?.Portfolio?.SecurityMissingCount ?? 0) > 0 ||
-            (detail?.Ledger?.SecurityMissingCount ?? 0) > 0);
-        var auditReadyRuns = runs.Count(static run => !string.IsNullOrWhiteSpace(run.AuditReference)) - runsWithBreaks;
-        var breakQueueItems = await GetBreakQueueItemsAsync(context.RequestServices, status: null, fundAccountId: null, ledgerBookId: requestedLedgerBookId, ct: context.RequestAborted).ConfigureAwait(false);
-        var reportingPayload = BuildReportingPayload(context);
-        var scopedOpenBreaks = requestedLedgerBookId.HasValue
-            ? breakQueueItems.Count(static item => item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview)
-            : openBreaks;
-
-        // PR-03: return typed DTO
-        return new WorkstationAccountingPayload(
-            Metrics:
-            [
-                new WorkstationMetricCard("open-breaks", "Open Breaks", scopedOpenBreaks.ToString(CultureInfo.InvariantCulture), "0%", scopedOpenBreaks == 0 ? "success" : "warning"),
-                new WorkstationMetricCard("timing-drift", "Timing Drift", timingDriftRuns.ToString(CultureInfo.InvariantCulture), "0%", timingDriftRuns == 0 ? "default" : "warning"),
-                new WorkstationMetricCard("security-gaps", "Security Gaps", runsWithSecurityIssues.ToString(CultureInfo.InvariantCulture), "0%", runsWithSecurityIssues == 0 ? "success" : "warning"),
-                new WorkstationMetricCard("audit-ready", "Audit Ready", Math.Max(0, auditReadyRuns).ToString(CultureInfo.InvariantCulture), "0%", auditReadyRuns > 0 ? "success" : "default"),
-                new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), "0%", GetKernelJumpAlertTone(kernelObservability))
-            ],
-            ReconciliationQueue: runs
-                .Zip(details, static (run, detail) => (run, detail))
-                .Zip(reconciliations, (pair, reconciliation) => BuildAccountingRunCard(pair.run, pair.detail, reconciliation, kernelObservability))
-                .ToArray(),
-            BreakQueue: breakQueueItems,
-            Workspace: new WorkstationAccountingWorkspaceSummary(
-                TotalRuns: allRuns.Length,
-                ReconciledRuns: reconciliations.Count(static detail => detail is not null),
-                LedgerReadyRuns: runs.Count(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
-                OpenBreaks: scopedOpenBreaks,
-                SecurityIssues: runsWithSecurityIssues),
-            CashFlow: BuildAccountingWorkspaceCashFlowSummary(details),
-            Reporting: reportingPayload,
-            ControlCenter: BuildAccountingControlCenterPayload(breakQueueItems, reportingPayload),
-            KernelObservability: BuildKernelObservabilityPayload(kernelObservability),
-            ManualJournalWorkbench: manualJournalWorkbench);
-    }
-
-    private static async Task<ManualJournalEntryWorkbenchDto?> BuildManualJournalWorkbenchPayloadAsync(HttpContext context)
-    {
-        var service = context.RequestServices.GetService<IManualJournalEntryWorkbenchService>();
-        if (service is null)
-        {
-            return null;
-        }
-
-        var query = context.Request.Query;
-        var fundProfileId = query["fundProfileId"].FirstOrDefault();
-        var ledgerBookId = ParseOptionalGuid(query["ledgerBookId"].FirstOrDefault());
-        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-
-        return await service
-            .GetWorkbenchAsync(fundProfileId, ledgerBookId, context.RequestAborted, tenantContext.TenantId, tenantContext.CompanyId)
-            .ConfigureAwait(false);
-    }
-
-    // PR-03: returns typed DTO
-    private static WorkstationAccountingPayload BuildAccountingFallbackPayload(
-        KernelObservabilitySnapshot? kernelObservability = null,
-        ManualJournalEntryWorkbenchDto? manualJournalWorkbench = null,
-        Guid? requestedLedgerBookId = null)
-    {
-        if (requestedLedgerBookId.HasValue)
-        {
-            var scopedReporting = BuildReportingPayload();
-            return new WorkstationAccountingPayload(
-                Metrics:
-                [
-                    new WorkstationMetricCard("open-breaks", "Open Breaks", "0", "0%", "success"),
-                    new WorkstationMetricCard("timing-drift", "Timing Drift", "0", "0%", "default"),
-                    new WorkstationMetricCard("security-gaps", "Security Gaps", "0", "0%", "success"),
-                    new WorkstationMetricCard("audit-ready", "Audit Ready", "0", "0%", "default"),
-                    new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), "0%", GetKernelJumpAlertTone(kernelObservability))
-                ],
-                ReconciliationQueue: Array.Empty<WorkstationAccountingRunRecord>(),
-                BreakQueue: Array.Empty<ReconciliationBreakQueueItem>(),
-                Workspace: new WorkstationAccountingWorkspaceSummary(0, 0, 0, 0, 0),
-                CashFlow: BuildAccountingWorkspaceCashFlowSummary(Array.Empty<StrategyRunDetail?>()),
-                Reporting: scopedReporting,
-                ControlCenter: BuildAccountingControlCenterPayload(Array.Empty<ReconciliationBreakQueueItem>(), scopedReporting),
-                KernelObservability: BuildKernelObservabilityPayload(kernelObservability),
-                ManualJournalWorkbench: manualJournalWorkbench);
-        }
-
-        var metricsCards = new WorkstationMetricCard[]
-        {
-            new("open-breaks", "Open Breaks", "4", "0%", "warning"),
-            new("timing-drift", "Timing Drift", "1", "0%", "warning"),
-            new("security-gaps", "Security Gaps", "2", "0%", "warning"),
-            new("audit-ready", "Audit Ready", "9", "0%", "success"),
-            new("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), "0%", GetKernelJumpAlertTone(kernelObservability))
-        };
-        var fallbackSecurityCoverage = new WorkstationSecurityCoveragePayload(
-            PortfolioResolved: 14,
-            PortfolioMissing: 1,
-            LedgerResolved: 12,
-            LedgerMissing: 1,
-            HasIssues: true,
-            Tone: "warning",
-            Summary: "26 references mapped, 2 unresolved.",
-            ResolvedReferences:
-            [
-                new WorkstationSecurityCoverageReferencePayload(
-                    Source: "portfolio",
-                    Symbol: "AAPL",
-                    AccountName: null,
-                    SecurityId: "security-aapl",
-                    DisplayName: "Apple Inc.",
-                    AssetClass: "Equity",
-                    SubType: null,
-                    Currency: "USD",
-                    Status: "Active",
-                    PrimaryIdentifier: "AAPL",
-                    CoverageStatus: "Resolved",
-                    CoverageReason: null,
-                    MatchedIdentifierKind: "Ticker",
-                    MatchedIdentifierValue: "AAPL",
-                    MatchedProvider: null)
-            ],
-            MissingReferences:
-            [
-                new WorkstationSecurityCoverageGapPayload(
-                    Source: "portfolio",
-                    Symbol: "XYZ",
-                    AccountName: null,
-                    Reason: "Portfolio position is missing a Security Master match."),
-                new WorkstationSecurityCoverageGapPayload(
-                    Source: "ledger",
-                    Symbol: "XYZ",
-                    AccountName: "Securities",
-                    Reason: "Ledger coverage is missing a Security Master match.")
-            ]);
-        var reconciliationQueue = new WorkstationAccountingRunRecord[]
-        {
-            new(
-                RunId: "gov-run-001",
-                StrategyName: "Global Macro Overlay",
-                Mode: "paper",
-                Status: "Completed",
-                LastUpdated: "12m ago",
-                AuditReference: "audit-gov-run-001",
-                LedgerReference: null,
-                PortfolioId: null,
-                BreakCount: 2,
-                OpenBreakCount: 2,
-                ReconciliationStatus: "BreaksOpen",
-                Governance: new WorkstationAccountingRunGovernancePayload(
-                    HasAuditTrail: true,
-                    HasPortfolio: true,
-                    HasLedger: true,
-                    DatasetReference: null,
-                    FeedReference: null),
-                SecurityCoverage: fallbackSecurityCoverage,
-                CashFlow: new WorkstationAccountingRunCashFlowPayload(
-                    CashBalance: 1_250_000m,
-                    LedgerCashBalance: 1_247_500m,
-                    CashVariance: -2_500m,
-                    Financing: 12_500m,
-                    RealizedPnl: 42_000m,
-                    UnrealizedPnl: 18_000m,
-                    JournalEntryCount: 24,
-                    Tone: "warning",
-                    Summary: "Cash and ledger balances diverge and should be reviewed."),
-                LatestReconciliation: new WorkstationAccountingRunReconciliationPayload(
-                    ReconciliationRunId: null,
-                    BreakCount: 2,
-                    OpenBreakCount: 2,
-                    MatchCount: 0,
-                    HasTimingDrift: false,
-                    SecurityIssueCount: 2,
-                    HasSecurityCoverageIssues: true,
-                    LastUpdated: "15m ago",
-                    Tone: "warning"),
-                KernelObservability: BuildKernelObservabilityPayload(kernelObservability))
-        };
-        var breakQueue = new ReconciliationBreakQueueItem[]
-        {
-            new ReconciliationBreakQueueItem(
-                BreakId: "BRK-gov-run-001-1",
-                RunId: "gov-run-001",
-                StrategyName: "Global Macro Overlay",
-                Category: ReconciliationBreakCategory.AmountMismatch,
-                Status: ReconciliationBreakQueueStatus.Open,
-                Variance: 2500m,
-                Reason: "Cash variance exceeds configured tolerance.",
-                AssignedTo: null,
-                DetectedAt: DateTimeOffset.UtcNow.AddMinutes(-18),
-                LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-18),
-                Severity: ReconciliationBreakSeverity.Critical,
-                ExceptionRoute: "accounting-variance-escalation",
-                ToleranceProfileId: "critical-zero-tolerance",
-                ToleranceBand: 0m,
-                RequiredSignoffRole: "Accounting sign-off",
-                SignoffStatus: "pending-signoff"),
-            new ReconciliationBreakQueueItem(
-                BreakId: "BRK-gov-run-001-2",
-                RunId: "gov-run-001",
-                StrategyName: "Global Macro Overlay",
-                Category: ReconciliationBreakCategory.ClassificationGap,
-                Status: ReconciliationBreakQueueStatus.InReview,
-                Variance: 0m,
-                Reason: "Security Master coverage is missing for XYZ.",
-                AssignedTo: "ops.gov",
-                DetectedAt: DateTimeOffset.UtcNow.AddMinutes(-16),
-                LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
-                ReviewedBy: "ops.gov",
-                ReviewedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
-                ResolutionNote: "Investigating ticker reclassification.",
-                Severity: ReconciliationBreakSeverity.Medium,
-                ExceptionRoute: "security-master-accounting-review",
-                ToleranceProfileId: "coverage-classification-review",
-                ToleranceBand: 0m,
-                RequiredSignoffRole: "Accounting analyst",
-                SignoffStatus: "in-review")
-        };
-        var reporting = BuildReportingPayload();
-        return new WorkstationAccountingPayload(
-            Metrics: metricsCards,
-            ReconciliationQueue: reconciliationQueue,
-            BreakQueue: breakQueue,
-            Workspace: new WorkstationAccountingWorkspaceSummary(12, 9, 10, 4, 2),
-            CashFlow: new WorkstationAccountingCashFlowSummaryPayload(
-                TotalCash: 2_450_000m,
-                TotalLedgerCash: 2_447_500m,
-                NetVariance: -2_500m,
-                TotalFinancing: 12_500m,
-                RunsWithCashSignals: 9,
-                RunsWithCashVariance: 1,
-                Tone: "warning",
-                Summary: "Cash-flow coverage is available for 9 runs; 1 run needs variance review."),
-            Reporting: reporting,
-            ControlCenter: BuildAccountingControlCenterPayload(breakQueue, reporting),
-            KernelObservability: BuildKernelObservabilityPayload(kernelObservability),
-            ManualJournalWorkbench: manualJournalWorkbench);
-    }
-
-    // PR-03: returns typed DTO
-    private static WorkstationRunDigest BuildRunDigest(StrategyRunSummary run, StrategyRunDetail? detail)
-    {
-        return new WorkstationRunDigest(
-            RunId: run.RunId,
-            StrategyName: run.StrategyName,
-            Mode: run.Mode.ToString().ToLowerInvariant(),
-            Status: run.Status.ToString(),
-            LastUpdated: FormatRelativeTime(run.LastUpdatedAt),
-            HasLedger: !string.IsNullOrWhiteSpace(run.LedgerReference),
-            HasPortfolio: !string.IsNullOrWhiteSpace(run.PortfolioId),
-            SecurityCoverage: BuildSecurityCoverage(detail));
-    }
     private static string ResolveModeVariant(StrategyRunMode? mode)
         => mode switch
         {
@@ -5483,376 +3583,6 @@ public static partial class WorkstationEndpoints
             StrategyRunMode.Live => "live",
             _ => "research"
         };
-
-    private static WorkstationStrategyRunCard BuildStrategyRunCard(StrategyRunSummary run, StrategyRunDetail? detail)
-    {
-        return new WorkstationStrategyRunCard(
-            Id: run.RunId,
-            StrategyName: run.StrategyName,
-            Engine: run.Engine.ToString(),
-            Mode: run.Mode.ToString().ToLowerInvariant(),
-            Status: run.Status.ToString(),
-            Dataset: run.DatasetReference ?? run.FeedReference ?? "Unassigned",
-            Window: FormatWindow(run.StartedAt, run.CompletedAt),
-            Pnl: FormatReturn(run.TotalReturn, run.NetPnl),
-            Sharpe: FormatSharpeProxy(run),
-            LastUpdated: FormatRelativeTime(run.LastUpdatedAt),
-            Notes: BuildRunNotes(run),
-            PromotionState: run.Promotion?.State.ToString(),
-            LedgerReference: run.LedgerReference,
-            PortfolioId: run.PortfolioId,
-            NetPnl: run.NetPnl,
-            TotalReturn: run.TotalReturn,
-            FinalEquity: run.FinalEquity,
-            SecurityCoverage: BuildSecurityCoverage(detail),
-            DrillIn: BuildRunDrillInLinks(run));
-    }
-
-    private static InsightFeed BuildBriefingInsightFeed(
-        IReadOnlyList<StrategyRunSummary> runs,
-        IReadOnlyList<StrategyRunDetail?> details,
-        int alertCount)
-    {
-        var generatedAt = DateTimeOffset.UtcNow;
-        if (runs.Count == 0)
-        {
-            return new InsightFeed(
-                FeedId: "strategy-market-briefing",
-                Title: "Pinned Insights",
-                Summary: "No saved charts or run insights yet.",
-                GeneratedAt: generatedAt,
-                Widgets: Array.Empty<InsightWidget>());
-        }
-
-        var widgets = runs
-            .Zip(details, static (run, detail) => new InsightWidget(
-                WidgetId: $"insight-{run.RunId}",
-                Title: run.StrategyName,
-                Subtitle: $"{run.Mode} · {run.Status}",
-                Headline: FormatReturn(run.TotalReturn, run.NetPnl),
-                Tone: GetInsightTone(run, detail),
-                Summary: BuildInsightSummary(run, detail),
-                RunId: run.RunId,
-                DrillInRoute: RunRoute(UiApiRoutes.RunsEquityCurve, run.RunId)))
-            .Take(3)
-            .ToArray();
-
-        return new InsightFeed(
-            FeedId: "strategy-market-briefing",
-            Title: "Pinned Insights",
-            Summary: $"{runs.Count} tracked run(s) in briefing scope; {alertCount} alert(s) require attention.",
-            GeneratedAt: generatedAt,
-            Widgets: widgets);
-    }
-
-    private static StrategyBriefingRun BuildBriefingRun(StrategyRunSummary run, StrategyRunDetail? detail)
-        => new(
-            RunId: run.RunId,
-            StrategyName: run.StrategyName,
-            Mode: run.Mode,
-            Status: run.Status,
-            Dataset: run.DatasetReference ?? run.FeedReference ?? "Unassigned",
-            WindowLabel: FormatWindow(run.StartedAt, run.CompletedAt),
-            ReturnLabel: FormatReturn(run.TotalReturn, run.NetPnl),
-            SharpeLabel: FormatSharpeProxy(run),
-            LastUpdatedLabel: FormatRelativeTime(run.LastUpdatedAt),
-            Notes: BuildInsightSummary(run, detail),
-            PromotionState: run.Promotion?.State,
-            NetPnl: run.NetPnl,
-            TotalReturn: run.TotalReturn,
-            FinalEquity: run.FinalEquity,
-            DrillIn: BuildStrategyDrillInLinks(run));
-
-    private static IReadOnlyList<StrategySavedComparison> BuildSavedComparisons(IReadOnlyList<StrategyRunSummary> runs)
-    {
-        var groupedComparisons = runs
-            .GroupBy(static run => run.StrategyName, StringComparer.OrdinalIgnoreCase)
-            .Select(group =>
-            {
-                var modes = group
-                    .OrderBy(static run => run.Mode)
-                    .Select(static run => new StrategySavedComparisonMode(
-                        RunId: run.RunId,
-                        Mode: run.Mode,
-                        Status: run.Status,
-                        NetPnl: run.NetPnl,
-                        TotalReturn: run.TotalReturn,
-                        DrillIn: BuildStrategyDrillInLinks(run)))
-                    .ToArray();
-
-                return new StrategySavedComparison(
-                    ComparisonId: $"cmp-{group.First().RunId}",
-                    StrategyName: group.Key,
-                    ModeSummary: string.Join(" -> ", modes.Select(static mode => mode.Mode.ToString())),
-                    Summary: BuildComparisonSummary(group.Key, modes),
-                    AnchorRunId: modes.FirstOrDefault()?.RunId,
-                    Modes: modes);
-            })
-            .Where(static comparison => comparison.Modes.Count >= 2)
-            .Take(4)
-            .ToArray();
-
-        if (groupedComparisons.Length > 0)
-        {
-            return groupedComparisons;
-        }
-
-        if (runs.Count < 2)
-        {
-            return Array.Empty<StrategySavedComparison>();
-        }
-
-        var syntheticModes = runs
-            .Take(2)
-            .Select(static run => new StrategySavedComparisonMode(
-                RunId: run.RunId,
-                Mode: run.Mode,
-                Status: run.Status,
-                NetPnl: run.NetPnl,
-                TotalReturn: run.TotalReturn,
-                DrillIn: BuildStrategyDrillInLinks(run)))
-            .ToArray();
-
-        return
-        [
-            new StrategySavedComparison(
-                ComparisonId: $"cmp-recent-{syntheticModes[0].RunId}",
-                StrategyName: "Recent Runs",
-                ModeSummary: string.Join(" vs ", syntheticModes.Select(static mode => mode.Mode.ToString())),
-                Summary: "Saved compare lane across the two most recent runs while multi-mode history is still building.",
-                AnchorRunId: syntheticModes[0].RunId,
-                Modes: syntheticModes)
-        ];
-    }
-
-    private static IReadOnlyList<StrategyBriefingAlert> BuildBriefingAlerts(
-        IReadOnlyList<StrategyRunSummary> runs,
-        IReadOnlyList<StrategyRunDetail?> details)
-    {
-        var alerts = new List<StrategyBriefingAlert>();
-
-        for (var index = 0; index < runs.Count; index++)
-        {
-            var run = runs[index];
-            var detail = index < details.Count ? details[index] : null;
-            var coverageIssueCount = GetSecurityCoverageIssueCount(detail);
-
-            if (run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled)
-            {
-                alerts.Add(new StrategyBriefingAlert(
-                    AlertId: $"alert-status-{run.RunId}",
-                    Title: $"{run.StrategyName} needs operator review",
-                    Summary: $"Run finished with status {run.Status} and should be investigated before it is reused.",
-                    Tone: "warning",
-                    RunId: run.RunId,
-                    ActionLabel: "Open run"));
-            }
-
-            if (run.Promotion?.RequiresReview == true)
-            {
-                alerts.Add(new StrategyBriefingAlert(
-                    AlertId: $"alert-promotion-{run.RunId}",
-                    Title: $"{run.StrategyName} is queued for promotion review",
-                    Summary: run.Promotion.Reason,
-                    Tone: "default",
-                    RunId: run.RunId,
-                    ActionLabel: "Review promotion"));
-            }
-
-            if (coverageIssueCount > 0)
-            {
-                alerts.Add(new StrategyBriefingAlert(
-                    AlertId: $"alert-security-{run.RunId}",
-                    Title: $"{run.StrategyName} has Security Master gaps",
-                    Summary: $"{coverageIssueCount} unresolved portfolio or ledger reference(s) should be fixed before handoff.",
-                    Tone: "warning",
-                    RunId: run.RunId,
-                    ActionLabel: "Inspect continuity"));
-            }
-        }
-
-        if (alerts.Count == 0)
-        {
-            return
-            [
-                new StrategyBriefingAlert(
-                    AlertId: "alert-none",
-                    Title: "No blocking alerts",
-                    Summary: "Recent runs have no failed states, open promotion blockers, or Security Master gaps.",
-                    Tone: "success",
-                    ActionLabel: "Browse runs")
-            ];
-        }
-
-        return alerts
-            .Take(4)
-            .ToArray();
-    }
-
-    private static IReadOnlyList<StrategyWhatChangedItem> BuildWhatChangedItems(IReadOnlyList<StrategyRunSummary> runs)
-        => runs
-            .Take(4)
-            .Select(static run => new StrategyWhatChangedItem(
-                ChangeId: $"change-{run.RunId}",
-                Title: $"{run.StrategyName} moved to {run.Mode}",
-                Summary: BuildChangeSummary(run),
-                Category: run.Mode.ToString().ToLowerInvariant(),
-                Timestamp: run.LastUpdatedAt,
-                RelativeTime: FormatRelativeTime(run.LastUpdatedAt),
-                RunId: run.RunId))
-            .ToArray();
-
-    private static string BuildInsightSummary(StrategyRunSummary run, StrategyRunDetail? detail)
-    {
-        var coverageIssueCount = GetSecurityCoverageIssueCount(detail);
-        if (coverageIssueCount > 0)
-        {
-            return $"{BuildRunNotes(run)} {coverageIssueCount} Security Master gap(s) remain open.";
-        }
-
-        return BuildRunNotes(run);
-    }
-
-    private static string BuildComparisonSummary(
-        string strategyName,
-        IReadOnlyList<StrategySavedComparisonMode> modes)
-    {
-        if (modes.Count == 0)
-        {
-            return $"No comparison history saved for {strategyName}.";
-        }
-
-        if (modes.Count == 1)
-        {
-            return $"Baseline comparison package is ready for {strategyName}.";
-        }
-
-        return $"Saved compare lane covers {modes.Count} lifecycle stage(s) for {strategyName}.";
-    }
-
-    private static string BuildChangeSummary(StrategyRunSummary run)
-        => run.Status switch
-        {
-            StrategyRunStatus.Running => $"{run.StrategyName} is still running with updated execution and workspace telemetry.",
-            StrategyRunStatus.Completed when run.Promotion?.RequiresReview == true => $"{run.StrategyName} completed and is ready for promotion review.",
-            StrategyRunStatus.Completed => $"{run.StrategyName} completed and remains available for compare and pin workflows.",
-            StrategyRunStatus.Failed => $"{run.StrategyName} failed and should be reviewed before promotion or reuse.",
-            StrategyRunStatus.Cancelled or StrategyRunStatus.Stopped => $"{run.StrategyName} stopped before promotion and is retained for evidence.",
-            _ => BuildRunNotes(run)
-        };
-
-    private static string GetInsightTone(StrategyRunSummary run, StrategyRunDetail? detail)
-    {
-        if (run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled)
-        {
-            return "warning";
-        }
-
-        if (run.Promotion?.RequiresReview == true || GetSecurityCoverageIssueCount(detail) > 0)
-        {
-            return "default";
-        }
-
-        return (run.NetPnl ?? 0m) >= 0m ? "success" : "warning";
-    }
-
-    private static int GetSecurityCoverageIssueCount(StrategyRunDetail? detail)
-        => (detail?.Portfolio?.SecurityMissingCount ?? 0) + (detail?.Ledger?.SecurityMissingCount ?? 0);
-
-    private static StrategyRunDrillInLinks BuildStrategyDrillInLinks(StrategyRunSummary run)
-        => new(
-            EquityCurve: RunRoute(UiApiRoutes.RunsEquityCurve, run.RunId),
-            Fills: RunRoute(UiApiRoutes.RunsFills, run.RunId),
-            Attribution: RunRoute(UiApiRoutes.RunsAttribution, run.RunId),
-            Ledger: string.IsNullOrWhiteSpace(run.LedgerReference) ? null : RunRoute(UiApiRoutes.RunsLedger, run.RunId),
-            CashFlows: RunRoute(UiApiRoutes.PortfolioCashFlows, run.RunId),
-            Continuity: RunRoute(UiApiRoutes.RunsContinuity, run.RunId));
-
-    // PR-03: returns typed DTO
-    private static WorkstationTimelineCard BuildTimelineCard(StrategyRunSummary run) =>
-        new WorkstationTimelineCard(
-            RunId: run.RunId,
-            StrategyName: run.StrategyName,
-            Mode: run.Mode.ToString().ToLowerInvariant(),
-            Status: run.Status.ToString(),
-            StartedAt: run.StartedAt,
-            CompletedAt: run.CompletedAt,
-            LastUpdatedAt: run.LastUpdatedAt,
-            TotalReturn: run.TotalReturn);
-
-    // PR-03: returns typed comparison groups
-    private static IReadOnlyList<WorkstationModeComparisonGroup> BuildModeComparisons(IReadOnlyList<StrategyRunSummary> runs)
-    {
-        return runs
-            .GroupBy(static run => run.StrategyName, StringComparer.OrdinalIgnoreCase)
-            .Select(group =>
-            {
-                var modes = group
-                    .OrderBy(static run => run.Mode)
-                    .Select(static run => new WorkstationModeComparisonRun(
-                        RunId: run.RunId,
-                        Mode: run.Mode.ToString().ToLowerInvariant(),
-                        Status: run.Status.ToString(),
-                        NetPnl: run.NetPnl,
-                        TotalReturn: run.TotalReturn,
-                        DrillIn: BuildRunDrillInLinks(run)))
-                    .ToArray();
-                return new WorkstationModeComparisonGroup(group.Key, modes);
-            })
-            .Where(static group => group.Modes.Count > 0)
-            .ToArray();
-    }
-
-    private static WorkstationRunDrillInLinks BuildRunDrillInLinks(StrategyRunSummary run) => new(
-        EquityCurve: RunRoute(UiApiRoutes.RunsEquityCurve, run.RunId),
-        Fills: RunRoute(UiApiRoutes.RunsFills, run.RunId),
-        Attribution: RunRoute(UiApiRoutes.RunsAttribution, run.RunId),
-        Ledger: string.IsNullOrWhiteSpace(run.LedgerReference) ? null : RunRoute(UiApiRoutes.RunsLedger, run.RunId),
-        CashFlows: RunRoute(UiApiRoutes.PortfolioCashFlows, run.RunId),
-        Continuity: RunRoute(UiApiRoutes.RunsContinuity, run.RunId),
-        Comparison: UiApiRoutes.RunsCompare);
-
-    private static string RunRoute(string routeTemplate, string runId)
-        => UiApiRoutes.WithParam(routeTemplate, "runId", runId);
-
-    private static IReadOnlyList<StrategyRunMode>? ParseModes(string? mode)
-    {
-        if (string.IsNullOrWhiteSpace(mode))
-        {
-            return null;
-        }
-
-        var parsed = mode
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(static token => Enum.TryParse<StrategyRunMode>(token, true, out var modeValue)
-                ? (StrategyRunMode?)modeValue
-                : null)
-            .Where(static item => item.HasValue)
-            .Select(static item => item!.Value)
-            .Distinct()
-            .ToArray();
-
-        return parsed.Length == 0 ? null : parsed;
-    }
-
-    private static IReadOnlyList<StrategyRunMode>? ParseModes(IReadOnlyList<string>? modes)
-    {
-        if (modes is not { Count: > 0 })
-        {
-            return null;
-        }
-
-        var parsed = modes
-            .Select(static token => Enum.TryParse<StrategyRunMode>(token, true, out var modeValue)
-                ? (StrategyRunMode?)modeValue
-                : null)
-            .Where(static item => item.HasValue)
-            .Select(static item => item!.Value)
-            .Distinct()
-            .ToArray();
-
-        return parsed.Length == 0 ? null : parsed;
-    }
 
     private static WorkstationAccountingRunRecord BuildAccountingRunCard(
         StrategyRunSummary run,
@@ -5981,458 +3711,39 @@ public static partial class WorkstationEndpoints
         return "Balanced";
     }
 
-    private static WorkstationSecurityCoveragePayload BuildSecurityCoverage(StrategyRunDetail? detail)
-    {
-        var portfolio = detail?.Portfolio;
-        var ledger = detail?.Ledger;
-        var portfolioResolved = portfolio?.SecurityResolvedCount ?? 0;
-        var portfolioMissing = portfolio?.SecurityMissingCount ?? 0;
-        var ledgerResolved = ledger?.SecurityResolvedCount ?? 0;
-        var ledgerMissing = ledger?.SecurityMissingCount ?? 0;
-        var hasIssues = portfolioMissing > 0 || ledgerMissing > 0;
-        var resolvedReferences = BuildResolvedSecurityReferences(detail);
-        var missingReferences = BuildMissingSecurityReferences(detail);
-        var resolvedCount = portfolioResolved + ledgerResolved;
-        var missingCount = portfolioMissing + ledgerMissing;
+    private static WorkstationReportingPayload BuildReportingPayload(HttpContext? context = null) =>
+        context is null
+            ? BuildUnavailableReportingPayload(BuildUnavailableReportingCapability(
+                deployment: null,
+                "The reporting workspace request context is unavailable."))
+            : BuildEmbeddedReportingPayload(context);
 
-        return new WorkstationSecurityCoveragePayload(
-            PortfolioResolved: portfolioResolved,
-            PortfolioMissing: portfolioMissing,
-            LedgerResolved: ledgerResolved,
-            LedgerMissing: ledgerMissing,
-            HasIssues: hasIssues,
-            Tone: hasIssues ? "warning" : resolvedCount > 0 ? "success" : "default",
-            Summary: missingCount > 0
-                ? $"{resolvedCount} references mapped, {missingCount} unresolved."
-                : resolvedCount > 0
-                    ? $"{resolvedCount} references mapped with no unresolved symbols."
-                    : "Security Master coverage not yet evaluated.",
-            ResolvedReferences: resolvedReferences,
-            MissingReferences: missingReferences);
-    }
-
-    private static WorkstationSecurityCoverageReferencePayload[] BuildResolvedSecurityReferences(StrategyRunDetail? detail)
-    {
-        if (detail is null)
-        {
-            return [];
-        }
-
-        var results = new List<WorkstationSecurityCoverageReferencePayload>();
-
-        if (detail.Portfolio is not null)
-        {
-            results.AddRange(
-                detail.Portfolio.Positions
-                    .Where(static position => position.Security is not null)
-                    .Select(static position => new WorkstationSecurityCoverageReferencePayload(
-                        Source: "portfolio",
-                        Symbol: position.Symbol,
-                        AccountName: null,
-                        SecurityId: position.Security!.SecurityId.ToString("N"),
-                        DisplayName: position.Security.DisplayName,
-                        AssetClass: position.Security.AssetClass,
-                        SubType: position.Security.SubType,
-                        Currency: position.Security.Currency,
-                        Status: position.Security.Status.ToString(),
-                        PrimaryIdentifier: position.Security.PrimaryIdentifier,
-                        CoverageStatus: position.Security.CoverageStatus.ToString(),
-                        CoverageReason: position.Security.ResolutionReason,
-                        MatchedIdentifierKind: position.Security.MatchedIdentifierKind,
-                        MatchedIdentifierValue: position.Security.MatchedIdentifierValue,
-                        MatchedProvider: position.Security.MatchedProvider)));
-        }
-
-        if (detail.Ledger is not null)
-        {
-            results.AddRange(
-                detail.Ledger.TrialBalance
-                    .Where(static line => line.Security is not null && !string.IsNullOrWhiteSpace(line.Symbol))
-                    .Select(static line => new WorkstationSecurityCoverageReferencePayload(
-                        Source: "ledger",
-                        Symbol: line.Symbol!,
-                        AccountName: line.AccountName,
-                        SecurityId: line.Security!.SecurityId.ToString("N"),
-                        DisplayName: line.Security.DisplayName,
-                        AssetClass: line.Security.AssetClass,
-                        SubType: line.Security.SubType,
-                        Currency: line.Security.Currency,
-                        Status: line.Security.Status.ToString(),
-                        PrimaryIdentifier: line.Security.PrimaryIdentifier,
-                        CoverageStatus: line.Security.CoverageStatus.ToString(),
-                        CoverageReason: line.Security.ResolutionReason,
-                        MatchedIdentifierKind: line.Security.MatchedIdentifierKind,
-                        MatchedIdentifierValue: line.Security.MatchedIdentifierValue,
-                        MatchedProvider: line.Security.MatchedProvider)));
-        }
-
-        return results
-            .DistinctBy(static item => $"{item.Source}|{item.Symbol}|{item.AccountName}|{item.SecurityId}", StringComparer.OrdinalIgnoreCase)
-            .Take(SecurityCoveragePreviewLimit)
-            .ToArray();
-    }
-
-    private static WorkstationSecurityCoverageGapPayload[] BuildMissingSecurityReferences(StrategyRunDetail? detail)
-    {
-        if (detail is null)
-        {
-            return [];
-        }
-
-        var results = new List<WorkstationSecurityCoverageGapPayload>();
-
-        if (detail.Portfolio is not null)
-        {
-            results.AddRange(
-                detail.Portfolio.Positions
-                    .Where(static position => position.Security is null && !string.IsNullOrWhiteSpace(position.Symbol))
-                    .Select(static position => new WorkstationSecurityCoverageGapPayload(
-                        Source: "portfolio",
-                        Symbol: position.Symbol,
-                        AccountName: null,
-                        Reason: "Portfolio position is missing a Security Master match.")));
-        }
-
-        if (detail.Ledger is not null)
-        {
-            results.AddRange(
-                detail.Ledger.TrialBalance
-                    .Where(static line => line.Security is null && !string.IsNullOrWhiteSpace(line.Symbol))
-                    .Select(static line => new WorkstationSecurityCoverageGapPayload(
-                        Source: "ledger",
-                        Symbol: line.Symbol!,
-                        AccountName: line.AccountName,
-                        Reason: "Ledger coverage is missing a Security Master match.")));
-        }
-
-        return results
-            .DistinctBy(static item => $"{item.Source}|{item.Symbol}|{item.AccountName}", StringComparer.OrdinalIgnoreCase)
-            .Take(SecurityCoveragePreviewLimit)
-            .ToArray();
-    }
-
-    private static Dictionary<string, WorkstationSecurityReference?> BuildPositionSecurityLookup(StrategyRunDetail? detail)
-        => detail?.Portfolio?.Positions
-            .Where(static position => !string.IsNullOrWhiteSpace(position.Symbol))
-            .GroupBy(static position => position.Symbol, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(static group => group.Key, static group => group.First().Security, StringComparer.OrdinalIgnoreCase)
-            ?? new Dictionary<string, WorkstationSecurityReference?>(StringComparer.OrdinalIgnoreCase);
-
-    private static object BuildTradingPositionPayload(
-        string symbol,
-        string side,
-        string quantity,
-        string averagePrice,
-        string markPrice,
-        string dayPnl,
-        string unrealizedPnl,
-        string exposure,
-        WorkstationSecurityReference? security)
-        => new
-        {
-            symbol,
-            side,
-            quantity,
-            averagePrice,
-            markPrice,
-            dayPnl,
-            unrealizedPnl,
-            exposure,
-            security = BuildInlineSecurityReference(symbol, security)
-        };
-
-    private static object? BuildInlineSecurityReference(string symbol, WorkstationSecurityReference? security)
-    {
-        if (security is null)
-        {
-            return null;
-        }
-
-        return new
-        {
-            securityId = security.SecurityId == Guid.Empty ? null : security.SecurityId.ToString("N"),
-            displayName = string.IsNullOrWhiteSpace(security.DisplayName) ? symbol : security.DisplayName,
-            assetClass = string.IsNullOrWhiteSpace(security.AssetClass) ? null : security.AssetClass,
-            subType = security.SubType,
-            currency = string.IsNullOrWhiteSpace(security.Currency) ? null : security.Currency,
-            status = security.Status.ToString(),
-            primaryIdentifier = security.PrimaryIdentifier,
-            coverageStatus = security.CoverageStatus.ToString(),
-            matchedIdentifierKind = security.MatchedIdentifierKind,
-            matchedIdentifierValue = security.MatchedIdentifierValue,
-            matchedProvider = security.MatchedProvider,
-            resolutionReason = security.ResolutionReason
-        };
-    }
-
-    private static WorkstationSecurityCoverageReferencePayload BuildSecurityCoverageReference(
-        string Source,
-        string Symbol,
-        string? AccountName,
-        WorkstationSecurityReference? Security)
-        => new(
-            Source: Source,
-            Symbol: Symbol,
-            AccountName: AccountName,
-            SecurityId: Security is null || Security.SecurityId == Guid.Empty ? null : Security.SecurityId.ToString("N"),
-            DisplayName: string.IsNullOrWhiteSpace(Security?.DisplayName) ? Symbol : Security!.DisplayName,
-            AssetClass: string.IsNullOrWhiteSpace(Security?.AssetClass) ? null : Security!.AssetClass,
-            SubType: Security?.SubType,
-            Currency: string.IsNullOrWhiteSpace(Security?.Currency) ? null : Security!.Currency,
-            Status: Security?.Status.ToString(),
-            PrimaryIdentifier: Security?.PrimaryIdentifier,
-            CoverageStatus: Security?.CoverageStatus.ToString() ?? WorkstationSecurityCoverageStatus.Missing.ToString(),
-            CoverageReason: BuildSecurityCoverageReason(Source, AccountName, Security),
-            MatchedIdentifierKind: Security?.MatchedIdentifierKind,
-            MatchedIdentifierValue: Security?.MatchedIdentifierValue,
-            MatchedProvider: Security?.MatchedProvider);
-
-    private static string? BuildSecurityCoverageReason(
-        string source,
-        string? accountName,
-        WorkstationSecurityReference? security)
-    {
-        if (!string.IsNullOrWhiteSpace(security?.ResolutionReason))
-        {
-            return security.ResolutionReason;
-        }
-
-        return security?.CoverageStatus switch
-        {
-            WorkstationSecurityCoverageStatus.Resolved => null,
-            WorkstationSecurityCoverageStatus.Partial => "Security Master coverage is partial and requires operator review.",
-            WorkstationSecurityCoverageStatus.Unavailable => "Security Master is unavailable in this environment.",
-            _ when string.Equals(source, "ledger", StringComparison.OrdinalIgnoreCase)
-                => string.IsNullOrWhiteSpace(accountName)
-                    ? "Ledger coverage is missing a Security Master match."
-                    : $"Ledger coverage in '{accountName}' is missing a Security Master match.",
-            _ => "Portfolio position is missing a Security Master match."
-        };
-    }
-
-    private static bool HasAuthoritativeSecurityMatch(WorkstationSecurityReference? security)
-        => security is not null &&
-           security.SecurityId != Guid.Empty &&
-           security.CoverageStatus is WorkstationSecurityCoverageStatus.Resolved
-               or WorkstationSecurityCoverageStatus.Partial;
-
-    private static bool NeedsSecurityReview(WorkstationSecurityReference? security)
-        => security is null ||
-           security.CoverageStatus is WorkstationSecurityCoverageStatus.Partial
-                or WorkstationSecurityCoverageStatus.Missing
-                or WorkstationSecurityCoverageStatus.Unavailable;
-    private static WorkstationAccountingCashFlowSummaryPayload BuildAccountingWorkspaceCashFlowSummary(IReadOnlyList<StrategyRunDetail?> details)
-    {
-        var totalCash = details.Sum(static detail => detail?.Portfolio?.Cash ?? 0m);
-        var totalLedgerCash = details.Sum(static detail => GetLedgerCashBalance(detail?.Ledger) ?? 0m);
-        var totalFinancing = details.Sum(static detail => detail?.Portfolio?.Financing ?? 0m);
-        var runsWithCashSignals = details.Count(static detail => detail?.Portfolio is not null || detail?.Ledger is not null);
-        var runsWithCashVariance = details.Count(static detail => Math.Abs(GetCashVariance(detail)) > 0.01m);
-        var netVariance = totalLedgerCash - totalCash;
-
-        return new WorkstationAccountingCashFlowSummaryPayload(
-            TotalCash: totalCash,
-            TotalLedgerCash: totalLedgerCash,
-            NetVariance: netVariance,
-            TotalFinancing: totalFinancing,
-            RunsWithCashSignals: runsWithCashSignals,
-            RunsWithCashVariance: runsWithCashVariance,
-            Tone: runsWithCashVariance > 0 ? "warning" : runsWithCashSignals > 0 ? "success" : "default",
-            Summary: runsWithCashSignals == 0
-                ? "Cash-flow coverage is not yet available."
-                : runsWithCashVariance > 0
-                    ? $"Cash-flow coverage is available for {runsWithCashSignals} runs; {runsWithCashVariance} run needs variance review."
-                    : $"Cash-flow coverage is aligned across {runsWithCashSignals} runs.");
-    }
-
-    private static WorkstationAccountingRunCashFlowPayload BuildAccountingRunCashFlowSummary(StrategyRunDetail? detail)
-    {
-        var cashBalance = detail?.Portfolio?.Cash ?? 0m;
-        var ledgerCashBalance = GetLedgerCashBalance(detail?.Ledger) ?? 0m;
-        var cashVariance = ledgerCashBalance - cashBalance;
-        var financing = detail?.Portfolio?.Financing ?? 0m;
-        var realizedPnl = detail?.Portfolio?.RealizedPnl ?? 0m;
-        var unrealizedPnl = detail?.Portfolio?.UnrealizedPnl ?? 0m;
-        var journalEntryCount = detail?.Ledger?.JournalEntryCount ?? 0;
-        var hasSignals = detail?.Portfolio is not null || detail?.Ledger is not null;
-
-        return new WorkstationAccountingRunCashFlowPayload(
-            CashBalance: cashBalance,
-            LedgerCashBalance: ledgerCashBalance,
-            CashVariance: cashVariance,
-            Financing: financing,
-            RealizedPnl: realizedPnl,
-            UnrealizedPnl: unrealizedPnl,
-            JournalEntryCount: journalEntryCount,
-            Tone: !hasSignals ? "default" : Math.Abs(cashVariance) > 0.01m ? "warning" : "success",
-            Summary: !hasSignals
-                ? "Cash-flow coverage is not yet available."
-                : Math.Abs(cashVariance) > 0.01m
-                    ? "Cash and ledger balances diverge and should be reviewed."
-                    : "Cash and ledger balances are aligned.");
-    }
-
-    private static decimal? GetLedgerCashBalance(LedgerSummary? ledger)
-        => ledger?.TrialBalance.FirstOrDefault(static line =>
-            string.Equals(line.AccountName, "Cash", StringComparison.OrdinalIgnoreCase))?.Balance;
-
-    private static decimal GetCashVariance(StrategyRunDetail? detail)
-    {
-        var portfolioCash = detail?.Portfolio?.Cash;
-        var ledgerCash = GetLedgerCashBalance(detail?.Ledger);
-        if (!portfolioCash.HasValue || !ledgerCash.HasValue)
-        {
-            return 0m;
-        }
-
-        return ledgerCash.Value - portfolioCash.Value;
-    }
-
-    private static WorkstationReportingPayload BuildReportingPayload(HttpContext? context = null)
-        => context?.RequestServices.GetService<ReportPackRunReadService>()?.BuildPayload(BuildReportAccessQueryContext(context))
-           ?? ReportPackRunReadService.BuildFallbackPayload();
+    private static WorkstationReportingPayload BuildUnavailableReportingPayload(
+        ReportingDeploymentCapabilityDto? deployment) =>
+        new(
+            ProfileCount: 0,
+            RecommendedProfiles: [],
+            Profiles: [],
+            ReportPackDistributions: [],
+            Summary: "Authoritative reporting is unavailable. Review the reporting deployment capability and readiness checks.",
+            Templates: [],
+            RecentRuns: [],
+            DeploymentCapability: deployment);
 
     private static ReportAccessQueryContext BuildReportAccessQueryContext(HttpContext context)
     {
         var actor = EndpointAuthorization.TryResolveActor(context, out var resolvedActor)
             ? resolvedActor
             : null;
+        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
         return new ReportAccessQueryContext(
             ActorPrincipalId: actor,
             GroupPrincipalIds: EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
             CompanyId: EndpointAuthorization.ResolveCompanyId(context),
-            HasGlobalOverride: EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance));
+            HasGlobalOverride: EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance),
+            TenantId: tenant.TenantId,
+            RequireBoundScope: true);
     }
-
-    private static void ApplyWorkstationStructuredExportAuditHeaders(
-        HttpContext context,
-        StructuredReportingExportPayloadDto payload)
-    {
-        context.Response.Headers["X-Meridian-Export-Id"] = payload.Export.ExportId;
-        context.Response.Headers["X-Meridian-Export-Generated-At"] = payload.GeneratedAtUtc.ToString("O");
-        if (!string.IsNullOrWhiteSpace(payload.GeneratedByPrincipalId))
-        {
-            context.Response.Headers["X-Meridian-Export-Generated-By"] = payload.GeneratedByPrincipalId;
-        }
-
-        if (!string.IsNullOrWhiteSpace(payload.GeneratedForCompanyId))
-        {
-            context.Response.Headers["X-Meridian-Export-Company"] = payload.GeneratedForCompanyId;
-        }
-
-        if (payload.GeneratedForGroupPrincipalIds is { Count: > 0 })
-        {
-            context.Response.Headers["X-Meridian-Export-Groups"] = string.Join(",", payload.GeneratedForGroupPrincipalIds);
-        }
-
-        if (!string.IsNullOrWhiteSpace(payload.Export.VersionStamp))
-        {
-            context.Response.Headers["X-Meridian-Export-Version"] = payload.Export.VersionStamp;
-        }
-
-        if (!string.IsNullOrWhiteSpace(payload.Export.IntegrityHashSha256))
-        {
-            context.Response.Headers["X-Meridian-Export-Sha256"] = payload.Export.IntegrityHashSha256;
-        }
-    }
-
-    private static WorkstationAccountingControlCenterPayload BuildAccountingControlCenterPayload(
-        IReadOnlyList<ReconciliationBreakQueueItem> breakQueue,
-        WorkstationReportingPayload reporting)
-    {
-        var criticalOpen = breakQueue.Count(item => item.Severity == ReconciliationBreakSeverity.Critical && item.Status != ReconciliationBreakQueueStatus.Resolved && item.Status != ReconciliationBreakQueueStatus.Dismissed);
-        var inReview = breakQueue.Count(item => item.Status == ReconciliationBreakQueueStatus.InReview);
-        var unowned = breakQueue.Count(item => string.IsNullOrWhiteSpace(item.AssignedTo));
-        var overdue = breakQueue.Count(item => item.Status != ReconciliationBreakQueueStatus.Resolved && item.LastUpdatedAt < DateTimeOffset.UtcNow.AddDays(-2));
-        var breachCount = breakQueue.Count(item => item.Status != ReconciliationBreakQueueStatus.Resolved && item.LastUpdatedAt < DateTimeOffset.UtcNow.AddDays(-3));
-
-        var alerts = new List<WorkstationAccountingAlertPayload>();
-        if (criticalOpen > 0)
-        {
-            alerts.Add(new WorkstationAccountingAlertPayload("danger", $"{criticalOpen} critical reconciliation breaks remain unresolved."));
-        }
-
-        if (overdue > 0)
-        {
-            alerts.Add(new WorkstationAccountingAlertPayload("danger", $"{overdue} reconciliation breaks are overdue for resolution."));
-        }
-
-        if (reporting.ReportPackDistributions.Any(distribution => distribution.PendingItems > 0))
-        {
-            alerts.Add(new WorkstationAccountingAlertPayload("warning", "Report-pack distribution recipients have pending approval, publication, or delivery work."));
-        }
-
-        return new WorkstationAccountingControlCenterPayload(
-            CloseReadiness: criticalOpen == 0 && overdue == 0 ? "ReadyWithAttention" : "Blocked",
-            PortfolioFilterOptions: ["all-portfolios", "macro", "equity", "fixed-income"],
-            AccountFilterOptions: breakQueue.Select(item => item.FundAccountId).Where(static id => !string.IsNullOrWhiteSpace(id)).Distinct().Cast<string>().ToArray(),
-            BlockerSeverityDistribution:
-            [
-                new WorkstationAccountingSeverityCountPayload("Critical", breakQueue.Count(item => item.Severity == ReconciliationBreakSeverity.Critical)),
-                new WorkstationAccountingSeverityCountPayload("High", breakQueue.Count(item => item.Severity == ReconciliationBreakSeverity.High)),
-                new WorkstationAccountingSeverityCountPayload("Medium", breakQueue.Count(item => item.Severity == ReconciliationBreakSeverity.Medium)),
-                new WorkstationAccountingSeverityCountPayload("Low", breakQueue.Count(item => item.Severity == ReconciliationBreakSeverity.Low))
-            ],
-            AgingCurves:
-            [
-                new WorkstationAccountingAgingBucketPayload("0-1d", breakQueue.Count(item => item.LastUpdatedAt >= DateTimeOffset.UtcNow.AddDays(-1))),
-                new WorkstationAccountingAgingBucketPayload("2-3d", breakQueue.Count(item => item.LastUpdatedAt < DateTimeOffset.UtcNow.AddDays(-1) && item.LastUpdatedAt >= DateTimeOffset.UtcNow.AddDays(-3))),
-                new WorkstationAccountingAgingBucketPayload("4d+", breakQueue.Count(item => item.LastUpdatedAt < DateTimeOffset.UtcNow.AddDays(-3)))
-            ],
-            OwnerWorkload: breakQueue.GroupBy(item => string.IsNullOrWhiteSpace(item.AssignedTo) ? "Unassigned" : item.AssignedTo!)
-                .Select(group => new WorkstationAccountingOwnerWorkloadPayload(
-                    Owner: group.Key,
-                    OpenCount: group.Count(item => item.Status != ReconciliationBreakQueueStatus.Resolved && item.Status != ReconciliationBreakQueueStatus.Dismissed)))
-                .OrderByDescending(item => item.OpenCount)
-                .ToArray(),
-            SlaBreachCount: breachCount,
-            TrendSnapshots:
-            [
-                new WorkstationAccountingTrendSnapshotPayload("Open critical breaks", criticalOpen, criticalOpen > 0 ? "worsening" : "stable"),
-                new WorkstationAccountingTrendSnapshotPayload("Breaks in review", inReview, inReview > 0 ? "improving" : "stable"),
-                new WorkstationAccountingTrendSnapshotPayload("Unassigned breaks", unowned, unowned > 0 ? "worsening" : "stable"),
-                new WorkstationAccountingTrendSnapshotPayload(
-                    "Report distributions pending",
-                    reporting.ReportPackDistributions.Count(distribution => distribution.PendingItems > 0),
-                    "stable")
-            ],
-            DrillLinks:
-            [
-                new WorkstationAccountingDrillLinkPayload("Open close readiness", "/trading/readiness"),
-                new WorkstationAccountingDrillLinkPayload("Open reconciliation queue", "/accounting/reconciliation"),
-                new WorkstationAccountingDrillLinkPayload("Open report approvals", "/reporting/report-packs"),
-                new WorkstationAccountingDrillLinkPayload("Open evidence completeness", "/reporting/evidence")
-            ],
-            Alerts: alerts);
-    }
-
-    private static string BuildDisplayName(StrategyRunSummary? latest)
-        => latest is null ? "Meridian Operator" : $"{latest.StrategyName} Desk";
-
-    private static string BuildRole(StrategyRunSummary? latest)
-        => latest is null
-            ? "Strategy Lead"
-            : latest.Mode == StrategyRunMode.Live
-                ? "Live Operations"
-                : "Strategy Lead";
-
-    private static string MapEnvironment(StrategyRunSummary? latest)
-        => latest?.Mode switch
-        {
-            StrategyRunMode.Live => "live",
-            StrategyRunMode.Paper => "paper",
-            StrategyRunMode.Backtest => "research",
-            _ => "paper"
-        };
-
-    private static string MapWorkspace(StrategyRunSummary? latest)
-        => latest?.Promotion?.State switch
-        {
-            StrategyRunPromotionState.LiveManaged => "accounting",
-            StrategyRunPromotionState.CandidateForLive => "trading",
-            StrategyRunPromotionState.CandidateForPaper => "strategy",
-            _ => latest?.Mode == StrategyRunMode.Live ? "trading" : "strategy"
-        };
 
     private static string BuildRunNotes(StrategyRunSummary run)
     {
@@ -6612,453 +3923,29 @@ public static partial class WorkstationEndpoints
         return $"{sign}${scaled.ToString("0.##", CultureInfo.InvariantCulture)}{suffix}";
     }
 
-    private static SecurityMasterWorkstationDto MapToWorkstationSecurity(SecuritySummaryDto summary)
-        => new(
-            SecurityId: summary.SecurityId,
-            DisplayName: summary.DisplayName,
-            Status: summary.Status,
-            Classification: new SecurityClassificationSummaryDto(
-                AssetClass: summary.AssetClass,
-                SubType: DeriveSubType(summary.AssetClass),
-                PrimaryIdentifierKind: null,
-                PrimaryIdentifierValue: summary.PrimaryIdentifier,
-                MatchedIdentifierKind: null,
-                MatchedIdentifierValue: null,
-                MatchedProvider: null),
-            EconomicDefinition: new SecurityEconomicDefinitionSummaryDto(
-                Currency: summary.Currency,
-                Version: summary.Version,
-                EffectiveFrom: null,
-                EffectiveTo: null));
-
-    private static SecurityMasterWorkstationDto MapToWorkstationSecurity(SecurityDetailDto detail)
-    {
-        var primaryIdentifier = detail.Identifiers
-            .FirstOrDefault(static identifier => identifier.IsPrimary)
-            ?? detail.Identifiers.FirstOrDefault();
-
-        return new SecurityMasterWorkstationDto(
-            SecurityId: detail.SecurityId,
-            DisplayName: detail.DisplayName,
-            Status: detail.Status,
-            Classification: new SecurityClassificationSummaryDto(
-                AssetClass: detail.AssetClass,
-                SubType: DeriveSubType(detail.AssetClass),
-                PrimaryIdentifierKind: primaryIdentifier?.Kind.ToString(),
-                PrimaryIdentifierValue: primaryIdentifier?.Value,
-                MatchedIdentifierKind: null,
-                MatchedIdentifierValue: null,
-                MatchedProvider: null),
-            EconomicDefinition: new SecurityEconomicDefinitionSummaryDto(
-                Currency: detail.Currency,
-                Version: detail.Version,
-                EffectiveFrom: detail.EffectiveFrom,
-                EffectiveTo: detail.EffectiveTo));
-    }
-
-    private static SecurityIdentityDrillInDto MapToIdentityDrillIn(SecurityDetailDto detail)
-        => new(
-            SecurityId: detail.SecurityId,
-            DisplayName: detail.DisplayName,
-            AssetClass: detail.AssetClass,
-            Status: detail.Status,
-            Version: detail.Version,
-            EffectiveFrom: detail.EffectiveFrom,
-            EffectiveTo: detail.EffectiveTo,
-            Identifiers: detail.Identifiers,
-            Aliases: detail.Aliases);
-
-    private static SecurityEconomicDefinitionSummaryDto MapToEconomicDefinitionSummary(SecurityEconomicDefinitionRecord record)
-        => new(
-            Currency: record.Currency,
-            Version: record.Version,
-            EffectiveFrom: record.EffectiveFrom,
-            EffectiveTo: record.EffectiveTo,
-            SubType: record.SubType,
-            AssetFamily: record.AssetFamily,
-            IssuerType: record.IssuerType);
-
-    /// <summary>
-    /// Derives the most specific sub-type available from the asset-class string without requiring
-    /// a full aggregate rebuild. Returns null for asset classes that may map to multiple sub-types.
-    /// </summary>
-    private static string? DeriveSubType(string? assetClass) => assetClass switch
-    {
-        "Bond" => "Bond",
-        "TreasuryBill" => "TreasuryBill",
-        "Option" => "OptionContract",
-        "Future" => "FutureContract",
-        "Swap" => "SwapContract",
-        "DirectLoan" => "DirectLoan",
-        "Deposit" => "Deposit",
-        "MoneyMarketFund" => "MoneyMarket",
-        "CertificateOfDeposit" => "CertificateOfDeposit",
-        "CommercialPaper" => "CommercialPaper",
-        "Repo" => "Repo",
-        _ => null
-    };
-
-    private static async Task SeedBreakQueueAsync(
-        IServiceProvider services,
-        IReadOnlyList<StrategyRunSummary> runs,
-        IReadOnlyList<ReconciliationRunDetail?> reconciliations,
-        CancellationToken ct)
-    {
-        var repository = services.GetService<IReconciliationBreakQueueRepository>();
-        await SeedBreakQueueAsync(repository, runs, reconciliations, ct).ConfigureAwait(false);
-    }
-
-    private static async Task SeedBreakQueueAsync(
-        IReconciliationBreakQueueRepository? repository,
-        IReadOnlyList<StrategyRunSummary> runs,
-        IReadOnlyList<ReconciliationRunDetail?> reconciliations,
-        CancellationToken ct)
-    {
-        if (repository is null)
-        {
-            return;
-        }
-
-        for (var i = 0; i < runs.Count; i++)
-        {
-            var run = runs[i];
-            var reconciliation = i < reconciliations.Count ? reconciliations[i] : null;
-            if (reconciliation is null)
-            {
-                continue;
-            }
-
-            foreach (var reconciliationBreak in reconciliation.Breaks)
-            {
-                var breakId = $"{run.RunId}:{reconciliationBreak.CheckId}";
-                var now = DateTimeOffset.UtcNow;
-                var routing = ResolveReconciliationExceptionRouting(
-                    reconciliationBreak.Category,
-                    reconciliationBreak.Severity,
-                    Math.Abs(reconciliationBreak.Variance));
-                await repository.CreateIfMissingAsync(
-                    new ReconciliationBreakQueueItem(
-                        BreakId: breakId,
-                        RunId: run.RunId,
-                        StrategyName: run.StrategyName,
-                        Category: reconciliationBreak.Category,
-                        Status: ReconciliationBreakQueueStatus.Open,
-                        Variance: Math.Abs(reconciliationBreak.Variance),
-                        Reason: reconciliationBreak.Reason,
-                        AssignedTo: null,
-                        DetectedAt: now,
-                        LastUpdatedAt: now,
-                        Severity: reconciliationBreak.Severity,
-                        ExceptionRoute: routing.ExceptionRoute,
-                        ToleranceProfileId: routing.ToleranceProfileId,
-                        ToleranceBand: routing.ToleranceBand,
-                        RequiredSignoffRole: routing.RequiredSignoffRole,
-                        SignoffStatus: routing.SignoffStatus,
-                        FundAccountId: run.FundProfileId,
-                        ExplainabilitySummary: reconciliationBreak.Reason,
-                        RoutingTarget: "/accounting/reconciliation",
-                        RoutingDetail: $"Review reconciliation break {breakId} in accounting queue.",
-                        RecommendedAction: "ReviewAndResolve",
-                        SourceType: "provider-ledger",
-                        SourceSystem: "provider-ledger-reconciliation",
-                        SourceReference: reconciliationBreak.CheckId,
-                        SourceBreakId: reconciliationBreak.CheckId,
-                        SourceFingerprint: ComputeReconciliationSourceFingerprint("provider-ledger", run.RunId, reconciliationBreak.CheckId, reconciliationBreak.Category.ToString(), reconciliationBreak.Reason, reconciliationBreak.Variance.ToString(CultureInfo.InvariantCulture)),
-                        LedgerBookId: null),
-                    ct).ConfigureAwait(false);
-            }
-        }
-    }
-
-    private static async Task SeedStatementBreakQueueAsync(
-        IReconciliationBreakQueueRepository repository,
-        IReadOnlyList<StatementBreakDto> statementBreaks,
-        CancellationToken ct)
-    {
-        foreach (var statementBreak in statementBreaks.Where(static item => IsOpenStatementBreak(item.Status)))
-        {
-            var item = MapStatementBreakToQueueItem(statementBreak);
-            await repository.CreateIfMissingAsync(item, ct).ConfigureAwait(false);
-        }
-    }
-
-    private static ReconciliationBreakQueueItem MapStatementBreakToQueueItem(StatementBreakDto statementBreak)
-    {
-        var observedAt = statementBreak.LastObservedAtUtc ?? statementBreak.CreatedAtUtc ?? DateTimeOffset.UtcNow;
-        var variance = Math.Abs(statementBreak.Delta ?? ((statementBreak.StatementAmount ?? 0m) - (statementBreak.BookAmount ?? 0m)));
-        var category = MapStatementBreakCategory(statementBreak.BreakType);
-        var severity = MapStatementBreakSeverity(statementBreak.Severity, variance, statementBreak.Tolerance);
-        var routing = ResolveReconciliationExceptionRouting(category, severity, variance);
-        var fingerprint = ComputeStatementBreakFingerprint(statementBreak);
-        var sourceReference = NormalizeMetadata(statementBreak.StatementReference) ?? NormalizeMetadata(statementBreak.InternalReference) ?? statementBreak.BreakId;
-
-        return new ReconciliationBreakQueueItem(
-            BreakId: $"statement:{fingerprint}",
-            RunId: NormalizeMetadata(statementBreak.InternalReference) ?? "statement-reconciliation",
-            StrategyName: "Statement reconciliation",
-            Category: category,
-            Status: ReconciliationBreakQueueStatus.Open,
-            Variance: variance,
-            Reason: NormalizeMetadata(statementBreak.Description) ?? $"Statement {statementBreak.BreakType?.ToString() ?? "break"} requires review.",
-            AssignedTo: NormalizeMetadata(statementBreak.Owner),
-            DetectedAt: statementBreak.CreatedAtUtc ?? observedAt,
-            LastUpdatedAt: observedAt,
-            Severity: severity,
-            ExceptionRoute: routing.ExceptionRoute,
-            ToleranceProfileId: routing.ToleranceProfileId,
-            ToleranceBand: statementBreak.Tolerance ?? routing.ToleranceBand,
-            RequiredSignoffRole: routing.RequiredSignoffRole,
-            SignoffStatus: routing.SignoffStatus,
-            ExplainabilitySummary: statementBreak.Description,
-            RoutingTarget: "/accounting/reconciliation/statements",
-            RoutingDetail: $"Review statement reconciliation break {sourceReference ?? statementBreak.BreakId ?? fingerprint} in accounting queue.",
-            RecommendedAction: NormalizeMetadata(statementBreak.RecommendedAction) ?? "ReviewAndResolve",
-            SourceType: "statement",
-            SourceSystem: "statement-reconciliation",
-            SourceReference: sourceReference,
-            SourceImportId: ExtractStatementImportId(statementBreak.StatementReference),
-            SourceBreakId: statementBreak.BreakId,
-            SourceFingerprint: fingerprint,
-            EvidenceLinks: string.IsNullOrWhiteSpace(statementBreak.EvidenceLink) ? null : [statementBreak.EvidenceLink],
-            EvidenceCount: string.IsNullOrWhiteSpace(statementBreak.EvidenceLink) ? 0 : 1,
-            LedgerBookId: null);
-    }
-
-    private static bool IsOpenStatementBreak(string? status)
-        => string.IsNullOrWhiteSpace(status) ||
-           status.Equals("open", StringComparison.OrdinalIgnoreCase) ||
-           status.Equals("review", StringComparison.OrdinalIgnoreCase) ||
-           status.Equals("inreview", StringComparison.OrdinalIgnoreCase) ||
-           status.Equals("in-review", StringComparison.OrdinalIgnoreCase);
-
-    private static ReconciliationBreakCategory MapStatementBreakCategory(StatementBreakType? breakType)
-        => breakType switch
-        {
-            StatementBreakType.MissingStatementPosition or StatementBreakType.MissingBookPosition or StatementBreakType.PositionQuantityMismatch or StatementBreakType.PositionMarketValueMismatch
-                => ReconciliationBreakCategory.MissingPortfolioCoverage,
-            StatementBreakType.MissingStatementCash or StatementBreakType.MissingBookCash or StatementBreakType.CashBalanceMismatch
-                => ReconciliationBreakCategory.CashMismatch,
-            StatementBreakType.SecurityIdentifierMismatch or StatementBreakType.ClassificationMismatch
-                => ReconciliationBreakCategory.ClassificationGap,
-            StatementBreakType.ValidationFailure or StatementBreakType.DuplicateStatementItem
-                => ReconciliationBreakCategory.MissingLedgerCoverage,
-            _ => ReconciliationBreakCategory.ExternalStatementMismatch
-        };
-
-    private static ReconciliationBreakSeverity MapStatementBreakSeverity(StatementValidationSeverity? severity, decimal variance, decimal? tolerance)
-        => severity switch
-        {
-            StatementValidationSeverity.Critical => ReconciliationBreakSeverity.Critical,
-            StatementValidationSeverity.Error => ReconciliationBreakSeverity.High,
-            StatementValidationSeverity.Warning => ReconciliationBreakSeverity.Medium,
-            StatementValidationSeverity.Info => ReconciliationBreakSeverity.Info,
-            _ when tolerance.HasValue && variance > tolerance.Value * 10m => ReconciliationBreakSeverity.High,
-            _ => ReconciliationBreakSeverity.Medium
-        };
-
-    private static string ComputeStatementBreakFingerprint(StatementBreakDto statementBreak)
-        => ComputeReconciliationSourceFingerprint(
-            "statement",
-            NormalizeStatementReference(statementBreak.StatementReference),
-            statementBreak.BreakType?.ToString(),
-            statementBreak.Currency,
-            (statementBreak.Delta ?? 0m).ToString(CultureInfo.InvariantCulture),
-            (statementBreak.Tolerance ?? 0m).ToString(CultureInfo.InvariantCulture),
-            NormalizeMetadata(statementBreak.Description));
-
-    private static string? ExtractStatementImportId(string? value)
-    {
-        var normalized = NormalizeMetadata(value);
-        var separator = normalized?.IndexOf(':');
-        return separator is > 0 ? normalized![..separator.Value] : null;
-    }
-
-    private static string NormalizeStatementReference(string? value)
-    {
-        var normalized = NormalizeMetadata(value);
-        if (normalized is null)
-        {
-            return string.Empty;
-        }
-
-        var separator = normalized.LastIndexOf(':');
-        return separator >= 0 && separator + 1 < normalized.Length
-            ? normalized[(separator + 1)..]
-            : normalized;
-    }
-
-    private static string? NormalizeMetadata(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
-    private static string ComputeReconciliationSourceFingerprint(params string?[] parts)
-    {
-        var payload = string.Join("|", parts.Select(static part => part?.Trim().ToUpperInvariant() ?? string.Empty));
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
-    }
-
-    private sealed record ReconciliationExceptionRouting(
-        string ExceptionRoute,
-        string ToleranceProfileId,
-        decimal ToleranceBand,
-        string RequiredSignoffRole,
-        string SignoffStatus);
-
-    private static ReconciliationExceptionRouting ResolveReconciliationExceptionRouting(
-        ReconciliationBreakCategory category,
-        ReconciliationBreakSeverity severity,
-        decimal variance)
-    {
-        if (severity == ReconciliationBreakSeverity.Critical)
-        {
-            return new ReconciliationExceptionRouting(
-                ExceptionRoute: category is ReconciliationBreakCategory.MissingLedgerCoverage or ReconciliationBreakCategory.MissingBankCoverage
-                    ? "accounting-coverage-escalation"
-                    : "accounting-variance-escalation",
-                ToleranceProfileId: "critical-zero-tolerance",
-                ToleranceBand: 0m,
-                RequiredSignoffRole: "Accounting sign-off",
-                SignoffStatus: "pending-signoff");
-        }
-
-        if (severity == ReconciliationBreakSeverity.High)
-        {
-            return new ReconciliationExceptionRouting(
-                ExceptionRoute: "fund-ops-review",
-                ToleranceProfileId: "high-variance-watch",
-                ToleranceBand: Math.Max(100m, Math.Round(variance * 0.05m, 2)),
-                RequiredSignoffRole: "Fund operations lead",
-                SignoffStatus: "pending-signoff");
-        }
-
-        if (category is ReconciliationBreakCategory.ClassificationGap or ReconciliationBreakCategory.MissingPortfolioCoverage)
-        {
-            return new ReconciliationExceptionRouting(
-                ExceptionRoute: "security-master-accounting-review",
-                ToleranceProfileId: "coverage-classification-review",
-                ToleranceBand: 0m,
-                RequiredSignoffRole: "Accounting analyst",
-                SignoffStatus: "routing-review");
-        }
-
-        if (severity == ReconciliationBreakSeverity.Low || severity == ReconciliationBreakSeverity.Info)
-        {
-            return new ReconciliationExceptionRouting(
-                ExceptionRoute: "ops-monitor",
-                ToleranceProfileId: "low-variance-watch",
-                ToleranceBand: 500m,
-                RequiredSignoffRole: "Operations reviewer",
-                SignoffStatus: "monitor");
-        }
-
-        return new ReconciliationExceptionRouting(
-            ExceptionRoute: "operations-triage",
-            ToleranceProfileId: "standard-recon-tolerance",
-            ToleranceBand: Math.Max(250m, Math.Round(variance * 0.02m, 2)),
-            RequiredSignoffRole: "Operations reviewer",
-            SignoffStatus: "pending-signoff");
-    }
-
-    private static async Task PublishProviderLedgerBreakQueueAsync(
-        IServiceProvider services,
-        ReconciliationRunDetail detail,
-        CancellationToken ct)
-    {
-        var repository = services.GetService<IReconciliationBreakQueueRepository>();
-        var readService = services.GetService<StrategyRunReadService>();
-        if (repository is null || readService is null)
-        {
-            return;
-        }
-
-        var runs = await readService.GetRunsAsync(ct: ct).ConfigureAwait(false);
-        var run = runs.FirstOrDefault(candidate =>
-            string.Equals(candidate.RunId, detail.Summary.RunId, StringComparison.OrdinalIgnoreCase));
-        if (run is null)
-        {
-            return;
-        }
-
-        await SeedBreakQueueAsync(repository, [run], [detail], ct).ConfigureAwait(false);
-    }
-
-    private static async Task PublishStatementBreakQueueAsync(
-        IServiceProvider services,
-        IReconciliationApiService statementService,
-        CancellationToken ct)
-    {
-        var repository = services.GetService<IReconciliationBreakQueueRepository>();
-        if (repository is null)
-        {
-            return;
-        }
-
-        var statementBreaks = await statementService.ListOpenStatementBreaksAsync(ct).ConfigureAwait(false);
-        await SeedStatementBreakQueueAsync(repository, statementBreaks, ct).ConfigureAwait(false);
-    }
-
-    private static async Task EnsureBreakQueueSeededAsync(IServiceProvider services, CancellationToken ct)
-    {
-        var readService = services.GetService<StrategyRunReadService>();
-        var reconciliationService = services.GetService<IReconciliationRunService>();
-        var statementService = services.GetService<IReconciliationApiService>();
-        var repository = services.GetService<IReconciliationBreakQueueRepository>();
-        await EnsureBreakQueueSeededAsync(readService, reconciliationService, statementService, repository, ct).ConfigureAwait(false);
-    }
-
-    private static Task EnsureBreakQueueSeededAsync(
-        StrategyRunReadService? readService,
-        IReconciliationRunService? reconciliationService,
-        IReconciliationBreakQueueRepository? repository,
-        CancellationToken ct)
-        => EnsureBreakQueueSeededAsync(readService, reconciliationService, null, repository, ct);
-
-    private static async Task EnsureBreakQueueSeededAsync(
-        StrategyRunReadService? readService,
-        IReconciliationRunService? reconciliationService,
-        IReconciliationApiService? statementService,
-        IReconciliationBreakQueueRepository? repository,
-        CancellationToken ct)
-    {
-        if (readService is not null && reconciliationService is not null)
-        {
-            var runs = await readService.GetRunsAsync(ct: ct).ConfigureAwait(false);
-            if (runs.Count > 0)
-            {
-                var reconciliations = await Task.WhenAll(
-                    runs.Select(run => reconciliationService.GetLatestForRunAsync(run.RunId, ct))).ConfigureAwait(false);
-                await SeedBreakQueueAsync(repository, runs, reconciliations, ct).ConfigureAwait(false);
-            }
-        }
-
-        if (repository is not null && statementService is not null)
-        {
-            var statementBreaks = await statementService.ListOpenStatementBreaksAsync(ct).ConfigureAwait(false);
-            await SeedStatementBreakQueueAsync(repository, statementBreaks, ct).ConfigureAwait(false);
-        }
-    }
-
     private static async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueItemsAsync(
         IServiceProvider services,
+        ReconciliationBreakQueueScope scope,
         string? status,
         string? fundAccountId,
         Guid? ledgerBookId,
         CancellationToken ct)
     {
-        var repository = services.GetService<IReconciliationBreakQueueRepository>();
-        return await GetBreakQueueItemsAsync(repository, status, fundAccountId, ledgerBookId, ct).ConfigureAwait(false);
+        var repository = services.GetService<IReconciliationBreakQueueRepository>()
+            ?? throw new InvalidOperationException(
+                "Reconciliation break queue repository is not registered.");
+        return await GetBreakQueueItemsAsync(repository, scope, status, fundAccountId, ledgerBookId, ct).ConfigureAwait(false);
     }
 
     private static async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueItemsAsync(
         IReconciliationBreakQueueRepository? repository,
+        ReconciliationBreakQueueScope scope,
         string? status,
         string? fundAccountId,
         Guid? ledgerBookId,
         CancellationToken ct)
     {
-        if (repository is null)
-        {
-            return [];
-        }
+        ArgumentNullException.ThrowIfNull(repository);
 
         ReconciliationBreakQueueStatus? parsed = null;
         if (Enum.TryParse<ReconciliationBreakQueueStatus>(status, ignoreCase: true, out var statusValue))
@@ -7066,7 +3953,7 @@ public static partial class WorkstationEndpoints
             parsed = statusValue;
         }
 
-        var items = await repository.GetAllAsync(parsed, ct).ConfigureAwait(false);
+        var items = await repository.GetAllAsync(scope, parsed, ct).ConfigureAwait(false);
         return items
             .Where(item => string.IsNullOrWhiteSpace(fundAccountId) ||
                            string.Equals(item.FundAccountId, fundAccountId, StringComparison.OrdinalIgnoreCase))
@@ -7142,206 +4029,19 @@ public static partial class WorkstationEndpoints
         };
     }
 
-    private static decimal CalculateAutoMatchRate(int totalBreakCount, int activeBreakCount)
-        => totalBreakCount <= 0 ? 1m : decimal.Round((decimal)Math.Max(0, totalBreakCount - activeBreakCount) / totalBreakCount, 4);
-
-    private static decimal CalculateT0ClosureRate(int totalBreakCount, int resolvedBreakCount, int dismissedBreakCount)
-        => totalBreakCount <= 0 ? 1m : decimal.Round((decimal)(resolvedBreakCount + dismissedBreakCount) / totalBreakCount, 4);
-
-    private static ReconciliationCalibrationProfileSummaryDto BuildCalibrationProfileSummary(
-        IGrouping<(string Profile, string Route), ReconciliationBreakQueueItem> group)
-    {
-        var items = group.ToArray();
-        var toleranceBands = items
-            .Where(static item => item.ToleranceBand.HasValue)
-            .Select(static item => item.ToleranceBand!.Value)
-            .ToArray();
-
-        return new ReconciliationCalibrationProfileSummaryDto(
-            ToleranceProfileId: group.Key.Profile,
-            ExceptionRoute: group.Key.Route,
-            HighestSeverity: items
-                .OrderByDescending(static item => item.Severity)
-                .First()
-                .Severity,
-            MaxToleranceBand: toleranceBands.Length == 0 ? null : toleranceBands.Max(),
-            TotalBreakCount: items.Length,
-            OpenBreakCount: items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Open),
-            InReviewBreakCount: items.Count(static item => item.Status == ReconciliationBreakQueueStatus.InReview),
-            ResolvedBreakCount: items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Resolved),
-            DismissedBreakCount: items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Dismissed),
-            PendingSignoffCount: items.Count(static item => RequiresCalibrationSignoff(item)),
-            SignedOffCount: items.Count(static item => IsSignedOff(item)),
-            LastUpdatedAt: items
-                .OrderByDescending(static item => item.LastUpdatedAt)
-                .First()
-                .LastUpdatedAt);
-    }
-
-    private static ReconciliationCalibrationStatusDto DetermineReconciliationCalibrationStatus(
-        int totalBreakCount,
-        int activeBreakCount,
-        int criticalOpenBreakCount,
-        int pendingSignoffCount,
-        int missingCalibrationMetadataCount)
-    {
-        if (totalBreakCount == 0)
-        {
-            return ReconciliationCalibrationStatusDto.Ready;
-        }
-
-        if (criticalOpenBreakCount > 0 || missingCalibrationMetadataCount > 0)
-        {
-            return ReconciliationCalibrationStatusDto.Blocked;
-        }
-
-        return activeBreakCount > 0 || pendingSignoffCount > 0
-            ? ReconciliationCalibrationStatusDto.ReviewRequired
-            : ReconciliationCalibrationStatusDto.Ready;
-    }
-
-    private static string BuildReconciliationCalibrationSummaryText(
-        ReconciliationCalibrationStatusDto status,
-        int totalBreakCount,
-        int activeBreakCount,
-        int criticalOpenBreakCount,
-        int pendingSignoffCount,
-        int missingCalibrationMetadataCount,
-        int profileCount)
-    {
-        if (totalBreakCount == 0)
-        {
-            return "No reconciliation breaks require calibration.";
-        }
-
-        if (missingCalibrationMetadataCount > 0)
-        {
-            return $"{missingCalibrationMetadataCount} reconciliation break(s) are missing tolerance or sign-off metadata.";
-        }
-
-        if (criticalOpenBreakCount > 0)
-        {
-            return $"{criticalOpenBreakCount} critical reconciliation break(s) block calibration sign-off.";
-        }
-
-        if (status == ReconciliationCalibrationStatusDto.ReviewRequired)
-        {
-            return $"{activeBreakCount} reconciliation break(s) need review across {profileCount} tolerance profile(s); {pendingSignoffCount} sign-off item(s) remain open.";
-        }
-
-        return "All reconciliation breaks are resolved or dismissed; calibration is ready for accounting sign-off.";
-    }
-
-    private static bool HasMissingCalibrationMetadata(ReconciliationBreakQueueItem item)
-        => (item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview) &&
-           (string.IsNullOrWhiteSpace(item.ExceptionRoute) ||
-            string.IsNullOrWhiteSpace(item.ToleranceProfileId) ||
-            !item.ToleranceBand.HasValue ||
-            string.IsNullOrWhiteSpace(item.RequiredSignoffRole) ||
-            string.IsNullOrWhiteSpace(item.SignoffStatus));
-
-    private static bool RequiresCalibrationSignoff(ReconciliationBreakQueueItem item)
-        => (item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview) &&
-           !IsTerminalCalibrationSignoff(item.SignoffStatus);
-
-    private static bool IsTerminalCalibrationSignoff(string? signoffStatus)
-        => string.Equals(signoffStatus, "signed-off", StringComparison.OrdinalIgnoreCase) ||
-           string.Equals(signoffStatus, "dismissed", StringComparison.OrdinalIgnoreCase) ||
-           string.Equals(signoffStatus, "monitor", StringComparison.OrdinalIgnoreCase);
-
-    private static bool IsSignedOff(ReconciliationBreakQueueItem item)
-        => string.Equals(item.SignoffStatus, "signed-off", StringComparison.OrdinalIgnoreCase) ||
-           item.SignoffHistory?.Count > 0;
-
-    private static string NormalizeCalibrationValue(string? value, string fallback)
-        => string.IsNullOrWhiteSpace(value) ? fallback : value;
-
-
-    private static async Task<IResult> ApplyReconciliationCaseworkEndpointAsync(
-        string breakId,
-        ReconciliationCaseworkCommand request,
-        HttpContext context,
-        JsonSerializerOptions jsonOptions)
-    {
-        if (!CanMutateReconciliationBreakQueue(context))
-        {
-            return EndpointHelpers.Forbidden();
-        }
-
-        if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase))
-        {
-            return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
-        }
-
-        if (!TryResolveCurrentUser(context, out var currentUser))
-        {
-            return Results.Unauthorized();
-        }
-
-        var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
-        if (repository is null)
-        {
-            return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-        }
-
-        var trusted = request with { Actor = currentUser, Source = string.IsNullOrWhiteSpace(request.Source) ? "workstation-api" : request.Source };
-        var transition = await repository.ApplyCaseworkCommandAsync(trusted, context.RequestAborted).ConfigureAwait(false);
-        return transition.Status switch
-        {
-            ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
-            ReconciliationBreakQueueTransitionStatus.NotFound => Results.NotFound(),
-            ReconciliationBreakQueueTransitionStatus.Conflict => Results.Conflict(new { error = transition.Error ?? "Version conflict.", currentState = transition.Item?.LifecycleState.ToString(), currentVersion = transition.Item?.Version }),
-            _ => Results.BadRequest(new { error = transition.Error ?? "Invalid reconciliation casework command.", code = transition.ErrorCode.ToString(), validation = transition.Validation })
-        };
-    }
-
-    private static async Task<IResult> ApplyReconciliationBulkEndpointAsync(
-        ReconciliationBulkCaseworkRequest request,
-        HttpContext context,
-        JsonSerializerOptions jsonOptions)
-    {
-        if (!CanMutateReconciliationBreakQueue(context))
-        {
-            return EndpointHelpers.Forbidden();
-        }
-
-        if (string.IsNullOrWhiteSpace(request.IdempotencyKey))
-        {
-            return Results.BadRequest(new { error = "Idempotency key is required." });
-        }
-
-        if (request.BreakIds.Count > request.MaxCaseCount)
-        {
-            return Results.BadRequest(new { error = $"Bulk action exceeds max case count {request.MaxCaseCount}." });
-        }
-
-        if (!TryResolveCurrentUser(context, out var currentUser))
-        {
-            return Results.Unauthorized();
-        }
-
-        var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
-        if (repository is null)
-        {
-            return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-        }
-
-        var trusted = request with { Actor = currentUser, Source = string.IsNullOrWhiteSpace(request.Source) ? "workstation-api" : request.Source };
-        var result = await repository.ApplyBulkCaseworkAsync(trusted, context.RequestAborted).ConfigureAwait(false);
-        return Results.Json(result, jsonOptions);
-    }
-
     private static async Task<ReconciliationBreakQueueTransitionResult> ReviewBreakAsync(
         IServiceProvider services,
+        ReconciliationBreakQueueScope scope,
         ReviewReconciliationBreakRequest request,
         CancellationToken ct)
     {
         var repository = services.GetService<IReconciliationBreakQueueRepository>();
-        return await ReviewBreakAsync(repository, request, ct).ConfigureAwait(false);
+        return await ReviewBreakAsync(repository, scope, request, ct).ConfigureAwait(false);
     }
 
     private static async Task<ReconciliationBreakQueueTransitionResult> ReviewBreakAsync(
         IReconciliationBreakQueueRepository? repository,
+        ReconciliationBreakQueueScope scope,
         ReviewReconciliationBreakRequest request,
         CancellationToken ct)
     {
@@ -7353,34 +4053,8 @@ public static partial class WorkstationEndpoints
                 Error: "Reconciliation break queue repository is not registered.");
         }
 
-        return await repository.StartReviewAsync(request, ct).ConfigureAwait(false);
+        return await repository.StartReviewAsync(scope, request, ct).ConfigureAwait(false);
     }
-
-    private static async Task<ReconciliationBreakQueueTransitionResult> ResolveBreakAsync(
-        IServiceProvider services,
-        ResolveReconciliationBreakRequest request,
-        CancellationToken ct)
-    {
-        var repository = services.GetService<IReconciliationBreakQueueRepository>();
-        return await ResolveBreakAsync(repository, request, ct).ConfigureAwait(false);
-    }
-
-    private static async Task<ReconciliationBreakQueueTransitionResult> ResolveBreakAsync(
-        IReconciliationBreakQueueRepository? repository,
-        ResolveReconciliationBreakRequest request,
-        CancellationToken ct)
-    {
-        if (repository is null)
-        {
-            return new ReconciliationBreakQueueTransitionResult(
-                ReconciliationBreakQueueTransitionStatus.NotFound,
-                Item: null,
-                Error: "Reconciliation break queue repository is not registered.");
-        }
-
-        return await repository.ResolveAsync(request, ct).ConfigureAwait(false);
-    }
-
 
     private static string ResolveCurrentActor(HttpContext context)
     {
@@ -7397,290 +4071,31 @@ public static partial class WorkstationEndpoints
         return "operator";
     }
 
+    /// <summary>
+    /// Who may read reconciliation break records, wherever they surface: the break-queue routes, and
+    /// the operator inbox, which contributes the same records as work items.
+    /// <para>
+    /// Deliberately a superset of <see cref="HasReconciliationMutationPermission"/> -- a profile that
+    /// can act on casework must be able to load the queue it acts on, and a permission override need
+    /// not match the bundled roles, so ManageDirectLending cannot be assumed to arrive alongside the
+    /// view grants.
+    /// </para>
+    /// <para>
+    /// ViewTrades is deliberately absent. It cannot act on casework at all, and the records carry
+    /// strategy and run identifiers, variances, reasons, assignees, sign-off history, counterparties
+    /// and resolution notes. Kept here rather than only on the route declarations because the inbox
+    /// reaches these records without passing one: a helper the declarations disagree with is not a
+    /// stricter gate, it is an unreachable check on one path and an open one on the other.
+    /// </para>
+    /// </summary>
     private static bool CanViewReconciliationBreakQueue(HttpContext context)
         => EndpointAuthorization.HasAnyPermission(
             context,
-            UserPermission.ViewTrades,
-            UserPermission.ViewSecurityMaster,
-            UserPermission.ModifySecurityMaster,
-            UserPermission.AdminMaintenance);
+            UserPermission.ViewDirectLending, UserPermission.ManageDirectLending,
+            UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance);
 
     private static bool CanMutateReconciliationBreakQueue(HttpContext context)
         => HasReconciliationMutationPermission(context);
-
-    private static void MapStrategyDesignerEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
-    {
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStrategyDesignerTemplates), (HttpContext context) =>
-        {
-            var service = context.RequestServices.GetService<StrategyDesignService>();
-            return service is null
-                ? StrategyDesignerUnavailable(jsonOptions)
-                : Results.Json(service.GetTemplates(), jsonOptions);
-        })
-        .WithName("GetStrategyDesignerTemplates")
-        .Produces<IReadOnlyList<StrategyDesignTemplate>>(200)
-        .Produces(501);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStrategyDesignerFieldCatalog), (HttpContext context) =>
-        {
-            var service = context.RequestServices.GetService<StrategyDesignService>();
-            return service is null
-                ? StrategyDesignerUnavailable(jsonOptions)
-                : Results.Json(service.GetFieldCatalog(), jsonOptions);
-        })
-        .WithName("GetStrategyDesignerFieldCatalog")
-        .Produces<IReadOnlyList<StrategyDesignFieldCatalogItem>>(200)
-        .Produces(501);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStrategyDesignerDrafts), async (HttpContext context) =>
-        {
-            var repository = context.RequestServices.GetService<IStrategyDesignRepository>();
-            if (repository is null)
-            {
-                return StrategyDesignerUnavailable(jsonOptions);
-            }
-
-            var drafts = await repository.ListDraftsAsync(context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(drafts, jsonOptions);
-        })
-        .WithName("GetStrategyDesignerDrafts")
-        .Produces<IReadOnlyList<StrategyDesignDraftSummary>>(200)
-        .Produces(501);
-
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStrategyDesignerDraftById), async (string documentId, HttpContext context) =>
-        {
-            var repository = context.RequestServices.GetService<IStrategyDesignRepository>();
-            if (repository is null)
-            {
-                return StrategyDesignerUnavailable(jsonOptions);
-            }
-
-            var document = await repository.GetAsync(documentId, context.RequestAborted).ConfigureAwait(false);
-            return document is null
-                ? Results.NotFound(new { error = "Strategy design draft was not found." })
-                : Results.Json(document, jsonOptions);
-        })
-        .WithName("GetStrategyDesignerDraft")
-        .Produces<StrategyDesignDocument>(200)
-        .Produces(404)
-        .Produces(501);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationStrategyDesignerDrafts), async (StrategyDesignDraftSaveRequest? request, HttpContext context) =>
-        {
-            if (!HasPermission(context, UserPermission.ManageStrategies))
-            {
-                return Results.StatusCode(StatusCodes.Status403Forbidden);
-            }
-
-            if (request?.Document is null)
-            {
-                return Results.BadRequest(new { error = "A strategy design document is required." });
-            }
-
-            var service = context.RequestServices.GetService<StrategyDesignService>();
-            var repository = context.RequestServices.GetService<IStrategyDesignRepository>();
-            if (service is null || repository is null)
-            {
-                return StrategyDesignerUnavailable(jsonOptions);
-            }
-
-            var document = service.Normalize(request.Document);
-            var validation = service.Validate(document);
-            await repository.SaveAsync(document, context.RequestAborted).ConfigureAwait(false);
-            var response = new StrategyDesignDraftSaveResponse(
-                document,
-                StrategyDesignService.CreateDraftSummary(document),
-                validation,
-                service.BuildRunTrace(document, validation));
-            return Results.Json(response, jsonOptions);
-        })
-        .WithName("SaveStrategyDesignerDraft")
-        .Produces<StrategyDesignDraftSaveResponse>(200)
-        .Produces(400)
-        .Produces(403)
-        .Produces(501);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationStrategyDesignerValidate), (StrategyDesignDocument? document, HttpContext context) =>
-        {
-            if (document is null)
-            {
-                return Results.BadRequest(new { error = "A strategy design document is required." });
-            }
-
-            var service = context.RequestServices.GetService<StrategyDesignService>();
-            if (service is null)
-            {
-                return StrategyDesignerUnavailable(jsonOptions);
-            }
-
-            var normalized = service.Normalize(document);
-            return Results.Json(service.Validate(normalized), jsonOptions);
-        })
-        .WithName("ValidateStrategyDesignerDocument")
-        .Produces<StrategyDesignValidationResult>(200)
-        .Produces(400)
-        .Produces(501);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationStrategyDesignerPreview), (StrategyDesignDocument? document, HttpContext context) =>
-        {
-            if (document is null)
-            {
-                return Results.BadRequest(new { error = "A strategy design document is required." });
-            }
-
-            var service = context.RequestServices.GetService<StrategyDesignService>();
-            if (service is null)
-            {
-                return StrategyDesignerUnavailable(jsonOptions);
-            }
-
-            var normalized = service.Normalize(document);
-            var preview = service.Preview(normalized);
-            return preview.Validation.IsValid
-                ? Results.Json(preview, jsonOptions)
-                : Results.Json(preview, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
-        })
-        .WithName("PreviewStrategyDesignerDocument")
-        .Produces<StrategyDesignPreviewResult>(200)
-        .Produces(400)
-        .Produces(501);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationStrategyDesignerRunBacktest), async (
-            StrategyDesignRunBacktestRequest? request,
-            HttpContext context,
-            CancellationToken ct) =>
-        {
-            if (!HasPermission(context, UserPermission.ManageStrategies))
-            {
-                return Results.StatusCode(StatusCodes.Status403Forbidden);
-            }
-
-            if (request?.Document is null)
-            {
-                return Results.BadRequest(new { error = "A strategy design document is required." });
-            }
-
-            var service = context.RequestServices.GetService<StrategyDesignService>();
-            if (service is null)
-            {
-                return StrategyDesignerUnavailable(jsonOptions);
-            }
-
-            var document = service.Normalize(request.Document);
-            var preview = service.Preview(document);
-            if (!preview.Validation.IsValid)
-            {
-                return Results.Json(
-                    CreateBacktestResponse(document, preview, null, new Dictionary<string, string>(), "Validation failed."),
-                    jsonOptions,
-                    statusCode: StatusCodes.Status400BadRequest);
-            }
-
-            var runner = context.RequestServices.GetService<IScriptRunner>();
-            if (runner is null)
-            {
-                return Results.Json(
-                    new
-                    {
-                        error = "Quant Lab is not enabled on this host. Set QuantLab:Enabled to true to enable.",
-                        quantLabEnabled = false
-                    },
-                    jsonOptions,
-                    statusCode: StatusCodes.Status503ServiceUnavailable);
-            }
-
-            var parameters = request.Parameters is null
-                ? new Dictionary<string, object?>()
-                : request.Parameters.ToDictionary(
-                    static item => item.Key,
-                    static item => (object?)item.Value,
-                    StringComparer.OrdinalIgnoreCase);
-            var result = await runner.RunAsync(preview.Compiled.Source, parameters, ct).ConfigureAwait(false);
-            var metrics = result.Metrics.ToDictionary(
-                static item => item.Key,
-                static item => item.Value,
-                StringComparer.OrdinalIgnoreCase);
-            if (!result.Success)
-            {
-                return Results.Json(
-                    CreateBacktestResponse(document, preview, null, metrics, result.RuntimeError),
-                    jsonOptions,
-                    statusCode: StatusCodes.Status400BadRequest);
-            }
-
-            var runId = Guid.NewGuid().ToString("N");
-            var repository = context.RequestServices.GetService<IStrategyRepository>();
-            if (repository is not null)
-            {
-                var entry = StrategyRunEntry
-                    .Start(
-                        document.DocumentId,
-                        document.Name,
-                        RunType.Backtest,
-                        runId,
-                        datasetReference: document.DatasetReference,
-                        feedReference: "strategy-designer:v1",
-                        engine: "QuantScript",
-                        parameterSet: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                        {
-                            ["designerDocumentId"] = document.DocumentId,
-                            ["datasetFingerprint"] = preview.Compiled.DatasetFingerprint,
-                            ["cellCount"] = document.Cells.Count.ToString(CultureInfo.InvariantCulture)
-                        })
-                    .Complete(result.CapturedBacktests.FirstOrDefault());
-                await repository.RecordRunAsync(entry, ct).ConfigureAwait(false);
-            }
-
-            return Results.Json(CreateBacktestResponse(document, preview, runId, metrics, null), jsonOptions);
-        })
-        .WithName("RunStrategyDesignerBacktest")
-        .Produces<StrategyDesignRunBacktestResponse>(200)
-        .Produces(400)
-        .Produces(403)
-        .Produces(503);
-    }
-
-    private static StrategyDesignRunBacktestResponse CreateBacktestResponse(
-        StrategyDesignDocument document,
-        StrategyDesignPreviewResult preview,
-        string? runId,
-        IReadOnlyDictionary<string, string> metrics,
-        string? runtimeError)
-    {
-        var success = runId is not null && runtimeError is null;
-        var trace = preview.Trace
-            .Concat([
-                new StrategyDesignRunTraceEntry(
-                    "record-run",
-                    "Record StrategyRunEntry",
-                    success ? "complete" : "blocked",
-                    success
-                        ? $"Recorded backtest run {runId} for promotion review."
-                        : runtimeError ?? "Backtest did not produce a recorded run.",
-                    OccurredAt: DateTimeOffset.UtcNow)
-            ])
-            .ToArray();
-
-        return new StrategyDesignRunBacktestResponse(
-            success,
-            runId,
-            document.DocumentId,
-            document.Name,
-            preview.Validation,
-            preview.Compiled,
-            trace,
-            preview.Rows,
-            metrics,
-            runtimeError,
-            success ? $"/api/promotion/evaluate/{runId}" : null,
-            success ? $"/api/workstation/runs/{runId}/review-packet" : null);
-    }
-
-    private static IResult StrategyDesignerUnavailable(JsonSerializerOptions jsonOptions)
-        => Results.Json(
-            new { error = "Strategy Designer services are not registered." },
-            jsonOptions,
-            statusCode: StatusCodes.Status501NotImplemented);
 
     private static bool HasPermission(HttpContext context, UserPermission requiredPermission)
         => EndpointAuthorization.HasPermission(context, requiredPermission);
@@ -7751,55 +4166,6 @@ public static partial class WorkstationEndpoints
         };
     }
 
-    private static void MapStrategyEngineEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
-    {
-        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStrategyEngineDefinitions), (HttpContext context) =>
-        {
-            var registry = context.RequestServices.GetService<StrategyEngineRegistry>();
-            return registry is null
-                ? StrategyEngineUnavailable(jsonOptions)
-                : Results.Json(registry.GetDefinitions(), jsonOptions);
-        })
-        .WithName("GetStrategyEngineDefinitions")
-        .Produces<IReadOnlyList<StrategyEngineDefinition>>(200)
-        .Produces(501);
-
-        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationStrategyEngineValidateRun), (
-            StrategyEngineValidateRunRequest? request,
-            HttpContext context) =>
-        {
-            if (request?.RunRequest is null)
-            {
-                return Results.BadRequest(new { error = "A strategy run request is required." });
-            }
-
-            var validation = context.RequestServices.GetService<StrategyEngineValidationService>();
-            if (validation is null)
-            {
-                return StrategyEngineUnavailable(jsonOptions);
-            }
-
-            var result = validation.Validate(request.RunRequest, request.DataAvailability ?? []);
-            return result.IsValid
-                ? Results.Json(result, jsonOptions)
-                : Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
-        })
-        .WithName("ValidateStrategyEngineRun")
-        .Produces<StrategyEngineValidationResult>(200)
-        .Produces<StrategyEngineValidationResult>(400)
-        .Produces(501);
-    }
-
-    private static IResult StrategyEngineUnavailable(JsonSerializerOptions jsonOptions)
-        => Results.Json(
-            new { error = "Strategy Engine services are not registered." },
-            jsonOptions,
-            statusCode: StatusCodes.Status501NotImplemented);
-
-    private sealed record StrategyEngineValidateRunRequest(
-        StrategyEngineRunRequest RunRequest,
-        IReadOnlyList<StrategyEngineDataAvailability>? DataAvailability);
-
     private static async Task<IResult> GetRunContinuityResultAsync(string runId, HttpContext context, JsonSerializerOptions jsonOptions)
     {
         var continuityService = context.RequestServices.GetService<StrategyRunContinuityService>();
@@ -7829,169 +4195,9 @@ public static partial class WorkstationEndpoints
             : Results.NotFound(new
             {
                 error = "Workstation bundle not found.",
-                message = "Build src/Meridian.Ui/dashboard before opening /workstation."
+                message = "Build the canonical tree (src/Meridian.Ui/wwwroot/workstation) with 'npm --prefix src/Meridian.Ui/dashboard run build' before opening /workstation."
             });
     }
-
-    private static bool IsWorkstationStructuredCsvRequest(string? format) =>
-        string.Equals(format, "csv", StringComparison.OrdinalIgnoreCase);
-
-    private static bool IsWorkstationStructuredJsonRequest(string? format) =>
-        string.Equals(format, "json", StringComparison.OrdinalIgnoreCase);
-
-    private static bool IsWorkstationStructuredXlsxRequest(string? format) =>
-        string.Equals(format, "xlsx", StringComparison.OrdinalIgnoreCase)
-        || string.Equals(format, "xls", StringComparison.OrdinalIgnoreCase)
-        || string.Equals(format, "excel", StringComparison.OrdinalIgnoreCase);
-
-    private static byte[] BuildWorkstationStructuredExportCsv(StructuredReportingExportPayloadDto payload)
-    {
-        var builder = new StringBuilder();
-        AppendWorkstationStructuredExportCsvRow(builder, payload.Columns.Select(static column => column.Name));
-
-        foreach (var row in payload.Rows)
-        {
-            AppendWorkstationStructuredExportCsvRow(
-                builder,
-                payload.Columns.Select(column =>
-                    row.TryGetValue(column.Name, out var value) ? value : null));
-        }
-
-        return Encoding.UTF8.GetBytes(builder.ToString());
-    }
-
-    private static byte[] BuildWorkstationStructuredExportXlsx(StructuredReportingExportPayloadDto payload)
-    {
-        var headers = payload.Columns.Select(static column => column.Name).ToArray();
-        var rows = payload.Rows
-            .Select(row => headers
-                .Select(header => row.TryGetValue(header, out var value) ? value : null)
-                .Cast<object?>()
-                .ToArray())
-            .Cast<IReadOnlyList<object?>>()
-            .ToArray();
-
-        return XlsxWorkbookWriter.CreateWorkbook(
-        [
-            new XlsxWorksheet(payload.Export.Dataset, headers, rows),
-            new XlsxWorksheet(
-                "Metadata",
-                ["Field", "Value"],
-                BuildWorkstationStructuredExportMetadataRows(payload)),
-            new XlsxWorksheet(
-                "DataDictionary",
-                ["Ordinal", "Name", "Data type", "Required", "Description"],
-                BuildWorkstationStructuredExportDataDictionaryRows(payload)),
-            new XlsxWorksheet(
-                "Validation",
-                ["Check", "Status", "Detail"],
-                BuildWorkstationStructuredExportValidationRows(payload)),
-            new XlsxWorksheet(
-                "RowLineage",
-                ["Row", "Row key", "SHA-256"],
-                BuildWorkstationStructuredExportRowLineageRows(payload))
-        ]);
-    }
-
-    private static IReadOnlyList<IReadOnlyList<object?>> BuildWorkstationStructuredExportMetadataRows(
-        StructuredReportingExportPayloadDto payload) =>
-    [
-        ["exportId", payload.Export.ExportId],
-        ["label", payload.Export.Label],
-        ["purpose", payload.Export.Purpose.ToString()],
-        ["dataset", payload.Export.Dataset],
-        ["consumer", payload.Export.Consumer],
-        ["schemaVersion", payload.Export.SchemaVersion],
-        ["rowCount", payload.Export.RowCount],
-        ["fieldCount", payload.Export.FieldCount],
-        ["sourceCount", payload.Export.SourceCount],
-        ["currency", payload.Export.Currency],
-        ["asOf", payload.Export.AsOf],
-        ["isReady", payload.Export.IsReady],
-        ["retainedPath", payload.Export.RetainedPath],
-        ["route", payload.Export.Route],
-        ["versionStamp", payload.Export.VersionStamp],
-        ["generatedAtUtc", payload.GeneratedAtUtc],
-        ["generatedByPrincipalId", payload.GeneratedByPrincipalId],
-        ["generatedForCompanyId", payload.GeneratedForCompanyId],
-        ["generatedForGroups", string.Join(";", payload.GeneratedForGroupPrincipalIds ?? [])],
-        ["rowLineageCount", payload.RowLineage?.Count ?? 0]
-    ];
-
-    private static IReadOnlyList<IReadOnlyList<object?>> BuildWorkstationStructuredExportDataDictionaryRows(
-        StructuredReportingExportPayloadDto payload)
-    {
-        var fields = payload.DataDictionary is { Count: > 0 }
-            ? payload.DataDictionary
-            : payload.Columns.Select((column, index) => new StructuredReportingExportDataDictionaryFieldDto(
-                column.Name,
-                column.DataType,
-                column.Description,
-                index + 1)).ToArray();
-
-        return fields
-            .Select(static field => (IReadOnlyList<object?>)
-            [
-                field.Ordinal,
-                field.Name,
-                field.DataType,
-                field.Required ? "true" : "false",
-                field.Description
-            ])
-            .ToArray();
-    }
-
-    private static IReadOnlyList<IReadOnlyList<object?>> BuildWorkstationStructuredExportValidationRows(
-        StructuredReportingExportPayloadDto payload) =>
-        (payload.ValidationChecks ?? [])
-            .Select(static check => (IReadOnlyList<object?>)
-            [
-                check.CheckId,
-                check.Status,
-                check.Detail
-            ])
-            .ToArray();
-
-    private static IReadOnlyList<IReadOnlyList<object?>> BuildWorkstationStructuredExportRowLineageRows(
-        StructuredReportingExportPayloadDto payload) =>
-        (payload.RowLineage ?? [])
-            .Select(static row => (IReadOnlyList<object?>)
-            [
-                row.RowNumber,
-                row.RowKey,
-                row.RowHashSha256
-            ])
-            .ToArray();
-
-    private static void AppendWorkstationStructuredExportCsvRow(StringBuilder builder, IEnumerable<string?> values)
-    {
-        var first = true;
-        foreach (var value in values)
-        {
-            if (!first)
-            {
-                builder.Append(',');
-            }
-
-            builder.Append(EscapeWorkstationStructuredExportCsvValue(value));
-            first = false;
-        }
-
-        builder.AppendLine();
-    }
-
-    private static string EscapeWorkstationStructuredExportCsvValue(string? value)
-    {
-        if (string.IsNullOrEmpty(value))
-        {
-            return string.Empty;
-        }
-
-        return value.IndexOfAny([',', '"', '\r', '\n']) >= 0
-            ? $"\"{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\""
-            : value;
-    }
-
 
     private sealed record ProviderTrustRationalePayload(
         string Status,

@@ -277,8 +277,11 @@ public sealed class WatchlistServiceTests
         }
 
         public Task<ApiResponse<T>> GetWithResponseAsync<T>(string endpoint, CancellationToken ct = default)
-            where T : class =>
-            Task.FromResult(new ApiResponse<T> { Success = true, Data = Watchlists as T });
+            where T : class
+        {
+            LastGetEndpoint = endpoint;
+            return Task.FromResult(new ApiResponse<T> { Success = true, Data = Watchlists as T });
+        }
 
         public Task<T?> PostAsync<T>(string endpoint, object? body = null, CancellationToken ct = default)
             where T : class =>

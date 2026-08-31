@@ -3,6 +3,17 @@
    small-caps section labels, nav items with a 3px teal-blue active indicator.
    ───────────────────────────────────────────────────────────────────────────── */
 
+:root {
+  --mds-nav-rail-bg: var(--theme-bg-hover, var(--ws-rail-bg));
+  --mds-nav-rail-border: var(--theme-border, var(--ws-border));
+  --mds-nav-rail-hover: var(--theme-bg-hover, var(--sidebar-hover));
+  --mds-nav-rail-active: var(--theme-bg-active, var(--ws-rail-active));
+  --mds-nav-rail-accent: var(--theme-accent, var(--ws-accent));
+  --mds-nav-rail-text: var(--theme-secondary-text, var(--nav-item));
+  --mds-nav-rail-text-active: var(--theme-primary-text, var(--nav-item-active));
+  --mds-nav-rail-text-muted: var(--theme-muted-text, var(--ws-text-muted));
+}
+
 .operator-rail {
   width: 14rem;
   min-height: 0;
@@ -10,8 +21,8 @@
   display: flex;
   flex-direction: column;
   padding: 0;
-  background: var(--ws-rail-bg, #EBEFF4);
-  border-right: 1px solid var(--ws-border, #CBD3DC);
+  background: var(--mds-nav-rail-bg, var(--ws-rail-bg, #EBEFF4));
+  border-right: 1px solid var(--mds-nav-rail-border, var(--ws-border, #CBD3DC));
   box-shadow: none;
 }
 
@@ -37,11 +48,11 @@
 .operator-rail-section {
   padding: 0.625rem 0.625rem 0.3125rem;
   font-family: var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 600;
   font-variant: all-small-caps;
   letter-spacing: 0.04em;
-  color: var(--nav-section-label, #59636F);
+  color: var(--mds-nav-rail-text-muted, var(--nav-section-label, #59636F));
 }
 
 /* Operating-context chip ------------------------------------------------------- */
@@ -51,21 +62,21 @@
   min-width: 0;
   margin: 0 0 0.375rem;
   padding: 0.5rem 0.625rem;
-  border: 1px solid var(--ws-border, #CBD3DC);
+  border: 1px solid var(--mds-nav-rail-border, var(--ws-border, #CBD3DC));
   border-radius: var(--radius-card, 2px);
   background: var(--ws-surface, #FFFFFF);
-  color: var(--ws-text-muted, #59636F);
+  color: var(--mds-nav-rail-text-muted, var(--ws-text-muted, #59636F));
   box-shadow: none;
 }
 
 .operator-nav-scope span:first-child {
   font-family: var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 600;
   font-variant: all-small-caps;
   letter-spacing: 0.04em;
   line-height: 1;
-  color: var(--ws-text-muted, #59636F);
+  color: var(--mds-nav-rail-text-muted, var(--ws-text-muted, #59636F));
 }
 
 .operator-nav-scope span:last-child {
@@ -73,7 +84,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--ws-text, #22272E);
+  color: var(--mds-nav-rail-text-active, var(--ws-text, #22272E));
   font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
   font-size: 0.6875rem;
   line-height: 1.35;
@@ -103,7 +114,7 @@
   border-left: 3px solid transparent;
   border-radius: 0 var(--radius-card, 2px) var(--radius-card, 2px) 0;
   background: transparent;
-  color: var(--nav-item, #4D5967);
+  color: var(--mds-nav-rail-text, var(--nav-item, #4D5967));
   font-size: 0.8125rem;
   text-decoration: none;
   transition: background-color 100ms ease, color 100ms ease;
@@ -117,8 +128,8 @@
 }
 
 .operator-nav-item:hover {
-  background: var(--sidebar-hover, #E1E7EE);
-  color: var(--nav-item-hover, #22272E);
+  background: var(--mds-nav-rail-hover, var(--sidebar-hover, #E1E7EE));
+  color: var(--mds-nav-rail-text-active, var(--nav-item-hover, #22272E));
 }
 
 .operator-nav-item:hover .operator-nav-item__icon {
@@ -126,9 +137,9 @@
 }
 
 .operator-nav-item.active {
-  background: var(--ws-rail-active, #E1EAF2);
-  border-left-color: var(--ws-accent, #2F6F8F);
-  color: var(--nav-item-active, #1F2933);
+  background: var(--mds-nav-rail-active, var(--ws-rail-active, #E1EAF2));
+  border-left-color: var(--mds-nav-rail-accent, var(--ws-accent, #2F6F8F));
+  color: var(--mds-nav-rail-text-active, var(--nav-item-active, #1F2933));
   font-weight: 600;
   box-shadow: none;
 }
@@ -152,14 +163,14 @@
   border: 1px solid transparent;
   border-radius: var(--radius-card, 2px);
   background: transparent;
-  color: var(--ws-text-muted, #59636F);
+  color: var(--mds-nav-rail-text-muted, var(--ws-text-muted, #59636F));
   transition: background-color 100ms ease, border-color 100ms ease, color 100ms ease;
 }
 
 .operator-nav-expand:hover {
-  border-color: var(--ws-border, #CBD3DC);
-  background: var(--sidebar-hover, #E1E7EE);
-  color: var(--ws-text, #22272E);
+  border-color: var(--mds-nav-rail-border, var(--ws-border, #CBD3DC));
+  background: var(--mds-nav-rail-hover, var(--sidebar-hover, #E1E7EE));
+  color: var(--mds-nav-rail-text-active, var(--ws-text, #22272E));
 }
 
 .operator-nav-expand svg {
@@ -170,7 +181,7 @@
   transform: rotate(90deg);
 }
 
-/* Per-workspace status pill ---------------------------------------------------- */
+/* Per-workspace product-maturity pill ----------------------------------------- */
 .operator-nav-status {
   display: inline-flex;
   align-items: center;
@@ -178,15 +189,15 @@
   max-width: 5.75rem;
   min-height: 1.125rem;
   padding: 0 0.375rem;
-  border: 1px solid var(--ws-border, #CBD3DC);
+  border: 1px solid var(--mds-nav-rail-border, var(--ws-border, #CBD3DC));
   border-radius: var(--radius-chip, 2px);
   background: var(--ws-surface, #FFFFFF);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
-  font-size: 0.5625rem;
-  color: var(--ws-text-muted, #59636F);
+  font-size: 0.75rem;
+  color: var(--mds-nav-rail-text-muted, var(--ws-text-muted, #59636F));
 }
 
 .operator-nav-status-dot {
@@ -197,15 +208,9 @@
   background: currentColor;
 }
 
-.operator-nav-status-live {
+.operator-nav-status-available {
   border-color: var(--state-healthy-bd, rgba(22, 136, 95, 0.32));
   color: var(--state-healthy-fg, #16885F);
-}
-
-.operator-nav-status-review,
-.operator-nav-status-paper {
-  border-color: var(--state-paper-bd, rgba(47, 111, 143, 0.34));
-  color: var(--state-paper-fg, #2F6F8F);
 }
 
 .operator-nav-status-preview {
@@ -225,11 +230,37 @@
   gap: 1px;
   margin: 1px 0 4px 1.375rem;
   padding-left: 1.5rem;
-  border-left: 1px solid var(--ws-border, #CBD3DC);
+  border-left: 1px solid var(--mds-nav-rail-border, var(--ws-border, #CBD3DC));
 }
 
 .operator-nav-subitems-collapsed {
   display: none;
+}
+
+.operator-nav-subgroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.operator-nav-subgroup + .operator-nav-subgroup {
+  margin-top: 0.3125rem;
+}
+
+.operator-nav-subgroup-label {
+  min-width: 0;
+  padding: 0.3125rem 0.5rem 0.1875rem;
+  overflow: hidden;
+  color: var(--mds-nav-rail-text-muted, var(--ws-text-muted, #59636F));
+  font-family: var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant: all-small-caps;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .operator-nav-subitem {
@@ -239,21 +270,21 @@
   padding: 0 0.5rem;
   border-left: 2px solid transparent;
   border-radius: 0 var(--radius-card, 2px) var(--radius-card, 2px) 0;
-  color: var(--nav-item, #4D5967);
+  color: var(--mds-nav-rail-text, var(--nav-item, #4D5967));
   font-size: 0.75rem;
   text-decoration: none;
   transition: background-color 100ms ease, color 100ms ease, border-left-color 100ms ease;
 }
 
 .operator-nav-subitem:hover {
-  background: var(--sidebar-hover, #E1E7EE);
-  color: var(--nav-item-hover, #22272E);
+  background: var(--mds-nav-rail-hover, var(--sidebar-hover, #E1E7EE));
+  color: var(--mds-nav-rail-text-active, var(--nav-item-hover, #22272E));
 }
 
 .operator-nav-subitem.active {
-  background: var(--ws-rail-active, #E1EAF2);
-  border-left-color: var(--ws-accent, #2F6F8F);
-  color: var(--nav-item-active, #1F2933);
+  background: var(--mds-nav-rail-active, var(--ws-rail-active, #E1EAF2));
+  border-left-color: var(--mds-nav-rail-accent, var(--ws-accent, #2F6F8F));
+  color: var(--mds-nav-rail-text-active, var(--nav-item-active, #1F2933));
 }
 
 /* ── Responsive ─────────────────────────────────────────────────────────────── */

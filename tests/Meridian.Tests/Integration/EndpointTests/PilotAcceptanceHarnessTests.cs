@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -8,16 +9,20 @@ using FluentAssertions;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Reporting;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Meridian.Ledger;
+using Meridian.Reporting;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Identity.Auth;
+using Meridian.Storage;
+using Meridian.Tests.TestSupport;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Evidence;
@@ -27,6 +32,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -37,10 +43,13 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// paper-session replay, promotion audit, reconciliation, and governed report-pack lineage.
 /// </summary>
 [Trait("Category", "Integration")]
+[Collection("Sequential")]
 public sealed class PilotAcceptanceHarnessTests
 {
     private const string DatasetEvidenceId = "dataset/pilot/golden-aapl-2026-04-11";
     private const string FeedEvidenceId = "provider-evidence/dk1/unit-ready";
+    private static readonly Guid PilotAccountingPeriodId =
+        Guid.Parse("20260411-0000-4000-8000-000000000001");
 
     private static readonly JsonSerializerOptions ServerJsonOptions = new()
     {
@@ -78,8 +87,15 @@ public sealed class PilotAcceptanceHarnessTests
                 RunId: seed.BacktestRunId,
                 ApprovedBy: "pilot.operator",
                 ApprovalReason: "Pilot harness replay, controls, and dataset evidence accepted.",
-                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper)));
-        promotion.Success.Should().BeTrue();
+                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+                EvidenceReferences:
+                [
+                    $"{PromotionApprovalChecklist.Dk1TrustPacketReviewed}:{FeedEvidenceId}",
+                    $"{PromotionApprovalChecklist.RunLineageReviewed}:audit-{seed.BacktestRunId}",
+                    $"{PromotionApprovalChecklist.PortfolioLedgerContinuityReviewed}:{seed.StrategyId}-backtest-ledger",
+                    $"{PromotionApprovalChecklist.RiskControlsReviewed}:{DatasetEvidenceId}"
+                ]));
+        promotion.Success.Should().BeTrue(promotion.Reason);
 
         var research = await client.GetFromJsonAsync<ResearchBriefingDto>(
             "/api/workstation/research/briefing",
@@ -147,39 +163,82 @@ public sealed class PilotAcceptanceHarnessTests
         var ledgerArtifactRefs = ledgerNode.ArtifactRefs;
         AssertLedgerArtifactRefs(ledgerArtifactRefs, ledgerJournalRoute, ledgerTrialBalanceRoute);
 
-        var reportPackResponse = await client.PostAsJsonAsync(
-            "/api/fund-structure/report-packs",
-            new FundReportPackGenerateRequestDto(
-                FundProfileId: seed.FundProfileId,
-                AuditActor: "pilot.operator",
-                AsOf: new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero),
-                Formats: [GovernanceReportArtifactFormatDto.Json],
-                ExpectedSchemaVersion: GovernanceReportPackContract.CurrentSchemaVersion),
+        var reportRunResponse = await PostAsPilotActorAsync(
+            client,
+            "/api/fund-structure/reporting/runs",
+            new ReportingRunRequestDto(
+                "audit-evidence-package",
+                Parameters: new ReportingRunParametersDto(
+                    new ReportingRunScopeDto(seed.FundProfileId),
+                    PilotAccountingPeriodId.ToString("D"),
+                    new DateOnly(2026, 4, 11),
+                    new ReportingLedgerBookSelectionDto(LedgerBookId: seed.AccountId),
+                    ReportingAccountingBasisDto.Gaap,
+                    "USD",
+                    ReportingConsolidationLevelDto.Fund,
+                    ReportingOutputFormatDto.EvidenceVault,
+                    ReportingFinalityDto.Draft,
+                    IncludeSupportingSchedules: true,
+                    IncludeEvidenceAppendix: true)),
+            "pilot.operator");
+        reportRunResponse.StatusCode.Should().Be(
+            HttpStatusCode.Created,
+            "the governed endpoint returned {0}",
+            await reportRunResponse.Content.ReadAsStringAsync());
+        var reportRun = await reportRunResponse.Content.ReadFromJsonAsync<ReportingRunResultDto>(
             ServerJsonOptions);
-        reportPackResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-        var reportPack = await reportPackResponse.Content.ReadFromJsonAsync<FundReportPackSnapshotDto>(
-            ServerJsonOptions);
-        reportPack.Should().NotBeNull();
-        reportPack!.Provenance.RelatedRunIds.Should().Contain(seed.BacktestRunId);
-        reportPack.Provenance.RelatedRunIds.Should().Contain(seed.PaperRunId);
+        reportRun.Should().NotBeNull();
+        var canonicalRunId = reportRun!.Run.RunId;
 
-        var workflow = PublishPilotReportPackWorkflow(
-            pilot.App.Services.GetRequiredService<ReportPackWorkflowService>(),
-            seed,
-            reportPack.ReportId,
-            reconciliation.Summary.ReconciliationRunId,
-            ledgerEvidenceId!,
-            reportPack.Provenance.SourceSnapshotHash);
-        workflow.State.Should().Be(ReportPackWorkflowStateDto.Published);
-        workflow.Publication.Should().NotBeNull();
-        workflow.AuditTrail.Should().Contain(audit => audit.ToState == ReportPackWorkflowStateDto.Approved);
+        var draft = await client.GetFromJsonAsync<GovernedReportingRunDto>(
+            $"/api/fund-structure/reporting/runs/{Uri.EscapeDataString(canonicalRunId)}",
+            ServerJsonOptions);
+        draft.Should().NotBeNull();
+        draft!.ExecutionState.Should().Be(GovernedReportingExecutionState.Succeeded.ToString());
+        draft.GovernanceState.Should().Be(GovernedReportingState.Draft.ToString());
+        draft.Scope.TenantId.Should().Be("pilot-acceptance-tenant");
+        draft.Scope.CompanyId.Should().Be("pilot-acceptance-tenant");
+        draft.Scope.FundId.Should().Be(seed.FundProfileId);
+        draft.Scope.PeriodId.Should().Be(PilotAccountingPeriodId.ToString("D"));
+
+        var validated = await TransitionPilotReportingRunAsync(
+            client,
+            canonicalRunId,
+            "validate",
+            new ReportingGovernanceVersionRequestDto(draft.Version),
+            "pilot.validator");
+        validated.GovernanceState.Should().Be(GovernedReportingState.Validated.ToString());
+        var submitted = await TransitionPilotReportingRunAsync(
+            client,
+            canonicalRunId,
+            "submit",
+            new ReportingGovernanceVersionRequestDto(validated.Version),
+            "pilot.reviewer");
+        submitted.GovernanceState.Should().Be(GovernedReportingState.InReview.ToString());
+        var approved = await TransitionPilotReportingRunAsync(
+            client,
+            canonicalRunId,
+            "approve",
+            new ReportingGovernanceApprovalRequestDto(
+                submitted.Version,
+                "Independent W4 pilot review approved the certified output."),
+            "pilot.approver");
+        approved.GovernanceState.Should().Be(GovernedReportingState.Approved.ToString());
+        var released = await TransitionPilotReportingRunAsync(
+            client,
+            canonicalRunId,
+            "release",
+            new ReportingGovernanceVersionRequestDto(approved.Version),
+            "pilot.publisher");
+        released.GovernanceState.Should().Be(GovernedReportingState.Released.ToString());
+        released.Release.Should().NotBeNull();
+        released.AuditTrail.Should().Contain(audit => audit.Action == ReportingGovernanceAuditAction.RunApproved.ToString());
 
         var w4Evidence = BuildW4AcceptanceEvidence(
             seed,
             reconciliation.Summary.ReconciliationRunId,
-            workflow,
-            reportPack.ReportId.ToString("D"),
-            reportPack.Artifacts);
+            released,
+            reportRun.Run.Artifacts);
         var w4Filter = pilot.App.Services.GetRequiredService<W4AcceptanceFilter>();
 
         var stageGates = BuildPilotStageGates(
@@ -191,7 +250,7 @@ public sealed class PilotAcceptanceHarnessTests
             continuity.Run.Summary.RunId,
             portfolioEvidenceId!,
             ledgerEvidenceId!,
-            reportPack.ReportId.ToString("D"));
+            canonicalRunId);
         var evidenceGraph = BuildPilotEvidenceGraph(
             seed,
             promotion.AuditReference,
@@ -201,8 +260,8 @@ public sealed class PilotAcceptanceHarnessTests
             continuity.Run.Summary.RunId,
             portfolioEvidenceId!,
             ledgerEvidenceId!,
-            reportPack.ReportId.ToString("D"))
-            .Concat(BuildW4AcceptanceGraph(workflow, reconciliation.Summary.ReconciliationRunId))
+            canonicalRunId)
+            .Concat(BuildW4AcceptanceGraph(seed, released, reconciliation.Summary.ReconciliationRunId))
             .ToArray();
 
         var artifact = w4Filter.ApplyToArtifact(new PilotReadinessArtifactDto(
@@ -218,8 +277,8 @@ public sealed class PilotAcceptanceHarnessTests
             ContinuityRunId: continuity.Run.Summary.RunId,
             PortfolioEvidenceId: portfolioEvidenceId,
             LedgerEvidenceId: ledgerEvidenceId,
-            ReportPackId: reportPack.ReportId.ToString("D"),
-            ReportPackRelatedRunIds: reportPack.Provenance.RelatedRunIds,
+            ReportPackId: canonicalRunId,
+            ReportPackRelatedRunIds: seed.ComparedRunIds,
             StageGates: stageGates,
             EvidenceGraph: evidenceGraph)
         {
@@ -240,7 +299,7 @@ public sealed class PilotAcceptanceHarnessTests
         var markdown = await File.ReadAllTextAsync(markdownPath);
         markdown.Should().Contain("trusted data -> strategy run -> paper promotion");
         markdown.Should().Contain("| TrustedData | W2, W3, W4 | Ready |");
-        markdown.Should().Contain(reportPack.ReportId.ToString("D"));
+        markdown.Should().Contain(canonicalRunId);
         AssertSerializedLedgerArtifactRefs(artifactDocument.RootElement, ledgerJournalRoute, ledgerTrialBalanceRoute);
         artifactDocument.RootElement.GetProperty("allStagesReady").GetBoolean().Should().BeTrue();
         artifactDocument.RootElement.GetProperty("readyStageCount").GetInt32().Should().Be(8);
@@ -384,81 +443,200 @@ public sealed class PilotAcceptanceHarnessTests
         gate.SupportEvidenceIds.Should().Contain("evidence-vault/report-pack-001/manifest.json");
     }
 
+    [Fact]
+    public async Task PilotHost_Dispose_StopsHostAndRestoresAmbientProcessState()
+    {
+        var originalEnvironment = CapturePilotHostEnvironment();
+        var originalCatalogProvider = Meridian.Contracts.Api.ProviderCatalog.RuntimeCatalogProvider;
+        var originalCatalogEntryProvider = Meridian.Contracts.Api.ProviderCatalog.RuntimeCatalogEntryProvider;
+        PilotTestApp? pilot = null;
+
+        try
+        {
+            pilot = await CreatePilotAppAsync();
+            var root = pilot.Root;
+            var applicationLifetime = pilot.App.Services.GetRequiredService<IHostApplicationLifetime>();
+            foreach (var variable in originalEnvironment.Keys)
+            {
+                Environment.GetEnvironmentVariable(variable).Should().BeNull();
+            }
+
+            await pilot.DisposeAsync();
+
+            applicationLifetime.ApplicationStopped.IsCancellationRequested.Should().BeTrue();
+            Meridian.Contracts.Api.ProviderCatalog.RuntimeCatalogProvider.Should().BeNull();
+            Meridian.Contracts.Api.ProviderCatalog.RuntimeCatalogEntryProvider.Should().BeNull();
+            var readCatalog = () => Meridian.Contracts.Api.ProviderCatalog.GetAll();
+            readCatalog.Should().NotThrow();
+            Directory.Exists(root).Should().BeFalse();
+            foreach (var pair in originalEnvironment)
+            {
+                Environment.GetEnvironmentVariable(pair.Key).Should().Be(pair.Value);
+            }
+        }
+        finally
+        {
+            if (pilot is not null)
+            {
+                await pilot.DisposeAsync();
+            }
+
+            RestorePilotHostEnvironment(originalEnvironment);
+            Meridian.Contracts.Api.ProviderCatalog.RuntimeCatalogProvider = originalCatalogProvider;
+            Meridian.Contracts.Api.ProviderCatalog.RuntimeCatalogEntryProvider = originalCatalogEntryProvider;
+        }
+    }
+
     private static async Task<PilotTestApp> CreatePilotAppAsync()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "pilot-acceptance", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(root);
-        var configPath = Path.Combine(root, "appsettings.json");
-        await File.WriteAllTextAsync(configPath, CreateMinimalConfig(root));
-
-        var automationRoot = Path.Combine(root, "provider-validation", "_automation");
-        WriteReadyDk1Packet(automationRoot);
-
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        var originalEnvironment = CapturePilotHostEnvironment();
+        foreach (var variable in originalEnvironment.Keys)
         {
-            EnvironmentName = "Test"
-        });
-        builder.WebHost.UseTestServer();
-
-        builder.Services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(configPath));
-        builder.Services.AddSingleton(new Dk1TrustGateReadinessOptions(automationRoot));
-        builder.Services.AddSingleton<IGovernanceReportPackRepository>(_ =>
-            new FileGovernanceReportPackRepository(
-                Path.Combine(root, "report-packs"),
-                NullLogger<FileGovernanceReportPackRepository>.Instance));
-        builder.Services.AddSingleton<IReconciliationBreakQueueRepository>(_ =>
-            new FileReconciliationBreakQueueRepository(
-                Path.Combine(root, "break-queue"),
-                NullLogger<FileReconciliationBreakQueueRepository>.Instance));
-        builder.Services.AddSingleton<IPromotionRecordStore>(_ =>
-            new JsonlPromotionRecordStore(
-                Path.Combine(root, "promotions"),
-                NullLogger<JsonlPromotionRecordStore>.Instance));
-
-        using (InMemoryGovernanceFixtureProfile.Enable())
-        {
-            builder.Services.AddUiSharedServices(configPath);
+            Environment.SetEnvironmentVariable(variable, null);
         }
 
-        builder.Services.AddSingleton(_ => new ExecutionAuditTrailService(
-            new ExecutionAuditTrailOptions(Path.Combine(root, "audit")),
-            NullLogger<ExecutionAuditTrailService>.Instance));
-        builder.Services.AddSingleton<IPaperSessionStore>(_ =>
-            new JsonlFilePaperSessionStore(
-                Path.Combine(root, "sessions"),
-                NullLogger<JsonlFilePaperSessionStore>.Instance));
-        builder.Services.AddSingleton<PaperSessionPersistenceService>(sp => new PaperSessionPersistenceService(
-            NullLogger<PaperSessionPersistenceService>.Instance,
-            sp.GetRequiredService<IPaperSessionStore>(),
-            sp.GetRequiredService<ExecutionAuditTrailService>()));
-        builder.Services.AddSingleton<ExecutionOperatorControlService>(sp => new ExecutionOperatorControlService(
-            new ExecutionOperatorControlOptions(Path.Combine(root, "controls")),
-            NullLogger<ExecutionOperatorControlService>.Instance,
-            sp.GetRequiredService<ExecutionAuditTrailService>()));
-        builder.Services.AddSingleton<PromotionService>(sp => new PromotionService(
-            sp.GetRequiredService<IStrategyRepository>(),
-            sp.GetRequiredService<BacktestToLivePromoter>(),
-            sp.GetRequiredService<IPromotionRecordStore>(),
-            NullLogger<PromotionService>.Instance,
-            operatorControls: sp.GetRequiredService<ExecutionOperatorControlService>(),
-            auditTrail: sp.GetRequiredService<ExecutionAuditTrailService>()));
-
-        var app = builder.Build();
-        app.Use(async (context, next) =>
+        PilotTestApp? pilot = null;
+        try
         {
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = "pilot.operator";
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.AdminMaintenance;
-            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "pilot-acceptance-tenant";
-            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "pilot-acceptance-tenant";
-            await next();
-        });
-        app.MapWorkstationEndpoints(ServerJsonOptions);
-        app.MapEvidenceEndpoints(ServerJsonOptions);
-        app.MapExecutionEndpoints(ServerJsonOptions);
-        app.MapFundStructureEndpoints(ServerJsonOptions);
-        await app.StartAsync();
+            Directory.CreateDirectory(root);
+            var configPath = Path.Combine(root, "appsettings.json");
+            await File.WriteAllTextAsync(configPath, CreateMinimalConfig(root));
 
-        return new PilotTestApp(app, root);
+            var automationRoot = Path.Combine(root, "provider-validation", "_automation");
+            WriteReadyDk1Packet(automationRoot);
+
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+            {
+                EnvironmentName = "Test"
+            });
+            builder.WebHost.UseTestServer();
+
+            builder.Services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(configPath));
+            builder.Services.AddSingleton(new Dk1TrustGateReadinessOptions(automationRoot));
+            builder.Services.AddSingleton<IGovernanceReportPackRepository>(_ =>
+                new FileGovernanceReportPackRepository(
+                    Path.Combine(root, "report-packs"),
+                    NullLogger<FileGovernanceReportPackRepository>.Instance));
+            builder.Services.AddSingleton<IReconciliationBreakQueueRepository>(_ =>
+                new FileReconciliationBreakQueueRepository(
+                    Path.Combine(root, "break-queue"),
+                    NullLogger<FileReconciliationBreakQueueRepository>.Instance));
+            builder.Services.AddSingleton<IPromotionRecordStore>(_ =>
+                new JsonlPromotionRecordStore(
+                    Path.Combine(root, "promotions"),
+                    NullLogger<JsonlPromotionRecordStore>.Instance));
+            builder.Services.AddSingleton<IReportingAuthoritativeSource, PilotReportingAuthoritativeSource>();
+            builder.Services.AddSingleton<IReportingReconciliationEvidenceSource, PilotReportingReconciliationEvidenceSource>();
+            builder.Services.AddSingleton<IReportingRunReadinessDependencyEvaluator, PilotReportingReadinessDependencyEvaluator>();
+            builder.Services.AddSingleton<IReportingGovernanceEndpointCoordinator, PilotReportingGovernanceCoordinator>();
+            builder.Services.AddSingleton<IReportingDeploymentReadinessService, PilotReportingDeploymentReadinessService>();
+
+            using (InMemoryGovernanceFixtureProfile.Enable())
+            {
+                builder.Services.AddUiSharedServices(configPath);
+            }
+
+            builder.Services.AddSingleton(_ => new ExecutionAuditTrailService(
+                new ExecutionAuditTrailOptions(Path.Combine(root, "audit")),
+                NullLogger<ExecutionAuditTrailService>.Instance));
+            builder.Services.AddSingleton<IPaperSessionStore>(_ =>
+                new JsonlFilePaperSessionStore(
+                    Path.Combine(root, "sessions"),
+                    NullLogger<JsonlFilePaperSessionStore>.Instance));
+            builder.Services.AddSingleton<PaperSessionPersistenceService>(sp => new PaperSessionPersistenceService(
+                NullLogger<PaperSessionPersistenceService>.Instance,
+                sp.GetRequiredService<IPaperSessionStore>(),
+                sp.GetRequiredService<ExecutionAuditTrailService>()));
+            builder.Services.AddSingleton<ExecutionOperatorControlService>(sp => new ExecutionOperatorControlService(
+                new ExecutionOperatorControlOptions(Path.Combine(root, "controls")),
+                NullLogger<ExecutionOperatorControlService>.Instance,
+                sp.GetRequiredService<ExecutionAuditTrailService>()));
+            builder.Services.AddSingleton<PromotionService>(sp => new PromotionService(
+                sp.GetRequiredService<IStrategyRepository>(),
+                sp.GetRequiredService<BacktestToLivePromoter>(),
+                sp.GetRequiredService<IPromotionRecordStore>(),
+                NullLogger<PromotionService>.Instance,
+                operatorControls: sp.GetRequiredService<ExecutionOperatorControlService>(),
+                auditTrail: sp.GetRequiredService<ExecutionAuditTrailService>()));
+
+            var app = builder.Build();
+            pilot = new PilotTestApp(app, root, originalEnvironment);
+            pilot.CaptureProviderCatalogLease();
+            app.Use(async (context, next) =>
+            {
+                var actor = context.Request.Headers.TryGetValue("X-Pilot-Actor", out var requestedActor)
+                    && !string.IsNullOrWhiteSpace(requestedActor.ToString())
+                        ? requestedActor.ToString().Trim()
+                        : "pilot.operator";
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = actor;
+                context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = RolePermissions.For(UserRole.Admin);
+                context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "pilot-acceptance-tenant";
+                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "pilot-acceptance-tenant";
+                await next();
+            });
+            app.MapWorkstationEndpoints(ServerJsonOptions);
+            app.MapEvidenceEndpoints(ServerJsonOptions);
+            app.MapExecutionEndpoints(ServerJsonOptions);
+            app.MapFundStructureEndpoints(ServerJsonOptions);
+            app.MapReportingGovernanceEndpoints(ServerJsonOptions);
+            pilot.MarkStartAttempted();
+            await app.StartAsync();
+
+            return pilot;
+        }
+        catch (Exception initializationError)
+        {
+            try
+            {
+                if (pilot is not null)
+                {
+                    await pilot.DisposeAsync();
+                }
+                else
+                {
+                    RestorePilotHostEnvironment(originalEnvironment);
+                    if (Directory.Exists(root))
+                    {
+                        Directory.Delete(root, recursive: true);
+                    }
+                }
+            }
+            catch (Exception cleanupError)
+            {
+                throw new AggregateException(
+                    "Pilot test host initialization and cleanup failed.",
+                    initializationError,
+                    cleanupError);
+            }
+
+            throw;
+        }
+    }
+
+    private static Dictionary<string, string?> CapturePilotHostEnvironment() =>
+        MeridianDatabaseEnvironment.PropagatedConnectionStringVariables
+            .Concat(
+            [
+                MeridianDatabaseEnvironment.UnifiedVariable,
+                "MERIDIAN_DIRECT_LENDING_CONNECTION_STRING",
+                "MERIDIAN_REPORTING_CONNECTION_STRING",
+                "LEAN_PATH",
+                "LEAN_DATA_PATH",
+                "LEAN_EXPORT_INTERVAL_SECONDS"
+            ])
+            .Distinct(StringComparer.Ordinal)
+            .ToDictionary(
+                static variable => variable,
+                static variable => Environment.GetEnvironmentVariable(variable),
+                StringComparer.Ordinal);
+
+    private static void RestorePilotHostEnvironment(IReadOnlyDictionary<string, string?> environment)
+    {
+        foreach (var pair in environment)
+        {
+            Environment.SetEnvironmentVariable(pair.Key, pair.Value);
+        }
     }
 
     private static async Task<PilotSeed> SeedPilotWorkspaceAsync(IServiceProvider services)
@@ -560,6 +738,8 @@ public sealed class PilotAcceptanceHarnessTests
         var startedAt = new DateTimeOffset(2026, 4, 11, 14, 0, 0, TimeSpan.Zero);
         var completedAt = startedAt.AddMinutes(30);
         var result = BuildPilotBacktestResult(startedAt, completedAt);
+        var ledgerReference = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-ledger";
+        var auditReference = $"audit-{runId}";
 
         return StrategyRunEntry.Start(strategyId, strategyName, runType).Complete(result) with
         {
@@ -569,11 +749,22 @@ public sealed class PilotAcceptanceHarnessTests
             DatasetReference = DatasetEvidenceId,
             FeedReference = FeedEvidenceId,
             PortfolioId = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-portfolio",
-            LedgerReference = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-ledger",
-            AuditReference = $"audit-{runId}",
+            LedgerReference = ledgerReference,
+            AuditReference = auditReference,
+            RetainedEvidenceReferences =
+            [
+                DatasetEvidenceId,
+                FeedEvidenceId,
+                ledgerReference,
+                auditReference
+            ],
             ParentRunId = parentRunId,
             FundProfileId = fundProfileId,
-            FundDisplayName = fundDisplayName
+            FundDisplayName = fundDisplayName,
+            // The overrides above change canonical hash inputs (run id, references, lineage),
+            // so the hash captured by Start() is stale. Clearing it lets the run store stamp
+            // the canonical hash instead of rejecting the seeded entry as tampered.
+            InputHashSha256 = null
         };
     }
 
@@ -719,97 +910,72 @@ public sealed class PilotAcceptanceHarnessTests
             Timestamp = DateTimeOffset.UtcNow
         };
 
-    private static ReportPackWorkflowRecordDto PublishPilotReportPackWorkflow(
-        ReportPackWorkflowService workflowService,
-        PilotSeed seed,
-        Guid generatedReportId,
-        string reconciliationRunId,
-        string ledgerEvidenceId,
-        string sourceSnapshotHash)
+    private static async Task<HttpResponseMessage> PostAsPilotActorAsync<TRequest>(
+        HttpClient client,
+        string route,
+        TRequest requestBody,
+        string actor)
     {
-        var lineProvenance = new[]
+        using var request = new HttpRequestMessage(HttpMethod.Post, route)
         {
-            new ReportPackLineProvenanceDto(
-                "trial-balance:cash",
-                "ledger",
-                ledgerEvidenceId,
-                ledgerEvidenceId,
-                RunId: seed.PaperRunId,
-                LedgerEntryId: ledgerEvidenceId,
-                ReconciliationCaseId: $"casework/{reconciliationRunId}",
-                ReportValue: "250000.00",
-                ReconciliationRunId: reconciliationRunId,
-                ProviderEventId: $"provider-event/{seed.AccountId:D}/PILOT-BANK-001",
-                SecurityMasterId: "security-master/cash/USD",
-                SecurityDefinitionId: "security-definition/cash/USD",
-                ReconciliationOutcome: "matched",
-                ApprovalId: $"approval/{generatedReportId:D}/pilot.approver")
+            Content = JsonContent.Create(requestBody, options: ServerJsonOptions)
         };
-        var workflow = workflowService.Create(
-            seed.FundProfileId,
-            seed.AccountId.ToString("D"),
-            "2026-04-11",
-            new VersionedReportTemplateIdDto("pilot-governed-report-pack", 1),
-            "pilot.operator",
-            lineProvenance);
-        workflow = workflowService.Transition(workflow.ReportId, ReportPackWorkflowStateDto.Validated, "pilot.validator", "validator", "Pilot report pack validated.");
-        workflow = workflowService.Transition(workflow.ReportId, ReportPackWorkflowStateDto.PendingApproval, "pilot.reviewer", "reviewer", "Submitted for W4 acceptance approval.");
-        workflow = workflowService.Transition(workflow.ReportId, ReportPackWorkflowStateDto.Approved, "pilot.approver", "approver", "Approved for pilot W4 publication.");
-        return workflowService.Publish(
-            workflow.ReportId,
-            "pilot.publisher",
-            "publisher",
-            "pilot.approver",
-            sourceSnapshotHash,
-            $"manifest/{generatedReportId:D}",
-            $"evidence-vault/report-packs/{generatedReportId:D}/manifest.json",
-            [
-                new ReportPackEvidenceLinkDto(ledgerEvidenceId, "Ledger evidence", $"/api/workstation/runs/{Uri.EscapeDataString(seed.PaperRunId)}/ledger/journal", "ledger"),
-                new ReportPackEvidenceLinkDto(seed.PaperRunId, "Paper strategy run", $"/api/workstation/runs/{Uri.EscapeDataString(seed.PaperRunId)}", "strategy"),
-                new ReportPackEvidenceLinkDto($"casework/{reconciliationRunId}", "Reconciliation casework", $"/api/workstation/reconciliation/runs/{Uri.EscapeDataString(reconciliationRunId)}", "reconciliation"),
-                new ReportPackEvidenceLinkDto(reconciliationRunId, "Reconciliation run", $"/api/workstation/reconciliation/runs/{Uri.EscapeDataString(reconciliationRunId)}", "reconciliation"),
-                new ReportPackEvidenceLinkDto($"provider-event/{seed.AccountId:D}/PILOT-BANK-001", "Provider event", null, "provider"),
-                new ReportPackEvidenceLinkDto("security-master/cash/USD", "Security Master identity", null, "security-master"),
-                new ReportPackEvidenceLinkDto("security-definition/cash/USD", "Security definition", null, "security-master"),
-                new ReportPackEvidenceLinkDto($"approval/{generatedReportId:D}/pilot.approver", "Accounting approval", null, "accounting"),
-                new ReportPackEvidenceLinkDto($"close-checklist/{seed.AccountId:D}/2026-04-11", "Accounting close checklist", null, "accounting-close"),
-                new ReportPackEvidenceLinkDto($"restatement-ready/{generatedReportId:D}", "Restatement readiness controls", null, "reporting-governance")
-            ],
-            "Published with retained W4 pilot acceptance evidence.");
+        request.Headers.Add("X-Pilot-Actor", actor);
+        return await client.SendAsync(request);
+    }
+
+    private static async Task<GovernedReportingRunDto> TransitionPilotReportingRunAsync<TRequest>(
+        HttpClient client,
+        string runId,
+        string transition,
+        TRequest requestBody,
+        string actor)
+    {
+        var response = await PostAsPilotActorAsync(
+            client,
+            $"/api/fund-structure/reporting/runs/{Uri.EscapeDataString(runId)}/{transition}",
+            requestBody,
+            actor);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var run = await response.Content.ReadFromJsonAsync<GovernedReportingRunDto>(ServerJsonOptions);
+        run.Should().NotBeNull();
+        return run!;
     }
 
     private static IReadOnlyList<PilotAcceptanceEvidenceDto> BuildW4AcceptanceEvidence(
         PilotSeed seed,
         string reconciliationRunId,
-        ReportPackWorkflowRecordDto workflow,
-        string reportPackId,
-        IReadOnlyList<FundReportPackArtifactDto> artifacts)
+        GovernedReportingRunDto run,
+        IReadOnlyList<string> artifacts)
     {
-        var approvalEvent = workflow.AuditTrail.Last(audit => audit.ToState == ReportPackWorkflowStateDto.Approved);
-        var publication = workflow.Publication ?? throw new InvalidOperationException("Published report-pack workflow requires publication metadata.");
-        var manifestSupportId = string.IsNullOrWhiteSpace(publication.RetainedManifestPath)
-            ? $"evidence-vault/{reportPackId}/manifest.json"
-            : publication.RetainedManifestPath;
-        var exportSupportId = artifacts.FirstOrDefault()?.RelativePath ?? manifestSupportId;
+        var approvalEvent = run.AuditTrail.Last(audit => audit.Action == ReportingGovernanceAuditAction.RunApproved.ToString());
+        var release = run.Release ?? throw new InvalidOperationException("Released governed reporting run requires a release receipt.");
+        var governanceRoute = $"/api/fund-structure/reporting/runs/{Uri.EscapeDataString(run.RunId)}";
+        var manifestSupportId = $"reporting-release/{run.RunId}/{release.ManifestId}";
+        var artifact = release.Artifacts.FirstOrDefault();
+        var exportSupportId = artifact is null
+            ? artifacts.FirstOrDefault() ?? governanceRoute
+            : $"/api/fund-structure/reporting/distribution/packages/{Uri.EscapeDataString(run.RunId)}/artifacts/{Uri.EscapeDataString(artifact.ArtifactId)}";
 
         return
         [
             new(PilotAcceptanceEvidenceCategoryDto.ReconciliationCasework, PilotAcceptanceEvidenceRoleDto.Acceptance, $"casework/{reconciliationRunId}", "Reconciliation casework", $"/api/workstation/reconciliation/runs/{Uri.EscapeDataString(reconciliationRunId)}"),
             new(PilotAcceptanceEvidenceCategoryDto.AccountingCloseChecklist, PilotAcceptanceEvidenceRoleDto.Acceptance, $"close-checklist/{seed.AccountId:D}/2026-04-11", "Accounting close checklist"),
-            new(PilotAcceptanceEvidenceCategoryDto.ReportingReviewApproval, PilotAcceptanceEvidenceRoleDto.Acceptance, $"approval/{workflow.ReportId:D}/{approvalEvent.At:yyyyMMddHHmmss}", "Reporting review approval"),
-            new(PilotAcceptanceEvidenceCategoryDto.GovernedReportPackPublication, PilotAcceptanceEvidenceRoleDto.Acceptance, $"publication/{workflow.ReportId:D}/{publication.ManifestId}", "Governed report-pack publication", publication.RetainedManifestPath),
-            new(PilotAcceptanceEvidenceCategoryDto.RestatementReadiness, PilotAcceptanceEvidenceRoleDto.Acceptance, $"restatement-ready/{reportPackId}", "Restatement readiness controls"),
+            new(PilotAcceptanceEvidenceCategoryDto.ReportingReviewApproval, PilotAcceptanceEvidenceRoleDto.Acceptance, $"reporting-approval/{run.RunId}/{approvalEvent.EventId}", "Reporting review approval", governanceRoute),
+            new(PilotAcceptanceEvidenceCategoryDto.GovernedReportPackPublication, PilotAcceptanceEvidenceRoleDto.Acceptance, manifestSupportId, "Governed report release", governanceRoute),
+            new(PilotAcceptanceEvidenceCategoryDto.RestatementReadiness, PilotAcceptanceEvidenceRoleDto.Acceptance, $"restatement-ready/{run.RunId}", "Restatement readiness controls", $"{governanceRoute}/restatement-requests"),
             new(PilotAcceptanceEvidenceCategoryDto.EvidenceVaultManifestExportSupport, PilotAcceptanceEvidenceRoleDto.Support, manifestSupportId, "Evidence-vault retained manifest/export", exportSupportId)
         ];
     }
 
     private static IReadOnlyList<PilotEvidenceGraphEdgeDto> BuildW4AcceptanceGraph(
-        ReportPackWorkflowRecordDto workflow,
+        PilotSeed seed,
+        GovernedReportingRunDto run,
         string reconciliationRunId) =>
     [
-        new($"casework/{reconciliationRunId}", $"close-checklist/{workflow.FundAccountId}/2026-04-11", "closes-into"),
-        new($"close-checklist/{workflow.FundAccountId}/2026-04-11", $"approval/{workflow.ReportId:D}", "approved-by"),
-        new($"approval/{workflow.ReportId:D}", $"publication/{workflow.ReportId:D}", "published-by")
+        new($"casework/{reconciliationRunId}", $"close-checklist/{seed.AccountId:D}/2026-04-11", "closes-into"),
+        new($"close-checklist/{seed.AccountId:D}/2026-04-11", $"reporting-approval/{run.RunId}", "approved-by"),
+        new($"reporting-approval/{run.RunId}", $"reporting-release/{run.RunId}", "published-by")
     ];
 
     public static IEnumerable<object[]> MissingEndToEndAcceptanceEvidence =>
@@ -1287,11 +1453,647 @@ public sealed class PilotAcceptanceHarnessTests
             """);
     }
 
-    private sealed record PilotTestApp(WebApplication App, string Root) : IAsyncDisposable
+    private sealed class PilotReportingAuthoritativeSource : IReportingAuthoritativeSource
     {
+        public ValueTask<ReportingAuthoritativeSourceCapture> CaptureAsync(
+            ReportingRunParametersDto parameters,
+            ReportAccessQueryContext accessContext,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var ledgerBookId = parameters.LedgerBook.LedgerBookId
+                ?? throw new InvalidOperationException("The pilot reporting fixture requires an explicit server-owned ledger book id.");
+            // Certification evaluates readiness before capturing the authoritative source. Keep
+            // the fixture capture current so the immutable snapshot cannot predate its readiness
+            // receipt; the source cutoff remains pinned to the requested accounting as-of date.
+            var capturedAt = DateTimeOffset.UtcNow;
+            var checkpointId = $"pilot-ledger-checkpoint-{ledgerBookId:N}";
+            var checkpointHash = PilotHash(
+                $"{accessContext.TenantId}|{accessContext.CompanyId}|{parameters.Scope.FundProfileId}|{ledgerBookId:D}|{parameters.PeriodId}|{parameters.AsOfDate:yyyy-MM-dd}");
+            var rows = ImmutableArray.Create<IReadOnlyDictionary<string, string>>(
+                new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["account"] = "Cash",
+                    ["debit"] = "250000.00",
+                    ["credit"] = "0.00",
+                    ["currency"] = "USD",
+                    ["evidenceId"] = DatasetEvidenceId
+                });
+            var evidence = ImmutableArray.Create(
+                $"reporting-source-checkpoint:{checkpointId}:{checkpointHash}",
+                DatasetEvidenceId,
+                FeedEvidenceId);
+            var checkpoint = new ReportingAuthoritativeSourceCheckpoint(
+                "pilot-durable-ledger-fixture",
+                $"pilot-ledger:{ledgerBookId:D}:{parameters.PeriodId}",
+                accessContext.TenantId!,
+                "pilot-organization",
+                accessContext.CompanyId,
+                parameters.Scope.FundProfileId,
+                ledgerBookId.ToString("D"),
+                parameters.PeriodId,
+                parameters.AccountingBasis.ToString(),
+                parameters.AsOfDate,
+                new DateTimeOffset(parameters.AsOfDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero),
+                2,
+                1,
+                rows.Length,
+                checkpointId,
+                checkpointHash,
+                capturedAt,
+                evidence);
+            return ValueTask.FromResult(new ReportingAuthoritativeSourceCapture(checkpoint, rows));
+        }
+    }
+
+    private sealed class PilotReportingReconciliationEvidenceSource : IReportingReconciliationEvidenceSource
+    {
+        public ValueTask<ReportingReconciliationEvidenceReceipt> ResolveAsync(
+            ReportingRunParametersDto parameters,
+            ReportingAuthoritativeSourceCheckpoint source,
+            ReportAccessQueryContext accessContext,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var completionId = $"pilot-close-{source.CheckpointId}";
+            var completionHash = PilotHash(
+                $"{source.CheckpointId}|{source.CheckpointHash}|{parameters.PeriodId}|{accessContext.TenantId}|closed");
+            return ValueTask.FromResult(ReportingReconciliationEvidenceValidation.CreateReceipt(
+                source,
+                new ReportingReconciliationCompletionEvidence(
+                    completionId,
+                    completionHash,
+                    source.CapturedAtUtc,
+                    HasOpenBreaks: false,
+                    [$"pilot-close:{completionId}:{completionHash}"])));
+        }
+    }
+
+    private sealed class PilotReportingReadinessDependencyEvaluator : IReportingRunReadinessDependencyEvaluator
+    {
+        public Task<IReadOnlyList<ReportingRunReadinessCheckDto>> EvaluateAsync(
+            ReportingRunRequestDto request,
+            ReportingTemplateMetadata template,
+            ReportingRunParametersDto parameters,
+            ReportAccessQueryContext? accessContext,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            IReadOnlyList<ReportingRunReadinessCheckDto> checks =
+            [
+                new(
+                    "pilot-close-evidence",
+                    "Pilot close and reconciliation evidence",
+                    ReportingRunReadinessStatusDto.Ready,
+                    "The pilot fixture retained close, reconciliation, and authoritative source evidence.",
+                    IssueCount: 0,
+                    BlocksDraft: false,
+                    BlocksFinal: false,
+                    EvidenceReferences:
+                    [
+                        DatasetEvidenceId,
+                        $"pilot-period:{parameters.PeriodId}:closed",
+                        $"pilot-fund:{parameters.Scope.FundProfileId}:reconciled"
+                    ])
+            ];
+            return Task.FromResult(checks);
+        }
+    }
+
+    private sealed class PilotReportingGovernanceCoordinator : IReportingGovernanceEndpointCoordinator
+    {
+        private readonly object _gate = new();
+        private readonly IReportingRunStore _runStore;
+        private readonly Dictionary<string, GovernedReportingRun> _runs = new(StringComparer.Ordinal);
+
+        public PilotReportingGovernanceCoordinator(IReportingRunStore runStore)
+        {
+            _runStore = runStore;
+        }
+
+        public Task<GovernedReportingRun> GetAsync(
+            string runId,
+            ReportingGovernanceCallerContext caller,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            lock (_gate)
+            {
+                return Task.FromResult(GetRequired(runId, caller));
+            }
+        }
+
+        public Task<IReadOnlyList<GovernedReportingRun>> ListAsync(
+            string seriesId,
+            ReportingGovernanceCallerContext caller,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            lock (_gate)
+            {
+                return Task.FromResult<IReadOnlyList<GovernedReportingRun>>(_runs.Values
+                    .Where(run =>
+                        string.Equals(run.SeriesId, seriesId, StringComparison.Ordinal) &&
+                        string.Equals(run.Scope.TenantId, caller.TenantId, StringComparison.Ordinal))
+                    .OrderBy(static run => run.Revision)
+                    .ToArray());
+            }
+        }
+
+        public Task<GovernedReportingRun> CreateFromCompletedCertifiedManifestAsync(
+            string manifestRunId,
+            ReportingGovernanceCallerContext caller,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var manifest = _runStore.GetManifest(manifestRunId)
+                ?? throw new ReportingGovernanceNotFoundException($"Reporting manifest '{manifestRunId}' was not retained.");
+            var scope = manifest.OperationalScope
+                ?? throw new ReportingGovernanceException("The pilot manifest is missing its certified operational scope.");
+            var access = manifest.ImmutableAccessScope
+                ?? throw new ReportingGovernanceException("The pilot manifest is missing its immutable access scope.");
+            var snapshot = manifest.CertifiedSnapshot
+                ?? throw new ReportingGovernanceException("The pilot manifest is missing its certified source snapshot.");
+            var authority = Authority(caller, scope);
+            var createdAt = new DateTimeOffset(2026, 4, 11, 16, 1, 0, TimeSpan.Zero);
+            var audit = ImmutableArray<ReportingGovernanceAuditEntry>.Empty;
+            audit = AppendAudit(
+                audit,
+                manifest.RunId,
+                1,
+                createdAt,
+                ReportingGovernanceAuditAction.RunCreated,
+                authority,
+                ReportingGovernancePermission.CreateRun,
+                fromExecution: null,
+                toExecution: GovernedReportingExecutionState.Queued,
+                fromGovernance: null,
+                toGovernance: GovernedReportingState.Draft,
+                note: "Canonical pilot run created from the certified renderer manifest.");
+            audit = AppendAudit(
+                audit,
+                manifest.RunId,
+                2,
+                createdAt.AddSeconds(1),
+                ReportingGovernanceAuditAction.ExecutionStarted,
+                authority,
+                ReportingGovernancePermission.ExecuteRun,
+                GovernedReportingExecutionState.Queued,
+                GovernedReportingExecutionState.Running,
+                GovernedReportingState.Draft,
+                GovernedReportingState.Draft,
+                note: "Certified renderer output reconciliation started.");
+            audit = AppendAudit(
+                audit,
+                manifest.RunId,
+                3,
+                createdAt.AddSeconds(2),
+                ReportingGovernanceAuditAction.ExecutionSucceeded,
+                authority,
+                ReportingGovernancePermission.ExecuteRun,
+                GovernedReportingExecutionState.Running,
+                GovernedReportingExecutionState.Succeeded,
+                GovernedReportingState.Draft,
+                GovernedReportingState.Draft,
+                note: "Exact certified renderer output was retained.");
+            var run = new GovernedReportingRun(
+                manifest.RunId,
+                manifest.RunSeriesId ?? manifest.RunId,
+                1,
+                manifest.TemplateId,
+                manifest.ResolvedTemplate?.Version.ToString() ?? "1",
+                scope,
+                access,
+                snapshot,
+                authority,
+                createdAt,
+                null,
+                GovernedReportingExecutionState.Succeeded,
+                GovernedReportingState.Draft,
+                3,
+                null,
+                null,
+                null,
+                audit);
+            lock (_gate)
+            {
+                if (!_runs.TryAdd(run.RunId, run))
+                {
+                    throw new ReportingGovernanceConcurrencyException($"Reporting run '{run.RunId}' already exists.");
+                }
+            }
+
+            return Task.FromResult(run);
+        }
+
+        public Task<GovernedReportingRun> ValidateAsync(
+            string runId,
+            long expectedVersion,
+            ReportingGovernanceCallerContext caller,
+            CancellationToken cancellationToken = default) =>
+            Mutate(
+                runId,
+                expectedVersion,
+                caller,
+                GovernedReportingState.Draft,
+                GovernedReportingState.Validated,
+                ReportingGovernanceAuditAction.RunValidated,
+                ReportingGovernancePermission.ValidateRun,
+                "Pilot reporting readiness validated.",
+                run =>
+                {
+                    var readiness = new ReportingReadinessReceipt(
+                        $"pilot-readiness-{run.RunId}",
+                        string.Empty,
+                        run.RunId,
+                        run.Scope.TenantId,
+                        run.Scope.OrganizationId,
+                        run.Scope.CompanyId,
+                        run.Snapshot.SnapshotId,
+                        run.Snapshot.SnapshotHash,
+                        new DateTimeOffset(2026, 4, 11, 16, 2, 0, TimeSpan.Zero),
+                        ImmutableArray.Create(new ReportingReadinessCheck(
+                            "certified-pilot-source",
+                            true,
+                            ImmutableArray.Create(DatasetEvidenceId),
+                            null)));
+                    return run with
+                    {
+                        Readiness = readiness with
+                        {
+                            ReceiptHash = ReportingGovernanceCanonicalValidation.ComputeReadinessReceiptHash(readiness)
+                        }
+                    };
+                },
+                cancellationToken);
+
+        public Task<GovernedReportingRun> SubmitAsync(
+            string runId,
+            long expectedVersion,
+            ReportingGovernanceCallerContext caller,
+            CancellationToken cancellationToken = default) =>
+            Mutate(
+                runId,
+                expectedVersion,
+                caller,
+                GovernedReportingState.Validated,
+                GovernedReportingState.InReview,
+                ReportingGovernanceAuditAction.RunSubmitted,
+                ReportingGovernancePermission.SubmitRun,
+                "Pilot reporting run submitted for independent review.",
+                static run => run,
+                cancellationToken);
+
+        public Task<GovernedReportingRun> ApproveAsync(
+            string runId,
+            long expectedVersion,
+            string decisionNote,
+            ReportingGovernanceCallerContext caller,
+            CancellationToken cancellationToken = default) =>
+            Mutate(
+                runId,
+                expectedVersion,
+                caller,
+                GovernedReportingState.InReview,
+                GovernedReportingState.Approved,
+                ReportingGovernanceAuditAction.RunApproved,
+                ReportingGovernancePermission.ApproveRun,
+                decisionNote,
+                run =>
+                {
+                    if (string.Equals(run.CreationAuthority.ActorId, caller.ActorId, StringComparison.Ordinal))
+                    {
+                        throw new ReportingGovernanceAuthorizationException(
+                            "The reporting run creator cannot independently approve the same run.");
+                    }
+
+                    return run with
+                    {
+                        Approval = new ReportingApprovalReceipt(
+                            Authority(caller, run.Scope),
+                            new DateTimeOffset(2026, 4, 11, 16, 3, 0, TimeSpan.Zero),
+                            decisionNote)
+                    };
+                },
+                cancellationToken);
+
+        public Task<GovernedReportingRun> ReleaseAsync(
+            string runId,
+            long expectedVersion,
+            ReportingGovernanceCallerContext caller,
+            CancellationToken cancellationToken = default) =>
+            Mutate(
+                runId,
+                expectedVersion,
+                caller,
+                GovernedReportingState.Approved,
+                GovernedReportingState.Released,
+                ReportingGovernanceAuditAction.RunReleased,
+                ReportingGovernancePermission.ReleaseRun,
+                "Pilot governed output released through the canonical lifecycle.",
+                run =>
+                {
+                    var manifest = _runStore.GetManifest(run.RunId)
+                        ?? throw new ReportingGovernanceNotFoundException($"Reporting manifest '{run.RunId}' was not retained.");
+                    var artifacts = manifest.Artifacts
+                        .Select((artifact, index) => new ReportingArtifactReference(
+                            $"artifact-{index + 1}",
+                            PilotHash(artifact),
+                            Encoding.UTF8.GetByteCount(artifact)))
+                        .ToImmutableArray();
+                    var manifestId = $"reporting-run://{run.RunId}/manifest";
+                    return run with
+                    {
+                        Release = new ReportingReleaseReceipt(
+                            Authority(caller, run.Scope),
+                            new DateTimeOffset(2026, 4, 11, 16, 4, 0, TimeSpan.Zero),
+                            manifestId,
+                            PilotHash(string.Join("|", manifest.Artifacts)),
+                            artifacts,
+                            ImmutableArray.Create(
+                                $"reporting-release:{run.RunId}",
+                                DatasetEvidenceId,
+                                run.Snapshot.ReconciliationCheckpointId))
+                    };
+                },
+                cancellationToken);
+
+        public Task<ReportingRestatementRequest> RequestRestatementAsync(
+            string predecessorRunId,
+            long expectedPredecessorVersion,
+            string reason,
+            ReportingGovernanceCallerContext caller,
+            CancellationToken cancellationToken = default) =>
+            Task.FromException<ReportingRestatementRequest>(
+                new NotSupportedException("The pilot fixture does not exercise restatement creation."));
+
+        public Task<ReportingRestatementApprovalResult> ApproveRestatementAsync(
+            string requestId,
+            long expectedRequestVersion,
+            ReportingGovernanceCallerContext caller,
+            CancellationToken cancellationToken = default) =>
+            Task.FromException<ReportingRestatementApprovalResult>(
+                new NotSupportedException("The pilot fixture does not exercise restatement approval."));
+
+        private Task<GovernedReportingRun> Mutate(
+            string runId,
+            long expectedVersion,
+            ReportingGovernanceCallerContext caller,
+            GovernedReportingState expectedState,
+            GovernedReportingState nextState,
+            ReportingGovernanceAuditAction action,
+            ReportingGovernancePermission permission,
+            string note,
+            Func<GovernedReportingRun, GovernedReportingRun> enrich,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            lock (_gate)
+            {
+                var run = GetRequired(runId, caller);
+                if (run.Version != expectedVersion)
+                {
+                    throw new ReportingGovernanceConcurrencyException(
+                        $"Aggregate '{run.RunId}' version conflict: expected {expectedVersion}, actual {run.Version}.");
+                }
+
+                if (run.GovernanceState != expectedState)
+                {
+                    throw new ReportingGovernanceException(
+                        $"Reporting run '{run.RunId}' must be {expectedState} before {action}; current state is {run.GovernanceState}.");
+                }
+
+                var authority = Authority(caller, run.Scope);
+                var enriched = enrich(run);
+                var nextVersion = run.Version + 1;
+                var updated = enriched with
+                {
+                    GovernanceState = nextState,
+                    Version = nextVersion,
+                    AuditTrail = AppendAudit(
+                        run.AuditTrail,
+                        run.RunId,
+                        nextVersion,
+                        new DateTimeOffset(2026, 4, 11, 16, checked((int)nextVersion), 0, TimeSpan.Zero),
+                        action,
+                        authority,
+                        permission,
+                        run.ExecutionState,
+                        run.ExecutionState,
+                        run.GovernanceState,
+                        nextState,
+                        note)
+                };
+                _runs[run.RunId] = updated;
+                return Task.FromResult(updated);
+            }
+        }
+
+        private GovernedReportingRun GetRequired(string runId, ReportingGovernanceCallerContext caller)
+        {
+            if (!_runs.TryGetValue(runId, out var run)
+                || !string.Equals(run.Scope.TenantId, caller.TenantId, StringComparison.Ordinal)
+                || !string.Equals(run.Scope.CompanyId, caller.CompanyId, StringComparison.Ordinal))
+            {
+                throw new ReportingGovernanceNotFoundException(
+                    $"Reporting run '{runId}' was not found in the caller tenant.");
+            }
+
+            return run;
+        }
+
+        private static ReportingAuthorityScope Authority(
+            ReportingGovernanceCallerContext caller,
+            ReportingOperationalScope scope) =>
+            new(
+                caller.ActorId,
+                caller.TenantId,
+                scope.OrganizationId,
+                caller.CompanyId,
+                Enum.GetValues<ReportingGovernancePermission>().ToImmutableArray(),
+                caller.Origin,
+                caller.CorrelationId,
+                caller.PrincipalIds);
+
+        private static ImmutableArray<ReportingGovernanceAuditEntry> AppendAudit(
+            ImmutableArray<ReportingGovernanceAuditEntry> audit,
+            string runId,
+            long version,
+            DateTimeOffset occurredAt,
+            ReportingGovernanceAuditAction action,
+            ReportingAuthorityScope authority,
+            ReportingGovernancePermission permission,
+            GovernedReportingExecutionState? fromExecution,
+            GovernedReportingExecutionState? toExecution,
+            GovernedReportingState? fromGovernance,
+            GovernedReportingState? toGovernance,
+            string note)
+        {
+            var previousHash = audit.IsDefaultOrEmpty ? null : audit[^1].Hash;
+            var eventId = $"pilot-reporting-{action}-{version}";
+            var hash = PilotHash($"{previousHash}|{eventId}|{runId}|{version}|{action}|{authority.ActorId}|{note}");
+            return audit.Add(new ReportingGovernanceAuditEntry(
+                eventId,
+                ReportingGovernanceAuditAggregateKind.Run,
+                runId,
+                version,
+                occurredAt,
+                action,
+                authority,
+                permission,
+                fromExecution,
+                toExecution,
+                fromGovernance,
+                toGovernance,
+                null,
+                null,
+                note,
+                previousHash,
+                hash));
+        }
+    }
+
+    private static string PilotHash(string value) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
+
+    /// <summary>
+    /// The pilot harness supplies deterministic in-memory authorities so it can verify evidence
+    /// continuity independently of the PostgreSQL deployment probe. Production composition and
+    /// fail-closed deployment posture are covered by dedicated reporting readiness tests.
+    /// </summary>
+    private sealed class PilotReportingDeploymentReadinessService
+        : IReportingDeploymentReadinessService
+    {
+        public ReportingDeploymentCapabilityDto Evaluate() =>
+            new(
+                IsReady: true,
+                DurableGovernance: true,
+                DurableArtifacts: true,
+                DurableReconciliationEvidence: true,
+                DurableRuns: true,
+                DurableScheduling: true,
+                DurableDelivery: true,
+                RecipientDestinationsConfigured: true,
+                ClientDocumentsConfigured: true,
+                MigrationsManaged: true,
+                Components:
+                [
+                    new ReportingDeploymentComponentDto(
+                        "pilot-harness",
+                        "Pilot harness",
+                        IsReady: true,
+                        "Deterministic in-memory pilot authorities are configured.")
+                ],
+                BlockingReasons: []);
+    }
+
+    private sealed class PilotTestApp : IAsyncDisposable
+    {
+        private readonly IReadOnlyDictionary<string, string?> _originalEnvironment;
+        private ProviderCatalogTestLease? _providerCatalogLease;
+        private bool _startAttempted;
+        private bool _appStopped;
+        private bool _appDisposed;
+        private bool _environmentRestored;
+
+        public PilotTestApp(
+            WebApplication app,
+            string root,
+            IReadOnlyDictionary<string, string?> originalEnvironment)
+        {
+            App = app;
+            Root = root;
+            _originalEnvironment = originalEnvironment;
+        }
+
+        public WebApplication App { get; }
+
+        public string Root { get; }
+
+        public void CaptureProviderCatalogLease() =>
+            _providerCatalogLease = ProviderCatalogTestLease.Capture(App.Services);
+
+        public void MarkStartAttempted() => _startAttempted = true;
+
         public async ValueTask DisposeAsync()
         {
-            await App.DisposeAsync();
+            var cleanupErrors = new List<Exception>();
+
+            if (_startAttempted && !_appStopped)
+            {
+                var applicationLifetime = App.Services.GetRequiredService<IHostApplicationLifetime>();
+                try
+                {
+                    using var stopTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                    await App.StopAsync(stopTimeout.Token);
+                    _appStopped = true;
+                }
+                catch (Exception stopError)
+                {
+                    if (!applicationLifetime.ApplicationStopped.IsCancellationRequested)
+                    {
+                        throw new AggregateException(
+                            "Pilot test host did not stop; owned resources were retained.",
+                            stopError);
+                    }
+
+                    _appStopped = true;
+                    cleanupErrors.Add(stopError);
+                }
+            }
+
+            try
+            {
+                _providerCatalogLease?.Dispose();
+                _providerCatalogLease = null;
+            }
+            catch (Exception ex)
+            {
+                cleanupErrors.Add(ex);
+            }
+
+            if (!_appDisposed)
+            {
+                try
+                {
+                    await App.DisposeAsync();
+                    _appDisposed = true;
+                }
+                catch (Exception ex)
+                {
+                    cleanupErrors.Add(ex);
+                }
+            }
+
+            if (!_environmentRestored)
+            {
+                try
+                {
+                    RestorePilotHostEnvironment(_originalEnvironment);
+                    _environmentRestored = true;
+                }
+                catch (Exception ex)
+                {
+                    cleanupErrors.Add(ex);
+                }
+            }
+
+            if (Directory.Exists(Root))
+            {
+                try
+                {
+                    Directory.Delete(Root, recursive: true);
+                }
+                catch (Exception ex)
+                {
+                    cleanupErrors.Add(ex);
+                }
+            }
+
+            if (cleanupErrors.Count > 0)
+            {
+                throw new AggregateException("Pilot test host cleanup failed.", cleanupErrors);
+            }
         }
     }
 

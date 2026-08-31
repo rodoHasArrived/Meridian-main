@@ -1,4 +1,5 @@
 import { ArrowRight, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,44 +11,84 @@ import { Label } from "@/components/ui/label";
 import { PanelSurface } from "@/components/ui/panel-surface";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
-  STATEMENT_FORMAT_DRIFT_ISSUE_CODE,
-  statementColumnConfidenceBadgeVariant,
-  statementIssueBadgeVariant,
   useStatementImportPanelViewModel,
   type StatementImportPanelViewModel,
   type UseStatementImportPanelOptions
 } from "@/screens/statement-import-panel.view-model";
+import { StatementFetchPanel } from "@/screens/statement-fetch-panel";
+import type { StatementFetchPanelServices } from "@/screens/statement-fetch-panel.view-model";
+import { StatementImportPreviewDetails } from "@/screens/statement-import-preview";
 import type { ApiErrorDisplay } from "@/lib/api-errors";
 
-export function StatementImportPanel(options: UseStatementImportPanelOptions = {}) {
+export interface StatementImportPanelProps extends UseStatementImportPanelOptions {
+  fetchServices?: Partial<StatementFetchPanelServices>;
+}
+
+export function StatementImportPanel(options: StatementImportPanelProps = {}) {
   const viewModel = useStatementImportPanelViewModel(options);
+  const [sourceMode, setSourceMode] = useState("file");
 
   return (
     <section className="flex flex-col gap-4" aria-label="Import statement">
       <PanelSurface className="p-4">
         <h1 className="text-base font-semibold text-foreground">Import statement</h1>
         <p className="mt-1 text-xs text-muted-foreground">
-          Upload a broker or custodian statement, review the detected column mappings and record kinds, then commit
-          the import into the reconciliation queue.
+          Upload a broker or custodian statement, or fetch it through a configured provider. Review the canonical
+          mapping and confidence before records enter the reconciliation queue.
         </p>
       </PanelSurface>
 
       <h2 className="sr-only">Statement import workflow</h2>
-
       {viewModel.loadError ? (
         <ErrorBanner title="Statement connector library failed to load" error={viewModel.loadError} />
       ) : null}
-
-      <SourceSection viewModel={viewModel} />
-      {viewModel.previewError ? (
-        <ErrorBanner title="Statement preview failed" error={viewModel.previewError} />
-      ) : null}
-      {viewModel.preview ? <PreviewSection viewModel={viewModel} /> : null}
-      <ProfileEditorSection viewModel={viewModel} />
-      <CommitSection viewModel={viewModel} />
+      <Tabs
+        aria-label="Statement import source"
+        value={sourceMode}
+        onValueChange={setSourceMode}
+        tabs={[
+          { id: "file", label: "File upload" },
+          { id: "scheduled", label: "Scheduled fetch" }
+        ]}
+      >
+        <TabPanel>
+          <div className="flex flex-col gap-4">
+            <SourceSection viewModel={viewModel} />
+            {viewModel.previewError ? (
+              <ErrorBanner title="Statement preview failed" error={viewModel.previewError} />
+            ) : null}
+            {viewModel.preview ? (
+              <StatementImportPreviewDetails
+                preview={viewModel.preview}
+                selectedKind={viewModel.selectedKind}
+                onSelectKind={viewModel.selectKind}
+              />
+            ) : null}
+            <ProfileEditorSection viewModel={viewModel} />
+            <CommitSection viewModel={viewModel} />
+          </div>
+        </TabPanel>
+        <TabPanel>
+          {sourceMode === "scheduled" && viewModel.loading ? (
+            <StatusBanner
+              tone="info"
+              title="Loading statement connectors"
+              detail="Checking the connector catalog for remote-fetch support."
+            />
+          ) : null}
+          {sourceMode === "scheduled" && !viewModel.loading ? (
+            <StatementFetchPanel
+              connectors={viewModel.connectors}
+              profiles={viewModel.profiles}
+              services={options.fetchServices}
+            />
+          ) : null}
+        </TabPanel>
+      </Tabs>
     </section>
   );
 }
@@ -68,7 +109,8 @@ function SourceSection({ viewModel }: { viewModel: StatementImportPanelViewModel
       <CardHeader>
         <CardTitle>Statement source</CardTitle>
         <CardDescription>
-          Drop a statement file, then optionally pin a connector and mapping profile. Changing the mapping profile
+          Drop a statement file and complete the commit details below — Meridian previews the file against that
+          fund account and period. Pinning a connector or mapping profile is optional; changing the mapping profile
           re-runs the preview automatically.
         </CardDescription>
       </CardHeader>
@@ -115,6 +157,13 @@ function SourceSection({ viewModel }: { viewModel: StatementImportPanelViewModel
             </Select>
           </div>
         </div>
+        {viewModel.previewRequirements.blocked ? (
+          <StatusBanner
+            tone="warning"
+            title={viewModel.previewRequirements.title}
+            detail={viewModel.previewRequirements.detail}
+          />
+        ) : null}
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
@@ -158,168 +207,6 @@ function SourceSection({ viewModel }: { viewModel: StatementImportPanelViewModel
         ) : null}
       </CardContent>
     </Card>
-  );
-}
-
-function PreviewSection({ viewModel }: { viewModel: StatementImportPanelViewModel }) {
-  const preview = viewModel.preview;
-  if (!preview) {
-    return null;
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Preview: {preview.fileName}</CardTitle>
-        <CardDescription>
-          {preview.connectorDisplayName} parsed {preview.recordCount} records.{" "}
-          {preview.nextAction}
-        </CardDescription>
-        <div className="mt-1">
-          <Badge variant={preview.status === "ReadyToImport" ? "success" : "warning"}>
-            {preview.status}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-5">
-        <ColumnMappingTable viewModel={viewModel} />
-        <KindSummarySection viewModel={viewModel} />
-        <IssueList viewModel={viewModel} />
-      </CardContent>
-    </Card>
-  );
-}
-
-function ColumnMappingTable({ viewModel }: { viewModel: StatementImportPanelViewModel }) {
-  const mappings = viewModel.preview?.columnMappings ?? [];
-  if (mappings.length === 0) {
-    return null;
-  }
-
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-xs" aria-label="Statement column mappings">
-        <caption className="sr-only">Detected statement columns mapped onto canonical Meridian fields</caption>
-        <thead>
-          <tr className="border-b border-border text-left font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-            <th scope="col" className="px-2 py-1.5">Source column</th>
-            <th scope="col" className="px-2 py-1.5">Canonical field</th>
-            <th scope="col" className="px-2 py-1.5">Confidence</th>
-          </tr>
-        </thead>
-        <tbody>
-          {mappings.map((mapping) => (
-            <tr key={mapping.sourceColumn} className="border-b border-border/60">
-              <td className="px-2 py-1.5 font-mono">{mapping.sourceColumn}</td>
-              <td className="px-2 py-1.5 font-mono">{mapping.canonicalField ?? "—"}</td>
-              <td className="px-2 py-1.5">
-                <Badge
-                  variant={statementColumnConfidenceBadgeVariant(mapping.confidence)}
-                  title={`${mapping.rationale} (score ${mapping.score.toFixed(2)})`}
-                >
-                  {mapping.confidence}
-                </Badge>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function KindSummarySection({ viewModel }: { viewModel: StatementImportPanelViewModel }) {
-  if (viewModel.kindSummaries.length === 0) {
-    return null;
-  }
-
-  const selected = viewModel.selectedKindSummary;
-
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Record kinds">
-        {viewModel.kindSummaries.map((summary) => (
-          <button
-            key={summary.kind}
-            type="button"
-            aria-pressed={summary.kind === viewModel.selectedKind}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-[2px] border px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em]",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-              summary.kind === viewModel.selectedKind
-                ? "border-primary bg-primary/15 text-primary"
-                : "border-border bg-secondary/35 text-muted-foreground hover:border-[#ADB8C4]"
-            )}
-            onClick={() => viewModel.selectKind(summary.kind)}
-          >
-            {summary.kind}
-            <span aria-hidden="true">{summary.recordCount}</span>
-            <span className="sr-only">{summary.recordCount} records</span>
-          </button>
-        ))}
-      </div>
-      {selected && selected.sampleRecords.length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-xs" aria-label={`Sample ${selected.kind} records`}>
-            <caption className="sr-only">Sample records parsed for the {selected.kind} kind</caption>
-            <thead>
-              <tr className="border-b border-border text-left font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                <th scope="col" className="px-2 py-1.5">Account</th>
-                <th scope="col" className="px-2 py-1.5">Symbol</th>
-                <th scope="col" className="px-2 py-1.5">Activity</th>
-                <th scope="col" className="px-2 py-1.5">Trade date</th>
-                <th scope="col" className="px-2 py-1.5 text-right">Quantity</th>
-                <th scope="col" className="px-2 py-1.5 text-right">Price</th>
-                <th scope="col" className="px-2 py-1.5 text-right">Cash</th>
-              </tr>
-            </thead>
-            <tbody>
-              {selected.sampleRecords.map((record, index) => (
-                <tr key={`${record.externalTransactionId ?? record.symbol}-${index}`} className="border-b border-border/60">
-                  <td className="px-2 py-1.5 font-mono">{record.account}</td>
-                  <td className="px-2 py-1.5 font-mono">{record.symbol}</td>
-                  <td className="px-2 py-1.5">{record.activityType}</td>
-                  <td className="px-2 py-1.5 font-mono">{record.tradeDate}</td>
-                  <td className="px-2 py-1.5 text-right font-mono">{record.quantity}</td>
-                  <td className="px-2 py-1.5 text-right font-mono">{record.price}</td>
-                  <td className="px-2 py-1.5 text-right font-mono">{record.cashAmount}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function IssueList({ viewModel }: { viewModel: StatementImportPanelViewModel }) {
-  if (viewModel.issues.length === 0) {
-    return null;
-  }
-
-  return (
-    <ul className="flex flex-col gap-1.5" aria-label="Statement import issues">
-      {viewModel.issues.map((issue, index) => (
-        <li
-          key={`${issue.code}-${issue.rowNumber ?? "file"}-${index}`}
-          className="flex flex-wrap items-center gap-2 rounded-[2px] border border-border/60 bg-card px-2 py-1.5 text-xs"
-        >
-          <Badge variant={statementIssueBadgeVariant(issue.severity)}>{issue.severity}</Badge>
-          <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-            {issue.code}
-            {issue.rowNumber !== null ? ` · row ${issue.rowNumber}` : ""}
-            {issue.field ? ` · ${issue.field}` : ""}
-          </span>
-          <span className="min-w-0 flex-1">
-            {issue.message}
-            {issue.code === STATEMENT_FORMAT_DRIFT_ISSUE_CODE
-              ? " Review the mapping profile before committing — the statement layout drifted from the accepted fingerprint."
-              : ""}
-          </span>
-        </li>
-      ))}
-    </ul>
   );
 }
 
@@ -609,7 +496,7 @@ function CommitSection({ viewModel }: { viewModel: StatementImportPanelViewModel
           <Button
             type="button"
             disabled={!viewModel.canCommit}
-            disabledReason={errors.file ?? "Select a statement file before committing the import."}
+            disabledReason={viewModel.commitDisabledReason ?? errors.file ?? "Preview the statement before committing."}
             busy={viewModel.commitBusy}
             busyLabel="Committing statement import…"
             onClick={() => void viewModel.commit()}
@@ -709,9 +596,151 @@ function CommitResultPanel({ viewModel }: { viewModel: StatementImportPanelViewM
           ))}
         </ul>
       ) : null}
+      <CommitCaseLinks result={result} />
       <CommitResultActions result={result} />
     </PanelSurface>
   );
+}
+
+function CommitCaseLinks({ result }: { result: StatementImportPanelViewModel["commitResult"] }) {
+  const caseLinks = result ? resolveStatementCaseLinks(result) : [];
+  if (!result || caseLinks.length === 0) {
+    return null;
+  }
+
+  const visibleCaseLinks = caseLinks.slice(0, 5);
+  const remainingCount = caseLinks.length - visibleCaseLinks.length;
+
+  return (
+    <div className="flex flex-col gap-2" aria-label="Statement import reconciliation cases">
+      <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        Reconciliation cases
+      </span>
+      <ul className="grid gap-2 sm:grid-cols-2">
+        {visibleCaseLinks.map((caseLink) => (
+          <li
+            key={caseLink.caseId}
+            className="flex min-w-0 flex-col gap-2 rounded-[2px] border border-border/70 bg-card/70 p-2 text-xs"
+          >
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <span className="min-w-[10rem] flex-1 truncate font-medium text-foreground">{caseLink.label}</span>
+              <Button asChild variant="outline" size="sm">
+                <Link to={caseLink.route}>
+                  <span className="max-w-[14rem] truncate font-mono text-[11px]">{caseLink.caseId}</span>
+                  <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                </Link>
+              </Button>
+              <Badge variant="outline">{caseLink.status}</Badge>
+              <Badge variant={statementCasePriorityBadgeVariant(caseLink.priority)}>{caseLink.priority}</Badge>
+            </div>
+            <p className="line-clamp-2 text-muted-foreground">{caseLink.reason}</p>
+            {caseLink.suggestedNextAction ? (
+              <p className="line-clamp-2 text-muted-foreground">
+                Next: {caseLink.suggestedNextAction}
+              </p>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+      {remainingCount > 0 ? (
+        <span className="text-xs text-muted-foreground">
+          {remainingCount} more case{remainingCount === 1 ? "" : "s"} are available from the reconciliation queue.
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+interface ResolvedStatementCaseLink {
+  caseId: string;
+  breakId: string | null;
+  route: string;
+  label: string;
+  status: string;
+  priority: string;
+  reason: string;
+  suggestedNextAction: string;
+}
+
+function resolveStatementCaseLinks(
+  result: NonNullable<StatementImportPanelViewModel["commitResult"]>
+): ResolvedStatementCaseLink[] {
+  const structuredLinks = (result.reconciliationCaseLinks ?? [])
+    .map((link) => ({
+      caseId: link.caseId?.trim() ?? "",
+      breakId: link.breakId?.trim() || null,
+      route: link.route?.trim() ?? "",
+      label: link.label?.trim() ?? "",
+      status: link.status?.trim() ?? "",
+      priority: link.priority?.trim() ?? "",
+      reason: link.reason?.trim() ?? "",
+      suggestedNextAction: link.suggestedNextAction?.trim() ?? ""
+    }))
+    .filter((link) => link.caseId);
+
+  if (structuredLinks.length > 0) {
+    return dedupeCaseLinks(structuredLinks.map((link, index) => ({
+      ...link,
+      route: link.route || resolveStatementCaseRoute(result, link.caseId, index),
+      label: link.label || `Reconciliation case ${link.caseId}`,
+      status: link.status || "Open",
+      priority: link.priority || "Normal",
+      reason: link.reason || "Statement import created a reconciliation case.",
+      suggestedNextAction: link.suggestedNextAction || "Review the linked statement evidence before disposition."
+    })));
+  }
+
+  return dedupeCaseLinks((result.caseIds ?? [])
+    .map((caseId, index) => {
+      const trimmedCaseId = caseId.trim();
+      if (!trimmedCaseId) {
+        return null;
+      }
+
+      const breakId = trimmedCaseId.toLowerCase().startsWith("case:")
+        ? trimmedCaseId.slice("case:".length).trim() || null
+        : null;
+      return {
+        caseId: trimmedCaseId,
+        breakId,
+        route: resolveStatementCaseRoute(result, trimmedCaseId, index),
+        label: `Reconciliation case ${trimmedCaseId}`,
+        status: "Open",
+        priority: "Normal",
+        reason: "Statement import created a reconciliation case.",
+        suggestedNextAction: "Review the linked statement evidence before disposition."
+      };
+    })
+    .filter((link): link is ResolvedStatementCaseLink => Boolean(link)));
+}
+
+function dedupeCaseLinks(links: ResolvedStatementCaseLink[]) {
+  const seen = new Set<string>();
+  const deduped: ResolvedStatementCaseLink[] = [];
+  for (const link of links) {
+    const key = link.caseId.toLowerCase();
+    if (seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+    deduped.push(link);
+  }
+
+  return deduped;
+}
+
+function statementCasePriorityBadgeVariant(priority: string): "outline" | "warning" | "danger" | "paper" {
+  switch (priority.toLowerCase()) {
+    case "critical":
+      return "danger";
+    case "high":
+      return "warning";
+    case "low":
+      return "paper";
+    default:
+      return "outline";
+  }
 }
 
 function CommitResultActions({ result }: { result: StatementImportPanelViewModel["commitResult"] }) {
@@ -719,7 +748,7 @@ function CommitResultActions({ result }: { result: StatementImportPanelViewModel
     return null;
   }
 
-  const evidenceRoute = result.evidenceWorkbenchRoute ?? WORKSTATION_ROUTE_CATALOG.accountingEvidence;
+  const evidenceRoute = result.evidenceWorkbenchRoute ?? WORKSTATION_ROUTE_CATALOG.reportingEvidence;
   const reconciliationRoute = result.reconciliationRoute ?? WORKSTATION_ROUTE_CATALOG.accountingReconciliationMatch;
 
   return (
@@ -738,4 +767,23 @@ function CommitResultActions({ result }: { result: StatementImportPanelViewModel
       </Button>
     </div>
   );
+}
+
+function resolveStatementCaseRoute(
+  result: NonNullable<StatementImportPanelViewModel["commitResult"]>,
+  caseId: string,
+  index: number
+) {
+  const explicitRoute = result.reconciliationCaseRoutes?.[index];
+  if (explicitRoute && explicitRoute.trim()) {
+    return explicitRoute;
+  }
+
+  const baseRoute = result.reconciliationRoute ?? WORKSTATION_ROUTE_CATALOG.accountingReconciliationMatch;
+  const separator = baseRoute.includes("?") ? "&" : "?";
+  const caseParam = `caseId=${encodeURIComponent(caseId)}`;
+  const breakId = caseId.toLowerCase().startsWith("case:") ? caseId.slice("case:".length).trim() : "";
+  return breakId
+    ? `${baseRoute}${separator}${caseParam}&breakId=${encodeURIComponent(breakId)}`
+    : `${baseRoute}${separator}${caseParam}`;
 }

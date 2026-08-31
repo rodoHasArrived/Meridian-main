@@ -1,0 +1,62 @@
+name: Branch Cleanup
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type delete-merged-branches to delete; anything else is a dry run."
+        required: true
+        default: dry-run
+
+permissions:
+  contents: write
+
+concurrency:
+  group: branch-cleanup
+  cancel-in-progress: false
+
+jobs:
+  delete-merged-branches:
+    name: Delete branches fully merged into main
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Delete ancestry-merged branches
+        env:
+          CONFIRM: ${{ inputs.confirm }}
+          KEEP_REF: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          git fetch origin '+refs/heads/*:refs/remotes/origin/*' --prune
+          main_sha="$(git rev-parse refs/remotes/origin/main)"
+          mapfile -t merged < <(git for-each-ref 'refs/remotes/origin/' --format='%(refname:lstrip=3)' --merged "$main_sha")
+          to_delete=()
+          for branch in "${merged[@]}"; do
+            case "$branch" in
+              main|HEAD|"$KEEP_REF") continue ;;
+            esac
+            to_delete+=("$branch")
+          done
+          echo "Fully merged into main and eligible for deletion: ${#to_delete[@]}"
+          printf '%s\n' "${to_delete[@]}"
+          {
+            echo "## Branch cleanup"
+            echo "Eligible (fully merged into \`main\`): ${#to_delete[@]}"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$CONFIRM" != "delete-merged-branches" ]; then
+            echo "Dry run: confirm input was not 'delete-merged-branches'; nothing deleted."
+            echo "Dry run only — nothing deleted." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          push_url="https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+          printf '%s\n' "${to_delete[@]}" | xargs -r -n 25 git push "$push_url" --delete
+          echo "Deleted ${#to_delete[@]} branches." >> "$GITHUB_STEP_SUMMARY"

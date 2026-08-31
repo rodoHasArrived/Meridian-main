@@ -1,10 +1,14 @@
 using System.Text.Json;
+using Meridian.Application.Composition.Startup;
 using Meridian.Application.Monitoring;
 using Meridian.Application.UI;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Lifecycle;
+using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -28,7 +32,7 @@ public static class StatusEndpoints
             var statusCode = handlers.GetHealthStatusCode(response);
             return Results.Json(response, jsonOptions, statusCode: statusCode);
         })
-        .WithName("GetHealth")
+        .WithName("GetHealth").DeclareOpenRead("Intentionally unauthenticated: both the session and API-key middlewares exempt the exact /health path because the shipped docker-compose healthcheck curls it, and a probe that authentication breaks reports every configured deployment unhealthy. Payload is status, uptime and coarse check names only; the detailed probe (/health/detailed) stays authenticated.")
         .WithTags("Health")
         .WithDescription("Returns comprehensive health status including provider connectivity and storage health.")
         .Produces<HealthCheckResponse>(200)
@@ -41,7 +45,7 @@ public static class StatusEndpoints
             var statusCode = handlers.GetHealthStatusCode(response);
             return Results.Json(response, jsonOptions, statusCode: statusCode);
         })
-        .WithName("GetHealthApi")
+        .WithName("GetHealthApi").DeclareOpenRead("Documented alias of /health kept for backward compatibility; same coarse liveness payload. Unlike /health itself, this alias is not in the middleware exemption sets, so it still sits behind the session or API key a configured deployment requires.")
         .WithTags("Health")
         .WithDescription("Alias for /health endpoint for backward compatibility.")
         .Produces<HealthCheckResponse>(200)
@@ -49,46 +53,61 @@ public static class StatusEndpoints
 
         // Kubernetes-style health endpoints
         app.MapGet("/healthz", () => Results.Ok("healthy"))
-            .WithName("GetHealthz")
+            .WithName("GetHealthz").DeclareOpenRead("Kubernetes liveness probe; exempt from session authentication, so a permission would refuse the orchestrator that must call it.")
             .WithTags("Health")
             .WithDescription("Kubernetes-style liveness probe returning 200 if the process is running.")
             .Produces(200);
 
         // Readiness probe
-        app.MapGet(UiApiRoutes.Ready, () =>
-        {
-            var (isReady, message) = handlers.CheckReadiness();
-            return isReady ? Results.Ok(message) : Results.StatusCode(503);
-        })
-        .WithName("GetReady")
+        app.MapGet(UiApiRoutes.Ready, (CancellationToken ct) =>
+            GetReadinessResultAsync(app, handlers, jsonOptions, ct))
+        .WithName("GetReady").DeclareOpenRead("Kubernetes readiness probe; exempt from session authentication, so a permission would refuse the orchestrator that must call it.")
         .WithTags("Health")
         .WithDescription("Readiness probe returning 200 when the service is ready to accept requests, or 503 if not.")
         .Produces(200)
         .Produces(503);
 
-        app.MapGet("/readyz", () =>
-        {
-            var (isReady, message) = handlers.CheckReadiness();
-            return isReady ? Results.Ok(message) : Results.StatusCode(503);
-        })
-        .WithName("GetReadyz")
+        app.MapGet("/readyz", (CancellationToken ct) =>
+            GetReadinessResultAsync(app, handlers, jsonOptions, ct))
+        .WithName("GetReadyz").DeclareOpenRead("Kubernetes readiness probe alias; exempt from session authentication, so a permission would refuse the orchestrator that must call it.")
         .WithTags("Health")
         .Produces(200)
         .Produces(503);
 
+        app.MapGet("/startupz", (CancellationToken ct) =>
+            GetStartupResultAsync(app, handlers, jsonOptions, ct))
+        .WithName("GetStartupz").DeclareOpenRead("Sanitized pre-login startup progress; reached before any session exists, so a permission would refuse every caller it is for.")
+        .WithTags("Health")
+        .WithDescription("Sanitized pre-login startup progress for the local workstation.")
+        .Produces<RuntimeLifecycleSnapshotDto>(200)
+        .Produces<RuntimeLifecycleSnapshotDto>(202)
+        .Produces<RuntimeLifecycleSnapshotDto>(503);
+
+        app.MapGet("/startup", () => Results.Content(
+                HtmlTemplateGenerator.Startup(),
+                "text/html; charset=utf-8"))
+            .WithName("GetStartupCenter").DeclareOpenRead("Pre-login lifecycle progress page; reached before any session exists, so a permission would refuse every caller it is for.")
+            .WithTags("Health")
+            .WithDescription("Pre-login lifecycle progress and readiness checks.")
+            .Produces(StatusCodes.Status200OK, contentType: "text/html");
+
         // Liveness probe
         app.MapGet(UiApiRoutes.Live, () => Results.Ok("alive"))
-            .WithName("GetLive").WithTags("Health").Produces(200);
+            .WithName("GetLive").WithTags("Health")
+            .DeclareOpenRead("Kubernetes liveness probe; exempt from session authentication, so a permission would refuse the orchestrator that must call it.")
+            .Produces(200);
         app.MapGet("/livez", () => Results.Ok("alive"))
-            .WithName("GetLivez").WithTags("Health").Produces(200);
+            .WithName("GetLivez").WithTags("Health")
+            .DeclareOpenRead("Kubernetes liveness probe alias; exempt from session authentication, so a permission would refuse the orchestrator that must call it.")
+            .Produces(200);
 
         // Prometheus metrics
-        app.MapGet(UiApiRoutes.Metrics, () =>
+        app.MapGet(UiApiRoutes.Metrics, async (CancellationToken cancellationToken) =>
         {
-            var content = handlers.GetPrometheusMetrics();
+            var content = await handlers.GetPrometheusMetricsAsync(cancellationToken).ConfigureAwait(false);
             return Results.Content(content, "text/plain; version=0.0.4");
         })
-        .WithName("GetMetrics")
+        .WithName("GetMetrics").DeclareOpenRead("Intentionally unauthenticated: both the session and API-key middlewares exempt the exact /metrics path because the shipped Prometheus scrape config targets it, and a scrape that authentication breaks collects nothing. Operational caveat: the exposition includes symbol-labelled counters, so the configured symbol set is visible to any caller that can reach the port — network-restrict /metrics (scrape network or reverse-proxy allowlist) in deployments where that matters.")
         .WithTags("Monitoring")
         .WithDescription("Returns Prometheus-format metrics for scraping by monitoring systems.")
         .Produces(200);
@@ -99,9 +118,16 @@ public static class StatusEndpoints
             var response = handlers.GetStatus();
             return Results.Json(response, jsonOptions);
         })
-        .WithName("GetStatus")
+        // The browser shell treats this as mandatory bootstrap evidence, and StatusResponse is aggregate
+        // counters, uptime, connection state and the degraded-mode posture -- no symbol list, no
+        // credentials, no account data, despite what the description below once implied. Gating it by
+        // the operational permissions locked out every built-in role but Admin and Developer, which
+        // left the shell in a permanent bootstrap error for everyone else. Worse, degraded mode is the
+        // signal that market data is simulated or stores do not persist: withholding it makes the shell
+        // quietly mislead exactly the operators who most need to know.
+        .WithName("GetStatus").RequireEstablishedPrincipalRead()
         .WithTags("Status")
-        .WithDescription("Returns full system status including connection state, metrics, and symbol information.")
+        .WithDescription("Returns system status: connection state, aggregate pipeline metrics, uptime, and degraded-mode posture.")
         .Produces<StatusResponse>(200);
 
         // Errors endpoint with optional filtering
@@ -110,7 +136,10 @@ public static class StatusEndpoints
             var response = handlers.GetErrors(count ?? 10, level, symbol);
             return Results.Json(response, jsonOptions);
         })
-        .WithName("GetErrors")
+        // ViewConfig reads platform configuration; ErrorEntryDto carries exception type, context and
+        // message, which is diagnostics. It stays on /api/status and /api/connections, whose payloads
+        // include the configured symbol set and data sources.
+        .WithName("GetErrors").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithTags("Status")
         .WithDescription("Returns recent error entries with optional filtering by count, severity level, and symbol.")
         .Produces<ErrorsResponseDto>(200);
@@ -121,7 +150,7 @@ public static class StatusEndpoints
             var response = handlers.GetBackpressure();
             return Results.Json(response, jsonOptions);
         })
-        .WithName("GetBackpressure")
+        .WithName("GetBackpressure").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithTags("Status")
         .WithDescription("Returns current backpressure status including queue utilization and drop rates.")
         .Produces<BackpressureStatusDto>(200);
@@ -136,7 +165,7 @@ public static class StatusEndpoints
             }
             return Results.Json(summary, jsonOptions);
         })
-        .WithName("GetProviderLatency")
+        .WithName("GetProviderLatency").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithTags("Monitoring")
         .WithDescription("Returns latency statistics for all providers including average, min, max, and percentiles.")
         .Produces<ProviderLatencySummaryDto>(200);
@@ -151,7 +180,7 @@ public static class StatusEndpoints
             }
             return Results.Json(snapshot, jsonOptions);
         })
-        .WithName("GetConnections")
+        .WithName("GetConnections").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
         .WithTags("Monitoring")
         .WithDescription("Returns connection health snapshot for all active provider connections.")
         .Produces<ConnectionHealthSnapshotDto>(200);
@@ -174,7 +203,7 @@ public static class StatusEndpoints
             };
             return Results.Json(report, jsonOptions, statusCode: statusCode);
         })
-        .WithName("GetDetailedHealth")
+        .WithName("GetDetailedHealth").RequirePermission(UserPermission.ViewDiagnostics)
         .WithTags("Health")
         .Produces(200)
         .Produces(503);
@@ -197,7 +226,7 @@ public static class StatusEndpoints
             };
             return Results.Json(report, jsonOptions, statusCode: statusCode);
         })
-        .WithName("GetDetailedHealthApi")
+        .WithName("GetDetailedHealthApi").RequirePermission(UserPermission.ViewDiagnostics)
         .WithTags("Health")
         .WithDescription("Alias for /health/detailed endpoint for backward compatibility.")
         .Produces(200)
@@ -247,6 +276,71 @@ public static class StatusEndpoints
             {
                 // Client disconnected
             }
-        });
+        })
+        // The stream republishes status, back-pressure, provider latency AND the error buffer, so its
+        // admission is the narrowest of what it carries, not the widest. ViewConfig is off it for the
+        // same reason it is off /api/errors: exception type, context and message are diagnostics, and a
+        // stream carrying them is the second door to the route that was just closed.
+        .RequireAnyPermission(
+            UserPermission.ViewDiagnostics,
+            UserPermission.ManageProviders,
+            UserPermission.AdminMaintenance);
+    }
+
+    private static async Task<IResult> GetReadinessResultAsync(
+        WebApplication app,
+        StatusEndpointHandlers handlers,
+        JsonSerializerOptions jsonOptions,
+        CancellationToken ct)
+    {
+        var readinessService = app.Services.GetService<IRuntimeReadinessService>();
+        if (readinessService is null)
+        {
+            var (legacyIsReady, message) = handlers.CheckReadiness();
+            return legacyIsReady ? Results.Ok(message) : Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+        }
+
+        var snapshot = await readinessService.EvaluateAsync(ct).ConfigureAwait(false);
+        var isReady = snapshot.AcceptingWork &&
+                      snapshot.Readiness is RuntimeReadinessStatus.Ready or RuntimeReadinessStatus.Degraded;
+        return Results.Json(
+            snapshot,
+            jsonOptions,
+            statusCode: isReady
+                ? StatusCodes.Status200OK
+                : StatusCodes.Status503ServiceUnavailable);
+    }
+
+    private static async Task<IResult> GetStartupResultAsync(
+        WebApplication app,
+        StatusEndpointHandlers handlers,
+        JsonSerializerOptions jsonOptions,
+        CancellationToken ct)
+    {
+        var readinessService = app.Services.GetService<IRuntimeReadinessService>();
+        if (readinessService is null)
+        {
+            var (isReady, _) = handlers.CheckReadiness();
+            return Results.Json(
+                new { state = isReady ? "ready" : "starting" },
+                jsonOptions,
+                statusCode: isReady
+                    ? StatusCodes.Status200OK
+                    : StatusCodes.Status202Accepted);
+        }
+
+        var snapshot = await readinessService.EvaluateAsync(ct).ConfigureAwait(false);
+        var statusCode = snapshot.State switch
+        {
+            RuntimeLifecycleState.Ready or RuntimeLifecycleState.Degraded => StatusCodes.Status200OK,
+            RuntimeLifecycleState.Failed or
+            RuntimeLifecycleState.ShutdownRequested or
+            RuntimeLifecycleState.Draining or
+            RuntimeLifecycleState.Flushing or
+            RuntimeLifecycleState.StoppingHost or
+            RuntimeLifecycleState.Stopped => StatusCodes.Status503ServiceUnavailable,
+            _ => StatusCodes.Status202Accepted
+        };
+        return Results.Json(snapshot, jsonOptions, statusCode: statusCode);
     }
 }

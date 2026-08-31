@@ -88,9 +88,13 @@ these cases:
 - Performing broad multi-surface edits across `.codex/`, `.agents/`, `.github/`, `CLAUDE.md`,
   `AGENTS.md`, and `docs/ai/`.
 
-These pause-and-confirm rules apply to ordinary assistant sessions regardless of provider. Use the
-Chief of Staff approval path for multi-domain, approval-gated, or evidence-synthesis work that needs
-structured sign-off, trace retention, or operator-facing briefing.
+These pause-and-confirm rules apply to ordinary assistant sessions regardless of provider. For
+multi-domain, approval-gated, or evidence-synthesis work that needs structured sign-off, trace
+retention, or operator-facing briefing, use provider-agnostic coordinator escalation. Follow
+`docs/ai/agent-handoff-checklist.md`, generate and validate a task-specific handoff packet, and capture
+the required evidence and validation-floor state. The checked-in
+`docs/status/ai-handoff-packet.json` is a deterministic automation artifact, not evidence of approval;
+explicit human confirmation remains a separate gate before implementation continues.
 
 ### Agent Orchestration
 
@@ -426,8 +430,8 @@ When editing `src/**`, assistants must:
 - Do not introduce new AI providers, tools, agents, models, or dependencies without repository
   evidence that they are needed.
 - Do not pursue mobile app development unless a future roadmap change explicitly creates and
-  documents a mobile product lane; keep operator UI work on the active browser workstation and WPF
-  desktop surfaces.
+  documents a mobile product lane; operator UI work runs across two active co-equal lanes, the
+  browser workstation and the reactivated WPF desktop workstation, both over shared contracts.
 - Do not duplicate long rule sets across provider-specific files. Link to the shared source of
   truth and keep host-specific files focused on host mechanics.
 - Do not embed full repository trees in host-specific guidance. Link to

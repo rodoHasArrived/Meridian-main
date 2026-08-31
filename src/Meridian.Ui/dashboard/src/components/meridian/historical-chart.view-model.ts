@@ -1,6 +1,28 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getHistoricalBars } from "@/lib/api";
 import type { HistoricalBarPoint } from "@/types";
+import {
+  CANDLESTICK_BOLLINGER_MULTIPLIER,
+  CANDLESTICK_BOLLINGER_PERIOD,
+  CANDLESTICK_RSI_PERIOD,
+  computeBollingerBands,
+  computeCandlestickIndicators,
+  computeRsi,
+  computeSimpleMovingAverage,
+  smaSeriesForPeriod,
+  type BollingerBand,
+  type CandlestickIndicatorSet
+} from "@/lib/historical-chart/indicators";
+import { createIndicatorsWorker } from "@/lib/historical-chart/indicators-worker-client";
+import { useOffThreadCompute } from "@/lib/perf/off-thread-compute";
+
+// Re-exported for backward compatibility with existing importers/tests.
+export {
+  computeBollingerBands,
+  computeRsi,
+  computeSimpleMovingAverage,
+  type BollingerBand
+} from "@/lib/historical-chart/indicators";
 
 export type ChartMode = "line" | "candles";
 
@@ -669,6 +691,38 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
   const compareFeedbackMessage = compareErrorMessage
     ?? `${compareSymbols.length} of ${COMPARE_SYMBOL_LIMIT} comparison symbols active.`;
 
+  // Chronological close prices, computed once per bar set. The heavy SMA/Bollinger/RSI
+  // pipeline runs off the main thread (with a synchronous fallback) so toggling
+  // indicators or typing a compare symbol no longer recomputes it on the UI thread.
+  const chronologicalCloses = useMemo(() => toChronologicalCloses(state.bars), [state.bars]);
+  const currentIndicatorKey = candlestickIndicatorKey(chronologicalCloses);
+  const { value: candlestickIndicators, valueKey: candlestickIndicatorsKey } = useOffThreadCompute<number[], CandlestickIndicatorSet>({
+    input: chronologicalCloses,
+    keyOf: () => currentIndicatorKey,
+    computeSync: computeCandlestickIndicators,
+    createWorker: createIndicatorsWorker
+  });
+  const currentCandlestickIndicators = candlestickIndicatorsKey === currentIndicatorKey
+    ? candlestickIndicators
+    : undefined;
+
+  const sparklineChart = useMemo(
+    () => buildHistoricalChartSparklineViewModel({ bars: state.bars, stats, symbol, timeframe: activeTimeframe.label }),
+    [state.bars, stats, symbol, activeTimeframe.label]
+  );
+  const candlestickChart = useMemo(
+    () =>
+      buildCandlestickChartViewModel({
+        bars: state.bars,
+        stats,
+        symbol,
+        timeframe: activeTimeframe.label,
+        indicators,
+        precomputedIndicators: currentCandlestickIndicators
+      }),
+    [state.bars, stats, symbol, activeTimeframe.label, indicators, currentCandlestickIndicators]
+  );
+
   return {
     eyebrow: "Historical price",
     title: `${symbol || "Symbol"} · ${activeTimeframe.label}`,
@@ -683,19 +737,8 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
     changeText: `${formatChange(stats.change)} (${formatChangePct(stats.changePct)})`,
     changeToneClass: chartChangeToneClass(stats.change),
     statePanel,
-    chart: buildHistoricalChartSparklineViewModel({
-      bars: state.bars,
-      stats,
-      symbol,
-      timeframe: activeTimeframe.label
-    }),
-    candlestickChart: buildCandlestickChartViewModel({
-      bars: state.bars,
-      stats,
-      symbol,
-      timeframe: activeTimeframe.label,
-      indicators
-    }),
+    chart: sparklineChart,
+    candlestickChart,
     compareChart,
     compareActive,
     compareInput,
@@ -739,13 +782,19 @@ export function buildCandlestickChartViewModel({
   stats,
   symbol,
   timeframe,
-  indicators
+  indicators,
+  precomputedIndicators
 }: {
   bars: readonly HistoricalBarPoint[];
   stats: HistoricalChartStats;
   symbol: string;
   timeframe: string;
   indicators?: CandlestickIndicatorVisibility;
+  /**
+   * Optional precomputed indicator arrays (e.g. produced off the main thread).
+   * When omitted, the indicators are computed synchronously here as before.
+   */
+  precomputedIndicators?: CandlestickIndicatorSet;
 }): CandlestickChartViewModel | null {
   const visibility: CandlestickIndicatorVisibility = indicators ?? {
     sma: true,
@@ -776,9 +825,18 @@ export function buildCandlestickChartViewModel({
   const bodyWidth = Math.max(1.5, slotWidth * 0.65);
 
   const closes = chartBars.map(({ bar }) => bar.close);
+  // Ignore malformed or stale worker output. It must be indexed one-for-one with
+  // the current bars; otherwise calculate indicators for this render synchronously.
+  const compatiblePrecomputedIndicators = hasIndicatorSeriesLength(precomputedIndicators, closes.length)
+    ? precomputedIndicators
+    : undefined;
 
-  const bollingerExtremes = visibility.bollinger
-    ? computeBollingerBands(closes, 20, 2).reduce(
+  const bollingerBands = visibility.bollinger
+    ? compatiblePrecomputedIndicators?.bollinger ?? computeBollingerBands(closes, CANDLESTICK_BOLLINGER_PERIOD, CANDLESTICK_BOLLINGER_MULTIPLIER)
+    : null;
+
+  const bollingerExtremes = bollingerBands
+    ? bollingerBands.reduce(
         (acc, band) => {
           if (band === null) return acc;
           return {
@@ -865,11 +923,11 @@ export function buildCandlestickChartViewModel({
   const midXs = candleBars.map((b) => b.midX);
 
   const smaOverlays = visibility.sma
-    ? buildSmaOverlays({ closes, midXs, yForPrice })
+    ? buildSmaOverlays({ closes, midXs, yForPrice, precomputed: compatiblePrecomputedIndicators })
     : [];
 
   const bollingerOverlay = visibility.bollinger
-    ? buildBollingerOverlay({ closes, midXs, yForPrice })
+    ? buildBollingerOverlay({ closes, midXs, yForPrice, precomputedBands: bollingerBands })
     : null;
 
   const rsiPanel = visibility.rsi
@@ -879,7 +937,8 @@ export function buildCandlestickChartViewModel({
         areaTop: rsiAreaTop,
         areaHeight: rsiAreaHeight,
         padX,
-        width
+        width,
+        precomputedRsi: compatiblePrecomputedIndicators?.rsi
       })
     : null;
 
@@ -917,10 +976,21 @@ export function buildCandlestickChartViewModel({
   };
 }
 
+function hasIndicatorSeriesLength(
+  indicators: CandlestickIndicatorSet | undefined,
+  expectedLength: number
+): indicators is CandlestickIndicatorSet {
+  return indicators !== undefined
+    && indicators.sma.every(({ values }) => values.length === expectedLength)
+    && indicators.bollinger.length === expectedLength
+    && indicators.rsi.length === expectedLength;
+}
+
 interface BuildSmaOverlaysInput {
   closes: number[];
   midXs: number[];
   yForPrice: (price: number) => number;
+  precomputed?: CandlestickIndicatorSet;
 }
 
 const SMA_OVERLAY_DEFINITIONS: ReadonlyArray<{
@@ -932,10 +1002,10 @@ const SMA_OVERLAY_DEFINITIONS: ReadonlyArray<{
   { period: 50, label: "SMA 50", stroke: "var(--chart-sma-50, #7c5cff)" }
 ];
 
-function buildSmaOverlays({ closes, midXs, yForPrice }: BuildSmaOverlaysInput): CandlestickSmaOverlay[] {
+function buildSmaOverlays({ closes, midXs, yForPrice, precomputed }: BuildSmaOverlaysInput): CandlestickSmaOverlay[] {
   const overlays: CandlestickSmaOverlay[] = [];
   for (const def of SMA_OVERLAY_DEFINITIONS) {
-    const values = computeSimpleMovingAverage(closes, def.period);
+    const values = (precomputed && smaSeriesForPeriod(precomputed, def.period)) ?? computeSimpleMovingAverage(closes, def.period);
     const points = values
       .map((value, i) =>
         value === null
@@ -958,106 +1028,17 @@ function buildSmaOverlays({ closes, midXs, yForPrice }: BuildSmaOverlaysInput): 
   return overlays;
 }
 
-export function computeSimpleMovingAverage(
-  values: readonly number[],
-  period: number
-): Array<number | null> {
-  if (period <= 0) return values.map(() => null);
-  const result: Array<number | null> = new Array(values.length).fill(null);
-  if (values.length < period) return result;
-
-  let sum = 0;
-  for (let i = 0; i < period; i++) sum += values[i]!;
-  result[period - 1] = sum / period;
-  for (let i = period; i < values.length; i++) {
-    sum += values[i]! - values[i - period]!;
-    result[i] = sum / period;
-  }
-  return result;
-}
-
-export interface BollingerBand {
-  middle: number;
-  upper: number;
-  lower: number;
-}
-
-export function computeBollingerBands(
-  values: readonly number[],
-  period: number,
-  multiplier: number
-): Array<BollingerBand | null> {
-  const result: Array<BollingerBand | null> = new Array(values.length).fill(null);
-  if (period <= 0 || values.length < period) return result;
-
-  let sum = 0;
-  let sumSq = 0;
-  for (let i = 0; i < period; i++) {
-    const v = values[i]!;
-    sum += v;
-    sumSq += v * v;
-  }
-  for (let i = period - 1; i < values.length; i++) {
-    if (i >= period) {
-      const out = values[i - period]!;
-      const incoming = values[i]!;
-      sum += incoming - out;
-      sumSq += incoming * incoming - out * out;
-    }
-    const mean = sum / period;
-    const variance = Math.max(0, sumSq / period - mean * mean);
-    const stddev = Math.sqrt(variance);
-    result[i] = {
-      middle: mean,
-      upper: mean + multiplier * stddev,
-      lower: mean - multiplier * stddev
-    };
-  }
-  return result;
-}
-
-export function computeRsi(values: readonly number[], period: number): Array<number | null> {
-  const result: Array<number | null> = new Array(values.length).fill(null);
-  if (period <= 0 || values.length <= period) return result;
-
-  let avgGain = 0;
-  let avgLoss = 0;
-  for (let i = 1; i <= period; i++) {
-    const change = values[i]! - values[i - 1]!;
-    if (change > 0) avgGain += change;
-    else avgLoss += -change;
-  }
-  avgGain /= period;
-  avgLoss /= period;
-  result[period] = computeRsiFromAverages(avgGain, avgLoss);
-
-  for (let i = period + 1; i < values.length; i++) {
-    const change = values[i]! - values[i - 1]!;
-    const gain = change > 0 ? change : 0;
-    const loss = change < 0 ? -change : 0;
-    avgGain = (avgGain * (period - 1) + gain) / period;
-    avgLoss = (avgLoss * (period - 1) + loss) / period;
-    result[i] = computeRsiFromAverages(avgGain, avgLoss);
-  }
-  return result;
-}
-
-function computeRsiFromAverages(avgGain: number, avgLoss: number): number {
-  if (avgLoss === 0) return 100;
-  const rs = avgGain / avgLoss;
-  return 100 - 100 / (1 + rs);
-}
-
 interface BuildBollingerOverlayInput {
   closes: number[];
   midXs: number[];
   yForPrice: (price: number) => number;
+  precomputedBands?: Array<BollingerBand | null> | null;
 }
 
-function buildBollingerOverlay({ closes, midXs, yForPrice }: BuildBollingerOverlayInput): CandlestickBollingerOverlay | null {
-  const period = 20;
-  const multiplier = 2;
-  const bands = computeBollingerBands(closes, period, multiplier);
+function buildBollingerOverlay({ closes, midXs, yForPrice, precomputedBands }: BuildBollingerOverlayInput): CandlestickBollingerOverlay | null {
+  const period = CANDLESTICK_BOLLINGER_PERIOD;
+  const multiplier = CANDLESTICK_BOLLINGER_MULTIPLIER;
+  const bands = precomputedBands ?? computeBollingerBands(closes, period, multiplier);
 
   const upperPts: string[] = [];
   const lowerPts: string[] = [];
@@ -1103,6 +1084,7 @@ interface BuildRsiPanelInput {
   areaHeight: number;
   padX: number;
   width: number;
+  precomputedRsi?: Array<number | null>;
 }
 
 function buildRsiPanel({
@@ -1111,12 +1093,13 @@ function buildRsiPanel({
   areaTop,
   areaHeight,
   padX,
-  width
+  width,
+  precomputedRsi
 }: BuildRsiPanelInput): CandlestickRsiPanel | null {
-  const period = 14;
+  const period = CANDLESTICK_RSI_PERIOD;
   if (areaHeight <= 0) return null;
 
-  const values = computeRsi(closes, period);
+  const values = precomputedRsi ?? computeRsi(closes, period);
   const yForRsi = (rsi: number): number => areaTop + (1 - rsi / 100) * areaHeight;
 
   const pts: string[] = [];
@@ -1529,6 +1512,22 @@ function toChronologicalChartBars(bars: readonly HistoricalBarPoint[]) {
       Number.isFinite(entry.bar.close)
     )
     .sort((left, right) => left.timestamp - right.timestamp);
+}
+
+/** Chronological close prices in the same order the candlestick builder uses. */
+export function toChronologicalCloses(bars: readonly HistoricalBarPoint[]): number[] {
+  return toChronologicalChartBars(bars).map(({ bar }) => bar.close);
+}
+
+/**
+ * Collision-free key for the finite close-price sequence consumed by the indicator worker.
+ * JavaScript's canonical number text round-trips every finite IEEE-754 value; explicit `-0`
+ * handling keeps the remaining distinct bit-level value from collapsing into positive zero.
+ */
+export function candlestickIndicatorKey(closes: readonly number[]): string {
+  return `v2:${closes.length}:${closes
+    .map((close) => Object.is(close, -0) ? "-0" : close.toString())
+    .join(",")}`;
 }
 
 export function formatIntervalLabel(intervalMinutes: number): string {

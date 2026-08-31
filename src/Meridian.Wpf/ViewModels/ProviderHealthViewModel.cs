@@ -1734,6 +1734,10 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
         }
         catch (ObjectDisposedException)
         {
+            // The token source was already disposed; nothing to release.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Ignored dispose on already-disposed token source.",
+                ("view", nameof(ProviderHealthViewModel)));
         }
     }
 

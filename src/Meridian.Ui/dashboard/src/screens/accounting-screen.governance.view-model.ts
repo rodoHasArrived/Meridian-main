@@ -28,6 +28,12 @@ import {
   formatDateOnly,
   formatDateTimeLabel,
 } from "./accounting-screen.formatting";
+import {
+  formatConfigurationActionLabel, formatConfigurationActorLabel, formatMigrationRunKind,
+  formatMigrationRunStatus, formatProductionReadinessArea, formatProductionReadinessStatus, formatRuleEffectiveRange,
+  migrationRunStatusTone, productionReadinessStatusTone,
+  resolveAccountingProductionReadinessActivationDisabledReason, resolveDryRunRuleMismatchReason,
+} from "./accounting-screen.governance-presenters";
 import type {
   AccountingApprovalQueueSetupEditorViewModel,
   AccountingConfigurationAuditViewModel,
@@ -68,15 +74,9 @@ import type {
   AccountingProductionReadiness,
   AccountingProductionReadinessRequest,
   AccountingProductionCertificationProfile,
-  AccountingDimensionalCertificationArtifact,
-  AccountingDimensionalCertificationLane,
-  AccountingTenantAdminCertificationArtifact,
-  AccountingTenantAdminCertificationLane,
   AccountingTenantAdministrationProfile,
   AccountingApprovalQueueConfiguration,
   AccountingDimensionMappingConfiguration,
-  AccountingWorkflowCertificationArtifact,
-  AccountingWorkflowCertificationLane,
   AccountingJournalTemplatePreview,
   AccountingRuleDryRunMatch,
   AccountingRuleTestCase,
@@ -203,10 +203,107 @@ const defaultAccountingConfigurationServices: AccountingConfigurationServices = 
   approveRulePromotion: (request) => approveAccountingConfigurationPostingRulePromotion(request),
   activate: (request) => activateAccountingConfiguration(request)
 };
+
+/** Operation keys tracked by the accounting-configuration busy-map (one per async action). */
+type GovernanceBusyKey =
+  | "externalGlMappingProfileSave"
+  | "productionCertificationProfileSave"
+  | "tenantAdministrationProfileSave"
+  | "sandboxProof"
+  | "preview"
+  | "dryRun"
+  | "createLedgerBook"
+  | "chartAccountSave"
+  | "journalCandidate"
+  | "applyEventPredicate"
+  | "applyThreshold"
+  | "applyEffectiveStart"
+  | "applyScope"
+  | "capturePostings"
+  | "applyFormula"
+  | "applyAllocation"
+  | "raisePriority"
+  | "ruleTest"
+  | "saveRuleTest"
+  | "duplicateRule"
+  | "archiveRule"
+  | "approveRulePromotion"
+  | "activate";
+
+/**
+ * Single keyed busy-map replacing what were ~23 individual `useState(false)` flags.
+ * Returns the current map and a stable setter; functional updates keep concurrent
+ * operations on different keys from clobbering one another.
+ */
+function useGovernanceBusyMap(): [
+  Partial<Record<GovernanceBusyKey, boolean>>,
+  (key: GovernanceBusyKey, value: boolean) => void
+] {
+  const [busy, setBusy] = useState<Partial<Record<GovernanceBusyKey, boolean>>>({});
+  const setBusyKey = useCallback((key: GovernanceBusyKey, value: boolean) => {
+    setBusy((prev) => (prev[key] === value ? prev : { ...prev, [key]: value }));
+  }, []);
+  return [busy, setBusyKey];
+}
+
 export function useAccountingConfigurationViewModel(
-  services: AccountingConfigurationServices = defaultAccountingConfigurationServices
+  services: AccountingConfigurationServices = defaultAccountingConfigurationServices,
+  active = true
 ): AccountingConfigurationViewModel {
   const [workspace, setWorkspace] = useState<AccountingConfigurationWorkspace | null>(null);
+  // Keyed busy-map: one source of truth for the ~23 per-operation "in flight" flags
+  // that were previously separate useState(false) hooks. Each operation still reads
+  // `<op>Busy` and calls `set<Op>Busy(...)` exactly as before via the aliases below;
+  // only the underlying storage changed. Functional updates mean concurrent operations
+  // toggling different keys never clobber one another.
+  const [governanceBusy, setGovernanceBusy] = useGovernanceBusyMap();
+  const externalGlMappingProfileSaveBusy = governanceBusy["externalGlMappingProfileSave"] === true;
+  const setExternalGlMappingProfileSaveBusy = (value: boolean) => setGovernanceBusy("externalGlMappingProfileSave", value);
+  const productionCertificationProfileSaveBusy = governanceBusy["productionCertificationProfileSave"] === true;
+  const setProductionCertificationProfileSaveBusy = (value: boolean) => setGovernanceBusy("productionCertificationProfileSave", value);
+  const tenantAdministrationProfileSaveBusy = governanceBusy["tenantAdministrationProfileSave"] === true;
+  const setTenantAdministrationProfileSaveBusy = (value: boolean) => setGovernanceBusy("tenantAdministrationProfileSave", value);
+  const sandboxProofBusy = governanceBusy["sandboxProof"] === true;
+  const setSandboxProofBusy = (value: boolean) => setGovernanceBusy("sandboxProof", value);
+  const previewBusy = governanceBusy["preview"] === true;
+  const setPreviewBusy = (value: boolean) => setGovernanceBusy("preview", value);
+  const dryRunBusy = governanceBusy["dryRun"] === true;
+  const setDryRunBusy = (value: boolean) => setGovernanceBusy("dryRun", value);
+  const createLedgerBookBusy = governanceBusy["createLedgerBook"] === true;
+  const setCreateLedgerBookBusy = (value: boolean) => setGovernanceBusy("createLedgerBook", value);
+  const chartAccountSaveBusy = governanceBusy["chartAccountSave"] === true;
+  const setChartAccountSaveBusy = (value: boolean) => setGovernanceBusy("chartAccountSave", value);
+  const journalCandidateBusy = governanceBusy["journalCandidate"] === true;
+  const setJournalCandidateBusy = (value: boolean) => setGovernanceBusy("journalCandidate", value);
+  const applyEventPredicateBusy = governanceBusy["applyEventPredicate"] === true;
+  const setApplyEventPredicateBusy = (value: boolean) => setGovernanceBusy("applyEventPredicate", value);
+  const applyThresholdBusy = governanceBusy["applyThreshold"] === true;
+  const setApplyThresholdBusy = (value: boolean) => setGovernanceBusy("applyThreshold", value);
+  const applyEffectiveStartBusy = governanceBusy["applyEffectiveStart"] === true;
+  const setApplyEffectiveStartBusy = (value: boolean) => setGovernanceBusy("applyEffectiveStart", value);
+  const applyScopeBusy = governanceBusy["applyScope"] === true;
+  const setApplyScopeBusy = (value: boolean) => setGovernanceBusy("applyScope", value);
+  const capturePostingsBusy = governanceBusy["capturePostings"] === true;
+  const setCapturePostingsBusy = (value: boolean) => setGovernanceBusy("capturePostings", value);
+  const applyFormulaBusy = governanceBusy["applyFormula"] === true;
+  const setApplyFormulaBusy = (value: boolean) => setGovernanceBusy("applyFormula", value);
+  const applyAllocationBusy = governanceBusy["applyAllocation"] === true;
+  const setApplyAllocationBusy = (value: boolean) => setGovernanceBusy("applyAllocation", value);
+  const raisePriorityBusy = governanceBusy["raisePriority"] === true;
+  const setRaisePriorityBusy = (value: boolean) => setGovernanceBusy("raisePriority", value);
+  const ruleTestBusy = governanceBusy["ruleTest"] === true;
+  const setRuleTestBusy = (value: boolean) => setGovernanceBusy("ruleTest", value);
+  const saveRuleTestBusy = governanceBusy["saveRuleTest"] === true;
+  const setSaveRuleTestBusy = (value: boolean) => setGovernanceBusy("saveRuleTest", value);
+  const duplicateRuleBusy = governanceBusy["duplicateRule"] === true;
+  const setDuplicateRuleBusy = (value: boolean) => setGovernanceBusy("duplicateRule", value);
+  const archiveRuleBusy = governanceBusy["archiveRule"] === true;
+  const setArchiveRuleBusy = (value: boolean) => setGovernanceBusy("archiveRule", value);
+  const approveRulePromotionBusy = governanceBusy["approveRulePromotion"] === true;
+  const setApproveRulePromotionBusy = (value: boolean) => setGovernanceBusy("approveRulePromotion", value);
+  const activateBusy = governanceBusy["activate"] === true;
+  const setActivateBusy = (value: boolean) => setGovernanceBusy("activate", value);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [productionReadiness, setProductionReadiness] = useState<AccountingProductionReadiness | null>(null);
@@ -215,7 +312,6 @@ export function useAccountingConfigurationViewModel(
   const [externalGlMappingProfiles, setExternalGlMappingProfiles] = useState<ExternalGlMappingProfile[]>([]);
   const [externalGlMappingProfileDraft, setExternalGlMappingProfileDraft] = useState<AccountingExternalGlMappingProfileDraft | null>(null);
   const [externalGlMappingProfileError, setExternalGlMappingProfileError] = useState<ApiErrorDisplay | null>(null);
-  const [externalGlMappingProfileSaveBusy, setExternalGlMappingProfileSaveBusy] = useState(false);
   const [externalGlMappingProfileSaveError, setExternalGlMappingProfileSaveError] = useState<ApiErrorDisplay | null>(null);
   const [externalGlMappingProfileSaveMessage, setExternalGlMappingProfileSaveMessage] = useState<string | null>(null);
   const [productionReadinessLoading, setProductionReadinessLoading] = useState(false);
@@ -223,74 +319,52 @@ export function useAccountingConfigurationViewModel(
   const [productionCertificationProfile, setProductionCertificationProfile] = useState<AccountingProductionCertificationProfile | null>(null);
   const [productionCertificationDraft, setProductionCertificationDraft] = useState<AccountingProductionCertificationProfileDraft | null>(null);
   const [productionCertificationProfileError, setProductionCertificationProfileError] = useState<ApiErrorDisplay | null>(null);
-  const [productionCertificationProfileSaveBusy, setProductionCertificationProfileSaveBusy] = useState(false);
   const [productionCertificationProfileSaveError, setProductionCertificationProfileSaveError] = useState<ApiErrorDisplay | null>(null);
   const [productionCertificationProfileSaveMessage, setProductionCertificationProfileSaveMessage] = useState<string | null>(null);
   const [tenantAdministrationProfile, setTenantAdministrationProfile] = useState<AccountingTenantAdministrationProfile | null>(null);
   const [tenantAdministrationDraft, setTenantAdministrationDraft] = useState<AccountingTenantAdministrationProfileDraft | null>(null);
   const [tenantAdministrationProfileError, setTenantAdministrationProfileError] = useState<ApiErrorDisplay | null>(null);
-  const [tenantAdministrationProfileSaveBusy, setTenantAdministrationProfileSaveBusy] = useState(false);
   const [tenantAdministrationProfileSaveError, setTenantAdministrationProfileSaveError] = useState<ApiErrorDisplay | null>(null);
   const [tenantAdministrationProfileSaveMessage, setTenantAdministrationProfileSaveMessage] = useState<string | null>(null);
-  const [sandboxProofBusy, setSandboxProofBusy] = useState(false);
   const [sandboxProofError, setSandboxProofError] = useState<ApiErrorDisplay | null>(null);
   const [sandboxProofMessage, setSandboxProofMessage] = useState<string | null>(null);
   const [preview, setPreview] = useState<AccountingJournalTemplatePreview | null>(null);
-  const [previewBusy, setPreviewBusy] = useState(false);
   const [previewError, setPreviewError] = useState<ApiErrorDisplay | null>(null);
   const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null);
   const [dryRunPreview, setDryRunPreview] = useState<RuleDryRunResult | null>(null);
-  const [dryRunBusy, setDryRunBusy] = useState(false);
   const [dryRunError, setDryRunError] = useState<ApiErrorDisplay | null>(null);
-  const [createLedgerBookBusy, setCreateLedgerBookBusy] = useState(false);
   const [createLedgerBookError, setCreateLedgerBookError] = useState<ApiErrorDisplay | null>(null);
   const [createdLedgerBookName, setCreatedLedgerBookName] = useState<string | null>(null);
   const [chartAccountDraft, setChartAccountDraft] = useState<AccountingChartAccountDraft>(() => buildDefaultAccountingChartAccountDraft());
-  const [chartAccountSaveBusy, setChartAccountSaveBusy] = useState(false);
   const [chartAccountSaveError, setChartAccountSaveError] = useState<ApiErrorDisplay | null>(null);
   const [chartAccountSaveMessage, setChartAccountSaveMessage] = useState<string | null>(null);
   const [journalCandidatePreview, setJournalCandidatePreview] = useState<PostingRuleJournalCandidateResult | null>(null);
-  const [journalCandidateBusy, setJournalCandidateBusy] = useState(false);
   const [journalCandidateError, setJournalCandidateError] = useState<ApiErrorDisplay | null>(null);
-  const [applyEventPredicateBusy, setApplyEventPredicateBusy] = useState(false);
   const [applyEventPredicateError, setApplyEventPredicateError] = useState<ApiErrorDisplay | null>(null);
   const [eventPredicateRuleId, setEventPredicateRuleId] = useState<string | null>(null);
-  const [applyThresholdBusy, setApplyThresholdBusy] = useState(false);
   const [applyThresholdError, setApplyThresholdError] = useState<ApiErrorDisplay | null>(null);
   const [thresholdRuleId, setThresholdRuleId] = useState<string | null>(null);
-  const [applyEffectiveStartBusy, setApplyEffectiveStartBusy] = useState(false);
   const [applyEffectiveStartError, setApplyEffectiveStartError] = useState<ApiErrorDisplay | null>(null);
   const [effectiveStartRuleId, setEffectiveStartRuleId] = useState<string | null>(null);
-  const [applyScopeBusy, setApplyScopeBusy] = useState(false);
   const [applyScopeError, setApplyScopeError] = useState<ApiErrorDisplay | null>(null);
   const [scopedRuleId, setScopedRuleId] = useState<string | null>(null);
-  const [capturePostingsBusy, setCapturePostingsBusy] = useState(false);
   const [capturePostingsError, setCapturePostingsError] = useState<ApiErrorDisplay | null>(null);
   const [capturedPostingsRuleId, setCapturedPostingsRuleId] = useState<string | null>(null);
-  const [applyFormulaBusy, setApplyFormulaBusy] = useState(false);
   const [applyFormulaError, setApplyFormulaError] = useState<ApiErrorDisplay | null>(null);
   const [formulaRuleId, setFormulaRuleId] = useState<string | null>(null);
-  const [applyAllocationBusy, setApplyAllocationBusy] = useState(false);
   const [applyAllocationError, setApplyAllocationError] = useState<ApiErrorDisplay | null>(null);
   const [allocationRuleId, setAllocationRuleId] = useState<string | null>(null);
-  const [raisePriorityBusy, setRaisePriorityBusy] = useState(false);
   const [raisePriorityError, setRaisePriorityError] = useState<ApiErrorDisplay | null>(null);
   const [raisedPriorityRuleId, setRaisedPriorityRuleId] = useState<string | null>(null);
   const [ruleTestSuite, setRuleTestSuite] = useState<AccountingRuleTestSuiteResult | null>(null);
-  const [ruleTestBusy, setRuleTestBusy] = useState(false);
   const [ruleTestError, setRuleTestError] = useState<ApiErrorDisplay | null>(null);
-  const [saveRuleTestBusy, setSaveRuleTestBusy] = useState(false);
   const [saveRuleTestError, setSaveRuleTestError] = useState<ApiErrorDisplay | null>(null);
-  const [duplicateRuleBusy, setDuplicateRuleBusy] = useState(false);
   const [duplicateRuleError, setDuplicateRuleError] = useState<ApiErrorDisplay | null>(null);
   const [duplicatedRuleId, setDuplicatedRuleId] = useState<string | null>(null);
-  const [archiveRuleBusy, setArchiveRuleBusy] = useState(false);
   const [archiveRuleError, setArchiveRuleError] = useState<ApiErrorDisplay | null>(null);
   const [archivedRuleId, setArchivedRuleId] = useState<string | null>(null);
-  const [approveRulePromotionBusy, setApproveRulePromotionBusy] = useState(false);
   const [approveRulePromotionError, setApproveRulePromotionError] = useState<ApiErrorDisplay | null>(null);
   const [approvedRulePromotionId, setApprovedRulePromotionId] = useState<string | null>(null);
-  const [activateBusy, setActivateBusy] = useState(false);
   const [activateError, setActivateError] = useState<ApiErrorDisplay | null>(null);
 
   const refresh = useCallback(async () => {
@@ -425,8 +499,12 @@ export function useAccountingConfigurationViewModel(
   }, [services]);
 
   useEffect(() => {
+    if (!active) {
+      return;
+    }
+
     void refresh();
-  }, [refresh]);
+  }, [active, refresh]);
 
   const updateProductionCertificationControl = useCallback((controlId: string, checked: boolean) => {
     setProductionCertificationDraft((current) => {
@@ -495,31 +573,7 @@ export function useAccountingConfigurationViewModel(
       return;
     }
 
-    const evidenceReferences = withProductionCertificationControlEvidence(
-      retainedEvidenceReferences,
-      productionCertificationProfile,
-      productionCertificationDraft
-    );
-    const workflowCertificationArtifact = buildAccountingWorkflowCertificationArtifact(
-      productionCertificationProfile,
-      productionCertificationDraft,
-      evidenceReferences,
-      correlationId
-    );
-    const dimensionalCertificationArtifact = buildAccountingDimensionalCertificationArtifact(
-      productionCertificationProfile,
-      productionCertificationDraft,
-      evidenceReferences,
-      correlationId
-    );
-    const tenantAdminCertificationArtifact = buildAccountingTenantAdminCertificationArtifact(
-      productionCertificationProfile,
-      tenantAdministrationProfile,
-      tenantAdministrationDraft,
-      evidenceReferences,
-      workspace?.ledgerBookId ?? null,
-      correlationId
-    );
+    const evidenceReferences = retainedEvidenceReferences;
     const nextProfile: AccountingProductionCertificationProfile = {
       ...productionCertificationProfile,
       postingRulesLedgerBookNativeCertified: productionCertificationDraft.postingRulesLedgerBookNativeCertified,
@@ -541,18 +595,12 @@ export function useAccountingConfigurationViewModel(
       updatedBy: "browser-accounting-operator",
       evidenceReferences,
       correlationId,
-      workflowCertificationArtifacts: mergeAccountingCertificationArtifacts(
-        productionCertificationProfile.workflowCertificationArtifacts,
-        workflowCertificationArtifact
-      ),
-      dimensionalCertificationArtifacts: mergeAccountingCertificationArtifacts(
-        productionCertificationProfile.dimensionalCertificationArtifacts,
-        dimensionalCertificationArtifact
-      ),
-      tenantAdminCertificationArtifacts: mergeAccountingCertificationArtifacts(
-        productionCertificationProfile.tenantAdminCertificationArtifacts,
-        tenantAdminCertificationArtifact
-      )
+      // Certified artifacts and retained-evidence bindings are server-owned command output. Clear
+      // any cached values so this request cannot be mistaken for certification authority.
+      workflowCertificationArtifacts: [],
+      dimensionalCertificationArtifacts: [],
+      tenantAdminCertificationArtifacts: [],
+      retainedEvidence: []
     };
 
     setProductionCertificationProfileSaveBusy(true);
@@ -575,7 +623,7 @@ export function useAccountingConfigurationViewModel(
     } finally {
       setProductionCertificationProfileSaveBusy(false);
     }
-  }, [productionCertificationDraft, productionCertificationProfile, productionCertificationProfileSaveBusy, refresh, services, tenantAdministrationDraft, tenantAdministrationProfile, workspace?.ledgerBookId]);
+  }, [productionCertificationDraft, productionCertificationProfile, productionCertificationProfileSaveBusy, refresh, services]);
 
   const updateTenantAdministrationControl = useCallback((controlId: string, checked: boolean) => {
     setTenantAdministrationDraft((current) => {
@@ -1895,7 +1943,12 @@ export function useAccountingConfigurationViewModel(
       return;
     }
 
-    const disabledReason = resolveAccountingConfigurationActivationDisabledReason(workspace, ruleTestSuite);
+    const disabledReason = resolveAccountingConfigurationActivationDisabledReason(workspace, ruleTestSuite)
+      ?? resolveAccountingProductionReadinessActivationDisabledReason(
+        productionReadiness,
+        productionReadinessLoading,
+        productionReadinessError
+      );
     if (disabledReason) {
       setActivateError({ summary: disabledReason, details: [] });
       return;
@@ -1917,7 +1970,7 @@ export function useAccountingConfigurationViewModel(
     } finally {
       setActivateBusy(false);
     }
-  }, [activateBusy, ruleTestSuite, services, workspace]);
+  }, [activateBusy, productionReadiness, productionReadinessError, productionReadinessLoading, ruleTestSuite, services, workspace]);
 
   return useMemo(() => {
     const issueCount = workspace?.validationIssues.length ?? 0;
@@ -2131,9 +2184,15 @@ export function useAccountingConfigurationViewModel(
         : !hasTemplate
           ? "Create at least one active journal template before preview."
           : null;
-    const activateDisabledReason = loading
+    const configurationActivateDisabledReason = loading
       ? "Accounting configuration is still loading."
       : resolveAccountingConfigurationActivationDisabledReason(workspace, ruleTestSuite);
+    const productionReadinessActivateDisabledReason = resolveAccountingProductionReadinessActivationDisabledReason(
+      productionReadiness,
+      productionReadinessLoading,
+      productionReadinessError
+    );
+    const activateDisabledReason = configurationActivateDisabledReason ?? productionReadinessActivateDisabledReason;
     const statusTone: AccountingConfigurationViewModel["statusTone"] = !workspace
       ? "default"
       : criticalIssueCount > 0
@@ -2199,14 +2258,14 @@ export function useAccountingConfigurationViewModel(
         const selectedDelta = Number(b.ledgerBookId === workspace?.ledgerBookId) - Number(a.ledgerBookId === workspace?.ledgerBookId);
         return selectedDelta !== 0 ? selectedDelta : a.displayName.localeCompare(b.displayName);
       })
-      .map<AccountingLedgerBookAdminRowViewModel>((book) => {
+      .map<AccountingLedgerBookAdminRowViewModel>((book, index) => {
         const isSelected = book.ledgerBookId === workspace?.ledgerBookId;
         return {
-          id: book.ledgerBookId,
+          id: isSelected ? "Selected ledger book" : `Available ledger book ${index + 1}`,
           title: book.displayName,
           subtitle: `${book.accountingBasis} basis | ${book.baseCurrency}`,
-          scopeLabel: `${book.fundProfileId} / ${book.fundStructureNodeKind} ${book.fundStructureNodeId}`,
-          policyLabel: `${book.accountingPolicyId}/${book.accountingPolicyVersion}`,
+          scopeLabel: `${book.fundStructureNodeKind} scope`,
+          policyLabel: `${book.accountingBasis} policy | version ${book.accountingPolicyVersion}`,
           currencyLabel: book.baseCurrency,
           updatedLabel: `Updated ${formatDateOnly(book.updatedAt)}`,
           description: book.description?.trim() || "No ledger-book description supplied.",
@@ -2220,36 +2279,6 @@ export function useAccountingConfigurationViewModel(
     const ledgerBookEmptyText = workspace && ledgerBookRows.length === 0
       ? "No registered ledger books are available in this configuration workspace."
       : null;
-    const setupReadinessRows: AccountingConfigurationMetricViewModel[] = [
-      {
-        id: "selected-ledger-book",
-        label: "Selected book",
-        value: missingLedgerBookIssue
-          ? "Missing"
-          : selectedLedgerBook
-            ? selectedLedgerBook.displayName
-            : workspace?.ledgerBookId
-              ? "Scoped"
-              : "Fund scope",
-        detail: missingLedgerBookIssue?.message ??
-          (selectedLedgerBook
-            ? `${selectedLedgerBook.accountingBasis} basis; policy ${selectedLedgerBook.accountingPolicyId}/${selectedLedgerBook.accountingPolicyVersion}.`
-            : workspace?.ledgerBookId
-              ? `Ledger book ${workspace.ledgerBookId} is selected; setup details are not loaded.`
-              : "Configuration is using the fund-level setup scope."),
-        tone: missingLedgerBookIssue ? "danger" : selectedLedgerBook ? "success" : workspace?.ledgerBookId ? "warning" : "default"
-      },
-      {
-        id: "activation-readiness",
-        label: "Activation readiness",
-        value: criticalIssueCount > 0 ? "Blocked" : "Ready",
-        detail: missingLedgerBookIssue?.suggestedAction ??
-          (criticalIssueCount > 0
-            ? `${criticalIssueCount} critical validation issue${criticalIssueCount === 1 ? "" : "s"} must be cleared.`
-            : "No critical validation blockers are attached to this configuration."),
-        tone: criticalIssueCount > 0 ? "danger" : "success"
-      }
-    ];
     const productionReadinessView = buildAccountingProductionReadinessViewModel(
       productionReadiness,
       migrationRunArtifacts,
@@ -2297,6 +2326,74 @@ export function useAccountingConfigurationViewModel(
       updateExternalGlMappingProfileDraft,
       saveExternalGlMappingProfile
     );
+    const pendingDraftEditorCount = [
+      chartAccountSaveDisabledReason === null && !chartAccountSaveBusy,
+      productionCertificationProfileView.canSave,
+      tenantAdministrationProfileView.canSave,
+      externalGlMappingProfileView.canSave
+    ].filter(Boolean).length;
+    const currentVersionIsActive = workspace?.status === "Active";
+    const activationReadinessValue = currentVersionIsActive
+      ? pendingDraftEditorCount > 0
+        ? "Draft review required"
+        : "Current version active"
+      : configurationActivateDisabledReason
+        ? "Blocked"
+        : productionReadinessLoading
+          ? "Assessing"
+          : !productionReadiness || productionReadinessError
+            ? "Unavailable"
+            : formatProductionReadinessStatus(productionReadiness.status);
+    const activationReadinessDetail = currentVersionIsActive
+      ? pendingDraftEditorCount > 0
+        ? `The current saved configuration remains active. ${pendingDraftEditorCount} editor${pendingDraftEditorCount === 1 ? " has" : "s have"} unsaved draft changes that must be saved and re-validated before promotion.`
+        : "The current saved configuration is active. No pending draft editor changes are available for promotion."
+      : configurationActivateDisabledReason
+        ?? (productionReadinessLoading
+          ? "Production readiness is being assessed before activation can proceed."
+          : productionReadinessError
+            ? "Production readiness could not be verified. Refresh the assessment before activation."
+            : !productionReadiness
+              ? "No production-readiness assessment is available. Refresh before activation."
+              : productionReadiness.status === "Ready"
+                ? "The shared accounting control-plane assessment is ready for activation."
+                : `Production readiness is ${formatProductionReadinessStatus(productionReadiness.status).toLowerCase()}; resolve the shared assessment before activation.`);
+    const activationReadinessTone: AccountingConfigurationMetricViewModel["tone"] = currentVersionIsActive
+      ? pendingDraftEditorCount > 0 ? "warning" : "success"
+      : configurationActivateDisabledReason
+        ? "danger"
+        : productionReadinessLoading
+          ? "warning"
+          : !productionReadiness || productionReadinessError
+            ? "danger"
+            : productionReadinessStatusTone(productionReadiness.status);
+    const setupReadinessRows: AccountingConfigurationMetricViewModel[] = [
+      {
+        id: "selected-ledger-book",
+        label: "Selected book",
+        value: missingLedgerBookIssue
+          ? "Missing"
+          : selectedLedgerBook
+            ? selectedLedgerBook.displayName
+            : workspace?.ledgerBookId
+              ? "Scoped"
+              : "Fund scope",
+        detail: missingLedgerBookIssue?.message ??
+          (selectedLedgerBook
+            ? `${selectedLedgerBook.accountingBasis} basis with the current ${selectedLedgerBook.accountingBasis.toLowerCase()} accounting policy.`
+            : workspace?.ledgerBookId
+              ? `Ledger book ${workspace.ledgerBookId} is selected; setup details are not loaded.`
+              : "Configuration is using the fund-level setup scope."),
+        tone: missingLedgerBookIssue ? "danger" : selectedLedgerBook ? "success" : workspace?.ledgerBookId ? "warning" : "default"
+      },
+      {
+        id: "activation-readiness",
+        label: currentVersionIsActive ? "Pending draft gate" : "Activation readiness",
+        value: activationReadinessValue,
+        detail: missingLedgerBookIssue?.suggestedAction ?? activationReadinessDetail,
+        tone: missingLedgerBookIssue ? "danger" : activationReadinessTone
+      }
+    ];
     const templates = (workspace?.journalTemplates ?? []).map<AccountingConfigurationTemplateViewModel>((template) => {
       const debitTotal = template.lines.filter((line) => line.side === "Debit").reduce((sum, line) => sum + line.amount, 0);
       const creditTotal = template.lines.filter((line) => line.side === "Credit").reduce((sum, line) => sum + line.amount, 0);
@@ -2336,9 +2433,9 @@ export function useAccountingConfigurationViewModel(
     }));
     const auditTrail = (workspace?.auditTrail ?? []).slice(0, 8).map<AccountingConfigurationAuditViewModel>((event) => ({
       id: event.auditEventId,
-      title: `${event.action} by ${event.actor}`,
-      subtitle: `${event.recordedAtUtc} | ${event.correlationId ?? "no correlation id"}`,
-      hashLabel: `${event.beforeHash.slice(0, 8)} -> ${event.afterHash.slice(0, 8)}`
+      title: `${formatConfigurationActionLabel(event.action)} by ${formatConfigurationActorLabel(event.actor)}`,
+      subtitle: `Recorded ${formatDateTimeLabel(event.recordedAtUtc)}`,
+      hashLabel: "Integrity and correlation evidence retained"
     }));
     const previewView = preview
       ? {
@@ -2355,13 +2452,13 @@ export function useAccountingConfigurationViewModel(
         }
       : null;
     const selectedDryRunRuleVersion = dryRunPreview
-      ? workspace.postingRules.find((rule) => rule.ruleId === dryRunPreview.selectedRuleId)?.ruleVersion ?? "v1"
+      ? (workspace?.postingRules ?? []).find((rule) => rule.ruleId === dryRunPreview.selectedRuleId)?.ruleVersion ?? "v1"
       : null;
 
     return {
       title: "Configure accounting",
       description: "Set up books, chart accounts, journal templates, posting rules, validation, and audit evidence before accounting actions are activated.",
-      statusLabel: workspace ? `${workspace.status} ${workspace.configurationVersion}` : "Not loaded",
+      statusLabel: workspace ? `Current saved version: ${workspace.status}` : "Current saved version not loaded",
       statusTone,
       loading,
       errorText: error?.summary ?? null,
@@ -2508,7 +2605,11 @@ export function useAccountingConfigurationViewModel(
       previewDisabledReason,
       previewBusy,
       canPreview: previewDisabledReason === null && !previewBusy,
-      activateButtonLabel: activateBusy ? "Activating" : "Activate configuration",
+      activateButtonLabel: activateBusy
+        ? "Activating draft"
+        : workspace?.status === "Active"
+          ? "Current version active"
+          : "Activate configuration",
       activateDisabledReason: activateError?.summary ?? activateDisabledReason,
       activateBusy,
       canActivate: activateDisabledReason === null && !activateBusy,
@@ -2647,7 +2748,7 @@ function resolveAccountingConfigurationActivationDisabledReason(
   }
 
   if (workspace.status === "Active") {
-    return "Accounting configuration is already active.";
+    return "Current saved accounting configuration is already active.";
   }
 
   const criticalIssueCount = workspace.validationIssues.filter((issue) => issue.severity === "Critical").length;
@@ -2692,16 +2793,6 @@ function resolveAccountingConfigurationActivationDisabledReason(
   }
 
   return null;
-}
-
-function resolveDryRunRuleMismatchReason(
-  dryRunPreview: RuleDryRunResult,
-  selectedRule: PostingRule,
-  action: string
-): string | null {
-  return dryRunPreview.selectedRuleId && dryRunPreview.selectedRuleId !== selectedRule.ruleId
-    ? `Dry-run preview must match the selected posting rule before ${action}.`
-    : null;
 }
 
 function buildDefaultAccountingChartAccountDraft(): AccountingChartAccountDraft {
@@ -3208,7 +3299,7 @@ function buildAccountingProductionCertificationProfileEditorViewModel(
       ? `Tenant ${profile.tenantId || "context"} | company ${profile.companyId || "context"} | fund ${profile.fundProfileId || "missing"} | ledger book ${profile.ledgerBookId || "fund-level"}`
       : "Tenant, company, fund, and ledger-book scope have not loaded.",
     updatedLabel: profile
-      ? `Last retained by ${profile.updatedBy || "unknown"} at ${profile.updatedAtUtc || "not retained"}`
+      ? `Last retained by ${formatConfigurationActorLabel(profile.updatedBy)} at ${formatDateTimeLabel(profile.updatedAtUtc)}`
       : "No retained profile loaded.",
     evidenceValue,
     controls,
@@ -3385,276 +3476,6 @@ function buildAccountingProductionCertificationProfileFromReadiness(
   };
 }
 
-function withProductionCertificationControlEvidence(
-  evidenceReferences: string[],
-  profile: AccountingProductionCertificationProfile | null,
-  draft: AccountingProductionCertificationProfileDraft | null
-): string[] {
-  const ledgerBookId = profile?.ledgerBookId?.trim();
-  if (!profile || !draft || !ledgerBookId) {
-    return evidenceReferences;
-  }
-
-  if (evidenceReferences.some((reference) => reference.toLowerCase().includes("production-certification/full"))) {
-    return evidenceReferences;
-  }
-
-  const tenantId = profile.tenantId?.trim() || "tenant";
-  const companyId = profile.companyId?.trim() || "company";
-  const fundProfileId = profile.fundProfileId?.trim() || "fund";
-  const scopePrefix = `evidence://tenant/${tenantId}/company/${companyId}/fund/${fundProfileId}/ledger-book/${ledgerBookId}/production-certification`;
-  const generated: string[] = [];
-  const addWorkflowEvidence = (certified: boolean, marker: string) => {
-    if (!certified) {
-      return;
-    }
-
-    generated.push(`${scopePrefix}/${marker}`);
-  };
-  const addDimensionEvidence = (certified: boolean, marker: string) => {
-    if (!certified) {
-      return;
-    }
-
-    generated.push(`${scopePrefix}/dimensions/${marker}/dimension-scope/canonical-production`);
-  };
-
-  addWorkflowEvidence(draft.postingRulesLedgerBookNativeCertified, "posting-candidate");
-  addWorkflowEvidence(draft.journalLifecycleLedgerBookNativeCertified, "journal-lifecycle");
-  addWorkflowEvidence(draft.closeReportingLedgerBookNativeCertified, "close-reporting");
-  addWorkflowEvidence(draft.closePlanConfigurationLedgerBookNativeCertified, "close-plan-configuration");
-  addWorkflowEvidence(draft.externalGlLedgerBookNativeCertified, "external-gl");
-  addWorkflowEvidence(draft.reconciliationLedgerBookNativeCertified, "reconciliation");
-  addWorkflowEvidence(draft.directLendingLedgerBookNativeCertified, "direct-lending");
-  addWorkflowEvidence(draft.strategyLedgerReadLedgerBookNativeCertified, "strategy-ledger");
-  addDimensionEvidence(draft.periodReportDimensionQueriesCertified, "period-report");
-  addDimensionEvidence(draft.crossPeriodReportDimensionQueriesCertified, "cross-period");
-  addDimensionEvidence(draft.journalQueryDimensionFiltersCertified, "journal-query");
-  addDimensionEvidence(draft.externalExportDimensionMappingCertified, "external-export");
-  addDimensionEvidence(draft.ledgerLineDimensionsPersistedCertified, "ledger-line");
-  addDimensionEvidence(draft.trialBalanceDimensionFiltersCertified, "trial-balance-filter");
-  addDimensionEvidence(draft.reportPackageDimensionProvenanceCertified, "report-package-provenance");
-
-  return [...evidenceReferences, ...generated]
-    .filter((item, index, items) => item.length > 0 && items.findIndex((candidate) => candidate.toLowerCase() === item.toLowerCase()) === index);
-}
-
-function buildAccountingWorkflowCertificationArtifact(
-  profile: AccountingProductionCertificationProfile,
-  draft: AccountingProductionCertificationProfileDraft,
-  evidenceReferences: string[],
-  correlationId: string
-): AccountingWorkflowCertificationArtifact | null {
-  const ledgerBookId = profile.ledgerBookId?.trim();
-  if (!ledgerBookId) {
-    return null;
-  }
-
-  const lanes: AccountingWorkflowCertificationLane[] = [
-    buildWorkflowCertificationLane(draft.postingRulesLedgerBookNativeCertified, "PostingRules", evidenceReferences, "posting-candidate"),
-    buildWorkflowCertificationLane(draft.journalLifecycleLedgerBookNativeCertified, "JournalLifecycle", evidenceReferences, "journal-lifecycle"),
-    buildWorkflowCertificationLane(draft.closeReportingLedgerBookNativeCertified, "CloseReporting", evidenceReferences, "close-reporting"),
-    buildWorkflowCertificationLane(draft.closePlanConfigurationLedgerBookNativeCertified, "ClosePlanConfiguration", evidenceReferences, "close-plan-configuration"),
-    buildWorkflowCertificationLane(draft.externalGlLedgerBookNativeCertified, "ExternalGl", evidenceReferences, "external-gl"),
-    buildWorkflowCertificationLane(draft.reconciliationLedgerBookNativeCertified, "Reconciliation", evidenceReferences, "reconciliation"),
-    buildWorkflowCertificationLane(draft.directLendingLedgerBookNativeCertified, "DirectLendingProjection", evidenceReferences, "direct-lending"),
-    buildWorkflowCertificationLane(draft.strategyLedgerReadLedgerBookNativeCertified, "StrategyLedgerReads", evidenceReferences, "strategy-ledger")
-  ].filter((lane): lane is AccountingWorkflowCertificationLane => lane !== null);
-
-  if (lanes.length === 0) {
-    return null;
-  }
-
-  return {
-    certificationId: `${correlationId}-workflow`,
-    status: "Certified",
-    tenantId: profile.tenantId ?? null,
-    companyId: profile.companyId ?? null,
-    fundProfileId: profile.fundProfileId,
-    ledgerBookId,
-    certifiedBy: "browser-accounting-operator",
-    certifiedAtUtc: new Date().toISOString(),
-    sourceService: "browser-accounting-configure",
-    lanes,
-    evidenceReferences,
-    issues: [],
-    correlationId
-  };
-}
-
-function buildAccountingDimensionalCertificationArtifact(
-  profile: AccountingProductionCertificationProfile,
-  draft: AccountingProductionCertificationProfileDraft,
-  evidenceReferences: string[],
-  correlationId: string
-): AccountingDimensionalCertificationArtifact | null {
-  const ledgerBookId = profile.ledgerBookId?.trim();
-  if (!ledgerBookId) {
-    return null;
-  }
-
-  const lanes: AccountingDimensionalCertificationLane[] = [
-    buildDimensionalCertificationLane(draft.ledgerLineDimensionsPersistedCertified, "LedgerLinePersistence", evidenceReferences, "ledger-line"),
-    buildDimensionalCertificationLane(draft.trialBalanceDimensionFiltersCertified, "TrialBalanceFilters", evidenceReferences, "trial-balance-filter"),
-    buildDimensionalCertificationLane(draft.periodReportDimensionQueriesCertified, "PeriodReports", evidenceReferences, "period-report"),
-    buildDimensionalCertificationLane(draft.crossPeriodReportDimensionQueriesCertified, "CrossPeriodReports", evidenceReferences, "cross-period"),
-    buildDimensionalCertificationLane(draft.journalQueryDimensionFiltersCertified, "JournalFilters", evidenceReferences, "journal-query"),
-    buildDimensionalCertificationLane(draft.reportPackageDimensionProvenanceCertified, "ReportPackageProvenance", evidenceReferences, "report-package-provenance"),
-    buildDimensionalCertificationLane(draft.externalExportDimensionMappingCertified, "ExternalExportMappings", evidenceReferences, "external-export")
-  ].filter((lane): lane is AccountingDimensionalCertificationLane => lane !== null);
-
-  if (lanes.length === 0) {
-    return null;
-  }
-
-  return {
-    certificationId: `${correlationId}-dimensions`,
-    status: "Certified",
-    tenantId: profile.tenantId ?? null,
-    companyId: profile.companyId ?? null,
-    fundProfileId: profile.fundProfileId,
-    ledgerBookId,
-    dimensionScopeEvidenceKey: "canonical-production",
-    certifiedBy: "browser-accounting-operator",
-    certifiedAtUtc: new Date().toISOString(),
-    sourceService: "browser-accounting-configure",
-    lanes,
-    evidenceReferences,
-    issues: [],
-    correlationId
-  };
-}
-
-function buildWorkflowCertificationLane(
-  certified: boolean,
-  kind: AccountingWorkflowCertificationLane["kind"],
-  evidenceReferences: string[],
-  marker: string
-): AccountingWorkflowCertificationLane | null {
-  if (!certified) {
-    return null;
-  }
-
-  return {
-    kind,
-    status: "Passed",
-    evidenceReferences: filterCertificationLaneEvidence(evidenceReferences, marker),
-    issues: []
-  };
-}
-
-function buildDimensionalCertificationLane(
-  certified: boolean,
-  kind: AccountingDimensionalCertificationLane["kind"],
-  evidenceReferences: string[],
-  marker: string
-): AccountingDimensionalCertificationLane | null {
-  if (!certified) {
-    return null;
-  }
-
-  return {
-    kind,
-    status: "Passed",
-    evidenceReferences: filterCertificationLaneEvidence(evidenceReferences, marker),
-    issues: []
-  };
-}
-
-function buildAccountingTenantAdminCertificationArtifact(
-  profile: AccountingProductionCertificationProfile,
-  tenantProfile: AccountingTenantAdministrationProfile | null,
-  draft: AccountingTenantAdministrationProfileDraft | null,
-  evidenceReferences: string[],
-  ledgerBookId: string | null | undefined,
-  correlationId: string
-): AccountingTenantAdminCertificationArtifact | null {
-  if (!tenantProfile || !draft) {
-    return null;
-  }
-
-  const lanes: AccountingTenantAdminCertificationLane[] = [
-    buildTenantAdminCertificationLane(draft.tenantScopeConfigured, "TenantScope", evidenceReferences, "tenant-scope"),
-    buildTenantAdminCertificationLane(draft.adminRoleProfileConfigured, "AdminRoleProfile", evidenceReferences, "admin-role"),
-    buildTenantAdminCertificationLane(draft.scopedAccessPoliciesConfigured, "ScopedAccessPolicies", evidenceReferences, "scoped-access"),
-    buildTenantAdminCertificationLane(draft.reportingGroupsConfigured, "ReportingGroups", evidenceReferences, "reporting-group"),
-    buildTenantAdminCertificationLane(draft.accountingAdminSurfaceConfigured, "AccountingAdminSurface", evidenceReferences, "accounting-admin-surface"),
-    buildTenantAdminCertificationLane(draft.browserAccountingAdminSurfaceConfigured, "BrowserAccountingAdminSurface", evidenceReferences, "browser-accounting-admin"),
-    buildTenantAdminCertificationLane(draft.wpfAccountingAdminSurfaceConfigured, "WpfAccountingAdminSurface", evidenceReferences, "wpf-admin-studio"),
-    buildTenantAdminCertificationLane(draft.chartAdministrationStudioConfigured, "ChartAdministrationStudio", evidenceReferences, "chart-administration"),
-    buildTenantAdminCertificationLane(draft.ruleTestPromotionStudioConfigured, "RuleTestPromotionStudio", evidenceReferences, "rule-test-promotion"),
-    buildTenantAdminCertificationLane(draft.closeSetupStudioConfigured, "CloseSetupStudio", evidenceReferences, "close-setup"),
-    buildTenantAdminCertificationLane(draft.providerMappingStudioConfigured, "ProviderMappingStudio", evidenceReferences, "provider-mapping"),
-    buildTenantAdminCertificationLane(draft.tenantCompanyReportGroupSetupStudioConfigured, "TenantCompanyReportGroupSetupStudio", evidenceReferences, "tenant-company-report-group"),
-    buildTenantAdminCertificationLane(draft.auditReviewToolingConfigured, "AuditReviewTooling", evidenceReferences, "audit-review"),
-    buildTenantAdminCertificationLane(draft.bulkImportExportSafeguardsConfigured, "BulkImportExportSafeguards", evidenceReferences, "bulk-import-export"),
-    buildTenantAdminCertificationLane(draft.performanceValidationConfigured, "PerformanceValidation", evidenceReferences, "performance-validation"),
-    buildTenantAdminCertificationLane(draft.disasterRecoveryRunbookConfigured, "DisasterRecoveryRunbook", evidenceReferences, "disaster-recovery"),
-    buildTenantAdminCertificationLane(draft.ledgerBookAdministrationStudioConfigured, "LedgerBookAdministrationStudio", evidenceReferences, "ledger-book-administration"),
-    buildTenantAdminCertificationLane(draft.postingRuleAuthoringStudioConfigured, "PostingRuleAuthoringStudio", evidenceReferences, "posting-rule-authoring"),
-    buildTenantAdminCertificationLane(draft.approvalQueueStudioConfigured, "ApprovalQueueStudio", evidenceReferences, "approval-queue"),
-    buildTenantAdminCertificationLane(draft.dimensionMappingStudioConfigured, "DimensionMappingStudio", evidenceReferences, "dimension-mapping"),
-    buildTenantAdminCertificationLane(draft.implementationSandboxConfigured, "ImplementationSandbox", evidenceReferences, "implementation-sandbox")
-  ].filter((lane): lane is AccountingTenantAdminCertificationLane => lane !== null);
-
-  if (lanes.length === 0) {
-    return null;
-  }
-
-  return {
-    certificationId: `${correlationId}-tenant-admin`,
-    status: "Certified",
-    tenantId: tenantProfile.tenantId,
-    companyId: tenantProfile.companyId,
-    fundProfileId: profile.fundProfileId,
-    ledgerBookId: ledgerBookId?.trim() || profile.ledgerBookId || null,
-    certifiedBy: "browser-accounting-operator",
-    certifiedAtUtc: new Date().toISOString(),
-    sourceService: "browser-accounting-configure",
-    lanes,
-    evidenceReferences,
-    issues: [],
-    correlationId
-  };
-}
-
-function buildTenantAdminCertificationLane(
-  certified: boolean,
-  kind: AccountingTenantAdminCertificationLane["kind"],
-  evidenceReferences: string[],
-  marker: string
-): AccountingTenantAdminCertificationLane | null {
-  if (!certified) {
-    return null;
-  }
-
-  return {
-    kind,
-    status: "Passed",
-    evidenceReferences: filterCertificationLaneEvidence(evidenceReferences, marker),
-    issues: []
-  };
-}
-
-function filterCertificationLaneEvidence(evidenceReferences: string[], marker: string): string[] {
-  const normalizedMarker = marker.toLowerCase();
-  const scoped = evidenceReferences.filter((reference) => reference.toLowerCase().includes(normalizedMarker));
-  return scoped.length > 0 ? scoped : evidenceReferences;
-}
-
-function mergeAccountingCertificationArtifacts<T extends { certificationId: string }>(
-  current: T[] | null | undefined,
-  next: T | null
-): T[] {
-  if (!next) {
-    return current ?? [];
-  }
-
-  return [
-    ...(current ?? []).filter((artifact) => artifact.certificationId.toLowerCase() !== next.certificationId.toLowerCase()),
-    next
-  ];
-}
 
 function buildAccountingTenantAdministrationProfileEditorViewModel(
   profile: AccountingTenantAdministrationProfile | null,
@@ -3710,7 +3531,7 @@ function buildAccountingTenantAdministrationProfileEditorViewModel(
       ? `Tenant ${profile.tenantId || "missing"} | company ${profile.companyId || "missing"}`
       : "Tenant and company scope have not loaded.",
     updatedLabel: profile
-      ? `Last retained by ${profile.updatedBy || "unknown"} at ${profile.updatedAtUtc || "not retained"}`
+      ? `Last retained by ${formatConfigurationActorLabel(profile.updatedBy)} at ${formatDateTimeLabel(profile.updatedAtUtc)}`
       : "No retained profile loaded.",
     evidenceValue,
     controls,
@@ -4245,76 +4066,6 @@ function buildAccountingMigrationRolloutPlanRows(plan: AccountingMigrationRollou
   });
 }
 
-function formatMigrationRunKind(kind: AccountingMigrationRunArtifact["kind"]): string {
-  switch (kind) {
-    case "LedgerBookScope":
-      return "Ledger-book scope";
-    case "HistoricalJournalBackfill":
-      return "Historical journal backfill";
-    case "DimensionalBackfill":
-      return "Dimensional backfill";
-    case "AccountingConfigurationPromotion":
-      return "Configuration promotion";
-    case "CloseReportingEvidence":
-      return "Close/reporting evidence";
-    default:
-      return String(kind);
-  }
-}
-
-function formatMigrationRunStatus(status: AccountingMigrationRunArtifact["status"]): string {
-  return status === "Completed" ? "Completed" : status === "Certified" ? "Certified" : status === "Failed" ? "Failed" : status === "Running" ? "Running" : "Planned";
-}
-
-function migrationRunStatusTone(status: AccountingMigrationRunArtifact["status"]): AccountingMigrationRunArtifactViewModel["tone"] {
-  switch (status) {
-    case "Certified":
-    case "Completed":
-      return "success";
-    case "Failed":
-      return "danger";
-    case "Running":
-      return "warning";
-    case "Planned":
-    default:
-      return "default";
-  }
-}
-
-function formatProductionReadinessStatus(status: AccountingProductionReadiness["status"]): string {
-  switch (status) {
-    case "Ready":
-      return "Ready";
-    case "ReviewRequired":
-      return "Review required";
-    case "Blocked":
-      return "Blocked";
-    case "Unavailable":
-      return "Unavailable";
-    default:
-      return String(status);
-  }
-}
-
-function formatProductionReadinessArea(area: string): string {
-  return area
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/\bGl\b/g, "GL");
-}
-
-function productionReadinessStatusTone(status: AccountingProductionReadiness["status"]): AccountingProductionReadinessComponentViewModel["tone"] {
-  switch (status) {
-    case "Ready":
-      return "success";
-    case "Blocked":
-    case "Unavailable":
-      return "danger";
-    case "ReviewRequired":
-    default:
-      return "warning";
-  }
-}
-
 type LedgerScopeScalarKey = Exclude<keyof NonNullable<PostingRule["scope"]>, "externalGlDimensions">;
 
 const LEDGER_SCOPE_SCALAR_KEYS: LedgerScopeScalarKey[] = [
@@ -4519,7 +4270,7 @@ function buildAccountingRulesStudioRuleViewModel(
       ? generatedPostings.map(formatGeneratedPostingLine)
       : [`Legacy template action: ${rule.templateId || "no template"}`],
     versionRows: versions.length > 0
-      ? versions.map((version) => `${version.version} by ${version.createdBy} on ${formatDateOnly(version.createdAtUtc)} - ${version.changeSummary}`)
+      ? versions.map((version) => `${version.version} by ${formatConfigurationActorLabel(version.createdBy)} on ${formatDateOnly(version.createdAtUtc)} - ${version.changeSummary}`)
       : [`${rule.ruleVersion} is the only retained rule version.`],
     promotionReadiness: buildAccountingRulesStudioPromotionReadiness(
       rule,
@@ -4528,7 +4279,7 @@ function buildAccountingRulesStudioRuleViewModel(
       studioRule,
       promotionQueueItem),
     promotionLabel: promotion
-      ? `${promotion.approvalState} by ${promotion.approvedBy ?? promotion.requestedBy}`
+      ? `${promotion.approvalState} by ${formatConfigurationActorLabel(promotion.approvedBy ?? promotion.requestedBy)}`
       : rule.requiresPromotionApproval
         ? "Promotion approval required"
         : "Promotion approval not required",
@@ -4795,7 +4546,7 @@ function buildAccountingRulesStudioTestSuiteViewModel(result: AccountingRuleTest
   return {
     title: "Accounting rule regression tests",
     summaryLabel: `${result.passedCount}/${result.totalCount} passed`,
-    executedLabel: `${result.executedAtUtc} by ${result.actor}`,
+    executedLabel: `${formatDateTimeLabel(result.executedAtUtc)} by ${formatConfigurationActorLabel(result.actor)}`,
     statusTone,
     resultRows: result.results.map((testCase) => {
       const selected = testCase.dryRunResult.selectedRuleId ?? "none";
@@ -4889,12 +4640,6 @@ function formatRuleDryRunMatch(match: AccountingRuleDryRunMatch): string {
   return `${match.displayName} ${state} at priority ${match.priority}. ${reasons}${issues}`;
 }
 
-function formatRuleEffectiveRange(rule: PostingRule): string {
-  const start = rule.effectiveFrom ?? "open start";
-  const end = rule.effectiveTo ?? "open end";
-  return `${start} -> ${end}`;
-}
-
 function formatLedgerDimensionSet(dimensions?: PostingRule["scope"]): string[] {
   if (!dimensions) {
     return [];
@@ -4975,4 +4720,3 @@ function resolveDryRunEffectiveDate(rule: PostingRule): string {
 
   return new Date().toISOString().slice(0, 10);
 }
-

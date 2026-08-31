@@ -39,18 +39,21 @@ public sealed record SecurityMasterRestatementDecision(
 /// one published pack referenced the security but could not be turned into an actionable candidate (for
 /// example an already-restated pack the workflow cannot re-restate). The caller uses the flag to require
 /// a manual follow-up for a soft-closed book even when no actionable candidate was produced, so a real
-/// match is never silently dropped.
+/// match is never silently dropped. <see cref="RestatementCandidateResult.IsAuthoritative"/> is false
+/// when the configured reporting authority cannot answer the lookup at all; that indeterminate state
+/// also requires manual follow-up and must not be interpreted as an authoritative empty result.
 /// </summary>
 public sealed record RestatementCandidateResult(
     IReadOnlyList<RestatementCandidateDto> Candidates,
-    bool HasNonActionableMatches)
+    bool HasNonActionableMatches,
+    bool IsAuthoritative = true)
 {
     public static RestatementCandidateResult Empty { get; } = new([], false);
 }
 
 /// <summary>
 /// Resolves the report packs that consumed a changed line in a locked period covering an upstream
-/// edit, as restatement candidates. <paramref name="fundProfileId"/> scopes the search to the impacted
+/// edit, as restatement candidates. <c>fundProfileId</c> scopes the search to the impacted
 /// fund's published packs. An empty result for a hard-closed book is treated by the caller as a manual
 /// locate-affected-packs task rather than "no restatement needed", so a precise resolver that cannot
 /// tie a published pack to the security never silently completes a closed period.
@@ -82,6 +85,30 @@ public sealed class NullRestatementCandidateResolver : IRestatementCandidateReso
         string? fundProfileId,
         CancellationToken ct = default)
         => Task.FromResult(RestatementCandidateResult.Empty);
+}
+
+/// <summary>
+/// Fail-closed bridge for hosts whose canonical reporting authority cannot yet answer the
+/// security-to-released-run candidate query. It never fabricates a legacy report-pack candidate;
+/// instead it marks the lookup indeterminate so soft-closed and hard-closed edits require explicit
+/// manual restatement review.
+/// </summary>
+public sealed class IndeterminateRestatementCandidateResolver : IRestatementCandidateResolver
+{
+    public Task<RestatementCandidateResult> ResolveAsync(
+        Guid securityId,
+        Guid ledgerBookId,
+        DateOnly effectiveDate,
+        IReadOnlyList<string> changedFields,
+        string? fundProfileId,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(new RestatementCandidateResult(
+            Candidates: [],
+            HasNonActionableMatches: false,
+            IsAuthoritative: false));
+    }
 }
 
 /// <summary>
@@ -135,12 +162,14 @@ public sealed class PeriodAwareRestatementResolver : IPeriodAwareRestatementReso
                     // default-deny, so without this the decision would be silently empty for a real match.
                     var softClosed = await ResolveCandidatesAsync(publishedEvent, ledgerBookId, effectiveDate, ct).ConfigureAwait(false);
                     candidates.AddRange(softClosed.Candidates);
-                    if (softClosed.HasNonActionableMatches)
+                    if (softClosed.HasNonActionableMatches || !softClosed.IsAuthoritative)
                     {
                         restatementRequired = true;
-                        _logger.LogInformation(
-                            "Security Master revision {RevisionId} affects soft-closed ledger book {LedgerBookId} at {EffectiveDate} with a matching but non-actionable report pack; flagging manual restatement follow-up.",
-                            publishedEvent.RevisionId, ledgerBookId, effectiveDate);
+                        _logger.LogWarning(
+                            "Security Master revision {RevisionId} affects soft-closed ledger book {LedgerBookId} at {EffectiveDate}, but the canonical reporting candidate lookup is indeterminate or has a non-actionable match; flagging manual restatement follow-up.",
+                            publishedEvent.RevisionId,
+                            ledgerBookId,
+                            effectiveDate);
                     }
                     break;
 

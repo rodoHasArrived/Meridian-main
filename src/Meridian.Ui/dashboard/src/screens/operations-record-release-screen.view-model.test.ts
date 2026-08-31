@@ -1,7 +1,13 @@
 import { cleanup, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildOperationsContinuityScreenViewModel } from "@/screens/operations-continuity-screen.view-model";
-import { buildOperationsRecordReleaseViewModel } from "@/screens/operations-record-release-screen.view-model";
+import {
+  OPERATIONS_RECORD_RELEASE_VIEW_STATE_SCREEN,
+  buildOperationsRecordReleaseViewModel,
+  buildOperationsRecordReleaseViewStateEnvelope,
+  normalizeOperationsRecordReleaseViewState,
+  resolveOperationsRecordReleaseSelectedStepId
+} from "@/screens/operations-record-release-screen.view-model";
 import { useReportingScreenViewModel } from "@/screens/reporting-screen.view-model";
 import type {
   AccountingReportingSummary,
@@ -339,6 +345,41 @@ describe("operations record release view model", () => {
       ["approve", "ready"],
       ["report", "ready"]
     ]);
+  });
+
+  it("normalizes and rejects selected-step view state against the loaded release path", () => {
+    const stepIds = ["source-data", "broker-intake", "ledger", "reconcile", "approve", "report"];
+
+    expect(normalizeOperationsRecordReleaseViewState({ selectedStepId: "reconcile" }, stepIds)).toEqual({
+      selectedStepId: "reconcile"
+    });
+    expect(normalizeOperationsRecordReleaseViewState({ selectedStepId: "missing" }, stepIds)).toBeNull();
+    expect(normalizeOperationsRecordReleaseViewState({ selectedStepId: 42 }, stepIds)).toBeNull();
+    expect(buildOperationsRecordReleaseViewStateEnvelope({ selectedStepId: "report" })).toMatchObject({
+      v: 1,
+      screen: OPERATIONS_RECORD_RELEASE_VIEW_STATE_SCREEN,
+      state: { selectedStepId: "report" }
+    });
+  });
+
+  it("falls back to the first release step when requested selection is stale", () => {
+    const continuity = buildOperationsContinuityScreenViewModel({
+      workflows: [readySummary],
+      selectedWorkflowId: workflowId,
+      detail: readyDetail,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+    const reporting = renderHook(() => useReportingScreenViewModel(readyReporting, undefined, "/reporting/report-packs")).result.current;
+    const vm = buildOperationsRecordReleaseViewModel({ data: readyData, continuity, reporting });
+
+    expect(resolveOperationsRecordReleaseSelectedStepId(vm.steps, "report")).toBe("report");
+    expect(resolveOperationsRecordReleaseSelectedStepId(vm.steps, "stale-step")).toBe("source-data");
+    expect(resolveOperationsRecordReleaseSelectedStepId(vm.steps, null)).toBe("source-data");
   });
 });
 

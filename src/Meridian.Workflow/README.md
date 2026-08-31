@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-WORKFLOW
 path: src/Meridian.Workflow
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-06
+last_reviewed: 2026-07-19
 ---
 
 # src/Meridian.Workflow
@@ -23,9 +23,14 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 ## Key folders and files
 
 - `Runbooks/` - persisted runbook definitions, JSON-backed runbook store, and deterministic
-  runbook executor used by Application CLI adapters.
+  runbook executor used by Application CLI adapters. Dry-run inspects without execution or raw
+  payload retention; non-dry-run requires registered step handlers and composes their verified
+  outcomes, evidence, artifacts, and recovery guidance. Inspection, child-step, and parent terminal
+  receipts are appended to the shared operational case history before the executor returns.
 - `Workflows/` - shared fund workflow command-state handler for broker ingest, Security Master,
-  ledger, reconciliation, approval, rejection, close, and governed reopen transitions.
+  ledger, reconciliation, approval, rejection, close, and governed reopen transitions. Its async
+  command path persists accepted and rejected attempts, reasons, actors, assignments, approvals,
+  recovery attempts, input hashes, and terminal receipts to operational case history.
 - `EnvironmentDesign/` - local-first environment draft, validation, publish, rollback, and runtime
   projection implementation consumed through Contracts-owned service interfaces.
 
@@ -35,6 +40,12 @@ Use this module when changing shared workflow definitions, operator actions, pre
 execution semantics. Application commands may adapt these services to CLI flags, but Workflow owns
 the runbook models, persistence contract, executor behavior, fund workflow state transitions, and
 Environment Designer runtime projection implementation.
+Missing runbook handlers return `Blocked`; handler failure stops later steps and returns `Failed`;
+warning-only child outcomes complete only as `CompletedWithWarnings` with retained review guidance.
+Fund workflow reads replay retained case history after restart rather than treating process-local
+state as authoritative. Request IDs replay as operation-and-input-hash identities: exact retries
+are suppressed, while reuse for a different command or payload returns a retained `Blocked`
+conflict instead of silently accepting the mismatch.
 
 ## Diagrams
 

@@ -73,8 +73,8 @@ public sealed class UiApiClient
     public async Task<List<BackfillPreset>?> GetBackfillPresetsAsync(CancellationToken ct = default)
         => await GetAsync<List<BackfillPreset>>(UiApiRoutes.BackfillPresets, ct).ConfigureAwait(false);
 
-    public async Task<List<BackfillExecution>?> GetBackfillExecutionsAsync(int limit = 50, CancellationToken ct = default)
-        => await GetAsync<List<BackfillExecution>>(
+    public async Task<BackfillExecutionHistoryResponse?> GetBackfillExecutionsAsync(int limit = 50, CancellationToken ct = default)
+        => await GetAsync<BackfillExecutionHistoryResponse>(
             UiApiRoutes.WithQuery(UiApiRoutes.BackfillExecutions, $"limit={limit}"), ct).ConfigureAwait(false);
 
     public async Task<BackfillStatistics?> GetBackfillStatisticsAsync(int? hours = null, CancellationToken ct = default)
@@ -278,30 +278,30 @@ public sealed class UiApiClient
             UiApiRoutes.WithParam(UiApiRoutes.ReconciliationRunById, "reconciliationRunId", reconciliationRunId),
             ct).ConfigureAwait(false);
 
-    public async Task<ApiResponse<ReconciliationBreakQueueItem>> ReviewReconciliationBreakAsync(
+    public async Task<ApiResponse<ReconciliationCaseworkOperationResult>> ReviewReconciliationBreakAsync(
         string breakId,
         ReviewReconciliationBreakRequest request,
         CancellationToken ct = default)
-        => await PostWithResponseAsync<ReconciliationBreakQueueItem>(
+        => await PostWithResponseAsync<ReconciliationCaseworkOperationResult>(
             UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakReview, "breakId", breakId),
             request,
             ct).ConfigureAwait(false);
 
-    public async Task<ApiResponse<ReconciliationBreakQueueItem>> ResolveReconciliationBreakAsync(
+    public async Task<ApiResponse<ReconciliationCaseworkOperationResult>> ResolveReconciliationBreakAsync(
         string breakId,
         ResolveReconciliationBreakRequest request,
         CancellationToken ct = default)
-        => await PostWithResponseAsync<ReconciliationBreakQueueItem>(
+        => await PostWithResponseAsync<ReconciliationCaseworkOperationResult>(
             UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakResolve, "breakId", breakId),
             request,
             ct).ConfigureAwait(false);
 
-    public async Task<ApiResponse<ReconciliationBreakQueueItem>> ApplyReconciliationCaseworkAsync(
+    public async Task<ApiResponse<ReconciliationCaseworkOperationResult>> ApplyReconciliationCaseworkAsync(
         string breakId,
         string routeTemplate,
         ReconciliationCaseworkCommand request,
         CancellationToken ct = default)
-        => await PostWithResponseAsync<ReconciliationBreakQueueItem>(
+        => await PostWithResponseAsync<ReconciliationCaseworkOperationResult>(
             UiApiRoutes.WithParam(routeTemplate, "breakId", breakId),
             request,
             ct).ConfigureAwait(false);

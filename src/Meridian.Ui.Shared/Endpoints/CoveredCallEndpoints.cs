@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Core.Exceptions;
+using Meridian.Identity;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Contracts;
 using Meridian.Ui.Shared.Services.CoveredCall;
 using Microsoft.AspNetCore.Builder;
@@ -12,13 +14,15 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 /// <summary>
 /// REST endpoints for the covered-call backtest UI (slice 1).
-/// Endpoints return 503 when <see cref="ICoveredCallBacktestService"/> is not registered.
+/// Endpoints return 501 when <see cref="ICoveredCallBacktestService"/> is not registered,
+/// matching the shared "service not registered" convention used across the UI endpoints.
 /// </summary>
 public static class CoveredCallEndpoints
 {
     public static void MapCoveredCallEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
-        var group = app.MapGroup(string.Empty).WithTags("Strategies.CoveredCall");
+        var group = app.MapGroup(string.Empty)
+            .WithTags("Strategies.CoveredCall");
 
         // POST /api/strategies/covered-call/runs — start a new backtest
         group.MapPost(UiApiRoutes.CoveredCallRuns, async (
@@ -28,12 +32,16 @@ public static class CoveredCallEndpoints
         {
             if (service is null)
             {
-                return Problem(503, "Covered-call backtest service is not registered.");
+                return Problem(501, "Covered-call backtest service is not registered.");
+            }
+            if (!TryResolveRunScope(context, out var scope))
+            {
+                return Problem(403, "An authenticated tenant, company, and actor scope is required.");
             }
 
             try
             {
-                var handle = await service.StartAsync(body, context.RequestAborted).ConfigureAwait(false);
+                var handle = await service.StartAsync(body, scope, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(handle, jsonOptions);
             }
             catch (ArgumentException ex)
@@ -45,8 +53,11 @@ public static class CoveredCallEndpoints
         .Accepts<CoveredCallBacktestRequest>("application/json")
         .Produces<CoveredCallRunHandle>(200)
         .Produces<CoveredCallProblemDetails>(400)
-        .Produces(503)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .Produces<CoveredCallProblemDetails>(403)
+        .Produces(501)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequirePermission(UserPermission.ManageStrategies)
+        .RequireWorkstationTenantCompanyScope();
 
         // GET /api/strategies/covered-call/runs — list prior runs
         group.MapGet(UiApiRoutes.CoveredCallRuns, async (
@@ -56,15 +67,22 @@ public static class CoveredCallEndpoints
         {
             if (service is null)
             {
-                return Problem(503, "Covered-call backtest service is not registered.");
+                return Problem(501, "Covered-call backtest service is not registered.");
+            }
+            if (!TryResolveRunScope(context, out var scope))
+            {
+                return Problem(403, "An authenticated tenant, company, and actor scope is required.");
             }
 
-            var runs = await service.ListRunsAsync(limit ?? 50, context.RequestAborted).ConfigureAwait(false);
+            var runs = await service.ListRunsAsync(scope, limit ?? 50, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(runs, jsonOptions);
         })
         .WithName("ListCoveredCallRuns")
         .Produces<IReadOnlyList<CoveredCallRunSummary>>(200)
-        .Produces(503);
+        .Produces<CoveredCallProblemDetails>(403)
+        .Produces(501)
+        .RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .RequireWorkstationTenantCompanyScope();
 
         // GET /api/strategies/covered-call/runs/{runId}/status
         group.MapGet(UiApiRoutes.CoveredCallRunStatus, async (
@@ -74,10 +92,14 @@ public static class CoveredCallEndpoints
         {
             if (service is null)
             {
-                return Problem(503, "Covered-call backtest service is not registered.");
+                return Problem(501, "Covered-call backtest service is not registered.");
+            }
+            if (!TryResolveRunScope(context, out var scope))
+            {
+                return Problem(403, "An authenticated tenant, company, and actor scope is required.");
             }
 
-            var status = await service.GetStatusAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var status = await service.GetStatusAsync(runId, scope, context.RequestAborted).ConfigureAwait(false);
             if (status is null)
             {
                 return Problem(404, $"Run '{runId}' is not known to this host.");
@@ -87,7 +109,10 @@ public static class CoveredCallEndpoints
         .WithName("GetCoveredCallRunStatus")
         .Produces<CoveredCallRunStatusDto>(200)
         .Produces<CoveredCallProblemDetails>(404)
-        .Produces(503);
+        .Produces<CoveredCallProblemDetails>(403)
+        .Produces(501)
+        .RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .RequireWorkstationTenantCompanyScope();
 
         // GET /api/strategies/covered-call/runs/{runId}/result
         group.MapGet(UiApiRoutes.CoveredCallRunResult, async (
@@ -97,13 +122,17 @@ public static class CoveredCallEndpoints
         {
             if (service is null)
             {
-                return Problem(503, "Covered-call backtest service is not registered.");
+                return Problem(501, "Covered-call backtest service is not registered.");
+            }
+            if (!TryResolveRunScope(context, out var scope))
+            {
+                return Problem(403, "An authenticated tenant, company, and actor scope is required.");
             }
 
             // Try the persisted result first: GetResultAsync rehydrates from IStrategyRepository
             // when the in-memory cache has expired, so a completed run that has fallen out of
             // _runs (e.g. after a host restart) can still be opened from history.
-            var result = await service.GetResultAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var result = await service.GetResultAsync(runId, scope, context.RequestAborted).ConfigureAwait(false);
             if (result is not null)
             {
                 return Results.Json(result, jsonOptions);
@@ -111,7 +140,7 @@ public static class CoveredCallEndpoints
 
             // No result yet — consult the in-memory status to distinguish "still running" from
             // "no such run" from "expired".
-            var status = await service.GetStatusAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var status = await service.GetStatusAsync(runId, scope, context.RequestAborted).ConfigureAwait(false);
             if (status is null)
             {
                 return Problem(404, $"Run '{runId}' is not known to this host.");
@@ -129,7 +158,10 @@ public static class CoveredCallEndpoints
         .Produces<CoveredCallProblemDetails>(404)
         .Produces<CoveredCallProblemDetails>(409)
         .Produces<CoveredCallProblemDetails>(410)
-        .Produces(503);
+        .Produces<CoveredCallProblemDetails>(403)
+        .Produces(501)
+        .RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .RequireWorkstationTenantCompanyScope();
 
         // POST /api/strategies/covered-call/runs/{runId}/cancel
         group.MapPost(UiApiRoutes.CoveredCallRunCancel, async (
@@ -139,11 +171,15 @@ public static class CoveredCallEndpoints
         {
             if (service is null)
             {
-                return Problem(503, "Covered-call backtest service is not registered.");
+                return Problem(501, "Covered-call backtest service is not registered.");
+            }
+            if (!TryResolveRunScope(context, out var scope))
+            {
+                return Problem(403, "An authenticated tenant, company, and actor scope is required.");
             }
 
-            await service.CancelAsync(runId, context.RequestAborted).ConfigureAwait(false);
-            var status = await service.GetStatusAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            await service.CancelAsync(runId, scope, context.RequestAborted).ConfigureAwait(false);
+            var status = await service.GetStatusAsync(runId, scope, context.RequestAborted).ConfigureAwait(false);
             return status is null
                 ? Problem(404, $"Run '{runId}' is not known to this host.")
                 : Results.Json(status, jsonOptions);
@@ -151,8 +187,11 @@ public static class CoveredCallEndpoints
         .WithName("CancelCoveredCallRun")
         .Produces<CoveredCallRunStatusDto>(200)
         .Produces<CoveredCallProblemDetails>(404)
-        .Produces(503)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .Produces<CoveredCallProblemDetails>(403)
+        .Produces(501)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequirePermission(UserPermission.ManageStrategies)
+        .RequireWorkstationTenantCompanyScope();
 
         // POST /api/strategies/covered-call/chain-preview
         group.MapPost(UiApiRoutes.CoveredCallChainPreview, async (
@@ -162,7 +201,7 @@ public static class CoveredCallEndpoints
         {
             if (service is null)
             {
-                return Problem(503, "Covered-call backtest service is not registered.");
+                return Problem(501, "Covered-call backtest service is not registered.");
             }
 
             try
@@ -179,12 +218,33 @@ public static class CoveredCallEndpoints
                 return Problem(400, ex.Message);
             }
         })
-        .WithName("PreviewCoveredCallChain")
+        .WithName("PreviewCoveredCallChain").DeclareNonMutating("Previews the covered-call option chain for an underlying; PreviewChainAsync fetches the chain, applies the filters in memory and returns a projection, never touching the run channel that StartAsync uses.")
         .Accepts<CoveredCallChainPreviewRequest>("application/json")
         .Produces<CoveredCallChainPreview>(200)
         .Produces<CoveredCallProblemDetails>(400)
+        .Produces(501)
         .Produces<CoveredCallProblemDetails>(503)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .RequireWorkstationTenantCompanyScope();
+    }
+
+    private static bool TryResolveRunScope(HttpContext context, out CoveredCallRunScope scope)
+    {
+        var workstationScope = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        if (!string.IsNullOrWhiteSpace(workstationScope.TenantId) &&
+            !string.IsNullOrWhiteSpace(workstationScope.CompanyId) &&
+            !string.IsNullOrWhiteSpace(workstationScope.Actor))
+        {
+            scope = new CoveredCallRunScope(
+                workstationScope.TenantId,
+                workstationScope.CompanyId,
+                workstationScope.Actor);
+            return true;
+        }
+
+        scope = new CoveredCallRunScope(string.Empty, string.Empty, string.Empty);
+        return false;
     }
 
     private static IResult Problem(int statusCode, string detail) =>

@@ -54,10 +54,12 @@ UI_PLATFORM_POLICY_MARKERS = (
 ACTIVE_OPERATOR_SURFACE_EXTRA_FILES = (
     ".codex/environments/README.md",
 )
+# As of the v0.25 design-charter reactivation, the WPF desktop workstation is an active co-equal
+# operator UI lane alongside the browser workstation. The now-stale wording is the earlier deferral
+# framing; these patterns flag AI-policy files that still describe WPF product/UI work as deferred.
 STALE_OPERATOR_SURFACE_LANGUAGE = (
-    re.compile(r"\bretained\s+WPF\b", re.IGNORECASE),
-    re.compile(r"\bretained\s+desktop\s+(?:support|tests?)\b", re.IGNORECASE),
-    re.compile(r"`src/Meridian\.Wpf/`\s+as\s+retained\s+support", re.IGNORECASE),
+    re.compile(r"\bWPF\b[^.\n]{0,80}\b(?:is\s+)?deferred\b", re.IGNORECASE),
+    re.compile(r"\bdeferred\b[^.\n]{0,40}\bWPF\b", re.IGNORECASE),
 )
 CURRENT_REPOSITORY_URL = "https://github.com/rodoHasArrived/Meridian-main"
 LEGACY_CANONICAL_LINK_PREFIXES = (
@@ -747,7 +749,8 @@ def check_stale_operator_surface_language(root: Path, inventory: Sequence[Invent
                 expected_doc=AI_CONTRACT,
                 message=(
                     f"{rel_path} still uses stale operator-surface wording ({matched_phrase}); "
-                    "describe both browser workstation and WPF desktop as active surfaces backed by shared contracts."
+                    "per the v0.25 reactivation, describe both the browser workstation and the WPF "
+                    "desktop workstation as active co-equal UI lanes over shared contracts."
                 ),
             )
         )

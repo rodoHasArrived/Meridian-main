@@ -8,24 +8,24 @@ function inject() {
   injected = true;
   const css = `
 .pgn-wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 12px; background: var(--bg-medium, #F5F7FA); border-radius: var(--radius-chip, 4px);
+  padding: 12px; background: var(--bg-medium, #F5F7FA); border-radius: var(--radius-chip,2px);
   border: 1px solid var(--border, #D7DCE2); flex-wrap: wrap; }
-.pgn-info { font-family: var(--font-data); font-size: 12px; color: var(--text-muted, #6E7781); }
+.pgn-info { font-family: var(--font-data); font-size: 12px; color: var(--text-muted, #59636F); }
 .pgn-controls { display: flex; align-items: center; gap: 4px; }
 .pgn-btn { appearance: none; border: 1px solid var(--border, #D7DCE2); background: var(--bg-light, #fff);
-  color: var(--text-primary, #22272E); width: 28px; height: 28px; border-radius: var(--radius-button, 6px);
+  color: var(--text-primary, #22272E); width: 28px; height: 28px; border-radius: var(--radius-button,2px);
   cursor: pointer; font-family: var(--font-data); font-size: 12px; font-weight: 500;
   display: flex; align-items: center; justify-content: center;
   transition: background 100ms ease, border-color 100ms ease; }
 .pgn-btn:hover:not(:disabled) { background: var(--bg-active, #E6EEF5); border-color: var(--accent, #2F6F8F); }
 .pgn-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.pgn-btn--active { background: var(--accent, #2F6F8F); color: white; border-color: var(--accent, #2F6F8F); }
+.pgn-btn--active { background: var(--accent, #2F6F8F); color: var(--text-on-accent, #fff); border-color: var(--accent, #2F6F8F); }
 .pgn-jump { height: 28px; padding: 4px 8px; border: 1px solid var(--border, #D7DCE2);
-  border-radius: var(--radius-button, 6px); background: var(--bg-light, #fff);
+  border-radius: var(--radius-button,2px); background: var(--bg-light, #fff);
   font-family: var(--font-data); font-size: 12px; width: 50px; text-align: center;
   transition: border-color 100ms ease; }
 .pgn-jump:focus { outline: none; border-color: var(--accent, #2F6F8F);
-  box-shadow: 0 0 0 2px rgba(47, 111, 143, 0.20); }
+  box-shadow: 0 0 0 2px color-mix(in srgb,var(--border-focus) 35%,transparent); }
 `;
   const el = document.createElement("style");
   el.setAttribute("data-pgn", "pagination");

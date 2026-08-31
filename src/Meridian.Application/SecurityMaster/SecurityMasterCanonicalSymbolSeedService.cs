@@ -86,10 +86,39 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
 
             // Build the alias list from provider-specific symbols and standard identifiers.
             var aliases = new List<string>();
+            var aliasDefinitions = new List<CanonicalSymbolAliasDefinition>();
+            var providerSymbols = new Dictionary<string, ProviderSymbolDefinition>(StringComparer.OrdinalIgnoreCase);
+            var now = DateTimeOffset.UtcNow;
             foreach (var alias in record.Aliases)
             {
-                if (alias.IsEnabled && !string.IsNullOrWhiteSpace(alias.AliasValue))
+                if (string.IsNullOrWhiteSpace(alias.AliasValue))
+                    continue;
+
+                var isCurrent = alias.IsEnabled && alias.ValidFrom <= now &&
+                    (alias.ValidTo is null || alias.ValidTo > now);
+                aliasDefinitions.Add(new CanonicalSymbolAliasDefinition(
+                    alias.AliasValue,
+                    Source: SymbolMappingSources.SecurityMaster,
+                    Provider: alias.Provider,
+                    ValidFrom: alias.ValidFrom,
+                    ValidTo: alias.ValidTo,
+                    IsActive: isCurrent));
+
+                if (!isCurrent)
+                    continue;
+
+                if (string.IsNullOrWhiteSpace(alias.Provider))
+                {
                     aliases.Add(alias.AliasValue);
+                }
+                else
+                {
+                    providerSymbols[alias.Provider.Trim().ToLowerInvariant()] = new ProviderSymbolDefinition(
+                        alias.AliasValue,
+                        SymbolMappingSources.SecurityMaster,
+                        IsOverride: false,
+                        UpdatedAt: now);
+                }
             }
 
             string? isin = null, cusip = null, figi = null, sedol = null;
@@ -123,9 +152,12 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
             definitions.Add(new CanonicalSymbolDefinition
             {
                 Canonical = ticker,
+                SecurityId = record.SecurityId,
                 DisplayName = record.DisplayName,
                 AssetClass = record.AssetClass,
                 Aliases = aliases,
+                AliasDefinitions = aliasDefinitions,
+                ProviderSymbols = providerSymbols,
                 Isin = isin,
                 Cusip = cusip,
                 Figi = figi,

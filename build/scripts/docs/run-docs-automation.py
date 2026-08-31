@@ -26,6 +26,23 @@ from typing import Dict, Iterable, List, Sequence
 TODO_SCAN_JSON_PATH = "docs/status/todo-scan-results.json"
 TODO_ISSUE_SUMMARY_PATH = "docs/status/todo-issue-creation-summary.json"
 
+# Recorded commands use this token so summary artifacts stay identical across
+# machines; execution substitutes the running interpreter (see execution_command).
+PYTHON_DISPLAY = "python3"
+
+
+def execution_command(command: Sequence[str]) -> List[str]:
+    """Swap the recorded interpreter token for the interpreter running this script."""
+    if command and command[0] == PYTHON_DISPLAY:
+        return [sys.executable, *command[1:]]
+    return list(command)
+
+
+def write_text_lf(path: Path, content: str) -> None:
+    """Write UTF-8 text with LF endings so generated summaries match the repo on every platform."""
+    with path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(content)
+
 
 @dataclass
 class ScriptResult:
@@ -54,6 +71,10 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
     "validate-docs-structure": {
         "script": "validate-docs-structure.py",
         "args": ["--summary"],
+    },
+    "validate-agent-definitions": {
+        "script": "validate-agent-definitions.py",
+        "args": [],
     },
     "generate-health-dashboard": {
         "script": "generate-health-dashboard.py",
@@ -257,6 +278,7 @@ PROFILE_CONFIG: Dict[str, List[str]] = {
     "quick": [
         "scan-todos",
         "validate-docs-structure",
+        "validate-agent-definitions",
         "validate-examples",
         "repair-links",
         "check-ai-inventory",
@@ -271,6 +293,7 @@ PROFILE_CONFIG: Dict[str, List[str]] = {
     "core": [
         "scan-todos",
         "validate-docs-structure",
+        "validate-agent-definitions",
         "generate-structure-docs",
         "generate-health-dashboard",
         "validate-examples",
@@ -293,6 +316,7 @@ PROFILE_CONFIG: Dict[str, List[str]] = {
     "full": [
         "scan-todos",
         "validate-docs-structure",
+        "validate-agent-definitions",
         "generate-structure-docs",
         "generate-health-dashboard",
         "repair-links",
@@ -353,6 +377,15 @@ def parse_args() -> argparse.Namespace:
         help="Optional Markdown output path for run summary.",
     )
     parser.add_argument(
+        "--include-pilot-readiness",
+        action="store_true",
+        help=(
+            "Regenerate the pilot-readiness dashboard. Off by default because its output "
+            "depends on the gitignored pilot-acceptance artifact left behind by a local test "
+            "run, which makes the committed dashboard non-reproducible."
+        ),
+    )
+    parser.add_argument(
         "--auto-create-todos",
         action="store_true",
         help="After scan-todos, create GitHub issues for untracked TODO items.",
@@ -374,6 +407,9 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+PILOT_READINESS_TASK = "generate-pilot-readiness-dashboard"
+
+
 def resolve_selected_scripts(args: argparse.Namespace) -> List[str]:
     if args.scripts:
         selected = [name.strip() for name in args.scripts.split(",") if name.strip()]
@@ -383,6 +419,17 @@ def resolve_selected_scripts(args: argparse.Namespace) -> List[str]:
     unknown = [name for name in selected if name not in SCRIPT_CONFIG]
     if unknown:
         raise ValueError(f"Unknown script names: {', '.join(unknown)}")
+
+    # generate-pilot-readiness-dashboard reads artifacts/pilot-acceptance/latest/pilot-readiness.json,
+    # which PilotAcceptanceHarnessTests writes and .gitignore keeps untracked. Whether that artifact
+    # happens to exist therefore decides whether the committed dashboard is regenerated as a
+    # placeholder or enriched with one local run's ephemeral identifiers (fresh GUIDs, session ids,
+    # timestamps). Anyone who ran the test suite and then any docs regeneration in the same workspace
+    # silently committed local test output as repository truth, and the drift gate only caught it
+    # afterwards. Opt in explicitly instead; the golden-path workflow calls the generator directly
+    # with its own artifact-scoped output paths and is unaffected.
+    if PILOT_READINESS_TASK in selected and not getattr(args, "include_pilot_readiness", False):
+        selected = [name for name in selected if name != PILOT_READINESS_TASK]
 
     # Validation: --auto-create-todos requires scan-todos
     if args.auto_create_todos and "scan-todos" not in selected:
@@ -397,12 +444,12 @@ def resolve_selected_scripts(args: argparse.Namespace) -> List[str]:
 def run_script_with_args(name: str, root: Path, extra_args: Sequence[str] | None = None) -> ScriptResult:
     config = SCRIPT_CONFIG[name]
     script_path = root / "build" / "scripts" / "docs" / str(config["script"])
-    command = ["python3", str(script_path), *[str(arg) for arg in config.get("args", [])]]
+    command = [PYTHON_DISPLAY, str(script_path), *[str(arg) for arg in config.get("args", [])]]
     if extra_args:
         command.extend(str(arg) for arg in extra_args)
 
     started = time.perf_counter()
-    proc = subprocess.run(command, cwd=root, capture_output=True, text=True)
+    proc = subprocess.run(execution_command(command), cwd=root, capture_output=True, text=True)
     duration = time.perf_counter() - started
 
     if proc.returncode == 0:
@@ -478,7 +525,7 @@ def write_markdown_summary(path: Path, results: Iterable[ScriptResult], dry_run:
             lines.append(f"- `{failed.name}`: {failed.error or 'Unknown error'}")
 
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    write_text_lf(path, "\n".join(lines) + "\n")
 
 
 def main() -> int:  # noqa: C901
@@ -499,7 +546,7 @@ def main() -> int:  # noqa: C901
         for name in selected:
             config = SCRIPT_CONFIG[name]
             script_path = root / "build" / "scripts" / "docs" / str(config["script"])
-            command = ["python3", str(script_path), *[str(arg) for arg in config.get("args", [])]]
+            command = [PYTHON_DISPLAY, str(script_path), *[str(arg) for arg in config.get("args", [])]]
             # For scan-todos, add JSON output if --auto-create-todos is set
             if name == "scan-todos" and args.auto_create_todos:
                 command.extend(["--json-output", TODO_SCAN_JSON_PATH])
@@ -517,7 +564,7 @@ def main() -> int:  # noqa: C901
 
         if args.auto_create_todos and "scan-todos" in selected:
             issue_cmd = [
-                "python3",
+                PYTHON_DISPLAY,
                 str(root / "build" / "scripts" / "docs" / "create-todo-issues.py"),
                 "--scan-json",
                 TODO_SCAN_JSON_PATH,
@@ -596,7 +643,7 @@ def main() -> int:  # noqa: C901
         }
         out = Path(args.json_output)
         out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        write_text_lf(out, json.dumps(payload, indent=2) + "\n")
         print(f"Wrote JSON summary: {args.json_output}")
 
     failed = [r for r in results if r.status == "failed"]

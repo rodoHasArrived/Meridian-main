@@ -34,7 +34,7 @@ public sealed class CompositeSinkCircuitBreakerTests
             Size: 100,
             Aggressor: AggressorSide.Buy,
             SequenceNumber: 1);
-        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade, seq: 1);
+        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade, seq: 1, source: "TEST");
     }
 
     private static Mock<IStorageSink> CreateFailingSink(int failAfterNth = 0)
@@ -232,6 +232,7 @@ public sealed class StreamingFailoverServiceResilienceTests : IDisposable
 {
     private readonly ConnectionHealthMonitor _healthMonitor;
     private readonly StreamingFailoverService _service;
+    private readonly IDisposable _transitionRegistration;
 
     private readonly FailoverRuleConfig _rule = new(
         Id: "resilience-rule",
@@ -245,6 +246,9 @@ public sealed class StreamingFailoverServiceResilienceTests : IDisposable
     {
         _healthMonitor = new ConnectionHealthMonitor();
         _service = new StreamingFailoverService(_healthMonitor);
+        _transitionRegistration = _service.RegisterTransitionHandler(
+            "resilience-rule",
+            static transition => transition.TryComplete());
 
         _service.RegisterProvider("primary");
         _service.RegisterProvider("backup");
@@ -252,6 +256,7 @@ public sealed class StreamingFailoverServiceResilienceTests : IDisposable
 
     public void Dispose()
     {
+        _transitionRegistration.Dispose();
         _service.Dispose();
         _healthMonitor.Dispose();
     }
@@ -408,6 +413,9 @@ public sealed class StreamingFailoverServiceResilienceTests : IDisposable
             EnableFailover: true,
             HealthCheckIntervalSeconds: 3600,
             FailoverRules: new[] { ruleWithTwoBackups });
+        using var transitionRegistration = _service.RegisterTransitionHandler(
+            ruleWithTwoBackups.Id,
+            static transition => transition.TryComplete());
         _service.Start(config);
 
         // Act

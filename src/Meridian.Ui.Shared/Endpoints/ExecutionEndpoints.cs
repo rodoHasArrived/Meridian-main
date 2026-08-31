@@ -1,11 +1,13 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
-using Meridian.Identity.Auth;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Identity;
+using Meridian.Identity.Auth;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -42,7 +44,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(snapshot, jsonOptions);
         })
-        .WithName("GetExecutionAccount")
+        .WithName("GetExecutionAccount").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionAccountSnapshot>(200)
         .Produces(503);
 
@@ -55,7 +57,7 @@ public static class ExecutionEndpoints
             var positions = portfolio.Positions.Values.ToArray();
             return Results.Json(positions, jsonOptions);
         })
-        .WithName("GetExecutionPositions")
+        .WithName("GetExecutionPositions").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionPosition[]>(200)
         .Produces(503);
 
@@ -69,7 +71,7 @@ public static class ExecutionEndpoints
                 ? Results.Problem("Execution position services are not active.", statusCode: StatusCodes.Status503ServiceUnavailable)
                 : Results.Json(snapshot, jsonOptions);
         })
-        .WithName("GetExecutionBlotterPositions")
+        .WithName("GetExecutionBlotterPositions").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionBlotterSnapshotResponse>(200)
         .Produces(503);
 
@@ -89,7 +91,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(snapshot, jsonOptions);
         })
-        .WithName("GetExecutionPortfolio")
+        .WithName("GetExecutionPortfolio").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionPortfolioSnapshot>(200)
         .Produces(503);
 
@@ -104,7 +106,7 @@ public static class ExecutionEndpoints
             var orders = oms.GetOpenOrders();
             return Results.Json(orders, jsonOptions);
         })
-        .WithName("GetOpenOrders")
+        .WithName("GetOpenOrders").RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<OrderState>>(200)
         .Produces(503);
 
@@ -119,7 +121,7 @@ public static class ExecutionEndpoints
                 ? Results.NotFound()
                 : Results.Json(order, jsonOptions);
         })
-        .WithName("GetOrderById")
+        .WithName("GetOrderById").RequirePermission(UserPermission.ViewTrades)
         .Produces<OrderState>(200)
         .Produces(404)
         .Produces(503);
@@ -160,6 +162,16 @@ public static class ExecutionEndpoints
                 return brokerAccountFailure;
             }
 
+            if (request.FundAccountId is { } fundAccountId
+                && await RequireExecutionFundAccountAccessAsync(
+                    fundAccountId,
+                    UserPermission.ManageOrders,
+                    context,
+                    jsonOptions).ConfigureAwait(false) is { } accountScopeFailure)
+            {
+                return accountScopeFailure;
+            }
+
             string? correlationId = null;
             request.Metadata?.TryGetValue("correlationId", out correlationId);
             var normalizedRequest = request with
@@ -172,12 +184,20 @@ public static class ExecutionEndpoints
 
             var result = await oms.PlaceOrderAsync(normalizedRequest, context.RequestAborted).ConfigureAwait(false);
 
-            return result.Success
-                ? Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created)
-                : Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+            // A parked order is not a rejection: nothing routed, but a live queue entry can
+            // still execute it once an operator approves. 202 keeps that distinguishable
+            // from the 400 a refusal returns, so a client cannot show "submission failed"
+            // for an order that is on its way to the desk.
+            return (result.Success, result.RequiresApproval) switch
+            {
+                (true, _) => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created),
+                (false, true) => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status202Accepted),
+                _ => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest)
+            };
         })
-        .WithName("SubmitOrder")
+        .WithName("SubmitOrder").RequirePermission(UserPermission.ManageOrders)
         .Produces<OrderResult>(201)
+        .Produces<OrderResult>(202)
         .Produces<OrderResult>(400)
         .Produces<OrderResult>(403)
         .Produces(429)
@@ -194,6 +214,23 @@ public static class ExecutionEndpoints
             var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+            // Cancelling a parked order durably withdraws its governed approval, which the
+            // escalation routes only allow within the caller's scoped authority over the
+            // owning fund. Reaching the same withdrawal through a client order id must not
+            // be the cheaper path: without this, an operator holding ManageOrders for one
+            // fund could retire another fund's approval just by knowing its id.
+            if (oms.GetOrder(orderId)?.FundAccountId is { } scopedFundAccountId &&
+                !EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance) &&
+                !await EndpointAuthorization.HasScopedPermissionAsync(
+                    context,
+                    UserPermission.ManageOrders,
+                    AccessScopeKindDto.Account,
+                    scopedFundAccountId,
+                    context.RequestAborted).ConfigureAwait(false))
+            {
+                return EndpointHelpers.Forbidden();
+            }
 
             var logger = GetLogger(context.RequestServices);
             var actionId = GenerateActionId();
@@ -218,7 +255,7 @@ public static class ExecutionEndpoints
                 ? Results.Json(actionResult, jsonOptions)
                 : Results.Json(actionResult, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
         })
-        .WithName("CancelOrder")
+        .WithName("CancelOrder").RequirePermission(UserPermission.ManageOrders)
         .Produces<TradingActionResult>(200)
         .Produces<TradingActionResult>(400)
         .Produces(503);
@@ -238,19 +275,34 @@ public static class ExecutionEndpoints
             var actionId = GenerateActionId();
             var openCount = oms.GetOpenOrders().Count;
 
-            await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false);
+            var sweep = await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false)
+                ?? KillSwitchSweepResult.Unestablished(openCount);
 
-            logger.LogInformation("Trading action {ActionId}: cancel-all — cancelled {Count} open orders", actionId, openCount);
+            logger.LogInformation(
+                "Trading action {ActionId}: cancel-all — cancelled {Cancelled} of {Requested} open order(s), {StillWorking} still working",
+                actionId,
+                sweep.Cancelled,
+                sweep.Requested,
+                sweep.StillWorking.Count);
 
+            // The operator is told what the sweep achieved, not that it was requested. A ticket
+            // reading "Completed" over a book that still has working orders is the specific
+            // failure this endpoint used to produce.
             var actionResult = new TradingActionResult(
                 ActionId: actionId,
-                Status: "Completed",
-                Message: $"Cancellation requested for {openCount} open order(s).",
-                OccurredAt: DateTimeOffset.UtcNow);
+                Status: sweep.Outcome.ToString(),
+                Message: sweep.Describe(),
+                OccurredAt: DateTimeOffset.UtcNow,
+                // Every surviving order, not the bounded prose. A caller driving recovery needs the
+                // ids to cancel by hand, and the rendered message names only the first ten.
+                StillWorking: sweep.StillWorking,
+                // Distinct from Status: a Completed sweep over an unenumerable broker book has
+                // emptied only the in-memory view, and the caller must be able to see that.
+                BrokerViewUnavailable: sweep.BrokerViewUnavailable ? true : null);
 
             return Results.Json(actionResult, jsonOptions);
         })
-        .WithName("CancelAllOrders")
+        .WithName("CancelAllOrders").RequirePermission(UserPermission.ManageOrders)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces<TradingActionResult>(200)
         .Produces(403)
@@ -275,7 +327,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(health, jsonOptions);
         })
-        .WithName("GetExecutionHealth")
+        .WithName("GetExecutionHealth").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionGatewayHealth>(200)
         .Produces(503);
 
@@ -287,7 +339,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(gateway.Capabilities, jsonOptions);
         })
-        .WithName("GetExecutionCapabilities")
+        .WithName("GetExecutionCapabilities").RequirePermission(UserPermission.ViewTrades)
         .Produces<OrderGatewayCapabilities>(200)
         .Produces(503);
 
@@ -304,7 +356,7 @@ public static class ExecutionEndpoints
                 .ConfigureAwait(false);
             return Results.Json(entries, jsonOptions);
         })
-        .WithName("GetExecutionAudit")
+        .WithName("GetExecutionAudit").RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<ExecutionAuditEntry>>(200);
 
         group.MapGet("/audit/search", async (
@@ -353,7 +405,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(result, jsonOptions);
         })
-        .WithName("SearchExecutionAuditTrail")
+        .WithName("SearchExecutionAuditTrail").RequirePermission(UserPermission.ViewTrades)
         .Produces<AuditTrailExplorerResultDto>(200);
 
         group.MapGet("/controls", (HttpContext context) =>
@@ -366,7 +418,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(controls.GetSnapshot(), jsonOptions);
         })
-        .WithName("GetExecutionControls")
+        .WithName("GetExecutionControls").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionControlSnapshot>(200)
         .Produces(503);
 
@@ -391,9 +443,91 @@ public static class ExecutionEndpoints
             var snapshot = await controls
                 .SetCircuitBreakerAsync(request.IsOpen, request.Reason, actor, request.CorrelationId, context.RequestAborted)
                 .ConfigureAwait(false);
-            return Results.Json(snapshot, jsonOptions);
+
+            // Opening the breaker is the kill switch: beyond blocking new submissions it must
+            // sweep the open book, or resting orders keep filling while routing is "halted".
+            // The cancel sweep runs after the durable breaker flip so a crash between the two
+            // restarts into the halted state, and its outcome is audited separately from the
+            // activation so a failed sweep is visible rather than silently absorbed.
+            KillSwitchSweepResult? sweepOutcome = null;
+            if (request.IsOpen && context.RequestServices.GetService<IOrderManager>() is { } oms)
+            {
+                var auditTrail = context.RequestServices.GetService<ExecutionAuditTrailService>();
+                var openCount = oms.GetOpenOrders().Count;
+                try
+                {
+                    // A null sweep is an order manager that established nothing about the book.
+                    // Fail closed on it rather than dereferencing: the kill switch reporting
+                    // "object reference not set" tells an operator nothing about their orders.
+                    var sweep = await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false)
+                        ?? KillSwitchSweepResult.Unestablished(openCount);
+                    sweepOutcome = sweep;
+
+                    // Outcome, not invocation. The Failed branch below fires only on a thrown
+                    // exception, so a broker that merely refuses a cancellation never reaches it —
+                    // which is how a half-fired kill switch used to be audited as Completed.
+                    if (sweep.RequiresOperatorAction)
+                    {
+                        GetLogger(context.RequestServices).LogError(
+                            "Circuit breaker opened by {Actor} but the cancel-all sweep left {StillWorking} order(s) working; manual cancellation is required",
+                            actor,
+                            sweep.StillWorking.Count);
+                    }
+                    else
+                    {
+                        GetLogger(context.RequestServices).LogInformation(
+                            "Circuit breaker opened by {Actor}; cancel-all emptied the book of {Count} open order(s)",
+                            actor, sweep.Requested);
+                    }
+
+                    if (auditTrail is not null)
+                    {
+                        await auditTrail.RecordAsync(
+                                "controls",
+                                "CircuitBreakerCancelAll",
+                                sweep.Outcome.ToString(),
+                                actor: actor,
+                                correlationId: request.CorrelationId,
+                                message: sweep.Describe(),
+                                ct: CancellationToken.None)
+                            .ConfigureAwait(false);
+                    }
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    GetLogger(context.RequestServices).LogError(
+                        ex,
+                        "Circuit breaker opened by {Actor} but the cancel-all sweep failed; open orders may remain working",
+                        actor);
+                    if (auditTrail is not null)
+                    {
+                        await auditTrail.RecordAsync(
+                                "controls",
+                                "CircuitBreakerCancelAll",
+                                "Failed",
+                                actor: actor,
+                                correlationId: request.CorrelationId,
+                                message: $"Kill-switch cancel-all failed with {openCount} open order(s); manual cancellation is required.",
+                                reason: ex.Message,
+                                ct: CancellationToken.None)
+                            .ConfigureAwait(false);
+                    }
+
+                    sweepOutcome = KillSwitchSweepResult.Unestablished(openCount);
+                }
+            }
+
+            // The activation response carries what the sweep achieved. Returning the plain snapshot
+            // either way meant a caller pulling the kill switch got an identical 200 whether the
+            // book emptied or orders were still working, and could only discover the difference by
+            // separately querying the audit trail.
+            return Results.Json(
+                sweepOutcome is null
+                    ? snapshot
+                    : (object)ExecutionCircuitBreakerActivationResponse.From(snapshot, sweepOutcome),
+                jsonOptions);
         })
-        .WithName("UpdateExecutionCircuitBreaker")
+        .WithName("UpdateExecutionCircuitBreaker").RequirePermission(UserPermission.ManageOrders)
         .Produces<ExecutionControlSnapshot>(200)
         .Produces(403)
         .Produces(429)
@@ -424,7 +558,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(snapshot, jsonOptions);
         })
-        .WithName("UpdateExecutionDefaultPositionLimit")
+        .WithName("UpdateExecutionDefaultPositionLimit").RequirePermission(UserPermission.ManageOrders)
         .Produces<ExecutionControlSnapshot>(200)
         .Produces(403)
         .Produces(429)
@@ -455,7 +589,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(snapshot, jsonOptions);
         })
-        .WithName("UpdateExecutionSymbolPositionLimit")
+        .WithName("UpdateExecutionSymbolPositionLimit").RequirePermission(UserPermission.ManageOrders)
         .Produces<ExecutionControlSnapshot>(200)
         .Produces(403)
         .Produces(429)
@@ -500,7 +634,7 @@ public static class ExecutionEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         })
-        .WithName("CreateExecutionManualOverride")
+        .WithName("CreateExecutionManualOverride").RequirePermission(UserPermission.ManageOrders)
         .Produces<ExecutionManualOverride>(201)
         .Produces(403)
         .Produces(429)
@@ -546,7 +680,7 @@ public static class ExecutionEndpoints
                     OccurredAt: DateTimeOffset.UtcNow),
                 jsonOptions);
         })
-        .WithName("ClearExecutionManualOverride")
+        .WithName("ClearExecutionManualOverride").RequirePermission(UserPermission.ManageOrders)
         .Produces<TradingActionResult>(200)
         .Produces(403)
         .Produces(429)
@@ -566,7 +700,7 @@ public static class ExecutionEndpoints
             var sessions = persistence.GetSessions();
             return Results.Json(sessions, jsonOptions);
         })
-        .WithName("GetExecutionSessions")
+        .WithName("GetExecutionSessions").RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<PaperSessionSummaryDto>>(200);
 
         group.MapGet("/sessions/{sessionId}", async (string sessionId, HttpContext context) =>
@@ -579,7 +713,7 @@ public static class ExecutionEndpoints
             var session = persistence.GetSession(sessionId);
             return session is null ? Results.NotFound() : Results.Json(session, jsonOptions);
         })
-        .WithName("GetExecutionSessionById")
+        .WithName("GetExecutionSessionById").RequirePermission(UserPermission.ViewTrades)
         .Produces<PaperSessionDetailDto>(200)
         .Produces(404);
 
@@ -601,7 +735,7 @@ public static class ExecutionEndpoints
                 session.OrderHistory);
             return Results.Json(report, jsonOptions);
         })
-        .WithName("GetExecutionSessionTcaReport")
+        .WithName("GetExecutionSessionTcaReport").RequirePermission(UserPermission.ViewTrades)
         .Produces<SessionTcaReport>(200)
         .Produces(404);
 
@@ -667,7 +801,7 @@ public static class ExecutionEndpoints
 
             return Results.Json(session, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
-        .WithName("CreateExecutionSession")
+        .WithName("CreateExecutionSession").RequirePermission(UserPermission.ExecuteTrades)
         .Produces<PaperSessionSummaryDto>(201)
         .Produces(400)
         .Produces(429)
@@ -724,7 +858,7 @@ public static class ExecutionEndpoints
                     AuditId: auditEntry?.AuditId),
                 jsonOptions);
         })
-        .WithName("CloseExecutionSession")
+        .WithName("CloseExecutionSession").RequirePermission(UserPermission.ManageOrders)
         .Produces<TradingActionResult>(200)
         .Produces(404)
         .Produces(503);
@@ -795,7 +929,7 @@ public static class ExecutionEndpoints
                 },
                 jsonOptions);
         })
-        .WithName("ReplayExecutionSession")
+        .WithName("ReplayExecutionSession").RequirePermission(UserPermission.ManageOrders)
         .Produces<PaperSessionReplayVerificationDto>(200)
         .Produces(404)
         .Produces(503);
@@ -818,7 +952,7 @@ public static class ExecutionEndpoints
             var single = BuildLegacySingleAccountSnapshot(portfolio);
             return Results.Json(new[] { single }, jsonOptions);
         })
-        .WithName("GetExecutionAccounts")
+        .WithName("GetExecutionAccounts").RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<ExecutionAccountDetailSnapshot>>(200)
         .Produces(503);
 
@@ -839,7 +973,7 @@ public static class ExecutionEndpoints
 
             return Results.NotFound();
         })
-        .WithName("GetExecutionAccountById")
+        .WithName("GetExecutionAccountById").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionAccountDetailSnapshot>(200)
         .Produces(404)
         .Produces(503);
@@ -863,7 +997,7 @@ public static class ExecutionEndpoints
 
             return Results.NotFound();
         })
-        .WithName("GetExecutionAccountPositions")
+        .WithName("GetExecutionAccountPositions").RequirePermission(UserPermission.ViewTrades)
         .Produces<ExecutionPosition[]>(200)
         .Produces(404)
         .Produces(503);
@@ -882,7 +1016,7 @@ public static class ExecutionEndpoints
             var aggregate = MultiAccountPortfolioSnapshot.FromAccounts([singleSnap]);
             return Results.Json(aggregate, jsonOptions);
         })
-        .WithName("GetExecutionPortfolioAggregate")
+        .WithName("GetExecutionPortfolioAggregate").RequirePermission(UserPermission.ViewTrades)
         .Produces<MultiAccountPortfolioSnapshot>(200)
         .Produces(503);
 
@@ -915,6 +1049,14 @@ public static class ExecutionEndpoints
                 return Results.Json(notFound, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
             }
 
+            if (await RequireScopedFundAccountOrderAccessAsync(
+                    context,
+                    request.FundAccountId,
+                    UserPermission.ExecuteTrades).ConfigureAwait(false) is { } fundAccountFailure)
+            {
+                return fundAccountFailure;
+            }
+
             return await SubmitPositionActionAsync(
                 position,
                 snapshot.Source,
@@ -927,7 +1069,7 @@ public static class ExecutionEndpoints
                 jsonOptions: jsonOptions,
                 context: context).ConfigureAwait(false);
         })
-        .WithName("ClosePositionByKey")
+        .WithName("ClosePositionByKey").RequirePermission(UserPermission.ExecuteTrades)
         .Produces<TradingActionResult>(200)
         .Produces<TradingActionResult>(400)
         .Produces(403)
@@ -960,6 +1102,14 @@ public static class ExecutionEndpoints
                 return Results.Json(notFound, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
             }
 
+            if (await RequireScopedFundAccountOrderAccessAsync(
+                    context,
+                    request.FundAccountId,
+                    UserPermission.ExecuteTrades).ConfigureAwait(false) is { } fundAccountFailure)
+            {
+                return fundAccountFailure;
+            }
+
             return await SubmitPositionActionAsync(
                 position,
                 snapshot.Source,
@@ -972,7 +1122,7 @@ public static class ExecutionEndpoints
                 jsonOptions: jsonOptions,
                 context: context).ConfigureAwait(false);
         })
-        .WithName("UpsizePositionByKey")
+        .WithName("UpsizePositionByKey").RequirePermission(UserPermission.ExecuteTrades)
         .Produces<TradingActionResult>(200)
         .Produces<TradingActionResult>(400)
         .Produces(403)
@@ -1017,6 +1167,14 @@ public static class ExecutionEndpoints
                 return Results.Json(ambiguous, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
             }
 
+            if (await RequireScopedFundAccountOrderAccessAsync(
+                    context,
+                    fundAccountId,
+                    UserPermission.ExecuteTrades).ConfigureAwait(false) is { } fundAccountFailure)
+            {
+                return fundAccountFailure;
+            }
+
             var position = matches[0];
             return await SubmitPositionActionAsync(
                 position,
@@ -1030,7 +1188,7 @@ public static class ExecutionEndpoints
                 jsonOptions: jsonOptions,
                 context: context).ConfigureAwait(false);
         })
-        .WithName("ClosePosition")
+        .WithName("ClosePosition").RequirePermission(UserPermission.ExecuteTrades)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces<TradingActionResult>(200)
         .Produces<TradingActionResult>(400)
@@ -1177,6 +1335,16 @@ public static class ExecutionEndpoints
             return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
         }
 
+        if (fundAccountId is { } requestedFundAccountId
+            && await RequireExecutionFundAccountAccessAsync(
+                requestedFundAccountId,
+                UserPermission.ExecuteTrades,
+                context,
+                jsonOptions).ConfigureAwait(false) is { } accountScopeFailure)
+        {
+            return accountScopeFailure;
+        }
+
         var metadata = MergeMetadata(
             RemoveServerOwnedExecutionMetadata(position.Metadata),
             ("actor", actor),
@@ -1203,6 +1371,12 @@ public static class ExecutionEndpoints
 
         var result = await oms.PlaceOrderAsync(orderRequest, context.RequestAborted).ConfigureAwait(false);
 
+        // A parked order is not a rejection here either. Reporting one as Rejected invites
+        // the operator to retry, and every retry mints a fresh ClientOrderId — so a single
+        // close can become several parked close orders that all release on approval and
+        // take the position past flat, or reverse it.
+        var parked = !result.Success && result.RequiresApproval;
+
         if (result.Success)
         {
             logger.LogInformation(
@@ -1212,6 +1386,15 @@ public static class ExecutionEndpoints
                 position.PositionKey,
                 quantity,
                 result.OrderId);
+        }
+        else if (parked)
+        {
+            logger.LogInformation(
+                "Trading action {ActionId}: {Action} {PositionKey} qty {Quantity} — order parked for governed approval",
+                actionId,
+                actionName,
+                position.PositionKey,
+                quantity);
         }
         else
         {
@@ -1227,10 +1410,12 @@ public static class ExecutionEndpoints
             context,
             actionId,
             action: actionName,
-            outcome: result.Success ? "Accepted" : "Rejected",
+            outcome: result.Success ? "Accepted" : parked ? "PendingApproval" : "Rejected",
             message: result.Success
                 ? $"{successVerb} order for {position.ProductDescription} submitted."
-                : (result.ErrorMessage ?? $"{successVerb} order rejected for {position.ProductDescription}."),
+                : parked
+                    ? $"{successVerb} order for {position.ProductDescription} parked for governed approval."
+                    : (result.ErrorMessage ?? $"{successVerb} order rejected for {position.ProductDescription}."),
             orderId: result.OrderId,
             symbol: position.Symbol,
             metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -1244,16 +1429,25 @@ public static class ExecutionEndpoints
 
         var actionResult = new TradingActionResult(
             ActionId: actionId,
-            Status: result.Success ? "Accepted" : "Rejected",
+            Status: result.Success ? "Accepted" : parked ? "PendingApproval" : "Rejected",
             Message: result.Success
                 ? $"{successVerb} order for {position.ProductDescription} submitted (order {result.OrderId})."
-                : (result.ErrorMessage ?? $"{successVerb} order rejected."),
+                : parked
+                    ? $"{successVerb} order for {position.ProductDescription} is parked for governed approval; "
+                        + "an approver must release it. Do not resubmit."
+                    : (result.ErrorMessage ?? $"{successVerb} order rejected."),
             OccurredAt: DateTimeOffset.UtcNow,
             AuditId: auditEntry?.AuditId);
 
-        return result.Success
-            ? Results.Json(actionResult, jsonOptions)
-            : Results.Json(actionResult, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+        // 202 for a park, matching /orders/submit: the request was accepted but not routed.
+        // 400 would read as "this failed, try again", and each retry mints a new
+        // ClientOrderId, so the retries all park and can all release.
+        return (result.Success, parked) switch
+        {
+            (true, _) => Results.Json(actionResult, jsonOptions),
+            (false, true) => Results.Json(actionResult, jsonOptions, statusCode: StatusCodes.Status202Accepted),
+            _ => Results.Json(actionResult, jsonOptions, statusCode: StatusCodes.Status400BadRequest)
+        };
     }
 
     private static ExecutionPositionDetailResponse MapBrokerPositionToDetail(BrokerPosition position)
@@ -1376,6 +1570,62 @@ public static class ExecutionEndpoints
         sp.GetRequiredService<ILoggerFactory>()
           .CreateLogger("Meridian.Ui.Shared.Endpoints.ExecutionEndpoints");
 
+
+    private static async Task<IResult?> RequireExecutionFundAccountAccessAsync(
+        Guid fundAccountId,
+        UserPermission requiredPermission,
+        HttpContext context,
+        JsonSerializerOptions jsonOptions)
+    {
+        if (!EndpointAuthorization.TryGetPermissions(context, out _))
+        {
+            return Results.Unauthorized();
+        }
+
+        var scopedAuthorization = context.RequestServices.GetService<IScopedAuthorizationService>();
+        if (scopedAuthorization is null)
+        {
+            return Results.Problem(
+                "Fund account scope authorization is not active.",
+                statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+
+        if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance)
+            && !await EndpointAuthorization.HasScopedPermissionAsync(
+                context,
+                requiredPermission,
+                AccessScopeKindDto.Account,
+                fundAccountId,
+                context.RequestAborted).ConfigureAwait(false))
+        {
+            return ExecutionFundAccountForbidden(jsonOptions);
+        }
+
+        var queryService = ResolveAccountQueryService(context);
+        if (queryService is null)
+        {
+            return Results.Problem(
+                "Fund account scope validation is not active.",
+                statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+
+        var account = await queryService.GetAccountAsync(fundAccountId, context.RequestAborted).ConfigureAwait(false);
+        return account is null ? ExecutionFundAccountForbidden(jsonOptions) : null;
+    }
+
+    private static IResult ExecutionFundAccountForbidden(JsonSerializerOptions jsonOptions)
+    {
+        var blocked = new TradingActionResult(
+            ActionId: GenerateActionId(),
+            Status: "Rejected",
+            Message: "The requested fund account is not authorized for this execution action.",
+            OccurredAt: DateTimeOffset.UtcNow);
+        return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    private static IAccountQueryService? ResolveAccountQueryService(HttpContext context) =>
+        context.RequestServices.GetService<IAccountQueryService>();
+
     private static bool TryResolveActor(HttpContext context, out string actor)
         => EndpointAuthorization.TryResolveActor(context, out actor);
 
@@ -1384,6 +1634,27 @@ public static class ExecutionEndpoints
 
     private static bool HasExecutionTradingPermission(HttpContext context, UserPermission requiredPermission)
         => EndpointAuthorization.HasPermission(context, requiredPermission);
+
+    private static async Task<IResult?> RequireScopedFundAccountOrderAccessAsync(
+        HttpContext context,
+        Guid? fundAccountId,
+        UserPermission requiredPermission)
+    {
+        if (!fundAccountId.HasValue)
+        {
+            return null;
+        }
+
+        var decision = await EndpointAuthorization.AuthorizeScopedAsync(
+                context,
+                requiredPermission,
+                AccessScopeKindDto.Account,
+                fundAccountId.Value,
+                context.RequestAborted)
+            .ConfigureAwait(false);
+
+        return decision.IsAllowed ? null : EndpointHelpers.Forbidden();
+    }
 
     private static IResult? TryRejectClientControlledExecutionMetadata(
         OrderRequest request,
@@ -1556,12 +1827,57 @@ public sealed record CreatePaperSessionRequest(
 /// Structured result returned by every Trading write action (cancel, close, pause, etc.).
 /// Carries a correlation ID so UI and backend audit logs can be cross-referenced.
 /// </summary>
+/// <summary>
+/// Circuit-breaker activation result: the control state, plus what the coupled kill-switch sweep
+/// achieved. The two travel together so opening the breaker cannot report success over a book that
+/// still has working orders.
+/// <para>
+/// The snapshot's members are repeated at the top level rather than nested under a wrapper
+/// property, so every existing consumer of this route — the browser workstation and the WPF halt
+/// client among them — keeps deserializing the shape it already expects and simply ignores the
+/// added sweep. Nesting them would have reported "Stop did not take effect" on a breaker the server
+/// had just opened.
+/// </para>
+/// </summary>
+public sealed record ExecutionCircuitBreakerActivationResponse(
+    ExecutionCircuitBreakerState CircuitBreaker,
+    decimal? DefaultMaxPositionSize,
+    IReadOnlyDictionary<string, decimal> SymbolPositionLimits,
+    IReadOnlyList<ExecutionManualOverride> ManualOverrides,
+    DateTimeOffset AsOf,
+    long Version,
+    KillSwitchSweepResult Sweep)
+{
+    public static ExecutionCircuitBreakerActivationResponse From(
+        ExecutionControlSnapshot snapshot,
+        KillSwitchSweepResult sweep) => new(
+            snapshot.CircuitBreaker,
+            snapshot.DefaultMaxPositionSize,
+            snapshot.SymbolPositionLimits,
+            snapshot.ManualOverrides,
+            snapshot.AsOf,
+            snapshot.Version,
+            sweep);
+}
+
 public sealed record TradingActionResult(
     string ActionId,
     string Status,
     string Message,
     DateTimeOffset OccurredAt,
-    string? AuditId = null);
+    string? AuditId = null,
+    /// <summary>
+    /// Orders a kill-switch sweep could not cancel, in full. The rendered <paramref name="Message"/>
+    /// names only the first few, so this is what a caller uses to finish the job by hand.
+    /// </summary>
+    IReadOnlyList<KillSwitchSweepFailure>? StillWorking = null,
+    /// <summary>
+    /// True when the kill-switch sweep could not enumerate the broker's own open-order book and
+    /// covered only the in-memory view — the broker may hold working orders the sweep never saw,
+    /// so the broker book must be verified by hand even when <c>Status</c> reads Completed.
+    /// Null on actions that carry no sweep, and omitted when the broker view was established.
+    /// </summary>
+    bool? BrokerViewUnavailable = null);
 
 /// <summary>Request to update the global execution circuit breaker.</summary>
 public sealed record UpdateExecutionCircuitBreakerRequest(

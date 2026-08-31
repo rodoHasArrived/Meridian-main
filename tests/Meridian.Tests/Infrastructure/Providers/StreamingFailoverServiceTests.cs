@@ -14,6 +14,7 @@ public sealed class StreamingFailoverServiceTests : IDisposable
 {
     private readonly ConnectionHealthMonitor _healthMonitor;
     private readonly StreamingFailoverService _service;
+    private readonly IDisposable _transitionRegistration;
 
     private readonly FailoverRuleConfig _rule = new(
         Id: "test-rule",
@@ -29,6 +30,7 @@ public sealed class StreamingFailoverServiceTests : IDisposable
     {
         _healthMonitor = new ConnectionHealthMonitor();
         _service = new StreamingFailoverService(_healthMonitor);
+        _transitionRegistration = RegisterImmediateTransitionHandler("test-rule");
 
         _config = new DataSourcesConfig(
             EnableFailover: true,
@@ -39,6 +41,7 @@ public sealed class StreamingFailoverServiceTests : IDisposable
 
     public void Dispose()
     {
+        _transitionRegistration.Dispose();
         _service.Dispose();
         _healthMonitor.Dispose();
     }
@@ -125,6 +128,26 @@ public sealed class StreamingFailoverServiceTests : IDisposable
     }
 
     [Fact]
+    public void Start_WithAvailableBackupAsInitialProvider_AlignsCoordinatorState()
+    {
+        _service.RegisterProvider("backup1");
+
+        _service.Start(
+            _config,
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["test-rule"] = "backup1"
+            });
+
+        var rule = _service.GetRuleSnapshots().Single();
+        rule.CurrentActiveProviderId.Should().Be("backup1");
+        rule.IsInFailoverState.Should().BeTrue(
+            "starting on an available backup is already a failover posture");
+        rule.FailoverCount.Should().Be(0,
+            "startup alignment is not a runtime provider transition");
+    }
+
+    [Fact]
     public void Start_WithFailoverDisabled_DoesNotActivate()
     {
         var disabledConfig = new DataSourcesConfig(
@@ -175,6 +198,28 @@ public sealed class StreamingFailoverServiceTests : IDisposable
     }
 
     [Fact]
+    public void ForceFailover_StalePrimarySuccesses_DoNotTriggerImmediateRecovery()
+    {
+        _service.RegisterProvider("primary");
+        _service.RegisterProvider("backup1");
+        _service.Start(_config);
+        _service.RecordSuccess("primary");
+        _service.RecordSuccess("primary");
+
+        _service.ForceFailover("test-rule", "backup1").Should().BeTrue();
+        _service.RecordSuccess("backup1");
+
+        _service.GetActiveProviderId("test-rule").Should().Be("backup1",
+            "successes observed before failover are not recovery evidence for the new failover epoch");
+
+        _service.RecordSuccess("primary");
+        _service.GetActiveProviderId("test-rule").Should().Be("backup1");
+        _service.RecordSuccess("primary");
+        _service.GetActiveProviderId("test-rule").Should().Be("primary",
+            "the configured recovery threshold must be met with post-failover primary successes");
+    }
+
+    [Fact]
     public void ForceFailover_WithUnknownRule_ReturnsFalse()
     {
         _service.Start(_config);
@@ -193,6 +238,25 @@ public sealed class StreamingFailoverServiceTests : IDisposable
         var result = _service.ForceFailover("test-rule", "unknown-provider");
 
         result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Scenario_ProviderFeedInterruption_NoLiveRuntimeHandler_FailsClosedWithoutChangingCoordinatorState()
+    {
+        _service.RegisterProvider("primary");
+        _service.RegisterProvider("backup1");
+        _service.Start(_config);
+        _transitionRegistration.Dispose();
+
+        _service.ForceFailover("test-rule", "backup1").Should().BeFalse();
+        (await _service.ForceFailoverAsync("test-rule", "backup1")).Should().BeFalse();
+        _service.RecordFailure("primary", "feed interruption");
+        _service.RecordFailure("primary", "feed interruption");
+        _service.RecordFailure("primary", "feed interruption");
+
+        var rule = _service.GetRuleSnapshots().Single();
+        rule.CurrentActiveProviderId.Should().Be("primary");
+        rule.FailoverCount.Should().Be(0);
     }
 
     [Fact]
@@ -264,6 +328,7 @@ public sealed class StreamingFailoverServiceTests : IDisposable
             EnableFailover: true,
             HealthCheckIntervalSeconds: 3600,
             FailoverRules: new[] { deterministicRule });
+        using var transitionRegistration = RegisterImmediateTransitionHandler(deterministicRule.Id);
 
         _service.RegisterProvider("primary");
         _service.RegisterProvider("backup1");
@@ -292,6 +357,7 @@ public sealed class StreamingFailoverServiceTests : IDisposable
             EnableFailover: true,
             HealthCheckIntervalSeconds: 3600,
             FailoverRules: new[] { normalizedRule });
+        using var transitionRegistration = RegisterImmediateTransitionHandler(normalizedRule.Id);
 
         _service.RegisterProvider("primary");
         _service.RegisterProvider("backup1");
@@ -320,6 +386,7 @@ public sealed class StreamingFailoverServiceTests : IDisposable
             EnableFailover: true,
             HealthCheckIntervalSeconds: 3600,
             FailoverRules: new[] { latencyRule });
+        using var transitionRegistration = RegisterImmediateTransitionHandler(latencyRule.Id);
 
         _service.RegisterProvider("primary");
         _service.RegisterProvider("backup1");
@@ -385,6 +452,7 @@ public sealed class StreamingFailoverServiceTests : IDisposable
             EnableFailover: true,
             HealthCheckIntervalSeconds: 3600,
             FailoverRules: new[] { latencyRule });
+        using var transitionRegistration = RegisterImmediateTransitionHandler(latencyRule.Id);
 
         _service.RegisterProvider("primary");
         _service.RegisterProvider("backup1");
@@ -419,6 +487,7 @@ public sealed class StreamingFailoverServiceTests : IDisposable
             EnableFailover: true,
             HealthCheckIntervalSeconds: 3600,
             FailoverRules: new[] { latencyRule });
+        using var transitionRegistration = RegisterImmediateTransitionHandler(latencyRule.Id);
 
         _service.RegisterProvider("primary");
         _service.RegisterProvider("backup1");
@@ -457,4 +526,58 @@ public sealed class StreamingFailoverServiceTests : IDisposable
         snap.AverageLatencyMs.Should().BeApproximately(10.0, 0.01);
     }
 
+    [Fact]
+    public void Scenario_ProviderFeedInterruption_PendingRuntimeHandoff_DoesNotCommitCoordinatorState()
+    {
+        _service.RegisterProvider("primary");
+        _service.RegisterProvider("backup1");
+        _service.Start(_config);
+        _transitionRegistration.Dispose();
+        FailoverTransitionRequest? requested = null;
+        using var registration = _service.RegisterTransitionHandler(
+            "test-rule",
+            transition => requested = transition);
+
+        _service.ForceFailover("test-rule", "backup1").Should().BeTrue();
+
+        requested.Should().NotBeNull();
+        _service.GetActiveProviderId("test-rule").Should().Be("primary");
+        _service.GetRuleSnapshots().Single(x => x.RuleId == "test-rule")
+            .FailoverCount.Should().Be(0);
+
+        requested!.TryComplete().Should().BeTrue();
+        _service.GetActiveProviderId("test-rule").Should().Be("backup1");
+        _service.GetRuleSnapshots().Single(x => x.RuleId == "test-rule")
+            .FailoverCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Dispose_PendingTransition_CompletesDefaultTokenWaiterAsRejected()
+    {
+        _service.RegisterProvider("primary");
+        _service.RegisterProvider("backup1");
+        _service.Start(_config);
+        _transitionRegistration.Dispose();
+        FailoverTransitionRequest? requested = null;
+        using var registration = _service.RegisterTransitionHandler(
+            "test-rule",
+            transition => requested = transition);
+
+        var transitionTask = _service.ForceFailoverAsync("test-rule", "backup1");
+        requested.Should().NotBeNull();
+        transitionTask.IsCompleted.Should().BeFalse();
+
+        _service.Dispose();
+
+        (await transitionTask.WaitAsync(TimeSpan.FromSeconds(2))).Should().BeFalse();
+        requested!.CancellationToken.IsCancellationRequested.Should().BeTrue();
+        requested!.TryComplete().Should().BeFalse();
+        _service.GetActiveProviderId("test-rule").Should().Be("primary");
+        _service.ForceFailover("test-rule", "backup1").Should().BeFalse();
+    }
+
+    private IDisposable RegisterImmediateTransitionHandler(string ruleId)
+        => _service.RegisterTransitionHandler(
+            ruleId,
+            static transition => transition.TryComplete());
 }

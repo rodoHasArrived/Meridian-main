@@ -1,20 +1,20 @@
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Storage.Ledger;
+using Meridian.TestSupport;
 using Npgsql;
-using Testcontainers.PostgreSql;
 
 namespace Meridian.Tests.Storage;
 
 internal sealed class LedgerPostgresTestDatabase : IAsyncDisposable
 {
     private const string ConnectionStringVariable = "MERIDIAN_LEDGER_CONNECTION_STRING";
-    private readonly PostgreSqlContainer? _container;
+    private readonly PostgresTestServer _server;
 
     private LedgerPostgresTestDatabase(
-        PostgreSqlContainer? container,
+        PostgresTestServer server,
         LedgerJournalStoreOptions options)
     {
-        _container = container;
+        _server = server;
         Options = options;
         StatusDerivation = new OperationsStatusDerivationService();
         JournalStore = new PostgresLedgerJournalStore(options);
@@ -37,35 +37,15 @@ internal sealed class LedgerPostgresTestDatabase : IAsyncDisposable
 
     public static async Task<LedgerPostgresTestDatabase> CreateAsync(CancellationToken ct = default)
     {
-        var externalConnectionString = Environment.GetEnvironmentVariable(ConnectionStringVariable);
-        PostgreSqlContainer? container = null;
-        LedgerJournalStoreOptions options;
-
-        if (!string.IsNullOrWhiteSpace(externalConnectionString))
+        var server = await PostgresTestServer.CreateAsync(ConnectionStringVariable, ct: ct)
+            .ConfigureAwait(false);
+        var options = new LedgerJournalStoreOptions
         {
-            options = new LedgerJournalStoreOptions
-            {
-                ConnectionString = externalConnectionString,
-                SchemaName = NewSchemaName()
-            };
-        }
-        else
-        {
-            container = new PostgreSqlBuilder("postgres:16-alpine")
-                .WithDatabase("meridian_test")
-                .WithUsername("testuser")
-                .WithPassword("testpass")
-                .Build();
+            ConnectionString = server.ConnectionString,
+            SchemaName = server.CreateSchemaName("ledger")
+        };
 
-            await container.StartAsync(ct).ConfigureAwait(false);
-            options = new LedgerJournalStoreOptions
-            {
-                ConnectionString = container.GetConnectionString(),
-                SchemaName = NewSchemaName()
-            };
-        }
-
-        var database = new LedgerPostgresTestDatabase(container, options);
+        var database = new LedgerPostgresTestDatabase(server, options);
         try
         {
             var runner = new LedgerMigrationRunner(options);
@@ -133,42 +113,6 @@ internal sealed class LedgerPostgresTestDatabase : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (_container is null)
-        {
-            await DropSchemaAsync().ConfigureAwait(false);
-            return;
-        }
-
-        await _container.DisposeAsync().ConfigureAwait(false);
-    }
-
-    private async Task DropSchemaAsync()
-    {
-        await using var connection = new NpgsqlConnection(Options.ConnectionString);
-        await connection.OpenAsync().ConfigureAwait(false);
-
-        await using var command = connection.CreateCommand();
-        command.CommandText = $"drop schema if exists {ValidateIdentifier(Options.SchemaName)} cascade;";
-        await command.ExecuteNonQueryAsync().ConfigureAwait(false);
-    }
-
-    private static string NewSchemaName() => $"ledger_test_{Guid.NewGuid():N}";
-
-    private static string ValidateIdentifier(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new InvalidOperationException("Schema name is required.");
-        }
-
-        foreach (var c in value)
-        {
-            if (!(char.IsAsciiLetterOrDigit(c) || c == '_'))
-            {
-                throw new InvalidOperationException("Schema name contains an invalid identifier character.");
-            }
-        }
-
-        return value;
+        await _server.DisposeAsync().ConfigureAwait(false);
     }
 }

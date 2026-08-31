@@ -1,16 +1,25 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ReportingHub } from "@/components/meridian/reporting-hub";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { buildReportingHubModel } from "@/lib/reporting-hub";
+import { formatReportingFamilyLabel } from "@/lib/reporting-hub";
+import {
+  normalizeReportingWorkspace,
+  type ReportingWorkspacePayload
+} from "@/lib/reporting-workspace";
 import { workstationRouteWithQuery } from "@/lib/workspace";
-import { buildRunStatusRows, buildTemplateRows, type ReportingRunStatusRow, type ReportingTemplateRow } from "@/screens/reporting-screen.view-model";
-import type { AccountingWorkspaceResponse } from "@/types";
+import {
+  buildRunStatusRows,
+  buildTemplateRows,
+  presentReportingAsOfDate,
+  presentReportingStatusLabel,
+  type ReportingRunStatusRow,
+  type ReportingTemplateRow
+} from "@/screens/reporting-screen.view-model";
 
 interface ReportLibraryScreenProps {
-  data: AccountingWorkspaceResponse | null;
+  data: ReportingWorkspacePayload | null;
 }
 
 const standardReportCategories = [
@@ -116,29 +125,13 @@ const standardReportCatalog = [
 ];
 
 export function ReportLibraryScreen({ data }: ReportLibraryScreenProps) {
-  const reporting = data?.reporting ?? null;
+  const reporting = normalizeReportingWorkspace(data);
   const templateRows = useMemo(() => buildTemplateRows(reporting?.templates ?? []), [reporting?.templates]);
-  const runStatusRows = useMemo(() => buildRunStatusRows(reporting?.recentRuns ?? []), [reporting?.recentRuns]);
-  const hubModel = useMemo(
-    () => buildReportingHubModel(runStatusRows, templateRows, reporting?.dailyWork ?? []),
-    [runStatusRows, templateRows, reporting?.dailyWork]
+  const runStatusRows = useMemo(
+    () => buildRunStatusRows(reporting?.recentRuns ?? [], reporting?.templates ?? []),
+    [reporting?.recentRuns, reporting?.templates]
   );
-
-  const templatesByFamily = useMemo(() => {
-    const groups = new Map<string, typeof templateRows>();
-    for (const template of templateRows) {
-      const family = template.family.trim() || "Uncategorized";
-      const bucket = groups.get(family);
-      if (bucket) {
-        bucket.push(template);
-      } else {
-        groups.set(family, [template]);
-      }
-    }
-    return groups;
-  }, [templateRows]);
-
-  if (!data) {
+  if (!reporting) {
     return (
       <Card
         className="panel-surface"
@@ -159,21 +152,71 @@ export function ReportLibraryScreen({ data }: ReportLibraryScreenProps) {
     <div className="space-y-4">
       <Card className="panel-surface">
         <CardHeader>
-          <CardTitle>Report Library</CardTitle>
-          <CardDescription>Select a standard Finance report, then configure its parameters before preview, validation, run, and release.</CardDescription>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <CardTitle>Report Library</CardTitle>
+              <CardDescription className="mt-1">Choose an available governed template, or browse the standard catalog when a new report family needs setup.</CardDescription>
+            </div>
+            <Badge variant={templateRows.length > 0 ? "success" : "warning"}>
+              {templateRows.length} available template{templateRows.length === 1 ? "" : "s"}
+            </Badge>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-2" aria-label="Report categories">
-            {standardReportCategories.map((category) => (
-              <Badge key={category} variant="outline">{category}</Badge>
-            ))}
-          </div>
-          <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" aria-label="Standard report catalog">
-            {standardReportCatalog.map((report) => {
-              const template = findTemplateForStandardReport(report, templateRows);
-              const lastRun = findLastRunLabel(report, runStatusRows);
-              return (
-                <article key={report.name} className="rounded-md border border-border/70 bg-secondary/15 p-3">
+          {templateRows.length > 0 ? (
+            <section aria-label="Available report templates" className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {templateRows.map((template) => {
+                const latestRun = runStatusRows.find((run) => run.templateId === template.templateName || run.templateId === template.id);
+                return (
+                  <article key={template.id} className="rounded-md border border-border/70 bg-secondary/15 p-3">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-semibold text-foreground">{template.name}</h3>
+                        <p className="mt-1 text-xs text-muted-foreground">{formatReportingFamilyLabel(template.family)}</p>
+                      </div>
+                      <Badge variant={template.canRunOnDemand ? "success" : "warning"}>{template.statusLabel}</Badge>
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-muted-foreground">{template.approvalSummary}</p>
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground">
+                        {latestRun
+                          ? `Latest: ${presentReportingStatusLabel(latestRun.status)} · ${presentReportingAsOfDate(latestRun.asOfDateLabel)}`
+                          : "No retained run"}
+                      </span>
+                      <Button asChild size="sm" variant={template.canRunOnDemand ? "default" : "outline"}>
+                        <Link to={workstationRouteWithQuery(template.canRunOnDemand ? "reportingRunParameters" : "reportingReportBuilder", { templateId: template.id })}>
+                          {template.canRunOnDemand ? `Run ${template.name}` : `Review ${template.name}`}
+                        </Link>
+                      </Button>
+                    </div>
+                  </article>
+                );
+              })}
+            </section>
+          ) : (
+            <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-3 text-sm text-warning">
+              No governed templates are available. Browse the standard catalog to choose the report family to configure.
+            </p>
+          )}
+
+          <details className="rounded-md border border-border/70 bg-background/50">
+            <summary className="flex cursor-pointer items-center justify-between gap-3 px-3 py-3 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+              Browse standard report catalog
+              <Badge variant="outline">{standardReportCatalog.length} reports</Badge>
+            </summary>
+            <div className="space-y-4 border-t border-border/70 px-3 py-3">
+              <div className="flex flex-wrap gap-2" aria-label="Report categories">
+                {standardReportCategories.map((category) => (
+                  <Badge key={category} variant="outline">{category}</Badge>
+                ))}
+              </div>
+              <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" aria-label="Standard report catalog">
+                {standardReportCatalog.map((report) => {
+                  const template = findTemplateForStandardReport(report, templateRows);
+                  const lastRun = findLastRunLabel(report, runStatusRows);
+                  const canRunTemplate = Boolean(template?.canRunOnDemand);
+                  return (
+                    <article key={report.name} className="rounded-md border border-border/70 bg-secondary/15 p-3">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <h3 className="text-sm font-semibold text-foreground">{report.name}</h3>
@@ -188,49 +231,30 @@ export function ReportLibraryScreen({ data }: ReportLibraryScreenProps) {
                     <ReportLibraryFact label="Owner" value={report.owner} />
                   </dl>
                   <div className="mt-3">
-                    <Button asChild key={template?.id ?? report.name} size="sm" variant={template ? "default" : "outline"}>
+                    <Button asChild key={template?.id ?? report.name} size="sm" variant={canRunTemplate ? "default" : "outline"}>
                       <Link
-                        to={template
+                        to={canRunTemplate && template
                           ? workstationRouteWithQuery("reportingRunParameters", { templateId: template.id })
-                          : workstationRouteWithQuery("reportingRunParameters", { report: report.name })}
+                          : workstationRouteWithQuery("reportingReportBuilder", template
+                            ? { templateId: template.id }
+                            : { report: report.name })}
                       >
-                        {template ? `Run ${template.name}` : `Set up ${report.name}`}
+                        {canRunTemplate && template
+                          ? `Run ${template.name}`
+                          : template
+                            ? `Review ${template.name}`
+                            : `Set up ${report.name}`}
                       </Link>
                     </Button>
                   </div>
-                </article>
-              );
-            })}
-          </section>
+                    </article>
+                  );
+                })}
+              </section>
+            </div>
+          </details>
         </CardContent>
       </Card>
-
-      <ReportingHub model={hubModel} />
-
-      {templatesByFamily.size > 0 ? (
-        <Card className="panel-surface">
-          <CardHeader>
-            <CardTitle>Run a report</CardTitle>
-            <CardDescription>Pick a template to open the guided parameters and readiness flow.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {Array.from(templatesByFamily.entries()).map(([family, templates]) => (
-              <div key={family}>
-                <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{family}</h3>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {templates.map((template) => (
-                    <Button asChild key={template.id} size="sm" variant="outline">
-                      <Link to={workstationRouteWithQuery("reportingRunParameters", { templateId: template.id })}>
-                        Run {template.name}
-                      </Link>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      ) : null}
     </div>
   );
 }
@@ -238,7 +262,7 @@ export function ReportLibraryScreen({ data }: ReportLibraryScreenProps) {
 function ReportLibraryFact({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid gap-1">
-      <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</dt>
+      <dt className="font-mono text-xs font-medium text-muted-foreground">{label}</dt>
       <dd className="text-foreground">{value}</dd>
     </div>
   );
@@ -264,7 +288,9 @@ function findLastRunLabel(
     const haystack = normalizeReportText(`${run.templateLabel} ${run.templateId} ${run.family}`);
     return terms.some((term) => term.length > 0 && haystack.includes(term));
   });
-  return match ? `${match.status} (${match.asOfDateLabel})` : "No retained run";
+  return match
+    ? `${presentReportingStatusLabel(match.status)} (${presentReportingAsOfDate(match.asOfDateLabel)})`
+    : "No retained run";
 }
 
 function normalizeReportText(value: string | null | undefined): string {

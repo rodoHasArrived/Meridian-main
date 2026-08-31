@@ -1,15 +1,25 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getOperatorInbox, type ApiRequestOptions } from "@/lib/api";
-import { formatCurrency } from "@/lib/format";
+import { getOperatorInbox, getTradingReadiness, type ApiRequestOptions } from "@/lib/api";
+import { formatCurrency, pluralizeCount } from "@/lib/format";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { countPendingReportPackDistributions, getReportPackDistributions } from "@/lib/reporting-distributions";
+import {
+  normalizeReportingWorkspace,
+  type ReportingWorkspacePayload
+} from "@/lib/reporting-workspace";
 import { normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
+import {
+  formatReadinessUtcMinute,
+  levelFromReadiness,
+  levelFromTone,
+  toErrorMessage
+} from "@/screens/operator-readiness-console.presentation";
 import type {
   DataProviderRecord,
   DataWorkspaceResponse,
   AccountingWorkspaceResponse,
-  ReportingWorkspaceResponse,
+  AccountingReportingSummary,
   MetricSnapshot,
   OperatorInbox,
   OperatorWorkItem,
@@ -192,11 +202,14 @@ export interface BuildOperatorReadinessConsoleStateOptions {
   trading: TradingWorkspaceResponse | null;
   data: DataWorkspaceResponse | null;
   accounting: AccountingWorkspaceResponse | null;
-  reporting?: ReportingWorkspaceResponse | null;
+  reporting?: ReportingWorkspacePayload | null;
   fundAccountId?: string | null;
   operatorInbox: OperatorInbox | null;
   inboxLoading: boolean;
   inboxError: string | null;
+  tradingReadiness?: TradingOperatorReadiness | null | undefined;
+  readinessLoading?: boolean;
+  readinessError?: string | null;
   selectedWorkItemId?: string | null;
   selectedPanelRowIds?: Partial<Record<ReadinessConsolePanelId, string>>;
   selectWorkItem?: (id: string) => void;
@@ -206,27 +219,40 @@ export interface BuildOperatorReadinessConsoleStateOptions {
 
 export interface OperatorReadinessConsoleServices {
   getOperatorInbox: (fundAccountId?: string, options?: ApiRequestOptions) => Promise<OperatorInbox>;
+  // Nullable to match both the API layer and the state this feeds: `tradingReadiness` is already
+  // declared and stored as `TradingOperatorReadiness | null | undefined`, and the selector below
+  // already folds null. Only this seam claimed the readiness is always present.
+  getTradingReadiness?: (options?: ApiRequestOptions & { fundAccountId?: string }) => Promise<TradingOperatorReadiness | null>;
 }
 
 const defaultServices: OperatorReadinessConsoleServices = {
-  getOperatorInbox: (fundAccountId?: string, options?: ApiRequestOptions) => getOperatorInbox(fundAccountId, options)
+  getOperatorInbox: (fundAccountId?: string, options?: ApiRequestOptions) => getOperatorInbox(fundAccountId, options),
+  getTradingReadiness: (options?: ApiRequestOptions & { fundAccountId?: string }) => getTradingReadiness(options)
 };
 
 const REPORT_PACKS_ROUTE = WORKSTATION_ROUTE_CATALOG.reportingReportPacks;
 const PROVIDER_SETUP_ROUTE = WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup;
 
 export function useOperatorReadinessConsoleViewModel(
-  payload: Omit<BuildOperatorReadinessConsoleStateOptions, "operatorInbox" | "inboxLoading" | "inboxError">,
+  payload: Omit<
+    BuildOperatorReadinessConsoleStateOptions,
+    "operatorInbox" | "inboxLoading" | "inboxError" | "tradingReadiness" | "readinessLoading" | "readinessError"
+  >,
   services: OperatorReadinessConsoleServices = defaultServices
 ): ReadinessConsoleState {
   const [operatorInbox, setOperatorInbox] = useState<OperatorInbox | null>(null);
   const [inboxLoading, setInboxLoading] = useState(true);
   const [inboxError, setInboxError] = useState<string | null>(null);
+  const [tradingReadiness, setTradingReadiness] = useState<TradingOperatorReadiness | null | undefined>(undefined);
+  const [readinessLoading, setReadinessLoading] = useState(true);
+  const [readinessError, setReadinessError] = useState<string | null>(null);
   const [selectedWorkItemId, setSelectedWorkItemId] = useState<string | null>(null);
   const [selectedPanelRowIds, setSelectedPanelRowIds] = useState<Partial<Record<ReadinessConsolePanelId, string>>>({});
   const mountedRef = useRef(true);
   const refreshRevisionRef = useRef(0);
+  const readinessRevisionRef = useRef(0);
   const inboxAbortRef = useRef<AbortController | null>(null);
+  const readinessAbortRef = useRef<AbortController | null>(null);
 
   const activeFundAccountId = normalizeFundAccountGuid(payload.fundAccountId)
     ?? payload.trading?.readiness?.brokerageSync?.fundAccountId;
@@ -246,7 +272,9 @@ export function useOperatorReadinessConsoleViewModel(
     return () => {
       mountedRef.current = false;
       refreshRevisionRef.current += 1;
+      readinessRevisionRef.current += 1;
       inboxAbortRef.current?.abort();
+      readinessAbortRef.current?.abort();
     };
   }, []);
 
@@ -292,19 +320,85 @@ export function useOperatorReadinessConsoleViewModel(
     void refreshInbox();
   }, [refreshInbox]);
 
+  const refreshReadiness = useCallback(async () => {
+    if (!mountedRef.current) {
+      return;
+    }
+
+    const loadTradingReadiness = services.getTradingReadiness;
+    if (!loadTradingReadiness) {
+      setReadinessLoading(false);
+      return;
+    }
+
+    const revision = readinessRevisionRef.current + 1;
+    readinessRevisionRef.current = revision;
+    readinessAbortRef.current?.abort();
+    const controller = new AbortController();
+    readinessAbortRef.current = controller;
+    setReadinessLoading(true);
+    setReadinessError(null);
+    setTradingReadiness(undefined);
+
+    try {
+      const readiness = await loadTradingReadiness({
+        signal: controller.signal,
+        fundAccountId: activeFundAccountId
+      });
+      if (!mountedRef.current || readinessRevisionRef.current !== revision) {
+        return;
+      }
+
+      setTradingReadiness(readiness ?? null);
+    } catch (err) {
+      if (!mountedRef.current || readinessRevisionRef.current !== revision) {
+        return;
+      }
+
+      setReadinessError(toErrorMessage(err, "Trading readiness failed to load."));
+    } finally {
+      if (mountedRef.current && readinessRevisionRef.current === revision) {
+        if (readinessAbortRef.current === controller) {
+          readinessAbortRef.current = null;
+        }
+        setReadinessLoading(false);
+      }
+    }
+  }, [activeFundAccountId, services]);
+
+  useEffect(() => {
+    void refreshReadiness();
+  }, [refreshReadiness]);
+
   return useMemo(
     () => buildOperatorReadinessConsoleState({
       ...payload,
       operatorInbox,
       inboxLoading,
       inboxError,
+      tradingReadiness,
+      readinessLoading,
+      readinessError,
       selectedWorkItemId,
       selectedPanelRowIds,
       selectWorkItem,
       selectPanelRow,
       refreshInbox
     }),
-    [inboxError, inboxLoading, operatorInbox, payload, selectedPanelRowIds, selectedWorkItemId, selectPanelRow, selectWorkItem, refreshInbox]
+    [
+      inboxError,
+      inboxLoading,
+      operatorInbox,
+      payload,
+      readinessError,
+      readinessLoading,
+      selectedPanelRowIds,
+      selectedWorkItemId,
+      selectPanelRow,
+      selectWorkItem,
+      tradingReadiness,
+      refreshInbox
+    ]
   );
 }
 
@@ -317,13 +411,17 @@ export function buildOperatorReadinessConsoleState({
   operatorInbox,
   inboxLoading,
   inboxError,
+  tradingReadiness,
+  readinessLoading,
+  readinessError,
   selectedWorkItemId,
   selectedPanelRowIds,
   selectWorkItem,
   selectPanelRow,
   refreshInbox
 }: BuildOperatorReadinessConsoleStateOptions): ReadinessConsoleState {
-  const readiness = trading?.readiness ?? null;
+  const readiness = tradingReadiness === undefined ? trading?.readiness ?? null : tradingReadiness;
+  const reportingSummary = normalizeReportingWorkspace(reporting);
   const workItems = mergeOperatorWorkItems(operatorInbox?.items ?? [], readiness?.workItems ?? []);
   const latestRuns = withRowPresentation(buildLatestRunRows(strategy?.runs ?? []), "latest-runs");
   const activeSessionFacts = withRowPresentation(buildActiveSessionFacts(readiness), "active-session");
@@ -331,7 +429,7 @@ export function buildOperatorReadinessConsoleState({
   const reconciliationRows = withRowPresentation(buildReconciliationRows(accounting), "reconciliation");
   const promotionRows = withRowPresentation(buildPromotionRows(readiness, workItems), "promotion");
   const prioritizedWorkItems = prioritizeWorkItems(workItems);
-  const reportPackFacts = withRowPresentation(buildReportPackFacts(reporting ?? accounting), "report-pack");
+  const reportPackFacts = withRowPresentation(buildReportPackFacts(reportingSummary), "report-pack");
   const checkpointGates = withRowPresentation(buildCockpitGateRows({
     readiness,
     providerTrustRows,
@@ -356,7 +454,7 @@ export function buildOperatorReadinessConsoleState({
     providerTrustRows,
     reconciliationRows,
     promotionRows,
-    reporting: reporting ?? accounting
+    reporting: reportingSummary
   }));
   const overallLevel = determineOverallLevel({
     readiness,
@@ -367,7 +465,11 @@ export function buildOperatorReadinessConsoleState({
   });
   const readinessStatusLabel = readiness
     ? formatReadinessStatusValue(readiness.overallStatus)
-    : "Awaiting readiness payload";
+    : readinessLoading
+      ? "Loading readiness"
+      : readinessError
+        ? "Readiness unavailable"
+        : "No readiness data";
   const overallLabel = formatEffectiveOverallLabel(readinessStatusLabel, overallLevel);
   const asOf = formatReadinessUtcMinute(operatorInbox?.asOf ?? readiness?.asOf ?? null, "Unavailable");
 
@@ -401,10 +503,10 @@ export function buildOperatorReadinessConsoleState({
     metricsLabel: "Operator readiness metrics",
     apiSources: withApiSourcePresentation(buildApiSources({
       strategy,
-      trading,
+      readiness,
       data,
       accounting,
-      reporting,
+      reporting: reportingSummary,
       operatorInbox,
       inboxLoading,
       inboxError
@@ -678,15 +780,17 @@ function buildProviderTrustRows(
   const rows: ReadinessConsoleRowBase[] = [];
   const trustGate = readiness?.trustGate ?? null;
   if (trustGate) {
+    const blockers = trustGate.blockers ?? [];
+    const signoffStatus = trustGate.operatorSignoffStatus ?? "";
     rows.push({
       id: "dk1-trust-gate",
       label: "DK1 provider trust",
       value: trustGate.status,
-      detail: trustGate.detail,
-       meta: `${trustGate.readySampleCount}/${trustGate.requiredSampleCount} samples ready · ${trustGate.validatedEvidenceDocumentCount} evidence documents`,
-      level: trustGate.blockers.length > 0
+      detail: trustGate.detail || "Provider trust evidence is available for operator review.",
+      meta: `${trustGate.readySampleCount}/${trustGate.requiredSampleCount} samples ready · ${trustGate.validatedEvidenceDocumentCount ?? 0} evidence documents`,
+      level: blockers.length > 0
         ? "blocked"
-        : trustGate.operatorSignoffStatus.toLowerCase().includes("signed")
+        : signoffStatus.toLowerCase().includes("signed")
           ? "ready"
           : "review"
     });
@@ -708,7 +812,11 @@ function buildProviderTrustRows(
         provider.signalSource,
         provider.gateImpact
       ].filter(Boolean).join(" · ") || provider.capability,
-      level: provider.status === "Healthy" ? "ready" : provider.status === "Degraded" ? "blocked" : "review"
+      level: provider.status === "Healthy"
+        ? "ready"
+        : provider.status === "Degraded" || provider.status === "Blocked"
+          ? "blocked"
+          : "review"
     });
   });
 
@@ -805,15 +913,15 @@ function buildAcceptanceGateRow(gate: TradingAcceptanceGate): ReadinessConsoleRo
   };
 }
 
-function buildReportPackFacts(reportingPayload: ReportingWorkspaceResponse | null): ReadinessConsoleRowBase[] {
-  const reporting = reportingPayload?.reporting ?? null;
+function buildReportPackFacts(reportingPayload: AccountingReportingSummary | null): ReadinessConsoleRowBase[] {
+  const reporting = reportingPayload;
   if (!reporting) {
     return [{
       id: "report-pack",
       label: "Report-pack readiness",
       value: "Unavailable",
       detail: "Reporting payload has not loaded.",
-      meta: "Wait for Accounting/Reporting bootstrap recovery.",
+      meta: "Wait for the Reporting capability and durability checks to recover.",
       level: "review"
     }];
   }
@@ -1543,7 +1651,7 @@ function timestampPriority(value: string): number {
 }
 
 function formatCount(count: number, singular: string): string {
-  return `${count} ${count === 1 ? singular : `${singular}s`}`;
+  return pluralizeCount(count, singular);
 }
 
 function buildMetrics({
@@ -1559,11 +1667,11 @@ function buildMetrics({
   providerTrustRows: ReadinessConsoleRow[];
   reconciliationRows: ReadinessConsoleRow[];
   promotionRows: ReadinessConsoleRow[];
-  reporting: ReportingWorkspaceResponse | null;
+  reporting: AccountingReportingSummary | null;
 }): ReadinessConsoleMetricBase[] {
   const activeSession = readiness?.activeSession;
-  const reportDistributions = getReportPackDistributions(reporting?.reporting);
-  const pendingReportDistributions = countPendingReportPackDistributions(reporting?.reporting);
+  const reportDistributions = getReportPackDistributions(reporting);
+  const pendingReportDistributions = countPendingReportPackDistributions(reporting);
 
   return [
     {
@@ -1619,7 +1727,7 @@ function buildMetrics({
 
 function buildApiSources({
   strategy,
-  trading,
+  readiness,
   data,
   accounting,
   reporting,
@@ -1628,10 +1736,10 @@ function buildApiSources({
   inboxError
 }: {
   strategy: StrategyWorkspaceResponse | null;
-  trading: TradingWorkspaceResponse | null;
+  readiness: TradingOperatorReadiness | null;
   data: DataWorkspaceResponse | null;
   accounting: AccountingWorkspaceResponse | null;
-  reporting?: ReportingWorkspaceResponse | null;
+  reporting?: AccountingReportingSummary | null;
   operatorInbox: OperatorInbox | null;
   inboxLoading: boolean;
   inboxError: string | null;
@@ -1641,8 +1749,8 @@ function buildApiSources({
       id: "trading-readiness",
       label: "Trading readiness",
       endpoint: WORKSTATION_API_ENDPOINTS.tradingReadiness,
-      status: trading?.readiness ? formatReadinessStatusValue(trading.readiness.overallStatus) : "Unavailable",
-      level: trading?.readiness ? levelFromReadiness(trading.readiness.overallStatus) : "review"
+      status: readiness ? formatReadinessStatusValue(readiness.overallStatus) : "Unavailable",
+      level: readiness ? levelFromReadiness(readiness.overallStatus) : "review"
     },
     {
       id: "operator-inbox",
@@ -1676,8 +1784,8 @@ function buildApiSources({
       id: "reporting",
       label: "Reporting",
       endpoint: WORKSTATION_API_ENDPOINTS.reporting,
-      status: reporting ? `${reporting.reporting.profileCount} report profiles` : "Unavailable",
-      level: reporting ? "ready" : "review"
+      status: reporting ? `${reporting.profileCount} report profiles` : "Unavailable",
+      level: reporting?.deploymentCapability?.isReady === true ? "ready" : "review"
     }
   ];
 }
@@ -1883,59 +1991,4 @@ function buildMissingReadinessDetail(
 function hasCriticalOperatorInbox(operatorInbox: OperatorInbox | null): boolean {
   return (operatorInbox?.criticalCount ?? 0) > 0 ||
     operatorInbox?.items.some((item) => item.tone === "Critical") === true;
-}
-
-function levelFromReadiness(status: string): ReadinessConsoleLevel {
-  if (status === "Ready") {
-    return "ready";
-  }
-
-  if (status === "Blocked") {
-    return "blocked";
-  }
-
-  return "review";
-}
-
-function levelFromTone(tone: string): ReadinessConsoleLevel {
-  if (tone === "Success") {
-    return "ready";
-  }
-
-  if (tone === "Critical") {
-    return "blocked";
-  }
-
-  if (tone === "Warning") {
-    return "review";
-  }
-
-  return "neutral";
-}
-
-function formatReadinessUtcMinute(value: string | null | undefined, fallback: string): string {
-  if (!value) {
-    return fallback;
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return fallback;
-  }
-
-  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
-}
-
-function padUtc(value: number): string {
-  return String(value).padStart(2, "0");
-}
-
-const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-function toErrorMessage(err: unknown, fallback: string): string {
-  if (err instanceof Error && err.message.trim()) {
-    return err.message;
-  }
-
-  return fallback;
 }

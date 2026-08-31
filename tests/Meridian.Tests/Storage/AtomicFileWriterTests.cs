@@ -2,39 +2,18 @@ using System.Security.Cryptography;
 using System.Text;
 using FluentAssertions;
 using Meridian.Storage.Archival;
+using Meridian.Tests.Infrastructure;
 using Xunit;
 
 namespace Meridian.Tests.Storage;
 
-public sealed class AtomicFileWriterTests : IDisposable
+public sealed class AtomicFileWriterTests : TempDirectoryTestBase
 {
-    private readonly string _testRoot;
-
-    public AtomicFileWriterTests()
-    {
-        _testRoot = Path.Combine(Path.GetTempPath(), $"mdc_atomic_test_{Guid.NewGuid():N}");
-        Directory.CreateDirectory(_testRoot);
-    }
-
-    public void Dispose()
-    {
-        for (var attempt = 0; attempt < 5; attempt++)
-        {
-            try
-            {
-                if (Directory.Exists(_testRoot))
-                    Directory.Delete(_testRoot, recursive: true);
-                return;
-            }
-            catch (IOException) when (attempt < 4) { Thread.Sleep(10); }
-            catch (UnauthorizedAccessException) when (attempt < 4) { Thread.Sleep(10); }
-        }
-    }
 
     [Fact]
     public async Task WriteAsync_String_CreatesFile()
     {
-        var path = Path.Combine(_testRoot, "test.txt");
+        var path = Path.Combine(TestDataRoot, "test.txt");
 
         await AtomicFileWriter.WriteAsync(path, "hello world");
 
@@ -45,7 +24,7 @@ public sealed class AtomicFileWriterTests : IDisposable
     [Fact]
     public async Task WriteAsync_String_OverwritesExistingFile()
     {
-        var path = Path.Combine(_testRoot, "overwrite.txt");
+        var path = Path.Combine(TestDataRoot, "overwrite.txt");
         await File.WriteAllTextAsync(path, "original");
 
         await AtomicFileWriter.WriteAsync(path, "updated");
@@ -61,7 +40,7 @@ public sealed class AtomicFileWriterTests : IDisposable
             return;
         }
 
-        var path = Path.Combine(_testRoot, "permissions.txt");
+        var path = Path.Combine(TestDataRoot, "permissions.txt");
         await File.WriteAllTextAsync(path, "original");
         File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
 
@@ -74,7 +53,7 @@ public sealed class AtomicFileWriterTests : IDisposable
     [Fact]
     public async Task WriteAsync_String_CreatesDirectoryIfNeeded()
     {
-        var path = Path.Combine(_testRoot, "sub", "dir", "test.txt");
+        var path = Path.Combine(TestDataRoot, "sub", "dir", "test.txt");
 
         await AtomicFileWriter.WriteAsync(path, "nested");
 
@@ -84,18 +63,18 @@ public sealed class AtomicFileWriterTests : IDisposable
     [Fact]
     public async Task WriteAsync_String_DoesNotLeaveTemporaryFiles()
     {
-        var path = Path.Combine(_testRoot, "clean.txt");
+        var path = Path.Combine(TestDataRoot, "clean.txt");
 
         await AtomicFileWriter.WriteAsync(path, "data");
 
-        var tmpFiles = Directory.GetFiles(_testRoot, "*.tmp");
+        var tmpFiles = Directory.GetFiles(TestDataRoot, "*.tmp");
         tmpFiles.Should().BeEmpty("atomic write should clean up temp files");
     }
 
     [Fact]
     public async Task WriteAsync_Bytes_WritesCorrectContent()
     {
-        var path = Path.Combine(_testRoot, "binary.bin");
+        var path = Path.Combine(TestDataRoot, "binary.bin");
         var content = new byte[] { 0x01, 0x02, 0x03, 0xFF, 0xFE };
 
         await AtomicFileWriter.WriteAsync(path, content);
@@ -107,7 +86,7 @@ public sealed class AtomicFileWriterTests : IDisposable
     [Fact]
     public async Task WriteAsync_StreamWriter_ExecutesWriteAction()
     {
-        var path = Path.Combine(_testRoot, "stream.txt");
+        var path = Path.Combine(TestDataRoot, "stream.txt");
 
         await AtomicFileWriter.WriteAsync(path, async writer =>
         {
@@ -124,7 +103,7 @@ public sealed class AtomicFileWriterTests : IDisposable
     [Fact]
     public async Task AppendLinesAsync_PreservesExistingContent_AndAddsNewLines()
     {
-        var path = Path.Combine(_testRoot, "append.txt");
+        var path = Path.Combine(TestDataRoot, "append.txt");
         await File.WriteAllLinesAsync(path, ["first", "second"]);
 
         await AtomicFileWriter.AppendLinesAsync(path, ["third", "fourth"]);
@@ -136,7 +115,7 @@ public sealed class AtomicFileWriterTests : IDisposable
     [Fact]
     public async Task WriteWithChecksumAsync_CreatesChecksumSidecar()
     {
-        var path = Path.Combine(_testRoot, "checksummed.bin");
+        var path = Path.Combine(TestDataRoot, "checksummed.bin");
         var content = Encoding.UTF8.GetBytes("test content for checksum");
 
         var checksum = await AtomicFileWriter.WriteWithChecksumAsync(path, content);
@@ -148,7 +127,7 @@ public sealed class AtomicFileWriterTests : IDisposable
     [Fact]
     public async Task WriteWithChecksumAsync_ChecksumMatchesSHA256()
     {
-        var path = Path.Combine(_testRoot, "verify_checksum.bin");
+        var path = Path.Combine(TestDataRoot, "verify_checksum.bin");
         var content = Encoding.UTF8.GetBytes("verify me");
 
         var expectedChecksum = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
@@ -160,7 +139,7 @@ public sealed class AtomicFileWriterTests : IDisposable
     [Fact]
     public async Task VerifyChecksumAsync_ReturnsTrueForValidFile()
     {
-        var path = Path.Combine(_testRoot, "valid.bin");
+        var path = Path.Combine(TestDataRoot, "valid.bin");
         var content = Encoding.UTF8.GetBytes("valid data");
 
         await AtomicFileWriter.WriteWithChecksumAsync(path, content);
@@ -173,7 +152,7 @@ public sealed class AtomicFileWriterTests : IDisposable
     [Fact]
     public async Task VerifyChecksumAsync_ReturnsFalseForTamperedFile()
     {
-        var path = Path.Combine(_testRoot, "tampered.bin");
+        var path = Path.Combine(TestDataRoot, "tampered.bin");
         var content = Encoding.UTF8.GetBytes("original data");
 
         await AtomicFileWriter.WriteWithChecksumAsync(path, content);
@@ -189,7 +168,7 @@ public sealed class AtomicFileWriterTests : IDisposable
     [Fact]
     public async Task VerifyChecksumAsync_ReturnsFalseWhenNoSidecarExists()
     {
-        var path = Path.Combine(_testRoot, "no_sidecar.bin");
+        var path = Path.Combine(TestDataRoot, "no_sidecar.bin");
         await File.WriteAllTextAsync(path, "some data");
 
         var result = await AtomicFileWriter.VerifyChecksumAsync(path);
@@ -200,7 +179,7 @@ public sealed class AtomicFileWriterTests : IDisposable
     [Fact]
     public async Task ReplaceAsync_ReplacesFileContent()
     {
-        var path = Path.Combine(_testRoot, "replace.txt");
+        var path = Path.Combine(TestDataRoot, "replace.txt");
         await File.WriteAllTextAsync(path, "original");
 
         await AtomicFileWriter.ReplaceAsync(path, "replaced", keepBackup: false);
@@ -211,7 +190,7 @@ public sealed class AtomicFileWriterTests : IDisposable
     [Fact]
     public async Task ReplaceAsync_KeepsBackup_WhenRequested()
     {
-        var path = Path.Combine(_testRoot, "backup_test.txt");
+        var path = Path.Combine(TestDataRoot, "backup_test.txt");
         await File.WriteAllTextAsync(path, "original content");
 
         await AtomicFileWriter.ReplaceAsync(path, "new content", keepBackup: true);
@@ -223,7 +202,7 @@ public sealed class AtomicFileWriterTests : IDisposable
     [Fact]
     public async Task ReplaceAsync_RemovesBackup_WhenNotRequested()
     {
-        var path = Path.Combine(_testRoot, "no_backup.txt");
+        var path = Path.Combine(TestDataRoot, "no_backup.txt");
         await File.WriteAllTextAsync(path, "original");
 
         await AtomicFileWriter.ReplaceAsync(path, "updated", keepBackup: false);
@@ -234,7 +213,7 @@ public sealed class AtomicFileWriterTests : IDisposable
     [Fact]
     public async Task ReplaceAsync_WorksForNewFile()
     {
-        var path = Path.Combine(_testRoot, "new_file.txt");
+        var path = Path.Combine(TestDataRoot, "new_file.txt");
 
         await AtomicFileWriter.ReplaceAsync(path, "brand new");
 
@@ -245,7 +224,7 @@ public sealed class AtomicFileWriterTests : IDisposable
     [Fact]
     public async Task WriteAsync_String_UsesUTF8Encoding()
     {
-        var path = Path.Combine(_testRoot, "utf8.txt");
+        var path = Path.Combine(TestDataRoot, "utf8.txt");
         var content = "Hello 世界 🌍";
 
         await AtomicFileWriter.WriteAsync(path, content);
@@ -257,11 +236,125 @@ public sealed class AtomicFileWriterTests : IDisposable
     [Fact]
     public async Task WriteAsync_Bytes_HandlesEmptyContent()
     {
-        var path = Path.Combine(_testRoot, "empty.bin");
+        var path = Path.Combine(TestDataRoot, "empty.bin");
 
         await AtomicFileWriter.WriteAsync(path, Array.Empty<byte>());
 
         File.Exists(path).Should().BeTrue();
         (await File.ReadAllBytesAsync(path)).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task WriteAsync_Bytes_AppliesRequestedUnixCreateMode()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "secret.bin");
+
+        var content = new byte[] { 1, 2, 3 };
+
+        await AtomicFileWriter.WriteAsync(
+            path, content, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        File.GetUnixFileMode(path).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        (await File.ReadAllBytesAsync(path)).Should().Equal(content);
+    }
+
+    // Without an explicit mode the destination's permissions win, so replacing an over-permissive
+    // secret would silently restore the mode that made it over-permissive. An explicit mode has to
+    // override the destination rather than inherit from it.
+    [Fact]
+    public async Task WriteAsync_Bytes_ExplicitModeOverridesAnExistingWiderMode()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "widened.bin");
+        await File.WriteAllBytesAsync(path, new byte[] { 9 });
+        File.SetUnixFileMode(
+            path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+
+        await AtomicFileWriter.WriteAsync(
+            path, new byte[] { 1, 2, 3 }, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        File.GetUnixFileMode(path).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+    }
+
+    [Fact]
+    public async Task WriteAsync_Bytes_WithoutModeStillPreservesExistingPermissions()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "inherited.bin");
+        await File.WriteAllBytesAsync(path, new byte[] { 9 });
+        File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        await AtomicFileWriter.WriteAsync(path, new byte[] { 1, 2, 3 });
+
+        File.GetUnixFileMode(path).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+    }
+
+    [Fact]
+    public async Task WriteAsync_String_AppliesRequestedUnixCreateMode()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "secret.json");
+
+        await AtomicFileWriter.WriteAsync(
+            path, "{\"token\":\"secret\"}", UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        File.GetUnixFileMode(path).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        (await File.ReadAllTextAsync(path)).Should().Be("{\"token\":\"secret\"}");
+    }
+
+    [Fact]
+    public async Task WriteAsync_String_ExplicitModeOverridesAnExistingWiderMode()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "widened.json");
+        await File.WriteAllTextAsync(path, "old");
+        File.SetUnixFileMode(
+            path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+
+        await AtomicFileWriter.WriteAsync(path, "new", UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        File.GetUnixFileMode(path).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+    }
+
+    // The text overload writes through a byte path when a mode is requested; a BOM there would
+    // corrupt readers that token-split the raw content, so encoding must not change with the mode.
+    [Fact]
+    public async Task WriteAsync_String_WithModeStillWritesUtf8WithoutABom()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "nobom.txt");
+
+        await AtomicFileWriter.WriteAsync(
+            path, "Hello 世界", UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        // Byte-exact against a BOM-free encode: this pins both "no BOM" and the content in one
+        // assertion, where a prefix check would only rule out the three bytes it names.
+        var bytes = await File.ReadAllBytesAsync(path);
+        bytes.Should().Equal(Encoding.UTF8.GetBytes("Hello 世界"));
     }
 }

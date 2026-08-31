@@ -1,16 +1,24 @@
+**Skill Selection**
+- Skill: `meridian-simulated-user-panel`
+- Mode: `release_gate`
+- Reason: fixture-backed provider workflow release advice
+- Required Opening: inspect the workflow evidence
+
 ## Executive Summary
 - Mode: `release_gate`
+- Evidence status: `sufficient`
+- Disclaimer: This is simulated persona feedback, not observed user research.
 - Verdict: `ship_with_caveats`
 - The provider onboarding flow is promising because the wizard, provider health surface, and workflow manifest create a visible end-to-end path, but the bundle still leaves too much ambiguity around whether credentials were saved successfully and what to do after a failed validation.
 
 ## Panel
-- Fund Operations Lead — tests whether a first-time operator can complete setup and explain the current state.
-- Support / Onboarding Lead — tests whether onboarding friction will create repeat tickets.
-- Data Operations Manager — tests whether provider health and recovery cues feel production-safe.
-- Owner-Operator — tests whether the flow is ready to ship without creating support drag.
+- Operations Manager — tests whether a first-time operator can complete setup and explain the current state.
+- Integration Administrator — tests whether onboarding friction will create repeat tickets.
+- Data Operations Analyst — tests whether provider health and recovery cues feel production-safe.
+- Financial Operations Professional — tests whether the flow is ready to ship without creating support drag.
 
 ## Persona Findings
-### Fund Operations Lead
+### Operations Manager
 - Liked: The wizard and provider health pages make the workflow manifest feel like a real operational loop instead of a disconnected demo.
 - Didn't like: There is no crisp confirmation that credentials were saved successfully after validation.
 - Missing or risky: Recovery guidance after a failed validation or retry is too thin for a release gate.
@@ -24,7 +32,7 @@
 - Extensibility: 4/5 - The wizard-plus-health structure can grow cleanly.
 - Learning Curve: 3/5 - New operators still need extra interpretation after failure.
 
-### Support / Onboarding Lead
+### Integration Administrator
 - Liked: The screenshots show a coherent wizard instead of a blank configuration wall.
 - Didn't like: A disabled or failed state would still force support because the recovery path is not spelled out.
 - Missing or risky: The bundle does not show a post-connect confirmation panel or obvious help text after validation.
@@ -38,7 +46,7 @@
 - Extensibility: 4/5 - The flow can absorb more onboarding hints without a redesign.
 - Learning Curve: 3/5 - The first-time user still needs stronger guardrails.
 
-### Data Operations Manager
+### Data Operations Analyst
 - Liked: Provider Health gives operators a place to verify status instead of guessing from the wizard alone.
 - Didn't like: Retry and validation states do not clearly distinguish transient failure from a bad configuration.
 - Missing or risky: The bundle does not show whether Provider Health reflects the same saved configuration immediately after the wizard closes.
@@ -52,7 +60,7 @@
 - Extensibility: 4/5 - Health and wizard together form a scalable operator pattern.
 - Learning Curve: 3/5 - The workflow is understandable but not self-healing enough.
 
-### Owner-Operator
+### Financial Operations Professional
 - Liked: The screenshot-backed WPF flow feels like a real Meridian operator surface, not just a form.
 - Didn't like: Shipping without a saved successfully signal would create support cost and weaken trust immediately.
 - Missing or risky: The release gate still lacks proof that failure guidance and retry semantics are understandable to non-builders.
@@ -69,7 +77,7 @@
 ## Cross-Persona Tensions
 - Shared complaint: the flow needs a stronger saved successfully confirmation after validation.
 - Shared complaint: recovery guidance after retry failure is not strong enough for a release gate.
-- Tension: the Owner-Operator wants to ship soon, while the Support / Onboarding Lead would rather hold until the handoff is clearer.
+- Tension: the Financial Operations Professional wants to ship soon, while the Integration Administrator would rather hold until the handoff is clearer.
 
 ## Owner Actions
 - Now: Add an explicit saved successfully state, a validation timestamp, and recovery copy for failed validation or retry.

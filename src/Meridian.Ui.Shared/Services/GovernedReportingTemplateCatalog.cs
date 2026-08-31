@@ -20,11 +20,64 @@ public sealed class GovernedReportingTemplateCatalog : IReportingTemplateCatalog
     public ReportingTemplateMetadata Get(string templateId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(templateId);
-        var governed = FindLatestApproved(templateId.Trim());
+        var governed = FindLatestApproved(templateId.Trim(), accessContext: null);
         return governed is null
             ? _fallbackCatalog.Get(templateId)
             : Project(governed);
     }
+
+    public ReportingTemplateMetadata Get(
+        string templateId,
+        ReportAccessQueryContext? accessContext)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(templateId);
+        var governed = FindLatestApproved(templateId.Trim(), accessContext);
+        return governed is null
+            ? _fallbackCatalog.Get(templateId)
+            : Project(governed);
+    }
+
+    public ReportingTemplateMetadata Get(
+        string templateId,
+        ReportingOperationalScope? operationalScope) =>
+        Get(templateId, BuildLookupContext(operationalScope));
+
+    public ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId)
+    {
+        ArgumentNullException.ThrowIfNull(templateId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(templateId.Name);
+        if (templateId.Version <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(templateId), "Template version must be greater than zero.");
+        }
+
+        var governed = FindApproved(templateId, accessContext: null);
+        return governed is null
+            ? _fallbackCatalog.Get(templateId)
+            : Project(governed);
+    }
+
+    public ReportingTemplateMetadata Get(
+        VersionedReportTemplateIdDto templateId,
+        ReportAccessQueryContext? accessContext)
+    {
+        ArgumentNullException.ThrowIfNull(templateId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(templateId.Name);
+        if (templateId.Version <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(templateId), "Template version must be greater than zero.");
+        }
+
+        var governed = FindApproved(templateId, accessContext);
+        return governed is null
+            ? _fallbackCatalog.Get(templateId)
+            : Project(governed);
+    }
+
+    public ReportingTemplateMetadata Get(
+        VersionedReportTemplateIdDto templateId,
+        ReportingOperationalScope? operationalScope) =>
+        Get(templateId, BuildLookupContext(operationalScope));
 
     public IReadOnlyList<ReportingTemplateMetadata> ListTemplates()
     {
@@ -45,23 +98,125 @@ public sealed class GovernedReportingTemplateCatalog : IReportingTemplateCatalog
             .ToArray();
     }
 
+    public IReadOnlyList<ReportingTemplateMetadata> ListTemplates(
+        ReportAccessQueryContext? accessContext)
+    {
+        var governed = _templateRegistry
+            .List(accessContext)
+            .Where(static record => record.Status == ReportTemplateLifecycleStatusDto.Approved)
+            .GroupBy(static record => record.Definition.TemplateId.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group
+                .OrderByDescending(static record => record.Definition.TemplateId.Version)
+                .First())
+            .Select(Project);
+
+        return governed
+            .Concat(_fallbackCatalog.ListTemplates())
+            .GroupBy(static template => template.TemplateId, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .OrderBy(static template => template.TemplateId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
     public ReportAccessEvaluationDto EvaluateAccess(string templateId, ReportAccessQueryContext? accessContext)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(templateId);
-        var governed = FindLatestApproved(templateId.Trim());
-        return governed is null
-            ? ReportAccessPolicyEvaluator.Evaluate(null, accessContext)
-            : ReportAccessPolicyEvaluator.Evaluate(governed.Definition.AccessPolicy, accessContext);
+        var governed = FindLatestApproved(templateId.Trim(), accessContext);
+        ReportAccessPolicyDto? policy;
+        if (governed is not null)
+        {
+            policy = governed.Definition.AccessPolicy;
+        }
+        else
+        {
+            try
+            {
+                policy = _fallbackCatalog.Get(templateId).AccessPolicy;
+            }
+            catch (KeyNotFoundException)
+            {
+                return new ReportAccessEvaluationDto(
+                    false,
+                    "Reporting template is outside the current tenant and company scope.",
+                    []);
+            }
+        }
+
+        return ReportAccessPolicyEvaluator.Evaluate(
+            BindCompanyWideTemplatePolicy(policy, accessContext),
+            accessContext);
     }
 
-    private ReportTemplateGovernanceRecordDto? FindLatestApproved(string templateId) =>
+    public ReportAccessEvaluationDto EvaluateAccess(VersionedReportTemplateIdDto templateId, ReportAccessQueryContext? accessContext)
+    {
+        ArgumentNullException.ThrowIfNull(templateId);
+        var governed = FindApproved(templateId, accessContext);
+        ReportAccessPolicyDto? policy;
+        if (governed is not null)
+        {
+            policy = governed.Definition.AccessPolicy;
+        }
+        else
+        {
+            try
+            {
+                policy = _fallbackCatalog.Get(templateId).AccessPolicy;
+            }
+            catch (KeyNotFoundException)
+            {
+                return new ReportAccessEvaluationDto(
+                    false,
+                    "Reporting template version is outside the current tenant and company scope.",
+                    []);
+            }
+        }
+
+        return ReportAccessPolicyEvaluator.Evaluate(
+            BindCompanyWideTemplatePolicy(policy, accessContext),
+            accessContext);
+    }
+
+    private ReportTemplateGovernanceRecordDto? FindLatestApproved(
+        string templateId,
+        ReportAccessQueryContext? accessContext) =>
         _templateRegistry
-            .List()
+            .List(accessContext)
             .Where(record =>
                 record.Status == ReportTemplateLifecycleStatusDto.Approved &&
                 string.Equals(record.Definition.TemplateId.Name, templateId, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(static record => record.Definition.TemplateId.Version)
             .FirstOrDefault();
+
+    private ReportTemplateGovernanceRecordDto? FindApproved(
+        VersionedReportTemplateIdDto templateId,
+        ReportAccessQueryContext? accessContext) =>
+        _templateRegistry
+            .List(accessContext, includeSuperseded: true)
+            .FirstOrDefault(record =>
+                record.Status == ReportTemplateLifecycleStatusDto.Approved &&
+                string.Equals(record.Definition.TemplateId.Name, templateId.Name, StringComparison.OrdinalIgnoreCase) &&
+                record.Definition.TemplateId.Version == templateId.Version);
+
+    private static ReportAccessPolicyDto BindCompanyWideTemplatePolicy(
+        ReportAccessPolicyDto? policy,
+        ReportAccessQueryContext? accessContext)
+    {
+        var normalized = ReportAccessPolicyEvaluator.Normalize(policy);
+        return normalized.Mode == ReportAccessModeDto.CompanyWide
+            && string.IsNullOrWhiteSpace(normalized.CompanyId)
+            && !string.IsNullOrWhiteSpace(accessContext?.CompanyId)
+                ? normalized with { CompanyId = accessContext.CompanyId.Trim() }
+                : normalized;
+    }
+
+    private static ReportAccessQueryContext? BuildLookupContext(
+        ReportingOperationalScope? operationalScope) =>
+        operationalScope is null
+            ? null
+            : new ReportAccessQueryContext(
+                CompanyId: operationalScope.CompanyId,
+                TenantId: operationalScope.TenantId,
+                RequireBoundScope: false);
 
     private static ReportingTemplateMetadata Project(ReportTemplateGovernanceRecordDto record)
     {
@@ -93,6 +248,7 @@ public sealed class GovernedReportingTemplateCatalog : IReportingTemplateCatalog
                 .Add("isBuiltIn", record.IsBuiltIn.ToString())
                 .Add("gridCount", (definition.Grids?.Count ?? 0).ToString()),
             definition.Grids,
-            definition.AccessPolicy);
+            definition.AccessPolicy,
+            definition.Parameters);
     }
 }

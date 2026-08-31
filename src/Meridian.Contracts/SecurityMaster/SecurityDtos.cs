@@ -7,7 +7,13 @@ namespace Meridian.Contracts.SecurityMaster;
 public enum SecurityStatusDto
 {
     Active,
-    Inactive
+    Inactive,
+    /// <summary>
+    /// Read-tolerance member: a status written by a newer node that this node does not recognize.
+    /// Treated as not-Active by filters, so unrecognized states degrade to conservative visibility
+    /// instead of failing every read of the row.
+    /// </summary>
+    Unknown
 }
 
 public sealed record SecuritySummaryDto(
@@ -129,7 +135,16 @@ public sealed record TradingParametersDto(
     decimal? MarginRequirementPct,
     string? TradingHoursUtc,
     decimal? CircuitBreakerThresholdPct,
-    DateTimeOffset AsOf);
+    DateTimeOffset AsOf)
+{
+    public bool? IsMarginable { get; init; }
+    public bool? IsShortable { get; init; }
+    public bool? IsEasyToBorrow { get; init; }
+    public bool? IsFractionable { get; init; }
+    public decimal? MinimumOrderSize { get; init; }
+    public decimal? MinimumTradeIncrement { get; init; }
+    public decimal? PriceIncrement { get; init; }
+}
 
 /// <summary>
 /// A single corporate action event envelope returned by the corporate actions query.
@@ -140,6 +155,14 @@ public sealed record TradingParametersDto(
 /// stays append-only and readers fold chains via the effective-state projector.
 /// <see cref="RedemptionPricePercentOfPar"/> carries BondCall/BondMaturityRedemption
 /// pricing as a percent of par.</para>
+/// </summary>
+/// <summary>
+/// One corporate-action event. The typed columns carry the economics of the historically declared
+/// event types; <paramref name="Payload"/> is the generic per-event-type envelope (a JSON object)
+/// for event types with no dedicated columns — tender offers, crypto forks, returns of capital,
+/// principal paydowns, option contract adjustments, delistings, and any future type — so a new
+/// event type never needs another nullable column. Well-known payload keys are documented in
+/// <see cref="CorporateActionPayloads"/>.
 /// </summary>
 public sealed record CorporateActionDto(
     Guid CorpActId,
@@ -159,7 +182,9 @@ public sealed record CorporateActionDto(
     DateOnly? RecordDate = null,
     string? LifecycleState = null,
     Guid? SupersedesCorpActId = null,
-    decimal? RedemptionPricePercentOfPar = null);
+    decimal? RedemptionPricePercentOfPar = null,
+    JsonElement? Payload = null,
+    int PayloadSchemaVersion = CorporateActionPayloads.CurrentSchemaVersion);
 
 /// <summary>
 /// Preferred-equity-specific terms returned by the preferred-terms query.

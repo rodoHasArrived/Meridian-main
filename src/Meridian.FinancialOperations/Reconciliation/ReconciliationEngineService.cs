@@ -145,16 +145,19 @@ public sealed class ReconciliationEngineService
         {
             securityDetails.TryGetValue(position.Symbol, out var security);
 
-            var ledgerAmount = request.LedgerBalances.TryGetValue(position.Symbol, out var lb) ? lb : 0m;
+            // Presence means the ledger carries the symbol at all — a legitimate zero balance is
+            // still present. Inferring presence from `!= 0m` misclassified zero-balance positions
+            // as missing_ledger_coverage breaks and skipped the amount comparison entirely.
+            var ledgerPresent = request.LedgerBalances.TryGetValue(position.Symbol, out var ledgerAmount);
 
             candidates.Add(new ReconciliationCandidate(
                 CandidateId: Guid.NewGuid(),
                 Symbol: position.Symbol,
                 Label: security?.DisplayName ?? position.Symbol,
                 ExpectedAmount: position.MarketValue,
-                ActualAmount: ledgerAmount,
+                ActualAmount: ledgerPresent ? ledgerAmount : 0m,
                 ExpectedPresent: true,
-                ActualPresent: ledgerAmount != 0m,
+                ActualPresent: ledgerPresent,
                 CategoryHint: security?.AssetClass ?? "Unknown",
                 ActualKind: security?.AssetClass ?? string.Empty));
         }

@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Media;
 using Meridian.Contracts.Api;
+using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Workstation.Models;
 
@@ -13,8 +14,13 @@ public sealed class BackfillWorkbenchSectionViewModel : BindableBase
 {
     private string _backfillStatusText = string.Empty;
     private string _overallProgressText = string.Empty;
+    private double _overallProgressPercent;
     private string _pauseButtonContent = "Pause";
     private bool _isProgressVisible;
+    private bool _hasProviderProgress;
+    private bool _hasRemediationQueue;
+    private string _providerProgressObservedText = "No provider-attempt snapshot loaded";
+    private string _remediationDefaultProviderText = "Automatic remediation default: stooq";
     private bool _hasNoScheduledJobs = true;
     private bool _hasNoResumableJobs = true;
     private string _gapAnalysisSummaryText = string.Empty;
@@ -27,6 +33,7 @@ public sealed class BackfillWorkbenchSectionViewModel : BindableBase
     public ObservableCollection<ScheduledJobInfo> ScheduledJobs { get; } = new();
     public ObservableCollection<ResumableJobInfo> ResumableJobs { get; } = new();
     public ObservableCollection<GapAnalysisItem> GapItems { get; } = new();
+    public ObservableCollection<BackfillRemediationQueuePresentation> RemediationQueue { get; } = new();
     public WorkstationTableModel<SymbolProgressInfo> SymbolProgressTable { get; }
     public WorkstationTableModel<GapAnalysisItem> GapItemsTable { get; }
 
@@ -36,10 +43,15 @@ public sealed class BackfillWorkbenchSectionViewModel : BindableBase
             SymbolProgress,
             [
                 new("Symbol", nameof(SymbolProgressInfo.Symbol), 90),
-                new("Progress", nameof(SymbolProgressInfo.Progress), 82),
-                new("Bars", nameof(SymbolProgressInfo.BarsText), 112),
-                new("Status", nameof(SymbolProgressInfo.StatusText), 100),
-                new("Elapsed", nameof(SymbolProgressInfo.TimeText), 90)
+                new("Range", nameof(SymbolProgressInfo.RangeText), 172),
+                new("Provider", nameof(SymbolProgressInfo.CurrentProvider), 96),
+                new("Fallback Attempt", nameof(SymbolProgressInfo.FallbackAttemptText), 132),
+                new("Retry", nameof(SymbolProgressInfo.RetryText), 76),
+                new("Progress", nameof(SymbolProgressInfo.ProgressText), 82),
+                new("Bars", nameof(SymbolProgressInfo.BarsText), 96),
+                new("Live State", nameof(SymbolProgressInfo.StatusText), 100),
+                new("Updated", nameof(SymbolProgressInfo.TimeText), 110),
+                new("Error", nameof(SymbolProgressInfo.ErrorText), 180)
             ],
             "Backfill per-symbol progress",
             "No active symbols",
@@ -60,8 +72,13 @@ public sealed class BackfillWorkbenchSectionViewModel : BindableBase
 
     public string BackfillStatusText { get => _backfillStatusText; set => SetProperty(ref _backfillStatusText, value); }
     public string OverallProgressText { get => _overallProgressText; set => SetProperty(ref _overallProgressText, value); }
+    public double OverallProgressPercent { get => _overallProgressPercent; set => SetProperty(ref _overallProgressPercent, value); }
     public string PauseButtonContent { get => _pauseButtonContent; set => SetProperty(ref _pauseButtonContent, value); }
     public bool IsProgressVisible { get => _isProgressVisible; set => SetProperty(ref _isProgressVisible, value); }
+    public bool HasProviderProgress { get => _hasProviderProgress; set => SetProperty(ref _hasProviderProgress, value); }
+    public bool HasRemediationQueue { get => _hasRemediationQueue; set => SetProperty(ref _hasRemediationQueue, value); }
+    public string ProviderProgressObservedText { get => _providerProgressObservedText; set => SetProperty(ref _providerProgressObservedText, value); }
+    public string RemediationDefaultProviderText { get => _remediationDefaultProviderText; set => SetProperty(ref _remediationDefaultProviderText, value); }
     public bool HasNoScheduledJobs { get => _hasNoScheduledJobs; set => SetProperty(ref _hasNoScheduledJobs, value); }
     public bool HasNoResumableJobs { get => _hasNoResumableJobs; set => SetProperty(ref _hasNoResumableJobs, value); }
     public string GapAnalysisSummaryText { get => _gapAnalysisSummaryText; set => SetProperty(ref _gapAnalysisSummaryText, value); }

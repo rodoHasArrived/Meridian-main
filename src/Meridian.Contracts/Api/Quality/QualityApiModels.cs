@@ -28,7 +28,101 @@ public sealed record QualityDashboardResponse(
     IReadOnlyList<QualityGapResponse> RecentGaps,
     IReadOnlyList<QualitySequenceErrorResponse> RecentErrors,
     IReadOnlyList<QualityAnomalyResponse> RecentAnomalies,
-    IReadOnlyList<string> StaleSymbols);
+    IReadOnlyList<string> StaleSymbols,
+    QualityCompositeDashboardResponse? Composite = null);
+
+/// <summary>
+/// Canonical cross-source quality projection shared by browser and desktop clients.
+/// </summary>
+public sealed record QualityCompositeDashboardResponse(
+    string Version,
+    DateTimeOffset ObservedAt,
+    double? CompositeScore,
+    string Status,
+    bool IsPartial,
+    double CoverageWeight,
+    IReadOnlyList<QualityComponentResponse> Components,
+    IReadOnlyList<QualityCompositeSymbolResponse> Symbols,
+    IReadOnlyList<QualityCompositeGapResponse> OpenGaps,
+    int AnomalyCount);
+
+/// <summary>
+/// Per-symbol composite quality row and its drill-down evidence.
+/// </summary>
+public sealed record QualityCompositeSymbolResponse(
+    string Symbol,
+    double? CompositeScore,
+    string Status,
+    bool IsPartial,
+    double CoverageWeight,
+    long? ExpectedEvents,
+    long? ObservedEvents,
+    int AnomalyCount,
+    IReadOnlyList<QualityComponentResponse> Components,
+    IReadOnlyList<QualityCompositeGapResponse> OpenGaps,
+    IReadOnlyList<QualityProviderFreshnessResponse> ProviderFreshness,
+    IReadOnlyList<string> Issues);
+
+/// <summary>
+/// Normalized evidence emitted by one quality subsystem.
+/// </summary>
+public sealed record QualityComponentResponse(
+    string Kind,
+    string Label,
+    double Weight,
+    double? Score,
+    string Availability,
+    DateTimeOffset? ObservedAt,
+    int IssueCount,
+    string Detail);
+
+/// <summary>
+/// Stable, server-resolvable gap entry used by contextual remediation actions.
+/// </summary>
+public sealed record QualityCompositeGapResponse(
+    string GapId,
+    string Symbol,
+    string? Provider,
+    string EventType,
+    DateTimeOffset From,
+    DateTimeOffset To,
+    long EstimatedMissingEvents,
+    string Severity,
+    string Status,
+    bool CanBackfill,
+    string? DisabledReason);
+
+/// <summary>
+/// Provider-specific freshness evidence for one symbol.
+/// </summary>
+public sealed record QualityProviderFreshnessResponse(
+    string Provider,
+    DateTimeOffset? LastEventAt,
+    double? AgeMilliseconds,
+    string Status,
+    double? CompletenessScore,
+    int GapCount);
+
+/// <summary>
+/// Requests remediation of a gap from a specific composite dashboard version.
+/// The server resolves provider and range from the retained gap identifier.
+/// </summary>
+public sealed record QualityGapRemediationRequest(
+    string GapId,
+    string DashboardVersion);
+
+/// <summary>
+/// Truthful outcome returned by a contextual data-quality remediation request.
+/// </summary>
+public sealed record QualityGapRemediationResponse(
+    string GapId,
+    string Symbol,
+    string Status,
+    string Provider,
+    DateOnly From,
+    DateOnly To,
+    string IdempotencyKey,
+    string Message);
 
 /// <summary>
 /// Real-time quality metrics payload.
@@ -55,6 +149,30 @@ public sealed record QualitySymbolHealthResponse(
     DateTimeOffset LastEvent,
     TimeSpan TimeSinceLastEvent,
     IReadOnlyList<string> ActiveIssues);
+
+/// <summary>
+/// One symbol whose p99 ingest latency exceeds the requested threshold.
+/// </summary>
+/// <remarks>
+/// The tracker returns these as a <c>ValueTuple</c>. Tuple members are fields, and this
+/// endpoint group serializes with the default <c>IncludeFields = false</c>, so returning the
+/// tuple directly emitted an empty object per element. Projecting through a named record is
+/// how every other payload in this group already crosses the wire.
+/// </remarks>
+public sealed record QualityHighLatencySymbolResponse(
+    string Symbol,
+    double P99Ms);
+
+/// <summary>
+/// One symbol ranked by retained sequence-error count.
+/// </summary>
+/// <remarks>
+/// Projected from a <c>ValueTuple</c> for the same reason as
+/// <see cref="QualityHighLatencySymbolResponse"/>.
+/// </remarks>
+public sealed record QualityTopErrorSymbolResponse(
+    string Symbol,
+    int ErrorCount);
 
 /// <summary>
 /// Completeness summary returned inside the dashboard.
@@ -97,7 +215,26 @@ public sealed record QualitySequenceErrorStatisticsResponse(
     int SymbolsWithErrors,
     double AverageGapSize,
     long MaxGapSize,
-    DateTimeOffset CalculatedAt);
+    DateTimeOffset CalculatedAt)
+{
+    /// <summary>
+    /// Number of error records currently retained after per-stream caps and retention cleanup.
+    /// This additive alias preserves the existing meaning of <see cref="TotalErrors"/>.
+    /// </summary>
+    public long RetainedTotalErrors => TotalErrors;
+
+    /// <summary>
+    /// Error rate calculated from retained records. This additive alias preserves the existing
+    /// meaning of <see cref="ErrorRate"/>.
+    /// </summary>
+    public double RetainedErrorRate => ErrorRate;
+
+    /// <summary>Total errors detected over the lifetime of the tracker generation.</summary>
+    public long LifetimeTotalErrors { get; init; }
+
+    /// <summary>Lifetime errors as a percentage of all checked events.</summary>
+    public double LifetimeErrorRate { get; init; }
+}
 
 /// <summary>
 /// Anomaly statistics payload returned by the dashboard.

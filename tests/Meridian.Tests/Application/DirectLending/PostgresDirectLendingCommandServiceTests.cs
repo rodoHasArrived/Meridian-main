@@ -402,6 +402,89 @@ public sealed class PostgresDirectLendingCommandServiceTests
             default);
     }
 
+    [Fact]
+    public async Task ChargePrepaymentPenaltyAsync_RejectsStalePrincipalBasisWithoutPersisting()
+    {
+        var loanId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var stateStore = Substitute.For<IDirectLendingStateStore>();
+        var queryService = Substitute.For<IDirectLendingQueryService>();
+        queryService.LoadAggregateAsync(loanId, Arg.Any<CancellationToken>())
+            .Returns(new PersistedDirectLendingState(loanId, 7, BuildContract(loanId), BuildServicing(loanId)));
+        var service = new PostgresDirectLendingCommandService(
+            stateStore,
+            Substitute.For<IDirectLendingOperationsStore>(),
+            queryService,
+            new LoanAccountingProjector(BuildLedgerJournalStore(), new AccountingPolicyService(), BuildSecurityMasterQueryService()),
+            new DirectLendingOptions { CurrentEventSchemaVersion = 3 });
+
+        var result = await service.ChargePrepaymentPenaltyAsync(
+            loanId,
+            new ChargePrepaymentPenaltyRequest(400_000m, new DateOnly(2026, 3, 24), "stale-basis"));
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error!.Code.Should().Be(DirectLendingErrorCode.ConcurrencyConflict);
+        await stateStore.DidNotReceiveWithAnyArgs().SaveAsync(
+            default,
+            default,
+            default,
+            default!,
+            default!,
+            default!,
+            default,
+            default,
+            default!,
+            default!,
+            default,
+            default,
+            default,
+            default);
+    }
+
+    [Fact]
+    public async Task CreateLoanAsync_CommitsThroughOutboxWithoutPostCommitAssetOperationsCall()
+    {
+        var loanId = Guid.NewGuid();
+        var contract = BuildContract(loanId);
+        var stateStore = Substitute.For<IDirectLendingStateStore>();
+        var assetOperations = Substitute.For<IAssetOperationsCommandService>();
+        assetOperations.UpsertProjectionAsync(
+                Arg.Any<AssetOperationsProjectionDto>(),
+                Arg.Any<AssetOperationsWriteApprovalDto>(),
+                Arg.Any<CancellationToken>())
+            .Returns<Task<AssetOperationsDetailDto>>(_ => throw new IOException("asset operations unavailable"));
+        var service = new PostgresDirectLendingCommandService(
+            stateStore,
+            Substitute.For<IDirectLendingOperationsStore>(),
+            Substitute.For<IDirectLendingQueryService>(),
+            new LoanAccountingProjector(BuildLedgerJournalStore(), new AccountingPolicyService(), BuildSecurityMasterQueryService()),
+            new DirectLendingOptions { CurrentEventSchemaVersion = 3 },
+            assetOperations);
+
+        var result = await service.CreateLoanAsync(new CreateLoanRequest(
+            loanId,
+            contract.FacilityName,
+            contract.Borrower,
+            contract.EffectiveDate,
+            contract.CurrentTerms));
+
+        result.IsSuccess.Should().BeTrue();
+        await stateStore.ReceivedWithAnyArgs(1).SaveAsync(
+            default,
+            default,
+            default,
+            default!,
+            default!,
+            default!,
+            default,
+            default,
+            default!,
+            default!,
+            default,
+            default,
+            default);
+        await assetOperations.DidNotReceiveWithAnyArgs().UpsertProjectionAsync(default!, default!, default);
+    }
+
 
     [Fact]
     public async Task PostDailyAccrualAsync_RejectsForgedSecurityMasterReferenceMissingFromAuthoritativeStore()

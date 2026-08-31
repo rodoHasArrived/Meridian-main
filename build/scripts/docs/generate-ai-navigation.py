@@ -27,9 +27,16 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 GENERATOR_VERSION = "1.0"
-EXCLUDED_PARTS = {"bin", "obj", "node_modules", ".git", ".vs", "__pycache__", "TestResults", "artifacts"}
+EXCLUDED_PARTS = {"bin", "obj", "node_modules", ".git", ".vs", "__pycache__", ".pytest_cache", "TestResults", "artifacts"}
 DEFAULT_RECENT_CHANGES_DAYS = 14
 DEFAULT_RECENT_CHANGES_LIMIT = 40
+
+# Build output that lives under src/ but is not source. The recent-changes feed is a bounded
+# routing signal, and one dashboard rebuild rewrites dozens of hash-named bundle files at once —
+# enough to evict nearly every real source change from the list and leave agents routed at
+# "Unmapped" assets. The authored code for this tree is src/Meridian.Ui/dashboard/, which is
+# still tracked normally.
+RECENT_CHANGE_EXCLUDED_PREFIXES = ("src/Meridian.Ui/wwwroot/workstation/",)
 
 
 @dataclass(frozen=True)
@@ -165,7 +172,10 @@ PROJECT_SEEDS: dict[str, ProjectSeed] = {
             "src/Meridian.Ui/dashboard/package.json",
             "src/Meridian.Ui/dashboard/src/main.tsx",
         ),
-        ("package.json", "src/main.tsx", "src/App.tsx"),
+        # `src/app.tsx` is lowercase on disk and owns the workstation shell and route table.
+        # The former "src/App.tsx" spelling resolved only on case-insensitive filesystems, so
+        # Linux generation silently produced a map without the application entrypoint.
+        ("package.json", "src/main.tsx", "src/app.tsx"),
     ),
     "Meridian.Backtesting": ProjectSeed(
         "Meridian.Backtesting",
@@ -419,8 +429,8 @@ DOC_CATALOG: list[dict[str, Any]] = [
         "keywords": ["fsharp", "interop", "domain"],
     },
     {
-        "path": "docs/plans/trading-workstation-migration-blueprint.md",
-        "title": "Trading workstation migration blueprint",
+        "path": "docs/development/wpf-web-ui-alignment-plan.md",
+        "title": "WPF web-UI alignment plan",
         "area": "ui",
         "whenToConsult": "When a task affects workflow-centric desktop or workspace experiences.",
         "keywords": ["workstation", "wpf", "workspace", "migration"],
@@ -566,7 +576,7 @@ TASK_ROUTE_SEEDS: list[dict[str, Any]] = [
         "startProjects": ["Meridian.Wpf", "Meridian.Ui.Services", "Meridian.Ui.Shared", "Meridian"],
         "startSymbols": ["MainWindow"],
         "docs": [
-            "docs/plans/trading-workstation-migration-blueprint.md",
+            "docs/development/wpf-web-ui-alignment-plan.md",
             "docs/ai/ai-known-errors.md",
         ],
         "recommendedSkill": "meridian-blueprint",
@@ -646,6 +656,11 @@ def parse_project_references(project_file: Path) -> list[str]:
         include = item.attrib.get("Include")
         if not include:
             continue
+        # .csproj ProjectReference Include paths use Windows-style backslash separators.
+        # Normalize to forward slashes so path resolution (and .stem) works cross-platform;
+        # otherwise on non-Windows hosts the backslashes are treated as literal filename
+        # characters and .stem yields the raw "..\Name\Name" string instead of the project name.
+        include = include.replace("\\", "/")
         target = (project_file.parent / include).resolve()
         refs.append(target.stem)
     return sorted(set(refs))
@@ -930,6 +945,9 @@ def collect_recent_source_changes(
             continue
 
         if current_header is None or not line.startswith("src/"):
+            continue
+
+        if line.startswith(RECENT_CHANGE_EXCLUDED_PREFIXES):
             continue
 
         if not (root / line).exists():

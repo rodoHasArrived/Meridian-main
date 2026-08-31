@@ -6,8 +6,8 @@
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /** @default "primary" */
   variant?: "primary" | "ghost" | "danger" | "link";
-  /** `sm` · `default` (16/9 pad) · `icon` (32×32 square). @default "default" */
-  size?: "sm" | "default" | "icon";
+  /** `sm` · `default` (16/9 pad) · `lg` (20/12 pad, prominent CTAs) · `icon` (32×32 square). @default "default" */
+  size?: "sm" | "default" | "lg" | "icon";
   /** Optional leading icon node (14–16px). */
   icon?: React.ReactNode;
   /** Replace the label with a spinner and set aria-busy. */

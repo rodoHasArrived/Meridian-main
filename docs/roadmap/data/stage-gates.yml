@@ -53,9 +53,25 @@ stage_gates:
       - src/Meridian.Ui/dashboard/src/screens/accounting-screen.test.tsx
   - id: BacktestingEvidence
     title: Backtesting evidence
-    purpose: Backtest results can be traced to strategy decisions and later paper validation.
+    purpose: Host-composed Covered Call runs require a scoped retained Evidence Vault manifest before queueing, preserve exact strategy-run lineage, and project four Paper checklist decisions only from durable operator/audit authority, exact keyed source evidence, and a matching same-scope Paper child.
     owner_lane: Strategy Analytics
-    exit_evidence: []
+    exit_evidence:
+      - src/Meridian.Backtesting/README.md
+      - src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.test.ts
+      - src/Meridian.Ui/dashboard/src/screens/covered-call-screen.test.tsx
+      - tests/Meridian.Tests/Strategies/CoveredCall/CoveredCallRunProjectionTests.cs
+      - tests/Meridian.Tests/Strategies/CoveredCall/CoveredCallBacktestServiceTests.cs
+      - tests/Meridian.Tests/Integration/EndpointTests/CoveredCallEndpointAuthorizationTests.cs
+      - tests/Meridian.Tests/Strategies/StrategyRunReadServiceTests.cs
+      - tests/Meridian.Tests/Strategies/PromotionServiceTests.cs
+      - tests/Meridian.Tests/Ui/ExecutionWriteEndpointsTests.cs
+      - tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs
+      - tests/Meridian.Tests/Strategies/StrategyRunStoreTests.cs
+      - tests/Meridian.Tests/Ui/WorkstationEndpointsTests.StrategyTenantScope.cs
+      - tests/Meridian.Tests/Ui/WorkstationEndpointsTests.TradingTenantScope.cs
+      - src/Meridian.Ui/dashboard/src/screens/strategy-screen.view-model.test.ts
+      - src/Meridian.Ui/dashboard/src/screens/strategy-screen.test.tsx
+      - src/Meridian.Ui/dashboard/src/screens/trading-screen.view-model.test.ts
   - id: LiveReadiness
     title: Live readiness
     purpose: Live operation remains gated by prior evidence-backed stages.

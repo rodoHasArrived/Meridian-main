@@ -6,6 +6,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
+using Meridian.Storage.Ledger;
 
 namespace Meridian.FinancialOperations.AccountingClose;
 
@@ -13,38 +14,112 @@ public interface IAccountingCloseManagementService
 {
     Task<ClosePeriodPlanDto?> GetPeriodPlanAsync(Guid workflowId, CancellationToken ct = default);
 
+    Task<ClosePeriodPlanDto?> GetPeriodPlanScopedAsync(
+        Guid workflowId,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
+        => GetPeriodPlanAsync(workflowId, ct);
+
     Task<ClosePeriodPlanDto?> RequestLateAdjustmentAsync(
         CreateLateAdjustmentRequestDto request,
         string actor,
         CancellationToken ct = default);
+
+    Task<ClosePeriodPlanDto?> RequestLateAdjustmentScopedAsync(
+        CreateLateAdjustmentRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
+        => RequestLateAdjustmentAsync(request, actor, ct);
 
     Task<ClosePeriodPlanDto?> ReviewLateAdjustmentAsync(
         ReviewLateAdjustmentRequestDto request,
         string actor,
         CancellationToken ct = default);
 
+    Task<ClosePeriodPlanDto?> ReviewLateAdjustmentScopedAsync(
+        ReviewLateAdjustmentRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
+        => ReviewLateAdjustmentAsync(request, actor, ct);
+
     Task<ClosePeriodPlanDto?> SignOffCloseTaskAsync(
         SignOffCloseTaskRequestDto request,
         string actor,
         CancellationToken ct = default);
+
+    Task<ClosePeriodPlanDto?> SignOffCloseTaskScopedAsync(
+        SignOffCloseTaskRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
+        => SignOffCloseTaskAsync(request, actor, ct);
 
     Task<ClosePeriodPlanDto?> ReviewCloseEvidenceAsync(
         ReviewCloseEvidenceRequestDto request,
         string actor,
         CancellationToken ct = default);
 
+    Task<ClosePeriodPlanDto?> ReviewCloseEvidenceScopedAsync(
+        ReviewCloseEvidenceRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
+        => ReviewCloseEvidenceAsync(request, actor, ct);
+
     Task<ClosePeriodPlanDto?> ConfigurePeriodPlanAsync(
         UpsertClosePeriodPlanConfigurationRequestDto request,
         string actor,
         CancellationToken ct = default);
 
+    Task<ClosePeriodPlanDto?> ConfigurePeriodPlanScopedAsync(
+        UpsertClosePeriodPlanConfigurationRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
+        => ConfigurePeriodPlanAsync(request, actor, ct);
+
     Task<ClosePeriodLockResultDto?> LockClosePeriodAsync(
         LockClosePeriodRequestDto request,
         string actor,
         CancellationToken ct = default);
+
+    Task<ClosePeriodLockResultDto?> LockClosePeriodScopedAsync(
+        LockClosePeriodRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
+        => Task.FromException<ClosePeriodLockResultDto?>(
+            new NotSupportedException(
+                "This accounting close service does not implement tenant- and company-scoped hard close."));
+
+    Task<ClosePeriodReopenResultDto?> ReopenClosePeriodAsync(
+        ReopenClosePeriodRequestDto request,
+        string actor,
+        CancellationToken ct = default)
+        => Task.FromException<ClosePeriodReopenResultDto?>(
+            new NotSupportedException("This accounting close service does not support governed period reopen."));
+
+    Task<ClosePeriodReopenResultDto?> ReopenClosePeriodScopedAsync(
+        ReopenClosePeriodRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
+        => Task.FromException<ClosePeriodReopenResultDto?>(
+            new NotSupportedException(
+                "This accounting close service does not implement tenant- and company-scoped reopen."));
 }
 
-public sealed class AccountingCloseManagementService : IAccountingCloseManagementService
+public sealed partial class AccountingCloseManagementService : IAccountingCloseManagementService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -61,9 +136,12 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         RequiresLateAdjustmentApproval: true);
 
     private readonly IOperationsContinuityWorkflowService _workflowService;
+    private readonly IAccountingClosePostingWorkbench? _postingWorkbench;
+    private readonly IAccountingCloseMutationGate? _mutationGate;
     private readonly object _readGate = new();
     private readonly SemaphoreSlim _writeGate = new(1, 1);
     private readonly string? _persistencePath;
+    private int _hasEstablishedPersistedSnapshot;
     private readonly ConcurrentDictionary<Guid, List<LateAdjustmentRequestDto>> _lateAdjustments = new();
     private readonly ConcurrentDictionary<Guid, List<WorkflowCloseTaskSignOffRecord>> _taskSignOffs = new();
     private readonly ConcurrentDictionary<Guid, ClosePeriodPlanConfigurationDto> _planConfigurations = new();
@@ -76,14 +154,43 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
 
     public AccountingCloseManagementService(
         IOperationsContinuityWorkflowService workflowService,
+        IAccountingClosePostingWorkbench postingWorkbench)
+        : this(workflowService)
+    {
+        _postingWorkbench = postingWorkbench ?? throw new ArgumentNullException(nameof(postingWorkbench));
+        _mutationGate = postingWorkbench as IAccountingCloseMutationGate;
+    }
+
+    public AccountingCloseManagementService(
+        IOperationsContinuityWorkflowService workflowService,
         StorageOptions storageOptions)
         : this(workflowService)
     {
         ArgumentNullException.ThrowIfNull(storageOptions);
         _persistencePath = Path.Combine(storageOptions.RootPath, "accounting", "close-management-late-adjustments.json");
+        _hasEstablishedPersistedSnapshot = File.Exists(_persistencePath) ? 1 : 0;
     }
 
-    public async Task<ClosePeriodPlanDto?> GetPeriodPlanAsync(Guid workflowId, CancellationToken ct = default)
+    public AccountingCloseManagementService(
+        IOperationsContinuityWorkflowService workflowService,
+        StorageOptions storageOptions,
+        IAccountingClosePostingWorkbench postingWorkbench)
+        : this(workflowService, storageOptions)
+    {
+        _postingWorkbench = postingWorkbench ?? throw new ArgumentNullException(nameof(postingWorkbench));
+        _mutationGate = postingWorkbench as IAccountingCloseMutationGate;
+    }
+
+    public Task<ClosePeriodPlanDto?> GetPeriodPlanAsync(
+        Guid workflowId,
+        CancellationToken ct = default)
+        => GetPeriodPlanScopedAsync(workflowId, tenantId: null, companyId: null, ct: ct);
+
+    public async Task<ClosePeriodPlanDto?> GetPeriodPlanScopedAsync(
+        Guid workflowId,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
     {
         if (workflowId == Guid.Empty)
         {
@@ -91,12 +198,22 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         }
 
         var workflow = await _workflowService.GetAsync(workflowId, ct).ConfigureAwait(false);
-        return workflow is null ? null : BuildPeriodPlan(workflow);
+        return workflow is null
+            ? null
+            : await BuildPeriodPlanWithGateAsync(workflow, ct, tenantId, companyId).ConfigureAwait(false);
     }
 
-    public async Task<ClosePeriodPlanDto?> RequestLateAdjustmentAsync(
+    public Task<ClosePeriodPlanDto?> RequestLateAdjustmentAsync(
         CreateLateAdjustmentRequestDto request,
         string actor,
+        CancellationToken ct = default)
+        => RequestLateAdjustmentScopedAsync(request, actor, tenantId: null, companyId: null, ct: ct);
+
+    public async Task<ClosePeriodPlanDto?> RequestLateAdjustmentScopedAsync(
+        CreateLateAdjustmentRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -182,12 +299,20 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             _writeGate.Release();
         }
 
-        return BuildPeriodPlan(workflow);
+        return await BuildPeriodPlanWithGateAsync(workflow, ct, tenantId, companyId).ConfigureAwait(false);
     }
 
-    public async Task<ClosePeriodPlanDto?> ReviewLateAdjustmentAsync(
+    public Task<ClosePeriodPlanDto?> ReviewLateAdjustmentAsync(
         ReviewLateAdjustmentRequestDto request,
         string actor,
+        CancellationToken ct = default)
+        => ReviewLateAdjustmentScopedAsync(request, actor, tenantId: null, companyId: null, ct: ct);
+
+    public async Task<ClosePeriodPlanDto?> ReviewLateAdjustmentScopedAsync(
+        ReviewLateAdjustmentRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -274,12 +399,20 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             _writeGate.Release();
         }
 
-        return BuildPeriodPlan(workflow);
+        return await BuildPeriodPlanWithGateAsync(workflow, ct, tenantId, companyId).ConfigureAwait(false);
     }
 
-    public async Task<ClosePeriodPlanDto?> SignOffCloseTaskAsync(
+    public Task<ClosePeriodPlanDto?> SignOffCloseTaskAsync(
         SignOffCloseTaskRequestDto request,
         string actor,
+        CancellationToken ct = default)
+        => SignOffCloseTaskScopedAsync(request, actor, tenantId: null, companyId: null, ct: ct);
+
+    public async Task<ClosePeriodPlanDto?> SignOffCloseTaskScopedAsync(
+        SignOffCloseTaskRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -417,12 +550,20 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             _writeGate.Release();
         }
 
-        return BuildPeriodPlan(workflow);
+        return await BuildPeriodPlanWithGateAsync(workflow, ct, tenantId, companyId).ConfigureAwait(false);
     }
 
-    public async Task<ClosePeriodPlanDto?> ReviewCloseEvidenceAsync(
+    public Task<ClosePeriodPlanDto?> ReviewCloseEvidenceAsync(
         ReviewCloseEvidenceRequestDto request,
         string actor,
+        CancellationToken ct = default)
+        => ReviewCloseEvidenceScopedAsync(request, actor, tenantId: null, companyId: null, ct: ct);
+
+    public async Task<ClosePeriodPlanDto?> ReviewCloseEvidenceScopedAsync(
+        ReviewCloseEvidenceRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -458,7 +599,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         }
 
         var currentPlan = BuildPeriodPlan(workflow);
-        var targetId = NormalizeOptional(request.TargetId);
+        var targetId = Meridian.Contracts.Text.TextPrimitives.NormalizeOptional(request.TargetId);
         var issue = currentPlan.ValidationIssues.FirstOrDefault(candidate =>
             string.Equals(candidate.Code, issueCode, StringComparison.OrdinalIgnoreCase) &&
             string.Equals(candidate.TargetId ?? string.Empty, targetId ?? string.Empty, StringComparison.OrdinalIgnoreCase));
@@ -510,12 +651,20 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             _writeGate.Release();
         }
 
-        return BuildPeriodPlan(workflow);
+        return await BuildPeriodPlanWithGateAsync(workflow, ct, tenantId, companyId).ConfigureAwait(false);
     }
 
-    public async Task<ClosePeriodPlanDto?> ConfigurePeriodPlanAsync(
+    public Task<ClosePeriodPlanDto?> ConfigurePeriodPlanAsync(
         UpsertClosePeriodPlanConfigurationRequestDto request,
         string actor,
+        CancellationToken ct = default)
+        => ConfigurePeriodPlanScopedAsync(request, actor, tenantId: null, companyId: null, ct: ct);
+
+    public async Task<ClosePeriodPlanDto?> ConfigurePeriodPlanScopedAsync(
+        UpsertClosePeriodPlanConfigurationRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -592,12 +741,35 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             _writeGate.Release();
         }
 
-        return BuildPeriodPlan(workflow);
+        return await BuildPeriodPlanWithGateAsync(workflow, ct, tenantId, companyId).ConfigureAwait(false);
     }
 
-    public async Task<ClosePeriodLockResultDto?> LockClosePeriodAsync(
+    public Task<ClosePeriodLockResultDto?> LockClosePeriodAsync(
         LockClosePeriodRequestDto request,
         string actor,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (!request.PrepareClosingEntriesOnly)
+        {
+            return Task.FromException<ClosePeriodLockResultDto?>(
+                new InvalidOperationException(
+                    "Governed hard close requires an authenticated tenant and company scope. Use the scoped close-period operation."));
+        }
+
+        return LockClosePeriodScopedAsync(
+            request,
+            actor,
+            tenantId: null,
+            companyId: null,
+            ct: ct);
+    }
+
+    public async Task<ClosePeriodLockResultDto?> LockClosePeriodScopedAsync(
+        LockClosePeriodRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -607,66 +779,577 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             throw new ArgumentException("WorkflowId is required.", nameof(request));
         }
 
-        var resolvedActor = string.IsNullOrWhiteSpace(actor) ? RequireText(request.Actor, "Actor") : actor.Trim();
-        var workflow = await _workflowService.GetAsync(request.WorkflowId, ct).ConfigureAwait(false);
-        if (workflow is null)
+        var controllerRole = request.PrepareClosingEntriesOnly
+            ? null
+            : RequireControllerRole(request.ControllerRole);
+        if (!request.PrepareClosingEntriesOnly)
         {
-            return null;
+            RequireCompleteMutationScope(tenantId, companyId);
         }
 
-        var plan = BuildPeriodPlan(workflow);
-        if (plan.IsPeriodLocked)
+        await _writeGate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            return new ClosePeriodLockResultDto(
-                true,
-                plan,
-                null,
-                [
-                    new AccountingConfigurationValidationIssueDto(
+            var resolvedActor = string.IsNullOrWhiteSpace(actor) ? RequireText(request.Actor, "Actor") : actor.Trim();
+            var workflow = await _workflowService.GetAsync(request.WorkflowId, ct).ConfigureAwait(false);
+            if (workflow is null)
+            {
+                return null;
+            }
+
+            var plan = BuildPeriodPlan(workflow);
+            if (!request.PrepareClosingEntriesOnly && _mutationGate is null)
+            {
+                plan = await AttachClosingEntriesGateAsync(
+                        plan,
+                        workflow,
+                        ct,
+                        tenantId,
+                        companyId)
+                    .ConfigureAwait(false);
+                return new ClosePeriodLockResultDto(
+                    false,
+                    plan,
+                    null,
+                    [MutationConsistencyGateUnavailableIssue(plan)]);
+            }
+
+            await using var closeConsistencyLease =
+                !request.PrepareClosingEntriesOnly
+                    ? await _mutationGate!
+                        .AcquireAsync(
+                            RequirePostingContext(workflow, plan, tenantId, companyId),
+                            ct)
+                        .ConfigureAwait(false)
+                    : null;
+            var consistencyLeaseHeld = closeConsistencyLease is not null;
+            if (!request.PrepareClosingEntriesOnly && !consistencyLeaseHeld)
+            {
+                plan = await AttachClosingEntriesGateAsync(
+                        plan,
+                        workflow,
+                        ct,
+                        tenantId,
+                        companyId)
+                    .ConfigureAwait(false);
+                return new ClosePeriodLockResultDto(
+                    false,
+                    plan,
+                    null,
+                    [MutationConsistencyGateUnavailableIssue(plan)]);
+            }
+
+            if (plan.IsPeriodLocked)
+            {
+                if (_postingWorkbench is not null && !request.PrepareClosingEntriesOnly)
+                {
+                    try
+                    {
+                        await _postingWorkbench.FinalizeHardCloseAsync(
+                                RequirePostingContext(workflow, plan, tenantId, companyId),
+                                new AccountingClosePostingCommand(
+                                    resolvedActor,
+                                    RequireText(request.Rationale, "Rationale"),
+                                    NormalizeEvidenceLinks(request.EvidenceLinks),
+                                    request.ActionOrigin,
+                                    Role: controllerRole!,
+                                    CorrelationId: request.CorrelationId)
+                                {
+                                    ConsistencyLeaseHeld = consistencyLeaseHeld
+                                },
+                                ct)
+                            .ConfigureAwait(false);
+                    }
+                    catch (ReportingCloseEvidenceHandoffException ex)
+                    {
+                        plan = await AttachClosingEntriesGateAsync(
+                                plan,
+                                workflow,
+                                ct,
+                                tenantId,
+                                companyId)
+                            .ConfigureAwait(false);
+                        plan = plan with
+                        {
+                            IsPeriodLocked = true,
+                            CloseCalendar = BuildCloseCalendar(plan.Tasks, isPeriodLocked: true)
+                        };
+                        return ReportingEvidenceHandoffPending(plan, ex);
+                    }
+                }
+
+                plan = await AttachClosingEntriesGateAsync(plan, workflow, ct, tenantId, companyId).ConfigureAwait(false);
+                return new ClosePeriodLockResultDto(
+                    true,
+                    plan,
+                    null,
+                    [
+                        new AccountingConfigurationValidationIssueDto(
                         "ClosePeriodAlreadyLocked",
                         AccountingConfigurationValidationSeverityDto.Warning,
                         $"Close period '{plan.PeriodId}' is already locked.",
                         plan.ClosePlanId,
                         "Use governed reopen workflow before changing a locked period.")
-                ]);
-        }
+                    ]);
+            }
 
-        var issues = BuildClosePeriodLockIssues(request, workflow, plan);
-        if (issues.Count > 0)
+            var issues = BuildClosePeriodLockIssues(request, workflow, plan);
+            if (issues.Count > 0)
+            {
+                plan = await AttachClosingEntriesGateAsync(plan, workflow, ct, tenantId, companyId).ConfigureAwait(false);
+                return new ClosePeriodLockResultDto(false, plan, null, issues);
+            }
+
+            if (_postingWorkbench is null)
+            {
+                plan = AttachClosingEntriesGate(plan, UnavailableClosingEntriesGate(plan));
+                return new ClosePeriodLockResultDto(
+                    false,
+                    plan,
+                    null,
+                    [ClosingEntriesIssue(plan.ClosingEntriesGate!)]);
+            }
+
+            ClosePostingGateDto closingGate;
+            try
+            {
+                closingGate = await _postingWorkbench.EnsureClosingDraftQueuedAsync(
+                        RequirePostingContext(workflow, plan, tenantId, companyId),
+                        new AccountingClosePostingCommand(
+                            resolvedActor,
+                            RequireText(request.Rationale, "Rationale"),
+                            NormalizeEvidenceLinks(request.EvidenceLinks),
+                            request.ActionOrigin,
+                            CorrelationId: request.CorrelationId),
+                        ct)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
+            {
+                closingGate = new ClosePostingGateDto(
+                    $"period-close-posting:{plan.ClosePlanId}",
+                    "Post closing entries",
+                    ClosePostingGateStateDto.Blocked,
+                    false,
+                    0m,
+                    0,
+                    ex.Message);
+            }
+
+            plan = AttachClosingEntriesGate(plan, closingGate);
+            if (request.PrepareClosingEntriesOnly)
+            {
+                var preparationIssues = closingGate.State is ClosePostingGateStateDto.Blocked
+                    or ClosePostingGateStateDto.Unavailable
+                    ? new[] { ClosingEntriesIssue(closingGate) }
+                    : Array.Empty<AccountingConfigurationValidationIssueDto>();
+                return new ClosePeriodLockResultDto(
+                    false,
+                    plan,
+                    null,
+                    preparationIssues);
+            }
+
+            if (!closingGate.IsReadyForLock)
+            {
+                return new ClosePeriodLockResultDto(
+                    false,
+                    plan,
+                    null,
+                    [ClosingEntriesIssue(closingGate)]);
+            }
+
+            // Closing-entry preparation can await external stores. Re-read the governed workflow at the
+            // irreversible mutation boundary so a concurrent sign-off/configuration/version change cannot
+            // hard-close the ledger against a stale close plan.
+            var boundaryWorkflow = await _workflowService.GetAsync(request.WorkflowId, ct).ConfigureAwait(false);
+            if (boundaryWorkflow is null)
+            {
+                return null;
+            }
+
+            var boundaryPlan = BuildPeriodPlan(boundaryWorkflow);
+            var boundaryIssues = BuildClosePeriodLockIssues(request, boundaryWorkflow, boundaryPlan);
+            if (boundaryIssues.Count > 0)
+            {
+                return new ClosePeriodLockResultDto(
+                    false,
+                    AttachClosingEntriesGate(boundaryPlan, closingGate),
+                    null,
+                    boundaryIssues);
+            }
+
+            workflow = boundaryWorkflow;
+            plan = AttachClosingEntriesGate(boundaryPlan, closingGate);
+
+            try
+            {
+                await _postingWorkbench.FinalizeHardCloseAsync(
+                        RequirePostingContext(workflow, plan, tenantId, companyId),
+                        new AccountingClosePostingCommand(
+                            resolvedActor,
+                            RequireText(request.Rationale, "Rationale"),
+                            NormalizeEvidenceLinks(request.EvidenceLinks),
+                            request.ActionOrigin,
+                            Role: controllerRole!,
+                            CorrelationId: request.CorrelationId)
+                        {
+                            ConsistencyLeaseHeld = consistencyLeaseHeld
+                        },
+                        ct)
+                    .ConfigureAwait(false);
+            }
+            catch (ReportingCloseEvidenceHandoffException ex)
+            {
+                plan = await AttachClosingEntriesGateAsync(
+                        plan,
+                        workflow,
+                        ct,
+                        tenantId,
+                        companyId)
+                    .ConfigureAwait(false);
+                plan = plan with
+                {
+                    IsPeriodLocked = true,
+                    CloseCalendar = BuildCloseCalendar(plan.Tasks, isPeriodLocked: true)
+                };
+                return ReportingEvidenceHandoffPending(plan, ex);
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or LedgerBookServiceException)
+            {
+                return new ClosePeriodLockResultDto(
+                    false,
+                    plan,
+                    null,
+                    [new AccountingConfigurationValidationIssueDto(
+                    "LedgerPeriodHardCloseFailed",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    ex.Message,
+                    closingGate.GateId,
+                    "Resolve the ledger-period hard-close failure and retry with the same retained closing-entry evidence.")]);
+            }
+
+            var transition = await _workflowService.CloseWorkflowAsync(
+                request.WorkflowId,
+                new OperationsCloseWorkflowRequestDto(
+                    ExpectedVersion: request.ExpectedWorkflowVersion,
+                    Actor: resolvedActor,
+                    Rationale: RequireText(request.Rationale, "Rationale"),
+                    ReportPackId: RequireText(request.ReportPackId, "ReportPackId"),
+                    ChecklistControlApprovals: request.ChecklistControlApprovals,
+                    CorrelationId: request.CorrelationId,
+                    EvidenceLinks: ToOperationsEvidenceLinks(request.EvidenceLinks),
+                    ClosePackageId: request.ClosePackageId,
+                    ClosePackageManifestId: request.ClosePackageManifestId,
+                    ClosePackageEvidenceHash: null,
+                    ClosePackageRetainedManifestRoute: request.ClosePackageRetainedManifestRoute,
+                    ActionOrigin: request.ActionOrigin),
+                ct).ConfigureAwait(false);
+
+            var updatedPlan = transition.Workflow is null
+                ? plan
+                : await BuildPeriodPlanWithGateAsync(transition.Workflow, ct, tenantId, companyId).ConfigureAwait(false);
+            if (transition.Success)
+            {
+                try
+                {
+                    // The first hard-close call deliberately cannot retain certifiable reporting
+                    // evidence while the Operations Continuity close transition is pending. Once
+                    // that transition commits, repeat the idempotent handoff so the final receipt
+                    // binds the closed workflow version, approval, checklist, close package, and
+                    // close-audit hash without reopening or re-closing the ledger period.
+                    await _postingWorkbench.FinalizeHardCloseAsync(
+                            RequirePostingContext(transition.Workflow ?? workflow, updatedPlan, tenantId, companyId),
+                            new AccountingClosePostingCommand(
+                                resolvedActor,
+                                RequireText(request.Rationale, "Rationale"),
+                                NormalizeEvidenceLinks(request.EvidenceLinks),
+                                request.ActionOrigin,
+                                Role: controllerRole!,
+                                CorrelationId: request.CorrelationId)
+                            {
+                                ConsistencyLeaseHeld = consistencyLeaseHeld
+                            },
+                            ct)
+                        .ConfigureAwait(false);
+                }
+                catch (ReportingCloseEvidenceHandoffException ex)
+                {
+                    updatedPlan = updatedPlan with
+                    {
+                        IsPeriodLocked = true,
+                        CloseCalendar = BuildCloseCalendar(updatedPlan.Tasks, isPeriodLocked: true)
+                    };
+                    return ReportingEvidenceHandoffPending(updatedPlan, ex);
+                }
+            }
+
+            var transitionIssues = transition.Success
+                ? Array.Empty<AccountingConfigurationValidationIssueDto>()
+                : transition.Blockers
+                    .Select(static blocker => ToValidationIssue(blocker))
+                    .Append(new AccountingConfigurationValidationIssueDto(
+                        "CloseWorkflowTransitionPendingAfterLedgerHardClose",
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        "The ledger period is hard-closed, but the workflow close transition did not commit.",
+                        plan.ClosePlanId,
+                        "Refresh the close plan and retry the same close command with the current workflow version; ledger hard close is idempotent."))
+                    .ToArray();
+            return new ClosePeriodLockResultDto(
+                transition.Success && updatedPlan.IsPeriodLocked,
+                updatedPlan,
+                transition,
+                transitionIssues);
+        }
+        finally
         {
-            return new ClosePeriodLockResultDto(false, plan, null, issues);
+            _writeGate.Release();
         }
+    }
 
-        var transition = await _workflowService.CloseWorkflowAsync(
-            request.WorkflowId,
-            new OperationsCloseWorkflowRequestDto(
-                ExpectedVersion: request.ExpectedWorkflowVersion,
-                Actor: resolvedActor,
-                Rationale: RequireText(request.Rationale, "Rationale"),
-                ReportPackId: RequireText(request.ReportPackId, "ReportPackId"),
-                ChecklistControlApprovals: request.ChecklistControlApprovals,
-                CorrelationId: request.CorrelationId,
-                EvidenceLinks: ToOperationsEvidenceLinks(request.EvidenceLinks),
-                ClosePackageId: request.ClosePackageId,
-                ClosePackageManifestId: request.ClosePackageManifestId,
-                ClosePackageEvidenceHash: null,
-                ClosePackageRetainedManifestRoute: request.ClosePackageRetainedManifestRoute,
-                ActionOrigin: request.ActionOrigin),
-            ct).ConfigureAwait(false);
+    private static ClosePeriodLockResultDto ReportingEvidenceHandoffPending(
+        ClosePeriodPlanDto plan,
+        ReportingCloseEvidenceHandoffException exception) =>
+        new(
+            false,
+            plan,
+            null,
+            [new AccountingConfigurationValidationIssueDto(
+                "CloseReportingEvidenceHandoffPending",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                exception.Message,
+                exception.CompletionCheckpointId,
+                "The ledger hard close is durable. Retry this same close command after restoring the reporting evidence store; do not reopen the period.")]);
 
-        var updatedPlan = transition.Workflow is null
-            ? plan
-            : BuildPeriodPlan(transition.Workflow);
-        var transitionIssues = transition.Success
-            ? Array.Empty<AccountingConfigurationValidationIssueDto>()
-            : transition.Blockers
-                .Select(static blocker => ToValidationIssue(blocker))
-                .ToArray();
-        return new ClosePeriodLockResultDto(
-            transition.Success && updatedPlan.IsPeriodLocked,
-            updatedPlan,
-            transition,
-            transitionIssues);
+    public Task<ClosePeriodReopenResultDto?> ReopenClosePeriodAsync(
+        ReopenClosePeriodRequestDto request,
+        string actor,
+        CancellationToken ct = default)
+        => Task.FromException<ClosePeriodReopenResultDto?>(
+            new InvalidOperationException(
+                "Governed close-period reopen requires an authenticated tenant and company scope. Use the scoped close-period operation."));
+
+    public async Task<ClosePeriodReopenResultDto?> ReopenClosePeriodScopedAsync(
+        ReopenClosePeriodRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        EnsureHumanOrigin(request.ActionOrigin, "reopen close periods");
+        if (request.WorkflowId == Guid.Empty)
+        {
+            throw new ArgumentException("WorkflowId is required.", nameof(request));
+        }
+        RequireCompleteMutationScope(tenantId, companyId);
+
+        await _writeGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var role = RequireText(request.Role, "Role");
+            if (!string.Equals(role, "Controller", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(role, "Fund Controller", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    "Governed close-period reopen requires Controller or Fund Controller authority.");
+            }
+
+            var evidence = NormalizeEvidenceLinks(request.EvidenceLinks);
+            if (evidence.Count == 0)
+            {
+                throw new InvalidOperationException("Governed close-period reopen requires retained reversal/restatement evidence.");
+            }
+
+            var resolvedActor = string.IsNullOrWhiteSpace(actor) ? RequireText(request.Actor, "Actor") : actor.Trim();
+            var workflow = await _workflowService.GetAsync(request.WorkflowId, ct).ConfigureAwait(false);
+            if (workflow is null)
+            {
+                return null;
+            }
+
+            var plan = BuildPeriodPlan(workflow);
+            if (!plan.IsPeriodLocked)
+            {
+                return new ClosePeriodReopenResultDto(
+                    false,
+                    await AttachClosingEntriesGateAsync(plan, workflow, ct, tenantId, companyId).ConfigureAwait(false),
+                    null,
+                    null,
+                    [new AccountingConfigurationValidationIssueDto(
+                    "ClosePeriodNotLocked",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Close period '{plan.PeriodId}' is not locked and cannot enter governed reopen.",
+                    plan.ClosePlanId,
+                    "Use the normal late-adjustment workflow for a soft-closed period.")]);
+            }
+
+            if (workflow.Version != request.ExpectedWorkflowVersion)
+            {
+                return new ClosePeriodReopenResultDto(
+                    false,
+                    await AttachClosingEntriesGateAsync(plan, workflow, ct, tenantId, companyId).ConfigureAwait(false),
+                    null,
+                    null,
+                    [new AccountingConfigurationValidationIssueDto(
+                    "ClosePeriodReopenVersionMismatch",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Workflow version {workflow.Version} does not match expected version {request.ExpectedWorkflowVersion}.",
+                    plan.ClosePlanId,
+                    "Refresh the close plan before reopening the period.")]);
+            }
+
+            if (_postingWorkbench is null)
+            {
+                var unavailable = UnavailableClosingEntriesGate(plan);
+                return new ClosePeriodReopenResultDto(
+                    false,
+                    AttachClosingEntriesGate(plan, unavailable),
+                    null,
+                    unavailable,
+                    [ClosingEntriesIssue(unavailable)]);
+            }
+
+            if (_mutationGate is null)
+            {
+                plan = await AttachClosingEntriesGateAsync(
+                        plan,
+                        workflow,
+                        ct,
+                        tenantId,
+                        companyId)
+                    .ConfigureAwait(false);
+                return new ClosePeriodReopenResultDto(
+                    false,
+                    plan,
+                    null,
+                    plan.ClosingEntriesGate,
+                    [MutationConsistencyGateUnavailableIssue(plan)]);
+            }
+
+            await using var reopenConsistencyLease = await _mutationGate
+                .AcquireAsync(
+                    RequirePostingContext(workflow, plan, tenantId, companyId),
+                    ct)
+                .ConfigureAwait(false);
+            var consistencyLeaseHeld = reopenConsistencyLease is not null;
+            if (!consistencyLeaseHeld)
+            {
+                plan = await AttachClosingEntriesGateAsync(
+                        plan,
+                        workflow,
+                        ct,
+                        tenantId,
+                        companyId)
+                    .ConfigureAwait(false);
+                return new ClosePeriodReopenResultDto(
+                    false,
+                    plan,
+                    null,
+                    plan.ClosingEntriesGate,
+                    [MutationConsistencyGateUnavailableIssue(plan)]);
+            }
+
+            // Re-read immediately before the durable ledger reopen. This prevents a stale version from
+            // reopening the ledger after another close-plan mutation completed while the request waited.
+            var boundaryWorkflow = await _workflowService.GetAsync(request.WorkflowId, ct).ConfigureAwait(false);
+            if (boundaryWorkflow is null)
+            {
+                return null;
+            }
+
+            var boundaryPlan = BuildPeriodPlan(boundaryWorkflow);
+            if (!boundaryPlan.IsPeriodLocked)
+            {
+                return new ClosePeriodReopenResultDto(
+                    false,
+                    await AttachClosingEntriesGateAsync(boundaryPlan, boundaryWorkflow, ct, tenantId, companyId).ConfigureAwait(false),
+                    null,
+                    null,
+                    [new AccountingConfigurationValidationIssueDto(
+                    "ClosePeriodNotLocked",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Close period '{boundaryPlan.PeriodId}' is no longer locked and cannot enter governed reopen.",
+                    boundaryPlan.ClosePlanId,
+                    "Refresh the close plan before retrying the reopen command.")]);
+            }
+
+            if (boundaryWorkflow.Version != request.ExpectedWorkflowVersion)
+            {
+                return new ClosePeriodReopenResultDto(
+                    false,
+                    await AttachClosingEntriesGateAsync(boundaryPlan, boundaryWorkflow, ct, tenantId, companyId).ConfigureAwait(false),
+                    null,
+                    null,
+                    [new AccountingConfigurationValidationIssueDto(
+                    "ClosePeriodReopenVersionMismatch",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Workflow version {boundaryWorkflow.Version} does not match expected version {request.ExpectedWorkflowVersion}.",
+                    boundaryPlan.ClosePlanId,
+                    "Refresh the close plan before reopening the period.")]);
+            }
+
+            workflow = boundaryWorkflow;
+            plan = boundaryPlan;
+
+            var reversalGate = await _postingWorkbench.ReopenAndQueueClosingReversalsAsync(
+                    RequirePostingContext(workflow, plan, tenantId, companyId),
+                    new AccountingClosePostingCommand(
+                        resolvedActor,
+                        RequireText(request.Rationale, "Rationale"),
+                        evidence,
+                        request.ActionOrigin,
+                        role,
+                        RequireText(request.ApprovalReference, "ApprovalReference"),
+                        request.CorrelationId)
+                    {
+                        ConsistencyLeaseHeld = consistencyLeaseHeld
+                    },
+                    ct)
+                .ConfigureAwait(false);
+
+            var transition = await _workflowService.ReopenWorkflowAsync(
+                    request.WorkflowId,
+                    new OperationsReopenWorkflowRequestDto(
+                        request.ExpectedWorkflowVersion,
+                        resolvedActor,
+                        RequireText(request.Rationale, "Rationale"),
+                        RequireText(request.IncidentId, "IncidentId"),
+                        IsGovernedAdmin: true,
+                        RequireText(request.Justification, "Justification"),
+                        RequireText(request.ApprovalReference, "ApprovalReference"),
+                        RequireText(request.ImpactSummary, "ImpactSummary"),
+                        request.CorrelationId,
+                        ToOperationsEvidenceLinks(evidence),
+                        request.ActionOrigin),
+                    ct)
+                .ConfigureAwait(false);
+
+            var updatedPlan = transition.Workflow is null
+                ? AttachClosingEntriesGate(plan, reversalGate)
+                : AttachClosingEntriesGate(BuildPeriodPlan(transition.Workflow), reversalGate);
+            var reopenIssues = transition.Success
+                ? Array.Empty<AccountingConfigurationValidationIssueDto>()
+                : transition.Blockers
+                    .Select(static blocker => ToValidationIssue(blocker))
+                    .Append(new AccountingConfigurationValidationIssueDto(
+                        "CloseWorkflowReopenPendingAfterLedgerReopen",
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        "The ledger period is reopened, but the workflow reopen transition did not commit.",
+                        plan.ClosePlanId,
+                        "Refresh the close plan and retry the exact reopen command with the current workflow version; the retained reversal receipt makes ledger reopen idempotent."))
+                    .ToArray();
+            return new ClosePeriodReopenResultDto(
+                transition.Success,
+                updatedPlan,
+                transition,
+                reversalGate,
+                reopenIssues);
+        }
+        finally
+        {
+            _writeGate.Release();
+        }
     }
 
     private ClosePeriodPlanDto BuildPeriodPlan(OperationsContinuityWorkflowDto workflow)
@@ -721,7 +1404,146 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             BuildCloseCalendar(tasks, isPeriodLocked),
             planConfiguration,
             evidenceReviews,
-            operatingCoverage);
+            operatingCoverage,
+            WorkflowVersion: workflow.Version);
+    }
+
+    private async Task<ClosePeriodPlanDto> BuildPeriodPlanWithGateAsync(
+        OperationsContinuityWorkflowDto workflow,
+        CancellationToken ct,
+        string? tenantId = null,
+        string? companyId = null)
+        => await AttachClosingEntriesGateAsync(
+                BuildPeriodPlan(workflow),
+                workflow,
+                ct,
+                tenantId,
+                companyId)
+            .ConfigureAwait(false);
+
+    private async Task<ClosePeriodPlanDto> AttachClosingEntriesGateAsync(
+        ClosePeriodPlanDto plan,
+        OperationsContinuityWorkflowDto workflow,
+        CancellationToken ct,
+        string? tenantId = null,
+        string? companyId = null)
+    {
+        if (_postingWorkbench is null)
+        {
+            return AttachClosingEntriesGate(plan, UnavailableClosingEntriesGate(plan));
+        }
+
+        ClosePostingGateDto gate;
+        try
+        {
+            gate = await _postingWorkbench
+                .EvaluateAsync(RequirePostingContext(workflow, plan, tenantId, companyId), ct)
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
+        {
+            gate = new ClosePostingGateDto(
+                $"period-close-posting:{plan.ClosePlanId}",
+                "Post closing entries",
+                ClosePostingGateStateDto.Blocked,
+                false,
+                0m,
+                0,
+                ex.Message);
+        }
+
+        return AttachClosingEntriesGate(plan, gate);
+    }
+
+    private static ClosePeriodPlanDto AttachClosingEntriesGate(
+        ClosePeriodPlanDto plan,
+        ClosePostingGateDto gate)
+    {
+        var gateIssues = gate.IsReadyForLock
+            ? Array.Empty<AccountingConfigurationValidationIssueDto>()
+            : new[] { ClosingEntriesIssue(gate) };
+        var coverageState = gate.IsReadyForLock
+            ? AccountingReadinessStateDto.ReadyForReview
+            : gate.State == ClosePostingGateStateDto.Unavailable
+                ? AccountingReadinessStateDto.NeedsAttention
+                : AccountingReadinessStateDto.Blocked;
+        var coverage = new CloseOperatingCoverageItemDto(
+            "post-closing-entries",
+            "Post closing entries",
+            coverageState,
+            gate.EvidenceLinks.Count,
+            gate.IsReadyForLock ? 0 : 1,
+            gate.Detail,
+            gate.EvidenceLinks,
+            gateIssues);
+        return plan with
+        {
+            ClosingEntriesGate = gate,
+            OperatingCoverage = plan.OperatingCoverage
+                .Where(static item => !string.Equals(item.ControlId, "post-closing-entries", StringComparison.OrdinalIgnoreCase))
+                .Append(coverage)
+                .ToArray()
+        };
+    }
+
+    private static ClosePostingGateDto UnavailableClosingEntriesGate(ClosePeriodPlanDto plan)
+        => new(
+            $"period-close-posting:{plan.ClosePlanId}",
+            "Post closing entries",
+            ClosePostingGateStateDto.Unavailable,
+            false,
+            0m,
+            0,
+            "The governed closing-entry workbench is unavailable; period lock fails closed.");
+
+    private static AccountingClosePostingContext RequirePostingContext(
+        OperationsContinuityWorkflowDto workflow,
+        ClosePeriodPlanDto plan,
+        string? tenantId = null,
+        string? companyId = null)
+    {
+        if (workflow.LedgerBookId is not { } ledgerBookId || ledgerBookId == Guid.Empty)
+        {
+            throw new InvalidOperationException(
+                $"Close workflow '{workflow.WorkflowId:D}' has no selected ledger book for closing entries.");
+        }
+
+        return new AccountingClosePostingContext(
+            workflow.WorkflowId,
+            workflow.FundAccountId,
+            ledgerBookId,
+            workflow.PeriodId,
+            plan.MaterialityPolicy.Currency,
+            tenantId,
+            companyId);
+    }
+
+    private static AccountingConfigurationValidationIssueDto ClosingEntriesIssue(ClosePostingGateDto gate)
+        => new(
+            gate.State == ClosePostingGateStateDto.Unavailable
+                ? "PeriodClosePostingGateUnavailable"
+                : "PeriodCloseClosingEntriesPending",
+            AccountingConfigurationValidationSeverityDto.Critical,
+            gate.Detail,
+            gate.GateId,
+            "Open the Post closing entries gate, review the net-income roll, and independently approve/post the governed draft before period lock.");
+
+    private static AccountingConfigurationValidationIssueDto MutationConsistencyGateUnavailableIssue(
+        ClosePeriodPlanDto plan)
+        => new(
+            "ClosePeriodMutationConsistencyGateUnavailable",
+            AccountingConfigurationValidationSeverityDto.Critical,
+            "The durable accounting-period mutation fence is unavailable; ledger close/reopen and the Operations workflow transition cannot be committed as one governed outcome.",
+            plan.ClosePlanId,
+            "Configure the canonical cross-host reporting release/close consistency authority, then retry the unchanged close or reopen command.");
+
+    private static void RequireCompleteMutationScope(string? tenantId, string? companyId)
+    {
+        if (string.IsNullOrWhiteSpace(tenantId) || string.IsNullOrWhiteSpace(companyId))
+        {
+            throw new ArgumentException(
+                "Governed accounting-period mutation requires authenticated tenant and company scope.");
+        }
     }
 
     private static IReadOnlyList<CloseOperatingCoverageItemDto> BuildOperatingCoverage(
@@ -908,26 +1730,258 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
     }
 
     private IReadOnlyList<WorkflowLateAdjustmentRecord> ReadLateAdjustments()
+        => ReadPersistedSlice(
+            static snapshot => snapshot.LateAdjustments,
+            ReadInMemoryLateAdjustments);
+
+    /// <summary>
+    /// Reads one collection out of the persisted close-management snapshot, falling back to the
+    /// in-memory set when no persistence path is configured or the file has never been initialized.
+    /// </summary>
+    /// <remarks>
+    /// An unreadable snapshot throws rather than yielding an empty set. Every close mutation
+    /// re-reads the three collections it is not changing and rewrites all four
+    /// (see <see cref="SaveCloseManagementAsync"/>), so an empty fallback would let the next
+    /// routine sign-off atomically overwrite the file with a snapshot missing every previously
+    /// recorded late adjustment, task sign-off, plan configuration, and evidence review.
+    /// Failing closed leaves the unreadable file intact on disk for recovery.
+    /// </remarks>
+    private IReadOnlyList<T> ReadPersistedSlice<T>(
+        Func<CloseManagementSnapshot, IReadOnlyList<T>?> select,
+        Func<IReadOnlyList<T>> readInMemory)
     {
-        if (string.IsNullOrWhiteSpace(_persistencePath) || !File.Exists(_persistencePath))
+        if (string.IsNullOrWhiteSpace(_persistencePath))
         {
-            return ReadInMemoryLateAdjustments();
+            return readInMemory();
         }
 
         lock (_readGate)
         {
+            if (!File.Exists(_persistencePath))
+            {
+                if (Volatile.Read(ref _hasEstablishedPersistedSnapshot) != 0)
+                {
+                    throw new InvalidDataException(
+                        $"Close-management snapshot '{_persistencePath}' is missing after durable " +
+                        "close-management state was previously persisted or observed. Refusing to " +
+                        "continue with an empty close-management set because the next close mutation " +
+                        "would permanently discard retained close evidence.");
+                }
+
+                return readInMemory();
+            }
+
+            CloseManagementSnapshot normalizedSnapshot;
             try
             {
-                var snapshot = JsonSerializer.Deserialize<CloseManagementSnapshot>(
-                    File.ReadAllText(_persistencePath),
-                    JsonOptions);
-                return snapshot?.LateAdjustments ?? [];
+                using var document = JsonDocument.Parse(File.ReadAllText(_persistencePath));
+                var version = ReadPersistedSnapshotVersion(document.RootElement);
+                var snapshot = document.RootElement.Deserialize<CloseManagementSnapshot>(JsonOptions);
+                normalizedSnapshot = NormalizePersistedSnapshot(snapshot, version);
             }
-            catch (JsonException)
+            catch (JsonException ex)
             {
-                return [];
+                throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' is unreadable. Refusing to " +
+                    "continue with an empty close-management set: the next close mutation would " +
+                    "overwrite this file and permanently discard the recorded late adjustments, " +
+                    "task sign-offs, plan configurations, and evidence reviews.",
+                    ex);
+            }
+
+            var slice = select(normalizedSnapshot)
+                ?? throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' is missing required state. " +
+                    "Refusing to continue because the next close mutation would overwrite retained " +
+                    "late adjustments, task sign-offs, plan configurations, or evidence reviews.");
+            Volatile.Write(ref _hasEstablishedPersistedSnapshot, 1);
+            return slice;
+        }
+    }
+
+    /// <summary>
+    /// Normalizes snapshots written before task sign-offs, plan configurations, and evidence
+    /// reviews were added to the persisted close-management record.
+    /// </summary>
+    /// <remarks>
+    /// Late adjustments are the original persisted authority and remain mandatory. A null root or
+    /// missing late-adjustment collection is therefore incomplete and fails closed. Repository
+    /// history contains three additive legacy generations: late adjustments only, then task
+    /// sign-offs, then plan configurations. Only those exact contiguous prefixes may omit later
+    /// collections; explicit nulls, unknown properties, and gapped shapes fail before typed
+    /// normalization. The next mutation persists the fully normalized four-collection snapshot
+    /// through <see cref="SaveCloseManagementAsync"/>.
+    /// </remarks>
+    private CloseManagementSnapshot NormalizePersistedSnapshot(
+        CloseManagementSnapshot? snapshot,
+        CloseManagementSnapshotVersion version)
+    {
+        if (snapshot?.LateAdjustments is null)
+        {
+            throw new InvalidDataException(
+                $"Close-management snapshot '{_persistencePath}' is missing required state. " +
+                "The legacy late-adjustment collection is the core persisted authority and must " +
+                "be present before retained close-management state can be read or rewritten.");
+        }
+
+        return version switch
+        {
+            CloseManagementSnapshotVersion.LateAdjustmentsOnly => snapshot with
+            {
+                TaskSignOffs = [],
+                PlanConfigurations = [],
+                EvidenceReviews = []
+            },
+            CloseManagementSnapshotVersion.ThroughTaskSignOffs
+                when snapshot.TaskSignOffs is not null => snapshot with
+                {
+                    PlanConfigurations = [],
+                    EvidenceReviews = []
+                },
+            CloseManagementSnapshotVersion.ThroughPlanConfigurations
+                when snapshot.TaskSignOffs is not null
+                     && snapshot.PlanConfigurations is not null => snapshot with
+                     {
+                         EvidenceReviews = []
+                     },
+            CloseManagementSnapshotVersion.Current
+                when snapshot.TaskSignOffs is not null
+                     && snapshot.PlanConfigurations is not null
+                     && snapshot.EvidenceReviews is not null => snapshot,
+            _ => throw new InvalidDataException(
+                $"Close-management snapshot '{_persistencePath}' is missing required state for " +
+                $"recognized persisted generation '{version}'. Refusing to infer retained close " +
+                "state from an incomplete typed snapshot.")
+        };
+    }
+
+    private CloseManagementSnapshotVersion ReadPersistedSnapshotVersion(JsonElement root)
+    {
+        if (root.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidDataException(
+                $"Close-management snapshot '{_persistencePath}' is missing required state. " +
+                "The persisted root must be a JSON object.");
+        }
+
+        var presentCollections = new bool[4];
+        foreach (var property in root.EnumerateObject())
+        {
+            var index = GetPersistedCollectionIndex(property.Name);
+            if (index < 0)
+            {
+                throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' has an unsupported state " +
+                    $"shape. Property '{property.Name}' is not part of a recognized persisted " +
+                    "close-management generation.");
+            }
+
+            if (presentCollections[index])
+            {
+                throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' has an unsupported state " +
+                    $"shape. Collection '{property.Name}' appears more than once.");
+            }
+
+            if (property.Value.ValueKind == JsonValueKind.Null)
+            {
+                throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' contains explicit null for " +
+                    $"collection '{property.Name}'. Present close-management collections must be " +
+                    "JSON arrays.");
+            }
+
+            if (property.Value.ValueKind != JsonValueKind.Array)
+            {
+                throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' has invalid state for " +
+                    $"collection '{property.Name}'. Present close-management collections must be " +
+                    "JSON arrays.");
+            }
+
+            presentCollections[index] = true;
+        }
+
+        if (!presentCollections[0])
+        {
+            throw new InvalidDataException(
+                $"Close-management snapshot '{_persistencePath}' is missing required state. " +
+                "The legacy late-adjustment collection is the core persisted authority.");
+        }
+
+        var lastPresentIndex = 0;
+        for (var index = 1; index < presentCollections.Length; index++)
+        {
+            if (presentCollections[index])
+            {
+                lastPresentIndex = index;
             }
         }
+
+        for (var index = 0; index <= lastPresentIndex; index++)
+        {
+            if (!presentCollections[index])
+            {
+                throw new InvalidDataException(
+                    $"Close-management snapshot '{_persistencePath}' has an unsupported gapped " +
+                    $"state shape. Collection '{GetPersistedCollectionName(index)}' is omitted " +
+                    "before a later-generation collection.");
+            }
+        }
+
+        return (CloseManagementSnapshotVersion)(lastPresentIndex + 1);
+    }
+
+    private static int GetPersistedCollectionIndex(string propertyName)
+    {
+        if (string.Equals(
+                propertyName,
+                nameof(CloseManagementSnapshot.LateAdjustments),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return 0;
+        }
+
+        if (string.Equals(
+                propertyName,
+                nameof(CloseManagementSnapshot.TaskSignOffs),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return 1;
+        }
+
+        if (string.Equals(
+                propertyName,
+                nameof(CloseManagementSnapshot.PlanConfigurations),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return 2;
+        }
+
+        return string.Equals(
+            propertyName,
+            nameof(CloseManagementSnapshot.EvidenceReviews),
+            StringComparison.OrdinalIgnoreCase)
+            ? 3
+            : -1;
+    }
+
+    private static string GetPersistedCollectionName(int index)
+        => index switch
+        {
+            0 => nameof(CloseManagementSnapshot.LateAdjustments),
+            1 => nameof(CloseManagementSnapshot.TaskSignOffs),
+            2 => nameof(CloseManagementSnapshot.PlanConfigurations),
+            3 => nameof(CloseManagementSnapshot.EvidenceReviews),
+            _ => throw new ArgumentOutOfRangeException(nameof(index))
+        };
+
+    private enum CloseManagementSnapshotVersion
+    {
+        LateAdjustmentsOnly = 1,
+        ThroughTaskSignOffs = 2,
+        ThroughPlanConfigurations = 3,
+        Current = 4
     }
 
     private async Task SaveCloseManagementAsync(
@@ -987,6 +2041,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
                 .ToArray());
         var json = JsonSerializer.Serialize(snapshot, JsonOptions);
         await AtomicFileWriter.WriteAsync(_persistencePath, json, ct).ConfigureAwait(false);
+        Volatile.Write(ref _hasEstablishedPersistedSnapshot, 1);
     }
 
     private IReadOnlyList<WorkflowLateAdjustmentRecord> ReadInMemoryLateAdjustments()
@@ -1006,27 +2061,9 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             .ToArray();
 
     private IReadOnlyList<WorkflowCloseTaskSignOffRecord> ReadTaskSignOffs()
-    {
-        if (string.IsNullOrWhiteSpace(_persistencePath) || !File.Exists(_persistencePath))
-        {
-            return ReadInMemoryTaskSignOffs();
-        }
-
-        lock (_readGate)
-        {
-            try
-            {
-                var snapshot = JsonSerializer.Deserialize<CloseManagementSnapshot>(
-                    File.ReadAllText(_persistencePath),
-                    JsonOptions);
-                return snapshot?.TaskSignOffs ?? [];
-            }
-            catch (JsonException)
-            {
-                return [];
-            }
-        }
-    }
+        => ReadPersistedSlice(
+            static snapshot => snapshot.TaskSignOffs,
+            ReadInMemoryTaskSignOffs);
 
     private IReadOnlyList<WorkflowCloseTaskSignOffRecord> ReadInMemoryTaskSignOffs()
     {
@@ -1043,27 +2080,9 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             .FirstOrDefault(configuration => configuration.WorkflowId == workflowId);
 
     private IReadOnlyList<ClosePeriodPlanConfigurationDto> ReadPlanConfigurations()
-    {
-        if (string.IsNullOrWhiteSpace(_persistencePath) || !File.Exists(_persistencePath))
-        {
-            return ReadInMemoryPlanConfigurations();
-        }
-
-        lock (_readGate)
-        {
-            try
-            {
-                var snapshot = JsonSerializer.Deserialize<CloseManagementSnapshot>(
-                    File.ReadAllText(_persistencePath),
-                    JsonOptions);
-                return snapshot?.PlanConfigurations ?? [];
-            }
-            catch (JsonException)
-            {
-                return [];
-            }
-        }
-    }
+        => ReadPersistedSlice(
+            static snapshot => snapshot.PlanConfigurations,
+            ReadInMemoryPlanConfigurations);
 
     private IReadOnlyList<ClosePeriodPlanConfigurationDto> ReadInMemoryPlanConfigurations()
     {
@@ -1076,27 +2095,9 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
     }
 
     private IReadOnlyList<WorkflowCloseEvidenceReviewRecord> ReadEvidenceReviews()
-    {
-        if (string.IsNullOrWhiteSpace(_persistencePath) || !File.Exists(_persistencePath))
-        {
-            return ReadInMemoryEvidenceReviews();
-        }
-
-        lock (_readGate)
-        {
-            try
-            {
-                var snapshot = JsonSerializer.Deserialize<CloseManagementSnapshot>(
-                    File.ReadAllText(_persistencePath),
-                    JsonOptions);
-                return snapshot?.EvidenceReviews ?? [];
-            }
-            catch (JsonException)
-            {
-                return [];
-            }
-        }
-    }
+        => ReadPersistedSlice(
+            static snapshot => snapshot.EvidenceReviews,
+            ReadInMemoryEvidenceReviews);
 
     private IReadOnlyList<WorkflowCloseEvidenceReviewRecord> ReadInMemoryEvidenceReviews()
     {
@@ -1108,888 +2109,4 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         }
     }
 
-    private static CloseTaskDto ToCloseTask(
-        OperationsCloseChecklistTaskDto task,
-        int index,
-        OperationsContinuityWorkflowDto workflow,
-        IReadOnlyList<WorkflowCloseTaskSignOffRecord> retainedSignOffs,
-        ISet<string> satisfiedTaskIds,
-        CloseTaskConfigurationDto? configuration)
-    {
-        var owner = NormalizeOptional(configuration?.Owner) ?? task.Owner;
-        var signOffRequirementConfigurations = BuildSignOffRequirementConfigurations(task, owner, configuration);
-        var dependencies = BuildDependencies(task.TaskId, index, workflow, configuration);
-        var signOffs = workflow.Approvals
-            .Select(approval => ToCloseSignOff(task, approval))
-            .Where(static signOff => signOff is not null)
-            .Cast<CloseSignOffDto>()
-            .Concat(retainedSignOffs
-                .Where(record => string.Equals(record.TaskId, task.TaskId, StringComparison.OrdinalIgnoreCase))
-                .Select(static record => record.SignOff))
-            .ToArray();
-        var evidenceLinks = NormalizeEvidenceLinks(
-            [task.EvidencePointer, .. signOffs.SelectMany(static signOff => signOff.EvidenceLinks)]);
-        var dependenciesSatisfied = dependencies.Count == 0 ||
-            dependencies.All(dependency => satisfiedTaskIds.Contains(dependency.DependsOnTaskId));
-
-        return new CloseTaskDto(
-            task.TaskId,
-            NormalizeOptional(configuration?.DisplayName) ?? task.Label,
-            ResolveTaskStatus(task, signOffRequirementConfigurations, dependencies, dependenciesSatisfied, workflow.Approvals, signOffs),
-            owner,
-            configuration?.DueDate ?? task.DueDate ?? task.ExpiresOn ?? DateOnly.FromDateTime(workflow.UpdatedAtUtc.UtcDateTime),
-                dependencies,
-                signOffs,
-                evidenceLinks,
-                task.BlockingReason,
-                BuildSignOffRequirements(task, signOffRequirementConfigurations, signOffs));
-    }
-
-    private static IReadOnlyList<CloseDependencyDto> BuildDependencies(
-        string taskId,
-        int index,
-        OperationsContinuityWorkflowDto workflow,
-        CloseTaskConfigurationDto? configuration)
-    {
-        if (configuration is not null && configuration.DependencyConfigurations.Count > 0)
-        {
-            return configuration.DependencyConfigurations
-                .Select(dependency => new CloseDependencyDto(
-                    $"dependency-{Sanitize(taskId)}-{Sanitize(dependency.DependsOnTaskId)}",
-                    dependency.DependsOnTaskId,
-                    string.IsNullOrWhiteSpace(dependency.Reason)
-                        ? "Configured close-plan dependency."
-                        : dependency.Reason.Trim()))
-                .ToArray();
-        }
-
-        return index == 0
-            ? []
-            :
-            [
-                new CloseDependencyDto(
-                    $"dependency-{taskId}",
-                    workflow.CloseChecklist[index - 1].TaskId,
-                    "Close checklist tasks must be completed in workflow order.")
-            ];
-    }
-
-    private static IReadOnlyList<CloseSignOffRequirementDto> BuildSignOffRequirements(
-        OperationsCloseChecklistTaskDto task,
-        IReadOnlyList<CloseTaskSignOffRequirementConfigurationDto> requirements,
-        IReadOnlyList<CloseSignOffDto> signOffs)
-        => requirements
-            .Select(requirement =>
-            {
-                var requiredCount = requirement.RequiredApprovalCount <= 0 ? 1 : requirement.RequiredApprovalCount;
-                var approvedCount = signOffs.Count(signOff =>
-                    signOff.ApprovalState == ManualJournalEntryStatusDto.Approved &&
-                    string.Equals(signOff.Role, requirement.Role, StringComparison.OrdinalIgnoreCase));
-                return new CloseSignOffRequirementDto(
-                    $"requirement-{Sanitize(task.TaskId)}-{Sanitize(requirement.Role)}",
-                    requirement.Role,
-                    requiredCount,
-                    approvedCount,
-                    approvedCount >= requiredCount,
-                    string.IsNullOrWhiteSpace(requirement.EvidenceRequirement)
-                        ? "Retained close-control sign-off evidence is required."
-                        : requirement.EvidenceRequirement);
-            })
-            .ToArray();
-
-    private static IReadOnlyList<CloseTaskSignOffRequirementConfigurationDto> BuildSignOffRequirementConfigurations(
-        OperationsCloseChecklistTaskDto task,
-        string owner,
-        CloseTaskConfigurationDto? configuration)
-    {
-        if (configuration is not null && configuration.SignOffRequirementConfigurations.Count > 0)
-        {
-            return configuration.SignOffRequirementConfigurations;
-        }
-
-        var requiredEvidence = NormalizeOptional(configuration?.RequiredEvidence) ?? task.RequiredEvidence;
-        var requiredApprovalCount = configuration?.RequiredApprovalCount ?? task.RequiredApprovalCount;
-        var requiredApprovalRole = NormalizeOptional(configuration?.RequiredApprovalRole) ?? ResolveRequiredSignOffRole(owner);
-        return
-        [
-            new CloseTaskSignOffRequirementConfigurationDto(
-                requiredApprovalRole,
-                requiredApprovalCount <= 0 ? 1 : requiredApprovalCount,
-                requiredEvidence)
-        ];
-    }
-
-    private static IReadOnlyList<CloseCalendarMilestoneDto> BuildCloseCalendar(
-        IReadOnlyList<CloseTaskDto> tasks,
-        bool isPeriodLocked)
-    {
-        return tasks
-            .OrderBy(static task => task.DueDate)
-            .ThenBy(static task => task.TaskId, StringComparer.OrdinalIgnoreCase)
-            .Select(task =>
-            {
-                var requiredSignOffCount = task.SignOffRequirements.Sum(static requirement => Math.Max(0, requirement.RequiredApprovalCount));
-                var approvedSignOffCount = task.SignOffRequirements.Sum(static requirement => Math.Max(0, requirement.ApprovedCount));
-                var fallbackApprovedCount = task.SignOffs.Count(static signOff => signOff.ApprovalState == ManualJournalEntryStatusDto.Approved);
-                return new CloseCalendarMilestoneDto(
-                    $"close-calendar-{Sanitize(task.TaskId)}",
-                    task.TaskId,
-                    task.DisplayName,
-                    task.Owner,
-                    task.DueDate,
-                    task.Status,
-                    task.Status == CloseTaskStatusDto.Blocked || !string.IsNullOrWhiteSpace(task.BlockerReason),
-                    task.Status == CloseTaskStatusDto.SignedOff || task.SignOffRequirements.Any(static requirement => requirement.IsSatisfied),
-                    isPeriodLocked,
-                    task.Dependencies.Count,
-                    requiredSignOffCount,
-                    task.SignOffRequirements.Count > 0 ? approvedSignOffCount : fallbackApprovedCount,
-                    task.EvidenceLinks,
-                    task.BlockerReason);
-            })
-            .ToArray();
-    }
-
-    private static string ResolveRequiredSignOffRole(OperationsCloseChecklistTaskDto task)
-        => ResolveRequiredSignOffRole(task.Owner);
-
-    private static string ResolveRequiredSignOffRole(string? owner)
-        => string.IsNullOrWhiteSpace(owner) ? "Controller" : owner.Trim();
-
-    private static CloseSignOffDto? ToCloseSignOff(
-        OperationsCloseChecklistTaskDto task,
-        OperationsApprovalDto approval)
-    {
-        if (approval.Status is OperationsApprovalStateDto.Pending)
-        {
-            return null;
-        }
-
-        return new CloseSignOffDto(
-            $"{task.TaskId}:{approval.ApprovalId}",
-            ResolveRequiredSignOffRole(task),
-            approval.Reviewer ?? approval.Operator,
-            approval.Status == OperationsApprovalStateDto.Approved
-                ? ManualJournalEntryStatusDto.Approved
-                : approval.Status == OperationsApprovalStateDto.Rejected
-                    ? ManualJournalEntryStatusDto.Rejected
-                    : ManualJournalEntryStatusDto.Submitted,
-            approval.DecidedAtUtc ?? approval.SubmittedAtUtc,
-            approval.EvidenceLinks.Select(static link => link.EvidenceId).ToArray());
-    }
-
-    private static CloseTaskStatusDto ResolveTaskStatus(
-        OperationsCloseChecklistTaskDto task,
-        IReadOnlyList<CloseTaskSignOffRequirementConfigurationDto> requirements,
-        IReadOnlyList<CloseDependencyDto> dependencies,
-        bool dependenciesSatisfied,
-        IReadOnlyList<OperationsApprovalDto> approvals,
-        IReadOnlyList<CloseSignOffDto> signOffs)
-    {
-        if (!string.IsNullOrWhiteSpace(task.BlockingReason)
-            || string.Equals(task.Status, "Blocked", StringComparison.OrdinalIgnoreCase))
-        {
-            return CloseTaskStatusDto.Blocked;
-        }
-
-        if (dependencies.Count > 0
-            && !dependenciesSatisfied
-            && !string.Equals(task.Status, "Done", StringComparison.OrdinalIgnoreCase))
-        {
-            return CloseTaskStatusDto.WaitingOnDependency;
-        }
-
-        if (signOffs.Any(signOff =>
-                signOff.ApprovalState == ManualJournalEntryStatusDto.Rejected &&
-                requirements.Any(requirement =>
-                    string.Equals(requirement.Role, signOff.Role, StringComparison.OrdinalIgnoreCase))))
-        {
-            return CloseTaskStatusDto.Blocked;
-        }
-
-        var isMatrixSatisfied = requirements.All(requirement =>
-            signOffs.Count(signOff =>
-                signOff.ApprovalState == ManualJournalEntryStatusDto.Approved &&
-                string.Equals(signOff.Role, requirement.Role, StringComparison.OrdinalIgnoreCase)) >= Math.Max(1, requirement.RequiredApprovalCount));
-        var hasApprovedSignOff = signOffs.Any(static signOff =>
-            signOff.ApprovalState == ManualJournalEntryStatusDto.Approved);
-        if (string.Equals(task.Status, "Done", StringComparison.OrdinalIgnoreCase)
-            || isMatrixSatisfied)
-        {
-            return CloseTaskStatusDto.SignedOff;
-        }
-
-        if (hasApprovedSignOff)
-        {
-            return CloseTaskStatusDto.InProgress;
-        }
-
-        var approvedCount = approvals.Count(static approval => approval.Status == OperationsApprovalStateDto.Approved);
-        if (task.RequiredApprovalCount > 0 && approvedCount >= task.RequiredApprovalCount)
-        {
-            return CloseTaskStatusDto.ReadyForSignOff;
-        }
-
-        return task.AcknowledgedAtUtc is null
-            ? CloseTaskStatusDto.NotStarted
-            : CloseTaskStatusDto.InProgress;
-    }
-
-    private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildValidationIssues(
-        OperationsContinuityWorkflowDto workflow,
-        IReadOnlyList<CloseTaskDto> tasks,
-        IReadOnlyList<LateAdjustmentRequestDto> lateAdjustments,
-        MaterialityPolicyDto policy)
-    {
-        var issues = new List<AccountingConfigurationValidationIssueDto>();
-        foreach (var blocker in workflow.Blockers)
-        {
-            issues.Add(new AccountingConfigurationValidationIssueDto(
-                $"CloseBlocker:{blocker.Code}",
-                string.Equals(blocker.Severity, "Critical", StringComparison.OrdinalIgnoreCase)
-                    ? AccountingConfigurationValidationSeverityDto.Critical
-                    : AccountingConfigurationValidationSeverityDto.Warning,
-                blocker.Message,
-                blocker.Code,
-                "Resolve the workflow blocker before close sign-off."));
-        }
-
-        foreach (var task in tasks.Where(static task => task.Status == CloseTaskStatusDto.Blocked))
-        {
-            issues.Add(new AccountingConfigurationValidationIssueDto(
-                "CloseTaskBlocked",
-                AccountingConfigurationValidationSeverityDto.Critical,
-                task.BlockerReason ?? $"Close task '{task.DisplayName}' is blocked.",
-                task.TaskId,
-                "Resolve the close checklist blocker before period lock."));
-        }
-
-        foreach (var task in tasks.Where(static task => task.SignOffs.Any(signOff =>
-                     signOff.ApprovalState == ManualJournalEntryStatusDto.Rejected &&
-                     task.SignOffRequirements.Any(requirement =>
-                         string.Equals(requirement.Role, signOff.Role, StringComparison.OrdinalIgnoreCase)))))
-        {
-            issues.Add(new AccountingConfigurationValidationIssueDto(
-                "CloseTaskSignOffRejected",
-                AccountingConfigurationValidationSeverityDto.Critical,
-                $"Close task '{task.DisplayName}' has a rejected retained sign-off decision.",
-                task.TaskId,
-                "Remediate the rejected close sign-off before period lock or report certification."));
-        }
-
-        foreach (var task in tasks)
-        {
-            foreach (var requirement in task.SignOffRequirements.Where(static requirement => !requirement.IsSatisfied))
-            {
-                if (HasRejectedSignOff(requirement.Role, task.SignOffs))
-                {
-                    continue;
-                }
-
-                issues.Add(new AccountingConfigurationValidationIssueDto(
-                    "CloseTaskSignOffMissing",
-                    AccountingConfigurationValidationSeverityDto.Critical,
-                    $"Close task '{task.DisplayName}' needs {requirement.RequiredApprovalCount:N0} approved '{requirement.Role}' sign-off decision(s); {requirement.ApprovedCount:N0} are retained.",
-                    task.TaskId,
-                    "Retain the required close sign-off approvals with scoped evidence before period lock or report certification."));
-            }
-        }
-
-        foreach (var task in tasks.Where(static task => task.Status == CloseTaskStatusDto.WaitingOnDependency))
-        {
-            var dependencyList = string.Join(", ", task.Dependencies.Select(static dependency => dependency.DependsOnTaskId));
-            issues.Add(new AccountingConfigurationValidationIssueDto(
-                "CloseTaskWaitingOnDependency",
-                AccountingConfigurationValidationSeverityDto.Warning,
-                $"Close task '{task.DisplayName}' is waiting on predecessor task(s): {dependencyList}.",
-                task.TaskId,
-                "Complete and sign off predecessor close tasks before this task can advance."));
-        }
-
-        foreach (var adjustment in lateAdjustments.Where(adjustment =>
-                     RequiresLateAdjustmentApproval(adjustment.Amount, policy) &&
-                     IsLateAdjustmentDecisionPending(adjustment)))
-        {
-            issues.Add(new AccountingConfigurationValidationIssueDto(
-                "LateAdjustmentRequiresApproval",
-                AccountingConfigurationValidationSeverityDto.Critical,
-                $"Late adjustment '{adjustment.RequestId}' exceeds the materiality policy and requires {policy.ReviewRole} approval.",
-                adjustment.RequestId,
-                "Approve or reject the late adjustment before final close certification."));
-        }
-
-        return issues;
-    }
-
-    private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildClosePeriodLockIssues(
-        LockClosePeriodRequestDto request,
-        OperationsContinuityWorkflowDto workflow,
-        ClosePeriodPlanDto plan)
-    {
-        var issues = new List<AccountingConfigurationValidationIssueDto>();
-        issues.AddRange(plan.ValidationIssues.Where(static issue =>
-            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical));
-
-        var evidenceLinks = NormalizeEvidenceLinks(request.EvidenceLinks);
-        if (evidenceLinks.Count == 0)
-        {
-            issues.Add(new AccountingConfigurationValidationIssueDto(
-                "ClosePeriodLockEvidenceMissing",
-                AccountingConfigurationValidationSeverityDto.Critical,
-                "Close period lock requires retained close-package, report-pack, or period-lock evidence.",
-                plan.ClosePlanId,
-                "Retain close-package evidence with exact workflow or period and ledger-book scope before locking the period."));
-        }
-        else if (!HasClosePeriodLockEvidenceWithProvenance(evidenceLinks, workflow))
-        {
-            issues.Add(new AccountingConfigurationValidationIssueDto(
-                "ClosePeriodLockEvidenceScopeMismatch",
-                AccountingConfigurationValidationSeverityDto.Critical,
-                "Close period lock evidence must reference the workflow or exact close period and selected ledger book on the same artifact.",
-                plan.ClosePlanId,
-                "Retain close-package evidence with exact workflow or period and ledger-book scope before locking the period."));
-        }
-
-        if (string.IsNullOrWhiteSpace(request.ReportPackId))
-        {
-            issues.Add(new AccountingConfigurationValidationIssueDto(
-                "ClosePeriodLockReportPackMissing",
-                AccountingConfigurationValidationSeverityDto.Critical,
-                "Close period lock requires a linked report package id.",
-                plan.ClosePlanId,
-                "Assemble and certify the report package before locking the period."));
-        }
-
-        if (request.ExpectedWorkflowVersion < 0)
-        {
-            issues.Add(new AccountingConfigurationValidationIssueDto(
-                "ClosePeriodLockVersionInvalid",
-                AccountingConfigurationValidationSeverityDto.Critical,
-                "Close period lock requires a non-negative expected workflow version.",
-                plan.ClosePlanId,
-                "Refresh the workflow and retry period lock with the current version."));
-        }
-
-        var unique = new List<AccountingConfigurationValidationIssueDto>(issues.Count);
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var issue in issues)
-        {
-            if (seen.Add($"{issue.Code}|{issue.TargetId}"))
-            {
-                unique.Add(issue);
-            }
-        }
-
-        return unique;
-    }
-
-    private static AccountingConfigurationValidationIssueDto ToValidationIssue(OperationsWorkflowBlockerDto blocker)
-        => new(
-            blocker.Code,
-            string.Equals(blocker.Severity, "Critical", StringComparison.OrdinalIgnoreCase)
-                ? AccountingConfigurationValidationSeverityDto.Critical
-                : AccountingConfigurationValidationSeverityDto.Warning,
-            blocker.Message,
-            blocker.Gate?.ToString(),
-            "Resolve the operations workflow blocker before locking the close period.");
-
-    private static IReadOnlyList<OperationsEvidenceLinkDto> ToOperationsEvidenceLinks(IReadOnlyList<string> evidenceLinks)
-        => NormalizeEvidenceLinks(evidenceLinks)
-            .Select(static link => new OperationsEvidenceLinkDto(
-                link,
-                "Close period lock evidence",
-                link.StartsWith("http", StringComparison.OrdinalIgnoreCase) ||
-                link.StartsWith("/", StringComparison.OrdinalIgnoreCase)
-                    ? link
-                    : null,
-                "Accounting close management",
-                DateTimeOffset.UtcNow))
-            .ToArray();
-
-    private static MaterialityPolicyDto ResolveMaterialityPolicy(OperationsContinuityWorkflowDto workflow)
-        => DefaultMaterialityPolicy with
-        {
-            PolicyId = $"materiality-{Sanitize(workflow.PeriodId)}",
-            Currency = "USD"
-        };
-
-    private static MaterialityPolicyDto NormalizeMaterialityPolicy(
-        MaterialityPolicyDto? requested,
-        MaterialityPolicyDto? current,
-        OperationsContinuityWorkflowDto workflow)
-    {
-        var fallback = current ?? ResolveMaterialityPolicy(workflow);
-        if (requested is null)
-        {
-            return fallback;
-        }
-
-        if (requested.AmountThreshold < 0m)
-        {
-            throw new ArgumentException("Materiality amount threshold must be zero or greater.", nameof(requested));
-        }
-
-        if (requested.PercentThreshold < 0m)
-        {
-            throw new ArgumentException("Materiality percent threshold must be zero or greater.", nameof(requested));
-        }
-
-        var reviewRole = RequireText(requested.ReviewRole, "MaterialityPolicy.ReviewRole");
-        var currency = RequireText(requested.Currency, "MaterialityPolicy.Currency").ToUpperInvariant();
-        return requested with
-        {
-            PolicyId = string.IsNullOrWhiteSpace(requested.PolicyId)
-                ? $"materiality-{Sanitize(workflow.PeriodId)}"
-                : requested.PolicyId.Trim(),
-            Currency = currency,
-            ReviewRole = reviewRole
-        };
-    }
-
-    private static IReadOnlyList<CloseTaskConfigurationDto> NormalizeTaskConfigurations(
-        IReadOnlyList<CloseTaskConfigurationDto> taskConfigurations,
-        OperationsContinuityWorkflowDto workflow)
-    {
-        var knownTaskIds = workflow.CloseChecklist
-            .Select(static task => task.TaskId)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var normalized = new List<CloseTaskConfigurationDto>(taskConfigurations.Count);
-        var seenTaskIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var configuration in taskConfigurations)
-        {
-            var taskId = RequireText(configuration.TaskId, "TaskConfiguration.TaskId");
-            if (!knownTaskIds.Contains(taskId))
-            {
-                throw new ArgumentException($"Close task '{taskId}' was not found for workflow '{workflow.WorkflowId}'.", nameof(taskConfigurations));
-            }
-
-            if (!seenTaskIds.Add(taskId))
-            {
-                throw new ArgumentException($"Close task '{taskId}' has duplicate configuration rows.", nameof(taskConfigurations));
-            }
-
-            if (configuration.RequiredApprovalCount is <= 0)
-            {
-                throw new ArgumentException($"Close task '{taskId}' requires a positive required approval count when configured.", nameof(taskConfigurations));
-            }
-
-            var signOffRequirements = NormalizeSignOffRequirementConfigurations(configuration, nameof(taskConfigurations));
-            var dependencies = NormalizeDependencyConfigurations(configuration);
-            foreach (var dependency in dependencies)
-            {
-                var dependsOn = dependency.DependsOnTaskId;
-                if (!knownTaskIds.Contains(dependsOn))
-                {
-                    throw new ArgumentException($"Close task '{taskId}' depends on unknown task '{dependsOn}'.", nameof(taskConfigurations));
-                }
-
-                if (string.Equals(dependsOn, taskId, StringComparison.OrdinalIgnoreCase))
-                {
-                    throw new ArgumentException($"Close task '{taskId}' cannot depend on itself.", nameof(taskConfigurations));
-                }
-            }
-
-            normalized.Add(configuration with
-            {
-                TaskId = taskId,
-                DisplayName = NormalizeOptional(configuration.DisplayName),
-                Owner = NormalizeOptional(configuration.Owner),
-                RequiredApprovalRole = NormalizeOptional(configuration.RequiredApprovalRole),
-                RequiredEvidence = NormalizeOptional(configuration.RequiredEvidence),
-                DependsOnTaskIds = dependencies.Select(static dependency => dependency.DependsOnTaskId).ToArray(),
-                DependencyConfigurations = dependencies,
-                SignOffRequirementConfigurations = signOffRequirements
-            });
-        }
-
-        return normalized
-            .OrderBy(static configuration => configuration.TaskId, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-    }
-
-    private static IReadOnlyList<CloseTaskSignOffRequirementConfigurationDto> NormalizeSignOffRequirementConfigurations(
-        CloseTaskConfigurationDto configuration,
-        string paramName)
-    {
-        var byRole = new Dictionary<string, CloseTaskSignOffRequirementConfigurationDto>(StringComparer.OrdinalIgnoreCase);
-        foreach (var requirement in configuration.SignOffRequirementConfigurations)
-        {
-            var role = RequireText(requirement.Role, "SignOffRequirementConfiguration.Role");
-            if (requirement.RequiredApprovalCount <= 0)
-            {
-                throw new ArgumentException(
-                    $"Close task '{configuration.TaskId}' sign-off requirement for role '{role}' must require at least one approval.",
-                    paramName);
-            }
-
-            byRole[role] = new CloseTaskSignOffRequirementConfigurationDto(
-                role,
-                requirement.RequiredApprovalCount,
-                NormalizeOptional(requirement.EvidenceRequirement));
-        }
-
-        return byRole.Values
-            .OrderBy(static requirement => requirement.Role, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-    }
-
-    private static IReadOnlyList<CloseTaskDependencyConfigurationDto> NormalizeDependencyConfigurations(
-        CloseTaskConfigurationDto configuration)
-    {
-        var byTaskId = new Dictionary<string, CloseTaskDependencyConfigurationDto>(StringComparer.OrdinalIgnoreCase);
-        foreach (var dependsOn in configuration.DependsOnTaskIds)
-        {
-            var dependsOnTaskId = RequireText(dependsOn, "DependsOnTaskId");
-            byTaskId[dependsOnTaskId] = new CloseTaskDependencyConfigurationDto(dependsOnTaskId);
-        }
-
-        foreach (var dependency in configuration.DependencyConfigurations)
-        {
-            var dependsOnTaskId = RequireText(dependency.DependsOnTaskId, "DependencyConfiguration.DependsOnTaskId");
-            byTaskId[dependsOnTaskId] = new CloseTaskDependencyConfigurationDto(
-                dependsOnTaskId,
-                NormalizeOptional(dependency.Reason));
-        }
-
-        return byTaskId.Values
-            .OrderBy(static dependency => dependency.DependsOnTaskId, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-    }
-
-    private static bool CloseConfigurationVersionMatches(DateTimeOffset actual, DateTimeOffset expected)
-        => actual.ToUniversalTime().Ticks == expected.ToUniversalTime().Ticks;
-
-    private static bool RequiresLateAdjustmentApproval(decimal amount, MaterialityPolicyDto policy)
-        => policy.RequiresLateAdjustmentApproval && Math.Abs(amount) >= policy.AmountThreshold;
-
-    private static bool IsLateAdjustmentDecisionPending(LateAdjustmentRequestDto adjustment)
-        => adjustment.ApprovalState is not ManualJournalEntryStatusDto.Approved
-            and not ManualJournalEntryStatusDto.Rejected;
-
-    private static bool IsLateAdjustmentRequestRetained(LateAdjustmentRequestDto adjustment)
-        => adjustment.ApprovalState is not ManualJournalEntryStatusDto.Rejected;
-
-    private static bool HasRejectedSignOff(string requiredRole, IReadOnlyList<CloseSignOffDto> signOffs)
-        => signOffs.Any(signOff =>
-            signOff.ApprovalState == ManualJournalEntryStatusDto.Rejected &&
-            string.Equals(signOff.Role, requiredRole, StringComparison.OrdinalIgnoreCase));
-
-    private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
-    {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
-        {
-            throw new InvalidOperationException($"Reviewed automation cannot {action}; a human operator must perform this accounting close action.");
-        }
-    }
-
-    private static void EnsureIndependentCloseTaskSignOffActor(
-        OperationsCloseChecklistTaskDto task,
-        string actor)
-    {
-        if (!string.IsNullOrWhiteSpace(task.AcknowledgedBy) &&
-            string.Equals(task.AcknowledgedBy.Trim(), actor, StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidOperationException(
-                $"Close task '{task.TaskId}' must be signed off by an actor independent from acknowledgement actor '{task.AcknowledgedBy.Trim()}'.");
-        }
-    }
-
-    private static bool HasCloseTaskSignOffEvidence(IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks.Any(static link =>
-            link.Contains("signoff", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("sign-off", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("approval", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("control", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("review", StringComparison.OrdinalIgnoreCase));
-
-    private static bool HasCloseTaskSignOffEvidenceWithProvenance(
-        IReadOnlyList<string> evidenceLinks,
-        string taskId,
-        string role,
-        OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            HasCloseTaskSignOffEvidence([link]) &&
-            EvidenceLinkContainsIdentifierToken(link, taskId) &&
-            EvidenceLinkContainsRoleToken(link, role) &&
-            (EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
-            EvidenceLinkContainsLedgerBook(link, workflow));
-
-    private static bool HasLateAdjustmentRequestEvidence(IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks.Any(static link =>
-            link.Contains("late-adjustment", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("late adjustment", StringComparison.OrdinalIgnoreCase));
-
-    private static bool HasLateAdjustmentRequestEvidenceWithProvenance(
-        IReadOnlyList<string> evidenceLinks,
-        Guid journalEntryId,
-        OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            HasLateAdjustmentRequestEvidence([link]) &&
-            (EvidenceLinkContainsGuidToken(link, journalEntryId) ||
-             EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
-            EvidenceLinkContainsLedgerBook(link, workflow));
-
-    private static bool HasLateAdjustmentReviewEvidence(IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks.Any(static link =>
-            link.Contains("approval", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("rejection", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("decision", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("review", StringComparison.OrdinalIgnoreCase));
-
-    private static bool HasLateAdjustmentReviewEvidenceWithProvenance(
-        IReadOnlyList<string> evidenceLinks,
-        string requestId,
-        LateAdjustmentRequestDto adjustment,
-        OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            HasLateAdjustmentReviewEvidence([link]) &&
-            (EvidenceLinkContainsIdentifierToken(link, requestId) ||
-             EvidenceLinkContainsGuidToken(link, adjustment.JournalEntryId) ||
-             EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
-            EvidenceLinkContainsLedgerBook(link, workflow));
-
-    private static bool HasCloseEvidenceReviewEvidence(IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks.Any(static link =>
-            link.Contains("close-review", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("blocker", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("evidence", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("audit", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("remediation", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("review", StringComparison.OrdinalIgnoreCase));
-
-    private static bool HasCloseEvidenceReviewEvidenceWithProvenance(
-        IReadOnlyList<string> evidenceLinks,
-        string issueCode,
-        string? targetId,
-        OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            HasCloseEvidenceReviewEvidence([link]) &&
-            (EvidenceLinkContainsIdentifierToken(link, issueCode) ||
-             (!string.IsNullOrWhiteSpace(targetId) && EvidenceLinkContainsIdentifierToken(link, targetId)) ||
-             EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
-            EvidenceLinkContainsLedgerBook(link, workflow));
-
-    private static bool HasClosePlanConfigurationEvidence(IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks.Any(static link =>
-            link.Contains("close-plan", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("close plan", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("close-setup", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("configuration", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("materiality", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("approval", StringComparison.OrdinalIgnoreCase));
-
-    private static bool HasClosePlanConfigurationEvidenceWithProvenance(
-        IReadOnlyList<string> evidenceLinks,
-        OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            HasClosePlanConfigurationEvidence([link]) &&
-            (EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
-            EvidenceLinkContainsLedgerBook(link, workflow));
-
-    private static bool HasClosePeriodLockEvidence(IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks.Any(static link =>
-            link.Contains("period-lock", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("close-package", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("close package", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("report-pack", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("report package", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("manifest", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("certification", StringComparison.OrdinalIgnoreCase));
-
-    private static bool HasClosePeriodLockEvidenceWithProvenance(
-        IReadOnlyList<string> evidenceLinks,
-        OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            HasClosePeriodLockEvidence([link]) &&
-            (EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
-            EvidenceLinkContainsLedgerBook(link, workflow));
-
-    private static bool EvidenceLinkContainsGuidToken(string link, Guid value)
-        => EvidenceLinkContainsIdentifierToken(link, value.ToString("D")) ||
-           EvidenceLinkContainsIdentifierToken(link, value.ToString("N"));
-
-    private static bool EvidenceLinkContainsRoleToken(string link, string role)
-    {
-        if (EvidenceLinkContainsIdentifierToken(link, role))
-        {
-            return true;
-        }
-
-        var roleSlug = string.Join(
-            '-',
-            role.Split([' ', '\t', '\r', '\n', '_', '/'], StringSplitOptions.RemoveEmptyEntries));
-        return !string.Equals(roleSlug, role, StringComparison.OrdinalIgnoreCase) &&
-            EvidenceLinkContainsIdentifierToken(link, roleSlug);
-    }
-
-    private static bool EvidenceLinkContainsIdentifierToken(string link, string token)
-    {
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            return false;
-        }
-
-        var searchIndex = 0;
-        while (searchIndex < link.Length)
-        {
-            var tokenIndex = link.IndexOf(token, searchIndex, StringComparison.OrdinalIgnoreCase);
-            if (tokenIndex < 0)
-            {
-                return false;
-            }
-
-            if (EvidenceTokenBoundaryAt(link, tokenIndex - 1) &&
-                EvidenceTokenBoundaryAt(link, tokenIndex + token.Length))
-            {
-                return true;
-            }
-
-            searchIndex = tokenIndex + token.Length;
-        }
-
-        return false;
-    }
-
-    private static bool EvidenceLinkContainsLedgerBook(string link, OperationsContinuityWorkflowDto workflow)
-    {
-        if (workflow.LedgerBookId is not { } ledgerBookId)
-        {
-            return true;
-        }
-
-        return EvidenceLinkContainsScopedLedgerBookValue(link, ledgerBookId.ToString("D")) ||
-            EvidenceLinkContainsScopedLedgerBookValue(link, ledgerBookId.ToString("N"));
-    }
-
-    private static bool EvidenceLinkContainsScopedLedgerBookValue(string link, string ledgerBookValue)
-    {
-        var prefixes = new[]
-        {
-            "ledger-book:",
-            "ledger-book/",
-            "ledger-book=",
-            "ledgerbook:",
-            "ledgerbook/",
-            "ledgerbook=",
-            "ledgerBookId:",
-            "ledgerBookId/",
-            "ledgerBookId=",
-            "book:",
-            "book/",
-            "book="
-        };
-
-        foreach (var prefix in prefixes)
-        {
-            var searchIndex = 0;
-            while (searchIndex < link.Length)
-            {
-                var prefixIndex = link.IndexOf(prefix, searchIndex, StringComparison.OrdinalIgnoreCase);
-                if (prefixIndex < 0)
-                {
-                    break;
-                }
-
-                var valueIndex = prefixIndex + prefix.Length;
-                if (valueIndex + ledgerBookValue.Length <= link.Length &&
-                    string.Compare(
-                        link,
-                        valueIndex,
-                        ledgerBookValue,
-                        0,
-                        ledgerBookValue.Length,
-                        StringComparison.OrdinalIgnoreCase) == 0 &&
-                    EvidenceLedgerBookValueEndsAtBoundary(link, valueIndex + ledgerBookValue.Length))
-                {
-                    return true;
-                }
-
-                searchIndex = valueIndex;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool EvidenceLedgerBookValueEndsAtBoundary(string link, int valueEndIndex)
-        => EvidenceTokenBoundaryAt(link, valueEndIndex);
-
-    private static bool EvidenceTokenBoundaryAt(string link, int index)
-    {
-        if (index < 0 || index >= link.Length)
-        {
-            return true;
-        }
-
-        return link[index] switch
-        {
-            ':' or '/' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}' => true,
-            ' ' or '\t' or '\r' or '\n' => true,
-            _ => false
-        };
-    }
-
-    private static DateOnly ResolveCloseDueDate(IReadOnlyList<CloseTaskDto> tasks, DateOnly fallback)
-        => tasks.Count == 0 ? fallback : tasks.Max(static task => task.DueDate);
-
-    private static (DateOnly Start, DateOnly End) ResolvePeriod(string periodId)
-    {
-        if (periodId.Length >= 7
-            && int.TryParse(periodId[..4], out var year)
-            && int.TryParse(periodId[5..7], out var month)
-            && month is >= 1 and <= 12)
-        {
-            var start = new DateOnly(year, month, 1);
-            return (start, start.AddMonths(1).AddDays(-1));
-        }
-
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var currentStart = new DateOnly(today.Year, today.Month, 1);
-        return (currentStart, currentStart.AddMonths(1).AddDays(-1));
-    }
-
-    private static IReadOnlyList<string> NormalizeEvidenceLinks(IEnumerable<string?> evidenceLinks)
-        => evidenceLinks
-            .Where(static value => !string.IsNullOrWhiteSpace(value))
-            .Select(static value => value!.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Order(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-    private static string RequireText(string? value, string label)
-        => string.IsNullOrWhiteSpace(value)
-            ? throw new ArgumentException($"{label} is required.")
-            : value.Trim();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
-    private static string Sanitize(string value)
-        => string.Concat(value.Select(static ch => char.IsLetterOrDigit(ch) ? char.ToLowerInvariant(ch) : '-'));
-
-    private sealed record CloseManagementSnapshot(
-        IReadOnlyList<WorkflowLateAdjustmentRecord>? LateAdjustments = null,
-        IReadOnlyList<WorkflowCloseTaskSignOffRecord>? TaskSignOffs = null,
-        IReadOnlyList<ClosePeriodPlanConfigurationDto>? PlanConfigurations = null,
-        IReadOnlyList<WorkflowCloseEvidenceReviewRecord>? EvidenceReviews = null);
-
-    private sealed record WorkflowLateAdjustmentRecord(
-        Guid WorkflowId,
-        LateAdjustmentRequestDto Adjustment);
-
-    private sealed record WorkflowCloseTaskSignOffRecord(
-        Guid WorkflowId,
-        string TaskId,
-        CloseSignOffDto SignOff);
-
-    private sealed record WorkflowCloseEvidenceReviewRecord(
-        Guid WorkflowId,
-        CloseEvidenceReviewDto Review);
 }

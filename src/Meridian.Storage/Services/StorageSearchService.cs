@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Meridian.Contracts.Integrity;
 using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
 using Meridian.Storage.Interfaces;
@@ -18,9 +19,10 @@ public sealed class StorageSearchService : IStorageSearchService
     private readonly StorageOptions _options;
     private readonly ISourceRegistry? _sourceRegistry;
     private readonly JsonlStoragePolicy? _pathParser;
-    private readonly ConcurrentDictionary<string, SymbolIndex> _symbolIndex = new();
-    private readonly ConcurrentDictionary<string, DateIndex> _dateIndex = new();
-    private readonly ConcurrentDictionary<string, FileMetadata> _fileMetadata = new();
+    private ConcurrentDictionary<string, SymbolIndex> _symbolIndex = new();
+    private ConcurrentDictionary<string, DateIndex> _dateIndex = new();
+    private ConcurrentDictionary<string, FileMetadata> _fileMetadata = new();
+    private readonly SemaphoreSlim _indexMutationGate = new(1, 1);
     private DateTime _lastIndexUpdate = DateTime.MinValue;
 
     private static readonly string[] DataExtensions = { ".jsonl", ".jsonl.gz", ".jsonl.zst", ".parquet" };
@@ -362,71 +364,151 @@ public sealed class StorageSearchService : IStorageSearchService
 
     public async Task UpdateIndexAsync(string filePath, IndexUpdateType updateType, CancellationToken ct = default)
     {
-        switch (updateType)
+        await _indexMutationGate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            case IndexUpdateType.FileCreated:
-            case IndexUpdateType.FileAppended:
-                var metadata = await CreateMetadataAsync(filePath, ct);
-                if (metadata != null)
-                {
-                    _fileMetadata[filePath] = metadata;
-                    UpdateSymbolIndex(metadata);
-                    UpdateDateIndex(metadata);
-                }
-                break;
+            switch (updateType)
+            {
+                case IndexUpdateType.FileCreated:
+                case IndexUpdateType.FileAppended:
+                    var metadata = await CreateMetadataAsync(filePath, ct).ConfigureAwait(false);
+                    if (metadata != null)
+                    {
+                        _fileMetadata[filePath] = metadata;
+                        UpdateSymbolIndex(_symbolIndex, metadata);
+                        UpdateDateIndex(_dateIndex, metadata);
+                    }
+                    break;
 
-            case IndexUpdateType.FileDeleted:
-                _fileMetadata.TryRemove(filePath, out _);
-                break;
+                case IndexUpdateType.FileDeleted:
+                    _fileMetadata.TryRemove(filePath, out _);
+                    break;
 
-            case IndexUpdateType.FileMoved:
-                _fileMetadata.TryRemove(filePath, out _);
-                break;
+                case IndexUpdateType.FileMoved:
+                    _fileMetadata.TryRemove(filePath, out _);
+                    break;
+            }
+        }
+        finally
+        {
+            _indexMutationGate.Release();
         }
     }
 
-    public async Task RebuildIndexAsync(string[] paths, RebuildOptions options, CancellationToken ct = default)
+    public async Task<IndexRebuildVerification> RebuildIndexAsync(
+        string[] paths,
+        RebuildOptions options,
+        CancellationToken ct = default)
     {
-        _symbolIndex.Clear();
-        _dateIndex.Clear();
-        _fileMetadata.Clear();
+        ArgumentNullException.ThrowIfNull(paths);
+        ArgumentNullException.ThrowIfNull(options);
+        if (options.ParallelIndexers <= 0)
+            throw new ArgumentOutOfRangeException(nameof(options), "ParallelIndexers must be greater than zero.");
 
-        var allFiles = paths.Length > 0
-            ? paths.SelectMany(p => Directory.Exists(p)
-                ? Directory.EnumerateFiles(p, "*", SearchOption.AllDirectories)
-                : File.Exists(p) ? new[] { p } : Array.Empty<string>())
-            : GetAllDataFiles();
+        var requestedPaths = paths
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Select(path => Path.GetFullPath(path.Trim()))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (requestedPaths.Length == 0)
+            throw new ArgumentException("At least one nonempty file or directory path is required to rebuild the index.", nameof(paths));
 
-        var semaphore = new SemaphoreSlim(options.ParallelIndexers);
-
-        var tasks = allFiles.Select(async file =>
+        var missingPaths = requestedPaths
+            .Where(path => !Directory.Exists(path) && !File.Exists(path))
+            .ToArray();
+        if (missingPaths.Length > 0)
         {
-            await semaphore.WaitAsync(ct);
-            try
-            {
-                var metadata = await CreateMetadataAsync(file, ct);
-                if (metadata != null)
-                {
-                    _fileMetadata[file] = metadata;
-                    UpdateSymbolIndex(metadata);
-                    UpdateDateIndex(metadata);
-                }
-            }
-            finally
-            {
-                semaphore.Release();
-            }
-        });
+            throw new FileNotFoundException(
+                $"Index rebuild scope does not exist: {string.Join(", ", missingPaths)}",
+                missingPaths[0]);
+        }
 
-        await Task.WhenAll(tasks);
-        _lastIndexUpdate = DateTime.UtcNow;
+        var allFiles = requestedPaths
+            .SelectMany(path => Directory.Exists(path)
+                ? Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
+                : [path])
+            .Where(IsDataFile)
+            .Select(Path.GetFullPath)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (allFiles.Length == 0)
+        {
+            throw new InvalidOperationException(
+                "Index rebuild found no supported data files in the requested scope; the live index was preserved.");
+        }
+
+        await _indexMutationGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var before = CaptureIndexSnapshot(_fileMetadata.Values, DateTimeOffset.UtcNow);
+            var stagedMetadata = new ConcurrentDictionary<string, FileMetadata>(StringComparer.OrdinalIgnoreCase);
+            var failures = new ConcurrentBag<string>();
+            using var semaphore = new SemaphoreSlim(options.ParallelIndexers);
+            var tasks = allFiles.Select(async file =>
+            {
+                await semaphore.WaitAsync(ct).ConfigureAwait(false);
+                try
+                {
+                    var metadata = await CreateMetadataAsync(file, ct).ConfigureAwait(false);
+                    if (metadata is null)
+                        failures.Add(file);
+                    else
+                        stagedMetadata[file] = metadata;
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            }).ToArray();
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+            if (!failures.IsEmpty)
+            {
+                throw new InvalidOperationException(
+                    $"Index rebuild could not read {failures.Count} file(s), including '{failures.First()}'; the live index was preserved.");
+            }
+
+            var stagedSymbolIndex = new ConcurrentDictionary<string, SymbolIndex>(StringComparer.OrdinalIgnoreCase);
+            var stagedDateIndex = new ConcurrentDictionary<string, DateIndex>(StringComparer.OrdinalIgnoreCase);
+            foreach (var metadata in stagedMetadata.Values)
+            {
+                UpdateSymbolIndex(stagedSymbolIndex, metadata);
+                UpdateDateIndex(stagedDateIndex, metadata);
+            }
+
+            ct.ThrowIfCancellationRequested();
+            var staged = CaptureIndexSnapshot(stagedMetadata.Values, DateTimeOffset.UtcNow);
+            _symbolIndex = stagedSymbolIndex;
+            _dateIndex = stagedDateIndex;
+            _fileMetadata = stagedMetadata;
+            _lastIndexUpdate = DateTime.UtcNow;
+
+            // Read back from the live reference after the atomic swap. The scheduler may only
+            // claim success when this independently captured snapshot matches the staged index.
+            var readback = CaptureIndexSnapshot(_fileMetadata.Values, DateTimeOffset.UtcNow);
+            return new IndexRebuildVerification(
+                Before: before,
+                After: staged,
+                Readback: readback,
+                DiscoveredFileCount: allFiles.Length);
+        }
+        finally
+        {
+            _indexMutationGate.Release();
+        }
     }
 
     private async Task EnsureIndexUpdatedAsync(CancellationToken ct)
     {
         if ((DateTime.UtcNow - _lastIndexUpdate) > TimeSpan.FromMinutes(5))
         {
-            await RebuildIndexAsync(Array.Empty<string>(), new RebuildOptions(), ct);
+            if (!GetAllDataFiles().Any())
+            {
+                _lastIndexUpdate = DateTime.UtcNow;
+                return;
+            }
+
+            await RebuildIndexAsync([_options.RootPath], new RebuildOptions(), ct).ConfigureAwait(false);
         }
     }
 
@@ -436,7 +518,47 @@ public sealed class StorageSearchService : IStorageSearchService
             return Enumerable.Empty<string>();
 
         return Directory.EnumerateFiles(_options.RootPath, "*", SearchOption.AllDirectories)
-            .Where(f => DataExtensions.Any(ext => f.EndsWith(ext, StringComparison.OrdinalIgnoreCase)));
+            .Where(IsDataFile);
+    }
+
+    private static bool IsDataFile(string path) =>
+        DataExtensions.Any(extension => path.EndsWith(extension, StringComparison.OrdinalIgnoreCase));
+
+    private static IndexSnapshot CaptureIndexSnapshot(
+        IEnumerable<FileMetadata> metadata,
+        DateTimeOffset capturedAtUtc)
+    {
+        var ordered = metadata
+            .OrderBy(item => item.FilePath, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(item => item.FilePath, StringComparer.Ordinal)
+            .ToArray();
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream))
+        {
+            writer.WriteStartArray();
+            foreach (var item in ordered)
+            {
+                writer.WriteStartObject();
+                writer.WriteString("filePath", item.FilePath);
+                writer.WriteString("symbol", item.Symbol);
+                writer.WriteString("eventType", item.EventType);
+                writer.WriteString("source", item.Source);
+                writer.WriteNumber("dateUtcTicks", item.Date.UtcTicks);
+                writer.WriteNumber("sizeBytes", item.SizeBytes);
+                writer.WriteNumber("eventCount", item.EventCount);
+                writer.WriteNumber("qualityScore", item.QualityScore);
+                writer.WriteNumber("createdAtUtcTicks", item.CreatedAt.ToUniversalTime().Ticks);
+                writer.WriteNumber("modifiedAtUtcTicks", item.ModifiedAt.ToUniversalTime().Ticks);
+                writer.WriteEndObject();
+            }
+
+            writer.WriteEndArray();
+        }
+
+        return new IndexSnapshot(
+            ordered.Length,
+            Sha256Digest.Compute(stream.ToArray()),
+            capturedAtUtc);
     }
 
     private async Task<FileMetadata?> GetOrCreateMetadataAsync(string filePath, CancellationToken ct)
@@ -480,16 +602,13 @@ public sealed class StorageSearchService : IStorageSearchService
                     source = fallback.Source;
             }
 
-            // Count events
+            // Count events. An unreadable file must fail an explicit rebuild instead of being
+            // represented as a valid zero-event entry.
             long eventCount = 0;
-            try
+            await foreach (var _ in File.ReadLinesAsync(filePath, ct))
             {
-                await foreach (var _ in File.ReadLinesAsync(filePath, ct))
-                {
-                    eventCount++;
-                }
+                eventCount++;
             }
-            catch (IOException) { /* File may be inaccessible */ }
 
             return new FileMetadata(
                 FilePath: filePath,
@@ -503,6 +622,10 @@ public sealed class StorageSearchService : IStorageSearchService
                 CreatedAt: fileInfo.CreationTimeUtc,
                 ModifiedAt: fileInfo.LastWriteTimeUtc
             );
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch
         {
@@ -537,9 +660,11 @@ public sealed class StorageSearchService : IStorageSearchService
         return (symbol, eventType, source);
     }
 
-    private void UpdateSymbolIndex(FileMetadata metadata)
+    private static void UpdateSymbolIndex(
+        ConcurrentDictionary<string, SymbolIndex> index,
+        FileMetadata metadata)
     {
-        _symbolIndex.AddOrUpdate(
+        index.AddOrUpdate(
             metadata.Symbol,
             _ => new SymbolIndex(metadata.Symbol, new List<string> { metadata.FilePath }),
             (_, existing) =>
@@ -549,10 +674,12 @@ public sealed class StorageSearchService : IStorageSearchService
             });
     }
 
-    private void UpdateDateIndex(FileMetadata metadata)
+    private static void UpdateDateIndex(
+        ConcurrentDictionary<string, DateIndex> index,
+        FileMetadata metadata)
     {
         var dateKey = metadata.Date.ToString("yyyy-MM-dd");
-        _dateIndex.AddOrUpdate(
+        index.AddOrUpdate(
             dateKey,
             _ => new DateIndex(dateKey, new List<string> { metadata.FilePath }),
             (_, existing) =>
@@ -602,7 +729,10 @@ public interface IStorageSearchService
     Task<FacetedSearchResult> SearchWithFacetsAsync(FacetedSearchQuery query, CancellationToken ct = default);
     StorageQuery? ParseNaturalLanguageQuery(string naturalQuery);
     Task UpdateIndexAsync(string filePath, IndexUpdateType updateType, CancellationToken ct = default);
-    Task RebuildIndexAsync(string[] paths, RebuildOptions options, CancellationToken ct = default);
+    Task<IndexRebuildVerification> RebuildIndexAsync(
+        string[] paths,
+        RebuildOptions options,
+        CancellationToken ct = default);
 }
 
 // Query types
@@ -734,6 +864,34 @@ public enum IndexUpdateType : byte
 public sealed record RebuildOptions(
     int ParallelIndexers = 4
 );
+
+/// <summary>A canonical count-and-digest snapshot of the live file metadata index.</summary>
+public sealed record IndexSnapshot(
+    int IndexedFileCount,
+    string DigestSha256,
+    DateTimeOffset CapturedAtUtc
+);
+
+/// <summary>
+/// Verifiable proof returned by an index rebuild. A caller must not claim success unless every
+/// discovered input was indexed and the post-swap readback matches the staged index exactly.
+/// </summary>
+public sealed record IndexRebuildVerification(
+    IndexSnapshot Before,
+    IndexSnapshot After,
+    IndexSnapshot Readback,
+    int DiscoveredFileCount
+)
+{
+    public bool AllDiscoveredFilesIndexed =>
+        DiscoveredFileCount > 0 && After.IndexedFileCount == DiscoveredFileCount;
+
+    public bool ReadbackVerified =>
+        After.IndexedFileCount == Readback.IndexedFileCount &&
+        string.Equals(After.DigestSha256, Readback.DigestSha256, StringComparison.Ordinal);
+
+    public bool IsVerified => AllDiscoveredFilesIndexed && ReadbackVerified;
+}
 
 // Query builder
 public sealed record StorageQuery(

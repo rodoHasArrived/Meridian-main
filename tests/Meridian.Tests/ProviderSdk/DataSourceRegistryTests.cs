@@ -1,5 +1,7 @@
 using System.Reflection;
+using System.Reflection.Emit;
 using FluentAssertions;
+using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.DataSources;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,15 +50,21 @@ public sealed class DataSourceRegistryTests
     }
 
     [Fact]
-    public void DiscoverFromAssemblies_InfrastructureAssembly_DiscoversSources()
+    public void DiscoverFromAssemblies_InfrastructureAssembly_PreservesDisjointProviderFamilyCapabilities()
     {
         var registry = new DataSourceRegistry();
 
-        registry.DiscoverFromAssemblies(typeof(DataSourceRegistry).Assembly);
+        registry.DiscoverFromAssemblies(typeof(NoOpMarketDataClient).Assembly);
 
-        // Infrastructure assembly should contain at least some data sources
-        // The exact count depends on build configuration and registered provider surfaces.
-        registry.Sources.Should().NotBeNull();
+        var alpaca = registry.Sources
+            .Where(source => source.Id.Equals("alpaca", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        alpaca.Should().HaveCountGreaterThanOrEqualTo(2);
+        alpaca.SelectMany(source => source.CapabilityKeys).Should().Contain([
+            DataSourceCapabilityContracts.MarketDataClient,
+            DataSourceCapabilityContracts.HistoricalDataProvider]);
+        alpaca.SelectMany(source => source.CapabilityKeys)
+            .Should().OnlyHaveUniqueItems("one provider family cannot claim a capability twice");
     }
 
     [Fact]
@@ -72,6 +80,103 @@ public sealed class DataSourceRegistryTests
 
         registry.Sources.Count.Should().Be(countAfterFirst,
             "scanning the same assembly twice should not create duplicate entries");
+    }
+
+    [Fact]
+    public void DiscoverFromAssemblyWithResult_SecondScanClassifiesExactDuplicate()
+    {
+        var registry = new DataSourceRegistry();
+        var assembly = CreateDataSourceAssembly(
+            new DynamicDataSource("exact-provider", "Exact provider", DataSourceCapabilityContracts.MarketDataClient));
+
+        var first = registry.DiscoverFromAssemblyWithResult(assembly);
+        var second = registry.DiscoverFromAssemblyWithResult(assembly);
+
+        first.Committed.Should().BeTrue();
+        first.Outcomes.Should().ContainSingle(outcome =>
+            outcome.Disposition == DataSourceRegistrationDisposition.Added);
+        second.Committed.Should().BeTrue();
+        second.Outcomes.Should().ContainSingle(outcome =>
+            outcome.Disposition == DataSourceRegistrationDisposition.Duplicate);
+        registry.Sources.Should().ContainSingle();
+    }
+
+    [Fact]
+    public void DiscoverFromAssemblyWithResult_DisjointCapabilitiesInProviderFamilyAreAdded()
+    {
+        var registry = new DataSourceRegistry();
+        var assembly = CreateDataSourceAssembly(
+            new DynamicDataSource("family-provider", "Streaming", DataSourceCapabilityContracts.MarketDataClient),
+            new DynamicDataSource("family-provider", "Historical", DataSourceCapabilityContracts.HistoricalDataProvider));
+
+        var result = registry.DiscoverFromAssemblyWithResult(assembly);
+
+        result.Committed.Should().BeTrue();
+        result.Outcomes.Should().OnlyContain(outcome =>
+            outcome.Disposition == DataSourceRegistrationDisposition.Added);
+        registry.Sources.Should().HaveCount(2);
+        registry.Sources.SelectMany(source => source.CapabilityKeys).Should().Contain([
+            DataSourceCapabilityContracts.MarketDataClient,
+            DataSourceCapabilityContracts.HistoricalDataProvider]);
+    }
+
+    [Fact]
+    public void DiscoverFromAssemblyWithResult_OverlappingExistingCapabilityConflictsAndRollsBack()
+    {
+        var registry = new DataSourceRegistry();
+        registry.DiscoverFromAssemblyWithResult(CreateDataSourceAssembly(
+            new DynamicDataSource("conflict-provider", "Original", DataSourceCapabilityContracts.MarketDataClient)));
+        var candidate = CreateDataSourceAssembly(
+            new DynamicDataSource("conflict-provider", "Replacement", DataSourceCapabilityContracts.MarketDataClient),
+            new DynamicDataSource("new-provider", "Must roll back", DataSourceCapabilityContracts.HistoricalDataProvider));
+
+        var result = registry.DiscoverFromAssemblyWithResult(candidate);
+
+        result.Committed.Should().BeFalse();
+        result.Outcomes.Should().ContainSingle(outcome =>
+            outcome.Candidate.Id == "conflict-provider"
+            && outcome.Disposition == DataSourceRegistrationDisposition.Conflict);
+        result.Outcomes.Should().ContainSingle(outcome =>
+            outcome.Candidate.Id == "new-provider"
+            && outcome.Disposition == DataSourceRegistrationDisposition.Added);
+        registry.Sources.Should().ContainSingle(source => source.DisplayName == "Original");
+        registry.Sources.Should().NotContain(source => source.Id == "new-provider");
+    }
+
+    [Fact]
+    public void DiscoverFromAssemblyWithResult_IntraAssemblyCapabilityConflictRollsBackAllCandidates()
+    {
+        var registry = new DataSourceRegistry();
+        var assembly = CreateDataSourceAssembly(
+            new DynamicDataSource("ambiguous-provider", "First", DataSourceCapabilityContracts.SymbolSearchProvider),
+            new DynamicDataSource("ambiguous-provider", "Second", DataSourceCapabilityContracts.SymbolSearchProvider),
+            new DynamicDataSource("unrelated-provider", "Unrelated", DataSourceCapabilityContracts.HistoricalDataProvider));
+
+        var result = registry.DiscoverFromAssemblyWithResult(assembly);
+
+        result.Committed.Should().BeFalse();
+        result.ConflictCount.Should().Be(2);
+        result.Outcomes.Should().ContainSingle(outcome =>
+            outcome.Candidate.Id == "unrelated-provider"
+            && outcome.Disposition == DataSourceRegistrationDisposition.Added);
+        registry.Sources.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void DiscoverFromAssemblies_LegacyApiThrowsTypedConflictAndDoesNotPartiallyRegisterAssembly()
+    {
+        var registry = new DataSourceRegistry();
+        var assembly = CreateDataSourceAssembly(
+            new DynamicDataSource("legacy-conflict", "First", DataSourceCapabilityContracts.CorporateActionProvider),
+            new DynamicDataSource("legacy-conflict", "Second", DataSourceCapabilityContracts.CorporateActionProvider),
+            new DynamicDataSource("legacy-unique", "Must roll back", DataSourceCapabilityContracts.HistoricalDataProvider));
+
+        var act = () => registry.DiscoverFromAssemblies(assembly);
+
+        var exception = act.Should().Throw<DataSourceRegistrationConflictException>().Which;
+        exception.Result.Committed.Should().BeFalse();
+        exception.Result.ConflictCount.Should().Be(2);
+        registry.Sources.Should().BeEmpty();
     }
 
     [Fact]
@@ -91,6 +196,50 @@ public sealed class DataSourceRegistryTests
     }
 
     #endregion
+
+    private static Assembly CreateDataSourceAssembly(params DynamicDataSource[] definitions)
+    {
+        var assembly = AssemblyBuilder.DefineDynamicAssembly(
+            new AssemblyName($"Meridian.ProviderDiscovery.Tests.{Guid.NewGuid():N}"),
+            AssemblyBuilderAccess.Run);
+        var module = assembly.DefineDynamicModule("providers");
+        var capabilityInterfaces = definitions
+            .Select(static definition => definition.CapabilityKey)
+            .Distinct(StringComparer.Ordinal)
+            .ToDictionary(
+                static capability => capability,
+                capability => module
+                    .DefineType(
+                        capability,
+                        TypeAttributes.Public | TypeAttributes.Interface | TypeAttributes.Abstract)
+                    .CreateType()!,
+                StringComparer.Ordinal);
+        var attributeConstructor = typeof(DataSourceAttribute).GetConstructor([
+            typeof(string),
+            typeof(string),
+            typeof(DataSourceType),
+            typeof(DataSourceCategory)])!;
+
+        foreach (var definition in definitions)
+        {
+            var type = module.DefineType(
+                $"DynamicProviders.Provider_{Guid.NewGuid():N}",
+                TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.Sealed);
+            type.AddInterfaceImplementation(capabilityInterfaces[definition.CapabilityKey]);
+            type.DefineDefaultConstructor(MethodAttributes.Public);
+            type.SetCustomAttribute(new CustomAttributeBuilder(
+                attributeConstructor,
+                [definition.Id, definition.DisplayName, DataSourceType.Hybrid, DataSourceCategory.Aggregator]));
+            type.CreateType();
+        }
+
+        return assembly;
+    }
+
+    private sealed record DynamicDataSource(
+        string Id,
+        string DisplayName,
+        string CapabilityKey);
 
     #region RegisterServices
 
@@ -332,7 +481,41 @@ public sealed class DataSourceRegistryTests
             "Register failures must be surfaced with the module identity");
     }
 
+    [Fact]
+    public void GetRegistrationReport_ReturnsImmutablePointInTimeSnapshotWithCumulativeCounts()
+    {
+        var timeProvider = new ManualTimeProvider(new DateTimeOffset(2026, 7, 13, 12, 0, 0, TimeSpan.Zero));
+        var registry = new DataSourceRegistry(timeProvider: timeProvider);
+        registry.ConfigureModule("ds-registry-requires-config", new ProviderModuleContext { Enabled = true });
+        var services = new ServiceCollection();
+
+        registry.RegisterModules(services, typeof(DataSourceRegistryTests).Assembly);
+        var first = registry.GetRegistrationReport();
+        timeProvider.Advance(TimeSpan.FromMinutes(5));
+        registry.RegisterModules(new ServiceCollection(), typeof(DataSourceRegistryTests).Assembly);
+        var second = registry.GetRegistrationReport();
+
+        first.GeneratedAt.Should().Be(new DateTimeOffset(2026, 7, 13, 12, 0, 0, TimeSpan.Zero));
+        second.GeneratedAt.Should().Be(first.GeneratedAt.AddMinutes(5));
+        first.ModuleCandidateCount.Should().BeGreaterThan(0);
+        first.ModuleActivationAttemptCount.Should().BeGreaterThan(0);
+        first.ModuleRegistrationAttemptCount.Should().BeGreaterThan(0);
+        first.RegisteredModuleCount.Should().BeGreaterThan(0);
+        second.ModuleCandidateCount.Should().Be(first.ModuleCandidateCount * 2);
+        first.Failures.Should().NotBeSameAs(second.Failures);
+        ((IList<DataSourceDiscoveryFailure>)first.Failures).IsReadOnly.Should().BeTrue();
+    }
+
     #endregion
+}
+
+internal sealed class ManualTimeProvider(DateTimeOffset utcNow) : TimeProvider
+{
+    private DateTimeOffset _utcNow = utcNow;
+
+    public override DateTimeOffset GetUtcNow() => _utcNow;
+
+    public void Advance(TimeSpan duration) => _utcNow += duration;
 }
 
 // -----------------------------------------------------------------------

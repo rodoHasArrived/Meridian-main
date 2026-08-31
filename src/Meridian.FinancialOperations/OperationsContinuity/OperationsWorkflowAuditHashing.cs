@@ -1,14 +1,13 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.FinancialOperations.OperationsContinuity;
 
 public static class OperationsWorkflowAuditHashing
 {
-    private static readonly JsonSerializerOptions HashJsonOptions = new(JsonSerializerDefaults.Web);
-
     public static OperationsWorkflowAuditDto Create(
         OperationsWorkflowAuditDraft draft,
         string? previousHash,
@@ -18,6 +17,11 @@ public static class OperationsWorkflowAuditHashing
         if (occurredAtUtc.Offset != TimeSpan.Zero)
         {
             throw new ArgumentException("Audit timestamps must be UTC.", nameof(occurredAtUtc));
+        }
+
+        if (draft.Outcome is not null)
+        {
+            VerifiedOperationOutcomeValidator.ValidateAndThrow(draft.Outcome);
         }
 
         var auditId = Guid.NewGuid();
@@ -38,6 +42,7 @@ public static class OperationsWorkflowAuditHashing
             draft.CorrelationId,
             draft.CorrelationKeys,
             draft.References,
+            draft.Outcome,
             previousHash);
 
         return new OperationsWorkflowAuditDto(
@@ -58,7 +63,8 @@ public static class OperationsWorkflowAuditHashing
             draft.CorrelationKeys,
             draft.References,
             previousHash,
-            currentHash);
+            currentHash,
+            draft.Outcome);
     }
 
     public static bool TryValidateChain(
@@ -119,6 +125,7 @@ public static class OperationsWorkflowAuditHashing
                 entry.CorrelationId,
                 entry.CorrelationKeys,
                 entry.References,
+                entry.Outcome,
                 entry.PreviousHash);
 
             if (!string.Equals(entry.CurrentHash, expectedHash, StringComparison.Ordinal))
@@ -154,9 +161,37 @@ public static class OperationsWorkflowAuditHashing
         string? correlationId,
         OperationsContinuityCorrelationKeysDto? correlationKeys,
         IReadOnlyList<OperationsEvidenceLinkDto> references,
+        VerifiedOperationOutcome? outcome,
         string? previousHash)
     {
-        var hashInput = new AuditHashInput(
+        if (outcome is null)
+        {
+            var legacyHashInput = new OperationsWorkflowAuditLegacyHashInput(
+                auditId,
+                occurredAtUtc,
+                workflowId,
+                fundAccountId,
+                periodId,
+                eventType,
+                fromState,
+                toState,
+                gate,
+                fromGateStatus,
+                toGateStatus,
+                actor,
+                rationale,
+                correlationId,
+                correlationKeys,
+                references,
+                previousHash);
+            var legacyCanonicalJson = JsonSerializer.Serialize(
+                legacyHashInput,
+                OperationsWorkflowAuditHashJsonContext.Default.LegacyAuditHashInput);
+            return Sha256Digest.ComputeUtf8(legacyCanonicalJson);
+        }
+
+        VerifiedOperationOutcomeValidator.ValidateAndThrow(outcome);
+        var hashInput = new OperationsWorkflowAuditOutcomeHashInput(
             auditId,
             occurredAtUtc,
             workflowId,
@@ -173,27 +208,11 @@ public static class OperationsWorkflowAuditHashing
             correlationId,
             correlationKeys,
             references,
+            outcome,
             previousHash);
-        var canonicalJson = JsonSerializer.Serialize(hashInput, HashJsonOptions);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonicalJson))).ToLowerInvariant();
+        var canonicalJson = JsonSerializer.Serialize(
+            hashInput,
+            OperationsWorkflowAuditHashJsonContext.Default.OutcomeAuditHashInput);
+        return Sha256Digest.ComputeUtf8(canonicalJson);
     }
-
-    private sealed record AuditHashInput(
-        Guid AuditId,
-        DateTimeOffset OccurredAtUtc,
-        Guid WorkflowId,
-        Guid FundAccountId,
-        string PeriodId,
-        string EventType,
-        OperationsWorkflowStatusDto FromState,
-        OperationsWorkflowStatusDto ToState,
-        OperationsGateKeyDto? Gate,
-        OperationsGateStatusDto? FromGateStatus,
-        OperationsGateStatusDto? ToGateStatus,
-        string Actor,
-        string? Rationale,
-        string? CorrelationId,
-        OperationsContinuityCorrelationKeysDto? CorrelationKeys,
-        IReadOnlyList<OperationsEvidenceLinkDto> References,
-        string? PreviousHash);
 }

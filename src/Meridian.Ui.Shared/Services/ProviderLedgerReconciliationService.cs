@@ -1,11 +1,18 @@
+using System.Collections.Concurrent;
+using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FSharp.Ledger;
 using Meridian.ProviderSdk;
@@ -13,15 +20,19 @@ using Meridian.Storage.Archival;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
 /// Compares the latest provider account projection with Meridian's internal account ledger snapshot.
 /// </summary>
-public sealed class ProviderLedgerReconciliationService
+public sealed partial class ProviderLedgerReconciliationService
 {
     private const string DefaultActor = "provider-ledger-reconciliation";
+    private const string OperationKind = "provider-ledger.reconciliation";
+    private const string RunIntentSchemaVersion = "meridian.provider-ledger-reconciliation.intent.v1";
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> OperationLocks = new(StringComparer.Ordinal);
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true,
@@ -37,6 +48,8 @@ public sealed class ProviderLedgerReconciliationService
     private readonly IReconciliationBreakQueueRepository? _breakQueueRepository;
     private readonly IOperatorOverridesStore? _operatorOverridesStore;
     private readonly ISecurityMasterConflictService? _securityMasterConflictService;
+    private readonly ILedgerBookService? _ledgerBookService;
+    private readonly IFundProfileTenancyRegistry? _fundProfileTenancyRegistry;
     private readonly ILogger<ProviderLedgerReconciliationService> _logger;
 
     public ProviderLedgerReconciliationService(
@@ -49,7 +62,9 @@ public sealed class ProviderLedgerReconciliationService
         ICapabilityRouter? capabilityRouter = null,
         IReconciliationBreakQueueRepository? breakQueueRepository = null,
         IOperatorOverridesStore? operatorOverridesStore = null,
-        ISecurityMasterConflictService? securityMasterConflictService = null)
+        ISecurityMasterConflictService? securityMasterConflictService = null,
+        ILedgerBookService? ledgerBookService = null,
+        IFundProfileTenancyRegistry? fundProfileTenancyRegistry = null)
     {
         _brokerageSync = brokerageSync ?? throw new ArgumentNullException(nameof(brokerageSync));
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
@@ -61,35 +76,232 @@ public sealed class ProviderLedgerReconciliationService
         _breakQueueRepository = breakQueueRepository;
         _operatorOverridesStore = operatorOverridesStore;
         _securityMasterConflictService = securityMasterConflictService;
+        _ledgerBookService = ledgerBookService;
+        _fundProfileTenancyRegistry = fundProfileTenancyRegistry;
     }
 
     public async Task<ProviderLedgerReconciliationDetailDto> RunAsync(
         Guid accountId,
         ProviderLedgerReconciliationRequestDto? request = null,
         CancellationToken ct = default)
+        => await RunInternalAsync(
+                accountId,
+                accessScope: null,
+                verifiedLedgerBook: null,
+                request,
+                ct)
+            .ConfigureAwait(false);
+
+    public async Task<ProviderLedgerReconciliationDetailDto> RunAsync(
+        Guid accountId,
+        ReconciliationBreakQueueScope accessScope,
+        ProviderLedgerReconciliationRequestDto? request = null,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(accessScope);
+        request ??= new ProviderLedgerReconciliationRequestDto();
+        var operationId = NormalizeOperationId(request.OperationId);
+        request = request with { OperationId = operationId };
+        var authority = await VerifyAuthoritativeScopeAsync(accountId, accessScope, ct)
+            .ConfigureAwait(false);
+        if (!authority.IsVerified)
+        {
+            return BuildAuthorityFailureDetail(
+                accountId,
+                operationId,
+                ComputeRequestHash(accountId, accessScope, request),
+                authority.ErrorCode!,
+                authority.Error!);
+        }
+
+        return await RunInternalAsync(accountId, accessScope, authority.LedgerBook, request, ct)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<ProviderLedgerReconciliationDetailDto> RunInternalAsync(
+        Guid accountId,
+        ReconciliationBreakQueueScope? accessScope,
+        LedgerBookDto? verifiedLedgerBook,
+        ProviderLedgerReconciliationRequestDto? request,
+        CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         request ??= new ProviderLedgerReconciliationRequestDto();
+        if (request.SignedOffBreakKeys is { Count: > 0 } || !string.IsNullOrWhiteSpace(request.SignedOffBy))
+        {
+            throw new ArgumentException(
+                "Provider-ledger reconciliation is comparison-only. Resolve, waive, supersede, and sign off through the governed reconciliation casework service.",
+                nameof(request));
+        }
+
+        var operationId = NormalizeOperationId(request.OperationId);
+        var requestHash = ComputeRequestHash(accountId, accessScope, request);
+        var operationLockKey = $"{accountId:N}:{Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(operationId)}";
+        var operationGate = OperationLocks.GetOrAdd(operationLockKey, static _ => new SemaphoreSlim(1, 1));
+        await operationGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var existingIntent = await ReadRunIntentAsync(accountId, operationId, ct).ConfigureAwait(false);
+            if (existingIntent is not null &&
+                (!string.Equals(existingIntent.OperationId, operationId, StringComparison.Ordinal) ||
+                 !string.Equals(existingIntent.RequestHashSha256, requestHash, StringComparison.OrdinalIgnoreCase)))
+            {
+                return BuildIdempotencyConflictDetail(accountId, operationId, requestHash, existingIntent);
+            }
+
+            if (existingIntent is not null)
+            {
+                var retained = await GetRunDetailAsync(accountId, existingIntent.RunId, ct).ConfigureAwait(false);
+                if (retained?.Outcome is { State: not OperationTerminalState.Failed })
+                {
+                    return retained;
+                }
+            }
+
+            var startedAt = DateTimeOffset.UtcNow;
+            var activeIntent = new ProviderLedgerReconciliationRunIntent(
+                SchemaVersion: RunIntentSchemaVersion,
+                OperationId: operationId,
+                RunId: existingIntent?.RunId ?? Guid.NewGuid(),
+                AccountId: accountId,
+                RequestHashSha256: requestHash,
+                InputHashSha256: existingIntent?.InputHashSha256,
+                AttemptNumber: (existingIntent?.AttemptNumber ?? 0) + 1,
+                StartedAtUtc: existingIntent?.StartedAtUtc ?? startedAt,
+                UpdatedAtUtc: startedAt,
+                State: "Running",
+                TerminalState: null,
+                FailureReason: null);
+            await PersistRunIntentAsync(activeIntent, ct).ConfigureAwait(false);
+
+            try
+            {
+                return await RunCoreAsync(
+                        accountId,
+                        accessScope,
+                        verifiedLedgerBook,
+                        request,
+                        activeIntent,
+                        ct)
+                    .ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                var cancelled = BuildUnexpectedFailureDetail(
+                    accountId,
+                    activeIntent,
+                    activeIntent.InputHashSha256 ?? requestHash,
+                    "PROVIDER_RECONCILIATION_CANCELLED",
+                    "Provider-ledger reconciliation was cancelled before all required postconditions could be verified.",
+                    exceptionType: typeof(OperationCanceledException).FullName);
+                await TryPersistTerminalFailureAsync(activeIntent, cancelled, CancellationToken.None).ConfigureAwait(false);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Provider-ledger reconciliation {OperationId} for account {AccountId} failed before terminal persistence",
+                    operationId,
+                    accountId);
+                var failed = BuildUnexpectedFailureDetail(
+                    accountId,
+                    activeIntent,
+                    activeIntent.InputHashSha256 ?? requestHash,
+                    "PROVIDER_RECONCILIATION_FAILED",
+                    "Provider-ledger reconciliation failed before all required postconditions could be verified.",
+                    ex.GetType().FullName);
+                await TryPersistTerminalFailureAsync(activeIntent, failed, CancellationToken.None).ConfigureAwait(false);
+                return failed;
+            }
+        }
+        finally
+        {
+            operationGate.Release();
+        }
+    }
+
+    private async Task<ProviderLedgerReconciliationDetailDto> RunCoreAsync(
+        Guid accountId,
+        ReconciliationBreakQueueScope? accessScope,
+        LedgerBookDto? verifiedLedgerBook,
+        ProviderLedgerReconciliationRequestDto request,
+        ProviderLedgerReconciliationRunIntent activeIntent,
+        CancellationToken ct)
+    {
         var tolerance = Math.Abs(request.AmountTolerance);
         var staleAfterMinutes = Math.Max(1, request.ProviderStaleAfterMinutes);
-        var runId = Guid.NewGuid();
-        var createdAt = DateTimeOffset.UtcNow;
+        var runId = activeIntent.RunId;
+        var createdAt = activeIntent.StartedAtUtc;
         var previousLatest = await GetLatestAsync(accountId, ct).ConfigureAwait(false);
         var lifecycle = new BreakLifecycleContext(
             CreatedAt: createdAt,
             AmountTolerance: tolerance,
-            DefaultOwner: NormalizeOwner(request.DefaultBreakOwner) ?? "fund-accounting",
-            SignedOffBreakKeys: new HashSet<string>(request.SignedOffBreakKeys ?? [], StringComparer.OrdinalIgnoreCase),
-            SignedOffBy: NormalizeOwner(request.SignedOffBy) ?? NormalizeOwner(request.RequestedBy),
+            DefaultOwner: NormalizeOptional(request.DefaultBreakOwner) ?? "fund-accounting",
+            SignedOffBreakKeys: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+            SignedOffBy: null,
             PreviousBreaksByKey: BuildPreviousBreakMap(previousLatest));
 
         var providerProjection = await _brokerageSync.GetActivityAsync(accountId, ct).ConfigureAwait(false);
         var internalSnapshot = await _fundAccountService.GetLatestBalanceSnapshotAsync(accountId, ct).ConfigureAwait(false);
+        ProviderLedgerScope? ledgerScope = null;
+        string? ledgerScopeError = null;
+        try
+        {
+            ledgerScope = await ResolvePrimaryLedgerScopeAsync(
+                    accountId,
+                    internalSnapshot?.AsOfDate,
+                    verifiedLedgerBook,
+                    ct)
+                .ConfigureAwait(false);
+            if (ledgerScope.Period is null || !ledgerScope.AsOfDate.HasValue)
+            {
+                ledgerScopeError = "Provider-ledger reconciliation requires an exact accounting period and as-of date before close/report casework can be retained.";
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            ledgerScopeError = ex.Message;
+        }
+
         var checks = new List<ProviderLedgerReconciliationCheckDto>();
         var breaks = new List<ProviderLedgerReconciliationBreakDto>();
         var securityMasterPassports = new List<ProviderSecurityMasterPassportDto>();
         var warnings = new List<string>();
         var evidenceLinks = new List<string>();
+
+        if (ledgerScopeError is not null)
+        {
+            AddBreak(
+                runId,
+                lifecycle,
+                checks,
+                breaks,
+                "accounting-scope-resolved",
+                "Accounting book and period scope is resolved",
+                ProviderLedgerReconciliationCheckStatusDto.Blocked,
+                "ACCOUNTING_SCOPE_UNRESOLVED",
+                ReconciliationBreakCategory.MissingLedgerCoverage,
+                ReconciliationBreakSeverity.Critical,
+                "ledger-book-service",
+                "ledger-book-service",
+                null,
+                null,
+                ledgerScopeError);
+        }
+        else
+        {
+            AddMatched(
+                checks,
+                "accounting-scope-resolved",
+                "Accounting book and period scope is resolved",
+                ReconciliationBreakCategory.MissingLedgerCoverage,
+                "ledger-book-service",
+                "ledger-book-service",
+                null,
+                null,
+                $"Primary ledger book '{ledgerScope!.Book.LedgerBookId:D}' and accounting period '{ledgerScope.Period!.PeriodId:D}' cover as-of date '{ledgerScope.AsOfDate:yyyy-MM-dd}'.");
+        }
 
         if (providerProjection is null)
         {
@@ -340,6 +552,40 @@ public sealed class ProviderLedgerReconciliationService
             securityMasterPassports,
             evidenceLinks);
 
+        var inputHash = ComputeOperationInputHash(
+            accountId,
+            accessScope,
+            request,
+            providerProjection,
+            internalSnapshot,
+            ledgerScope,
+            ledgerScopeError,
+            custodianPositions,
+            bankStatementLines,
+            checks,
+            securityMasterPassports);
+        if (activeIntent.InputHashSha256 is { Length: > 0 } retainedInputHash &&
+            !string.Equals(retainedInputHash, inputHash, StringComparison.OrdinalIgnoreCase))
+        {
+            var conflict = BuildInputConflictDetail(accountId, activeIntent, inputHash, retainedInputHash);
+            await PersistAsync(accountId, conflict, ct).ConfigureAwait(false);
+            await PersistRunIntentAsync(
+                    activeIntent with
+                    {
+                        InputHashSha256 = retainedInputHash,
+                        UpdatedAtUtc = conflict.Outcome!.CompletedAtUtc,
+                        State = "Blocked",
+                        TerminalState = OperationTerminalState.Blocked,
+                        FailureReason = conflict.Outcome.Issues[0].Message
+                    },
+                    ct)
+                .ConfigureAwait(false);
+            return conflict;
+        }
+
+        activeIntent = activeIntent with { InputHashSha256 = inputHash, UpdatedAtUtc = DateTimeOffset.UtcNow };
+        await PersistRunIntentAsync(activeIntent, ct).ConfigureAwait(false);
+
         var hasBlockedCheck = checks.Any(static check => check.Status == ProviderLedgerReconciliationCheckStatusDto.Blocked);
         var status = hasBlockedCheck
             ? ProviderLedgerReconciliationStatusDto.Blocked
@@ -372,7 +618,7 @@ public sealed class ProviderLedgerReconciliationService
             InternalAsOfDate: internalSnapshot?.AsOfDate,
             DetailPath: detailPath);
 
-        var detail = new ProviderLedgerReconciliationDetailDto(
+        var provisionalDetail = new ProviderLedgerReconciliationDetailDto(
             summary,
             checks,
             breaks,
@@ -382,13 +628,109 @@ public sealed class ProviderLedgerReconciliationService
             shadowBookComparison,
             corporateActionReadiness);
 
-        await SeedBreakQueueCasesAsync(detail, request, ct).ConfigureAwait(false);
-        await PersistAsync(accountId, detail, ct).ConfigureAwait(false);
+        ProviderCaseworkPersistenceResult casework;
+        try
+        {
+            casework = await SeedBreakQueueCasesAsync(
+                    provisionalDetail,
+                    accessScope,
+                    request,
+                    ledgerScope,
+                    ledgerScopeError,
+                    ct)
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(
+                ex,
+                "Provider-ledger reconciliation {ReconciliationRunId} failed while retaining reconciliation casework",
+                runId);
+            var failed = provisionalDetail with
+            {
+                Outcome = BuildPersistenceFailureOutcome(
+                    activeIntent,
+                    inputHash,
+                    summary,
+                    "RECONCILIATION_CASEWORK_PERSISTENCE_FAILED",
+                    "The reconciliation was evaluated, but one or more required break cases could not be durably retained.",
+                    ex.GetType().FullName,
+                    caseworkRetained: false,
+                    runRecordRetained: true)
+            };
+            var retained = await TryPersistTerminalFailureAsync(activeIntent, failed, CancellationToken.None)
+                .ConfigureAwait(false);
+            return retained
+                ? failed
+                : failed with
+                {
+                    Outcome = BuildPersistenceFailureOutcome(
+                        activeIntent,
+                        inputHash,
+                        summary,
+                        "RECONCILIATION_TERMINAL_PERSISTENCE_FAILED",
+                        "Reconciliation casework persistence failed and the terminal run detail could not be durably retained. The pre-casework run intent remains the recovery anchor.",
+                        ex.GetType().FullName,
+                        caseworkRetained: false,
+                        runRecordRetained: false)
+                };
+        }
+
+        var detail = provisionalDetail with
+        {
+            Outcome = BuildTerminalOutcome(activeIntent, inputHash, summary, warnings, casework)
+        };
+        try
+        {
+            await PersistAsync(accountId, detail, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(
+                ex,
+                "Provider-ledger reconciliation {ReconciliationRunId} retained casework but failed to persist terminal run detail",
+                runId);
+            var failed = provisionalDetail with
+            {
+                Outcome = BuildPersistenceFailureOutcome(
+                    activeIntent,
+                    inputHash,
+                    summary,
+                    "RECONCILIATION_TERMINAL_PERSISTENCE_FAILED",
+                    "Reconciliation casework was retained, but the terminal run detail could not be durably persisted. The pre-casework run intent remains the recovery anchor.",
+                    ex.GetType().FullName,
+                    caseworkRetained: casework.IsSatisfied,
+                    runRecordRetained: false)
+            };
+            await TryPersistRunIntentAsync(
+                    activeIntent with
+                    {
+                        UpdatedAtUtc = failed.Outcome.CompletedAtUtc,
+                        State = "Failed",
+                        TerminalState = OperationTerminalState.Failed,
+                        FailureReason = failed.Outcome.Issues[0].Message
+                    },
+                    CancellationToken.None)
+                .ConfigureAwait(false);
+            return failed;
+        }
+
+        await TryPersistRunIntentAsync(
+                activeIntent with
+                {
+                    UpdatedAtUtc = detail.Outcome!.CompletedAtUtc,
+                    State = detail.Outcome.State.ToString(),
+                    TerminalState = detail.Outcome.State,
+                    FailureReason = detail.Outcome.Issues.FirstOrDefault(static issue => issue.Severity == OperationIssueSeverity.Error)?.Message
+                },
+                CancellationToken.None)
+            .ConfigureAwait(false);
         _logger.LogInformation(
-            "Provider-ledger reconciliation {ReconciliationRunId} for account {AccountId} completed with {Status}",
+            "Provider-ledger reconciliation {ReconciliationRunId} for account {AccountId} completed with {Status} and verified state {TerminalState}",
             runId,
             accountId,
-            status);
+            status,
+            detail.Outcome.State);
         return detail;
     }
 
@@ -406,6 +748,19 @@ public sealed class ProviderLedgerReconciliationService
         return await JsonSerializer
             .DeserializeAsync<ProviderLedgerReconciliationDetailDto>(stream, JsonOptions, ct)
             .ConfigureAwait(false);
+    }
+
+    public async Task<ProviderLedgerReconciliationDetailDto?> GetLatestAsync(
+        Guid accountId,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(accessScope);
+        var authority = await VerifyAuthoritativeScopeAsync(accountId, accessScope, ct)
+            .ConfigureAwait(false);
+        return authority.IsVerified
+            ? await GetLatestAsync(accountId, ct).ConfigureAwait(false)
+            : null;
     }
 
     private static ProviderShadowBookComparisonDto BuildShadowBookComparison(
@@ -540,7 +895,8 @@ public sealed class ProviderLedgerReconciliationService
                 static group => new PositionComparisonAmount(
                     group.First().Symbol.Trim(),
                     group.Sum(static position => position.Quantity),
-                    group.Sum(static position => position.MarketValue)),
+                    group.Sum(static position => position.MarketValue),
+                    group.Sum(static position => Math.Abs(position.Quantity) * position.AverageEntryPrice)),
                 StringComparer.OrdinalIgnoreCase) ?? [];
         var custodianByIdentifier = custodianPositions
             .Where(static position => !string.IsNullOrWhiteSpace(position.Identifier))
@@ -550,7 +906,10 @@ public sealed class ProviderLedgerReconciliationService
                 static group => new PositionComparisonAmount(
                     group.First().Identifier.Trim(),
                     group.Sum(static position => position.IsShort ? -Math.Abs(position.Quantity) : position.Quantity),
-                    group.Sum(static position => position.MarketValue)),
+                    group.Sum(static position => position.MarketValue),
+                    group.All(static position => position.CostBasis.HasValue)
+                        ? group.Sum(static position => position.CostBasis!.Value)
+                        : null),
                 StringComparer.OrdinalIgnoreCase);
         var keys = providerBySymbol.Keys
             .Concat(custodianByIdentifier.Keys)
@@ -581,6 +940,15 @@ public sealed class ProviderLedgerReconciliationService
                 provider?.MarketValue,
                 tolerance,
                 "Position market value is compared between retained custodian statement lines and provider positions."));
+            lines.Add(BuildShadowBookLine(
+                $"position-cost-basis:{display}",
+                $"Position {display} cost basis",
+                "custodian-statement",
+                "provider-sync",
+                custodian?.CostBasis,
+                provider?.CostBasis,
+                tolerance,
+                "Position cost basis is compared between retained custodian statement lines and provider average-entry-price evidence."));
         }
 
         return lines;
@@ -770,1097 +1138,127 @@ public sealed class ProviderLedgerReconciliationService
     private sealed record PositionComparisonAmount(
         string DisplayName,
         decimal Quantity,
-        decimal MarketValue);
+        decimal MarketValue,
+        decimal? CostBasis);
 
-    private static ProviderCorporateActionReadinessDto BuildCorporateActionReadiness(
-        FundAccountBrokerageSyncActivityDto? providerProjection,
-        IReadOnlyList<ProviderLedgerReconciliationCheckDto> checks,
-        IReadOnlyList<ProviderSecurityMasterPassportDto> securityMasterPassports,
-        IReadOnlyList<string> evidenceLinks)
-    {
-        if (providerProjection is null)
-        {
-            return new ProviderCorporateActionReadinessDto(
-                ProviderCorporateActionsRoutable: false,
-                Status: ProviderLedgerReconciliationCheckStatusDto.Blocked,
-                PositionCount: 0,
-                SecurityResolvedCount: 0,
-                EquityPositionCount: 0,
-                FixedIncomeOrStructuredPositionCount: 0,
-                FactorScheduleCandidateCount: 0,
-                IncomeCashTransactionCount: 0,
-                DividendCashTransactionCount: 0,
-                InterestCashTransactionCount: 0,
-                RequiredFeeds: [],
-                MissingFeeds: ["provider-projection"],
-                Warnings: ["Corporate-action readiness is blocked until a provider projection is retained."],
-                EvidenceLinks: [],
-                Lines:
-                [
-                    new ProviderCorporateActionReadinessLineDto(
-                        "provider-projection",
-                        "Provider projection",
-                        ProviderLedgerReconciliationCheckStatusDto.Blocked,
-                        "provider-projection",
-                        "provider-sync",
-                        0,
-                        "No brokerage sync projection exists for this fund account.")
-                ]);
-        }
-
-        var positions = providerProjection.Positions;
-        var corporateActionEvents = providerProjection.CorporateActions ?? [];
-        var equityPositionCount = positions.Count(static position => IsEquityAssetClass(position.AssetClass));
-        var fixedIncomeOrStructuredPositionCount = positions.Count(static position => IsFixedIncomeOrStructuredAssetClass(position.AssetClass));
-        var incomeCashTransactionCount = providerProjection.CashTransactions.Count(static transaction => IsIncomeTransaction(transaction.TransactionType));
-        var dividendCashTransactionCount = providerProjection.CashTransactions.Count(static transaction => IsDividendTransaction(transaction.TransactionType));
-        var interestCashTransactionCount = providerProjection.CashTransactions.Count(static transaction => IsInterestTransaction(transaction.TransactionType));
-        var principalCashTransactionCount = providerProjection.CashTransactions.Count(static transaction => IsPrincipalReturnTransaction(transaction.TransactionType));
-        var providerCorporateActionEventCount = corporateActionEvents.Count;
-        var amortizationScheduleEventCount = corporateActionEvents.Count(static action => IsAmortizationScheduleEvent(action.EventType));
-        var factorScheduleEventCount = corporateActionEvents.Count(static action => IsFactorScheduleEvent(action.EventType));
-        var loanScheduleEventCount = corporateActionEvents.Count(static action => IsLoanScheduleEvent(action.EventType));
-        var factorLikeScheduleEventCount = amortizationScheduleEventCount + factorScheduleEventCount + loanScheduleEventCount;
-        var positionSecurityIdentityCount = positions
-            .Where(static position => !string.IsNullOrWhiteSpace(position.Symbol))
-            .Select(static position => position.Symbol.Trim().ToUpperInvariant())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Count();
-        var securityResolvedCount = securityMasterPassports.Count(static passport =>
-            passport.Status is ProviderSecurityMasterPassportStatusDto.Resolved or ProviderSecurityMasterPassportStatusDto.Inferred);
-        var candidateCount = equityPositionCount
-            + fixedIncomeOrStructuredPositionCount
-            + incomeCashTransactionCount
-            + principalCashTransactionCount
-            + providerCorporateActionEventCount;
-        var nonFactorCorporateActionEventCount = Math.Max(0, providerCorporateActionEventCount - factorLikeScheduleEventCount);
-        var unresolvedSecurityCount = Math.Max(0, positionSecurityIdentityCount - securityResolvedCount);
-        var corporateActionCapability = checks.FirstOrDefault(static check =>
-            string.Equals(check.CheckId, "provider-capability:CorporateActions", StringComparison.OrdinalIgnoreCase));
-        var factorScheduleCapability = checks.FirstOrDefault(static check =>
-            string.Equals(check.CheckId, "provider-capability:FactorSchedule", StringComparison.OrdinalIgnoreCase));
-        var hasCorporateActionCapabilityEvidence = corporateActionCapability is not null;
-        var hasFactorScheduleCapabilityEvidence = factorScheduleCapability is not null;
-        var providerCorporateActionsRoutable =
-            corporateActionCapability?.Status == ProviderLedgerReconciliationCheckStatusDto.Matched;
-        var factorScheduleRoutable =
-            factorScheduleCapability?.Status == ProviderLedgerReconciliationCheckStatusDto.Matched;
-        var requiresCorporateActionCapability =
-            equityPositionCount > 0 ||
-            incomeCashTransactionCount > 0 ||
-            nonFactorCorporateActionEventCount > 0;
-        var requiresFactorScheduleCapability =
-            fixedIncomeOrStructuredPositionCount > 0 ||
-            principalCashTransactionCount > 0 ||
-            factorLikeScheduleEventCount > 0;
-        var hasRequiredCorporateActionCapabilityEvidence =
-            !requiresCorporateActionCapability || hasCorporateActionCapabilityEvidence;
-        var hasRequiredFactorScheduleCapabilityEvidence =
-            !requiresFactorScheduleCapability || hasFactorScheduleCapabilityEvidence;
-        var requiredProviderCapabilitiesRoutable =
-            (!requiresCorporateActionCapability || providerCorporateActionsRoutable) &&
-            (!requiresFactorScheduleCapability || factorScheduleRoutable);
-        var requiredFeeds = new List<string>();
-        var missingFeeds = new List<string>();
-        var warnings = new List<string>();
-        var lines = new List<ProviderCorporateActionReadinessLineDto>();
-        var evidenceCandidates = new List<ProviderCorporateActionEvidenceCandidateDto>();
-        var passportsBySymbol = securityMasterPassports
-            .Where(static passport => !string.IsNullOrWhiteSpace(passport.Symbol))
-            .GroupBy(static passport => NormalizeSymbol(passport.Symbol), StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(static group => group.Key, static group => group.First(), StringComparer.OrdinalIgnoreCase);
-
-        if (equityPositionCount > 0)
-        {
-            requiredFeeds.Add("splits");
-            requiredFeeds.Add("dividends");
-        }
-
-        if (fixedIncomeOrStructuredPositionCount > 0)
-        {
-            requiredFeeds.Add("factor-schedule");
-            requiredFeeds.Add("coupon-schedule");
-        }
-
-        if (incomeCashTransactionCount > 0)
-        {
-            requiredFeeds.Add("income-cash-activity");
-        }
-
-        if (principalCashTransactionCount > 0)
-        {
-            requiredFeeds.Add("principal-cash-activity");
-            requiredFeeds.Add("factor-schedule");
-        }
-
-        if (providerCorporateActionEventCount > 0)
-        {
-            requiredFeeds.Add("provider-corporate-actions");
-        }
-
-        if (factorScheduleEventCount > 0)
-        {
-            requiredFeeds.Add("factor-schedule");
-        }
-
-        if (amortizationScheduleEventCount > 0)
-        {
-            requiredFeeds.Add("amortization-schedule");
-            requiredFeeds.Add("factor-schedule");
-        }
-
-        if (loanScheduleEventCount > 0)
-        {
-            requiredFeeds.Add("loan-schedule");
-            requiredFeeds.Add("factor-schedule");
-        }
-
-        if (candidateCount > 0 &&
-            (!hasRequiredCorporateActionCapabilityEvidence || !hasRequiredFactorScheduleCapabilityEvidence))
-        {
-            missingFeeds.Add("provider-capability-matrix");
-            warnings.Add("Provider capability routing metadata is not registered, so corporate-action feed readiness cannot be confirmed.");
-        }
-        else if (requiresCorporateActionCapability && !providerCorporateActionsRoutable)
-        {
-            missingFeeds.Add("provider-corporate-actions");
-            warnings.Add("Provider corporate-action capability is not routable for this account; controller review is required before relying on split, dividend, or factor evidence.");
-        }
-
-        if (requiresFactorScheduleCapability && hasFactorScheduleCapabilityEvidence && !factorScheduleRoutable)
-        {
-            missingFeeds.Add("factor-schedule");
-            warnings.Add("Provider factor-schedule capability is not routable for this account; fixed-income, structured, amortization, or paydown evidence requires controller review.");
-        }
-
-        if (unresolvedSecurityCount > 0)
-        {
-            missingFeeds.Add("security-master-identities");
-            warnings.Add($"{unresolvedSecurityCount} provider position(s) are missing a resolved Security Master identity for corporate-action/factor attribution.");
-        }
-
-        lines.Add(BuildCorporateActionReadinessLine(
-            "equity-corporate-actions",
-            "Equity corporate actions",
-            "splits,dividends",
-            "provider-sync",
-            equityPositionCount,
-            candidateCount,
-            hasCorporateActionCapabilityEvidence,
-            providerCorporateActionsRoutable,
-            unresolvedSecurityCount,
-            "corporate-action",
-            "Equity positions require split and dividend evidence before provider values can be used as accounting support."));
-
-        lines.Add(BuildCorporateActionReadinessLine(
-            "factor-schedule",
-            "Factor schedule candidates",
-            "factor-schedule,coupon-schedule",
-            "security-master-provider",
-            fixedIncomeOrStructuredPositionCount,
-            candidateCount,
-            hasFactorScheduleCapabilityEvidence,
-            factorScheduleRoutable,
-            unresolvedSecurityCount,
-            "factor-schedule",
-            "Fixed income and structured positions require factor, coupon, amortization, or paydown schedules for valuation support."));
-
-        lines.Add(BuildCorporateActionReadinessLine(
-            "income-cash-activity",
-            "Income cash activity",
-            "income-cash-activity",
-            "provider-activity",
-            incomeCashTransactionCount,
-            candidateCount,
-            hasCorporateActionCapabilityEvidence,
-            providerCorporateActionsRoutable,
-            unresolvedSecurityCount,
-            "corporate-action",
-            "Dividend, interest, coupon, and distribution cash movements require retained provider activity and Security Master attribution."));
-
-        lines.Add(BuildCorporateActionReadinessLine(
-            "principal-cash-activity",
-            "Principal cash activity",
-            "principal-cash-activity,factor-schedule",
-            "provider-activity",
-            principalCashTransactionCount,
-            candidateCount,
-            hasFactorScheduleCapabilityEvidence,
-            factorScheduleRoutable,
-            unresolvedSecurityCount,
-            "factor-schedule",
-            "Principal, amortization, and paydown cash movements require retained provider activity, factor schedule support, and Security Master attribution."));
-
-        var providerEventsHaveCapabilityEvidence = nonFactorCorporateActionEventCount == 0
-            ? hasFactorScheduleCapabilityEvidence
-            : factorLikeScheduleEventCount == 0
-                ? hasCorporateActionCapabilityEvidence
-                : hasCorporateActionCapabilityEvidence && hasFactorScheduleCapabilityEvidence;
-        var providerEventsRoutable = nonFactorCorporateActionEventCount == 0
-            ? factorScheduleRoutable
-            : factorLikeScheduleEventCount == 0
-                ? providerCorporateActionsRoutable
-                : providerCorporateActionsRoutable && factorScheduleRoutable;
-        lines.Add(BuildCorporateActionReadinessLine(
-            "provider-corporate-action-events",
-            "Provider corporate-action events",
-            providerCorporateActionEventCount == factorLikeScheduleEventCount && factorLikeScheduleEventCount > 0
-                ? "factor-schedule"
-                : "provider-corporate-actions",
-            "provider-corporate-action",
-            providerCorporateActionEventCount,
-            candidateCount,
-            providerEventsHaveCapabilityEvidence,
-            providerEventsRoutable,
-            unresolvedSecurityCount,
-            factorLikeScheduleEventCount > 0 && nonFactorCorporateActionEventCount == 0
-                ? "factor-schedule"
-                : "corporate-action/factor-schedule",
-            "Retained provider corporate-action, factor, and loan-schedule events are direct evidence for split, dividend, amortization, paydown, loan schedule, or factor support."));
-
-        if (candidateCount == 0)
-        {
-            warnings.Add("No corporate-action-sensitive positions, provider corporate-action events, income transactions, or principal cash movements were present in the provider projection.");
-        }
-
-        var status = candidateCount == 0
-            ? ProviderLedgerReconciliationCheckStatusDto.Matched
-            : !hasRequiredCorporateActionCapabilityEvidence || !hasRequiredFactorScheduleCapabilityEvidence
-                ? ProviderLedgerReconciliationCheckStatusDto.Blocked
-                : requiredProviderCapabilitiesRoutable && unresolvedSecurityCount == 0
-                    ? ProviderLedgerReconciliationCheckStatusDto.Matched
-                    : ProviderLedgerReconciliationCheckStatusDto.Break;
-
-        foreach (var position in positions)
-        {
-            if (!IsEquityAssetClass(position.AssetClass) &&
-                !IsFixedIncomeOrStructuredAssetClass(position.AssetClass))
-            {
-                continue;
-            }
-
-            passportsBySymbol.TryGetValue(NormalizeSymbol(position.Symbol), out var passport);
-            var candidateType = IsFixedIncomeOrStructuredAssetClass(position.AssetClass)
-                ? "FactorScheduleCandidate"
-                : "EquityCorporateActionCandidate";
-            var requiredFeed = candidateType == "FactorScheduleCandidate"
-                ? "factor-schedule,coupon-schedule"
-                : "splits,dividends";
-            var providerEventId = string.IsNullOrWhiteSpace(position.PositionId)
-                ? position.Symbol
-                : position.PositionId;
-            var candidateStatus = BuildCorporateActionCandidateStatus(
-                candidateType == "FactorScheduleCandidate"
-                    ? hasFactorScheduleCapabilityEvidence
-                    : hasCorporateActionCapabilityEvidence,
-                candidateType == "FactorScheduleCandidate"
-                    ? factorScheduleRoutable
-                    : providerCorporateActionsRoutable,
-                passport,
-                requiresSecurityIdentity: true);
-
-            evidenceCandidates.Add(new ProviderCorporateActionEvidenceCandidateDto(
-                CandidateId: BuildCorporateActionCandidateId(
-                    providerProjection.Link.ProviderId,
-                    providerProjection.Link.ExternalAccountId,
-                    candidateType,
-                    providerEventId,
-                    position.Symbol),
-                CandidateType: candidateType,
-                Symbol: NormalizeOptional(position.Symbol),
-                SecurityId: passport?.SecurityId ?? position.Security?.SecurityId,
-                SecurityDisplayName: passport?.SecurityDisplayName ?? position.Security?.DisplayName,
-                Status: candidateStatus,
-                RequiredFeed: requiredFeed,
-                EvidenceSource: "provider-position",
-                ProviderId: providerProjection.Link.ProviderId,
-                ExternalAccountId: providerProjection.Link.ExternalAccountId,
-                ProviderEventId: providerEventId,
-                ObservedAt: providerProjection.SyncedAt,
-                Amount: position.MarketValue,
-                Quantity: position.Quantity,
-                Currency: NormalizeOptional(position.Currency) ?? NormalizeOptional(providerProjection.Balance?.Currency),
-                Reason: BuildCorporateActionCandidateReason(
-                    candidateType,
-                    candidateType == "FactorScheduleCandidate"
-                        ? hasFactorScheduleCapabilityEvidence
-                        : hasCorporateActionCapabilityEvidence,
-                    candidateType == "FactorScheduleCandidate"
-                        ? factorScheduleRoutable
-                        : providerCorporateActionsRoutable,
-                    passport,
-                    requiresSecurityIdentity: true,
-                    candidateType == "FactorScheduleCandidate" ? "factor-schedule" : "corporate-action")));
-        }
-
-        foreach (var transaction in providerProjection.CashTransactions.Where(static transaction =>
-                     IsIncomeTransaction(transaction.TransactionType) ||
-                     IsPrincipalReturnTransaction(transaction.TransactionType)))
-        {
-            passportsBySymbol.TryGetValue(NormalizeSymbol(transaction.Symbol), out var passport);
-            var isPrincipalReturn = IsPrincipalReturnTransaction(transaction.TransactionType);
-            var candidateType = isPrincipalReturn
-                ? "PrincipalCashActivity"
-                : IsDividendTransaction(transaction.TransactionType)
-                    ? "DividendCashActivity"
-                    : IsInterestTransaction(transaction.TransactionType)
-                        ? "InterestCashActivity"
-                        : "DistributionCashActivity";
-            var requiresSecurityIdentity = !string.IsNullOrWhiteSpace(transaction.Symbol);
-            var candidateStatus = BuildCorporateActionCandidateStatus(
-                isPrincipalReturn ? hasFactorScheduleCapabilityEvidence : hasCorporateActionCapabilityEvidence,
-                isPrincipalReturn ? factorScheduleRoutable : providerCorporateActionsRoutable,
-                passport,
-                requiresSecurityIdentity);
-
-            evidenceCandidates.Add(new ProviderCorporateActionEvidenceCandidateDto(
-                CandidateId: BuildCorporateActionCandidateId(
-                    providerProjection.Link.ProviderId,
-                    providerProjection.Link.ExternalAccountId,
-                    candidateType,
-                    transaction.TransactionId,
-                    transaction.Symbol),
-                CandidateType: candidateType,
-                Symbol: NormalizeOptional(transaction.Symbol),
-                SecurityId: passport?.SecurityId,
-                SecurityDisplayName: passport?.SecurityDisplayName,
-                Status: candidateStatus,
-                RequiredFeed: isPrincipalReturn ? "principal-cash-activity,factor-schedule" : "income-cash-activity",
-                EvidenceSource: "provider-activity",
-                ProviderId: providerProjection.Link.ProviderId,
-                ExternalAccountId: providerProjection.Link.ExternalAccountId,
-                ProviderEventId: transaction.TransactionId,
-                ObservedAt: transaction.PostedAt,
-                Amount: transaction.Amount,
-                Quantity: null,
-                Currency: NormalizeOptional(transaction.Currency),
-                Reason: BuildCorporateActionCandidateReason(
-                    candidateType,
-                    isPrincipalReturn ? hasFactorScheduleCapabilityEvidence : hasCorporateActionCapabilityEvidence,
-                    isPrincipalReturn ? factorScheduleRoutable : providerCorporateActionsRoutable,
-                    passport,
-                    requiresSecurityIdentity,
-                    isPrincipalReturn ? "factor-schedule" : "corporate-action")));
-        }
-
-        foreach (var action in corporateActionEvents)
-        {
-            passportsBySymbol.TryGetValue(NormalizeSymbol(action.Symbol), out var passport);
-            var candidateType = ResolveCorporateActionEventCandidateType(action.EventType);
-            var requiredFeed = ResolveCorporateActionEventRequiredFeed(action.EventType);
-            var requiresSecurityIdentity = !string.IsNullOrWhiteSpace(action.Symbol);
-            var isScheduleEvent = IsScheduleEvidenceCandidate(candidateType);
-            var candidateStatus = BuildCorporateActionCandidateStatus(
-                isScheduleEvent
-                    ? hasFactorScheduleCapabilityEvidence
-                    : hasCorporateActionCapabilityEvidence,
-                isScheduleEvent
-                    ? factorScheduleRoutable
-                    : providerCorporateActionsRoutable,
-                passport,
-                requiresSecurityIdentity);
-            var amount = action.Amount ?? action.Factor;
-
-            evidenceCandidates.Add(new ProviderCorporateActionEvidenceCandidateDto(
-                CandidateId: BuildCorporateActionCandidateId(
-                    providerProjection.Link.ProviderId,
-                    providerProjection.Link.ExternalAccountId,
-                    candidateType,
-                    action.EventId,
-                    action.Symbol),
-                CandidateType: candidateType,
-                Symbol: NormalizeOptional(action.Symbol),
-                SecurityId: passport?.SecurityId,
-                SecurityDisplayName: passport?.SecurityDisplayName,
-                Status: candidateStatus,
-                RequiredFeed: requiredFeed,
-                EvidenceSource: "provider-corporate-action",
-                ProviderId: providerProjection.Link.ProviderId,
-                ExternalAccountId: providerProjection.Link.ExternalAccountId,
-                ProviderEventId: action.EventId,
-                ObservedAt: providerProjection.SyncedAt,
-                Amount: amount,
-                Quantity: action.Quantity,
-                Currency: NormalizeOptional(action.Currency) ?? NormalizeOptional(providerProjection.Balance?.Currency),
-                Reason: BuildCorporateActionCandidateReason(
-                    candidateType,
-                    isScheduleEvent
-                        ? hasFactorScheduleCapabilityEvidence
-                        : hasCorporateActionCapabilityEvidence,
-                    isScheduleEvent
-                        ? factorScheduleRoutable
-                        : providerCorporateActionsRoutable,
-                    passport,
-                    requiresSecurityIdentity,
-                    isScheduleEvent ? "factor-schedule" : "corporate-action")));
-        }
-
-        var orderedCandidates = evidenceCandidates
-            .OrderBy(static candidate => candidate.CandidateType, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(static candidate => candidate.Symbol, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(static candidate => candidate.ProviderEventId, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        var ledgerEffects = BuildCorporateActionLedgerEffects(orderedCandidates);
-        return new ProviderCorporateActionReadinessDto(
-            ProviderCorporateActionsRoutable: providerCorporateActionsRoutable,
-            Status: status,
-            PositionCount: positions.Count,
-            SecurityResolvedCount: securityResolvedCount,
-            EquityPositionCount: equityPositionCount,
-            FixedIncomeOrStructuredPositionCount: fixedIncomeOrStructuredPositionCount,
-            FactorScheduleCandidateCount: fixedIncomeOrStructuredPositionCount,
-            IncomeCashTransactionCount: incomeCashTransactionCount,
-            DividendCashTransactionCount: dividendCashTransactionCount,
-            InterestCashTransactionCount: interestCashTransactionCount,
-            RequiredFeeds: requiredFeeds.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
-            MissingFeeds: missingFeeds.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
-            Warnings: warnings.ToArray(),
-            EvidenceLinks: evidenceLinks.Where(static link => !string.IsNullOrWhiteSpace(link)).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
-            Lines: lines,
-            ProviderCorporateActionEventCount: providerCorporateActionEventCount,
-            FactorScheduleEventCount: factorScheduleEventCount,
-            FactorScheduleRoutable: factorScheduleRoutable,
-            LoanScheduleEventCount: loanScheduleEventCount)
-        {
-            EvidenceCandidates = orderedCandidates,
-            LedgerEffects = ledgerEffects,
-            SecurityMasterScheduleFeeds = BuildSecurityMasterScheduleFeeds(orderedCandidates, ledgerEffects),
-            PrincipalCashTransactionCount = principalCashTransactionCount,
-            AmortizationScheduleEventCount = amortizationScheduleEventCount
-        };
-    }
-
-    private static IReadOnlyList<ProviderCorporateActionLedgerEffectDto> BuildCorporateActionLedgerEffects(
-        IReadOnlyList<ProviderCorporateActionEvidenceCandidateDto> candidates)
-        => candidates
-            .Select(BuildCorporateActionLedgerEffect)
-            .Where(static effect => effect is not null)
-            .Cast<ProviderCorporateActionLedgerEffectDto>()
-            .ToArray();
-
-    private static bool IsScheduleEvidenceCandidate(string candidateType) =>
-        string.Equals(candidateType, "FactorScheduleEvent", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(candidateType, "AmortizationScheduleEvent", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(candidateType, "LoanScheduleEvent", StringComparison.OrdinalIgnoreCase);
-
-    private static IReadOnlyList<ProviderSecurityMasterScheduleFeedDto> BuildSecurityMasterScheduleFeeds(
-        IReadOnlyList<ProviderCorporateActionEvidenceCandidateDto> candidates,
-        IReadOnlyList<ProviderCorporateActionLedgerEffectDto> ledgerEffects)
-    {
-        var candidatesById = candidates.ToDictionary(static candidate => candidate.CandidateId, StringComparer.OrdinalIgnoreCase);
-        return ledgerEffects
-            .Where(static effect => IsSecurityMasterScheduleFeedEffect(effect.LedgerEffectKind))
-            .Select(effect =>
-            {
-                candidatesById.TryGetValue(effect.CandidateId, out var candidate);
-                var canUpdateSecurityMaster = effect.Status == ProviderLedgerReconciliationCheckStatusDto.Matched &&
-                    effect.SecurityId.HasValue &&
-                    !string.Equals(effect.LedgerEffectKind, "FactorScheduleCoverageCandidate", StringComparison.OrdinalIgnoreCase);
-                var canSupportLedgerValuation = effect.Status == ProviderLedgerReconciliationCheckStatusDto.Matched &&
-                    !string.Equals(effect.LedgerEffectKind, "FactorScheduleCoverageCandidate", StringComparison.OrdinalIgnoreCase);
-                return new ProviderSecurityMasterScheduleFeedDto(
-                    FeedId: $"security-master-feed:{NormalizeBreakIdPart(effect.CandidateId)}",
-                    CandidateId: effect.CandidateId,
-                    CandidateType: effect.CandidateType,
-                    FeedKind: MapSecurityMasterScheduleFeedKind(effect.LedgerEffectKind),
-                    RequiredFeed: candidate?.RequiredFeed ?? ResolveRequiredFeedFromLedgerEffect(effect.LedgerEffectKind),
-                    EvidenceSource: candidate?.EvidenceSource ?? "provider-ledger",
-                    ProviderId: candidate?.ProviderId ?? "unknown-provider",
-                    ExternalAccountId: candidate?.ExternalAccountId ?? "unknown-account",
-                    ProviderEventId: effect.ProviderEventId,
-                    Symbol: effect.Symbol,
-                    SecurityId: effect.SecurityId,
-                    EffectiveDate: effect.EffectiveDate,
-                    Factor: effect.Factor,
-                    CashAmount: effect.CashAmount,
-                    PrincipalAmount: effect.PrincipalAmount,
-                    IncomeAmount: effect.IncomeAmount,
-                    Currency: effect.Currency,
-                    LedgerEffectKind: effect.LedgerEffectKind,
-                    Status: effect.Status,
-                    CanUpdateSecurityMaster: canUpdateSecurityMaster,
-                    CanSupportLedgerValuation: canSupportLedgerValuation,
-                    Reason: BuildSecurityMasterScheduleFeedReason(effect, canUpdateSecurityMaster, canSupportLedgerValuation));
-            })
-            .OrderBy(static feed => feed.EffectiveDate)
-            .ThenBy(static feed => feed.FeedKind, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(static feed => feed.Symbol, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-    }
-
-    private static bool IsSecurityMasterScheduleFeedEffect(string ledgerEffectKind) =>
-        string.Equals(ledgerEffectKind, "FactorScheduleValuationInput", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(ledgerEffectKind, "AmortizationScheduleValuationInput", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(ledgerEffectKind, "LoanScheduleValuationInput", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(ledgerEffectKind, "CorporateActionCoverageInput", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(ledgerEffectKind, "DividendIncomeRecognition", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(ledgerEffectKind, "DistributionIncomeRecognition", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(ledgerEffectKind, "CashIncomeRecognition", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(ledgerEffectKind, "PrincipalReturnRecognition", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(ledgerEffectKind, "FactorScheduleCoverageCandidate", StringComparison.OrdinalIgnoreCase);
-
-    private static string MapSecurityMasterScheduleFeedKind(string ledgerEffectKind) =>
-        ledgerEffectKind switch
-        {
-            "FactorScheduleValuationInput" => "SecurityMasterFactorHistory",
-            "AmortizationScheduleValuationInput" => "SecurityMasterAmortizationSchedule",
-            "LoanScheduleValuationInput" => "SecurityMasterLoanSchedule",
-            "CorporateActionCoverageInput" => "SecurityMasterCorporateAction",
-            "DividendIncomeRecognition" or "DistributionIncomeRecognition" or "CashIncomeRecognition" => "SecurityMasterIncomeSchedule",
-            "PrincipalReturnRecognition" => "SecurityMasterPrincipalSchedule",
-            "FactorScheduleCoverageCandidate" => "SecurityMasterFactorCoverageRequirement",
-            _ => "SecurityMasterScheduleEvidence"
-        };
-
-    private static string ResolveRequiredFeedFromLedgerEffect(string ledgerEffectKind) =>
-        ledgerEffectKind switch
-        {
-            "FactorScheduleValuationInput" or "FactorScheduleCoverageCandidate" => "factor-schedule",
-            "AmortizationScheduleValuationInput" => "amortization-schedule,factor-schedule",
-            "LoanScheduleValuationInput" => "loan-schedule,factor-schedule",
-            "DividendIncomeRecognition" or "DistributionIncomeRecognition" or "CashIncomeRecognition" => "income-cash-activity",
-            "PrincipalReturnRecognition" => "principal-cash-activity,factor-schedule",
-            "CorporateActionCoverageInput" => "provider-corporate-actions",
-            _ => "provider-ledger"
-        };
-
-    private static string BuildSecurityMasterScheduleFeedReason(
-        ProviderCorporateActionLedgerEffectDto effect,
-        bool canUpdateSecurityMaster,
-        bool canSupportLedgerValuation)
-    {
-        if (canUpdateSecurityMaster && canSupportLedgerValuation)
-        {
-            return $"{effect.LedgerEffectKind} is matched, Security Master-attributed, and ready to feed schedule/factor history plus downstream ledger valuation support.";
-        }
-
-        if (!effect.SecurityId.HasValue)
-        {
-            return $"{effect.LedgerEffectKind} cannot update Security Master schedule history until the provider evidence resolves to a Security Master identity.";
-        }
-
-        if (string.Equals(effect.LedgerEffectKind, "FactorScheduleCoverageCandidate", StringComparison.OrdinalIgnoreCase))
-        {
-            return "Fixed-income or structured holdings require provider factor/coupon schedule evidence before Security Master history or ledger valuation can be updated.";
-        }
-
-        return $"{effect.LedgerEffectKind} requires controller review before it can feed Security Master schedule history or ledger valuation support.";
-    }
-
-    private static ProviderCorporateActionLedgerEffectDto? BuildCorporateActionLedgerEffect(
-        ProviderCorporateActionEvidenceCandidateDto candidate)
-    {
-        var eventDate = DateOnly.FromDateTime(candidate.ObservedAt.UtcDateTime);
-        if (string.Equals(candidate.CandidateType, "FactorScheduleEvent", StringComparison.OrdinalIgnoreCase))
-        {
-            return new ProviderCorporateActionLedgerEffectDto(
-                candidate.CandidateId,
-                candidate.CandidateType,
-                candidate.Symbol,
-                candidate.SecurityId,
-                candidate.ProviderEventId,
-                "FactorScheduleValuationInput",
-                eventDate,
-                Factor: candidate.Amount,
-                CashAmount: null,
-                PrincipalAmount: null,
-                IncomeAmount: null,
-                candidate.Currency,
-                candidate.Status,
-                candidate.Status == ProviderLedgerReconciliationCheckStatusDto.Matched
-                    ? "Retained provider factor evidence can feed Security Master factor history and downstream ledger valuation; journal amount generation still requires par and prior-factor context."
-                    : candidate.Reason,
-                JournalLines: []);
-        }
-
-        if (string.Equals(candidate.CandidateType, "AmortizationScheduleEvent", StringComparison.OrdinalIgnoreCase))
-        {
-            return new ProviderCorporateActionLedgerEffectDto(
-                candidate.CandidateId,
-                candidate.CandidateType,
-                candidate.Symbol,
-                candidate.SecurityId,
-                candidate.ProviderEventId,
-                "AmortizationScheduleValuationInput",
-                eventDate,
-                Factor: candidate.Quantity,
-                CashAmount: candidate.Amount,
-                PrincipalAmount: candidate.Amount,
-                IncomeAmount: null,
-                candidate.Currency,
-                candidate.Status,
-                candidate.Status == ProviderLedgerReconciliationCheckStatusDto.Matched
-                    ? "Retained provider amortization schedule evidence can feed Security Master amortization history and downstream ledger valuation; final journal generation still requires amortization policy context."
-                    : candidate.Reason,
-                JournalLines: []);
-        }
-
-        if (string.Equals(candidate.CandidateType, "LoanScheduleEvent", StringComparison.OrdinalIgnoreCase))
-        {
-            return new ProviderCorporateActionLedgerEffectDto(
-                candidate.CandidateId,
-                candidate.CandidateType,
-                candidate.Symbol,
-                candidate.SecurityId,
-                candidate.ProviderEventId,
-                "LoanScheduleValuationInput",
-                eventDate,
-                Factor: candidate.Quantity,
-                CashAmount: candidate.Amount,
-                PrincipalAmount: candidate.Amount,
-                IncomeAmount: null,
-                candidate.Currency,
-                candidate.Status,
-                candidate.Status == ProviderLedgerReconciliationCheckStatusDto.Matched
-                    ? "Retained provider loan schedule evidence can feed Security Master schedule history and downstream ledger valuation; final journal generation still requires amortization policy context."
-                    : candidate.Reason,
-                JournalLines: []);
-        }
-
-        if (string.Equals(candidate.CandidateType, "FactorScheduleCandidate", StringComparison.OrdinalIgnoreCase))
-        {
-            return new ProviderCorporateActionLedgerEffectDto(
-                candidate.CandidateId,
-                candidate.CandidateType,
-                candidate.Symbol,
-                candidate.SecurityId,
-                candidate.ProviderEventId,
-                "FactorScheduleCoverageCandidate",
-                eventDate,
-                Factor: null,
-                CashAmount: null,
-                PrincipalAmount: null,
-                IncomeAmount: null,
-                candidate.Currency,
-                candidate.Status,
-                candidate.Status == ProviderLedgerReconciliationCheckStatusDto.Matched
-                    ? "Fixed-income or structured position requires factor/coupon schedule coverage before final ledger valuation support."
-                    : candidate.Reason,
-                JournalLines: []);
-        }
-
-        if (string.Equals(candidate.CandidateType, "InterestCashActivity", StringComparison.OrdinalIgnoreCase))
-        {
-            return BuildCashIncomeLedgerEffect(
-                candidate,
-                eventDate,
-                "CashIncomeRecognition",
-                "Coupon Income");
-        }
-
-        if (string.Equals(candidate.CandidateType, "PrincipalCashActivity", StringComparison.OrdinalIgnoreCase))
-        {
-            return BuildPrincipalCashLedgerEffect(candidate, eventDate);
-        }
-
-        if (string.Equals(candidate.CandidateType, "DividendCashActivity", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(candidate.CandidateType, "DistributionCashActivity", StringComparison.OrdinalIgnoreCase))
-        {
-            return BuildCashIncomeLedgerEffect(
-                candidate,
-                eventDate,
-                string.Equals(candidate.CandidateType, "DividendCashActivity", StringComparison.OrdinalIgnoreCase)
-                    ? "DividendIncomeRecognition"
-                    : "DistributionIncomeRecognition",
-                "Dividend Income");
-        }
-
-        if (string.Equals(candidate.CandidateType, "EquityCorporateActionCandidate", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(candidate.CandidateType, "CorporateActionEvent", StringComparison.OrdinalIgnoreCase))
-        {
-            return new ProviderCorporateActionLedgerEffectDto(
-                candidate.CandidateId,
-                candidate.CandidateType,
-                candidate.Symbol,
-                candidate.SecurityId,
-                candidate.ProviderEventId,
-                "CorporateActionCoverageInput",
-                eventDate,
-                Factor: null,
-                CashAmount: candidate.Amount,
-                PrincipalAmount: null,
-                IncomeAmount: null,
-                candidate.Currency,
-                candidate.Status,
-                candidate.Status == ProviderLedgerReconciliationCheckStatusDto.Matched
-                    ? "Retained provider corporate-action evidence can support Security Master event review and downstream ledger valuation."
-                    : candidate.Reason,
-                JournalLines: []);
-        }
-
-        return null;
-    }
-
-    private static ProviderCorporateActionLedgerEffectDto BuildCashIncomeLedgerEffect(
-        ProviderCorporateActionEvidenceCandidateDto candidate,
-        DateOnly eventDate,
-        string ledgerEffectKind,
-        string incomeAccount)
-    {
-        var amount = candidate.Amount;
-        var journalLines = candidate.Status == ProviderLedgerReconciliationCheckStatusDto.Matched && amount.HasValue
-            ? new[]
-            {
-                new ExpectedJournalPreviewLineDto("Cash", "Asset", null, Math.Abs(amount.Value), 0m),
-                new ExpectedJournalPreviewLineDto(incomeAccount, "Revenue", candidate.Symbol, 0m, Math.Abs(amount.Value))
-            }
-            : [];
-        return new ProviderCorporateActionLedgerEffectDto(
-            candidate.CandidateId,
-            candidate.CandidateType,
-            candidate.Symbol,
-            candidate.SecurityId,
-            candidate.ProviderEventId,
-            ledgerEffectKind,
-            eventDate,
-            Factor: null,
-            CashAmount: amount,
-            PrincipalAmount: null,
-            IncomeAmount: amount,
-            candidate.Currency,
-            candidate.Status,
-            candidate.Status == ProviderLedgerReconciliationCheckStatusDto.Matched
-                ? "Retained provider income cash activity has enough Security Master attribution to preview the expected cash/income journal support."
-                : candidate.Reason,
-            journalLines);
-    }
-
-    private static ProviderCorporateActionLedgerEffectDto BuildPrincipalCashLedgerEffect(
-        ProviderCorporateActionEvidenceCandidateDto candidate,
-        DateOnly eventDate)
-    {
-        var amount = candidate.Amount;
-        var journalLines = candidate.Status == ProviderLedgerReconciliationCheckStatusDto.Matched && amount.HasValue
-            ? new[]
-            {
-                new ExpectedJournalPreviewLineDto("Cash", "Asset", null, Math.Abs(amount.Value), 0m),
-                new ExpectedJournalPreviewLineDto("Investment Principal", "Asset", candidate.Symbol, 0m, Math.Abs(amount.Value))
-            }
-            : [];
-        return new ProviderCorporateActionLedgerEffectDto(
-            candidate.CandidateId,
-            candidate.CandidateType,
-            candidate.Symbol,
-            candidate.SecurityId,
-            candidate.ProviderEventId,
-            "PrincipalReturnRecognition",
-            eventDate,
-            Factor: null,
-            CashAmount: amount,
-            PrincipalAmount: amount,
-            IncomeAmount: null,
-            candidate.Currency,
-            candidate.Status,
-            candidate.Status == ProviderLedgerReconciliationCheckStatusDto.Matched
-                ? "Retained provider principal, amortization, or paydown activity has enough Security Master attribution to preview the expected cash/principal journal support."
-                : candidate.Reason,
-            journalLines);
-    }
-
-    private static ProviderCorporateActionReadinessLineDto BuildCorporateActionReadinessLine(
-        string dimension,
-        string label,
-        string requiredFeed,
-        string evidenceSource,
-        int count,
-        int candidateCount,
-        bool hasCapabilityEvidence,
-        bool providerCorporateActionsRoutable,
-        int unresolvedSecurityCount,
-        string capabilityLabel,
-        string reason)
-    {
-        if (count == 0)
-        {
-            return new ProviderCorporateActionReadinessLineDto(
-                dimension,
-                label,
-                ProviderLedgerReconciliationCheckStatusDto.Matched,
-                requiredFeed,
-                evidenceSource,
-                count,
-                $"{reason} No matching provider records were present in this projection.");
-        }
-
-        if (!hasCapabilityEvidence)
-        {
-            return new ProviderCorporateActionReadinessLineDto(
-                dimension,
-                label,
-                ProviderLedgerReconciliationCheckStatusDto.Blocked,
-                requiredFeed,
-                evidenceSource,
-                count,
-                $"{reason} Provider capability routing metadata is unavailable for {candidateCount} corporate-action-sensitive record(s).");
-        }
-
-        if (!providerCorporateActionsRoutable)
-        {
-            return new ProviderCorporateActionReadinessLineDto(
-                dimension,
-                label,
-                ProviderLedgerReconciliationCheckStatusDto.Break,
-                requiredFeed,
-                evidenceSource,
-                count,
-                $"{reason} Provider {capabilityLabel} capability is not routable for this account.");
-        }
-
-        if (unresolvedSecurityCount > 0)
-        {
-            return new ProviderCorporateActionReadinessLineDto(
-                dimension,
-                label,
-                ProviderLedgerReconciliationCheckStatusDto.Break,
-                requiredFeed,
-                evidenceSource,
-                count,
-                $"{reason} {unresolvedSecurityCount} position(s) need Security Master identity resolution before attribution is complete.");
-        }
-
-        return new ProviderCorporateActionReadinessLineDto(
-            dimension,
-            label,
-            ProviderLedgerReconciliationCheckStatusDto.Matched,
-            requiredFeed,
-            evidenceSource,
-            count,
-            $"{reason} Provider capability and Security Master identity coverage are available.");
-    }
-
-    private static ProviderLedgerReconciliationCheckStatusDto BuildCorporateActionCandidateStatus(
-        bool hasCapabilityEvidence,
-        bool providerCorporateActionsRoutable,
-        ProviderSecurityMasterPassportDto? passport,
-        bool requiresSecurityIdentity)
-    {
-        if (!hasCapabilityEvidence)
-        {
-            return ProviderLedgerReconciliationCheckStatusDto.Blocked;
-        }
-
-        if (!providerCorporateActionsRoutable)
-        {
-            return ProviderLedgerReconciliationCheckStatusDto.Break;
-        }
-
-        return requiresSecurityIdentity && !IsResolvedSecurityPassport(passport)
-            ? ProviderLedgerReconciliationCheckStatusDto.Break
-            : ProviderLedgerReconciliationCheckStatusDto.Matched;
-    }
-
-    private static string BuildCorporateActionCandidateReason(
-        string candidateType,
-        bool hasCapabilityEvidence,
-        bool providerCorporateActionsRoutable,
-        ProviderSecurityMasterPassportDto? passport,
-        bool requiresSecurityIdentity,
-        string capabilityLabel)
-    {
-        if (!hasCapabilityEvidence)
-        {
-            return $"{candidateType} cannot be promoted until provider capability routing metadata is available.";
-        }
-
-        if (!providerCorporateActionsRoutable)
-        {
-            return $"{candidateType} requires controller review because provider {capabilityLabel} capability is not routable.";
-        }
-
-        if (passport is not null && IsResolvedSecurityPassport(passport))
-        {
-            return $"{candidateType} has provider evidence and resolved Security Master attribution.";
-        }
-
-        if (!requiresSecurityIdentity)
-        {
-            return $"{candidateType} has provider account-level income evidence and no provider symbol was supplied for Security Master attribution.";
-        }
-
-        return $"{candidateType} has provider evidence but needs Security Master identity attribution.";
-    }
-
-    private static bool IsResolvedSecurityPassport(ProviderSecurityMasterPassportDto? passport)
-        => passport?.Status is ProviderSecurityMasterPassportStatusDto.Resolved or ProviderSecurityMasterPassportStatusDto.Inferred;
-
-    private static string BuildCorporateActionCandidateId(
-        string providerId,
-        string externalAccountId,
-        string candidateType,
-        string? providerEventId,
-        string? symbol)
-        => string.Join(
-            ":",
-            "provider-corporate-action",
-            NormalizeCandidateToken(providerId, "provider"),
-            NormalizeCandidateToken(externalAccountId, "account"),
-            NormalizeCandidateToken(candidateType, "candidate"),
-            NormalizeCandidateToken(providerEventId, "event"),
-            NormalizeCandidateToken(symbol, "symbol"));
-
-    private static string NormalizeCandidateToken(string? value, string fallback)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return fallback;
-        }
-
-        return value.Trim().Replace(' ', '-').ToLowerInvariant();
-    }
-
-    private static string NormalizeSymbol(string? symbol)
-        => string.IsNullOrWhiteSpace(symbol) ? string.Empty : symbol.Trim().ToUpperInvariant();
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
-    private static bool IsIncomeTransaction(string transactionType)
-    {
-        if (string.IsNullOrWhiteSpace(transactionType))
-        {
-            return false;
-        }
-
-        return transactionType.Contains("dividend", StringComparison.OrdinalIgnoreCase) ||
-            transactionType.Contains("interest", StringComparison.OrdinalIgnoreCase) ||
-            transactionType.Contains("coupon", StringComparison.OrdinalIgnoreCase) ||
-            transactionType.Contains("income", StringComparison.OrdinalIgnoreCase) ||
-            transactionType.Contains("distribution", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool IsPrincipalReturnTransaction(string transactionType)
-        => !string.IsNullOrWhiteSpace(transactionType) &&
-           (transactionType.Contains("principal", StringComparison.OrdinalIgnoreCase) ||
-            transactionType.Contains("paydown", StringComparison.OrdinalIgnoreCase) ||
-            transactionType.Contains("amortization", StringComparison.OrdinalIgnoreCase) ||
-            transactionType.Contains("amortisation", StringComparison.OrdinalIgnoreCase));
-
-    private static bool IsDividendTransaction(string transactionType)
-        => !string.IsNullOrWhiteSpace(transactionType) &&
-           (transactionType.Contains("dividend", StringComparison.OrdinalIgnoreCase) ||
-            transactionType.Contains("distribution", StringComparison.OrdinalIgnoreCase));
-
-    private static bool IsInterestTransaction(string transactionType)
-        => !string.IsNullOrWhiteSpace(transactionType) &&
-           (transactionType.Contains("interest", StringComparison.OrdinalIgnoreCase) ||
-            transactionType.Contains("coupon", StringComparison.OrdinalIgnoreCase));
-
-    private static bool IsFactorScheduleEvent(string eventType)
-        => !string.IsNullOrWhiteSpace(eventType) &&
-           !IsLoanScheduleEvent(eventType) &&
-           !IsAmortizationScheduleEvent(eventType) &&
-           (eventType.Contains("factor", StringComparison.OrdinalIgnoreCase) ||
-            eventType.Contains("paydown", StringComparison.OrdinalIgnoreCase) ||
-            eventType.Contains("principal", StringComparison.OrdinalIgnoreCase));
-
-    private static bool IsAmortizationScheduleEvent(string eventType)
-        => !string.IsNullOrWhiteSpace(eventType) &&
-           !IsLoanScheduleEvent(eventType) &&
-           (eventType.Contains("amortization", StringComparison.OrdinalIgnoreCase) ||
-            eventType.Contains("amortisation", StringComparison.OrdinalIgnoreCase));
-
-    private static bool IsLoanScheduleEvent(string eventType)
-        => !string.IsNullOrWhiteSpace(eventType) &&
-           eventType.Contains("loan", StringComparison.OrdinalIgnoreCase) &&
-           eventType.Contains("schedule", StringComparison.OrdinalIgnoreCase);
-
-    private static string ResolveCorporateActionEventCandidateType(string eventType)
-    {
-        if (IsLoanScheduleEvent(eventType))
-        {
-            return "LoanScheduleEvent";
-        }
-
-        if (IsAmortizationScheduleEvent(eventType))
-        {
-            return "AmortizationScheduleEvent";
-        }
-
-        if (IsFactorScheduleEvent(eventType))
-        {
-            return "FactorScheduleEvent";
-        }
-
-        if (!string.IsNullOrWhiteSpace(eventType) &&
-            eventType.Contains("split", StringComparison.OrdinalIgnoreCase))
-        {
-            return "SplitCorporateActionEvent";
-        }
-
-        return IsDividendTransaction(eventType)
-            ? "DividendCorporateActionEvent"
-            : "ProviderCorporateActionEvent";
-    }
-
-    private static string ResolveCorporateActionEventRequiredFeed(string eventType)
-    {
-        if (IsLoanScheduleEvent(eventType))
-        {
-            return "loan-schedule,factor-schedule";
-        }
-
-        if (IsAmortizationScheduleEvent(eventType))
-        {
-            return "amortization-schedule,factor-schedule";
-        }
-
-        if (IsFactorScheduleEvent(eventType))
-        {
-            return "factor-schedule";
-        }
-
-        if (!string.IsNullOrWhiteSpace(eventType) &&
-            eventType.Contains("split", StringComparison.OrdinalIgnoreCase))
-        {
-            return "splits";
-        }
-
-        return IsDividendTransaction(eventType)
-            ? "dividends"
-            : "provider-corporate-actions";
-    }
-
-    private static bool IsEquityAssetClass(string assetClass)
-        => !string.IsNullOrWhiteSpace(assetClass) &&
-           (assetClass.Contains("equity", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("stock", StringComparison.OrdinalIgnoreCase));
-
-    private static bool IsFixedIncomeOrStructuredAssetClass(string assetClass)
-    {
-        if (string.IsNullOrWhiteSpace(assetClass))
-        {
-            return false;
-        }
-
-        return assetClass.Contains("bond", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("fixed", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("treasury", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("mbs", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("abs", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("loan", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("structured", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("mortgage", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private async Task SeedBreakQueueCasesAsync(
+    private async Task<ProviderCaseworkPersistenceResult> SeedBreakQueueCasesAsync(
         ProviderLedgerReconciliationDetailDto detail,
+        ReconciliationBreakQueueScope? accessScope,
         ProviderLedgerReconciliationRequestDto request,
+        ProviderLedgerScope? ledgerScope,
+        string? ledgerScopeError,
         CancellationToken ct)
     {
+        var caseCount = detail.Breaks.Count
+            + (detail.CorporateActionReadiness?.EvidenceCandidates.Count(static candidate =>
+                candidate.Status is ProviderLedgerReconciliationCheckStatusDto.Break or ProviderLedgerReconciliationCheckStatusDto.Blocked) ?? 0)
+            + (detail.SecurityMasterPassports?.Count(IsStaleResolvedSecurityMasterPassport) ?? 0);
+        if (accessScope is null)
+        {
+            if (caseCount == 0)
+            {
+                return new ProviderCaseworkPersistenceResult(0, 0, IsSatisfied: true, IsBlocked: false, [], null);
+            }
+
+            return new ProviderCaseworkPersistenceResult(
+                caseCount,
+                0,
+                IsSatisfied: false,
+                IsBlocked: true,
+                [],
+                "Provider-ledger reconciliation requires an authoritative tenant and company scope before casework can be retained.");
+        }
+
+        if (ledgerScope is null || ledgerScope.Period is null || !ledgerScope.AsOfDate.HasValue)
+        {
+            return new ProviderCaseworkPersistenceResult(
+                caseCount,
+                0,
+                IsSatisfied: false,
+                IsBlocked: true,
+                [],
+                ledgerScopeError ?? "Exact primary ledger-book, accounting-period, and as-of scope is unavailable.");
+        }
+
+        if (_fundProfileTenancyRegistry is null)
+        {
+            return new ProviderCaseworkPersistenceResult(
+                caseCount,
+                0,
+                IsSatisfied: false,
+                IsBlocked: true,
+                [],
+                "The authoritative fund-profile tenancy registry is unavailable.");
+        }
+
+        FundProfileOwnership? ownership;
+        try
+        {
+            ownership = await _fundProfileTenancyRegistry
+                .ResolveAsync(ledgerScope.Book.FundProfileId, ct)
+                .ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Provider-ledger reconciliation could not verify ownership for fund profile {FundProfileId}",
+                ledgerScope.Book.FundProfileId);
+            return new ProviderCaseworkPersistenceResult(
+                caseCount,
+                0,
+                IsSatisfied: false,
+                IsBlocked: true,
+                [],
+                "The authoritative fund-profile owner could not be verified.");
+        }
+
+        if (ownership is null
+            || !ownership.IsHeldBy(accessScope.TenantId)
+            || string.IsNullOrWhiteSpace(ownership.CompanyId)
+            || !string.Equals(
+                ownership.CompanyId.Trim(),
+                accessScope.CompanyId,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return new ProviderCaseworkPersistenceResult(
+                caseCount,
+                0,
+                IsSatisfied: false,
+                IsBlocked: true,
+                [],
+                "The provider-ledger fund profile is not owned by the authenticated tenant and company.");
+        }
+
+        if (caseCount == 0)
+        {
+            return new ProviderCaseworkPersistenceResult(0, 0, IsSatisfied: true, IsBlocked: false, [], null);
+        }
+
         if (_breakQueueRepository is null)
         {
-            return;
+            return new ProviderCaseworkPersistenceResult(
+                caseCount,
+                0,
+                IsSatisfied: false,
+                IsBlocked: true,
+                [],
+                "The durable reconciliation break queue is unavailable.");
         }
+
+        var items = new List<ReconciliationBreakQueueItem>(caseCount);
 
         foreach (var breakRow in detail.Breaks)
         {
             ct.ThrowIfCancellationRequested();
-            var item = BuildBreakQueueItem(detail, breakRow, request);
-            var created = await _breakQueueRepository.CreateIfMissingAsync(item, ct).ConfigureAwait(false);
-            if (!created && breakRow.SignOffState == ProviderLedgerReconciliationBreakSignOffStateDto.SignedOff)
-            {
-                await ApplySignedOffStateToExistingCaseAsync(item, breakRow, request, ct).ConfigureAwait(false);
-            }
+            items.Add(ApplyLedgerPeriodScope(
+                BuildBreakQueueItem(detail, breakRow, request, ledgerScope.Book),
+                ledgerScope,
+                accessScope));
         }
 
         if (detail.CorporateActionReadiness?.EvidenceCandidates.Count > 0)
@@ -1874,9 +1272,10 @@ public sealed class ProviderLedgerReconciliationService
             {
                 ct.ThrowIfCancellationRequested();
                 ledgerEffectsByCandidateId.TryGetValue(candidate.CandidateId, out var ledgerEffect);
-                await _breakQueueRepository
-                    .CreateIfMissingAsync(BuildCorporateActionCandidateCase(detail, candidate, ledgerEffect, request), ct)
-                    .ConfigureAwait(false);
+                items.Add(ApplyLedgerPeriodScope(
+                    BuildCorporateActionCandidateCase(detail, candidate, ledgerEffect, request, ledgerScope.Book),
+                    ledgerScope,
+                    accessScope));
             }
         }
 
@@ -1885,115 +1284,275 @@ public sealed class ProviderLedgerReconciliationService
             foreach (var passport in detail.SecurityMasterPassports.Where(IsStaleResolvedSecurityMasterPassport))
             {
                 ct.ThrowIfCancellationRequested();
+                items.Add(ApplyLedgerPeriodScope(
+                    BuildStaleSecurityMasterPassportCase(detail, passport, request, ledgerScope.Book),
+                    ledgerScope,
+                    accessScope));
+            }
+        }
+
+        var retainedCaseIds = new List<string>(items.Count);
+        foreach (var item in items)
+        {
+            ct.ThrowIfCancellationRequested();
+            var existing = await _breakQueueRepository
+                .GetByIdAsync(accessScope, item.BreakId, ct)
+                .ConfigureAwait(false);
+            if (existing is null)
+            {
                 await _breakQueueRepository
-                    .CreateIfMissingAsync(BuildStaleSecurityMasterPassportCase(detail, passport, request), ct)
+                    .CreateIfMissingAsync(accessScope, item, ct)
+                    .ConfigureAwait(false);
+                existing = await _breakQueueRepository
+                    .GetByIdAsync(accessScope, item.BreakId, ct)
                     .ConfigureAwait(false);
             }
+
+            if (existing is null)
+            {
+                throw new InvalidOperationException(
+                    $"Reconciliation case '{item.BreakId}' was not readable after the queue accepted its persistence request.");
+            }
+
+            if (!HasEquivalentProviderCaseIdentity(existing, item))
+            {
+                return new ProviderCaseworkPersistenceResult(
+                    items.Count,
+                    retainedCaseIds.Count,
+                    IsSatisfied: false,
+                    IsBlocked: true,
+                    retainedCaseIds,
+                    $"Existing reconciliation case '{item.BreakId}' is bound to different source evidence or accounting scope. Resolve or supersede that case before retaining this run.");
+            }
+
+            retainedCaseIds.Add(existing.BreakId);
+        }
+
+        return new ProviderCaseworkPersistenceResult(
+            items.Count,
+            retainedCaseIds.Count,
+            IsSatisfied: retainedCaseIds.Count == items.Count,
+            IsBlocked: false,
+            retainedCaseIds,
+            null);
+    }
+
+    private static bool HasEquivalentProviderCaseIdentity(
+        ReconciliationBreakQueueItem existing,
+        ReconciliationBreakQueueItem candidate)
+        => string.Equals(existing.BreakId, candidate.BreakId, StringComparison.Ordinal)
+            && string.Equals(existing.SourceType, candidate.SourceType, StringComparison.Ordinal)
+            && string.Equals(existing.SourceSystem, candidate.SourceSystem, StringComparison.Ordinal)
+            && string.Equals(existing.SourceReference, candidate.SourceReference, StringComparison.Ordinal)
+            && string.Equals(existing.SourceFingerprint, candidate.SourceFingerprint, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(existing.TenantId, candidate.TenantId, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(existing.CompanyId, candidate.CompanyId, StringComparison.OrdinalIgnoreCase)
+            && existing.LedgerBookId == candidate.LedgerBookId
+            && string.Equals(existing.AccountingPeriodId, candidate.AccountingPeriodId, StringComparison.Ordinal)
+            && existing.AsOfDate == candidate.AsOfDate;
+
+    private async Task<ProviderLedgerScope> ResolvePrimaryLedgerScopeAsync(
+        Guid accountId,
+        DateOnly? asOfDate,
+        LedgerBookDto? verifiedLedgerBook,
+        CancellationToken ct)
+    {
+        var service = _ledgerBookService ?? throw new InvalidOperationException(
+            "Provider-ledger reconciliation cannot create close/report casework without ILedgerBookService.");
+        LedgerBookDto book;
+        if (verifiedLedgerBook is null)
+        {
+            var books = await service.ListBooksAsync(
+                    new LedgerBookQuery(
+                        FundStructureNodeId: accountId,
+                        AccountingBasis: AccountingBasisKindDto.Primary),
+                    ct)
+                .ConfigureAwait(false);
+            if (books.Count != 1)
+            {
+                throw new InvalidOperationException(
+                    $"Provider-ledger reconciliation requires exactly one primary ledger book for fund account '{accountId:D}', but found {books.Count}.");
+            }
+
+            book = books[0];
+        }
+        else
+        {
+            book = verifiedLedgerBook;
+        }
+        if (book.LedgerBookId == Guid.Empty
+            || book.FundStructureNodeId != accountId
+            || book.AccountingBasis != AccountingBasisKindDto.Primary
+            || string.IsNullOrWhiteSpace(book.FundProfileId)
+            || string.IsNullOrWhiteSpace(book.BaseCurrency)
+            || book.BaseCurrency.Trim().Length != 3)
+        {
+            throw new InvalidOperationException(
+                $"Provider-ledger reconciliation found an incomplete or mismatched primary ledger book for fund account '{accountId:D}'.");
+        }
+
+        LedgerPeriodDto? period = null;
+        if (asOfDate.HasValue)
+        {
+            var periods = await service.ListPeriodsAsync(
+                    new LedgerPeriodQuery(
+                        LedgerBookId: book.LedgerBookId,
+                        AccountingBasis: AccountingBasisKindDto.Primary),
+                    ct)
+                .ConfigureAwait(false);
+            var matches = periods
+                .Where(candidate => candidate.LedgerBookId == book.LedgerBookId
+                    && candidate.AccountingBasis == AccountingBasisKindDto.Primary
+                    && candidate.StartDate <= asOfDate.Value
+                    && candidate.EndDate >= asOfDate.Value)
+                .ToArray();
+            if (matches.Length != 1)
+            {
+                throw new InvalidOperationException(
+                    $"Provider-ledger reconciliation requires exactly one primary accounting period containing as-of date '{asOfDate:yyyy-MM-dd}' for ledger book '{book.LedgerBookId:D}', but found {matches.Length}.");
+            }
+            period = matches[0];
+        }
+
+        return new ProviderLedgerScope(book, period, asOfDate);
+    }
+
+    private async Task<ProviderLedgerAuthorityVerification> VerifyAuthoritativeScopeAsync(
+        Guid accountId,
+        ReconciliationBreakQueueScope accessScope,
+        CancellationToken ct)
+    {
+        if (_ledgerBookService is null || _fundProfileTenancyRegistry is null)
+        {
+            return ProviderLedgerAuthorityVerification.Failed(
+                "PROVIDER_RECONCILIATION_AUTHORITY_UNAVAILABLE",
+                "Provider-ledger reconciliation authority requires the ledger-book service and fund-profile tenancy registry.");
+        }
+
+        AccountSummaryDto? account;
+        IReadOnlyList<LedgerBookDto> books;
+        FundProfileOwnership? ownership;
+        try
+        {
+            account = await _fundAccountService.GetAccountAsync(accountId, ct).ConfigureAwait(false);
+            if (account is null
+                || !account.IsActive
+                || !account.FundId.HasValue
+                || account.FundId.Value == Guid.Empty)
+            {
+                return ProviderLedgerAuthorityVerification.Failed(
+                    "PROVIDER_RECONCILIATION_ACCOUNT_NOT_AUTHORIZED",
+                    "Provider-ledger reconciliation requires an active account bound to a canonical fund.");
+            }
+
+            books = await _ledgerBookService
+                .ListBooksAsync(
+                    new LedgerBookQuery(
+                        FundStructureNodeId: accountId,
+                        AccountingBasis: AccountingBasisKindDto.Primary),
+                    ct)
+                .ConfigureAwait(false);
+            var fundProfileId = account.FundId.Value.ToString("D");
+            var matchingBooks = books
+                .Where(book =>
+                    book.FundStructureNodeId == accountId
+                    && book.AccountingBasis == AccountingBasisKindDto.Primary
+                    && string.Equals(
+                        book.FundProfileId?.Trim(),
+                        fundProfileId,
+                        StringComparison.OrdinalIgnoreCase))
+                .DistinctBy(static book => book.LedgerBookId)
+                .ToArray();
+            if (matchingBooks.Length != 1)
+            {
+                return ProviderLedgerAuthorityVerification.Failed(
+                    "PROVIDER_RECONCILIATION_LEDGER_SCOPE_NOT_AUTHORIZED",
+                    "Provider-ledger reconciliation requires exactly one primary ledger book bound to the account's canonical fund.");
+            }
+
+            ownership = await _fundProfileTenancyRegistry
+                .ResolveAsync(fundProfileId, ct)
+                .ConfigureAwait(false);
+            if (ownership is null
+                || !ownership.IsHeldBy(accessScope.TenantId)
+                || string.IsNullOrWhiteSpace(ownership.CompanyId)
+                || !string.Equals(
+                    ownership.CompanyId.Trim(),
+                    accessScope.CompanyId,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return ProviderLedgerAuthorityVerification.Failed(
+                    "PROVIDER_RECONCILIATION_FUND_NOT_AUTHORIZED",
+                    "The provider-ledger fund is not owned by the authenticated tenant and company.");
+            }
+
+            return ProviderLedgerAuthorityVerification.Verified(matchingBooks[0]);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Provider-ledger reconciliation authority verification failed for account {AccountId}",
+                accountId);
+            return ProviderLedgerAuthorityVerification.Failed(
+                "PROVIDER_RECONCILIATION_AUTHORITY_UNAVAILABLE",
+                "Provider-ledger reconciliation authority could not be verified.");
         }
     }
 
-    private async Task ApplySignedOffStateToExistingCaseAsync(
-        ReconciliationBreakQueueItem desired,
-        ProviderLedgerReconciliationBreakDto breakRow,
-        ProviderLedgerReconciliationRequestDto request,
-        CancellationToken ct)
+    private static ReconciliationBreakQueueItem ApplyLedgerPeriodScope(
+        ReconciliationBreakQueueItem item,
+        ProviderLedgerScope scope,
+        ReconciliationBreakQueueScope accessScope)
     {
-        if (_breakQueueRepository is null)
+        var scopedFingerprint = ComputeQueueSourceFingerprint(
+            item.SourceFingerprint,
+            accessScope.TenantId,
+            accessScope.CompanyId,
+            scope.Book.FundProfileId,
+            scope.Book.LedgerBookId,
+            scope.Book.AccountingBasis,
+            scope.Book.AccountingPolicyId,
+            scope.Book.AccountingPolicyVersion,
+            scope.Period?.PeriodId,
+            scope.AsOfDate);
+        var hasExactScope = scope.Period is not null && scope.AsOfDate.HasValue;
+        return item with
         {
-            return;
-        }
-
-        var existing = await _breakQueueRepository.GetByIdAsync(desired.BreakId, ct).ConfigureAwait(false);
-        if (existing is null ||
-            existing.Status is ReconciliationBreakQueueStatus.Resolved
-                or ReconciliationBreakQueueStatus.Dismissed
-                or ReconciliationBreakQueueStatus.SignedOff)
-        {
-            return;
-        }
-
-        var actor = NormalizeOwner(breakRow.SignedOffBy) ??
-            NormalizeOwner(request.SignedOffBy) ??
-            NormalizeOwner(request.RequestedBy) ??
-            DefaultActor;
-
-        if (existing.Status == ReconciliationBreakQueueStatus.Open)
-        {
-            var review = await _breakQueueRepository.StartReviewAsync(
-                    new ReviewReconciliationBreakRequest(
-                        existing.BreakId,
-                        existing.AssignedTo ?? actor,
-                        actor,
-                        "Provider-ledger reconciliation break selected for sign-off.",
-                        existing.Team),
-                    ct)
-                .ConfigureAwait(false);
-            if (review.Status != ReconciliationBreakQueueTransitionStatus.Success)
-            {
-                _logger.LogWarning(
-                    "Provider-ledger reconciliation could not start review for break case {BreakId}: {Error}",
-                    existing.BreakId,
-                    review.Error);
-                return;
-            }
-        }
-
-        var resolve = await _breakQueueRepository.ResolveAsync(
-                new ResolveReconciliationBreakRequest(
-                    existing.BreakId,
-                    ReconciliationBreakQueueStatus.Resolved,
-                    actor,
-                    "Provider-ledger reconciliation break signed off.",
-                    $"Signed off break key {breakRow.BreakKey ?? breakRow.CheckId}."),
-                ct)
-            .ConfigureAwait(false);
-        if (resolve.Status != ReconciliationBreakQueueTransitionStatus.Success)
-        {
-            _logger.LogWarning(
-                "Provider-ledger reconciliation could not resolve signed-off break case {BreakId}: {Error}",
-                existing.BreakId,
-                resolve.Error);
-            return;
-        }
-
-        if (resolve.Item is null)
-        {
-            return;
-        }
-
-        var signOff = await _breakQueueRepository.ApplyCaseworkCommandAsync(
-                new ReconciliationCaseworkCommand(
-                    existing.BreakId,
-                    ReconciliationCaseworkAction.SignOff,
-                    actor,
-                    $"provider-ledger-signoff:{existing.BreakId}:{breakRow.BreakKey ?? breakRow.CheckId}",
-                    existing.RunId,
-                    "provider-ledger-reconciliation",
-                    resolve.Item.Version,
-                    Reason: "Provider-ledger reconciliation request carried a controller sign-off.",
-                    Note: "Provider-ledger reconciliation break signed off.",
-                    Privileged: string.Equals(resolve.Item.ResolvedBy, actor, StringComparison.OrdinalIgnoreCase)),
-                ct)
-            .ConfigureAwait(false);
-        if (signOff.Status != ReconciliationBreakQueueTransitionStatus.Success)
-        {
-            _logger.LogWarning(
-                "Provider-ledger reconciliation could not sign off break case {BreakId}: {Error}",
-                existing.BreakId,
-                signOff.Error);
-        }
+            TenantId = accessScope.TenantId,
+            CompanyId = accessScope.CompanyId,
+            AccountingPeriodId = scope.Period?.PeriodId.ToString("D"),
+            AsOfDate = scope.AsOfDate,
+            SourceFingerprint = scopedFingerprint,
+            EvidenceLinks = (item.EvidenceLinks ?? [])
+                .Append($"urn:sha256:{scopedFingerprint}")
+                .Distinct(StringComparer.Ordinal)
+                .ToArray(),
+            ExceptionRoute = hasExactScope
+                ? item.ExceptionRoute
+                : "accounting/reconciliation/scope-resolution",
+            LifecycleRationale = hasExactScope
+                ? item.LifecycleRationale
+                : $"{item.LifecycleRationale} Exact accounting period/as-of scope is unavailable; this case is quarantined from close/report evidence until scope resolution.",
+            BlockedOutputs = hasExactScope
+                ? item.BlockedOutputs
+                : ["reconciliation-scope-resolution"]
+        };
     }
 
     private static ReconciliationBreakQueueItem BuildBreakQueueItem(
         ProviderLedgerReconciliationDetailDto detail,
         ProviderLedgerReconciliationBreakDto breakRow,
-        ProviderLedgerReconciliationRequestDto request)
+        ProviderLedgerReconciliationRequestDto request,
+        LedgerBookDto ledgerBook)
     {
         var summary = detail.Summary;
         var signedOff = breakRow.SignOffState == ProviderLedgerReconciliationBreakSignOffStateDto.SignedOff;
-        var signedOffBy = NormalizeOwner(breakRow.SignedOffBy) ??
-            NormalizeOwner(request.SignedOffBy) ??
-            NormalizeOwner(request.RequestedBy);
+        var signedOffBy = NormalizeOptional(breakRow.SignedOffBy);
         var signedOffAt = breakRow.SignedOffAt ?? (signedOff ? summary.CreatedAt : null);
         var status = signedOff
             ? ReconciliationBreakQueueStatus.Resolved
@@ -2001,7 +1560,7 @@ public sealed class ProviderLedgerReconciliationService
         var isSecurityMasterIdentityCase = IsSecurityMasterIdentityBreak(breakRow);
         var signoffRole = isSecurityMasterIdentityCase ? "Security Master steward" : "Fund accounting";
         var assignedTo = isSecurityMasterIdentityCase
-            ? NormalizeOwner(request.DefaultBreakOwner) ?? "security-master-steward"
+            ? NormalizeOptional(request.DefaultBreakOwner) ?? "security-master-steward"
             : breakRow.Owner;
         var signoffStatus = signedOff
             ? "signed-off"
@@ -2019,9 +1578,31 @@ public sealed class ProviderLedgerReconciliationService
             summary.ExternalAccountId ?? "external-account-unknown",
             summary.ProviderSyncedAt?.ToString("O") ?? "provider-sync-missing",
             summary.ReconciliationRunId.ToString("N"));
+        var sourceSnapshotCursor = string.Join(
+            "|",
+            summary.ProviderId ?? "provider-unknown",
+            summary.ExternalAccountId ?? "external-account-unknown",
+            summary.ProviderSyncedAt?.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture) ?? "provider-sync-missing");
         var passport = isSecurityMasterIdentityCase
             ? FindPassportForBreak(detail, breakRow)
             : null;
+        var explanation = BuildBreakExplanation(summary, breakRow, latestRoute, syncCursor, passport);
+        var evidenceLinks = explanation.EvidenceLinks
+            .Append(breakRow.EvidenceLink)
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value!.Trim())
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        var sourceFingerprint = ComputeQueueSourceFingerprint(
+            "provider-ledger-break",
+            caseId,
+            sourceSnapshotCursor,
+            breakRow.ExpectedAmount,
+            breakRow.ActualAmount,
+            breakRow.Variance);
+        var blockedOutputs = signedOff
+            ? Array.Empty<string>()
+            : ["accounting-close", "certified-reporting"];
 
         return new ReconciliationBreakQueueItem(
             BreakId: caseId,
@@ -2070,7 +1651,18 @@ public sealed class ProviderLedgerReconciliationService
             Team: isSecurityMasterIdentityCase ? "Security Master" : null,
             Counterparty: summary.ProviderId,
             StateTransitions: [],
-            BreakExplanation: BuildBreakExplanation(summary, breakRow, latestRoute, syncCursor, passport));
+            EvidenceLinks: evidenceLinks,
+            SourceType: "provider-ledger-reconciliation",
+            SourceSystem: summary.ProviderId ?? "provider-unknown",
+            SourceReference: breakRow.BreakKey ?? breakRow.CheckId,
+            SourceFingerprint: sourceFingerprint,
+            BreakExplanation: explanation,
+            LedgerBookId: ledgerBook.LedgerBookId,
+            Measures: BuildProviderBreakMeasures(breakRow, ledgerBook.BaseCurrency),
+            BlockedOutputs: blockedOutputs)
+        {
+            FundProfileId = ledgerBook.FundProfileId
+        };
     }
 
     private static ProviderSecurityMasterPassportDto? FindPassportForBreak(
@@ -2102,7 +1694,8 @@ public sealed class ProviderLedgerReconciliationService
         ProviderLedgerReconciliationDetailDto detail,
         ProviderCorporateActionEvidenceCandidateDto candidate,
         ProviderCorporateActionLedgerEffectDto? ledgerEffect,
-        ProviderLedgerReconciliationRequestDto request)
+        ProviderLedgerReconciliationRequestDto request,
+        LedgerBookDto ledgerBook)
     {
         var summary = detail.Summary;
         var latestRoute = UiApiRoutes.FundAccountBrokerageSyncReconciliationLatest.Replace(
@@ -2121,16 +1714,24 @@ public sealed class ProviderLedgerReconciliationService
         var reason = string.IsNullOrWhiteSpace(candidate.Reason)
             ? $"{candidate.CandidateType} requires controller review before close or valuation support."
             : candidate.Reason;
+        var caseId = BuildCorporateActionCandidateCaseId(summary.AccountId, candidate);
+        var explanation = BuildCorporateActionCandidateBreakExplanation(summary, candidate, reason, latestRoute, syncCursor);
+        var evidenceLinks = explanation.EvidenceLinks
+            .Append(candidate.ProviderEventId)
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value!.Trim())
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
 
         return new ReconciliationBreakQueueItem(
-            BreakId: BuildCorporateActionCandidateCaseId(summary.AccountId, candidate),
+            BreakId: caseId,
             RunId: summary.ReconciliationRunId.ToString("N"),
             StrategyName: "Provider corporate-action evidence",
             Category: MapCorporateActionCandidateCategory(candidate),
             Status: ReconciliationBreakQueueStatus.Open,
             Variance: 0m,
             Reason: reason,
-            AssignedTo: NormalizeOwner(request.DefaultBreakOwner) ?? "security-master-steward",
+            AssignedTo: NormalizeOptional(request.DefaultBreakOwner) ?? "security-master-steward",
             DetectedAt: candidate.ObservedAt,
             LastUpdatedAt: summary.CreatedAt,
             Severity: severity,
@@ -2152,13 +1753,35 @@ public sealed class ProviderLedgerReconciliationService
             Team: "Security Master",
             Counterparty: summary.ProviderId ?? candidate.ProviderId,
             StateTransitions: [],
-            BreakExplanation: BuildCorporateActionCandidateBreakExplanation(summary, candidate, reason, latestRoute, syncCursor));
+            EvidenceLinks: evidenceLinks,
+            SourceType: "provider-corporate-action",
+            SourceSystem: summary.ProviderId ?? candidate.ProviderId,
+            SourceReference: candidate.ProviderEventId ?? candidate.CandidateId,
+            SourceFingerprint: ComputeQueueSourceFingerprint(
+                "provider-corporate-action",
+                caseId,
+                syncCursor,
+                candidate.Amount,
+                candidate.Quantity,
+                ledgerEffect?.CashAmount),
+            BreakExplanation: explanation,
+            LedgerBookId: ledgerBook.LedgerBookId,
+            Measures: BuildUnavailableProviderMeasures(
+                ledgerBook.BaseCurrency,
+                "The provider corporate-action candidate does not contain an authoritative expected and actual value pair.",
+                "The provider corporate-action candidate does not contain an authoritative expected and actual quantity pair.",
+                "The provider corporate-action candidate does not contain an authoritative expected and actual cost-basis pair."),
+            BlockedOutputs: ["accounting-close", "certified-reporting"])
+        {
+            FundProfileId = ledgerBook.FundProfileId
+        };
     }
 
     private static ReconciliationBreakQueueItem BuildStaleSecurityMasterPassportCase(
         ProviderLedgerReconciliationDetailDto detail,
         ProviderSecurityMasterPassportDto passport,
-        ProviderLedgerReconciliationRequestDto request)
+        ProviderLedgerReconciliationRequestDto request,
+        LedgerBookDto ledgerBook)
     {
         var summary = detail.Summary;
         var latestRoute = UiApiRoutes.FundAccountBrokerageSyncReconciliationLatest.Replace(
@@ -2175,16 +1798,18 @@ public sealed class ProviderLedgerReconciliationService
             passport.Symbol,
             "stale-security-master-passport");
         var reason = $"Provider-to-Security Master mapping for {passport.Symbol} is resolved but backed by stale provider evidence ({passport.FreshnessMinutes} minute(s) old).";
+        var caseId = BuildStaleSecurityMasterPassportCaseId(summary.AccountId, passport);
+        var explanation = BuildStaleSecurityMasterPassportBreakExplanation(passport, latestRoute, syncCursor);
 
         return new ReconciliationBreakQueueItem(
-            BreakId: BuildStaleSecurityMasterPassportCaseId(summary.AccountId, passport),
+            BreakId: caseId,
             RunId: summary.ReconciliationRunId.ToString("N"),
             StrategyName: "Provider Security Master passport",
             Category: ReconciliationBreakCategory.ClassificationGap,
             Status: ReconciliationBreakQueueStatus.Open,
             Variance: 0m,
             Reason: reason,
-            AssignedTo: NormalizeOwner(request.DefaultBreakOwner) ?? "security-master-steward",
+            AssignedTo: NormalizeOptional(request.DefaultBreakOwner) ?? "security-master-steward",
             DetectedAt: passport.ProviderSyncedAt,
             LastUpdatedAt: summary.CreatedAt,
             Severity: ReconciliationBreakSeverity.Medium,
@@ -2206,7 +1831,28 @@ public sealed class ProviderLedgerReconciliationService
             Team: "Security Master",
             Counterparty: provider,
             StateTransitions: [],
-            BreakExplanation: BuildStaleSecurityMasterPassportBreakExplanation(passport, latestRoute, syncCursor));
+            EvidenceLinks: explanation.EvidenceLinks,
+            SourceType: "provider-security-master-passport",
+            SourceSystem: provider,
+            SourceReference: passport.SecurityId?.ToString("D") ?? passport.Symbol,
+            SourceFingerprint: ComputeQueueSourceFingerprint(
+                "provider-security-master-passport",
+                caseId,
+                syncCursor,
+                passport.ConfidenceScore,
+                passport.FreshnessMinutes,
+                passport.ProviderSyncedAt.UtcTicks),
+            BreakExplanation: explanation,
+            LedgerBookId: ledgerBook.LedgerBookId,
+            Measures: BuildUnavailableProviderMeasures(
+                ledgerBook.BaseCurrency,
+                "A stale Security Master passport is identity evidence and does not contain an authoritative expected and actual value pair.",
+                "A stale Security Master passport is identity evidence and does not contain an authoritative expected and actual quantity pair.",
+                "A stale Security Master passport is identity evidence and does not contain an authoritative expected and actual cost-basis pair."),
+            BlockedOutputs: ["accounting-close", "certified-reporting"])
+        {
+            FundProfileId = ledgerBook.FundProfileId
+        };
     }
 
     private static string BuildCorporateActionCandidateCaseId(
@@ -2226,6 +1872,118 @@ public sealed class ProviderLedgerReconciliationService
             "provider-ledger-security-master-stale",
             accountId.ToString("N"),
             NormalizeBreakIdPart(passport.SecurityId?.ToString("N") ?? passport.Symbol));
+
+    private static IReadOnlyList<ReconciliationBreakMeasureDto> BuildProviderBreakMeasures(
+        ProviderLedgerReconciliationBreakDto breakRow,
+        string baseCurrency)
+    {
+        var currency = baseCurrency.Trim().ToUpperInvariant();
+        var hasExactValue = breakRow.ExpectedAmount.HasValue
+            && breakRow.ActualAmount.HasValue
+            && breakRow.Variance.HasValue
+            && breakRow.Variance.Value == breakRow.ActualAmount.Value - breakRow.ExpectedAmount.Value;
+        var comparisonKind = breakRow.Code.Contains("POSITION_QUANTITY", StringComparison.OrdinalIgnoreCase)
+            ? ReconciliationBreakMeasureKindDto.Quantity
+            : breakRow.Code.Contains("POSITION_COST_BASIS", StringComparison.OrdinalIgnoreCase)
+                ? ReconciliationBreakMeasureKindDto.CostBasis
+                : ReconciliationBreakMeasureKindDto.Value;
+        ReconciliationBreakMeasureDto BuildMeasure(
+            ReconciliationBreakMeasureKindDto kind,
+            string unit,
+            string unavailableReason)
+        {
+            if (kind == comparisonKind && hasExactValue)
+            {
+                return new ReconciliationBreakMeasureDto(
+                    kind,
+                    breakRow.ExpectedAmount,
+                    breakRow.ActualAmount,
+                    breakRow.Variance,
+                    breakRow.Tolerance.HasValue ? Math.Abs(breakRow.Tolerance.Value) : null,
+                    unit);
+            }
+
+            return new ReconciliationBreakMeasureDto(
+                kind,
+                Expected: null,
+                Actual: null,
+                Variance: null,
+                Tolerance: kind == comparisonKind && breakRow.Tolerance.HasValue
+                    ? Math.Abs(breakRow.Tolerance.Value)
+                    : null,
+                Unit: unit,
+                UnavailableReason: kind == comparisonKind
+                    ? $"The provider break does not contain a complete, arithmetically consistent expected and actual {kind.ToString().ToLowerInvariant()} comparison."
+                    : unavailableReason);
+        }
+
+        return
+        [
+            BuildMeasure(
+                ReconciliationBreakMeasureKindDto.Value,
+                currency,
+                "This item-level break compares a different measure and does not provide a separate expected and actual value pair."),
+            BuildMeasure(
+                ReconciliationBreakMeasureKindDto.Quantity,
+                "units",
+                "This item-level break compares a different measure and does not provide a separate expected and actual quantity pair."),
+            BuildMeasure(
+                ReconciliationBreakMeasureKindDto.CostBasis,
+                currency,
+                "This item-level break compares a different measure and does not provide a separate expected and actual cost-basis pair.")
+        ];
+    }
+
+    private static IReadOnlyList<ReconciliationBreakMeasureDto> BuildUnavailableProviderMeasures(
+        string baseCurrency,
+        string valueReason,
+        string quantityReason,
+        string costBasisReason)
+    {
+        var currency = baseCurrency.Trim().ToUpperInvariant();
+        return
+        [
+            new ReconciliationBreakMeasureDto(
+                ReconciliationBreakMeasureKindDto.Value,
+                Expected: null,
+                Actual: null,
+                Variance: null,
+                Tolerance: null,
+                Unit: currency,
+                UnavailableReason: valueReason),
+            new ReconciliationBreakMeasureDto(
+                ReconciliationBreakMeasureKindDto.Quantity,
+                Expected: null,
+                Actual: null,
+                Variance: null,
+                Tolerance: null,
+                Unit: "units",
+                UnavailableReason: quantityReason),
+            new ReconciliationBreakMeasureDto(
+                ReconciliationBreakMeasureKindDto.CostBasis,
+                Expected: null,
+                Actual: null,
+                Variance: null,
+                Tolerance: null,
+                Unit: currency,
+                UnavailableReason: costBasisReason)
+        ];
+    }
+
+    private static string ComputeQueueSourceFingerprint(params object?[] values)
+    {
+        var builder = new StringBuilder();
+        foreach (var value in values)
+        {
+            var text = CanonicalScalar(value);
+            builder.Append(text.Length.ToString(CultureInfo.InvariantCulture))
+                .Append(':')
+                .Append(text)
+                .Append('|');
+        }
+
+        return Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(builder.ToString());
+    }
 
     private static ReconciliationBreakCategory MapCorporateActionCandidateCategory(
         ProviderCorporateActionEvidenceCandidateDto candidate)
@@ -2581,503 +2339,6 @@ public sealed class ProviderLedgerReconciliationService
             evidenceLink: "/workstation/settings/providers");
     }
 
-    private async Task AddSecurityCoverageChecksAsync(
-        Guid runId,
-        BreakLifecycleContext lifecycle,
-        FundAccountBrokerageSyncActivityDto providerProjection,
-        string? requestedBy,
-        List<ProviderLedgerReconciliationCheckDto> checks,
-        List<ProviderLedgerReconciliationBreakDto> breaks,
-        List<ProviderSecurityMasterPassportDto> securityMasterPassports,
-        DateTimeOffset observedAt,
-        int providerStaleAfterMinutes,
-        CancellationToken ct)
-    {
-        var positions = providerProjection.Positions
-            .Where(static position => !string.IsNullOrWhiteSpace(position.Symbol))
-            .GroupBy(static position => position.Symbol.Trim().ToUpperInvariant(), StringComparer.OrdinalIgnoreCase)
-            .Select(static group => group.First())
-            .ToArray();
-        IReadOnlyList<SecurityMasterConflict> openIdentifierConflicts = _securityMasterConflictService is null
-            ? Array.Empty<SecurityMasterConflict>()
-            : await _securityMasterConflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
-
-        foreach (var position in positions)
-        {
-            ct.ThrowIfCancellationRequested();
-            var symbol = position.Symbol.Trim().ToUpperInvariant();
-            var checkId = $"security-master:{symbol}";
-
-            if (position.Security is not null)
-            {
-                var overrideHistory = await GetSecurityMasterOverrideHistoryAsync(position.Security.SecurityId, ct)
-                    .ConfigureAwait(false);
-                if (AddInactiveSecurityMasterBreak(
-                    runId,
-                    lifecycle,
-                    providerProjection,
-                    position,
-                    position.Security,
-                    checks,
-                    breaks,
-                    securityMasterPassports,
-                    checkId,
-                    symbol,
-                    observedAt,
-                    providerStaleAfterMinutes,
-                    overrideHistory,
-                    openIdentifierConflicts))
-                {
-                    continue;
-                }
-
-                securityMasterPassports.Add(BuildSecurityMasterPassport(
-                    providerProjection,
-                    position,
-                    position.Security,
-                    validation: null,
-                    status: MapPassportStatus(position.Security),
-                    confidenceScore: position.Security.IsInferredMatch ? 85m : 100m,
-                    resolutionSource: "provider-position",
-                    reason: "Provider position already carries a resolved Security Master reference.",
-                    observedAt: observedAt,
-                    providerStaleAfterMinutes: providerStaleAfterMinutes,
-                    overrideHistory: overrideHistory,
-                    openIdentifierConflicts: openIdentifierConflicts));
-                AddMatched(
-                    checks,
-                    checkId,
-                    $"Security Master identity for {symbol}",
-                    ReconciliationBreakCategory.ClassificationGap,
-                    "security-master",
-                    "provider-sync",
-                    null,
-                    null,
-                    "Provider position already carries a resolved Security Master reference.");
-                continue;
-            }
-
-            var resolved = _securityReferenceLookup is null
-                ? null
-                : await _securityReferenceLookup
-                    .GetByCanonicalAsync(
-                        new SecurityReferenceLookupRequest(
-                            IdentifierKind: SecurityIdentifierKind.Ticker.ToString(),
-                            IdentifierValue: symbol,
-                            Symbol: symbol,
-                            Currency: position.Currency,
-                            AssetClass: position.AssetClass,
-                            Source: "provider-ledger-reconciliation"),
-                        ct)
-                    .ConfigureAwait(false);
-
-            if (resolved is not null)
-            {
-                var overrideHistory = await GetSecurityMasterOverrideHistoryAsync(resolved.SecurityId, ct)
-                    .ConfigureAwait(false);
-                if (AddInactiveSecurityMasterBreak(
-                    runId,
-                    lifecycle,
-                    providerProjection,
-                    position,
-                    resolved,
-                    checks,
-                    breaks,
-                    securityMasterPassports,
-                    checkId,
-                    symbol,
-                    observedAt,
-                    providerStaleAfterMinutes,
-                    overrideHistory,
-                    openIdentifierConflicts))
-                {
-                    continue;
-                }
-
-                securityMasterPassports.Add(BuildSecurityMasterPassport(
-                    providerProjection,
-                    position,
-                    resolved,
-                    validation: null,
-                    status: MapPassportStatus(resolved),
-                    confidenceScore: resolved.IsInferredMatch ? 80m : 90m,
-                    resolutionSource: "security-master-lookup",
-                    reason: "Provider position resolved through the shared Security Master lookup.",
-                    observedAt: observedAt,
-                    providerStaleAfterMinutes: providerStaleAfterMinutes,
-                    overrideHistory: overrideHistory,
-                    openIdentifierConflicts: openIdentifierConflicts));
-                AddMatched(
-                    checks,
-                    checkId,
-                    $"Security Master identity for {symbol}",
-                    ReconciliationBreakCategory.ClassificationGap,
-                    "security-master",
-                    "provider-sync",
-                    null,
-                    null,
-                    "Provider position resolved through the shared Security Master lookup.");
-                continue;
-            }
-
-            var code = "SM_PROVIDER_POSITION_SECURITY_UNRESOLVED";
-            var reason = $"Provider position '{symbol}' could not be resolved to a Security Master record.";
-            var severity = ReconciliationBreakSeverity.High;
-            if (_securityValidationGate is not null)
-            {
-                var validation = await _securityValidationGate
-                    .ValidateSymbolAsync(
-                        symbol,
-                        SecurityValidationWorkflowDto.ReconciliationBreakIntake,
-                        workflowReference: runId.ToString("N"),
-                        actor: string.IsNullOrWhiteSpace(requestedBy) ? DefaultActor : requestedBy.Trim(),
-                        persistSnapshot: false,
-                        ct)
-                    .ConfigureAwait(false);
-
-                if (validation.IsResolved && !validation.IsBlocked)
-                {
-                    var overrideHistory = await GetSecurityMasterOverrideHistoryAsync(validation.SecurityId, ct)
-                        .ConfigureAwait(false);
-                    securityMasterPassports.Add(BuildSecurityMasterPassport(
-                        providerProjection,
-                        position,
-                        security: null,
-                        validation: validation,
-                        status: ProviderSecurityMasterPassportStatusDto.Resolved,
-                        confidenceScore: 80m,
-                        resolutionSource: "security-validation-gate",
-                        reason: "Security Master validation accepted the provider position.",
-                        observedAt: observedAt,
-                        providerStaleAfterMinutes: providerStaleAfterMinutes,
-                        overrideHistory: overrideHistory,
-                        openIdentifierConflicts: openIdentifierConflicts));
-                    AddMatched(
-                        checks,
-                        checkId,
-                        $"Security Master identity for {symbol}",
-                        ReconciliationBreakCategory.ClassificationGap,
-                        "security-master",
-                        "provider-sync",
-                        null,
-                        null,
-                        "Security Master validation accepted the provider position.");
-                    continue;
-                }
-
-                var issue = validation.Report.Issues.FirstOrDefault();
-                if (issue is not null)
-                {
-                    code = issue.Code;
-                    reason = $"Security Master validation {issue.Code}: {issue.Message}";
-                    severity = MapSecurityValidationSeverity(issue.Severity);
-                }
-
-                securityMasterPassports.Add(BuildSecurityMasterPassport(
-                    providerProjection,
-                    position,
-                    security: null,
-                    validation: validation,
-                    status: validation.IsBlocked || validation.Report.HasBlockingIssues
-                        ? ProviderSecurityMasterPassportStatusDto.Blocked
-                        : ProviderSecurityMasterPassportStatusDto.Unresolved,
-                    confidenceScore: 0m,
-                    resolutionSource: "security-validation-gate",
-                    reason: reason,
-                    observedAt: observedAt,
-                    providerStaleAfterMinutes: providerStaleAfterMinutes,
-                    overrideHistory: [],
-                    openIdentifierConflicts: openIdentifierConflicts));
-            }
-            else
-            {
-                securityMasterPassports.Add(BuildSecurityMasterPassport(
-                    providerProjection,
-                    position,
-                    security: null,
-                    validation: null,
-                    status: ProviderSecurityMasterPassportStatusDto.Unresolved,
-                    confidenceScore: 0m,
-                    resolutionSource: "unresolved",
-                    reason: reason,
-                    observedAt: observedAt,
-                    providerStaleAfterMinutes: providerStaleAfterMinutes,
-                    overrideHistory: [],
-                    openIdentifierConflicts: openIdentifierConflicts));
-            }
-
-            AddBreak(
-                runId,
-                lifecycle,
-                checks,
-                breaks,
-                checkId,
-                $"Security Master identity for {symbol}",
-                ProviderLedgerReconciliationCheckStatusDto.Break,
-                code,
-                ReconciliationBreakCategory.ClassificationGap,
-                severity,
-                "security-master",
-                "provider-sync",
-                null,
-                null,
-                reason,
-                symbol,
-                "/workstation/data/security-master");
-        }
-    }
-
-    private static bool AddInactiveSecurityMasterBreak(
-        Guid runId,
-        BreakLifecycleContext lifecycle,
-        FundAccountBrokerageSyncActivityDto providerProjection,
-        FundAccountBrokeragePositionDto position,
-        WorkstationSecurityReference security,
-        List<ProviderLedgerReconciliationCheckDto> checks,
-        List<ProviderLedgerReconciliationBreakDto> breaks,
-        List<ProviderSecurityMasterPassportDto> securityMasterPassports,
-        string checkId,
-        string symbol,
-        DateTimeOffset observedAt,
-        int providerStaleAfterMinutes,
-        IReadOnlyList<string> overrideHistory,
-        IReadOnlyList<SecurityMasterConflict> openIdentifierConflicts)
-    {
-        if (security.Status == SecurityStatusDto.Active)
-        {
-            return false;
-        }
-
-        var reason = $"Security Master reference for provider position '{symbol}' is {security.Status}; active approved Security Master status is required for ledger posting and close readiness.";
-        securityMasterPassports.Add(BuildSecurityMasterPassport(
-            providerProjection,
-            position,
-            security,
-            validation: null,
-            status: ProviderSecurityMasterPassportStatusDto.Blocked,
-            confidenceScore: 0m,
-            resolutionSource: "security-master-status",
-            reason: reason,
-            observedAt: observedAt,
-            providerStaleAfterMinutes: providerStaleAfterMinutes,
-            overrideHistory: overrideHistory,
-            openIdentifierConflicts: openIdentifierConflicts));
-
-        AddBreak(
-            runId,
-            lifecycle,
-            checks,
-            breaks,
-            checkId,
-            $"Security Master identity for {symbol}",
-            ProviderLedgerReconciliationCheckStatusDto.Blocked,
-            "SM_SECURITY_NOT_ACTIVE",
-            ReconciliationBreakCategory.ClassificationGap,
-            ReconciliationBreakSeverity.Critical,
-            "active-security-master",
-            "provider-sync",
-            null,
-            null,
-            reason,
-            symbol,
-            "/workstation/data/security-master");
-        return true;
-    }
-
-    private static string BuildProviderCapabilityBlockReason(
-        ProviderCapabilityKind capability,
-        ProviderRouteResult result)
-    {
-        var reason = string.IsNullOrWhiteSpace(result.PolicyGate)
-            ? $"Provider capability '{capability}' is not routable for provider-ledger reconciliation."
-            : result.PolicyGate;
-        var skipped = result.SkippedCandidates
-            .Where(static item => !string.IsNullOrWhiteSpace(item))
-            .Take(3)
-            .ToArray();
-
-        return skipped.Length == 0
-            ? reason
-            : $"{reason} Skipped: {string.Join(" ", skipped)}";
-    }
-
-    private static ProviderSecurityMasterPassportDto BuildSecurityMasterPassport(
-        FundAccountBrokerageSyncActivityDto providerProjection,
-        FundAccountBrokeragePositionDto position,
-        WorkstationSecurityReference? security,
-        SecurityValidationGateResultDto? validation,
-        ProviderSecurityMasterPassportStatusDto status,
-        decimal confidenceScore,
-        string resolutionSource,
-        string reason,
-        DateTimeOffset observedAt,
-        int providerStaleAfterMinutes,
-        IReadOnlyList<string> overrideHistory,
-        IReadOnlyList<SecurityMasterConflict> openIdentifierConflicts)
-    {
-        var issues = validation?.Report.Issues ?? [];
-        var securityId = security?.SecurityId ?? validation?.SecurityId;
-        var openConflictSummaries = FormatOpenIdentifierConflicts(securityId, openIdentifierConflicts);
-        var identifierConflicts = issues
-            .Where(static issue =>
-                issue.Code.Contains("CONFLICT", StringComparison.OrdinalIgnoreCase)
-                || issue.Title.Contains("conflict", StringComparison.OrdinalIgnoreCase)
-                || issue.AffectedFields.Any(static field => field.Contains("identifier", StringComparison.OrdinalIgnoreCase)))
-            .Select(static issue => issue.Code)
-            .Concat(openConflictSummaries)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        var freshnessMinutes = Math.Max(0, (int)Math.Floor((observedAt - providerProjection.SyncedAt).TotalMinutes));
-        var providerEvidenceStale = providerProjection.Status.IsStale || freshnessMinutes > providerStaleAfterMinutes;
-        var issueCodes = issues
-            .Select(static issue => issue.Code)
-            .Where(static code => !string.IsNullOrWhiteSpace(code))
-            .Concat(providerEvidenceStale ? ["PROVIDER_EVIDENCE_STALE"] : [])
-            .Concat(openConflictSummaries.Length > 0 ? ["SM_IDENTIFIER_CONFLICT"] : [])
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        var adjustedConfidenceScore = confidenceScore;
-        if (providerEvidenceStale && adjustedConfidenceScore > 70m)
-        {
-            adjustedConfidenceScore = 70m;
-        }
-
-        if (openConflictSummaries.Length > 0 && adjustedConfidenceScore > 60m)
-        {
-            adjustedConfidenceScore = 60m;
-        }
-
-        var reasonParts = new List<string> { reason };
-        if (providerEvidenceStale)
-        {
-            reasonParts.Add("Provider evidence is stale for this reconciliation run.");
-        }
-
-        if (openConflictSummaries.Length > 0)
-        {
-            reasonParts.Add($"{openConflictSummaries.Length} open Security Master identifier conflict(s) involve this resolved instrument.");
-        }
-
-        return new ProviderSecurityMasterPassportDto(
-            Symbol: position.Symbol.Trim().ToUpperInvariant(),
-            ProviderId: providerProjection.Link.ProviderId,
-            ExternalAccountId: providerProjection.Link.ExternalAccountId,
-            ProviderSyncedAt: providerProjection.SyncedAt,
-            ProviderIsStale: providerEvidenceStale,
-            AssetClass: position.AssetClass,
-            Currency: position.Currency,
-            PositionId: position.PositionId,
-            SecurityId: securityId,
-            SecurityDisplayName: security?.DisplayName,
-            SecurityStatus: security?.Status,
-            Status: status,
-            ConfidenceScore: adjustedConfidenceScore,
-            ResolutionSource: resolutionSource,
-            IdentifierConflicts: identifierConflicts,
-            ValidationIssueCodes: issueCodes,
-            OverrideHistory: overrideHistory,
-            ObservedAt: observedAt,
-            FreshnessMinutes: freshnessMinutes,
-            Reason: string.Join(" ", reasonParts));
-    }
-
-    private static string[] FormatOpenIdentifierConflicts(
-        Guid? securityId,
-        IReadOnlyList<SecurityMasterConflict> openIdentifierConflicts)
-    {
-        var resolvedSecurityId = securityId.GetValueOrDefault();
-        if (resolvedSecurityId == Guid.Empty || openIdentifierConflicts.Count == 0)
-        {
-            return [];
-        }
-
-        return openIdentifierConflicts
-            .Where(conflict =>
-                conflict.SecurityId == resolvedSecurityId &&
-                string.Equals(conflict.Status, "Open", StringComparison.OrdinalIgnoreCase))
-            .OrderBy(static conflict => conflict.DetectedAt)
-            .Select(static conflict =>
-                $"conflict={conflict.ConflictId:N}; kind={conflict.ConflictKind}; field={conflict.FieldPath}; providers={conflict.ProviderA}/{conflict.ProviderB}")
-            .ToArray();
-    }
-
-    private async Task<IReadOnlyList<string>> GetSecurityMasterOverrideHistoryAsync(
-        Guid? securityId,
-        CancellationToken ct)
-    {
-        var resolvedSecurityId = securityId.GetValueOrDefault();
-        if (_operatorOverridesStore is null || resolvedSecurityId == Guid.Empty)
-        {
-            return [];
-        }
-
-        var overrides = await _operatorOverridesStore.GetAsync(resolvedSecurityId, ct).ConfigureAwait(false);
-        if (overrides is null || overrides.AuditTrail.Count == 0)
-        {
-            return [];
-        }
-
-        return overrides.AuditTrail
-            .OrderByDescending(static entry => entry.OccurredAt)
-            .Take(10)
-            .Select(FormatOverrideHistory)
-            .ToArray();
-    }
-
-    private static string FormatOverrideHistory(SecurityOverrideAuditEntryDto entry)
-    {
-        var parts = new List<string>
-        {
-            entry.EventType,
-            entry.ApprovalStatus.ToString(),
-            $"actor={entry.Actor}",
-            $"at={entry.OccurredAt:O}"
-        };
-
-        if (!string.IsNullOrWhiteSpace(entry.Reviewer))
-        {
-            parts.Add($"reviewer={entry.Reviewer.Trim()}");
-        }
-
-        if (entry.ReviewedAt.HasValue)
-        {
-            parts.Add($"reviewedAt={entry.ReviewedAt.Value:O}");
-        }
-
-        if (!string.IsNullOrWhiteSpace(entry.ReasonCode))
-        {
-            parts.Add($"reason={entry.ReasonCode.Trim()}");
-        }
-
-        if (!string.IsNullOrWhiteSpace(entry.Comment))
-        {
-            parts.Add($"comment={entry.Comment.Trim()}");
-        }
-
-        return string.Join("; ", parts);
-    }
-
-    private async Task PersistAsync(
-        Guid accountId,
-        ProviderLedgerReconciliationDetailDto detail,
-        CancellationToken ct)
-    {
-        var json = JsonSerializer.Serialize(detail, JsonOptions);
-        await AtomicFileWriter.WriteAsync(BuildRunDetailPath(accountId, detail.Summary.ReconciliationRunId), json, ct)
-            .ConfigureAwait(false);
-        await AtomicFileWriter.WriteAsync(BuildLatestDetailPath(accountId), json, ct)
-            .ConfigureAwait(false);
-    }
-
-    private string BuildRunDetailPath(Guid accountId, Guid runId)
-        => Path.Combine(BuildAccountDirectory(accountId), "runs", $"{runId:N}.json");
-
-    private string BuildLatestDetailPath(Guid accountId)
-        => Path.Combine(BuildAccountDirectory(accountId), "latest.json");
-
-    private string BuildAccountDirectory(Guid accountId)
-        => Path.Combine(_options.RootDirectory, "reconciliation", accountId.ToString("N"));
-
     private static void AddAmountCheck(
         Guid runId,
         BreakLifecycleContext lifecycle,
@@ -3266,9 +2527,6 @@ public sealed class ProviderLedgerReconciliationService
             NormalizeBreakIdPart(code),
             NormalizeBreakIdPart(string.IsNullOrWhiteSpace(symbol) ? "account" : symbol));
 
-    private static string? NormalizeOwner(string? owner)
-        => string.IsNullOrWhiteSpace(owner) ? null : owner.Trim();
-
     private sealed record BreakLifecycleContext(
         DateTimeOffset CreatedAt,
         decimal AmountTolerance,
@@ -3276,6 +2534,46 @@ public sealed class ProviderLedgerReconciliationService
         IReadOnlySet<string> SignedOffBreakKeys,
         string? SignedOffBy,
         IReadOnlyDictionary<string, ProviderLedgerReconciliationBreakDto> PreviousBreaksByKey);
+
+    private sealed record ProviderLedgerScope(
+        LedgerBookDto Book,
+        LedgerPeriodDto? Period,
+        DateOnly? AsOfDate);
+
+    private sealed record ProviderLedgerAuthorityVerification(
+        bool IsVerified,
+        LedgerBookDto? LedgerBook,
+        string? ErrorCode,
+        string? Error)
+    {
+        public static ProviderLedgerAuthorityVerification Verified(LedgerBookDto ledgerBook)
+            => new(true, ledgerBook, null, null);
+
+        public static ProviderLedgerAuthorityVerification Failed(string errorCode, string error)
+            => new(false, null, errorCode, error);
+    }
+
+    private sealed record ProviderCaseworkPersistenceResult(
+        int RequiredCount,
+        int RetainedCount,
+        bool IsSatisfied,
+        bool IsBlocked,
+        IReadOnlyList<string> CaseIds,
+        string? Error);
+
+    private sealed record ProviderLedgerReconciliationRunIntent(
+        string SchemaVersion,
+        string OperationId,
+        Guid RunId,
+        Guid AccountId,
+        string RequestHashSha256,
+        string? InputHashSha256,
+        int AttemptNumber,
+        DateTimeOffset StartedAtUtc,
+        DateTimeOffset UpdatedAtUtc,
+        string State,
+        OperationTerminalState? TerminalState,
+        string? FailureReason);
 
     private static readonly ProviderCapabilityKind[] RequiredProviderLedgerCapabilities =
     [

@@ -1,0 +1,148 @@
+<!-- @dsCard group="Theming" viewport="1200x900" name="Token playground" subtitle="Flip brand · theme · density live and watch the same components re-skin — the white-label pitch, demonstrated" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Token playground</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#ECEFF3);font-family:var(--font-body);color:var(--text-primary);">
+<div id="root"></div>
+<script type="text/babel">
+const { MetricCard, Button, Badge, SeverityBadge, DenseDataTable, Sparkline, Input, Select, Toggle, Eyebrow } = window.MeridianDesignSystem_4f61be;
+
+const BRANDS = [
+  { id: "", label: "Steel",   hex: "#2F6F8F" },
+  { id: "indigo",  label: "Indigo",  hex: "#4F46E5" },
+  { id: "emerald", label: "Emerald", hex: "#0B7A55" },
+  { id: "rose",    label: "Rose",    hex: "#E11D48" },
+  { id: "slate",   label: "Slate",   hex: "#64748B" },
+  { id: "cyan",    label: "Cyan",    hex: "#0C6A85" },
+  { id: "amber",   label: "Amber",   hex: "#A34A08" },
+];
+const THEMES = ["light", "dark"];
+const DENSITIES = [
+  { id: "terminal", label: "Terminal" },
+  { id: "compact",  label: "Compact" },
+  { id: "",         label: "Default" },
+  { id: "spacious", label: "Spacious" },
+];
+
+const ROWS = [
+  { symbol: "MSFT", qty: "1,200", price: "468.20", pnl: "+8,412.00" },
+  { symbol: "NVDA", qty: "400",   price: "1,182.44", pnl: "−2,108.80" },
+  { symbol: "TLT",  qty: "2,500", price: "94.16",  pnl: "+512.50" },
+];
+
+function Chip({ active, onClick, children, swatch }) {
+  return (
+    <button onClick={onClick} style={{
+      appearance: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6,
+      font: "600 11px var(--font-body)", padding: "4px 10px", borderRadius: 2,
+      border: `1px solid ${active ? "var(--accent)" : "var(--border)"}`,
+      background: active ? "var(--blue-a10)" : "var(--bg-light)",
+      color: active ? "var(--accent-dim)" : "var(--text-secondary)",
+      boxShadow: active ? "inset 0 0 0 1px var(--accent)" : "none" }}>
+      {swatch && <span style={{ width: 10, height: 10, background: swatch, display: "inline-block" }}></span>}
+      {children}
+    </button>
+  );
+}
+
+function Row({ label, children }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <span style={{ width: 62, fontSize: 10, fontWeight: 600, fontVariant: "all-small-caps",
+        letterSpacing: ".05em", color: "var(--text-muted)" }}>{label}</span>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>{children}</div>
+    </div>
+  );
+}
+
+function Playground() {
+  const [brand, setBrand] = React.useState("");
+  const [theme, setTheme] = React.useState("light");
+  const [density, setDensity] = React.useState("");
+
+  React.useEffect(() => {
+    const html = document.documentElement;
+    if (brand) html.setAttribute("data-brand", brand); else html.removeAttribute("data-brand");
+    html.setAttribute("data-theme", theme);
+    if (density) document.body.setAttribute("data-theme-density", density);
+    else document.body.removeAttribute("data-theme-density");
+  }, [brand, theme, density]);
+
+  return (
+    <div style={{ maxWidth: 1140, display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ background: "var(--bg-light)", border: "1px solid var(--border)", borderRadius: 2,
+        padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+        <Eyebrow>Token playground — every control below writes one data attribute; no component re-renders needed</Eyebrow>
+        <Row label="Brand">
+          {BRANDS.map((b) => (
+            <Chip key={b.id} active={brand === b.id} onClick={() => setBrand(b.id)} swatch={b.hex}>{b.label}</Chip>
+          ))}
+        </Row>
+        <Row label="Theme">
+          {THEMES.map((t) => (
+            <Chip key={t} active={theme === t} onClick={() => setTheme(t)}>{t === "light" ? "Light" : "Dark"}</Chip>
+          ))}
+        </Row>
+        <Row label="Density">
+          {DENSITIES.map((d) => (
+            <Chip key={d.id} active={density === d.id} onClick={() => setDensity(d.id)}>{d.label}</Chip>
+          ))}
+        </Row>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+        <MetricCard label="Net liquidation" value="$1,284,002.18" delta="+1.84% today" tone="info" />
+        <MetricCard label="Day P&L" value="+$6,815.70" delta="+0.53%" tone="success" />
+        <MetricCard label="Margin used" value="31.2%" delta="limit 60%" tone="neutral" />
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 12, alignItems: "start" }}>
+        <div style={{ background: "var(--bg-light)", border: "1px solid var(--border)", borderRadius: 2, padding: 14,
+          display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            <Button variant="primary">Queue run</Button>
+            <Button variant="ghost">Preview</Button>
+            <Button variant="danger">Halt</Button>
+            <Button variant="link">Run history</Button>
+            <div style={{ flex: 1 }}></div>
+            <Badge variant="paper">Paper</Badge>
+            <SeverityBadge status="Ready" />
+            <SeverityBadge status="Review" />
+            <SeverityBadge status="Blocked" />
+          </div>
+          <DenseDataTable
+            columns={[
+              { key: "symbol", label: "Symbol" },
+              { key: "qty", label: "Qty", align: "right" },
+              { key: "price", label: "Price", align: "right" },
+              { key: "pnl", label: "Unrealized", align: "right" },
+            ]}
+            rows={ROWS} />
+        </div>
+        <div style={{ background: "var(--bg-light)", border: "1px solid var(--border)", borderRadius: 2, padding: 14,
+          display: "flex", flexDirection: "column", gap: 10 }}>
+          <span style={{ fontSize: 10, fontWeight: 600, fontVariant: "all-small-caps", letterSpacing: ".04em",
+            color: "var(--text-muted)" }}>Controls under this brand</span>
+          <Input placeholder="Search symbols" />
+          <Select options={["Polygon", "IBKR", "Databento"]} value="Polygon" onChange={() => {}} />
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Toggle checked onChange={() => {}} /> <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Follow tail</span>
+          </div>
+          <div style={{ height: 56 }}>
+            <Sparkline points={[4, 6, 5, 8, 7, 9, 11, 10, 12, 14, 13, 16]} variant="area" width={280} height={56} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Playground />);
+</script>
+</body>
+</html>

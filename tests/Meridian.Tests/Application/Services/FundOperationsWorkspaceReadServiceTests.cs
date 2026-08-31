@@ -10,9 +10,11 @@ using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Reporting;
+using Meridian.Storage.Ledger;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
@@ -452,7 +454,9 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         portfolioExport.Rows.Should().Contain(row =>
             row["cutId"] == "fund:consolidated" &&
             row["totalPnl"] == "50" &&
-            row["shadowNav"] == "2000");
+            // Shadow NAV is the consolidated NAV (assets - liabilities) from the NAV
+            // attribution service, not the sum of every account's normal balance.
+            row["shadowNav"] == "1000");
         portfolioExport.RowLineage.Should().NotBeNull();
         portfolioExport.Export.RowLineageCount.Should().Be(portfolioExport.RowLineage!.Count);
         var warehouseExport = await service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
@@ -750,6 +754,156 @@ public sealed class FundOperationsWorkspaceReadServiceTests
     }
 
     [Fact]
+    public async Task GetWorkspaceAsync_DirectDeliveryFallbackWithoutAccessContext_SuppressesAttempts()
+    {
+        var fixture = await CreateLegacyDeliveryFallbackFixtureAsync("tenant-a", "company-a");
+
+        var workspace = await fixture.Service.GetWorkspaceAsync(fixture.Query);
+
+        workspace.Reporting.DeliveryAttempts.Should().NotBeNull().And.BeEmpty();
+        JsonSerializer.Serialize(workspace.Reporting)
+            .Contains("token=", StringComparison.OrdinalIgnoreCase)
+            .Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetWorkspaceAsync_DirectDeliveryFallbackAcrossTenantAndCompany_SuppressesAttempts()
+    {
+        var fixture = await CreateLegacyDeliveryFallbackFixtureAsync("tenant-b", "company-b");
+        var caller = new ReportAccessQueryContext(
+            ActorPrincipalId: "viewer-a",
+            CompanyId: "company-a",
+            TenantId: "tenant-a",
+            RequireBoundScope: true);
+
+        var workspace = await fixture.Service.GetWorkspaceAsync(fixture.Query, caller);
+
+        workspace.Reporting.WorkflowRecords.Should().NotBeNull().And.BeEmpty();
+        workspace.Reporting.DeliveryAttempts.Should().NotBeNull().And.BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetWorkspaceAsync_DirectDeliveryFallbackWithExactScope_RetainsOnlySecretFreeMetadata()
+    {
+        var fixture = await CreateLegacyDeliveryFallbackFixtureAsync("tenant-a", "company-a");
+        var caller = new ReportAccessQueryContext(
+            ActorPrincipalId: "viewer-a",
+            CompanyId: "company-a",
+            TenantId: "tenant-a",
+            RequireBoundScope: true);
+
+        var workspace = await fixture.Service.GetWorkspaceAsync(fixture.Query, caller);
+
+        var attempt = workspace.Reporting.DeliveryAttempts.Should().ContainSingle().Subject;
+        attempt.DeliveryReference.Should().Be("/delivery/history");
+        attempt.Package.Should().NotBeNull();
+        attempt.Package!.SecureLink.Should().BeEmpty();
+        attempt.Package.PortalRoute.Should().BeEmpty();
+        attempt.Package.Artifacts.Should().ContainSingle().Which.DownloadRoute.Should().BeNull();
+        attempt.Package.AccessLinks.Should().ContainSingle(link =>
+            link.Kind == "manifest" &&
+            !link.RequiresToken &&
+            link.Href == "/api/workstation/evidence/subjects/report-pack/current/packet");
+        attempt.Package.Notifications.Should().BeEmpty();
+        attempt.Package.AccessExpiresAtUtc.Should().BeNull();
+        attempt.Package.DeliveryAccessSummary.Should().Be(ReportingDeliveryReadModelSecurity.RetiredAccessSummary);
+
+        var json = JsonSerializer.Serialize(workspace.Reporting);
+        json.Contains("token=", StringComparison.OrdinalIgnoreCase).Should().BeFalse();
+        json.Contains("access_token=", StringComparison.OrdinalIgnoreCase).Should().BeFalse();
+        json.Contains("/portal/reporting/packages/", StringComparison.OrdinalIgnoreCase).Should().BeFalse();
+        json.Contains("/reporting/runs/legacy-run/packages/", StringComparison.OrdinalIgnoreCase).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetWorkspaceAsync_WithScopedCasework_ShouldExposeOnlyExactScopeWithoutReadTimeMutation()
+    {
+        var fundProfileId = $"fund-casework-{Guid.NewGuid():N}";
+        var strategyRepository = new StrategyRunStore();
+        await strategyRepository.RecordRunAsync(BuildRun(
+            runId: "run-casework-001",
+            strategyId: "casework-1",
+            strategyName: "Casework Strategy",
+            fundProfileId: fundProfileId,
+            fundDisplayName: "Casework Fund"));
+        var alphaScope = new ReconciliationBreakQueueScope("tenant-alpha", "company-alpha");
+        var betaScope = new ReconciliationBreakQueueScope("tenant-beta", "company-beta");
+        var queueRepository = new TrackingReconciliationBreakQueueRepository(
+        [
+            BuildScopedQueueItem("break-alpha", "run-casework-001", fundProfileId, alphaScope),
+            BuildScopedQueueItem("break-beta", "run-casework-001", fundProfileId, betaScope)
+        ]);
+        var reconciliationService = new ReadOnlyReconciliationRunService();
+        var securityMaster = new NullSecurityMasterQueryService();
+        var service = new FundOperationsWorkspaceReadService(
+            new InMemoryFundAccountService(),
+            strategyRepository,
+            new PortfolioReadService(),
+            new NavAttributionService(securityMaster),
+            new ReportGenerationService(securityMaster),
+            strategyReconciliationService: reconciliationService,
+            breakQueueRepository: queueRepository);
+        var query = new FundOperationsWorkspaceQuery(fundProfileId);
+
+        var alphaWorkspace = await service.GetWorkspaceAsync(
+            query,
+            new ReportAccessQueryContext(
+                CompanyId: alphaScope.CompanyId,
+                TenantId: alphaScope.TenantId,
+                RequireBoundScope: true));
+        var betaWorkspace = await service.GetWorkspaceAsync(
+            query,
+            new ReportAccessQueryContext(
+                CompanyId: betaScope.CompanyId,
+                TenantId: betaScope.TenantId,
+                RequireBoundScope: true));
+
+        alphaWorkspace.Reconciliation.BreakQueue.Should().NotBeNull();
+        alphaWorkspace.Reconciliation.BreakQueue!.Items.Should()
+            .ContainSingle(item => item.BreakId == "break-alpha");
+        betaWorkspace.Reconciliation.BreakQueue.Should().NotBeNull();
+        betaWorkspace.Reconciliation.BreakQueue!.Items.Should()
+            .ContainSingle(item => item.BreakId == "break-beta");
+        queueRepository.ScopedReadCount.Should().Be(2);
+        queueRepository.UnscopedReadCount.Should().Be(0);
+        queueRepository.MutationCount.Should().Be(0);
+        reconciliationService.LatestReadCount.Should().Be(2);
+        reconciliationService.RunCount.Should().Be(0);
+    }
+
+    [Theory]
+    [InlineData(null, "company-alpha")]
+    [InlineData("tenant-alpha", null)]
+    public async Task GetWorkspaceAsync_WithIncompleteCaseworkScope_ShouldFailClosed(
+        string? tenantId,
+        string? companyId)
+    {
+        var queueRepository = new TrackingReconciliationBreakQueueRepository([]);
+        var securityMaster = new NullSecurityMasterQueryService();
+        var service = new FundOperationsWorkspaceReadService(
+            new InMemoryFundAccountService(),
+            new StrategyRunStore(),
+            new PortfolioReadService(),
+            new NavAttributionService(securityMaster),
+            new ReportGenerationService(securityMaster),
+            breakQueueRepository: queueRepository);
+
+        var act = () => service.GetWorkspaceAsync(
+            new FundOperationsWorkspaceQuery("fund-scope-required"),
+            new ReportAccessQueryContext(
+                CompanyId: companyId,
+                TenantId: tenantId,
+                RequireBoundScope: true));
+
+        await act.Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage("*tenant- and company-scoped*");
+        queueRepository.ScopedReadCount.Should().Be(0);
+        queueRepository.UnscopedReadCount.Should().Be(0);
+        queueRepository.MutationCount.Should().Be(0);
+    }
+
+    [Fact]
     public void ProjectReconciliationSnapshot_MapsConsolidatedAndPerDimensionSnapshots()
     {
         var asOf = new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero);
@@ -905,6 +1059,74 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         workspace.RelatedRunIds.Should().BeEmpty();
         workspace.Ledger.JournalEntryCount.Should().Be(0);
         workspace.Ledger.TrialBalance.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task DurableLedgerStore_DrivesWorkspaceTrialBalanceNavAndReportPreview()
+    {
+        var fundProfileId = $"fund-durable-{Guid.NewGuid():N}";
+        var ledgerBookId = Guid.Parse("f32a721f-cbcf-40b3-b84b-7db23ab2c57b");
+        var periodId = Guid.Parse("749dbb05-f290-4f4f-b384-b6471a346b66");
+        var asOf = new DateTimeOffset(2026, 6, 30, 16, 0, 0, TimeSpan.Zero);
+        var book = new LedgerBookRecord(
+            ledgerBookId,
+            fundProfileId,
+            Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund,
+            "Primary operations ledger",
+            "USD",
+            asOf.AddDays(-30),
+            asOf,
+            AccountingBasis: AccountingBasisKindDto.Primary);
+        var records = new[]
+        {
+            BuildDurableRecord(
+                ledgerBookId,
+                periodId,
+                asOf.AddHours(-2),
+                globalSequence: 1,
+                "capital contribution",
+                (new LedgerAccount("Assets:Cash", LedgerAccountType.Asset), 1_000m, 0m),
+                (new LedgerAccount("Equity:Capital", LedgerAccountType.Equity), 0m, 1_000m)),
+            BuildDurableRecord(
+                ledgerBookId,
+                periodId,
+                asOf.AddHours(-1),
+                globalSequence: 2,
+                "administration accrual",
+                (new LedgerAccount("Expenses:Administration", LedgerAccountType.Expense), 100m, 0m),
+                (new LedgerAccount("Liabilities:Payable", LedgerAccountType.Liability), 0m, 100m))
+        };
+        var journalStore = new ReadOnlyFundLedgerJournalStore(book, records);
+        var securityMaster = new NullSecurityMasterQueryService();
+        var service = new FundOperationsWorkspaceReadService(
+            new InMemoryFundAccountService(),
+            new StrategyRunStore(),
+            new PortfolioReadService(),
+            new NavAttributionService(securityMaster),
+            new ReportGenerationService(securityMaster),
+            ledgerJournalStore: journalStore);
+
+        var workspace = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(
+            fundProfileId,
+            AsOf: asOf,
+            Currency: "USD"));
+        var preview = await service.PreviewReportPackAsync(new FundReportPackPreviewRequestDto(
+            fundProfileId,
+            AsOf: asOf,
+            Currency: "USD"));
+
+        workspace.RecordedRunCount.Should().Be(0);
+        workspace.Ledger.Journal.Select(static row => row.Description)
+            .Should()
+            .Equal("administration accrual", "capital contribution");
+        workspace.Ledger.TrialBalance.Should().ContainSingle(row =>
+            row.AccountName == "Assets:Cash" && row.Balance == 1_000m);
+        workspace.Ledger.TrialBalance.Should().ContainSingle(row =>
+            row.AccountName == "Liabilities:Payable" && row.Balance == 100m);
+        workspace.Nav.TotalNav.Should().Be(900m);
+        preview.TrialBalanceLineCount.Should().Be(4);
+        journalStore.QueryCount.Should().Be(2);
     }
 
     [Fact]
@@ -1351,6 +1573,54 @@ public sealed class FundOperationsWorkspaceReadServiceTests
     }
 
     [Fact]
+    public async Task GenerateReportPack_WhenSourceRunCarriesSeededProvenance_InheritsBlockingMarkAndStaysReviewRequired()
+    {
+        var fundProfileId = $"fund-report-{Guid.NewGuid():N}";
+        var accountService = new InMemoryFundAccountService();
+        var strategyRepository = new StrategyRunStore();
+        await strategyRepository.RecordRunAsync(BuildRun(
+            runId: "run-report-seeded",
+            strategyId: "report-seeded",
+            strategyName: "Seeded Report Strategy",
+            fundProfileId: fundProfileId,
+            fundDisplayName: "Seeded Report Fund") with
+        {
+            DataProvenanceToken = "seeded"
+        });
+
+        var tempRoot = CreateTempDirectory();
+        try
+        {
+            var repository = CreateReportPackRepository(tempRoot);
+            var service = CreateReportPackService(accountService, strategyRepository, repository);
+
+            var snapshot = await service.GenerateReportPackAsync(new FundReportPackGenerateRequestDto(
+                FundProfileId: fundProfileId,
+                AuditActor: "unit-test",
+                ExpectedSchemaVersion: GovernanceReportPackContract.CurrentSchemaVersion));
+
+            snapshot.Provenance.DataProvenanceToken.Should().Be("seeded");
+            snapshot.Status.Should().Be(GovernanceReportPackStatusDto.ReviewRequired);
+            snapshot.ValidationIssues.Should().ContainSingle(issue =>
+                issue.Code == "report-pack.provenance.simulated-source"
+                && issue.Severity == GovernanceReportValidationSeverityDto.Critical);
+
+            // The durable boundary refuses to persist the marked pack in any deliverable state.
+            var act = () => repository.SaveAsync(
+                snapshot with { Status = GovernanceReportPackStatusDto.Validated },
+                []);
+
+            var exception = await act.Should().ThrowAsync<ArgumentException>();
+            exception.Which.Message.Should().Contain("'seeded' data-provenance");
+            exception.Which.Message.Should().Contain("cannot persist in the 'Validated' state");
+        }
+        finally
+        {
+            DeleteDirectory(tempRoot);
+        }
+    }
+
+    [Fact]
     public async Task ReportPackHistory_ListsNewestFirstAndRetrievesById()
     {
         var fundProfileId = $"fund-history-{Guid.NewGuid():N}";
@@ -1592,6 +1862,116 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             reportPackRepository: reportPackRepository);
     }
 
+    private static LedgerJournalEntryRecord BuildDurableRecord(
+        Guid ledgerBookId,
+        Guid periodId,
+        DateTimeOffset timestamp,
+        long globalSequence,
+        string description,
+        params (LedgerAccount Account, decimal Debit, decimal Credit)[] lines)
+    {
+        var journalEntryId = Guid.NewGuid();
+        var entry = new JournalEntry(
+            journalEntryId,
+            timestamp,
+            description,
+            lines.Select(line => new LedgerEntry(
+                Guid.NewGuid(),
+                journalEntryId,
+                timestamp,
+                line.Account,
+                line.Debit,
+                line.Credit,
+                description,
+                new LedgerLineDimensionSet(FundId: "durable-fund"))).ToArray());
+
+        return new LedgerJournalEntryRecord(
+            entry,
+            ledgerBookId,
+            periodId,
+            CommandId: null,
+            CorrelationId: null,
+            GlobalSequence: globalSequence,
+            CreatedAt: timestamp,
+            AccountingBasis: AccountingBasisKindDto.Primary);
+    }
+
+    private sealed class ReadOnlyFundLedgerJournalStore(
+        LedgerBookRecord book,
+        IReadOnlyList<LedgerJournalEntryRecord> records) : ILedgerJournalStore
+    {
+        public int QueryCount { get; private set; }
+
+        public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default) =>
+            throw new NotSupportedException("Test store is read-only.");
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
+            LedgerJournalEntryQuery query,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            QueryCount++;
+            var filtered = records
+                .Where(record => !query.LedgerBookId.HasValue || record.AggregateId == query.LedgerBookId.Value)
+                .Where(record => !query.OccurredTo.HasValue || record.Entry.Timestamp <= query.OccurredTo.Value)
+                .ToArray();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(filtered);
+        }
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(
+            Guid periodId,
+            CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(
+                records.Where(record => record.PeriodId == periodId).ToArray());
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByAggregateAsync(
+            Guid aggregateId,
+            CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(
+                records.Where(record => record.AggregateId == aggregateId).ToArray());
+
+        public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default) =>
+            Task.FromResult<LedgerAccountingPeriod?>(null);
+
+        public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
+            Guid? ledgerBookId = null,
+            string? status = null,
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>([]);
+
+        public Task<LedgerAccountingPeriod> SavePeriodAsync(
+            LedgerAccountingPeriod period,
+            long expectedVersion,
+            PeriodCloseEventRecord? closeEvent = null,
+            CancellationToken ct = default) =>
+            throw new NotSupportedException("Test store is read-only.");
+
+        public Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default) =>
+            Task.FromResult<LedgerBookRecord?>(book.LedgerBookId == ledgerBookId ? book : null);
+
+        public Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            FundStructureNodeKindDto? fundStructureNodeKind = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var matches =
+                (string.IsNullOrWhiteSpace(fundProfileId) ||
+                 string.Equals(book.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase)) &&
+                (!fundStructureNodeId.HasValue || book.FundStructureNodeId == fundStructureNodeId.Value) &&
+                (!fundStructureNodeKind.HasValue || book.FundStructureNodeKind == fundStructureNodeKind.Value);
+            return Task.FromResult<IReadOnlyList<LedgerBookRecord>>(matches ? [book] : []);
+        }
+
+        public Task<LedgerBookRecord> SaveLedgerBookAsync(
+            LedgerBookRecord book,
+            CancellationToken ct = default) =>
+            throw new NotSupportedException("Test store is read-only.");
+    }
+
     private static FileGovernanceReportPackRepository CreateReportPackRepository(string tempRoot) =>
         new(tempRoot, NullLogger<FileGovernanceReportPackRepository>.Instance);
 
@@ -1775,6 +2155,287 @@ public sealed class FundOperationsWorkspaceReadServiceTests
 
     private static bool IsGuidString(string value) => Guid.TryParse(value, out _);
 
+    private static ReconciliationBreakQueueItem BuildScopedQueueItem(
+        string breakId,
+        string runId,
+        string fundProfileId,
+        ReconciliationBreakQueueScope scope)
+    {
+        var now = new DateTimeOffset(2026, 5, 20, 15, 0, 0, TimeSpan.Zero);
+        return new ReconciliationBreakQueueItem(
+            BreakId: breakId,
+            RunId: runId,
+            StrategyName: "Casework Strategy",
+            Category: ReconciliationBreakCategory.AmountMismatch,
+            Status: ReconciliationBreakQueueStatus.Open,
+            Variance: 25m,
+            Reason: "Retained casework",
+            AssignedTo: "fund-controller",
+            DetectedAt: now,
+            LastUpdatedAt: now,
+            Severity: ReconciliationBreakSeverity.Critical)
+        {
+            TenantId = scope.TenantId,
+            CompanyId = scope.CompanyId,
+            FundProfileId = fundProfileId
+        };
+    }
+
     private static Guid TranslateFundProfileId(string fundProfileId)
         => new(MD5.HashData(Encoding.UTF8.GetBytes(fundProfileId)));
+
+    private sealed class ReadOnlyReconciliationRunService : IReconciliationRunService
+    {
+        public int RunCount { get; private set; }
+
+        public int LatestReadCount { get; private set; }
+
+        public Task<ReconciliationRunDetail?> RunAsync(
+            ReconciliationRunRequest request,
+            CancellationToken ct = default)
+        {
+            RunCount++;
+            throw new InvalidOperationException("A workspace read must not execute reconciliation.");
+        }
+
+        public Task<ReconciliationRunDetail?> GetByIdAsync(
+            string reconciliationRunId,
+            CancellationToken ct = default) =>
+            Task.FromResult<ReconciliationRunDetail?>(null);
+
+        public Task<ReconciliationRunDetail?> GetLatestForRunAsync(
+            string runId,
+            CancellationToken ct = default)
+        {
+            LatestReadCount++;
+            return Task.FromResult<ReconciliationRunDetail?>(null);
+        }
+
+        public Task<IReadOnlyList<ReconciliationRunSummary>> GetHistoryForRunAsync(
+            string runId,
+            CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<ReconciliationRunSummary>>([]);
+    }
+
+    private sealed class TrackingReconciliationBreakQueueRepository(
+        IReadOnlyList<ReconciliationBreakQueueItem> items) : IReconciliationBreakQueueRepository
+    {
+        public int ScopedReadCount { get; private set; }
+
+        public int UnscopedReadCount { get; private set; }
+
+        public int MutationCount { get; private set; }
+
+        public Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(
+            ReconciliationBreakQueueStatus? status = null,
+            CancellationToken ct = default)
+        {
+            UnscopedReadCount++;
+            return Task.FromResult<IReadOnlyList<ReconciliationBreakQueueItem>>(
+                items.Where(item => !status.HasValue || item.Status == status.Value).ToArray());
+        }
+
+        public Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(
+            ReconciliationBreakQueueScope scope,
+            ReconciliationBreakQueueStatus? status = null,
+            CancellationToken ct = default)
+        {
+            ScopedReadCount++;
+            return Task.FromResult<IReadOnlyList<ReconciliationBreakQueueItem>>(
+                items
+                    .Where(scope.Owns)
+                    .Where(item => !status.HasValue || item.Status == status.Value)
+                    .ToArray());
+        }
+
+        public Task<ReconciliationBreakQueueItem?> GetByIdAsync(
+            string breakId,
+            CancellationToken ct = default) =>
+            Task.FromResult(items.FirstOrDefault(item =>
+                string.Equals(item.BreakId, breakId, StringComparison.OrdinalIgnoreCase)));
+
+        public Task<bool> CreateIfMissingAsync(
+            ReconciliationBreakQueueItem item,
+            CancellationToken ct = default)
+        {
+            MutationCount++;
+            throw new NotSupportedException();
+        }
+
+        public Task SaveAsync(
+            ReconciliationBreakQueueItem item,
+            CancellationToken ct = default)
+        {
+            MutationCount++;
+            throw new NotSupportedException();
+        }
+
+        public Task<bool> DeleteAsync(
+            string breakId,
+            CancellationToken ct = default)
+        {
+            MutationCount++;
+            throw new NotSupportedException();
+        }
+
+        public Task<ReconciliationBreakQueueTransitionResult> StartReviewAsync(
+            ReviewReconciliationBreakRequest request,
+            CancellationToken ct = default)
+        {
+            MutationCount++;
+            throw new NotSupportedException();
+        }
+
+        public Task<ReconciliationBreakQueueTransitionResult> ResolveAsync(
+            ResolveReconciliationBreakRequest request,
+            CancellationToken ct = default)
+        {
+            MutationCount++;
+            throw new NotSupportedException();
+        }
+
+        public Task<IReadOnlyList<ReconciliationBreakQueueAuditEvent>> GetAuditHistoryAsync(
+            string breakId,
+            CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<ReconciliationBreakQueueAuditEvent>>([]);
+    }
+
+    private static async Task<LegacyDeliveryFallbackFixture> CreateLegacyDeliveryFallbackFixtureAsync(
+        string recordTenantId,
+        string recordCompanyId)
+    {
+        var fundProfileId = $"fund-delivery-{Guid.NewGuid():N}";
+        var accountService = new InMemoryFundAccountService();
+        var account = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            AccountId: Guid.NewGuid(),
+            AccountType: AccountTypeDto.Custody,
+            AccountCode: "CUST-DELIVERY",
+            DisplayName: "Delivery custody",
+            BaseCurrency: "USD",
+            EffectiveFrom: new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero),
+            CreatedBy: "test",
+            FundId: TranslateFundProfileId(fundProfileId),
+            LedgerReference: "DELIVERY-TB"));
+        var workflow = new ReportPackWorkflowService();
+        var recordAccess = new ReportAccessQueryContext(
+            ActorPrincipalId: "owner-a",
+            CompanyId: recordCompanyId,
+            TenantId: recordTenantId,
+            RequireBoundScope: true);
+        var record = workflow.Create(
+            fundProfileId,
+            account.AccountId.ToString("D"),
+            "2026-05",
+            new VersionedReportTemplateIdDto("monthly-board-pack", 1),
+            "owner-a",
+            accessPolicy: new ReportAccessPolicyDto(
+                ReportAccessModeDto.CompanyWide,
+                CompanyId: recordCompanyId),
+            accessContext: recordAccess);
+        var attempt = BuildCredentialBearingDeliveryAttempt(record.ReportId);
+        var deliveryStore = new InMemoryDeliveryRecordStore([attempt]);
+        var deliveryService = new ReportPackDeliveryService(workflow, deliveryStore);
+        var securityMaster = new NullSecurityMasterQueryService();
+        var service = new FundOperationsWorkspaceReadService(
+            accountService,
+            new StrategyRunStore(),
+            new PortfolioReadService(),
+            new NavAttributionService(securityMaster),
+            new ReportGenerationService(securityMaster),
+            reportPackWorkflowService: workflow,
+            reportPackDeliveryService: deliveryService,
+            reportPackRunReadService: null);
+
+        return new LegacyDeliveryFallbackFixture(
+            service,
+            new FundOperationsWorkspaceQuery(
+                fundProfileId,
+                new DateTimeOffset(2026, 5, 20, 16, 0, 0, TimeSpan.Zero),
+                "USD"));
+    }
+
+    private static ReportPackDeliveryAttemptDto BuildCredentialBearingDeliveryAttempt(Guid reportId)
+    {
+        var createdAt = new DateTimeOffset(2026, 5, 20, 15, 0, 0, TimeSpan.Zero);
+        var package = new ReportPackDeliveryPackageDto(
+            PackageId: "legacy-package",
+            ReportId: reportId,
+            DistributionId: "board-reporting-committee",
+            DeliveryMode: ReportPackDeliveryModeDto.SecurePortal,
+            SecureLink: "/portal/reporting/packages/legacy-package?token=secret-token",
+            PortalRoute: "/reporting/runs/legacy-run/packages/legacy-package",
+            Formats: [GovernanceReportArtifactFormatDto.Pdf],
+            Artifacts:
+            [
+                new ReportPackDeliveryArtifactDto(
+                    GovernanceReportArtifactFormatDto.Pdf,
+                    "board-pack.pdf",
+                    "application/pdf",
+                    "reporting/legacy/board-pack.pdf",
+                    128,
+                    "evidence-artifact",
+                    DownloadRoute: "/api/fund-structure/reporting/packs/legacy/artifacts/board-pack.pdf?access_token=secret")
+            ],
+            CreatedAtUtc: createdAt,
+            RetainedManifestPath: "reporting/legacy/manifest.json",
+            DeliveryAccessSummary: "Open /portal/reporting/packages/legacy-package?token=secret-token",
+            AccessExpiresAtUtc: createdAt.AddDays(14),
+            AccessLinks:
+            [
+                new ReportPackDeliveryAccessLinkDto(
+                    "package",
+                    "Legacy package",
+                    "/portal/reporting/packages/legacy-package?token=secret-token",
+                    RequiresToken: true,
+                    ExpiresAtUtc: createdAt.AddDays(14)),
+                new ReportPackDeliveryAccessLinkDto(
+                    "manifest",
+                    "Evidence packet",
+                    "/api/workstation/evidence/subjects/report-pack/current/packet",
+                    RequiresToken: false)
+            ],
+            Notifications:
+            [
+                new ReportPackDeliveryNotificationDto(
+                    "notification-1",
+                    "email",
+                    "board@example.test",
+                    "Board",
+                    ReportPackDeliveryModeDto.EmailLink,
+                    "Board pack ready",
+                    "Open /portal/reporting/packages/legacy-package?token=secret-token",
+                    "/portal/reporting/packages/legacy-package?token=secret-token",
+                    RequiresToken: true,
+                    CreatedAtUtc: createdAt,
+                    ExpiresAtUtc: createdAt.AddDays(14))
+            ]);
+
+        return new ReportPackDeliveryAttemptDto(
+            AttemptId: Guid.NewGuid(),
+            ReportId: reportId,
+            DistributionId: "board-reporting-committee",
+            Recipient: "Board reporting committee",
+            RecipientRole: "Board",
+            Channel: "Board portal",
+            State: ReportPackDeliveryStateDto.Delivered,
+            AttemptedAtUtc: createdAt,
+            Actor: "owner-a",
+            AttemptNumber: 1,
+            DeliveryReference: "/delivery/history?token=secret-token",
+            Package: package);
+    }
+
+    private sealed record LegacyDeliveryFallbackFixture(
+        FundOperationsWorkspaceReadService Service,
+        FundOperationsWorkspaceQuery Query);
+
+    private sealed class InMemoryDeliveryRecordStore(IReadOnlyList<ReportPackDeliveryAttemptDto> attempts)
+        : IReportPackDeliveryRecordStore
+    {
+        public IReadOnlyList<ReportPackDeliveryAttemptDto> Load() => attempts;
+
+        public void Save(IReadOnlyList<ReportPackDeliveryAttemptDto> updatedAttempts)
+        {
+        }
+    }
 }

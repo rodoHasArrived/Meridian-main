@@ -126,6 +126,252 @@ public sealed class SecurityAssetProfileGovernanceServiceTests
     }
 
     [Fact]
+    public async Task GetProfiles_KeepsCurrentlyEffectiveSupersededVersionSelectableUntilReplacementActivates()
+    {
+        // Approving a replacement with a FUTURE EffectiveFrom immediately marks the predecessor
+        // Superseded, yet write-time governance keeps accepting the predecessor until the
+        // replacement activates. The selectable catalog must keep exposing it during that gap;
+        // otherwise the creation form offers only a version write-time validation rejects.
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var service = new SecurityAssetProfileGovernanceService();
+        var firstDraft = await service.DraftProfileAsync(
+            CreateDraftRequest("custom-private-credit", fieldLabel: "NAV date"),
+            "settings-admin");
+        var firstApproved = await service.ApproveProfileAsync(
+            new SecurityAssetProfileApprovalRequestDto(
+                "custom-private-credit",
+                firstDraft.Profile.Version,
+                today.AddDays(-30),
+                "AP-001",
+                null,
+                "Approve first governed version.",
+                null),
+            "controller");
+        var secondDraft = await service.DraftProfileAsync(
+            CreateDraftRequest("custom-private-credit", fieldLabel: "Latest NAV date"),
+            "settings-admin");
+        var secondApproved = await service.ApproveProfileAsync(
+            new SecurityAssetProfileApprovalRequestDto(
+                "custom-private-credit",
+                secondDraft.Profile.Version,
+                today.AddDays(30),
+                "AP-002",
+                null,
+                "Approve future-dated replacement.",
+                null),
+            "controller");
+
+        var selectable = service.GetProfiles()
+            .Where(static profile => profile.ProfileId == "custom-private-credit")
+            .ToArray();
+
+        selectable.Should().Contain(profile =>
+            profile.Version == firstApproved.Profile.Version
+            && profile.Status == SecurityAssetProfileStatusDto.Superseded);
+        // The future-dated replacement is NOT selectable yet: its effective window has not
+        // opened, so write-time governance would reject any record pinned to it today.
+        selectable.Should().NotContain(profile =>
+            profile.Version == secondApproved.Profile.Version);
+    }
+
+    [Fact]
+    public async Task GetProfiles_HidesApprovedVersionWhoseEffectiveWindowHasNotOpened()
+    {
+        // The shared catalog seam backs /api/security-master/asset-profiles for create/amend
+        // workflows across ALL consumers, so a freshly approved profile with a future
+        // EffectiveFrom (and no predecessor) must not be exposed: write-time validation rejects
+        // it with SM_CUSTOM_PROFILE_VERSION_NOT_EFFECTIVE until its window opens.
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var service = new SecurityAssetProfileGovernanceService();
+        var draft = await service.DraftProfileAsync(
+            CreateDraftRequest("custom-future-approval", fieldLabel: "NAV date"),
+            "settings-admin");
+        await service.ApproveProfileAsync(
+            new SecurityAssetProfileApprovalRequestDto(
+                "custom-future-approval",
+                draft.Profile.Version,
+                today.AddDays(30),
+                "AP-001",
+                null,
+                "Approve future-dated first version.",
+                null),
+            "controller");
+
+        service.GetProfiles()
+            .Should().NotContain(profile => profile.ProfileId == "custom-future-approval");
+        service.GetAllProfiles()
+            .Should().Contain(profile => profile.ProfileId == "custom-future-approval");
+    }
+
+    [Fact]
+    public async Task GetProfiles_HidesSupersededVersionWhoseEffectiveWindowHasClosed()
+    {
+        // Once the replacement's effective window has actually opened, the superseded
+        // predecessor's window is closed and it must drop out of the selectable catalog again.
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var service = new SecurityAssetProfileGovernanceService();
+        var firstDraft = await service.DraftProfileAsync(
+            CreateDraftRequest("custom-expired-window", fieldLabel: "NAV date"),
+            "settings-admin");
+        var firstApproved = await service.ApproveProfileAsync(
+            new SecurityAssetProfileApprovalRequestDto(
+                "custom-expired-window",
+                firstDraft.Profile.Version,
+                today.AddDays(-60),
+                "AP-001",
+                null,
+                "Approve first governed version.",
+                null),
+            "controller");
+        var secondDraft = await service.DraftProfileAsync(
+            CreateDraftRequest("custom-expired-window", fieldLabel: "Latest NAV date"),
+            "settings-admin");
+        await service.ApproveProfileAsync(
+            new SecurityAssetProfileApprovalRequestDto(
+                "custom-expired-window",
+                secondDraft.Profile.Version,
+                today.AddDays(-10),
+                "AP-002",
+                null,
+                "Approve already-active replacement.",
+                null),
+            "controller");
+
+        service.GetProfiles()
+            .Where(static profile => profile.ProfileId == "custom-expired-window")
+            .Should().NotContain(profile => profile.Version == firstApproved.Profile.Version);
+
+        // A BACKDATED write effective inside the superseded version's historical window must
+        // still discover it: write-time governance evaluates against the write's effective date,
+        // and the as-of catalog seam exposes the version whose window covered that date.
+        service.GetProfiles(today.AddDays(-30))
+            .Where(static profile => profile.ProfileId == "custom-expired-window")
+            .Should().ContainSingle(profile => profile.Version == firstApproved.Profile.Version);
+    }
+
+    [Fact]
+    public async Task ApproveProfileAsync_EffectiveDateNotAfterIncumbentStart_IsRejected()
+    {
+        // Superseding an incumbent with an effective date on or before the incumbent's own
+        // EffectiveFrom would assign it an EffectiveTo preceding its start - a corrupt window
+        // that strands every write date the incumbent formerly governed.
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var service = new SecurityAssetProfileGovernanceService();
+        var firstDraft = await service.DraftProfileAsync(
+            CreateDraftRequest("custom-backdated", fieldLabel: "NAV date"),
+            "settings-admin");
+        await service.ApproveProfileAsync(
+            new SecurityAssetProfileApprovalRequestDto(
+                "custom-backdated",
+                firstDraft.Profile.Version,
+                today.AddDays(-30),
+                "AP-001",
+                null,
+                "Approve first governed version.",
+                null),
+            "controller");
+        var secondDraft = await service.DraftProfileAsync(
+            CreateDraftRequest("custom-backdated", fieldLabel: "Latest NAV date"),
+            "settings-admin");
+
+        var act = async () => await service.ApproveProfileAsync(
+            new SecurityAssetProfileApprovalRequestDto(
+                "custom-backdated",
+                secondDraft.Profile.Version,
+                today.AddDays(-45),
+                "AP-002",
+                null,
+                "Approve backdated replacement.",
+                null),
+            "controller");
+
+        await act.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must be after the incumbent approved version*");
+    }
+
+    [Fact]
+    public async Task DraftProfileAsync_DuplicateIdentifierKinds_RetainStrictestCloseRequirement()
+    {
+        // [Cusip optional, Cusip required] must not normalize to optional: the merged preference
+        // keeps IsRequiredForClose when any duplicate declared it.
+        var service = new SecurityAssetProfileGovernanceService();
+        var request = CreateDraftRequest("custom-duplicate-identifiers") with
+        {
+            IdentifierPreferences =
+            [
+                new SecurityAssetProfileIdentifierPreferenceDto(
+                    SecurityIdentifierKind.Cusip,
+                    false,
+                    "CUSIP coverage helps vendor joins."),
+                new SecurityAssetProfileIdentifierPreferenceDto(
+                    SecurityIdentifierKind.Cusip,
+                    true,
+                    "CUSIP is mandatory for close."),
+                new SecurityAssetProfileIdentifierPreferenceDto(
+                    SecurityIdentifierKind.InternalCode,
+                    true,
+                    "Internal identity is required.")
+            ]
+        };
+
+        var draft = await service.DraftProfileAsync(request, "settings-admin");
+
+        var cusip = draft.Profile.IdentifierPreferences
+            .Should().ContainSingle(preference => preference.Kind == SecurityIdentifierKind.Cusip)
+            .Subject;
+        cusip.IsRequiredForClose.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task DraftProfileAsync_DateOrderRuleOverNonDateFields_IsRejected()
+    {
+        // Runtime date-order validation silently passes when either value is not a date, so a
+        // rule over non-Date fields would advertise an ordering control that never enforces.
+        var service = new SecurityAssetProfileGovernanceService();
+        var request = CreateDraftRequest("custom-bad-date-rule") with
+        {
+            DateOrderRules =
+            [
+                new SecurityAssetProfileDateOrderRuleDto(
+                    "navDate",
+                    "note",
+                    "SM_PROFILE_BAD_ORDER",
+                    "NAV date must precede the note.")
+            ],
+            Fields =
+            [
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "navDate",
+                    "NAV date",
+                    SecurityAssetProfileFieldTypeDto.Date,
+                    IsRequired: true,
+                    AllowedValues: [],
+                    Description: "Latest valuation date.",
+                    MinValue: null,
+                    MaxValue: null,
+                    IsProjected: true,
+                    IsSearchable: false),
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "note",
+                    "Note",
+                    SecurityAssetProfileFieldTypeDto.Text,
+                    IsRequired: false,
+                    AllowedValues: [],
+                    Description: "Free-text note.",
+                    MinValue: null,
+                    MaxValue: null,
+                    IsProjected: false,
+                    IsSearchable: false)
+            ]
+        };
+
+        var act = async () => await service.DraftProfileAsync(request, "settings-admin");
+
+        await act.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference Date-typed profile fields*");
+    }
+
+    [Fact]
     public void GetPromotionCandidates_FlagsStructuredCreditForFirstClassFixedIncomePackage()
     {
         var service = new SecurityAssetProfileGovernanceService();

@@ -45,7 +45,7 @@ function buildOperatorFocusCandidateFromProvider(
     route: WORKSTATION_ROUTE_CATALOG.dataProviders,
     workspaceLabel: "Data",
     actionLabel: "Open provider trust",
-    tone: provider.status === "Degraded" ? "blocked" : "review",
+    tone: provider.status === "Degraded" || provider.status === "Blocked" ? "blocked" : "review",
     sourcePriority: 15,
     sourceIndex: index
   });
@@ -63,7 +63,7 @@ function buildOperatorFocusCandidateFromBackfill(
     id: `backfill:${backfill.jobId}`,
     label: `${backfill.scope} backfill needs review`,
     detail: `${backfill.provider} backfill is ${backfill.progress}; updated ${backfill.updatedAt}.`,
-    route: WORKSTATION_ROUTE_CATALOG.dataBackfills,
+    route: WORKSTATION_ROUTE_CATALOG.dataOperations,
     workspaceLabel: "Data",
     actionLabel: "Open backfills",
     tone: "review",

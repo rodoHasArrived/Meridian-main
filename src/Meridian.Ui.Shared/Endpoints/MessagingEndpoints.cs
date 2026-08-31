@@ -1,8 +1,9 @@
 using System.Text.Json;
 using Meridian.Application.Monitoring;
-using Meridian.DataIntegration.Monitoring;
 using Meridian.Application.Services;
 using Meridian.Contracts.Api;
+using Meridian.DataIntegration.Monitoring;
+using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -44,7 +45,7 @@ public static class MessagingEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetMessagingConfig")
+        .WithName("GetMessagingConfig").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.AdminMaintenance)
         .Produces(200);
 
         // Messaging status - returns actual webhook delivery stats
@@ -62,7 +63,7 @@ public static class MessagingEndpoints
                 }, jsonOptions);
             }
         })
-        .WithName("GetMessagingStatus")
+        .WithName("GetMessagingStatus").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.AdminMaintenance)
         .Produces(200);
 
         // Messaging stats
@@ -90,7 +91,7 @@ public static class MessagingEndpoints
                 }, jsonOptions);
             }
         })
-        .WithName("GetMessagingStats")
+        .WithName("GetMessagingStats").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.AdminMaintenance)
         .Produces(200);
 
         // Messaging activity - returns recent activity log
@@ -119,7 +120,7 @@ public static class MessagingEndpoints
                 }, jsonOptions);
             }
         })
-        .WithName("GetMessagingActivity")
+        .WithName("GetMessagingActivity").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.AdminMaintenance)
         .Produces(200);
 
         // Messaging consumers
@@ -138,7 +139,7 @@ public static class MessagingEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetMessagingConsumers")
+        .WithName("GetMessagingConsumers").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.AdminMaintenance)
         .Produces(200);
 
         // Messaging endpoints list - shows configured webhook URLs
@@ -165,7 +166,7 @@ public static class MessagingEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetMessagingEndpointsList")
+        .WithName("GetMessagingEndpointsList").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.AdminMaintenance)
         .Produces(200);
 
         // Test messaging - actually sends a test message via the webhook service
@@ -232,6 +233,14 @@ public static class MessagingEndpoints
                     timestamp = DateTimeOffset.UtcNow
                 }, jsonOptions);
             }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                // The caller hung up. Propagate instead of recording a delivery failure: the
+                // counters and error log below are operator-visible, so counting an aborted
+                // request as a failed send would put a webhook delivery that never happened
+                // into the messaging error queue.
+                throw;
+            }
             catch (Exception ex)
             {
                 sw.Stop();
@@ -257,6 +266,7 @@ public static class MessagingEndpoints
             }
         })
         .WithName("TestMessaging")
+        .RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -274,7 +284,7 @@ public static class MessagingEndpoints
                 }, jsonOptions);
             }
         })
-        .WithName("GetMessagingPublishing")
+        .WithName("GetMessagingPublishing").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.AdminMaintenance)
         .Produces(200);
 
         // Purge queue - clears in-memory activity/error logs
@@ -299,6 +309,7 @@ public static class MessagingEndpoints
             }, jsonOptions);
         })
         .WithName("PurgeMessagingQueue")
+        .RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -320,7 +331,7 @@ public static class MessagingEndpoints
                 }, jsonOptions);
             }
         })
-        .WithName("GetMessagingErrors")
+        .WithName("GetMessagingErrors").RequireAnyPermission(UserPermission.ViewDiagnostics, UserPermission.AdminMaintenance)
         .Produces(200);
 
         // Retry failed message
@@ -376,6 +387,12 @@ public static class MessagingEndpoints
                     timestamp = DateTimeOffset.UtcNow
                 }, jsonOptions);
             }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                // The caller hung up mid-retry. Propagate rather than answering 200 with
+                // retried = false, which reads as "the retry ran and failed".
+                throw;
+            }
             catch (Exception ex)
             {
                 return Results.Json(new
@@ -388,6 +405,7 @@ public static class MessagingEndpoints
             }
         })
         .WithName("RetryMessagingError")
+        .RequirePermission(UserPermission.AdminMaintenance)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }

@@ -1,12 +1,13 @@
 using System.Text.Json;
 using Meridian.Application.Monitoring;
-using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Monitoring;
+using Meridian.DataIntegration.Monitoring.DataQuality;
+using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Meridian.Contracts.Monitoring;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -29,7 +30,7 @@ public static class AnalyticsEndpoints
             var gaps = qualityService.GapAnalyzer.GetRecentGaps();
             return Results.Json(new { gaps, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetAnalyticsGaps")
+        .WithName("GetAnalyticsGaps").RequireAnyPermission(UserPermission.ViewAnalytics, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
         .Produces(200);
 
         // Gap repair
@@ -44,6 +45,7 @@ public static class AnalyticsEndpoints
             }, jsonOptions);
         })
         .WithName("RepairAnalyticsGaps")
+        .RequirePermission(UserPermission.TriggerBackfill)
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -56,7 +58,7 @@ public static class AnalyticsEndpoints
             var stats = qualityService.CrossProvider.GetStatistics();
             return Results.Json(new { comparison = stats, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetAnalyticsCompare")
+        .WithName("GetAnalyticsCompare").RequireAnyPermission(UserPermission.ViewAnalytics, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
         .Produces(200);
 
         // Latency analysis
@@ -68,7 +70,7 @@ public static class AnalyticsEndpoints
             var distributions = qualityService.LatencyHistogram.GetAllDistributions();
             return Results.Json(new { latency = distributions, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetAnalyticsLatency")
+        .WithName("GetAnalyticsLatency").RequireAnyPermission(UserPermission.ViewAnalytics, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
         .Produces(200);
 
         // Latency stats
@@ -80,7 +82,7 @@ public static class AnalyticsEndpoints
             var stats = qualityService.LatencyHistogram.GetStatistics();
             return Results.Json(new { stats, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetAnalyticsLatencyStats")
+        .WithName("GetAnalyticsLatencyStats").RequireAnyPermission(UserPermission.ViewAnalytics, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
         .Produces(200);
 
         // Anomaly detection
@@ -94,7 +96,7 @@ public static class AnalyticsEndpoints
                 : qualityService.AnomalyDetector.GetRecentAnomalies();
             return Results.Json(new { anomalies, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetAnalyticsAnomalies")
+        .WithName("GetAnalyticsAnomalies").RequireAnyPermission(UserPermission.ViewAnalytics, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
         .Produces(200);
 
         // Quality report
@@ -106,7 +108,7 @@ public static class AnalyticsEndpoints
             var dashboard = qualityService.GetDashboard();
             return Results.Json(new { report = dashboard, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetAnalyticsQualityReport")
+        .WithName("GetAnalyticsQualityReport").RequireAnyPermission(UserPermission.ViewAnalytics, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
         .Produces(200);
 
         // Completeness
@@ -124,7 +126,7 @@ public static class AnalyticsEndpoints
             var summary = qualityService.Completeness.GetSummary();
             return Results.Json(new { completeness = summary, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetAnalyticsCompleteness")
+        .WithName("GetAnalyticsCompleteness").RequireAnyPermission(UserPermission.ViewAnalytics, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
         .Produces(200);
 
         // Throughput
@@ -136,7 +138,7 @@ public static class AnalyticsEndpoints
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
-        .WithName("GetAnalyticsThroughput")
+        .WithName("GetAnalyticsThroughput").RequireAnyPermission(UserPermission.ViewAnalytics, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.TriggerBackfill)
         .Produces(200);
 
         // Rate limits
@@ -153,7 +155,7 @@ public static class AnalyticsEndpoints
 
             return Results.Json(new { providers, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
-        .WithName("GetAnalyticsRateLimits")
+        .WithName("GetAnalyticsRateLimits").RequireAnyPermission(UserPermission.ViewAnalytics, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageProviders)
         .Produces(200);
     }
 

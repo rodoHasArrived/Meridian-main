@@ -1,19 +1,22 @@
 // Meridian useTableState — lightweight query/sort/filter state for data tables.
 // Syncs across the screen: one hook manages filter, sort, search; passed to FilteredDataTable.
-// Persists to localStorage under a key you provide.
+// Persists to localStorage under a key you provide. Sort supports a multi-column stack:
+// shift-toggleSort appends a secondary/tertiary key instead of replacing.
+import React from "react";
 
 export function useTableState(initialData = [], localStorageKey = null) {
   const [data, setData] = React.useState(initialData);
   const [query, setQuery] = React.useState("");
-  const [sortBy, setSortBy] = React.useState(null); // { column, direction: 'asc'|'desc' }
+  const [sortBy, setSortBy] = React.useState(null); // { column, direction } — primary (compat)
+  const [sortStack, setSortStack] = React.useState([]); // [{ column, direction }, ...] full multi-sort
   const [filters, setFilters] = React.useState({}); // { columnName: [values] }
 
   // Persist state to localStorage if key provided
   React.useEffect(() => {
     if (!localStorageKey) return;
-    const state = { query, sortBy, filters };
+    const state = { query, sortStack, filters };
     localStorage.setItem(localStorageKey, JSON.stringify(state));
-  }, [query, sortBy, filters, localStorageKey]);
+  }, [query, sortStack, filters, localStorageKey]);
 
   // Restore from localStorage on mount
   React.useEffect(() => {
@@ -21,10 +24,12 @@ export function useTableState(initialData = [], localStorageKey = null) {
     const saved = localStorage.getItem(localStorageKey);
     if (saved) {
       try {
-        const { query: q, sortBy: s, filters: f } = JSON.parse(saved);
-        setQuery(q || "");
-        setSortBy(s || null);
-        setFilters(f || {});
+        const parsed = JSON.parse(saved);
+        setQuery(parsed.query || "");
+        const stack = parsed.sortStack || (parsed.sortBy ? [parsed.sortBy] : []);
+        setSortStack(stack);
+        setSortBy(stack[0] || null);
+        setFilters(parsed.filters || {});
       } catch (e) {
         // ignore parse errors
       }
@@ -52,30 +57,51 @@ export function useTableState(initialData = [], localStorageKey = null) {
     );
   }, [filtered, query]);
 
-  // Sort by column
+  // Sort by the full stack: primary key first, ties broken by secondary, etc.
   const sorted = React.useMemo(() => {
-    if (!sortBy) return searched;
-    const { column, direction } = sortBy;
+    if (!sortStack.length) return searched;
     const result = [...searched];
     result.sort((a, b) => {
-      const aVal = a[column];
-      const bVal = b[column];
-      if (aVal === bVal) return 0;
-      const cmp = aVal < bVal ? -1 : 1;
-      return direction === "asc" ? cmp : -cmp;
+      for (const { column, direction } of sortStack) {
+        const aVal = a[column], bVal = b[column];
+        if (aVal === bVal) continue;
+        const cmp = aVal < bVal ? -1 : 1;
+        return direction === "asc" ? cmp : -cmp;
+      }
+      return 0;
     });
     return result;
-  }, [searched, sortBy]);
+  }, [searched, sortStack]);
 
-  const toggleSort = (column) => {
-    if (sortBy?.column === column) {
-      setSortBy({
-        column,
-        direction: sortBy.direction === "asc" ? "desc" : "asc",
-      });
-    } else {
-      setSortBy({ column, direction: "asc" });
-    }
+  // Single-column sort: replace the stack (existing behavior). Shift-click appends/advances a
+  // secondary key: asc → desc → removed, so operators can build a Status-then-Time ordering.
+  const toggleSort = (column, additive = false) => {
+    setSortStack((prev) => {
+      const idx = prev.findIndex((s) => s.column === column);
+      let next;
+      if (!additive) {
+        if (idx === 0 && prev.length === 1) {
+          next = [{ column, direction: prev[0].direction === "asc" ? "desc" : "asc" }];
+        } else {
+          next = [{ column, direction: "asc" }];
+        }
+      } else if (idx === -1) {
+        next = [...prev, { column, direction: "asc" }];
+      } else {
+        const cur = prev[idx];
+        next = [...prev];
+        if (cur.direction === "asc") next[idx] = { column, direction: "desc" };
+        else next.splice(idx, 1); // third click removes this key from the stack
+      }
+      setSortBy(next[0] || null);
+      return next;
+    });
+  };
+
+  // Where a column sits in the sort stack (for header badges): { rank, direction } | null.
+  const sortInfo = (column) => {
+    const idx = sortStack.findIndex((s) => s.column === column);
+    return idx === -1 ? null : { rank: idx + 1, direction: sortStack[idx].direction, multi: sortStack.length > 1 };
   };
 
   const toggleFilter = (column, value) => {
@@ -92,7 +118,18 @@ export function useTableState(initialData = [], localStorageKey = null) {
   const clearAllFilters = () => {
     setQuery("");
     setSortBy(null);
+    setSortStack([]);
     setFilters({});
+  };
+
+  // View snapshot in/out — what SavedViews captures and re-applies.
+  const getViewState = () => ({ query, sortStack, filters });
+  const applyViewState = (state = {}) => {
+    setQuery(state.query || "");
+    const stack = state.sortStack || [];
+    setSortStack(stack);
+    setSortBy(stack[0] || null);
+    setFilters(state.filters || {});
   };
 
   const exportCSV = (filename = "data.csv") => {
@@ -125,9 +162,14 @@ export function useTableState(initialData = [], localStorageKey = null) {
     query,
     setQuery,
     sortBy,
+    sortStack,
+    sortInfo,
     toggleSort,
     filters,
     toggleFilter,
+    setFilters,
+    getViewState,
+    applyViewState,
     clearAllFilters,
     exportCSV,
     filterCount: Object.values(filters).filter((v) => v && v.length > 0).length,

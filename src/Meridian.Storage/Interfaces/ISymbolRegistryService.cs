@@ -48,6 +48,22 @@ public interface ISymbolRegistryService
     Task AddProviderMappingAsync(string canonical, string provider, string providerSymbol, CancellationToken ct = default);
 
     /// <summary>
+    /// Adds a provider mapping with provenance and merge precedence.
+    /// </summary>
+    Task AddProviderMappingAsync(
+        string canonical,
+        string provider,
+        string providerSymbol,
+        string source,
+        bool isOverride,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Removes a provider mapping without removing the canonical security entry.
+    /// </summary>
+    Task<bool> RemoveProviderMappingAsync(string canonical, string provider, CancellationToken ct = default);
+
+    /// <summary>
     /// Gets all symbols.
     /// </summary>
     IEnumerable<SymbolRegistryEntry> GetAllSymbols();
@@ -58,6 +74,17 @@ public interface ISymbolRegistryService
     IEnumerable<SymbolRegistryEntry> GetSymbolsByAssetClass(string assetClass);
 
     /// <summary>
+    /// Gets the retained fingerprint for a completed registry migration while holding the
+    /// registry mutation gate.
+    /// </summary>
+    Task<string?> GetMigrationMarkerAsync(string migrationId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Persists a registry migration fingerprint while holding the registry mutation gate.
+    /// </summary>
+    Task SetMigrationMarkerAsync(string migrationId, string fingerprint, CancellationToken ct = default);
+
+    /// <summary>
     /// Saves the registry to disk.
     /// </summary>
     Task SaveRegistryAsync(CancellationToken ct = default);
@@ -66,4 +93,21 @@ public interface ISymbolRegistryService
     /// Imports symbols from an external source.
     /// </summary>
     Task<int> ImportSymbolsAsync(IEnumerable<SymbolRegistryEntry> symbols, bool merge = true, CancellationToken ct = default);
+}
+
+/// <summary>
+/// Optional atomic migration capability kept separate from the stable symbol-registry service
+/// contract so third-party storage implementations are not forced to implement startup concerns.
+/// </summary>
+public interface ISymbolRegistryMigrationWriter
+{
+    /// <summary>
+    /// Atomically imports symbols and persists the migration fingerprint in the same registry
+    /// replacement. Cancellation or persistence failure leaves the prior registry active.
+    /// </summary>
+    Task<int> ApplyMigrationAsync(
+        string migrationId,
+        string fingerprint,
+        IEnumerable<SymbolRegistryEntry> symbols,
+        CancellationToken ct = default);
 }

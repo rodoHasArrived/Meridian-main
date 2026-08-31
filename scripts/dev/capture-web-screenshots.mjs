@@ -149,11 +149,36 @@ function appendLog(logs, prefix, chunk) {
   logs.push(...text.split(/\r?\n/).filter(Boolean).map((line) => `${prefix}${line}`));
 }
 
-async function waitForServer(url, timeoutMs) {
+async function waitForServer(url, timeoutMs, child, logs) {
   const started = Date.now();
   let lastError = "";
+  let serverExit = null;
+
+  // Fail fast if the dev server process dies before it ever answers (port
+  // conflict, Vite config error, OOM) instead of polling for the full timeout
+  // and then reporting a generic "timed out" message that hides the real cause.
+  const noteExit = (code, signal) => {
+    serverExit = `exit code ${code ?? "null"}${signal ? `, signal ${signal}` : ""}`;
+  };
+  if (child) {
+    if (child.exitCode !== null || child.signalCode !== null) {
+      noteExit(child.exitCode, child.signalCode);
+    } else {
+      child.once("exit", noteExit);
+    }
+  }
+
+  const describeServerExit = () => {
+    const recentLogs = Array.isArray(logs) ? logs.slice(-20).join("\n") : "";
+    const detail = recentLogs ? `\n${recentLogs}` : "";
+    return `Dev server exited before becoming ready (${serverExit}).${detail}`;
+  };
 
   while (Date.now() - started < timeoutMs) {
+    if (serverExit) {
+      throw new Error(describeServerExit());
+    }
+
     try {
       const response = await fetch(url, { redirect: "manual" });
       if (response.status >= 200 && response.status < 500) {
@@ -168,6 +193,9 @@ async function waitForServer(url, timeoutMs) {
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
 
+  if (serverExit) {
+    throw new Error(describeServerExit());
+  }
   throw new Error(`Timed out waiting for ${url}: ${lastError}`);
 }
 
@@ -307,17 +335,11 @@ function collectRequiredFixtureRoutes(captures) {
   return [...required];
 }
 
-function assertFixtureRouteCoverage(requiredRoutes, fixtureRoutes) {
+function findMissingFixtureRoutes(requiredRoutes, fixtureRoutes) {
   const availableRoutes = Object.keys(fixtureRoutes);
-  const missing = requiredRoutes.filter(
+  return requiredRoutes.filter(
     (requiredRoute) => !availableRoutes.some((candidate) => candidate === requiredRoute || requiredRoute.startsWith(`${candidate}/`))
   );
-
-  if (missing.length > 0) {
-    throw new Error(
-      `Screenshot fixture route coverage is incomplete. Missing route fixtures: ${missing.join(", ")}`
-    );
-  }
 }
 
 function extractWorkstationRouteCatalog(source, filePath) {
@@ -350,16 +372,33 @@ function extractExplicitAppRoutes(source) {
 }
 
 function collectExpectedCapturePaths(routeCatalog, appRoutes) {
+  // Compatibility redirect routes forward to a canonical screen that already has
+  // its own capture, so they do not need a dedicated screenshot entry. This list
+  // must stay in sync with the compatibility routes excluded by the coverage
+  // tests in tests/scripts/test_refresh_screenshots_workflow.py.
   const compatibilityRouteKeys = new Set([
-    "dataSecurityMasterLegacy"
+    "accountingTrialBalanceLegacy",
+    "dataAlertsLegacy",
+    "dataSecurityMasterLegacy",
+    "dataWatchlistLegacy",
+    "settingsIntegrations",
+    "settingsFeatureCoverage",
+    "settingsAlpacaProviderSetup",
+    "settingsBackendCapabilityCoverage",
+    "settingsDiagnosticEndpoints",
+    "strategyFormulaWorkbenchLegacy"
   ]);
   const compatibilityAppRoutes = new Set([
+    "/accounting/trial-balance",
+    "/data/alerts",
     "/data/security-master",
     "/data/security-master/*",
+    "/data/watchlist",
     "/overview/*",
     "/research/*",
     "/data-operations/*",
-    "/governance/*"
+    "/governance/*",
+    "/strategy/formula-workbench"
   ]);
   const expected = new Set(["/"]);
 
@@ -391,7 +430,45 @@ function screenshotCoveragePath(routePath) {
   }
 }
 
-async function assertCaptureRouteCoverage(captures, routeCatalogPath, appShellPath) {
+function assertCaptureRouteStateIdentity(captures) {
+  const capturesByPath = new Map();
+
+  for (const capture of captures) {
+    const routePath = typeof capture.path === "string" ? capture.path.trim() : "";
+    if (routePath.length === 0) {
+      continue;
+    }
+
+    const matches = capturesByPath.get(routePath) ?? [];
+    matches.push(capture);
+    capturesByPath.set(routePath, matches);
+  }
+
+  const ambiguousPaths = [];
+  for (const [routePath, matches] of capturesByPath.entries()) {
+    if (matches.length < 2) {
+      continue;
+    }
+
+    const variants = matches.map((capture) =>
+      typeof capture.variant === "string" ? capture.variant.trim() : ""
+    );
+    const hasExplicitUniqueVariants = variants.every((variant) => variant.length > 0)
+      && new Set(variants).size === variants.length;
+    if (!hasExplicitUniqueVariants) {
+      ambiguousPaths.push(routePath);
+    }
+  }
+
+  if (ambiguousPaths.length > 0) {
+    throw new Error(
+      "Web screenshot captures must use a unique route state or declare distinct non-empty "
+      + `variant values. Ambiguous path(s): ${ambiguousPaths.sort().join(", ")}`
+    );
+  }
+}
+
+async function findMissingCaptureRoutePaths(captures, routeCatalogPath, appShellPath) {
   const capturedPaths = new Set(
     captures
       .map((capture) => screenshotCoveragePath(capture.path))
@@ -407,15 +484,9 @@ async function assertCaptureRouteCoverage(captures, routeCatalogPath, appShellPa
       .map((routePath) => screenshotCoveragePath(routePath))
       .filter((routePath) => routePath.length > 0)
   );
-  const missingPaths = [...expectedPaths]
+  return [...expectedPaths]
     .filter((routePath) => !capturedPaths.has(routePath))
     .sort();
-
-  if (missingPaths.length > 0) {
-    throw new Error(
-      `Web screenshot route coverage is incomplete. Missing capture path(s): ${missingPaths.join(", ")}`
-    );
-  }
 }
 
 function collectCaptureWaitForTexts(capture) {
@@ -435,6 +506,18 @@ function collectCaptureWaitForTexts(capture) {
   return [...new Set(waitForTexts)];
 }
 
+function collectCaptureWaitForAbsentTexts(capture) {
+  if (!Array.isArray(capture.waitForAbsentTexts)) {
+    return [];
+  }
+
+  return [...new Set(
+    capture.waitForAbsentTexts
+      .filter((value) => typeof value === "string" && value.trim().length > 0)
+      .map((value) => value.trim())
+  )];
+}
+
 function isActionableBrowserError(text) {
   return /Maximum update depth exceeded|Meridian workstation route failed to render|Unhandled error/i.test(text);
 }
@@ -452,7 +535,7 @@ function createPageErrorTracker(page) {
   };
 
   const onPageError = (error) => {
-    record(`pageerror: ${error.message}`);
+    record(`pageerror: ${error.stack ?? error.message}`);
   };
   const onConsole = (message) => {
     if (message.type() !== "error") {
@@ -522,7 +605,7 @@ function assertNoCaptureBrowserError(pageErrors, captureName) {
   }
 }
 
-async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defaults, minBytes, minTextLength, timeoutMs) {
+async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defaults, minBytes, minTextLength, timeoutMs, readinessTimeoutMs) {
   pageErrors.reset();
   const viewport = {
     width: Number(capture.viewport?.width ?? defaults.width ?? 1440),
@@ -541,15 +624,27 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     capture.name,
     "loading the route"
   );
+  // Label the frame timeout explicitly: the raw Playwright message ("page.waitForSelector:
+  // Timeout ... exceeded.") does not say which wait failed, and this is the one wait that
+  // fails when the app shell itself never mounts (e.g. the first-run activation gate has no
+  // fixture and blocks every route).
   await waitForCaptureStep(
-    page.waitForSelector(".workstation-frame", { timeout: timeoutMs }),
+    page.waitForSelector(".workstation-frame", { timeout: timeoutMs }).catch((cause) => {
+      if (cause?.name === "TimeoutError") {
+        throw new Error(
+          `App shell failed to mount: .workstation-frame did not render within ${timeoutMs}ms. `
+          + "Check shell-level screenshot fixtures (e.g. /api/workstation/first-run/) and the dev server logs."
+        );
+      }
+      throw cause;
+    }),
     pageErrors,
     capture.name,
     "waiting for the workstation frame"
   );
   for (const waitForText of collectCaptureWaitForTexts(capture)) {
     await waitForCaptureStep(
-      page.getByText(waitForText, { exact: false }).filter({ visible: true }).first().waitFor({ timeout: timeoutMs }),
+      page.getByText(waitForText, { exact: false }).filter({ visible: true }).first().waitFor({ timeout: readinessTimeoutMs }),
       pageErrors,
       capture.name,
       `waiting for visible text '${waitForText}'`
@@ -559,7 +654,7 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     for (const selector of capture.waitForSelectors) {
       if (typeof selector === "string" && selector.trim().length > 0) {
         await waitForCaptureStep(
-          page.waitForSelector(selector, { timeout: timeoutMs }),
+          page.waitForSelector(selector, { timeout: readinessTimeoutMs }),
           pageErrors,
           capture.name,
           `waiting for selector '${selector}'`
@@ -568,6 +663,17 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     }
   }
   await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => undefined);
+  for (const waitForAbsentText of collectCaptureWaitForAbsentTexts(capture)) {
+    await waitForCaptureStep(
+      page.getByText(waitForAbsentText, { exact: false })
+        .filter({ visible: true })
+        .first()
+        .waitFor({ state: "hidden", timeout: readinessTimeoutMs }),
+      pageErrors,
+      capture.name,
+      `waiting for transitional text '${waitForAbsentText}' to clear`
+    );
+  }
   assertNoCaptureBrowserError(pageErrors, capture.name);
 
   const textLength = await page.evaluate(() => document.body.innerText.trim().length);
@@ -576,7 +682,16 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
   }
 
   const actualUrl = page.url();
-  const expectedPath = new URL(url).pathname;
+  const requestedPath = new URL(url).pathname;
+  // Some captures deliberately target a compatibility route that redirects to
+  // the canonical screen (e.g. the accounting/data evidence entry points land
+  // on the reporting evidence workbench). When a capture declares that redirect
+  // via `expectedRedirectPath`, treat the redirect destination as the expected
+  // final path so the intentional navigation is not mistaken for a route that
+  // bounced to a fallback. The strict check still catches undeclared redirects.
+  const expectedPath = typeof capture.expectedRedirectPath === "string" && capture.expectedRedirectPath.trim().length > 0
+    ? new URL(toRouteUrl(baseUrl, capture.expectedRedirectPath.trim())).pathname
+    : requestedPath;
   const actualPath = new URL(actualUrl).pathname;
   if (actualPath !== expectedPath) {
     throw new Error(`Capture ${capture.name} ended on '${actualPath}', expected '${expectedPath}'.`);
@@ -595,6 +710,7 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     route: capture.path,
     url,
     actualUrl,
+    requestedPath,
     expectedPath,
     actualPath,
     file: fileName,
@@ -605,6 +721,66 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     durationSeconds: Number(((Date.now() - started) / 1000).toFixed(2)),
     status: "passed"
   };
+}
+
+async function captureRouteWithRetries(
+  browser,
+  capture,
+  fixtureRoutes,
+  outputDir,
+  baseUrl,
+  defaults,
+  minBytes,
+  minTextLength,
+  timeoutMs,
+  readinessTimeoutMs,
+  maxAttempts,
+  onTrackerChange
+) {
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    // Each attempt renders in a fresh browser context so a retry starts from the
+    // route's default first-load state instead of inheriting a half-rendered
+    // page from the attempt that just failed.
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await setupApiMocking(page, fixtureRoutes);
+    const tracker = createPageErrorTracker(page);
+    onTrackerChange(tracker);
+
+    try {
+      const result = await captureRoute(
+        page,
+        tracker,
+        capture,
+        outputDir,
+        baseUrl,
+        defaults,
+        minBytes,
+        minTextLength,
+        timeoutMs,
+        readinessTimeoutMs
+      );
+      result.attempts = attempt;
+      return result;
+    } catch (error) {
+      lastError = error;
+      if (attempt < maxAttempts) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.warn(
+          `::warning::Capture ${capture.name} (${capture.path}) attempt ${attempt}/${maxAttempts} failed: `
+          + `${message.split(/\r?\n/)[0]}; retrying.`
+        );
+      }
+    } finally {
+      tracker.dispose();
+      onTrackerChange(null);
+      await context.close();
+    }
+  }
+
+  throw lastError ?? new Error(`Capture ${capture.name} failed after ${maxAttempts} attempt(s).`);
 }
 
 async function main() {
@@ -624,6 +800,7 @@ async function main() {
   if (allCaptures.length === 0) {
     throw new Error(`No web screenshot captures found in ${configPath}`);
   }
+  assertCaptureRouteStateIdentity(allCaptures);
   const captureSelectors = collectCaptureSelectors(valueLists);
   const captures = selectCaptures(allCaptures, captureSelectors);
 
@@ -651,8 +828,19 @@ async function main() {
   const host = values.get("host") ?? "127.0.0.1";
   const port = Number(values.get("port") ?? "5173");
   const timeoutMs = Number(values.get("timeout-ms") ?? "120000");
+  // Readiness assertions (waitForText/selector) use a shorter budget than the
+  // navigation/frame timeout so a single screen that never renders its expected
+  // content fails fast and the run moves on to the next route instead of
+  // blocking the whole catalog for the full navigation timeout.
+  const readinessTimeoutMs = Number(values.get("readiness-timeout-ms") ?? "30000");
   const minBytes = Number(values.get("min-bytes") ?? "12000");
   const minTextLength = Number(values.get("min-text-length") ?? "80");
+  // A transient render or network-idle hiccup on a single route should not fail
+  // the whole catalog. Retry each capture a bounded number of times (fresh
+  // context each attempt) before recording it as failed.
+  const parsedCaptureRetries = Number(values.get("capture-retries") ?? "1");
+  const captureRetries = Number.isFinite(parsedCaptureRetries) ? Math.max(0, parsedCaptureRetries) : 1;
+  const captureAttempts = captureRetries + 1;
   const basePath = routeConfig.basePath ?? "/workstation";
   const baseUrl = values.get("base-url") ?? `http://${host}:${port}${basePath}`;
   const logs = [];
@@ -673,16 +861,21 @@ async function main() {
     outputDir,
     selectedCaptureCount: captures.length,
     totalCaptureCount: allCaptures.length,
+    maxAttemptsPerCapture: captureAttempts,
     captures: results,
     logs: []
   };
 
   try {
-    await assertCaptureRouteCoverage(allCaptures, routeCatalogPath, appShellPath);
+    // Coverage gaps (a live app route with no capture entry) are reported at the
+    // end as a run failure rather than aborting before any screenshot is taken,
+    // so the catalog stays self-adjusting: every configured screen is still
+    // captured and the run tells you exactly which new route needs an entry.
+    const missingCoverage = await findMissingCaptureRoutePaths(allCaptures, routeCatalogPath, appShellPath);
 
     if (!flags.has("skip-server")) {
       server = startViteServer(dashboardDir, host, port, logs);
-      await waitForServer(`${normalizeBaseUrl(baseUrl)}/`, timeoutMs);
+      await waitForServer(`${normalizeBaseUrl(baseUrl)}/`, timeoutMs, server, logs);
     }
 
     // Load fixture API responses and mock all /api/** requests so screenshots
@@ -692,34 +885,61 @@ async function main() {
       ? fixtureConfig.routes
       : {};
     const requiredFixtureRoutes = collectRequiredFixtureRoutes(captures);
-    assertFixtureRouteCoverage(requiredFixtureRoutes, fixtureRoutes);
+    const missingFixtureRoutes = findMissingFixtureRoutes(requiredFixtureRoutes, fixtureRoutes);
+    if (missingFixtureRoutes.length > 0) {
+      // A missing fixture no longer aborts the run; the affected route may render
+      // a degraded state and, if it fails its readiness checks, is reported as a
+      // per-route capture failure while every other route still captures.
+      console.warn(
+        `::warning::Screenshot fixture route coverage is incomplete. Missing route fixtures: ${missingFixtureRoutes.join(", ")}. `
+        + "Affected routes may render degraded and be reported as capture failures."
+      );
+    }
 
     const dashboardRequire = createRequire(path.join(dashboardDir, "package.json"));
     const { chromium } = dashboardRequire("playwright");
     // Sandboxes and CI images often provide a system Chromium instead of the exact
     // browser build the pinned Playwright version would download.
     const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
-    browser = await chromium.launch(chromiumExecutablePath ? { executablePath: chromiumExecutablePath } : {});
-    const page = await browser.newPage();
-    await setupApiMocking(page, fixtureRoutes);
-    pageErrors = createPageErrorTracker(page);
+    // --disable-dev-shm-usage avoids Chromium crashing when the CI container's
+    // /dev/shm is too small for full-page screenshots of large workstation routes.
+    const launchOptions = { args: ["--disable-dev-shm-usage"] };
+    if (chromiumExecutablePath) {
+      launchOptions.executablePath = chromiumExecutablePath;
+    }
+    browser = await chromium.launch(launchOptions);
 
     for (const capture of captures) {
+      // Each capture renders in a fresh browser context so it shows the
+      // route's default first-load state. The app shell persists
+      // workflow-continuity, activity, and focus state across navigations,
+      // so a shared context makes capture results depend on visit order.
       try {
-        const result = await captureRoute(
-          page,
-          pageErrors,
+        const result = await captureRouteWithRetries(
+          browser,
           capture,
+          fixtureRoutes,
           outputDir,
           baseUrl,
           routeConfig.defaultViewport ?? {},
           minBytes,
           minTextLength,
-          timeoutMs
+          timeoutMs,
+          readinessTimeoutMs,
+          captureAttempts,
+          (tracker) => {
+            pageErrors = tracker;
+          }
         );
         results.push(result);
         console.log(`Captured ${capture.name} -> ${result.path}`);
       } catch (error) {
+        // Fault isolation: a screen that still fails after its retries is
+        // recorded with its error and skipped so the run continues through the
+        // remaining screens. The failure is surfaced in the end-of-run summary
+        // and turns the overall run non-zero, but never blocks the rest of the
+        // catalog.
+        const message = error instanceof Error ? error.message : String(error);
         const failed = {
           id: capture.id,
           name: capture.name,
@@ -727,18 +947,73 @@ async function main() {
           route: capture.path,
           url: toRouteUrl(baseUrl, capture.path),
           status: "failed",
-          error: error instanceof Error ? error.message : String(error)
+          attempts: captureAttempts,
+          error: message
         };
         results.push(failed);
-        throw error;
+        console.error(`::warning::Skipped ${capture.name} (${capture.path}): ${message.split(/\r?\n/)[0]}`);
+
+        // Systemic-failure circuit breaker: per-route fault isolation exists so one broken
+        // screen never blocks the rest of the catalog, but when the shared app shell itself
+        // never mounts, every remaining route is guaranteed to fail the same slow way
+        // (2 x timeoutMs each) until the CI job ceiling cancels the run. If the first few
+        // routes ALL failed to mount the shell, abort now with a pointed error instead.
+        const shellMountFailureLimit = 3;
+        if (
+          results.length >= shellMountFailureLimit
+          && results.every((result) => result.status === "failed"
+            && /App shell failed to mount/.test(String(result.error)))
+        ) {
+          throw new Error(
+            `Aborting capture run: the app shell failed to mount on the first ${results.length} route(s). `
+            + "This is a shell-level failure (activation gate, missing shell fixtures, or a dev server "
+            + "compile error), so every remaining route would fail the same way. See the manifest logs."
+          );
+        }
       }
     }
 
     const proxyErrors = logs.filter((line) => /http proxy error:\s*\/api\//i.test(line));
+    const failedCaptures = results.filter((result) => result.status === "failed");
+    const passedCaptures = results.filter((result) => result.status === "passed");
+    manifest.capturedCount = passedCaptures.length;
+    manifest.failedCaptureCount = failedCaptures.length;
+
+    console.log(
+      `\nScreenshot capture summary: ${passedCaptures.length}/${captures.length} route(s) captured successfully.`
+    );
+    if (failedCaptures.length > 0) {
+      console.log(`${failedCaptures.length} route(s) did not render correctly and were skipped:`);
+      for (const failure of failedCaptures) {
+        const firstLine = String(failure.error ?? "unknown error").split(/\r?\n/)[0];
+        console.log(`  - ${failure.name} (${failure.route}): ${firstLine}`);
+      }
+    }
+
+    const problems = [];
+    if (missingCoverage.length > 0) {
+      problems.push(`Live route(s) without a screenshot capture entry: ${missingCoverage.join(", ")}`);
+    }
     if (proxyErrors.length > 0) {
-      throw new Error(
-        `Detected ${proxyErrors.length} Vite proxy API error log(s) during screenshot capture.`
-      );
+      problems.push(`Detected ${proxyErrors.length} Vite proxy API error log(s) during screenshot capture.`);
+    }
+    for (const problem of problems) {
+      console.error(`::error::${problem}`);
+    }
+
+    // The run has already moved through every screen and written a screenshot
+    // for each one that rendered. If any screen failed or coverage is
+    // incomplete, exit non-zero with a consolidated summary so CI flags it while
+    // the successful screenshots remain available.
+    if (failedCaptures.length > 0 || problems.length > 0) {
+      manifest.status = "failed";
+      const summary = [
+        failedCaptures.length > 0
+          ? `${failedCaptures.length} route(s) failed to render: ${failedCaptures.map((failure) => failure.name).join(", ")}`
+          : null,
+        ...problems
+      ].filter(Boolean).join(" | ");
+      throw new Error(summary);
     }
 
     manifest.status = "passed";

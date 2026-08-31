@@ -183,6 +183,47 @@ public sealed class FundAccountServiceTests
         Assert.Equal(2_250m, latest.RealizedPnl);
     }
 
+    [Theory]
+    [InlineData("balance snapshot")]
+    [InlineData("custodian statement")]
+    [InlineData("bank statement")]
+    [InlineData("reconciliation")]
+    [InlineData("sync history")]
+    [InlineData("margin snapshot")]
+    public async Task AccountScopedChildMutation_UnknownAccount_ThrowsConsistentInvalidOperation(
+        string operation)
+    {
+        var svc = CreateService();
+        var accountId = Guid.NewGuid();
+        var today = DateOnly.FromDateTime(DateTime.Today);
+
+        Func<Task> mutation = operation switch
+        {
+            "balance snapshot" => () => svc.RecordBalanceSnapshotAsync(
+                new RecordAccountBalanceSnapshotRequest(
+                    accountId, today, "USD", 100m, "Manual", "test")),
+            "custodian statement" => () => svc.IngestCustodianStatementAsync(
+                new IngestCustodianStatementRequest(
+                    Guid.NewGuid(), accountId, today, "Custodian", "JSON", null, [], "test")),
+            "bank statement" => () => svc.IngestBankStatementAsync(
+                new IngestBankStatementRequest(
+                    Guid.NewGuid(), accountId, today, "Bank", null, [], "test")),
+            "reconciliation" => () => svc.ReconcileAccountAsync(
+                new ReconcileAccountRequest(accountId, today, "test")),
+            "sync history" => () => svc.RecordSyncHistoryAsync(
+                new RecordAccountSyncHistoryRequest(
+                    accountId, "bank-balances", AccountSyncStatusDto.Succeeded)),
+            "margin snapshot" => () => svc.RecordMarginSnapshotAsync(
+                new RecordMarginSnapshotRequest(
+                    accountId, DateTimeOffset.UtcNow, "USD", MarginModelTypeDto.RegT)),
+            _ => throw new ArgumentOutOfRangeException(nameof(operation), operation, null)
+        };
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(mutation);
+
+        Assert.Equal($"Account {accountId} not found.", exception.Message);
+    }
+
     [Fact]
     public async Task GetBalanceHistory_FiltersByDateRange()
     {
@@ -255,7 +296,7 @@ public sealed class FundAccountServiceTests
     // ── Reconciliation ────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task ReconcileAccount_WithBalanceSnapshot_ReturnsMatchedRun()
+    public async Task ReconcileAccount_WithBalanceSnapshotOnly_ReturnsUnverifiedRun()
     {
         var svc = CreateService();
         var acct = await svc.CreateAccountAsync(MakeBankRequest());
@@ -267,10 +308,72 @@ public sealed class FundAccountServiceTests
         var run = await svc.ReconcileAccountAsync(
             new ReconcileAccountRequest(acct.AccountId, today, "test-user"));
 
+        // A snapshot with no independent counterpart (no ingested bank statement closing
+        // balance) cannot be verified, so the run must not claim "Matched".
+        Assert.NotNull(run);
+        Assert.Equal("Unverified", run.Status);
+        Assert.Equal(0, run.TotalBreaks);
+        Assert.Equal(0, run.TotalMatched);
+        Assert.True(run.TotalChecks > 0);
+    }
+
+    [Fact]
+    public async Task ReconcileAccount_WithOnlyForeignCurrencyClosingBalance_ReturnsUnverifiedRun()
+    {
+        var svc = CreateService();
+        var acct = await svc.CreateAccountAsync(MakeBankRequest());
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var batchId = Guid.NewGuid();
+
+        await svc.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+            acct.AccountId, today, "USD", 500_000m, "BankStatement", "test"));
+        // The only closing balance for the date is EUR-denominated: numerically equal to
+        // the USD snapshot, but it must not be treated as verification of it.
+        await svc.IngestBankStatementAsync(new IngestBankStatementRequest(
+            batchId, acct.AccountId, today, "JPMorgan", null,
+            new List<BankStatementLineDto>
+            {
+                new(Guid.NewGuid(), batchId, acct.AccountId, today, today,
+                    -50_000m, "EUR", "Wire", "EUR sweep", null, 500_000m)
+            },
+            "loader"));
+
+        var run = await svc.ReconcileAccountAsync(
+            new ReconcileAccountRequest(acct.AccountId, today, "test-user"));
+
+        Assert.NotNull(run);
+        Assert.Equal("Unverified", run.Status);
+        Assert.Equal(0, run.TotalBreaks);
+        Assert.Equal(0, run.TotalMatched);
+    }
+
+    [Fact]
+    public async Task ReconcileAccount_WithMatchingBankClosingBalance_ReturnsMatchedRun()
+    {
+        var svc = CreateService();
+        var acct = await svc.CreateAccountAsync(MakeBankRequest());
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var batchId = Guid.NewGuid();
+
+        await svc.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+            acct.AccountId, today, "USD", 500_000m, "BankStatement", "test"));
+        await svc.IngestBankStatementAsync(new IngestBankStatementRequest(
+            batchId, acct.AccountId, today, "JPMorgan", null,
+            new List<BankStatementLineDto>
+            {
+                new(Guid.NewGuid(), batchId, acct.AccountId, today, today,
+                    -50_000m, "USD", "Wire", "Payment to broker", null, 500_000m)
+            },
+            "loader"));
+
+        var run = await svc.ReconcileAccountAsync(
+            new ReconcileAccountRequest(acct.AccountId, today, "test-user"));
+
         Assert.NotNull(run);
         Assert.Equal("Matched", run.Status);
         Assert.Equal(0, run.TotalBreaks);
         Assert.True(run.TotalChecks > 0);
+        Assert.Equal(run.TotalChecks, run.TotalMatched);
     }
 
     [Fact]

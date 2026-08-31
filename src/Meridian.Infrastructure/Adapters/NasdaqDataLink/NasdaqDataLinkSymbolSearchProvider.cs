@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using System.Text.Json;
 using Meridian.Contracts.Domain;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Infrastructure.Adapters.Core;
@@ -170,6 +171,28 @@ public sealed class NasdaqDataLinkSymbolSearchProvider : BaseSymbolSearchProvide
         var databaseCode = dataset.DatabaseCode.Trim().ToUpperInvariant();
         return string.Equals(datasetCode, normalizedSymbol, StringComparison.OrdinalIgnoreCase) ||
             string.Equals($"{databaseCode}/{datasetCode}", normalizedSymbol, StringComparison.OrdinalIgnoreCase);
+    }
+
+    protected override bool IsQuotaExceededResponse(string json)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            if (document.RootElement.TryGetProperty("quandl_error", out var error) &&
+                error.ValueKind == JsonValueKind.Object &&
+                error.TryGetProperty("code", out var code) &&
+                code.GetString() is { } value &&
+                value.StartsWith("QELx", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+
+        return base.IsQuotaExceededResponse(json);
     }
 
     private static bool IsErrorBody(string json)

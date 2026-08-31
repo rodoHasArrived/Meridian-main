@@ -1,8 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Ledger;
@@ -12,6 +10,7 @@ using Meridian.FinancialOperations.Ledger;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Wpf.ViewModels.Accounting;
 
@@ -158,6 +157,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private readonly ILedgerBookService? _ledgerBookService;
     private readonly AccountingProductionReadinessService? _accountingProductionReadinessService;
     private readonly IAccountingProductionCertificationProfileStore? _productionCertificationProfileStore;
+    private readonly AccountingProductionCertificationCommandService? _productionCertificationCommandService;
     private readonly IAccountingTenantAdministrationProfileStore? _tenantAdministrationProfileStore;
     private readonly IAccountingMigrationRunWorkerPlanStore? _migrationRunWorkerPlanStore;
 
@@ -288,9 +288,18 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private ManualJournalEntryTypeDto _selectedEntryType = ManualJournalEntryTypeDto.General;
     private AccountingBasisKindDto _selectedAccountingBasis = AccountingBasisKindDto.Primary;
 
+    private readonly DesktopAuthenticationSession? _authenticationSession;
+
+    /// <summary>
+    /// Audit finding P8: governance records carry the authenticated desktop operator when a
+    /// session exists; the historical constant remains only as an anonymous-session fallback.
+    /// </summary>
+    private string ResolveActor() =>
+        _authenticationSession?.CurrentActor is { Length: > 0 } actor ? actor : DefaultActor;
+
     public AccountingConfigureViewModel(
         FundContextService fundContextService,
-        IAccountingConfigurationService configurationService,
+        IWorkstationAccountingApiClient configurationService,
         IManualJournalEntryWorkbenchService manualJournalEntryWorkbenchService,
         IAccountingConfigurationStore? configurationStore = null,
         IManualJournalEntryDraftStore? manualJournalEntryDraftStore = null,
@@ -303,10 +312,13 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ILedgerBookService? ledgerBookService = null,
         AccountingProductionReadinessService? accountingProductionReadinessService = null,
         IAccountingProductionCertificationProfileStore? productionCertificationProfileStore = null,
+        AccountingProductionCertificationCommandService? productionCertificationCommandService = null,
         IAccountingTenantAdministrationProfileStore? tenantAdministrationProfileStore = null,
-        IAccountingMigrationRunWorkerPlanStore? migrationRunWorkerPlanStore = null)
+        IAccountingMigrationRunWorkerPlanStore? migrationRunWorkerPlanStore = null,
+        DesktopAuthenticationSession? authenticationSession = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
+        _authenticationSession = authenticationSession;
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _manualJournalEntryWorkbenchService = manualJournalEntryWorkbenchService ?? throw new ArgumentNullException(nameof(manualJournalEntryWorkbenchService));
         _capitalAccountWorkbenchService = capitalAccountWorkbenchService;
@@ -321,6 +333,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         _ledgerBookService = ledgerBookService;
         _accountingProductionReadinessService = accountingProductionReadinessService;
         _productionCertificationProfileStore = productionCertificationProfileStore;
+        _productionCertificationCommandService = productionCertificationCommandService;
         _tenantAdministrationProfileStore = tenantAdministrationProfileStore;
         _migrationRunWorkerPlanStore = migrationRunWorkerPlanStore;
 
@@ -1016,7 +1029,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
 
     public bool CanSaveProductionCertificationProfile =>
         _activeFundProfile is not null
-        && _productionCertificationProfileStore is not null
+        && _productionCertificationCommandService is not null
         && NormalizeTenantAdministrationEvidence(ProductionCertificationEvidenceText).Count > 0;
 
     public string TenantAdministrationProfileStatusText
@@ -1534,7 +1547,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 new UpsertChartOfAccountsNodeRequest(
                     fundProfileId,
                     new ChartOfAccountsNodeDto("assets-cash", "Assets:Cash", "Cash", "Asset"),
-                    DefaultActor,
+                    ResolveActor(),
                     CorrelationId: "wpf-accounting-config-seed",
                     EvidenceLinks: evidence,
                     LedgerBookId: ledgerBookId),
@@ -1543,7 +1556,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 new UpsertChartOfAccountsNodeRequest(
                     fundProfileId,
                     new ChartOfAccountsNodeDto("income-investment", "Income:Investment Income", "Investment Income", "Revenue"),
-                    DefaultActor,
+                    ResolveActor(),
                     CorrelationId: "wpf-accounting-config-seed",
                     EvidenceLinks: evidence,
                     LedgerBookId: ledgerBookId),
@@ -1552,7 +1565,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 new UpsertChartOfAccountsNodeRequest(
                     fundProfileId,
                     new ChartOfAccountsNodeDto("expenses-investment-fees", "Expenses:Investment Fees", "Investment Fees", "Expense"),
-                    DefaultActor,
+                    ResolveActor(),
                     CorrelationId: "wpf-accounting-config-seed",
                     EvidenceLinks: evidence,
                     LedgerBookId: ledgerBookId),
@@ -1563,7 +1576,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     new UpsertChartOfAccountsNodeRequest(
                         fundProfileId,
                         node,
-                        DefaultActor,
+                        ResolveActor(),
                         CorrelationId: "wpf-accounting-config-seed",
                         EvidenceLinks: evidence,
                         LedgerBookId: ledgerBookId),
@@ -1581,7 +1594,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                             new JournalEntryTemplateLineDto("debit-cash", "Assets:Cash", AccountingTemplateLineSideDto.Debit, 1m, _activeFundProfile.BaseCurrency, "Debit configured cash account."),
                             new JournalEntryTemplateLineDto("credit-income", "Income:Investment Income", AccountingTemplateLineSideDto.Credit, 1m, _activeFundProfile.BaseCurrency, "Credit configured income account.")
                         ]),
-                    DefaultActor,
+                    ResolveActor(),
                     CorrelationId: "wpf-accounting-config-seed",
                     EvidenceLinks: evidence,
                     LedgerBookId: ledgerBookId),
@@ -1592,7 +1605,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     new UpsertJournalEntryTemplateRequest(
                         fundProfileId,
                         template,
-                        DefaultActor,
+                        ResolveActor(),
                         CorrelationId: "wpf-accounting-config-seed",
                         EvidenceLinks: evidence,
                         LedgerBookId: ledgerBookId),
@@ -1608,7 +1621,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                         "ManualJournalEntry",
                         "desktop-manual-adjustment-v1",
                         Description: "Fund/book configurable WPF policy route for manual accounting adjustments."),
-                    DefaultActor,
+                    ResolveActor(),
                     CorrelationId: "wpf-accounting-config-seed",
                     EvidenceLinks: evidence,
                     LedgerBookId: ledgerBookId),
@@ -1619,7 +1632,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     new UpsertPostingRuleRequest(
                         fundProfileId,
                         rule,
-                        DefaultActor,
+                        ResolveActor(),
                         CorrelationId: "wpf-accounting-config-seed",
                         EvidenceLinks: evidence,
                         LedgerBookId: ledgerBookId),
@@ -1652,7 +1665,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             _configuration = await _configurationService.ActivateAsync(
                 new ActivateAccountingConfigurationRequest(
                     _activeFundProfile.FundProfileId,
-                    DefaultActor,
+                    ResolveActor(),
                     _configuration?.LedgerBookId,
                     CorrelationId: "wpf-accounting-config-activate",
                     EvidenceLinks: ["accounting-config://desktop-activation"]),
@@ -1940,9 +1953,9 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             return;
         }
 
-        if (_productionCertificationProfileStore is null)
+        if (_productionCertificationCommandService is null)
         {
-            ProductionCertificationProfileStatusText = "Production certification profile store is not registered for this desktop session.";
+            ProductionCertificationProfileStatusText = "Production certification authority is not registered for this desktop session.";
             StatusText = ProductionCertificationProfileStatusText;
             return;
         }
@@ -1959,9 +1972,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         try
         {
             var correlationId = $"wpf-accounting-production-certification-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
-            var workflowCertificationArtifacts = BuildWorkflowCertificationArtifacts(retainedEvidence, correlationId);
-            var dimensionalCertificationArtifacts = BuildDimensionalCertificationArtifacts(retainedEvidence, correlationId);
-            var tenantAdminCertificationArtifacts = BuildTenantAdminCertificationArtifacts(retainedEvidence, correlationId);
+            var actor = ResolveActor();
             var profile = new AccountingProductionCertificationProfileDto(
                 _activeFundProfile.FundProfileId,
                 _configuration?.LedgerBookId,
@@ -1973,8 +1984,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 CrossPeriodReportDimensionQueriesCertified,
                 JournalQueryDimensionFiltersCertified,
                 ExternalExportDimensionMappingCertified,
-                DateTimeOffset.UtcNow,
-                DefaultLifecycleActor,
+                default,
+                actor,
                 retainedEvidence,
                 correlationId,
                 ResolveTenantAdministrationTenantId(),
@@ -1985,17 +1996,15 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 LedgerLineDimensionsPersistedCertified,
                 TrialBalanceDimensionFiltersCertified,
                 ReportPackageDimensionProvenanceCertified,
-                ClosePlanConfigurationLedgerBookNativeCertified,
-                WorkflowCertificationArtifacts: workflowCertificationArtifacts,
-                DimensionalCertificationArtifacts: dimensionalCertificationArtifacts,
-                TenantAdminCertificationArtifacts: tenantAdminCertificationArtifacts);
+                ClosePlanConfigurationLedgerBookNativeCertified);
 
-            var saved = await _productionCertificationProfileStore.UpsertAsync(
+            var saved = await _productionCertificationCommandService.CertifyAsync(
                 new AccountingProductionCertificationProfileUpsertRequestDto(
                     profile,
-                    DefaultLifecycleActor,
+                    actor,
                     correlationId,
                     retainedEvidence),
+                actor,
                 ct).ConfigureAwait(false);
 
             ApplyProductionCertificationProfile(saved, "Production certification profile saved; readiness refreshed from retained book and dimension controls.");
@@ -2022,7 +2031,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             var saved = await _manualJournalEntryWorkbenchService.SaveDraftAsync(
                 new SaveManualJournalEntryDraftRequest(
                     BuildManualJournalDraft(),
-                    DefaultActor,
+                    ResolveActor(),
                     CorrelationId: "wpf-manual-je-save",
                     EvidenceLinks: NormalizeEvidenceLink(DraftEvidenceLink),
                     LedgerBookId: _configuration?.LedgerBookId),
@@ -2052,7 +2061,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             var validated = await _manualJournalEntryWorkbenchService.ValidateDraftAsync(
                 new ValidateManualJournalEntryDraftRequest(
                     BuildManualJournalDraft(),
-                    DefaultActor,
+                    ResolveActor(),
                     CorrelationId: "wpf-manual-je-validate",
                     LedgerBookId: _configuration?.LedgerBookId),
                 ct).ConfigureAwait(false);
@@ -2079,7 +2088,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 new SubmitManualJournalEntryApprovalRequest(
                     _selectedDraft.JournalEntryId,
                     _selectedDraft.FundProfileId,
-                    DefaultActor,
+                    ResolveActor(),
                     _selectedDraft.Version,
                     Notes: "Submitted from WPF Accounting Configure.",
                     CorrelationId: "wpf-manual-je-submit",
@@ -2265,7 +2274,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 new UpsertChartOfAccountsNodeRequest(
                     _activeFundProfile.FundProfileId,
                     node,
-                    DefaultActor,
+                    ResolveActor(),
                     CorrelationId: $"wpf-accounting-chart-account-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
                     EvidenceLinks: evidence,
                     LedgerBookId: ledgerBookId),
@@ -2342,7 +2351,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 new UpsertPostingRuleRequest(
                     _activeFundProfile.FundProfileId,
                     rule,
-                    DefaultActor,
+                    ResolveActor(),
                     CorrelationId: $"wpf-accounting-posting-rule-draft-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
                     EvidenceLinks: evidence,
                     LedgerBookId: ledgerBookId),
@@ -2517,7 +2526,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             var result = await _configurationService.ExecuteRuleTestCasesAsync(
                 new ExecuteAccountingRuleTestCasesRequestDto(
                     _activeFundProfile.FundProfileId,
-                    DefaultActor,
+                    ResolveActor(),
                     TestCases: [],
                     LedgerBookId: _configuration.LedgerBookId),
                 ct).ConfigureAwait(false);
@@ -2580,7 +2589,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     _activeFundProfile.FundProfileId,
                     queueItem.RuleId,
                     queueItem.RuleVersion,
-                    DefaultActor,
+                    ResolveActor(),
                     approvalId,
                     "Desktop controller approved the posting rule after Rules Studio regression review.",
                     EvidenceLinks: [evidenceLink],
@@ -2695,7 +2704,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                         Math.Abs(DraftAmount),
                         currency,
                         effectiveDate,
-                        DefaultActor,
+                        ResolveActor(),
                         AggregateId: Guid.NewGuid(),
                         PeriodId: Guid.NewGuid(),
                         AccountingTimestamp: DateTimeOffset.UtcNow,
@@ -3880,7 +3889,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private static Guid CreateStableGuid(params string?[] parts)
     {
         var input = string.Join("|", parts.Select(static part => part?.Trim() ?? string.Empty));
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        var hash = Sha256Digest.ComputeBytesUtf8(input);
         var bytes = hash[..16].ToArray();
         return new Guid(bytes);
     }
@@ -4448,7 +4457,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             FundNodeId: null,
             currency,
             DraftMemo,
-            DefaultActor,
+            ResolveActor(),
             _selectedDraft?.CreatedAtUtc ?? now,
             now,
             _selectedDraft?.Version ?? 0,
@@ -4466,7 +4475,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     link,
                     "WPF",
                     now,
-                    DefaultActor))
+                    ResolveActor()))
                 .ToArray(),
             EntryType: SelectedEntryType,
             TreasuryContext: BuildManualJournalTreasuryContext(fundProfileId, SelectedEntryType, accountingDate, journalEntryId),
@@ -4975,204 +4984,6 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 .Where(static item => !string.IsNullOrWhiteSpace(item))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
-
-    private IReadOnlyList<AccountingWorkflowCertificationArtifactDto> BuildWorkflowCertificationArtifacts(
-        IReadOnlyList<string> evidence,
-        string correlationId)
-    {
-        if (_activeFundProfile is null || _configuration?.LedgerBookId is not { } ledgerBookId)
-        {
-            return [];
-        }
-
-        var lanes = new[]
-            {
-                BuildWorkflowCertificationLane(PostingRulesLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.PostingRules, evidence, "posting-candidate"),
-                BuildWorkflowCertificationLane(JournalLifecycleLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.JournalLifecycle, evidence, "journal-lifecycle"),
-                BuildWorkflowCertificationLane(CloseReportingLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.CloseReporting, evidence, "close-reporting"),
-                BuildWorkflowCertificationLane(ClosePlanConfigurationLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.ClosePlanConfiguration, evidence, "close-plan-configuration"),
-                BuildWorkflowCertificationLane(ExternalGlLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.ExternalGl, evidence, "external-gl"),
-                BuildWorkflowCertificationLane(ReconciliationLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.Reconciliation, evidence, "reconciliation"),
-                BuildWorkflowCertificationLane(DirectLendingLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.DirectLendingProjection, evidence, "direct-lending"),
-                BuildWorkflowCertificationLane(StrategyLedgerReadLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.StrategyLedgerReads, evidence, "strategy-ledger")
-            }
-            .OfType<AccountingWorkflowCertificationLaneDto>()
-            .ToArray();
-
-        if (lanes.Length == 0)
-        {
-            return [];
-        }
-
-        return
-        [
-            new AccountingWorkflowCertificationArtifactDto(
-                $"{correlationId}-workflow",
-                AccountingCertificationArtifactStatusDto.Certified,
-                ResolveTenantAdministrationTenantId(),
-                ResolveTenantAdministrationCompanyId(),
-                _activeFundProfile.FundProfileId,
-                ledgerBookId,
-                DefaultLifecycleActor,
-                DateTimeOffset.UtcNow,
-                "wpf-accounting-configure",
-                lanes,
-                evidence,
-                CorrelationId: correlationId)
-        ];
-    }
-
-    private IReadOnlyList<AccountingDimensionalCertificationArtifactDto> BuildDimensionalCertificationArtifacts(
-        IReadOnlyList<string> evidence,
-        string correlationId)
-    {
-        if (_activeFundProfile is null || _configuration?.LedgerBookId is not { } ledgerBookId)
-        {
-            return [];
-        }
-
-        var lanes = new[]
-            {
-                BuildDimensionalCertificationLane(LedgerLineDimensionsPersistedCertified, AccountingDimensionalCertificationLaneKindDto.LedgerLinePersistence, evidence, "ledger-line"),
-                BuildDimensionalCertificationLane(TrialBalanceDimensionFiltersCertified, AccountingDimensionalCertificationLaneKindDto.TrialBalanceFilters, evidence, "trial-balance-filter"),
-                BuildDimensionalCertificationLane(PeriodReportDimensionQueriesCertified, AccountingDimensionalCertificationLaneKindDto.PeriodReports, evidence, "period-report"),
-                BuildDimensionalCertificationLane(CrossPeriodReportDimensionQueriesCertified, AccountingDimensionalCertificationLaneKindDto.CrossPeriodReports, evidence, "cross-period"),
-                BuildDimensionalCertificationLane(JournalQueryDimensionFiltersCertified, AccountingDimensionalCertificationLaneKindDto.JournalFilters, evidence, "journal-query"),
-                BuildDimensionalCertificationLane(ReportPackageDimensionProvenanceCertified, AccountingDimensionalCertificationLaneKindDto.ReportPackageProvenance, evidence, "report-package-provenance"),
-                BuildDimensionalCertificationLane(ExternalExportDimensionMappingCertified, AccountingDimensionalCertificationLaneKindDto.ExternalExportMappings, evidence, "external-export")
-            }
-            .OfType<AccountingDimensionalCertificationLaneDto>()
-            .ToArray();
-
-        if (lanes.Length == 0)
-        {
-            return [];
-        }
-
-        return
-        [
-            new AccountingDimensionalCertificationArtifactDto(
-                $"{correlationId}-dimensions",
-                AccountingCertificationArtifactStatusDto.Certified,
-                ResolveTenantAdministrationTenantId(),
-                ResolveTenantAdministrationCompanyId(),
-                _activeFundProfile.FundProfileId,
-                ledgerBookId,
-                "canonical-production",
-                DefaultLifecycleActor,
-                DateTimeOffset.UtcNow,
-                "wpf-accounting-configure",
-                lanes,
-                evidence,
-                CorrelationId: correlationId)
-        ];
-    }
-
-    private static AccountingWorkflowCertificationLaneDto? BuildWorkflowCertificationLane(
-        bool certified,
-        AccountingWorkflowCertificationLaneKindDto kind,
-        IReadOnlyList<string> evidence,
-        string marker)
-        => certified
-            ? new AccountingWorkflowCertificationLaneDto(
-                kind,
-                AccountingCertificationArtifactLaneStatusDto.Passed,
-                FilterCertificationLaneEvidence(evidence, marker))
-            : null;
-
-    private static AccountingDimensionalCertificationLaneDto? BuildDimensionalCertificationLane(
-        bool certified,
-        AccountingDimensionalCertificationLaneKindDto kind,
-        IReadOnlyList<string> evidence,
-        string marker)
-        => certified
-            ? new AccountingDimensionalCertificationLaneDto(
-                kind,
-                AccountingCertificationArtifactLaneStatusDto.Passed,
-                FilterCertificationLaneEvidence(evidence, marker))
-            : null;
-
-    private IReadOnlyList<AccountingTenantAdminCertificationArtifactDto> BuildTenantAdminCertificationArtifacts(
-        IReadOnlyList<string> evidence,
-        string correlationId)
-    {
-        if (_activeFundProfile is null)
-        {
-            return [];
-        }
-
-        var lanes = new[]
-            {
-                BuildTenantAdminCertificationLane(TenantScopeConfigured, AccountingTenantAdminCertificationLaneKindDto.TenantScope, evidence, "tenant-scope"),
-                BuildTenantAdminCertificationLane(AdminRoleProfileConfigured, AccountingTenantAdminCertificationLaneKindDto.AdminRoleProfile, evidence, "admin-role"),
-                BuildTenantAdminCertificationLane(ScopedAccessPoliciesConfigured, AccountingTenantAdminCertificationLaneKindDto.ScopedAccessPolicies, evidence, "scoped-access"),
-                BuildTenantAdminCertificationLane(ReportingGroupsConfigured, AccountingTenantAdminCertificationLaneKindDto.ReportingGroups, evidence, "reporting-group"),
-                BuildTenantAdminCertificationLane(AccountingAdminSurfaceConfigured, AccountingTenantAdminCertificationLaneKindDto.AccountingAdminSurface, evidence, "accounting-admin-surface"),
-                BuildTenantAdminCertificationLane(false, AccountingTenantAdminCertificationLaneKindDto.BrowserAccountingAdminSurface, evidence, "browser-accounting-admin"),
-                BuildTenantAdminCertificationLane(WpfAccountingAdminSurfaceConfigured, AccountingTenantAdminCertificationLaneKindDto.WpfAccountingAdminSurface, evidence, "wpf-admin-studio"),
-                BuildTenantAdminCertificationLane(ChartAdministrationStudioConfigured, AccountingTenantAdminCertificationLaneKindDto.ChartAdministrationStudio, evidence, "chart-administration"),
-                BuildTenantAdminCertificationLane(RuleTestPromotionStudioConfigured, AccountingTenantAdminCertificationLaneKindDto.RuleTestPromotionStudio, evidence, "rule-test-promotion"),
-                BuildTenantAdminCertificationLane(CloseSetupStudioConfigured, AccountingTenantAdminCertificationLaneKindDto.CloseSetupStudio, evidence, "close-setup"),
-                BuildTenantAdminCertificationLane(ProviderMappingStudioConfigured, AccountingTenantAdminCertificationLaneKindDto.ProviderMappingStudio, evidence, "provider-mapping"),
-                BuildTenantAdminCertificationLane(TenantCompanyReportGroupSetupStudioConfigured, AccountingTenantAdminCertificationLaneKindDto.TenantCompanyReportGroupSetupStudio, evidence, "tenant-company-report-group"),
-                BuildTenantAdminCertificationLane(AuditReviewToolingConfigured, AccountingTenantAdminCertificationLaneKindDto.AuditReviewTooling, evidence, "audit-review"),
-                BuildTenantAdminCertificationLane(BulkImportExportSafeguardsConfigured, AccountingTenantAdminCertificationLaneKindDto.BulkImportExportSafeguards, evidence, "bulk-import-export"),
-                BuildTenantAdminCertificationLane(PerformanceValidationConfigured, AccountingTenantAdminCertificationLaneKindDto.PerformanceValidation, evidence, "performance-validation"),
-                BuildTenantAdminCertificationLane(DisasterRecoveryRunbookConfigured, AccountingTenantAdminCertificationLaneKindDto.DisasterRecoveryRunbook, evidence, "disaster-recovery"),
-                BuildTenantAdminCertificationLane(LedgerBookAdministrationStudioConfigured, AccountingTenantAdminCertificationLaneKindDto.LedgerBookAdministrationStudio, evidence, "ledger-book-administration"),
-                BuildTenantAdminCertificationLane(PostingRuleAuthoringStudioConfigured, AccountingTenantAdminCertificationLaneKindDto.PostingRuleAuthoringStudio, evidence, "posting-rule-authoring"),
-                BuildTenantAdminCertificationLane(ApprovalQueueStudioConfigured, AccountingTenantAdminCertificationLaneKindDto.ApprovalQueueStudio, evidence, "approval-queue"),
-                BuildTenantAdminCertificationLane(DimensionMappingStudioConfigured, AccountingTenantAdminCertificationLaneKindDto.DimensionMappingStudio, evidence, "dimension-mapping"),
-                BuildTenantAdminCertificationLane(ImplementationSandboxConfigured, AccountingTenantAdminCertificationLaneKindDto.ImplementationSandbox, evidence, "implementation-sandbox")
-            }
-            .OfType<AccountingTenantAdminCertificationLaneDto>()
-            .ToArray();
-
-        if (lanes.Length == 0)
-        {
-            return [];
-        }
-
-        return
-        [
-            new AccountingTenantAdminCertificationArtifactDto(
-                $"{correlationId}-tenant-admin",
-                AccountingCertificationArtifactStatusDto.Certified,
-                ResolveTenantAdministrationTenantId(),
-                ResolveTenantAdministrationCompanyId(),
-                _activeFundProfile.FundProfileId,
-                _configuration?.LedgerBookId,
-                DefaultLifecycleActor,
-                DateTimeOffset.UtcNow,
-                "wpf-accounting-configure",
-                lanes,
-                evidence,
-                CorrelationId: correlationId)
-        ];
-    }
-
-    private static AccountingTenantAdminCertificationLaneDto? BuildTenantAdminCertificationLane(
-        bool certified,
-        AccountingTenantAdminCertificationLaneKindDto kind,
-        IReadOnlyList<string> evidence,
-        string marker)
-        => certified
-            ? new AccountingTenantAdminCertificationLaneDto(
-                kind,
-                AccountingCertificationArtifactLaneStatusDto.Passed,
-                FilterCertificationLaneEvidence(evidence, marker))
-            : null;
-
-    private static IReadOnlyList<string> FilterCertificationLaneEvidence(
-        IReadOnlyList<string> evidence,
-        string marker)
-    {
-        var scoped = evidence
-            .Where(reference => reference.Contains(marker, StringComparison.OrdinalIgnoreCase))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        return scoped.Length > 0 ? scoped : evidence;
-    }
 
     private void ApplyExternalGlMappingProfileDraft(ExternalGlMappingProfileDto profile)
     {

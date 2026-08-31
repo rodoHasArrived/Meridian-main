@@ -2,36 +2,14 @@ using System.Security.Cryptography;
 using System.Text;
 using FluentAssertions;
 using Meridian.Storage.Services;
+using Meridian.Tests.Infrastructure;
 using Xunit;
 
 namespace Meridian.Tests.Storage;
 
-public sealed class StorageChecksumServiceTests : IDisposable
+public sealed class StorageChecksumServiceTests : TempDirectoryTestBase
 {
-    private readonly string _testRoot;
-    private readonly StorageChecksumService _service;
-
-    public StorageChecksumServiceTests()
-    {
-        _testRoot = Path.Combine(Path.GetTempPath(), $"mdc_checksum_test_{Guid.NewGuid():N}");
-        Directory.CreateDirectory(_testRoot);
-        _service = new StorageChecksumService();
-    }
-
-    public void Dispose()
-    {
-        for (var attempt = 0; attempt < 5; attempt++)
-        {
-            try
-            {
-                if (Directory.Exists(_testRoot))
-                    Directory.Delete(_testRoot, recursive: true);
-                return;
-            }
-            catch (IOException) when (attempt < 4) { Thread.Sleep(10); }
-            catch (UnauthorizedAccessException) when (attempt < 4) { Thread.Sleep(10); }
-        }
-    }
+    private readonly StorageChecksumService _service = new();
 
     [Fact]
     public void ComputeChecksum_Bytes_ReturnsLowercaseHexString()
@@ -111,7 +89,7 @@ public sealed class StorageChecksumServiceTests : IDisposable
     [Fact]
     public async Task ComputeFileChecksumAsync_ReturnsCorrectHash()
     {
-        var path = Path.Combine(_testRoot, "test.txt");
+        var path = Path.Combine(TestDataRoot, "test.txt");
         var content = "file content for hashing";
         await File.WriteAllTextAsync(path, content);
 
@@ -131,7 +109,7 @@ public sealed class StorageChecksumServiceTests : IDisposable
     [Fact]
     public async Task ComputeFileChecksumAsync_MissingFile_ThrowsFileNotFoundException()
     {
-        var path = Path.Combine(_testRoot, "nonexistent.txt");
+        var path = Path.Combine(TestDataRoot, "nonexistent.txt");
 
         var act = () => _service.ComputeFileChecksumAsync(path);
 
@@ -169,7 +147,7 @@ public sealed class StorageChecksumServiceTests : IDisposable
     [Fact]
     public async Task VerifyFileChecksumAsync_CorrectChecksum_ReturnsTrue()
     {
-        var path = Path.Combine(_testRoot, "verify.txt");
+        var path = Path.Combine(TestDataRoot, "verify.txt");
         await File.WriteAllBytesAsync(path, Encoding.UTF8.GetBytes("verify content"));
         var checksum = await _service.ComputeFileChecksumAsync(path);
 
@@ -181,7 +159,7 @@ public sealed class StorageChecksumServiceTests : IDisposable
     [Fact]
     public async Task VerifyFileChecksumAsync_WrongChecksum_ReturnsFalse()
     {
-        var path = Path.Combine(_testRoot, "wrong.txt");
+        var path = Path.Combine(TestDataRoot, "wrong.txt");
         await File.WriteAllBytesAsync(path, Encoding.UTF8.GetBytes("data"));
 
         var result = await _service.VerifyFileChecksumAsync(path, "0000000000000000000000000000000000000000000000000000000000000000");
@@ -192,7 +170,7 @@ public sealed class StorageChecksumServiceTests : IDisposable
     [Fact]
     public async Task VerifyFileChecksumAsync_IsCaseInsensitive()
     {
-        var path = Path.Combine(_testRoot, "case.txt");
+        var path = Path.Combine(TestDataRoot, "case.txt");
         await File.WriteAllBytesAsync(path, Encoding.UTF8.GetBytes("case check"));
         var checksum = await _service.ComputeFileChecksumAsync(path);
 
@@ -207,7 +185,7 @@ public sealed class StorageChecksumServiceTests : IDisposable
         var files = new List<string>();
         for (int i = 0; i < 3; i++)
         {
-            var path = Path.Combine(_testRoot, $"file{i}.txt");
+            var path = Path.Combine(TestDataRoot, $"file{i}.txt");
             await File.WriteAllTextAsync(path, $"content {i}");
             files.Add(path);
         }

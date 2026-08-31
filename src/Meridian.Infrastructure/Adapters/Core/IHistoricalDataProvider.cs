@@ -4,6 +4,7 @@ using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
+using Meridian.ProviderSdk;
 
 namespace Meridian.Infrastructure.Adapters.Core;
 
@@ -43,6 +44,21 @@ public interface IHistoricalDataProvider : IProviderMetadata, IDisposable
     string Description { get; }
 
 
+
+    /// <summary>
+    /// True when this provider fabricates bars instead of returning real observed market data.
+    /// Mirrors <see cref="Meridian.ProviderSdk.IMarketDataClient.IsSimulated"/> for the historical
+    /// lane, which feeds backfill and daily fair-value valuation. Valuation, ledger, and reporting
+    /// surfaces use it to classify derived figures, so a fabricated price is never presented as an
+    /// observable market input.
+    /// </summary>
+    /// <remarks>
+    /// This is the primary, explicit signal. Consumers should also treat a bar whose own
+    /// <c>Source</c> tag is a structured simulated-origin token as non-real, because an aggregator
+    /// such as <see cref="CompositeHistoricalDataProvider"/> is not itself simulated yet can serve
+    /// a fabricated bar from a constituent provider.
+    /// </remarks>
+    bool IsSimulated => false;
 
     /// <summary>
     /// Priority for fallback ordering (lower = higher priority, tried first).
@@ -265,7 +281,7 @@ public interface IHistoricalDataProvider : IProviderMetadata, IDisposable
 /// <summary>
 /// Optional interface for providers that can report their rate limit status.
 /// </summary>
-public interface IRateLimitAwareProvider
+public interface IRateLimitAwareProvider : IProviderRateLimitDiagnosticsSource
 {
     /// <summary>
     /// Get current rate limit usage information.
@@ -276,6 +292,24 @@ public interface IRateLimitAwareProvider
     /// Event raised when the provider hits a rate limit.
     /// </summary>
     event Action<RateLimitInfo>? OnRateLimitHit;
+
+    /// <inheritdoc />
+    ProviderRateLimitDiagnosticSnapshot IProviderRateLimitDiagnosticsSource.GetRateLimitDiagnosticsSnapshot()
+    {
+        var observedAt = DateTimeOffset.UtcNow;
+        var info = GetRateLimitInfo();
+        return new ProviderRateLimitDiagnosticSnapshot(
+            info.ProviderName,
+            ProviderRateLimitSurfaces.Historical,
+            observedAt,
+            info.RequestsMade,
+            info.MaxRequests,
+            info.Window,
+            info.IsLimited,
+            info.ResetsAt,
+            info.UsageRatio,
+            info.IsLimited ? "provider-response" : null);
+    }
 }
 
 /// <summary>
@@ -321,11 +355,23 @@ public sealed record ProviderBackfillProgress(
     int CurrentSymbolIndex,
     DateTimeOffset StartedAt,
     string? CurrentStatus = null,
-    string? Error = null
+    string? Error = null,
+    DateOnly? RangeStart = null,
+    DateOnly? RangeEnd = null,
+    int ProviderAttempt = 0,
+    int RetryRound = 0,
+    string? Operation = null,
+    DateTimeOffset? ObservedAt = null
 )
 {
     public double PercentComplete => TotalSymbols > 0 ? (CurrentSymbolIndex * 100.0) / TotalSymbols : 0;
     public TimeSpan Elapsed => DateTimeOffset.UtcNow - StartedAt;
+
+    /// <summary>
+    /// Stable observation time for transport and API projections. Older callers that do not
+    /// populate the additive field retain the request start time as a deterministic fallback.
+    /// </summary>
+    public DateTimeOffset EffectiveObservedAt => ObservedAt ?? StartedAt;
 }
 
 /// <summary>

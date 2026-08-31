@@ -16,7 +16,7 @@ internal static class SecurityMasterMapping
             SecurityId.NewSecurityId(request.SecurityId),
             ToCommonTerms(request.CommonTerms),
             ToFSharpList(request.Identifiers.Select(ToIdentifier)),
-            ToSecurityKind(request.AssetClass, request.AssetSpecificTerms),
+            ToSecurityKind(request.AssetClass, request.AssetSpecificTerms, SecurityKindMappingMode.Write),
             request.EffectiveFrom,
             ToProvenance(request.SourceSystem, request.UpdatedBy, request.SourceRecordId, request.Reason, request.EffectiveFrom));
 
@@ -26,7 +26,7 @@ internal static class SecurityMasterMapping
             request.ExpectedVersion,
             request.CommonTerms is JsonElement common ? FSharpOption<CommonTerms>.Some(ToCommonTerms(common)) : FSharpOption<CommonTerms>.None,
             request.AssetSpecificTermsPatch is JsonElement assetSpecific
-                ? FSharpOption<SecurityKind>.Some(ToSecurityKind(current.AssetClass, assetSpecific))
+                ? FSharpOption<SecurityKind>.Some(ToSecurityKind(current.AssetClass, assetSpecific, SecurityKindMappingMode.Write))
                 : FSharpOption<SecurityKind>.None,
             ToFSharpList(request.IdentifiersToAdd.Select(ToIdentifier)),
             ToFSharpList(request.IdentifiersToExpire.Select(ToIdentifier)),
@@ -98,7 +98,7 @@ internal static class SecurityMasterMapping
             {
                 ["sourceSystem"] = sourceSystem,
                 ["reason"] = reason,
-                ["schemaVersion"] = 2,
+                ["schemaVersion"] = SecurityMasterSchemaVersions.EconomicTerms,
                 ["payloadType"] = "SecurityEconomicDefinition"
             },
             SecurityMasterJsonContext.Default.DictionaryStringObject);
@@ -169,7 +169,8 @@ internal static class SecurityMasterMapping
             identifier.Value,
             identifier.IsPrimary,
             identifier.ValidFrom,
-            ToOption(identifier.ValidTo));
+            ToOption(identifier.ValidTo),
+            ToOption(identifier.Provider));
 
     private static IdentifierKind ToIdentifierKind(SecurityIdentifierKind kind, string? provider)
         => kind switch
@@ -194,17 +195,21 @@ internal static class SecurityMasterMapping
         };
 
     private static SecurityIdentifierDto ToIdentifierDto(SecurityIdentifierSnapshot identifier)
-        => new(
-            Enum.Parse<SecurityIdentifierKind>(identifier.Kind, ignoreCase: true),
+    {
+        // Read-tolerant: a kind stamped by a newer node degrades to Unknown so the snapshot stays
+        // readable; the strict write-side mapping (ToIdentifier) still rejects Unknown, so an
+        // unrecognized kind is never silently re-persisted.
+        var kind = SecurityMasterEnumReads.ParseOrFallback(identifier.Kind, SecurityIdentifierKind.Unknown);
+        return new(
+            kind,
             identifier.Value,
             identifier.IsPrimary,
             identifier.ValidFrom,
             identifier.ValidTo.HasValue ? identifier.ValidTo.Value : null,
             string.IsNullOrWhiteSpace(identifier.Provider) ? null : identifier.Provider,
-            SecurityIdentifierNormalizer.NormalizeValue(
-                Enum.Parse<SecurityIdentifierKind>(identifier.Kind, ignoreCase: true),
-                identifier.Value),
+            SecurityIdentifierNormalizer.NormalizeValue(kind, identifier.Value),
             SecurityIdentifierNormalizer.NormalizeProvider(identifier.Provider));
+    }
 
     private static CommonTerms ToCommonTerms(JsonElement json)
         => new(
@@ -220,7 +225,18 @@ internal static class SecurityMasterMapping
             ToOption(GetOptionalInt(json, "settlementCycleDays")),
             ToOption(GetOptionalString(json, "holidayCalendarId")));
 
-    private static SecurityKind ToSecurityKind(string assetClass, JsonElement json)
+    /// <summary>
+    /// Distinguishes command mapping (create/amend requests) from record reconstruction. Write
+    /// mapping is strict: a malformed payload must fail the command instead of being coerced into
+    /// a different kind. Read mapping stays tolerant so legacy rows remain loadable.
+    /// </summary>
+    private enum SecurityKindMappingMode
+    {
+        Read,
+        Write
+    }
+
+    private static SecurityKind ToSecurityKind(string assetClass, JsonElement json, SecurityKindMappingMode mode = SecurityKindMappingMode.Read)
     {
         EnsureSupportedAssetSchemaVersion(assetClass, json);
         var terms = ResolveAssetTermsJson(json);
@@ -230,7 +246,7 @@ internal static class SecurityMasterMapping
             "Equity" => SecurityKind.NewEquity(new EquityTerms(
                 ToOption(GetOptionalString(json, "shareClass")),
                 ToVotingRightsCatOption(GetOptionalString(json, "votingRightsCat")),
-                ToEquityClassificationOption(json))),
+                ToEquityClassificationOption(json, mode))),
             "Option" => SecurityKind.NewOption(new OptionTerms(
                 SecurityId.NewSecurityId(GetRequiredGuid(json, "underlyingId")),
                 GetRequiredString(json, "putCall"),
@@ -300,12 +316,13 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalString(json, "sweepFrequency")),
                 ToOption(GetOptionalString(json, "targetAccountType")),
                 ToOption(GetOptionalDecimal(json, "yieldRate")))),
-            "OtherSecurity" or "CustomAsset" => SecurityKind.NewOtherSecurity(new OtherSecurityTerms(
+            "OtherSecurity" => SecurityKind.NewOtherSecurity(new OtherSecurityTerms(
                 GetRequiredString(json, "category"),
                 ToOption(GetOptionalString(json, "subType")),
                 ToOption(GetOptionalDateOnly(json, "maturity")),
                 ToOption(GetOptionalString(json, "issuerName")),
                 ToOption(GetOptionalString(json, "settlementType")))),
+            "CustomAsset" => ToCustomAssetKind(json, mode),
             "Swap" => SecurityKind.NewSwap(new SwapTerms(
                 GetRequiredDateOnly(json, "effectiveDate"),
                 GetRequiredDateOnly(json, "maturityDate"),
@@ -327,7 +344,9 @@ internal static class SecurityMasterMapping
                 GetRequiredDecimal(terms, "originalFace"),
                 ToOption(GetOptionalDecimal(terms, "currentFactor")),
                 GetRequiredString(terms, "couponOrIndex"),
-                ToOption(GetOptionalString(terms, "factorSchedule")))),
+                ToOption(GetOptionalString(terms, "factorSchedule")),
+                ToFSharpList(GetOptionalArrayItemsStrict(terms, "factorScheduleEntries").Select(ToFactorScheduleEntry)),
+                ToOption(GetOptionalDateOnly(terms, "maturity")))),
             "PrivateFundInterest" => SecurityKind.NewPrivateFundInterest(new PrivateFundInterestTerms(
                 GetRequiredString(terms, "gpSponsor"),
                 GetRequiredString(terms, "strategy"),
@@ -381,8 +400,64 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalDecimal(json, "strike")),
                 ToOption(GetOptionalDateOnly(json, "expiry")),
                 ToOption(GetOptionalDecimal(json, "multiplier")))),
-            _ => throw new InvalidOperationException($"Unsupported asset class '{assetClass}'.")
+            "InvestmentFund" => SecurityKind.NewInvestmentFund(new InvestmentFundTerms(
+                ToOption(GetOptionalString(json, "fundType")),
+                ToOption(GetOptionalString(json, "fundFamily")),
+                ToOption(GetOptionalString(json, "navCurrency")),
+                ToDistributionPolicyOption(GetOptionalString(json, "distributionPolicy")),
+                ToOption(GetOptionalBoolean(json, "isStableNav")),
+                ToOption(GetOptionalString(json, "pricingSource")))),
+            // Unknown classes degrade to OtherSecurity with the raw class preserved as the category
+            // instead of failing every read of the row. A newer node can register a class this node
+            // has no deserializer for; throwing here made that a total read outage per security
+            // (see the InvestmentFund regression in SecurityMasterMappingInteropTests).
+            _ => SecurityKind.NewOtherSecurity(new OtherSecurityTerms(
+                assetClass,
+                ToOption(GetOptionalString(json, "subType")),
+                ToOption(GetOptionalDateOnly(json, "maturity")),
+                ToOption(GetOptionalString(json, "issuerName")),
+                ToOption(GetOptionalString(json, "settlementType"))))
         };
+    }
+
+    /// <summary>
+    /// Maps a CustomAsset payload to the first-class <see cref="SecurityKind.CustomAsset"/> case,
+    /// carrying the document verbatim so the profile envelope and dynamic profile fields survive
+    /// amend round-trips. A legacy CustomAsset row without a profile envelope degrades to the
+    /// pre-existing OtherSecurity salvage on READS only; create/amend commands that name
+    /// CustomAsset without a profile envelope fail here instead of being silently re-typed, so the
+    /// F# CustomAsset invariants (profile envelope, profileFields object) always run for writes.
+    /// <para>The <c>profileVersion ?? 1</c> default is READ tolerance only: the F# write-path
+    /// validation (<c>validateKind</c>) parses the document and rejects create/amend commands whose
+    /// envelope lacks a numeric <c>profileVersion</c> or an object-valued <c>profileFields</c>, so
+    /// the default can never mint a canonical record with an incomplete envelope.</para>
+    /// </summary>
+    private static SecurityKind ToCustomAssetKind(JsonElement json, SecurityKindMappingMode mode)
+    {
+        if (json.ValueKind == JsonValueKind.Object
+            && json.TryGetProperty("customProfileId", out var customProfileId)
+            && customProfileId.ValueKind == JsonValueKind.String
+            && !string.IsNullOrWhiteSpace(customProfileId.GetString()))
+        {
+            return SecurityKind.NewCustomAsset(new CustomAssetTerms(
+                customProfileId.GetString()!,
+                GetOptionalInt(json, "profileVersion") ?? 1,
+                json.GetRawText()));
+        }
+
+        if (mode == SecurityKindMappingMode.Write)
+        {
+            throw new InvalidOperationException(
+                "CustomAsset terms must include a non-empty 'customProfileId' referencing an approved asset profile. " +
+                "Select an approved profile (or use asset class 'OtherSecurity' for unprofiled instruments) instead of submitting an envelope-less CustomAsset.");
+        }
+
+        return SecurityKind.NewOtherSecurity(new OtherSecurityTerms(
+            GetOptionalString(json, "category") ?? "CustomAsset",
+            ToOption(GetOptionalString(json, "subType")),
+            ToOption(GetOptionalDateOnly(json, "maturity")),
+            ToOption(GetOptionalString(json, "issuerName")),
+            ToOption(GetOptionalString(json, "settlementType"))));
     }
 
     private static BondSubclass ParseBondSubclass(string? subclass) => subclass switch
@@ -393,6 +468,12 @@ internal static class SecurityMasterMapping
         "Convertible" => BondSubclass.Convertible,
         "InflationLinked" => BondSubclass.InflationLinked,
         "FloatingRate" => BondSubclass.FloatingRate,
+        "SinkingFund" => BondSubclass.SinkingFund,
+        "StepRate" => BondSubclass.StepRate,
+        "FixedToFloat" => BondSubclass.FixedToFloat,
+        "Vrdn" => BondSubclass.Vrdn,
+        "AuctionRate" => BondSubclass.AuctionRate,
+        "BankLoan" => BondSubclass.BankLoan,
         "AssetBacked" => BondSubclass.AssetBacked,
         "MortgageBacked" => BondSubclass.MortgageBacked,
         "AgencyMbs" => BondSubclass.AgencyMbs,
@@ -420,6 +501,17 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalDecimal(json, "floorRate")),
                 ToOption(GetOptionalString(json, "dayCount"))),
             "ZeroCoupon" => BondCouponStructure.ZeroCoupon,
+            "Step" => BondCouponStructure.NewStep(
+                ToFSharpList(GetOptionalArrayItemsStrict(json, "stepSchedule").Select(ToStepCouponEntry)),
+                ToOption(GetOptionalString(json, "dayCount"))),
+            // The scalar couponRate slot carries the inflation-linked REAL rate; couponType
+            // discriminates, so a fixed-coupon read can never pick up an indexed rate.
+            "InflationLinked" => BondCouponStructure.NewInflationLinked(
+                GetOptionalDecimal(json, "couponRate") ?? 0m,
+                GetRequiredString(json, "inflationIndex"),
+                ToOption(GetOptionalDecimal(json, "inflationBaseIndexValue")),
+                ToOption(GetOptionalDecimal(json, "inflationIndexRatio")),
+                ToOption(GetOptionalString(json, "dayCount"))),
             _ => BondCouponStructure.NewFixed(
                 GetOptionalDecimal(json, "couponRate") ?? 0m,
                 ToOption(GetOptionalString(json, "dayCount")))
@@ -437,7 +529,8 @@ internal static class SecurityMasterMapping
             ToPaymentFrequencyOption(GetOptionalString(json, "paymentFrequency")),
             ToOption(GetOptionalDateOnly(json, "legalFinalMaturity")),
             ToOption(GetOptionalDateOnly(json, "preRefundDate")),
-            ToOption(GetOptionalDateOnly(json, "mandatoryPutDate")));
+            ToOption(GetOptionalDateOnly(json, "mandatoryPutDate")),
+            ToFSharpList(GetOptionalArrayItemsStrict(json, "principalSchedule").Select(ToPrincipalPaymentEntry)));
     }
 
     private static SwapLeg ToSwapLeg(JsonElement json)
@@ -457,6 +550,16 @@ internal static class SecurityMasterMapping
         => new(
             GetRequiredDateOnly(json, "paymentDate"),
             GetRequiredDecimal(json, "amount"));
+
+    private static StepCouponEntry ToStepCouponEntry(JsonElement json)
+        => new(
+            GetRequiredDateOnly(json, "effectiveDate"),
+            GetRequiredDecimal(json, "rate"));
+
+    private static FactorScheduleEntry ToFactorScheduleEntry(JsonElement json)
+        => new(
+            GetRequiredDateOnly(json, "asOfDate"),
+            GetRequiredDecimal(json, "factor"));
 
     private static Provenance ToProvenance(string sourceSystem, string updatedBy, string? sourceRecordId, string? reason, DateTimeOffset asOf)
         => new(sourceSystem, ToOption(sourceRecordId), asOf, updatedBy, ToOption(reason));
@@ -490,6 +593,20 @@ internal static class SecurityMasterMapping
     private static FSharpOption<int> ToOption(int? value)
         => value.HasValue ? FSharpOption<int>.Some(value.Value) : FSharpOption<int>.None;
 
+    private static FSharpOption<bool> ToOption(bool? value)
+        => value.HasValue ? FSharpOption<bool>.Some(value.Value) : FSharpOption<bool>.None;
+
+    private static FSharpOption<DistributionPolicy> ToDistributionPolicyOption(string? value)
+        => string.IsNullOrWhiteSpace(value)
+            ? FSharpOption<DistributionPolicy>.None
+            : FSharpOption<DistributionPolicy>.Some(value.Trim() switch
+            {
+                "Accumulating" => DistributionPolicy.Accumulating,
+                "Distributing" => DistributionPolicy.Distributing,
+                "Sweep" => DistributionPolicy.Sweep,
+                var other => DistributionPolicy.NewOtherDistribution(other)
+            });
+
     private static FSharpOption<DateOnly> ToOption(DateOnly? value)
         => value.HasValue ? FSharpOption<DateOnly>.Some(value.Value) : FSharpOption<DateOnly>.None;
 
@@ -515,23 +632,16 @@ internal static class SecurityMasterMapping
 
     private static void EnsureSupportedAssetSchemaVersion(string assetClass, JsonElement json)
     {
-        var schemaVersion = GetOptionalInt(json, "schemaVersion") ?? 1;
-        if (schemaVersion == SecurityMasterSchemaVersions.LegacyAssetSpecificTerms)
+        var schemaVersion = GetOptionalInt(json, "schemaVersion")
+            ?? SecurityMasterSchemaVersions.DefaultAssetSpecificTerms;
+        var isProfileBacked = IsProfileBackedAssetPayload(assetClass, json);
+        if (SecurityMasterSchemaVersions.IsAcceptedAssetSpecificTermsVersion(schemaVersion, isProfileBacked))
         {
             return;
         }
 
-        if (schemaVersion == SecurityMasterSchemaVersions.CustomAssetProfileTerms
-            && IsProfileBackedAssetPayload(assetClass, json))
-        {
-            return;
-        }
-
-        if (schemaVersion != SecurityMasterSchemaVersions.LegacyAssetSpecificTerms)
-        {
-            throw new InvalidOperationException(
-                $"Unsupported schemaVersion '{schemaVersion}' for asset class '{assetClass}'.");
-        }
+        throw new InvalidOperationException(
+            $"Unsupported schemaVersion '{schemaVersion}' for asset class '{assetClass}'.");
     }
 
     private static bool IsProfileBackedAssetPayload(string assetClass, JsonElement json)
@@ -541,13 +651,7 @@ internal static class SecurityMasterMapping
            && !string.IsNullOrWhiteSpace(customProfileId.GetString());
 
     private static bool SupportsProfileBackedTerms(string assetClass)
-        => string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "StructuredCredit", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "PrivateFundInterest", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "PrivateCompanyEquity", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "RealEstateHolding", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "CommitmentGuarantee", StringComparison.OrdinalIgnoreCase);
+        => SecurityAssetClassCatalog.GetOrDefault(assetClass).SupportsProfileBackedTerms;
 
     private static JsonElement ResolveAssetTermsJson(JsonElement json)
         => json.TryGetProperty("profileFields", out var profileFields) && profileFields.ValueKind == JsonValueKind.Object
@@ -570,6 +674,25 @@ internal static class SecurityMasterMapping
         {
             yield return item;
         }
+    }
+
+    /// <summary>
+    /// Like <see cref="GetOptionalArrayItems"/>, but a property that is PRESENT with the wrong JSON
+    /// kind fails instead of reading as absent. Used for contractual schedules: silently treating a
+    /// malformed <c>principalSchedule</c>/<c>factorScheduleEntries</c> as missing would let domain
+    /// validation succeed and persist a snapshot that deleted the submitted schedule — projecting a
+    /// sinker as a bullet — rather than rejecting the invalid terms.
+    /// </summary>
+    private static IEnumerable<JsonElement> GetOptionalArrayItemsStrict(JsonElement json, string propertyName)
+    {
+        if (json.TryGetProperty(propertyName, out var value)
+            && value.ValueKind is not (JsonValueKind.Array or JsonValueKind.Null or JsonValueKind.Undefined))
+        {
+            throw new InvalidOperationException(
+                $"Property '{propertyName}' must be a JSON array when present, but was {value.ValueKind}.");
+        }
+
+        return GetOptionalArrayItems(json, propertyName);
     }
 
     private static string GetRequiredString(JsonElement json, string propertyName)
@@ -726,7 +849,8 @@ internal static class SecurityMasterMapping
             ToOption(GetOptionalDateOnly(json, "conversionStartDate")),
             ToOption(GetOptionalDateOnly(json, "conversionEndDate")));
 
-    private static FSharpOption<EquityClassification> ToEquityClassificationOption(JsonElement json)
+    private static FSharpOption<EquityClassification> ToEquityClassificationOption(
+        JsonElement json, SecurityKindMappingMode mode)
     {
         var raw = GetOptionalString(json, "classification");
         return raw switch
@@ -740,10 +864,29 @@ internal static class SecurityMasterMapping
                 EquityClassification.NewConvertiblePreferred(
                     ToPreferredTerms(GetRequiredObject(json, "preferredTerms")),
                     ToConvertibleTerms(GetRequiredObject(json, "convertibleTerms")))),
+            // A write selecting "Other" must NAME the classification: defaulting a missing
+            // otherClassification to the placeholder "Other" would persist an economically
+            // meaningless label as the security's classification.
+            "Other" when mode == SecurityKindMappingMode.Write =>
+                GetOptionalString(json, "otherClassification") is { } named && !string.IsNullOrWhiteSpace(named)
+                    ? FSharpOption<EquityClassification>.Some(EquityClassification.NewOther(named))
+                    : throw new InvalidOperationException(
+                        "An equity classification of 'Other' requires a non-empty 'otherClassification' naming the " +
+                        "classification. Supply it, or use one of the declared classifications " +
+                        "(Common, Preferred, Convertible, ConvertiblePreferred)."),
             "Other" => FSharpOption<EquityClassification>.Some(
-                EquityClassification.NewOther(GetRequiredString(json, "otherClassification"))),
+                EquityClassification.NewOther(GetOptionalString(json, "otherClassification") ?? "Other")),
             null => FSharpOption<EquityClassification>.None,
-            _ => throw new InvalidOperationException($"Unsupported equity classification '{raw}'.")
+            // A WRITE fails closed on an unrecognized discriminant: silently persisting a typo
+            // ("Commmon") as Other(raw) would change the security's economic classification.
+            _ when mode == SecurityKindMappingMode.Write =>
+                throw new InvalidOperationException(
+                    $"Unknown equity classification '{raw}'. Declared classifications are Common, Preferred, " +
+                    "Convertible, and ConvertiblePreferred; use 'Other' with 'otherClassification' for anything else."),
+            // Read tolerance: rows written before the serializer emitted the "Other" discriminant
+            // carry the raw label in the classification slot. Treat any unrecognized value as an
+            // Other classification instead of failing every read of the row.
+            _ => FSharpOption<EquityClassification>.Some(EquityClassification.NewOther(raw))
         };
     }
 

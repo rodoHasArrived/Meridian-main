@@ -4,8 +4,10 @@ using System.Threading.Tasks;
 namespace Meridian.Wpf.Services;
 
 /// <summary>
-/// Service for persisting offline tracking data.
-/// Implements singleton pattern for application-wide offline data management.
+/// Service for persisting offline tracking data — the durable pending-operations queue that
+/// captures mutations attempted while the backend was unreachable. Initialization restores the
+/// queue persisted by the previous session (clean shutdown or crash); persist/load snapshot and
+/// reload it on demand. Implements singleton pattern for application-wide offline data management.
 /// </summary>
 public sealed class OfflineTrackingPersistenceService
 {
@@ -29,40 +31,43 @@ public sealed class OfflineTrackingPersistenceService
     }
 
     /// <summary>
-    /// Initializes the offline tracking persistence service.
+    /// Initializes the offline tracking persistence service and performs crash recovery by
+    /// restoring the durable pending-operations queue persisted by the previous session.
     /// </summary>
     /// <returns>A task representing the async operation.</returns>
-    public Task InitializeAsync()
+    public async Task InitializeAsync()
     {
+        await PendingOperationsQueueService.Instance.InitializeAsync().ConfigureAwait(false);
         _initialized = true;
-        return Task.CompletedTask;
     }
 
     /// <summary>
-    /// Shuts down the offline tracking persistence service.
+    /// Shuts down the offline tracking persistence service after persisting the current
+    /// offline state.
     /// </summary>
     /// <returns>A task representing the async operation.</returns>
-    public Task ShutdownAsync()
+    public async Task ShutdownAsync()
     {
+        await PersistAsync().ConfigureAwait(false);
         _initialized = false;
-        return Task.CompletedTask;
     }
 
     /// <summary>
-    /// Persists offline data to storage.
+    /// Persists offline data (the pending-operations queue) to storage.
     /// </summary>
     /// <returns>A task representing the async operation.</returns>
     public Task PersistAsync()
     {
-        return Task.CompletedTask;
+        return PendingOperationsQueueService.Instance.PersistAsync();
     }
 
     /// <summary>
-    /// Loads offline data from storage.
+    /// Loads offline data from storage, restoring persisted pending operations when the queue
+    /// has not been initialized yet.
     /// </summary>
     /// <returns>A task representing the async operation.</returns>
     public Task LoadAsync()
     {
-        return Task.CompletedTask;
+        return PendingOperationsQueueService.Instance.InitializeAsync();
     }
 }

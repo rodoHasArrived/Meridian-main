@@ -68,14 +68,14 @@ public sealed class CsvPartnerFileParser : IPartnerFileParser
 
         if (schema.HasHeaderRow)
         {
-            var headerLine = await reader.ReadLineAsync(ct).ConfigureAwait(false);
+            var headerLine = await ReadRecordAsync(reader, ct).ConfigureAwait(false);
             if (headerLine is null)
                 yield break;
             headers = SplitCsvLine(headerLine, schema.Delimiter).ToArray();
         }
 
         string? line;
-        while ((line = await reader.ReadLineAsync(ct).ConfigureAwait(false)) is not null)
+        while ((line = await ReadRecordAsync(reader, ct).ConfigureAwait(false)) is not null)
         {
             recordIndex++;
             if (ShouldSkip(checkpoint, file.ChecksumSha256, recordIndex))
@@ -288,6 +288,45 @@ public sealed class CsvPartnerFileParser : IPartnerFileParser
         }
 
         return index == 0 ? null : index;
+    }
+
+    /// <summary>
+    /// Reads one logical CSV record. RFC 4180 allows quoted fields to contain embedded
+    /// newlines, so physical lines are appended until all quotes balance; splitting on raw
+    /// lines would otherwise break one record into two.
+    /// </summary>
+    private static async Task<string?> ReadRecordAsync(StreamReader reader, CancellationToken ct)
+    {
+        var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
+        if (line is null || !HasOddQuoteCount(line))
+            return line;
+
+        var record = new System.Text.StringBuilder(line);
+        var insideQuotes = true;
+        while (insideQuotes)
+        {
+            var continuation = await reader.ReadLineAsync(ct).ConfigureAwait(false);
+            if (continuation is null)
+                break; // Unterminated quote at EOF: surface what was read so the row still parses.
+
+            record.Append('\n').Append(continuation);
+            if (HasOddQuoteCount(continuation))
+                insideQuotes = false;
+        }
+
+        return record.ToString();
+    }
+
+    private static bool HasOddQuoteCount(string line)
+    {
+        var odd = false;
+        foreach (var ch in line)
+        {
+            if (ch == '"')
+                odd = !odd;
+        }
+
+        return odd;
     }
 
     private static IEnumerable<string> SplitCsvLine(string line, char delimiter)

@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using Meridian.Application.Pipeline;
+using Meridian.Core.Resilience;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 using Meridian.Core.Pipeline;
@@ -13,7 +14,7 @@ namespace Meridian.Execution.Adapters;
 /// streaming via bounded channels, and rate limit scaffolding.
 /// Concrete implementations override broker-specific methods.
 /// </summary>
-public abstract class BaseBrokerageGateway : IBrokerageGateway
+public abstract class BaseBrokerageGateway : IBrokerageGateway, IExecutionGatewayModeProvider
 {
     private readonly Channel<ExecutionReport> _reportChannel;
     private volatile bool _disposed;
@@ -28,6 +29,9 @@ public abstract class BaseBrokerageGateway : IBrokerageGateway
     /// <summary>Base delay for exponential backoff on reconnection.</summary>
     protected virtual TimeSpan ReconnectBaseDelay => TimeSpan.FromSeconds(2);
 
+    /// <summary>Upper bound applied to the reconnection backoff delay.</summary>
+    protected virtual TimeSpan MaxReconnectDelay => TimeSpan.FromSeconds(60);
+
     protected BaseBrokerageGateway(ILogger logger)
     {
         Logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -40,6 +44,9 @@ public abstract class BaseBrokerageGateway : IBrokerageGateway
     // ── IExecutionGateway ──────────────────────────────────────────────
     /// <inheritdoc />
     public abstract string GatewayId { get; }
+
+    /// <inheritdoc />
+    public ExecutionMode ExecutionMode => ExecutionMode.Live;
 
     /// <inheritdoc />
     public bool IsConnected => _connected;
@@ -222,7 +229,8 @@ public abstract class BaseBrokerageGateway : IBrokerageGateway
             if (reconnectToken.IsCancellationRequested)
                 return;
 
-            var delay = TimeSpan.FromSeconds(ReconnectBaseDelay.TotalSeconds * Math.Pow(2, attempt - 1));
+            var delay = Backoff.ExponentialDelay(
+                attempt, ReconnectBaseDelay, MaxReconnectDelay, jitterFraction: 0.2);
             Logger.LogWarning(
                 "{Gateway} reconnect attempt {Attempt}/{Max} in {Delay}s",
                 GatewayId, attempt, MaxReconnectAttempts, delay.TotalSeconds);

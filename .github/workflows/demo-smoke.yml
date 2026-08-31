@@ -1,0 +1,142 @@
+name: Demo Smoke
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/demo-smoke.yml"
+      - "src/Meridian/Program.cs"
+      - "src/Meridian/DemoWorkspaceCli.cs"
+      - "src/Meridian/WorkstationAssetTree.cs"
+      - "src/Meridian.Ui/wwwroot/workstation/**"
+      - "src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs"
+      - "src/Meridian.Contracts/Workstation/FirstRunDtos.cs"
+      - "src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs"
+      - "src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs"
+      - "src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs"
+      - "tests/Meridian.Tests/Demo/**"
+      - "README.md"
+      - "docs/start/README.md"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/demo-smoke.yml"
+      - "src/Meridian/Program.cs"
+      - "src/Meridian/DemoWorkspaceCli.cs"
+      - "src/Meridian/WorkstationAssetTree.cs"
+      - "src/Meridian.Ui/wwwroot/workstation/**"
+      - "src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs"
+      - "src/Meridian.Contracts/Workstation/FirstRunDtos.cs"
+      - "src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs"
+      - "src/Meridian.Ui.Shared/Services/DemoTenantProvisioner.cs"
+      - "src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs"
+      - "tests/Meridian.Tests/Demo/**"
+      - "README.md"
+      - "docs/start/README.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: demo-smoke-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+  DOTNET_VERSION: '10.0.x'
+  MERIDIAN_DISABLE_DOCKER_TESTS: "true"
+
+jobs:
+  demo-smoke:
+    name: Seeded Demo Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.4.0
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-demo-smoke-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore demo-smoke test project
+        run: dotnet restore tests/Meridian.Tests/Meridian.Tests.csproj /p:EnableWindowsTargeting=true
+
+      - name: Seed demo workspace and assert key screens render populated
+        run: |
+          # Scenario source: tests/Meridian.Tests/Demo/*.cs
+          # Seeds the isolated demo workspace, boots the workstation on it, and asserts the
+          # reconciliation and strategy screens render populated (HTTP 200, not empty, not 501),
+          # plus the reset guard and restart-survival checks. A broken first-run fails here.
+          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore --filter "FullyQualifiedName~Meridian.Tests.Demo" --logger "trx;LogFilePrefix=demo-smoke" --results-directory artifacts/test-results/demo-smoke /p:EnableWindowsTargeting=true
+
+      - name: Prove the documented first-mile command works from a clean environment
+        run: |
+          set -euo pipefail
+
+          # The tests above boot a TestServer and set the demo's environment defaults in-process,
+          # so a green result there does not prove the CLI verb, the real host boot, or the login
+          # path a new user actually hits. Run exactly what README tells a new user to run, with
+          # none of those defaults present in the environment.
+          demo_run() {
+            env -u DOTNET_ENVIRONMENT -u MDC_AUTH_MODE -u MERIDIAN_USE_INMEMORY_GOVERNANCE \
+              dotnet run --project src/Meridian/Meridian.csproj -c Release -- "$@"
+          }
+
+          demo_run --seed-demo --seed-only
+
+          demo_run --demo --http-port 8123 > demo-serve.log 2>&1 &
+          serve_pid=$!
+
+          served=""
+          for _ in $(seq 1 60); do
+            if ! kill -0 "$serve_pid" 2>/dev/null; then
+              echo "::error::The demo host exited before it served the workstation."
+              cat demo-serve.log
+              exit 1
+            fi
+            if curl -fsS -o /dev/null "http://127.0.0.1:8123/workstation/"; then
+              served=yes
+              break
+            fi
+            sleep 2
+          done
+
+          kill "$serve_pid" 2>/dev/null || true
+          wait "$serve_pid" 2>/dev/null || true
+
+          if [ -z "$served" ]; then
+            echo "::error::The demo never served /workstation/ within 120s."
+            cat demo-serve.log
+            exit 1
+          fi
+          echo "The demo served /workstation/ from a clean environment."
+
+          demo_run --reset-demo
+
+      - name: Upload demo-smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: demo-smoke-evidence
+          path: artifacts/test-results/demo-smoke/
+          if-no-files-found: ignore
+          retention-days: 30

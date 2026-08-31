@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -50,6 +51,9 @@ public sealed partial class TiingoCorporateActionProvider : ICorporateActionProv
     }
 
     public string ProviderId => "tiingo";
+
+    public CorporateActionProviderReleaseStatusDto ReleaseStatus =>
+        CorporateActionProviderReleaseStatusDto.ReviewOnly;
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<CorporateActionCommand>> FetchAsync(
@@ -195,12 +199,7 @@ public sealed partial class TiingoCorporateActionProvider : ICorporateActionProv
             return false;
         }
 
-        return DateOnly.TryParseExact(
-            value[..10],
-            "yyyy-MM-dd",
-            CultureInfo.InvariantCulture,
-            DateTimeStyles.None,
-            out sessionDate);
+        return ProviderDateParsing.TryParseProviderDate(value[..10], "yyyy-MM-dd", out sessionDate);
     }
 
     private sealed class TiingoCorporateActionPrice

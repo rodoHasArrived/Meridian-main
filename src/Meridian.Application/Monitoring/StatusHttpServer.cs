@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -258,12 +259,14 @@ public sealed class StatusHttpServer : IAsyncDisposable
     /// <summary>
     /// Prometheus metrics endpoint using shared handlers.
     /// </summary>
-    private Task WriteMetricsAsync(HttpListenerResponse resp)
+    private async Task WriteMetricsAsync(HttpListenerResponse resp)
     {
         resp.ContentType = "text/plain; version=0.0.4";
-        var content = _handlers.GetPrometheusMetrics();
+        // The server's own token, not the default: registry collection walks every registered
+        // collector and would otherwise keep running, and keep writing, after shutdown began.
+        var content = await _handlers.GetPrometheusMetricsAsync(_cts.Token).ConfigureAwait(false);
         var bytes = Encoding.UTF8.GetBytes(content);
-        return resp.OutputStream.WriteAsync(bytes, 0, bytes.Length);
+        await resp.OutputStream.WriteAsync(bytes.AsMemory(0, bytes.Length), _cts.Token).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -434,7 +437,15 @@ setInterval(refresh,2000);refresh();
             }
         }
 
-        return string.Equals(headerToken, _accessToken, StringComparison.Ordinal);
+        if (string.IsNullOrWhiteSpace(headerToken))
+        {
+            return false;
+        }
+
+        // Constant-time comparison so remote callers cannot recover the token via timing.
+        var expected = Encoding.UTF8.GetBytes(_accessToken);
+        var provided = Encoding.UTF8.GetBytes(headerToken);
+        return CryptographicOperations.FixedTimeEquals(provided, expected);
     }
 
     private static string ResolveBindAddress(string bindAddress, bool allowRemoteAccess)

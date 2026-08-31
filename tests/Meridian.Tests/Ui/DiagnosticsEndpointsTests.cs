@@ -4,18 +4,20 @@ using System.Text.Json;
 using System.Threading.Channels;
 using System.Threading.RateLimiting;
 using FluentAssertions;
-using Meridian.Contracts.Coordination;
-using Meridian.Core.Config;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Coordination;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.Monitoring;
+using Meridian.Core.Config;
 using Meridian.Core.Performance;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
+using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Resilience;
 using Meridian.Platform.Diagnostics;
@@ -28,7 +30,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using UiConfigStore = Meridian.Ui.Shared.Services.ConfigStore;
-using Meridian.Contracts.Monitoring;
 
 namespace Meridian.Tests.Ui;
 
@@ -438,7 +439,7 @@ public sealed class DiagnosticsEndpointsTests : IDisposable
             SequenceNumber: 1,
             Venue: "TEST");
 
-        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade);
+        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade, source: "TEST");
     }
 
     private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection> configureServices)
@@ -455,6 +456,20 @@ public sealed class DiagnosticsEndpointsTests : IDisposable
 
         var app = applicationBuilder.Build();
         app.UseRateLimiter();
+        // Diagnostics mutations now require ViewDiagnostics (credential validation requires
+        // ManageCredentials). This minimal app composes no login middleware, so seed the
+        // permissions the way LoginSessionMiddleware would, with a header override so a test
+        // can still exercise the unauthorized path.
+        app.Use((context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "diagnostics-operator";
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] =
+                context.Request.Headers.TryGetValue("X-Test-Permissions", out var configured) &&
+                Enum.TryParse<UserPermission>(configured.ToString(), out var parsed)
+                    ? parsed
+                    : UserPermission.ViewDiagnostics | UserPermission.ManageCredentials;
+            return next();
+        });
         app.MapDiagnosticsEndpoints(JsonOptions);
         await app.StartAsync();
         return app;

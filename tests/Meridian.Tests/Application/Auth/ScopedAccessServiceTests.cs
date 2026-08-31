@@ -60,6 +60,48 @@ public sealed class ScopedAccessServiceTests
     }
 
     [Fact]
+    public async Task AuthorizeManyAsync_OrganizationGrant_ResolvesAllScopesWithOneStoreAndLineageRead()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(AuthorizeManyAsync_OrganizationGrant_ResolvesAllScopesWithOneStoreAndLineageRead));
+        var fundStructure = new InMemoryFundStructureService(new InMemoryFundAccountService());
+        var created = await CreateTwoFundStructureAsync(fundStructure);
+        var store = new CountingScopedAccessAssignmentStore(
+            new FileScopedAccessAssignmentStore(Path.Combine(artifacts.RootPath, "governance", "user-access-assignments.json")));
+        var lineage = new CountingAccessScopeLineageProvider(
+            new FundStructureAccessScopeLineageProvider(fundStructure));
+        var service = new ScopedAccessService(store, lineage);
+
+        await service.CreateAsync(
+            new UserAccessAssignmentCreateRequestDto(
+                PrincipalId: "fund-controller",
+                PrincipalKind: AccessPrincipalKindDto.User,
+                ScopeKind: AccessScopeKindDto.Organization,
+                ScopeId: created.OrganizationId,
+                Role: nameof(UserRole.Accounting),
+                RoleProfileName: "Accounting Reviewer",
+                PermissionNames: [nameof(UserPermission.ViewTrades)],
+                EffectiveFrom: DateTimeOffset.UtcNow.AddMinutes(-1),
+                EffectiveTo: null,
+                RequestedBy: "admin",
+                Rationale: "Controller owns this fund complex."),
+            actor: "admin");
+
+        var decisions = await service.AuthorizeManyAsync(
+            "fund-controller",
+            UserPermission.ViewTrades,
+            AccessScopeKindDto.Fund,
+            [created.ChildFundId, created.UnrelatedFundId, created.ChildFundId],
+            UserPermission.None);
+
+        decisions.Should().HaveCount(2);
+        decisions[created.ChildFundId].IsAllowed.Should().BeTrue();
+        decisions[created.UnrelatedFundId].IsAllowed.Should().BeFalse();
+        store.ListCalls.Should().Be(1, "one authorization batch must use one fresh assignment snapshot");
+        lineage.BatchCalls.Should().Be(1, "all candidate scopes should share one fund-structure graph load");
+        lineage.ScalarCalls.Should().Be(0);
+    }
+
+    [Fact]
     public async Task RevokeAsync_StaleVersion_RejectsSecondWriter()
     {
         using var artifacts = TestArtifactDirectory.Create(nameof(RevokeAsync_StaleVersion_RejectsSecondWriter));
@@ -287,6 +329,58 @@ public sealed class ScopedAccessServiceTests
         await service.CreateFundAsync(new CreateFundRequest(unrelatedFundId, "FUND-B", "Fund B", "USD", now, "test", BusinessId: unrelatedBizId));
 
         return new FundFixture(orgId, childFundId, unrelatedFundId);
+    }
+
+    private sealed class CountingScopedAccessAssignmentStore(IScopedAccessAssignmentStore inner)
+        : IScopedAccessAssignmentStore
+    {
+        public int ListCalls { get; private set; }
+
+        public Task<IReadOnlyList<UserAccessAssignmentDto>> ListAsync(CancellationToken ct = default)
+        {
+            ListCalls++;
+            return inner.ListAsync(ct);
+        }
+
+        public Task<UserAccessAssignmentDto?> GetAsync(Guid assignmentId, CancellationToken ct = default)
+            => inner.GetAsync(assignmentId, ct);
+
+        public Task<UserAccessAssignmentDto> CreateAsync(
+            UserAccessAssignmentDto assignment,
+            CancellationToken ct = default)
+            => inner.CreateAsync(assignment, ct);
+
+        public Task<UserAccessAssignmentDto> ReplaceAsync(
+            UserAccessAssignmentDto assignment,
+            long expectedVersion,
+            CancellationToken ct = default)
+            => inner.ReplaceAsync(assignment, expectedVersion, ct);
+    }
+
+    private sealed class CountingAccessScopeLineageProvider(IAccessScopeLineageProvider inner)
+        : IAccessScopeLineageProvider
+    {
+        public int ScalarCalls { get; private set; }
+
+        public int BatchCalls { get; private set; }
+
+        public Task<IReadOnlyList<AccessScopeRef>> ResolveLineageAsync(
+            AccessScopeKindDto scopeKind,
+            Guid scopeId,
+            CancellationToken ct = default)
+        {
+            ScalarCalls++;
+            return inner.ResolveLineageAsync(scopeKind, scopeId, ct);
+        }
+
+        public Task<IReadOnlyDictionary<Guid, IReadOnlyList<AccessScopeRef>>> ResolveLineagesAsync(
+            AccessScopeKindDto scopeKind,
+            IReadOnlyCollection<Guid> scopeIds,
+            CancellationToken ct = default)
+        {
+            BatchCalls++;
+            return inner.ResolveLineagesAsync(scopeKind, scopeIds, ct);
+        }
     }
 
     private sealed record FundFixture(Guid OrganizationId, Guid ChildFundId, Guid UnrelatedFundId);

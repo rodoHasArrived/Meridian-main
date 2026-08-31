@@ -44,6 +44,12 @@ public sealed class NullSecurityMasterQueryService
     public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
         => Task.FromResult<SecurityDetailDto?>(null);
 
+    public Task<SecurityDetailDto?> GetRecordedByIdAsOfAsync(
+        Guid securityId,
+        DateTimeOffset asOfUtc,
+        CancellationToken ct = default)
+        => Task.FromResult<SecurityDetailDto?>(null);
+
     public Task<SecurityDetailDto?> GetByIdentifierAsync(
         SecurityIdentifierKind identifierKind,
         string identifierValue,
@@ -144,6 +150,62 @@ public sealed class NullSecurityMasterCorporateActionCommandService : ISecurityM
             "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable corporate action appends."));
 }
 
+public sealed class NullCorporateActionOperationsService : ICorporateActionOperationsService
+{
+    private static Task<T> NotConfigured<T>() =>
+        Task.FromException<T>(new CorporateActionOperationException(
+            CorporateActionProblemCodes.PersistenceUnavailable,
+            "Security Master corporate-action persistence is not configured."));
+
+    public Task<CorporateActionSourceProposalDto> RecordSourceProposalAsync(RecordCorporateActionSourceProposalRequestDto request, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionSourceProposalDto>();
+
+    public Task<CorporateActionSourceProposalDto?> GetSourceProposalAsync(Guid proposalId, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionSourceProposalDto?>();
+
+    public Task<IReadOnlyList<CorporateActionSourceProposalDto>> ListSourceProposalsAsync(Guid? securityId, string? state, int take, CancellationToken ct = default) =>
+        NotConfigured<IReadOnlyList<CorporateActionSourceProposalDto>>();
+
+    public Task<IReadOnlyList<CorporateActionSourceProposalDto>> ListActionableSourceProposalsAsync(Guid? securityId, int take, CancellationToken ct = default) =>
+        NotConfigured<IReadOnlyList<CorporateActionSourceProposalDto>>();
+
+    public Task<CorporateActionDurableInboxDto> GetInboxAsync(CorporateActionCaseScopeDto acceptanceScope, int take, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionDurableInboxDto>();
+
+    public Task<CorporateActionSourceProposalAcceptanceResultDto> AcceptSourceProposalAsync(AcceptCorporateActionSourceProposalRequestDto request, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionSourceProposalAcceptanceResultDto>();
+
+    public Task<CorporateActionSourceProposalDecisionResultDto> RejectSourceProposalAsync(RejectCorporateActionSourceProposalRequestDto request, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionSourceProposalDecisionResultDto>();
+
+    public Task<CorporateActionProcessingCaseDto?> GetCaseAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionProcessingCaseDto?>();
+
+    public Task<IReadOnlyList<CorporateActionProcessingCaseDto>> ListCasesAsync(string tenantId, string companyId, Guid? securityId, string? state, int take, CancellationToken ct = default) =>
+        NotConfigured<IReadOnlyList<CorporateActionProcessingCaseDto>>();
+
+    public Task<CorporateActionConflictDto?> GetConflictAsync(Guid caseId, Guid conflictId, string tenantId, string companyId, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionConflictDto?>();
+
+    public Task<IReadOnlyList<CorporateActionConflictDto>> ListConflictsAsync(Guid caseId, string tenantId, string companyId, string? state, int take, CancellationToken ct = default) =>
+        NotConfigured<IReadOnlyList<CorporateActionConflictDto>>();
+
+    public Task<CorporateActionEvidenceMutationResultDto> AddEvidenceAsync(AddCorporateActionEvidenceRequestDto request, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionEvidenceMutationResultDto>();
+
+    public Task<CorporateActionConflictMutationResultDto> RecordConflictAsync(RecordCorporateActionConflictRequestDto request, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionConflictMutationResultDto>();
+
+    public Task<CorporateActionConflictResolutionResultDto> ResolveConflictAsync(ResolveCorporateActionConflictRequestDto request, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionConflictResolutionResultDto>();
+
+    public Task<CorporateActionProcessingOptionMutationResultDto> UpsertOptionAsync(UpsertCorporateActionProcessingOptionRequestDto request, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionProcessingOptionMutationResultDto>();
+
+    public Task<CorporateActionCaseTransitionResultDto> TransitionCaseAsync(TransitionCorporateActionCaseRequestDto request, CancellationToken ct = default) =>
+        NotConfigured<CorporateActionCaseTransitionResultDto>();
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Conflict service — returns empty lists (no conflicts to show when not configured)
 // ──────────────────────────────────────────────────────────────────────────────
@@ -164,6 +226,12 @@ internal sealed class NullSecurityMasterConflictService : ISecurityMasterConflic
 
     public Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
         => Task.CompletedTask;
+
+    public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct)
+        => Task.CompletedTask;
+
+    public Task ReconcileOpenFieldConflictsAsync(SecurityProjectionRecord persisted, CancellationToken ct)
+        => Task.CompletedTask;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -178,6 +246,7 @@ public sealed class NullSecurityMasterImportService : ISecurityMasterImportServi
     public Task<SecurityMasterImportResult> ImportAsync(
         string fileContent,
         string fileExtension,
+        string actor,
         IProgress<SecurityMasterImportProgress>? progress = null,
         CancellationToken ct = default)
         => Task.FromResult(new SecurityMasterImportResult(
@@ -256,8 +325,41 @@ internal sealed class NullOperatorOverridesStore : IOperatorOverridesStore
         Guid securityId,
         OperatorOverridesPatchRequest request,
         string updatedBy,
+        CancellationToken ct = default,
+        long? expectedCanonicalVersion = null)
+        => Task.FromException<OperatorOverridesDto>(new InvalidOperationException(
+            "Security Master is not configured. " +
+            "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable operator overrides."));
+
+    public Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
+        Guid securityId,
+        OperatorOverrideDecision decision,
         CancellationToken ct = default)
         => Task.FromException<OperatorOverridesDto>(new InvalidOperationException(
             "Security Master is not configured. " +
             "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable operator overrides."));
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Field-level provenance store — inert when Security Master is offline
+// ──────────────────────────────────────────────────────────────────────────────
+
+/// <summary>
+/// Field provenance is best-effort lineage, not a workflow gate: with no Security Master backend
+/// there is nothing to attribute, so writes are no-ops and reads are empty rather than failures.
+/// </summary>
+internal sealed class NullSecurityFieldProvenanceStore : ISecurityFieldProvenanceStore
+{
+    private static readonly IReadOnlyList<SecurityFieldProvenanceRecord> Empty = [];
+
+    public Task UpsertAsync(SecurityFieldProvenanceRecord record, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task RemoveAsync(
+        Guid securityId, string fieldPath, string origin, DateTimeOffset clearedAt,
+        long? maxSourceVersion = null, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task<IReadOnlyList<SecurityFieldProvenanceRecord>> GetAsync(Guid securityId, CancellationToken ct = default)
+        => Task.FromResult(Empty);
 }

@@ -1,4 +1,5 @@
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Meridian.Strategies.Interfaces;
@@ -23,6 +24,7 @@ public sealed class PromotionService
     private readonly ExecutionOperatorControlService? _operatorControls;
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly BrokerageConfiguration? _brokerageConfiguration;
+    private readonly IPromotedRunLauncher? _runLauncher;
 
     public PromotionService(
         IStrategyRepository repository,
@@ -31,7 +33,8 @@ public sealed class PromotionService
         ILogger<PromotionService> logger,
         ExecutionOperatorControlService? operatorControls = null,
         ExecutionAuditTrailService? auditTrail = null,
-        BrokerageConfiguration? brokerageConfiguration = null)
+        BrokerageConfiguration? brokerageConfiguration = null,
+        IPromotedRunLauncher? runLauncher = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _promoter = promoter ?? throw new ArgumentNullException(nameof(promoter));
@@ -40,19 +43,41 @@ public sealed class PromotionService
         _operatorControls = operatorControls;
         _auditTrail = auditTrail;
         _brokerageConfiguration = brokerageConfiguration;
+        _runLauncher = runLauncher;
     }
 
     /// <summary>
     /// Evaluates whether a completed run is eligible for promotion to the next mode.
     /// </summary>
-    public async Task<PromotionEvaluationResult> EvaluateAsync(
+    public Task<PromotionEvaluationResult> EvaluateAsync(
         string runId,
+        PromotionCriteria? criteria = null,
+        CancellationToken ct = default) =>
+        EvaluateCoreAsync(runId, criteria, scope: null, ct);
+
+    /// <summary>
+    /// Evaluates a run only when its retained tenant and company exactly match the trusted
+    /// workstation scope.
+    /// </summary>
+    public Task<PromotionEvaluationResult> EvaluateAsync(
+        string runId,
+        StrategyRunReadScope scope,
         PromotionCriteria? criteria = null,
         CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(scope);
+        return EvaluateCoreAsync(runId, criteria, scope, ct);
+    }
+
+    private async Task<PromotionEvaluationResult> EvaluateCoreAsync(
+        string runId,
+        PromotionCriteria? criteria,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
 
-        var run = await FindRunAsync(runId, ct).ConfigureAwait(false);
+        var run = await FindRunAsync(runId, scope, ct).ConfigureAwait(false);
         if (run is null)
         {
             return PromotionEvaluationResult.NotFound(runId);
@@ -107,6 +132,7 @@ public sealed class PromotionService
             }
         }
 
+        var walkForwardEvidence = run.WalkForwardEvidence;
         var policyInput = new Meridian.FSharp.Promotion.PromotionPolicy.PromotionPolicyInput(
             run.EndedAt.HasValue,
             run.Metrics is not null,
@@ -123,7 +149,15 @@ public sealed class PromotionService
             controlsSnapshot?.CircuitBreaker.IsOpen ?? false,
             hasConflictingOverride,
             targetMode != RunType.Live || hasLivePromotionOverride,
-            ExecutionManualOverrideKinds.AllowLivePromotion);
+            ExecutionManualOverrideKinds.AllowLivePromotion,
+            requireWalkForwardEvidence: effectiveCriteria.RequireWalkForwardEvidenceForLive && targetMode == RunType.Live,
+            hasWalkForwardEvidence: walkForwardEvidence is not null,
+            outOfSampleSharpeRatio: walkForwardEvidence?.OutOfSampleSharpeRatio ?? 0.0,
+            walkForwardDegradationRatio: walkForwardEvidence?.DegradationRatio ?? 0.0,
+            minOutOfSampleSharpe: effectiveCriteria.MinOutOfSampleSharpe,
+            minWalkForwardDegradationRatio: effectiveCriteria.MinWalkForwardDegradationRatio,
+            outOfSampleMaxDrawdownPercent: walkForwardEvidence?.OutOfSampleMaxDrawdownPercent ?? 0m,
+            maxOutOfSampleDrawdownPercent: effectiveCriteria.MaxOutOfSampleDrawdownPercent);
         var policyDecision = Interop.PromotionInterop.EvaluatePromotionPolicy(policyInput);
         var hasBrokerageGap = brokerageValidation?.HasBlockingGap == true;
         var eligible = policyDecision.Eligible && !hasBrokerageGap;
@@ -191,9 +225,28 @@ public sealed class PromotionService
     /// <summary>
     /// Approves a promotion: creates a new run entry for the target mode and records the audit trail.
     /// </summary>
-    public async Task<PromotionDecisionResult> ApproveAsync(
+    public Task<PromotionDecisionResult> ApproveAsync(
         PromotionApprovalRequest request,
+        CancellationToken ct = default) =>
+        ApproveCoreAsync(request, scope: null, ct);
+
+    /// <summary>
+    /// Approves a promotion only when the source run exactly matches the trusted tenant and
+    /// company scope.
+    /// </summary>
+    public Task<PromotionDecisionResult> ApproveAsync(
+        PromotionApprovalRequest request,
+        StrategyRunReadScope scope,
         CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return ApproveCoreAsync(request, scope, ct);
+    }
+
+    private async Task<PromotionDecisionResult> ApproveCoreAsync(
+        PromotionApprovalRequest request,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -215,7 +268,16 @@ public sealed class PromotionService
                 Reason: "Promotion approval requires an approval reason.");
         }
 
-        var run = await FindRunAsync(request.RunId, ct).ConfigureAwait(false);
+        return await ApproveSingleDecisionAsync(request, scope, ct).ConfigureAwait(false);
+    }
+
+    private async Task<PromotionDecisionResult> ApproveSingleDecisionAsync(
+        PromotionApprovalRequest request,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
+    {
+
+        var run = await FindRunAsync(request.RunId, scope, ct).ConfigureAwait(false);
         if (run?.Metrics is null || !run.EndedAt.HasValue)
         {
             return new PromotionDecisionResult(
@@ -235,11 +297,34 @@ public sealed class PromotionService
         }
 
         var targetRunType = run.RunType == RunType.Backtest ? RunType.Paper : RunType.Live;
+        var existingDecision = await FindExistingDecisionAsync(run, targetRunType, ct).ConfigureAwait(false);
+        if (existingDecision is not null)
+        {
+            if (!string.Equals(
+                    existingDecision.Decision,
+                    PromotionDecisionKinds.Approved,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return CreateApprovalRetryResult(existingDecision);
+            }
+
+            return await ReserveAndMaterializeApprovedDecisionAsync(
+                    run,
+                    existingDecision,
+                    ct)
+                .ConfigureAwait(false);
+        }
+
         var approvalChecklist = PromotionApprovalChecklist.Normalize(request.ApprovalChecklist);
         var evidenceReferences = NormalizeEvidenceReferences(request.EvidenceReferences);
         var auditReference = Guid.NewGuid().ToString("N");
 
-        var evaluation = await EvaluateAsync(run.RunId, ct: ct).ConfigureAwait(false);
+        var evaluation = await EvaluateCoreAsync(
+                run.RunId,
+                criteria: null,
+                scope: scope,
+                ct: ct)
+            .ConfigureAwait(false);
         if (!evaluation.IsEligible)
         {
             if (targetRunType == RunType.Live)
@@ -276,6 +361,41 @@ public sealed class PromotionService
                     ?? "Promotion gate is blocked.");
         }
 
+        // W9-TRUTH-001: a run whose figures derive from simulated, seeded, or sample data
+        // carries a blocking simulation provenance mark and can never be approved into
+        // promotion evidence — fail closed before any checklist or evidence evaluation.
+        if (!string.IsNullOrWhiteSpace(run.DataProvenanceToken)
+            && !string.Equals(run.DataProvenanceToken.Trim(), "real", StringComparison.OrdinalIgnoreCase))
+        {
+            var provenanceReason =
+                $"Source run {run.RunId} is marked '{run.DataProvenanceToken.Trim().ToLowerInvariant()}': " +
+                "figures derived from simulated or seeded data cannot enter promotion evidence.";
+            await RecordPromotionAuditAsync(
+                action: "PromotionBlocked",
+                outcome: "Blocked",
+                actor: request.ApprovedBy,
+                runId: run.RunId,
+                promotionId: null,
+                message: provenanceReason,
+                reason: "PromotionSimulatedProvenanceBlocked",
+                scope: BuildPromotionAuditScope(run, targetRunType),
+                metadata: BuildPromotionControlMetadata(
+                    run,
+                    targetRunType,
+                    request.ManualOverrideId,
+                    approvalChecklist,
+                    evidenceReferences,
+                    auditReference,
+                    provenanceReason),
+                ct).ConfigureAwait(false);
+
+            return new PromotionDecisionResult(
+                Success: false,
+                PromotionId: null,
+                NewRunId: null,
+                Reason: provenanceReason);
+        }
+
         var missingChecklistItems = PromotionApprovalChecklist.GetMissingRequiredItems(targetRunType, approvalChecklist);
         if (missingChecklistItems.Length > 0)
         {
@@ -309,10 +429,10 @@ public sealed class PromotionService
                 Reason: reason);
         }
 
-        var missingEvidenceRequirements = GetMissingLiveEvidenceRequirements(targetRunType, evidenceReferences);
+        var missingEvidenceRequirements = GetMissingEvidenceRequirements(targetRunType, evidenceReferences);
         if (missingEvidenceRequirements.Length > 0)
         {
-            var reason = $"Paper -> Live promotion evidence is incomplete: {string.Join(", ", missingEvidenceRequirements)}.";
+            var reason = $"{GetPromotionPath(targetRunType)} promotion evidence is incomplete: {string.Join(", ", missingEvidenceRequirements)}.";
             await RecordPromotionAuditAsync(
                 action: "PromotionBlocked",
                 outcome: "Blocked",
@@ -339,10 +459,16 @@ public sealed class PromotionService
                 Reason: reason);
         }
 
-        var invalidEvidenceReferences = GetInvalidLiveEvidenceReferences(targetRunType, evidenceReferences, request.ManualOverrideId);
+        var invalidEvidenceReferences = GetInvalidEvidenceReferences(
+                targetRunType,
+                evidenceReferences,
+                request.ManualOverrideId)
+            .Concat(GetInvalidSourceRunEvidenceReferences(run, targetRunType, evidenceReferences))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         if (invalidEvidenceReferences.Length > 0)
         {
-            var reason = $"Paper -> Live promotion evidence references are invalid: {string.Join(", ", invalidEvidenceReferences)}.";
+            var reason = $"{GetPromotionPath(targetRunType)} promotion evidence references are invalid: {string.Join(", ", invalidEvidenceReferences)}.";
             await RecordPromotionAuditAsync(
                 action: "PromotionBlocked",
                 outcome: "Blocked",
@@ -428,52 +554,264 @@ public sealed class PromotionService
                 Reason: validationError ?? "Promotion approval record is invalid.");
         }
 
-        var newRun = new StrategyRunEntry(
-            RunId: newRunId,
-            StrategyId: run.StrategyId,
-            StrategyName: run.StrategyName,
-            RunType: targetRunType,
-            StartedAt: DateTimeOffset.UtcNow,
-            EndedAt: null,
-            Metrics: null,
-            PortfolioId: $"{run.StrategyId}-{targetRunType.ToString().ToLowerInvariant()}-portfolio",
-            LedgerReference: $"{run.StrategyId}-{targetRunType.ToString().ToLowerInvariant()}-ledger",
-            AuditReference: auditReference,
-            Engine: targetRunType == RunType.Paper ? "BrokerPaper" : "BrokerLive",
-            ParameterSet: run.ParameterSet,
-            ParentRunId: run.RunId,
-            FundProfileId: run.FundProfileId,
-            FundDisplayName: run.FundDisplayName);
+        return await ReserveAndMaterializeApprovedDecisionAsync(run, promotionRecord, ct)
+            .ConfigureAwait(false);
+    }
 
-        await _repository.RecordRunAsync(newRun, ct).ConfigureAwait(false);
-        await _promotionRecordStore.AppendAsync(promotionRecord, ct).ConfigureAwait(false);
-
-        _logger.LogInformation(
-            "Promoted strategy {StrategyId} from {Source} to {Target}: promotionId={PromotionId}, newRunId={NewRunId}",
-            run.StrategyId, run.RunType, targetRunType, promotionRecord.PromotionId, newRun.RunId);
-
-        if (_auditTrail is not null)
+    private async Task<PromotionDecisionResult> ReserveAndMaterializeApprovedDecisionAsync(
+        StrategyRunEntry sourceRun,
+        StrategyPromotionRecord candidate,
+        CancellationToken ct)
+    {
+        PromotionDecisionReservation reservation;
+        try
         {
-            await RecordPromotionAuditAsync(
-                action: "PromotionApproved",
-                outcome: "Approved",
-                actor: request.ApprovedBy,
-                runId: request.RunId,
-                promotionId: promotionRecord.PromotionId,
-                message: request.ApprovalReason,
-                reason: targetRunType == RunType.Live ? "HumanApprovedLivePromotion" : "HumanApprovedPromotion",
-                scope: BuildPromotionAuditScope(run, targetRunType),
-                metadata: BuildPromotionRecordMetadata(promotionRecord),
-                ct).ConfigureAwait(false);
+            reservation = await _promotionRecordStore
+                .ReserveFirstDecisionAsync(candidate, ct)
+                .ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Promotion decision for source run {RunId} could not be durably reserved; no target run was created.",
+                sourceRun.RunId);
+            return new PromotionDecisionResult(
+                Success: false,
+                PromotionId: null,
+                NewRunId: null,
+                Reason: "Promotion decision could not be durably recorded; no target run was created or launched.");
         }
 
-        return new PromotionDecisionResult(
-            Success: true,
+        await using (reservation)
+        {
+            var promotionRecord = reservation.Record;
+            if (!string.Equals(
+                    promotionRecord.Decision,
+                    PromotionDecisionKinds.Approved,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return CreateApprovalRetryResult(promotionRecord);
+            }
+
+            if (string.IsNullOrWhiteSpace(promotionRecord.TargetRunId))
+            {
+                return CreateDurableApprovalCompletionFailure(
+                    promotionRecord,
+                    "The retained approval has no target run id; no runnable target was created.");
+            }
+
+            StrategyRunEntry? retainedTarget;
+            try
+            {
+                retainedTarget = await _repository
+                    .GetRunByIdAsync(promotionRecord.TargetRunId, CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Promotion {PromotionId} is durable, but target run {TargetRunId} could not be inspected.",
+                    promotionRecord.PromotionId,
+                    promotionRecord.TargetRunId);
+                return CreateDurableApprovalCompletionFailure(
+                    promotionRecord,
+                    "The promotion decision is durable, but target-run state could not be inspected; no launch was attempted.");
+            }
+
+            if (retainedTarget is not null)
+            {
+                var retainedTargetError = GetRetainedTargetValidationError(
+                    sourceRun,
+                    promotionRecord,
+                    retainedTarget);
+                return retainedTargetError is null
+                    ? CreateApprovalRetryResult(promotionRecord)
+                    : CreateDurableApprovalCompletionFailure(promotionRecord, retainedTargetError);
+            }
+
+            // Once the decision is durable, complete its governance and target materialization
+            // non-cancellably. Cancellation cannot be allowed to strand an approved decision after
+            // commit while exposing an unaudited or request-owned target id.
+            try
+            {
+                await EnsurePromotionApprovalAuditAsync(
+                        sourceRun,
+                        promotionRecord,
+                        CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Promotion {PromotionId} is durable, but its approval audit could not be retained; target run {TargetRunId} was not created.",
+                    promotionRecord.PromotionId,
+                    promotionRecord.TargetRunId);
+                return CreateDurableApprovalCompletionFailure(
+                    promotionRecord,
+                    "The promotion decision is durable, but approval audit retention failed; no target run was created or launched.");
+            }
+
+            var promotedRun = CreatePromotedRun(sourceRun, promotionRecord);
+            try
+            {
+                await _repository
+                    .RecordRunAsync(promotedRun, CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Promotion {PromotionId} is durable and audited, but target run {TargetRunId} could not be recorded.",
+                    promotionRecord.PromotionId,
+                    promotionRecord.TargetRunId);
+                return CreateDurableApprovalCompletionFailure(
+                    promotionRecord,
+                    "The promotion decision is durable and audited, but its target run could not be recorded; no launch was attempted.");
+            }
+
+            _logger.LogInformation(
+                "Promoted strategy {StrategyId} from {Source} to {Target}: promotionId={PromotionId}, newRunId={NewRunId}",
+                sourceRun.StrategyId,
+                sourceRun.RunType,
+                promotionRecord.TargetRunType,
+                promotionRecord.PromotionId,
+                promotedRun.RunId);
+
+            await ActivatePromotedRunAsync(promotedRun, CancellationToken.None).ConfigureAwait(false);
+
+            return new PromotionDecisionResult(
+                Success: true,
+                PromotionId: promotionRecord.PromotionId,
+                NewRunId: promotedRun.RunId,
+                Reason: reservation.WasAppended
+                    ? $"Strategy promoted from {sourceRun.RunType} to {promotionRecord.TargetRunType}."
+                    : $"Durable promotion from {sourceRun.RunType} to {promotionRecord.TargetRunType} was repaired with its retained target run.",
+                AuditReference: promotionRecord.AuditReference,
+                ApprovedBy: promotionRecord.ApprovedBy);
+        }
+    }
+
+    private async Task EnsurePromotionApprovalAuditAsync(
+        StrategyRunEntry sourceRun,
+        StrategyPromotionRecord promotionRecord,
+        CancellationToken ct)
+    {
+        if (_auditTrail is null)
+        {
+            return;
+        }
+
+        var retainedAudit = await _auditTrail.GetAllAsync(ct).ConfigureAwait(false);
+        if (retainedAudit.Any(entry =>
+                string.Equals(entry.Category, "Promotion", StringComparison.Ordinal) &&
+                string.Equals(entry.Action, "PromotionApproved", StringComparison.Ordinal) &&
+                string.Equals(entry.CorrelationId, promotionRecord.PromotionId, StringComparison.Ordinal)))
+        {
+            return;
+        }
+
+        await RecordPromotionAuditAsync(
+            action: "PromotionApproved",
+            outcome: "Approved",
+            actor: promotionRecord.ApprovedBy,
+            runId: promotionRecord.SourceRunId,
+            promotionId: promotionRecord.PromotionId,
+            message: promotionRecord.ApprovalReason,
+            reason: promotionRecord.TargetRunType == RunType.Live
+                ? "HumanApprovedLivePromotion"
+                : "HumanApprovedPromotion",
+            scope: BuildPromotionAuditScope(sourceRun, promotionRecord.TargetRunType),
+            metadata: BuildPromotionRecordMetadata(promotionRecord),
+            ct).ConfigureAwait(false);
+    }
+
+    private static StrategyRunEntry CreatePromotedRun(
+        StrategyRunEntry sourceRun,
+        StrategyPromotionRecord promotionRecord) =>
+        new(
+            RunId: promotionRecord.TargetRunId!,
+            StrategyId: sourceRun.StrategyId,
+            StrategyName: sourceRun.StrategyName,
+            RunType: promotionRecord.TargetRunType,
+            StartedAt: promotionRecord.PromotedAt,
+            EndedAt: null,
+            Metrics: null,
+            PortfolioId: $"{sourceRun.StrategyId}-{promotionRecord.TargetRunType.ToString().ToLowerInvariant()}-portfolio",
+            LedgerReference: $"{sourceRun.StrategyId}-{promotionRecord.TargetRunType.ToString().ToLowerInvariant()}-ledger",
+            AuditReference: promotionRecord.AuditReference,
+            Engine: promotionRecord.TargetRunType == RunType.Paper ? "BrokerPaper" : "BrokerLive",
+            ParameterSet: sourceRun.ParameterSet,
+            ParentRunId: sourceRun.RunId,
+            FundProfileId: sourceRun.FundProfileId,
+            FundDisplayName: sourceRun.FundDisplayName);
+
+    private static string? GetRetainedTargetValidationError(
+        StrategyRunEntry sourceRun,
+        StrategyPromotionRecord promotionRecord,
+        StrategyRunEntry retainedTarget)
+    {
+        if (!string.Equals(retainedTarget.RunId, promotionRecord.TargetRunId, StringComparison.Ordinal) ||
+            !string.Equals(retainedTarget.ParentRunId, sourceRun.RunId, StringComparison.Ordinal) ||
+            !string.Equals(retainedTarget.StrategyId, sourceRun.StrategyId, StringComparison.Ordinal) ||
+            retainedTarget.RunType != promotionRecord.TargetRunType ||
+            !string.Equals(retainedTarget.AuditReference, promotionRecord.AuditReference, StringComparison.Ordinal))
+        {
+            return "The retained target run conflicts with the durable promotion decision; no launch was attempted.";
+        }
+
+        return null;
+    }
+
+    private static PromotionDecisionResult CreateDurableApprovalCompletionFailure(
+        StrategyPromotionRecord promotionRecord,
+        string reason) =>
+        new(
+            Success: false,
             PromotionId: promotionRecord.PromotionId,
-            NewRunId: newRun.RunId,
-            Reason: $"Strategy promoted from {run.RunType} to {targetRunType}.",
-            AuditReference: auditReference,
-            ApprovedBy: request.ApprovedBy);
+            NewRunId: promotionRecord.TargetRunId,
+            Reason: reason,
+            AuditReference: promotionRecord.AuditReference,
+            ApprovedBy: promotionRecord.ApprovedBy);
+
+    /// <summary>
+    /// Hands the newly recorded target run to the live trading engine. Activation failures are
+    /// deliberately non-fatal: the promotion decision is already durable, the run entry stays
+    /// retained, and the engine's startup resume sweep (or a manual restart) can activate it later.
+    /// </summary>
+    private async Task ActivatePromotedRunAsync(StrategyRunEntry newRun, CancellationToken ct)
+    {
+        if (_runLauncher is null)
+        {
+            _logger.LogWarning(
+                "Promoted run {RunId} ({RunType}) was recorded but no run launcher is configured; the run will not execute until an engine activates it.",
+                newRun.RunId, newRun.RunType);
+            return;
+        }
+
+        try
+        {
+            var launch = await _runLauncher.TryLaunchAsync(newRun, ct).ConfigureAwait(false);
+            if (!launch.Launched)
+            {
+                _logger.LogWarning(
+                    "Promoted run {RunId} ({RunType}) was recorded but not activated: {Reason}",
+                    newRun.RunId, newRun.RunType, launch.Reason);
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex,
+                "Promoted run {RunId} ({RunType}) was recorded but its activation failed.",
+                newRun.RunId, newRun.RunType);
+        }
     }
 
     private async Task RecordPromotionAuditAsync(
@@ -567,11 +905,11 @@ public sealed class PromotionService
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray() ?? [];
 
-    private static string[] GetMissingLiveEvidenceRequirements(
+    private static string[] GetMissingEvidenceRequirements(
         RunType targetRunType,
         string[] evidenceReferences)
     {
-        if (targetRunType != RunType.Live)
+        if (targetRunType is not (RunType.Paper or RunType.Live))
         {
             return [];
         }
@@ -587,12 +925,12 @@ public sealed class PromotionService
             .ToArray();
     }
 
-    private static string[] GetInvalidLiveEvidenceReferences(
+    private static string[] GetInvalidEvidenceReferences(
         RunType targetRunType,
         string[] evidenceReferences,
         string? manualOverrideId)
     {
-        if (targetRunType != RunType.Live)
+        if (targetRunType is not (RunType.Paper or RunType.Live))
         {
             return [];
         }
@@ -626,10 +964,75 @@ public sealed class PromotionService
             {
                 invalid.Add($"{requiredItem} must reference active manual override {manualOverrideId}");
             }
+
+            // Paper-to-live promotions must record which paper matching and cost model
+            // versions produced the cited paper session (e.g. paper-match/1+paper-cost/1),
+            // so promotion evidence names the execution realism policy behind it.
+            if (string.Equals(requiredItem, PromotionApprovalChecklist.PaperExecutionModelReviewed, StringComparison.OrdinalIgnoreCase) &&
+                (!value.Contains("paper-match/", StringComparison.OrdinalIgnoreCase)
+                    || !value.Contains("paper-cost/", StringComparison.OrdinalIgnoreCase)))
+            {
+                invalid.Add($"{requiredItem} must record the paper matching and cost model versions (paper-match/<n>+paper-cost/<n>)");
+            }
         }
 
         return invalid.ToArray();
     }
+
+    private static string GetPromotionPath(RunType targetRunType) =>
+        targetRunType == RunType.Live ? "Paper -> Live" : "Backtest -> Paper";
+
+    private static string[] GetInvalidSourceRunEvidenceReferences(
+        StrategyRunEntry sourceRun,
+        RunType targetRunType,
+        string[] evidenceReferences)
+    {
+        if (targetRunType != RunType.Paper)
+        {
+            return [];
+        }
+
+        var retainedEvidence = sourceRun.RetainedEvidenceReferences
+            .Select(static reference => reference.Trim())
+            .Where(static reference => reference.Length > 0)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var requiresEvidenceVaultAuthority = IsCoveredCallStrategy(sourceRun.StrategyId) &&
+            StrategyRunRepositoryVisibility.TryGetRetainedScope(sourceRun, out _);
+        var invalid = new List<string>();
+
+        foreach (var requiredItem in PromotionApprovalChecklist.CreateRequiredFor(targetRunType))
+        {
+            var reference = evidenceReferences.FirstOrDefault(item =>
+                string.Equals(GetEvidenceRequirementKey(item), requiredItem, StringComparison.OrdinalIgnoreCase));
+            if (string.IsNullOrWhiteSpace(reference))
+            {
+                continue;
+            }
+
+            var value = GetEvidenceReferenceValue(reference);
+            if (value.Length == 0)
+            {
+                continue;
+            }
+
+            if (!retainedEvidence.Contains(value))
+            {
+                invalid.Add($"{requiredItem} must match evidence retained on source run {sourceRun.RunId}");
+                continue;
+            }
+
+            if (requiresEvidenceVaultAuthority && !EvidenceVaultReference.TryParseCanonical(value, out _))
+            {
+                invalid.Add($"{requiredItem} must reference evidence://evidence-vault/{{vaultId}}");
+            }
+        }
+
+        return invalid.ToArray();
+    }
+
+    private static bool IsCoveredCallStrategy(string strategyId) =>
+        string.Equals(strategyId, "covered-call-overwrite", StringComparison.Ordinal) ||
+        strategyId.StartsWith("covered-call-overwrite:", StringComparison.Ordinal);
 
     private static string GetEvidenceRequirementKey(string evidenceReference)
     {
@@ -662,9 +1065,28 @@ public sealed class PromotionService
     /// <summary>
     /// Rejects a promotion with a recorded reason.
     /// </summary>
-    public async Task<PromotionDecisionResult> RejectAsync(
+    public Task<PromotionDecisionResult> RejectAsync(
         PromotionRejectionRequest request,
+        CancellationToken ct = default) =>
+        RejectCoreAsync(request, scope: null, ct);
+
+    /// <summary>
+    /// Rejects a promotion only when the source run exactly matches the trusted tenant and
+    /// company scope.
+    /// </summary>
+    public Task<PromotionDecisionResult> RejectAsync(
+        PromotionRejectionRequest request,
+        StrategyRunReadScope scope,
         CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return RejectCoreAsync(request, scope, ct);
+    }
+
+    private async Task<PromotionDecisionResult> RejectCoreAsync(
+        PromotionRejectionRequest request,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -686,7 +1108,16 @@ public sealed class PromotionService
                 Reason: "Promotion rejection requires a rationale.");
         }
 
-        var run = await FindRunAsync(request.RunId, ct).ConfigureAwait(false);
+        return await RejectSingleDecisionAsync(request, scope, ct).ConfigureAwait(false);
+    }
+
+    private async Task<PromotionDecisionResult> RejectSingleDecisionAsync(
+        PromotionRejectionRequest request,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
+    {
+
+        var run = await FindRunAsync(request.RunId, scope, ct).ConfigureAwait(false);
         if (run?.Metrics is null)
         {
             return new PromotionDecisionResult(
@@ -697,6 +1128,13 @@ public sealed class PromotionService
         }
 
         var targetRunType = run.RunType == RunType.Backtest ? RunType.Paper : RunType.Live;
+        var existingDecision = await FindExistingDecisionAsync(run, targetRunType, ct).ConfigureAwait(false);
+        if (existingDecision is not null)
+        {
+            return await ReserveAndCompleteRejectionAsync(run, existingDecision, ct)
+                .ConfigureAwait(false);
+        }
+
         var auditReference = Guid.NewGuid().ToString("N");
         var promotionRecord = _promoter.CreatePromotionRecord(
             run.Metrics,
@@ -721,64 +1159,325 @@ public sealed class PromotionService
                 Reason: validationError ?? "Promotion rejection record is invalid.");
         }
 
-        await _promotionRecordStore.AppendAsync(promotionRecord, ct).ConfigureAwait(false);
+        return await ReserveAndCompleteRejectionAsync(run, promotionRecord, ct)
+            .ConfigureAwait(false);
+    }
 
-        _logger.LogInformation(
-            "Promotion rejected for run {RunId}: {Reason}",
-            request.RunId, request.Reason);
-
-        if (_auditTrail is not null)
+    private async Task<PromotionDecisionResult> ReserveAndCompleteRejectionAsync(
+        StrategyRunEntry sourceRun,
+        StrategyPromotionRecord candidate,
+        CancellationToken ct)
+    {
+        PromotionDecisionReservation reservation;
+        try
         {
-            await _auditTrail.RecordAsync(new ExecutionAuditEntry(
-                AuditId: Guid.NewGuid().ToString("N"),
-                Category: "Promotion",
-                Action: "PromotionRejected",
-                Outcome: "Rejected",
-                OccurredAt: DateTimeOffset.UtcNow,
-                Actor: request.RejectedBy,
-                RunId: request.RunId,
-                CorrelationId: promotionRecord.PromotionId,
-                Message: request.Reason,
-                Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["decision"] = promotionRecord.Decision,
-                    ["sourceRunId"] = promotionRecord.SourceRunId,
-                    ["targetRunType"] = promotionRecord.TargetRunType.ToString(),
-                    ["manualOverrideId"] = promotionRecord.ManualOverrideId ?? string.Empty,
-                    ["reviewNotes"] = promotionRecord.ReviewNotes ?? string.Empty,
-                    ["auditReference"] = promotionRecord.AuditReference ?? string.Empty
-                }), ct).ConfigureAwait(false);
+            reservation = await _promotionRecordStore
+                .ReserveFirstDecisionAsync(candidate, ct)
+                .ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Promotion rejection for source run {RunId} could not be durably reserved.",
+                sourceRun.RunId);
+            return new PromotionDecisionResult(
+                Success: false,
+                PromotionId: null,
+                NewRunId: null,
+                Reason: "Promotion rejection could not be durably recorded.");
+        }
+
+        await using (reservation)
+        {
+            var promotionRecord = reservation.Record;
+            if (!string.Equals(
+                    promotionRecord.Decision,
+                    PromotionDecisionKinds.Rejected,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return CreateRejectionRetryResult(promotionRecord);
+            }
+
+            try
+            {
+                await EnsurePromotionRejectionAuditAsync(promotionRecord, CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Promotion rejection {PromotionId} is durable, but its audit could not be retained.",
+                    promotionRecord.PromotionId);
+                return new PromotionDecisionResult(
+                    Success: false,
+                    PromotionId: promotionRecord.PromotionId,
+                    NewRunId: null,
+                    Reason: "Promotion rejection is durable, but its audit could not be retained.",
+                    AuditReference: promotionRecord.AuditReference,
+                    ApprovedBy: promotionRecord.ApprovedBy);
+            }
+
+            _logger.LogInformation(
+                "Promotion rejected for run {RunId}: {Reason}",
+                promotionRecord.SourceRunId,
+                promotionRecord.ApprovalReason);
+
+            return reservation.WasAppended
+                ? new PromotionDecisionResult(
+                    Success: true,
+                    PromotionId: promotionRecord.PromotionId,
+                    NewRunId: null,
+                    Reason: $"Promotion rejected: {promotionRecord.ApprovalReason}",
+                    AuditReference: promotionRecord.AuditReference,
+                    ApprovedBy: promotionRecord.ApprovedBy)
+                : CreateRejectionRetryResult(promotionRecord);
+        }
+    }
+
+    private async Task EnsurePromotionRejectionAuditAsync(
+        StrategyPromotionRecord promotionRecord,
+        CancellationToken ct)
+    {
+        if (_auditTrail is null)
+        {
+            return;
+        }
+
+        var retainedAudit = await _auditTrail.GetAllAsync(ct).ConfigureAwait(false);
+        if (retainedAudit.Any(entry =>
+                string.Equals(entry.Category, "Promotion", StringComparison.Ordinal) &&
+                string.Equals(entry.Action, "PromotionRejected", StringComparison.Ordinal) &&
+                string.Equals(entry.CorrelationId, promotionRecord.PromotionId, StringComparison.Ordinal)))
+        {
+            return;
+        }
+
+        await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+            AuditId: Guid.NewGuid().ToString("N"),
+            Category: "Promotion",
+            Action: "PromotionRejected",
+            Outcome: "Rejected",
+            OccurredAt: promotionRecord.PromotedAt,
+            Actor: promotionRecord.ApprovedBy,
+            RunId: promotionRecord.SourceRunId,
+            CorrelationId: promotionRecord.PromotionId,
+            Message: promotionRecord.ApprovalReason,
+            Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["decision"] = promotionRecord.Decision,
+                ["sourceRunId"] = promotionRecord.SourceRunId,
+                ["targetRunType"] = promotionRecord.TargetRunType.ToString(),
+                ["manualOverrideId"] = promotionRecord.ManualOverrideId ?? string.Empty,
+                ["reviewNotes"] = promotionRecord.ReviewNotes ?? string.Empty,
+                ["auditReference"] = promotionRecord.AuditReference ?? string.Empty
+            }), ct).ConfigureAwait(false);
+    }
+
+    private async Task<StrategyPromotionRecord?> FindExistingDecisionAsync(
+        StrategyRunEntry sourceRun,
+        RunType targetRunType,
+        CancellationToken ct)
+    {
+        var records = await _promotionRecordStore.LoadAllAsync(ct).ConfigureAwait(false);
+        return records.FirstOrDefault(record =>
+            string.Equals(record.SourceRunId, sourceRun.RunId, StringComparison.Ordinal) &&
+            record.SourceRunType == sourceRun.RunType &&
+            record.TargetRunType == targetRunType);
+    }
+
+    private static PromotionDecisionResult CreateApprovalRetryResult(StrategyPromotionRecord existingDecision)
+    {
+        if (string.Equals(
+                existingDecision.Decision,
+                PromotionDecisionKinds.Approved,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return new PromotionDecisionResult(
+                Success: true,
+                PromotionId: existingDecision.PromotionId,
+                NewRunId: existingDecision.TargetRunId,
+                Reason: $"Promotion from {existingDecision.SourceRunType} to {existingDecision.TargetRunType} was already approved.",
+                AuditReference: existingDecision.AuditReference,
+                ApprovedBy: existingDecision.ApprovedBy);
         }
 
         return new PromotionDecisionResult(
-            Success: true,
-            PromotionId: promotionRecord.PromotionId,
+            Success: false,
+            PromotionId: existingDecision.PromotionId,
             NewRunId: null,
-            Reason: $"Promotion rejected: {request.Reason}",
-            AuditReference: promotionRecord.AuditReference,
-            ApprovedBy: request.RejectedBy);
+            Reason: $"Promotion was already rejected: {existingDecision.ApprovalReason}",
+            AuditReference: existingDecision.AuditReference,
+            ApprovedBy: existingDecision.ApprovedBy);
+    }
+
+    private static PromotionDecisionResult CreateRejectionRetryResult(StrategyPromotionRecord existingDecision)
+    {
+        if (string.Equals(
+                existingDecision.Decision,
+                PromotionDecisionKinds.Rejected,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return new PromotionDecisionResult(
+                Success: true,
+                PromotionId: existingDecision.PromotionId,
+                NewRunId: null,
+                Reason: $"Promotion was already rejected: {existingDecision.ApprovalReason}",
+                AuditReference: existingDecision.AuditReference,
+                ApprovedBy: existingDecision.ApprovedBy);
+        }
+
+        return new PromotionDecisionResult(
+            Success: false,
+            PromotionId: existingDecision.PromotionId,
+            NewRunId: existingDecision.TargetRunId,
+            Reason: $"Promotion from {existingDecision.SourceRunType} to {existingDecision.TargetRunType} was already approved and cannot be rejected.",
+            AuditReference: existingDecision.AuditReference,
+            ApprovedBy: existingDecision.ApprovedBy);
     }
 
     /// <summary>Returns the full promotion audit trail.</summary>
-    public async Task<IReadOnlyList<StrategyPromotionRecord>> GetPromotionHistoryAsync(CancellationToken ct = default)
+    public Task<IReadOnlyList<StrategyPromotionRecord>> GetPromotionHistoryAsync(CancellationToken ct = default) =>
+        GetPromotionHistoryCoreAsync(scope: null, ct);
+
+    /// <summary>
+    /// Returns promotion records whose source runs exactly match the trusted tenant and company
+    /// scope.
+    /// </summary>
+    public Task<IReadOnlyList<StrategyPromotionRecord>> GetPromotionHistoryAsync(
+        StrategyRunReadScope scope,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return GetPromotionHistoryCoreAsync(scope, ct);
+    }
+
+    private async Task<IReadOnlyList<StrategyPromotionRecord>> GetPromotionHistoryCoreAsync(
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
     {
         var records = await _promotionRecordStore.LoadAllAsync(ct).ConfigureAwait(false);
+        if (records.Count == 0)
+        {
+            return [];
+        }
+
+        var sourceRunIds = records
+            .Select(static record => record.SourceRunId)
+            .Where(static runId => !string.IsNullOrWhiteSpace(runId))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        var sourceRuns = await _repository.GetRunsByIdsAsync(sourceRunIds, ct).ConfigureAwait(false);
+        var sourceRunsById = sourceRuns.ToDictionary(static run => run.RunId, StringComparer.Ordinal);
+
         return records
+            .Where(record => IsPromotionRecordVisible(
+                record,
+                scope,
+                sourceRunsById.GetValueOrDefault(record.SourceRunId)))
             .OrderByDescending(static record => record.PromotedAt)
             .ToArray();
     }
 
-    private async Task<StrategyRunEntry?> FindRunAsync(string runId, CancellationToken ct)
+    private static bool IsPromotionRecordVisible(
+        StrategyPromotionRecord record,
+        StrategyRunReadScope? scope,
+        StrategyRunEntry? sourceRun)
     {
-        await foreach (var run in _repository.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
+        if (sourceRun is not null)
         {
-            if (string.Equals(run.RunId, runId, StringComparison.Ordinal))
-            {
-                return run;
-            }
+            return IsVisibleToPromotionScope(sourceRun, scope);
         }
 
-        return null;
+        // Durable legacy promotion history outlives an in-memory compatibility run store. Keep
+        // that unscoped audit trail readable after restart, while scoped reads continue to fail
+        // closed without the exact retained source-run scope. Scoped Covered Call identities are
+        // never admitted through this compatibility fallback.
+        return scope is null && !IsCoveredCallStrategy(record.StrategyId);
+    }
+
+    /// <summary>
+    /// Records walk-forward/out-of-sample robustness evidence on a completed run so the
+    /// promotion policy can gate eligibility on it. Returns the updated run, or <c>null</c>
+    /// when the run does not exist.
+    /// </summary>
+    public Task<StrategyRunEntry?> RecordWalkForwardEvidenceAsync(
+        string runId,
+        StrategyRunWalkForwardEvidence evidence,
+        CancellationToken ct = default) =>
+        RecordWalkForwardEvidenceCoreAsync(runId, evidence, scope: null, ct);
+
+    /// <summary>
+    /// Records walk-forward evidence only when the source run exactly matches the trusted tenant
+    /// and company scope.
+    /// </summary>
+    public Task<StrategyRunEntry?> RecordWalkForwardEvidenceAsync(
+        string runId,
+        StrategyRunWalkForwardEvidence evidence,
+        StrategyRunReadScope scope,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return RecordWalkForwardEvidenceCoreAsync(runId, evidence, scope, ct);
+    }
+
+    private async Task<StrategyRunEntry?> RecordWalkForwardEvidenceCoreAsync(
+        string runId,
+        StrategyRunWalkForwardEvidence evidence,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentNullException.ThrowIfNull(evidence);
+        if (evidence.Validate() is { } validationError)
+            throw new ArgumentException(validationError, nameof(evidence));
+
+        var run = await FindRunAsync(runId, scope, ct).ConfigureAwait(false);
+        if (run is null)
+        {
+            return null;
+        }
+
+        var updated = run with { WalkForwardEvidence = evidence };
+        await _repository.RecordRunAsync(updated, ct).ConfigureAwait(false);
+
+        // The run id arrives from the API route; strip line endings so a crafted value
+        // cannot forge additional log entries.
+        _logger.LogInformation(
+            "Recorded walk-forward evidence for run {RunId}: oosSharpe={OosSharpe:F3}, degradation={Degradation:F3}, windows={Windows}",
+            runId.ReplaceLineEndings(string.Empty),
+            evidence.OutOfSampleSharpeRatio,
+            evidence.DegradationRatio,
+            evidence.WindowCount);
+
+        return updated;
+    }
+
+    private async Task<StrategyRunEntry?> FindRunAsync(
+        string runId,
+        StrategyRunReadScope? scope,
+        CancellationToken ct)
+    {
+        var run = await _repository.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
+        return run is not null && IsVisibleToPromotionScope(run, scope) ? run : null;
+    }
+
+    private static bool IsVisibleToPromotionScope(StrategyRunEntry run, StrategyRunReadScope? scope)
+    {
+        if (scope is null)
+        {
+            return StrategyRunRepositoryVisibility.IsVisible(run, scope: null);
+        }
+
+        var repositoryScope = new StrategyRunRepositoryScope(scope.TenantId, scope.CompanyId);
+        return StrategyRunRepositoryVisibility.TryGetRetainedScope(run, out var retainedScope) &&
+            StrategyRunRepositoryVisibility.TryCreateScopeKey(repositoryScope, out var requestedScope) &&
+            retainedScope == requestedScope;
     }
 
     internal static bool TryValidatePromotionRecord(StrategyPromotionRecord record, out string? validationError)
@@ -823,9 +1522,9 @@ public sealed class PromotionService
             return false;
         }
 
-        if (isApproved && record.TargetRunType == RunType.Live)
+        if (isApproved && record.TargetRunType is RunType.Paper or RunType.Live)
         {
-            var missingEvidence = GetMissingLiveEvidenceRequirements(
+            var missingEvidence = GetMissingEvidenceRequirements(
                 record.TargetRunType,
                 NormalizeEvidenceReferences(record.EvidenceReferences));
             if (missingEvidence.Length > 0)
@@ -834,7 +1533,7 @@ public sealed class PromotionService
                 return false;
             }
 
-            var invalidEvidence = GetInvalidLiveEvidenceReferences(
+            var invalidEvidence = GetInvalidEvidenceReferences(
                 record.TargetRunType,
                 NormalizeEvidenceReferences(record.EvidenceReferences),
                 record.ManualOverrideId);
@@ -907,6 +1606,14 @@ public sealed record PromotionRejectionRequest(
     string? ReviewNotes = null,
     string? RejectedBy = null,
     string? ManualOverrideId = null);
+
+/// <summary>Request to record walk-forward/out-of-sample evidence on a run.</summary>
+public sealed record RecordWalkForwardEvidenceRequest(
+    double OutOfSampleSharpeRatio,
+    decimal OutOfSampleMaxDrawdownPercent,
+    double DegradationRatio,
+    int WindowCount,
+    string? SourceReference = null);
 
 /// <summary>Result of a promotion approval or rejection.</summary>
 public sealed record PromotionDecisionResult(

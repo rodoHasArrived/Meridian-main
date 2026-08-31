@@ -303,6 +303,7 @@ public sealed class CommandPaletteService
         RegisterNavigationCommand("nav-quantscript", "Open Strategy: Quant Script", "QuantScript", "strategy research quant script prototype calculation ide code", "\uE943", "");
         RegisterNavigationCommand("nav-batch-backtest", "Open Strategy: Batch Backtest", "BatchBacktest", "strategy research batch backtest bulk run multi strategy sweep", "\uE8EF", "");
         RegisterNavigationCommand("nav-run-cashflow", "Open Accounting: Run Cash Flow", "RunCashFlow", "accounting research run cash flow funding impact projection", "\uE8C8", "");
+        RegisterNavigationCommand("nav-posted-ledger", "Open Accounting: Posted Ledger", "PostedLedger", "accounting posted ledger posted journal trial balance book of record profit and loss period", "\uE8D2", "");
         RegisterNavigationCommand("nav-security-master", "Open Accounting: Security Master", "SecurityMaster", "accounting data security master reference data listings identifiers", "\uE8F1", "");
         RegisterNavigationCommand("nav-direct-lending", "Open Portfolio: Direct Lending", "DirectLending", "portfolio direct lending workflow contracts accrual", "\uE8C8", "");
         RegisterNavigationCommand("nav-credential-management", "Open Settings: Credential Management", "CredentialManagement", "settings credential management provider access secure api key", "\uE8D7", "");

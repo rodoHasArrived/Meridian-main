@@ -1,3 +1,4 @@
+using static Meridian.Contracts.Text.TextPrimitives;
 namespace Meridian.Ledger;
 
 public sealed record JournalEvidenceReference(
@@ -9,7 +10,14 @@ public sealed record JournalEvidenceReference(
     string RetainedBy,
     string? SubjectId = null,
     string? ContentHash = null,
-    string? Description = null)
+    string? Description = null,
+    string? SourceReference = null,
+    string? ReviewStatus = null,
+    string? ReviewedBy = null,
+    DateTimeOffset? ReviewedAtUtc = null,
+    DateOnly? EffectiveDate = null,
+    long? EvidenceVersion = null,
+    string? SubjectType = null)
 {
     public JournalEvidenceReference Normalize()
         => new(
@@ -21,7 +29,14 @@ public sealed record JournalEvidenceReference(
             RequireText(RetainedBy, nameof(RetainedBy)),
             NormalizeOptional(SubjectId),
             NormalizeOptional(ContentHash),
-            NormalizeOptional(Description));
+            NormalizeOptional(Description),
+            NormalizeOptional(SourceReference),
+            NormalizeOptional(ReviewStatus),
+            NormalizeOptional(ReviewedBy),
+            ReviewedAtUtc,
+            EffectiveDate,
+            EvidenceVersion,
+            NormalizeOptional(SubjectType));
 
     private static string RequireText(string value, string parameterName)
     {
@@ -32,7 +47,4 @@ public sealed record JournalEvidenceReference(
 
         return value.Trim();
     }
-
-    private static string? NormalizeOptional(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

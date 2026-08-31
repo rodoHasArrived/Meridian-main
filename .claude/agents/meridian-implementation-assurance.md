@@ -4,7 +4,7 @@ description: >
   Implementation assurance and evidence specialist for Meridian. Verifies that a
   change matches the approved blueprint or requirements, with explicit test
   evidence, doc routing, and a traceable summary.
-tools: ["read", "search", "edit", "mcp"]
+tools: Read, Glob, Grep, Edit, Write, Bash
 ---
 
 # Meridian — Implementation Assurance Specialist

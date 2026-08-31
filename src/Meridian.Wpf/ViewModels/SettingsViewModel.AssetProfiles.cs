@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ui.Services;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -277,7 +278,7 @@ public sealed partial class SettingsViewModel
                 NormalizeAssetProfileId(AssetProfileDraftProfileId),
                 AssetProfileDraftName.Trim(),
                 AssetProfileDraftCategory.Trim(),
-                NullIfWhiteSpace(AssetProfileDraftSubType),
+                NormalizeOptional(AssetProfileDraftSubType),
                 starter.Fields,
                 starter.IdentifierPreferences,
                 starter.LifecycleStates,
@@ -719,6 +720,11 @@ public sealed partial class SettingsViewModel
                     return false;
                 }
 
+                if (!TryValidateRange(field, decimalValue, out validationMessage))
+                {
+                    return false;
+                }
+
                 element = JsonSerializer.SerializeToElement(decimalValue);
                 return true;
 
@@ -726,6 +732,11 @@ public sealed partial class SettingsViewModel
                 if (!int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var integerValue))
                 {
                     validationMessage = $"{field.Label} must be an integer value.";
+                    return false;
+                }
+
+                if (!TryValidateRange(field, integerValue, out validationMessage))
+                {
                     return false;
                 }
 
@@ -783,6 +794,27 @@ public sealed partial class SettingsViewModel
         }
     }
 
+    private static bool TryValidateRange(
+        SecurityAssetProfileFieldDefinitionDto field,
+        decimal value,
+        out string? validationMessage)
+    {
+        if (field.MinValue.HasValue && value < field.MinValue.Value)
+        {
+            validationMessage = $"{field.Label} must be at least {field.MinValue.Value.ToString(CultureInfo.InvariantCulture)}.";
+            return false;
+        }
+
+        if (field.MaxValue.HasValue && value > field.MaxValue.Value)
+        {
+            validationMessage = $"{field.Label} must be at most {field.MaxValue.Value.ToString(CultureInfo.InvariantCulture)}.";
+            return false;
+        }
+
+        validationMessage = null;
+        return true;
+    }
+
     private static bool TryParseBoolean(string raw, out bool value)
     {
         if (bool.TryParse(raw, out value))
@@ -824,9 +856,6 @@ public sealed partial class SettingsViewModel
 
     private static string NormalizeCurrency(string? value)
         => string.IsNullOrWhiteSpace(value) ? "USD" : value.Trim().ToUpperInvariant();
-
-    private static string? NullIfWhiteSpace(string? value)
-        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string GetRequestedBy()
         => string.IsNullOrWhiteSpace(Environment.UserName) ? "wpf-settings" : Environment.UserName;
@@ -906,13 +935,21 @@ public sealed class SettingsAssetProfileFieldInput : BindableBase
     public SecurityAssetProfileFieldTypeDto FieldType => Definition.FieldType;
     public bool IsRequired => Definition.IsRequired;
     public string Description => Definition.Description ?? string.Empty;
+    public IReadOnlyList<string> AllowedValues => Definition.AllowedValues;
     public string AllowedValuesLabel => Definition.AllowedValues.Count == 0
         ? string.Empty
         : $"Allowed: {string.Join(", ", Definition.AllowedValues)}";
+
+    public bool IsBooleanField => Definition.FieldType == SecurityAssetProfileFieldTypeDto.Boolean;
+    public bool IsEnumField => Definition.FieldType == SecurityAssetProfileFieldTypeDto.Enum
+                               && Definition.AllowedValues.Count > 0;
+    public bool IsDateField => Definition.FieldType == SecurityAssetProfileFieldTypeDto.Date;
+    public bool IsTextEntryField => !IsBooleanField && !IsEnumField && !IsDateField;
+
     public string InputHint => Definition.FieldType switch
     {
-        SecurityAssetProfileFieldTypeDto.Decimal => "Decimal",
-        SecurityAssetProfileFieldTypeDto.Integer => "Integer",
+        SecurityAssetProfileFieldTypeDto.Decimal => WithRange("Decimal"),
+        SecurityAssetProfileFieldTypeDto.Integer => WithRange("Integer"),
         SecurityAssetProfileFieldTypeDto.Boolean => "true or false",
         SecurityAssetProfileFieldTypeDto.Date => "yyyy-mm-dd",
         SecurityAssetProfileFieldTypeDto.CurrencyCode => "ISO currency",
@@ -928,7 +965,41 @@ public sealed class SettingsAssetProfileFieldInput : BindableBase
             if (SetProperty(ref _value, value))
             {
                 _changed();
+                RaisePropertyChanged(nameof(BoolValue));
+                RaisePropertyChanged(nameof(DateValue));
             }
         }
+    }
+
+    /// <summary>Typed checkbox surface over <see cref="Value"/> for Boolean profile fields.</summary>
+    public bool BoolValue
+    {
+        get => string.Equals(_value, "true", StringComparison.OrdinalIgnoreCase)
+               || string.Equals(_value, "yes", StringComparison.OrdinalIgnoreCase)
+               || _value == "1";
+        set => Value = value ? "true" : "false";
+    }
+
+    /// <summary>Typed date-picker surface over <see cref="Value"/> for Date profile fields.</summary>
+    public DateTime? DateValue
+    {
+        get => DateOnly.TryParse(_value, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
+            ? date.ToDateTime(TimeOnly.MinValue)
+            : null;
+        set => Value = value is null
+            ? string.Empty
+            : DateOnly.FromDateTime(value.Value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    }
+
+    private string WithRange(string baseHint)
+    {
+        if (!Definition.MinValue.HasValue && !Definition.MaxValue.HasValue)
+        {
+            return baseHint;
+        }
+
+        var minimum = Definition.MinValue?.ToString(CultureInfo.InvariantCulture) ?? "any";
+        var maximum = Definition.MaxValue?.ToString(CultureInfo.InvariantCulture) ?? "any";
+        return $"{baseHint} ({minimum} to {maximum})";
     }
 }

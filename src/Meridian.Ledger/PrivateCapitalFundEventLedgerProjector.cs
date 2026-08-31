@@ -1,3 +1,6 @@
+using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Text;
+
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -126,7 +129,7 @@ public sealed record PrivateCapitalFundEventIssue(
 /// </summary>
 public static class PrivateCapitalFundEventLedgerProjector
 {
-    private const decimal BalanceTolerance = 0.000001m;
+    private const decimal BalanceTolerance = LedgerToleranceConstants.Balance;
 
     private sealed record CapitalAccountImpactLine(
         string CapitalAccountId,
@@ -226,7 +229,7 @@ public static class PrivateCapitalFundEventLedgerProjector
                     line.Account.FinancialAccountId,
                     line.Debit,
                     line.Credit,
-                    CalculateNormalBalanceImpact(line.Account.AccountType, line.Debit, line.Credit)))
+                    Ledger.CalculateNetBalance(line.Account.AccountType, line.Debit, line.Credit)))
                 .ToArray());
     }
 
@@ -256,7 +259,9 @@ public static class PrivateCapitalFundEventLedgerProjector
                     first.Line.Account.FinancialAccountId,
                     debits,
                     credits,
-                    credits - debits,
+                    // Capital-account subledger lines are all equity; route the net through the
+                    // shared posting kernel rather than reimplementing the credit-normal rule.
+                    Ledger.CalculateNetBalance(LedgerAccountType.Equity, debits, credits),
                     group.Select(static line => line.Line.EntryId).Distinct().ToArray());
             })
             .OrderBy(static item => item.CapitalAccountId, StringComparer.OrdinalIgnoreCase)
@@ -271,13 +276,13 @@ public static class PrivateCapitalFundEventLedgerProjector
         string? fallbackCapitalAccountId,
         string? fallbackInvestorId)
     {
-        var resolvedCapitalAccountId = NormalizeText(metadata.CapitalAccountId) ?? NormalizeText(fallbackCapitalAccountId);
+        var resolvedCapitalAccountId = TextPrimitives.NormalizeOptional(metadata.CapitalAccountId) ?? TextPrimitives.NormalizeOptional(fallbackCapitalAccountId);
         if (resolvedCapitalAccountId is null)
         {
             return null;
         }
 
-        var resolvedInvestorId = NormalizeText(metadata.InvestorId) ?? NormalizeText(fallbackInvestorId);
+        var resolvedInvestorId = TextPrimitives.NormalizeOptional(metadata.InvestorId) ?? TextPrimitives.NormalizeOptional(fallbackInvestorId);
         return new CapitalAccountImpactLine(resolvedCapitalAccountId, resolvedInvestorId, line);
     }
 
@@ -535,9 +540,6 @@ public static class PrivateCapitalFundEventLedgerProjector
             .FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))
             ?.Trim();
 
-    private static string? NormalizeText(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
     private static string? FirstTagText(IReadOnlyList<JournalEntry> entries, string key)
     {
         foreach (var entry in entries)
@@ -559,9 +561,4 @@ public static class PrivateCapitalFundEventLedgerProjector
            !string.IsNullOrWhiteSpace(value)
             ? value.Trim()
             : null;
-
-    private static decimal CalculateNormalBalanceImpact(LedgerAccountType accountType, decimal debit, decimal credit) =>
-        accountType is LedgerAccountType.Asset or LedgerAccountType.Expense
-            ? debit - credit
-            : credit - debit;
 }

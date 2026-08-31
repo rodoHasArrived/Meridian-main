@@ -97,7 +97,7 @@ describe("daily control tower model", () => {
     const model = buildDailyControlTowerModel(shell.workflowContinuity, shell.trustStrip);
 
     expect(shell.workflowContinuity.title).toBe("Daily Control Tower");
-    expect(model.decision.title).toBe("Resolve Report pack approval waiting");
+    expect(model.decision.title).toBe("Report pack approval waiting");
     expect(model.statusLabel).toBe("Review");
     expect(model.ownerLabel).toBe("Reporting");
     expect(model.outputLabel).toBe("Reporting package or evidence");
@@ -119,7 +119,7 @@ describe("daily control tower model", () => {
       expect.objectContaining({
         id: "trust",
         label: "Trust posture",
-        value: "1 need attention",
+        value: "2 need attention",
         badgeVariant: "warning"
       }),
       expect.objectContaining({
@@ -154,5 +154,30 @@ describe("daily control tower model", () => {
     expect(row?.proofPassportItems.find((item) => item.label === "Freshness")?.value).toBe("2026-05-14 21:00 UTC");
     expect(row?.proofPassportItems.find((item) => item.label === "Report Usage")?.value).toBe("Reporting package or evidence");
     expect(row?.proofPassportItems.find((item) => item.label === "Audit Trail")?.value).toBe("2026-05-14T21:00:00.000Z");
+  });
+
+  it("fails closed when an item has no exactly correlated evidence event", () => {
+    const shell = buildAppShellViewState({
+      pathname: "/",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload
+    });
+    const leadingItemId = shell.workflowContinuity.operatorFocusItems[0]?.id;
+    const viewModel = {
+      ...shell.workflowContinuity,
+      evidenceTimelineItems: shell.workflowContinuity.evidenceTimelineItems.filter(
+        (item) => item.id !== leadingItemId
+      )
+    };
+
+    const row = buildDailyControlTowerModel(viewModel, shell.trustStrip).queueRows[0];
+
+    expect(row?.proof).toBeNull();
+    expect(row?.proofPassportItems.find((item) => item.label === "Freshness")?.value)
+      .toBe("No timestamped evidence");
+    expect(row?.proofPassportItems.find((item) => item.label === "Evidence Packet")?.value)
+      .toBe("No evidence packet linked");
   });
 });

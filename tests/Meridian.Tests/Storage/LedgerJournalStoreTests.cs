@@ -1,8 +1,13 @@
 using FluentAssertions;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
+using System.Data;
+using System.Reflection;
 using System.Text.Json;
 
 namespace Meridian.Tests.Storage;
@@ -35,6 +40,7 @@ public sealed class LedgerJournalStoreTests
         provider.GetRequiredService<IAccountingConfigurationStore>().Should().BeOfType<PostgresAccountingConfigurationStore>();
         provider.GetRequiredService<IAccountingActionAuditStore>().Should().BeOfType<PostgresAccountingConfigurationStore>();
         provider.GetRequiredService<LedgerMigrationRunner>().Should().NotBeNull();
+        provider.GetRequiredService<PostgresLedgerCurrencyBackfill>().Should().NotBeNull();
         provider.GetRequiredService<ILedgerBookService>().Should().BeOfType<PostgresLedgerBookService>();
     }
 
@@ -75,10 +81,429 @@ public sealed class LedgerJournalStoreTests
             .WithMessage("*At least one journal query filter is required*");
     }
 
+    [LedgerDatabaseFact]
+    public async Task QueryAsync_EffectiveWindow_IncludesEntryPostedAfterWindow()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var periodId = Guid.NewGuid();
+        await database.SavePeriodAsync(periodId, "Open");
+        var postedAt = DateTimeOffset.Parse("2026-06-15T14:30:00Z");
+        var write = BuildBalancedJournalWrite(periodId, postedAt);
+        write = write with
+        {
+            Entry = new JournalEntry(
+                write.Entry.JournalEntryId,
+                write.Entry.Timestamp,
+                write.Entry.Description,
+                write.Entry.Lines,
+                new JournalEntryMetadata(EffectiveDate: new DateOnly(2026, 5, 30)))
+        };
+        await database.JournalStore.AppendAsync(write);
+
+        var oldPostingWindow = await database.JournalStore.QueryAsync(
+            new LedgerJournalEntryQuery(
+                OccurredFrom: DateTimeOffset.Parse("2026-05-01T00:00:00Z"),
+                OccurredTo: DateTimeOffset.Parse("2026-05-31T23:59:59Z")));
+        var effectiveWindow = await database.JournalStore.QueryAsync(
+            new LedgerJournalEntryQuery(
+                EffectiveFrom: new DateOnly(2026, 5, 1),
+                EffectiveTo: new DateOnly(2026, 5, 31)));
+
+        oldPostingWindow.Should().BeEmpty("the entry was posted in June");
+        effectiveWindow.Should().ContainSingle().Which.Entry.JournalEntryId
+            .Should().Be(write.Entry.JournalEntryId);
+    }
+
+    [Fact]
+    public async Task AppendAsync_TypedPostingCommandWithoutBookContext_RejectsBeforeOpeningConnection()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var write = BuildBookScopedPostingWrite(
+            ledgerBookId,
+            Guid.NewGuid(),
+            bookContext: null,
+            accountingPolicyId: "gaap-policy",
+            accountingPolicyVersion: "v1");
+        var store = new PostgresLedgerJournalStore(new LedgerJournalStoreOptions());
+
+        var act = () => store.AppendAsync(write);
+
+        await act.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*require authoritative book context*");
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AppendAsync_ClientContextConflictsWithRetainedBook_RejectsEveryConflict()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var ownerNodeId = Guid.NewGuid();
+        var recordedAt = DateTimeOffset.Parse("2026-01-02T12:00:00Z");
+        var book = new LedgerBookRecord(
+            ledgerBookId,
+            "fund-alpha",
+            ownerNodeId,
+            FundStructureNodeKindDto.Fund,
+            "Fund Alpha GAAP",
+            "USD",
+            recordedAt,
+            recordedAt,
+            AccountingBasis: AccountingBasisKindDto.Gaap,
+            AccountingPolicyId: "gaap-policy",
+            AccountingPolicyVersion: "v1");
+        await database.JournalStore.SaveLedgerBookAsync(book);
+        await database.JournalStore.SavePeriodAsync(
+            new LedgerAccountingPeriod(
+                periodId,
+                ledgerBookId,
+                2026,
+                1,
+                "2026-01",
+                new DateOnly(2026, 1, 1),
+                new DateOnly(2026, 1, 31),
+                "Open",
+                recordedAt,
+                ClosedAt: null,
+                Version: 0),
+            expectedVersion: 0);
+
+        var retainedContext = new AccountingBookContextDto(
+            ledgerBookId,
+            book.FundProfileId,
+            book.FundStructureNodeId,
+            book.FundStructureNodeKind,
+            book.DisplayName,
+            book.BaseCurrency,
+            book.AccountingBasis,
+            book.AccountingPolicyId,
+            book.AccountingPolicyVersion,
+            periodId);
+        var conflicts = new (string Name, AccountingBookContextDto Context, string PolicyId, string PolicyVersion)[]
+        {
+            ("policy id", retainedContext with { AccountingPolicyId = "client-policy" }, "client-policy", book.AccountingPolicyVersion),
+            ("policy version", retainedContext with { AccountingPolicyVersion = "v2" }, book.AccountingPolicyId, "v2"),
+            ("fund owner", retainedContext with { FundProfileId = "fund-beta" }, book.AccountingPolicyId, book.AccountingPolicyVersion),
+            ("owner node", retainedContext with { FundStructureNodeId = Guid.NewGuid() }, book.AccountingPolicyId, book.AccountingPolicyVersion),
+            ("owner kind", retainedContext with { FundStructureNodeKind = FundStructureNodeKindDto.Entity }, book.AccountingPolicyId, book.AccountingPolicyVersion),
+            ("base currency", retainedContext with { BaseCurrency = "EUR" }, book.AccountingPolicyId, book.AccountingPolicyVersion)
+        };
+
+        foreach (var conflict in conflicts)
+        {
+            var write = BuildBookScopedPostingWrite(
+                ledgerBookId,
+                periodId,
+                conflict.Context,
+                conflict.PolicyId,
+                conflict.PolicyVersion);
+            var act = () => database.JournalStore.AppendAsync(write);
+
+            await act.Should().ThrowAsync<LedgerValidationException>(conflict.Name)
+                .WithMessage("*retained ledger book*");
+        }
+
+        var validWrite = BuildBookScopedPostingWrite(
+            ledgerBookId,
+            periodId,
+            retainedContext,
+            book.AccountingPolicyId,
+            book.AccountingPolicyVersion);
+        await database.JournalStore.AppendAsync(validWrite);
+
+        var retained = await database.JournalStore.QueryAsync(
+            new LedgerJournalEntryQuery(PeriodId: periodId));
+        retained.Should().ContainSingle(record =>
+            record.Entry.JournalEntryId == validWrite.Entry.JournalEntryId);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task RetainedJournal_V30RejectsUpdateAndDeleteAtTheDatabase()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var periodId = Guid.NewGuid();
+        await database.SavePeriodAsync(periodId, "Open");
+        var write = BuildBalancedJournalWrite(periodId);
+        await database.JournalStore.AppendAsync(write);
+        var journalEntryId = write.Entry.JournalEntryId;
+
+        await using var connection = new NpgsqlConnection(database.Options.ConnectionString);
+        await connection.OpenAsync();
+        var mutations = new[]
+        {
+            $"update {database.Options.SchemaName}.journal_entries set description = 'tampered' where journal_entry_id = @id;",
+            $"delete from {database.Options.SchemaName}.journal_entries where journal_entry_id = @id;",
+            $"update {database.Options.SchemaName}.journal_legs set debit = debit + 1 where journal_entry_id = @id;",
+            $"delete from {database.Options.SchemaName}.journal_legs where journal_entry_id = @id;",
+        };
+
+        foreach (var sql in mutations)
+        {
+            var act = async () =>
+            {
+                await using var command = connection.CreateCommand();
+                command.CommandText = sql;
+                command.Parameters.AddWithValue("id", journalEntryId);
+                await command.ExecuteNonQueryAsync();
+            };
+            (await act.Should().ThrowAsync<PostgresException>(
+                    "V_ledger_030 makes the retained journal append-only at the database"))
+                .Which.SqlState.Should().Be("55000");
+        }
+
+        var retained = await database.JournalStore.GetByPeriodAsync(periodId);
+        retained.Should().ContainSingle(record => record.Entry.JournalEntryId == journalEntryId);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task RetainedJournal_V31SealsNormalAppendAndRejectsLaterBalancedLegPair()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var periodId = Guid.NewGuid();
+        await database.SavePeriodAsync(periodId, "Open");
+        var write = BuildBalancedJournalWrite(periodId);
+
+        await database.JournalStore.AppendAsync(write);
+
+        await using var connection = new NpgsqlConnection(database.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using (var seal = connection.CreateCommand())
+        {
+            seal.CommandText =
+                $"select leg_count from {database.Options.SchemaName}.journal_entry_integrity_seals where journal_entry_id = @id;";
+            seal.Parameters.AddWithValue("id", write.Entry.JournalEntryId);
+            (await seal.ExecuteScalarAsync()).Should().Be(2, "a normal parent-then-legs append is sealed at commit");
+        }
+
+        await using (var openMarker = connection.CreateCommand())
+        {
+            openMarker.CommandText =
+                $"select count(*) from {database.Options.SchemaName}.journal_entry_open_postings where journal_entry_id = @id;";
+            openMarker.Parameters.AddWithValue("id", write.Entry.JournalEntryId);
+            (await openMarker.ExecuteScalarAsync()).Should().Be(0L,
+                "the same-transaction append marker must be removed when the aggregate is sealed");
+        }
+
+        var appendExtraBalancedPair = async () =>
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText =
+                $"""
+                insert into {database.Options.SchemaName}.journal_legs (
+                    entry_id, journal_entry_id, line_no, aggregate_id, period_id, occurred_at,
+                    account_name, account_type, debit, credit, description)
+                values
+                    (@debit_id, @journal_entry_id, 3, @aggregate_id, @period_id, now(),
+                        'Cash', 'Asset', 50, 0, 'late balanced debit'),
+                    (@credit_id, @journal_entry_id, 4, @aggregate_id, @period_id, now(),
+                        'Revenue', 'Revenue', 0, 50, 'late balanced credit');
+                """;
+            command.Parameters.AddWithValue("debit_id", Guid.NewGuid());
+            command.Parameters.AddWithValue("credit_id", Guid.NewGuid());
+            command.Parameters.AddWithValue("journal_entry_id", write.Entry.JournalEntryId);
+            command.Parameters.AddWithValue("aggregate_id", write.AggregateId);
+            command.Parameters.AddWithValue("period_id", periodId);
+            await command.ExecuteNonQueryAsync();
+        };
+
+        (await appendExtraBalancedPair.Should().ThrowAsync<PostgresException>(
+                "a balanced pair still changes the already-posted aggregate"))
+            .Which.SqlState.Should().Be("55000");
+
+        var retained = await database.JournalStore.GetByPeriodAsync(periodId);
+        retained.Should().ContainSingle().Which.Entry.Lines.Should().HaveCount(2);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task RetainedJournal_V31RepeatableReadConcurrentLegInsertFailsClosedAfterPostingSeal()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var periodId = Guid.NewGuid();
+        await database.SavePeriodAsync(periodId, "Open");
+        var write = BuildBalancedJournalWrite(periodId);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+
+        await using var postingConnection = new NpgsqlConnection(database.Options.ConnectionString);
+        await postingConnection.OpenAsync(timeout.Token);
+        await using var postingTransaction = await postingConnection.BeginTransactionAsync(timeout.Token);
+        await database.JournalStore.AppendAsync(
+            postingConnection,
+            postingTransaction,
+            write,
+            timeout.Token);
+
+        var contenderApplicationName = $"ledger-seal-{Guid.NewGuid():N}";
+        var contenderConnectionString = new NpgsqlConnectionStringBuilder(database.Options.ConnectionString)
+        {
+            ApplicationName = contenderApplicationName
+        }.ConnectionString;
+        await using var contenderConnection = new NpgsqlConnection(contenderConnectionString);
+        await contenderConnection.OpenAsync(timeout.Token);
+        await using var contenderTransaction = await contenderConnection.BeginTransactionAsync(
+            IsolationLevel.RepeatableRead,
+            timeout.Token);
+        await using (var establishSnapshot = contenderConnection.CreateCommand())
+        {
+            establishSnapshot.Transaction = contenderTransaction;
+            establishSnapshot.CommandText =
+                $"select count(*) from {database.Options.SchemaName}.journal_entries;";
+            await establishSnapshot.ExecuteScalarAsync(timeout.Token);
+        }
+
+        await using var contenderCommand = contenderConnection.CreateCommand();
+        contenderCommand.Transaction = contenderTransaction;
+        contenderCommand.CommandText =
+            $"""
+            insert into {database.Options.SchemaName}.journal_legs (
+                entry_id, journal_entry_id, line_no, aggregate_id, period_id, occurred_at,
+                account_name, account_type, debit, credit, description)
+            values
+                (@debit_id, @journal_entry_id, 3, @aggregate_id, @period_id, now(),
+                    'Cash', 'Asset', 50, 0, 'concurrent balanced debit'),
+                (@credit_id, @journal_entry_id, 4, @aggregate_id, @period_id, now(),
+                    'Revenue', 'Revenue', 0, 50, 'concurrent balanced credit');
+            """;
+        contenderCommand.Parameters.AddWithValue("debit_id", Guid.NewGuid());
+        contenderCommand.Parameters.AddWithValue("credit_id", Guid.NewGuid());
+        contenderCommand.Parameters.AddWithValue("journal_entry_id", write.Entry.JournalEntryId);
+        contenderCommand.Parameters.AddWithValue("aggregate_id", write.AggregateId);
+        contenderCommand.Parameters.AddWithValue("period_id", periodId);
+
+        var racingInsert = contenderCommand.ExecuteNonQueryAsync(timeout.Token);
+        await WaitForAdvisoryLockWaitAsync(
+            database.Options.ConnectionString,
+            contenderApplicationName,
+            timeout.Token);
+
+        await postingTransaction.CommitAsync(timeout.Token);
+
+        var awaitRacingInsert = async () => await racingInsert;
+        (await awaitRacingInsert.Should().ThrowAsync<PostgresException>(
+                "the contender must re-check the seal after the original posting releases its entry lock"))
+            .Which.SqlState.Should().Be("55000");
+
+        var retained = await database.JournalStore.GetByPeriodAsync(periodId, timeout.Token);
+        retained.Should().ContainSingle().Which.Entry.Lines.Should().HaveCount(2,
+            "a balanced child pair racing the initial commit must not extend the sealed aggregate");
+    }
+
+    [LedgerDatabaseFact]
+    public async Task RetainedJournal_V31ZeroLegRawEntry_IsRejectedWhenTheTransactionCommits()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var periodId = Guid.NewGuid();
+        await database.SavePeriodAsync(periodId, "Open");
+        var journalEntryId = Guid.NewGuid();
+
+        await using var connection = new NpgsqlConnection(database.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using (var transaction = await connection.BeginTransactionAsync())
+        {
+            await using (var command = connection.CreateCommand())
+            {
+                command.Transaction = transaction;
+                command.CommandText =
+                    $"""
+                    insert into {database.Options.SchemaName}.journal_entries (
+                        journal_entry_id, aggregate_id, period_id, occurred_at, description)
+                    values (@journal_entry_id, @aggregate_id, @period_id, now(), 'zero-leg bypass attempt');
+                    """;
+                command.Parameters.AddWithValue("journal_entry_id", journalEntryId);
+                command.Parameters.AddWithValue("aggregate_id", Guid.NewGuid());
+                command.Parameters.AddWithValue("period_id", periodId);
+                await command.ExecuteNonQueryAsync();
+            }
+
+            var commit = () => transaction.CommitAsync();
+
+            (await commit.Should().ThrowAsync<PostgresException>(
+                    "the parent-row constraint trigger must fire even when no leg insert occurred"))
+                .Which.SqlState.Should().Be("23514");
+        }
+
+        await using var count = connection.CreateCommand();
+        count.CommandText =
+            $"select count(*) from {database.Options.SchemaName}.journal_entries where journal_entry_id = @id;";
+        count.Parameters.AddWithValue("id", journalEntryId);
+        (await count.ExecuteScalarAsync()).Should().Be(0L);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task RetainedJournal_UnbalancedRawInsert_IsRejectedWhenTheTransactionCommits()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var periodId = Guid.NewGuid();
+        await database.SavePeriodAsync(periodId, "Open");
+        var journalEntryId = Guid.NewGuid();
+
+        await using var connection = new NpgsqlConnection(database.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText =
+                $"""
+                insert into {database.Options.SchemaName}.journal_entries (
+                    journal_entry_id, aggregate_id, period_id, occurred_at, description)
+                values (@journal_entry_id, @aggregate_id, @period_id, now(), 'unbalanced bypass attempt');
+                insert into {database.Options.SchemaName}.journal_legs (
+                    entry_id, journal_entry_id, line_no, aggregate_id, period_id, occurred_at,
+                    account_name, account_type, debit, credit, description)
+                values (@entry_id, @journal_entry_id, 1, @aggregate_id, @period_id, now(),
+                    'Cash', 'Asset', 100, 0, 'debit with no balancing credit');
+                """;
+            command.Parameters.AddWithValue("journal_entry_id", journalEntryId);
+            command.Parameters.AddWithValue("aggregate_id", Guid.NewGuid());
+            command.Parameters.AddWithValue("period_id", periodId);
+            command.Parameters.AddWithValue("entry_id", Guid.NewGuid());
+            await command.ExecuteNonQueryAsync();
+        }
+
+        var act = () => transaction.CommitAsync();
+
+        (await act.Should().ThrowAsync<PostgresException>(
+                "per-entry debits = credits is enforced by the deferred constraint trigger at commit"))
+            .Which.SqlState.Should().Be("23514");
+        (await database.JournalStore.GetByPeriodAsync(periodId)).Should().BeEmpty();
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AppendAsync_SameCommandAcrossAggregates_V25GlobalIdentityRejectsSecondPosting()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var periodId = Guid.NewGuid();
+        await database.SavePeriodAsync(periodId, "Open");
+        var commandId = Guid.NewGuid();
+        var occurredAt = DateTimeOffset.Parse("2026-05-15T18:00:00Z");
+        var first = BuildBalancedJournalWrite(periodId, occurredAt) with
+        {
+            AggregateId = Guid.NewGuid(),
+            CommandId = commandId
+        };
+        var second = BuildBalancedJournalWrite(periodId, occurredAt.AddMinutes(1)) with
+        {
+            AggregateId = Guid.NewGuid(),
+            CommandId = commandId
+        };
+        await database.JournalStore.AppendAsync(first);
+
+        var act = () => database.JournalStore.AppendAsync(second);
+
+        var exception = await act.Should().ThrowAsync<PostgresException>();
+        exception.Which.SqlState.Should().Be(PostgresErrorCodes.UniqueViolation);
+        exception.Which.ConstraintName.Should().Be("ux_journal_entries_command");
+        var retained = await database.JournalStore.GetByPeriodAsync(periodId);
+        retained.Should().ContainSingle(record =>
+            record.Entry.JournalEntryId == first.Entry.JournalEntryId &&
+            record.AggregateId == first.AggregateId);
+    }
+
     [Fact]
     public void LineDimensionContainmentJson_UsesSparseCanonicalDimensionPayload()
     {
         var instrumentId = Guid.Parse("2a9e5505-f6c6-4ce4-aac5-a80ab95968f2");
+        var positionId = Guid.Parse("51e16a9e-56f3-4765-81b6-403c38a29d70");
         var json = PostgresLedgerJournalStore.BuildLineDimensionContainmentJson(new LedgerLineDimensionSet(
             FundId: " fund-alpha ",
             EntityId: "entity-master",
@@ -90,7 +515,10 @@ public sealed class LedgerJournalStoreTests
                 ["Department"] = "FundAccounting",
                 [" "] = "ignored",
                 ["Region"] = " US "
-            }));
+            })
+        {
+            PositionId = positionId
+        });
 
         json.Should().NotBeNull();
         using var document = JsonDocument.Parse(json!);
@@ -98,6 +526,7 @@ public sealed class LedgerJournalStoreTests
         root.GetProperty("fundId").GetString().Should().Be("fund-alpha");
         root.GetProperty("entityId").GetString().Should().Be("entity-master");
         root.GetProperty("instrumentId").GetGuid().Should().Be(instrumentId);
+        root.GetProperty("positionId").GetGuid().Should().Be(positionId);
         root.GetProperty("costCenterId").GetString().Should().Be("fund-accounting");
         root.GetProperty("counterpartyId").GetString().Should().Be("administrator");
         root.TryGetProperty("investorId", out _).Should().BeFalse();
@@ -110,6 +539,7 @@ public sealed class LedgerJournalStoreTests
     public void LineDimensions_AreCanonicalizedBeforeDurableStorageAndQueryFilters()
     {
         var instrumentId = Guid.Parse("2a9e5505-f6c6-4ce4-aac5-a80ab95968f2");
+        var positionId = Guid.Parse("51e16a9e-56f3-4765-81b6-403c38a29d70");
         var dimensions = new LedgerLineDimensionSet(
             FundId: " fund-alpha ",
             EntityId: " entity-master ",
@@ -134,7 +564,10 @@ public sealed class LedgerJournalStoreTests
             AccountId: " account-cash ",
             CustomerId: " customer-investor-services ",
             VendorId: " vendor-administrator ",
-            ProjectId: " project-close ");
+            ProjectId: " project-close ")
+        {
+            PositionId = positionId
+        };
 
         var canonical = PostgresLedgerJournalStore.CanonicalizeLineDimensions(dimensions);
         var json = PostgresLedgerJournalStore.BuildLineDimensionContainmentJson(dimensions);
@@ -147,6 +580,7 @@ public sealed class LedgerJournalStoreTests
         canonical.InvestorId.Should().Be("investor-lp-1");
         canonical.CapitalAccountId.Should().Be("capital-account-lp-1");
         canonical.InstrumentId.Should().Be(instrumentId);
+        canonical.PositionId.Should().Be(positionId);
         canonical.TaxLotId.Should().Be("tax-lot-2026-001");
         canonical.CostCenterId.Should().Be("fund-accounting");
         canonical.CounterpartyId.Should().Be("counterparty-admin");
@@ -172,6 +606,7 @@ public sealed class LedgerJournalStoreTests
         root.GetProperty("investorId").GetString().Should().Be("investor-lp-1");
         root.GetProperty("capitalAccountId").GetString().Should().Be("capital-account-lp-1");
         root.GetProperty("instrumentId").GetGuid().Should().Be(instrumentId);
+        root.GetProperty("positionId").GetGuid().Should().Be(positionId);
         root.GetProperty("taxLotId").GetString().Should().Be("tax-lot-2026-001");
         root.GetProperty("costCenterId").GetString().Should().Be("fund-accounting");
         root.GetProperty("counterpartyId").GetString().Should().Be("counterparty-admin");
@@ -220,6 +655,38 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void JournalEntryQueryFilterSql_SourceEvent_UsesIndexedJournalEntryColumn()
+    {
+        var sourceEventId = Guid.NewGuid();
+
+        var sql = PostgresLedgerJournalStore.BuildJournalEntryQueryFilterSql(
+            "ledger.journal_entries",
+            "ledger.journal_legs",
+            "ledger.accounting_periods",
+            new LedgerJournalEntryQuery(SourceEventId: sourceEventId));
+
+        sql.Should().Contain("je_filter.source_event_id = @source_event_id");
+        sql.Should().NotContain("jl_filter.source_event_id");
+    }
+
+    [Fact]
+    public void JournalEntryQueryFilterSql_EffectiveWindow_UsesMetadataDateWithPostingDateFallback()
+    {
+        var sql = PostgresLedgerJournalStore.BuildJournalEntryQueryFilterSql(
+            "ledger.journal_entries",
+            "ledger.journal_legs",
+            "ledger.accounting_periods",
+            new LedgerJournalEntryQuery(
+                EffectiveFrom: new DateOnly(2026, 5, 1),
+                EffectiveTo: new DateOnly(2026, 5, 31)));
+
+        sql.Should().Contain("je_filter.metadata ->> 'effectiveDate'");
+        sql.Should().Contain("je_filter.occurred_at at time zone 'UTC'");
+        sql.Should().Contain(">= @effective_from");
+        sql.Should().Contain("<= @effective_to");
+    }
+
+    [Fact]
     public void PostingGuard_OpenPeriod_AllowsOriginatingAndAdjustmentEntries()
     {
         var period = BuildAccountingPeriod("Open");
@@ -231,6 +698,21 @@ public sealed class LedgerJournalStoreTests
 
         originatingAct.Should().NotThrow();
         adjustmentAct.Should().NotThrow();
+    }
+
+    [Fact]
+    public void PostingGuard_OpenPeriod_RejectsClosingEntryUntilPeriodIsSoftClosed()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildBalancedJournalWrite(period.PeriodId) with
+        {
+            PostingKind = LedgerPostingKindDto.ClosingEntry
+        };
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*ClosingEntry postings*soft-closed*");
     }
 
     [Fact]
@@ -316,6 +798,35 @@ public sealed class LedgerJournalStoreTests
         var write = BuildBalancedJournalWrite(period.PeriodId) with
         {
             PostingKind = LedgerPostingKindDto.Adjustment
+        };
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*hard-closed*no postings*");
+    }
+
+    [Fact]
+    public void PostingGuard_SoftClosedPeriod_AllowsClosingEntry()
+    {
+        var period = BuildAccountingPeriod("SoftClosed");
+        var write = BuildBalancedJournalWrite(period.PeriodId) with
+        {
+            PostingKind = LedgerPostingKindDto.ClosingEntry
+        };
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().NotThrow("closing entries finalize the period being closed");
+    }
+
+    [Fact]
+    public void PostingGuard_HardClosedPeriod_RejectsClosingEntrySoHardCloseIsFinalMutationBoundary()
+    {
+        var period = BuildAccountingPeriod("HardClosed");
+        var write = BuildBalancedJournalWrite(period.PeriodId) with
+        {
+            PostingKind = LedgerPostingKindDto.ClosingEntry
         };
 
         var act = () => LedgerPeriodPostingGuard.Validate(write, period);
@@ -761,6 +1272,64 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void LedgerJournalCurrencyMigration_DefinesTransactionCurrencyColumns()
+    {
+        var sql = ReadMigration("V_ledger_026__journal_leg_currency.sql");
+
+        sql.Should().Contain("alter table __SCHEMA__.journal_legs");
+        sql.Should().Contain("add column if not exists transaction_currency text null");
+        sql.Should().Contain("add column if not exists functional_currency text null");
+        sql.Should().Contain("add column if not exists transaction_debit numeric(38, 10) null");
+        sql.Should().Contain("add column if not exists transaction_credit numeric(38, 10) null");
+        sql.Should().Contain("add column if not exists fx_rate_to_functional numeric(38, 10) null");
+        sql.Should().Contain("ck_journal_legs_currency_detail");
+    }
+
+    [Fact]
+    public void LedgerJournalImmutabilityMigration_DefinesTriggersBalanceGuardAndPlainForeignKey()
+    {
+        var sql = ReadMigration("V_ledger_030__journal_immutability.sql");
+
+        sql.Should().Contain("trg_journal_entries_immutable");
+        sql.Should().Contain("trg_journal_legs_immutable");
+        sql.Should().Contain("trg_journal_entries_truncate_guard");
+        sql.Should().Contain("trg_journal_legs_truncate_guard");
+        sql.Should().Contain("ctrg_journal_legs_entry_balanced");
+        sql.Should().Contain("deferrable initially deferred");
+        sql.Should().Contain("meridian.ledger_currency_repair");
+        sql.Should().Contain("add constraint fk_journal_legs_journal_entry");
+        sql.Should().NotContain("on delete cascade");
+    }
+
+    [Fact]
+    public void LedgerJournalAggregateSealMigration_DefinesCompleteEntryAndLaterInsertGuards()
+    {
+        var sql = ReadMigration("V_ledger_031__journal_aggregate_seal.sql");
+
+        sql.Should().Contain("journal_entry_integrity_seals");
+        sql.Should().Contain("journal_entry_open_postings");
+        sql.Should().Contain("opening_xid = pg_current_xact_id()");
+        sql.Should().Contain("lock table __SCHEMA__.journal_entries, __SCHEMA__.journal_legs");
+        sql.Should().Contain("in share row exclusive mode");
+        sql.Should().Contain("trg_journal_entries_integrity_lock");
+        sql.Should().Contain("trg_journal_entries_mark_open");
+        sql.Should().Contain("pg_advisory_xact_lock");
+        sql.Should().Contain("ctrg_journal_entry_complete");
+        sql.Should().Contain("deferrable initially deferred");
+        sql.Should().Contain("trg_journal_legs_reject_sealed_insert");
+        sql.Should().Contain("retained_leg_count < 2");
+        sql.Should().Contain("total_debit <> total_credit");
+        sql.Should().Contain("trg_journal_integrity_seals_immutable");
+        sql.Should().Contain("trg_journal_integrity_seals_truncate_guard");
+        sql.Should().Contain("trg_journal_open_postings_guard");
+
+        sql.IndexOf("lock table __SCHEMA__.journal_entries", StringComparison.Ordinal)
+            .Should().BeLessThan(
+                sql.IndexOf("do $migration$", StringComparison.Ordinal),
+                "writers must be excluded before retained entries are validated and backfilled");
+    }
+
+    [Fact]
     public void LedgerJournalAsOfIndexMigration_DefinesHydrationIndexes()
     {
         var sql = ReadMigration("V_ledger_023__journal_as_of_indexes.sql");
@@ -773,6 +1342,72 @@ public sealed class LedgerJournalStoreTests
         sql.Should().Contain("on __SCHEMA__.journal_entries (occurred_at, global_sequence, journal_entry_id)");
     }
 
+
+    [Theory]
+    [InlineData("Simulated")]
+    [InlineData("seeded")]
+    [InlineData("seed")]
+    [InlineData("demo")]
+    [InlineData("fixture")]
+    [InlineData("sample")]
+    [InlineData("placeholder")]
+    public void PostingCommand_UnmarkedNonRealEvidence_IsRejectedAtAppendBoundary(string evidenceSource)
+    {
+        var write = BuildSimulatedOriginPostingWrite(DataProvenance.Real, evidenceSource);
+
+        var act = () => AccountingPostingCommandValidator.NormalizeAndValidate(write);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*unmarked simulated figure*");
+    }
+
+    [Fact]
+    public void PostingCommand_SimulatedMarkRetained_PostsAndRetainsProvenanceTag()
+    {
+        var write = BuildSimulatedOriginPostingWrite(DataProvenance.Simulated);
+
+        var normalized = AccountingPostingCommandValidator.NormalizeAndValidate(write);
+
+        normalized.Entry.Metadata.Tags.Should().ContainKey("dataProvenance");
+        normalized.Entry.Metadata.Tags["dataProvenance"].Should().Be("SIMULATED");
+    }
+
+    private static LedgerJournalEntryWrite BuildSimulatedOriginPostingWrite(
+        DataProvenance provenance,
+        string evidenceSource = "Simulated")
+    {
+        var periodId = Guid.NewGuid();
+        var aggregateId = Guid.NewGuid();
+        var ledgerBookId = Guid.NewGuid();
+        return BuildBalancedJournalWrite(periodId) with
+        {
+            AggregateId = aggregateId,
+            PostingCommand = new AccountingPostingCommandDto(
+                Guid.NewGuid(),
+                aggregateId,
+                periodId,
+                new DateOnly(2026, 1, 31),
+                DateTimeOffset.Parse("2026-01-31T21:00:00Z"),
+                "sim:shadow-book:20260131",
+                SourceEventType: "CapitalCall",
+                ApprovalState: AccountingPostingApprovalStateDto.Approved,
+                ApprovalId: "approval-sim-1",
+                Evidence:
+                [
+                    new AccountingPostingEvidenceReferenceDto(
+                        "evidence-sim-1",
+                        "evidence://sim/shadow-book-1",
+                        AccountingPostingEvidenceKindDto.Source,
+                        evidenceSource,
+                        DateTimeOffset.Parse("2026-01-31T20:00:00Z"),
+                        "fund-controller")
+                ],
+                LedgerBookId: ledgerBookId)
+            {
+                Provenance = provenance
+            }
+        };
+    }
 
     [Fact]
     public void PostingCommand_ApprovedCommand_NormalizesWriteMetadataAndEvidence()
@@ -838,6 +1473,7 @@ public sealed class LedgerJournalStoreTests
         var sourceEventId = Guid.NewGuid();
         var commandId = Guid.NewGuid();
         var instrumentId = Guid.NewGuid();
+        var positionId = Guid.NewGuid();
         var ledgerBookId = Guid.NewGuid();
         var write = BuildBalancedJournalWrite(periodId) with
         {
@@ -850,6 +1486,7 @@ public sealed class LedgerJournalStoreTests
             [$"lineDimensions.{debitLine.EntryId:N}.fundId"] = " fund-alpha ",
             [$"lineDimensions.{debitLine.EntryId:N}.entityId"] = "entity-master",
             [$"lineDimensions.{debitLine.EntryId:N}.instrumentId"] = instrumentId.ToString("D"),
+            [$"lineDimensions.{debitLine.EntryId:N}.positionId"] = positionId.ToString("D"),
             [$"lineDimensions.{debitLine.EntryId:N}.costCenterId"] = "investment-ops",
             [$"lineDimensions.{debitLine.EntryId:N}.counterpartyId"] = "custodian-bny",
             [$"lineDimensions.{debitLine.EntryId:N}.externalGl.Department"] = " InvestmentOps ",
@@ -899,6 +1536,7 @@ public sealed class LedgerJournalStoreTests
         normalizedDebit.Dimensions!.FundId.Should().Be("fund-alpha");
         normalizedDebit.Dimensions.EntityId.Should().Be("entity-master");
         normalizedDebit.Dimensions.InstrumentId.Should().Be(instrumentId);
+        normalizedDebit.Dimensions.PositionId.Should().Be(positionId);
         normalizedDebit.Dimensions.CostCenterId.Should().Be("investment-ops");
         normalizedDebit.Dimensions.CounterpartyId.Should().Be("custodian-bny");
         normalizedDebit.Dimensions.ExternalGlDimensions["Department"].Should().Be("InvestmentOps");
@@ -1195,6 +1833,60 @@ public sealed class LedgerJournalStoreTests
                 ]),
             AggregateId: Guid.NewGuid(),
             PeriodId: periodId);
+    }
+
+    private static LedgerJournalEntryWrite BuildBookScopedPostingWrite(
+        Guid ledgerBookId,
+        Guid periodId,
+        AccountingBookContextDto? bookContext,
+        string accountingPolicyId,
+        string accountingPolicyVersion)
+    {
+        var write = BuildBalancedJournalWrite(
+            periodId,
+            DateTimeOffset.Parse("2026-01-15T18:00:00Z")) with
+        {
+            AggregateId = ledgerBookId,
+            AccountingBasis = AccountingBasisKindDto.Gaap,
+            AccountingPolicyId = accountingPolicyId,
+            AccountingPolicyVersion = accountingPolicyVersion,
+            LedgerBookId = ledgerBookId
+        };
+        var command = new AccountingPostingCommandDto(
+            Guid.NewGuid(),
+            write.AggregateId,
+            periodId,
+            new DateOnly(2026, 1, 15),
+            write.Entry.Timestamp,
+            $"governed-book-context:{Guid.NewGuid():N}",
+            AccountingPostingIntentDto.Originating,
+            SourceEventId: Guid.NewGuid(),
+            CorrelationId: Guid.NewGuid(),
+            CausationId: Guid.NewGuid(),
+            SourceEventType: "GovernedBookContextTest",
+            ApprovalState: AccountingPostingApprovalStateDto.Approved,
+            ApprovalId: $"approval:{Guid.NewGuid():N}",
+            Evidence:
+            [
+                new AccountingPostingEvidenceReferenceDto(
+                    $"evidence:{Guid.NewGuid():N}",
+                    "evidence://ledger-book/context",
+                    AccountingPostingEvidenceKindDto.Source,
+                    "LedgerBookAuthority",
+                    write.Entry.Timestamp.AddMinutes(-1),
+                    "fund-controller")
+            ],
+            LedgerBookId: ledgerBookId)
+        {
+            BookContext = bookContext,
+            RulePackReference = new AccountingRulePackReferenceDto(
+                "gaap-rule-pack",
+                "v1",
+                "governed-book-context",
+                "v1")
+        };
+
+        return write with { PostingCommand = command };
     }
 
     private static LedgerJournalEntryWrite BuildTreasuryJournalWrite(
@@ -1561,6 +2253,36 @@ public sealed class LedgerJournalStoreTests
             ]);
     }
 
+    private static async Task WaitForAdvisoryLockWaitAsync(
+        string connectionString,
+        string applicationName,
+        CancellationToken ct)
+    {
+        await using var observer = new NpgsqlConnection(connectionString);
+        await observer.OpenAsync(ct);
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            await using var command = observer.CreateCommand();
+            command.CommandText =
+                """
+                select exists (
+                    select 1
+                    from pg_catalog.pg_stat_activity
+                    where application_name = @application_name
+                      and wait_event_type = 'Lock'
+                      and wait_event = 'advisory');
+                """;
+            command.Parameters.AddWithValue("application_name", applicationName);
+            if (await command.ExecuteScalarAsync(ct) is true)
+            {
+                return;
+            }
+
+            await Task.Delay(25, ct);
+        }
+    }
+
     private static string ReadMigration(string fileName)
     {
         var root = FindRepoRoot();
@@ -1583,4 +2305,112 @@ public sealed class LedgerJournalStoreTests
 
         throw new DirectoryNotFoundException("Unable to locate Meridian repository root.");
     }
+
+    /// <summary>
+    /// Every dimension declared on <see cref="LedgerLineDimensionSet"/> must survive
+    /// canonicalization and reach the JSONB containment predicate.
+    ///
+    /// Both paths rebuild the field list by hand -- <c>CanonicalizeLineDimensions</c> reconstructs
+    /// the record field by field, and <c>BuildLineDimensionContainmentJson</c> re-lists every key --
+    /// and neither can reach <c>LedgerLineDimensionSetFields</c>, which is internal to
+    /// Meridian.Ledger. A dimension added to the record but not threaded through them fails
+    /// silently in the worst way: canonicalization strips it before persistence, and the
+    /// containment predicate ignores it, so a dimension-scoped journal query returns rows that do
+    /// not match the requested scope. No exception, no log -- wrong rows (ACCT-CHECKLIST-03).
+    ///
+    /// Reflecting over the record turns that drift into a build failure here instead.
+    /// </summary>
+    [Fact]
+    public void LineDimensions_CarryEveryDeclaredDimensionThroughCanonicalizationAndContainment()
+    {
+        var populated = FullyPopulatedLineDimensions();
+        var declared = typeof(LedgerLineDimensionSet)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .OrderBy(static property => property.Name, StringComparer.Ordinal)
+            .ToArray();
+
+        // Check the fixture first, so a newly declared dimension reports as an unset fixture rather
+        // than as a mysterious missing key in one of the assertions below.
+        foreach (var property in declared)
+        {
+            HasDimensionValue(property, populated).Should().BeTrue(
+                "{0} is declared on LedgerLineDimensionSet but this fixture leaves it unset; populate "
+                + "it so the canonicalization and containment assertions actually cover it",
+                property.Name);
+        }
+
+        var canonical = PostgresLedgerJournalStore.CanonicalizeLineDimensions(populated);
+
+        canonical.Should().NotBeNull();
+        foreach (var property in declared)
+        {
+            HasDimensionValue(property, canonical!).Should().BeTrue(
+                "canonicalization must preserve {0}; it rebuilds the record field by field, so a "
+                + "dimension it does not list is stripped before the line is ever persisted",
+                property.Name);
+        }
+
+        var json = PostgresLedgerJournalStore.BuildLineDimensionContainmentJson(populated);
+
+        json.Should().NotBeNull();
+        using var document = JsonDocument.Parse(json!);
+        var containmentKeys = document.RootElement
+            .EnumerateObject()
+            .Select(static property => property.Name)
+            .ToHashSet(StringComparer.Ordinal);
+
+        foreach (var property in declared)
+        {
+            containmentKeys.Should().Contain(
+                ToCamelCase(property.Name),
+                "the containment predicate must filter on {0}; a dimension missing from it is ignored "
+                + "by dimension-scoped journal queries, which then return rows outside the requested scope",
+                property.Name);
+        }
+    }
+
+    /// <summary>
+    /// A <see cref="LedgerLineDimensionSet"/> with every declared dimension populated. Kept beside
+    /// the reflection test that consumes it: when a dimension is added to the record, that test
+    /// fails here first and names the field to add.
+    /// </summary>
+    private static LedgerLineDimensionSet FullyPopulatedLineDimensions()
+        => new(
+            FundId: "fund-alpha",
+            EntityId: "entity-master",
+            SleeveId: "sleeve-core",
+            StrategyId: "strategy-momentum",
+            InvestorId: "investor-lp-1",
+            CapitalAccountId: "capital-account-1",
+            InstrumentId: Guid.Parse("2a9e5505-f6c6-4ce4-aac5-a80ab95968f2"),
+            TaxLotId: "tax-lot-1",
+            CostCenterId: "fund-accounting",
+            CounterpartyId: "administrator",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "FundAccounting"
+            },
+            OrganizationId: "organization-1",
+            PortfolioId: "portfolio-1",
+            BookId: "book-1",
+            AccountId: "account-1",
+            CustomerId: "customer-1",
+            VendorId: "vendor-1",
+            ProjectId: "project-1")
+        {
+            PositionId = Guid.Parse("51e16a9e-56f3-4765-81b6-403c38a29d70")
+        };
+
+    private static bool HasDimensionValue(PropertyInfo property, LedgerLineDimensionSet dimensions)
+        => property.GetValue(dimensions) switch
+        {
+            null => false,
+            string text => !string.IsNullOrWhiteSpace(text),
+            // Never null -- it defaults to an empty dictionary -- so emptiness is what "unset" means.
+            IReadOnlyDictionary<string, string> externalGlDimensions => externalGlDimensions.Count > 0,
+            _ => true
+        };
+
+    private static string ToCamelCase(string name)
+        => char.ToLowerInvariant(name[0]) + name[1..];
 }

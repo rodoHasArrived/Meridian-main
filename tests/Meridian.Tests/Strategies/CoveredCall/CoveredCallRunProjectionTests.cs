@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite;
 using Meridian.Contracts.Domain.Enums;
+using Meridian.Strategies.Models;
 using Meridian.Ui.Shared.Contracts;
 using Meridian.Ui.Shared.Services.CoveredCall;
 using Xunit;
@@ -9,11 +10,88 @@ namespace Meridian.Tests.Strategies.CoveredCall;
 
 public sealed class CoveredCallRunProjectionTests
 {
+    private static readonly CoveredCallRunScope Scope = new("tenant-alpha", "company-alpha", "strategy-operator");
+
     private static CoveredCallBacktestRequest ValidRequest() => new(
         UnderlyingSymbol: "SPY",
         From: new DateOnly(2024, 1, 1),
         To: new DateOnly(2024, 6, 30),
-        MinStrike: 500m);
+        MinStrike: 500m)
+    {
+        OperatorAcceptanceCriteria = ["Operator reviewed the retained covered-call backtest evidence."],
+        RetainedEvidenceReferences = ["evidence://strategy-runs/covered-call-overwrite"]
+    };
+
+    [Fact]
+    public void CreateEvidenceBackedRunEntry_NormalizesAndRetainsW6LineageBeforeExecution()
+    {
+        var request = ValidRequest() with
+        {
+            OperatorAcceptanceCriteria =
+            [
+                " Operator reviewed the retained covered-call backtest evidence. ",
+                "operator reviewed the retained covered-call backtest evidence."
+            ],
+            RetainedEvidenceReferences =
+            [
+                " evidence://strategy-runs/covered-call-overwrite ",
+                "evidence://strategy-runs/covered-call-overwrite"
+            ],
+            ApprovalReferences = ["approval://strategy-runs/covered-call-overwrite"]
+        };
+
+        var entry = CoveredCallRunProjection.CreateEvidenceBackedRunEntry(
+            request,
+            Scope,
+            "covered-call-run-1",
+            new Dictionary<string, string>
+            {
+                [CoveredCallBacktestService.TenantParameterKey] = Scope.TenantId,
+                [CoveredCallBacktestService.CompanyParameterKey] = Scope.CompanyId,
+                ["underlyingSymbol"] = "SPY"
+            });
+
+        entry.RunType.Should().Be(RunType.Backtest);
+        entry.Engine.Should().Be("MeridianNative");
+        entry.StrategyId.Should().Be(CoveredCallBacktestService.GetScopedStrategyId(Scope));
+        entry.ActorId.Should().Be(Scope.Actor);
+        entry.OperatorAcceptanceCriteria.Should()
+            .ContainSingle("Operator reviewed the retained covered-call backtest evidence.");
+        entry.RetainedEvidenceReferences.Should()
+            .ContainSingle("evidence://strategy-runs/covered-call-overwrite");
+        entry.ApprovalReferences.Should()
+            .ContainSingle("approval://strategy-runs/covered-call-overwrite");
+        entry.InputHashSha256.Should().Be(StrategyRunEntry.ComputeEvidenceBoundInputHash(
+            entry.StrategyId,
+            entry.StrategyName,
+            entry.RunType,
+            entry.DatasetReference,
+            entry.FeedReference,
+            entry.Engine,
+            entry.ParameterSet,
+            entry.ParentRunId,
+            entry.PortfolioId,
+            entry.LedgerReference,
+            entry.AuditReference,
+            entry.FundProfileId,
+            entry.OperatorAcceptanceCriteria,
+            entry.RetainedEvidenceReferences,
+            entry.AccountingRecordReferences,
+            entry.ApprovalReferences,
+            entry.PaperValidationReferences,
+            entry.GovernedReportReferences));
+    }
+
+    [Fact]
+    public void RequireEvidenceLoop_MissingOperatorChecklist_RejectsBeforeQueueing()
+    {
+        var request = ValidRequest() with { OperatorAcceptanceCriteria = [] };
+
+        var act = () => CoveredCallRunProjection.RequireEvidenceLoop(request);
+
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("*operator acceptance criterion*");
+    }
 
     [Fact]
     public void ToParams_MapsAllWhitelistedFields()

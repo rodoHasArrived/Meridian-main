@@ -29,6 +29,11 @@ class DocumentationWorkflowTests(unittest.TestCase):
         self.assertIn("uses: actions/checkout@v6.0.2", regenerate_block)
         self.assertIn("fetch-depth: 0", regenerate_block)
 
+    def test_diagram_dependencies_use_root_lockfile(self) -> None:
+        self.assertIn('"package-lock.json"', self.workflow)
+        self.assertIn("npm ci --no-fund --no-audit", self.workflow)
+        self.assertNotIn("npm install --no-fund --no-audit", self.workflow)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -110,6 +110,104 @@ function New-Candidate {
     }
 }
 
+function Add-GeneratedDirectory {
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
+        [System.Collections.Generic.List[object]]$Candidates,
+
+        [Parameter(Mandatory)]
+        [string]$RepoRoot,
+
+        [Parameter(Mandatory)]
+        [string]$RelativePath,
+
+        [Parameter(Mandatory)]
+        [string]$Reason
+    )
+
+    $fullPath = Join-Path $RepoRoot $RelativePath
+    if (Test-Path -LiteralPath $fullPath -PathType Container) {
+        $Candidates.Add((New-Candidate -Path $fullPath -Reason $Reason))
+    }
+}
+
+function Add-GeneratedFiles {
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
+        [System.Collections.Generic.List[object]]$Candidates,
+
+        [Parameter(Mandatory)]
+        [string]$RootPath,
+
+        [Parameter(Mandatory)]
+        [string[]]$Patterns,
+
+        [Parameter(Mandatory)]
+        [string]$Reason,
+
+        [switch]$Recurse
+    )
+
+    if (-not (Test-Path -LiteralPath $RootPath -PathType Container)) {
+        return
+    }
+
+    foreach ($pattern in $Patterns) {
+        Get-ChildItem -LiteralPath $RootPath -Filter $pattern -File -Force -Recurse:$Recurse -ErrorAction SilentlyContinue |
+            ForEach-Object {
+                $Candidates.Add((New-Candidate -Path $_.FullName -Reason $Reason))
+            }
+    }
+}
+
+function Add-GeneratedTempChildren {
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
+        [System.Collections.Generic.List[object]]$DirectoryCandidates,
+
+        [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
+        [System.Collections.Generic.List[object]]$FileCandidates,
+
+        [Parameter(Mandatory)]
+        [string]$RepoRoot
+    )
+
+    $tmpRoot = Join-Path $RepoRoot '.tmp'
+    if (-not (Test-Path -LiteralPath $tmpRoot -PathType Container)) {
+        return
+    }
+
+    $directoryPatterns = @(
+        'codex-*',
+        'dashboard-dev',
+        'gh-run-*',
+        'gitleaks-*',
+        'localappdata',
+        'logs',
+        'MSBuildTemp*',
+        'tools'
+    )
+
+    foreach ($directory in Get-ChildItem -LiteralPath $tmpRoot -Directory -Force -ErrorAction SilentlyContinue) {
+        foreach ($pattern in $directoryPatterns) {
+            if ($directory.Name -like $pattern) {
+                $DirectoryCandidates.Add((New-Candidate -Path $directory.FullName -Reason "Temporary workspace output"))
+                break
+            }
+        }
+    }
+
+    Add-GeneratedFiles `
+        -Candidates $FileCandidates `
+        -RootPath $tmpRoot `
+        -Patterns @('*.log', '*.tmp', '*.pid', '*.exitcode') `
+        -Reason "Temporary workspace output"
+}
+
 function Add-GeneratedArtifactChildren {
     param(
         [Parameter(Mandatory)]
@@ -160,6 +258,12 @@ function Test-SkipGeneratedOutputTraversal {
     )
 
     if ($Directory.Name -in @('.git', '.vs', '.idea', 'node_modules')) {
+        return $true
+    }
+
+    $relativePath = (Get-RelativeRepoPath -RepoRoot $RepoRoot -FullPath $Directory.FullName) -replace '\\', '/'
+    $firstSegment = ($relativePath -split '/')[0]
+    if ($firstSegment -in @('.agents', '.claude', '.codex', '.tmp', 'archive', 'artifacts', 'data', 'docs', 'Meridian Design System', 'output', 'plugins', 'wwwroot')) {
         return $true
     }
 
@@ -214,6 +318,12 @@ function Add-NodeModuleDirectories {
         $currentDirectory = $pendingDirectories.Pop()
         foreach ($directory in Get-ChildItem -LiteralPath $currentDirectory -Directory -Force -ErrorAction SilentlyContinue) {
             if ($directory.Name -in @('.git', '.vs', '.idea')) {
+                continue
+            }
+
+            $relativePath = (Get-RelativeRepoPath -RepoRoot $RepoRoot -FullPath $directory.FullName) -replace '\\', '/'
+            $firstSegment = ($relativePath -split '/')[0]
+            if ($firstSegment -in @('.agents', '.claude', '.codex', '.tmp', 'archive', 'artifacts', 'data', 'docs', 'Meridian Design System', 'output', 'plugins', 'wwwroot')) {
                 continue
             }
 
@@ -280,12 +390,11 @@ Add-GeneratedArtifactChildren `
     -Reason "Generated publish output"
 
 if ($IncludeTemp) {
-    foreach ($name in @('temp')) {
-        $fullPath = Join-Path $repoRoot $name
-        if (Test-Path -LiteralPath $fullPath -PathType Container) {
-            $candidateDirectories.Add((New-Candidate -Path $fullPath -Reason "Temporary workspace output"))
-        }
-    }
+    Add-GeneratedDirectory -Candidates $candidateDirectories -RepoRoot $repoRoot -RelativePath '.buildtmp' -Reason "Temporary workspace output"
+    Add-GeneratedDirectory -Candidates $candidateDirectories -RepoRoot $repoRoot -RelativePath 'temp' -Reason "Temporary workspace output"
+    Add-GeneratedDirectory -Candidates $candidateDirectories -RepoRoot $repoRoot -RelativePath 'output' -Reason "Temporary workspace output"
+    Add-GeneratedDirectory -Candidates $candidateDirectories -RepoRoot $repoRoot -RelativePath 'src/Meridian.Ui/dashboard/.tmp' -Reason "Dashboard temporary output"
+    Add-GeneratedTempChildren -DirectoryCandidates $candidateDirectories -FileCandidates $candidateFiles -RepoRoot $repoRoot
 }
 
 if ($IncludeLogs) {
@@ -295,6 +404,12 @@ if ($IncludeLogs) {
             $candidateDirectories.Add((New-Candidate -Path $fullPath -Reason "Generated log files"))
         }
     }
+
+    Add-GeneratedFiles `
+        -Candidates $candidateFiles `
+        -RootPath (Join-Path $repoRoot 'artifacts') `
+        -Patterns @('*.log', '*.tmp', '*.pid', '*.exitcode', '*_stdout.txt', '*_stderr.txt') `
+        -Reason "Generated artifact log or process sidecar"
 }
 
 if ($IncludeVisualStudio) {

@@ -146,4 +146,46 @@ public sealed class HttpClientConfigurationTests
 
         client.BaseAddress.Should().Be(new Uri("https://api.stlouisfed.org/fred/"));
     }
+
+    [Fact]
+    public void ValidateIbClientPortalCertificate_WithValidCertificate_AcceptsAnyHost()
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, "https://gw.example.com/v1/api/portfolio/accounts");
+
+        var accepted = HttpClientConfiguration.ValidateIbClientPortalCertificate(
+            request, certificate: null, chain: null, System.Net.Security.SslPolicyErrors.None);
+
+        accepted.Should().BeTrue("a certificate that passes standard validation is always acceptable");
+    }
+
+    [Theory]
+    [InlineData("https://localhost:5000/v1/api/portfolio/accounts")]
+    [InlineData("https://127.0.0.1:5000/v1/api/portfolio/accounts")]
+    [InlineData("https://[::1]:5000/v1/api/portfolio/accounts")]
+    public void ValidateIbClientPortalCertificate_WithCertificateErrors_AcceptsLoopbackHostsOnly(string url)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+        var accepted = HttpClientConfiguration.ValidateIbClientPortalCertificate(
+            request, certificate: null, chain: null,
+            System.Net.Security.SslPolicyErrors.RemoteCertificateChainErrors);
+
+        accepted.Should().BeTrue("IB Gateway's self-signed certificate is tolerated on loopback hosts");
+    }
+
+    [Theory]
+    [InlineData("https://gw.example.com/v1/api/portfolio/accounts")]
+    [InlineData("https://192.168.1.20:5000/v1/api/portfolio/accounts")]
+    public void ValidateIbClientPortalCertificate_WithCertificateErrors_RejectsRemoteHosts(string url)
+    {
+        // The previous DangerousAcceptAnyServerCertificateValidator accepted any certificate
+        // from any host, leaving the brokerage-credential path with no MITM protection.
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+        var accepted = HttpClientConfiguration.ValidateIbClientPortalCertificate(
+            request, certificate: null, chain: null,
+            System.Net.Security.SslPolicyErrors.RemoteCertificateChainErrors);
+
+        accepted.Should().BeFalse("certificate errors from non-loopback hosts must fail TLS validation");
+    }
 }

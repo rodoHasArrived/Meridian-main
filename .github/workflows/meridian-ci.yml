@@ -39,17 +39,17 @@ jobs:
           fetch-depth: 1
 
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v5.2.0
+        uses: actions/setup-dotnet@v5.4.0
         with:
           global-json-file: global.json
 
       - name: Set up Python
-        uses: actions/setup-python@v6.2.0
+        uses: actions/setup-python@v6.3.0
         with:
           python-version: "3.12"
 
       - name: Cache NuGet packages
-        uses: actions/cache@v5.0.5
+        uses: actions/cache@v6.1.0
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-quality-gate-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
@@ -92,7 +92,7 @@ jobs:
           cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
 
       - name: Set up Python
-        uses: actions/setup-python@v6.2.0
+        uses: actions/setup-python@v6.3.0
         with:
           python-version: "3.12"
 
@@ -123,9 +123,30 @@ jobs:
           fetch-depth: 1
 
       - name: Set up Python
-        uses: actions/setup-python@v6.2.0
+        uses: actions/setup-python@v6.3.0
         with:
           python-version: "3.12"
+
+      # validate-agent-definitions.py parses agent frontmatter with PyYAML rather than a
+      # hand-rolled subset parser, so this lane needs the dependency installed.
+      - name: Install docs script dependencies
+        run: python -m pip install --requirement build/scripts/docs/requirements.txt
+
+      # `promtool check rules` proves the alert file parses; `promtool test rules` proves each
+      # rule fires on the condition it claims. Only the second catches a rate() window that
+      # goes quiet while the fault persists, which is the shape of every alert regression here.
+      # The docker CLI is preinstalled on ubuntu-latest and `docker compose config` needs no
+      # daemon. validate-monitoring-deployment.py fails closed if either tool is missing.
+      - name: Install promtool
+        env:
+          PROMETHEUS_VERSION: "3.1.0"
+        run: |
+          set -euo pipefail
+          curl -sSfL -o /tmp/prometheus.tar.gz \
+            "https://github.com/prometheus/prometheus/releases/download/v${PROMETHEUS_VERSION}/prometheus-${PROMETHEUS_VERSION}.linux-amd64.tar.gz"
+          tar -xzf /tmp/prometheus.tar.gz -C /tmp --wildcards '*/promtool' --strip-components=1
+          sudo install -m 0755 /tmp/promtool /usr/local/bin/promtool
+          promtool --version
 
       - name: Run docs/source/AI lane
         run: bash scripts/ci.sh --lane verify-docs
@@ -156,9 +177,14 @@ jobs:
           fetch-depth: 1
 
       - name: Set up Python
-        uses: actions/setup-python@v6.2.0
+        uses: actions/setup-python@v6.3.0
         with:
           python-version: "3.12"
+
+      # validate-agent-definitions.py parses agent frontmatter with PyYAML rather than a
+      # hand-rolled subset parser, so this lane needs the dependency installed.
+      - name: Install docs script dependencies
+        run: python -m pip install --requirement build/scripts/docs/requirements.txt
 
       - name: Run workflow hygiene lane
         run: bash scripts/ci.sh --lane verify-workflows

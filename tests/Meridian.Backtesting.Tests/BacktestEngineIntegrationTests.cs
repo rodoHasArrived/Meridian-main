@@ -125,7 +125,10 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
         var request = new BacktestRequest(
             From: new DateOnly(2024, 1, 2),
             To: new DateOnly(2024, 1, 2),
-            DataRoot: _dataRoot);
+            DataRoot: _dataRoot,
+            // Single-bar fixture: only same-bar execution can fill at all, which is exactly the
+            // legacy midpoint behaviour this test documents.
+            FillTiming: FillTiming.SameBar);
 
         var result = await _engine.RunAsync(request, strategy);
 
@@ -344,7 +347,10 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
             From: new DateOnly(2024, 1, 2),
             To: new DateOnly(2024, 1, 3),
             DataRoot: _dataRoot,
-            Accounts: [restrictedAccount]);
+            Accounts: [restrictedAccount],
+            // Same-bar timing keeps the regression scenario intact: the first slices must be
+            // accepted/rejected against the expensive first bar, then complete on the cheap second bar.
+            FillTiming: FillTiming.SameBar);
 
         var strategy = new BuyFirstBarWithMarketImpactGtcStrategy("AAPL", quantity: 20);
         var result = await _engine.RunAsync(request, strategy);
@@ -492,7 +498,7 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
             Source: "test",
             SequenceNumber: 1L);
 
-        var evt = MarketEvent.HistoricalBar(timestamp, symbol, bar, 1, "test");
+        var evt = MarketEvent.HistoricalBar(timestamp, symbol, bar, "test", 1);
         using var writer = new StreamWriter(filePath);
         writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
     }
@@ -529,7 +535,7 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
                 SequenceNumber: seq++);
 
             var ts = bar.ToTimestampUtc();
-            var evt = MarketEvent.HistoricalBar(ts, symbol, bar, seq, "test");
+            var evt = MarketEvent.HistoricalBar(ts, symbol, bar, "test", seq);
 
             writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
             date = date.AddDays(1);
@@ -558,7 +564,7 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
                 SequenceNumber: seq++);
 
             var ts = payload.ToTimestampUtc();
-            var evt = MarketEvent.HistoricalBar(ts, symbol, payload, seq, "test");
+            var evt = MarketEvent.HistoricalBar(ts, symbol, payload, "test", seq);
             writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
         }
     }

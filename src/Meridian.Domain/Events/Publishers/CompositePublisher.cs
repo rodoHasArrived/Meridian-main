@@ -1,3 +1,6 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
 namespace Meridian.Domain.Events.Publishers;
 
 /// <summary>
@@ -6,11 +9,18 @@ namespace Meridian.Domain.Events.Publishers;
 /// </summary>
 public sealed class CompositePublisher : IMarketEventPublisher
 {
+    private readonly ILogger<CompositePublisher> _logger;
     private readonly IMarketEventPublisher[] _publishers;
 
     public CompositePublisher(params IMarketEventPublisher[] publishers)
+        : this(null, publishers)
+    {
+    }
+
+    public CompositePublisher(ILogger<CompositePublisher>? logger, params IMarketEventPublisher[] publishers)
     {
         _publishers = publishers ?? throw new ArgumentNullException(nameof(publishers));
+        _logger = logger ?? NullLogger<CompositePublisher>.Instance;
     }
 
     public bool TryPublish(in MarketEvent evt)
@@ -33,8 +43,11 @@ public sealed class CompositePublisher : IMarketEventPublisher
             }
             catch (Exception ex) when (ex is not OutOfMemoryException and not OperationCanceledException)
             {
-                // Continue to other publishers even if one fails.
-                // OutOfMemoryException and OperationCanceledException are re-thrown.
+                _logger.LogWarning(
+                    ex,
+                    "Market-event publisher {PublisherType} failed while publishing {EventType}; continuing fan-out.",
+                    publisher.GetType().FullName,
+                    evt.Type);
             }
         }
 

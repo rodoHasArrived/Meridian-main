@@ -7,7 +7,8 @@ public static class MultiCurrencyLedgerTranslator
 {
     /// <summary>
     /// Translates the current ledger trial balance to <paramref name="baseCurrency"/>.
-    /// Account currency is supplied by <paramref name="accountCurrencies"/> or inferred from ISO-like account symbols.
+    /// Account currency is supplied by <paramref name="accountCurrencies"/> or inferred from
+    /// account symbols that match known ISO-4217 currency codes.
     /// </summary>
     public static LedgerCurrencyTranslation Translate(
         IReadOnlyLedger ledger,
@@ -134,7 +135,13 @@ public static class MultiCurrencyLedgerTranslator
         if (accountCurrencies is not null && accountCurrencies.TryGetValue(account, out var configuredCurrency))
             return NormalizeCurrency(configuredCurrency, nameof(accountCurrencies));
 
-        return IsIsoCurrencyCode(account.Symbol) ? account.Symbol!.ToUpperInvariant() : baseCurrency;
+        // Per-symbol instrument accounts (Securities, Option Premium Asset, ...) carry a ticker
+        // in Symbol, not a denomination. Some tickers (e.g. ALL, TRY, CUP) collide with real
+        // ISO-4217 codes, so those accounts never participate in symbol-based currency inference.
+        if (LedgerAccounts.UsesInstrumentSymbol(account))
+            return baseCurrency;
+
+        return CurrencyCodeCatalog.IsRecognized(account.Symbol) ? account.Symbol!.ToUpperInvariant() : baseCurrency;
     }
 
     private static decimal ResolveRate(
@@ -176,12 +183,17 @@ public static class MultiCurrencyLedgerTranslator
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(currency, parameterName);
         var normalized = currency.Trim().ToUpperInvariant();
-        if (!IsIsoCurrencyCode(normalized))
+        if (!IsCurrencyShaped(normalized))
             throw new ArgumentException("Currency codes must be three alphabetic ISO-style characters.", parameterName);
 
         return normalized;
     }
 
-    private static bool IsIsoCurrencyCode(string? currency)
+    /// <summary>
+    /// Returns whether an explicitly supplied currency has the three-letter ISO-style shape.
+    /// Symbol-based inference separately uses <see cref="CurrencyCodeCatalog"/> so instrument
+    /// tickers are not misread as currencies.
+    /// </summary>
+    private static bool IsCurrencyShaped(string currency)
         => currency is { Length: 3 } && currency.All(static c => c is >= 'A' and <= 'Z' or >= 'a' and <= 'z');
 }

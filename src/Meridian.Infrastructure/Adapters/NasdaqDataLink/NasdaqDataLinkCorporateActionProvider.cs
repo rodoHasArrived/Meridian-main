@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -47,6 +48,9 @@ public sealed partial class NasdaqDataLinkCorporateActionProvider : ICorporateAc
     }
 
     public string ProviderId => "nasdaq";
+
+    public CorporateActionProviderReleaseStatusDto ReleaseStatus =>
+        CorporateActionProviderReleaseStatusDto.ReviewOnly;
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<CorporateActionCommand>> FetchAsync(
@@ -121,7 +125,7 @@ public sealed partial class NasdaqDataLinkCorporateActionProvider : ICorporateAc
         Guid securityId)
     {
         if (!TryGetString(row, columnIndex, "Date", out var sessionDateText) ||
-            !DateOnly.TryParse(sessionDateText, CultureInfo.InvariantCulture, DateTimeStyles.None, out var sessionDate))
+            !ProviderDateParsing.TryParseProviderDate(sessionDateText, out var sessionDate))
         {
             yield break;
         }

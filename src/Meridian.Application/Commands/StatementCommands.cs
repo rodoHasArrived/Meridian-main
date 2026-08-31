@@ -9,11 +9,9 @@ internal sealed class StatementCommands(
     IReconciliationCaseIntakeService intakeService,
     IStatementReconciliationCheckpointStore checkpointStore) : ICliCommand
 {
-    public bool CanHandle(string[] args)
-        => CliArguments.HasFlag(args, "--statement-import")
-           || CliArguments.HasFlag(args, "--statement-validate")
-           || CliArguments.HasFlag(args, "--statement-reconcile")
-           || CliArguments.HasFlag(args, "--statement-orchestrate");
+    public IReadOnlyList<string> Triggers { get; } = ["--statement-import", "--statement-validate", "--statement-reconcile", "--statement-orchestrate"];
+
+    public bool CanHandle(string[] args) => CliArguments.MatchesAnyFlag(args, Triggers);
 
     public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {

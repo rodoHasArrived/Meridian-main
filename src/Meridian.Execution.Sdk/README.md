@@ -29,7 +29,13 @@ This layer should hold reusable execution contracts without binding them to one 
 Use this module when execution integration contracts need to be shared by multiple execution implementations.
 `BrokerageOrderPlacementGate` is the shared pre-submit safety gate for HTTP endpoints and the OMS:
 non-paper gateways must have a matching `BrokerageConfiguration`, while the paper gateway keeps
-the default paper-first behavior.
+the default paper-first behavior. Gateways that implement `IExecutionGatewayModeProvider` expose
+typed paper/simulation/live mode metadata so live-readiness checks do not infer safety posture from
+gateway-id strings.
+Gateways whose providers keep client and broker order IDs in separate lookup namespaces implement
+`IExplicitOrderCancellationGateway`. Callers label the namespace with
+`OrderCancellationIdentifier`; identifier shape is never used to guess whether a value is a broker
+ID, because a UUID-shaped client ID can otherwise target an unrelated broker order.
 Brokerage activity fill snapshots can carry explicit provider-reported realized P&L when a broker
 or custodian supplies it; callers should leave the field null rather than infer it from fill
 notional. Activity snapshots can also carry provider corporate-action/factor events such as
@@ -42,6 +48,21 @@ manual override identifiers, asset class routing, and live-readiness evidence re
 server-owned metadata. Endpoint callers may name a run for validation, but retained live-readiness
 evidence must be supplied by server-side execution gates and is stripped before broker submission if
 a caller attempts to provide it.
+`INotionalOrderSizingGateway` is the opt-in marker for gateways that route the broker-native
+notional metadata dollar amount in place of `OrderRequest.Quantity` — Alpaca alone today. Every
+rail that measures an order's economic size reads that metadata through `BrokerNotionalMetadata`,
+so a gateway that routes quantity must not implement it: the OMS refuses such orders rather than
+measuring one size while the broker routes another. `BrokerNotionalMetadata` consults only the
+first non-blank alias, matching the gateway's own precedence, so a value the gateway cannot use
+means the order is quantity-sized rather than falling through to a later alias.
+Because another broker can use the same asset-class label with different unit semantics,
+`IFaceValueOrderSizingGateway` makes the active gateway resolve the actual route. The OMS then
+carries that server-owned fact through `OrderSizingMetadata` and `OrderState`; risk and working
+reserves value those orders as `abs(quantity) * price / 100`, and broker-notional metadata does not
+override routed face value.
+`IPosition.ExactQuantity` carries the unrounded signed size beside the whole-share `Quantity`;
+fund-ownership attribution is decimal, so deriving an unattributed remainder from the rounded value
+invents a contribution the book never held.
 
 ## Diagrams
 

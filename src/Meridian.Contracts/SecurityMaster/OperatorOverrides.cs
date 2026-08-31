@@ -24,9 +24,14 @@ public sealed record SecurityOverrideAuditEntryDto(
 
 /// <summary>
 /// Operator-supplied per-security override values that supplement the authoritative
-/// Security Master record. Values are free-form string key/value pairs used by the
-/// operator workstation to record annotations and corrections (e.g. ratings, sector
-/// classification, factor adjustments) without amending the canonical security terms.
+/// Security Master record. Values are string key/value pairs staged by the operator
+/// workstation: paths outside the asset-terms namespace are free-form annotations
+/// (e.g. ratings, sector classification) that never amend the canonical security terms,
+/// while <c>assetSpecificTerms.*</c> paths are schema-validated corrections that — once
+/// approved and published through the governed revision lifecycle — are merged into the
+/// canonical terms as a complete economic-definition amendment by the publish fan-out's
+/// canonical-merge handler. Until publish, staged values of either kind live only in
+/// this overlay.
 /// </summary>
 public sealed record OperatorOverridesDto(
     Guid SecurityId,
@@ -56,3 +61,15 @@ public sealed record OperatorOverridesPatchRequest(
 {
     public string? ReasonCode { get; init; }
 }
+
+/// <summary>
+/// Public API request for a reviewer's decision on a pending operator-override overlay.
+/// <see cref="Decision"/> must be <see cref="SecurityOverrideApprovalStatusDto.Approved"/> or
+/// <see cref="SecurityOverrideApprovalStatusDto.Rejected"/>, with an optional comment recorded on the
+/// durable audit trail. The reviewer identity is intentionally absent: the API layer derives it from
+/// the authenticated principal and maps this request onto the internal store command, so a caller
+/// cannot attribute a decision to someone else.
+/// </summary>
+public sealed record OperatorOverrideDecisionRequest(
+    SecurityOverrideApprovalStatusDto Decision,
+    string? Comment = null);

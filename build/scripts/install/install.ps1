@@ -543,7 +543,6 @@ function Show-Help {
     Write-Host "  .\install.ps1 -Mode UninstallDesktop           # Uninstall Desktop App"
     Write-Host ""
     Write-Host "Environment Variables (Desktop Mode):" -ForegroundColor Yellow
-    Write-Host "  MDC_APPINSTALLER_URI      URI for AppInstaller auto-update"
     Write-Host "  MDC_SIGNING_CERT_PFX      Path to signing certificate (PFX)"
     Write-Host "  MDC_SIGNING_CERT_PASSWORD Password for signing certificate"
     Write-Host ""
@@ -882,6 +881,7 @@ function Install-Desktop {
     try {
         $desktopProjectPath = Join-Path $RepoRoot "src\Meridian.Wpf\Meridian.Wpf.csproj"
         $outputPath = Join-Path $RepoRoot "dist\$runtimeId\msix"
+        $publishOutputPath = Join-Path $RepoRoot "dist\$runtimeId\publish"
         $diagnosticLogDir = Join-Path $RepoRoot "diagnostic-logs"
 
         # Ensure diagnostic log directory exists
@@ -942,6 +942,9 @@ function Install-Desktop {
                 Update-BuildProgress -Message "Removed previous build at $outputPath"
             }
         }
+        if (Test-Path $publishOutputPath) {
+            Remove-Item -Path $publishOutputPath -Recurse -Force
+        }
 
         # Clean obj/bin directories for the project
         $objPath = Join-Path (Split-Path -Parent $desktopProjectPath) "obj"
@@ -1000,7 +1003,7 @@ function Install-Desktop {
             else {
                 Write-Err "Restore failed. Check log: $restoreLogFile"
             }
-            return
+            throw "Desktop dependency restore failed with exit code $restoreExitCode. See $restoreLogFile"
         }
 
         # Count restored packages
@@ -1044,7 +1047,7 @@ function Install-Desktop {
 
         if ($useNotificationModule) {
             Update-BuildProgress -Message "Compiling C# code..."
-            Update-BuildProgress -Message "Target: win-x64 | Config: Release"
+            Update-BuildProgress -Message "Target: $runtimeId | Config: Release"
         }
 
         $buildOutput = & dotnet $buildArgs 2>&1 | Tee-Object -FilePath $buildLogFile
@@ -1079,7 +1082,7 @@ function Install-Desktop {
                     $buildErrors | Select-Object -First 5 | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
                 }
             }
-            return
+            throw "Desktop build failed with exit code $buildExitCode. See $buildLogFile"
         }
 
         if ($buildWarnings.Count -gt 0) {
@@ -1115,6 +1118,10 @@ function Install-Desktop {
         $appInstallerUri = $env:MDC_APPINSTALLER_URI
         $certPfxPath = $env:MDC_SIGNING_CERT_PFX
         $certPassword = $env:MDC_SIGNING_CERT_PASSWORD
+        if (-not [string]::IsNullOrWhiteSpace($appInstallerUri)) {
+            throw "MDC_APPINSTALLER_URI is not supported by the WPF MSIX packager."
+        }
+
         $publishReadyToRun = if ($EnableReadyToRun) { "true" } else { "false" }
         $publishArgs = @(
             "publish"
@@ -1122,31 +1129,12 @@ function Install-Desktop {
             "-c", "Release"
             "-r", $runtimeId
             "--self-contained", "true"
+            "--output", $publishOutputPath
             "-p:EnableFullWpfBuild=true"
-            "-p:WindowsPackageType=MSIX"
+            "-p:WindowsPackageType=None"
             "-p:PublishReadyToRun=$publishReadyToRun"
             "-p:Platform=$platformName"
-            "-p:AppxPackageDir=$outputPath\\"
         )
-
-        if (-not [string]::IsNullOrWhiteSpace($appInstallerUri)) {
-            $publishArgs += @(
-                "-p:GenerateAppInstallerFile=true"
-                "-p:AppInstallerUri=$appInstallerUri"
-                "-p:AppInstallerCheckForUpdateFrequency=OnApplicationRun"
-                "-p:AppInstallerUpdateFrequency=1"
-            )
-        }
-
-        if (-not [string]::IsNullOrWhiteSpace($certPfxPath)) {
-            $publishArgs += @(
-                "-p:PackageCertificateKeyFile=$certPfxPath"
-                "-p:PackageCertificatePassword=$certPassword"
-            )
-        }
-        else {
-            $publishArgs += "-p:GenerateTemporaryStoreCertificate=true"
-        }
 
         if ($DetailedOutput) {
             $publishArgs += @("-v", "detailed")
@@ -1164,6 +1152,21 @@ function Install-Desktop {
         $publishExitCode = $LASTEXITCODE
 
         if ($publishExitCode -ne 0) {
+            # Assigning the teed pipeline to a variable keeps every line out of the console, so a
+            # CI failure previously pointed at a diagnostic log that no job ever uploaded. Echo the
+            # diagnostics that name the failure so the run page alone explains it.
+            $publishDiagnostics = @($publishOutput | Where-Object { "$_" -match '(?i)\berror\b|: error |MSB\d{4}|Unhandled exception' })
+            if ($publishDiagnostics.Count -gt 0) {
+                Write-Host "----- dotnet publish diagnostics (first 40 matching lines) -----"
+                $publishDiagnostics | Select-Object -First 40 | ForEach-Object { Write-Host "$_" }
+                Write-Host "----- end dotnet publish diagnostics -----"
+            }
+            else {
+                Write-Host "----- dotnet publish tail (last 40 lines; no error-shaped line matched) -----"
+                @($publishOutput) | Select-Object -Last 40 | ForEach-Object { Write-Host "$_" }
+                Write-Host "----- end dotnet publish tail -----"
+            }
+
             if ($useNotificationModule) {
                 Complete-BuildStep -Success $false -Message "Publish failed"
                 Show-BuildError -Error "Failed to publish application" `
@@ -1178,8 +1181,23 @@ function Install-Desktop {
             else {
                 Write-Err "Publish failed. Check log: $publishLogFile"
             }
-            return
+            throw "Desktop publish failed with exit code $publishExitCode. See $publishLogFile"
         }
+
+        $packageScript = Join-Path $ScriptDir "package-desktop-msix.ps1"
+        $packagePath = Join-Path $outputPath "Meridian.Desktop-$runtimeId.msix"
+        $packageArguments = @{
+            PublishDirectory = $publishOutputPath
+            ManifestPath = (Join-Path $RepoRoot "src\Meridian.Wpf\Package.appxmanifest")
+            OutputPath = $packagePath
+            Architecture = $(if ($runtimeId -eq "win-arm64") { "arm64" } else { "x64" })
+            PackageCertificateKeyFile = $certPfxPath
+            PackageCertificatePassword = $certPassword
+        }
+        if (-not [string]::IsNullOrWhiteSpace($env:MDC_PACKAGE_VERSION)) {
+            $packageArguments.PackageVersion = $env:MDC_PACKAGE_VERSION
+        }
+        & $packageScript @packageArguments | ForEach-Object { Write-Host $_ }
 
         if ($useNotificationModule) {
             Complete-BuildStep -Success $true -Message "Application published"
@@ -1203,14 +1221,14 @@ function Install-Desktop {
                 Show-BuildError -Error "MSIX package not found at expected location" `
                     -Suggestion "Check build output and ensure the project packaged correctly" `
                     -Details @(
-                        "Expected MSIX/MSIXBundle in: $outputPath",
+                        "Expected MSIX in: $outputPath",
                         "Check publish output directory: $outputPath"
                     )
             }
             else {
                 Write-Err "MSIX package not found in: $outputPath"
             }
-            return
+            throw "MSIX package not found in expected output directory: $outputPath"
         }
 
         $packageCount = $msixPackages.Count
@@ -1231,6 +1249,10 @@ function Install-Desktop {
         $installedSuccessfully = $false
 
         if (-not $SkipInstall -and $msixFile) {
+            if ([string]::IsNullOrWhiteSpace($certPfxPath)) {
+                throw "The MSIX package is unsigned. Supply MDC_SIGNING_CERT_PFX before installing it."
+            }
+
             if ($useNotificationModule) {
                 Start-BuildStep -Name "Install Application" -Description "Installing MSIX package"
             }
@@ -1238,16 +1260,20 @@ function Install-Desktop {
                 Write-Info "Preparing to install MSIX package..."
             }
 
-            # Trust certificate if not using a production certificate and not skipped
-            if (-not $NoTrustCert -and [string]::IsNullOrWhiteSpace($certPfxPath)) {
+            # Trust the package certificate for local installation unless the
+            # caller confirms it is already trusted.
+            if (-not $NoTrustCert) {
                 $certTrusted = Install-TrustedCertificate -MsixPath $msixFile.FullName
                 if (-not $certTrusted) {
-                    Write-Warn "Certificate was not trusted. Installation may fail."
+                    throw "The MSIX signing certificate could not be trusted."
                 }
             }
 
             # Install the MSIX package
             $installedSuccessfully = Install-MsixPackage -MsixPath $msixFile.FullName
+            if (-not $installedSuccessfully) {
+                throw "MSIX package installation failed: $($msixFile.FullName)"
+            }
 
             if ($useNotificationModule) {
                 Complete-BuildStep -Success $installedSuccessfully -Message $(if ($installedSuccessfully) { "Application installed" } else { "Installation skipped or failed" })
@@ -1287,7 +1313,7 @@ function Install-Desktop {
         }
         else {
             Write-Host "  Signing:      " -ForegroundColor White -NoNewline
-            Write-Host "Temporary dev certificate used" -ForegroundColor Gray
+            Write-Host "Unsigned build-only package" -ForegroundColor Yellow
         }
         Write-Host ""
         if ($installedSuccessfully) {
@@ -1306,7 +1332,7 @@ function Install-Desktop {
         }
         Write-Host ""
         Write-Host "  Guidance:     " -ForegroundColor White -NoNewline
-        Write-Host "docs/operations/msix-packaging.md" -ForegroundColor Gray
+        Write-Host "docs/operators/deployment-packaging.md" -ForegroundColor Gray
         Write-Host ""
         Write-Host "  Build logs:   " -ForegroundColor White -NoNewline
         Write-Host $diagnosticLogDir -ForegroundColor Gray

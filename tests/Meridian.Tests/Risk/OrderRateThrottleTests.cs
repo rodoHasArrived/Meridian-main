@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Execution.Sdk;
+using Meridian.Risk;
 using Meridian.Risk.Rules;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -7,8 +8,8 @@ namespace Meridian.Tests.Risk;
 
 public sealed class OrderRateThrottleTests
 {
-    private static OrderRateThrottle CreateSut(int maxOrdersPerMinute = 10) =>
-        new(maxOrdersPerMinute, NullLogger<OrderRateThrottle>.Instance);
+    private static OrderRateThrottle CreateSut(int maxOrdersPerMinute = 10, TimeProvider? time = null) =>
+        new(() => maxOrdersPerMinute, NullLogger<OrderRateThrottle>.Instance, time ?? TimeProvider.System);
 
     private static OrderRequest CreateOrder(string symbol = "AAPL") => new()
     {
@@ -21,9 +22,7 @@ public sealed class OrderRateThrottleTests
     [Fact]
     public void RuleName_ReturnsOrderRateThrottle()
     {
-        var sut = CreateSut();
-
-        sut.RuleName.Should().Be("OrderRateThrottle");
+        CreateSut().RuleName.Should().Be("OrderRateThrottle");
     }
 
     [Fact]
@@ -35,106 +34,221 @@ public sealed class OrderRateThrottleTests
     }
 
     [Fact]
-    public async Task EvaluateAsync_FirstOrder_IsApproved()
+    public async Task EvaluateAndReserveAsync_FirstOrder_IsApproved()
     {
-        var sut = CreateSut(maxOrdersPerMinute: 5);
+        var result = await CreateSut(maxOrdersPerMinute: 5).EvaluateAndReserveAsync(CreateOrder());
 
-        var result = await sut.EvaluateAsync(CreateOrder());
-
-        result.IsApproved.Should().BeTrue();
+        result.Result.IsApproved.Should().BeTrue();
+        result.Reservation.Should().NotBeNull();
     }
 
     [Fact]
-    public async Task EvaluateAsync_WhenUnderLimit_ReturnsApproved()
+    public async Task EvaluateAndReserveAsync_WhenUnderLimit_ReturnsNoFinding()
     {
         var sut = CreateSut(maxOrdersPerMinute: 5);
 
-        // Submit 4 orders (under the limit of 5)
         for (var i = 0; i < 4; i++)
-            await sut.EvaluateAsync(CreateOrder());
+        {
+            await sut.EvaluateAndReserveAsync(CreateOrder());
+        }
 
-        var result = await sut.EvaluateAsync(CreateOrder());
-
-        result.IsApproved.Should().BeTrue();
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Result.IsApproved.Should().BeTrue();
     }
 
     [Fact]
-    public async Task EvaluateAsync_WhenAtLimit_ReturnsRejected()
+    public async Task EvaluateAndReserveAsync_WhenAtLimit_ReturnsFindingAndNoReservation()
     {
         var sut = CreateSut(maxOrdersPerMinute: 3);
 
-        // Fill up to the limit
         for (var i = 0; i < 3; i++)
-            await sut.EvaluateAsync(CreateOrder());
+        {
+            await sut.EvaluateAndReserveAsync(CreateOrder());
+        }
 
-        // This order pushes count to 3 which equals the limit → rejected
-        var result = await sut.EvaluateAsync(CreateOrder());
+        var result = await sut.EvaluateAndReserveAsync(CreateOrder());
 
-        result.IsApproved.Should().BeFalse();
+        result.Result.IsApproved.Should().BeFalse();
+        result.Result.Code.Should().Be(OrderRateThrottle.RateExceededCode);
+        result.Reservation.Should().BeNull();
     }
 
     [Fact]
-    public async Task EvaluateAsync_WhenRejected_IncludesCountInReason()
+    public async Task EvaluateAndReserveAsync_WhenAtLimit_ReportsObservedAndLimit()
     {
         var sut = CreateSut(maxOrdersPerMinute: 2);
 
         for (var i = 0; i < 2; i++)
-            await sut.EvaluateAsync(CreateOrder());
+        {
+            await sut.EvaluateAndReserveAsync(CreateOrder());
+        }
 
-        var result = await sut.EvaluateAsync(CreateOrder());
+        var finding = (await sut.EvaluateAndReserveAsync(CreateOrder())).Result;
 
-        result.RejectReason.Should().Contain("2").And.Contain("limit");
+        // Structured values, not just a formatted sentence — the operator surface compares them.
+        finding.ObservedValue.Should().Be(2m);
+        finding.LimitValue.Should().Be(2m);
+        finding.RejectReason.Should().Contain("2");
     }
 
     [Fact]
-    public async Task EvaluateAsync_WithZeroLimit_FirstOrderIsRejected()
+    public async Task EvaluateAndReserveAsync_WithZeroLimit_FirstOrderIsRejected()
     {
-        // maxOrdersPerMinute=0: 0 >= 0 is true, so even the first order is rejected
-        var sut = CreateSut(maxOrdersPerMinute: 0);
+        var result = await CreateSut(maxOrdersPerMinute: 0).EvaluateAndReserveAsync(CreateOrder());
 
-        var result = await sut.EvaluateAsync(CreateOrder());
-
-        result.IsApproved.Should().BeFalse();
+        result.Result.IsApproved.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Evaluation must be a pure read. If it consumed capacity, an order that a later rule blocked
+    /// would still count against the window and throttle subsequent orders for no reason.
+    /// </summary>
     [Fact]
-    public async Task EvaluateAsync_WhenApproved_EnqueuesOrderForRateTracking()
-    {
-        var sut = CreateSut(maxOrdersPerMinute: 2);
-
-        // First approved order is tracked
-        await sut.EvaluateAsync(CreateOrder());
-
-        // Second order is the limit → rejected, proving the first was tracked
-        await sut.EvaluateAsync(CreateOrder());
-        var result = await sut.EvaluateAsync(CreateOrder());
-
-        result.IsApproved.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task EvaluateAsync_WithLimitOfOne_SecondOrderWithinMinuteIsRejected()
+    public async Task EvaluateAsync_DoesNotConsumeCapacity()
     {
         var sut = CreateSut(maxOrdersPerMinute: 1);
 
-        var first = await sut.EvaluateAsync(CreateOrder());
-        var second = await sut.EvaluateAsync(CreateOrder());
-
-        first.IsApproved.Should().BeTrue();
-        second.IsApproved.Should().BeFalse();
+        for (var i = 0; i < 5; i++)
+        {
+            (await sut.EvaluateAsync(CreateOrder())).IsApproved.Should().BeTrue();
+        }
     }
 
     [Fact]
-    public async Task EvaluateAsync_ConsecutiveRejectsReturnRejected()
+    public async Task Rollback_ReturnsCapacityToTheWindow()
     {
         var sut = CreateSut(maxOrdersPerMinute: 1);
 
-        await sut.EvaluateAsync(CreateOrder()); // fills limit
+        var first = await sut.EvaluateAndReserveAsync(CreateOrder());
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Result.IsApproved.Should().BeFalse();
 
-        var result1 = await sut.EvaluateAsync(CreateOrder());
-        var result2 = await sut.EvaluateAsync(CreateOrder());
+        first.Reservation!.Rollback();
 
-        result1.IsApproved.Should().BeFalse();
-        result2.IsApproved.Should().BeFalse();
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Result.IsApproved.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Commit_KeepsCapacityConsumed()
+    {
+        var sut = CreateSut(maxOrdersPerMinute: 1);
+
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Reservation!.Commit();
+
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Result.IsApproved.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Settling_IsIdempotent()
+    {
+        var sut = CreateSut(maxOrdersPerMinute: 1);
+        var reserved = await sut.EvaluateAndReserveAsync(CreateOrder());
+
+        reserved.Reservation!.Commit();
+        reserved.Reservation.Rollback();
+        reserved.Reservation.Rollback();
+
+        // A rollback after commit must not hand capacity back: the order was routed.
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Result.IsApproved.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// The race the reservation model exists to prevent. A post-decision commit callback would let
+    /// concurrent callers each observe room below the cap and all consume it.
+    /// </summary>
+    [Fact]
+    public async Task UnderConcurrentBurst_ReservationsNeverExceedLimit()
+    {
+        const int limit = 10;
+        const int burst = 200;
+        var sut = CreateSut(maxOrdersPerMinute: limit);
+
+        var results = await Task.WhenAll(
+            Enumerable.Range(0, burst).Select(_ => Task.Run(() => sut.EvaluateAndReserveAsync(CreateOrder()))));
+
+        results.Count(r => r.Reservation is not null).Should().Be(limit,
+            "a concurrent burst must not reserve more slots than the per-minute limit");
+        results.Count(r => !r.Result.IsApproved).Should().Be(burst - limit);
+    }
+
+    /// <summary>
+    /// A pending reservation must keep blocking capacity even past the window length. Expiring it
+    /// would free the slot while the order is still in flight, letting a second order route and
+    /// leaving the first uncounted when it finally commits.
+    /// </summary>
+    [Fact]
+    public async Task PendingReservation_DoesNotExpireWithTheWindow()
+    {
+        var time = new StubTimeProvider(DateTimeOffset.Parse("2026-08-01T00:00:00Z"));
+        var sut = CreateSut(maxOrdersPerMinute: 1, time);
+
+        var pending = await sut.EvaluateAndReserveAsync(CreateOrder());
+        pending.Reservation.Should().NotBeNull();
+
+        // Acknowledgement is slow: well past the one-minute window.
+        time.Advance(TimeSpan.FromSeconds(120));
+
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Result.IsApproved.Should()
+            .BeFalse("an in-flight submission still holds its slot");
+
+        // It commits late; the slot is now stamped at routing time and holds for another minute.
+        pending.Reservation!.Commit();
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Result.IsApproved.Should()
+            .BeFalse("the routed order occupies the window from its acknowledgement");
+
+        time.Advance(TimeSpan.FromSeconds(61));
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Result.IsApproved.Should()
+            .BeTrue("the committed slot expires a minute after routing");
+    }
+
+    [Fact]
+    public async Task Window_ExpiresCommittedSlotsAfterOneMinute()
+    {
+        var time = new StubTimeProvider(DateTimeOffset.Parse("2026-08-01T00:00:00Z"));
+        var sut = CreateSut(maxOrdersPerMinute: 1, time);
+
+        var first = await sut.EvaluateAndReserveAsync(CreateOrder());
+        first.Result.IsApproved.Should().BeTrue();
+        // Only committed slots age out, so the order has to route before the window can release it.
+        first.Reservation!.Commit();
+
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Result.IsApproved.Should().BeFalse();
+
+        time.Advance(TimeSpan.FromSeconds(61));
+
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Result.IsApproved.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// The number a status surface reads. It has to include reservations still in flight, because
+    /// those are what the rule will compare against the ceiling on the next evaluation — and they
+    /// exist before any audit record of the submission does.
+    /// </summary>
+    [Fact]
+    public async Task CurrentUsage_CountsPendingAndCommittedSlots()
+    {
+        var time = new StubTimeProvider(DateTimeOffset.Parse("2026-08-01T00:00:00Z"));
+        var sut = CreateSut(maxOrdersPerMinute: 10, time);
+
+        sut.CurrentUsage.Should().Be(0);
+
+        var pending = await sut.EvaluateAndReserveAsync(CreateOrder());
+        sut.CurrentUsage.Should().Be(1, "an in-flight submission already holds its slot");
+
+        pending.Reservation!.Commit();
+        sut.CurrentUsage.Should().Be(1, "committing moves the slot, it does not add one");
+
+        (await sut.EvaluateAndReserveAsync(CreateOrder())).Reservation!.Rollback();
+        sut.CurrentUsage.Should().Be(1, "a rolled-back slot is released");
+
+        time.Advance(TimeSpan.FromSeconds(61));
+        sut.CurrentUsage.Should().Be(0, "committed slots age out of the window");
+    }
+
+    private sealed class StubTimeProvider(DateTimeOffset start) : TimeProvider
+    {
+        private DateTimeOffset _now = start;
+
+        public override DateTimeOffset GetUtcNow() => _now;
+
+        public void Advance(TimeSpan delta) => _now = _now.Add(delta);
     }
 }

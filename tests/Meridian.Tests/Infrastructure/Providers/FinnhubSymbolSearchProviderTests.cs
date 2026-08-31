@@ -1,13 +1,14 @@
 using System.Net;
 using System.Text;
 using FluentAssertions;
+using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Tests.TestHelpers;
 
 namespace Meridian.Tests.Infrastructure.Providers;
 
 /// <summary>
-/// Unit tests for <see cref="FinnhubSymbolSearchProviderRefactored"/> symbol-search behavior.
+/// Unit tests for <see cref="FinnhubSymbolSearchProvider"/> symbol-search behavior.
 /// All HTTP calls are stubbed; no live Finnhub token or network access is required.
 /// </summary>
 [Trait("Category", "Unit")]
@@ -56,7 +57,7 @@ public sealed class FinnhubSymbolSearchProviderTests
             return JsonResponse(SearchResponse);
         });
         using var httpClient = new HttpClient(handler);
-        using var provider = new FinnhubSymbolSearchProviderRefactored(ApiKey, httpClient);
+        using var provider = new FinnhubSymbolSearchProvider(ApiKey, httpClient);
 
         var results = await provider.SearchAsync("AAPL", 2, CancellationToken.None);
 
@@ -84,7 +85,7 @@ public sealed class FinnhubSymbolSearchProviderTests
     {
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(SearchResponse));
         using var httpClient = new HttpClient(handler);
-        using var provider = new FinnhubSymbolSearchProviderRefactored(ApiKey, httpClient);
+        using var provider = new FinnhubSymbolSearchProvider(ApiKey, httpClient);
 
         var results = await provider.SearchAsync(
             "AAPL",
@@ -104,7 +105,7 @@ public sealed class FinnhubSymbolSearchProviderTests
         using var handler = new StubHttpMessageHandler(_ =>
             throw new InvalidOperationException("Blank queries should not call Finnhub."));
         using var httpClient = new HttpClient(handler);
-        using var provider = new FinnhubSymbolSearchProviderRefactored(ApiKey, httpClient);
+        using var provider = new FinnhubSymbolSearchProvider(ApiKey, httpClient);
 
         var results = await provider.SearchAsync("   ", 10, CancellationToken.None);
 
@@ -118,7 +119,7 @@ public sealed class FinnhubSymbolSearchProviderTests
         using var handler = new StubHttpMessageHandler(_ =>
             throw new InvalidOperationException("Credential-gated search should not call Finnhub."));
         using var httpClient = new HttpClient(handler);
-        using var provider = new FinnhubSymbolSearchProviderRefactored(string.Empty, httpClient);
+        using var provider = new FinnhubSymbolSearchProvider(string.Empty, httpClient);
 
         var results = await provider.SearchAsync("AAPL", 10, CancellationToken.None);
 
@@ -127,16 +128,18 @@ public sealed class FinnhubSymbolSearchProviderTests
     }
 
     [Fact]
-    public async Task SearchAsync_WithRateLimitResponse_ReturnsEmptyList()
+    public async Task SearchAsync_WithRateLimitResponse_ThrowsProviderAttributedFailure()
     {
         using var handler = new StubHttpMessageHandler(_ =>
             new HttpResponseMessage(HttpStatusCode.TooManyRequests));
         using var httpClient = new HttpClient(handler);
-        using var provider = new FinnhubSymbolSearchProviderRefactored(ApiKey, httpClient);
+        using var provider = new FinnhubSymbolSearchProvider(ApiKey, httpClient);
 
-        var results = await provider.SearchAsync("AAPL", 10, CancellationToken.None);
+        var act = () => provider.SearchAsync("AAPL", 10, CancellationToken.None);
 
-        results.Should().BeEmpty();
+        var exception = await act.Should().ThrowAsync<RateLimitException>();
+        exception.Which.Provider.Should().Be("finnhub");
+        exception.Which.Symbol.Should().Be("AAPL");
     }
 
     [Fact]
@@ -146,7 +149,7 @@ public sealed class FinnhubSymbolSearchProviderTests
         await cts.CancelAsync();
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(SearchResponse));
         using var httpClient = new HttpClient(handler);
-        using var provider = new FinnhubSymbolSearchProviderRefactored(ApiKey, httpClient);
+        using var provider = new FinnhubSymbolSearchProvider(ApiKey, httpClient);
 
         Func<Task> act = () => provider.SearchAsync("AAPL", 10, cts.Token);
 

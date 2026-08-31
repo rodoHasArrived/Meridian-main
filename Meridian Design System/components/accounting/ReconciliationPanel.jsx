@@ -1,80 +1,76 @@
 // Meridian reconciliation panel — two-sided statement vs. ledger comparison rendered as proper
 // multi-column data tables (Date · Reference · Memo · [Category] · Amount), with a shared toolbar
-// for status filtering + free-text search and click-to-sort column headers. A matched/open rail
-// colours each row; a summary bar totals each side (on the FULL data set, not the filtered view)
-// and flags the difference. Light institutional theme.
+// for status filtering + free-text search and click-to-sort column headers. Uses Core Input, Button, Checkbox primitives.
 import React from "react";
 import { AmountCell } from "./AmountCell";
 import { toNumber } from "./money";
+import { Input } from "../core/Input";
+import { Button } from "../core/Button";
+import { Checkbox } from "../core/Checkbox";
 
 let injected = false;
 function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.rec{border:1px solid var(--border,#D7DCE2);border-radius:var(--radius-card,8px);
-  background:var(--bg-light,#fff);overflow:hidden;box-shadow:var(--shadow-card,0 1px 1px rgba(0,0,0,.08));}
+.rec{border:1px solid var(--border,#D7DCE2);border-radius:var(--radius-card,2px);
+  background:var(--bg-light,#fff);overflow:hidden;box-shadow:var(--shadow-card,none);}
 .rec__toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
   padding:8px 12px;background:var(--bg-medium,#F5F7FA);border-bottom:1px solid var(--border,#D7DCE2);}
-.rec__seg{display:inline-flex;border:1px solid var(--border,#D7DCE2);border-radius:var(--radius-chip,4px);overflow:hidden;background:var(--bg-light,#fff);}
+.rec__seg{display:inline-flex;border:1px solid var(--border,#D7DCE2);border-radius:var(--radius-chip,2px);overflow:hidden;background:var(--bg-light,#fff);}
 .rec__seg button{appearance:none;border:none;background:transparent;cursor:pointer;
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;
-  color:var(--text-muted,#6E7781);padding:4px 10px;line-height:1.4;border-left:1px solid var(--border,#D7DCE2);}
+  color:var(--text-muted,#59636F);padding:4px 10px;line-height:1.4;border-left:1px solid var(--border,#D7DCE2);}
 .rec__seg button:first-child{border-left:none;}
 .rec__seg button[aria-pressed="true"]{background:var(--bg-medium,#F5F7FA);color:var(--text-primary,#22272E);box-shadow:inset 0 -2px 0 var(--accent,#0A5E3E);}
 .rec__searchwrap{position:relative;display:flex;align-items:center;}
-.rec__search{font-family:var(--font-body);font-size:12px;color:var(--text-primary,#22272E);
-  border:1px solid var(--border,#D7DCE2);border-radius:var(--radius-chip,4px);background:var(--bg-light,#fff);
-  padding:4px 9px 4px 24px;width:170px;outline:none;}
-.rec__search:focus{border-color:var(--accent,#0A5E3E);box-shadow:0 0 0 2px var(--green-a10,rgba(10,94,62,.12));}
-.rec__searchicon{position:absolute;left:8px;width:11px;height:11px;color:var(--text-muted,#6E7781);pointer-events:none;}
+.rec__searchicon{position:absolute;left:8px;width:11px;height:11px;color:var(--text-muted,#59636F);pointer-events:none;}
 .rec__cols{display:grid;grid-template-columns:1fr 1fr;}
 .rec__side{min-width:0;display:flex;flex-direction:column;}
 .rec__side + .rec__side{border-left:1px solid var(--border,#D7DCE2);}
 .rec__head{display:flex;align-items:center;justify-content:space-between;gap:8px;
   padding:9px 12px;background:var(--bg-medium,#F5F7FA);border-bottom:1px solid var(--border,#D7DCE2);}
 .rec__title{font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#6E7781);}
+  letter-spacing:.03em;color:var(--text-muted,#59636F);}
 .rec__counts{display:flex;gap:6px;}
 .rec__chip{font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.02em;border:1px solid;border-radius:var(--radius-chip,4px);padding:1px 6px;line-height:1.4;white-space:nowrap;}
-.rec__chip--ok{background:var(--green-a10,rgba(22,136,95,.10));border-color:var(--green,#16885F);color:var(--green-dim,#126C4D);}
-.rec__chip--open{background:var(--orange-a10,rgba(183,121,31,.10));border-color:var(--orange,#B7791F);color:var(--orange-dim,#946216);}
+  letter-spacing:.02em;border:1px solid;border-radius:var(--radius-chip,2px);padding:1px 6px;line-height:1.4;white-space:nowrap;}
+.rec__chip--ok{background:var(--green-a10,rgba(22,136,95,.10));border-color:var(--green,#16885F);color:var(--green-dim,#10663F);}
+.rec__chip--open{background:var(--orange-a10,rgba(183,121,31,.10));border-color:var(--orange,#8A520E);color:var(--orange-dim,#683E0B);}
 .rec__tablewrap{overflow-x:auto;}
 .rec__table{width:100%;border-collapse:collapse;table-layout:auto;}
 .rec__table th{position:sticky;top:0;background:var(--bg-light,#fff);text-align:left;
   font-family:var(--font-body);font-size:9px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;
-  color:var(--text-muted,#6E7781);padding:6px 10px;border-bottom:1px solid var(--border,#D7DCE2);
+  color:var(--text-muted,#59636F);padding:6px 10px;border-bottom:1px solid var(--border,#D7DCE2);
   white-space:nowrap;cursor:pointer;user-select:none;}
 .rec__table th:hover{color:var(--text-primary,#22272E);}
-.rec__table th.is-sorted{color:var(--accent,#0A5E3E);}
+.rec__table th:focus-visible{outline:var(--focus-ring);outline-offset:-2px;color:var(--text-primary,#22272E);}
+.rec__table th.is-sorted{color:var(--accent,#2F6F8F);}
 .rec__table th.num{text-align:right;}
 .rec__caret{display:inline-block;width:0;height:0;margin-left:4px;vertical-align:middle;}
 .rec__caret--asc{border-left:3px solid transparent;border-right:3px solid transparent;border-bottom:4px solid currentColor;}
 .rec__caret--desc{border-left:3px solid transparent;border-right:3px solid transparent;border-top:4px solid currentColor;}
 .rec__table td{font-family:var(--font-body);font-size:12px;color:var(--text-primary,#22272E);
   padding:6px 10px;border-top:1px solid var(--border,#D7DCE2);vertical-align:baseline;white-space:nowrap;}
-.rec__table td.mono{font-family:var(--font-data);font-size:11px;font-variant-numeric:tabular-nums;color:var(--text-muted,#6E7781);}
+.rec__table td.mono{font-family:var(--font-data);font-size:11px;font-variant-numeric:tabular-nums;color:var(--text-muted,#59636F);}
 .rec__table td.memo{white-space:normal;max-width:0;width:99%;}
 .rec__table td.num{text-align:right;}
 .rec__table tbody tr{position:relative;}
-.rec__table tbody tr td:first-child{position:relative;padding-left:13px;}
-.rec__table tbody tr td:first-child::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;}
-.rec__table tr.matched td:first-child::before{background:var(--green,#16885F);}
-.rec__table tr.open td:first-child::before{background:var(--orange,#B7791F);}
+.rec__table tbody tr td:first-child{position:relative;padding-left:8px;}
+.rec__table tr.matched td{background:var(--green-a10,rgba(22,136,95,.06));}
 .rec__table tr.open td{background:var(--orange-a10,rgba(183,121,31,.06));}
 .rec__status-pill{display:inline-block;width:7px;height:7px;border-radius:50%;}
-.rec__empty{padding:16px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#6E7781);text-align:center;}
+.rec__empty{padding:16px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#59636F);text-align:center;}
 .rec__summary{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:center;
   padding:10px 14px;border-top:2px solid var(--border-strong,#AAB4BF);background:var(--bg-medium,#F5F7FA);}
 .rec__sumcell{display:flex;flex-direction:column;gap:2px;min-width:0;}
 .rec__sumlabel{font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#6E7781);}
+  letter-spacing:.03em;color:var(--text-muted,#59636F);}
 .rec__statusbox{display:flex;align-items:center;gap:7px;justify-self:end;
   font-family:var(--font-body);font-size:11px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;border:1px solid;border-radius:var(--radius-chip,4px);padding:4px 10px;}
-.rec__statusbox--bal{background:var(--green-a10,rgba(22,136,95,.10));border-color:var(--green,#16885F);color:var(--green-dim,#126C4D);}
-.rec__statusbox--out{background:var(--red-a10,rgba(186,63,85,.10));border-color:var(--red,#BA3F55);color:var(--red-dim,#983244);}
+  letter-spacing:.03em;border:1px solid;border-radius:var(--radius-chip,2px);padding:4px 10px;}
+.rec__statusbox--bal{background:var(--green-a10,rgba(22,136,95,.10));border-color:var(--green,#16885F);color:var(--green-dim,#10663F);}
+.rec__statusbox--out{background:var(--red-a10,rgba(186,63,85,.10));border-color:var(--red,#BA3F55);color:var(--red-dim,#8C2F40);}
 .rec__dot{height:6px;width:6px;border-radius:50%;background:currentColor;}
 `;
   const el = document.createElement("style");
@@ -96,7 +92,9 @@ function SortHead({ col, sort, onSort }) {
   return (
     <th
       className={`${col.num ? "num" : ""} ${active ? "is-sorted" : ""}`.trim()}
+      tabIndex={0}
       onClick={() => onSort(col.key)}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSort(col.key); } }}
       aria-sort={active ? (sort.dir > 0 ? "ascending" : "descending") : "none"}
       scope="col"
     >
@@ -139,15 +137,27 @@ function Side({ side, columns, currency, status, query, sort, onSort }) {
         <table className="rec__table">
           <thead>
             <tr>
+              <th style={{ width: 28, textAlign: "center" }}>
+                <Checkbox
+                  checked={rows.every(i => i.matched)}
+                  onChange={(e) => onToggleAll && onToggleAll(side, e.target.checked)}
+                />
+              </th>
               {columns.map((c) => <SortHead key={c.key} col={c} sort={sort} onSort={onSort} />)}
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
-              <tr><td className="rec__empty" colSpan={columns.length}>No matching items</td></tr>
+              <tr><td className="rec__empty" colSpan={columns.length + 1}>No matching items</td></tr>
             )}
             {rows.map((it, i) => (
               <tr key={it.id ?? i} className={it.matched ? "matched" : "open"}>
+                <td style={{ textAlign: "center", paddingLeft: 6, paddingRight: 6 }}>
+                  <Checkbox
+                    checked={it.matched || false}
+                    onChange={(e) => onToggleItem && onToggleItem(it.id, e.target.checked)}
+                  />
+                </td>
                 {columns.map((c) =>
                   c.amount ? (
                     <td key={c.key} className="num">
@@ -184,6 +194,8 @@ export function ReconciliationPanel({
   tolerance = 0.005,
   searchable = true,
   filterable = true,
+  onToggleItem,
+  onToggleAll,
 }) {
   inject();
   const [status, setStatus] = React.useState("all");
@@ -229,16 +241,10 @@ export function ReconciliationPanel({
           ) : <span />}
           {searchable && (
             <div className="rec__searchwrap">
-              <svg className="rec__searchicon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
-                <circle cx="7" cy="7" r="4.5" /><line x1="11" y1="11" x2="14.5" y2="14.5" />
-              </svg>
-              <input
-                className="rec__search"
-                type="search"
+              <Input
                 placeholder="Filter memo, ref…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                aria-label="Filter line items"
               />
             </div>
           )}

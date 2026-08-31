@@ -2,11 +2,21 @@ import { Link } from "react-router-dom";
 import { DenseDataTableColumn, EntitySummary } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
 import type {
   AccountingTrialBalanceRowViewModel,
   AccountingTrialBalanceDetailViewState
 } from "@/screens/accounting-screen.view-model";
+
+const TRIAL_BALANCE_TECHNICAL_FIELD_LABELS = new Set([
+  "Policy",
+  "Financial account",
+  "Journal entries",
+  "Source events",
+  "Approvals",
+  "Run"
+]);
 
 export const trialBalanceColumns: DenseDataTableColumn<AccountingTrialBalanceRowViewModel>[] = [
   {
@@ -15,7 +25,6 @@ export const trialBalanceColumns: DenseDataTableColumn<AccountingTrialBalanceRow
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.accountLabel}</span>
-        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.financialAccountId ?? "Unassigned"}</span>
         <span className="mt-1 block break-words font-mono text-[11px] text-muted-foreground">{row.dimensionLabel}</span>
       </span>
     )
@@ -47,6 +56,9 @@ export function AccountingTrialBalanceSelectedDetailPanel({
   panelId: string;
   detail: AccountingTrialBalanceDetailViewState;
 }) {
+  const technicalFields = detail.fields.filter((field) => TRIAL_BALANCE_TECHNICAL_FIELD_LABELS.has(field.label));
+  const operationalFields = detail.fields.filter((field) => !TRIAL_BALANCE_TECHNICAL_FIELD_LABELS.has(field.label));
+
   return (
     <div id={panelId} className="min-w-0">
       <EntitySummary
@@ -55,9 +67,21 @@ export function AccountingTrialBalanceSelectedDetailPanel({
         subtitle={detail.subtitle}
         description={detail.description}
         status={<Badge variant={detail.statusVariant} dot>{detail.statusLabel}</Badge>}
-        fields={detail.fields}
+        fields={operationalFields}
         ariaLabel={detail.ariaLabel}
       />
+      {technicalFields.length > 0 ? (
+        <TechnicalDetails label="Record identifiers" className="mt-3">
+          <dl className="grid gap-2 text-xs sm:grid-cols-2">
+            {technicalFields.map((field) => (
+              <div key={field.label}>
+                <dt className="text-muted-foreground">{field.label}</dt>
+                <dd className="break-all font-mono text-foreground">{field.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </TechnicalDetails>
+      ) : null}
       <div className="mt-3 flex flex-wrap gap-2" aria-label="Trial balance audit drill-through actions">
         {detail.auditDrillThroughHref ? (
           <Button asChild size="sm" variant="secondary">
@@ -82,7 +106,7 @@ export function AccountingTrialBalanceSelectedDetailPanel({
                 <div className="flex items-start justify-between gap-3">
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-semibold text-foreground">{line.description}</span>
-                    <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{line.journalEntryId}</span>
+                    <span className="mt-1 block text-[11px] text-muted-foreground">Retained journal posting</span>
                   </span>
                   <Badge variant="outline">{line.balanceLabel}</Badge>
                 </div>
@@ -104,6 +128,9 @@ export function AccountingTrialBalanceSelectedDetailPanel({
                     </Link>
                   ) : null}
                 </div>
+                <TechnicalDetails label="Posting reference" className="mt-2">
+                  <p className="break-all font-mono text-xs text-muted-foreground">{line.journalEntryId}</p>
+                </TechnicalDetails>
               </div>
             ))}
           </div>

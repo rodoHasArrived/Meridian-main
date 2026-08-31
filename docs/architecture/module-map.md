@@ -55,8 +55,8 @@ flowchart LR
   must not depend on UI projects.
 - Browser workstation logic should prefer view-model/read-model seams instead of
   hardcoding workflow state in React components.
-- WPF is the active desktop shell; new desktop workflow lanes are expected and encouraged.
-- Browser and WPF operator surfaces should consume shared DTOs, services, and route definitions for accounting, reporting, private-capital, and identity workflows instead of duplicating business rules.
+- Browser workstation work and WPF desktop workstation work are two active co-equal operator UI lanes over shared contracts; WPF's current focus is web-UI parity (`W8-WPF-PARITY-001`).
+- Browser surfaces and retained WPF compatibility should consume shared DTOs, services, and route definitions for accounting, reporting, private-capital, and identity workflows instead of duplicating business rules.
 - Design tokens and shared UI patterns should come from the Meridian Design
   System or local shared dashboard primitives, not one-off screen styling.
 

@@ -52,7 +52,7 @@ public sealed class BatchBacktestSummary
 /// </summary>
 public sealed class BatchBacktestProgress
 {
-    /// <summary>Number of completed runs.</summary>
+    /// <summary>Number of completed runs. Reports are emitted in nondecreasing order.</summary>
     public int Completed { get; init; }
 
     /// <summary>Total number of runs in the batch.</summary>
@@ -133,27 +133,31 @@ public sealed class BatchBacktestService : IBatchBacktestService
         ArgumentException.ThrowIfNullOrWhiteSpace(request.StrategyDescriptor);
         ArgumentNullException.ThrowIfNull(request.StrategyFactory);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(request.MaxConcurrency);
+        ct.ThrowIfCancellationRequested();
 
         var sw = Stopwatch.StartNew();
         var total = request.ParameterGrid.Count;
-        var completedCounter = new int[1];
-        var runs = new List<BatchBacktestRun>();
-        var semaphore = new SemaphoreSlim(request.MaxConcurrency, request.MaxConcurrency);
+        var runs = new BatchBacktestRun?[total];
+        var progressCoordinator = new BatchProgressCoordinator(progress, total);
+        using var semaphore = new SemaphoreSlim(request.MaxConcurrency, request.MaxConcurrency);
 
         _logger.LogInformation("Starting batch backtest with {Total} runs, strategy {Strategy}, max concurrency {MaxConcurrency}",
             total, request.StrategyDescriptor, request.MaxConcurrency);
 
         var tasks = request.ParameterGrid.Select((paramSet, index) =>
-            RunSingleBacktestAsync(index, paramSet, request, semaphore, runs, completedCounter, total, progress, ct)
+            RunSingleBacktestAsync(index, paramSet, request, semaphore, runs, progressCoordinator, total, ct)
         ).ToList();
 
-        await Task.WhenAll(tasks);
+        await Task.WhenAll(tasks).ConfigureAwait(false);
+        ct.ThrowIfCancellationRequested();
 
         sw.Stop();
 
         var summary = new BatchBacktestSummary
         {
-            Runs = runs.AsReadOnly(),
+            Runs = runs
+                .Select(static run => run ?? throw new InvalidOperationException("A batch run completed without producing a result record."))
+                .ToArray(),
             TotalDuration = sw.Elapsed
         };
 
@@ -170,73 +174,90 @@ public sealed class BatchBacktestService : IBatchBacktestService
         Dictionary<string, object> paramSet,
         BatchBacktestRequest request,
         SemaphoreSlim semaphore,
-        List<BatchBacktestRun> runs,
-        int[] completedCounter,
+        BatchBacktestRun?[] runs,
+        BatchProgressCoordinator progressCoordinator,
         int total,
-        IProgress<BatchBacktestProgress> progress,
         CancellationToken ct)
     {
-        await semaphore.WaitAsync(ct);
+        await semaphore.WaitAsync(ct).ConfigureAwait(false);
+        await Task.Yield();
 
         try
         {
+            ct.ThrowIfCancellationRequested();
             var runSw = Stopwatch.StartNew();
-            var label = FormatParameterLabel(paramSet);
-
-            _logger.LogInformation("Starting run {Index}/{Total}: {Label}", index + 1, total, label);
-
-            progress?.Report(new BatchBacktestProgress
-            {
-                Completed = completedCounter[0],
-                Total = total,
-                CurrentLabel = label
-            });
-
+            var label = string.Create(CultureInfo.InvariantCulture, $"run-{index + 1}");
             BacktestResult? result = null;
             string? errorMessage = null;
 
             try
             {
-                var runRequest = ApplyParameters(request.BaseRequest, paramSet);
-                var engine = _engineFactory(runRequest);
-                var strategy = request.StrategyFactory(paramSet);
-
-                result = await Task.Run(async () =>
-                    await _runExecutor(engine, runRequest, strategy, ct).ConfigureAwait(false), ct)
-                    .ConfigureAwait(false);
-
-                _logger.LogInformation("Run {Index}/{Total} succeeded in {Duration}ms",
-                    index + 1, total, runSw.ElapsedMilliseconds);
+                label = FormatParameterLabel(paramSet);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
             }
             catch (Exception ex)
             {
                 errorMessage = ex.Message;
-                _logger.LogWarning(ex, "Run {Index}/{Total} failed: {Error}", index + 1, total, ex.Message);
+                _logger.LogWarning(
+                    ex,
+                    "Run {Index}/{Total} failed while formatting its parameter label: {Error}",
+                    index + 1,
+                    total,
+                    ex.Message);
             }
 
-            runSw.Stop();
-            var currentCompleted = completedCounter[0];
+            progressCoordinator.ReportStarted(label);
 
-            lock (runs)
+            if (errorMessage is null)
             {
-                runs.Add(new BatchBacktestRun
+                _logger.LogInformation("Starting run {Index}/{Total}: {Label}", index + 1, total, label);
+
+                try
                 {
-                    Parameters = paramSet,
-                    Result = result,
-                    DurationMs = runSw.ElapsedMilliseconds,
-                    ErrorMessage = errorMessage
-                });
+                    result = await BacktestDependencyRunner.RunAsync(
+                            () =>
+                            {
+                                var runRequest = ApplyParameters(request.BaseRequest, paramSet);
+                                var engine = _engineFactory(runRequest);
+                                var strategy = request.StrategyFactory(paramSet);
+                                return _runExecutor(engine, runRequest, strategy, ct);
+                            },
+                            ct,
+                            ex => _logger.LogWarning(
+                                ex,
+                                "Run {Index}/{Total} faulted after caller cancellation",
+                                index + 1,
+                                total))
+                        .ConfigureAwait(false);
+                    ct.ThrowIfCancellationRequested();
 
-                completedCounter[0]++;
-                currentCompleted = completedCounter[0];
+                    _logger.LogInformation("Run {Index}/{Total} succeeded in {Duration}ms",
+                        index + 1, total, runSw.ElapsedMilliseconds);
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    errorMessage = ex.Message;
+                    _logger.LogWarning(ex, "Run {Index}/{Total} failed: {Error}", index + 1, total, ex.Message);
+                }
             }
 
-            progress?.Report(new BatchBacktestProgress
+            ct.ThrowIfCancellationRequested();
+            runSw.Stop();
+            runs[index] = new BatchBacktestRun
             {
-                Completed = currentCompleted,
-                Total = total,
-                CurrentLabel = label
-            });
+                Parameters = paramSet,
+                Result = result,
+                DurationMs = runSw.ElapsedMilliseconds,
+                ErrorMessage = errorMessage
+            };
+            progressCoordinator.ReportCompleted(label);
         }
         finally
         {
@@ -244,13 +265,27 @@ public sealed class BatchBacktestService : IBatchBacktestService
         }
     }
 
-    private static string FormatParameterLabel(Dictionary<string, object> paramSet)
+    internal static string FormatParameterLabel(IReadOnlyDictionary<string, object> paramSet)
     {
-        var parts = paramSet.Select(kvp => $"{kvp.Key}={kvp.Value}");
+        var parts = paramSet
+            .OrderBy(static kvp => kvp.Key, StringComparer.Ordinal)
+            .Select(static kvp => $"{kvp.Key}={FormatParameterValue(kvp.Value)}");
         return string.Join(", ", parts);
     }
 
-    private static BacktestRequest ApplyParameters(
+    private static string FormatParameterValue(object? value)
+        => value switch
+        {
+            null => "<null>",
+            IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture) ?? string.Empty,
+            _ => value.ToString() ?? string.Empty
+        };
+
+    /// <summary>
+    /// Applies a parameter dictionary to a base request, returning a new request. Shared with the
+    /// walk-forward harness so training and out-of-sample runs interpret parameters identically.
+    /// </summary>
+    internal static BacktestRequest ApplyParameters(
         BacktestRequest baseRequest,
         IReadOnlyDictionary<string, object> parameters)
     {
@@ -274,6 +309,11 @@ public sealed class BatchBacktestService : IBatchBacktestService
                 nameof(BacktestRequest.CommissionKind) => request with { CommissionKind = ToEnum<BacktestCommissionKind>(value) },
                 nameof(BacktestRequest.AdjustForCorporateActions) => request with { AdjustForCorporateActions = ToBool(value) },
                 nameof(BacktestRequest.FailOnUnknownSymbols) => request with { FailOnUnknownSymbols = ToBool(value) },
+                nameof(BacktestRequest.FillTiming) => request with { FillTiming = ToEnum<FillTiming>(value) },
+                nameof(BacktestRequest.FillConservatism) => request with { FillConservatism = ToEnum<FillConservatism>(value) },
+                nameof(BacktestRequest.DelistingPolicy) => request with { DelistingPolicy = ToEnum<DelistingPolicy>(value) },
+                nameof(BacktestRequest.DelistingHaircutPercent) => request with { DelistingHaircutPercent = ToDecimal(value) },
+                nameof(BacktestRequest.DelistingGraceDays) => request with { DelistingGraceDays = Convert.ToInt32(value, CultureInfo.InvariantCulture) },
                 _ => request
             };
         }
@@ -289,7 +329,11 @@ public sealed class BatchBacktestService : IBatchBacktestService
             float floatValue => (decimal)floatValue,
             int intValue => intValue,
             long longValue => longValue,
-            string stringValue when decimal.TryParse(stringValue, out var parsed) => parsed,
+            string stringValue when decimal.TryParse(
+                stringValue,
+                NumberStyles.Number,
+                CultureInfo.InvariantCulture,
+                out var parsed) => parsed,
             _ => Convert.ToDecimal(value, CultureInfo.InvariantCulture)
         };
 
@@ -299,7 +343,11 @@ public sealed class BatchBacktestService : IBatchBacktestService
             double doubleValue => doubleValue,
             decimal decimalValue => decimal.ToDouble(decimalValue),
             float floatValue => floatValue,
-            string stringValue when double.TryParse(stringValue, out var parsed) => parsed,
+            string stringValue when double.TryParse(
+                stringValue,
+                NumberStyles.Float | NumberStyles.AllowThousands,
+                CultureInfo.InvariantCulture,
+                out var parsed) => parsed,
             _ => Convert.ToDouble(value, CultureInfo.InvariantCulture)
         };
 
@@ -320,4 +368,145 @@ public sealed class BatchBacktestService : IBatchBacktestService
             _ => (TEnum)Enum.ToObject(typeof(TEnum), value)
         };
 
+    private sealed class BatchProgressCoordinator(
+        IProgress<BatchBacktestProgress>? progress,
+        int total)
+    {
+        private readonly object _gate = new();
+        private readonly Queue<BatchBacktestProgress> _pending = new();
+        private int _completed;
+        private bool _isDraining;
+
+        public void ReportStarted(string label)
+        {
+            bool shouldDrain;
+            lock (_gate)
+            {
+                shouldDrain = EnqueueLocked(new BatchBacktestProgress
+                {
+                    Completed = _completed,
+                    Total = total,
+                    CurrentLabel = label
+                });
+            }
+
+            if (shouldDrain)
+                Drain();
+        }
+
+        public void ReportCompleted(string label)
+        {
+            bool shouldDrain;
+            lock (_gate)
+            {
+                _completed++;
+                shouldDrain = EnqueueLocked(new BatchBacktestProgress
+                {
+                    Completed = _completed,
+                    Total = total,
+                    CurrentLabel = label
+                });
+            }
+
+            if (shouldDrain)
+                Drain();
+        }
+
+        private bool EnqueueLocked(BatchBacktestProgress report)
+        {
+            if (progress is null)
+                return false;
+
+            _pending.Enqueue(report);
+            if (_isDraining)
+                return false;
+
+            _isDraining = true;
+            return true;
+        }
+
+        private void Drain()
+        {
+            try
+            {
+                while (true)
+                {
+                    BatchBacktestProgress next;
+                    lock (_gate)
+                    {
+                        if (_pending.Count == 0)
+                        {
+                            _isDraining = false;
+                            return;
+                        }
+
+                        next = _pending.Dequeue();
+                    }
+
+                    progress!.Report(next);
+                }
+            }
+            catch
+            {
+                lock (_gate)
+                {
+                    _pending.Clear();
+                    _isDraining = false;
+                }
+
+                throw;
+            }
+        }
+    }
+
+}
+
+internal static class BacktestDependencyRunner
+{
+    public static async Task<T> RunAsync<T>(
+        Func<Task<T>> operation,
+        CancellationToken ct,
+        Action<Exception>? abandonedFaultObserver = null)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        ct.ThrowIfCancellationRequested();
+
+        var operationTask = Task.Run(operation, CancellationToken.None);
+
+        try
+        {
+            return await operationTask.WaitAsync(ct).ConfigureAwait(false);
+        }
+        catch (Exception) when (ct.IsCancellationRequested)
+        {
+            ObserveLateFault(operationTask, abandonedFaultObserver);
+            ct.ThrowIfCancellationRequested();
+            throw;
+        }
+    }
+
+    private static void ObserveLateFault(Task operationTask, Action<Exception>? observer)
+    {
+        _ = operationTask.ContinueWith(
+            static (faultedTask, state) =>
+            {
+                var exception = faultedTask.Exception;
+                if (exception is null || state is not Action<Exception> faultObserver)
+                    return;
+
+                try
+                {
+                    faultObserver(exception.GetBaseException());
+                }
+                catch
+                {
+                    // The dependency fault has already been observed. Logging must not create a
+                    // second unobserved task failure on this fire-and-observe continuation.
+                }
+            },
+            observer,
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnFaulted,
+            TaskScheduler.Default);
+    }
 }

@@ -45,35 +45,44 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
     private readonly StrategyRunWorkspaceService _runWorkspaceService;
     private readonly IWorkstationReconciliationApiClient _apiClient;
 
+    private readonly DesktopAuthenticationSession? _authenticationSession;
+
     public FundReconciliationWorkbenchService(
         ReconciliationReadService reconciliationReadService,
         IFundAccountService fundAccountService,
         StrategyRunWorkspaceService runWorkspaceService,
-        IWorkstationReconciliationApiClient apiClient)
+        IWorkstationReconciliationApiClient apiClient,
+        DesktopAuthenticationSession? authenticationSession = null)
     {
         _reconciliationReadService = reconciliationReadService ?? throw new ArgumentNullException(nameof(reconciliationReadService));
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
         _runWorkspaceService = runWorkspaceService ?? throw new ArgumentNullException(nameof(runWorkspaceService));
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+        _authenticationSession = authenticationSession;
     }
+
+    private string ResolveActorLabel() =>
+        _authenticationSession?.CurrentActor is { Length: > 0 } actor ? actor : "desktop-user";
 
     public async Task<FundReconciliationWorkbenchSnapshot> GetSnapshotAsync(string fundProfileId, CancellationToken ct = default)
     {
-        var summaryTask = _reconciliationReadService.GetAsync(fundProfileId, ct);
+        var reconciliationReadTask = _reconciliationReadService.GetAsync(fundProfileId, ct);
         var calibrationSummaryTask = ReadOptionalWorkstationAsync(
             token => _apiClient.GetCalibrationSummaryAsync(token),
             (ReconciliationCalibrationSummaryDto?)null,
             ct);
         var breakQueueTask = ReadOptionalWorkstationAsync<IReadOnlyList<ReconciliationBreakQueueItem>>(
-            token => _apiClient.GetBreakQueueAsync(token),
+            async token => await _apiClient.GetBreakQueueAsync(token).ConfigureAwait(false)
+                ?? throw new HttpRequestException("Get reconciliation break queue returned no data."),
             Array.Empty<ReconciliationBreakQueueItem>(),
             ct);
         var runsTask = _runWorkspaceService.GetRecordedRunsAsync(ct);
 
-        await Task.WhenAll(summaryTask, calibrationSummaryTask, breakQueueTask, runsTask).ConfigureAwait(false);
+        await Task.WhenAll(reconciliationReadTask, calibrationSummaryTask, breakQueueTask, runsTask).ConfigureAwait(false);
 
-        var summary = await summaryTask.ConfigureAwait(false);
-        var calibrationSummary = await calibrationSummaryTask.ConfigureAwait(false);
+        var reconciliationRead = await reconciliationReadTask.ConfigureAwait(false);
+        var summary = reconciliationRead.Summary;
+        var calibrationRead = await calibrationSummaryTask.ConfigureAwait(false);
         var runs = await runsTask.ConfigureAwait(false);
         var relevantRuns = runs
             .Where(run => string.Equals(run.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
@@ -83,7 +92,8 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         var runNames = relevantRuns.ToDictionary(run => run.RunId, run => run.StrategyName, StringComparer.OrdinalIgnoreCase);
 
-        var breakQueue = await breakQueueTask.ConfigureAwait(false);
+        var breakQueueRead = await breakQueueTask.ConfigureAwait(false);
+        var breakQueue = breakQueueRead.Value;
         var scopedBreakQueue = breakQueue
             .Where(item => runIds.Contains(item.RunId))
             .ToArray();
@@ -100,8 +110,12 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             .ThenByDescending(item => item.SecurityIssueCount)
             .ThenByDescending(item => item.RequestedAt)
             .ToArray();
-        var scopedCalibrationSummary = BuildCalibrationSummary(scopedBreakQueue, calibrationSummary);
-        var calibrationProfiles = scopedCalibrationSummary.Profiles
+        // A derived zero-break/Ready posture is valid only when both server reads succeeded.
+        // Empty fallbacks after an outage are not evidence that calibration is ready.
+        var scopedCalibrationSummary = breakQueueRead.Available && calibrationRead.Available
+            ? BuildCalibrationSummary(scopedBreakQueue, calibrationRead.Value)
+            : null;
+        var calibrationProfiles = (scopedCalibrationSummary?.Profiles ?? [])
             .Select(MapCalibrationProfileRow)
             .OrderByDescending(item => item.PendingSignoffCount)
             .ThenByDescending(item => item.ActiveBreakCount)
@@ -116,7 +130,13 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             BreakQueueItems: breakQueueItems,
             RunRows: runRows,
             RefreshedAt: DateTimeOffset.UtcNow,
-            InReviewBreakCount: breakQueueItems.Count(item => item.Status == ReconciliationBreakQueueStatus.InReview));
+            InReviewBreakCount: breakQueueItems.Count(item => item.Status == ReconciliationBreakQueueStatus.InReview),
+            ReadAvailability: reconciliationRead.Availability,
+            KnownRunCount: reconciliationRead.KnownRunCount,
+            MissingRunCount: reconciliationRead.MissingRunCount,
+            UnavailableRunCount: reconciliationRead.UnavailableRunCount,
+            BreakQueueReadAvailable: breakQueueRead.Available,
+            CalibrationReadAvailable: calibrationRead.Available);
     }
 
     public async Task<FundReconciliationDetailModel?> GetBreakDetailAsync(
@@ -127,7 +147,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
         ArgumentNullException.ThrowIfNull(breakRow);
 
         var detail = await _apiClient.GetLatestRunDetailAsync(breakRow.RunId, ct).ConfigureAwait(false);
-        return detail is null ? null : BuildStrategyDetail(detail, baseCurrency, breakRow);
+        return detail is null ? null : BuildStrategyDetail(detail, baseCurrency, breakRow, ResolveActorLabel());
     }
 
     public async Task<FundReconciliationDetailModel?> GetRunDetailAsync(
@@ -142,7 +162,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             var results = await _fundAccountService
                 .GetReconciliationResultsAsync(runRow.ReconciliationRunId, ct)
                 .ConfigureAwait(false);
-            return BuildAccountDetail(runRow, results, baseCurrency);
+            return BuildAccountDetail(runRow, results, baseCurrency, ResolveActorLabel());
         }
 
         ReconciliationRunDetail? detail = null;
@@ -152,7 +172,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
         }
 
         detail ??= await _apiClient.GetRunDetailAsync(runRow.ReconciliationRunId.ToString("N"), ct).ConfigureAwait(false);
-        return detail is null ? null : BuildStrategyDetail(detail, baseCurrency, focusBreak: null, runOverride: runRow);
+        return detail is null ? null : BuildStrategyDetail(detail, baseCurrency, focusBreak: null, ResolveActorLabel(), runOverride: runRow);
     }
 
     public Task<WorkstationReconciliationActionResult> StartReviewAsync(
@@ -211,14 +231,16 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             ct);
     }
 
-    private static async Task<T> ReadOptionalWorkstationAsync<T>(
+    private static async Task<OptionalWorkstationRead<T>> ReadOptionalWorkstationAsync<T>(
         Func<CancellationToken, Task<T>> readAsync,
         T fallback,
         CancellationToken ct)
     {
         try
         {
-            return await readAsync(ct).ConfigureAwait(false);
+            return new OptionalWorkstationRead<T>(
+                await readAsync(ct).ConfigureAwait(false),
+                Available: true);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -226,9 +248,11 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
         }
         catch (Exception)
         {
-            return fallback;
+            return new OptionalWorkstationRead<T>(fallback, Available: false);
         }
     }
+
+    private readonly record struct OptionalWorkstationRead<T>(T Value, bool Available);
 
     private static ReconciliationCalibrationSummaryDto BuildCalibrationSummary(
         IReadOnlyList<ReconciliationBreakQueueItem> items,
@@ -470,6 +494,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
         ReconciliationRunDetail detail,
         string baseCurrency,
         FundReconciliationBreakQueueRow? focusBreak,
+        string fallbackActorLabel,
         FundReconciliationRunRow? runOverride = null)
     {
         var strategyName = runOverride?.PrimaryLabel
@@ -548,7 +573,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
                 Description: string.IsNullOrWhiteSpace(focusBreak.AssignedToLabel)
                     ? "Assigned for review."
                     : $"Assigned to {focusBreak.AssignedToLabel}.",
-                ActorLabel: focusBreak.ReviewedBy ?? "desktop-user"));
+                ActorLabel: focusBreak.ReviewedBy ?? fallbackActorLabel));
         }
 
         if (focusBreak?.ResolvedAt is not null)
@@ -560,7 +585,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
                 Description: string.IsNullOrWhiteSpace(focusBreak.ResolutionNote)
                     ? "Resolution note was not captured."
                     : focusBreak.ResolutionNote,
-                ActorLabel: focusBreak.ResolvedBy ?? "desktop-user"));
+                ActorLabel: focusBreak.ResolvedBy ?? fallbackActorLabel));
         }
 
         auditRows.Sort(static (left, right) => right.Timestamp.CompareTo(left.Timestamp));
@@ -596,7 +621,8 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
     private static FundReconciliationDetailModel BuildAccountDetail(
         FundReconciliationRunRow runRow,
         IReadOnlyList<AccountReconciliationResultDto> results,
-        string baseCurrency)
+        string baseCurrency,
+        string fallbackActorLabel)
     {
         var exceptionRows = results
             .Where(result => !result.IsMatch)
@@ -612,7 +638,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
                 TimestampText: runRow.RequestedAtText,
                 Title: "Account reconciliation requested",
                 Description: $"{runRow.TotalChecks} check(s) were evaluated for {runRow.PrimaryLabel}.",
-                ActorLabel: "desktop-user"),
+                ActorLabel: fallbackActorLabel),
             new FundReconciliationAuditTrailRow(
                 Timestamp: runRow.CompletedAt ?? runRow.RequestedAt,
                 TimestampText: runRow.CompletedAtText,

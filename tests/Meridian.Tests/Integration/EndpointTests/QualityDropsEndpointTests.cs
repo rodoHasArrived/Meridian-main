@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using Meridian.Identity.Auth;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -12,14 +13,19 @@ namespace Meridian.Tests.Integration.EndpointTests;
 [Collection("Endpoint")]
 public sealed class QualityDropsEndpointTests : EndpointIntegrationTestBase
 {
+    private readonly HttpClient _client;
+
     public QualityDropsEndpointTests(EndpointTestFixture fixture) : base(fixture)
     {
+        // Data-quality reads require one of ViewHistoricalData / ViewDiagnostics / ManageStorage
+        // (W9-GOV-008); the shared base client carries no permissions.
+        _client = fixture.CreatePermittedClient(UserPermission.ViewHistoricalData);
     }
 
     [Fact]
     public async Task QualityDropsEndpoint_ReturnsJson()
     {
-        var response = await GetAsync("/api/quality/drops");
+        var response = await _client.GetAsync("/api/quality/drops");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var contentType = response.Content.Headers.ContentType?.ToString() ?? string.Empty;
@@ -29,7 +35,7 @@ public sealed class QualityDropsEndpointTests : EndpointIntegrationTestBase
     [Fact]
     public async Task QualityDropsEndpoint_ReturnsValidStructure()
     {
-        var response = await GetAsync("/api/quality/drops");
+        var response = await _client.GetAsync("/api/quality/drops");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var content = await response.Content.ReadAsStringAsync();
@@ -45,7 +51,7 @@ public sealed class QualityDropsEndpointTests : EndpointIntegrationTestBase
     [Fact]
     public async Task QualityDropsBySymbol_ReturnsJson()
     {
-        var response = await GetAsync("/api/quality/drops/AAPL");
+        var response = await _client.GetAsync("/api/quality/drops/AAPL");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var contentType = response.Content.Headers.ContentType?.ToString() ?? string.Empty;
@@ -55,7 +61,7 @@ public sealed class QualityDropsEndpointTests : EndpointIntegrationTestBase
     [Fact]
     public async Task QualityDropsBySymbol_ReturnsValidStructure()
     {
-        var response = await GetAsync("/api/quality/drops/SPY");
+        var response = await _client.GetAsync("/api/quality/drops/SPY");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var content = await response.Content.ReadAsStringAsync();
@@ -72,14 +78,14 @@ public sealed class QualityDropsEndpointTests : EndpointIntegrationTestBase
     [Fact]
     public async Task QualityDropsBySymbol_HandlesUppercaseSymbol()
     {
-        var response = await GetAsync("/api/quality/drops/TSLA");
+        var response = await _client.GetAsync("/api/quality/drops/TSLA");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     [Fact]
     public async Task QualityDropsBySymbol_HandlesLowercaseSymbol()
     {
-        var response = await GetAsync("/api/quality/drops/tsla");
+        var response = await _client.GetAsync("/api/quality/drops/tsla");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
@@ -87,7 +93,7 @@ public sealed class QualityDropsEndpointTests : EndpointIntegrationTestBase
     public async Task QualityDropsBySymbol_HandlesSpecialCharacters()
     {
         // Test with symbol containing special characters (some brokers use formats like BRK.B)
-        var response = await GetAsync("/api/quality/drops/BRK.B");
+        var response = await _client.GetAsync("/api/quality/drops/BRK.B");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
@@ -98,7 +104,7 @@ public sealed class QualityDropsEndpointTests : EndpointIntegrationTestBase
     {
         // URL encoding will handle spaces, but endpoint should handle gracefully
         var encoded = Uri.EscapeDataString(symbol);
-        var response = await GetAsync($"/api/quality/drops/{encoded}");
+        var response = await _client.GetAsync($"/api/quality/drops/{encoded}");
         // Should still return OK with 0 drops for invalid/empty symbol
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
@@ -107,7 +113,7 @@ public sealed class QualityDropsEndpointTests : EndpointIntegrationTestBase
     public async Task QualityDropsEndpoint_AuditTrailNotConfigured_ReturnsValidResponse()
     {
         // Even without audit trail, endpoint should return valid response with message
-        var response = await GetAsync("/api/quality/drops");
+        var response = await _client.GetAsync("/api/quality/drops");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var content = await response.Content.ReadAsStringAsync();

@@ -1,10 +1,10 @@
 # Desktop WPF Screenshot Index
 
-This index tracks screenshot evidence for active registered WPF screens. It is intentionally conservative: a committed PNG only counts for the exact page tag listed here, and uncovered registered screens are marked TBI instead of implying visual evidence exists.
+This index tracks screenshot evidence for registered WPF screens. WPF is an active co-equal operator UI lane; its current focus is web-UI parity (`W8-WPF-PARITY-001`). The index is intentionally conservative: a committed PNG only counts for the exact page tag listed here, and uncovered registered screens are marked TBI instead of implying visual evidence exists.
 
 ## Sources and refresh policy
 
-- Active screen inventory source: `ShellNavigationCatalog` plus feature-module page registrations under `src/Meridian.Wpf/Models/` and `src/Meridian.Wpf/Features/`.
+- Retained screen inventory source: `ShellNavigationCatalog` plus feature-module page registrations under `src/Meridian.Wpf/Models/` and `src/Meridian.Wpf/Features/`.
 - Canonical screenshot workflow source: `scripts/dev/desktop-workflows.json`, especially the `screenshot-catalog` workflow.
 - Existing committed PNGs were discovered under `docs/screenshots/desktop/`.
 - Last refreshed dates below use each PNG's latest Git commit date. TBI rows have no screenshot refresh date yet.
@@ -32,6 +32,8 @@ This index tracks screenshot evidence for active registered WPF screens. It is i
 | Accounting | Accounting Workspace | `AccountingShell` | [`docs/screenshots/desktop/wpf-accounting-shell.png`](wpf-accounting-shell.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
 | Accounting | Entity setup | `FundStructureSetup` | [`docs/screenshots/desktop/wpf-fund-structure-setup.png`](wpf-fund-structure-setup.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
 | Accounting | Fund operations | `FundLedger` | [`docs/screenshots/desktop/wpf-fund-ledger.png`](wpf-fund-ledger.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
+| Accounting | Operations continuity | `OperationsContinuity` | TBI | — | TBI | New W8-WPF-PARITY-001 Wave P3 surface has no retained PNG yet. | TBI: capture via the `wpf-operations-continuity` screenshot-catalog step on a Windows run. |
+| Accounting | Posted ledger | `PostedLedger` | TBI | — | TBI | New W8-WPF-PARITY-001 posted-journal surface has no retained PNG yet. | TBI: capture via the `wpf-posted-ledger` screenshot-catalog step on a Windows run. |
 | Accounting | Run ledger | `RunLedger` | [`docs/screenshots/desktop/wpf-run-ledger.png`](wpf-run-ledger.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
 | Accounting | Run cash flow | `RunCashFlow` | [`docs/screenshots/desktop/wpf-run-cash-flow.png`](wpf-run-cash-flow.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
 | Accounting | Fund reconciliation | `FundReconciliation` | [`docs/screenshots/desktop/wpf-fund-reconciliation.png`](wpf-fund-reconciliation.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
@@ -46,6 +48,8 @@ This index tracks screenshot evidence for active registered WPF screens. It is i
 | Reporting | Reporting Workspace | `ReportingShell` | [`docs/screenshots/desktop/wpf-reporting-shell.png`](wpf-reporting-shell.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
 | Reporting | Fund report pack | `FundReportPack` | [`docs/screenshots/desktop/wpf-fund-report-pack.png`](wpf-fund-report-pack.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
 | Reporting | Report run status | `ReportRunStatus` | [`docs/screenshots/desktop/wpf-report-run-status.png`](wpf-report-run-status.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
+| Reporting | Evidence packets | `EvidenceWorkbench` | TBI | — | TBI | New W8-WPF-PARITY-001 Wave P1 surface has no retained PNG yet. | TBI: capture via the `wpf-evidence-workbench` screenshot-catalog step on a Windows run. |
+| Reporting | Operations record release | `OperationsRecordRelease` | TBI | — | TBI | New W8-WPF-PARITY-001 Wave P3 surface has no retained PNG yet. | TBI: capture via the `wpf-operations-record-release` screenshot-catalog step on a Windows run. |
 | Reporting | Reporting dashboard | `Dashboard` | [`docs/screenshots/desktop/wpf-dashboard.png`](wpf-dashboard.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
 | Reporting | Analysis export | `AnalysisExport` | [`docs/screenshots/desktop/wpf-analysis-export.png`](wpf-analysis-export.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
 | Reporting | Report-line provenance | `ReportLineProvenanceExplorer` | [`docs/screenshots/desktop/wpf-report-line-provenance-explorer.png`](wpf-report-line-provenance-explorer.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
@@ -64,6 +68,7 @@ This index tracks screenshot evidence for active registered WPF screens. It is i
 | Strategy | Advanced analytics | `AdvancedAnalytics` | [`docs/screenshots/desktop/wpf-advanced-analytics.png`](wpf-advanced-analytics.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
 | Strategy | Quant script | `QuantScript` | [`docs/screenshots/desktop/wpf-quant-script.png`](wpf-quant-script.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
 | Strategy | Home | `HomeWorkspace` | [`docs/screenshots/desktop/wpf-home-workspace.png`](wpf-home-workspace.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
+| Strategy | Operator readiness | `OperatorReadinessConsole` | TBI | — | TBI | New W8-WPF-PARITY-001 Wave P2 surface has no retained PNG yet. | TBI: capture via the `wpf-operator-readiness-console` screenshot-catalog step on a Windows run. |
 | Data | Data browser | `DataBrowser` | [`docs/screenshots/desktop/wpf-data-browser.png`](wpf-data-browser.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
 | Data | Data calendar | `DataCalendar` | [`docs/screenshots/desktop/wpf-data-calendar.png`](wpf-data-calendar.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
 | Data | Data sampling | `DataSampling` | [`docs/screenshots/desktop/wpf-data-sampling.png`](wpf-data-sampling.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
@@ -99,6 +104,7 @@ This index tracks screenshot evidence for active registered WPF screens. It is i
 | Settings | Settings | `Settings` | [`docs/screenshots/desktop/wpf-settings.png`](wpf-settings.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
 | Settings | Credential management | `CredentialManagement` | [`docs/screenshots/desktop/wpf-credential-management.png`](wpf-credential-management.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
 | Settings | System health | `SystemHealth` | [`docs/screenshots/desktop/wpf-system-health.png`](wpf-system-health.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
+| Settings | Lifecycle control | `LifecycleControl` | TBI | — | TBI | New lifecycle-control surface has no retained PNG yet. | TBI: add a screenshot-catalog workflow step and fixture-mode capture. |
 | Settings | Diagnostics | `Diagnostics` | [`docs/screenshots/desktop/wpf-diagnostics.png`](wpf-diagnostics.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
 | Settings | Service manager | `ServiceManager` | [`docs/screenshots/desktop/wpf-service-manager.png`](wpf-service-manager.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
 | Settings | Admin maintenance | `AdminMaintenance` | [`docs/screenshots/desktop/wpf-admin-maintenance.png`](wpf-admin-maintenance.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |

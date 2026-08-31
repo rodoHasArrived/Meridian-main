@@ -69,6 +69,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Meridian.Application\Meridian.Application.csproj" />
     <ProjectReference Include="..\Meridian.Audit\Meridian.Audit.csproj" />
+    <ProjectReference Include="..\Meridian.Backtesting\Meridian.Backtesting.csproj" />
     <ProjectReference Include="..\Meridian.Infrastructure\Meridian.Infrastructure.csproj" />
     <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
     <ProjectReference Include="..\Meridian.Core\Meridian.Core.csproj" />
@@ -77,13 +78,19 @@
     <ProjectReference Include="..\Meridian.Identity\Meridian.Identity.csproj" />
     <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
     <ProjectReference Include="..\Meridian.QuantScript\Meridian.QuantScript.csproj" />
+    <ProjectReference Include="..\Meridian.QuantScript.Worker\Meridian.QuantScript.Worker.csproj"
+                      ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\Meridian.Ui.Shared\Meridian.Ui.Shared.csproj" />
     <ProjectReference Include="..\Meridian.Ui.Services\Meridian.Ui.Services.csproj" />
   </ItemGroup>
 
-  <!-- Host static assets -->
+  <Import Project="..\Meridian.QuantScript.Worker\QuantScriptWorker.Sidecar.targets" />
+
+  <!-- Host static assets: the canonical tracked workstation bundle (PRD-018). Copying it beside
+       the executable makes `dotnet run`, `dotnet publish`, and installed layouts serve the same
+       tree the dashboard build writes, independent of launch directory. -->
   <ItemGroup>
-    <Content Include="wwwroot\**\*">
+    <Content Include="..\Meridian.Ui\wwwroot\**\*" Link="wwwroot\%(RecursiveDir)%(Filename)%(Extension)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

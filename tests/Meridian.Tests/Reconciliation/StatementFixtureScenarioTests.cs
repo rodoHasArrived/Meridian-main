@@ -10,7 +10,7 @@ namespace Meridian.Tests.Reconciliation;
 public sealed class StatementFixtureScenarioTests
 {
     [Fact]
-    public async Task Scenario_MonthEndCleanStatement_ServiceFullyReconcilesFixture()
+    public async Task Scenario_MonthEndCleanStatement_PositionRequiresInternalEvidenceForMatch()
     {
         var path = FixturePath("statement-clean-reconciles.csv");
         var service = new StatementReconciliationService();
@@ -20,10 +20,12 @@ public sealed class StatementFixtureScenarioTests
         var intake = await service.CreateExternalStatementCasesAsync("broker", path, CancellationToken.None);
 
         Assert.Contains("canonical-csv-v1", validation);
-        Assert.Equal(1, result.MatchCount);
-        Assert.Equal(0, result.UnresolvedCount);
+        // File-only intake carries no internal portfolio snapshot, so the position row surfaces
+        // as an operator case through the shared matching engine instead of auto-matching.
+        Assert.Equal(0, result.MatchCount);
+        Assert.Equal(1, result.UnresolvedCount);
         Assert.Equal(1, intake.RowCount);
-        Assert.Empty(intake.Cases);
+        Assert.Single(intake.Cases);
     }
 
     [Fact]
@@ -91,8 +93,8 @@ public sealed class StatementFixtureScenarioTests
                 CancellationToken.None);
 
             Assert.Equal(2, result.RowCount);
-            Assert.Equal(1, result.MatchCount);
-            Assert.Single(result.Cases);
+            Assert.Equal(0, result.MatchCount);
+            Assert.Equal(2, result.Cases.Count);
             Assert.All(result.Cases, reconciliationCase => Assert.Equal("fund-ops", reconciliationCase.Owner));
         }
         finally
@@ -194,8 +196,8 @@ public sealed class StatementFixtureScenarioTests
         var result = await service.CreateExternalStatementCasesAsync("broker", path, CancellationToken.None);
 
         Assert.Equal(3, result.RowCount);
-        Assert.Equal(1, result.MatchCount);
-        Assert.Equal(2, result.Cases.Count);
+        Assert.Equal(0, result.MatchCount);
+        Assert.Equal(3, result.Cases.Count);
         Assert.All(result.Cases, reconciliationCase =>
         {
             Assert.Equal("Open", reconciliationCase.Status);

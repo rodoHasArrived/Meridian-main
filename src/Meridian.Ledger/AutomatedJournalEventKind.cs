@@ -37,4 +37,16 @@ public enum AutomatedJournalEventKind
 
     /// <summary>Period-close closing entries rolling net income into retained earnings.</summary>
     PeriodCloseClosingEntries,
+
+    /// <summary>Periodic fixed-asset depreciation charge (debit expense, credit accumulated depreciation).</summary>
+    DepreciationPosted,
+
+    /// <summary>Capital call issued against an investor commitment (debit receivable, credit investor capital).</summary>
+    CapitalCallIssued,
+
+    /// <summary>Cash received against an outstanding capital-call receivable.</summary>
+    CapitalCallFunded,
+
+    /// <summary>Default interest accrued on an unfunded capital call past its grace period.</summary>
+    CapitalCallDefaultInterestAccrued,
 }

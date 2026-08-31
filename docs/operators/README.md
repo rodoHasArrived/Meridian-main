@@ -2,7 +2,7 @@
 title: Operator Documentation
 status: active
 owner: core-team
-reviewed: 2026-06-02
+reviewed: 2026-07-20
 audience: operators
 ---
 
@@ -35,24 +35,38 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | Need | Start here | Notes |
 | --- | --- | --- |
 | First local setup | [Start](../start/README.md) | fastest contributor/operator orientation |
-| Product operating scope | [Meridian Design Document (Draft v1.0)](../product/meridian-design-document.md) | stakeholder design context for operator posture |
+| Product operating scope | [Meridian Design Document](../product/meridian-design-document.md) | stakeholder design context for operator posture |
 | Daily operator controls | [Operators](./README.md) | this page |
+| Startup, restart, and shutdown control | [Lifecycle Control Plane](../reference/lifecycle-control-plane.md) | states, supervisor commands, database ownership, and receipts |
+| Failed, blocked, or warning operation | [Verified Outcome Recovery](./verified-outcome-recovery.md) | terminal receipt triage, evidence verification, safe retry, and escalation |
+| Historical journal legs missing their currency | [Ledger Currency Backfill](./ledger-currency-backfill.md) | why legs are currency-blind, what the repair may assert, and the survey/affirm workflow |
+| Statement intake through reconciliation report | [Statement Reconciliation Report Operations](./statement-reconciliation-report-operations.md) | exact accounting scope, Operations Continuity and canonical-queue handoff, JSON/CSV verification, and recovery |
+| Governed reporting, schedules, and delivery | [Governed Reporting Operations](./governed-reporting-operations.md) | reporting preflight, hard-close evidence, recovery, and secure relay operation |
 | Deployment and packaging | [Deployment and Packaging](./deployment-packaging.md) | canonical packaging/checksum/sign-off posture |
+| A firing alert | [Operator Runbook](./operator-runbook.md) | per-alert response, diagnostics bundle, incident procedure and ownership |
+| Objectives, thresholds, RTO/RPO | [Service Level Objectives](./service-level-objectives.md) | SLIs, targets, error budgets, and recovery objectives |
 | Troubleshooting and support evidence | [Operator Preflight Checklist](./preflight-checklist.md) | readiness gate and rollback posture |
 
 ## Active Operator Procedure Files
 
 - [Browser Workstation Installer](./browser-workstation-installer.md)
+- [Lifecycle Control Plane Reference](../reference/lifecycle-control-plane.md)
 - [Deployment and Packaging](./deployment-packaging.md)
 - [Failover and Recovery](./failover-and-recovery.md)
 - [Fund Operations Persistence Cutover](./fund-ops-persistence-cutover.md)
+- [Governed Reporting Operations](./governed-reporting-operations.md)
+- [Ledger Currency Backfill](./ledger-currency-backfill.md)
 - [Operator Preflight Checklist](./preflight-checklist.md)
+- [Operator Runbook](./operator-runbook.md)
+- [Service Level Objectives](./service-level-objectives.md)
 - [Provider Backfill Operations](./provider-backfill-operations.md)
 - [Provider Credentials and Access](./provider-credentials.md)
 - [Plaid Provider Operations](./plaid-provider-operations.md)
 - [Provider Onboarding: Alpaca](./provider-onboarding-alpaca.md)
 - [Provider Onboarding: Interactive Brokers](./provider-onboarding-interactive-brokers.md)
 - [Reconciliation Operations](./reconciliation-operations.md)
+- [Statement Reconciliation Report Operations](./statement-reconciliation-report-operations.md)
+- [Verified Outcome Recovery](./verified-outcome-recovery.md)
 
 ## High-Traffic Legacy Path Migration Status
 
@@ -63,7 +77,7 @@ The table below tracks active legacy/high-traffic routes and their replacements 
 | `docs/operations/README.md` | [README.md](./README.md) | Canonical | legacy routing hub points to operator canonical entry |
 | `docs/operations/broker-order-routing-phased-runbook.md` | [README.md](./README.md) | Canonical | migration retained as historical archive + routing index |
 | `docs/operations/canonical-buyer-workflow.md` | [README.md](./README.md) | Canonical | migration retained as historical archive + routing index |
-| `docs/operations/operator-runbook.md` | [docs/operators/README.md](./README.md) | Canonical | route consolidated |
+| `docs/operations/operator-runbook.md` | [operator-runbook.md](./operator-runbook.md) | Canonical | active per-alert runbook; every `runbook_url` resolves here |
 | `docs/operations/provider-credential-management.md` | [provider-credentials.md](./provider-credentials.md) | Canonical | archived copy maintained |
 | `docs/operations/preflight-checklist.md` | [preflight-checklist.md](./preflight-checklist.md) | Canonical | legacy as source-material during migration |
 | `docs/operations/reconciliation-operations.md` | [reconciliation-operations.md](./reconciliation-operations.md) | Canonical | archived source retained |
@@ -76,7 +90,7 @@ The table below tracks active legacy/high-traffic routes and their replacements 
 | `docs/operations/web-workstation-installer.md` | [browser-workstation-installer.md](./browser-workstation-installer.md) | Canonical | migration mapping retained |
 | `docs/operations/failover-and-recovery-runbook.md` | [failover-and-recovery.md](./failover-and-recovery.md) | Canonical | active recovery policy |
 | `docs/operations/high-availability.md` | [failover-and-recovery.md](./failover-and-recovery.md) | Canonical | high-availability posture remains in failover lane |
-| `docs/operations/service-level-objectives.md` | [failover-and-recovery.md](./failover-and-recovery.md) | Canonical | SLO posture indexed from failover lane |
+| `docs/operations/service-level-objectives.md` | [service-level-objectives.md](./service-level-objectives.md) | Canonical | active SLIs/SLOs, error budgets, and RTO/RPO |
 | `docs/operations/slo-review-template.md` | [README.md](./README.md) | Canonical | template retained as source-material pattern |
 | `docs/operations/cleanup-and-maintenance.md` | [README.md](./README.md) | Canonical | legacy cleanup posture migration |
 | `docs/operations/disk-space-hygiene.md` | [README.md](./README.md) | Canonical | cleanup/ops hygiene migration |
@@ -137,6 +151,8 @@ Use this simple status model for operator-facing claims:
 ### Reconciliation and reliability
 
 - [Reconciliation Operations](./reconciliation-operations.md)
+- [Statement Reconciliation Report Operations](./statement-reconciliation-report-operations.md)
+- [Governed Reporting Operations](./governed-reporting-operations.md)
 - [Operator Preflight Checklist](./preflight-checklist.md)
 - [Failover and Recovery](./failover-and-recovery.md)
 - [Fund Operations Persistence Cutover](./fund-ops-persistence-cutover.md)

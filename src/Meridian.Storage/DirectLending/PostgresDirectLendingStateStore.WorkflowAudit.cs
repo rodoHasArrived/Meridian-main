@@ -1,9 +1,9 @@
 using System.Buffers.Binary;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.DirectLending;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.DirectLending;
 
@@ -30,14 +30,58 @@ public sealed partial class PostgresDirectLendingStateStore
             previous.Transaction = transaction;
             previous.CommandText =
                 $"""
-                select hash
-                from {Qualified("operations_workflow_audit")}
-                where workflow_id = @workflow_id
-                order by created_at desc, audit_id desc
-                limit 1;
+                with recursive workflow_entries as (
+                    select hash, previous_hash
+                    from {Qualified("operations_workflow_audit")}
+                    where workflow_id = @workflow_id
+                ),
+                audit_chain as (
+                    select hash, previous_hash
+                    from workflow_entries
+                    where previous_hash is null
+
+                    union all
+
+                    select successor.hash, successor.previous_hash
+                    from workflow_entries as successor
+                    inner join audit_chain as predecessor
+                        on successor.previous_hash = predecessor.hash
+                ),
+                chain_tails as (
+                    select candidate.hash
+                    from audit_chain as candidate
+                    where not exists (
+                        select 1
+                        from audit_chain as successor
+                        where successor.previous_hash = candidate.hash)
+                )
+                select (select count(*) from workflow_entries) as stream_count,
+                       (select count(*) from audit_chain) as reachable_count,
+                       count(*) as tail_count,
+                       min(hash) as tail_hash
+                from chain_tails;
                 """;
             previous.Parameters.AddWithValue("workflow_id", request.WorkflowId);
-            previousHash = (string?)await previous.ExecuteScalarAsync(ct).ConfigureAwait(false);
+            await using var reader = await previous.ExecuteReaderAsync(ct).ConfigureAwait(false);
+            if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+            {
+                throw new InvalidOperationException(
+                    $"Operations workflow audit chain '{request.WorkflowId}' could not be inspected.");
+            }
+
+            var streamCount = reader.GetInt64(0);
+            var reachableCount = reader.GetInt64(1);
+            var tailCount = reader.GetInt64(2);
+            previousHash = reader.IsDBNull(3) ? null : reader.GetString(3);
+
+            var isEmptyChain = streamCount == 0 && reachableCount == 0 && tailCount == 0 && previousHash is null;
+            var isLinearChain = streamCount > 0 && reachableCount == streamCount && tailCount == 1 && previousHash is not null;
+            if (!isEmptyChain && !isLinearChain)
+            {
+                throw new InvalidOperationException(
+                    $"Operations workflow audit chain '{request.WorkflowId}' is corrupt: " +
+                    $"{streamCount} stored entries, {reachableCount} reachable entries, and {tailCount} tails were found.");
+            }
         }
 
         var computedHash = ComputeOperationsWorkflowAuditHash(request, previousHash);
@@ -100,21 +144,55 @@ public sealed partial class PostgresDirectLendingStateStore
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
-            select audit_id, occurred_at_utc, workflow_id, fund_account_id, period_id, event_type,
-                   from_state, to_state, gate, from_gate_status, to_gate_status, actor, rationale,
-                   trace_id, request_id, session_id, run_id,
-                   broker_reference_id, security_reference_id, ledger_reference_id, reconciliation_reference_id, evidence_reference_id, audit_reference_id,
-                   hash, previous_hash, severity, tags
-            from {Qualified("operations_workflow_audit")}
-            where workflow_id = @workflow_id
-            order by created_at, audit_id;
+            with recursive audit_chain as (
+                select audit_id, workflow_id, hash, previous_hash, 0::bigint as chain_position
+                from {Qualified("operations_workflow_audit")}
+                where workflow_id = @workflow_id
+                  and previous_hash is null
+
+                union all
+
+                select successor.audit_id,
+                       successor.workflow_id,
+                       successor.hash,
+                       successor.previous_hash,
+                       predecessor.chain_position + 1
+                from {Qualified("operations_workflow_audit")} as successor
+                inner join audit_chain as predecessor
+                    on successor.workflow_id = predecessor.workflow_id
+                   and successor.previous_hash = predecessor.hash
+            ),
+            workflow_totals as (
+                select count(*)::bigint as entry_count
+                from {Qualified("operations_workflow_audit")}
+                where workflow_id = @workflow_id
+            )
+            select audit.audit_id, audit.occurred_at_utc, audit.workflow_id, audit.fund_account_id, audit.period_id, audit.event_type,
+                   audit.from_state, audit.to_state, audit.gate, audit.from_gate_status, audit.to_gate_status, audit.actor, audit.rationale,
+                   audit.trace_id, audit.request_id, audit.session_id, audit.run_id,
+                   audit.broker_reference_id, audit.security_reference_id, audit.ledger_reference_id, audit.reconciliation_reference_id, audit.evidence_reference_id, audit.audit_reference_id,
+                   audit.hash, audit.previous_hash, audit.severity, audit.tags,
+                   workflow_totals.entry_count
+            from workflow_totals
+            left join audit_chain
+                on true
+            left join {Qualified("operations_workflow_audit")} as audit
+                on audit.audit_id = audit_chain.audit_id
+            order by audit_chain.chain_position nulls last;
             """;
         command.Parameters.AddWithValue("workflow_id", workflowId);
 
         var results = new List<OperationsWorkflowAuditRecord>();
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        long expectedCount = 0;
         while (await reader.ReadAsync(ct).ConfigureAwait(false))
         {
+            expectedCount = reader.GetInt64(27);
+            if (reader.IsDBNull(0))
+            {
+                continue;
+            }
+
             results.Add(new OperationsWorkflowAuditRecord(
                 reader.GetGuid(0),
                 new DateTimeOffset(reader.GetDateTime(1), TimeSpan.Zero),
@@ -143,6 +221,13 @@ public sealed partial class PostgresDirectLendingStateStore
                 reader.IsDBNull(24) ? null : reader.GetString(24),
                 reader.GetString(25),
                 reader.GetFieldValue<string[]>(26)));
+        }
+
+        if (results.Count != expectedCount)
+        {
+            throw new InvalidOperationException(
+                $"Operations workflow audit chain '{workflowId}' is corrupt: " +
+                $"{expectedCount} stored entries exist, but only {results.Count} are reachable from the genesis entry.");
         }
 
         return results;
@@ -181,14 +266,14 @@ public sealed partial class PostgresDirectLendingStateStore
         var bytes = JsonSerializer.SerializeToUtf8Bytes(
             canonicalPayload,
             OperationsWorkflowAuditJsonContext.Default.OperationsWorkflowAuditHashPayload);
-        return Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+        return Sha256Digest.Compute(bytes);
     }
 
     private static (int LockKey1, int LockKey2) ComputeWorkflowAuditLockKeys(string workflowId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(workflowId);
 
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(workflowId.Trim()));
+        var hash = Sha256Digest.ComputeBytesUtf8(workflowId.Trim());
         return (
             BinaryPrimitives.ReadInt32BigEndian(hash.AsSpan(0, sizeof(int))),
             BinaryPrimitives.ReadInt32BigEndian(hash.AsSpan(sizeof(int), sizeof(int))));

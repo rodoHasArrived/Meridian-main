@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
@@ -70,7 +71,8 @@ public sealed class IBCallbackRouter
             MarketMaker: null,
             SequenceNumber: 0,
             StreamId: "IB",
-            Venue: null
+            Venue: null,
+            Source: MarketDataSources.Ib
         );
 
         _depthCollector.OnDepth(upd);
@@ -92,7 +94,8 @@ public sealed class IBCallbackRouter
             MarketMaker: marketMaker,
             SequenceNumber: 0,
             StreamId: isSmartDepth ? "IB-SMARTDEPTH" : "IB-L2",
-            Venue: marketMaker
+            Venue: marketMaker,
+            Source: MarketDataSources.Ib
         );
 
         _depthCollector.OnDepth(upd);
@@ -121,7 +124,8 @@ public sealed class IBCallbackRouter
             Aggressor: aggressor,
             SequenceNumber: 0,
             StreamId: "IB-TBT",
-            Venue: exchange
+            Venue: exchange,
+            Source: MarketDataSources.Ib
         );
 
         _tradeCollector.OnTrade(trade);
@@ -355,7 +359,8 @@ public sealed class IBCallbackRouter
             Rho: 0m,
             ImpliedVolatility: impliedVolDecimal,
             UnderlyingPrice: underlyingPriceDecimal,
-            TheoreticalPrice: theoreticalPrice);
+            TheoreticalPrice: theoreticalPrice,
+            Source: MarketDataSources.Ib);
 
         _optionCollector.OnGreeksUpdate(greeks);
     }
@@ -412,7 +417,8 @@ public sealed class IBCallbackRouter
             AskSize: state.AskSize ?? 0,
             SequenceNumber: 0,
             StreamId: "IB-L1",
-            Venue: null
+            Venue: null,
+            Source: MarketDataSources.Ib
         );
 
         _quoteCollector.OnQuote(quote);
@@ -449,7 +455,8 @@ public sealed class IBCallbackRouter
             Aggressor: AggressorSide.Unknown,
             SequenceNumber: 0,
             StreamId: "IB-RTV",
-            Venue: null
+            Venue: null,
+            Source: MarketDataSources.Ib
         );
 
         _tradeCollector.OnTrade(trade);

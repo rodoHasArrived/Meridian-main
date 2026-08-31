@@ -2,6 +2,7 @@ using System.Buffers;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Models;
@@ -15,7 +16,7 @@ using AlpacaOptions = Meridian.Core.Config.AlpacaOptions;
 namespace Meridian.Infrastructure.Adapters.Alpaca;
 
 /// <summary>
-/// Alpaca Market Data client (WebSocket) that implements the IMarketDataClient abstraction.
+/// Alpaca equities market-data stream adapter (WebSocket) that implements the IMarketDataClient abstraction.
 /// Extends <see cref="WebSocketProviderBase"/>, which centralises connection lifecycle,
 /// resilience (retry + circuit breaker), heartbeat monitoring, and automatic reconnection.
 /// ~80 LOC of WebSocket boilerplate removed compared to the previous direct implementation.
@@ -42,11 +43,11 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
     EnvironmentVariables = new[] { "ALPACA_SECRET_KEY", "ALPACA__SECRETKEY" },
     DisplayName = "API Secret Key",
     Description = "Alpaca API secret key from https://app.alpaca.markets/brokerage/papers")]
-public sealed class AlpacaMarketDataClient : WebSocketProviderBase
+public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
 {
     private readonly TradeDataCollector _tradeCollector;
     private readonly QuoteCollector _quoteCollector;
-    private readonly AlpacaOptions _opt;
+    protected readonly AlpacaOptions Options;
 
     // Content-based trade deduplication: sliding window keyed on (symbol, price, size, timestamp).
     // Alpaca's WebSocket is known to re-deliver identical trade messages during reconnections and
@@ -65,14 +66,23 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
     {
         _tradeCollector = tradeCollector ?? throw new ArgumentNullException(nameof(tradeCollector));
         _quoteCollector = quoteCollector ?? throw new ArgumentNullException(nameof(quoteCollector));
-        _opt = opt ?? throw new ArgumentNullException(nameof(opt));
-        if (string.IsNullOrWhiteSpace(_opt.KeyId) || string.IsNullOrWhiteSpace(_opt.SecretKey))
+        Options = opt ?? throw new ArgumentNullException(nameof(opt));
+        if (string.IsNullOrWhiteSpace(Options.KeyId) || string.IsNullOrWhiteSpace(Options.SecretKey))
             throw new ArgumentException("Alpaca KeyId/SecretKey required.");
     }
 
 
     /// <inheritdoc/>
     public override bool IsEnabled => true;
+
+    /// <summary>The asset class served by this independent WebSocket adapter.</summary>
+    public virtual MarketDataAssetClass AssetClass => MarketDataAssetClass.Equities;
+
+    /// <summary>Instrument types this stream is permitted to publish.</summary>
+    public virtual IReadOnlyList<Meridian.Contracts.Domain.Enums.InstrumentType> SupportedInstrumentTypes => [Meridian.Contracts.Domain.Enums.InstrumentType.Equity];
+
+    /// <summary>Whether this stream has a configured entitlement usable for subscription.</summary>
+    public virtual bool IsSubscriptionAvailable => IsConfiguredFeed(Options.EquitiesFeed);
 
     /// <inheritdoc/>
     public override string ProviderId => "alpaca";
@@ -98,6 +108,17 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
         MinRequestDelay = TimeSpan.FromMilliseconds(300)
     };
 
+    /// <summary>
+    /// Returns diagnostics for every distinct Alpaca asset-class stream. Equities is backed by
+    /// this live adapter; options, crypto, and news remain separately visible rather than being
+    /// incorrectly reported as covered by the equities socket.
+    /// </summary>
+    public override WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
+    {
+        var snapshot = base.GetConnectionDiagnosticsSnapshot();
+        return snapshot with { Streams = AlpacaStreamProfiles.Create(Options, snapshot, AssetClass) };
+    }
+
     /// <inheritdoc/>
     public ProviderCredentialField[] ProviderCredentialFields => new[]
     {
@@ -118,9 +139,9 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
     /// <inheritdoc/>
     protected override Uri BuildWebSocketUri()
     {
-        var host = _opt.UseSandbox ? "stream.data.sandbox.alpaca.markets" : "stream.data.alpaca.markets";
-        var uri = new Uri($"wss://{host}/v2/{_opt.Feed}");
-        Log.Information("Connecting to Alpaca WebSocket at {Uri} (Sandbox: {UseSandbox})", uri, _opt.UseSandbox);
+        var host = Options.UseSandbox ? "stream.data.sandbox.alpaca.markets" : "stream.data.alpaca.markets";
+        var uri = new Uri($"wss://{host}/v2/{Options.Feed}");
+        Log.Information("Connecting to Alpaca {AssetClass} WebSocket at {Uri} (Sandbox: {UseSandbox})", AssetClass, uri, Options.UseSandbox);
         return uri;
     }
 
@@ -132,7 +153,7 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
     /// </remarks>
     protected override Task AuthenticateAsync(CancellationToken ct)
     {
-        var authMsg = BuildAuthenticationMessage(_opt);
+        var authMsg = BuildAuthenticationMessage(Options);
         Log.Debug("Sending authentication message to Alpaca");
         return SendAsync(authMsg, ct);
     }
@@ -181,9 +202,7 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
             if (!Connected)
                 return;
 
-            var trades = Subscriptions.GetSymbolsByKind("trades");
-            var quotes = Subscriptions.GetSymbolsByKind("quotes");
-            var json = BuildSubscriptionMessage(_opt.SubscribeQuotes, trades, quotes);
+            var json = BuildSubscriptionPayload();
             await SendAsync(json, ct).ConfigureAwait(false);
         }
         catch (Exception ex)
@@ -198,6 +217,8 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
     /// <inheritdoc/>
     public override int SubscribeTrades(SymbolConfig cfg)
     {
+        if (!IsSubscriptionAvailable)
+            return -1;
         if (cfg is null)
             throw new ArgumentNullException(nameof(cfg));
         var id = Subscriptions.Subscribe(cfg.Symbol, "trades");
@@ -223,9 +244,11 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
     /// <inheritdoc/>
     public override int SubscribeMarketDepth(SymbolConfig cfg)
     {
+        if (!IsSubscriptionAvailable)
+            return -1;
         // Not supported for stocks: Alpaca provides quotes, not full L2 depth updates.
         // If you later add QuoteCollector -> L2Snapshot mapping, wire it here.
-        if (!_opt.SubscribeQuotes)
+        if (!Options.SubscribeQuotes)
             return -1;
 
         if (cfg is null)
@@ -249,6 +272,28 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
                 .ObserveException(Log, $"Alpaca unsubscribe depth for {subscription.Symbol}");
         }
     }
+
+    protected virtual string BuildSubscriptionPayload() => BuildSubscriptionMessage(
+        Options.SubscribeQuotes, Subscriptions.GetSymbolsByKind("trades"), Subscriptions.GetSymbolsByKind("quotes"));
+
+    protected int Subscribe(SymbolConfig cfg, string kind)
+    {
+        ArgumentNullException.ThrowIfNull(cfg);
+        if (!IsSubscriptionAvailable)
+            return -1;
+        var id = Subscriptions.Subscribe(cfg.Symbol, kind);
+        if (id != -1)
+            ResubscribeAsync(CancellationToken.None).ObserveException(Log, $"Alpaca subscribe {kind} for {cfg.Symbol}");
+        return id;
+    }
+
+    protected void Unsubscribe(int subscriptionId)
+    {
+        if (Subscriptions.Unsubscribe(subscriptionId) is not null)
+            ResubscribeAsync(CancellationToken.None).ObserveException(Log, "Alpaca unsubscribe");
+    }
+
+    protected static bool IsConfiguredFeed(string? feed) => !string.IsNullOrWhiteSpace(feed) && !string.Equals(feed, "none", StringComparison.OrdinalIgnoreCase) && !string.Equals(feed, "disabled", StringComparison.OrdinalIgnoreCase);
 
     internal static string BuildAuthenticationMessage(AlpacaOptions options)
     {
@@ -294,6 +339,17 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
         });
     }
 
+    internal static string BuildNewsSubscriptionMessage(IReadOnlyList<string> symbols)
+    {
+        ArgumentNullException.ThrowIfNull(symbols);
+        return BuildJsonMessage(writer =>
+        {
+            writer.WriteString("action", "subscribe");
+            if (symbols.Count > 0)
+            { writer.WritePropertyName("news"); writer.WriteStartArray(); foreach (var symbol in symbols) writer.WriteStringValue(symbol); writer.WriteEndArray(); }
+        });
+    }
+
     private static string BuildJsonMessage(Action<Utf8JsonWriter> writePayload)
     {
         ArgumentNullException.ThrowIfNull(writePayload);
@@ -309,7 +365,7 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
 
 
 
-    private void HandleMessage(JsonElement el)
+    protected virtual void HandleMessage(JsonElement el)
     {
         // Trades: "T":"t" (per Alpaca docs)
         if (!el.TryGetProperty("T", out var tProp))
@@ -363,6 +419,10 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
                 SequenceNumber: tradeId <= 0 ? 0L : tradeId,
                 StreamId: "ALPACA",
                 Venue: venue ?? "ALPACA",
+                Source: MarketDataSources.Alpaca,
+                // Alpaca's "i" is an exchange-assigned trade id: unique and increasing but
+                // not dense, so jumps are normal interleaving rather than data loss.
+                SequenceIsContiguous: false,
                 RawConditions: el.TryGetProperty("c", out var cProp) && cProp.ValueKind == JsonValueKind.Array
                     ? cProp.EnumerateArray()
                             .Select(c => c.GetString())
@@ -412,7 +472,8 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
                 AskSize: askSize,
                 SequenceNumber: null,
                 StreamId: "ALPACA",
-                Venue: "ALPACA"
+                Venue: "ALPACA",
+                Source: MarketDataSources.Alpaca
             );
 
             var issues = ProviderDataQualityValidator.ValidateQuote(ProviderId, quoteUpdate);

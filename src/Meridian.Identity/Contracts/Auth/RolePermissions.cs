@@ -7,6 +7,15 @@ public static class RolePermissions
 {
     // ── Per-role permission sets ─────────────────────────────────────────────
 
+    // Technical administration is intentionally not business authority. In particular, these
+    // grants do not include approval, posting, tax review, policy override, or reopening a closed
+    // case. Deployments must assign those governed capabilities explicitly through an audited
+    // custom role/break-glass policy.
+    private const UserPermission CorporateActionTechnicalPermissions =
+        UserPermission.ViewCorporateActions |
+        UserPermission.IngestCorporateActions |
+        UserPermission.ResolveCorporateActionTerms;
+
     private const UserPermission AdminPermissions =
         UserPermission.ViewMarketData |
         UserPermission.ViewHistoricalData |
@@ -34,10 +43,20 @@ public static class RolePermissions
         UserPermission.ViewReporting |
         UserPermission.ManageReporting |
         UserPermission.ApproveReporting |
-        UserPermission.DeliverReporting;
+        UserPermission.DeliverReporting |
+        UserPermission.ViewLedgerReports |
+        UserPermission.ManageLedgerReports |
+        UserPermission.ManageCompliance |
+        CorporateActionTechnicalPermissions;
 
+    // Subtracted, not merely omitted: Developer is defined as Admin minus user administration, so
+    // every permission added to AdminPermissions lands here silently. ManageCompliance did exactly
+    // that. Before the split, compliance routes required ManageUsers and Developer was refused by
+    // all of them; inheriting the new grant would have let a Developer account file and decide
+    // approval requests, extract the audit chain, and read access reviews — the opposite of what a
+    // least-privilege split is for.
     private const UserPermission DeveloperPermissions =
-        AdminPermissions & ~UserPermission.ManageUsers;
+        AdminPermissions & ~(UserPermission.ManageUsers | UserPermission.ManageCompliance);
 
     private const UserPermission TradeDeskPermissions =
         UserPermission.ViewMarketData |
@@ -49,7 +68,9 @@ public static class RolePermissions
         UserPermission.ExportData |
         UserPermission.ViewStrategies |
         UserPermission.ManageStrategies |
-        UserPermission.ViewSecurityMaster;
+        UserPermission.ViewSecurityMaster |
+        UserPermission.ViewCorporateActions |
+        UserPermission.RecordCorporateActionElection;
 
     private const UserPermission AnalysisPermissions =
         UserPermission.ViewMarketData |
@@ -72,7 +93,11 @@ public static class RolePermissions
         UserPermission.ViewReporting |
         UserPermission.ManageReporting |
         UserPermission.ApproveReporting |
-        UserPermission.DeliverReporting;
+        UserPermission.DeliverReporting |
+        UserPermission.ViewLedgerReports |
+        UserPermission.ManageLedgerReports |
+        UserPermission.ViewCorporateActions |
+        UserPermission.PrepareCorporateActionAccounting;
 
     private const UserPermission FundAccountantPermissions =
         UserPermission.ViewTrades |
@@ -83,7 +108,11 @@ public static class RolePermissions
         UserPermission.ManageFundStructure |
         UserPermission.ViewReporting |
         UserPermission.ManageReporting |
-        UserPermission.DeliverReporting;
+        UserPermission.DeliverReporting |
+        UserPermission.ViewLedgerReports |
+        UserPermission.ManageLedgerReports |
+        UserPermission.ViewCorporateActions |
+        UserPermission.PrepareCorporateActionAccounting;
 
     private const UserPermission ReportingAnalystPermissions =
         UserPermission.ViewAnalytics |
@@ -91,7 +120,8 @@ public static class RolePermissions
         UserPermission.ViewStrategies |
         UserPermission.ViewSecurityMaster |
         UserPermission.ViewReporting |
-        UserPermission.ManageReporting;
+        UserPermission.ManageReporting |
+        UserPermission.ViewLedgerReports;
 
     private const UserPermission ControllerPermissions =
         UserPermission.ViewTrades |
@@ -103,7 +133,11 @@ public static class RolePermissions
         UserPermission.ViewReporting |
         UserPermission.ManageReporting |
         UserPermission.ApproveReporting |
-        UserPermission.DeliverReporting;
+        UserPermission.DeliverReporting |
+        UserPermission.ViewLedgerReports |
+        UserPermission.ManageLedgerReports |
+        UserPermission.ViewCorporateActions |
+        UserPermission.ApproveCorporateActionAccounting;
 
     private const UserPermission CompliancePermissions =
         UserPermission.ViewTrades |
@@ -113,7 +147,11 @@ public static class RolePermissions
         UserPermission.ViewDirectLending |
         UserPermission.ViewReporting |
         UserPermission.ApproveReporting |
-        UserPermission.DeliverReporting;
+        UserPermission.DeliverReporting |
+        UserPermission.ViewCorporateActions |
+        // The compliance surface used to gate on ManageUsers, so a compliance officer
+        // could only file an approval request by also holding user administration.
+        UserPermission.ManageCompliance;
 
     private const UserPermission ExecutivePermissions =
         UserPermission.ViewMarketData |
@@ -154,9 +192,38 @@ public static class RolePermissions
     };
 
     /// <summary>
-    /// Returns <see langword="true"/> when <paramref name="role"/> has been granted all of the
-    /// specified <paramref name="required"/> permissions.
+    /// Parses a configured role by name only, for the environment settings that name one --
+    /// <c>MDC_ANONYMOUS_ROLE</c> and <c>MDC_API_KEY_ROLE</c> in the browser host, the same anonymous
+    /// role in the desktop shell.
+    /// <para>
+    /// <see cref="Enum.TryParse{TEnum}(string, bool, out TEnum)"/> also accepts numeric text, and
+    /// <see cref="UserRole.Admin"/> is the zero value, so "0" -- or any stray number -- would
+    /// otherwise resolve to a full administrator rather than failing closed as unrecognised. Shared
+    /// rather than reimplemented per host so the two lanes cannot disagree about what a misconfigured
+    /// role means.
+    /// </para>
     /// </summary>
+    public static bool TryParseRoleName(string? configured, out UserRole role)
+    {
+        role = default;
+        if (string.IsNullOrWhiteSpace(configured))
+        {
+            return false;
+        }
+
+        var trimmed = configured.Trim();
+        foreach (var name in Enum.GetNames<UserRole>())
+        {
+            if (string.Equals(name, trimmed, StringComparison.OrdinalIgnoreCase))
+            {
+                role = Enum.Parse<UserRole>(name);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static bool HasPermission(UserRole role, UserPermission required) =>
         (For(role) & required) == required;
 
@@ -252,15 +319,15 @@ public static class RolePermissions
 
     private static string GetRoleDescription(UserRole role) => role switch
     {
-        UserRole.Admin => "Full platform administration including users, configuration, credentials, storage, trading, and governed operations.",
-        UserRole.Developer => "Broad development and diagnostic access without user-management authority.",
-        UserRole.TradeDesk => "Trading desk access for market data, orders, strategy operation, and execution review.",
+        UserRole.Admin => "Platform administration including users, configuration, credentials, storage, trading, and technical corporate-action operations; governed corporate-action decisions require a separate grant.",
+        UserRole.Developer => "Broad development and diagnostic access without user-management or corporate-action business-approval authority.",
+        UserRole.TradeDesk => "Trading desk access for market data, orders, strategy operation, execution review, and corporate-action elections.",
         UserRole.Analysis => "Research and analytics access for market data, strategy results, and read-only reference data.",
-        UserRole.Accounting => "Accounting and fund-operations access for trade records, exports, and direct-lending operations.",
-        UserRole.FundAccountant => "Fund-accounting access for reporting packages, delivery readiness, and retained evidence operations.",
+        UserRole.Accounting => "Accounting and fund-operations access for trade records, exports, direct lending, and corporate-action preparation.",
+        UserRole.FundAccountant => "Fund-accounting access for reporting packages, retained evidence, and corporate-action preparation.",
         UserRole.ReportingAnalyst => "Reporting operations access for templates, schedules, runs, and pre-approval evidence review.",
-        UserRole.Controller => "Controller access for governed reporting approval, publication, restatement, and delivery oversight.",
-        UserRole.Compliance => "Compliance access for reporting evidence, approvals, delivery posture, and retained audit context.",
+        UserRole.Controller => "Controller access for governed reporting and corporate-action approval; corporate-action posting requires a separate grant.",
+        UserRole.Compliance => "Read-only corporate-action proof access plus compliance and reporting oversight.",
         UserRole.Executive => "Read-only management visibility across dashboards, trades, analytics, and fund operations.",
         UserRole.ReadOnly => "Minimal read-only workstation access.",
         _ => "Custom role."
@@ -279,6 +346,18 @@ public static class RolePermissions
         UserPermission.ViewDirectLending or UserPermission.ManageDirectLending => "Direct lending",
         UserPermission.ManageFundStructure => "Fund structure",
         UserPermission.ViewReporting or UserPermission.ManageReporting or UserPermission.ApproveReporting or UserPermission.DeliverReporting => "Reporting",
+        UserPermission.ViewLedgerReports or UserPermission.ManageLedgerReports => "Ledger and fund accounting",
+        UserPermission.ManageCompliance => "Compliance",
+        UserPermission.ViewCorporateActions or
+        UserPermission.IngestCorporateActions or
+        UserPermission.ResolveCorporateActionTerms or
+        UserPermission.RecordCorporateActionElection or
+        UserPermission.PrepareCorporateActionAccounting or
+        UserPermission.ApproveCorporateActionAccounting or
+        UserPermission.PostCorporateActionAccounting or
+        UserPermission.ReviewCorporateActionTax or
+        UserPermission.OverrideCorporateActionPolicy or
+        UserPermission.ReopenCorporateActionCase => "Corporate actions",
         _ => "Other"
     };
 
@@ -311,6 +390,19 @@ public static class RolePermissions
         UserPermission.ManageReporting => "Create and manage reporting templates, schedules, runs, and work packages.",
         UserPermission.ApproveReporting => "Approve, reject, publish, restate, and archive governed report packs.",
         UserPermission.DeliverReporting => "Deliver report packs and record delivery failures or retry evidence.",
+        UserPermission.ViewLedgerReports => "Read the governed ledger: trial balance, P&L, periods, and posted journal entries.",
+        UserPermission.ManageLedgerReports => "Operate the governed ledger: post entries, close periods, configure accounting, and run journal automation.",
+        UserPermission.ManageCompliance => "File and decide compliance approvals, run access reviews, and extract the audit chain.",
+        UserPermission.ViewCorporateActions => "View corporate-action source facts, scoped cases, treatment, and proof.",
+        UserPermission.IngestCorporateActions => "Run or manage corporate-action provider ingest without accounting authority.",
+        UserPermission.ResolveCorporateActionTerms => "Resolve provider conflicts and confirm normalized corporate-action terms.",
+        UserPermission.RecordCorporateActionElection => "Prepare or submit holder elections and record confirmations.",
+        UserPermission.PrepareCorporateActionAccounting => "Select policy-supported corporate-action treatment and generate projections.",
+        UserPermission.ApproveCorporateActionAccounting => "Approve an exact corporate-action evidence and projection version.",
+        UserPermission.PostCorporateActionAccounting => "Commit approved corporate-action journals and lot mutations.",
+        UserPermission.ReviewCorporateActionTax => "Finalize corporate-action tax classification and tax-basis treatment.",
+        UserPermission.OverrideCorporateActionPolicy => "Apply an authorized, reasoned corporate-action policy exception.",
+        UserPermission.ReopenCorporateActionCase => "Reopen a closed corporate-action case or initiate correction/restatement.",
         _ => permission.ToString()
     };
 }

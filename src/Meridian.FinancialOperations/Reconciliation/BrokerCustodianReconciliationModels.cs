@@ -264,7 +264,7 @@ public sealed class BrokerCustodianMatchingPipeline
 
     private static string StableDecisionId(string runId, string left, string right)
     {
-        var bytes = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes($"{runId}|{left}|{right}"));
+        var bytes = Meridian.Contracts.Integrity.Sha256Digest.ComputeBytesUtf8($"{runId}|{left}|{right}");
         return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 }

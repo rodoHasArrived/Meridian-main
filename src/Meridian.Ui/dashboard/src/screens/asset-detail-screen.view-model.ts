@@ -19,8 +19,26 @@ export interface AssetDetailOverviewViewState {
   statusLabel: string;
   statusTone: AssetDetailStatusTone;
   fields: AssetDetailOverviewField[];
+  technicalFields: AssetDetailOverviewField[];
   corporateActions: AssetDetailCorporateActionRow[];
   hasCorporateActions: boolean;
+}
+
+export function selectExactSecuritySearchResult(
+  query: string,
+  entries: SecurityMasterEntry[]
+): string | null {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) {
+    return null;
+  }
+
+  const exactMatches = entries.filter((entry) =>
+    entry.securityId.trim().toLowerCase() === normalizedQuery
+      || entry.classification.primaryIdentifierValue?.trim().toLowerCase() === normalizedQuery
+  );
+
+  return exactMatches.length === 1 ? exactMatches[0].securityId : null;
 }
 
 function securityStatusTone(status: string): AssetDetailStatusTone {
@@ -68,13 +86,15 @@ export function buildAssetDetailOverviewViewState({
     statusLabel: entry.status,
     statusTone: securityStatusTone(entry.status),
     fields: [
-      { label: "Security ID", value: entry.securityId },
       { label: "Asset class", value: entry.classification.assetClass },
       { label: "Sub-type", value: entry.classification.subType ?? "Unclassified" },
       { label: "Primary identifier", value: `${entry.classification.primaryIdentifierKind ?? "None"} - ${symbol}` },
       { label: "Currency", value: entry.economicDefinition.currency },
       { label: "Effective from", value: entry.economicDefinition.effectiveFrom ?? "Unknown" },
-      { label: "Effective to", value: entry.economicDefinition.effectiveTo ?? "Open" },
+      { label: "Effective to", value: entry.economicDefinition.effectiveTo ?? "Open" }
+    ],
+    technicalFields: [
+      { label: "Security ID", value: entry.securityId },
       { label: "Version", value: identity ? String(identity.version) : "Unknown" }
     ],
     corporateActions: corporateActions.map(buildCorporateActionRow),

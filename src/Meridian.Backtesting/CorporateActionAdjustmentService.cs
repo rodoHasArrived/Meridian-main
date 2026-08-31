@@ -1,5 +1,7 @@
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Instruments.AssetOperations;
 using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Backtesting;
@@ -13,15 +15,18 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
     private readonly Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService _queryService;
     private readonly ISecurityResolver _resolver;
     private readonly ILogger<CorporateActionAdjustmentService> _logger;
+    private readonly IFactorPaydownProjectionService _factorPaydownProjector;
 
     public CorporateActionAdjustmentService(
         Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService queryService,
         ISecurityResolver resolver,
-        ILogger<CorporateActionAdjustmentService> logger)
+        ILogger<CorporateActionAdjustmentService> logger,
+        IFactorPaydownProjectionService? factorPaydownProjector = null)
     {
         _queryService = queryService;
         _resolver = resolver;
         _logger = logger;
+        _factorPaydownProjector = factorPaydownProjector ?? new FactorPaydownProjectionService();
     }
 
     public async Task<IReadOnlyList<HistoricalBar>> AdjustAsync(
@@ -162,7 +167,11 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
             Close: bar.Close * dividendFactor / splitDivisor,
             Volume: (long)Math.Round(bar.Volume * splitDivisor, MidpointRounding.AwayFromZero),
             Source: bar.Source,
-            SequenceNumber: bar.SequenceNumber);
+            SequenceNumber: bar.SequenceNumber,
+            // Only a bar an actual factor rewrote is claimed as adjusted; a bar the factor
+            // computation skipped (CA_DEF_001: missing prior close) keeps its input regime, so
+            // the flag can never assert an adjustment that silently did not happen.
+            IsAdjusted: dividendFactor != 1m || splitDivisor != 1m ? true : bar.IsAdjusted);
     }
 
     private static IReadOnlyDictionary<DateOnly, decimal> BuildDividendFactors(
@@ -270,8 +279,38 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
             else if (eventType == CorporateActionEventTypes.PrincipalPaydown &&
                      action.DistributionRatio is > 0m)
             {
-                adjustedCostBasis = Math.Max(0m, adjustedCostBasis - action.DistributionRatio.Value);
-                appliedActions++;
+                var heldFace = Math.Abs(adjustedQuantity);
+                var positionId = DeriveCompatibilityPositionId(securityId.Value, ticker);
+                var projection = _factorPaydownProjector.Project(new FactorPaydownProjectionRequest(
+                    securityId.Value,
+                    positionId,
+                    PositionVersion: 1,
+                    ExpectedPositionVersion: 1,
+                    HeldFace: heldFace,
+                    PriorFactor: 1m,
+                    CurrentFactor: 1m - action.DistributionRatio.Value,
+                    Currency: action.Currency ?? string.Empty,
+                    EffectiveDate: action.ExDate,
+                    OccurredAtUtc: new DateTimeOffset(action.ExDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
+                    SourceDomain: "SecurityMaster",
+                    SourceEntityId: action.CorpActId.ToString("D"),
+                    SourceContentHash: HashCorporateAction(action),
+                    EvidenceLinks: [$"security-master://corporate-actions/{action.CorpActId:D}"]));
+                if (projection.ProducesPostingCandidate && heldFace > 0m)
+                {
+                    var totalBasis = heldFace * adjustedCostBasis;
+                    var adjustedTotalBasis = Math.Max(0m, totalBasis - projection.PrincipalPaydown!.Value);
+                    adjustedCostBasis = adjustedTotalBasis / heldFace;
+                    appliedActions++;
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "AdjustPositionAsync skipped principal paydown {CorporateActionId} for {Ticker}: {Issues}",
+                        action.CorpActId,
+                        ticker,
+                        string.Join("; ", projection.Issues.Select(static issue => issue.Message)));
+                }
             }
         }
 
@@ -282,5 +321,23 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
 
         return new PositionCorporateActionAdjustment(
             ticker, quantity, adjustedQuantity, costBasis, adjustedCostBasis, appliedActions);
+    }
+
+    private static Guid DeriveCompatibilityPositionId(Guid securityId, string ticker)
+        => new(System.Security.Cryptography.MD5.HashData(
+            System.Text.Encoding.UTF8.GetBytes($"{securityId:N}:factor-position:{ticker.Trim().ToUpperInvariant()}")));
+
+    private static string HashCorporateAction(CorporateActionDto action)
+    {
+        var source = string.Join(
+            '|',
+            action.CorpActId.ToString("N"),
+            action.SecurityId.ToString("N"),
+            action.EventType,
+            action.ExDate.ToString("yyyy-MM-dd"),
+            action.DistributionRatio?.ToString("G29", System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
+            action.Currency ?? string.Empty,
+            action.LifecycleState ?? string.Empty);
+        return $"sha256:{Sha256Digest.ComputeUtf8(source)}";
     }
 }

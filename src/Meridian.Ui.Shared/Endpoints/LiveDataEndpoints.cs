@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Application.Pipeline;
 using Meridian.Contracts.Api;
 using Meridian.Domain.Collectors;
+using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,7 +58,7 @@ public static class LiveDataEndpoints
 
             return Results.Json(response, jsonOptions);
         })
-        .WithName("GetTrades")
+        .WithName("GetTrades").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200)
         .Produces(503);
 
@@ -100,7 +101,7 @@ public static class LiveDataEndpoints
 
             return Results.Json(response, jsonOptions);
         })
-        .WithName("GetQuotes")
+        .WithName("GetQuotes").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200)
         .Produces(503);
 
@@ -119,7 +120,7 @@ public static class LiveDataEndpoints
 
             return Results.Json(response, jsonOptions);
         })
-        .WithName("GetQuotesSnapshot")
+        .WithName("GetQuotesSnapshot").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200)
         .Produces(503);
 
@@ -191,7 +192,7 @@ public static class LiveDataEndpoints
 
             return Results.Json(response, jsonOptions);
         })
-        .WithName("GetOrderBook")
+        .WithName("GetOrderBook").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200)
         .Produces(503);
 
@@ -261,7 +262,7 @@ public static class LiveDataEndpoints
 
             return Results.Json(response, jsonOptions);
         })
-        .WithName("GetL3OrderBook")
+        .WithName("GetL3OrderBook").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200)
         .Produces(503);
 
@@ -300,7 +301,7 @@ public static class LiveDataEndpoints
 
             return Results.Json(response, jsonOptions);
         })
-        .WithName("GetBbo")
+        .WithName("GetBbo").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200)
         .Produces(404)
         .Produces(503);
@@ -341,7 +342,7 @@ public static class LiveDataEndpoints
 
             return Results.Json(response, jsonOptions);
         })
-        .WithName("GetOrderFlow")
+        .WithName("GetOrderFlow").RequirePermission(UserPermission.ViewMarketData)
         .Produces(200)
         .Produces(404)
         .Produces(503);
@@ -417,7 +418,7 @@ public static class LiveDataEndpoints
 
             return Results.Json(response, jsonOptions);
         })
-        .WithName("GetDataHealth")
+        .WithName("GetDataHealth").RequireAnyPermission(UserPermission.ViewMarketData, UserPermission.ViewDiagnostics)
         .Produces(200);
     }
 

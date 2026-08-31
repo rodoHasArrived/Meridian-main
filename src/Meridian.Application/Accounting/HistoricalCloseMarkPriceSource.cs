@@ -1,6 +1,8 @@
 using System.Threading;
+using Meridian.Contracts.Operations;
 using Meridian.Core.Logging;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Ledger;
 using Serilog;
 
 namespace Meridian.Application.Accounting;
@@ -43,10 +45,17 @@ public sealed class HistoricalCloseMarkPriceSource : IMarkPriceSource
             }
 
             var source = string.IsNullOrWhiteSpace(bar.Source) ? _provider.Name : bar.Source;
+            var provenance = ResolveProvenance(source);
             return new MarkPriceQuote(
                 bar.Close,
                 source,
-                FormattableString.Invariant($"daily-close:{symbol}:{bar.SessionDate:yyyy-MM-dd}:{source}"));
+                FormattableString.Invariant($"daily-close:{symbol}:{bar.SessionDate:yyyy-MM-dd}:{source}"),
+                // A quoted exchange close for the identical instrument is an ASC 820 Level 1 input.
+                // A fabricated close is not an observation of anything, so it is classified at the
+                // unobservable tier instead of inheriting Level 1 from the shape of the request.
+                provenance.IsNonReal() ? FairValueLevel.Level3 : FairValueLevel.Level1,
+                bar.SessionDate,
+                Provenance: provenance);
         }
         catch (OperationCanceledException)
         {
@@ -58,4 +67,17 @@ public sealed class HistoricalCloseMarkPriceSource : IMarkPriceSource
             return null;
         }
     }
+
+    /// <summary>
+    /// Classifies where a close actually came from. The provider's own
+    /// <see cref="IHistoricalDataProvider.IsSimulated"/> declaration is the primary gate; the bar's
+    /// <c>Source</c> tag is the second, and is what catches an aggregator such as
+    /// <see cref="CompositeHistoricalDataProvider"/> — not simulated itself — serving a fabricated
+    /// bar from a constituent provider. Both use the shared structured token table, so a real
+    /// vendor named "Sample Custodian" is not mistaken for a simulated origin.
+    /// </summary>
+    private DataProvenance ResolveProvenance(string source)
+        => _provider.IsSimulated || DataProvenanceExtensions.IsSimulatedOriginToken(source)
+            ? DataProvenance.Simulated
+            : DataProvenance.Real;
 }
