@@ -220,6 +220,29 @@ public sealed class FundStructureTenantScopeTests
 
     private sealed record SeededOrganization(Guid OrganizationId, Guid BusinessId, Guid FundId);
 
+    private static string ReplaceGuids(string message)
+        => System.Text.RegularExpressions.Regex.Replace(
+            message,
+            "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+            "<id>");
+
+    /// <summary>
+    /// Asserts a mutation is refused with the same not-found answer an unknown id gets.
+    /// </summary>
+    /// <remarks>
+    /// The refusal is deliberately indistinguishable from "there is no such node": telling a caller
+    /// that an id they cannot see nevertheless exists is the disclosure this scoping prevents, and
+    /// <c>ResolveNodeKindAsync</c> now applies the same ownership test the write gate applies so
+    /// both answers come from one place.
+    /// <see cref="AForeignAccountAndANonexistentOne_AreRefusedIndistinguishably"/> pins the
+    /// equivalence itself; these call sites assert the refusal and its non-persistence.
+    /// </remarks>
+    private static async Task AssertRefusedAsNotFoundAsync(Func<Task> mutation)
+    {
+        var refusal = await Assert.ThrowsAsync<InvalidOperationException>(mutation);
+        Assert.Contains("was not found", refusal.Message, StringComparison.Ordinal);
+    }
+
     private static async Task<SeededOrganization> SeedOrganizationAsync(
         FakeFundStructureStore store,
         string tenantId,
@@ -449,7 +472,7 @@ public sealed class FundStructureTenantScopeTests
             Guid.NewGuid(), alpha.FundId, straddling.AccountId,
             OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
 
-        await Assert.ThrowsAsync<FundStructureTenantScopeException>(hijack);
+        await AssertRefusedAsNotFoundAsync(hijack);
         Assert.Null(store.TenantOf(straddling.AccountId));
     }
 
@@ -584,7 +607,7 @@ public sealed class FundStructureTenantScopeTests
                 Guid.NewGuid(), alpha.FundId, betaAccount.AccountId,
                 OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
 
-        await Assert.ThrowsAsync<FundStructureTenantScopeException>(hijack);
+        await AssertRefusedAsNotFoundAsync(hijack);
         Assert.Null(store.TenantOf(betaAccount.AccountId));
     }
 
@@ -621,6 +644,56 @@ public sealed class FundStructureTenantScopeTests
 
         Assert.DoesNotContain(view.Accounts, a => a.AccountId == straddling.AccountId);
         Assert.Contains(view.Accounts, a => a.AccountId == alphaOwn.AccountId);
+    }
+
+    [Fact]
+    public async Task AForeignAccountAndANonexistentOne_AreRefusedIndistinguishably()
+    {
+        // Eighteenth Codex review round. The refusals above are the point of this suite, but the
+        // SHAPE of the refusal was leaking the fact being withheld: a foreign account resolved
+        // through the unscoped account service, reached MaterializeLinkedAccount, and came back as
+        // a scope violation (403), while an id that exists nowhere was rejected earlier as
+        // not-found (500). A caller who could tell those apart had a cross-tenant account-existence
+        // oracle, which is the same disclosure the read gate exists to prevent, reached through the
+        // write path.
+        //
+        // This asserts the equivalence directly rather than the two cases separately, because the
+        // defect is precisely that they differed.
+        var store = new FakeFundStructureStore(isTenantPartitioned: true);
+        var accountService = new InMemoryFundAccountService();
+
+        var beta = await SeedOrganizationAsync(store, TenantBeta, "BETA");
+        var alpha = await SeedOrganizationAsync(store, TenantAlpha, "ALPHA");
+        var alphaService = CreateService(
+            store, TenantAlpha, TenantScopeEnforcementOptions.FailClosed, accountService);
+
+        var foreign = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(), AccountTypeDto.Custody, "ACC-ORACLE", "Beta Account",
+            "USD", EffectiveFrom, "tenant-scope-test", FundId: beta.FundId));
+
+        var linkForeign = () => alphaService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            Guid.NewGuid(), alpha.FundId, foreign.AccountId,
+            OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
+        var linkNonexistent = () => alphaService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            Guid.NewGuid(), alpha.FundId, Guid.NewGuid(),
+            OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
+
+        var foreignRefusal = await Assert.ThrowsAsync<InvalidOperationException>(linkForeign);
+        var nonexistentRefusal = await Assert.ThrowsAsync<InvalidOperationException>(linkNonexistent);
+
+        // Same type, and the same sentence once the id is taken out of it. Compared by shape
+        // rather than by string equality on the whole message, since the ids necessarily differ.
+        Assert.Equal(
+            ReplaceGuids(nonexistentRefusal.Message),
+            ReplaceGuids(foreignRefusal.Message));
+
+        // And the refusal is still a refusal. Asserted against the links this test could have
+        // created rather than against an empty store: SeedOrganizationAsync builds its own
+        // organization-business-fund links, so the collection is never empty here.
+        var links = await store.GetAllOwnershipLinksAsync();
+        Assert.DoesNotContain(
+            links, link => link.ChildNodeId == foreign.AccountId || link.ParentNodeId == foreign.AccountId);
+        Assert.Null(store.TenantOf(foreign.AccountId));
     }
 
     [Fact]
@@ -837,7 +910,7 @@ public sealed class FundStructureTenantScopeTests
             hijackLinkId, alpha.FundId, betaAccount.AccountId,
             OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
 
-        await Assert.ThrowsAsync<FundStructureTenantScopeException>(hijack);
+        await AssertRefusedAsNotFoundAsync(hijack);
 
         Assert.Null(store.TenantOf(betaAccount.AccountId));
         Assert.DoesNotContain(
@@ -873,7 +946,7 @@ public sealed class FundStructureTenantScopeTests
             hijackLinkId, alpha.FundId, betaAccount.AccountId,
             OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
 
-        await Assert.ThrowsAsync<FundStructureTenantScopeException>(hijack);
+        await AssertRefusedAsNotFoundAsync(hijack);
 
         Assert.Equal(TenantBeta, store.TenantOf(betaAccount.AccountId));
         Assert.DoesNotContain(
@@ -914,7 +987,7 @@ public sealed class FundStructureTenantScopeTests
                 Guid.NewGuid(), alpha.FundId, account.AccountId,
                 OwnershipRelationshipTypeDto.Operates, EffectiveFrom, "tenant-scope-test"));
 
-        await Assert.ThrowsAsync<FundStructureTenantScopeException>(hijack);
+        await AssertRefusedAsNotFoundAsync(hijack);
 
         // And ownership is untouched: refusing must not have re-stamped it either.
         Assert.Equal(TenantBeta, store.TenantOf(account.AccountId));

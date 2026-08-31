@@ -620,6 +620,42 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    public async Task AnEventRetainedOutsideTheChain_StopsTheNextAppend()
+    {
+        // Eighteenth Codex review round. The scan filters on `chain_sequence is not null`, so a row
+        // inserted with that column left null -- by an instance predating the chain migration, or by
+        // any other writer -- was simply omitted: every link still verified, the append still
+        // extended the chain, and ListAsync went on serving that event as ordinary audit history
+        // with nothing protecting it. Every link binding correctly says nothing about an event no
+        // link points at, which is what AccountingAuditChainStatus.UnlinkedEvent exists to name and
+        // what the file posture already checked by counting.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var store = database.AccountingConfigurationStore;
+
+        await store.AppendAsync(AuditEvent());
+        await store.AppendAsync(AuditEvent());
+
+        // An event that exists but is in no link's reach.
+        await ExecuteAsync(
+            database,
+            """
+            insert into {0}.accounting_action_audit_events (
+                audit_event_id, recorded_at_utc, actor, action, fund_profile_id,
+                before_hash, after_hash,
+                validation_issues, evidence_links, report_group_principal_ids)
+            values (@id, now(), 'intruder@example.test', 'chart.upsert', 'fund-alpha',
+                repeat('0', 64), repeat('1', 64),
+                '[]'::jsonb, '[]'::jsonb, '[]'::jsonb);
+            """,
+            ("id", Guid.NewGuid()));
+
+        var appendNext = async () => await store.AppendAsync(AuditEvent());
+
+        var refusal = await appendNext.Should().ThrowAsync<AccountingAuditChainIntegrityException>();
+        refusal.Which.Verification.Status.Should().Be(AccountingAuditChainStatus.UnlinkedEvent);
+    }
+
+    [LedgerDatabaseFact]
     public async Task AMarkerFromAMutationCarryingPaddedOptionalText_IsClearedRatherThanRaised()
     {
         // Seventeenth Codex review round. ReplaceChartAsync writes ParentPath, Symbol and

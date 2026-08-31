@@ -376,6 +376,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
 
         long? sequence = null;
         string? retainedHash = null;
+        var linksVerified = 0;
 
         await using (var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false))
         {
@@ -437,10 +438,30 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
 
                 sequence = linkSequence;
                 retainedHash = linkEntryHash;
+                linksVerified++;
             }
         }
 
         var hasChainedEvent = sequence is not null;
+
+        // Every link verifying says nothing about an event that no link points at. The scan above
+        // filters on `chain_sequence is not null`, so a row inserted with the column left null --
+        // by an instance predating migration V_ledger_032, or by any other writer -- is simply
+        // omitted from it: the chain still verified, the append still extended it, and ListAsync
+        // went on serving that event as ordinary audit history with nothing protecting it (Codex
+        // review finding on PR #2871). The file posture already compares the retained count against
+        // the genesis boundary plus the links, and this is that check.
+        var retainedEventCount = await CountRetainedEventsAsync(connection, transaction, ct)
+            .ConfigureAwait(false);
+        var accountedFor = head.PreChainEventCount + linksVerified;
+        if (retainedEventCount != accountedFor)
+        {
+            throw ChainFailure(
+                AccountingAuditChainStatus.UnlinkedEvent, head,
+                $"{retainedEventCount.ToString(CultureInfo.InvariantCulture)} accounting audit "
+                + "events are retained but the chain and its genesis boundary account for "
+                + $"{accountedFor.ToString(CultureInfo.InvariantCulture)}.");
+        }
 
         if (head.NextSequence == head.GenesisSequence)
         {
@@ -492,6 +513,22 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 AccountingAuditChainStatus.AnchorMismatch, head,
                 "The accounting audit chain head does not name the final retained event.");
         }
+    }
+
+    /// <summary>Every retained audit event, chained or not.</summary>
+    private async Task<long> CountRetainedEventsAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select count(*)
+            from {Qualified("accounting_action_audit_events")};
+            """;
+        return (long)(await command.ExecuteScalarAsync(ct).ConfigureAwait(false) ?? 0L);
     }
 
     private async Task AdvanceChainHeadAsync(

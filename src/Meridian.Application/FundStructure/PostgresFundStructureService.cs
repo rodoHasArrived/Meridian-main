@@ -1230,8 +1230,23 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
             return FundStructureNodeKindDto.Entity;
         if (snap.LinkedAccountIds.Contains(nodeId))
             return FundStructureNodeKindDto.Account;
+        // The account service is not necessarily scoped -- PostgresFundAccountStore applies the
+        // tenant predicate, InMemoryFundAccountService applies nothing -- so a row it returns is not
+        // yet evidence this caller may see it. Resolved through the same ownership test
+        // MaterializeLinkedAccountAsync applies, so the two cannot drift apart, and because
+        // answering "Account" for a row the caller cannot see turned link and assignment attempts
+        // into a cross-tenant existence oracle: the foreign id went on to be refused as a scope
+        // violation (403) while an id that exists nowhere was rejected by the callers above as
+        // not-found (500), and the difference between those two answers is the fact being withheld
+        // (Codex review finding on PR #2871).
         var account = await _fundAccountService.GetAccountAsync(nodeId, ct).ConfigureAwait(false);
-        return account is not null ? FundStructureNodeKindDto.Account : null;
+        return account is not null
+               && IsAccountParentVisible(
+                   account,
+                   snap,
+                   _tenantScope.Mode == TenantScopeEnforcementMode.FailClosed)
+            ? FundStructureNodeKindDto.Account
+            : null;
     }
 
     // ── Back-reference update ─────────────────────────────────────────────────
