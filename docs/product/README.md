@@ -151,7 +151,8 @@ exit criterion four. Both decisions and their chronology are recorded in the
 [2026-08-29 W9 Operator Acceptance Record](w9-operator-acceptance-2026-08-29.md).
 `W9-ALPACA-004` was deliberately held over three recorded fill-path caveats and moved to
 `accepted` on 2026-09-01 under `DEC-W9-ACCEPTANCE-003` once all three were closed in source;
-`W9-SAFETY-007`, `W9-GOV-008`, and `W9-INGEST-009` remain `in_progress`.
+`W9-SAFETY-007` reached `ready_for_acceptance` the same day, and `W9-GOV-008` and `W9-INGEST-009`
+remain `in_progress`.
 Those latter three open rows are sequenced by the
 [2026-08 W9 Close-Out Delivery Plan](w9-close-out-delivery-plan-2026-08.md). Acceptance of a bounded
 row is not a release certification and does not move a row to `done`. Every W10 row still carries

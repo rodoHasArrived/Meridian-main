@@ -30,7 +30,7 @@ Snapshot date: 2026-08-30
 | W9-ALPACA-004 | W9 | Alpaca fill streaming into order and ledger state | Trading | accepted | green | high | Execution and Fund Accounts | complete | 2026-09-01 |
 | W9-REPORT-005 | W9 | Client-grade PDF/XLSX exports and partners-capital statement | Reporting; Accounting | accepted | green | high | Accounting and Ledger | complete | 2026-08-29 |
 | W9-NAV-006 | W9 | Unitized NAV and real fee, waterfall, and capital-call economics | Accounting; Portfolio | accepted | green | high | Accounting and Ledger | complete | 2026-08-29 |
-| W9-SAFETY-007 | W9 | Kill-switch cancel-all and fat-finger, notional, and collar rules | Trading; Settings | in_progress | green | high | Execution and Fund Accounts | in_progress | 2026-09-01 |
+| W9-SAFETY-007 | W9 | Kill-switch cancel-all and fat-finger, notional, and collar rules | Trading; Settings | ready_for_acceptance | green | high | Execution and Fund Accounts | implementation_complete | 2026-09-01 |
 | W9-GOV-008 | W9 | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit | Settings; Accounting | in_progress | green | high | Platform Security and Governance | in_progress | 2026-08-29 |
 | W9-INGEST-009 | W9 | Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher | Accounting; Data | in_progress | green | high | Accounting and Ledger | in_progress | 2026-09-01 |
 | W9-ASSET-010 | W9 | Asset Accounting Event Spine and atomic lot posting | Accounting; Portfolio; Reporting | done | green | critical | Accounting and Ledger | complete | 2026-07-28 |
