@@ -104,6 +104,11 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
     // next scanner row for that id begins a fresh batch and replaces the accumulated results.
     // Entries for terminal requests are inert — request ids are process-monotonic, never reused.
     private readonly ConcurrentDictionary<int, bool> _scannerBatchClosed = new();
+    // Serializes each request's read-model transition WITH its publication: without the gate, a
+    // callback that paused between AddOrUpdate and Publish could publish its stale active model
+    // after another thread published the terminal one, resurrecting the request for watchers and
+    // letting the last-write-wins durable projector overwrite the terminal record.
+    private readonly ConcurrentDictionary<int, object> _readModelGates = new();
     private readonly TenantScopedProviderDataUpdateHub _updates = new();
     private int _nextRequestId = 90_000;
 
@@ -778,28 +783,36 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
 
     private void UpdateReadModel(int requestId, Func<ProviderDataRequestReadModel, ProviderDataRequestReadModel> update)
     {
-        var lineage = _lineage.TryGetValue(requestId, out var currentLineage) ? currentLineage : null;
-        var applied = true;
-        var updated = _requests.AddOrUpdate(
-            requestId,
-            _ => throw new KeyNotFoundException($"Unknown IB request id {requestId}."),
-            (_, current) =>
-            {
-                // Terminal outcomes are frozen inside the atomic update, not only at the
-                // routability pre-checks: a queued payload or completion racing cancellation,
-                // timeout, or rejection on another thread must not resurrect the read model,
-                // and the first terminal status recorded is the one the operator keeps seeing.
-                if (!IsActiveStatus(current.Status))
+        // The transition and its publication are serialized per request: the map alone would
+        // stay consistent (terminal outcomes are frozen in the atomic update below), but a
+        // publication escaping the transition's ordering could deliver a stale active model
+        // after the terminal one to watchers and the durable projector.
+        var gate = _readModelGates.GetOrAdd(requestId, static _ => new object());
+        lock (gate)
+        {
+            var lineage = _lineage.TryGetValue(requestId, out var currentLineage) ? currentLineage : null;
+            var applied = true;
+            var updated = _requests.AddOrUpdate(
+                requestId,
+                _ => throw new KeyNotFoundException($"Unknown IB request id {requestId}."),
+                (_, current) =>
                 {
-                    applied = false;
-                    return current;
-                }
+                    // Terminal outcomes are frozen inside the atomic update, not only at the
+                    // routability pre-checks: a queued payload or completion racing cancellation,
+                    // timeout, or rejection on another thread must not resurrect the read model,
+                    // and the first terminal status recorded is the one the operator keeps seeing.
+                    if (!IsActiveStatus(current.Status))
+                    {
+                        applied = false;
+                        return current;
+                    }
 
-                applied = true;
-                return update(current) with { UpdatedAt = DateTimeOffset.UtcNow, Lineage = lineage };
-            });
-        if (applied)
-            Publish(updated);
+                    applied = true;
+                    return update(current) with { UpdatedAt = DateTimeOffset.UtcNow, Lineage = lineage };
+                });
+            if (applied)
+                Publish(updated);
+        }
     }
 
     private ProviderDataProvenance CreateRequestProvenance(IBDataLineage lineage)
