@@ -1530,7 +1530,18 @@ against, two paragraphs after the correction that withdrew that target.
    (`ValidateCrossRecordDuplicates`, `:441-449`), two providers may legitimately share symbol text,
    and the denormalized `securities` columns carry no provider to express the rule with. Widening it
    means projecting a normalized primary provider column first.
-4. **P6** — plan (do not refactor) the lot-model convergence, and **start by reconciling the models
+4. **P6** — **a plan now exists**, and this item is the input to it rather than a standing ask:
+   `docs/architecture/security-lot-convergence-blueprint.md` (`W10-LOT-002`, status *proposed*),
+   which landed on `main` after this pass was written. It reaches the same durable anchor this item
+   does — `LedgerTaxLotRecord` extended rather than replaced, `SecurityId` mandatory, `TaxLot`
+   retired as authoritative — and it carries acquisition currency/FX, which this item flagged as
+   absent everywhere. **Two gaps against what the sweeps here return, both worth raising against
+   that blueprint rather than re-planning:** its scope is the .NET lane, so the browser lane's
+   `SecurityLot` is outside it (see below), and its stated end state makes decimal quantity
+   mandatory without a position on the float lane that would have to satisfy it. Read the rest of
+   this item as the reconciliation input, not as a competing plan.
+
+   Plan (do not refactor) the lot-model convergence, and **start by reconciling the models
    named below rather than naming a target** (named, not counted — the count in this sentence was
    itself wrong until this revision). `LedgerTaxLotRecord`
    (`Storage/Ledger/ILedgerJournalStore.cs:332-349`) is the durable model; `LedgerTaxLot` is the
