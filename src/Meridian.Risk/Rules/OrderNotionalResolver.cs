@@ -105,7 +105,8 @@ internal static class OrderNotionalResolver
         OrderRequest request,
         PortfolioExposureSnapshot snapshot,
         Func<string, decimal?>? referencePriceLookup,
-        Func<string, OrderSide, decimal?>? sideAwarePriceLookup)
+        Func<string, OrderSide, decimal?>? sideAwarePriceLookup,
+        bool inferredOccOption)
     {
         // Broker-native notional sizing still wins: it is what the gateway routes.
         if (BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is { } brokerNotional)
@@ -151,7 +152,9 @@ internal static class OrderNotionalResolver
                 return null;
             }
 
-            var multiplier = ResolveMultiplier(leg.OptionContract ?? request.OptionContract);
+            var multiplier = inferredOccOption
+                ? DefaultContractMultiplier
+                : ResolveMultiplier(leg.OptionContract ?? request.OptionContract);
             total += Math.Abs(request.Quantity) * Math.Abs(leg.RatioQuantity) * price * multiplier;
             priced = true;
         }
@@ -199,10 +202,25 @@ internal static class OrderNotionalResolver
         // with Multiplier "0.000001" as $100 rather than $1,000,000, clearing the notional,
         // gross-exposure, and concentration rails by six orders of magnitude. A leg list still wins,
         // because a package's top-level price is a net debit or credit belonging to no single symbol.
+        //
+        // Broker adapters may also infer an option from its compact OCC symbol even when a caller
+        // omitted OptionContract. Risk must classify that same route as a derivative or it will
+        // measure premium-only notional without the 100x multiplier. The face-value marker outranks
+        // that inference for the same reason it outranks OptionContract.
+        var inferredOccOption = request.Legs is not { Count: > 0 } &&
+            request.OptionContract is null &&
+            !usesFaceValuePercentageOfPar &&
+            IsOccOptionSymbol(request.Symbol);
         if (request.Legs is { Count: > 0 }
-            || (request.OptionContract is not null && !usesFaceValuePercentageOfPar))
+            || (request.OptionContract is not null && !usesFaceValuePercentageOfPar)
+            || inferredOccOption)
         {
-            return ResolveDerivative(request, snapshot, referencePriceLookup, sideAwarePriceLookup);
+            return ResolveDerivative(
+                request,
+                snapshot,
+                referencePriceLookup,
+                sideAwarePriceLookup,
+                inferredOccOption);
         }
 
         // Broker-native notional sizing (Alpaca metadata "notional"/"alpaca:notional")
@@ -271,6 +289,12 @@ internal static class OrderNotionalResolver
         var effectivePrice = usesFaceValuePercentageOfPar ? price / 100m : price;
         return Math.Abs(request.Quantity) * effectivePrice;
     }
+
+    private static bool IsOccOptionSymbol(string symbol) =>
+        Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer.TryValidateFormat(
+            Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.OccOptionSymbol,
+            symbol,
+            out _);
 
     /// <summary>
     /// Signed order notional: positive for buys, negative for sells, so direction-aware
