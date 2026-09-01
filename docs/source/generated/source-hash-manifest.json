@@ -206,7 +206,7 @@
       "path": "src/Meridian.Ledger",
       "readme": "src/Meridian.Ledger/README.md",
       "readme_hash": "b30c25b6952984691486051da29cdbadda25f1de15a1dd10444793814fc639c6",
-      "source_hash": "aa296bc83b6c7990d78689351fea647a7cb0ba57329673a1039bcce885308fb3"
+      "source_hash": "496735216f2081c50fc00c181cbde9f2fbb6b9dba19bce52f4d7d33506aef935"
     },
     {
       "id": "SRC-LIFECYCLE-SUPERVISOR",

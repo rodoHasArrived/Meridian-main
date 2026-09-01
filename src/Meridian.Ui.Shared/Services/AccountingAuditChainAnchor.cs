@@ -319,34 +319,6 @@ public sealed class FileAccountingAuditChainAnchor
         return Sha256Digest.ComputeUtf8(material);
     }
 
-    private async Task<FileStream> AcquireCrossProcessLockAsync(CancellationToken ct)
-    {
-        var lockPath = AnchorPath + ".lock";
-        var directory = Path.GetDirectoryName(lockPath);
-        if (!string.IsNullOrEmpty(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-
-        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        timeout.CancelAfter(CrossProcessLockTimeout);
-        while (true)
-        {
-            timeout.Token.ThrowIfCancellationRequested();
-            try
-            {
-                return new FileStream(
-                    lockPath,
-                    FileMode.OpenOrCreate,
-                    FileAccess.ReadWrite,
-                    FileShare.None,
-                    bufferSize: 1,
-                    options: FileOptions.Asynchronous | FileOptions.WriteThrough);
-            }
-            catch (IOException)
-            {
-                await Task.Delay(TimeSpan.FromMilliseconds(25), timeout.Token).ConfigureAwait(false);
-            }
-        }
-    }
+    private Task<FileStream> AcquireCrossProcessLockAsync(CancellationToken ct)
+        => CrossProcessFileLock.AcquireAsync(AnchorPath + ".lock", CrossProcessLockTimeout, ct);
 }
