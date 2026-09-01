@@ -689,7 +689,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
         (await markers.ReadAsync()).Should().BeNull("a resolved marker must not re-fire");
     }
 
-    [Fact]
+    [LedgerDatabaseFact]
     public async Task AMarkerFromAMutationCarryingNoncanonicalDimensionKeys_IsClearedRatherThanRaised()
     {
         // Codex review finding on PR #2871. ReplaceRulesAsync persists rule payloads as jsonb,
@@ -728,7 +728,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
         (await markers.ReadAsync()).Should().BeNull("a resolved marker must not re-fire");
     }
 
-    [Fact]
+    [LedgerDatabaseFact]
     public async Task AMarkerFromAMutationWhoseTestCaseDisplayOrderInvertsIdOrder_IsClearedRatherThanRaised()
     {
         // Control for a Codex round-23 finding on PR #2871, kept because it pins the property the

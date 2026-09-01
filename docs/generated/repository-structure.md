@@ -1417,6 +1417,7 @@ Meridian-main
 │   │   ├── provider-management.md
 │   │   ├── README.md
 │   │   ├── runtime-component-state-boundaries.md
+│   │   ├── security-lot-convergence-blueprint.md
 │   │   ├── security-master-extensibility-review.md
 │   │   ├── storage-design.md
 │   │   ├── strategy-builder-integration.md
@@ -7256,6 +7257,7 @@ Meridian-main
 │   │   │   ├── CashSyncOrchestrationService.cs
 │   │   │   ├── CollateralExposureService.cs
 │   │   │   ├── ConfigStore.cs
+│   │   │   ├── CrossProcessFileLock.cs
 │   │   │   ├── DailyValuationBatchLifecycleService.cs
 │   │   │   ├── DailyValuationPositionService.cs
 │   │   │   ├── DailyValuationScheduler.cs
@@ -10086,6 +10088,7 @@ Meridian-main
 │   │   │   ├── CorporateActionOperationsEndpointTests.cs
 │   │   │   ├── CredentialCompatibilityEndpointsTests.cs
 │   │   │   ├── CronEndpointsTests.cs
+│   │   │   ├── CrossProcessFileLockTests.cs
 │   │   │   ├── DailyValuationBatchLifecycleServiceTests.cs
 │   │   │   ├── DailyValuationPositionServiceTests.cs
 │   │   │   ├── DailyValuationScheduleIdentityTests.cs
