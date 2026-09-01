@@ -40,8 +40,14 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
         return store;
     }
 
+    // primaryValue overrides the record-level canonical primary when the shared identifier
+    // claim must not be it: migration 032 uniquely indexes the securities table on
+    // (primary_identifier_kind, normalized_primary_identifier_value), so two distinct upserted
+    // securities may share an identifier claim — the ambiguity under test — but never a
+    // normalized record primary. Claims drive detection and candidate lookup, not the primary.
     private static SecurityProjectionRecord MakeProjection(
-        Guid securityId, string identifierKind, string identifierValue, string provider)
+        Guid securityId, string identifierKind, string identifierValue, string provider,
+        string? primaryValue = null)
     {
         var identifier = new SecurityIdentifierDto(
             Enum.Parse<SecurityIdentifierKind>(identifierKind, ignoreCase: true),
@@ -57,7 +63,7 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
             DisplayName: $"Test Security {securityId:N}",
             Currency: "USD",
             PrimaryIdentifierKind: identifierKind,
-            PrimaryIdentifierValue: identifierValue,
+            PrimaryIdentifierValue: primaryValue ?? identifierValue,
             CommonTerms: JsonSerializer.SerializeToElement(new { currency = "USD" }),
             AssetSpecificTerms: JsonSerializer.SerializeToElement(new { }),
             Provenance: JsonSerializer.SerializeToElement(new { sourceSystem = provider }),
@@ -660,8 +666,8 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
     [SecurityMasterDatabaseFact]
     public async Task FindIdentifierCandidatesAsync_UsesNormalizedIdentifierIndexAndExcludesSubjects()
     {
-        var existing = MakeProjection(Guid.NewGuid(), "Isin", "US-0378331005", "provider-a");
-        var unrelated = MakeProjection(Guid.NewGuid(), "Isin", "US5949181045", "provider-b");
+        var existing = MakeProjection(Guid.NewGuid(), "Isin", "US-0378331005", "provider-a", primaryValue: $"CANON-{Guid.NewGuid():N}");
+        var unrelated = MakeProjection(Guid.NewGuid(), "Isin", "US5949181045", "provider-b", primaryValue: $"CANON-{Guid.NewGuid():N}");
         var store = new PostgresSecurityMasterStore(_fixture.Options);
         await store.UpsertProjectionAsync(existing, CancellationToken.None);
         await store.UpsertProjectionAsync(unrelated, CancellationToken.None);
@@ -684,8 +690,8 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
     public async Task ProviderScopedIdentifier_DoesNotConflictAcrossProviders()
     {
         var value = $"SCOPED-{Guid.NewGuid():N}";
-        var first = MakeProjection(Guid.NewGuid(), "ProviderSymbol", value, "provider-a");
-        var second = MakeProjection(Guid.NewGuid(), "ProviderSymbol", value, "provider-b");
+        var first = MakeProjection(Guid.NewGuid(), "ProviderSymbol", value, "provider-a", primaryValue: $"{value}-A");
+        var second = MakeProjection(Guid.NewGuid(), "ProviderSymbol", value, "provider-b", primaryValue: $"{value}-B");
         var store = new PostgresSecurityMasterStore(_fixture.Options);
         await store.UpsertProjectionAsync(first, CancellationToken.None);
         await store.UpsertProjectionAsync(second, CancellationToken.None);
@@ -712,8 +718,8 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
     {
         var boundary = DateTimeOffset.UtcNow;
         var value = $"REOPEN-{Guid.NewGuid():N}";
-        var first = MakeProjection(Guid.NewGuid(), "Ticker", value, "XNAS");
-        var second = MakeProjection(Guid.NewGuid(), "Ticker", value, "XNAS");
+        var first = MakeProjection(Guid.NewGuid(), "Ticker", value, "XNAS", primaryValue: $"{value}-A");
+        var second = MakeProjection(Guid.NewGuid(), "Ticker", value, "XNAS", primaryValue: $"{value}-B");
         var store = new PostgresSecurityMasterStore(_fixture.Options);
         await store.UpsertProjectionAsync(first, CancellationToken.None);
         await store.UpsertProjectionAsync(second, CancellationToken.None);
@@ -753,8 +759,8 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
     public async Task ConcurrentRefreshAndIngest_LeaveOneOpenConflict()
     {
         var value = $"RACE-{Guid.NewGuid():N}";
-        var first = MakeProjection(Guid.NewGuid(), "Ticker", value, "XNYS");
-        var second = MakeProjection(Guid.NewGuid(), "Ticker", value, "XNYS");
+        var first = MakeProjection(Guid.NewGuid(), "Ticker", value, "XNYS", primaryValue: $"{value}-A");
+        var second = MakeProjection(Guid.NewGuid(), "Ticker", value, "XNYS", primaryValue: $"{value}-B");
         var store = new PostgresSecurityMasterStore(_fixture.Options);
         await store.UpsertProjectionAsync(first, CancellationToken.None);
         await store.UpsertProjectionAsync(second, CancellationToken.None);
@@ -776,8 +782,8 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
     public async Task GetOpenConflictsAsync_MigratesLegacyRawConflictIdAndPreservesResolution()
     {
         var value = $"Legacy{Guid.NewGuid():N}";
-        var first = MakeProjection(Guid.NewGuid(), "InternalCode", value, "provider-a");
-        var second = MakeProjection(Guid.NewGuid(), "InternalCode", value.ToLowerInvariant(), "provider-b");
+        var first = MakeProjection(Guid.NewGuid(), "InternalCode", value, "provider-a", primaryValue: $"{value}-A");
+        var second = MakeProjection(Guid.NewGuid(), "InternalCode", value.ToLowerInvariant(), "provider-b", primaryValue: $"{value}-B");
         var store = new PostgresSecurityMasterStore(_fixture.Options);
         await store.UpsertProjectionAsync(first, CancellationToken.None);
         await store.UpsertProjectionAsync(second, CancellationToken.None);
