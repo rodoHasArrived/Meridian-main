@@ -89,7 +89,7 @@ public sealed class SecurityMasterMigrationRunnerTests : IClassFixture<SecurityM
     public async Task Migration030_ReportsEveryCollisionInDeterministicOrderBeforeChangingIndexes()
     {
         var schema = $"sm_collision_{Guid.NewGuid():N}";
-        await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
+        await using var connection = new NpgsqlConnection(WithErrorDetail(_fixture.Options.ConnectionString));
         await connection.OpenAsync();
         try
         {
@@ -166,5 +166,15 @@ public sealed class SecurityMasterMigrationRunnerTests : IClassFixture<SecurityM
             cleanup.CommandText = $"drop schema if exists {schema} cascade;";
             await cleanup.ExecuteNonQueryAsync();
         }
+    }
+
+    private static string WithErrorDetail(string connectionString)
+    {
+        var builder = new NpgsqlConnectionStringBuilder(connectionString)
+        {
+            IncludeErrorDetail = true
+        };
+
+        return builder.ConnectionString;
     }
 }
