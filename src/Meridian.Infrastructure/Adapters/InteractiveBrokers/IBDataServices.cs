@@ -617,16 +617,20 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
         if (!IsRoutable(requestId))
             return;
 
-        // Two delimiters with no rows between them mean the just-completed refresh matched
-        // nothing. No row will arrive to trigger the replacement in RecordScannerResult, so the
-        // empty current scan is represented here; the still-set marker keeps a later cycle's
-        // first row starting a fresh batch.
-        if (!_scannerBatchClosed.TryAdd(requestId, true))
+        // A cycle that delivered no rows never reaches the replacement in RecordScannerResult,
+        // so its empty current scan is represented at the delimiter itself. A repeat delimiter
+        // (marker still set) means the closed cycle was empty; a first delimiter closing a scan
+        // that never delivered a row is the same case, recognizable by the still-absent result
+        // set. Either way the still-set marker keeps a later cycle's first row starting fresh.
+        if (!_scannerBatchClosed.TryAdd(requestId, true)
+            || (_requests.TryGetValue(requestId, out var snapshot) && snapshot.ScannerResults is not { Count: > 0 }))
+        {
             UpdateReadModel(requestId, static current => current with
             {
                 Status = ProviderDataRequestStatus.Streaming,
                 ScannerResults = Array.Empty<ProviderScannerResult>(),
             });
+        }
     }
 
     private void OnRealTimeBarReceived(object? sender, (int RequestId, ProviderRealTimeBar Bar) value)

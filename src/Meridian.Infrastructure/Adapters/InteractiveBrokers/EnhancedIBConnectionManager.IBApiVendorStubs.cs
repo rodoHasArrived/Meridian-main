@@ -130,6 +130,9 @@ public sealed partial class EnhancedIBConnectionManager
     public void securityDefinitionOptionParameterEnd(int reqId)
     {
         RecordMessageReceived();
+        // Completion is terminal downstream, so the id's rejection-routing ownership ends here —
+        // the IBAPI-build callback releases it the same way.
+        _dataServiceRequestIds.TryRemove(reqId, out _);
         RequestCompleted?.Invoke(this, reqId);
     }
 

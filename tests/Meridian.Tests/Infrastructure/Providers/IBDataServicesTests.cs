@@ -438,6 +438,22 @@ public sealed class IBDataServicesTests
     }
 
     [Fact]
+    public void CallbackBridge_FirstScannerCycleWithNoRows_PublishesTheEmptyScan()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport, "ignored-because-transport-supplies-identity");
+        var requestId = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
+
+        // The very first cycle matched nothing: the delimiter arrives before any row, and the
+        // request must report the live empty scan instead of staying Requested with no results.
+        transport.RaiseScannerBatchEnd(requestId);
+
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Streaming);
+        request.ScannerResults.Should().NotBeNull().And.BeEmpty();
+    }
+
+    [Fact]
     public void CallbackBridge_EmptyScannerRefreshCycle_ClearsTheCurrentBatch()
     {
         var transport = new CallbackTransport();
