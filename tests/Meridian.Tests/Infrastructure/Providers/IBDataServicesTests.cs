@@ -447,6 +447,27 @@ public sealed class IBDataServicesTests
     }
 
     [Fact]
+    public void Cancellation_MarketDataTypeArrivingAfterCancel_LeavesLineageAndReadModelFrozenTogether()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport);
+        var requestId = services.SubscribeTickByTick(new SymbolConfig("AAPL"));
+        transport.RaiseMarketDataType(requestId, 1);
+
+        services.CancelRequest(requestId, CancellationToken.None);
+
+        // Lineage evidence outlives the request, so a queued availability callback for the
+        // cancelled id must not mutate it: the retained lineage and the frozen read model
+        // must keep reporting the same availability the request had when it went terminal.
+        transport.RaiseMarketDataType(requestId, 3);
+
+        services.GetLineage().Single().Availability.Should().Be(IBMarketDataAvailability.Live);
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Cancelled);
+        request.Lineage!.Availability.Should().Be(IBMarketDataAvailability.Live);
+    }
+
+    [Fact]
     public void Cancellation_TransportCancelFailure_LeavesTheRequestRoutableForRejection()
     {
         var transport = new CallbackTransport { CancelFailure = new InvalidOperationException("socket write failed") };

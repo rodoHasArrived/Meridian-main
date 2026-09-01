@@ -506,7 +506,11 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
 
     private void OnMarketDataTypeReceived(object? sender, IBMarketDataTypeUpdate update)
     {
-        if (_lineage.ContainsKey(update.RequestId))
+        // Routability, not lineage presence: lineage evidence outlives terminal requests, so a
+        // late availability callback after cancellation, timeout, or rejection would otherwise
+        // mutate the retained lineage while the frozen read model keeps its terminal snapshot,
+        // leaving the two surfaces reporting different availability.
+        if (IsRoutable(update.RequestId))
             RecordMarketDataType(update.RequestId, update.MarketDataType);
     }
 
