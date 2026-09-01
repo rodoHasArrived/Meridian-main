@@ -64,7 +64,7 @@ public sealed class DesktopMutationPermissionResolverTests
     }
 
     [Fact]
-    public void IsGranted_WhenCredentialFreeHostNamesReadOnlyAnonymousRole_RefusesTheMutationTheSessionWouldAllow()
+    public void IsGranted_WhenCredentialFreeHostNamesReadOnlyAnonymousRole_RefusesTheMutation()
     {
         using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
             .Set("MDC_USERS", null)
@@ -75,10 +75,11 @@ public sealed class DesktopMutationPermissionResolverTests
 
         var session = DesktopAuthenticationSessionTests.CreateSession("Development");
 
-        // The defect this resolver exists to close: the session answers true to every permission on
-        // a credential-free host, so a gate built on HasPermission alone would authorize every
-        // mutation on a host explicitly declared read-only.
-        session.HasPermission(UserPermission.ModifySecurityMaster).Should().BeTrue();
+        // This resolver was introduced when HasPermission answered true to every permission on a
+        // credential-free host. The session has since been hardened to honour the named anonymous
+        // role itself, so both layers now refuse — and the resolver remains the seam dialog view
+        // models depend on, and the only gate when composed with no session at all.
+        session.HasPermission(UserPermission.ModifySecurityMaster).Should().BeFalse();
         DesktopMutationPermissionResolver.IsGranted(session, UserPermission.ModifySecurityMaster)
             .Should().BeFalse();
     }
