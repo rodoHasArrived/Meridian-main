@@ -1,5 +1,6 @@
 using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Execution;
@@ -350,6 +351,64 @@ public sealed partial class OrderManagementSystem
             owner._inFlightDispatches.TryRemove(new KeyValuePair<string, TaskCompletionSource>(_orderId, _settled));
             _settled.TrySetResult();
         }
+    }
+
+    /// <summary>
+    /// Rejects an order that is already registered in the tracked table but has not been sent to
+    /// the gateway, because the operator controls closed between the gate and dispatch.
+    /// <para>
+    /// Unlike <see cref="RejectOrderAsync"/>, which runs before registration and must not disturb
+    /// an entry that belongs to another order, this path owns the entry under
+    /// <paramref name="orderId"/> and replaces its <c>PendingNew</c> state with the rejection --
+    /// the same terminal transition the gateway-failure path applies -- so a sweep or a status
+    /// read never sees an order that was never routed reported as working.
+    /// </para>
+    /// </summary>
+    private async Task<OrderResult> RejectRegisteredOrderBeforeDispatchAsync(
+        string orderId,
+        OrderState registeredState,
+        OrderRequest request,
+        string? actor,
+        string brokerName,
+        string? runId,
+        string? correlationId,
+        ExecutionControlDecision decision,
+        string? sessionId,
+        IReadOnlyList<string>? riskWarnings,
+        RiskValidationResult? riskDecision,
+        CancellationToken ct)
+    {
+        var rejectedState = registeredState with
+        {
+            Status = OrderStatus.Rejected,
+            LastUpdatedAt = DateTimeOffset.UtcNow
+        };
+        _orders[orderId] = rejectedState;
+        TrimRetainedOrdersIfNeeded();
+
+        await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
+        await RecordOrderRejectionAsync(
+            orderId,
+            request,
+            actor,
+            brokerName,
+            runId,
+            correlationId,
+            decision.RejectReason,
+            ct,
+            rejectionSource: "operator controls at dispatch",
+            decision.RejectCode ?? "OPERATOR_CONTROL_REJECTED",
+            BuildOrderRejectedByControlAuditMetadata(decision)).ConfigureAwait(false);
+
+        return new OrderResult
+        {
+            Success = false,
+            OrderId = orderId,
+            ErrorMessage = decision.RejectReason,
+            OrderState = rejectedState,
+            RiskWarnings = riskWarnings,
+            RiskDecision = riskDecision?.ToSummary()
+        };
     }
 
     /// <summary>

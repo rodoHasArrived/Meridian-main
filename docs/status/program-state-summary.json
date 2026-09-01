@@ -314,7 +314,7 @@
       "Priority": "high",
       "Owner Lane": "Execution and Fund Accounts",
       "Evidence Posture": "complete",
-      "Evidence": "src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaTradeUpdatesClient.cs; src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs; src/Meridian.Execution/OrderManagementSystem.cs; src/Meridian.Execution/Events/LedgerPostingConsumer.cs; src/Meridian/HostedBrokerageGatewayServiceCollectionExtensions.cs; tests/Meridian.Tests/Infrastructure/Providers/AlpacaTradeUpdatesClientTests.cs; tests/Meridian.Tests/Execution/OrderManagementSystemReportStreamTests.cs; tests/Meridian.Tests/Execution/AlpacaStreamedFillLoopTests.cs; tests/Meridian.Tests/Execution/OrderManagementSystemDurableHandoffOrderingTests.cs; docs/product/w9-operator-acceptance-2026-08-29.md",
+      "Evidence": "src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaTradeUpdatesClient.cs; src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs; src/Meridian.Execution/OrderManagementSystem.cs; src/Meridian.Execution/OrderManagementSystem.UntrackedFills.cs; src/Meridian.Execution/Events/LedgerPostingConsumer.cs; src/Meridian/HostedBrokerageGatewayServiceCollectionExtensions.cs; tests/Meridian.Tests/Infrastructure/Providers/AlpacaTradeUpdatesClientTests.cs; tests/Meridian.Tests/Execution/OrderManagementSystemReportStreamTests.cs; tests/Meridian.Tests/Execution/AlpacaStreamedFillLoopTests.cs; tests/Meridian.Tests/Execution/OrderManagementSystemDurableHandoffOrderingTests.cs; docs/product/w9-operator-acceptance-2026-08-29.md",
       "Last Reviewed": "2026-09-01"
     },
     {

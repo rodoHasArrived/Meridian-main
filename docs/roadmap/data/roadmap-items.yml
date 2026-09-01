@@ -991,6 +991,8 @@ items:
       - type: source
         path: src/Meridian.Execution/OrderManagementSystem.cs
       - type: source
+        path: src/Meridian.Execution/OrderManagementSystem.UntrackedFills.cs
+      - type: source
         path: src/Meridian.Execution/Events/LedgerPostingConsumer.cs
       - type: source
         path: src/Meridian/HostedBrokerageGatewayServiceCollectionExtensions.cs
