@@ -225,7 +225,7 @@
          ClosedXML). Housed in Meridian.Documents so heavy OpenXML/rendering closures stay out of
          the core ledger assembly. -->
     <PackageVersion Include="QuestPDF" Version="2025.7.0" />
-    <PackageVersion Include="ClosedXML" Version="0.105.0" />
+    <PackageVersion Include="ClosedXML" Version="0.105.1" />
 
     <!-- Microsoft.IdentityModel.JsonWebTokens / System.IdentityModel.Tokens.Jwt:
          Fix GHSA-59j7-ghrg-fj52 (Moderate) - DoS from transitive Microsoft.Data.SqlClient 4.0.5.
