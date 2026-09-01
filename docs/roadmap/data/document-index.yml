@@ -89,3 +89,10 @@ documents:
       - W10-RECON-004
       - W10-PERF-001
       - W10-CONSOL-001
+  - id: DOC-OPEN-LOT-CONVERGENCE
+    path: docs/architecture/security-lot-convergence-blueprint.md
+    title: Security-identified open-lot convergence blueprint
+    role: planning_interpretation
+    owner_lane: Accounting and Ledger
+    roadmap_items:
+      - W10-LOT-002
