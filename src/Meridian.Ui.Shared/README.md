@@ -312,7 +312,12 @@ the declared genesis boundary -- the pre-chain event count is what bounds how ma
 may sit outside the chain, and it lives in the snapshot being protected, so an anchor that did not
 carry it could be satisfied by the same edit that defeated it. **That journal is at format version
 2; a v1 journal written before the boundary was bound is refused by name on read** rather than
-verified under the weaker rules or reported as tampering. The shared accounting endpoints stamp the resolved
+verified under the weaker rules or reported as tampering. Store write cycles (workspace saves and
+audit appends alike) and chain verification hold a cross-process lock file beside the snapshot for
+their whole read-modify-write span, so the browser host and the WPF shell composing this store over
+one data root serialize against each other instead of interleaving whole-document replacements --
+without it, the later writer silently discarded the earlier process's committed event and the
+surviving snapshot then read as tampered against the anchor. The shared accounting endpoints stamp the resolved
 tenant/company context on chart, template, posting-rule, rule-test, promotion, activation, read,
 dry-run, execution, and audit requests so browser and WPF clients cannot spoof a different
 configuration workspace through request body fields. Configuration audit history is filtered by the
