@@ -36,13 +36,23 @@ label alone will update this file.
 - **Area**: (docs/build/tests/runtime/config)
 - **Symptoms**: What failed.
 - **Root cause**: Why the error was introduced.
-- **Prevention checklist**:
-  - [ ] Check 1
-  - [ ] Check 2
-- **Verification commands**:
-  - `command`
+- **Prevention checklist**: (1) Check 1. (2) Check 2. — *all substance on this one line; see the parser note below*
+  - [ ] Check 1, expanded for human readers
+  - [ ] Check 2, expanded for human readers
+- **Verification commands**: `command-1`; then `command-2`. — *one line, as above*
+  - `command` with commentary for human readers
 - **Source issue**: #123
 - **Status**: open | mitigated | closed
+
+> **Put every field's substance on the `- **Field**:` line itself.** `load_known_errors`
+> (`build/scripts/ai-repo-updater.py:1141-1150`) matches `- \*\*(\w[\w\s]*)\*\*:\s*(.*)` per line and
+> keeps only that line's remainder; indented continuation lines never match and are dropped. So a
+> checklist written only as an indented list reaches `python3 build/scripts/ai-repo-updater.py
+> known-errors` as an **empty string**, and a field line holding just a lead-in sentence is truncated
+> to that fragment. Every entry predating this note has that shape and loads empty. Indented detail is
+> still welcome for human readers — but it is invisible to the agents this file exists to serve, so it
+> must repeat rather than replace what the field line says. Verify with the `known-errors` command
+> above after adding an entry.
 
 ---
 
@@ -420,15 +430,13 @@ label alone will update this file.
 - **Area**: docs/ci
 - **Symptoms**: A docs-only PR reds `verify-docs` and `regenerate-docs` on "Verify whole-repo generated documentation is committed". Regenerating the doc-health dashboard locally the obvious way — `run-docs-automation.py --scripts generate-structure-docs,generate-health-dashboard,generate-workflow-manifest`, exactly as `ci.yml` invokes it — produces `total_lines`/`todo_count` one lower than CI expects, so committing that output reds the same check again on the next push.
 - **Root cause**: The profile also runs `generate-structure-docs`, which walks the filesystem rather than the git index. `docs/status/todo-scan-results.json` is gitignored and absent from a clean checkout, but present on a runner because an earlier step in the same job generates it. So a local run drops that filename's line from `docs/generated/repository-structure.md`. The health dashboard then counts one fewer markdown line, and — because the filename contains the substring "todo" — one fewer TODO marker. The two generators are coupled through a generated file that is not in git, which makes the drift check environment-dependent.
-- **Prevention checklist**:
+- **Prevention checklist**: (1) Reproduce CI's inputs before regenerating — run `scan-todos.py --json-output docs/status/todo-scan-results.json` FIRST, then the full profile; `ci.yml:131` writes that file before the generators run at `:157`, so a clean-checkout run omits a predecessor CI supplies and manufactures the mismatch. (2) Regenerating the dashboard alone is a fallback for markdown-line-count-only changes; prefer the ordered run for anything structural. (3) Never commit a `repository-structure.md` diff whose only change adds or removes a gitignored path — confirm with `git check-ignore -v <path>`. (4) Cross-check regenerated numbers against the failing CI log exactly, not approximately. (5) If local disagrees with CI, regenerate on the untouched base commit in a scratch worktree — no diff there means the divergence is environmental. Detail below.
   - [ ] **Reproduce CI's inputs before regenerating: run `scan-todos.py --json-output docs/status/todo-scan-results.json` first, then the full profile.** CI does exactly this — `ci.yml:131` writes that file in the "Validate TODO registry contract" step, and the generators do not run until `:157`, so on a runner the file always exists by then. Running the three-generator command on a clean checkout omits a predecessor CI supplies, which is what manufactures the mismatch; it is not an inherent divergence
   - [ ] Regenerating the dashboard alone (`generate-health-dashboard.py`), leaving `docs/generated/repository-structure.md` at its committed state, is the fallback when only markdown line counts changed — correct output, but it sidesteps the sequence rather than exercising it, so prefer the ordered run above when validating anything structural
   - [ ] Never commit a `repository-structure.md` diff whose only change is adding or removing a gitignored artifact path — confirm with `git check-ignore -v <path>` before including it
   - [ ] Cross-check the regenerated numbers against the values the failing CI log printed; they must match exactly, not approximately
   - [ ] If a local regeneration disagrees with CI, regenerate on the untouched base commit in a scratch worktree first — no diff there means the divergence is environmental, not caused by your change
-- **Verification commands**: run CI's own sequence, in this order. Regenerating the dashboard alone
-  cannot reproduce the failure or verify the mitigation, because the mismatch is *manufactured by the
-  missing predecessor* — it exercises the fallback in the checklist above, not the fix.
+- **Verification commands**: run CI's own sequence, in this order — `python3 build/scripts/docs/scan-todos.py --json-output docs/status/todo-scan-results.json`; then `python3 build/scripts/docs/run-docs-automation.py --profile core --summary-output docs/status/docs-automation-summary.md --json-output docs/status/docs-automation-summary.json`; then `python3 build/scripts/docs/generate-structure-docs.py --workflows-only --output docs/generated/workflows-overview.md`; then `python3 build/scripts/docs/generate-workflow-manifest.py`; then `git diff --exit-code` over the generated files, and run the whole sequence twice to confirm idempotence. Regenerating the dashboard alone CANNOT reproduce the failure or verify the mitigation, because the mismatch is manufactured by the missing predecessor — that exercises the fallback, not the fix. Detail below.
   - `python3 build/scripts/docs/scan-todos.py --json-output docs/status/todo-scan-results.json` — the
     predecessor CI supplies at `ci.yml:131`; without it the next command drops that filename's line
   - `python3 build/scripts/docs/run-docs-automation.py --scripts generate-structure-docs,generate-health-dashboard,generate-workflow-manifest` — the profile as `ci.yml:156` invokes it
@@ -454,18 +462,14 @@ label alone will update this file.
 - **Area**: ci/governance
 - **Symptoms**: `scope-gate` reds on a PR that has been passing it for many pushes, with `##[error]No phase declaration found. Provide --phase/--dispatch-phase, a 'phase:PRx' label, or a PR body marker like '<!-- phase:PR2 -->'.` Nothing in the diff touches roadmap tooling or workflows, and the immediately preceding pushes on the same branch passed the same check.
 - **Root cause**: The phase is declared by an HTML comment marker (`<!-- phase:PRx -->`, `PR1` on the PR that produced this entry) in the pull-request body. HTML comments are invisible in every rendered view of the PR, so rewriting the body — to refresh a stale summary, say — silently drops the marker unless it is deliberately carried across. The check does not fail on the push that removed it if that was a body-only edit; it fails on the *next* code push, which makes the two events easy to disconnect.
-- **Prevention checklist**: the ordering matters — the first two items remove the need to detect the
-  marker at all, which is what makes them reliable. Everything that tries to *read it back* has failed
-  at least once; see the note under Verification commands.
+- **Prevention checklist**: (1) When rewriting a PR body, write `<!-- phase:PRx -->` as the first line unconditionally, using the phase THIS PR declares — never a hardcoded one; hardcoding `PR1` onto a PR2–PR9 PR silently narrows scope and onto a PR0 PR silently widens it. (2) Establish the phase from `--phase`/dispatch input, the `phase:PRx` label, or the roadmap phase the change belongs to — if you can determine none of these, do not rewrite the body at all. (3) Prefer a `phase:PRx` label: it is visible in the UI, survives body rewrites, and outranks the body in `resolve_phase`. (4) Never confirm the marker via GitHub MCP `pull_request_read` method `get` — it strips HTML comments, so a marker that IS present returns invisible. (5) Never treat the latest `scope-gate` log as evidence about the current body. (6) A job re-run will not clear the failure. Ordering matters: the first three remove the need to detect the marker at all, and everything that tries to read it back has failed at least once. Detail below.
   - [ ] **Write the marker unconditionally — for *this PR's* phase, never a hardcoded one.** When rewriting a PR body, emit `<!-- phase:PRx -->` as the first line without first checking whether it is there, where `PRx` is the phase this pull request actually declares. It is idempotent and removes the read-back entirely. This is the primary rule: construct, do not verify. **Hardcoding a phase is worse than the bug it fixes** — `resolve_phase` prefers a label but otherwise takes the body value (`enforce_phase_scope.py:134-150`), so writing `PR1` onto a PR2–PR9 PR silently rejects in-scope changes against PR1's narrower allowlist, and writing it onto a PR0 PR silently *broadens* the allowed scope
   - [ ] **Establish the phase from a source you can actually read**, in this order: an explicit `--phase`/dispatch input; the `phase:PRx` label; or the roadmap phase the change belongs to, which the author knows independently of the body. **If you cannot determine the phase and cannot read the body, do not rewrite the body at all** — a rewrite is exactly the operation that can silently downgrade or widen scope, and no summary refresh is worth that
   - [ ] **Prefer a `phase:PRx` label.** It is visible in the PR UI, survives body rewrites, and outranks the body in `resolve_phase`, so it makes the body marker non-load-bearing and removes the guesswork above. Where a label is available this whole failure mode goes away
   - [ ] Do not expect a job re-run to clear a failure once it happens — see the recovery note below
   - [ ] Do not try to confirm the marker by reading the body through GitHub MCP `pull_request_read` (method `get`): it returns the body with HTML comments **stripped**, so a marker that is really there comes back invisible. This recurred on PR #2857 *after* this entry was written — the returned body began `\n\n## Summary`, the two leading newlines being exactly where `<!-- phase:PR1 -->` sat
   - [ ] Do not treat the latest `scope-gate` log as evidence about the *current* body either — see below for why it is a post-push confirmation only
-- **Verification commands**: there is no pre-push check here, and that is the point. Two successive
-  attempts to write one were both unsound, so the entry now relies on constructing the marker rather
-  than confirming it.
+- **Verification commands**: there is no sound pre-push check — two successive attempts to write one were both unsound, so rely on constructing the marker, not confirming it. POST-PUSH ONLY: read the `scope-gate` job log for `Phase scope gate passed for PRx (source: …)` and check the phase named is the one the PR intends — a wrong phase passes just as loudly, against the wrong allowlist; `source:` names what the gate resolved (`pr_body`, `labels`, `dispatch`). That log is evidence about the commit that triggered the run, NOT about the body as it now stands: `roadmap-source-docs.yml` declares `pull_request:` with `paths:` and no `types:` (`:10-20`), so it takes the default set (`opened`, `synchronize`, `reopened`) and a body-only edit emits `edited`, which triggers nothing — after such an edit the latest log still describes the pre-edit body. So the marker is unverified until the next `synchronize` push. Detail below.
   - **Post-push confirmation** — the only sound read. After a push, read the `scope-gate` job log for
     `Phase scope gate passed for PRx (source: …)`. Check the phase it names is the one the PR intends —
     a wrong phase passes the gate just as loudly as a right one, against the wrong allowlist.

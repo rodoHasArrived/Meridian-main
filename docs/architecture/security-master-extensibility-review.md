@@ -1298,10 +1298,47 @@ multi-currency cost basis "has nowhere to live in any of them". `LedgerTaxLotRec
 `Currency` the whole time. The prior draft had swept two models and stopped; this one swept three and
 stopped. Restated precisely, so the surviving claim is checkable rather than sweeping:
 
-**And the enumeration was still short — this is the third time.** A repository-wide sweep for
-lot-*bearing* record types (as distinct from the many types that operate *on* lots — relief results,
-disposal selections, mutations, policies, projections) returns **six**, not four. The two missing ones
-are both active:
+**Stop treating this as a count. It has been wrong four times** — two models, then three, then four,
+then six — and each correction came from review, never from the sweep that preceded it. The fourth
+miss is the instructive one: the round that produced "six" explicitly warned the list was not closed
+and named the risk as a narrower search axis, and that is exactly what happened. The stated axis was
+"lot-bearing record declarations"; the regex actually run required the name to contain `TaxLot`,
+`OpenLot` or `FaceValueLot` and to be followed by `(`. It therefore missed `DrawdownLotDto`,
+`PaperTradingPortfolio.PositionLot`, and — despite being named in it — `FaceValueLot` itself, which
+uses a block body. Describing an axis is not running it.
+
+So the planning input is the **command**, not a number:
+
+```
+grep -rnE '(record|class) [A-Za-z]*Lot[A-Za-z]*[ ({]' src/ --include=*.cs
+```
+
+filtered against types that merely *operate on* lots (relief results, disposal selections, mutations,
+policies, projectors, selectors). Run at the head that produced this entry it returns, by role:
+
+- **Durable / persisted** — `LedgerTaxLotRecord` (`Storage/Ledger/ILedgerJournalStore.cs:332`).
+- **Contract shapes** — `FaceValueLot` (`Contracts/SecurityMaster/FaceValueLot.cs:14`),
+  `AssetAcquisitionLotDto` (`Contracts/AssetOperations/AssetAccountingEventDtos.cs:264`),
+  `CorporateActionLotStateSnapshotDto` (`…/CorporateActionAccountingDtos.cs:274`).
+- **In-memory relief** — `LedgerTaxLot` (`Meridian.Ledger/LedgerTaxLot.cs:6`).
+- **Execution / simulation** — `TaxLot` (`Execution.Sdk/TaxLot.cs:16`), `OpenLot` and `ClosedLot`
+  (`Backtesting.Sdk/`), and `PaperTradingPortfolio.PositionLot`
+  (`Execution/Services/PaperTradingPortfolio.cs:1331` — internal, `LotId`/`OpenQuantity`/`EntryPrice`/
+  `OpenedAt`, consumed under FIFO/LIFO/HIFO and surfaced as `PositionLotEntry`).
+- **Direct lending** — `DrawdownLotDto` (`Contracts/DirectLending/DirectLendingDtos.cs:181` —
+  `LotId`, `DrawdownDate`, `SettleDate`, `OriginalPrincipal`, `RemainingPrincipal`, `ExternalRef`;
+  an open-*principal* model, so its quantity semantics differ from every share-quantity lot above).
+- **Ingestion** — `BrokerageTaxLotSnapshotDto` (`Execution.Sdk/IBrokerageAccountSync.cs:274`).
+- **Workstation read models** — `SecurityMasterOpenLotDto`, `SecurityMasterOpenLotReadModelDto`,
+  `SecurityMasterLotModelDto`, `SecurityMasterOpenLotProvenanceDto`
+  (`Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:281-335`), plus `OpenLotSummary`
+  (`Contracts/Workstation/StrategyRunReadModels.cs:1111`).
+
+Convergence planning has to start by re-running that command and reconciling **principal-versus-share
+quantity, currency, and identity keying** across whatever it returns — `DrawdownLotDto` tracks
+principal, `PositionLot` and `OpenLot` are symbol-keyed with no currency, `LedgerTaxLotRecord` is
+`SecurityId`-keyed with a functional currency. Two earlier additions to this list are described below
+for the record:
 
 - **`OpenLot`** (`src/Meridian.Backtesting.Sdk/OpenLot.cs:8`) — `LotId`, `Symbol`, `long Quantity`,
   `EntryPrice`, `OpenedAt`, `OpenFillId`. Populated by the simulator, retained in the portfolio
@@ -1331,8 +1368,9 @@ correcting its scope.
   durable journal functional currency"* (`:354-360`) — and the disposal path filters open lots by it
   before mapping them into `LedgerTaxLot` (`:641-651`). It is an identity and scoping key, not a
   record of what the position was bought in.
-- **Acquisition FX rate** — absent from **all six**. Unchanged, and the one half of the original
-  claim that has survived every revision.
+- **Acquisition FX rate** — absent from **every lot type the sweep returns**. Unchanged, and the one
+  half of the original claim that has survived every revision. State it against the sweep, not a
+  count, for the reason given above.
 
 **Do not read this list as closed.** It has now been short three times — two models, then three, then
 four, now six — and each correction came from review rather than from the sweep that preceded it. The
@@ -1377,8 +1415,8 @@ Restated: the work is to **finish the existing convergence**, not to design a re
 begins by reconciling the two ledger models rather than naming either as the target. Establish how
 `LedgerTaxLotRecord` (durable), `LedgerTaxLot` (the in-memory relief shape) and the adapter relate
 and which of that pair is the contract new lot-bearing surfaces adopt; decide where an acquisition
-currency and FX rate belong, noting the FX rate is absent from **all six** models and the currency
-from all but the brokerage ingestion DTO — which reads it off the broker's own lot row and drops it
+currency and FX rate belong, noting the FX rate is absent from **every lot type the sweep returns**
+and the currency from all but the brokerage ingestion DTO — which reads it off the broker's own lot row and drops it
 at the boundary — so this adds a
 genuinely new pair rather than plumbing an existing field further; decide whether an explicit
 quantity basis (units vs. face) belongs on the type or stays encoded in the adapter; and settle where
@@ -1458,11 +1496,14 @@ against, two paragraphs after the correction that withdrew that target.
    (`Storage/Ledger/ILedgerJournalStore.cs:332-349`) is the durable model; `LedgerTaxLot` is the
    in-memory relief shape; `FaceValueLotExtensions.ToLedgerTaxLot` adapts the par model into the
    latter; Execution's `TaxLot` has no consumer outside Execution and is not the thing to converge.
-   **The inventory is six, not four**, and has been short three times — `OpenLot`
+   **Do not plan from a count — it has been wrong four times.** Re-run the sweep
+   (`grep -rnE '(record|class) [A-Za-z]*Lot[A-Za-z]*[ ({]' src/ --include=*.cs`, filtered against
+   types that only operate on lots) and reconcile principal-versus-share quantity, currency and
+   identity keying across what it returns. Among the later additions — `OpenLot`
    (`Backtesting.Sdk/OpenLot.cs:8`, symbol-keyed, simulator-populated, projected to the workstation)
    and `BrokerageTaxLotSnapshotDto` (`Execution.Sdk/IBrokerageAccountSync.cs:274-281`) are both
    active seams. Re-run the sweep before planning; do not trust this count either.
-   **The acquisition FX rate is absent from all six**; the acquisition *currency* is absent from five
+   **The acquisition FX rate is absent from every lot type the sweep returns**; the acquisition *currency* is absent from five
    but **present on the brokerage DTO**, read off the broker's own open-lot row
    (`IbFlexStatementConnector.cs:943-950`) and dropped at the boundary.
    `LedgerTaxLotRecord.Currency` is
@@ -2631,10 +2672,25 @@ wrong-security resolution, and cross-vendor formatting variance is precisely whe
 golden-record conflict surface, which exists to catch this, is blind to it by construction.
 
 The mechanism is certain from source. What is not established without a query is how many such pairs
-exist in a live universe today; a one-off `group by identifier_kind, normalized_identifier_value
-having count(distinct security_id) > 1` is the cheapest way to size it, and is worth running before
-choosing between a unique normalized index (fail-closed on write) and normalized detection keys
-(detect-and-review, matching the current golden-record posture).
+exist in a live universe today, and the sizing query has to carry the same provider rule as the
+remedy — an earlier version of it did not. Grouping on `(identifier_kind,
+normalized_identifier_value)` alone counts two providers' identical `ProviderSymbol` text as a
+collision, when provider is part of identity for that kind (`ValidateCrossRecordDuplicates:441-449`)
+and the resolution query filters on `normalized_provider` (`PostgresSecurityMasterStore.cs:629-650`).
+That inflates the population with legitimate distinct identities, on the one kind most likely to
+generate them, and the inflated number is what the remedy choice would be made from. Group provider
+symbols by normalized provider as well:
+
+```sql
+group by identifier_kind, normalized_identifier_value,
+         case when identifier_kind = 'ProviderSymbol' then normalized_provider end
+having count(distinct security_id) > 1
+```
+
+— or run the simpler form restricted to the provider-independent kinds. Either way it is the cheapest
+way to size the problem, and is worth running before choosing between a unique normalized index
+(fail-closed on write) and normalized detection keys (detect-and-review, matching the current
+golden-record posture).
 
 **Those two options are not interchangeable, and the index one carries a precondition this document
 establishes elsewhere.** `ExecuteCreateAsync` appends the event stream before upserting the projection
@@ -2795,7 +2851,9 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    every `Required`/`Opt` key, which would fail the shipped `DirectLoan` schema on `borrower`,
    `covenants` and `pricingSource`. Fix the two "DirectLoan-shaped" tests to use the keys `DirectLoan`
    actually emits at the same time — as written they would have caught this and did not.
-2. **Reconcile identifier detection with identifier resolution (A2).** Run the duplicate query first
+2. **Reconcile identifier detection with identifier resolution (A2).** Run the duplicate query first —
+   **scoped by provider for `ProviderSymbol`**, or it counts legitimate two-provider identities as
+   collisions and inflates the number the remedy is chosen from —
    to size it, then pick one key. The current split is the one state that guarantees the conflict
    surface cannot see the ambiguity the resolver acts on. The two answers are **not** equally cheap:
    normalized detection keys reach only the identifier half — they are **not** self-contained, and an
