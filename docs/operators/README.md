@@ -65,6 +65,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 - [Provider Onboarding: Alpaca](./provider-onboarding-alpaca.md)
 - [Provider Onboarding: Interactive Brokers](./provider-onboarding-interactive-brokers.md)
 - [Reconciliation Operations](./reconciliation-operations.md)
+- [Security Master Normalized Identifier Uniqueness Migration](./security-master-normalized-identifier-migration.md)
 - [Statement Reconciliation Report Operations](./statement-reconciliation-report-operations.md)
 - [Verified Outcome Recovery](./verified-outcome-recovery.md)
 
