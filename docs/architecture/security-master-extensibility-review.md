@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-31 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
+**Reviewed:** 2026-09-01 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -40,6 +40,15 @@ risks that compound as new asset classes land.
 > views (P3b), and invalid import rows are reported to the operator as harmless skips while a cancelled
 > Polygon ingest imports a partial set and reports success (P4). The architectural assessment below is
 > unaffected.
+>
+> **Update 2026-09-01, mapped onto the four.** P5 is closed and verified — a
+> `RolePermissions`-backed mutation gate now covers all five in-process golden-record commands. The
+> legacy PATCH bypass (P1) was closed on 2026-08-29. P3b is narrowed, not resolved: the creation
+> fields are frozen, the history problem stands. P4's clause splits: invalid import rows are no
+> longer misreported as skips (the substring classifier is gone, so validation failures count
+> `Failed`), but a cancelled Polygon ingest still imports a partial set and reports success —
+> `FetchPageAsync` is unchanged. See the
+> [2026-09-01 pass](#scheduled-institutional-requirements-pass--2026-09-01).
 
 > **Verification pass, 2026-08-14.** Re-read against current source at `4b39e9da8`. The findings
 > below stand as written except where a **Status (2026-08-14)** note says otherwise; four of the ten
@@ -1703,6 +1712,12 @@ against, two paragraphs after the correction that withdrew that target.
   review (round 18), after the implementation work on the other items had likely been scoped, which
   may explain why it was not picked up.
 
+  **Status (2026-09-01): closed.** PR #2885 (`f316077b`) landed the gate this item specified —
+  resolved from `RolePermissions` rather than the session, failing closed on a named-but-unrecognised
+  anonymous role — and it covers all five in-process mutation paths including the backfill command.
+  Verified against the property, not the artefact, in the
+  [2026-09-01 pass](#scheduled-institutional-requirements-pass--2026-09-01).
+
 **The pattern across those four is worth more than the four entries.** P3b froze the creation fields
 while still overwriting `alias_value`; P4 replaced the message-sniffing classifier while still equating
 a stream conflict with a duplicate; P1's import path gained an `actor` parameter that the CLI fills
@@ -2996,6 +3011,260 @@ the private/alternative classes, valid-time term history, codec generation from
 
 ---
 
+## Scheduled institutional-requirements pass — 2026-09-01
+
+Re-read against `5b901dda`. Since `eaa83032` (the 2026-08-31 baseline), two merges put Security
+Master code in front of this review: PR #2885 (`f316077b`) landed the desktop mutation gate P5
+specified, and PR #2882 landed a new corporate-action accounting lane — service, store partial,
+migration 031, and three workstation routes. This pass therefore had three jobs: verify the P5
+closure against the property the finding requires rather than the artefact the fix produced, retire
+the "not re-verified" debt the 2026-08-29 status section explicitly left on P4's cancellation half,
+and review the new accounting lane end to end. One new finding (B1) comes out of the third job. The
+2026-08-31 findings are untouched by the range — no commit between `eaa83032` and `5b901dda`
+touches any of their anchor files (`git log` over each path returns empty) — so A1–A4 re-verify as
+open without re-argument. No code was changed by this pass and no tests were run — every claim is a
+source read at `5b901dda`.
+
+### Claimed closures, independently re-verified
+
+**P5 — closed, on the enumerated surface and by the remedy the item specified.** The verification
+here was an enumeration of the desktop mutation *commands* from the code surface — a sweep of
+`src/Meridian.Wpf/` for callers of every mutating member of `ISecurityMasterService`, the backfill
+service, ticker-change, corporate-action, alias, and conflict services — not a re-read of the
+dialogs the fix touched, because P5's own history shows the dialog frame is how the backfill
+command was missed. The sweep finds exactly five in-process golden-record call sites, and all five
+are gated:
+
+| Path | Service call | Enablement | Enforcement before the call |
+| --- | --- | --- | --- |
+| Create | `SecurityMasterEditViewModel.cs:276` | none (dialog-open command is gated, `SecurityMasterViewModel.cs:1594`) | `IsMutationGranted()` at `:194`, failing closed on a null seam (`:118-120`) |
+| Amend | `SecurityMasterEditViewModel.cs:308` | as above | same check, same handler |
+| Deactivate | `SecurityMasterDeactivateViewModel.cs:84` | dialog-open gated (`:1596`) | `:60-61`, failing closed on a null seam |
+| Import | `SecurityMasterViewModel.Import.cs:69` | `:1602` — `!IsImporting && CanModifySecurityMaster` | `EnsureCanModifySecurityMaster()` at `Import.cs:20` |
+| Backfill | `SecurityMasterViewModel.cs:2237` | `:1601` — `CanModifySecurityMaster` | `:2229`, with a comment naming it the largest mutation on the lane |
+
+The gate itself is the remedy this item prescribed after retracting the `HasPermission` one.
+`DesktopMutationPermissionResolver` resolves a named anonymous role's grants from `RolePermissions`
+rather than from the session — its own comment quotes the reason this document gave — refuses when
+that role lacks `ModifySecurityMaster`, and fails **closed** on a named-but-unrecognised role
+because "a typo in a security setting must never grant everything"
+(`DesktopMutationPermissionResolver.cs:43-52, 103-112`). So the configuration P5's retracted remedy
+would have left open — `MDC_ANONYMOUS_ROLE=ReadOnly` on a credential-free host — now refuses
+desktop mutations exactly as the browser lane does. On a credential-backed host the session's own
+fail-closed check decides (`:77`). Composition is sound: the parent view model constructs one
+`DesktopMutationAuthorization` over the DI-singleton session (`SecurityMasterViewModel.cs:1583`,
+`App.xaml.cs:449`) and hands the same instance to all three child dialogs (`:1670, :1698, :1722`).
+
+Two boundaries of this closure, stated so it is not read wider than it is. First, a null session,
+or a credential-free host that names no anonymous role, remains fail-open
+(`DesktopMutationPermissionResolver.cs:70-77`) — the resolver's comment records this as the shell's
+unconfigured local-development posture, the same decision `HasPermission` and the read-scope
+resolver already make for that host. That is a documented, consistent posture, not drift; the
+parity P5 required was for the credential-backed and named-anonymous-role hosts, and both are
+established. Second, closure is scoped to the Security Master lane: the same sweep found the P5
+shape alive one lane over — see the strategy-promotion note below.
+
+Residue, neither of which reopens the item: `CanModifySecurityMaster` raises no change
+notification and no gated command's `NotifyCanExecuteChanged` is invoked on sign-in/out, so a
+button can render enabled after a permission change — the body checks re-evaluate live, so the
+write still refuses; and the backfill handler still invokes `BackfillAllAsync()` with no
+cancellation token (`SecurityMasterViewModel.cs:2237`, against
+`ITradingParametersBackfillService.cs:12` which accepts one) — P4's plumbing defect, unchanged,
+tracked there.
+
+**P4's cancellation half, ingest side — closed, verified now.** The 2026-08-29 status section
+listed this half as "not re-verified, and therefore unknown". It is now verified at `5b901dda`
+(the fixes landed before `eaa83032`; no commit in this range touches these files, so the
+verification is of standing code, not of new work):
+
+- All three create loops rethrow cancellation **before** classifying:
+  `SecurityMasterImportService.cs:183-188`, the Polygon CLI at
+  `SecurityMasterCommands.cs:279-283`, and EDGAR at `EdgarIngestOrchestrator.cs:120-125`, each a
+  `catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }` ahead of the
+  classifier clause — the exact ordering the item said the remediation had to have.
+- EDGAR's three other broad catches — the ones this item established as the real swallow sites —
+  now rethrow the same way: around `SaveFactsAsync` (`:252-256`), around the provider fetch/store
+  (`:293-295`), and in `CountOpenConflictsAsync` (`:648-652`), whose comment states this item's own
+  reasoning ("reporting zero conflicts on a cancelled run would understate the ingest's outcome").
+- `IsDuplicateException` and its substring pair are gone from `src/` entirely; classification is
+  `SecurityMasterIngestFailureClassifier` on exception type and SQLSTATE, and EDGAR's
+  `CreateOrAmendSecurityAsync` has no catch of its own (`:307-358`), so **both** create and amend
+  flow through the typed classifier — the coverage this item said a create-only outcome would miss.
+
+What this closure is **not**: it is not the whole of P4. The classifier still equates "stream
+exists" with "idempotent duplicate" — `IsAlreadyMastered` returns `conflict.IsAlreadyCreated` for a
+version-0 conflict and `true` for any PostgreSQL `23505`, with no payload comparison
+(`SecurityMasterIngestFailureClassifier.cs:38-51`) — so a create reusing a `SecurityId` with
+*different* terms is still reported `Skipped`; and the backfill and Polygon-fetch swallows are all
+still live, per the table below.
+
+### Re-verified as still open
+
+| # | Item | Evidence at `5b901dda` |
+| --- | --- | --- |
+| A1 | Cash-flow resolver cannot read `DirectLoan`'s coupon or principal basis | `StructuredCashFlowTermsResolver.cs`, `SecurityMasterCashFlowService.cs`, `SecurityAssetTermsSchema.cs` untouched in the range; `CouponRateAliases` still lacks `currentCouponRate` (`:19`), `principalBasis` still falls back to `100m` (`SecurityMasterCashFlowService.cs:240`). |
+| A2 | Detection on raw values, resolution on normalized | `SecurityMasterConflictDetection.cs` and `PostgresSecurityMasterStore.cs` untouched in the range; detection still keys `$"{id.Kind}\|{id.Value}"` (`:33, :107, :115`). |
+| A3 | Readiness models 13 of 26 classes, no parity guard, no unmodeled state | `SecurityMasterOperationalReadinessService.cs` untouched in the range. |
+| A4 | Profile `IsProjected`/`IsSearchable` govern nothing | `SecurityAssetProfiles.cs` and `SecurityMasterQueryService.cs` untouched in the range. |
+| N4/N5 | Pack registry overlap rule cannot fire; shared prose contract schema | `SecurityAssetPackRegistry.cs` untouched in the range. |
+| N6 | Projection fan-out per upsert | Store untouched in the range. |
+| P4 (semantic) | Classifier has no content-equivalence check | `SecurityMasterIngestFailureClassifier.cs:38-51`, re-read this pass — see the closure bullet above for why the cancellation fix does not close this. |
+| P4 (backfill) | Both swallow points, and the `break` | `TradingParametersBackfillService.cs` unchanged: the `SearchAsync` catch still swallows and `return`s (`:62-70`), the loop still `break`s on `IsCancellationRequested` (`:85-89`), and the per-item `catch (Exception)` (`:98-108`) still counts a swallowed cancellation as `failureCount++` — **including the one `BackfillTickerAsync` correctly rethrows at `:223-227`**, so the inner fix is defeated one frame up and the run completes with a spurious failure count. |
+| P4 (WPF plumbing) | Desktop backfill has nothing to cancel with | `OnBackfillTradingParams()` takes no token and passes none (`SecurityMasterViewModel.cs:2224, :2237`); the sibling import handler plumbs one (`Import.cs:18, :69`), so the pattern exists in the same file. |
+| P4 (Polygon fetch) | Cancellation and HTTP failure read as end-of-pagination | `PolygonSecurityMasterIngestProvider.cs:128-149` unchanged: `catch (Exception)` returns `null`, `FetchAllAsync` `break`s on `null` (`:80-82`) and returns the partial set as a normal result. |
+| P1 (CLI) | `--imported-by` stamps an unvalidated caller string | `SecurityMasterCommands.cs:364-368` unchanged; neither validation against a known identity nor a documented trust exception has appeared. |
+| P1 (alias corrections) | The correcting actor is discarded | `PostgresSecurityMasterStore.Aliases.cs` untouched in the range; the conflict path still omits `created_by` (correctly, per P3b) and still records the corrector nowhere. |
+| P1 (remaining constraints) | `SourceSystem` from trusted metadata; valid-time gates; nested identifier windows; alias source-role decision | `SecurityMasterService.cs` untouched in the range; none of the four has landed. |
+| P3b | Recorded-as-of's alias promise not narrowed | No alias versioning or event backing in the range, and no documented narrowing of the recorded-as-of promise for aliases. The interim state — frozen creation fields, overwritten `alias_value` — is exactly the one the item said must not be mistaken for closure. |
+| — | Deferred quartet | Relational projections for private/alternative classes, valid-time term history, codec generation, N6 amplification — posture unchanged. |
+
+### B1 — The accounting lane verifies what it loads and trusts what it is told
+
+The new corporate-action accounting lane (PR #2882) is, in most respects, the strongest evidence
+yet that this review's findings are being read: every route rebinds tenant, company, actor, and a
+server-derived capability object rather than trusting the body
+(`SecurityMasterEndpoints.CorporateActionOperations.cs:606-676`), permissions are granular per
+stage (`PrepareCorporateActionAccounting`, `ApproveCorporateActionAccounting`,
+`PostCorporateActionAccounting` — `:623, :647, :671`), the store runs serializable transactions
+with advisory locks, fingerprinted receipts and replay (`PostgresCorporateActionOperationsStore.Accounting.cs:81-137`),
+maker-checker independence is enforced in both the service
+(`CorporateActionCaseAccountingService.cs:135`) and the store (`:198`), cancellation
+hygiene is clean, and the crash-retry adoption path refuses a spine posted outside the case's own
+approval (`CorporateActionCaseAccountingService.cs:234-250`).
+
+Which is what makes the gap it does have worth stating precisely: **the lane dereferences and
+re-verifies the bindings it loads, and shape-checks the bindings it is told.** Within one method,
+`AttachProjectionAsync`:
+
+- The **spine** binding is real verification: the snapshot is loaded at the exact expected version,
+  required to be Drafted with a retained candidate, and the candidate's canonical fingerprint is
+  **recomputed** and compared (`CorporateActionCaseAccountingService.cs:286-318`). The **period**
+  is the same at posting time: dereferenced, exact-version-checked, open-checked (`:411-435`).
+- The **lot snapshot** and **policy decision** are caller-asserted: `RequireId`/`RequirePositive`
+  on the request fields (`:62-65`) and nothing more. No store is consulted, migration 031 carries
+  no reference for either (`:20-21, :35-37` are bare columns), and
+  `HasAuthoritativeLotResolution: true` is stamped unconditionally from those unexamined inputs
+  (`:403`). The downstream "fail-closed" gates — `EnsurePolicyCoverage`, `EnsureLotResolution`
+  (`CorporateActionCaseAccountingContracts.cs:333-358`), re-run at approval (store `:196-197`) and
+  posting (`:208-209`) — therefore validate the caller's assertion against itself.
+- The **hashes and idempotency key** are the same class: `ProjectionInputHash` and
+  `PostingIntentHash` are format-checked (`:60-61`) and `PostingIdempotencyKey` prefix-checked
+  (`:66-71`), while one layer down the drafting side *recomputes* the intent hash against the
+  mapped effect (`CorporateActionAssetAccountingEventMapper.cs:260-261`) and *derives* the
+  idempotency key deterministically (`:343-363`). The values the case lane stores as its durable
+  audit binding are whatever the caller sent, in fields whose names promise they are the mapper's.
+
+The retained candidate the service has already loaded carries everything needed to verify instead:
+drafting requires evidence rows binding the exact lot snapshot and policy decision by subject id
+and version (`CorporateActionAccountingProjectionService.cs:1871-1874, 1899-1915`), and the attach
+step holds that very evidence list in hand — and checks only that it is non-empty (`:369-373`).
+
+**The sharpest instance: nothing ties the bound spine event to the case's own corporate action.**
+The cross-checks at attach are security, tenant/company, and accounting scope
+(`:326-339`, plus `EnsureProjectionMatchesCaseScope`). The processing case carries its
+`CorporateActionId` (`CorporateActionOperationsContracts.cs:477`); the accounting service never
+reads it — the identifier appears nowhere in `CorporateActionCaseAccountingService.cs` — and
+neither the projection DTO nor the `corporate_action_case_accounting_projections` table carries a
+source-action identity any later gate could compare. So where two drafted spine events exist for
+the same security in the same accounting scope — a dividend and a return of capital in one period —
+the case for action X can attach, approve, and durably post action Y's journal. Every gate passes,
+because every gate checks scope and candidate integrity, not provenance. The consequence is not a
+wrong journal in the ledger — the journal is Y's retained, fingerprint-verified candidate — it is a
+wrong *authority chain*: case X's record claims Y's economics as its accounting, and case Y can
+then no longer attach or post its own event (`spine.PostedJournalImpact is not null` fails its
+attach, the adoption path correctly refuses an approval reference that is not its own, and the
+route left is the restatement lane). The mechanism is certain from source; how often two Drafted
+spines coexist in one scope is not established here, and does not need to be for the gate to be
+worth having — the identity to compare against is already retained on the candidate: drafting
+requires a `SourceCorporateActionId`
+(`CorporateActionAccountingProjectionService.cs:243`) and requires the SourceEvent-role evidence
+row to bind exactly that id as its subject (`:1880-1888`), so the case's `CorporateActionId` can be
+checked against the candidate's retained SourceEvent evidence binding at attach time, where both
+sides are in memory.
+
+Two subtleties for the implementer, both about what *not* to do:
+
+- **Do not "fix" attribution by re-stamping `PreparedBy`.** The projection records the spine
+  drafter as its preparer (`candidate.Actor` — `CorporateActionCaseAccountingService.cs:404`), and
+  maker-checker independence is measured against that drafter
+  (`CorporateActionCaseAccountingContracts.cs:380-390`), which is right: the drafter authored the
+  economics. The attach actor is recorded on the case's version-bump audit, not on the projection.
+  The consequence worth knowing is that the operator who *selected* the binding — the only actor in
+  the lane whose inputs are currently unverified — may also approve and post it. Verifying the
+  binding (above) removes what that selection can smuggle; re-labelling the preparer would instead
+  relabel the economics author, the alias-update mistake from P3b's history arriving from the other
+  direction.
+- **The remedy is comparison against the retained candidate, not a second assertion.** Each of the
+  caller-asserted fields has an authoritative counterpart already in memory at attach time: the
+  evidence rows for lot and policy, the recomputable hashes, the derivable idempotency key, the
+  economic event's source identity. Requiring the request to match them keeps the request DTO as an
+  idempotency-friendly command envelope while making the stored binding mean what it says.
+
+### Smaller notes, not filed as findings
+
+- **The corporate-action CLI verb hardcodes its actor.** `Actor: "meridian-cli"` at
+  `SecurityMasterCommands.cs:140`, while the import verb in the same file derives
+  `--imported-by` → OS user → workload identity with a reasoned comment (`:360-368`). P2's shape —
+  a hardcoded actor constant — closed on the CSV parser and standing on the neighbouring verb. The
+  import verb's chain is the pattern to reuse (with P1's caveat about the unvalidated override).
+- **EDGAR still reports hard failures as skips.** The generic catch increments `securitiesSkipped`
+  (`EdgarIngestOrchestrator.cs:131-134`), so the CLI's "Securities skipped" line aggregates
+  genuine write failures with benign already-mastered rows. Known from the 2026-08-28 pass's EDGAR
+  bullet; restated here only because the cancellation fix in the same catch chain might otherwise
+  read as having addressed it — it did not, and was not meant to.
+- **Import's final-row cancellation window.** With no conflict service configured, nothing after
+  the import loop observes the token (`SecurityMasterImportService.cs:222-227`), so a cancellation
+  during the final row's `CreateAsync` that the call itself does not surface returns a normal
+  result. One-row blast radius — the loop-top check covers every other iteration — and the same
+  final-item shape this document mapped on EDGAR.
+- **`RecordCorpActionCommand` has no enablement predicate** (`SecurityMasterViewModel.cs:1600`) and
+  no body check; it posts over HTTP to a route requiring `ModifySecurityMaster`, so this is not a
+  bypass — but P5's remedy asked that enablement reflect permission "so the UI does not offer
+  actions that will be refused", and several HTTP-mediated commands (corporate-action record,
+  conflict resolution, asset profiles) still offer refusable actions.
+- **P5's shape is alive one lane over, outside this review's scope.** The desktop strategy
+  workspace approves a promotion through the in-process `PromotionService` with no authorization
+  seam and `ApprovedBy: Environment.UserName`
+  (`StrategyWorkspaceShellPresentationService.cs:174-179`) — P5's authorization defect and P1's
+  self-asserted attribution, together, on the strategy lane. Not a Security Master finding; named
+  so the closure of P5 is not read as closure of the pattern, and worth filing where strategy
+  governance is reviewed.
+
+### Priorities from this pass
+
+Ordered by institutional risk per unit of work, read as a delta on the standing lists above:
+
+1. **Bind the accounting lane's assertions to the retained candidate (B1).** Four comparisons at
+   attach, each against data already loaded: lot snapshot and policy decision against the
+   candidate's evidence rows (subject id + version), the two hashes against recomputation, the
+   idempotency key against derivation — and one comparison no layer can currently make after
+   attach: the case's `CorporateActionId` against the candidate's retained SourceEvent evidence
+   binding. Run that one at attach, where both sides are in memory, or persist the source-action
+   identity on the binding so later gates can re-check it. Do this while the lane is new and its one consumer is the
+   workstation; every month of postings makes retrofitted verification a data-repair exercise.
+2. **Finish P4's cancellation remediation where it actually still lives.** The ingest side is done
+   and verified; what remains is exactly the two backfill swallows
+   (`TradingParametersBackfillService.cs:62-70, :98-108`), the `break` that should be a throw
+   (`:85-89`), the WPF token plumbing (`SecurityMasterViewModel.cs:2224`), and Polygon's
+   `FetchPageAsync` null-on-failure (`:128-149`) — the last of which is also a *silent truncation*
+   defect for ordinary HTTP errors, independent of cancellation. Scope by method, per the item: the
+   per-item catch fix alone is defeated by the search catch above it.
+3. **The classifier's payload-equivalence check (P4's semantic half).** Unchanged in posture and
+   now the only part of the duplicate-classification defect left: a reused `SecurityId` with
+   different terms is still `Skipped`. The typed outcome exists; it needs the content-equivalence
+   or idempotency-key evidence before `Skipped` is earned, with `Failed` (or a conflict) preserved
+   for a non-equivalent row.
+4. **A1 and A2 stand as the top standing items** — their 2026-08-31 priority entries apply
+   unchanged, and nothing in this range touched them. They outrank item 3 in institutional risk
+   (silent zero-interest projection; silent wrong-security resolution) but are listed after it here
+   only because their remedies are already fully specified above and need no new analysis.
+5. **The two attribution stragglers travel together.** The CLI override validation (P1's import
+   path) and the corporate-action verb's hardcoded actor are one decision — what a CLI run is
+   allowed to assert about identity — and should be settled once, in both places, with the trust
+   assumption written down.
+
+---
+
 ## Method
 
 Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`,
@@ -3018,3 +3287,17 @@ projection fan-out, the parity-guard and terms-schema test suites, and — new t
 import path end to end: `SecurityMasterCsvParser`, `SecurityMasterImportService`, the
 `SecurityMasterImport` endpoint in `Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs`, and the
 WPF `SecurityMasterViewModel` import command.
+
+The 2026-09-01 pass established the merge delta with `git log`/`git diff` over
+`eaa83032..5b901dda` per anchor file, then read: the desktop mutation gate and its composition
+(`DesktopMutationPermissionResolver`, the three gated view models, `App.xaml.cs` registration),
+with the mutation surface enumerated by sweeping `src/Meridian.Wpf/` for callers of every mutating
+service member rather than by revisiting the dialogs the fix touched; the five ingest files named
+by P4's cancellation tables, re-anchored line by line; and — new to this pass — the corporate-action
+accounting lane end to end: `CorporateActionCaseAccountingService`,
+`CorporateActionCaseAccountingContracts` (policy and DTOs),
+`PostgresCorporateActionOperationsStore.Accounting`, migration
+`031_security_master_corporate_action_accounting_lane.sql`, the three accounting routes in
+`SecurityMasterEndpoints.CorporateActionOperations.cs`, and the drafting-side authorities they bind
+to (`CorporateActionAccountingProjectionService`, `CorporateActionAssetAccountingEventMapper`,
+`AssetAccountingEventDtos` spine validation).
