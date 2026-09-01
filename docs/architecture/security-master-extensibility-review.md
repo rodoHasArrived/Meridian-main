@@ -3072,10 +3072,15 @@ cancellation token (`SecurityMasterViewModel.cs:2237`, against
 `ITradingParametersBackfillService.cs:12` which accepts one) — P4's plumbing defect, unchanged,
 tracked there.
 
-**P4's cancellation half, ingest side — closed, verified now.** The 2026-08-29 status section
-listed this half as "not re-verified, and therefore unknown". It is now verified at `5b901dda`
-(the fixes landed before `eaa83032`; no commit in this range touches these files, so the
-verification is of standing code, not of new work):
+**P4's cancellation half — fully re-verified; closed at the create loops and EDGAR's broad
+catches.** The 2026-08-29 status section listed this half as "not re-verified, and therefore
+unknown". Every site it named is now verified at `5b901dda` (the fixes landed before `eaa83032`;
+no commit in this range touches these files, so the verification is of standing code, not of new
+work) — but only the sites below verified *fixed*. An earlier version of this heading said "ingest
+side — closed", which sweeps in the Polygon page fetch: that path feeds the CLI ingest, and this
+same pass re-verifies it as open in the table below. Scoping a closure by lane rather than by the
+sites actually checked is the over-generalisation this document keeps catching; the closed set is
+exactly these:
 
 - All three create loops rethrow cancellation **before** classifying:
   `SecurityMasterImportService.cs:183-188`, the Polygon CLI at
@@ -3167,15 +3172,23 @@ re-verifies the bindings it loads, and shape-checks the bindings it is told.** W
   posting (`:208-209`) — therefore validate the caller's assertion against itself.
 - The **hashes and idempotency key** are the same class: `ProjectionInputHash` and
   `PostingIntentHash` are format-checked (`:60-61`) and `PostingIdempotencyKey` prefix-checked
-  (`:66-71`), while one layer down the drafting side *recomputes* the intent hash against the
-  mapped effect (`CorporateActionAssetAccountingEventMapper.cs:260-261`) and *derives* the
-  idempotency key deterministically (`:343-363`). The values the case lane stores as its durable
-  audit binding are whatever the caller sent, in fields whose names promise they are the mapper's.
+  (`:66-71`), while one layer down these values have real authorities — the hashes are computed by
+  `CorporateActionAccountingProjectionService` (`Fingerprints` partial: `BuildProjectionInputHash`
+  at `:29`, `BuildPostingIntentHash` at `:150`), the mapper *attests* the intent hash against the
+  mapped effect (`ValidateMappedEffectAttestation`,
+  `CorporateActionAssetAccountingEventMapper.cs:260-266`) and *derives* the posting idempotency
+  key (`BuildPostingIdempotencyKey`, `:343-372`). An earlier version of this bullet said the
+  mapper "recomputes" the intent hash at `:260-261`; those lines compare two already-computed
+  hashes, and naming the wrong authority matters because the remedy below turns on where the
+  authoritative values live. The values the case lane stores as its durable audit binding are
+  whatever the caller sent, in fields whose names promise they are the drafting pipeline's.
 
-The retained candidate the service has already loaded carries everything needed to verify instead:
-drafting requires evidence rows binding the exact lot snapshot and policy decision by subject id
-and version (`CorporateActionAccountingProjectionService.cs:1871-1874, 1899-1915`), and the attach
-step holds that very evidence list in hand — and checks only that it is non-empty (`:369-373`).
+The retained candidate the service has already loaded carries the evidence to verify the **lot,
+policy, and source-action** assertions: drafting requires evidence rows binding the exact lot
+snapshot and policy decision by subject id and version
+(`CorporateActionAccountingProjectionService.cs:1871-1874, 1899-1915`), and the attach step holds
+that very evidence list in hand — and checks only that it is non-empty (`:369-373`). The hashes
+and idempotency key are different, per the correction below.
 
 **The sharpest instance: nothing ties the bound spine event to the case's own corporate action.**
 The cross-checks at attach are security, tenant/company, and accounting scope
@@ -3212,10 +3225,31 @@ Two subtleties for the implementer, both about what *not* to do:
   binding (above) removes what that selection can smuggle; re-labelling the preparer would instead
   relabel the economics author, the alias-update mistake from P3b's history arriving from the other
   direction.
-- **The remedy is comparison against the retained candidate, not a second assertion.** Each of the
-  caller-asserted fields has an authoritative counterpart already in memory at attach time: the
-  evidence rows for lot and policy, the recomputable hashes, the derivable idempotency key, the
-  economic event's source identity. Requiring the request to match them keeps the request DTO as an
+- **The remedy is comparison against a retained authority, not a second assertion — and for three
+  of the fields the authority is not yet retained.** An earlier version of this paragraph claimed
+  every caller-asserted field had "an authoritative counterpart already in memory at attach time",
+  including "recomputable hashes" and a "derivable idempotency key". That was wrong in kind, the
+  remedy failure this document tracks. What the retained candidate actually carries splits the
+  fields:
+  - **Comparable at attach today:** the lot snapshot, policy decision, and source corporate action —
+    each bound in the candidate's retained evidence rows by subject id and version.
+  - **Not comparable at attach today:** `ProjectionInputHash`, `PostingIntentHash`, and
+    `PostingIdempotencyKey`. The retained candidate declares no member for any of them
+    (`PostingRuleJournalCandidateRequestDto`, `AccountingConfigurationDtos.cs:848-883`), and none
+    is recomputable from it: `BuildProjectionInputHash` consumes the original projection request,
+    treatment decision, and role-bearing evidence dependencies — case and election versions,
+    position snapshot identity, model and engine versions
+    (`CorporateActionAccountingProjectionService.Fingerprints.cs:29-60`) — and
+    `BuildPostingIdempotencyKey` consumes the projection DTO and the mapped effect, including
+    `MappingHash` (`CorporateActionAssetAccountingEventMapper.cs:343-372`), inputs discarded
+    before the spine candidate is built. Prescribing "compare at attach" for these three would
+    leave them unchecked or invite a non-equivalent reconstruction. The remedy for them is to
+    **persist the authoritative values into retained spine state** (or onto the candidate) at
+    drafting time — where they are computed and attested — so attach has something real to compare;
+    until then the honest statement is that these three fields are verifiable only by extending
+    retention, not by a check the lane can add today.
+
+  Requiring the request to match retained authorities keeps the request DTO as an
   idempotency-friendly command envelope while making the stored binding mean what it says.
 
 ### Smaller notes, not filed as findings
@@ -3252,16 +3286,19 @@ Two subtleties for the implementer, both about what *not* to do:
 
 Ordered by institutional risk per unit of work, read as a delta on the standing lists above:
 
-1. **Bind the accounting lane's assertions to the retained candidate (B1).** Four comparisons at
-   attach, each against data already loaded: lot snapshot and policy decision against the
-   candidate's evidence rows (subject id + version), the two hashes against recomputation, the
-   idempotency key against derivation — and one comparison no layer can currently make after
-   attach: the case's `CorporateActionId` against the candidate's retained SourceEvent evidence
-   binding. Run that one at attach, where both sides are in memory, or persist the source-action
-   identity on the binding so later gates can re-check it. Do this while the lane is new and its one consumer is the
+1. **Bind the accounting lane's assertions to retained authorities (B1).** Three comparisons run
+   at attach against data already loaded — lot snapshot, policy decision, and the case's
+   `CorporateActionId`, each against the candidate's retained evidence rows (subject id +
+   version) — and three need the authority persisted first: the two hashes and the posting
+   idempotency key, which the retained candidate neither carries nor can recompute (see the
+   corrected remedy under B1; an earlier version of this entry said all six were comparable at
+   attach). Persist those at drafting time into retained spine state, then compare; and persist
+   the source-action identity on the binding so gates after attach can re-check it too. Do this while the lane is new and its one consumer is the
    workstation; every month of postings makes retrofitted verification a data-repair exercise.
-2. **Finish P4's cancellation remediation where it actually still lives.** The ingest side is done
-   and verified; what remains is exactly the two backfill swallows
+2. **Finish P4's cancellation remediation where it actually still lives.** The create loops and
+   EDGAR's broad catches are done and verified — not "the ingest side", which an earlier version
+   of this entry said while the same list it introduces names an open ingest path; what remains is
+   exactly the two backfill swallows
    (`TradingParametersBackfillService.cs:62-70, :98-108`), the `break` that should be a throw
    (`:85-89`), the WPF token plumbing (`SecurityMasterViewModel.cs:2224`), and Polygon's
    `FetchPageAsync` null-on-failure (`:128-149`) — the last of which is also a *silent truncation*
