@@ -166,7 +166,16 @@ public sealed partial class EnhancedIBConnectionManager
     public void marketRule(int marketRuleId, PriceIncrement[] priceIncrements)
     {
         RecordMessageReceived();
-        var requestId = _marketRuleRequests.TryRemove(marketRuleId, out var correlatedRequestId) ? correlatedRequestId : marketRuleId;
+        var correlated = _marketRuleRequests.TryRemove(marketRuleId, out var correlatedRequestId);
+        var requestId = correlated ? correlatedRequestId : marketRuleId;
+        if (correlated)
+        {
+            // The payload completes the request downstream, so the correlated id's
+            // rejection-routing ownership ends with it. The uncorrelated fallback id is left
+            // alone: it may belong to an unrelated in-flight data request.
+            _dataServiceRequestIds.TryRemove(requestId, out _);
+        }
+
         MarketRuleReceived?.Invoke(this, (requestId, priceIncrements.Select(static x => new ProviderMarketRuleIncrement((decimal)x.LowEdge, (decimal)x.Increment, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow))).ToArray()));
     }
 

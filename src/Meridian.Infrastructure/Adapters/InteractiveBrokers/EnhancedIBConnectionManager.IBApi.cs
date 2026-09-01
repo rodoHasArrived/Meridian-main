@@ -1216,12 +1216,14 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
 
     /// <summary>
     /// True for request-scoped IB notices that leave the request live: the 2100-2199
-    /// system-message band and 10167, which announces the delayed-market-data fallback whose
-    /// ticks follow on the same id. Terminal outcomes are frozen downstream, so treating one of
-    /// these as a rejection would permanently end a request the vendor is still serving.
+    /// system-message band, 10090 (part of the requested data is unsubscribed but
+    /// subscription-independent ticks keep streaming on the same id), and 10167, which
+    /// announces the delayed-market-data fallback whose ticks follow on the same id. Terminal
+    /// outcomes are frozen downstream, so treating one of these as a rejection would
+    /// permanently end a request the vendor is still serving.
     /// </summary>
     private static bool IsNonTerminalNotice(int errorCode)
-        => errorCode is (>= 2100 and <= 2199) or 10167;
+        => errorCode is (>= 2100 and <= 2199) or 10090 or 10167;
 
     public void connectionClosed()
     {
