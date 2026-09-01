@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Text;
@@ -15,7 +16,18 @@ public sealed record StatementRunMatchArtifact(
     string ImportId,
     IReadOnlyList<ReconciliationBreakRecord> Breaks,
     IReadOnlyList<ReconciliationCase> Cases,
-    int MatchCount);
+    int MatchCount)
+{
+    /// <summary>
+    /// One record per matched result carrying the evidence membership that formed the match, so a
+    /// retained artifact distinguishes different pair or split assignments of the same size. Null on
+    /// legacy artifacts written before groups were retained; the null is omitted from serialization
+    /// so a legacy artifact round-trips byte-identically and keeps verifying against the recovery
+    /// checkpoint hash recorded when it was written. New runs always retain a (possibly empty) list.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<StatementRunMatchGroupRecord>? MatchGroups { get; init; }
+}
 
 /// <summary>
 /// Deterministic sidecar binding a live statement projection to the immutable match artifact that
@@ -83,6 +95,26 @@ public sealed class InMemoryStatementRunMatchArtifactStore : IStatementRunMatchA
         if (artifact.MatchCount < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(artifact), "Statement match count cannot be negative.");
+        }
+
+        // Legacy artifacts predate retained match groups (null). When groups are retained they must
+        // account for every counted match, or the artifact could again claim matches whose
+        // membership is unverifiable.
+        if (artifact.MatchGroups is { } groups)
+        {
+            if (groups.Count != artifact.MatchCount)
+            {
+                throw new ArgumentException(
+                    $"Statement run '{artifact.RunId}' retains {groups.Count} match groups for {artifact.MatchCount} counted matches.",
+                    nameof(artifact));
+            }
+
+            if (groups.Any(static group => group is null))
+            {
+                throw new ArgumentException(
+                    $"Statement run '{artifact.RunId}' retains a null match group.",
+                    nameof(artifact));
+            }
         }
     }
 }

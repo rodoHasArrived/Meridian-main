@@ -88,6 +88,7 @@ internal static class StatementRunMatcher
             ToEngineTolerance(toleranceProfile)));
 
         var breaks = new List<StatementRunBreak>();
+        var matchGroups = new List<StatementRunMatchGroupRecord>();
         var matchCount = 0;
         var breakOrdinal = 0;
         // With no retained internal ledger transactions, every statement movement is structurally
@@ -99,6 +100,7 @@ internal static class StatementRunMatcher
             if (result.MatchTier is StatementMatchTier.Exact or StatementMatchTier.Tolerance)
             {
                 matchCount++;
+                matchGroups.Add(BuildMatchGroup(import.ImportId, result));
                 continue;
             }
 
@@ -135,7 +137,47 @@ internal static class StatementRunMatcher
             breaks.Add(new StatementRunBreak(record, result, statementRow));
         }
 
-        return new StatementRunMatchResult(breaks, matchCount);
+        return new StatementRunMatchResult(breaks, matchCount, matchGroups);
+    }
+
+    /// <summary>
+    /// Retains one matched engine result as a durable group record. Member references are sorted so
+    /// the group — and the deterministic id derived from its full membership — depends only on which
+    /// records reconciled together, never on enumeration order.
+    /// </summary>
+    private static StatementRunMatchGroupRecord BuildMatchGroup(string importId, StatementMatchResult result)
+    {
+        var statementReferences = result.AllBrokerEvidenceReferences
+            .OrderBy(static reference => reference, StringComparer.Ordinal)
+            .ToArray();
+        var internalReferences = result.AllInternalEvidenceReferences
+            .OrderBy(static reference => reference, StringComparer.Ordinal)
+            .ToArray();
+        var groupId = ReconciliationMatchKernel.CreateDeterministicId(
+            "match-group",
+            [
+                importId,
+                result.Kind.ToString(),
+                result.MatchTier.ToString(),
+                .. result.RuleIds,
+                "statement",
+                .. statementReferences,
+                "internal",
+                .. internalReferences
+            ]);
+        return new StatementRunMatchGroupRecord(
+            groupId,
+            result.Kind.ToString(),
+            result.MatchTier.ToString(),
+            result.RuleIds.ToArray(),
+            statementReferences,
+            internalReferences,
+            result.Confidence)
+        {
+            QuantityVariance = result.Variance.Quantity,
+            MarketValueVariance = result.Variance.MarketValue,
+            AmountVariance = result.Variance.Amount
+        };
     }
 
     /// <summary>
@@ -357,8 +399,14 @@ internal static class StatementRunMatcher
     }
 }
 
-/// <summary>The outcome of a statement run's match pass: the breaks to persist and the match count.</summary>
-internal sealed record StatementRunMatchResult(IReadOnlyList<StatementRunBreak> Breaks, int MatchCount);
+/// <summary>
+/// The outcome of a statement run's match pass: the breaks to persist, the match count, and one
+/// group record per matched result carrying the evidence membership that formed the match.
+/// </summary>
+internal sealed record StatementRunMatchResult(
+    IReadOnlyList<StatementRunBreak> Breaks,
+    int MatchCount,
+    IReadOnlyList<StatementRunMatchGroupRecord> MatchGroups);
 
 /// <summary>
 /// A single break produced by the match pass, carrying the persisted record, the originating engine

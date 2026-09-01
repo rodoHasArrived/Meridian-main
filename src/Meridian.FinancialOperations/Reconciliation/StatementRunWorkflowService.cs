@@ -222,9 +222,17 @@ public sealed class StatementRunWorkflowService(
             var retainedArtifact = await _matchArtifactStore.GetAsync(runId, ct).ConfigureAwait(false);
             if (retainedArtifact is not null)
             {
+                // A retained artifact without match groups was written before groups were retained
+                // (a crash between the artifact write and the Matched checkpoint, replayed after the
+                // schema upgrade). Verify it against the group-free projection of the expected
+                // artifact and adopt it as-is: rewriting it under the retained hash would fabricate
+                // durable evidence the original run never produced.
+                var comparableArtifact = retainedArtifact.MatchGroups is null && expectedArtifact.MatchGroups is not null
+                    ? expectedArtifact with { MatchGroups = null }
+                    : expectedArtifact;
                 EnsureSameArtifact(
                     retainedArtifact,
-                    expectedArtifact,
+                    comparableArtifact,
                     StatementRunRecoveryJsonContext.Default.StatementRunMatchArtifact,
                     $"Statement run '{runId}' retained a conflicting legacy match artifact.");
                 matchArtifact = retainedArtifact;
@@ -391,7 +399,10 @@ public sealed class StatementRunWorkflowService(
             imported.Import.ImportId,
             breaks,
             cases,
-            matchResult.MatchCount);
+            matchResult.MatchCount)
+        {
+            MatchGroups = matchResult.MatchGroups
+        };
     }
 
     private async Task<StatementRunMatchArtifact> LoadVerifiedMatchArtifactAsync(

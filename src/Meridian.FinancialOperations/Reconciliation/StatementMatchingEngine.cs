@@ -2,7 +2,11 @@ namespace Meridian.FinancialOperations.Reconciliation;
 
 /// <summary>
 /// Matches normalized broker statement positions, cash balances, and transactions against
-/// Meridian's internal portfolio, cash, and ledger views using deterministic staged rules.
+/// Meridian's internal portfolio, cash, and ledger views using deterministic staged rules. Pair
+/// selection routes through <see cref="ReconciliationMatchKernel.SelectDeterministicAssignment{TPair}"/>
+/// with side-qualified member keys, and transactions additionally get bounded one-to-many /
+/// many-to-one split matching over the kernel's split search, so identical populations produce
+/// identical results regardless of input enumeration order.
 /// </summary>
 public sealed class StatementMatchingEngine
 {
@@ -17,8 +21,10 @@ public sealed class StatementMatchingEngine
     private const string TransactionExternalIdRuleId = "statement-transaction-external-id-v1";
     private const string TransactionExactRuleId = "statement-transaction-exact-v1";
     private const string TransactionToleranceRuleId = "statement-transaction-tolerance-v1";
+    private const string TransactionSplitRuleId = "statement-transaction-split-v1";
     private const string TransactionCandidateRuleId = "statement-transaction-candidate-v1";
     private const string TransactionBreakRuleId = "statement-transaction-break-v1";
+    private const int MaxTransactionSplitLegs = 4;
 
     public StatementMatchingResult Run(StatementMatchingRequest request)
     {
@@ -50,6 +56,7 @@ public sealed class StatementMatchingEngine
             (statement, internalPosition) => SamePositionIdentity(statement, internalPosition)
                 && statement.Quantity == internalPosition.Quantity
                 && OptionalMarketValueEquals(statement.MarketValue, internalPosition.MarketValue),
+            static (_, _) => 0m,
             (statement, internalPosition) => CreatePositionResult(
                 statement,
                 internalPosition,
@@ -69,6 +76,7 @@ public sealed class StatementMatchingEngine
             (statement, internalPosition) => SamePositionIdentity(statement, internalPosition)
                 && Abs(statement.Quantity - internalPosition.Quantity) <= tolerance.PositionQuantity
                 && OptionalMarketValueWithinTolerance(statement.MarketValue, internalPosition.MarketValue, tolerance.PositionMarketValue),
+            static (statement, internalPosition) => PositionVariance(statement, internalPosition).LargestAbsoluteAmount,
             (statement, internalPosition) => CreatePositionResult(
                 statement,
                 internalPosition,
@@ -113,6 +121,7 @@ public sealed class StatementMatchingEngine
             matchedStatements,
             matchedInternal,
             (statement, internalCash) => SameCashIdentity(statement, internalCash) && statement.EndingBalance == internalCash.Balance,
+            static (_, _) => 0m,
             (statement, internalCash) => CreateCashResult(
                 statement,
                 internalCash,
@@ -131,6 +140,7 @@ public sealed class StatementMatchingEngine
             matchedInternal,
             (statement, internalCash) => SameCashIdentity(statement, internalCash)
                 && Abs(statement.EndingBalance - internalCash.Balance) <= tolerance.CashBalance,
+            static (statement, internalCash) => Abs(statement.EndingBalance - internalCash.Balance),
             (statement, internalCash) => CreateCashResult(
                 statement,
                 internalCash,
@@ -178,6 +188,7 @@ public sealed class StatementMatchingEngine
                 && SameTransactionIdentity(statement, internalTransaction)
                 && statement.Quantity == internalTransaction.Quantity
                 && statement.NetAmount == internalTransaction.NetAmount,
+            static (_, _) => 0m,
             (statement, internalTransaction) => CreateTransactionResult(
                 statement,
                 internalTransaction,
@@ -197,6 +208,7 @@ public sealed class StatementMatchingEngine
             (statement, internalTransaction) => SameTransactionIdentity(statement, internalTransaction)
                 && statement.Quantity == internalTransaction.Quantity
                 && statement.NetAmount == internalTransaction.NetAmount,
+            static (_, _) => 0m,
             (statement, internalTransaction) => CreateTransactionResult(
                 statement,
                 internalTransaction,
@@ -216,6 +228,7 @@ public sealed class StatementMatchingEngine
             (statement, internalTransaction) => SameTransactionIdentity(statement, internalTransaction)
                 && Abs(statement.Quantity - internalTransaction.Quantity) <= tolerance.TransactionQuantity
                 && Abs(statement.NetAmount - internalTransaction.NetAmount) <= tolerance.TransactionNetAmount,
+            static (statement, internalTransaction) => TransactionVariance(statement, internalTransaction).LargestAbsoluteAmount,
             (statement, internalTransaction) => CreateTransactionResult(
                 statement,
                 internalTransaction,
@@ -226,6 +239,8 @@ public sealed class StatementMatchingEngine
                 TransactionTolerance(tolerance),
                 "Transaction matched inside configured quantity and net-amount tolerances."),
             results);
+
+        MatchTransactionSplits(request, matchedStatements, matchedInternal, tolerance, results);
 
         MatchBestCandidate(
             request.StatementTransactions,
@@ -252,17 +267,25 @@ public sealed class StatementMatchingEngine
         AddUnmatchedTransactions(request.StatementTransactions, request.InternalLedgerTransactions, matchedStatements, matchedInternal, tolerance, results);
     }
 
+    /// <summary>
+    /// Runs one pair-matching stage: every admissible pair competes in a total deterministic order
+    /// (score, then statement id, then internal id) and the kernel selects a non-overlapping
+    /// assignment, so selection depends only on the population contents, never on the order either
+    /// side happens to be enumerated in.
+    /// </summary>
     private static void MatchStage<TStatement, TInternal>(
         IReadOnlyList<TStatement> statements,
         IReadOnlyList<TInternal> internalItems,
         HashSet<string> matchedStatements,
         HashSet<string> matchedInternal,
         Func<TStatement, TInternal, bool> isMatch,
+        Func<TStatement, TInternal, decimal> scorePair,
         Func<TStatement, TInternal, StatementMatchResult> createResult,
         List<StatementMatchResult> results)
         where TStatement : class, IStatementMatchItem
         where TInternal : class, IStatementMatchItem
     {
+        var pairs = new List<(TStatement Statement, TInternal Internal, decimal Score)>();
         foreach (var statement in statements)
         {
             if (matchedStatements.Contains(statement.MatchId))
@@ -273,11 +296,21 @@ public sealed class StatementMatchingEngine
                 if (matchedInternal.Contains(internalItem.MatchId) || !isMatch(statement, internalItem))
                     continue;
 
-                matchedStatements.Add(statement.MatchId);
-                matchedInternal.Add(internalItem.MatchId);
-                results.Add(createResult(statement, internalItem));
-                break;
+                pairs.Add((statement, internalItem, scorePair(statement, internalItem)));
             }
+        }
+
+        var ordered = pairs
+            .OrderBy(static pair => pair.Score)
+            .ThenBy(static pair => pair.Statement.MatchId, StringComparer.Ordinal)
+            .ThenBy(static pair => pair.Internal.MatchId, StringComparer.Ordinal);
+        foreach (var pair in ReconciliationMatchKernel.SelectDeterministicAssignment(
+            ordered,
+            static pair => new[] { StatementMemberKey(pair.Statement), InternalMemberKey(pair.Internal) }))
+        {
+            matchedStatements.Add(pair.Statement.MatchId);
+            matchedInternal.Add(pair.Internal.MatchId);
+            results.Add(createResult(pair.Statement, pair.Internal));
         }
     }
 
@@ -292,35 +325,221 @@ public sealed class StatementMatchingEngine
         List<StatementMatchResult> results)
         where TStatement : class, IStatementMatchItem
         where TInternal : class, IStatementMatchItem
+        => MatchStage(
+            statements,
+            internalItems,
+            matchedStatements,
+            matchedInternal,
+            isCandidate,
+            scoreCandidate,
+            createResult,
+            results);
+
+    /// <summary>
+    /// Deterministic one-to-many / many-to-one transaction matching over the sided kernel. Anchors
+    /// are visited in ordinal id order; each anchor's candidate legs are partitioned by the same
+    /// identity constraints the pair stages apply (account, instrument-or-currency, trade and
+    /// settlement dates, type) BEFORE the kernel's bounded search, so the
+    /// <see cref="ReconciliationMatchKernel.MaxSplitSearchCandidates"/> cap lands on legs that could
+    /// actually match instead of being exhausted by larger cross-identity amounts. The accept
+    /// callback then holds the subset's aggregate quantity to the transaction-quantity tolerance —
+    /// legs with the right cash but the wrong share count must stay a break, because a silently
+    /// absorbed quantity mismatch surfaces nowhere.
+    /// </summary>
+    private static void MatchTransactionSplits(
+        StatementMatchingRequest request,
+        HashSet<string> matchedStatements,
+        HashSet<string> matchedInternal,
+        StatementMatchingToleranceProfile tolerance,
+        List<StatementMatchResult> results)
     {
-        foreach (var statement in statements)
+        // Statement-anchored: one statement movement settled internally as several ledger legs.
+        foreach (var statement in request.StatementTransactions
+            .Where(item => !matchedStatements.Contains(((IStatementMatchItem)item).MatchId))
+            .OrderBy(static item => item.TransactionId, StringComparer.Ordinal))
         {
-            if (matchedStatements.Contains(statement.MatchId))
-                continue;
-
-            TInternal? best = default;
-            decimal? bestScore = null;
-            foreach (var internalItem in internalItems)
+            var legs = CollectSplitPool(
+                request.InternalLedgerTransactions,
+                matchedInternal,
+                internalTransaction => SameTransactionIdentity(statement, internalTransaction),
+                static internalTransaction => internalTransaction.TransactionId,
+                static internalTransaction => internalTransaction.EvidenceReference);
+            if (!TryMatchSplit(
+                statement.NetAmount,
+                statement.Quantity,
+                legs,
+                static leg => leg.TransactionId,
+                static leg => leg.NetAmount,
+                static leg => leg.Quantity,
+                tolerance,
+                out var selectedLegs,
+                out var amountVariance,
+                out var quantityVariance))
             {
-                if (matchedInternal.Contains(internalItem.MatchId) || !isCandidate(statement, internalItem))
-                    continue;
-
-                var score = scoreCandidate(statement, internalItem);
-                if (bestScore is null || score < bestScore)
-                {
-                    best = internalItem;
-                    bestScore = score;
-                }
+                continue;
             }
 
-            if (best is null)
-                continue;
+            matchedStatements.Add(((IStatementMatchItem)statement).MatchId);
+            foreach (var leg in selectedLegs)
+            {
+                matchedInternal.Add(((IStatementMatchItem)leg).MatchId);
+            }
 
-            matchedStatements.Add(statement.MatchId);
-            matchedInternal.Add(best.MatchId);
-            results.Add(createResult(statement, best));
+            results.Add(new StatementMatchResult(
+                StatementMatchKind.Transaction,
+                amountVariance == 0m && quantityVariance == 0m ? StatementMatchTier.Exact : StatementMatchTier.Tolerance,
+                SplitConfidence(amountVariance, quantityVariance, tolerance),
+                [TransactionSplitRuleId],
+                statement.EvidenceReference,
+                null,
+                new StatementMatchVariance(Quantity: quantityVariance, Amount: amountVariance),
+                TransactionTolerance(tolerance),
+                $"Statement transaction settled as {selectedLegs.Count} internal ledger legs sharing account, instrument or currency, dates, and type within configured tolerances.")
+            {
+                InternalEvidenceReferences = selectedLegs.Select(static leg => leg.EvidenceReference).ToArray()
+            });
+        }
+
+        // Internal-anchored mirror: one internal posting the custodian reports as several rows.
+        foreach (var internalTransaction in request.InternalLedgerTransactions
+            .Where(item => !matchedInternal.Contains(((IStatementMatchItem)item).MatchId))
+            .OrderBy(static item => item.TransactionId, StringComparer.Ordinal))
+        {
+            var legs = CollectSplitPool(
+                request.StatementTransactions,
+                matchedStatements,
+                statement => SameTransactionIdentity(statement, internalTransaction),
+                static statement => statement.TransactionId,
+                static statement => statement.EvidenceReference);
+            if (!TryMatchSplit(
+                internalTransaction.NetAmount,
+                internalTransaction.Quantity,
+                legs,
+                static leg => leg.TransactionId,
+                static leg => leg.NetAmount,
+                static leg => leg.Quantity,
+                tolerance,
+                out var selectedLegs,
+                out var amountVariance,
+                out var quantityVariance))
+            {
+                continue;
+            }
+
+            matchedInternal.Add(((IStatementMatchItem)internalTransaction).MatchId);
+            foreach (var leg in selectedLegs)
+            {
+                matchedStatements.Add(((IStatementMatchItem)leg).MatchId);
+            }
+
+            // Variance keeps the statement-minus-internal convention of the pair stages.
+            results.Add(new StatementMatchResult(
+                StatementMatchKind.Transaction,
+                amountVariance == 0m && quantityVariance == 0m ? StatementMatchTier.Exact : StatementMatchTier.Tolerance,
+                SplitConfidence(amountVariance, quantityVariance, tolerance),
+                [TransactionSplitRuleId],
+                null,
+                internalTransaction.EvidenceReference,
+                new StatementMatchVariance(Quantity: -quantityVariance, Amount: -amountVariance),
+                TransactionTolerance(tolerance),
+                $"Internal ledger transaction reported by the custodian as {selectedLegs.Count} statement rows sharing account, instrument or currency, dates, and type within configured tolerances.")
+            {
+                BrokerEvidenceReferences = selectedLegs.Select(static leg => leg.EvidenceReference).ToArray()
+            });
         }
     }
+
+    /// <summary>
+    /// Collects the identity-partitioned, still-unmatched candidate legs for one split anchor in a
+    /// deterministic order. A duplicated raw id keeps only its deterministically-first record,
+    /// because the kernel maps legs back by id.
+    /// </summary>
+    private static IReadOnlyList<TLeg> CollectSplitPool<TLeg>(
+        IReadOnlyList<TLeg> population,
+        HashSet<string> matchedKeys,
+        Func<TLeg, bool> sharesIdentity,
+        Func<TLeg, string> legId,
+        Func<TLeg, string> legEvidence)
+        where TLeg : class, IStatementMatchItem
+    {
+        var pool = new List<TLeg>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var leg in population
+            .Where(item => !matchedKeys.Contains(item.MatchId) && sharesIdentity(item))
+            .OrderBy(legId, StringComparer.Ordinal)
+            .ThenBy(legEvidence, StringComparer.Ordinal))
+        {
+            if (seen.Add(legId(leg)))
+            {
+                pool.Add(leg);
+            }
+        }
+
+        return pool;
+    }
+
+    private static bool TryMatchSplit<TLeg>(
+        decimal anchorNetAmount,
+        decimal anchorQuantity,
+        IReadOnlyList<TLeg> legs,
+        Func<TLeg, string> legId,
+        Func<TLeg, decimal> legNetAmount,
+        Func<TLeg, decimal> legQuantity,
+        StatementMatchingToleranceProfile tolerance,
+        out IReadOnlyList<TLeg> selectedLegs,
+        out decimal amountVariance,
+        out decimal quantityVariance)
+        where TLeg : class
+    {
+        selectedLegs = [];
+        amountVariance = 0m;
+        quantityVariance = 0m;
+        if (legs.Count < 2)
+        {
+            return false;
+        }
+
+        var legById = legs.ToDictionary(legId, StringComparer.Ordinal);
+        if (!ReconciliationMatchKernel.TryFindSplit(
+            anchorNetAmount,
+            legs.Select(leg => new ReconciliationMatchKernel.SplitCandidate(legId(leg), legNetAmount(leg))).ToArray(),
+            tolerance.TransactionNetAmount,
+            MaxTransactionSplitLegs,
+            accept: subset => Abs(anchorQuantity - subset.Sum(leg => legQuantity(legById[leg.Id]))) <= tolerance.TransactionQuantity,
+            out var kernelLegs,
+            out var residual))
+        {
+            return false;
+        }
+
+        selectedLegs = kernelLegs
+            .Select(leg => legById[leg.Id])
+            .OrderBy(legId, StringComparer.Ordinal)
+            .ToArray();
+        amountVariance = residual;
+        quantityVariance = anchorQuantity - selectedLegs.Sum(legQuantity);
+        return true;
+    }
+
+    private static decimal SplitConfidence(
+        decimal amountVariance,
+        decimal quantityVariance,
+        StatementMatchingToleranceProfile tolerance)
+        => ConfidenceFromVariance(
+            Math.Max(Abs(amountVariance), Abs(quantityVariance)),
+            Math.Max(tolerance.TransactionNetAmount, tolerance.TransactionQuantity));
+
+    /// <summary>
+    /// Side-qualified, case-normalized member keys for the kernel's ordinal consumed set. The
+    /// qualification keeps a raw id that legitimately appears on both sides — a bank reference
+    /// propagated into the ledger — from letting one side's consumption block the other side's
+    /// match; upper-casing preserves the engine's case-insensitive id semantics.
+    /// </summary>
+    private static string StatementMemberKey<T>(T item) where T : class, IStatementMatchItem
+        => $"statement:{item.MatchId.ToUpperInvariant()}";
+
+    private static string InternalMemberKey<T>(T item) where T : class, IStatementMatchItem
+        => $"internal:{item.MatchId.ToUpperInvariant()}";
 
     private static void AddUnmatchedPositions(
         IReadOnlyList<NormalizedStatementPosition> statements,
@@ -344,7 +563,12 @@ public sealed class StatementMatchingEngine
                 "Broker statement position did not match any internal portfolio position."));
         }
 
-        foreach (var internalItem in internalItems.Where(internalItem => !matchedInternal.Contains(((IStatementMatchItem)internalItem).MatchId)))
+        // Statement rows surface in retained-import order; internal records arrive in provider
+        // enumeration order, which is not retained anywhere, so sort them for a permutation-stable
+        // result sequence (break ids derive from the enumeration ordinal downstream).
+        foreach (var internalItem in internalItems
+            .Where(internalItem => !matchedInternal.Contains(((IStatementMatchItem)internalItem).MatchId))
+            .OrderBy(static internalItem => internalItem.PositionId, StringComparer.Ordinal))
         {
             results.Add(new StatementMatchResult(
                 StatementMatchKind.Position,
@@ -381,7 +605,9 @@ public sealed class StatementMatchingEngine
                 "Broker statement cash balance did not match any internal cash balance."));
         }
 
-        foreach (var internalItem in internalItems.Where(internalItem => !matchedInternal.Contains(((IStatementMatchItem)internalItem).MatchId)))
+        foreach (var internalItem in internalItems
+            .Where(internalItem => !matchedInternal.Contains(((IStatementMatchItem)internalItem).MatchId))
+            .OrderBy(static internalItem => internalItem.CashBalanceId, StringComparer.Ordinal))
         {
             results.Add(new StatementMatchResult(
                 StatementMatchKind.Cash,
@@ -418,7 +644,9 @@ public sealed class StatementMatchingEngine
                 "Broker statement transaction did not match any internal ledger transaction."));
         }
 
-        foreach (var internalItem in internalItems.Where(internalItem => !matchedInternal.Contains(((IStatementMatchItem)internalItem).MatchId)))
+        foreach (var internalItem in internalItems
+            .Where(internalItem => !matchedInternal.Contains(((IStatementMatchItem)internalItem).MatchId))
+            .OrderBy(static internalItem => internalItem.TransactionId, StringComparer.Ordinal))
         {
             results.Add(new StatementMatchResult(
                 StatementMatchKind.Transaction,
@@ -690,7 +918,28 @@ public sealed record StatementMatchResult(
     string? InternalEvidenceReference,
     StatementMatchVariance Variance,
     StatementMatchTolerance Tolerance,
-    string Explanation);
+    string Explanation)
+{
+    /// <summary>
+    /// Every broker-side member of a many-to-one split group. Null for pair and unmatched results,
+    /// whose only broker member is <see cref="BrokerEvidenceReference"/>.
+    /// </summary>
+    public IReadOnlyList<string>? BrokerEvidenceReferences { get; init; }
+
+    /// <summary>
+    /// Every internal-side member of a one-to-many split group. Null for pair and unmatched
+    /// results, whose only internal member is <see cref="InternalEvidenceReference"/>.
+    /// </summary>
+    public IReadOnlyList<string>? InternalEvidenceReferences { get; init; }
+
+    /// <summary>All broker-side evidence members, whether the result is a pair or a split group.</summary>
+    public IReadOnlyList<string> AllBrokerEvidenceReferences
+        => BrokerEvidenceReferences ?? (BrokerEvidenceReference is null ? [] : [BrokerEvidenceReference]);
+
+    /// <summary>All internal-side evidence members, whether the result is a pair or a split group.</summary>
+    public IReadOnlyList<string> AllInternalEvidenceReferences
+        => InternalEvidenceReferences ?? (InternalEvidenceReference is null ? [] : [InternalEvidenceReference]);
+}
 
 public sealed record StatementMatchVariance(
     decimal? Quantity = null,
