@@ -66,8 +66,12 @@ public interface ISecurityMasterConflictService
 /// </summary>
 public sealed class SecurityMasterConflictService : ISecurityMasterConflictService
 {
-    internal const string IdentifierNoLongerOverlapsReason =
-        "Identifier claims no longer have overlapping validity windows.";
+    // Cause-neutral by design: a conflict leaves the detected set when its claims stop
+    // overlapping, but also when an identifier is removed, corrected to another value, or moved
+    // to another provider scope — the detector only knows the pair is gone, not why, and the
+    // durable audit reason must not assert a cause it cannot distinguish.
+    internal const string IdentifierNoLongerDetectedReason =
+        "Identifier claims are no longer detected as conflicting; the claims or their validity windows changed.";
 
     private readonly ISecurityMasterStore _store;
     private readonly ILogger<SecurityMasterConflictService> _logger;
@@ -115,7 +119,7 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
                 _conflicts.TryUpdate(existing.ConflictId, existing with
                 {
                     Status = "Superseded",
-                    ResolvedReason = IdentifierNoLongerOverlapsReason,
+                    ResolvedReason = IdentifierNoLongerDetectedReason,
                     ResolvedAt = DateTimeOffset.UtcNow,
                 }, existing);
             }
@@ -249,7 +253,7 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
     private static bool IsDetectorSuperseded(SecurityMasterConflict conflict)
         => string.Equals(conflict.Status, "Superseded", StringComparison.Ordinal)
            && string.Equals(conflict.ConflictKind, SecurityMasterConflictKinds.IdentifierAmbiguity, StringComparison.Ordinal)
-           && string.Equals(conflict.ResolvedReason, IdentifierNoLongerOverlapsReason, StringComparison.Ordinal)
+           && string.Equals(conflict.ResolvedReason, IdentifierNoLongerDetectedReason, StringComparison.Ordinal)
            && conflict.ResolvedBy is null
            && conflict.ResolvedWinnerSource is null;
 

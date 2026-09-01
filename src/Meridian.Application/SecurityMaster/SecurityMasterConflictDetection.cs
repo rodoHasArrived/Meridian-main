@@ -53,6 +53,11 @@ internal static class SecurityMasterConflictDetection
         {
             foreach (var id in record.Identifiers)
             {
+                if (IsIssuerScopedKind(id.Kind))
+                {
+                    continue;
+                }
+
                 var normalizedValue = SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(id);
                 if (normalizedValue.Length == 0)
                 {
@@ -178,6 +183,15 @@ internal static class SecurityMasterConflictDetection
 
         return results;
     }
+
+    /// <summary>
+    /// Kinds that identify an issuer or legal entity rather than a standalone tradable security —
+    /// per their contract in <see cref="SecurityIdentifierKind"/>, CIK names an EDGAR filer and
+    /// LEI names an ISO 17442 legal entity. Distinct securities of one issuer legitimately share
+    /// these, so they never participate in identifier-ambiguity pairing.
+    /// </summary>
+    private static bool IsIssuerScopedKind(SecurityIdentifierKind kind)
+        => kind is SecurityIdentifierKind.Cik or SecurityIdentifierKind.Lei;
 
     private static (IdentifierClaim Left, IdentifierClaim Right)? FindDeterministicOverlap(
         IEnumerable<IdentifierClaim> leftClaims,

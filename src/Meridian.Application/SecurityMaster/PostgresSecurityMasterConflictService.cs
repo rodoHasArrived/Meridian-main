@@ -83,7 +83,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                 """;
             supersede.Parameters.AddWithValue(
                 "resolved_reason",
-                SecurityMasterConflictService.IdentifierNoLongerOverlapsReason);
+                SecurityMasterConflictService.IdentifierNoLongerDetectedReason);
             supersede.Parameters.AddWithValue("resolved_at", DateTimeOffset.UtcNow.UtcDateTime);
             supersede.Parameters.AddWithValue("conflict_kind", SecurityMasterConflictKinds.IdentifierAmbiguity);
             supersede.Parameters.AddWithValue(
@@ -996,7 +996,7 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         command.Parameters.AddWithValue("detected_at", conflict.DetectedAt.UtcDateTime);
         command.Parameters.AddWithValue(
             "detector_reason",
-            SecurityMasterConflictService.IdentifierNoLongerOverlapsReason);
+            SecurityMasterConflictService.IdentifierNoLongerDetectedReason);
         return await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false) > 0;
     }
 

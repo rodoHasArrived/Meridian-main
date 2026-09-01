@@ -91,6 +91,30 @@ public sealed class SecurityMasterConflictServiceTests
     }
 
     [Fact]
+    public async Task GetOpenConflictsAsync_IssuerScopedIdentifiers_DoNotPairDistinctSecurities()
+    {
+        // CIK names an EDGAR filer and LEI names an ISO 17442 legal entity, so distinct tradable
+        // securities of one issuer legitimately share them with overlapping validity — sharing an
+        // issuer-scoped identifier is not an identity ambiguity.
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns(new[]
+            {
+                MakeProjection(Guid.NewGuid(), "Cik", "0000320193", provider: "edgar"),
+                MakeProjection(Guid.NewGuid(), "Cik", "0000320193", provider: "edgar"),
+                MakeProjection(Guid.NewGuid(), "Lei", "HWUPKR0MPOU8FGXBT394", provider: "gleif"),
+                MakeProjection(Guid.NewGuid(), "Lei", "HWUPKR0MPOU8FGXBT394", provider: "gleif")
+            });
+
+        var service = new SecurityMasterConflictService(
+            store, NullLogger<SecurityMasterConflictService>.Instance);
+
+        var conflicts = await service.GetOpenConflictsAsync(CancellationToken.None);
+
+        conflicts.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task GetOpenConflictsAsync_NormalizesPunctuationBeforeComparing()
     {
         var store = Substitute.For<ISecurityMasterStore>();

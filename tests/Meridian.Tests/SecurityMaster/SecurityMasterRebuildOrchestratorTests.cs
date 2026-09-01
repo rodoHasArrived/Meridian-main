@@ -233,7 +233,7 @@ public sealed class SecurityMasterRebuildOrchestratorTests
     public async Task RebuildAsync_WhenConflictDetectionFailsForABatch_RetriesThatBatchAfterReplay()
     {
         var securityId = Guid.NewGuid();
-        var (orchestrator, conflictService) = CreateReplayScenario(securityId);
+        var (orchestrator, conflictService, _) = CreateReplayScenario(securityId);
         conflictService.RecordConflictsForProjectionsAsync(
                 Arg.Any<IReadOnlyList<SecurityProjectionRecord>>(),
                 Arg.Any<CancellationToken>())
@@ -252,7 +252,7 @@ public sealed class SecurityMasterRebuildOrchestratorTests
     public async Task RebuildAsync_WhenConflictDetectionFailsTwice_CompletesTheRebuildWithoutThrowing()
     {
         var securityId = Guid.NewGuid();
-        var (orchestrator, conflictService) = CreateReplayScenario(securityId);
+        var (orchestrator, conflictService, _) = CreateReplayScenario(securityId);
         conflictService.RecordConflictsForProjectionsAsync(
                 Arg.Any<IReadOnlyList<SecurityProjectionRecord>>(),
                 Arg.Any<CancellationToken>())
@@ -266,8 +266,33 @@ public sealed class SecurityMasterRebuildOrchestratorTests
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task RebuildAsync_WhenDeferredReloadFails_CompletesTheRebuildWithoutThrowing()
+    {
+        var securityId = Guid.NewGuid();
+        var (orchestrator, conflictService, store) = CreateReplayScenario(securityId);
+        conflictService.RecordConflictsForProjectionsAsync(
+                Arg.Any<IReadOnlyList<SecurityProjectionRecord>>(),
+                Arg.Any<CancellationToken>())
+            .Returns(_ => Task.FromException(new InvalidOperationException("conflict store unavailable")));
+        // First read seeds the replay fold; the second is the deferred retry's reload, where a
+        // transient store failure must degrade to a logged error, not fail the committed rebuild.
+        var projection = (await store.GetProjectionAsync(securityId, CancellationToken.None))!;
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(
+                _ => Task.FromResult<SecurityProjectionRecord?>(projection),
+                _ => Task.FromException<SecurityProjectionRecord?>(new IOException("projection store unavailable")));
+
+        var act = () => orchestrator.RebuildAsync();
+
+        await act.Should().NotThrowAsync();
+        await conflictService.Received(1).RecordConflictsForProjectionsAsync(
+            Arg.Any<IReadOnlyList<SecurityProjectionRecord>>(),
+            Arg.Any<CancellationToken>());
+    }
+
     /// <summary>One replayable event past the checkpoint, mirroring the recorded-conflicts scenario.</summary>
-    private static (SecurityMasterRebuildOrchestrator Orchestrator, ISecurityMasterConflictService ConflictService) CreateReplayScenario(Guid securityId)
+    private static (SecurityMasterRebuildOrchestrator Orchestrator, ISecurityMasterConflictService ConflictService, ISecurityMasterStore Store) CreateReplayScenario(Guid securityId)
     {
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var store = Substitute.For<ISecurityMasterStore>();
@@ -314,7 +339,7 @@ public sealed class SecurityMasterRebuildOrchestratorTests
             options,
             NullLogger<SecurityMasterRebuildOrchestrator>.Instance,
             conflictService);
-        return (orchestrator, conflictService);
+        return (orchestrator, conflictService, store);
     }
 
     private static SecurityProjectionRecord CreateProjection(Guid securityId, string displayName, long version)
