@@ -227,14 +227,21 @@ public sealed class StatementRunWorkflowService(
                 // schema upgrade). Verify it against the group-free projection of the expected
                 // artifact and adopt it as-is: rewriting it under the retained hash would fabricate
                 // durable evidence the original run never produced.
-                var comparableArtifact = retainedArtifact.MatchGroups is null && expectedArtifact.MatchGroups is not null
+                var isLegacyArtifact = retainedArtifact.MatchGroups is null && expectedArtifact.MatchGroups is not null;
+                var comparableArtifact = isLegacyArtifact
                     ? expectedArtifact with { MatchGroups = null }
                     : expectedArtifact;
+                // A legacy conflict can also mean the matcher's assignment rules changed between
+                // the write and this replay, not that the retained bytes are corrupt; name that so
+                // an operator investigates the right thing.
                 EnsureSameArtifact(
                     retainedArtifact,
                     comparableArtifact,
                     StatementRunRecoveryJsonContext.Default.StatementRunMatchArtifact,
-                    $"Statement run '{runId}' retained a conflicting legacy match artifact.");
+                    isLegacyArtifact
+                        ? $"Statement run '{runId}' retained a pre-upgrade match artifact that the current matcher does not reproduce; " +
+                          "the retained artifact may reflect earlier matcher assignment rules rather than corruption, and needs operator review."
+                        : $"Statement run '{runId}' retained a conflicting legacy match artifact.");
                 matchArtifact = retainedArtifact;
             }
             else

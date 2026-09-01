@@ -402,6 +402,9 @@ internal static class StatementRunMatcher
 /// <summary>
 /// The outcome of a statement run's match pass: the breaks to persist, the match count, and one
 /// group record per matched result carrying the evidence membership that formed the match.
+/// <see cref="MatchCount"/> counts matched results (equal to <see cref="MatchGroups"/>.Count), not
+/// statement rows: a split group covering several rows counts once, so row totals must be derived
+/// from group membership rather than from this count.
 /// </summary>
 internal sealed record StatementRunMatchResult(
     IReadOnlyList<StatementRunBreak> Breaks,

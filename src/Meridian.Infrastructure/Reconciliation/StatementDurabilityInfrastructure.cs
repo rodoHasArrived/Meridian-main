@@ -23,7 +23,11 @@ public sealed record StatementRunMatchArtifact(
     /// retained artifact distinguishes different pair or split assignments of the same size. Null on
     /// legacy artifacts written before groups were retained; the null is omitted from serialization
     /// so a legacy artifact round-trips byte-identically and keeps verifying against the recovery
-    /// checkpoint hash recorded when it was written. New runs always retain a (possibly empty) list.
+    /// checkpoint hash recorded when it was written. New runs always retain a (possibly empty)
+    /// list. The widening is forward-only: a rolled-back binary whose artifact type lacks this
+    /// property reserializes a group-carrying artifact without it and reports every post-upgrade
+    /// run as a checkpoint conflict — roll the binary forward instead of editing retained
+    /// artifacts.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<StatementRunMatchGroupRecord>? MatchGroups { get; init; }

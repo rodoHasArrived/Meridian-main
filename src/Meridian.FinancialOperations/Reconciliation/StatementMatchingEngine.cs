@@ -303,7 +303,9 @@ public sealed class StatementMatchingEngine
         var ordered = pairs
             .OrderBy(static pair => pair.Score)
             .ThenBy(static pair => pair.Statement.MatchId, StringComparer.Ordinal)
-            .ThenBy(static pair => pair.Internal.MatchId, StringComparer.Ordinal);
+            .ThenBy(static pair => pair.Internal.MatchId, StringComparer.Ordinal)
+            .ThenBy(static pair => pair.Statement.EvidenceReference, StringComparer.Ordinal)
+            .ThenBy(static pair => pair.Internal.EvidenceReference, StringComparer.Ordinal);
         foreach (var pair in ReconciliationMatchKernel.SelectDeterministicAssignment(
             ordered,
             static pair => new[] { StatementMemberKey(pair.Statement), InternalMemberKey(pair.Internal) }))
@@ -344,7 +346,9 @@ public sealed class StatementMatchingEngine
     /// actually match instead of being exhausted by larger cross-identity amounts. The accept
     /// callback then holds the subset's aggregate quantity to the transaction-quantity tolerance —
     /// legs with the right cash but the wrong share count must stay a break, because a silently
-    /// absorbed quantity mismatch surfaces nowhere.
+    /// absorbed quantity mismatch surfaces nowhere. Splits discover legs by net cash movement, so a
+    /// zero-net-amount anchor and zero-amount legs never split (the kernel searches same-sign
+    /// non-zero amounts only); such movements stay in the pair, candidate, and break lanes.
     /// </summary>
     private static void MatchTransactionSplits(
         StatementMatchingRequest request,
@@ -362,8 +366,7 @@ public sealed class StatementMatchingEngine
                 request.InternalLedgerTransactions,
                 matchedInternal,
                 internalTransaction => SameTransactionIdentity(statement, internalTransaction),
-                static internalTransaction => internalTransaction.TransactionId,
-                static internalTransaction => internalTransaction.EvidenceReference);
+                static internalTransaction => internalTransaction.TransactionId);
             if (!TryMatchSplit(
                 statement.NetAmount,
                 statement.Quantity,
@@ -409,8 +412,7 @@ public sealed class StatementMatchingEngine
                 request.StatementTransactions,
                 matchedStatements,
                 statement => SameTransactionIdentity(statement, internalTransaction),
-                static statement => statement.TransactionId,
-                static statement => statement.EvidenceReference);
+                static statement => statement.TransactionId);
             if (!TryMatchSplit(
                 internalTransaction.NetAmount,
                 internalTransaction.Quantity,
@@ -458,8 +460,7 @@ public sealed class StatementMatchingEngine
         IReadOnlyList<TLeg> population,
         HashSet<string> matchedKeys,
         Func<TLeg, bool> sharesIdentity,
-        Func<TLeg, string> legId,
-        Func<TLeg, string> legEvidence)
+        Func<TLeg, string> legId)
         where TLeg : class, IStatementMatchItem
     {
         var pool = new List<TLeg>();
@@ -467,7 +468,7 @@ public sealed class StatementMatchingEngine
         foreach (var leg in population
             .Where(item => !matchedKeys.Contains(item.MatchId) && sharesIdentity(item))
             .OrderBy(legId, StringComparer.Ordinal)
-            .ThenBy(legEvidence, StringComparer.Ordinal))
+            .ThenBy(static item => item.EvidenceReference, StringComparer.Ordinal))
         {
             if (seen.Add(legId(leg)))
             {
@@ -975,4 +976,12 @@ public enum StatementMatchTier
 public interface IStatementMatchItem
 {
     string MatchId { get; }
+
+    /// <summary>
+    /// The durable evidence reference the item contributes to a match or break. Also the final
+    /// pair-ordering tie-breaker: match ids are expected to be unique per side, but a population
+    /// that repeats one must still order totally, or the assignment would fall back to input
+    /// enumeration order.
+    /// </summary>
+    string EvidenceReference { get; }
 }
