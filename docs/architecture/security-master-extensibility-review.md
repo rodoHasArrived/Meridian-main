@@ -1307,10 +1307,12 @@ and named the risk as a narrower search axis, and that is exactly what happened.
 `PaperTradingPortfolio.PositionLot`, and — despite being named in it — `FaceValueLot` itself, which
 uses a block body. Describing an axis is not running it.
 
-So the planning input is the **command**, not a number:
+So the planning input is the **command**, not a number — and it takes **two** of them, because the
+lot models do not all live in one language:
 
 ```
 grep -rnE '(record|class) [A-Za-z]*Lot[A-Za-z]*\b' src/ --include=*.cs
+grep -rnE '(interface|type|class) [A-Za-z]*Lot[A-Za-z]*\b' src/ --include=*.ts --include=*.tsx
 ```
 
 **The trailing `\b` matters, and the first version of this command got it wrong.** Anchoring on
@@ -1320,6 +1322,14 @@ command prescribed here as *the* planning input silently omitted the principal c
 in-memory relief model, the two named in the listing directly below it. That is the same class of
 error as the counts it replaced: a sweep is only as good as its ability to rediscover what the list
 already contains, and this one could not. **Check that property before trusting any revision of it.**
+
+**And `--include=*.cs` was the same mistake one axis over.** A single-language sweep cannot see a
+lot model that is not written in that language, and the browser workstation declares its own. The
+second command above is not a completeness flourish; it returns models that participate in the
+convergence question and were invisible to every count and every command this section has printed so
+far. The `.fs` lane was checked on the same axis and is genuinely empty (`grep -rnE 'type
+[A-Za-z]*Lot[A-Za-z]*\b' src/ --include=*.fs` returns nothing), so two commands cover it — but that
+is a *checked* result, not an assumption, and it should be rechecked rather than inherited.
 
 filtered against types that merely *operate on* lots (relief results, disposal selections, mutations,
 policies, projectors, selectors). Run at the head that produced this entry it returns, by role:
@@ -1341,6 +1351,27 @@ policies, projectors, selectors). Run at the head that produced this entry it re
   `SecurityMasterLotModelDto`, `SecurityMasterOpenLotProvenanceDto`
   (`Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:281-335`), plus `OpenLotSummary`
   (`Contracts/Workstation/StrategyRunReadModels.cs:1111`).
+- **Browser workstation (TypeScript)** — the mirrors of the read models above in
+  `dashboard/src/types/workstation-7.ts:26-90` (`SecurityMasterLotModel`, `SecurityMasterOpenLot`,
+  `SecurityMasterOpenLotProvenance`, `SecurityMasterOpenLotReadModel`), and two shapes that are
+  **not** mirrors of anything server-side and matter more to convergence for exactly that reason:
+  - `SecurityLot` (`dashboard/src/components/meridian/security-details-tracker.view-model.ts:504-511`
+    — `lotId`, `tradeDate`, `quantity`, `price`, `fees`, `note`). It is **operator-entered and
+    persisted to browser local storage**, not to the ledger: `loadLots` reads it per security
+    (`security-details-tracker.tsx:486`, `:548`, `:567`). So the workstation already offers an
+    editable open-lot surface whose records never reach `LedgerTaxLotRecord`, carry **no currency at
+    all**, and hold `quantity` and `price` as JavaScript `number` — IEEE-754 binary floating point,
+    where every durable and contract model on this list uses `decimal`. Any convergence target that
+    ends at the API boundary leaves this divergence in place.
+  - `TaxLot` (`dashboard/src/components/accounting/TaxLotTable.tsx:9-25`) — the accounting-screen
+    presentation lot, with `quantity`/`costBasis`/`marketValue` typed `number | string`, an optional
+    `id`, and holding-period fields (`daysHeld`, `term`) that exist on no server model.
+    `ExecutionPositionLot` (`dashboard/src/types/execution-blotter.types.ts:33`) and
+    `CorporateActionLotPreview` (`workstation-7.ts:1601`) are the same category.
+
+  The browser lane is therefore a **third** quantity regime alongside principal-versus-share:
+  float-versus-decimal, with a currency-less editable model inside it. That belongs in the
+  reconciliation, not as an afterthought to it.
 
 Convergence planning has to start by re-running that command and reconciling **principal-versus-share
 quantity, currency, and identity keying** across whatever it returns — `DrawdownLotDto` tracks
@@ -1499,22 +1530,32 @@ against, two paragraphs after the correction that withdrew that target.
    (`ValidateCrossRecordDuplicates`, `:441-449`), two providers may legitimately share symbol text,
    and the denormalized `securities` columns carry no provider to express the rule with. Widening it
    means projecting a normalized primary provider column first.
-4. **P6** — plan (do not refactor) the lot-model convergence, and **start by reconciling the four
-   models rather than naming a target**. `LedgerTaxLotRecord`
+4. **P6** — plan (do not refactor) the lot-model convergence, and **start by reconciling the models
+   named below rather than naming a target** (named, not counted — the count in this sentence was
+   itself wrong until this revision). `LedgerTaxLotRecord`
    (`Storage/Ledger/ILedgerJournalStore.cs:332-349`) is the durable model; `LedgerTaxLot` is the
    in-memory relief shape; `FaceValueLotExtensions.ToLedgerTaxLot` adapts the par model into the
    latter; Execution's `TaxLot` has no consumer outside Execution and is not the thing to converge.
    **Do not plan from a count — it has been wrong four times.** Re-run the sweep
-   (`grep -rnE '(record|class) [A-Za-z]*Lot[A-Za-z]*\b' src/ --include=*.cs` — the trailing `\b` is
-   required, since anchoring on `[ ({]` misses block-bodied declarations like `FaceValueLot` and
-   `LedgerTaxLot`; filtered against
+   (**both** commands — `grep -rnE '(record|class) [A-Za-z]*Lot[A-Za-z]*\b' src/ --include=*.cs` and
+   `grep -rnE '(interface|type|class) [A-Za-z]*Lot[A-Za-z]*\b' src/ --include=*.ts --include=*.tsx`;
+   the trailing `\b` is required, since anchoring on `[ ({]` misses block-bodied declarations like
+   `FaceValueLot` and `LedgerTaxLot`, and the `.cs`-only version misses the browser lane entirely;
+   filtered against
    types that only operate on lots) and reconcile principal-versus-share quantity, currency and
    identity keying across what it returns. Among the later additions — `OpenLot`
    (`Backtesting.Sdk/OpenLot.cs:8`, symbol-keyed, simulator-populated, projected to the workstation)
    and `BrokerageTaxLotSnapshotDto` (`Execution.Sdk/IBrokerageAccountSync.cs:274-281`) are both
-   active seams. Re-run the sweep before planning; do not trust this count either.
-   **The acquisition FX rate is absent from every lot type the sweep returns**; the acquisition *currency* is absent from five
-   but **present on the brokerage DTO**, read off the broker's own open-lot row
+   active seams, and the browser lane's `SecurityLot`
+   (`dashboard/src/components/meridian/security-details-tracker.view-model.ts:504-511`) is a third:
+   an operator-editable open-lot model persisted to browser local storage, currency-less, with
+   float `quantity`/`price`. A convergence plan scoped to the .NET models alone does not reach it.
+   Re-run both sweeps before planning; do not trust this list either.
+   **The acquisition FX rate is absent from every lot type the sweep returns**; the acquisition
+   *currency* is absent from most of them — **do not restate that as a count either**, for the same
+   reason the model count was wrong four times; derive it from the sweep at the head you are planning
+   at. What is worth carrying forward is the one **present** case, not the tally of absences: it is
+   **present on the brokerage DTO**, read off the broker's own open-lot row
    (`IbFlexStatementConnector.cs:943-950`) and dropped at the boundary.
    `LedgerTaxLotRecord.Currency` is
    the journal *functional* currency, required to match on acquisition and used to filter open lots
