@@ -610,6 +610,64 @@ public sealed class AlpacaTradeUpdatesClientTests
     }
 
     [Fact]
+    public async Task ProcessMessageAsync_AuthorizedAndListeningAcks_ConfirmTheHandshake()
+    {
+        var store = new TestCursorStore();
+        await using var sut = CreateSut(store);
+
+        sut.HandshakeAcknowledged.Should().BeFalse();
+        await sut.ProcessMessageAsync("""{"stream":"authorization","data":{"status":"authorized","action":"authenticate"}}""");
+        sut.HandshakeAcknowledged.Should().BeFalse("the subscription is not yet confirmed");
+        await sut.ProcessMessageAsync("""{"stream":"listening","data":{"streams":["trade_updates"]}}""");
+
+        sut.HandshakeAcknowledged.Should().BeTrue();
+        sut.UnhealthyReason.Should().NotContain("refused");
+    }
+
+    [Fact]
+    public async Task ProcessMessageAsync_UnauthorizedAck_NamesTheRefusalInHealth()
+    {
+        var store = new TestCursorStore();
+        await using var sut = CreateSut(store);
+
+        await sut.ProcessMessageAsync("""{"stream":"authorization","data":{"status":"unauthorized","action":"authenticate"}}""");
+
+        sut.IsHealthy.Should().BeFalse();
+        sut.HandshakeAcknowledged.Should().BeFalse();
+        sut.UnhealthyReason.Should().Contain("refused");
+    }
+
+    [Fact]
+    public async Task ProcessMessageAsync_ListeningAckWithoutTradeUpdates_IsNotASubscription()
+    {
+        var store = new TestCursorStore();
+        await using var sut = CreateSut(store);
+
+        await sut.ProcessMessageAsync("""{"stream":"authorization","data":{"status":"authorized"}}""");
+        await sut.ProcessMessageAsync("""{"stream":"listening","data":{"streams":["account_updates"]}}""");
+
+        sut.HandshakeAcknowledged.Should().BeFalse();
+        sut.UnhealthyReason.Should().Contain("trade_updates");
+    }
+
+    [Fact]
+    public async Task ProcessMessageAsync_FillEvent_CarriesTheBrokerAssetClassWithoutChangingIdentity()
+    {
+        var store = new TestCursorStore();
+        await using var sut = CreateSut(store);
+        const string message = """
+            {"stream":"trade_updates","data":{"event_id":"evt-2","event":"fill","timestamp":"2026-08-05T14:30:00Z","qty":"2","price":"5.10","order":{"id":"alpaca-2","client_order_id":"MDN-2","symbol":"AAPL260918C00200000","side":"buy","qty":"2","filled_qty":"2","status":"filled","asset_class":"us_option","updated_at":"2026-08-05T14:30:00Z"}}}
+            """;
+
+        await sut.ProcessMessageAsync(message);
+
+        var report = store.PendingReports.Should().ContainSingle().Which;
+        report.AssetClass.Should().Be("us_option");
+        AlpacaTradeUpdateStateCodec.ComputeContentHash(report, report.Timestamp)
+            .Should().Be(AlpacaTradeUpdateStateCodec.ComputeContentHash(report with { AssetClass = null }, report.Timestamp));
+    }
+
+    [Fact]
     public async Task LegacyCursorStore_NewEnvelope_FailsClosedUntilVersionedStateIsImplemented()
     {
         await using var sut = CreateSut(new LegacyCursorStore());

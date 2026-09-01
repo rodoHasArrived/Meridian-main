@@ -201,6 +201,39 @@ public sealed class AlpacaStreamedFillLoopTests
         restartedPortfolio.Positions["AAPL"].Quantity.Should().Be(6L);
     }
 
+    /// <summary>
+    /// An untracked option fill cannot be booked from the report alone: the contract multiplier
+    /// the submission carried is gone with the previous host, and booking at share semantics
+    /// would post a hundredth of the exposure. It must be refused, not approximated.
+    /// </summary>
+    [Fact]
+    public async Task RestartReplay_UntrackedOptionFill_IsRefusedRatherThanBookedAtShareSemantics()
+    {
+        var store = new InMemoryCursorStore();
+        await using var client = CreateClient(store);
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        var publisher = new RecordingTradeEventPublisher();
+        using var oms = new OrderManagementSystem(
+            new AlpacaReportsGateway(client),
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio,
+            tradeEventPublisher: publisher);
+
+        await client.ProcessMessageAsync(TradeUpdateJson(
+            "evt-option-fill", "alpaca-opt", "MDN-20260807-000001", "AAPL260918C00200000", "fill", "filled",
+            qty: "2", filledQty: "2", price: "5.10", timestamp: "2026-08-07T14:30:05Z", fillQty: "2",
+            assetClass: "us_option"));
+
+        // The report is still observed (it reaches the observer stream) but nothing is booked.
+        using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var observed = await oms.ExecutionReports.ReadAsync(readCts.Token);
+        observed.Symbol.Should().Be("AAPL260918C00200000");
+        await Task.Delay(100);
+        publisher.AcceptedEvents.Should().BeEmpty("an option fill without its multiplier must not reach accounting at share semantics");
+        oms.GetOrder("MDN-20260807-000001").Should().BeNull("the order is not adopted");
+        portfolio.Positions.Should().NotContainKey("AAPL260918C00200000");
+    }
+
     private static AlpacaTradeUpdatesClient CreateClient(IAlpacaTradeUpdateCursorStore store)
     {
         var client = new AlpacaTradeUpdatesClient(
@@ -271,7 +304,8 @@ public sealed class AlpacaStreamedFillLoopTests
         string? price,
         string timestamp,
         string? reason = null,
-        string? fillQty = null)
+        string? fillQty = null,
+        string assetClass = "us_equity")
     {
         var order = new Dictionary<string, object?>
         {
@@ -282,6 +316,7 @@ public sealed class AlpacaStreamedFillLoopTests
             ["filled_qty"] = filledQty,
             ["side"] = "buy",
             ["status"] = status,
+            ["asset_class"] = assetClass,
             ["updated_at"] = timestamp
         };
         var data = new Dictionary<string, object?>

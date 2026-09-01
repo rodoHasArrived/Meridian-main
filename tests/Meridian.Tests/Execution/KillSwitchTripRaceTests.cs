@@ -107,6 +107,43 @@ public sealed class KillSwitchTripRaceTests : IDisposable
         await placing.WaitAsync(TimeSpan.FromSeconds(5));
     }
 
+    /// <summary>
+    /// A second submission under the same client order id is rejected as a duplicate, but it
+    /// used to overwrite the winner's dispatch lease on the way in and strip it on the way out,
+    /// so a sweep that followed no longer waited for the live broker submission.
+    /// </summary>
+    [Fact]
+    public async Task CancelAllAsync_AfterADuplicateClientOrderIdWasRejected_StillWaitsForTheWinnerInFlight()
+    {
+        var controls = CreateControls();
+        await using var gateway = new RaceBrokerageGateway { HoldSubmissions = true };
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            operatorControls: controls);
+
+        var winner = oms.PlaceOrderAsync(Order("AAPL") with { ClientOrderId = "dup-1" });
+        await gateway.SubmissionStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        var duplicate = await oms.PlaceOrderAsync(Order("AAPL") with { ClientOrderId = "dup-1" })
+            .WaitAsync(TimeSpan.FromSeconds(5));
+        duplicate.Success.Should().BeFalse("the id is held by the in-flight winner");
+
+        await controls.SetCircuitBreakerAsync(isOpen: true, "trip during dispatch", "operator");
+        var sweeping = oms.CancelAllAsync();
+        await Task.Delay(TimeSpan.FromMilliseconds(200));
+        sweeping.IsCompleted.Should().BeFalse("the winner's lease must survive the duplicate's rejection");
+
+        gateway.ReleaseSubmissions();
+        var placed = await winner.WaitAsync(TimeSpan.FromSeconds(5));
+        var sweep = await sweeping.WaitAsync(TimeSpan.FromSeconds(5));
+
+        placed.Success.Should().BeTrue();
+        sweep.Outcome.Should().Be(KillSwitchSweepOutcome.Completed);
+        sweep.Cancelled.Should().Be(1);
+        gateway.CancelledOrderIds.Should().ContainSingle().Which.Should().Be("dup-1");
+    }
+
     [Fact]
     public async Task CancelAllAsync_WithNothingInFlight_DoesNotWait()
     {

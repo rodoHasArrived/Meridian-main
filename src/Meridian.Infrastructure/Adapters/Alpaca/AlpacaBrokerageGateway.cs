@@ -848,6 +848,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                         (leavesQuantity is { } leaves ? cumulativeQuantity + leaves : cumulativeQuantity),
                     FilledQuantity = cumulativeQuantity,
                     LastFillQuantity = executedQuantity,
+                    AssetClass = order?.AssetClass,
                     FillPrice = fillPrice,
                     OrderStatus = status,
                     ReportType = reportType,
@@ -1840,6 +1841,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         /// become invisible to the OMS and to the kill-switch sweep.
         /// </summary>
         [JsonPropertyName("legs")] public AlpacaOrderResponse[]? Legs { get; set; }
+        [JsonPropertyName("asset_class")] public string? AssetClass { get; set; }
     }
 
     internal sealed class AlpacaAccountResponse

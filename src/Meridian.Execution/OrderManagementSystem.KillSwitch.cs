@@ -334,11 +334,34 @@ public sealed partial class OrderManagementSystem
         public void Begin(string orderId)
         {
             var settled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            // Indexer rather than TryAdd: a terminal client order id may be reused, and a lease
-            // that leaked under it must not make the new submission invisible to the sweep.
-            owner._inFlightDispatches[orderId] = settled;
-            _orderId = orderId;
-            _settled = settled;
+            while (true)
+            {
+                if (owner._inFlightDispatches.TryAdd(orderId, settled))
+                {
+                    _orderId = orderId;
+                    _settled = settled;
+                    return;
+                }
+
+                if (!owner._inFlightDispatches.TryGetValue(orderId, out var existing))
+                {
+                    continue;
+                }
+
+                if (!existing.Task.IsCompleted)
+                {
+                    // Another attempt is in flight under this client order id. It owns the
+                    // lease and the sweep is already waiting on it; TryRegisterOrder will
+                    // reject this attempt as a duplicate. Overwriting here would let this
+                    // attempt's disposal strip the winner's lease and hide a live broker
+                    // submission from the kill switch.
+                    return;
+                }
+
+                // A settled lease still under the id is a leak from a terminal order whose id
+                // is being reused; clear it so the new submission is visible to the sweep.
+                owner._inFlightDispatches.TryRemove(new KeyValuePair<string, TaskCompletionSource>(orderId, existing));
+            }
         }
 
         public void Dispose()

@@ -1395,6 +1395,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 }
             }
 
+            var adoptedUntrackedFill = false;
             if (updatedState is null)
             {
                 // A report for an order this process never registered: a fill is adopted and
@@ -1405,6 +1406,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                     report,
                     isFillReport,
                     ct).ConfigureAwait(false);
+                adoptedUntrackedFill = updatedState is not null;
             }
             else
             {
@@ -1418,11 +1420,29 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             if (isFillReport)
             {
                 var sessionId = string.IsNullOrWhiteSpace(orderId) ? null : ResolveSessionId(orderId);
-                await ProcessFillReportAsync(
-                        sessionId,
-                        report,
-                        previousFilledQuantity)
-                    .ConfigureAwait(false);
+                try
+                {
+                    await ProcessFillReportAsync(
+                            sessionId,
+                            report,
+                            previousFilledQuantity)
+                        .ConfigureAwait(false);
+                }
+                catch (Exception handoffFailure) when (adoptedUntrackedFill)
+                {
+                    // The adoption audit must describe what happened, not what was attempted:
+                    // an entry saying the fill was booked, written before the handoff ran,
+                    // would stand as evidence over a ledger that never accepted it.
+                    await RecordUntrackedFillOutcomeAsync(orderId!, updatedState!, report, handoffFailure, ct)
+                        .ConfigureAwait(false);
+                    throw;
+                }
+
+                if (adoptedUntrackedFill)
+                {
+                    await RecordUntrackedFillOutcomeAsync(orderId!, updatedState!, report, null, ct)
+                        .ConfigureAwait(false);
+                }
             }
 
             if (updatedState is not null)

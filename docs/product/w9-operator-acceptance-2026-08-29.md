@@ -156,5 +156,7 @@ warning log. It is recorded here so that the acceptance is of that behaviour, no
 
 `W9-SAFETY-007`, `W9-GOV-008`, and `W9-INGEST-009` are `in_progress` and were never candidates
 here. `W9-ASSET-010` is already `done`. The 2026-09-01 change that closed the Alpaca hold also
-discharged `W9-SAFETY-007`'s criterion one (the trip/submission race) and re-ran its criterion-three
-sweep; that row's own registry entry records what remains before it is ready for acceptance.
+discharged `W9-SAFETY-007`'s criterion one (the trip/submission race), re-ran its criterion-three
+sweep, and recorded the Windows WPF build-and-test result, moving that row to
+`ready_for_acceptance`; its registry entry carries the follow-up candidates (the OCO reservation
+arithmetic and the browser's absent breaker control) for its acceptance review to weigh.

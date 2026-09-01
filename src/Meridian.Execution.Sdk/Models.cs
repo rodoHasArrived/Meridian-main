@@ -158,6 +158,19 @@ public sealed record ExecutionReport
         Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public decimal? LastFillQuantity { get; init; }
 
+    /// <summary>
+    /// The broker's asset class for the filled instrument, in the broker's own vocabulary (for
+    /// Alpaca: <c>us_equity</c>, <c>us_option</c>, <c>crypto</c>, and the fixed-income classes),
+    /// when the gateway reports it. Read only when a fill arrives for an order this process does
+    /// not track: an equity fill can be booked from the report alone, while an option or bond
+    /// fill needs the contract multiplier or face-value sizing a submission would have carried,
+    /// so an adoption that cannot establish those refuses rather than books at share semantics.
+    /// Omitted from serialized payloads when null so existing durable records are unaffected.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? AssetClass { get; init; }
+
     /// <summary>Regulatory/exchange fees for this fill, when the gateway models them.</summary>
     public decimal? Fees { get; init; }
 

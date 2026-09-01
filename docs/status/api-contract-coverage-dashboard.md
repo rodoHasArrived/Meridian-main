@@ -658,10 +658,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/symbols/{symbol}/status` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:99` |
 | `GET` | `/api/symbols/{symbol}/trades` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:200` |
 | `POST` | `/api/symbols/{symbol}/update` | Gap | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:499` |
-| `GET` | `/api/system/lifecycle` | Documented | `src/Meridian/UiServer.cs:669` |
-| `POST` | `/api/system/shutdown` | Documented | `src/Meridian/UiServer.cs:703` |
-| `GET` | `/api/system/shutdown/receipts/latest` | Documented | `src/Meridian/UiServer.cs:778` |
-| `GET` | `/api/system/shutdown/{operationId}` | Documented | `src/Meridian/UiServer.cs:757` |
+| `GET` | `/api/system/lifecycle` | Documented | `src/Meridian/UiServer.cs:671` |
+| `POST` | `/api/system/shutdown` | Documented | `src/Meridian/UiServer.cs:705` |
+| `GET` | `/api/system/shutdown/receipts/latest` | Documented | `src/Meridian/UiServer.cs:780` |
+| `GET` | `/api/system/shutdown/{operationId}` | Documented | `src/Meridian/UiServer.cs:759` |
 | `POST` | `/api/workstation/desktop/launch` | Gap | `src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:30` |
 | `GET` | `/health` | Documented | `src/Meridian.Application/Composition/HostAdapters.cs:60` |
 | `GET` | `/live` | Documented | `src/Meridian.Application/Composition/HostAdapters.cs:73` |

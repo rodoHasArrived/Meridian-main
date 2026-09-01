@@ -29,6 +29,28 @@ public sealed partial class OrderManagementSystem
         bool isFillReport,
         CancellationToken ct)
     {
+        if (isFillReport && !IsBookableFromReportAlone(report.AssetClass))
+        {
+            // An option fill needs the contract multiplier and a bond fill the face-value
+            // sizing that the original submission carried and this process no longer has.
+            // Booking either at share semantics would post a hundredth of an option's
+            // exposure or a hundred times a bond's; refusing, loudly, is the only honest
+            // answer until the sizing identity travels on the report.
+            _logger.LogError(
+                "Received a fill report for order {OrderId} ({Symbol}, asset class {AssetClass}) not tracked by this OMS whose instrument cannot be sized from the report alone; it was NOT booked to accounting",
+                LogSanitizer.Sanitize(report.OrderId),
+                LogSanitizer.Sanitize(report.Symbol),
+                report.AssetClass ?? "unknown");
+            await TryRecordUntrackedFillAuditAsync(
+                "UntrackedFillNotBooked",
+                orderId ?? report.OrderId,
+                null,
+                report,
+                $"A fill for an order this OMS does not track carries asset class '{report.AssetClass ?? "unknown"}', whose contract multiplier or face-value sizing cannot be established from the report; it was not booked. Reconcile it through the brokerage activity-sync lane.",
+                ct).ConfigureAwait(false);
+            return (null, 0m);
+        }
+
         if (isFillReport
             && TryAdoptUntrackedFilledOrder(orderId, report, out var adoptedState, out var bookedBeforeAdoption))
         {
@@ -40,18 +62,14 @@ public sealed partial class OrderManagementSystem
             // executed. What cannot be recovered is the fund attribution the original
             // submission carried, so the fill posts unattributed to the posting scope and
             // the audit trail flags it for operator review.
+            // Logged here; audited only once the accounting handoff has actually accepted the
+            // fill (see RecordUntrackedFillOutcomeAsync), so the trail never claims a booking
+            // the ledger did not take.
             _logger.LogWarning(
-                "Adopted a fill of {LastFillQuantity} {Symbol} for order {OrderId} that this OMS did not track; it is booked to the posting scope without fund attribution",
+                "Adopted a fill of {LastFillQuantity} {Symbol} for order {OrderId} that this OMS did not track; it will be booked to the posting scope without fund attribution",
                 report.LastFillQuantity,
                 LogSanitizer.Sanitize(report.Symbol),
                 LogSanitizer.Sanitize(orderId!));
-            await TryRecordUntrackedFillAuditAsync(
-                "UntrackedFillAdopted",
-                orderId!,
-                adoptedState,
-                report,
-                "The order was not tracked by this OMS (restart or out-of-band submission); the reported fill increment was booked to the posting scope without fund attribution and needs operator review.",
-                ct).ConfigureAwait(false);
             return (adoptedState, bookedBeforeAdoption);
         }
 
@@ -134,6 +152,43 @@ public sealed partial class OrderManagementSystem
         adopted = merged;
         return true;
     }
+
+    /// <summary>
+    /// Writes the adoption outcome after the fill funnel has run: booked, when the durable
+    /// accounting handoff accepted the increment; failed, naming the exception, when it did not.
+    /// The entry is written after the fact precisely so that it is evidence of what the ledger
+    /// holds rather than of what this process intended.
+    /// </summary>
+    private Task RecordUntrackedFillOutcomeAsync(
+        string orderId,
+        OrderState adoptedState,
+        ExecutionReport report,
+        Exception? handoffFailure,
+        CancellationToken ct) =>
+        handoffFailure is null
+            ? TryRecordUntrackedFillAuditAsync(
+                "UntrackedFillAdopted",
+                orderId,
+                adoptedState,
+                report,
+                "The order was not tracked by this OMS (restart or out-of-band submission); the reported fill increment was booked through the durable accounting handoff to the posting scope without fund attribution and needs operator review for attribution.",
+                ct)
+            : TryRecordUntrackedFillAuditAsync(
+                "UntrackedFillHandoffFailed",
+                orderId,
+                adoptedState,
+                report,
+                $"The order was not tracked by this OMS and its fill increment was adopted, but the accounting handoff did not accept it: {handoffFailure.Message}. The fill is retained for replay where a handoff-failure store is configured; verify the ledger before relying on this fill.",
+                ct);
+
+    /// <summary>
+    /// Whether a fill for this broker asset class can be booked from the report alone: a unit
+    /// quantity at the reported price, with no contract multiplier and no percentage-of-par
+    /// scaling. Equities and crypto qualify; options and fixed income do not, and an absent
+    /// class is treated as unknown rather than as equity.
+    /// </summary>
+    internal static bool IsBookableFromReportAlone(string? assetClass) =>
+        assetClass?.Trim().ToLowerInvariant() is "us_equity" or "equity" or "crypto";
 
     /// <summary>Evidence, not control flow: an audit failure must not stall the report pump.</summary>
     private async Task TryRecordUntrackedFillAuditAsync(
