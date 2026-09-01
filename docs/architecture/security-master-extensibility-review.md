@@ -161,7 +161,11 @@ risks that compound as new asset classes land.
 > Its highest-severity finding is new and is the same *shape* as the prose-classification defects the
 > last pass closed, one layer down: `StructuredCashFlowTermsResolver` keeps a second, unlocked alias
 > vocabulary alongside `SecurityAssetTermsSchema`, and it does not know the key `DirectLoan` actually
-> writes for its coupon — so every calculated private-credit projection prices interest at zero.
+> writes for its coupon. The base projection — the one the ledger bridge posts — therefore prices
+> interest at zero, while the upward and stress scenarios price it at a bare 1–3% that has nothing to
+> do with the instrument, and the downward scenarios clamp back to zero. Compounding it, `DirectLoan`
+> supplies no resolvable principal basis either, so every calculated projection runs on a synthetic
+> 100 notional whatever the rate.
 
 ---
 
@@ -1138,8 +1142,16 @@ outlives the facts it was based on. That is a weaker claim than the draft made a
 still worth fixing — but it is a workload argument, not a correctness one, and it should be ranked
 as such.
 
-Detection should compare only identifiers whose windows overlap, at the same `asOf` the resolution
-path already takes.
+Detection should compare only identifiers whose windows overlap — but by **pairwise interval
+intersection**, not by evaluating both claims at a single `asOf`. An earlier version of this sentence
+said "at the same `asOf` the resolution path already takes", and that is not sufficient. Two windows
+that overlap only in the *future* do not intersect today's instant, so a detector evaluated at `asOf`
+emits nothing when the future-dated claim is published — and **no write reruns detection when that
+date arrives**, because detection runs on write, not on a clock. A lookup made inside the overlap
+then resolves ambiguously with no queue item behind it. Historical overlaps fail the same way for
+as-of resolution. The detector's question is "do these two intervals intersect at all", which is
+`asOf`-independent; the *lookup* keeps applying its caller-selected instant. Keeping the two
+questions distinct also avoids re-creating the stale-dismissal problem above from the other side.
 
 ### P3 — With three or more claimants, only the first pair is reported
 
@@ -1422,7 +1434,9 @@ against, two paragraphs after the correction that withdrew that target.
    unit of work is alias values and providers, their enabled state, and overlapping validity
    windows, on the same terms `ResolveSecurityIdAsync` already applies to them. This is not "one
    change"; it is one change plus the alias surface it does not reach.
-2. **P2** — window-filter detection so recycled tickers stop generating conflicts the system already
+2. **P2** — window-filter detection by **pairwise interval intersection** (not evaluation at a single
+   `asOf`, which misses windows overlapping only in the future or only historically, with no write to
+   rerun detection when that date arrives) so recycled tickers stop generating conflicts the system already
    holds the facts to decide. These conflicts **are** dismissible and stay dismissed, so the case is
    the recurring adjudication cost, not a queue that cannot reach zero; rank it as workload relief —
    **plus a correctness half**: because `DeterministicConflictId` carries no window or occurrence
