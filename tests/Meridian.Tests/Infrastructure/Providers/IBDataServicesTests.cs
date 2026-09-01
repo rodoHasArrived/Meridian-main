@@ -438,6 +438,30 @@ public sealed class IBDataServicesTests
     }
 
     [Fact]
+    public void CallbackBridge_EmptyScannerRefreshCycle_ClearsTheCurrentBatch()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport, "ignored-because-transport-supplies-identity");
+        var requestId = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
+
+        transport.RaiseScannerResult(requestId, Scanner(0, "AAPL"));
+        transport.RaiseScannerBatchEnd(requestId);
+        // A refresh matching nothing emits the next delimiter with no intervening rows; the
+        // read model must report the empty current scan, not keep exposing the prior batch.
+        transport.RaiseScannerBatchEnd(requestId);
+
+        services.GetRequests().Single().ScannerResults.Should().BeEmpty();
+
+        // A later cycle's first row still starts a fresh batch after the empty one.
+        transport.RaiseScannerResult(requestId, Scanner(0, "NVDA"));
+        services.GetRequests().Single().ScannerResults.Should().ContainSingle()
+            .Which.Symbol.Should().Be("NVDA");
+
+        static ProviderScannerResult Scanner(int rank, string symbol)
+            => new(rank, symbol, "NASDAQ", null, null, null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow));
+    }
+
+    [Fact]
     public void Cancellation_MarksOnlyTheRequestedStreamAndCallsTransportCancellation()
     {
         var transport = new RecordingTransport();

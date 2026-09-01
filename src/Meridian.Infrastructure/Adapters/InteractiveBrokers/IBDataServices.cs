@@ -614,8 +614,19 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
 
     private void OnScannerBatchCompleted(object? sender, int requestId)
     {
-        if (IsRoutable(requestId))
-            _scannerBatchClosed[requestId] = true;
+        if (!IsRoutable(requestId))
+            return;
+
+        // Two delimiters with no rows between them mean the just-completed refresh matched
+        // nothing. No row will arrive to trigger the replacement in RecordScannerResult, so the
+        // empty current scan is represented here; the still-set marker keeps a later cycle's
+        // first row starting a fresh batch.
+        if (!_scannerBatchClosed.TryAdd(requestId, true))
+            UpdateReadModel(requestId, static current => current with
+            {
+                Status = ProviderDataRequestStatus.Streaming,
+                ScannerResults = Array.Empty<ProviderScannerResult>(),
+            });
     }
 
     private void OnRealTimeBarReceived(object? sender, (int RequestId, ProviderRealTimeBar Bar) value)
