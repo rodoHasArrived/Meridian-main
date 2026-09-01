@@ -123,8 +123,13 @@ public sealed record CapitalCallPlan(
     IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues)
 {
     public bool IsExecutable =>
-        AllocatedAmount == Request.AmountToCall
-        && Lines.Count > 0
+        Request is not null
+        && Lines is { Count: > 0 }
+        && ValidationIssues is not null
+        && Lines.All(static line => line is not null)
+        && ValidationIssues.All(static issue => issue is not null)
+        && Lines.Sum(static line => line.CallAmount) == AllocatedAmount
+        && AllocatedAmount == Request.AmountToCall
         && !ValidationIssues.Any(static issue =>
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
 }
