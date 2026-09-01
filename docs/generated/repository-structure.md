@@ -1417,6 +1417,7 @@ Meridian-main
 │   │   ├── provider-management.md
 │   │   ├── README.md
 │   │   ├── runtime-component-state-boundaries.md
+│   │   ├── security-lot-convergence-blueprint.md
 │   │   ├── security-master-extensibility-review.md
 │   │   ├── storage-design.md
 │   │   ├── strategy-builder-integration.md
@@ -7256,6 +7257,7 @@ Meridian-main
 │   │   │   ├── CashSyncOrchestrationService.cs
 │   │   │   ├── CollateralExposureService.cs
 │   │   │   ├── ConfigStore.cs
+│   │   │   ├── CrossProcessFileLock.cs
 │   │   │   ├── DailyValuationBatchLifecycleService.cs
 │   │   │   ├── DailyValuationPositionService.cs
 │   │   │   ├── DailyValuationScheduler.cs
@@ -7661,6 +7663,7 @@ Meridian-main
 │   │   │   ├── DesktopConfigurationRecoveryService.cs
 │   │   │   ├── DesktopLaunchArguments.cs
 │   │   │   ├── DesktopLaunchTicketClient.cs
+│   │   │   ├── DesktopMutationPermissionResolver.cs
 │   │   │   ├── DesktopWorkflowReadScopeResolver.cs
 │   │   │   ├── DropImportService.cs
 │   │   │   ├── EvidenceWorkbenchApiClient.cs
@@ -10083,6 +10086,7 @@ Meridian-main
 │   │   │   ├── CorporateActionOperationsEndpointTests.cs
 │   │   │   ├── CredentialCompatibilityEndpointsTests.cs
 │   │   │   ├── CronEndpointsTests.cs
+│   │   │   ├── CrossProcessFileLockTests.cs
 │   │   │   ├── DailyValuationBatchLifecycleServiceTests.cs
 │   │   │   ├── DailyValuationPositionServiceTests.cs
 │   │   │   ├── DailyValuationScheduleIdentityTests.cs
@@ -10363,6 +10367,7 @@ Meridian-main
 │   │   │   ├── DataWorkspacePresentationBuilderTests.cs
 │   │   │   ├── DesktopAuthenticationSessionTests.cs
 │   │   │   ├── DesktopConfigurationRecoveryServiceTests.cs
+│   │   │   ├── DesktopMutationPermissionResolverTests.cs
 │   │   │   ├── DesktopWorkflowReadScopeResolverTests.cs
 │   │   │   ├── ExportPresetServiceTests.cs
 │   │   │   ├── FirstRunServiceTests.cs
@@ -10473,6 +10478,7 @@ Meridian-main
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   ├── RunRiskViewModelTests.cs
 │   │   │   ├── ScheduleManagerViewModelTests.cs
+│   │   │   ├── SecurityMasterDeactivateViewModelTests.cs
 │   │   │   ├── SecurityMasterEditViewModelTests.cs
 │   │   │   ├── SecurityMasterViewModelTests.cs
 │   │   │   ├── SecurityPassportEditorViewModelTests.cs
