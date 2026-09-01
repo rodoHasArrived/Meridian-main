@@ -33,6 +33,19 @@ internal static class SecurityMasterConflictDetection
     public static IReadOnlyList<SecurityMasterConflict> DetectAll(
         IReadOnlyList<SecurityProjectionRecord> universe,
         DateTimeOffset detectedAt)
+        => DetectAll(universe, detectedAt, subjectIds: null);
+
+    /// <summary>
+    /// Full-universe detection, optionally restricted to pairs involving at least one subject.
+    /// The indexed candidate lookup deliberately returns every historical claimant of a shared
+    /// identifier, so an unrestricted scan of a batch with many candidates enumerates
+    /// candidate-to-candidate pairs the caller would discard anyway — quadratic in claimants of
+    /// a recycled identifier. The restriction skips those pairs before the overlap check.
+    /// </summary>
+    private static IReadOnlyList<SecurityMasterConflict> DetectAll(
+        IReadOnlyList<SecurityProjectionRecord> universe,
+        DateTimeOffset detectedAt,
+        IReadOnlySet<Guid>? subjectIds)
     {
         var byIdentifier = new Dictionary<IdentifierKey, List<IdentifierClaim>>();
 
@@ -75,6 +88,13 @@ internal static class SecurityMasterConflictDetection
             {
                 for (var rightIndex = leftIndex + 1; rightIndex < claimants.Length; rightIndex++)
                 {
+                    if (subjectIds is not null
+                        && !subjectIds.Contains(claimants[leftIndex].Key)
+                        && !subjectIds.Contains(claimants[rightIndex].Key))
+                    {
+                        continue;
+                    }
+
                     var overlap = FindDeterministicOverlap(claimants[leftIndex], claimants[rightIndex]);
                     if (overlap is null)
                     {
@@ -135,7 +155,7 @@ internal static class SecurityMasterConflictDetection
             .Concat(candidates.Where(candidate => !subjectIds.Contains(candidate.SecurityId)))
             .ToArray();
         var results = new List<SecurityMasterConflict>();
-        foreach (var conflict in DetectAll(universe, detectedAt))
+        foreach (var conflict in DetectAll(universe, detectedAt, subjectIds))
         {
             if (subjectIds.Contains(conflict.SecurityId))
             {

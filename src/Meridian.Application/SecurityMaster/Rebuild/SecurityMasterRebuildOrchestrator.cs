@@ -197,26 +197,38 @@ public sealed class SecurityMasterRebuildOrchestrator
             return;
         }
 
-        // The same security can appear in several failed batches; the last rebuilt copy is the
-        // current one, so earlier duplicates are dropped before the retry.
-        var records = deferredRecords
-            .GroupBy(static record => record.SecurityId)
-            .Select(static group => group.Last())
-            .ToArray();
+        // A deferred security can have been rebuilt again by a later batch whose scan succeeded,
+        // so the held copy may be stale by retry time. Each deferred security is re-read from
+        // the store and the retry scans the projection as persisted now; one that no longer
+        // exists has nothing left to scan.
+        var records = new List<SecurityProjectionRecord>();
+        foreach (var securityId in deferredRecords.Select(static record => record.SecurityId).Distinct())
+        {
+            var current = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
+            if (current is not null)
+            {
+                records.Add(current);
+            }
+        }
+
+        if (records.Count == 0)
+        {
+            return;
+        }
 
         try
         {
             await _conflictService.RecordConflictsForProjectionsAsync(records, ct).ConfigureAwait(false);
             _logger.LogInformation(
                 "Deferred conflict detection succeeded on retry for {SecurityCount} securities",
-                records.Length);
+                records.Count);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(
                 ex,
                 "Conflict detection failed twice during projection rebuild; {SecurityCount} rebuilt securities carry no ambiguity scan and need a full conflict refresh",
-                records.Length);
+                records.Count);
         }
     }
 }

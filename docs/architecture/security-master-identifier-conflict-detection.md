@@ -1,10 +1,14 @@
 # Security Master Identifier Conflict Detection
 
 Security Master identifier resolution and ambiguity detection use the same canonical identity:
-`SecurityIdentifierKind` plus the value produced by `SecurityIdentifierNormalizer`. Raw
-punctuation, whitespace, and case are never separate identities. `ProviderSymbol` and `Ticker`
-also include the normalized provider or venue namespace; canonical identifiers such as ISIN,
-CUSIP, and FIGI remain provider-independent and retain provider only as provenance.
+`SecurityIdentifierKind` plus the value produced by `SecurityIdentifierNormalizer`. For the
+canonical kinds the normalizer strips to alphanumerics (ISIN, CUSIP, SEDOL, FIGI, OCC option
+symbol, LEI, WKN, CIK — and Valoren to digits), so punctuation and whitespace are never separate
+identities there. Venue- and provider-scoped kinds (`Ticker`, `ProviderSymbol`, `Ric`, and the
+fallback kinds) normalize case and trim but deliberately retain internal punctuation — `VOD.L`
+and `VOD-L` remain distinct RICs. `ProviderSymbol` and `Ticker` also include the normalized
+provider or venue namespace; canonical identifiers such as ISIN, CUSIP, and FIGI remain
+provider-independent and retain provider only as provenance.
 
 An ambiguity exists only when two different `SecurityId` values claim the same canonical
 identifier during overlapping half-open validity windows (`[ValidFrom, ValidTo)`). Adjacent
