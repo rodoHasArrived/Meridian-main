@@ -9110,6 +9110,7 @@ Meridian-main
 │   │   │   │   ├── ReconciliationMatchKernelTests.cs
 │   │   │   │   ├── ReconciliationNormalizationServiceTests.cs
 │   │   │   │   ├── ReconciliationRunOrchestratorTests.cs
+│   │   │   │   ├── StatementMatchingEngineSidedKernelTests.cs
 │   │   │   │   ├── StatementMatchingEngineTests.cs
 │   │   │   │   ├── StatementReconciliationContextAdapterTests.cs
 │   │   │   │   ├── StatementReconciliationOrchestratorTests.cs
@@ -9732,6 +9733,8 @@ Meridian-main
 │   │   │   ├── StatementCaseworkCommitStoreTests.cs
 │   │   │   ├── StatementFixtureScenarioTests.cs
 │   │   │   ├── StatementImportAndMatchingTests.cs
+│   │   │   ├── StatementRunMatchArtifactUpgradeTests.cs
+│   │   │   ├── StatementRunMatcherGroupTests.cs
 │   │   │   ├── StatementRunMatchingServiceTests.cs
 │   │   │   ├── StatementRunRecoveryTests.cs
 │   │   │   └── StatementRunWorkflowServiceTests.cs
