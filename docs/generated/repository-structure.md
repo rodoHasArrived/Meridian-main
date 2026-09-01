@@ -1417,6 +1417,7 @@ Meridian-main
 │   │   ├── provider-management.md
 │   │   ├── README.md
 │   │   ├── runtime-component-state-boundaries.md
+│   │   ├── security-lot-convergence-blueprint.md
 │   │   ├── security-master-extensibility-review.md
 │   │   ├── storage-design.md
 │   │   ├── strategy-builder-integration.md
