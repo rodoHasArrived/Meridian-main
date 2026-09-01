@@ -237,6 +237,26 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
                     conflict.FieldPath, conflict.ValueB, conflict.SecurityId);
             }
 
+            // Mirrors the durable store: a refresh that loaded the pre-amendment universe can
+            // have retained a conflict these subjects no longer produce, and this scan is
+            // authoritative for every pair touching a subject — supersede what it did not
+            // re-detect instead of leaving the stale row open until the next full refresh.
+            var detectedIds = candidates.Select(static conflict => conflict.ConflictId).ToHashSet();
+            var subjectIds = excludedSecurityIds.Select(static id => id.ToString()).ToHashSet(StringComparer.Ordinal);
+            foreach (var existing in _conflicts.Values.Where(conflict =>
+                         conflict.Status == "Open"
+                         && conflict.ConflictKind == SecurityMasterConflictKinds.IdentifierAmbiguity
+                         && (subjectIds.Contains(conflict.ValueA) || subjectIds.Contains(conflict.ValueB))
+                         && !detectedIds.Contains(conflict.ConflictId)))
+            {
+                _conflicts.TryUpdate(existing.ConflictId, existing with
+                {
+                    Status = "Superseded",
+                    ResolvedReason = IdentifierNoLongerDetectedReason,
+                    ResolvedAt = DateTimeOffset.UtcNow,
+                }, existing);
+            }
+
             if (newConflicts > 0)
             {
                 _logger.LogInformation(

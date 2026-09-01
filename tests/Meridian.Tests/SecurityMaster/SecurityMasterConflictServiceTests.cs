@@ -276,6 +276,42 @@ public sealed class SecurityMasterConflictServiceTests
     }
 
     [Fact]
+    public async Task RecordConflictsForProjections_SupersedesSubjectConflictsTheScanNoLongerDetects()
+    {
+        var securityA = Guid.NewGuid();
+        var securityB = Guid.NewGuid();
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns(new[]
+            {
+                MakeProjection(securityA, "Ticker", "STALE", provider: "XNAS"),
+                MakeProjection(securityB, "Ticker", "STALE", provider: "XNAS")
+            });
+        store.FindIdentifierCandidatesAsync(
+                Arg.Any<IReadOnlyList<SecurityIdentifierDto>>(),
+                Arg.Any<IReadOnlyCollection<Guid>>(),
+                Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<SecurityProjectionRecord>());
+
+        var service = new SecurityMasterConflictService(
+            store, NullLogger<SecurityMasterConflictService>.Instance);
+        var conflictId = (await service.GetOpenConflictsAsync(CancellationToken.None)).Single().ConflictId;
+
+        // A refresh racing an amendment can retain a conflict the amended claims no longer
+        // produce. The ingest scan is authoritative for every pair touching its subjects, so
+        // scanning the amended projection must supersede the stale pair rather than leaving it
+        // open until the next full refresh.
+        await service.RecordConflictsForProjectionAsync(
+            MakeProjection(securityA, "Ticker", "AMENDED", provider: "XNAS"),
+            CancellationToken.None);
+
+        var superseded = await service.GetConflictAsync(conflictId, CancellationToken.None);
+        superseded.Should().NotBeNull();
+        superseded!.Status.Should().Be("Superseded");
+        superseded.ResolvedReason.Should().Be(SecurityMasterConflictService.IdentifierNoLongerDetectedReason);
+    }
+
+    [Fact]
     public async Task GetOpenConflictsAsync_WhenSameIdentifierSameSecurityDifferentProviders_NoConflict()
     {
         var securityId = Guid.NewGuid();

@@ -567,6 +567,42 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
             }
         }
 
+        // The projection write commits BEFORE this lock is taken, so a full refresh that loaded
+        // the pre-write universe can have upserted or retained a conflict the subjects' amended
+        // claims no longer produce. This scan holds the subjects' current claims and enumerates
+        // every pair touching a subject, so it is authoritative for them: still-open detector
+        // rows referencing a subject that the scan did not re-detect are superseded here rather
+        // than lingering until the next full refresh.
+        await using (var supersede = connection.CreateCommand())
+        {
+            supersede.Transaction = transaction;
+            supersede.CommandText =
+                $"""
+                update {Qualified(ConflictsTable)}
+                set status = 'Superseded',
+                    resolved_reason = @resolved_reason,
+                    resolved_at = @resolved_at
+                where status = 'Open'
+                  and conflict_kind = @conflict_kind
+                  and (value_a = any(@subject_ids) or value_b = any(@subject_ids))
+                  and not (conflict_id = any(@detected_ids));
+                """;
+            supersede.Parameters.AddWithValue(
+                "resolved_reason",
+                SecurityMasterConflictService.IdentifierNoLongerDetectedReason);
+            supersede.Parameters.AddWithValue("resolved_at", DateTimeOffset.UtcNow.UtcDateTime);
+            supersede.Parameters.AddWithValue("conflict_kind", SecurityMasterConflictKinds.IdentifierAmbiguity);
+            supersede.Parameters.AddWithValue(
+                "subject_ids",
+                NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Text,
+                excludedSecurityIds.Select(static id => id.ToString()).ToArray());
+            supersede.Parameters.AddWithValue(
+                "detected_ids",
+                NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Uuid,
+                candidates.Select(static conflict => conflict.ConflictId).ToArray());
+            await supersede.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
+
         await transaction.CommitAsync(ct).ConfigureAwait(false);
 
         if (newConflicts > 0)
