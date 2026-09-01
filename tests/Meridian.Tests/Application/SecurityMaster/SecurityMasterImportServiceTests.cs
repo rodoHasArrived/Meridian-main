@@ -148,17 +148,17 @@ public sealed class SecurityMasterImportServiceTests
             request.EffectiveFrom == authorityTimestamp
             && request.SourceSystem == "SecurityMasterImport"
             && request.UpdatedBy == "authenticated.operator"
-            && request.SourceRecordId is null
+            && request.SourceRecordId == null
             && request.Reason == "Bulk import through Security Master import workflow");
 
         recordingService.Requests
             .SelectMany(static request => request.Identifiers)
             .Should().OnlyContain(identifier =>
                 identifier.ValidFrom == authorityTimestamp
-                && identifier.ValidTo is null
-                && identifier.Provider is null
-                && identifier.NormalizedValue is null
-                && identifier.NormalizedProvider is null);
+                && identifier.ValidTo == null
+                && identifier.Provider == null
+                && identifier.NormalizedValue == null
+                && identifier.NormalizedProvider == null);
     }
 
     [Fact]
@@ -185,16 +185,16 @@ public sealed class SecurityMasterImportServiceTests
             request.EffectiveFrom == authorityTimestamp
             && request.SourceSystem == "SecurityMasterImport"
             && request.UpdatedBy == "authenticated.operator"
-            && request.SourceRecordId is null
+            && request.SourceRecordId == null
             && request.Reason == "Bulk import through Security Master import workflow");
         recordingService.Requests
             .SelectMany(static request => request.Identifiers)
             .Should().OnlyContain(identifier =>
                 identifier.ValidFrom == authorityTimestamp
-                && identifier.ValidTo is null
-                && identifier.Provider is null
-                && identifier.NormalizedValue is null
-                && identifier.NormalizedProvider is null);
+                && identifier.ValidTo == null
+                && identifier.Provider == null
+                && identifier.NormalizedValue == null
+                && identifier.NormalizedProvider == null);
     }
 
     private static SecurityMasterImportService CreateImportService(ISecurityMasterService service)
