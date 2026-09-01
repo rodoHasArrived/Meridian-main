@@ -7,7 +7,7 @@ namespace Meridian.Tests.Ledger;
 public sealed class EuropeanDistributionWaterfallTests
 {
     [Fact]
-    public void Constructor_CatchUpRateDoesNotExceedCarryRate_RejectsInvalidWaterfall()
+    public void Constructor_CatchUpRateBelowCarryRate_RejectsInvalidWaterfall()
     {
         // A 10% catch-up cannot achieve a 20% carried-interest target. Rejecting this configuration
         // avoids silently skipping the catch-up tier and paying the higher residual carry rate.
