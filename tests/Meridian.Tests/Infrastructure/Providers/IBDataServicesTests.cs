@@ -414,6 +414,30 @@ public sealed class IBDataServicesTests
     }
 
     [Fact]
+    public void CallbackBridge_ScannerRefreshCycles_ReplaceTheBatchInsteadOfAccumulating()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport, "ignored-because-transport-supplies-identity");
+        var requestId = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
+
+        transport.RaiseScannerResult(requestId, Scanner(0, "AAPL"));
+        transport.RaiseScannerResult(requestId, Scanner(1, "MSFT"));
+        transport.RaiseScannerBatchEnd(requestId);
+        // The vendor re-sends the full current ranked list each cycle; MSFT left the scan, so
+        // the read model must report the current batch, not the union of every cycle.
+        transport.RaiseScannerResult(requestId, Scanner(0, "NVDA"));
+        transport.RaiseScannerResult(requestId, Scanner(1, "AAPL"));
+
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Streaming);
+        request.ScannerResults.Should().HaveCount(2);
+        request.ScannerResults!.Select(result => result.Symbol).Should().Equal("NVDA", "AAPL");
+
+        static ProviderScannerResult Scanner(int rank, string symbol)
+            => new(rank, symbol, "NASDAQ", null, null, null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow));
+    }
+
+    [Fact]
     public void Cancellation_MarksOnlyTheRequestedStreamAndCallsTransportCancellation()
     {
         var transport = new RecordingTransport();
@@ -665,6 +689,7 @@ public sealed class IBDataServicesTests
         public event EventHandler<(int RequestId, ProviderDividendEarnings Payload)>? DividendEarningsReceived;
         public event EventHandler<(int RequestId, ProviderOptionContract Contract)>? OptionContractReceived;
         public event EventHandler<(int RequestId, ProviderScannerResult Result)>? ScannerResultReceived;
+        public event EventHandler<int>? ScannerBatchCompleted;
         public event EventHandler<(int RequestId, ProviderRealTimeBar Bar)>? RealTimeBarReceived;
         public event EventHandler<(int RequestId, ProviderHistoricalTick Tick, bool Completed)>? HistoricalTickReceived;
         public event EventHandler<(int RequestId, ProviderAccountPnl Pnl)>? PnlReceived;
@@ -708,6 +733,7 @@ public sealed class IBDataServicesTests
         public void RaiseCompleted(int id) => RequestCompleted?.Invoke(this, id);
         public void RaiseRejected(int id, string code, string message) => RequestRejected?.Invoke(this, (id, code, message));
         public void RaiseScannerResult(int requestId, ProviderScannerResult result) => ScannerResultReceived?.Invoke(this, (requestId, result));
+        public void RaiseScannerBatchEnd(int id) => ScannerBatchCompleted?.Invoke(this, id);
         public void RaiseMarketDataType(int requestId, int marketDataType) => MarketDataTypeReceived?.Invoke(this, new IBMarketDataTypeUpdate(requestId, marketDataType));
     }
 }

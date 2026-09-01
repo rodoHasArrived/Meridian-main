@@ -70,8 +70,10 @@ public sealed partial class EnhancedIBConnectionManager
     public void scannerDataEnd(int reqId)
     {
         // A batch delimiter for a live subscription, not completion — see the IBAPI partial's
-        // scannerDataEnd: cancellation is the scanner's only terminal transition.
+        // scannerDataEnd: cancellation is the scanner's only terminal transition. Forwarded so
+        // the next refresh cycle's rows replace the accumulated batch.
         RecordMessageReceived();
+        ScannerBatchCompleted?.Invoke(this, reqId);
     }
 
     public void receiveFA(int faDataType, string faXmlData)

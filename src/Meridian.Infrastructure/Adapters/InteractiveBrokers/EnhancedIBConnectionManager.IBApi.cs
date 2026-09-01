@@ -172,6 +172,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public event EventHandler<(int RequestId, ProviderDividendEarnings Payload)>? DividendEarningsReceived;
     public event EventHandler<(int RequestId, ProviderOptionContract Contract)>? OptionContractReceived;
     public event EventHandler<(int RequestId, ProviderScannerResult Result)>? ScannerResultReceived;
+    public event EventHandler<int>? ScannerBatchCompleted;
     public event EventHandler<(int RequestId, ProviderRealTimeBar Bar)>? RealTimeBarReceived;
     public event EventHandler<(int RequestId, ProviderHistoricalTick Tick, bool Completed)>? HistoricalTickReceived;
     public event EventHandler<(int RequestId, ProviderAccountPnl Pnl)>? PnlReceived;
@@ -1080,6 +1081,12 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
                 _clientSocket.cancelRealTimeBars(requestId);
 #endif
                 break;
+            case "dividend-earnings":
+                // RequestDividendEarnings opens a live reqMktData subscription (generic ticks
+                // 456,258); without this cancel TWS keeps streaming into a released id,
+                // consuming a market-data line indefinitely.
+                _clientSocket.cancelMktData(requestId);
+                break;
             case "historical-ticks":
                 break; // IB historical ticks are bounded and complete from their terminal callback.
         }
@@ -1393,8 +1400,10 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         // refreshed rows until cancelScannerSubscription. Completing here would mark the read
         // model terminal and drop every refreshed batch, and releasing the ownership id would
         // stop routing subscription-scoped errors — cancellation is the scanner's only terminal
-        // transition.
+        // transition. The delimiter itself is forwarded so the next refresh cycle's rows replace
+        // the accumulated batch instead of extending it forever.
         RecordMessageReceived();
+        ScannerBatchCompleted?.Invoke(this, reqId);
     }
 
     public void symbolSamples(int reqId, ContractDescription[] contractDescriptions) { }

@@ -67,6 +67,12 @@ public interface IIBDataCallbackSource
     event EventHandler<(int RequestId, ProviderDividendEarnings Payload)>? DividendEarningsReceived;
     event EventHandler<(int RequestId, ProviderOptionContract Contract)>? OptionContractReceived;
     event EventHandler<(int RequestId, ProviderScannerResult Result)>? ScannerResultReceived;
+    /// <summary>
+    /// Non-terminal batch delimiter for a live scanner subscription (IB's scannerDataEnd): the
+    /// vendor re-sends the full current ranked list each refresh cycle, so the rows after this
+    /// delimiter REPLACE the request's accumulated results rather than extending them.
+    /// </summary>
+    event EventHandler<int>? ScannerBatchCompleted;
     event EventHandler<(int RequestId, ProviderRealTimeBar Bar)>? RealTimeBarReceived;
     event EventHandler<(int RequestId, ProviderHistoricalTick Tick, bool Completed)>? HistoricalTickReceived;
     event EventHandler<(int RequestId, ProviderAccountPnl Pnl)>? PnlReceived;
@@ -94,6 +100,10 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
     private readonly ConcurrentDictionary<int, ProviderDataRequestReadModel> _requests = new();
     private readonly ConcurrentDictionary<int, IBDataRequestOwnership> _ownership = new();
     private readonly ConcurrentDictionary<int, string> _requestCorrelationIds = new();
+    // Scanner ids whose current result batch was delimited by the vendor (scannerDataEnd): the
+    // next scanner row for that id begins a fresh batch and replaces the accumulated results.
+    // Entries for terminal requests are inert — request ids are process-monotonic, never reused.
+    private readonly ConcurrentDictionary<int, bool> _scannerBatchClosed = new();
     private readonly TenantScopedProviderDataUpdateHub _updates = new();
     private int _nextRequestId = 90_000;
 
@@ -120,6 +130,7 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
             callbacks.DividendEarningsReceived += OnDividendEarningsReceived;
             callbacks.OptionContractReceived += OnOptionContractReceived;
             callbacks.ScannerResultReceived += OnScannerResultReceived;
+            callbacks.ScannerBatchCompleted += OnScannerBatchCompleted;
             callbacks.RealTimeBarReceived += OnRealTimeBarReceived;
             callbacks.HistoricalTickReceived += OnHistoricalTickReceived;
             callbacks.PnlReceived += OnPnlReceived;
@@ -448,7 +459,19 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
     public void RecordScannerResult(int requestId, ProviderScannerResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
-        UpdateReadModel(requestId, current => current with { Status = ProviderDataRequestStatus.Streaming, ScannerResults = Append(current.ScannerResults, result with { Provenance = CreateObservationProvenance(current, result.ProviderContractId ?? $"{result.Symbol}:{result.Rank}", result.Provenance.SourceTimestamp) }) });
+        // The vendor re-sends the full current ranked list every refresh cycle; the first row
+        // after a batch delimiter therefore REPLACES the accumulated results, so the read model
+        // reports the current scan instead of an ever-growing union of every cycle.
+        var startsNewBatch = _scannerBatchClosed.TryRemove(requestId, out _);
+        UpdateReadModel(requestId, current =>
+        {
+            var enriched = result with { Provenance = CreateObservationProvenance(current, result.ProviderContractId ?? $"{result.Symbol}:{result.Rank}", result.Provenance.SourceTimestamp) };
+            return current with
+            {
+                Status = ProviderDataRequestStatus.Streaming,
+                ScannerResults = startsNewBatch ? new[] { enriched } : Append(current.ScannerResults, enriched),
+            };
+        });
     }
 
     public void RecordRealTimeBar(int requestId, ProviderRealTimeBar bar)
@@ -587,6 +610,12 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
     {
         if (IsRoutable(value.RequestId))
             RecordScannerResult(value.RequestId, value.Result);
+    }
+
+    private void OnScannerBatchCompleted(object? sender, int requestId)
+    {
+        if (IsRoutable(requestId))
+            _scannerBatchClosed[requestId] = true;
     }
 
     private void OnRealTimeBarReceived(object? sender, (int RequestId, ProviderRealTimeBar Bar) value)
@@ -847,6 +876,7 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
             callbacks.DividendEarningsReceived -= OnDividendEarningsReceived;
             callbacks.OptionContractReceived -= OnOptionContractReceived;
             callbacks.ScannerResultReceived -= OnScannerResultReceived;
+            callbacks.ScannerBatchCompleted -= OnScannerBatchCompleted;
             callbacks.RealTimeBarReceived -= OnRealTimeBarReceived;
             callbacks.HistoricalTickReceived -= OnHistoricalTickReceived;
             callbacks.PnlReceived -= OnPnlReceived;
