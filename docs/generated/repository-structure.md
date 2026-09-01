@@ -7880,6 +7880,7 @@ Meridian-main
 │   │   │   ├── SecurityConflictLaneModels.cs
 │   │   │   ├── SecurityMasterDeactivateViewModel.cs
 │   │   │   ├── SecurityMasterEditViewModel.cs
+│   │   │   ├── SecurityMasterViewModel.Authorization.cs
 │   │   │   ├── SecurityMasterViewModel.cs
 │   │   │   ├── SecurityMasterViewModel.Import.cs
 │   │   │   ├── SecurityMasterViewModel.Sections.cs
