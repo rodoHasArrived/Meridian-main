@@ -1273,3 +1273,38 @@ Rank 11 of the 2026-07 W10 depth slate. Consolidation elimination already exists
 - `SRC-UI-SHARED`
 - `SRC-UI-DASHBOARD`
 - `SRC-WPF`
+
+## W10-LOT-002 - Security-identified open-lot convergence
+| Field | Value |
+| --- | --- |
+| Wave | W10 |
+| Status | planned |
+| Health | green |
+| Priority | critical |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-08-28 |
+
+### Current Summary
+
+Converge Execution TaxLot, Security Master FaceValueLot, and the already-more-complete durable LedgerTaxLotRecord onto one SecurityId-keyed decimal open-lot contract. The target extends the existing atomic ledger lot rather than creating a parallel store and adds explicit units-versus-face basis, acquisition currency and immutable FX, face-value acquisition terms, shared relief and amortization, and append-only corporate-action continuity.
+
+### Exit Criteria
+
+- Every authoritative open lot requires SecurityId and BookPositionId, uses decimal original/open quantity, and declares Units or Face quantity basis; symbols remain effective-dated display evidence only.
+- Acquisition currency, functional currency, transaction-to-functional acquisition FX, transaction basis, and functional basis are retained and restatable without using a current market FX rate.
+- FIFO, LIFO, HIFO, SpecificId, and AverageCost relief plus face-value factor and constant-yield amortization operate through one canonical contract with parity evidence for Execution, Ledger, Backtesting, and Reporting.
+- Ticker changes preserve lot identity, while splits, exchanges, mergers, spin-offs, returns of capital, paydowns, redemptions, and advance refundings produce append-only predecessor/successor mutations that conserve basis and holding period under approved rules.
+- Acquisition, disposal, amortization, and corporate-action lot mutations commit atomically with immutable journals, retained evidence, optimistic versions, idempotency fingerprints, and correction lineage.
+- Legacy rows are backfilled only from retained evidence; unresolved SecurityId, quantity-basis, or acquisition-FX facts enter a governed exception queue and never receive synthetic defaults.
+- The advance-refunding acceptance scenario produces unrefunded and pre-refunded successor lots with allocated book basis and holding period, distinguishes Schedule D treatment, and reconciles through retained report evidence.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-EXECUTION`
+- `SRC-EXECUTION-SDK`
+- `SRC-BACKTESTING`
+- `SRC-LEDGER`
+- `SRC-STORAGE`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
