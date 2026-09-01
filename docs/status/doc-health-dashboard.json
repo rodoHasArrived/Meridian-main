@@ -1,11 +1,11 @@
 {
-  "total_files": 662,
-  "total_lines": 137123,
+  "total_files": 663,
+  "total_lines": 139596,
   "orphaned_count": 253,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 253,
-  "average_lines": 207.1,
+  "todo_count": 263,
+  "average_lines": 210.6,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1080,9 +1080,9 @@
     },
     {
       "path": "docs/ai/ai-known-errors.md",
-      "line_count": 416,
+      "line_count": 509,
       "has_heading": true,
-      "todo_count": 0,
+      "todo_count": 10,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -1592,7 +1592,7 @@
     },
     {
       "path": "docs/architecture/README.md",
-      "line_count": 88,
+      "line_count": 89,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1607,8 +1607,16 @@
       "stale": false
     },
     {
+      "path": "docs/architecture/security-lot-convergence-blueprint.md",
+      "line_count": 256,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 934,
+      "line_count": 3020,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2656,7 +2664,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10774,
+      "line_count": 10775,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3488,7 +3496,7 @@
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "line_count": 1275,
+      "line_count": 1310,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3496,7 +3504,7 @@
     },
     {
       "path": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
-      "line_count": 65,
+      "line_count": 66,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

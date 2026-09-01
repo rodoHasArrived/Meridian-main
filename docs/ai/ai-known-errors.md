@@ -36,13 +36,23 @@ label alone will update this file.
 - **Area**: (docs/build/tests/runtime/config)
 - **Symptoms**: What failed.
 - **Root cause**: Why the error was introduced.
-- **Prevention checklist**:
-  - [ ] Check 1
-  - [ ] Check 2
-- **Verification commands**:
-  - `command`
+- **Prevention checklist**: (1) Check 1. (2) Check 2. — *all substance on this one line; see the parser note below*
+  - [ ] Check 1, expanded for human readers
+  - [ ] Check 2, expanded for human readers
+- **Verification commands**: `command-1`; then `command-2`. — *one line, as above*
+  - `command` with commentary for human readers
 - **Source issue**: #123
 - **Status**: open | mitigated | closed
+
+> **Put every field's substance on the `- **Field**:` line itself.** `load_known_errors`
+> (`build/scripts/ai-repo-updater.py:1141-1150`) matches `- \*\*(\w[\w\s]*)\*\*:\s*(.*)` per line and
+> keeps only that line's remainder; indented continuation lines never match and are dropped. So a
+> checklist written only as an indented list reaches `python3 build/scripts/ai-repo-updater.py
+> known-errors` as an **empty string**, and a field line holding just a lead-in sentence is truncated
+> to that fragment. Every entry predating this note has that shape and loads empty. Indented detail is
+> still welcome for human readers — but it is invisible to the agents this file exists to serve, so it
+> must repeat rather than replace what the field line says. Verify with the `known-errors` command
+> above after adding an entry.
 
 ---
 
@@ -414,3 +424,86 @@ label alone will update this file.
 - **Source issue**: PR "Fix CS0433 type ambiguity errors breaking WPF desktop build"
 - **Status**: fixed
 - **Fixed in**: `src/Meridian.Ui.Services/Meridian.Ui.Services.csproj` — replaced the entire `<Compile Include>` block sourcing Contracts files with a single `<ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />`
+
+### AI-20260828-doc-health-dashboard-local-regeneration-drift
+- **ID**: AI-20260828-doc-health-dashboard-local-regeneration-drift
+- **Area**: docs/ci
+- **Symptoms**: A docs-only PR reds `verify-docs` and `regenerate-docs` on "Verify whole-repo generated documentation is committed". Regenerating the doc-health dashboard locally the obvious way — `run-docs-automation.py --scripts generate-structure-docs,generate-health-dashboard,generate-workflow-manifest`, exactly as `ci.yml` invokes it — produces `total_lines`/`todo_count` one lower than CI expects, so committing that output reds the same check again on the next push.
+- **Root cause**: The profile also runs `generate-structure-docs`, which walks the filesystem rather than the git index. `docs/status/todo-scan-results.json` is gitignored and absent from a clean checkout, but present on a runner because an earlier step in the same job generates it. So a local run drops that filename's line from `docs/generated/repository-structure.md`. The health dashboard then counts one fewer markdown line, and — because the filename contains the substring "todo" — one fewer TODO marker. The two generators are coupled through a generated file that is not in git, which makes the drift check environment-dependent.
+- **Prevention checklist**: (1) Reproduce CI's inputs before regenerating — run `scan-todos.py --json-output docs/status/todo-scan-results.json` FIRST, then the full profile; `ci.yml:131` writes that file before the generators run at `:157`, so a clean-checkout run omits a predecessor CI supplies and manufactures the mismatch. (2) Regenerating the dashboard alone is a fallback for markdown-line-count-only changes; prefer the ordered run for anything structural. (3) Never commit a `repository-structure.md` diff whose only change adds or removes a gitignored path — confirm with `git check-ignore -v <path>`. (4) Cross-check regenerated numbers against the failing CI log exactly, not approximately. (5) If local disagrees with CI, regenerate on the untouched base commit in a scratch worktree — no diff there means the divergence is environmental. Detail below.
+  - [ ] **Reproduce CI's inputs before regenerating: run `scan-todos.py --json-output docs/status/todo-scan-results.json` first, then the full profile.** CI does exactly this — `ci.yml:131` writes that file in the "Validate TODO registry contract" step, and the generators do not run until `:157`, so on a runner the file always exists by then. Running the three-generator command on a clean checkout omits a predecessor CI supplies, which is what manufactures the mismatch; it is not an inherent divergence
+  - [ ] Regenerating the dashboard alone (`generate-health-dashboard.py`), leaving `docs/generated/repository-structure.md` at its committed state, is the fallback when only markdown line counts changed — correct output, but it sidesteps the sequence rather than exercising it, so prefer the ordered run above when validating anything structural
+  - [ ] Never commit a `repository-structure.md` diff whose only change is adding or removing a gitignored artifact path — confirm with `git check-ignore -v <path>` before including it
+  - [ ] Cross-check the regenerated numbers against the values the failing CI log printed; they must match exactly, not approximately
+  - [ ] If a local regeneration disagrees with CI, regenerate on the untouched base commit in a scratch worktree first — no diff there means the divergence is environmental, not caused by your change
+- **Verification commands**: reproduce `ci.yml`'s invocation exactly — `--profile core` is NOT it and will not reproduce this failure. Run `python3 build/scripts/docs/scan-todos.py --json-output docs/status/todo-scan-results.json` (ci.yml:131, the predecessor whose absence manufactures the mismatch); then `python3 build/scripts/docs/run-docs-automation.py --scripts generate-structure-docs,generate-health-dashboard,generate-workflow-manifest` (ci.yml:157 — `--scripts` REPLACES a profile; `core` selects ~20 scripts and additional tracked reports, so it regenerates artifacts this failure is not about and can red unrelated gates); then `python3 build/scripts/docs/generate-structure-docs.py --workflows-only --output docs/generated/workflows-overview.md` (ci.yml runs this separately because the automation profile runs structure mode only); then `git diff --exit-code` over the five artifacts, and run the sequence twice to confirm idempotence. Regenerating the dashboard alone CANNOT reproduce the failure or verify the mitigation — that exercises the fallback, not the fix. Note `documentation.yml` uses `--profile core` for its own fuller drift check; that is a different lane and not what reds here. Detail below.
+  - `python3 build/scripts/docs/scan-todos.py --json-output docs/status/todo-scan-results.json` — the
+    predecessor CI supplies at `ci.yml:131`; without it the next command drops that filename's line
+  - `python3 build/scripts/docs/run-docs-automation.py --scripts generate-structure-docs,generate-health-dashboard,generate-workflow-manifest` — the profile as `ci.yml:156` invokes it
+  - `python3 build/scripts/docs/generate-structure-docs.py --workflows-only` — the profile runs
+    structure mode only, so the workflows overview needs its own invocation (`ci.yml:160`); omitting it
+    is how a new workflow file merges green here and reds the documentation lane
+  - `git diff --exit-code -- docs/generated/repository-structure.md docs/generated/workflows-overview.md docs/status/doc-health-dashboard.json docs/status/doc-health-dashboard.md docs/status/workflow-drift-report.md`
+    — the exact set `ci.yml:161` checks. A diff here whose only change is a gitignored artifact path
+    means the predecessor was skipped, not that your change caused it; confirm with
+    `git check-ignore -v <path>`
+  - *Fallback only*, when nothing structural changed and only markdown line counts moved:
+    `python3 build/scripts/docs/generate-health-dashboard.py --output docs/status/doc-health-dashboard.md --json-output docs/status/doc-health-dashboard.json --summary`.
+    Correct output, but it sidesteps the coupling rather than exercising it, so it verifies nothing
+    about this entry.
+- **Source issue**: PR #2857
+- **Status**: mitigated
+- **Fixed in**: Documented here; the coupling itself is unchanged. A durable fix has to reach **both** generators, because each discovers files independently. (1) `generate-structure-docs` should render only tracked paths — `_git_visible_files` (`:153`) already runs `git ls-files`, so the remedy is to stop merging the filesystem walk into that result, not to filter it; merely honoring `.gitignore` would close this instance without making the output a function of the committed repository, since any untracked-but-unignored file would still enter the tree. (2) `generate-health-dashboard` needs the same treatment on its own scan — it walks the filesystem directly (`os.walk` at `:360-373`) with only directory and pattern exclusions, and consults git solely for last-commit dates (`:146-179`), never for discovery, so an untracked unignored `.md` file shifts `total_files`, line and TODO counts, and orphan counts locally while being absent on a clean CI checkout no matter what the structure generator does.
+  - `generate-structure-docs` should render only tracked paths. `_git_visible_files` (`:153`) already runs `git ls-files`, so the remedy is to stop merging the filesystem walk into that result rather than to filter it. Merely honoring `.gitignore` would close this instance without making the output a function of the committed repository, since any untracked-but-unignored file would still enter the tree.
+  - `generate-health-dashboard` needs the same treatment on its own scan. It walks the filesystem directly (`os.walk` at `:360-373`) with only directory and pattern exclusions, and consults git only for last-commit dates (`:146-179`) — never for discovery. So an untracked, unignored `.md` file shifts `total_files`, line and TODO counts, and orphan counts locally while being absent on a clean CI checkout, no matter what the structure generator does.
+
+### AI-20260828-pr-body-rewrite-drops-phase-marker
+- **ID**: AI-20260828-pr-body-rewrite-drops-phase-marker
+- **Area**: ci/governance
+- **Symptoms**: `scope-gate` reds on a PR that has been passing it for many pushes, with `##[error]No phase declaration found. Provide --phase/--dispatch-phase, a 'phase:PRx' label, or a PR body marker like '<!-- phase:PR2 -->'.` Nothing in the diff touches roadmap tooling or workflows, and the immediately preceding pushes on the same branch passed the same check.
+- **Root cause**: The phase is declared by an HTML comment marker (`<!-- phase:PRx -->`, `PR1` on the PR that produced this entry) in the pull-request body. HTML comments are invisible in every rendered view of the PR, so rewriting the body — to refresh a stale summary, say — silently drops the marker unless it is deliberately carried across. The check does not fail on the push that removed it if that was a body-only edit; it fails on the *next* code push, which makes the two events easy to disconnect.
+- **Prevention checklist**: (1) When rewriting a PR body, write `<!-- phase:PRx -->` as the first line unconditionally, using the phase THIS PR declares — never a hardcoded one; hardcoding `PR1` onto a PR2–PR9 PR silently narrows scope and onto a PR0 PR silently widens it. (2) Establish the phase from `--phase`/dispatch input, the `phase:PRx` label, or the roadmap phase the change belongs to — if you can determine none of these, do not rewrite the body at all. (3) Prefer a `phase:PRx` label: it is visible in the UI, survives body rewrites, and outranks the body in `resolve_phase`. (4) Never confirm the marker via GitHub MCP `pull_request_read` method `get` — it strips HTML comments, so a marker that IS present returns invisible. (5) Never treat the latest `scope-gate` log as evidence about the current body. (6) A job re-run will not clear the failure. Ordering matters: the first three remove the need to detect the marker at all, and everything that tries to read it back has failed at least once. Detail below.
+  - [ ] **Write the marker unconditionally — for *this PR's* phase, never a hardcoded one.** When rewriting a PR body, emit `<!-- phase:PRx -->` as the first line without first checking whether it is there, where `PRx` is the phase this pull request actually declares. It is idempotent and removes the read-back entirely. This is the primary rule: construct, do not verify. **Hardcoding a phase is worse than the bug it fixes** — `resolve_phase` prefers a label but otherwise takes the body value (`enforce_phase_scope.py:134-150`), so writing `PR1` onto a PR2–PR9 PR silently rejects in-scope changes against PR1's narrower allowlist, and writing it onto a PR0 PR silently *broadens* the allowed scope
+  - [ ] **Establish the phase from a source you can actually read**, in this order: an explicit `--phase`/dispatch input; the `phase:PRx` label; or the roadmap phase the change belongs to, which the author knows independently of the body. **If you cannot determine the phase and cannot read the body, do not rewrite the body at all** — a rewrite is exactly the operation that can silently downgrade or widen scope, and no summary refresh is worth that
+  - [ ] **Prefer a `phase:PRx` label.** It is visible in the PR UI, survives body rewrites, and outranks the body in `resolve_phase`, so it makes the body marker non-load-bearing and removes the guesswork above. Where a label is available this whole failure mode goes away
+  - [ ] Do not expect a job re-run to clear a failure once it happens — see the recovery note below
+  - [ ] Do not try to confirm the marker by reading the body through GitHub MCP `pull_request_read` (method `get`): it returns the body with HTML comments **stripped**, so a marker that is really there comes back invisible. This recurred on PR #2857 *after* this entry was written — the returned body began `\n\n## Summary`, the two leading newlines being exactly where `<!-- phase:PR1 -->` sat
+  - [ ] Do not treat the latest `scope-gate` log as evidence about the *current* body either — see below for why it is a post-push confirmation only
+- **Verification commands**: there is no sound pre-push check — two successive attempts to write one were both unsound, so rely on constructing the marker, not confirming it. POST-PUSH ONLY: read the `scope-gate` job log for `Phase scope gate passed for PRx (source: …)` and check the phase named is the one the PR intends — a wrong phase passes just as loudly, against the wrong allowlist; `source:` names what the gate resolved (`pr_body`, `labels`, `dispatch`). That log is evidence about the commit that triggered the run, NOT about the body as it now stands: `roadmap-source-docs.yml` declares `pull_request:` with `paths:` and no `types:` (`:10-20`), so it takes the default set (`opened`, `synchronize`, `reopened`) and a body-only edit emits `edited`, which triggers nothing — after such an edit the latest log still describes the pre-edit body. So the marker is unverified until the next `synchronize` push. Detail below.
+  - **Post-push confirmation** — the only sound read. After a push, read the `scope-gate` job log for
+    `Phase scope gate passed for PRx (source: …)`. Check the phase it names is the one the PR intends —
+    a wrong phase passes the gate just as loudly as a right one, against the wrong allowlist.
+    `source:` names the declaration the gate actually
+    resolved (`pr_body`, `labels`, or `dispatch`). This is valid evidence **about the commit that
+    triggered that run, not about the body as it stands now**: `roadmap-source-docs.yml` declares
+    `pull_request:` with a `paths:` filter and no `types:` (`:10-20`), so it takes the default activity
+    set — `opened`, `synchronize`, `reopened`. A body-only edit emits `edited`, which triggers nothing,
+    so after such an edit the latest log still describes the *pre-edit* body.
+  - Consequently: after a body-only rewrite the marker's presence is **unverified until the next
+    `synchronize` push**. Treat that push's `scope-gate` as the confirmation. If it errors with
+    `No phase declaration found`, restore the marker and recover by the route your role allows — the
+    two differ, so read the recovery note below rather than assuming:
+    - *Automated contributors* fold the restoration into the next real change. Never an empty commit,
+      and never close/reopen — that restriction is the agent rule, not a property of the repository.
+    - *Human authors* may close and reopen the pull request, which needs no commit at all and is the
+      documented recovery when the marker is noticed after the last intended change. The recovery note
+      explains why `reopened` clears it where a job re-run cannot.
+  - `grep -n "PHASE_BODY\|PHASE_LABEL" tools/roadmap/enforce_phase_scope.py` to confirm the accepted forms.
+  - **Why no pre-push check is listed.** A raw, comment-preserving read of the current body would be
+    the right check, but no tool available in this environment performs one: MCP `pull_request_read`
+    strips HTML comments, and there is no `gh` CLI or direct API access. A human, or an agent with raw
+    API access, should read the body bytes and confirm `<!-- phase:` directly. Everyone else should
+    rely on writing the marker unconditionally.
+  - **The pattern this entry kept repeating, recorded because it outlives the specific bug.** Two
+    consecutive review rounds on PR #2857 found the verification step unsound, each time for a
+    different reason and each time in the *replacement* for the previous one: first it read a
+    sanitized copy of the body (comments stripped), then it read a stale snapshot of it (a log from
+    before the edit). Both answered a question about the past and were treated as answering the
+    present. When a check is hard to get right twice, stop trying to observe the state and make the
+    state unconditional instead.
+- **Source issue**: PR #2857
+- **Status**: mitigated
+- **Fixed in**: Documented here. The recovery is the part worth recording, because the obvious one does not work: `.github/workflows/roadmap-source-docs.yml:74-75` passes `PR_LABELS` and `PR_BODY` from `github.event.pull_request.*`, which is the **event payload captured when the run was triggered**. Re-running the failed job replays that same stale payload, so neither restoring the body marker nor adding a label takes effect on a re-run. Clearing it requires a fresh `pull_request` event, and there are two ways to get one. (1) **A `synchronize` push** — fold the marker restoration in with whatever genuine change is next; never push an empty commit to manufacture one. (2) **Close and reopen the PR**, which needs no commit: the workflow declares `pull_request:` with `paths:` and no `types:` (`:10-15`), so it takes the default set — `opened`, `synchronize`, `reopened` — and `reopened` carries the CURRENT body and labels; reach for this when the marker is noticed after the last intended code change, so a finished PR does not sit blocked on a stale required check. ROLE-SENSITIVE: automated contributors under a "never close and reopen a PR to kick CI" rule must use path (1) only — that rule exists to stop re-running checks hoping for a different result, and although this case differs in kind (the check is deterministic and reads stale input), the safe reading is to fold the fix into the next real change and leave reopening to a human author.
+  - **A `synchronize` push** — fold the marker restoration in with whatever genuine change is next, or with an entry like this one recording the trap. Never push an empty commit to manufacture one.
+  - **Close and reopen the pull request**, which needs no commit at all. The workflow declares `pull_request:` with a `paths:` filter and **no `types:`** (`:10-15`), so it takes the default activity set — `opened`, `synchronize`, `reopened` — and the `reopened` event carries the *current* body and labels. This is the recovery to reach for when the marker is noticed after the last intended code change, since otherwise a finished PR sits blocked on a stale required check, or its author invents a content change purely to emit `synchronize`.
+  Note for automated contributors: agents operating under a "never close and reopen a PR to kick CI" rule should use the first path only. That rule exists to stop re-running checks in the hope of a different result; this case is different in kind — the check is deterministic and reads stale input — but the safe reading is to fold the fix into the next real change and leave reopening to a human author.
