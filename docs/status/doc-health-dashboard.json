@@ -1,11 +1,11 @@
 {
-  "total_files": 663,
-  "total_lines": 139595,
+  "total_files": 664,
+  "total_lines": 139660,
   "orphaned_count": 253,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 263,
-  "average_lines": 210.6,
+  "average_lines": 210.3,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2664,7 +2664,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 10775,
+      "line_count": 10777,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2880,7 +2880,7 @@
     },
     {
       "path": "docs/operators/README.md",
-      "line_count": 194,
+      "line_count": 195,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2889,6 +2889,14 @@
     {
       "path": "docs/operators/reconciliation-operations.md",
       "line_count": 133,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/security-master-normalized-identifier-migration.md",
+      "line_count": 62,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
