@@ -464,6 +464,31 @@ public sealed class IBDataServicesTests
         services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.Rejected);
     }
 
+    /// <summary>
+    /// The vendor delivers a bounded historical-tick result as batches whose done flag describes
+    /// the batch, so the transport may mark only the final batch's last element as completing —
+    /// completing on the first element would drop the rest of the batch at the active-status guard.
+    /// </summary>
+    [Fact]
+    public void HistoricalTicks_TerminalBatchWithMultipleTicks_RetainsEveryTick()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport);
+        var requestId = services.RequestHistoricalTicks(
+            new IBHistoricalTickRequest(new SymbolConfig("AAPL"), null, DateTimeOffset.UtcNow, 3));
+
+        transport.RaiseHistoricalTick(requestId, HistoricalTick(200.10m), completed: false);
+        transport.RaiseHistoricalTick(requestId, HistoricalTick(200.15m), completed: false);
+        transport.RaiseHistoricalTick(requestId, HistoricalTick(200.20m), completed: true);
+
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Completed);
+        request.HistoricalTicks.Should().HaveCount(3);
+    }
+
+    private static ProviderHistoricalTick HistoricalTick(decimal price)
+        => new(DateTimeOffset.UtcNow, price, 10m, "TRADES", null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow));
+
     [Fact]
     public void PnlCallbacks_RetainAccountAndModelIsolation()
     {
@@ -621,6 +646,7 @@ public sealed class IBDataServicesTests
         public void RequestPnl(int requestId, string account, string? modelCode) { }
         public void RequestMarketRule(int requestId, int marketRuleId) { }
         public void RequestDepthExchanges(int requestId) { }
+        public void RequestHistoricalTicks(int requestId, IBHistoricalTickRequest request) { }
         public void CancelDataRequest(int requestId, string capability)
         {
             if (CancelFailure is { } failure)
@@ -632,6 +658,7 @@ public sealed class IBDataServicesTests
         public void RaiseArticle(int id, ProviderNewsArticlePayload value) => NewsArticleReceived?.Invoke(this, (id, value));
         public void RaiseFundamental(int id, ProviderFundamentalReport value) => FundamentalReportReceived?.Invoke(this, (id, value));
         public void RaiseTick(int id, ProviderTickByTickObservation value) => TickByTickReceived?.Invoke(this, (id, value));
+        public void RaiseHistoricalTick(int id, ProviderHistoricalTick value, bool completed) => HistoricalTickReceived?.Invoke(this, (id, value, completed));
         public void RaiseDepth(int id, IReadOnlyList<ProviderDepthExchangeDescription> value) => DepthExchangesReceived?.Invoke(this, (id, value));
         public void RaiseDividend(int id, ProviderDividendEarnings value) => DividendEarningsReceived?.Invoke(this, (id, value));
         public void RaiseScanner(int id, ProviderScannerResult value) => ScannerResultReceived?.Invoke(this, (id, value));

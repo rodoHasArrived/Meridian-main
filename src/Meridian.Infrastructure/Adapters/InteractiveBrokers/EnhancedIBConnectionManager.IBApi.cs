@@ -1371,9 +1371,12 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
 
     public void scannerDataEnd(int reqId)
     {
+        // Delimits one result batch of a live scanner subscription: the vendor keeps publishing
+        // refreshed rows until cancelScannerSubscription. Completing here would mark the read
+        // model terminal and drop every refreshed batch, and releasing the ownership id would
+        // stop routing subscription-scoped errors — cancellation is the scanner's only terminal
+        // transition.
         RecordMessageReceived();
-        _dataServiceRequestIds.TryRemove(reqId, out _);
-        RequestCompleted?.Invoke(this, reqId);
     }
 
     public void symbolSamples(int reqId, ContractDescription[] contractDescriptions) { }

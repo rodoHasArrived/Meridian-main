@@ -69,8 +69,9 @@ public sealed partial class EnhancedIBConnectionManager
 
     public void scannerDataEnd(int reqId)
     {
+        // A batch delimiter for a live subscription, not completion — see the IBAPI partial's
+        // scannerDataEnd: cancellation is the scanner's only terminal transition.
         RecordMessageReceived();
-        RequestCompleted?.Invoke(this, reqId);
     }
 
     public void receiveFA(int faDataType, string faXmlData)
@@ -184,8 +185,16 @@ public sealed partial class EnhancedIBConnectionManager
     public void historicalTicks(int reqId, HistoricalTick[] ticks, bool done)
     {
         RecordMessageReceived();
-        foreach (var tick in ticks)
-            HistoricalTickReceived?.Invoke(this, (reqId, new ProviderHistoricalTick(DateTimeOffset.FromUnixTimeSeconds(tick.Time), (decimal)tick.Price, tick.Size, "TRADES", null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.FromUnixTimeSeconds(tick.Time))), done));
+        for (var index = 0; index < ticks.Length; index++)
+        {
+            var tick = ticks[index];
+            // Downstream, Completed is a per-request terminal flag: the read model completes on
+            // the first element carrying it and stops routing the rest. The vendor's done flag
+            // describes the whole batch, so only its last element may carry the flag forward or
+            // a bounded result would retain a single tick.
+            var completesRequest = done && index == ticks.Length - 1;
+            HistoricalTickReceived?.Invoke(this, (reqId, new ProviderHistoricalTick(DateTimeOffset.FromUnixTimeSeconds(tick.Time), (decimal)tick.Price, tick.Size, "TRADES", null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.FromUnixTimeSeconds(tick.Time))), completesRequest));
+        }
         if (done)
         {
             // Bounded requests terminate here rather than through CancelDataRequest, so the
