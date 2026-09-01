@@ -8,6 +8,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Meridian.Storage.Export;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Workstation.Models;
 
@@ -637,21 +638,18 @@ public partial class DenseDataGridControl : UserControl
     }
 
     /// <summary>
-    /// Neutralizes spreadsheet formula prefixes on string-sourced cells: an externally
-    /// sourced message or identifier beginning with '=', '+', '-' or '@' would otherwise
-    /// execute as a formula when the TSV is pasted into a spreadsheet. Only raw string
-    /// values are guarded — numeric and temporal cells legitimately format with a leading
-    /// minus, and prefixing those would corrupt ordinary financial data.
+    /// Neutralizes spreadsheet formula content on string-sourced cells: an externally sourced
+    /// message or identifier a paste target would read as a formula would otherwise execute
+    /// when the TSV lands in a spreadsheet. The shared <see cref="SpreadsheetFormulaGuard"/>
+    /// supplies the semantics — including skipping leading spaces, which spreadsheet imports
+    /// trim before interpreting, and treating tab/CR/LF prefixes as unsafe — while keeping
+    /// plain negative numbers numeric. Only raw string values are guarded; numeric and
+    /// temporal cells legitimately format with a leading minus.
     /// </summary>
     private static string GuardFormulaPrefix(object? value, string text)
-    {
-        if (value is string && text.Length > 0 && text[0] is '=' or '+' or '-' or '@')
-        {
-            return "'" + text;
-        }
-
-        return text;
-    }
+        => value is string && text.Length > 0
+            ? SpreadsheetFormulaGuard.Neutralize(text)
+            : text;
 
     private static object? ResolveCellValue(object row, string bindingPath)
     {

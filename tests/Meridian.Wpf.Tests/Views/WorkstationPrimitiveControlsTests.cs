@@ -532,7 +532,7 @@ public sealed class WorkstationPrimitiveControlsTests
 
             var tableRows = new ObservableCollection<IndexedRowFixture>
             {
-                new(-1234.5m, new Dictionary<string, string> { ["fund"] = "=SUM(A1:A9)" })
+                new(-1234.5m, new Dictionary<string, string> { ["fund"] = " =SUM(A1:A9)" })
             };
             var denseGrid = new DenseDataGridControl
             {
@@ -548,10 +548,11 @@ public sealed class WorkstationPrimitiveControlsTests
                 var rowsList = denseGrid.FindName("RowsList").Should().BeOfType<ListView>().Subject;
                 rowsList.SelectedItem = tableRows[0];
 
-                // A string cell that would execute as a spreadsheet formula is prefixed;
+                // A string cell that would execute as a spreadsheet formula is prefixed even
+                // behind leading spaces, which spreadsheet imports trim before interpreting;
                 // a negative numeric cell keeps its leading minus untouched.
                 var expectedNotional = string.Format(denseGrid.Language.GetSpecificCulture(), "{0:N2}", -1234.5m);
-                denseGrid.FormatSelectedRowsForClipboard().Should().Be($"Notional\tFund\n{expectedNotional}\t'=SUM(A1:A9)");
+                denseGrid.FormatSelectedRowsForClipboard().Should().Be($"Notional\tFund\n{expectedNotional}\t' =SUM(A1:A9)");
             }
             finally
             {
