@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-08-31 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
+**Reviewed:** 2026-09-01 (scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12)
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -166,6 +166,24 @@ risks that compound as new asset classes land.
 > do with the instrument, and the downward scenarios clamp back to zero. Compounding it, `DirectLoan`
 > supplies no resolvable principal basis either, so every calculated projection runs on a synthetic
 > 100 notional whatever the rate.
+>
+> **Scheduled institutional-requirements pass, 2026-09-01.** Re-read against `de8c0ded8`. The
+> architectural verdict stands. **P5 is closed** — the desktop lane now gates every golden-record
+> mutation on `ModifySecurityMaster`, in both the command predicates and a re-check inside each
+> handler, over a resolver that fails closed on credential-backed hosts. That retires the item the
+> 2026-08-28 pass ranked first.
+>
+> One new item (B1) replaces it at the top, and it is a consequence of a fix rather than of drift:
+> the normalized-uniqueness constraint landed on 2026-08-28 as migration 032 **without the atomicity
+> precondition the 2026-08-31 pass named as its condition**. `ExecuteCreateAsync` still commits the
+> event stream and the projection in two separate transactions, so a normalized collision now raises
+> 23505 at the projection insert *after* the stream is committed — leaving an orphaned stream that no
+> projection-backed read can see, that a retry cannot recreate (the stream is already at version 1),
+> that `SecurityMasterIngestFailureClassifier` reports to the operator as a successful skip, and that
+> stalls the whole projection-rebuild batch. A2's detection half is unchanged, so the collisions this
+> now wedges are exactly the ones the conflict surface still cannot see. The constraint itself is
+> right and its preflight is well built; what is overdue is the precondition it shipped without. See
+> [Scheduled institutional-requirements pass — 2026-09-01](#scheduled-institutional-requirements-pass--2026-09-01).
 
 ---
 
@@ -2994,6 +3012,177 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
 the private/alternative classes, valid-time term history, codec generation from
 `SecurityAssetTermsSchema`.
 
+## Scheduled institutional-requirements pass — 2026-09-01
+
+Re-read against `de8c0ded8`. The architectural verdict stands. One previously-open finding is
+**closed** (P5, the desktop authorization bypass, which the 2026-08-28 pass ranked first and the
+2026-08-29 status note left open). One finding is **new and is the highest-severity item in this
+document**: the normalized-uniqueness constraint the last pass discussed landed on 2026-08-28 as
+migration 032 **without the atomicity precondition that same pass named as its condition**, which
+converts A2's silent wrong-security resolution into a silent partial write that wedges the affected
+record permanently. A1, A2's detection half, A3, A4, N4, N5, N6 and the three deferred items are
+re-verified as still open, unchanged.
+
+No code was changed by this pass and no tests were run — every claim below is a source read. The
+runtime consequences in B1 follow from the source and the shipped migration, and are stated as such;
+they have not been reproduced against a live Postgres, and the sizing question B1 raises needs a
+query like A2's.
+
+### Closed since the last pass
+
+**P5 — the desktop lane now gates golden-record mutations.** The 2026-08-28 pass found the WPF
+edit, deactivate, import and trading-parameter backfill commands reaching `ISecurityMasterService`
+in process with no authorization check. That is fixed. `SecurityMasterViewModel` now holds an
+`IDesktopMutationAuthorization` (`:47`), exposes
+`CanModifySecurityMaster => _mutationAuthorization.IsGranted(UserPermission.ModifySecurityMaster)`
+(`:1518`), and enforces it in **both** halves the finding asked for: the command predicates
+(`:1594-1602`) and an `EnsureCanModifySecurityMaster()` re-check inside every mutation handler
+(`:1667, :1677, :1719, :2229`, and `SecurityMasterViewModel.Import.cs:20`) — the second half
+mattering because a `RelayCommand` can be executed programmatically regardless of its predicate.
+
+The resolver behind it fails closed where the finding required it to.
+`DesktopMutationPermissionResolver.IsGranted` (`:63-78`) defers to `session.HasPermission` on a
+credential-backed host; the fail-open arm is reached only when the shell was composed without
+authentication at all, and a credential-free host that *names* an anonymous role resolves that
+role's permissions from `RolePermissions` rather than from the session — closing the specific hole
+the finding identified, where the session answers true to everything and would ignore the named
+role. A named-but-unrecognised role refuses rather than falling through. The remaining fail-open
+posture is the unconfigured local-development one, declared in the type's own documentation and
+shared with the read-scope resolver; it is a deliberate host posture, not the ungated write surface
+P5 reported.
+
+### B1 — Migration 032 enforces normalized uniqueness while the create path still commits the event stream before the projection, so a collision leaves an orphaned stream that is reported as a successful skip
+
+The 2026-08-31 pass stated the precondition explicitly, twice: a unique normalized index "means also
+making the append and projection insert atomic, or detecting and compensating the committed stream,
+and landing that with the constraint". The constraint landed alone.
+
+**The constraint.** `032_security_master_normalized_primary_identifier_uniqueness.sql` drops
+`ux_securities_primary_identifier` and `ix_securities_normalized_primary_identifier` and creates
+`ux_securities_normalized_primary_identifier` **unique** on
+`(primary_identifier_kind, normalized_primary_identifier_value)`. Its preflight block is careful and
+correct — it refuses to run against legacy collisions and declines to pick a canonical `SecurityId`
+automatically, which is the right call. The runner picks it up by ordinal directory scan
+(`SecurityMasterMigrationRunner.cs:23-27`). So from 032 forward, two securities whose normalized
+primary identifiers match are rejected by the database where previously they inserted.
+
+**The write path did not change with it.** `ExecuteCreateAsync` still runs:
+
+```csharp
+await _eventStore.AppendAsync(request.SecurityId, expectedVersion: 0, [envelope], ct);   // :323
+await _store.UpsertProjectionAsync(projection, ct);                                       // :324
+```
+
+Two awaits, two connections, two transactions — `PostgresSecurityMasterEventStore.AppendAsync`
+opens its own `Serializable` transaction and commits (`:30, :86`), and `UpsertProjectionAsync` opens
+another (`:76-80`). There is no shared transaction, no try/catch, and no compensating delete around
+either call. Nothing in the create path validates normalized uniqueness before the write:
+`SecurityValidationService.ValidateCrossRecordDuplicates` (`:432`) is the only cross-record duplicate
+check in the subsystem and `SecurityMasterService` never calls it — it is a read-side advisory
+surface, not a write gate. The database constraint is therefore the **first** enforcement, and it
+fires at the second of the two commits.
+
+**So the failure is a partial write.** `UpsertProjectionCoreAsync`'s insert is
+`on conflict (security_id) do update` (`PostgresSecurityMasterStore.cs:281`) — a conflict on a
+*different* security's `security_id` is not that conflict target, so a normalized collision raises
+23505 on `ux_securities_normalized_primary_identifier` uncaught; no unique-violation handler exists
+in `PostgresSecurityMasterStore`. The event stream for the new `SecurityId` is already committed at
+version 1. The record now exists in the event store and in no projection, so it is invisible to
+every projection-backed read, to search, and to the conflict surface.
+
+**And the record cannot be recreated.** A retry with the same `SecurityId` calls
+`AppendAsync(securityId, expectedVersion: 0, …)` against a stream whose current version is 1, and
+`AppendAsync` throws `SecurityMasterStreamVersionConflictException` on `currentVersion != expectedVersion`
+(`:36-40`). The orphan is permanent without direct event-store intervention.
+
+**On the ingest paths it is reported as a successful skip, twice over.**
+`SecurityMasterIngestFailureClassifier.IsAlreadyMastered` returns true for
+`PostgresException { SqlState: UniqueViolation }` (`:45`). Its comment names the two indexes it was
+written for — "the primary-identifier index, or the (security_id, stream_version) event key" — and
+under 032 the primary-identifier index is a *different* index with a *different* meaning: the old
+raw-value index rejected a genuine re-ingest of the same identifier text, whereas the new normalized
+one also rejects a **distinct** security whose identifier merely normalizes to the same value. The
+classifier cannot tell them apart, so the import counts a `Skipped` and drops the row from the error
+list. The operator is told the security was already mastered. It was not — it is an orphaned stream.
+Re-running the import then hits the stream-version conflict above, which `IsAlreadyCreated`
+(`ISecurityMasterEventStore.cs:35`) also classifies as a skip. The record is silently absent on
+every subsequent run.
+
+**Rebuild does not heal it and is poisoned by it.** `SecurityMasterRebuildOrchestrator` persists
+through `PersistProjectionBatchAsync` (`:54, :93`), which wraps the whole batch plus its checkpoint
+in one transaction (`PostgresSecurityMasterStore.cs:88-98`). Replaying an orphaned stream
+re-attempts the same colliding projection insert, so one collision fails the entire batch and its
+checkpoint — the rebuild cannot advance past it.
+
+**The amend path shares the ordering with a milder failure.**
+`AmendTermsInternalAsync` appends then upserts inside the amendment gate (`:144-145`), same two
+transactions. An amendment that moves a primary identifier onto a colliding normalized value
+advances the stream and leaves the projection at the prior version: the golden record silently
+diverges from its own event stream rather than disappearing. Recoverable in principle by rebuild,
+except that rebuild hits the paragraph above. The code comment at `:151-154` already acknowledges
+this seam ("true atomicity needs the shared-transaction seam tracked as follow-up work") for
+attribution; 032 raised the cost of that outstanding item without referencing it.
+
+**Nothing tests the interaction.** The commit added `SecurityMasterMigrationRunnerTests.cs` (+135),
+which exercises the migration's preflight and ordinal application. No test in `tests/` drives a
+create or amend into the new constraint; searching for the index name across `tests/` returns
+nothing. The one behaviour the constraint changed at runtime is uncovered.
+
+**Net effect on A2.** The constraint does not close A2 — the last pass was right that it is defense
+in depth on one column, and detection is unchanged (below). What it does change is the *failure
+mode* on the primary-identifier column: before 032 a normalized collision inserted and produced a
+silent wrong-security resolution; after 032 it produces a silent partial write, a wedged record, and
+a stalled rebuild. Both are silent, and the second is harder to detect and harder to undo. This is
+not an argument for reverting 032 — the constraint is right and its preflight is well built — but
+its precondition is now overdue rather than optional.
+
+**Remedy, in dependency order.** (1) Make the create's append-and-project atomic, or detect the
+23505 and compensate the committed stream — the precondition as originally stated, now load-bearing.
+(2) Until that lands, narrow `IsAlreadyMastered` so a unique violation is classified by
+**constraint name** rather than by SQLSTATE alone: `ux_securities_normalized_primary_identifier` is
+a genuine failure to report, the event-key violation is the skip. `PostgresException` carries
+`ConstraintName`, so this is a small change and it stops the misreporting immediately. (3) Add a
+pre-write normalized-uniqueness check on the create path so the common case fails before any commit
+rather than between two. (4) Cover the create-into-collision and rebuild-with-orphan cases in tests.
+
+### Re-verified as still open
+
+| # | Item | Evidence at `de8c0ded8` |
+| --- | --- | --- |
+| A1 | Cash-flow resolver cannot read `DirectLoan`'s coupon or principal basis | `CouponRateAliases` is still `["fixedCouponRate", "couponRate", "coupon", "annualRate"]` (`StructuredCashFlowTermsResolver.cs:19`) and `DirectLoan` still declares `currentCouponRate` (`SecurityAssetTermsSchema.cs:249`). `PrincipalFaceAliases` (`:17`) still matches none of `DirectLoan`'s nine keys (`:245-253`), so `principalBasis` still falls back to `100m`. Unchanged. |
+| A2 | Detection keys on raw values, resolution on normalized ones | `SecurityMasterConflictDetection` still keys `$"{id.Kind}|{id.Value}"` in `DetectAll` (`:33`) and `DetectForProjection` (`:105, 114`); neither reads `NormalizedValue`, neither reads aliases, neither applies the `ProviderSymbol` provider rule. Migration 032 touched the `securities` table only — see B1. |
+| A3 | Readiness models 13 of 26 classes, no parity guard, no unmodeled state | `GetReadinessAsync` still projects `Specifications` directly (`:255-258`). No `IntentionallyUnspecifiedClasses` set exists anywhere in `src/` or `tests/`. Unchanged. |
+| A4 | `IsProjected` / `IsSearchable` govern nothing | Still read at exactly two places, both counters: `SecurityAssetProfileGovernanceService.cs:511, 525`, plus the WPF/browser renderings of those counts. No projection writer, index, or search predicate consults either flag. Unchanged. |
+| N4 | `ValidateAll()` cannot fire its own overlap rule | `ValidateAll()` still calls `ValidateCandidateSet([])` (`:258-261`) and the overlap check still filters to groups containing a candidate pack (`:289`), so no group survives an empty candidate set. Unchanged. |
+| N5 | Per-pack contract schema is one shared prose object | Unchanged. |
+| N6 | Projection fan-out writes to every asset class on every upsert | `ProjectionWriters` (`:43-56`) is still fanned out unconditionally per record; still 11 writers. Unchanged. |
+| — | Relational projections for private/alternative classes | Still 11 projected classes against the catalog's 26. Governed, not drifting. |
+| — | Valid-time term history | Unchanged. |
+| — | Codec generation from `SecurityAssetTermsSchema` | Unchanged. |
+
+### Priorities from this pass
+
+1. **Close B1's misreporting now and its atomicity next.** Classifying the unique violation by
+   constraint name is a few lines and stops an ingest reporting a rejected security as mastered.
+   The atomic append-plus-projection seam is the real fix, and it is the same seam
+   `SecurityMasterService.cs:151-154` already tracks as follow-up for attribution — 032 made it a
+   correctness dependency rather than a latency one. Until it lands, a normalized collision on
+   create wedges the record permanently and stalls projection rebuild.
+2. **A1 — teach the cash-flow resolver `DirectLoan`'s coupon and principal basis.** Unchanged in
+   substance and still the highest-severity *economic* defect: private credit projects and posts at
+   zero interest on a synthetic 100 notional. The floating case remains a design decision, not a
+   resolver-alias addition.
+3. **A2 — normalized detection keys, carrying aliases and the `ProviderSymbol` provider rule.**
+   B1 raises the cost of leaving detection blind: the collisions detection cannot see are now the
+   ones that wedge records rather than merely resolve wrongly. Run the sizing query first.
+4. **A3 — the sixth parity guard, plus an explicit unmodeled state and catalog-based totals.**
+   Unchanged.
+5. **A4, then N4/N5 together.** Unchanged.
+
+*Deferred and unchanged in posture:* N6 projection fan-out amplification, relational projections for
+the private/alternative classes, valid-time term history, codec generation from
+`SecurityAssetTermsSchema`.
+
 ---
 
 ## Method
@@ -3018,3 +3207,12 @@ projection fan-out, the parity-guard and terms-schema test suites, and — new t
 import path end to end: `SecurityMasterCsvParser`, `SecurityMasterImportService`, the
 `SecurityMasterImport` endpoint in `Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs`, and the
 WPF `SecurityMasterViewModel` import command.
+
+The 2026-09-01 pass re-read every finding open at `eaa83032` against `de8c0ded8`, and — new to this
+pass — the Security Master commits merged since that revision: migration 032 and its runner tests,
+`SecurityMasterService.ExecuteCreateAsync` / `AmendTermsInternalAsync`,
+`PostgresSecurityMasterEventStore.AppendAsync`, `PostgresSecurityMasterStore.UpsertProjectionAsync`
+and `PersistProjectionBatchAsync`, `SecurityMasterRebuildOrchestrator`,
+`SecurityMasterIngestFailureClassifier`, `SecurityValidationService.ValidateCrossRecordDuplicates`,
+and the WPF mutation-authorization seam (`SecurityMasterViewModel`,
+`DesktopMutationPermissionResolver`).
