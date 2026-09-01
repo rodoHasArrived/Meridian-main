@@ -137,6 +137,146 @@ public sealed class AlpacaStreamedFillLoopTests
         portfolio.Positions["AAPL"].Quantity.Should().Be(10L);
     }
 
+    /// <summary>
+    /// The restart handoff gap: a fill durably admitted into the inbox but not yet acknowledged
+    /// when the host stopped is replayed into a fresh OMS that never registered its order. It
+    /// used to be acknowledged without reaching the accounting handoff. It is now adopted and
+    /// booked as exactly the quantity the broker event executed -- never the cumulative, part of
+    /// which the previous host already posted.
+    /// </summary>
+    [Fact]
+    public async Task RestartReplay_FillForAnOrderTheNewHostNeverTracked_ReachesAccountingAsTheEventIncrementOnly()
+    {
+        var store = new InMemoryCursorStore();
+        string orderId;
+
+        // First incarnation: places the order and books the partial.
+        {
+            await using var client = CreateClient(store);
+            var gateway = new AlpacaReportsGateway(client);
+            var publisher = new RecordingTradeEventPublisher();
+            using var oms = new OrderManagementSystem(
+                gateway,
+                NullLogger<OrderManagementSystem>.Instance,
+                portfolioState: new PaperTradingPortfolio(100_000m),
+                tradeEventPublisher: publisher);
+
+            var order = await PlaceAcceptedOrderAsync(oms, "AAPL", quantity: 10m);
+            orderId = order.OrderId;
+            await client.ProcessMessageAsync(TradeUpdateJson(
+                "evt-partial", "alpaca-restart", orderId, "AAPL", "partial_fill", "partially_filled",
+                qty: "10", filledQty: "4", price: "101", timestamp: "2026-08-07T14:30:01Z", fillQty: "4"));
+            (await ReadFillIncrementsAsync(oms, orderId, count: 1)).Single().FilledQuantity.Should().Be(4m);
+            await WaitUntilAsync(() => publisher.AcceptedEvents.Count == 1, "the partial reaches accounting before the host stops");
+        }
+
+        // The completion lands in the durable inbox while no OMS is consuming it, then the host
+        // restarts with an empty in-memory book.
+        await using var restartedClient = CreateClient(store);
+        await restartedClient.ProcessMessageAsync(TradeUpdateJson(
+            "evt-fill", "alpaca-restart", orderId, "AAPL", "fill", "filled",
+            qty: "10", filledQty: "10", price: "102", timestamp: "2026-08-07T14:30:05Z", fillQty: "6"));
+
+        var restartedPortfolio = new PaperTradingPortfolio(100_000m);
+        var restartedPublisher = new RecordingTradeEventPublisher();
+        using var restartedOms = new OrderManagementSystem(
+            new AlpacaReportsGateway(restartedClient),
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: restartedPortfolio,
+            tradeEventPublisher: restartedPublisher);
+
+        var booked = await ReadFillIncrementsAsync(restartedOms, orderId, count: 1);
+        booked.Single().FilledQuantity.Should().Be(6m,
+            "only the completion's own executed quantity may post; the 4 already booked before the restart must not be re-posted");
+        await WaitUntilAsync(() => restartedPublisher.AcceptedEvents.Count == 1, "the adopted fill reaches the accounting handoff");
+        var tradeEvent = restartedPublisher.AcceptedEvents.Single();
+        tradeEvent.FilledQuantity.Should().Be(6m);
+        tradeEvent.FillPrice.Should().Be(102m);
+        tradeEvent.FinancialAccountId.Should().BeNull("the original fund attribution cannot be recovered after a restart");
+
+        var adopted = restartedOms.GetOrder(orderId);
+        adopted.Should().NotBeNull("the fill's order is adopted into tracked state");
+        adopted!.Status.Should().Be(OrderStatus.Filled);
+        adopted.FilledQuantity.Should().Be(10m, "tracked state reflects the broker's cumulative");
+        restartedPortfolio.Positions["AAPL"].Quantity.Should().Be(6L);
+    }
+
+    /// <summary>
+    /// An untracked option fill cannot be booked from the report alone: the contract multiplier
+    /// the submission carried is gone with the previous host, and booking at share semantics
+    /// would post a hundredth of the exposure. It must be refused, not approximated.
+    /// </summary>
+    [Fact]
+    public async Task RestartReplay_UntrackedOptionFill_IsRefusedRatherThanBookedAtShareSemantics()
+    {
+        var store = new InMemoryCursorStore();
+        await using var client = CreateClient(store);
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        var publisher = new RecordingTradeEventPublisher();
+        using var oms = new OrderManagementSystem(
+            new AlpacaReportsGateway(client),
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio,
+            tradeEventPublisher: publisher);
+
+        await client.ProcessMessageAsync(TradeUpdateJson(
+            "evt-option-fill", "alpaca-opt", "MDN-20260807-000001", "AAPL260918C00200000", "fill", "filled",
+            qty: "2", filledQty: "2", price: "5.10", timestamp: "2026-08-07T14:30:05Z", fillQty: "2",
+            assetClass: "us_option"));
+
+        // The pump is sequential, so once a later adoptable equity fill has been observed the
+        // option fill has been fully processed -- and it must have gone nowhere.
+        await client.ProcessMessageAsync(TradeUpdateJson(
+            "evt-equity-fill", "alpaca-eq", "MDN-20260807-000002", "MSFT", "fill", "filled",
+            qty: "3", filledQty: "3", price: "400", timestamp: "2026-08-07T14:30:06Z", fillQty: "3"));
+        (await ReadFillIncrementsAsync(oms, "MDN-20260807-000002", count: 1)).Single().FilledQuantity.Should().Be(3m);
+        await WaitUntilAsync(() => publisher.AcceptedEvents.Count == 1, "the equity fill is adopted and booked");
+
+        publisher.AcceptedEvents.Should().OnlyContain(tradeEvent => tradeEvent.Symbol == "MSFT",
+            "an option fill without its multiplier must not reach accounting at share semantics");
+        oms.GetOrder("MDN-20260807-000001").Should().BeNull("the option order is not adopted");
+        portfolio.Positions.Should().NotContainKey("AAPL260918C00200000");
+    }
+
+    /// <summary>
+    /// A fill re-read from the REST activity history cannot be told from one the previous host
+    /// already booked under its stream event id, which is exactly what the reconnect overlap
+    /// window re-reads. Snapshot-derived fills for untracked orders are therefore never adopted.
+    /// </summary>
+    [Fact]
+    public async Task RestartReplay_SnapshotDerivedFillForAnUntrackedOrder_IsNotAdopted()
+    {
+        var store = new InMemoryCursorStore();
+        await using var client = CreateClient(store);
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        var publisher = new RecordingTradeEventPublisher();
+        using var oms = new OrderManagementSystem(
+            new AlpacaReportsGateway(client),
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio,
+            tradeEventPublisher: publisher);
+
+        client.ConfigureReconciliation((_, _) => Task.FromResult<IReadOnlyList<AlpacaReconciliationReport>>(
+        [
+            new AlpacaReconciliationReport(
+                "rest-fill-activity",
+                "activity-rest-1",
+                ReconciledReport("MDN-20260807-000009", cumulativeQuantity: 4m, fillPrice: 101m,
+                    OrderStatus.Filled, "2026-08-07T14:30:01Z") with { LastFillQuantity = 4m, AssetClass = "us_equity" })
+        ]));
+        await client.ReconcileAfterConnectAsync();
+
+        await client.ProcessMessageAsync(TradeUpdateJson(
+            "evt-equity-fill-2", "alpaca-eq-2", "MDN-20260807-000010", "MSFT", "fill", "filled",
+            qty: "3", filledQty: "3", price: "400", timestamp: "2026-08-07T14:30:06Z", fillQty: "3"));
+        (await ReadFillIncrementsAsync(oms, "MDN-20260807-000010", count: 1)).Single().FilledQuantity.Should().Be(3m);
+        await WaitUntilAsync(() => publisher.AcceptedEvents.Count == 1, "the streamed equity fill is adopted and booked");
+
+        publisher.AcceptedEvents.Should().OnlyContain(tradeEvent => tradeEvent.Symbol == "MSFT",
+            "a REST-derived fill for an untracked order may already have been booked before the restart");
+        oms.GetOrder("MDN-20260807-000009").Should().BeNull();
+    }
+
     private static AlpacaTradeUpdatesClient CreateClient(IAlpacaTradeUpdateCursorStore store)
     {
         var client = new AlpacaTradeUpdatesClient(
@@ -206,7 +346,9 @@ public sealed class AlpacaStreamedFillLoopTests
         string filledQty,
         string? price,
         string timestamp,
-        string? reason = null)
+        string? reason = null,
+        string? fillQty = null,
+        string assetClass = "us_equity")
     {
         var order = new Dictionary<string, object?>
         {
@@ -217,6 +359,7 @@ public sealed class AlpacaStreamedFillLoopTests
             ["filled_qty"] = filledQty,
             ["side"] = "buy",
             ["status"] = status,
+            ["asset_class"] = assetClass,
             ["updated_at"] = timestamp
         };
         var data = new Dictionary<string, object?>
@@ -228,6 +371,8 @@ public sealed class AlpacaStreamedFillLoopTests
         };
         if (price is not null)
             data["price"] = price;
+        if (fillQty is not null)
+            data["qty"] = fillQty;
         if (reason is not null)
             data["reason"] = reason;
 

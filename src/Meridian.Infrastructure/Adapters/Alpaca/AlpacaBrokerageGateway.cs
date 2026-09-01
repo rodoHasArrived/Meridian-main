@@ -80,6 +80,16 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
     private const int AccountActivityPageSize = 100;
     private const int OpenOrderPageSize = 500;
 
+    /// <summary>
+    /// How far behind the acknowledged watermark the reconnect FILL-activity backfill starts.
+    /// Backfilling from exactly the watermark recovers only fills newer than the newest
+    /// acknowledged event; a fill the stream skipped beneath an already-acknowledged newer event
+    /// was then recovered only through the order-snapshot lane, at snapshot average-price
+    /// attribution rather than its exact economics. The overlap re-reads that band. Re-read fills
+    /// are harmless: each carries its stable activity id, so the durable inbox admits it once.
+    /// </summary>
+    internal static readonly TimeSpan FillBackfillOverlap = TimeSpan.FromMinutes(15);
+
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly AlpacaOptions _options;
     private readonly ILogger<AlpacaBrokerageGateway> _logger;
@@ -768,7 +778,9 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         var ordersById = orders
             .Where(order => !string.IsNullOrWhiteSpace(order.Id))
             .ToDictionary(order => order.Id!, StringComparer.Ordinal);
-        var fillActivities = await GetFillActivitiesAsync(watermark, ct).ConfigureAwait(false);
+        var fillActivities = await GetFillActivitiesAsync(
+            watermark is { } acknowledgedWatermark ? acknowledgedWatermark - FillBackfillOverlap : null,
+            ct).ConfigureAwait(false);
         foreach (var orderId in fillActivities
                      .Select(activity => activity.OrderId)
                      .Where(orderId => !string.IsNullOrWhiteSpace(orderId))
@@ -802,6 +814,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 $"Alpaca FILL activity '{activityId}' omitted its order id.");
             ordersById.TryGetValue(orderId, out var order);
             var cumulativeQuantity = ParseRequiredDecimal(activity.CumQty, "cum_qty", activityId);
+            var executedQuantity = ParseNullableDecimal(activity.Qty);
             var leavesQuantity = ParseNullableDecimal(activity.LeavesQty);
             var reportType = string.Equals(activity.Type, "fill", StringComparison.OrdinalIgnoreCase) ||
                              leavesQuantity == 0m
@@ -834,6 +847,8 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                     OrderQuantity = ParseNullableDecimal(order?.Qty) ??
                         (leavesQuantity is { } leaves ? cumulativeQuantity + leaves : cumulativeQuantity),
                     FilledQuantity = cumulativeQuantity,
+                    LastFillQuantity = executedQuantity,
+                    AssetClass = order?.AssetClass,
                     FillPrice = fillPrice,
                     OrderStatus = status,
                     ReportType = reportType,
@@ -1826,6 +1841,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         /// become invisible to the OMS and to the kill-switch sweep.
         /// </summary>
         [JsonPropertyName("legs")] public AlpacaOrderResponse[]? Legs { get; set; }
+        [JsonPropertyName("asset_class")] public string? AssetClass { get; set; }
     }
 
     internal sealed class AlpacaAccountResponse
