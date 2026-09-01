@@ -350,6 +350,121 @@ public sealed class FileAccountingAuditChainTests : IDisposable
     }
 
     [Fact]
+    public async Task AppendAsync_SerializesAppendsAcrossStoreInstancesRatherThanLosingOne()
+    {
+        // W9-GOV-008 criterion 3: cross-process file-append serialization, deferred from #2866 and
+        // #2871. Two instances model the two processes that really compose this store over one data
+        // root (the browser host and the WPF shell): each instance carries its own in-process gate,
+        // so only the shared lock file serializes them — exactly the seam a second process exercises.
+        // Without it, both cycles read the same head, both pass the anchor's declare (a pending
+        // declaration supersedes another at the same sequence, by design, for crash recovery), and
+        // the later snapshot write replaces the earlier one: a committed audit event vanishes and
+        // verification reports the race as tampering.
+        var first = new FileAccountingConfigurationStore(SnapshotPath);
+        var second = new FileAccountingConfigurationStore(SnapshotPath);
+
+        await Task.WhenAll(Enumerable
+            .Range(0, 8)
+            .SelectMany(index => new[]
+            {
+                first.AppendAsync(AuditEvent($"first-{index.ToString()}")),
+                second.AppendAsync(AuditEvent($"second-{index.ToString()}")),
+            }));
+
+        var verification = await first.VerifyAuditChainAsync();
+        verification.IsValid.Should().BeTrue();
+        verification.LinksChecked.Should().Be(16);
+
+        var chain = ReadChain()!;
+        chain.Links.Select(link => link.Sequence).Should().Equal(Enumerable.Range(1, 16).Select(value => (long)value));
+        chain.Links.Select(link => link.AuditEventId).Should().OnlyHaveUniqueItems();
+        ReadEvents().Should().HaveCount(16, "no append may replace another instance's committed write");
+    }
+
+    [Fact]
+    public async Task SaveAsync_FromAnotherInstance_DoesNotDiscardAConcurrentlyAppendedEvent()
+    {
+        // A workspace save replaces the whole document too, so a save cycle racing an append from
+        // another process used to write back a snapshot without the event that append had already
+        // committed to the anchor — shortening a chain whose external head says otherwise, which is
+        // indistinguishable from deliberate rollback. Interleaved saves and appends through two
+        // instances must leave every appended event retained and the chain verifying.
+        var appender = new FileAccountingConfigurationStore(SnapshotPath);
+        var saver = new FileAccountingConfigurationStore(SnapshotPath);
+
+        await Task.WhenAll(Enumerable
+            .Range(0, 8)
+            .SelectMany(index => new[]
+            {
+                appender.AppendAsync(AuditEvent($"action-{index.ToString()}")),
+                saver.SaveAsync(Workspace($"v{index.ToString()}")),
+            }));
+
+        var verification = await appender.VerifyAuditChainAsync();
+        verification.IsValid.Should().BeTrue();
+        verification.LinksChecked.Should().Be(8);
+        ReadEvents().Should().HaveCount(8);
+        (await saver.GetAsync("fund-alpha", tenantId: "tenant-alpha", companyId: "company-alpha"))
+            .Should().NotBeNull("the saves must survive alongside the appends");
+    }
+
+    [Fact]
+    public async Task AppendAsync_WaitsForTheStoreLockAnotherProcessHolds()
+    {
+        // The deterministic half of the serialization proof: with the lock file held the way
+        // another process's write cycle holds it, an append must wait rather than proceed — and
+        // must complete once the holder releases, rather than failing.
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        var lockPath = SnapshotPath + ".lock";
+
+        Task append;
+        await using (new FileStream(
+            lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+        {
+            append = store.AppendAsync(AuditEvent("post-journal"));
+            var winner = await Task.WhenAny(append, Task.Delay(TimeSpan.FromMilliseconds(300)));
+            winner.Should().NotBe(append, "an append must not run while another process holds the store lock");
+        }
+
+        await append;
+        (await store.VerifyAuditChainAsync()).IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task VerifyAuditChainAsync_NeverReportsAnInFlightAppendAsAnIncident()
+    {
+        // Verification reads two files. Unserialized, it could read the anchor between another
+        // process's declare and commit and report an interrupted append — or read the pair in the
+        // other order and report a rollback — about a store that is merely busy. Under the store
+        // lock every verification observes a quiesced boundary.
+        var writer = new FileAccountingConfigurationStore(SnapshotPath);
+        var observer = new FileAccountingConfigurationStore(SnapshotPath);
+        await writer.AppendAsync(AuditEvent("genesis"));
+
+        var appends = Task.Run(async () =>
+        {
+            for (var index = 0; index < 10; index++)
+            {
+                await writer.AppendAsync(AuditEvent($"action-{index.ToString()}"));
+            }
+        });
+
+        // Bounded, with a breather between rounds: verification must observe a valid boundary
+        // every time it looks, but a loop that reacquires the lock back-to-back would starve the
+        // appender's acquisition polls rather than prove anything about serialization.
+        for (var round = 0; round < 25 && !appends.IsCompleted; round++)
+        {
+            var verification = await observer.VerifyAuditChainAsync();
+            verification.IsValid.Should().BeTrue(
+                "an append in flight is not an incident; observed {0}", verification.Status);
+            await Task.Delay(TimeSpan.FromMilliseconds(5));
+        }
+
+        await appends;
+        (await observer.VerifyAuditChainAsync()).LinksChecked.Should().Be(11);
+    }
+
+    [Fact]
     public async Task AnEventAddedWithoutAChainLink_IsReportedRatherThanServedAsHistory()
     {
         // Codex review finding on PR #2866. Every link binding to a real, unmutated event says
@@ -703,6 +818,22 @@ public sealed class FileAccountingAuditChainTests : IDisposable
             CompanyId: "company-alpha",
             ReportGroupPrincipalIds: null,
             TenantId: "tenant-alpha");
+
+    private static AccountingConfigurationWorkspaceDto Workspace(string version)
+        => new(
+            FundProfileId: "fund-alpha",
+            LedgerBookId: null,
+            Status: AccountingConfigurationStatusDto.Draft,
+            ConfigurationVersion: version,
+            UpdatedAtUtc: DateTimeOffset.UtcNow,
+            LedgerBooks: [],
+            ChartOfAccounts: [],
+            JournalTemplates: [],
+            PostingRules: [],
+            ValidationIssues: [],
+            AuditTrail: [],
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha");
 
     private static JsonNode SerializeEvent(AccountingActionAuditEventDto auditEvent)
         => JsonSerializer.SerializeToNode(auditEvent, WebJson)!;

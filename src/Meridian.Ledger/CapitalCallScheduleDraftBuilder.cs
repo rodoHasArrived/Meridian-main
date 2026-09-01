@@ -44,13 +44,7 @@ public static class CapitalCallScheduleDraftBuilder
         IReadOnlyDictionary<string, IReadOnlyList<JournalEvidenceReference>>? evidenceByCommitmentId = null)
     {
         ArgumentNullException.ThrowIfNull(plan);
-        if (!plan.IsExecutable)
-        {
-            var criticalCount = plan.ValidationIssues.Count(static issue =>
-                issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
-            throw new InvalidOperationException(FormattableString.Invariant(
-                $"Capital call '{plan.Request.CallId}' is not executable: allocated {plan.AllocatedAmount} of requested {plan.Request.AmountToCall} across {plan.Lines.Count} line(s) with {criticalCount} critical validation issue(s)."));
-        }
+        var commitmentsById = ValidateExecutablePlan(plan);
 
         var drafts = new List<AutomatedJournalDraft>(plan.Lines.Count);
         foreach (var line in plan.Lines
@@ -63,7 +57,7 @@ public static class CapitalCallScheduleDraftBuilder
                     : null;
 
             drafts.Add(CapitalCallDraftFactory.BuildCapitalCallDraft(
-                line.Commitment,
+                commitmentsById[line.Commitment.CommitmentId],
                 line.InstallmentId,
                 line.CallAmount,
                 effectiveDate: plan.Request.NoticeDate,
@@ -72,5 +66,47 @@ public static class CapitalCallScheduleDraftBuilder
         }
 
         return drafts;
+    }
+
+    private static IReadOnlyDictionary<string, InvestorCommitment> ValidateExecutablePlan(CapitalCallPlan plan)
+    {
+        if (!plan.IsExecutable)
+        {
+            var criticalCount = plan.ValidationIssues?.Count(static issue =>
+                issue.Severity == AccountingConfigurationValidationSeverityDto.Critical) ?? 0;
+            throw new InvalidOperationException(FormattableString.Invariant(
+                $"Capital call '{plan.Request?.CallId}' is not executable: allocated {plan.AllocatedAmount} across {plan.Lines?.Count ?? 0} line(s) with {criticalCount} critical validation issue(s)."));
+        }
+
+        var rollForwardsByCommitmentId = plan.Request.RollForwards.ToDictionary(
+            static rollForward => rollForward.CommitmentId,
+            static rollForward => rollForward,
+            StringComparer.OrdinalIgnoreCase);
+        var seenCommitments = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var seenInstallments = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var line in plan.Lines)
+        {
+            if (string.IsNullOrWhiteSpace(line.InstallmentId)
+                || line.Commitment is null
+                || line.CallAmount <= 0m
+                || !seenCommitments.Add(line.Commitment.CommitmentId)
+                || !seenInstallments.Add(line.InstallmentId.Trim())
+                || !rollForwardsByCommitmentId.TryGetValue(line.Commitment.CommitmentId, out var rollForward)
+                || !Equals(line.Commitment, rollForward.Commitment)
+                || !rollForward.InvariantHolds
+                || !rollForward.Commitment.IsCallable
+                || line.CallAmount > rollForward.Uncalled
+                || !string.Equals(line.Commitment.FundProfileId, plan.Request.FundProfileId, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(FormattableString.Invariant(
+                    $"Capital call '{plan.Request.CallId}' contains an invalid plan line and cannot issue drafts."));
+            }
+        }
+
+        return rollForwardsByCommitmentId.ToDictionary(
+            static pair => pair.Key,
+            static pair => pair.Value.Commitment,
+            StringComparer.OrdinalIgnoreCase);
     }
 }

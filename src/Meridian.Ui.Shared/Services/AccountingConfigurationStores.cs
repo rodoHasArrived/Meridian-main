@@ -121,7 +121,31 @@ public sealed class FileAccountingConfigurationStore :
         WriteIndented = true
     };
 
+    private static readonly TimeSpan CrossProcessLockTimeout = TimeSpan.FromSeconds(30);
+
     private readonly FileAccountingAuditChainAnchor _auditChainAnchor;
+
+    /// <summary>
+    /// Serializes whole write cycles against every other process composed over the same snapshot
+    /// (W9-GOV-008 criterion 3: cross-process file-append serialization).
+    /// </summary>
+    /// <remarks>
+    /// <para>The base class gate is in-process only, and this store replaces the whole document on
+    /// every write — so without this lock, two processes (the browser host and the WPF shell both
+    /// compose this store over one data root) could interleave read-modify-write cycles, and the
+    /// later snapshot write would silently discard the earlier process's committed audit event or
+    /// workspace save. The anchor's monotonic-sequence refusal caught that interleaving after the
+    /// fact, but by then the surviving snapshot disagreed with the committed head, and verification
+    /// reported the race as tampering (<c>AnchorMismatch</c>) — permanently, on a store nobody
+    /// tampered with.</para>
+    /// <para>Lock ordering is store lock → base gate → anchor lock, everywhere; the anchor keeps
+    /// its own narrower lock (a different file) so its journal stays internally serialized even for
+    /// callers that hold no store lock, and no path acquires the two in the reverse order. Plain
+    /// reads (<see cref="GetAsync"/>, <see cref="ListAsync"/>) deliberately do not take this lock:
+    /// the snapshot is replaced atomically, so a reader always sees a consistent document, at worst
+    /// one write old.</para>
+    /// </remarks>
+    private readonly string _storeLockPath;
 
     public FileAccountingConfigurationStore(string snapshotPath)
         : this(snapshotPath, anchorPath: null)
@@ -144,6 +168,7 @@ public sealed class FileAccountingConfigurationStore :
             string.IsNullOrWhiteSpace(anchorPath)
                 ? FileAccountingAuditChainAnchor.AnchorPathFor(snapshotPath)
                 : anchorPath);
+        _storeLockPath = snapshotPath + ".lock";
     }
 
     /// <summary>Path of the head journal that anchors this store's audit chain.</summary>
@@ -173,12 +198,20 @@ public sealed class FileAccountingConfigurationStore :
             ct).ConfigureAwait(false);
     }
 
+    /// <remarks>
+    /// Holds the cross-process store lock for the whole read-modify-write cycle: a save replaces
+    /// the entire document, so one racing another process's append would otherwise write back a
+    /// snapshot without the event that append had already committed to the anchor — shortening a
+    /// chain whose head says otherwise, which verification must then report as tampering.
+    /// </remarks>
     public async Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(workspace);
         var normalizedFundProfileId = NormalizeFundProfileId(workspace.FundProfileId);
         var normalizedTenantId = NormalizeOptional(workspace.TenantId);
         var normalizedCompanyId = NormalizeOptional(workspace.CompanyId);
+        await using var storeLock = await CrossProcessFileLock
+            .AcquireAsync(_storeLockPath, CrossProcessLockTimeout, ct).ConfigureAwait(false);
         await UpdateSnapshotAsync(
             snapshot =>
             {
@@ -219,6 +252,9 @@ public sealed class FileAccountingConfigurationStore :
     /// held outside the snapshot, because this store replaces the whole document on every write: a
     /// head stored inside it would be removed by the same replacement that removed the events, and
     /// what remained would verify perfectly. See <see cref="FileAccountingAuditChainAnchor"/>.</para>
+    /// <para>Serialized across processes: the whole cycle runs under a lock file every composition
+    /// over this snapshot shares, so concurrent appends from the browser host and the WPF shell
+    /// chain one after the other rather than interleaving (W9-GOV-008 criterion 3).</para>
     /// <para>Idempotent on <see cref="AccountingActionAuditEventDto.AuditEventId"/>: an append whose
     /// event is already retained does nothing. This is not a convenience. The chain requires each
     /// link to claim a distinct event, so a second append of one id produces a history that can
@@ -234,12 +270,22 @@ public sealed class FileAccountingConfigurationStore :
 
         var normalized = auditEvent with { FundProfileId = NormalizeOptional(auditEvent.FundProfileId) };
 
+        // The cross-process lock spans the whole cycle — verify, link, declare, write, commit — so
+        // an append from another process serializes behind this one and then chains onto its
+        // result, instead of interleaving with it. Without this, both processes could pass the
+        // anchor's declare (a pending declaration at one sequence supersedes another, by design,
+        // because that is what crash recovery looks like), and the later snapshot write would
+        // replace the earlier one — losing its event while the anchor retained its hash, which
+        // verification then reports as tampering. The anchor's monotonic refusal stays as the
+        // backstop for a writer that bypasses this store.
+        await using var storeLock = await CrossProcessFileLock
+            .AcquireAsync(_storeLockPath, CrossProcessLockTimeout, ct).ConfigureAwait(false);
+
         await UpdateSnapshotAsync<AccountingAuditChainLink?>(
             async (snapshot, token) =>
             {
                 // Read the head under the store gate: reading it beforehand would race this store's
-                // own write. A concurrent writer in another process is caught by the anchor itself,
-                // which refuses a sequence that does not advance the journal.
+                // own write.
                 var anchor = await _auditChainAnchor.ReadHeadAsync(token).ConfigureAwait(false);
                 var verification = AccountingAuditChain.Verify(
                     snapshot.AuditChain,
@@ -351,6 +397,14 @@ public sealed class FileAccountingConfigurationStore :
     /// </remarks>
     public async Task<AccountingAuditChainVerification> VerifyAuditChainAsync(CancellationToken ct = default)
     {
+        // Verification reads two files, and only the store lock makes that pair atomic against a
+        // writer: an append in flight elsewhere holds the same lock from declare through commit, so
+        // a verification that read the anchor between those writes would see a head the snapshot
+        // has not caught up with and report an interrupted append — or worse, read them in the
+        // other order and report a rollback — about a store that is merely busy.
+        await using var storeLock = await CrossProcessFileLock
+            .AcquireAsync(_storeLockPath, CrossProcessLockTimeout, ct).ConfigureAwait(false);
+
         var anchor = await _auditChainAnchor.ReadHeadAsync(ct).ConfigureAwait(false);
         return await ReadSnapshotAsync(
             snapshot => AccountingAuditChain.Verify(snapshot.AuditChain, snapshot.AuditEvents, anchor),
