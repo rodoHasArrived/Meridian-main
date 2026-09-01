@@ -48,6 +48,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     // exposure. Without it, concurrent submissions each evaluate against the same
     // pre-order book and can collectively breach a ceiling none of them breaches alone.
     private readonly SemaphoreSlim _preTradeReservationGate = new(1, 1);
+    // Submissions past the operator-control gate but not yet acknowledged by the gateway, keyed by
+    // order id. The kill-switch sweep waits for these before it snapshots the book: an order that
+    // passed the gate a moment before a breaker trip would otherwise reach the broker after the
+    // sweep had observed an empty book, and be reported as nothing rather than as working.
+    private readonly ConcurrentDictionary<string, TaskCompletionSource> _inFlightDispatches = new(StringComparer.Ordinal);
     // Client order ids held by orders parked for governed approval, mapped to the
     // escalation that owns them. The tracked state is terminal, so without this the id
     // would be reclaimable while the approval is still live.
@@ -373,6 +378,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         var dispatchAttempted = false;
         OrderState orderState;
 
+        // Held from the moment this order becomes visible in the tracked table until the
+        // gateway has acknowledged (or refused) it, so a kill-switch sweep started in between
+        // waits for the acknowledgement instead of racing it. Disposed on every exit path.
+        using var dispatchLease = new DispatchLease(this);
+
         // Pre-trade risk check. Validation and the registration that reserves this order's
         // exposure happen under one gate so a concurrent order cannot slip through against
         // the same pre-order snapshot.
@@ -482,6 +492,12 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                     : safeRequest.Legs
             };
 
+            // Taken after validation rather than before the gate: a critical rule can trip the
+            // breaker from inside ValidateOrderAsync, and the sweep that trip runs waits on
+            // these leases. A lease held by the order still being validated would make that
+            // sweep wait on itself until the settle window lapsed.
+            dispatchLease.Begin(orderId);
+
             if (!TryRegisterOrder(orderId, orderState))
             {
                 // Lost a race with a concurrent submission that claimed the same client order id
@@ -560,6 +576,37 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             // The order is registered (or the submission has already returned), so its
             // exposure is now visible to the next validation.
             _preTradeReservationGate.Release();
+        }
+
+        // The operator controls are consulted again at the point of dispatch, not only at the
+        // gate above. Everything between the two -- readiness, risk validation, reservation --
+        // takes time, and a breaker opened during that time has already run its cancel-all
+        // sweep against a book this order was not yet in. Passing the gate a moment before the
+        // trip is not permission to reach the broker a moment after it.
+        if (_operatorControls is not null)
+        {
+            var dispatchControlRequest = requiresLiveOrderReadinessGate ? safeRequest : request;
+            var dispatchDecision = _operatorControls.EvaluateOrder(dispatchControlRequest, _portfolioState, runId);
+            if (!dispatchDecision.IsApproved)
+            {
+                // Nothing reached the gateway, so the reserved capacity and any governed release
+                // this order consumed go back exactly as they do for a gate rejection.
+                SettleRiskReservations(riskDecision, commit: false, orderId);
+                RestoreConsumedApprovals(consumedApprovalId, "an operator control that closed before dispatch", orderId);
+                return await RejectRegisteredOrderBeforeDispatchAsync(
+                    orderId,
+                    orderState,
+                    safeRequest,
+                    actor,
+                    brokerName,
+                    runId,
+                    correlationId,
+                    dispatchDecision,
+                    sessionId,
+                    riskWarnings,
+                    riskDecision,
+                    ct).ConfigureAwait(false);
+            }
         }
 
         try
@@ -1215,6 +1262,89 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         => status is OrderStatus.Filled or OrderStatus.Cancelled or OrderStatus.Rejected or OrderStatus.Expired;
 
     /// <summary>
+    /// Registers tracked state for a filled order this OMS never placed, from the fill report
+    /// alone, so the fill can be booked as the increment the broker executed.
+    /// <para>
+    /// Requires the report's per-event quantity: the report's <c>FilledQuantity</c> is cumulative,
+    /// and without knowing how much of it a previous incarnation of this process already booked,
+    /// booking the cumulative would double-post. The adopted state starts at the cumulative
+    /// minus this event's quantity, so the ordinary increment arithmetic yields exactly the
+    /// event's quantity. The order type is not on the report and is recorded as Market, which is
+    /// the one shape every gateway can have filled; it does not participate in booking.
+    /// </para>
+    /// </summary>
+    private bool TryAdoptUntrackedFilledOrder(
+        string? orderId,
+        ExecutionReport report,
+        [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out OrderState? adopted,
+        out decimal bookedBeforeAdoption)
+    {
+        adopted = null;
+        bookedBeforeAdoption = 0m;
+        if (string.IsNullOrWhiteSpace(orderId)
+            || report.LastFillQuantity is not { } executedQuantity
+            || executedQuantity <= 0m
+            || report.FillPrice is null
+            || report.FilledQuantity < executedQuantity)
+        {
+            return false;
+        }
+
+        var orderQuantity = Math.Max(report.OrderQuantity, report.FilledQuantity);
+        var seed = new OrderState
+        {
+            OrderId = orderId,
+            Symbol = report.Symbol,
+            Side = report.Side,
+            Type = OrderType.Market,
+            Quantity = orderQuantity,
+            FilledQuantity = report.FilledQuantity - executedQuantity,
+            Status = OrderStatus.PendingNew,
+            CreatedAt = report.Timestamp
+        };
+        var merged = ApplyReport(seed, report);
+        if (!TryRegisterOrder(orderId, merged))
+        {
+            return false;
+        }
+
+        RememberBrokerOrderId(orderId, report);
+        bookedBeforeAdoption = seed.FilledQuantity;
+        adopted = merged;
+        return true;
+    }
+
+    /// <summary>Evidence, not control flow: an audit failure must not stall the report pump.</summary>
+    private async Task TryRecordUntrackedFillAuditAsync(
+        string action,
+        string orderId,
+        OrderState? state,
+        ExecutionReport report,
+        string message,
+        CancellationToken ct)
+    {
+        try
+        {
+            await RecordOrderLifecycleAuditAsync(
+                action: action,
+                outcome: "AttentionRequired",
+                orderId: orderId,
+                state: state,
+                report: report,
+                message: message,
+                ct: ct).ConfigureAwait(false);
+        }
+        catch (Exception auditException)
+        {
+            _logger.LogError(
+                auditException,
+                "Could not audit the untracked fill outcome {Action} for order {OrderId}",
+                action,
+                LogSanitizer.Sanitize(orderId));
+        }
+    }
+
+    /// <summary>
     /// Atomically claims <paramref name="orderId"/> in the order table. A terminal entry may be
     /// reclaimed (retention trimming already makes terminal ids reusable once evicted, so
     /// reuse-after-terminal keeps the same semantics); an active entry may not.
@@ -1348,11 +1478,57 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 }
             }
 
-            if (updatedState is null)
+            if (updatedState is null && isFillReport
+                && TryAdoptUntrackedFilledOrder(orderId, report, out var adoptedState, out var bookedBeforeAdoption))
             {
+                // A fill the gateway delivered for an order this process never registered -- most
+                // often a durably admitted event replayed into a restarted host whose in-memory
+                // book started empty. The fill is real and belongs to the connected account, so
+                // it is adopted into tracked state and booked below through the same durable
+                // accounting handoff every other fill takes, as exactly the increment the broker
+                // executed. What cannot be recovered is the fund attribution the original
+                // submission carried, so the fill posts unattributed to the posting scope and
+                // the audit trail flags it for operator review.
+                updatedState = adoptedState;
+                previousFilledQuantity = bookedBeforeAdoption;
                 _logger.LogWarning(
-                    "Received execution report for order {OrderId} ({ReportType}, {Status}) not tracked by this OMS",
-                    LogSanitizer.Sanitize(report.OrderId), report.ReportType, report.OrderStatus);
+                    "Adopted a fill of {LastFillQuantity} {Symbol} for order {OrderId} that this OMS did not track; it is booked to the posting scope without fund attribution",
+                    report.LastFillQuantity,
+                    LogSanitizer.Sanitize(report.Symbol),
+                    LogSanitizer.Sanitize(orderId!));
+                await TryRecordUntrackedFillAuditAsync(
+                    "UntrackedFillAdopted",
+                    orderId!,
+                    adoptedState,
+                    report,
+                    "The order was not tracked by this OMS (restart or out-of-band submission); the reported fill increment was booked to the posting scope without fund attribution and needs operator review.",
+                    ct).ConfigureAwait(false);
+            }
+            else if (updatedState is null)
+            {
+                if (isFillReport)
+                {
+                    // Not adoptable: the report carries no per-event quantity, so the increment
+                    // the broker executed cannot be told from the cumulative it reports, and
+                    // booking the cumulative could double-post a part already booked before the
+                    // restart. Loud, and on the audit trail, rather than a debug-level shrug.
+                    _logger.LogError(
+                        "Received a fill report for order {OrderId} ({ReportType}, {Status}) not tracked by this OMS and carrying no per-event quantity; it was NOT booked to accounting",
+                        LogSanitizer.Sanitize(report.OrderId), report.ReportType, report.OrderStatus);
+                    await TryRecordUntrackedFillAuditAsync(
+                        "UntrackedFillNotBooked",
+                        orderId ?? report.OrderId,
+                        null,
+                        report,
+                        "A fill for an order this OMS does not track carried no per-event quantity and was not booked; reconcile it through the brokerage activity-sync lane.",
+                        ct).ConfigureAwait(false);
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "Received execution report for order {OrderId} ({ReportType}, {Status}) not tracked by this OMS",
+                        LogSanitizer.Sanitize(report.OrderId), report.ReportType, report.OrderStatus);
+                }
             }
             else
             {
@@ -1823,6 +1999,64 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             Reason: report?.RejectReason,
             Scope: state is null ? null : BuildOrderAuditScope(state),
             Metadata: metadata ?? BuildOrderLifecycleAuditMetadata(state, report)), ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Rejects an order that is already registered in the tracked table but has not been sent to
+    /// the gateway, because the operator controls closed between the gate and dispatch.
+    /// <para>
+    /// Unlike <see cref="RejectOrderAsync"/>, which runs before registration and must not disturb
+    /// an entry that belongs to another order, this path owns the entry under
+    /// <paramref name="orderId"/> and replaces its <c>PendingNew</c> state with the rejection --
+    /// the same terminal transition the gateway-failure path applies -- so a sweep or a status
+    /// read never sees an order that was never routed reported as working.
+    /// </para>
+    /// </summary>
+    private async Task<OrderResult> RejectRegisteredOrderBeforeDispatchAsync(
+        string orderId,
+        OrderState registeredState,
+        OrderRequest request,
+        string? actor,
+        string brokerName,
+        string? runId,
+        string? correlationId,
+        ExecutionControlDecision decision,
+        string? sessionId,
+        IReadOnlyList<string>? riskWarnings,
+        RiskValidationResult? riskDecision,
+        CancellationToken ct)
+    {
+        var rejectedState = registeredState with
+        {
+            Status = OrderStatus.Rejected,
+            LastUpdatedAt = DateTimeOffset.UtcNow
+        };
+        _orders[orderId] = rejectedState;
+        TrimRetainedOrdersIfNeeded();
+
+        await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
+        await RecordOrderRejectionAsync(
+            orderId,
+            request,
+            actor,
+            brokerName,
+            runId,
+            correlationId,
+            decision.RejectReason,
+            ct,
+            rejectionSource: "operator controls at dispatch",
+            decision.RejectCode ?? "OPERATOR_CONTROL_REJECTED",
+            BuildOrderRejectedByControlAuditMetadata(decision)).ConfigureAwait(false);
+
+        return new OrderResult
+        {
+            Success = false,
+            OrderId = orderId,
+            ErrorMessage = decision.RejectReason,
+            OrderState = rejectedState,
+            RiskWarnings = riskWarnings,
+            RiskDecision = riskDecision?.ToSummary()
+        };
     }
 
     private async Task<OrderResult> RejectOrderAsync(

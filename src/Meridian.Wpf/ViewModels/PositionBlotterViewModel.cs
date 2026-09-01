@@ -910,15 +910,27 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
                 new ExecutionPositionActionRequest(entry.PositionKey, FundAccountId: fundAccountId),
                 _cts.Token);
 
-            if (response.Success)
+            // Judged from the action result the endpoint returned, not from the HTTP call
+            // succeeding. The position endpoints answer 200 with a Rejected or Failed status when
+            // the OMS refused the close, and counting that as "submitted" would tell an operator
+            // flattening a book that a position was closing while it was still open.
+            var actionStatus = response.Data?.Status;
+            if (response.Success && IsSubmittedActionStatus(actionStatus))
             {
                 successes++;
             }
             else
             {
-                failures.Add(string.IsNullOrWhiteSpace(response.ErrorMessage)
+                var detail = !string.IsNullOrWhiteSpace(response.ErrorMessage)
+                    ? response.ErrorMessage
+                    : response.Success
+                        ? string.IsNullOrWhiteSpace(response.Data?.Message)
+                            ? $"the execution service reported '{actionStatus ?? "no status"}'"
+                            : response.Data!.Message
+                        : null;
+                failures.Add(string.IsNullOrWhiteSpace(detail)
                     ? entry.ProductDescription
-                    : $"{entry.ProductDescription}: {response.ErrorMessage}");
+                    : $"{entry.ProductDescription}: {detail}");
             }
         }
 
@@ -957,6 +969,20 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
             }
         }
     }
+
+    /// <summary>
+    /// The statuses under which a position action actually reached the book. Everything else
+    /// the endpoint can answer with -- Rejected, Failed, Partial, Unestablished -- means the
+    /// position is still open and the operator has to know.
+    /// </summary>
+    internal static bool IsSubmittedActionStatus(string? status) =>
+        status is not null
+        && (string.Equals(status, "Submitted", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(status, "Accepted", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(status, "Filled", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(status, "PartiallyFilled", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(status, "Completed", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(status, "Success", StringComparison.OrdinalIgnoreCase));
 
     private sealed class TradingActionResultDto
     {

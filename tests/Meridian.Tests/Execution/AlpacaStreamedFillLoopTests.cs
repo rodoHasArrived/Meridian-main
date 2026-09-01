@@ -137,6 +137,70 @@ public sealed class AlpacaStreamedFillLoopTests
         portfolio.Positions["AAPL"].Quantity.Should().Be(10L);
     }
 
+    /// <summary>
+    /// The restart handoff gap: a fill durably admitted into the inbox but not yet acknowledged
+    /// when the host stopped is replayed into a fresh OMS that never registered its order. It
+    /// used to be acknowledged without reaching the accounting handoff. It is now adopted and
+    /// booked as exactly the quantity the broker event executed -- never the cumulative, part of
+    /// which the previous host already posted.
+    /// </summary>
+    [Fact]
+    public async Task RestartReplay_FillForAnOrderTheNewHostNeverTracked_ReachesAccountingAsTheEventIncrementOnly()
+    {
+        var store = new InMemoryCursorStore();
+        string orderId;
+
+        // First incarnation: places the order and books the partial.
+        {
+            await using var client = CreateClient(store);
+            var gateway = new AlpacaReportsGateway(client);
+            var publisher = new RecordingTradeEventPublisher();
+            using var oms = new OrderManagementSystem(
+                gateway,
+                NullLogger<OrderManagementSystem>.Instance,
+                portfolioState: new PaperTradingPortfolio(100_000m),
+                tradeEventPublisher: publisher);
+
+            var order = await PlaceAcceptedOrderAsync(oms, "AAPL", quantity: 10m);
+            orderId = order.OrderId;
+            await client.ProcessMessageAsync(TradeUpdateJson(
+                "evt-partial", "alpaca-restart", orderId, "AAPL", "partial_fill", "partially_filled",
+                qty: "10", filledQty: "4", price: "101", timestamp: "2026-08-07T14:30:01Z", fillQty: "4"));
+            (await ReadFillIncrementsAsync(oms, orderId, count: 1)).Single().FilledQuantity.Should().Be(4m);
+            await WaitUntilAsync(() => publisher.AcceptedEvents.Count == 1, "the partial reaches accounting before the host stops");
+        }
+
+        // The completion lands in the durable inbox while no OMS is consuming it, then the host
+        // restarts with an empty in-memory book.
+        await using var restartedClient = CreateClient(store);
+        await restartedClient.ProcessMessageAsync(TradeUpdateJson(
+            "evt-fill", "alpaca-restart", orderId, "AAPL", "fill", "filled",
+            qty: "10", filledQty: "10", price: "102", timestamp: "2026-08-07T14:30:05Z", fillQty: "6"));
+
+        var restartedPortfolio = new PaperTradingPortfolio(100_000m);
+        var restartedPublisher = new RecordingTradeEventPublisher();
+        using var restartedOms = new OrderManagementSystem(
+            new AlpacaReportsGateway(restartedClient),
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: restartedPortfolio,
+            tradeEventPublisher: restartedPublisher);
+
+        var booked = await ReadFillIncrementsAsync(restartedOms, orderId, count: 1);
+        booked.Single().FilledQuantity.Should().Be(6m,
+            "only the completion's own executed quantity may post; the 4 already booked before the restart must not be re-posted");
+        await WaitUntilAsync(() => restartedPublisher.AcceptedEvents.Count == 1, "the adopted fill reaches the accounting handoff");
+        var tradeEvent = restartedPublisher.AcceptedEvents.Single();
+        tradeEvent.FilledQuantity.Should().Be(6m);
+        tradeEvent.FillPrice.Should().Be(102m);
+        tradeEvent.FinancialAccountId.Should().BeNull("the original fund attribution cannot be recovered after a restart");
+
+        var adopted = restartedOms.GetOrder(orderId);
+        adopted.Should().NotBeNull("the fill's order is adopted into tracked state");
+        adopted!.Status.Should().Be(OrderStatus.Filled);
+        adopted.FilledQuantity.Should().Be(10m, "tracked state reflects the broker's cumulative");
+        restartedPortfolio.Positions["AAPL"].Quantity.Should().Be(6L);
+    }
+
     private static AlpacaTradeUpdatesClient CreateClient(IAlpacaTradeUpdateCursorStore store)
     {
         var client = new AlpacaTradeUpdatesClient(
@@ -206,7 +270,8 @@ public sealed class AlpacaStreamedFillLoopTests
         string filledQty,
         string? price,
         string timestamp,
-        string? reason = null)
+        string? reason = null,
+        string? fillQty = null)
     {
         var order = new Dictionary<string, object?>
         {
@@ -228,6 +293,8 @@ public sealed class AlpacaStreamedFillLoopTests
         };
         if (price is not null)
             data["price"] = price;
+        if (fillQty is not null)
+            data["qty"] = fillQty;
         if (reason is not null)
             data["reason"] = reason;
 

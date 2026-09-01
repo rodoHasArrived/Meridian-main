@@ -309,13 +309,13 @@
       "Wave": "W9",
       "Title": "Alpaca fill streaming into order and ledger state",
       "Workspaces": "Trading",
-      "Status": "ready_for_acceptance",
+      "Status": "accepted",
       "Health": "green",
       "Priority": "high",
       "Owner Lane": "Execution and Fund Accounts",
-      "Evidence Posture": "implementation_complete",
-      "Evidence": "src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaTradeUpdatesClient.cs; src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs; src/Meridian.Execution/OrderManagementSystem.cs; src/Meridian.Execution/Events/LedgerPostingConsumer.cs; src/Meridian/HostedBrokerageGatewayServiceCollectionExtensions.cs; tests/Meridian.Tests/Infrastructure/Providers/AlpacaTradeUpdatesClientTests.cs; tests/Meridian.Tests/Execution/OrderManagementSystemReportStreamTests.cs; tests/Meridian.Tests/Execution/AlpacaStreamedFillLoopTests.cs; tests/Meridian.Tests/Execution/OrderManagementSystemDurableHandoffOrderingTests.cs",
-      "Last Reviewed": "2026-08-29"
+      "Evidence Posture": "complete",
+      "Evidence": "src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaTradeUpdatesClient.cs; src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs; src/Meridian.Execution/OrderManagementSystem.cs; src/Meridian.Execution/Events/LedgerPostingConsumer.cs; src/Meridian/HostedBrokerageGatewayServiceCollectionExtensions.cs; tests/Meridian.Tests/Infrastructure/Providers/AlpacaTradeUpdatesClientTests.cs; tests/Meridian.Tests/Execution/OrderManagementSystemReportStreamTests.cs; tests/Meridian.Tests/Execution/AlpacaStreamedFillLoopTests.cs; tests/Meridian.Tests/Execution/OrderManagementSystemDurableHandoffOrderingTests.cs; docs/product/w9-operator-acceptance-2026-08-29.md",
+      "Last Reviewed": "2026-09-01"
     },
     {
       "ID": "W9-REPORT-005",
@@ -353,8 +353,8 @@
       "Priority": "high",
       "Owner Lane": "Execution and Fund Accounts",
       "Evidence Posture": "in_progress",
-      "Evidence": "src/Meridian.Execution/Services/ExecutionOperatorControlService.cs; src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs; src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs; src/Meridian.Risk/CompositeRiskValidator.cs; src/Meridian.Execution/OrderManagementSystem.KillSwitch.cs; src/Meridian.Wpf/Services/ExecutionSafetyControlClient.cs; src/Meridian.Wpf/Services/TradingSafetyCommandService.cs; src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs; src/Meridian.Risk/Rules/FatFingerRule.cs; src/Meridian.Risk/Rules/PriceCollarRule.cs; src/Meridian.Risk/Rules/OrderPriceLimbs.cs; src/Meridian.Risk/Rules/BracketChildLimbRule.cs; src/Meridian.Execution.Sdk/BracketOrderMetadata.cs; src/Meridian.FSharp/Risk/RiskRules.fs; tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs; tests/Meridian.Tests/Risk/FatFingerRuleTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimeFatFingerStatusTests.cs; tests/Meridian.Tests/Risk/PriceCollarRuleTests.cs; tests/Meridian.Tests/Risk/BracketChildLimbRuleTests.cs; tests/Meridian.Tests/Execution/KillSwitchCloseOnlyTests.cs; tests/Meridian.Wpf.Tests/Services/TradingSafetyCommandTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimePriceCollarConfigTests.cs; tests/Meridian.Tests/Execution/FixedIncomeFillBookingTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimeFirstRunDefaultsTests.cs",
-      "Last Reviewed": "2026-08-25"
+      "Evidence": "src/Meridian.Execution/Services/ExecutionOperatorControlService.cs; src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs; src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs; src/Meridian.Risk/CompositeRiskValidator.cs; src/Meridian.Execution/OrderManagementSystem.KillSwitch.cs; src/Meridian.Wpf/Services/ExecutionSafetyControlClient.cs; src/Meridian.Wpf/Services/TradingSafetyCommandService.cs; src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs; src/Meridian.Risk/Rules/FatFingerRule.cs; src/Meridian.Risk/Rules/PriceCollarRule.cs; src/Meridian.Risk/Rules/OrderPriceLimbs.cs; src/Meridian.Risk/Rules/BracketChildLimbRule.cs; src/Meridian.Execution.Sdk/BracketOrderMetadata.cs; src/Meridian.FSharp/Risk/RiskRules.fs; tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs; tests/Meridian.Tests/Risk/FatFingerRuleTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimeFatFingerStatusTests.cs; tests/Meridian.Tests/Risk/PriceCollarRuleTests.cs; tests/Meridian.Tests/Risk/BracketChildLimbRuleTests.cs; tests/Meridian.Tests/Execution/KillSwitchCloseOnlyTests.cs; tests/Meridian.Wpf.Tests/Services/TradingSafetyCommandTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimePriceCollarConfigTests.cs; tests/Meridian.Tests/Execution/FixedIncomeFillBookingTests.cs; tests/Meridian.Tests/Ui/RiskRuleRuntimeFirstRunDefaultsTests.cs; tests/Meridian.Tests/Execution/KillSwitchBrokerTruthTests.cs; tests/Meridian.Tests/Execution/KillSwitchTripRaceTests.cs; src/Meridian.Wpf/ViewModels/EventReplayViewModel.cs; tests/Meridian.Wpf.Tests/ViewModels/EventReplayViewModelTests.cs",
+      "Last Reviewed": "2026-09-01"
     },
     {
       "ID": "W9-GOV-008",
@@ -380,7 +380,7 @@
       "Owner Lane": "Accounting and Ledger",
       "Evidence Posture": "in_progress",
       "Evidence": "",
-      "Last Reviewed": "2026-08-29"
+      "Last Reviewed": "2026-09-01"
     },
     {
       "ID": "W9-ASSET-010",
@@ -563,6 +563,19 @@
       "Evidence Posture": "planned_evidence",
       "Evidence": "",
       "Last Reviewed": "2026-07-31"
+    },
+    {
+      "ID": "W10-LOT-002",
+      "Wave": "W10",
+      "Title": "Security-identified open-lot convergence",
+      "Workspaces": "Accounting; Portfolio; Reporting",
+      "Status": "planned",
+      "Health": "green",
+      "Priority": "critical",
+      "Owner Lane": "Accounting and Ledger",
+      "Evidence Posture": "planned_evidence",
+      "Evidence": "docs/architecture/security-lot-convergence-blueprint.md",
+      "Last Reviewed": "2026-08-28"
     }
   ]
 }

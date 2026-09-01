@@ -144,6 +144,20 @@ public sealed record ExecutionReport
     public decimal? FillPrice { get; init; }
     public decimal? Commission { get; init; }
 
+    /// <summary>
+    /// Quantity executed by this specific fill event, when the gateway reports it alongside the
+    /// cumulative <see cref="FilledQuantity"/> (Alpaca's trade-update <c>qty</c> and FILL-activity
+    /// <c>qty</c>). The OMS derives fill increments from tracked order state, so this is not
+    /// consulted for orders it placed; it is what lets a fill for an order the process no longer
+    /// tracks -- a durably admitted event replayed into a restarted host -- be booked as exactly
+    /// the increment the broker executed rather than as the whole cumulative quantity. Null when
+    /// the gateway does not report per-event quantities, and omitted from serialized payloads so
+    /// existing durable fill records keep their canonical content hash.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? LastFillQuantity { get; init; }
+
     /// <summary>Regulatory/exchange fees for this fill, when the gateway models them.</summary>
     public decimal? Fees { get; init; }
 
