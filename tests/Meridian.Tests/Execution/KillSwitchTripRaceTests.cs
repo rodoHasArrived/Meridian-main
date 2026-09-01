@@ -205,14 +205,16 @@ public sealed class KillSwitchTripRaceTests : IDisposable
         public async Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default)
         {
             var orderId = request.ClientOrderId ?? Guid.NewGuid().ToString("N");
-            lock (_submitted) _submitted.Add(orderId);
+            lock (_submitted)
+                _submitted.Add(orderId);
             SubmissionStarted.TrySetResult();
             if (HoldSubmissions)
             {
                 await _release.Task.ConfigureAwait(false);
             }
 
-            lock (_acknowledged) _acknowledged.Add(orderId);
+            lock (_acknowledged)
+                _acknowledged.Add(orderId);
             return new ExecutionReport
             {
                 OrderId = orderId,
@@ -228,9 +230,11 @@ public sealed class KillSwitchTripRaceTests : IDisposable
 
         public Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default)
         {
-            lock (_cancelled) _cancelled.Add(orderId);
+            lock (_cancelled)
+                _cancelled.Add(orderId);
             bool acknowledged;
-            lock (_acknowledged) acknowledged = _acknowledged.Contains(orderId);
+            lock (_acknowledged)
+                acknowledged = _acknowledged.Contains(orderId);
             if (RefuseCancelOfUnacknowledged && !acknowledged)
             {
                 return Task.FromResult(new ExecutionReport
