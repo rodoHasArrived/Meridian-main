@@ -182,24 +182,25 @@ public sealed partial class EnhancedIBConnectionManager
         PnlReceived?.Invoke(this, (reqId, new ProviderAccountPnl(string.Empty, null, (decimal)dailyPnL, (decimal)unrealizedPnL, (decimal)realizedPnL, pos, (decimal)value, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow))));
     }
 
+    // IB routes reqHistoricalTicks results by WhatToShow: MIDPOINT arrives through
+    // historicalTicks, TRADES (the request record's default) through historicalTicksLast, and
+    // BID_ASK through historicalTicksBidAsk. Downstream, Completed is a per-request terminal
+    // flag: the read model completes on the first element carrying it and stops routing the
+    // rest, so only the final batch's last element may carry the vendor's done flag forward —
+    // and the completion must release the rejection-routing ownership, because bounded requests
+    // terminate here rather than through CancelDataRequest.
+
     public void historicalTicks(int reqId, HistoricalTick[] ticks, bool done)
     {
         RecordMessageReceived();
         for (var index = 0; index < ticks.Length; index++)
         {
             var tick = ticks[index];
-            // Downstream, Completed is a per-request terminal flag: the read model completes on
-            // the first element carrying it and stops routing the rest. The vendor's done flag
-            // describes the whole batch, so only its last element may carry the flag forward or
-            // a bounded result would retain a single tick.
             var completesRequest = done && index == ticks.Length - 1;
-            HistoricalTickReceived?.Invoke(this, (reqId, new ProviderHistoricalTick(DateTimeOffset.FromUnixTimeSeconds(tick.Time), (decimal)tick.Price, tick.Size, "TRADES", null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.FromUnixTimeSeconds(tick.Time))), completesRequest));
+            HistoricalTickReceived?.Invoke(this, (reqId, new ProviderHistoricalTick(DateTimeOffset.FromUnixTimeSeconds(tick.Time), (decimal)tick.Price, tick.Size, "MIDPOINT", null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.FromUnixTimeSeconds(tick.Time))), completesRequest));
         }
         if (done)
         {
-            // Bounded requests terminate here rather than through CancelDataRequest, so the
-            // rejection-routing ownership must be released with the completion or the map grows
-            // by one id per page request and a recycled id could reject a finished request.
             _dataServiceRequestIds.TryRemove(reqId, out _);
             RequestCompleted?.Invoke(this, reqId);
         }
@@ -211,6 +212,18 @@ public sealed partial class EnhancedIBConnectionManager
 
     public void historicalTicksLast(int reqId, HistoricalTickLast[] ticks, bool done)
     {
+        RecordMessageReceived();
+        for (var index = 0; index < ticks.Length; index++)
+        {
+            var tick = ticks[index];
+            var completesRequest = done && index == ticks.Length - 1;
+            HistoricalTickReceived?.Invoke(this, (reqId, new ProviderHistoricalTick(DateTimeOffset.FromUnixTimeSeconds(tick.Time), (decimal)tick.Price, tick.Size, "TRADES", null, null, string.IsNullOrEmpty(tick.Exchange) ? null : tick.Exchange, ProviderDataProvenance.Unattributed(DateTimeOffset.FromUnixTimeSeconds(tick.Time))), completesRequest));
+        }
+        if (done)
+        {
+            _dataServiceRequestIds.TryRemove(reqId, out _);
+            RequestCompleted?.Invoke(this, reqId);
+        }
     }
 
     public void tickByTickBidAsk(int reqId, long time, double bidPrice, double askPrice, decimal bidSize, decimal askSize, TickAttribBidAsk tickAttribBidAsk)

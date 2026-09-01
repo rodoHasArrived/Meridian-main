@@ -510,15 +510,17 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
             RecordMarketDataType(update.RequestId, update.MarketDataType);
     }
 
+    private static bool IsActiveStatus(ProviderDataRequestStatus status)
+        => status is ProviderDataRequestStatus.Requested or ProviderDataRequestStatus.Streaming;
+
     /// <summary>
-    /// True only for a tracked request that has not reached a terminal status. Payload and
-    /// completion callbacks race cancellation, timeout, and rejection on the reader loop, so a
-    /// queued event delivered after the terminal transition must not resurrect the read model
-    /// to a live status.
+    /// True only for a tracked request that has not reached a terminal status. This is the
+    /// allocation-free pre-check on the reader loop; the race it cannot close (a terminal
+    /// transition landing between this check and the recorder) is closed atomically inside
+    /// <see cref="UpdateReadModel"/>.
     /// </summary>
     private bool IsRoutable(int requestId)
-        => _requests.TryGetValue(requestId, out var request)
-           && request.Status is ProviderDataRequestStatus.Requested or ProviderDataRequestStatus.Streaming;
+        => _requests.TryGetValue(requestId, out var request) && IsActiveStatus(request.Status);
 
     // Ownership guards are inline rather than a shared delegate-taking wrapper: these run on
     // the IB reader loop at market-data rates, and a capturing lambda per callback would
@@ -729,8 +731,27 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
     private void UpdateReadModel(int requestId, Func<ProviderDataRequestReadModel, ProviderDataRequestReadModel> update)
     {
         var lineage = _lineage.TryGetValue(requestId, out var currentLineage) ? currentLineage : null;
-        var updated = _requests.AddOrUpdate(requestId, _ => throw new KeyNotFoundException($"Unknown IB request id {requestId}."), (_, current) => update(current) with { UpdatedAt = DateTimeOffset.UtcNow, Lineage = lineage });
-        Publish(updated);
+        var applied = true;
+        var updated = _requests.AddOrUpdate(
+            requestId,
+            _ => throw new KeyNotFoundException($"Unknown IB request id {requestId}."),
+            (_, current) =>
+            {
+                // Terminal outcomes are frozen inside the atomic update, not only at the
+                // routability pre-checks: a queued payload or completion racing cancellation,
+                // timeout, or rejection on another thread must not resurrect the read model,
+                // and the first terminal status recorded is the one the operator keeps seeing.
+                if (!IsActiveStatus(current.Status))
+                {
+                    applied = false;
+                    return current;
+                }
+
+                applied = true;
+                return update(current) with { UpdatedAt = DateTimeOffset.UtcNow, Lineage = lineage };
+            });
+        if (applied)
+            Publish(updated);
     }
 
     private ProviderDataProvenance CreateRequestProvenance(IBDataLineage lineage)

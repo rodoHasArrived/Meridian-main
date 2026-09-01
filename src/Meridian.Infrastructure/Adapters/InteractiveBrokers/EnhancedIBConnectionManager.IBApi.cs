@@ -1200,8 +1200,12 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
                 _dataServiceRequestIds.TryRemove(marketRuleRequestId, out _);
                 RequestRejected?.Invoke(this, (marketRuleRequestId, errorCode.ToString(CultureInfo.InvariantCulture), errorMsg));
             }
-            else if (_dataServiceRequestIds.ContainsKey(id))
+            else if (_dataServiceRequestIds.TryRemove(id, out _))
             {
+                // A forwarded rejection makes the downstream read model terminal, so the id's
+                // rejection-routing ownership ends with it — leaving it tracked would grow the
+                // map by one entry per rejected request and let a recycled id reject a request
+                // that already finished.
                 RequestRejected?.Invoke(this, (id, errorCode.ToString(CultureInfo.InvariantCulture), errorMsg));
             }
         }

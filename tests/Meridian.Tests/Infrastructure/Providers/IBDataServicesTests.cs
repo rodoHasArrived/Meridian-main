@@ -465,6 +465,26 @@ public sealed class IBDataServicesTests
     }
 
     /// <summary>
+    /// The routability pre-checks on the reader loop cannot close the race where a terminal
+    /// transition lands between the check and the recorder, so the freeze is enforced inside
+    /// the atomic read-model update itself: even a direct record call on a terminal request
+    /// is dropped rather than resurrecting it.
+    /// </summary>
+    [Fact]
+    public void Cancellation_DirectRecordAfterCancel_DoesNotResurrectTheReadModel()
+    {
+        var services = new IBDataServices(new RecordingTransport());
+        var requestId = services.SubscribeTickByTick(new SymbolConfig("AAPL"));
+
+        services.CancelRequest(requestId, CancellationToken.None);
+        services.RecordTickByTick(requestId, new ProviderTickByTickObservation(DateTimeOffset.UtcNow, "last", 200m, 10m));
+
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Cancelled);
+        request.TickByTickObservations.Should().BeNullOrEmpty();
+    }
+
+    /// <summary>
     /// The vendor delivers a bounded historical-tick result as batches whose done flag describes
     /// the batch, so the transport may mark only the final batch's last element as completing —
     /// completing on the first element would drop the rest of the batch at the active-status guard.
