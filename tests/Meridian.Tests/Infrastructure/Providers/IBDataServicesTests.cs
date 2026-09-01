@@ -427,6 +427,44 @@ public sealed class IBDataServicesTests
     }
 
     [Fact]
+    public void Cancellation_QueuedCallbacksArrivingAfterCancel_DoNotResurrectTheStream()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport);
+        var requestId = services.SubscribeTickByTick(new SymbolConfig("AAPL"));
+        transport.RaiseTick(requestId, new ProviderTickByTickObservation(DateTimeOffset.UtcNow, "last", 200m, 10m));
+
+        services.CancelRequest(requestId, CancellationToken.None);
+
+        // The IB reader loop can still hold queued events for the cancelled id; neither a
+        // payload nor a completion may flip the operator-visible outcome back to a live status.
+        transport.RaiseTick(requestId, new ProviderTickByTickObservation(DateTimeOffset.UtcNow, "last", 201m, 5m));
+        transport.RaiseCompleted(requestId);
+
+        var request = services.GetRequests().Single();
+        request.Status.Should().Be(ProviderDataRequestStatus.Cancelled);
+        request.TickByTickObservations.Should().ContainSingle();
+    }
+
+    [Fact]
+    public void Cancellation_TransportCancelFailure_LeavesTheRequestRoutableForRejection()
+    {
+        var transport = new CallbackTransport { CancelFailure = new InvalidOperationException("socket write failed") };
+        using var services = new IBDataServices(transport);
+        var requestId = services.SubscribeTickByTick(new SymbolConfig("AAPL"));
+
+        var act = () => services.CancelRequest(requestId, CancellationToken.None);
+
+        // The vendor stream may still be live, so the request must not be reported cancelled
+        // and the request-scoped error that follows must still reach the read model.
+        act.Should().Throw<InvalidOperationException>();
+        services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.Requested);
+
+        transport.RaiseRejected(requestId, "10197", "No market data during competing live session.");
+        services.GetRequests().Single().Status.Should().Be(ProviderDataRequestStatus.Rejected);
+    }
+
+    [Fact]
     public void PnlCallbacks_RetainAccountAndModelIsolation()
     {
         var services = new IBDataServices(new RecordingTransport());
@@ -549,6 +587,7 @@ public sealed class IBDataServicesTests
     {
         public string ProviderConnectionId => "ib-gateway:live:7";
         public ProviderScannerResult? ScannerResultDuringRequest { get; init; }
+        public Exception? CancelFailure { get; init; }
         public event EventHandler<IBMarketDataTypeUpdate>? MarketDataTypeReceived;
         public event EventHandler<(int RequestId, ProviderContractDetails Details)>? ContractDetailsReceived;
         public event EventHandler<(int RequestId, ProviderOptionChainDefinition Definition)>? OptionChainDefinitionReceived;
@@ -582,6 +621,11 @@ public sealed class IBDataServicesTests
         public void RequestPnl(int requestId, string account, string? modelCode) { }
         public void RequestMarketRule(int requestId, int marketRuleId) { }
         public void RequestDepthExchanges(int requestId) { }
+        public void CancelDataRequest(int requestId, string capability)
+        {
+            if (CancelFailure is { } failure)
+                throw failure;
+        }
         public void RaiseContract(int id, ProviderContractDetails value) => ContractDetailsReceived?.Invoke(this, (id, value));
         public void RaiseChain(int id, ProviderOptionChainDefinition value) => OptionChainDefinitionReceived?.Invoke(this, (id, value));
         public void RaiseHeadline(int id, ProviderNewsHeadline value) => HistoricalNewsReceived?.Invoke(this, (id, value));

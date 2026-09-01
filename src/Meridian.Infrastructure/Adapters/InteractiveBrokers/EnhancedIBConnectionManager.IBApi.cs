@@ -1056,8 +1056,12 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     /// <summary>Cancels the associated vendor stream when its request lifetime ends.</summary>
     public void CancelDataRequest(int requestId, string capability)
     {
-        _dataServiceRequestIds.TryRemove(requestId, out _);
-        if (!IsConnected) return;
+        if (!IsConnected)
+        {
+            _dataServiceRequestIds.TryRemove(requestId, out _);
+            return;
+        }
+
         switch (capability)
         {
             case "scanner":
@@ -1079,6 +1083,11 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
             case "historical-ticks":
                 break; // IB historical ticks are bounded and complete from their terminal callback.
         }
+
+        // Ownership is released only after the vendor accepted the cancellation. A cancel that
+        // throws leaves the id routable, so the request-scoped error that follows can still
+        // reach RequestRejected and drive the read model terminal instead of stranding it live.
+        _dataServiceRequestIds.TryRemove(requestId, out _);
     }
 
     // -----------------------

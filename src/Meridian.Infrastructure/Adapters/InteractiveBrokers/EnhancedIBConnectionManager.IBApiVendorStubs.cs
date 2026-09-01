@@ -186,7 +186,14 @@ public sealed partial class EnhancedIBConnectionManager
         RecordMessageReceived();
         foreach (var tick in ticks)
             HistoricalTickReceived?.Invoke(this, (reqId, new ProviderHistoricalTick(DateTimeOffset.FromUnixTimeSeconds(tick.Time), (decimal)tick.Price, tick.Size, "TRADES", null, null, null, ProviderDataProvenance.Unattributed(DateTimeOffset.FromUnixTimeSeconds(tick.Time))), done));
-        if (done) RequestCompleted?.Invoke(this, reqId);
+        if (done)
+        {
+            // Bounded requests terminate here rather than through CancelDataRequest, so the
+            // rejection-routing ownership must be released with the completion or the map grows
+            // by one id per page request and a recycled id could reject a finished request.
+            _dataServiceRequestIds.TryRemove(reqId, out _);
+            RequestCompleted?.Invoke(this, reqId);
+        }
     }
 
     public void historicalTicksBidAsk(int reqId, HistoricalTickBidAsk[] ticks, bool done)

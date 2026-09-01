@@ -510,102 +510,112 @@ public sealed class IBDataServices : ITenantScopedProviderDataReadService, IDisp
             RecordMarketDataType(update.RequestId, update.MarketDataType);
     }
 
+    /// <summary>
+    /// True only for a tracked request that has not reached a terminal status. Payload and
+    /// completion callbacks race cancellation, timeout, and rejection on the reader loop, so a
+    /// queued event delivered after the terminal transition must not resurrect the read model
+    /// to a live status.
+    /// </summary>
+    private bool IsRoutable(int requestId)
+        => _requests.TryGetValue(requestId, out var request)
+           && request.Status is ProviderDataRequestStatus.Requested or ProviderDataRequestStatus.Streaming;
+
     // Ownership guards are inline rather than a shared delegate-taking wrapper: these run on
     // the IB reader loop at market-data rates, and a capturing lambda per callback would
     // allocate a closure for every vendor tick, tracked or not.
     private void OnContractDetailsReceived(object? sender, (int RequestId, ProviderContractDetails Details) value)
     {
-        if (_requests.ContainsKey(value.RequestId))
+        if (IsRoutable(value.RequestId))
             RecordContractDetails(value.RequestId, value.Details);
     }
 
     private void OnOptionChainDefinitionReceived(object? sender, (int RequestId, ProviderOptionChainDefinition Definition) value)
     {
-        if (_requests.ContainsKey(value.RequestId))
+        if (IsRoutable(value.RequestId))
             RecordOptionChainDefinition(value.RequestId, value.Definition);
     }
 
     private void OnHistoricalNewsReceived(object? sender, (int RequestId, ProviderNewsHeadline Headline) value)
     {
-        if (_requests.ContainsKey(value.RequestId))
+        if (IsRoutable(value.RequestId))
             RecordNewsHeadline(value.RequestId, value.Headline);
     }
 
     private void OnNewsArticleReceived(object? sender, (int RequestId, ProviderNewsArticlePayload Article) value)
     {
-        if (_requests.ContainsKey(value.RequestId))
+        if (IsRoutable(value.RequestId))
             RecordNewsArticle(value.RequestId, value.Article);
     }
 
     private void OnFundamentalReportReceived(object? sender, (int RequestId, ProviderFundamentalReport Report) value)
     {
-        if (_requests.ContainsKey(value.RequestId))
+        if (IsRoutable(value.RequestId))
             RecordFundamentalReport(value.RequestId, value.Report);
     }
 
     private void OnTickByTickReceived(object? sender, (int RequestId, ProviderTickByTickObservation Observation) value)
     {
-        if (_requests.ContainsKey(value.RequestId))
+        if (IsRoutable(value.RequestId))
             RecordTickByTick(value.RequestId, value.Observation);
     }
 
     private void OnDepthExchangesReceived(object? sender, (int RequestId, IReadOnlyList<ProviderDepthExchangeDescription> Exchanges) value)
     {
-        if (_requests.ContainsKey(value.RequestId))
+        if (IsRoutable(value.RequestId))
             RecordDepthExchanges(value.RequestId, value.Exchanges);
     }
 
     private void OnDividendEarningsReceived(object? sender, (int RequestId, ProviderDividendEarnings Payload) value)
     {
-        if (_requests.ContainsKey(value.RequestId))
+        if (IsRoutable(value.RequestId))
             RecordDividendEarnings(value.RequestId, value.Payload);
     }
 
     private void OnOptionContractReceived(object? sender, (int RequestId, ProviderOptionContract Contract) value)
     {
-        if (_requests.ContainsKey(value.RequestId))
+        if (IsRoutable(value.RequestId))
             RecordOptionContract(value.RequestId, value.Contract);
     }
 
     private void OnScannerResultReceived(object? sender, (int RequestId, ProviderScannerResult Result) value)
     {
-        if (_requests.ContainsKey(value.RequestId))
+        if (IsRoutable(value.RequestId))
             RecordScannerResult(value.RequestId, value.Result);
     }
 
     private void OnRealTimeBarReceived(object? sender, (int RequestId, ProviderRealTimeBar Bar) value)
     {
-        if (_requests.ContainsKey(value.RequestId))
+        if (IsRoutable(value.RequestId))
             RecordRealTimeBar(value.RequestId, value.Bar);
     }
 
     private void OnHistoricalTickReceived(object? sender, (int RequestId, ProviderHistoricalTick Tick, bool Completed) value)
     {
-        if (_requests.ContainsKey(value.RequestId))
+        if (IsRoutable(value.RequestId))
             RecordHistoricalTick(value.RequestId, value.Tick, value.Completed);
     }
 
     private void OnPnlReceived(object? sender, (int RequestId, ProviderAccountPnl Pnl) value)
     {
-        if (_requests.ContainsKey(value.RequestId))
+        if (IsRoutable(value.RequestId))
             RecordPnl(value.RequestId, value.Pnl);
     }
 
     private void OnMarketRuleReceived(object? sender, (int RequestId, IReadOnlyList<ProviderMarketRuleIncrement> Increments) value)
     {
-        if (_requests.ContainsKey(value.RequestId))
+        if (IsRoutable(value.RequestId))
             RecordMarketRule(value.RequestId, value.Increments);
     }
 
     private void OnRequestCompleted(object? sender, int requestId)
     {
-        if (_requests.ContainsKey(requestId))
+        if (IsRoutable(requestId))
             CompleteRequest(requestId);
     }
 
     private void OnRequestRejected(object? sender, (int RequestId, string Code, string Message) value)
     {
-        if (_requests.ContainsKey(value.RequestId))
+        if (IsRoutable(value.RequestId))
             RejectRequest(value.RequestId, value.Code, value.Message);
     }
 
