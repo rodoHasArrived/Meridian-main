@@ -3118,6 +3118,24 @@ still live, per the table below.
 | P3b | Recorded-as-of's alias promise not narrowed | No alias versioning or event backing in the range, and no documented narrowing of the recorded-as-of promise for aliases. The interim state — frozen creation fields, overwritten `alias_value` — is exactly the one the item said must not be mistaken for closure. |
 | — | Deferred quartet | Relational projections for private/alternative classes, valid-time term history, codec generation, N6 amplification — posture unchanged. |
 
+**Landed after this pass's pinned read — noted, not verified.** Merging `main` at `fa43d2e4` into
+this branch brought #2855: migration 032 replaces the raw primary-identifier unique index with
+`ux_securities_normalized_primary_identifier` on `securities`, behind a fail-closed collision
+preflight that refuses to automate canonical-record selection
+(`032_security_master_normalized_primary_identifier_uniqueness.sql`). Read against A2 as filed,
+this is the **defense-in-depth half** A2 already scopes: it constrains the one table resolution
+consults last, leaves `security_identifiers`' per-security key and non-unique normalized index
+untouched, and lands **without** the atomic append-plus-projection precondition A2 and P4
+establish — `ExecuteCreateAsync` still appends the stream before the projection upsert
+(`SecurityMasterService.cs:323-324`, unchanged), so a normalized collision at create now commits
+the event stream, fails the projection insert with `23505`, and on the ingest paths is reported to
+the operator as `Skipped` by the classifier's unique-violation arm
+(`SecurityMasterIngestFailureClassifier.cs:45`) — the orphaned-stream outcome both items describe,
+now reachable through punctuation variants that previously inserted as a second golden record. The
+detection-key remedy, the alias half, and the `ProviderSymbol` provider rule remain open as
+written. This note records the merge so the index is not later read as A2's closure; verifying 032
+against A2's requirements is the next pass's work.
+
 ### B1 — The accounting lane verifies what it loads and trusts what it is told
 
 The new corporate-action accounting lane (PR #2882) is, in most respects, the strongest evidence
