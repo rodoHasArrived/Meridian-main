@@ -1184,16 +1184,19 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         ErrorOccurred?.Invoke(this, new IBApiError(id, errorCode, errorMsg, advancedOrderRejectJson));
         // Forward a rejection only for ids the data-service transport issued: error() also carries
         // order and other non-data-service ids, and a colliding id must not reject an unrelated
-        // data request. Membership is tested without removal because IB routes non-terminal
-        // per-request notices through error() as well.
+        // data request. IB additionally routes request-scoped notices that do NOT terminate the
+        // request through error() — the 2100-2199 system-message band and 10167 (displaying
+        // delayed market data). Those must not become rejections: the read model freezes on its
+        // first terminal status, so rejecting a delayed-data notice would silence the delayed
+        // stream that follows instead of letting it route.
         //
-        // Market rules are the exception on both counts: reqMarketRule sends the vendor only its
+        // Market rules are the exception on correlation: reqMarketRule sends the vendor only its
         // marketRuleId, so a failure comes back under that id, not the data-service request id —
         // translate it through the in-flight map, which this failure consumes just as the payload
         // would. While such a request is in flight, an unrelated error on the same small vendor id
         // would mis-route here; the alternative leaves every market-rule failure stuck in
         // Requested, which is the worse trade.
-        if (id > 0)
+        if (id > 0 && !IsNonTerminalNotice(errorCode))
         {
             if (_marketRuleRequests.TryRemove(id, out var marketRuleRequestId))
             {
@@ -1210,6 +1213,15 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
             }
         }
     }
+
+    /// <summary>
+    /// True for request-scoped IB notices that leave the request live: the 2100-2199
+    /// system-message band and 10167, which announces the delayed-market-data fallback whose
+    /// ticks follow on the same id. Terminal outcomes are frozen downstream, so treating one of
+    /// these as a rejection would permanently end a request the vendor is still serving.
+    /// </summary>
+    private static bool IsNonTerminalNotice(int errorCode)
+        => errorCode is (>= 2100 and <= 2199) or 10167;
 
     public void connectionClosed()
     {
