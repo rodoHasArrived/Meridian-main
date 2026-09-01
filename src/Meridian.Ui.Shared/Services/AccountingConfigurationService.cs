@@ -37,8 +37,9 @@ public sealed partial class AccountingConfigurationService : IAccountingConfigur
     ///
     /// <para>Both shipping compositions register this service as a singleton, so an instance lock
     /// covers every mutation in the process. Cross-process serialization is the stores' own concern
-    /// and they carry it: the file audit chain takes a cross-process lock file around its head, and
-    /// the PostgreSQL posture locks the chain head row FOR UPDATE inside the append transaction.</para>
+    /// and they carry it: the file store holds a cross-process lock file across each whole
+    /// save/append cycle (with the anchor's monotonic head as backstop), and the PostgreSQL posture
+    /// locks the chain head row FOR UPDATE inside the append transaction.</para>
     /// </remarks>
     private readonly SemaphoreSlim _auditCycleLock = new(1, 1);
 
