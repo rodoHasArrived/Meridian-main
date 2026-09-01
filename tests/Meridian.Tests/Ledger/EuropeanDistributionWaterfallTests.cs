@@ -23,6 +23,30 @@ public sealed class EuropeanDistributionWaterfallTests
     }
 
     [Fact]
+    public void CatchUpRateEqualToCarryRate_ExpressesNoCatchUpWithoutOverpayingTheGp()
+    {
+        // Fund terms with a preferred return and no special GP catch-up are represented by a
+        // catch-up rate equal to the carry rate: the catch-up tier would split every dollar
+        // exactly like the residual carry tier, so skipping it changes nothing and the GP cannot
+        // be overpaid. The equality boundary must therefore stay constructible.
+        var input = new EuropeanWaterfallInput(
+            contributedCapital: 100m,
+            preferredReturnAccrued: 10m,
+            amountToDistribute: 120m,
+            carryRate: 0.20m,
+            catchUpRate: 0.20m);
+
+        var result = EuropeanDistributionWaterfall.Distribute(input);
+
+        result.GpCatchUp.Should().Be(0m);
+        result.Tiers.Should().NotContain(tier => tier.Tier == "GpCatchUp");
+        result.ReturnOfCapital.Should().Be(100m);
+        result.PreferredReturn.Should().Be(10m);
+        result.GpCarry.Should().Be(2m);
+        result.LpCarry.Should().Be(8m);
+    }
+
+    [Fact]
     public void ReturnOfCapitalTier_PaidFirstToLp()
     {
         var result = EuropeanDistributionWaterfall.Distribute(new EuropeanWaterfallInput(
