@@ -1310,8 +1310,16 @@ uses a block body. Describing an axis is not running it.
 So the planning input is the **command**, not a number:
 
 ```
-grep -rnE '(record|class) [A-Za-z]*Lot[A-Za-z]*[ ({]' src/ --include=*.cs
+grep -rnE '(record|class) [A-Za-z]*Lot[A-Za-z]*\b' src/ --include=*.cs
 ```
+
+**The trailing `\b` matters, and the first version of this command got it wrong.** Anchoring on
+`[ ({]` requires the character straight after the type name, which excludes every **block-bodied**
+declaration — `record FaceValueLot` and `record LedgerTaxLot` both put `{` on the next line. So the
+command prescribed here as *the* planning input silently omitted the principal contract model and the
+in-memory relief model, the two named in the listing directly below it. That is the same class of
+error as the counts it replaced: a sweep is only as good as its ability to rediscover what the list
+already contains, and this one could not. **Check that property before trusting any revision of it.**
 
 filtered against types that merely *operate on* lots (relief results, disposal selections, mutations,
 policies, projectors, selectors). Run at the head that produced this entry it returns, by role:
@@ -1497,7 +1505,9 @@ against, two paragraphs after the correction that withdrew that target.
    in-memory relief shape; `FaceValueLotExtensions.ToLedgerTaxLot` adapts the par model into the
    latter; Execution's `TaxLot` has no consumer outside Execution and is not the thing to converge.
    **Do not plan from a count — it has been wrong four times.** Re-run the sweep
-   (`grep -rnE '(record|class) [A-Za-z]*Lot[A-Za-z]*[ ({]' src/ --include=*.cs`, filtered against
+   (`grep -rnE '(record|class) [A-Za-z]*Lot[A-Za-z]*\b' src/ --include=*.cs` — the trailing `\b` is
+   required, since anchoring on `[ ({]` misses block-bodied declarations like `FaceValueLot` and
+   `LedgerTaxLot`; filtered against
    types that only operate on lots) and reconcile principal-versus-share quantity, currency and
    identity keying across what it returns. Among the later additions — `OpenLot`
    (`Backtesting.Sdk/OpenLot.cs:8`, symbol-keyed, simulator-populated, projected to the workstation)
@@ -2688,9 +2698,26 @@ having count(distinct security_id) > 1
 ```
 
 — or run the simpler form restricted to the provider-independent kinds. Either way it is the cheapest
-way to size the problem, and is worth running before choosing between a unique normalized index
-(fail-closed on write) and normalized detection keys (detect-and-review, matching the current
-golden-record posture).
+way to size the problem.
+
+**The remedy is normalized detection keys. The unique index is not a second option that reconciles
+A2, and successive versions of this item wrongly presented the two as a choice.** A unique index on
+`securities.(primary_identifier_kind, normalized_primary_identifier_value)` constrains **one table**,
+and it is not the table resolution consults first. `security_identifiers` has primary key
+`(security_id, identifier_kind, identifier_value, valid_from)` — scoped **per security**
+(`001_security_master.sql:45-57`), so two securities may hold the same identifier value freely — and
+migration 016 adds `ix_security_identifiers_normalized_lookup` as a plain `create index`, not a
+unique one (`:39`). So when security A carries a normalized value as its *primary* identifier and
+security B carries the same value as a *non-primary* `security_identifiers` row, the proposed index
+cannot see B's claim, both rows insert, and `ResolveSecurityIdAsync` — which tries the identifier
+table before the denormalized `securities` columns — can still return either. The ambiguity the index
+was meant to prevent survives it.
+
+The index therefore stands only as **defense in depth on the primary-identifier column**, alongside
+normalized detection rather than instead of it. Making it actually fail closed would mean extending
+uniqueness across *active identifier claims* — with the provider rule for `ProviderSymbol` and the
+validity-window rules both applied — which is a materially larger change than a single index, and one
+that still carries the atomic-creation precondition below.
 
 **Those two options are not interchangeable, and the index one carries a precondition this document
 establishes elsewhere.** `ExecuteCreateAsync` appends the event stream before upserting the projection
@@ -2854,9 +2881,14 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
 2. **Reconcile identifier detection with identifier resolution (A2).** Run the duplicate query first —
    **scoped by provider for `ProviderSymbol`**, or it counts legitimate two-provider identities as
    collisions and inflates the number the remedy is chosen from —
-   to size it, then pick one key. The current split is the one state that guarantees the conflict
-   surface cannot see the ambiguity the resolver acts on. The two answers are **not** equally cheap:
-   normalized detection keys reach only the identifier half — they are **not** self-contained, and an
+   to size it. The current split is the one state that guarantees the conflict
+   surface cannot see the ambiguity the resolver acts on. **The remedy is normalized detection keys;
+   the unique index is not an alternative and earlier versions of this entry wrongly offered a
+   choice.** That index constrains `securities` alone, while `security_identifiers` is keyed per
+   security (`001_security_master.sql:45-57`) and carries only a non-unique normalized index
+   (`016:39`) — so a value held as one security's *primary* and another's *non-primary* row passes it,
+   and resolution can still return either. Treat it as defense in depth on the primary column only.
+   Detection keys themselves reach only the identifier half — they are **not** self-contained, and an
    earlier version of this entry said they were. `SecurityMasterConflictDetection` iterates
    `Identifiers` only (`:31, :105, :114`) and never reads aliases, while `ResolveSecurityIdAsync`
    also searches enabled, validity-windowed aliases and returns an arbitrary claimant through an
