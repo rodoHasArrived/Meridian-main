@@ -1866,6 +1866,7 @@ Meridian-main
 │   │   ├── provider-onboarding-interactive-brokers.md
 │   │   ├── README.md
 │   │   ├── reconciliation-operations.md
+│   │   ├── security-master-normalized-identifier-migration.md
 │   │   ├── service-level-objectives.md
 │   │   ├── statement-reconciliation-report-operations.md
 │   │   └── verified-outcome-recovery.md
@@ -5734,7 +5735,8 @@ Meridian-main
 │   │   │   │   ├── 028_security_master_revision_values_and_versioned_provenance.sql
 │   │   │   │   ├── 029_security_master_corp_action_payload.sql
 │   │   │   │   ├── 030_security_master_corporate_action_operations.sql
-│   │   │   │   └── 031_security_master_corporate_action_accounting_lane.sql
+│   │   │   │   ├── 031_security_master_corporate_action_accounting_lane.sql
+│   │   │   │   └── 032_security_master_normalized_primary_identifier_uniqueness.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
