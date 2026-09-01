@@ -1,6 +1,5 @@
 using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
-using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Execution;
@@ -252,6 +251,39 @@ public sealed partial class OrderManagementSystem
             }
         }
 
+        // A submission whose gateway call had still not returned by the end of the sweep is
+        // working as far as this sweep can tell, whatever its cancellation attempt reported: a
+        // cancel acknowledged before the submit settles is not proof the submit cannot land
+        // afterwards, and the broker snapshot taken above cannot show an order the broker has
+        // not yet accepted. Such an order is reported as still working and never counted as
+        // cancelled. One that settled during the sweep is judged by its cancellation result.
+        foreach (var unsettledOrderId in unsettledDispatches)
+        {
+            if (!DispatchLease.IsUnsettled(this, unsettledOrderId))
+            {
+                continue;
+            }
+
+            var confirmedIndex = confirmedCancellations.FindIndex(confirmed =>
+                string.Equals(confirmed.LocalOrderId, unsettledOrderId, StringComparison.Ordinal));
+            if (confirmedIndex >= 0)
+            {
+                confirmedCancellations.RemoveAt(confirmedIndex);
+                cancelled = Math.Max(0, cancelled - 1);
+            }
+
+            if (failures.Any(failure => string.Equals(failure.OrderId, unsettledOrderId, StringComparison.Ordinal)))
+            {
+                continue;
+            }
+
+            _orders.TryGetValue(unsettledOrderId, out var unsettledState);
+            failures.Add(new KillSwitchSweepFailure(
+                unsettledOrderId,
+                unsettledState?.Symbol,
+                "The submission was still awaiting the gateway's acknowledgement when the sweep finished; a cancellation sent before the submission settles is not proof it cannot land. Verify it at the broker."));
+        }
+
         var sweep = KillSwitchSweepResult.From(
             sweepTargets.Count + brokerResidualOrders.Count + preSweepFailures,
             cancelled,
@@ -364,7 +396,11 @@ public sealed partial class OrderManagementSystem
             }
         }
 
-        public void Dispose()
+        /// <summary>
+        /// Marks the dispatch settled: the gateway has acknowledged or refused the order and the
+        /// tracked table reflects it. Idempotent; disposal calls it again as a safety net.
+        /// </summary>
+        public void Settle()
         {
             if (_orderId is null || _settled is null)
             {
@@ -374,64 +410,12 @@ public sealed partial class OrderManagementSystem
             owner._inFlightDispatches.TryRemove(new KeyValuePair<string, TaskCompletionSource>(_orderId, _settled));
             _settled.TrySetResult();
         }
-    }
 
-    /// <summary>
-    /// Rejects an order that is already registered in the tracked table but has not been sent to
-    /// the gateway, because the operator controls closed between the gate and dispatch.
-    /// <para>
-    /// Unlike <see cref="RejectOrderAsync"/>, which runs before registration and must not disturb
-    /// an entry that belongs to another order, this path owns the entry under
-    /// <paramref name="orderId"/> and replaces its <c>PendingNew</c> state with the rejection --
-    /// the same terminal transition the gateway-failure path applies -- so a sweep or a status
-    /// read never sees an order that was never routed reported as working.
-    /// </para>
-    /// </summary>
-    private async Task<OrderResult> RejectRegisteredOrderBeforeDispatchAsync(
-        string orderId,
-        OrderState registeredState,
-        OrderRequest request,
-        string? actor,
-        string brokerName,
-        string? runId,
-        string? correlationId,
-        ExecutionControlDecision decision,
-        string? sessionId,
-        IReadOnlyList<string>? riskWarnings,
-        RiskValidationResult? riskDecision,
-        CancellationToken ct)
-    {
-        var rejectedState = registeredState with
-        {
-            Status = OrderStatus.Rejected,
-            LastUpdatedAt = DateTimeOffset.UtcNow
-        };
-        _orders[orderId] = rejectedState;
-        TrimRetainedOrdersIfNeeded();
+        public void Dispose() => Settle();
 
-        await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
-        await RecordOrderRejectionAsync(
-            orderId,
-            request,
-            actor,
-            brokerName,
-            runId,
-            correlationId,
-            decision.RejectReason,
-            ct,
-            rejectionSource: "operator controls at dispatch",
-            decision.RejectCode ?? "OPERATOR_CONTROL_REJECTED",
-            BuildOrderRejectedByControlAuditMetadata(decision)).ConfigureAwait(false);
-
-        return new OrderResult
-        {
-            Success = false,
-            OrderId = orderId,
-            ErrorMessage = decision.RejectReason,
-            OrderState = rejectedState,
-            RiskWarnings = riskWarnings,
-            RiskDecision = riskDecision?.ToSummary()
-        };
+        /// <summary>Whether this order id still has an unsettled dispatch in the owner's registry.</summary>
+        public static bool IsUnsettled(OrderManagementSystem owner, string orderId) =>
+            owner._inFlightDispatches.TryGetValue(orderId, out var pending) && !pending.Task.IsCompleted;
     }
 
     /// <summary>

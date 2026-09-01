@@ -498,6 +498,43 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             // sweep wait on itself until the settle window lapsed.
             dispatchLease.Begin(orderId);
 
+            // The operator controls are consulted again here, at the point the order is about to
+            // become visible and be dispatched, not only at the gate above. Everything between
+            // the two -- readiness, risk validation, reservation -- takes time, and a breaker
+            // opened during that time has already run its cancel-all sweep against a book this
+            // order was not yet in. Passing the gate a moment before the trip is not permission
+            // to reach the broker a moment after it. Evaluated before registration so that the
+            // close-only exception measures the desk's other working reductions and not this
+            // order's own quantity twice.
+            if (_operatorControls is not null)
+            {
+                var dispatchControlRequest = requiresLiveOrderReadinessGate ? safeRequest : request;
+                var dispatchDecision = _operatorControls.EvaluateOrder(dispatchControlRequest, _portfolioState, runId);
+                if (!dispatchDecision.IsApproved)
+                {
+                    // Nothing reached the gateway, so the reserved capacity and any governed
+                    // release this order consumed go back exactly as they do for a gate rejection.
+                    SettleRiskReservations(riskDecision, commit: false, orderId);
+                    RestoreConsumedApprovals(consumedApprovalId, "an operator control that closed before dispatch", orderId);
+                    return await RejectOrderAsync(
+                        orderId,
+                        safeRequest,
+                        actor,
+                        brokerName,
+                        runId,
+                        correlationId,
+                        dispatchDecision.RejectReason,
+                        sessionId,
+                        ct,
+                        rejectionSource: "operator controls at dispatch",
+                        reasonCode: dispatchDecision.RejectCode ?? "OPERATOR_CONTROL_REJECTED",
+                        metadata: BuildOrderRejectedByControlAuditMetadata(dispatchDecision),
+                        riskWarnings: riskWarnings,
+                        riskDecision: riskDecision?.ToSummary())
+                        .ConfigureAwait(false);
+                }
+            }
+
             if (!TryRegisterOrder(orderId, orderState))
             {
                 // Lost a race with a concurrent submission that claimed the same client order id
@@ -578,37 +615,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             _preTradeReservationGate.Release();
         }
 
-        // The operator controls are consulted again at the point of dispatch, not only at the
-        // gate above. Everything between the two -- readiness, risk validation, reservation --
-        // takes time, and a breaker opened during that time has already run its cancel-all
-        // sweep against a book this order was not yet in. Passing the gate a moment before the
-        // trip is not permission to reach the broker a moment after it.
-        if (_operatorControls is not null)
-        {
-            var dispatchControlRequest = requiresLiveOrderReadinessGate ? safeRequest : request;
-            var dispatchDecision = _operatorControls.EvaluateOrder(dispatchControlRequest, _portfolioState, runId);
-            if (!dispatchDecision.IsApproved)
-            {
-                // Nothing reached the gateway, so the reserved capacity and any governed release
-                // this order consumed go back exactly as they do for a gate rejection.
-                SettleRiskReservations(riskDecision, commit: false, orderId);
-                RestoreConsumedApprovals(consumedApprovalId, "an operator control that closed before dispatch", orderId);
-                return await RejectRegisteredOrderBeforeDispatchAsync(
-                    orderId,
-                    orderState,
-                    safeRequest,
-                    actor,
-                    brokerName,
-                    runId,
-                    correlationId,
-                    dispatchDecision,
-                    sessionId,
-                    riskWarnings,
-                    riskDecision,
-                    ct).ConfigureAwait(false);
-            }
-        }
-
         try
         {
             ct.ThrowIfCancellationRequested();
@@ -632,6 +638,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                     previousFilledQuantity = existing.FilledQuantity;
                     return ApplyReport(existing, report);
                 });
+
+            // The gateway has answered and the answer is in the tracked table: the sweep has
+            // what it waits for. Settled here rather than at method exit so the fill handoff,
+            // session persistence, and audit writes below never hold a kill switch open.
+            dispatchLease.Settle();
 
             _logger.LogInformation("Order {OrderId} submitted for {Symbol} {Side} {Quantity} — status {Status}",
                 LogSanitizer.Sanitize(orderId), LogSanitizer.Sanitize(safeRequest.Symbol), safeRequest.Side, safeRequest.Quantity, updatedState.Status);
@@ -1417,6 +1428,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
                 RegisterGatewayChildOrders(orderId!, updatedState, report);
             }
 
+            // A refused untracked fill still enters the funnel, which for an order this OMS does
+            // not track publishes the report to observers and lossless subscribers only: the
+            // paper book, the accounting handoff, and session persistence are each gated on the
+            // order being tracked, so nothing is booked, exactly as external fills have always
+            // been surfaced without being booked.
             if (isFillReport)
             {
                 var sessionId = string.IsNullOrWhiteSpace(orderId) ? null : ResolveSessionId(orderId);

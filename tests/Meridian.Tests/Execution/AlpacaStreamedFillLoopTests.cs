@@ -224,14 +224,57 @@ public sealed class AlpacaStreamedFillLoopTests
             qty: "2", filledQty: "2", price: "5.10", timestamp: "2026-08-07T14:30:05Z", fillQty: "2",
             assetClass: "us_option"));
 
-        // The report is still observed (it reaches the observer stream) but nothing is booked.
-        using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var observed = await oms.ExecutionReports.ReadAsync(readCts.Token);
-        observed.Symbol.Should().Be("AAPL260918C00200000");
-        await Task.Delay(100);
-        publisher.AcceptedEvents.Should().BeEmpty("an option fill without its multiplier must not reach accounting at share semantics");
-        oms.GetOrder("MDN-20260807-000001").Should().BeNull("the order is not adopted");
+        // The pump is sequential, so once a later adoptable equity fill has been observed the
+        // option fill has been fully processed -- and it must have gone nowhere.
+        await client.ProcessMessageAsync(TradeUpdateJson(
+            "evt-equity-fill", "alpaca-eq", "MDN-20260807-000002", "MSFT", "fill", "filled",
+            qty: "3", filledQty: "3", price: "400", timestamp: "2026-08-07T14:30:06Z", fillQty: "3"));
+        (await ReadFillIncrementsAsync(oms, "MDN-20260807-000002", count: 1)).Single().FilledQuantity.Should().Be(3m);
+        await WaitUntilAsync(() => publisher.AcceptedEvents.Count == 1, "the equity fill is adopted and booked");
+
+        publisher.AcceptedEvents.Should().OnlyContain(tradeEvent => tradeEvent.Symbol == "MSFT",
+            "an option fill without its multiplier must not reach accounting at share semantics");
+        oms.GetOrder("MDN-20260807-000001").Should().BeNull("the option order is not adopted");
         portfolio.Positions.Should().NotContainKey("AAPL260918C00200000");
+    }
+
+    /// <summary>
+    /// A fill re-read from the REST activity history cannot be told from one the previous host
+    /// already booked under its stream event id, which is exactly what the reconnect overlap
+    /// window re-reads. Snapshot-derived fills for untracked orders are therefore never adopted.
+    /// </summary>
+    [Fact]
+    public async Task RestartReplay_SnapshotDerivedFillForAnUntrackedOrder_IsNotAdopted()
+    {
+        var store = new InMemoryCursorStore();
+        await using var client = CreateClient(store);
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        var publisher = new RecordingTradeEventPublisher();
+        using var oms = new OrderManagementSystem(
+            new AlpacaReportsGateway(client),
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio,
+            tradeEventPublisher: publisher);
+
+        client.ConfigureReconciliation((_, _) => Task.FromResult<IReadOnlyList<AlpacaReconciliationReport>>(
+        [
+            new AlpacaReconciliationReport(
+                "rest-fill-activity",
+                "activity-rest-1",
+                ReconciledReport("MDN-20260807-000009", cumulativeQuantity: 4m, fillPrice: 101m,
+                    OrderStatus.Filled, "2026-08-07T14:30:01Z") with { LastFillQuantity = 4m, AssetClass = "us_equity" })
+        ]));
+        await client.ReconcileAfterConnectAsync();
+
+        await client.ProcessMessageAsync(TradeUpdateJson(
+            "evt-equity-fill-2", "alpaca-eq-2", "MDN-20260807-000010", "MSFT", "fill", "filled",
+            qty: "3", filledQty: "3", price: "400", timestamp: "2026-08-07T14:30:06Z", fillQty: "3"));
+        (await ReadFillIncrementsAsync(oms, "MDN-20260807-000010", count: 1)).Single().FilledQuantity.Should().Be(3m);
+        await WaitUntilAsync(() => publisher.AcceptedEvents.Count == 1, "the streamed equity fill is adopted and booked");
+
+        publisher.AcceptedEvents.Should().OnlyContain(tradeEvent => tradeEvent.Symbol == "MSFT",
+            "a REST-derived fill for an untracked order may already have been booked before the restart");
+        oms.GetOrder("MDN-20260807-000009").Should().BeNull();
     }
 
     private static AlpacaTradeUpdatesClient CreateClient(IAlpacaTradeUpdateCursorStore store)

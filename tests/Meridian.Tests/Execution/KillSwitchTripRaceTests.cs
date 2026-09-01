@@ -108,6 +108,39 @@ public sealed class KillSwitchTripRaceTests : IDisposable
     }
 
     /// <summary>
+    /// A gateway that acknowledges the cancellation of an order it has not yet accepted proves
+    /// nothing about the submission still in flight: the submit can land after the sweep. The
+    /// unsettled dispatch must stay on the still-working list even though its cancel "succeeded".
+    /// </summary>
+    [Fact]
+    public async Task CancelAllAsync_WhenTheCancelIsAcknowledgedBeforeTheSubmitSettles_StillReportsTheOrderWorking()
+    {
+        var controls = CreateControls();
+        await using var gateway = new RaceBrokerageGateway { HoldSubmissions = true, RefuseCancelOfUnacknowledged = false };
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            operatorControls: controls,
+            options: new OrderManagementSystemOptions
+            {
+                CancelAllInFlightSettleTimeout = TimeSpan.FromMilliseconds(100)
+            });
+
+        var placing = oms.PlaceOrderAsync(Order("AAPL"));
+        await gateway.SubmissionStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        var sweep = await oms.CancelAllAsync().WaitAsync(TimeSpan.FromSeconds(5));
+
+        sweep.Outcome.Should().NotBe(KillSwitchSweepOutcome.Completed,
+            "a cancellation acknowledged before the submission settles is not proof the submission cannot land");
+        sweep.Cancelled.Should().Be(0);
+        sweep.StillWorking.Should().ContainSingle().Which.Reason.Should().Contain("awaiting");
+
+        gateway.ReleaseSubmissions();
+        await placing.WaitAsync(TimeSpan.FromSeconds(5));
+    }
+
+    /// <summary>
     /// A second submission under the same client order id is rejected as a duplicate, but it
     /// used to overwrite the winner's dispatch lease on the way in and strip it on the way out,
     /// so a sweep that followed no longer waited for the live broker submission.

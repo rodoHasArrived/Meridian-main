@@ -29,6 +29,28 @@ public sealed partial class OrderManagementSystem
         bool isFillReport,
         CancellationToken ct)
     {
+        if (isFillReport && IsSnapshotDerived(report))
+        {
+            // A fill re-read from the broker's REST snapshot or activity history cannot be told
+            // apart from a re-sighting of one the previous host already booked under the
+            // stream's event identity, so adopting it would double-post exactly the fills the
+            // reconnect overlap window re-reads. Only the authenticated stream's own events,
+            // deduplicated durably by broker event id, are adopted; a snapshot-derived fill for
+            // an untracked order is left to the brokerage activity-sync lane.
+            _logger.LogWarning(
+                "Received a snapshot-derived fill report for order {OrderId} ({Symbol}) not tracked by this OMS; it was NOT booked, because a re-read fill cannot be told from one already booked before a restart",
+                LogSanitizer.Sanitize(report.OrderId),
+                LogSanitizer.Sanitize(report.Symbol));
+            await TryRecordUntrackedFillAuditAsync(
+                "UntrackedFillNotBooked",
+                orderId ?? report.OrderId,
+                null,
+                report,
+                "A snapshot-derived fill (REST reconciliation or activity backfill) for an order this OMS does not track was not booked: it cannot be distinguished from a fill already booked under its stream event before a restart. Reconcile it through the brokerage activity-sync lane.",
+                ct).ConfigureAwait(false);
+            return (null, 0m);
+        }
+
         if (isFillReport && !IsBookableFromReportAlone(report.AssetClass))
         {
             // An option fill needs the contract multiplier and a bond fill the face-value
@@ -189,6 +211,14 @@ public sealed partial class OrderManagementSystem
     /// </summary>
     internal static bool IsBookableFromReportAlone(string? assetClass) =>
         assetClass?.Trim().ToLowerInvariant() is "us_equity" or "equity" or "crypto";
+
+    /// <summary>
+    /// Whether the report was produced from a broker snapshot or activity history rather than
+    /// from the authenticated stream's own event. Gateways mark such reports with a diagnostics
+    /// category naming reconciliation.
+    /// </summary>
+    internal static bool IsSnapshotDerived(ExecutionReport report) =>
+        report.Diagnostics?.Category?.Contains("reconciliation", StringComparison.OrdinalIgnoreCase) == true;
 
     /// <summary>Evidence, not control flow: an audit failure must not stall the report pump.</summary>
     private async Task TryRecordUntrackedFillAuditAsync(

@@ -398,6 +398,9 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
                             : "wss://api.alpaca.markets/stream"),
                         ct)
                     .ConfigureAwait(false);
+                // The transport is alive again; the previous connection's failure is history.
+                // Left in place it would fail the handshake below on its first valid frame.
+                _transportFailure = null;
                 await SendAsync(new { action = "auth", key = credentials.KeyId, secret = credentials.SecretKey }, ct)
                     .ConfigureAwait(false);
                 await SendAsync(
