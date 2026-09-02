@@ -145,6 +145,77 @@ public sealed class AssetOperationsProjectionRoundTripTests : IClassFixture<Secu
     }
 
     [SecurityMasterDatabaseFact]
+    public async Task StructuredCredit_ProjectsAProfileBackedTrancheFromItsProfileEnvelope()
+    {
+        // A profile-backed record's asset terms ARE the envelope, so the tranche's economics sit
+        // under profileFields. Reading only the document root would leave every governed
+        // profile-routed tranche unprojected while the accounting adapter reads it fine.
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var projectionStore = new PostgresStructuredCreditReferenceProjectionStore(_fixture.Options);
+        var securityId = Guid.NewGuid();
+
+        await store.UpsertProjectionAsync(Record(securityId, "StructuredCredit", version: 1, new
+        {
+            schemaVersion = 3,
+            customProfileId = "structured-credit-io-po",
+            profileVersion = 1,
+            profileFields = new
+            {
+                tranche = "A-1",
+                poolId = "POOL-1",
+                collateralType = "CLO",
+                originalFace = 1_000_000m,
+                currentFactor = 0.5m,
+                couponOrIndex = "SOFR+250",
+                factorScheduleEntries = new[]
+                {
+                    new { asOfDate = "2026-01-01", factor = 0.8m }
+                },
+                maturity = "2032-01-01"
+            }
+        }));
+
+        var tranche = await projectionStore.GetStructuredCreditAsync(securityId);
+        tranche.Should().NotBeNull();
+        tranche!.Tranche.Should().Be("A-1");
+        tranche.PoolId.Should().Be("POOL-1");
+        tranche.OriginalFace.Should().Be(1_000_000m);
+
+        (await projectionStore.GetFactorAsOfAsync(securityId, new(2026, 6, 30)))!.Factor.Should().Be(0.8m);
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task DirectLoan_ProjectsACanonicalPayloadWhoseOptionalTermsAreExplicitNull()
+    {
+        // The canonical serializer writes every declared key and nulls the ones the record does not
+        // carry, so this is the shape production persists for a loan with no spread or maturity.
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var projectionStore = new PostgresDirectLoanReferenceProjectionStore(_fixture.Options);
+        var securityId = Guid.NewGuid();
+
+        await store.UpsertProjectionAsync(Record(securityId, "DirectLoan", version: 1, new
+        {
+            schemaVersion = 1,
+            borrower = "Sparse Borrower LLC",
+            covenants = Array.Empty<object>(),
+            currentCouponRate = (decimal?)null,
+            maturity = (string?)null,
+            pricingSource = (string?)null,
+            principalSchedule = Array.Empty<object>(),
+            referenceIndex = (string?)null,
+            resetFrequency = (string?)null,
+            spreadBps = (decimal?)null
+        }));
+
+        var loan = await projectionStore.GetDirectLoanAsync(securityId);
+        loan.Should().NotBeNull();
+        loan!.Borrower.Should().Be("Sparse Borrower LLC");
+        loan.SpreadBps.Should().BeNull();
+        loan.MaturityDate.Should().BeNull();
+        loan.ReferenceIndex.Should().BeNull();
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task StructuredCredit_PublishesNoProjectionWhenARequiredTermIsMissing()
     {
         var store = new PostgresSecurityMasterStore(_fixture.Options);

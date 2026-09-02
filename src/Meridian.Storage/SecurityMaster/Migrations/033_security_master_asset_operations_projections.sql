@@ -16,9 +16,11 @@
 -- the persisted order identical to the terms document, so a projected schedule reads back in the
 -- order the contract declares it rather than in whatever order a scan returns.
 --
--- Not to be confused with the direct-lending servicing tables (loan_contract, loan_terms_version)
--- in the direct_lending schema: those key on loan_id and belong to Meridian's own loan origination
--- aggregate. These key on security_id and project a Security Master reference record.
+-- Not to be confused with the direct-lending servicing tables (loan_contract, loan_terms_version),
+-- which DirectLendingOptions co-locates in this same schema by default: those key on loan_id and
+-- belong to Meridian's own loan origination aggregate, written by a different migration runner.
+-- These key on security_id and project a Security Master reference record. The two families being
+-- neighbours in one schema is exactly why the distinction is written down here.
 
 create table if not exists __SCHEMA__.direct_loan_projection (
     security_id              uuid            not null primary key,
@@ -54,9 +56,6 @@ create table if not exists __SCHEMA__.direct_loan_covenant_projection (
     notes         text,
     primary key (security_id, ordinal)
 );
-
-create index if not exists direct_loan_covenant_projection_type_idx
-    on __SCHEMA__.direct_loan_covenant_projection (lower(covenant_type));
 
 create table if not exists __SCHEMA__.direct_loan_principal_schedule_projection (
     security_id  uuid            not null references __SCHEMA__.direct_loan_projection(security_id) on delete cascade,
@@ -94,9 +93,6 @@ create index if not exists structured_credit_projection_pool_idx
 create index if not exists structured_credit_projection_collateral_type_idx
     on __SCHEMA__.structured_credit_projection (lower(collateral_type));
 
-create index if not exists structured_credit_projection_maturity_idx
-    on __SCHEMA__.structured_credit_projection (maturity_date);
-
 create table if not exists __SCHEMA__.structured_credit_factor_schedule_projection (
     security_id uuid            not null references __SCHEMA__.structured_credit_projection(security_id) on delete cascade,
     ordinal     integer         not null,
@@ -111,7 +107,7 @@ create index if not exists structured_credit_factor_schedule_projection_as_of_id
     on __SCHEMA__.structured_credit_factor_schedule_projection (security_id, as_of_date desc);
 
 comment on table __SCHEMA__.direct_loan_projection is
-    'Relational projection of DirectLoan asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. Distinct from direct_lending.loan_contract, which keys on loan_id and belongs to the loan servicing aggregate.';
+    'Relational projection of DirectLoan asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. Distinct from the loan_contract family in this same schema, which keys on loan_id and belongs to the direct-lending servicing aggregate.';
 
 comment on table __SCHEMA__.direct_loan_covenant_projection is
     'Covenants declared by a projected direct loan, in terms-document order (ordinal). Threshold is text because the canonical covenant term is written prose ("4.5x"), not a number.';

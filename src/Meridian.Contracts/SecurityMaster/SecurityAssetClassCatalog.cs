@@ -452,9 +452,10 @@ public static class SecurityAssetClassCatalog
         => GetOrDefault(assetClass).AssetOperationsCapabilities ?? AssetOperationsCapabilitySet.IdentityOnly;
 
     /// <summary>
-    /// The asset classes the catalog gives an Asset Operations capability set — the classes that go
-    /// beyond <see cref="AssetOperationsCapabilitySet.IdentityOnly"/> to declare LifecycleState,
-    /// ProjectedCashFlows, ActualActivity, Reconciliation, LedgerProjection and WorkflowAudit.
+    /// The asset classes that declare an Asset Operations capability set of their own, rather than
+    /// falling through to <see cref="AssetOperationsCapabilitySet.IdentityOnly"/>. Every declared
+    /// set adds LifecycleState, ProjectedCashFlows, ActualActivity, Reconciliation, LedgerProjection
+    /// and WorkflowAudit on top of identity, so declaring one is what makes a class ops-capable.
     /// <para>
     /// Naming the set once lets surfaces that owe these classes more than identity — relational term
     /// projections, readiness reporting, coverage guards — agree on which classes those are, instead

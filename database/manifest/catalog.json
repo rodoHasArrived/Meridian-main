@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "adc53ee7c1c501b5c22733deb80a76013c3b758ee5a6503855f5ef757d3815a1",
+  "database_fingerprint": "4d54aeb9b635f35f7fb15d23f0f56886208a0713de015ec1344c8af0becd442a",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -16149,7 +16149,7 @@
       "object": "comment:table:security_master.direct_loan_principal_schedule_projection"
     },
     {
-      "fingerprint": "5148fbc91098f36e7b4180fdc9c7363ab3cea4398664a2eab912c3a4a08cd3c3",
+      "fingerprint": "f14d101eec3bb407b7c63ff8463d8e8c8a2479f2a624ad1cb54ad1868ec6764b",
       "object": "comment:table:security_master.direct_loan_projection"
     },
     {
@@ -22381,10 +22381,6 @@
       "object": "index:security_master.direct_loan_covenant_projection_pkey"
     },
     {
-      "fingerprint": "cdc9d3d41c218969acecb35d774a35c289bcfe911c4d75a43f40ed4326ced5e1",
-      "object": "index:security_master.direct_loan_covenant_projection_type_idx"
-    },
-    {
       "fingerprint": "e956b627e22328f5e4e90a757d9abd25273f289f39547fcb6cab0a3355aadd03",
       "object": "index:security_master.direct_loan_principal_schedule_projection_payment_date_idx"
     },
@@ -22951,10 +22947,6 @@
     {
       "fingerprint": "88ac12ed9b94d5bd1bfa8e8a14f220f141cb977289438e74208988fea9c08bf0",
       "object": "index:security_master.structured_credit_projection_collateral_type_idx"
-    },
-    {
-      "fingerprint": "4db1e7991ab74a119ec9c24b41896ae676209b9010475a028b63225c49a5c5cb",
-      "object": "index:security_master.structured_credit_projection_maturity_idx"
     },
     {
       "fingerprint": "62abca2562051815eaf9caa4a92b87653c0f1d54e2c80e44dbc1f531c31a17dd",
@@ -23837,7 +23829,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "65eaf60364a35683447ac1412b0834552eb72157dd481318bf137dd0142ec248",
+      "fingerprint": "5c70a715993f4bc23e7edd7a11e4f997f0678f78423cee77446f575b3672d076",
       "object": "schema:security_master"
     },
     {
@@ -24349,7 +24341,7 @@
       "object": "table:security_master.direct_lending_schema_migrations"
     },
     {
-      "fingerprint": "8c08347c35fb7edd00aeaf255a80f8cec14500c49d260cfecc7a061b133b1f82",
+      "fingerprint": "e633ad899ee087a5c8b47e269b49c9c5519a75fd16486a2a99ad6e84d03036ef",
       "object": "table:security_master.direct_loan_covenant_projection"
     },
     {
@@ -24357,7 +24349,7 @@
       "object": "table:security_master.direct_loan_principal_schedule_projection"
     },
     {
-      "fingerprint": "fe71311cf05a7b7536e662a1de5f4f935b363dfde6cb03118d1f2029c7cc4d90",
+      "fingerprint": "901d5f3c9cc924f4aaebce8b3768b7c037e97bfd64692662215e5436ce55abe6",
       "object": "table:security_master.direct_loan_projection"
     },
     {
@@ -24573,7 +24565,7 @@
       "object": "table:security_master.structured_credit_factor_schedule_projection"
     },
     {
-      "fingerprint": "da004679c07cc144afba464015ee95202cc46cef8414f79939356eb255c640dd",
+      "fingerprint": "2e64307c948acdb3698a2a88c0e320fd682ed01c36d95c7d562657877ca43c7b",
       "object": "table:security_master.structured_credit_projection"
     },
     {
@@ -110201,8 +110193,8 @@
           "object_type": "table"
         },
         {
-          "comment": "Relational projection of DirectLoan asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. Distinct from direct_lending.loan_contract, which keys on loan_id and belongs to the loan servicing aggregate.",
-          "fingerprint": "5148fbc91098f36e7b4180fdc9c7363ab3cea4398664a2eab912c3a4a08cd3c3",
+          "comment": "Relational projection of DirectLoan asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. Distinct from the loan_contract family in this same schema, which keys on loan_id and belongs to the direct-lending servicing aggregate.",
+          "fingerprint": "f14d101eec3bb407b7c63ff8463d8e8c8a2479f2a624ad1cb54ad1868ec6764b",
           "object": "security_master.direct_loan_projection",
           "object_type": "table"
         },
@@ -112950,7 +112942,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "65eaf60364a35683447ac1412b0834552eb72157dd481318bf137dd0142ec248",
+      "fingerprint": "5c70a715993f4bc23e7edd7a11e4f997f0678f78423cee77446f575b3672d076",
       "foreign_tables": [],
       "functions": [
         {
@@ -124221,7 +124213,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "8c08347c35fb7edd00aeaf255a80f8cec14500c49d260cfecc7a061b133b1f82",
+          "fingerprint": "e633ad899ee087a5c8b47e269b49c9c5519a75fd16486a2a99ad6e84d03036ef",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -124246,28 +124238,6 @@
               "ready": true,
               "security_labels": [],
               "unique": true,
-              "valid": true
-            },
-            {
-              "comment": null,
-              "definition": "CREATE INDEX direct_loan_covenant_projection_type_idx ON security_master.direct_loan_covenant_projection USING btree (lower(covenant_type))",
-              "expression": "lower(covenant_type)",
-              "fingerprint": "cdc9d3d41c218969acecb35d774a35c289bcfe911c4d75a43f40ed4326ced5e1",
-              "included_columns": [],
-              "is_replica_identity": false,
-              "key_columns": [
-                "lower(covenant_type)"
-              ],
-              "live": true,
-              "method": "btree",
-              "name": "direct_loan_covenant_projection_type_idx",
-              "options": [],
-              "owner": "meridian",
-              "predicate": null,
-              "primary": false,
-              "ready": true,
-              "security_labels": [],
-              "unique": false,
               "valid": true
             }
           ],
@@ -124749,7 +124719,7 @@
               "type_schema": "pg_catalog"
             }
           ],
-          "comment": "Relational projection of DirectLoan asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. Distinct from direct_lending.loan_contract, which keys on loan_id and belongs to the loan servicing aggregate.",
+          "comment": "Relational projection of DirectLoan asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. Distinct from the loan_contract family in this same schema, which keys on loan_id and belongs to the direct-lending servicing aggregate.",
           "constraints": [
             {
               "columns": [
@@ -124774,7 +124744,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "fe71311cf05a7b7536e662a1de5f4f935b363dfde6cb03118d1f2029c7cc4d90",
+          "fingerprint": "901d5f3c9cc924f4aaebce8b3768b7c037e97bfd64692662215e5436ce55abe6",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -143395,7 +143365,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "da004679c07cc144afba464015ee95202cc46cef8414f79939356eb255c640dd",
+          "fingerprint": "2e64307c948acdb3698a2a88c0e320fd682ed01c36d95c7d562657877ca43c7b",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -143412,28 +143382,6 @@
               "live": true,
               "method": "btree",
               "name": "structured_credit_projection_collateral_type_idx",
-              "options": [],
-              "owner": "meridian",
-              "predicate": null,
-              "primary": false,
-              "ready": true,
-              "security_labels": [],
-              "unique": false,
-              "valid": true
-            },
-            {
-              "comment": null,
-              "definition": "CREATE INDEX structured_credit_projection_maturity_idx ON security_master.structured_credit_projection USING btree (maturity_date)",
-              "expression": null,
-              "fingerprint": "4db1e7991ab74a119ec9c24b41896ae676209b9010475a028b63225c49a5c5cb",
-              "included_columns": [],
-              "is_replica_identity": false,
-              "key_columns": [
-                "maturity_date"
-              ],
-              "live": true,
-              "method": "btree",
-              "name": "structured_credit_projection_maturity_idx",
               "options": [],
               "owner": "meridian",
               "predicate": null,
@@ -155921,7 +155869,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "8c08347c35fb7edd00aeaf255a80f8cec14500c49d260cfecc7a061b133b1f82",
+          "fingerprint": "e633ad899ee087a5c8b47e269b49c9c5519a75fd16486a2a99ad6e84d03036ef",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -155946,28 +155894,6 @@
               "ready": true,
               "security_labels": [],
               "unique": true,
-              "valid": true
-            },
-            {
-              "comment": null,
-              "definition": "CREATE INDEX direct_loan_covenant_projection_type_idx ON security_master.direct_loan_covenant_projection USING btree (lower(covenant_type))",
-              "expression": "lower(covenant_type)",
-              "fingerprint": "cdc9d3d41c218969acecb35d774a35c289bcfe911c4d75a43f40ed4326ced5e1",
-              "included_columns": [],
-              "is_replica_identity": false,
-              "key_columns": [
-                "lower(covenant_type)"
-              ],
-              "live": true,
-              "method": "btree",
-              "name": "direct_loan_covenant_projection_type_idx",
-              "options": [],
-              "owner": "meridian",
-              "predicate": null,
-              "primary": false,
-              "ready": true,
-              "security_labels": [],
-              "unique": false,
               "valid": true
             }
           ],
@@ -156449,7 +156375,7 @@
               "type_schema": "pg_catalog"
             }
           ],
-          "comment": "Relational projection of DirectLoan asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. Distinct from direct_lending.loan_contract, which keys on loan_id and belongs to the loan servicing aggregate.",
+          "comment": "Relational projection of DirectLoan asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. Distinct from the loan_contract family in this same schema, which keys on loan_id and belongs to the direct-lending servicing aggregate.",
           "constraints": [
             {
               "columns": [
@@ -156474,7 +156400,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "fe71311cf05a7b7536e662a1de5f4f935b363dfde6cb03118d1f2029c7cc4d90",
+          "fingerprint": "901d5f3c9cc924f4aaebce8b3768b7c037e97bfd64692662215e5436ce55abe6",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -174883,7 +174809,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "da004679c07cc144afba464015ee95202cc46cef8414f79939356eb255c640dd",
+          "fingerprint": "2e64307c948acdb3698a2a88c0e320fd682ed01c36d95c7d562657877ca43c7b",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -174900,28 +174826,6 @@
               "live": true,
               "method": "btree",
               "name": "structured_credit_projection_collateral_type_idx",
-              "options": [],
-              "owner": "meridian",
-              "predicate": null,
-              "primary": false,
-              "ready": true,
-              "security_labels": [],
-              "unique": false,
-              "valid": true
-            },
-            {
-              "comment": null,
-              "definition": "CREATE INDEX structured_credit_projection_maturity_idx ON security_master.structured_credit_projection USING btree (maturity_date)",
-              "expression": null,
-              "fingerprint": "4db1e7991ab74a119ec9c24b41896ae676209b9010475a028b63225c49a5c5cb",
-              "included_columns": [],
-              "is_replica_identity": false,
-              "key_columns": [
-                "maturity_date"
-              ],
-              "live": true,
-              "method": "btree",
-              "name": "structured_credit_projection_maturity_idx",
               "options": [],
               "owner": "meridian",
               "predicate": null,

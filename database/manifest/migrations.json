@@ -295,7 +295,7 @@
       "ordinal": 33,
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/033_security_master_asset_operations_projections.sql",
       "schema": "security_master",
-      "sha256": "ecc4606a9f93e3444d1963f1c0bcff4d5435ab3b9ad24ba4d5596f84764185ed"
+      "sha256": "c1e461a80037d8567bb4f9bcc724304bf13573ed32b5caf7a57eedb5456b2a3f"
     },
     {
       "filename": "001_direct_lending.sql",
@@ -965,7 +965,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "f6be769c8aa5e8c863429e86219588a4557d339df5bb90618e2f503a93c24f7e",
+  "fingerprint": "4a5462e52d123d3c3a044d12aa7b02d978015c93a4d3f255fdf4937169a4c1ab",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {

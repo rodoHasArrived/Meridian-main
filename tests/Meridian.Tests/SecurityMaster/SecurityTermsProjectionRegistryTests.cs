@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Text;
+using System.Text.RegularExpressions;
 using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
@@ -238,6 +240,124 @@ public sealed class SecurityTermsProjectionRegistryTests
     }
 
     [Fact]
+    public void TryBuild_ProjectsACanonicalPayloadWhoseOptionalTermsAreExplicitNull()
+    {
+        // The canonical serializer emits EVERY declared key on every document and writes null where
+        // the domain value is None, so this — not a key-omitting payload — is the shape production
+        // persists. Reading it must project nulls, not throw: the shared GetOptional* readers reach
+        // for TryGetDecimal/TryGetInt32, which throw on a non-number element, and a throw here would
+        // abort the whole security's projection transaction.
+        var record = Record("DirectLoan", new
+        {
+            schemaVersion = 1,
+            borrower = "Sparse Borrower LLC",
+            covenants = Array.Empty<object>(),
+            currentCouponRate = (decimal?)null,
+            maturity = (string?)null,
+            pricingSource = (string?)null,
+            principalSchedule = Array.Empty<object>(),
+            referenceIndex = (string?)null,
+            resetFrequency = (string?)null,
+            spreadBps = (decimal?)null
+        });
+
+        PostgresSecurityMasterStore.TryBuildTermsProjection(Descriptor("DirectLoan"), record, out var plan)
+            .Should().BeTrue();
+
+        plan.Value("borrower").Should().Be("Sparse Borrower LLC");
+        plan.Value("spread_bps").Should().Be(DBNull.Value);
+        plan.Value("current_coupon_rate").Should().Be(DBNull.Value);
+        plan.Value("maturity_date").Should().Be(DBNull.Value);
+        plan.Value("reference_index").Should().Be(DBNull.Value);
+    }
+
+    [Fact]
+    public void TryBuild_ReadsAProfileBackedStructuredCreditThroughItsProfileFields()
+    {
+        // A profile-backed record's asset terms ARE the profile envelope, so its economics sit one
+        // level down. Reading only the root would fail every gate and unproject the tranche —
+        // deleting any row it already had — while every other codec for the class reads it fine.
+        var record = Record("StructuredCredit", new
+        {
+            schemaVersion = 3,
+            customProfileId = "structured-credit-io-po",
+            profileVersion = 1,
+            profileFields = new
+            {
+                tranche = "A-1",
+                poolId = "POOL-1",
+                collateralType = "CLO",
+                originalFace = 1_000_000m,
+                currentFactor = 0.5m,
+                couponOrIndex = "SOFR+250",
+                factorSchedule = "trustee report",
+                factorScheduleEntries = new[]
+                {
+                    new { asOfDate = "2026-01-01", factor = 0.8m }
+                },
+                maturity = "2032-01-01"
+            }
+        });
+
+        PostgresSecurityMasterStore.TryBuildTermsProjection(Descriptor("StructuredCredit"), record, out var plan)
+            .Should().BeTrue();
+
+        plan.Value("tranche").Should().Be("A-1");
+        plan.Value("pool_id").Should().Be("POOL-1");
+        plan.Value("collateral_type").Should().Be("CLO");
+        plan.Value("original_face").Should().Be(1_000_000m);
+        plan.Value("coupon_or_index").Should().Be("SOFR+250");
+        plan.Value("maturity_date").Should().Be(new DateTime(2032, 1, 1));
+
+        var factors = plan.ChildRows("structured_credit_factor_schedule_projection");
+        factors.Should().ContainSingle();
+        Column(factors[0], "as_of_date").Should().Be(new DateTime(2026, 1, 1));
+        Column(factors[0], "factor").Should().Be(0.8m);
+    }
+
+    [Fact]
+    public void TryBuild_PrefersARootTermOverTheProfileEnvelopeCopy()
+    {
+        // A first-class payload that also carries an envelope must read as first-class: the root is
+        // the canonical form, the envelope is the fallback.
+        var record = Record("StructuredCredit", new
+        {
+            schemaVersion = 1,
+            tranche = "B",
+            collateralType = "CLO",
+            originalFace = 10_000_000m,
+            couponOrIndex = "SOFR+250",
+            profileFields = new { tranche = "SHOULD-NOT-WIN", collateralType = "RMBS" }
+        });
+
+        PostgresSecurityMasterStore.TryBuildTermsProjection(Descriptor("StructuredCredit"), record, out var plan)
+            .Should().BeTrue();
+
+        plan.Value("tranche").Should().Be("B");
+        plan.Value("collateral_type").Should().Be("CLO");
+    }
+
+    [Fact]
+    public void TryBuild_DoesNotReachIntoProfileFieldsForAClassThatCannotCarryAProfile()
+    {
+        // DirectLoan is not profile-backed, so a stray profileFields object is opaque payload, not a
+        // term source. Reading it would invent economics the class never declared.
+        var record = Record("DirectLoan", new
+        {
+            schemaVersion = 1,
+            borrower = "Root Borrower LLC",
+            covenants = Array.Empty<object>(),
+            principalSchedule = Array.Empty<object>(),
+            profileFields = new { referenceIndex = "SHOULD-NOT-BE-READ" }
+        });
+
+        PostgresSecurityMasterStore.TryBuildTermsProjection(Descriptor("DirectLoan"), record, out var plan)
+            .Should().BeTrue();
+
+        plan.Value("reference_index").Should().Be(DBNull.Value);
+    }
+
+    [Fact]
     public void TryBuild_RefusesARecordOfAnotherAssetClass()
     {
         // Every writer runs for every record, so a class change has to clear the previous
@@ -341,6 +461,142 @@ public sealed class SecurityTermsProjectionRegistryTests
         PostgresSecurityMasterStore.TryBuildTermsProjection(Descriptor("DirectLoan"), record, out _)
             .Should().BeFalse();
     }
+
+    [Fact]
+    public void EveryRegisteredTableAndColumn_ExistsInTheMigrationDdl()
+    {
+        // The descriptor names the table and columns the writer emits SQL against; the migration
+        // creates them. Nothing else binds the two, and a mismatch fails only once a statement
+        // reaches a real database — which the pull-request gate never does, because it excludes
+        // Category=Integration. This reads the shipped DDL so the binding is checked at unit speed.
+        var ddl = ReadShippedMigrationDdl();
+
+        foreach (var descriptor in SecurityTermsProjectionRegistry.Descriptors)
+        {
+            AssertTableDeclares(
+                ddl,
+                descriptor.TableName,
+                SecurityTermsProjectionRegistry.LeadingIdentityColumns
+                    .Concat(descriptor.Columns.Select(column => column.ColumnName))
+                    .Concat(SecurityTermsProjectionRegistry.TrailingIdentityColumns));
+
+            foreach (var child in descriptor.ChildTables)
+            {
+                AssertTableDeclares(
+                    ddl,
+                    child.TableName,
+                    SecurityTermsProjectionRegistry.ChildKeyColumns
+                        .Concat(child.Columns.Select(column => column.ColumnName)));
+            }
+        }
+    }
+
+    private static void AssertTableDeclares(
+        IReadOnlyDictionary<string, IReadOnlyCollection<string>> ddl,
+        string tableName,
+        IEnumerable<string> columnNames)
+    {
+        ddl.Should().ContainKey(tableName,
+            $"the registry writes into '{tableName}', so a migration must create it");
+
+        foreach (var columnName in columnNames)
+        {
+            ddl[tableName].Should().Contain(columnName,
+                $"the registry writes '{tableName}.{columnName}', so the migration must declare it");
+        }
+    }
+
+    /// <summary>
+    /// The column names each Security Master migration declares per created table, read from the
+    /// scripts as they ship in the build output — the same files the migration runner applies.
+    /// </summary>
+    private static IReadOnlyDictionary<string, IReadOnlyCollection<string>> ReadShippedMigrationDdl()
+    {
+        var directory = Path.Combine(AppContext.BaseDirectory, "SecurityMaster", "Migrations");
+        Directory.Exists(directory).Should().BeTrue($"migration scripts must ship to '{directory}'");
+
+        var tables = new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var path in Directory.GetFiles(directory, "*.sql"))
+        {
+            var sql = StripLineComments(File.ReadAllText(path));
+            foreach (Match table in CreateTablePattern.Matches(sql))
+            {
+                tables[table.Groups["table"].Value] = ParseColumnNames(table.Groups["body"].Value);
+            }
+        }
+
+        return tables;
+    }
+
+    /// <summary>Drops <c>--</c> comments so their prose cannot be mistaken for a column definition.</summary>
+    private static string StripLineComments(string sql)
+        => string.Join(
+            '\n',
+            sql.Split('\n').Select(static line =>
+            {
+                var comment = line.IndexOf("--", StringComparison.Ordinal);
+                return comment < 0 ? line : line[..comment];
+            }));
+
+    /// <summary>
+    /// The leading identifier of each top-level definition in a <c>create table</c> body. Splitting
+    /// is depth-aware so a type's own comma — <c>numeric(28, 10)</c> — does not read as a column
+    /// boundary, and definitions that start with a keyword (<c>primary key</c>, <c>constraint</c>)
+    /// are dropped rather than recorded as columns.
+    /// </summary>
+    private static IReadOnlyCollection<string> ParseColumnNames(string body)
+    {
+        var columns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var current = new StringBuilder();
+        var depth = 0;
+
+        void Flush()
+        {
+            var definition = current.ToString().Trim();
+            current.Clear();
+
+            var name = definition
+                .Split([' ', '\t', '\n', '\r'], StringSplitOptions.RemoveEmptyEntries)
+                .FirstOrDefault();
+
+            if (name is not null && !TableConstraintKeywords.Contains(name))
+            {
+                columns.Add(name);
+            }
+        }
+
+        foreach (var character in body)
+        {
+            switch (character)
+            {
+                case '(':
+                    depth++;
+                    current.Append(character);
+                    break;
+                case ')':
+                    depth--;
+                    current.Append(character);
+                    break;
+                case ',' when depth == 0:
+                    Flush();
+                    break;
+                default:
+                    current.Append(character);
+                    break;
+            }
+        }
+
+        Flush();
+        return columns;
+    }
+
+    private static readonly HashSet<string> TableConstraintKeywords =
+        new(StringComparer.OrdinalIgnoreCase) { "primary", "unique", "constraint", "foreign", "check", "exclude" };
+
+    private static readonly Regex CreateTablePattern = new(
+        @"create\s+table\s+(?:if\s+not\s+exists\s+)?__SCHEMA__\.(?<table>\w+)\s*\((?<body>.*?)\)\s*;",
+        RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
     private static SecurityTermsProjectionDescriptor Descriptor(string assetClass)
         => SecurityTermsProjectionRegistry.Descriptors.Single(descriptor =>

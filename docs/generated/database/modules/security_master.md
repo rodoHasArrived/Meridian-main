@@ -1260,9 +1260,9 @@ erDiagram
 | `data_vendor_entitlements` | table | 21 | `entitlement_id` | 0 | 4 | - |
 | `deposit_projection` | table | 11 | `security_id` | 0 | 3 | - |
 | `direct_lending_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
-| `direct_loan_covenant_projection` | table | 5 | `security_id`, `ordinal` | 1 | 2 | Covenants declared by a projected direct loan, in terms-document order (ordinal). Threshold is text because the canonical covenant term is written prose ("4.5x"), not a number. |
+| `direct_loan_covenant_projection` | table | 5 | `security_id`, `ordinal` | 1 | 1 | Covenants declared by a projected direct loan, in terms-document order (ordinal). Threshold is text because the canonical covenant term is written prose ("4.5x"), not a number. |
 | `direct_loan_principal_schedule_projection` | table | 4 | `security_id`, `ordinal` | 1 | 2 | Contractual principal instalments of a projected direct loan, in terms-document order (ordinal). Makes instalments-due-in-a-window answerable without parsing every security document. |
-| `direct_loan_projection` | table | 12 | `security_id` | 0 | 4 | Relational projection of DirectLoan asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. Distinct from direct_lending.loan_contract, which keys on loan_id and belongs to the loan servicing aggregate. |
+| `direct_loan_projection` | table | 12 | `security_id` | 0 | 4 | Relational projection of DirectLoan asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. Distinct from the loan_contract family in this same schema, which keys on loan_id and belongs to the direct-lending servicing aggregate. |
 | `drawdown_lot_projection` | table | 7 | `lot_id` | 0 | 2 | - |
 | `equity_projection` | table | 11 | `security_id` | 1 | 3 | - |
 | `fee_balance` | table | 9 | `fee_balance_id` | 2 | 2 | - |
@@ -1320,5 +1320,5 @@ erDiagram
 | `servicing_revision_projection` | table | 6 | `loan_id`, `revision_number` | 0 | 2 | - |
 | `servicing_revision_source` | table | 4 | `loan_id`, `servicing_revision`, `servicer_report_batch_id` | 1 | 1 | - |
 | `structured_credit_factor_schedule_projection` | table | 4 | `security_id`, `ordinal` | 1 | 2 | Dated pool-factor points of a projected structured-credit tranche, in terms-document order (ordinal). Serves the factor-as-of lookup used by amortization. |
-| `structured_credit_projection` | table | 13 | `security_id` | 0 | 4 | Relational projection of StructuredCredit tranche terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. factor_schedule_reference is the free-text trustee-report pointer, never factor data. |
+| `structured_credit_projection` | table | 13 | `security_id` | 0 | 3 | Relational projection of StructuredCredit tranche terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. factor_schedule_reference is the free-text trustee-report pointer, never factor data. |
 | `swap_projection` | table | 9 | `security_id` | 0 | 3 | - |

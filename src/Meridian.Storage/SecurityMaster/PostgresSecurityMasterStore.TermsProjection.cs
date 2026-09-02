@@ -92,6 +92,7 @@ public sealed partial class PostgresSecurityMasterStore
         }
 
         var terms = record.AssetSpecificTerms;
+        var profileFields = ResolveProfileFields(descriptor.AssetClass, terms);
         var columns = new List<SecurityTermsProjectionValue>(
             SecurityTermsProjectionRegistry.LeadingIdentityColumns.Count
             + descriptor.Columns.Count
@@ -104,7 +105,7 @@ public sealed partial class PostgresSecurityMasterStore
 
         foreach (var column in descriptor.Columns)
         {
-            var value = ReadTermValue(terms, column.TermKey, column.Type);
+            var value = ReadTermValue(terms, profileFields, column.TermKey, column.Type);
             if (column.Gates && value is null)
             {
                 return false;
@@ -119,7 +120,7 @@ public sealed partial class PostgresSecurityMasterStore
         var children = new List<SecurityTermsProjectionChildRows>(descriptor.ChildTables.Count);
         foreach (var child in descriptor.ChildTables)
         {
-            if (!TryBuildChildRows(terms, record.SecurityId, child, out var rows))
+            if (!TryBuildChildRows(terms, profileFields, record.SecurityId, child, out var rows))
             {
                 return false;
             }
@@ -133,20 +134,17 @@ public sealed partial class PostgresSecurityMasterStore
 
     private static bool TryBuildChildRows(
         JsonElement terms,
+        JsonElement? profileFields,
         Guid securityId,
         SecurityTermsProjectionChildTable child,
         out IReadOnlyList<IReadOnlyList<SecurityTermsProjectionValue>> rows)
     {
         rows = [];
 
-        if (!terms.TryGetProperty(child.TermKey, out var array))
-        {
-            return true;
-        }
-
-        // A term that is present as JSON null is the serializer's rendering of an absent optional
-        // list, not a malformed schedule; anything else non-array is a shape the contract forbids.
-        if (array.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+        // An absent schedule, or one present as JSON null (the serializer's rendering of an empty
+        // optional list), is an empty schedule; anything else non-array is a shape the contract
+        // forbids and suppresses the projection rather than publishing a partial one.
+        if (!TryResolveTerm(terms, profileFields, child.TermKey, out var array))
         {
             return true;
         }
@@ -174,7 +172,9 @@ public sealed partial class PostgresSecurityMasterStore
 
             foreach (var column in child.Columns)
             {
-                var value = ReadTermValue(element, column.ElementKey, column.Type);
+                // Element keys are read from the element itself; the profile envelope only nests the
+                // term list, not the rows inside it.
+                var value = ReadTermValue(element, profileFields: null, column.ElementKey, column.Type);
                 if (column.Required && value is null)
                 {
                     return false;
@@ -192,23 +192,89 @@ public sealed partial class PostgresSecurityMasterStore
     }
 
     /// <summary>
-    /// Reads one declared term as its projected CLR value, or null when it is absent or carries a
-    /// shape the contract does not declare. Delegates to the same <c>GetOptional*</c> readers the
-    /// hand-written projections use, so a schema-driven column and a hand-written one decode a
-    /// payload identically instead of diverging on their own tolerance rules.
+    /// Resolves a declared term to the element carrying it, preferring the document root and falling
+    /// back to the profile envelope's <c>profileFields</c>. A term present as JSON null resolves as
+    /// absent: the canonical serializer emits every declared key on every document and writes null
+    /// where the domain value is <c>None</c>, so null is how "no value" is spelled, not a shape error.
     /// </summary>
-    private static object? ReadTermValue(JsonElement source, string key, SecurityAssetTermFieldType type)
+    private static bool TryResolveTerm(JsonElement root, JsonElement? profileFields, string key, out JsonElement element)
+    {
+        if (root.ValueKind == JsonValueKind.Object && root.TryGetProperty(key, out element) && HasValue(element))
+        {
+            return true;
+        }
+
+        if (profileFields is { } fields && fields.TryGetProperty(key, out element) && HasValue(element))
+        {
+            return true;
+        }
+
+        element = default;
+        return false;
+    }
+
+    private static bool HasValue(JsonElement element)
+        => element.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined);
+
+    /// <summary>
+    /// Reads one declared term as its projected CLR value, or null when it is absent or carries a
+    /// shape the contract does not declare.
+    /// <para>
+    /// The value kind is checked before the value is read rather than after. The shared
+    /// <c>GetOptional*</c> readers reach straight for <c>TryGetDecimal</c>/<c>TryGetInt32</c>, which
+    /// THROW on a non-number element — including on the JSON null the canonical serializer writes for
+    /// every optional term the record does not carry. A loan with no spread is an ordinary record,
+    /// not an error, and it must not be able to abort the projection transaction.
+    /// </para>
+    /// </summary>
+    private static object? ReadTermValue(
+        JsonElement root,
+        JsonElement? profileFields,
+        string key,
+        SecurityAssetTermFieldType type)
+        => TryResolveTerm(root, profileFields, key, out var element) ? DecodeTerm(element, type) : null;
+
+    private static object? DecodeTerm(JsonElement element, SecurityAssetTermFieldType type)
         => type switch
         {
             // NormalizeOptional: blank reads as absent and surrounding whitespace is trimmed, so a
             // padded vendor value and a clean one land on the same indexed column value.
-            SecurityAssetTermFieldType.String => TextPrimitives.NormalizeOptional(GetOptionalString(source, key)),
-            SecurityAssetTermFieldType.Decimal => GetOptionalDecimal(source, key),
-            SecurityAssetTermFieldType.Integer => GetOptionalInt(source, key),
-            SecurityAssetTermFieldType.Boolean => GetOptionalBool(source, key),
-            SecurityAssetTermFieldType.Date => GetOptionalDateOnly(source, key)?.ToDateTime(TimeOnly.MinValue),
+            SecurityAssetTermFieldType.String => element.ValueKind == JsonValueKind.String
+                ? TextPrimitives.NormalizeOptional(element.GetString())
+                : null,
+            SecurityAssetTermFieldType.Decimal => element.ValueKind == JsonValueKind.Number && element.TryGetDecimal(out var decimalValue)
+                ? decimalValue
+                : null,
+            SecurityAssetTermFieldType.Integer => element.ValueKind == JsonValueKind.Number && element.TryGetInt32(out var intValue)
+                ? intValue
+                : null,
+            SecurityAssetTermFieldType.Boolean => element.ValueKind is JsonValueKind.True or JsonValueKind.False
+                ? element.GetBoolean()
+                : null,
+            SecurityAssetTermFieldType.Date => element.ValueKind == JsonValueKind.String && DateOnly.TryParse(element.GetString(), out var date)
+                ? date.ToDateTime(TimeOnly.MinValue)
+                : null,
             _ => null
         };
+
+    /// <summary>
+    /// The profile envelope's field bag when the class may carry one, otherwise null.
+    /// <para>
+    /// A profile-backed record's asset-specific terms ARE the envelope
+    /// (<c>{customProfileId, profileVersion, profileFields:{…}}</c>), so its economic terms sit one
+    /// level down. Every other codec for these classes already resolves that — the C# deserializer,
+    /// the validator's field reader, and the accounting adapter's factor-schedule reader — and a
+    /// projection that only looked at the root would silently unproject every profile-backed record
+    /// of a class like StructuredCredit, deleting any row it previously had.
+    /// </para>
+    /// </summary>
+    private static JsonElement? ResolveProfileFields(string assetClass, JsonElement terms)
+        => SecurityAssetClassCatalog.GetOrDefault(assetClass).SupportsProfileBackedTerms
+            && terms.ValueKind == JsonValueKind.Object
+            && terms.TryGetProperty("profileFields", out var profileFields)
+            && profileFields.ValueKind == JsonValueKind.Object
+                ? profileFields
+                : null;
 
     /// <summary>
     /// Builds the parent upsert for <paramref name="descriptor"/>. The <c>do update set</c> clause
