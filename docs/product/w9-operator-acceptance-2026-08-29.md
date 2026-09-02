@@ -174,4 +174,8 @@ here. `W9-ASSET-010` is already `done`. The 2026-09-01 change that closed the Al
 discharged `W9-SAFETY-007`'s criterion one (the trip/submission race), re-ran its criterion-three
 sweep, and recorded the Windows WPF build-and-test result, moving that row to
 `ready_for_acceptance`; its registry entry carries the follow-up candidates (the OCO reservation
-arithmetic and the browser's absent breaker control) for its acceptance review to weigh.
+arithmetic and the browser's absent breaker control) for its acceptance review to weigh. The
+Windows evidence was re-run on 2026-09-02 against the tree that carries every WPF change in the
+sweep (Targeted Test run 33596174759, `wpf-dev-loop` on `windows-latest`, head `0891ca6ca`,
+covering `TradingSafetyCommandTests`, `EventReplayViewModelTests`, and
+`PositionBlotterViewModelTests`), superseding the earlier run that predated the blotter change.
