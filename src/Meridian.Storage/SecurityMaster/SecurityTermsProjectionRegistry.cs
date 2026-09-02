@@ -42,7 +42,14 @@ internal sealed record SecurityTermsProjectionColumn(
 /// declared array term rather than from the terms document root.
 /// </summary>
 /// <param name="ColumnName">Target SQL column on the child table.</param>
-/// <param name="ElementKey">The JSON key on each array element.</param>
+/// <param name="ElementKey">
+/// The JSON key on each array element. Unlike a scalar column's term key this is NOT checked against
+/// <see cref="SecurityAssetTermsSchema"/>, which declares array fields as
+/// <see cref="SecurityAssetTermFieldType.Array"/> without enumerating their inner shape. What pins
+/// these keys instead is the canonical-payload decode test per registered class: a mistyped required
+/// element key makes the whole projection unbuildable, which those tests assert against. Enforcing
+/// it in the registry would mean declaring element contracts in the terms schema first.
+/// </param>
 /// <param name="Type">The element value type.</param>
 /// <param name="Required">
 /// Whether the column is NOT NULL. A malformed element — one missing a required key, or carrying it
