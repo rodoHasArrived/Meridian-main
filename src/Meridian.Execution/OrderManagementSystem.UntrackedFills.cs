@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
@@ -16,6 +17,15 @@ namespace Meridian.Execution;
 /// </summary>
 public sealed partial class OrderManagementSystem
 {
+    /// <summary>
+    /// Cumulative quantity an adoption assumed was booked before it, per adopted order, that no
+    /// event delivered to this process has yet accounted for. The durable inbox guarantees
+    /// admission, not booking, and delivers out of order: when a completion is replayed before
+    /// an earlier partial of the same order, the partial's own quantity is claimed against this
+    /// gap when it arrives instead of being suppressed by the order's monotonic cumulative.
+    /// </summary>
+    private readonly ConcurrentDictionary<string, decimal> _adoptedFillGaps = new(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>
     /// Resolves a gateway report for an order this OMS does not track. A fill carrying the
     /// broker's per-event quantity is adopted into tracked state and returned with the
@@ -69,6 +79,31 @@ public sealed partial class OrderManagementSystem
                 null,
                 report,
                 $"A fill for an order this OMS does not track carries asset class '{report.AssetClass ?? "unknown"}', whose contract multiplier or face-value sizing cannot be established from the report; it was not booked. Reconcile it through the brokerage activity-sync lane.",
+                ct).ConfigureAwait(false);
+            return (null, 0m);
+        }
+
+        if (isFillReport
+            && report.LastFillQuantity is { } untrackedQuantity
+            && TryDescribeMissingPositionContext(_portfolioState, report, untrackedQuantity, out var missingContext))
+        {
+            // Unit sizing settles what the fill is worth, not what it did to the book. A sell
+            // against a long the book does not hold cannot be told from the close of a position
+            // lost with the previous host, and booking it as a fresh short would invent
+            // exposure and post the proceeds as a zero-gain reduction. Refused, on the record,
+            // until the book carries the lot the fill reduces.
+            _logger.LogError(
+                "Received a fill report for order {OrderId} ({Symbol}, {Side}) not tracked by this OMS whose economics cannot be established against the book; it was NOT booked to accounting: {Reason}",
+                LogSanitizer.Sanitize(report.OrderId),
+                LogSanitizer.Sanitize(report.Symbol),
+                report.Side,
+                missingContext);
+            await TryRecordUntrackedFillAuditAsync(
+                "UntrackedFillNotBooked",
+                orderId ?? report.OrderId,
+                null,
+                report,
+                $"A fill for an order this OMS does not track was not booked because the book cannot establish its economics: {missingContext} Reconcile it through the brokerage activity-sync lane.",
                 ct).ConfigureAwait(false);
             return (null, 0m);
         }
@@ -171,8 +206,158 @@ public sealed partial class OrderManagementSystem
 
         RememberBrokerOrderId(orderId, report);
         bookedBeforeAdoption = seed.FilledQuantity;
+        if (bookedBeforeAdoption > 0m)
+        {
+            // Assumed booked, not known booked: an earlier event of this order still pending
+            // in the durable inbox claims its own quantity against this gap when it arrives.
+            _adoptedFillGaps[orderId] = bookedBeforeAdoption;
+        }
+
         adopted = merged;
         return true;
+    }
+
+    /// <summary>
+    /// Claims an earlier increment of an adopted order that was delivered after the later event
+    /// that adopted it. The order's cumulative already covers this event, so the ordinary
+    /// arithmetic would book nothing; instead the event's own quantity is taken from the
+    /// adoption gap and returned as the cumulative to book from, so the funnel posts exactly
+    /// that quantity. Returns <see langword="null"/> when the report is not such an increment,
+    /// auditing the cases where it is one that cannot be booked.
+    /// </summary>
+    private async Task<decimal?> TryClaimLateAdoptedIncrementAsync(
+        string orderId,
+        OrderState trackedState,
+        ExecutionReport report,
+        CancellationToken ct)
+    {
+        if (!_adoptedFillGaps.TryGetValue(orderId, out var remainingGap) || remainingGap <= 0m)
+        {
+            return null;
+        }
+
+        if (IsSnapshotDerived(report))
+        {
+            // A snapshot re-read of an earlier fill is the one the previous host most likely
+            // booked itself; only the stream's own durably deduplicated events claim the gap.
+            _logger.LogDebug(
+                "Snapshot-derived report for adopted order {OrderId} does not claim its adoption gap of {Gap}",
+                LogSanitizer.Sanitize(orderId),
+                remainingGap);
+            return null;
+        }
+
+        if (report.FilledQuantity >= trackedState.FilledQuantity)
+        {
+            // Not an earlier event: a re-sighting of the adopting event or of a later one,
+            // which the tracked cumulative already covers.
+            return null;
+        }
+
+        if (report.LastFillQuantity is not { } executedQuantity || executedQuantity <= 0m || report.FillPrice is null)
+        {
+            await TryRecordUntrackedFillAuditAsync(
+                "UntrackedFillNotBooked",
+                orderId,
+                trackedState,
+                report,
+                $"An earlier fill of an adopted order arrived after the event that adopted it, but carried no per-event quantity, so its share of the {remainingGap:G29} not yet accounted for could not be booked. Reconcile it through the brokerage activity-sync lane.",
+                ct).ConfigureAwait(false);
+            return null;
+        }
+
+        if (executedQuantity > remainingGap)
+        {
+            await TryRecordUntrackedFillAuditAsync(
+                "UntrackedFillNotBooked",
+                orderId,
+                trackedState,
+                report,
+                $"An earlier fill of {executedQuantity:G29} for an adopted order exceeds the {remainingGap:G29} its adoption left unaccounted for; it was not booked, because the broker's cumulative does not admit it. Reconcile the order through the brokerage activity-sync lane.",
+                ct).ConfigureAwait(false);
+            return null;
+        }
+
+        if (TryDescribeMissingPositionContext(_portfolioState, report, executedQuantity, out var missingContext))
+        {
+            await TryRecordUntrackedFillAuditAsync(
+                "UntrackedFillNotBooked",
+                orderId,
+                trackedState,
+                report,
+                $"An earlier fill of an adopted order was not booked because the book cannot establish its economics: {missingContext} Reconcile it through the brokerage activity-sync lane.",
+                ct).ConfigureAwait(false);
+            return null;
+        }
+
+        while (true)
+        {
+            var claimed = remainingGap - executedQuantity;
+            var settled = claimed <= 0m
+                ? _adoptedFillGaps.TryRemove(new KeyValuePair<string, decimal>(orderId, remainingGap))
+                : _adoptedFillGaps.TryUpdate(orderId, claimed, remainingGap);
+            if (settled)
+            {
+                break;
+            }
+
+            if (!_adoptedFillGaps.TryGetValue(orderId, out remainingGap) || remainingGap < executedQuantity)
+            {
+                return null; // A concurrent claim took the gap first.
+            }
+        }
+
+        _logger.LogWarning(
+            "Booking an earlier fill of {ExecutedQuantity} {Symbol} for adopted order {OrderId} that arrived after the event that adopted it; {RemainingGap} of the order's earlier quantity remains unaccounted for",
+            executedQuantity,
+            LogSanitizer.Sanitize(report.Symbol),
+            LogSanitizer.Sanitize(orderId),
+            Math.Max(0m, remainingGap - executedQuantity));
+        return trackedState.FilledQuantity - executedQuantity;
+    }
+
+    /// <summary>
+    /// Whether the book lacks the position context this fill needs to be booked honestly, and
+    /// why. A buy that opens or adds to a long is established by the fill itself; a buy that
+    /// covers a known short, or a sell that reduces a known long, is established by the lot it
+    /// reduces. A sell into no long, or either side reversing through zero, is not: the book
+    /// cannot tell it from the close of a position it has lost, so it is not bookable.
+    /// </summary>
+    internal static bool TryDescribeMissingPositionContext(
+        Meridian.Execution.Models.IPortfolioState? portfolioState,
+        ExecutionReport report,
+        decimal quantity,
+        [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out string? reason)
+    {
+        reason = null;
+        if (portfolioState is null)
+        {
+            reason = "no portfolio state is composed, so the fill cannot be applied to a book at all.";
+            return true;
+        }
+
+        var held = 0m;
+        if (!string.IsNullOrWhiteSpace(report.Symbol)
+            && (portfolioState.Positions.TryGetValue(report.Symbol, out var position)
+                || portfolioState.Positions.TryGetValue(report.Symbol.Trim().ToUpperInvariant(), out position)))
+        {
+            held = position.ExactQuantity;
+        }
+
+        switch (report.Side)
+        {
+            case OrderSide.Buy when held < 0m && quantity > -held:
+                reason = $"a buy of {quantity:G29} would cover the known short of {-held:G29} {report.Symbol} and open a long with the remainder, and the book cannot establish which part closes a lost position.";
+                return true;
+            case OrderSide.Sell when held <= 0m:
+                reason = $"the book holds no long {report.Symbol} position for the sell of {quantity:G29} to reduce; it cannot be told from the close of a position lost with the previous host, and booking it would open a short.";
+                return true;
+            case OrderSide.Sell when quantity > held:
+                reason = $"a sell of {quantity:G29} exceeds the known long of {held:G29} {report.Symbol} and would reverse through zero, and the book cannot establish which part closes a lost position.";
+                return true;
+            default:
+                return false;
+        }
     }
 
     /// <summary>
@@ -186,22 +371,28 @@ public sealed partial class OrderManagementSystem
         OrderState adoptedState,
         ExecutionReport report,
         Exception? handoffFailure,
-        CancellationToken ct) =>
-        handoffFailure is null
+        CancellationToken ct,
+        bool lateIncrement = false)
+    {
+        var origin = lateIncrement
+            ? "The order was adopted from a later fill event after a restart, and this earlier fill of it arrived afterwards; its own executed quantity"
+            : "The order was not tracked by this OMS (restart or out-of-band submission); the reported fill increment";
+        return handoffFailure is null
             ? TryRecordUntrackedFillAuditAsync(
                 "UntrackedFillAdopted",
                 orderId,
                 adoptedState,
                 report,
-                "The order was not tracked by this OMS (restart or out-of-band submission); the reported fill increment was booked through the durable accounting handoff to the posting scope without fund attribution and needs operator review for attribution.",
+                $"{origin} was booked through the durable accounting handoff to the posting scope without fund attribution and needs operator review for attribution.",
                 ct)
             : TryRecordUntrackedFillAuditAsync(
                 "UntrackedFillHandoffFailed",
                 orderId,
                 adoptedState,
                 report,
-                $"The order was not tracked by this OMS and its fill increment was adopted, but the accounting handoff did not accept it: {handoffFailure.Message}. The fill is retained for replay where a handoff-failure store is configured; verify the ledger before relying on this fill.",
+                $"{origin} was adopted, but the accounting handoff did not accept it: {handoffFailure.Message}. The fill is retained for replay where a handoff-failure store is configured; verify the ledger before relying on this fill.",
                 ct);
+    }
 
     /// <summary>
     /// Whether a fill for this broker asset class can be booked from the report alone: a unit
