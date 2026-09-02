@@ -3065,8 +3065,11 @@ established. Second, closure is scoped to the Security Master lane: the same swe
 shape alive one lane over — see the strategy-promotion note below. Third, closure is of
 authorization only: the deactivate dialog the gate now guards still attributes its write to the
 literal `"User"` (`SecurityMasterDeactivateViewModel.cs:80`, unchanged at the pin) — P1's wiring
-defect, whose 2026-08-28 analysis stands; it is carried in the open table below and in priority 5
-(added 2026-09-02, after review: the first version of this block did not name it).
+defect, whose 2026-08-28 analysis stands — and the backfill command the gate guards attributes
+every amendment it makes to `"TradingParametersBackfillService"` rather than to the operator who
+invoked it (`TradingParametersBackfillService.cs:209`); both are carried in the open table below
+and in priority 5 (added 2026-09-02, after review: the first version of this block named neither,
+the second only the first).
 
 Residue, neither of which reopens the item: `CanModifySecurityMaster` raises no change
 notification and no gated command's `NotifyCanExecuteChanged` is invoked on sign-in/out, so a
@@ -3125,6 +3128,7 @@ still live, per the table below.
 | P1 (alias corrections) | The correcting actor is discarded | `PostgresSecurityMasterStore.Aliases.cs` untouched in the range; the conflict path still omits `created_by` (correctly, per P3b) and still records the corrector nowhere. |
 | P1 (remaining constraints) | `SourceSystem` from trusted metadata; valid-time gates; nested identifier windows; alias source-role decision | `SecurityMasterService.cs` untouched in the range; none of the four has landed. |
 | P1 (desktop deactivate) | Desktop deactivation attributes its write to a literal | `SecurityMasterDeactivateViewModel.cs` unchanged in the range: `UpdatedBy: "User"` (`:80`) on the request the new P5 gate (`:60-68`) authorizes — authorized now, still unattributed; the 2026-08-28 wiring analysis stands. Row added 2026-09-02, after review: the table's first version omitted it. |
+| P1 (desktop backfill) | Desktop-initiated backfill attributes up to 1,000 amendments to the service | `TradingParametersBackfillService.cs` unchanged in the range: every `AmendSecurityTermsRequest` carries `SourceSystem: "PolygonBackfill"` and `UpdatedBy: "TradingParametersBackfillService"` (`:208-209`); the only caller is the desktop command (`SecurityMasterViewModel.cs:2237`), through an interface with no actor parameter (`ITradingParametersBackfillService.cs:12`). `SourceSystem` is right by P1's rule; `UpdatedBy` names the automation where it should name the operator who pressed the button. Row added 2026-09-02, after review; not previously in this document's P1 inventory. |
 | P3b | Recorded-as-of's alias promise not narrowed | No alias versioning or event backing in the range, and no documented narrowing of the recorded-as-of promise for aliases. The interim state — frozen creation fields, overwritten `alias_value` — is exactly the one the item said must not be mistaken for closure. |
 | — | Deferred quartet | Relational projections for private/alternative classes, valid-time term history, codec generation, N6 amplification — posture unchanged. |
 
@@ -3164,10 +3168,21 @@ Which is what makes the gap it does have worth stating precisely: **the lane der
 re-verifies the bindings it loads, and shape-checks the bindings it is told.** Within one method,
 `AttachProjectionAsync`:
 
-- The **spine** binding is real verification: the snapshot is loaded at the exact expected version,
-  required to be Drafted with a retained candidate, and the candidate's canonical fingerprint is
-  **recomputed** and compared (`CorporateActionCaseAccountingService.cs:286-318`). The **period**
-  is the same at posting time: dereferenced, exact-version-checked, open-checked (`:411-435`).
+- The **spine** binding is real verification of the snapshot's integrity and stage — and of nothing
+  else about it. The snapshot is loaded at the exact expected version, required to be Drafted with
+  a retained candidate and no posted impact, and the candidate's canonical fingerprint is
+  **recomputed** and compared (`CorporateActionCaseAccountingService.cs:286-318`). What is not
+  checked is what the snapshot *is*: neither the resolver nor `BuildProjectionBinding` (`:320-409`)
+  nor the posting-time re-check (`ValidateSpineStillDrafted`, `:437-451`) reads `spine.EventKind`
+  (the DTO carries it, `AssetAccountingEventDtos.cs:179`; the mapper sets `CorporateAction` on
+  every event it projects, `CorporateActionAssetAccountingEventMapper.cs:175`), and nothing binds
+  the snapshot to the case (B1's subject below). So an attach caller holding a Drafted
+  acquisition, disposal, or income spine for the same security and accounting scope can bind it to
+  a corporate-action case, and the scope check (`EnsureProjectionMatchesCaseScope`) passes because
+  scope is what those spines share. An earlier version of this bullet called the spine binding
+  "real verification" without the qualifier (corrected 2026-09-02, after review). The **period**
+  is the same at posting time: dereferenced, exact-version-checked, open-checked
+  (`CorporateActionCaseAccountingService.cs:411-435`).
 - The **lot snapshot** and **policy decision** are caller-asserted: `RequireId`/`RequirePositive`
   on the request fields (`:62-65`) and nothing more. No store is consulted, migration 031 carries
   no reference for either (`:20-21, :35-37` are bare columns), and
@@ -3187,6 +3202,17 @@ re-verifies the bindings it loads, and shape-checks the bindings it is told.** W
   hashes, and naming the wrong authority matters because the remedy below turns on where the
   authoritative values live. The values the case lane stores as its durable audit binding are
   whatever the caller sent, in fields whose names promise they are the drafting pipeline's.
+  One of those names promises more than the lane delivers even on the drafting side: the
+  `PostingIdempotencyKey` the mapper derives is consumed after attach by nothing that posts.
+  `ExecuteSpinePostingAsync` builds the post request from the candidate, actor, and approval
+  (`CorporateActionCaseAccountingService.cs:501-511`; `PostPostingRuleJournalCandidateRequestDto`
+  has no key slot, `AccountingConfigurationDtos.cs:949-958`), and the posting authority takes its
+  idempotency key from the candidate's own posting command or entry metadata
+  (`AccountingPostingCandidatePostService.cs:1180-1181`). The projection's key is validated for
+  its prefix (`CorporateActionCaseAccountingService.cs:66-71`), stored
+  (`PostgresCorporateActionOperationsStore.Accounting.cs:439`), and read back into the summary
+  (`CorporateActionCaseAccountingService.cs:581`) — audit metadata under a name that says it
+  governs retries. (Added 2026-09-02, after review.)
 
 The retained candidate the service has already loaded holds the evidence rows that *drafting*
 used to bind the **lot, policy, and source-action** assertions — but not in a form attach can read
@@ -3290,6 +3316,12 @@ Two subtleties for the implementer, both about what *not* to do:
   it in *every* form the snapshot retains — direct member, nested member, and deterministic
   derivation from retained inputs — before classifying it. What the retained candidate actually
   carries:
+  - **Comparable at attach today, and first: the spine's kind.** `spine.EventKind ==
+    AssetAccountingEventKindDto.CorporateAction` is one read of a retained field
+    (`AssetAccountingEventDtos.cs:179`), refused with `ProjectionStale` in the resolver before any
+    other comparison. The event-identity recomputation below would also reject a non-corporate-action
+    spine — its id was never built from a corporate-action identity — but the kind check is the
+    cheap, explicit refusal and should not be left to a derived one. Added 2026-09-02, after review.
   - **Comparable at attach today: `ProjectionInputHash`.** The projection service writes the
     computed input hash into the lineage as `TermsHash`
     (`CorporateActionAccountingProjectionService.cs:161-178`, `TermsHash: projectionInputHash` at
@@ -3337,7 +3369,14 @@ Two subtleties for the implementer, both about what *not* to do:
     before the spine candidate is built. Prescribing "compare at attach" for these two would leave
     them unchecked or invite a non-equivalent reconstruction. The remedy is to **persist the
     authoritative values into retained spine state** (or onto the candidate) at drafting time,
-    where they are computed and attested, so attach has something real to compare.
+    where they are computed and attested, so attach has something real to compare. For the key,
+    that makes the stored column truthful and nothing more: it does not become the posting
+    idempotency authority, because posting never reads it (the hashes-and-key bullet above). The
+    remedy has a second half — either thread the mapper's key into the posting authority, so the
+    key the case recorded is the one that governs the append and any retry, or rename and document
+    the column as the mapping fingerprint it is. The first is the design the prefix validation
+    already implies; until one is chosen, `posting_idempotency_key` is a name that overstates its
+    column (added 2026-09-02, after review).
 
   Requiring the request to match retained authorities keeps the request DTO as an
   idempotency-friendly command envelope while making the stored binding mean what it says.
@@ -3437,14 +3476,16 @@ gated on.
 Ordered by institutional risk per unit of work, read as a delta on the standing lists above:
 
 1. **Make attach verify the candidate instead of trusting the request (B1) and instead of
-   stamping the case version (B2).** Two comparisons can run at attach against data already
-   loaded — `ProjectionInputHash` against the candidate's `ProjectionLineage.TermsHash`, and the
-   case's `CorporateActionId` through the deterministic event identity against `spine.EventId` —
-   and four need the authority retained first: the lot and policy identities, whose retained
-   evidence rows carry id and version but not the role that binds them, and the posting-intent
-   hash and idempotency key, which the candidate neither carries nor can recompute. Retain those at
-   drafting time — the identities either directly or by keeping the role on the evidence rows, the
-   hash and key as values — then compare. In the same change retain the drafting-time case version
+   stamping the case version (B2).** Three comparisons can run at attach against data already
+   loaded — `spine.EventKind` against `CorporateAction`, `ProjectionInputHash` against the
+   candidate's `ProjectionLineage.TermsHash`, and the case's `CorporateActionId` through the
+   deterministic event identity against `spine.EventId` — and four need the authority retained
+   first: the lot and policy identities, whose retained evidence rows carry id and version but not
+   the role that binds them, and the posting-intent hash and idempotency key, which the candidate
+   neither carries nor can recompute. Retain those at drafting time — the identities either
+   directly or by keeping the role on the evidence rows, the hash and key as values — then
+   compare; and decide whether the key governs posting or is renamed, since today it governs
+   nothing. In the same change retain the drafting-time case version
    (with the election and position-snapshot inputs from the same digest) as its own typed field on
    the candidate and compare it to the asserted case version at attach, refusing a stale draft
    there; `bound_case_version` stays the post-attach stamp the currency gate needs, and is not
@@ -3479,18 +3520,23 @@ Ordered by institutional risk per unit of work, read as a delta on the standing 
    unchanged, and nothing in this range touched them. They outrank item 3 in institutional risk
    (silent zero-interest projection; silent wrong-security resolution) but are listed after it here
    only because their remedies are already fully specified above and need no new analysis.
-5. **The attribution stragglers are three, not two — two by decision, one by wiring.** The CLI
+5. **The attribution stragglers are four, not two — two by decision, two by wiring.** The CLI
    override validation (P1's import path) and the corporate-action verb's hardcoded actor are one
    decision — what a CLI run is allowed to assert about identity — and should be settled once, in
    both places, with the trust assumption written down. The third is the desktop deactivation
    dialog's literal `UpdatedBy: "User"` (`SecurityMasterDeactivateViewModel.cs:80`), which the new
    P5 gate authorizes without attributing; its remedy is already specified — thread the desktop
    actor source through a constructor that does not yet accept it, per the 2026-08-28 wiring
-   analysis — and P1's attribution work must not close with it outstanding. An earlier version of
-   this entry counted two (corrected 2026-09-02, after review): the pass re-verified P1's CLI,
-   alias, and constraint rows and did not carry the desktop row into the table, so the priority
-   built on the table inherited the omission — a frame limiting what was seen, the failure the
-   Method section names.
+   analysis. The fourth is the desktop backfill command, whose up-to-1,000 amendments per
+   invocation all carry `UpdatedBy: "TradingParametersBackfillService"`
+   (`TradingParametersBackfillService.cs:209`) because neither the interface nor the command passes
+   an actor (`ITradingParametersBackfillService.cs:12`, `SecurityMasterViewModel.cs:2237`); the
+   remedy is the same actor source threaded through the command and the service signature, with
+   `SourceSystem: "PolygonBackfill"` left as it is. P1's attribution work must not close with
+   either outstanding. This entry has counted two, then three (both corrected 2026-09-02, after
+   review): the pass re-verified P1's CLI, alias, and constraint rows and did not carry the
+   desktop rows into the table, so the priority built on the table inherited the omissions — a
+   frame limiting what was seen, the failure the Method section names.
 
 ---
 
@@ -3538,4 +3584,6 @@ role that made it evidence; as a retained value, when it was a deterministic der
 retained values (the event identity). The procedural rule that fell out is recorded under B1: name
 the authority per field, then look for it in every form the snapshot retains before classifying
 it. The same review added B2, extended the P4 backfill row to the inner method's success
-accounting, and restored the desktop deactivation actor to P1's open table.
+accounting, restored the desktop deactivation actor to P1's open table, and — in a fourth round —
+added the spine-kind check the attach path lacks, the posting idempotency key that posting never
+reads, and the desktop backfill's actor to P1's inventory.
