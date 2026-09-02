@@ -170,6 +170,7 @@ public sealed partial class PostgresSecurityMasterStore
                 new("ordinal", ordinal),
             };
 
+            var skipRow = false;
             foreach (var column in child.Columns)
             {
                 // Element keys are read from the element itself; the profile envelope only nests the
@@ -180,7 +181,18 @@ public sealed partial class PostgresSecurityMasterStore
                     return false;
                 }
 
+                if (column.MustBePositive && value is decimal amount && amount <= 0m)
+                {
+                    skipRow = true;
+                    break;
+                }
+
                 row.Add(new(column.ColumnName, value ?? DBNull.Value));
+            }
+
+            if (skipRow)
+            {
+                continue;
             }
 
             built.Add(row);
@@ -192,19 +204,29 @@ public sealed partial class PostgresSecurityMasterStore
     }
 
     /// <summary>
-    /// Resolves a declared term to the element carrying it, preferring the document root and falling
-    /// back to the profile envelope's <c>profileFields</c>. A term present as JSON null resolves as
-    /// absent: the canonical serializer emits every declared key on every document and writes null
-    /// where the domain value is <c>None</c>, so null is how "no value" is spelled, not a shape error.
+    /// Resolves a declared term to the element carrying it, preferring the profile envelope's
+    /// <c>profileFields</c> and falling back to the document root.
+    /// <para>
+    /// Governed profile fields outrank outer duplicates, matching
+    /// <c>StructuredCashFlowTermsResolver.EnumerateTermSources</c>: profileFields values are schema-
+    /// and profile-validated on write, while extra outer keys on an envelope are ungoverned
+    /// pass-through. Probing the root first would let an unvalidated outer term shadow the governed
+    /// one, so the projection would disagree with every other reader of the same record.
+    /// </para>
+    /// <para>
+    /// A term present as JSON null resolves as absent: the canonical serializer emits every declared
+    /// key on every document and writes null where the domain value is <c>None</c>, so null is how
+    /// "no value" is spelled, not a shape error.
+    /// </para>
     /// </summary>
     private static bool TryResolveTerm(JsonElement root, JsonElement? profileFields, string key, out JsonElement element)
     {
-        if (root.ValueKind == JsonValueKind.Object && root.TryGetProperty(key, out element) && HasValue(element))
+        if (profileFields is { } fields && fields.TryGetProperty(key, out element) && HasValue(element))
         {
             return true;
         }
 
-        if (profileFields is { } fields && fields.TryGetProperty(key, out element) && HasValue(element))
+        if (root.ValueKind == JsonValueKind.Object && root.TryGetProperty(key, out element) && HasValue(element))
         {
             return true;
         }
@@ -367,21 +389,30 @@ public sealed partial class PostgresSecurityMasterStore
         var sql = GetTermsProjectionSql(descriptor);
         var projected = TryBuildTermsProjection(descriptor, record, out var plan);
 
-        // Child rows are cleared explicitly rather than left to the foreign key's cascade: the
-        // projected path upserts the parent instead of deleting it, so no cascade fires there, and
-        // relying on one for the delete path would put a correctness requirement in the DDL that the
-        // descriptor cannot state or check.
+        // Clearing a projection: the parent delete cascades to every child table that declares it,
+        // so the common path — every record of some other asset class, on every upsert and every
+        // rebuild — costs one statement instead of one per table. A child that does not declare the
+        // cascade is still cleared explicitly; the migration-DDL guard checks each claim against the
+        // shipped SQL, so this cannot quietly become an orphan-row leak.
+        if (!projected)
+        {
+            foreach (var child in descriptor.ChildTables.Where(static child => !child.CascadesFromParent))
+            {
+                await ExecuteBySecurityIdAsync(connection, transaction, sql.ChildDeletes[child.TableName], record.SecurityId, ct)
+                    .ConfigureAwait(false);
+            }
+
+            await ExecuteBySecurityIdAsync(connection, transaction, sql.DeleteParent, record.SecurityId, ct)
+                .ConfigureAwait(false);
+            return;
+        }
+
+        // Publishing a projection upserts the parent rather than deleting it, so no cascade fires:
+        // the child rows have to be replaced explicitly or a shortened schedule keeps its tail.
         foreach (var child in descriptor.ChildTables)
         {
             await ExecuteBySecurityIdAsync(connection, transaction, sql.ChildDeletes[child.TableName], record.SecurityId, ct)
                 .ConfigureAwait(false);
-        }
-
-        if (!projected)
-        {
-            await ExecuteBySecurityIdAsync(connection, transaction, sql.DeleteParent, record.SecurityId, ct)
-                .ConfigureAwait(false);
-            return;
         }
 
         await using (var upsert = connection.CreateCommand())

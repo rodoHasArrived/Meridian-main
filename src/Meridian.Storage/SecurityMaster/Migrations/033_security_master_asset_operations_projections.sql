@@ -11,6 +11,13 @@
 -- writer and keyed by security_id like every other reference projection. The blob stays the source
 -- of truth: nothing here changes what the cash-flow, obligation or ledger paths read.
 --
+-- ROLLOUT: like every projection migration before it, this creates the tables empty. Records only
+-- populate them when they are next persisted, so an existing database needs a one-time refresh --
+-- SecurityMasterRebuildOrchestrator.RebuildAssetClassAsync("DirectLoan") and the same for
+-- "StructuredCredit". That is the purpose-built path: it folds each class's event streams and
+-- upserts the projections without advancing the shared replay checkpoint. Until it is run, borrower
+-- ladders, payment-due queries and factor lookups see only records amended since deployment.
+--
 -- The two schedules get child tables rather than a jsonb column because their rows are the queryable
 -- unit -- a principal instalment due in a window, a pool factor effective on a date. Ordinal keeps
 -- the persisted order identical to the terms document, so a projected schedule reads back in the

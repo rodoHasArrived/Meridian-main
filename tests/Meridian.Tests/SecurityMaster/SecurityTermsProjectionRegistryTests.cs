@@ -316,18 +316,26 @@ public sealed class SecurityTermsProjectionRegistryTests
     }
 
     [Fact]
-    public void TryBuild_PrefersARootTermOverTheProfileEnvelopeCopy()
+    public void TryBuild_PrefersTheGovernedProfileTermOverAnOuterDuplicate()
     {
-        // A first-class payload that also carries an envelope must read as first-class: the root is
-        // the canonical form, the envelope is the fallback.
+        // Governed profile fields outrank outer duplicates, as StructuredCashFlowTermsResolver
+        // already does: profileFields values are validated on write, outer keys on an envelope are
+        // ungoverned pass-through. A projection that preferred the root would disagree with every
+        // other reader of the same record.
         var record = Record("StructuredCredit", new
         {
-            schemaVersion = 1,
-            tranche = "B",
-            collateralType = "CLO",
-            originalFace = 10_000_000m,
-            couponOrIndex = "SOFR+250",
-            profileFields = new { tranche = "SHOULD-NOT-WIN", collateralType = "RMBS" }
+            schemaVersion = 3,
+            customProfileId = "structured-credit-io-po",
+            profileVersion = 1,
+            tranche = "UNGOVERNED-OUTER",
+            collateralType = "RMBS",
+            profileFields = new
+            {
+                tranche = "B",
+                collateralType = "CLO",
+                originalFace = 10_000_000m,
+                couponOrIndex = "SOFR+250"
+            }
         });
 
         PostgresSecurityMasterStore.TryBuildTermsProjection(Descriptor("StructuredCredit"), record, out var plan)
@@ -335,6 +343,33 @@ public sealed class SecurityTermsProjectionRegistryTests
 
         plan.Value("tranche").Should().Be("B");
         plan.Value("collateral_type").Should().Be("CLO");
+    }
+
+    [Fact]
+    public void TryBuild_FallsBackToTheRootForATermTheProfileDoesNotDeclare()
+    {
+        // The seeded structured-credit profile declares no factorScheduleEntries, so a record can
+        // carry the governed scalars in the envelope and the typed schedule at the root.
+        var record = Record("StructuredCredit", new
+        {
+            schemaVersion = 3,
+            customProfileId = "structured-credit-io-po",
+            profileVersion = 1,
+            factorScheduleEntries = new[] { new { asOfDate = "2026-01-01", factor = 0.8m } },
+            profileFields = new
+            {
+                tranche = "B",
+                collateralType = "CLO",
+                originalFace = 10_000_000m,
+                couponOrIndex = "SOFR+250"
+            }
+        });
+
+        PostgresSecurityMasterStore.TryBuildTermsProjection(Descriptor("StructuredCredit"), record, out var plan)
+            .Should().BeTrue();
+
+        plan.Value("tranche").Should().Be("B");
+        plan.ChildRows("structured_credit_factor_schedule_projection").Should().ContainSingle();
     }
 
     [Fact]
@@ -355,6 +390,38 @@ public sealed class SecurityTermsProjectionRegistryTests
             .Should().BeTrue();
 
         plan.Value("reference_index").Should().Be(DBNull.Value);
+    }
+
+    [Fact]
+    public void TryBuild_SkipsPrincipalInstalmentsTheCashFlowPathDoesNotRecognise()
+    {
+        // StructuredCashFlowTermsResolver discards instalments with a non-positive amount, so
+        // projecting one would have the relational read model report a contractual payment the
+        // canonical path does not. The surrounding schedule still projects: this is a value the
+        // domain defines as "not a payment", not a malformed row.
+        var record = Record("DirectLoan", new
+        {
+            schemaVersion = 1,
+            borrower = "Meridian Industrials LLC",
+            covenants = Array.Empty<object>(),
+            principalSchedule = new[]
+            {
+                new { paymentDate = "2027-03-31", amount = 1_250_000m },
+                new { paymentDate = "2027-09-30", amount = 0m },
+                new { paymentDate = "2028-03-31", amount = -500m },
+                new { paymentDate = "2028-09-30", amount = 750_000m }
+            }
+        });
+
+        PostgresSecurityMasterStore.TryBuildTermsProjection(Descriptor("DirectLoan"), record, out var plan)
+            .Should().BeTrue();
+
+        var schedule = plan.ChildRows("direct_loan_principal_schedule_projection");
+        schedule.Should().HaveCount(2);
+        Column(schedule[0], "amount").Should().Be(1_250_000m);
+        Column(schedule[1], "amount").Should().Be(750_000m);
+        // Ordinal stays contiguous, so the projected schedule reads as its own sequence.
+        schedule.Select(row => Column(row, "ordinal")).Should().Equal(0, 1);
     }
 
     [Fact]
@@ -491,6 +558,27 @@ public sealed class SecurityTermsProjectionRegistryTests
         }
     }
 
+    [Fact]
+    public void EveryChildTableClaimingACascade_DeclaresOneInTheMigrationDdl()
+    {
+        // The writer clears a projection with a single parent delete wherever a child declares the
+        // cascade. If the DDL ever loses it, that shortcut silently leaves orphan child rows behind
+        // for every record that stops qualifying — so the claim is checked against the shipped SQL.
+        var sql = ReadShippedMigrationSql();
+
+        foreach (var descriptor in SecurityTermsProjectionRegistry.Descriptors)
+        {
+            foreach (var child in descriptor.ChildTables.Where(static child => child.CascadesFromParent))
+            {
+                CascadingForeignKey(child.TableName, descriptor.TableName)
+                    .IsMatch(sql)
+                    .Should().BeTrue(
+                        $"'{child.TableName}' claims it cascades from '{descriptor.TableName}', so its "
+                        + "security_id foreign key must declare 'on delete cascade'");
+            }
+        }
+    }
+
     private static void AssertTableDeclares(
         IReadOnlyDictionary<string, IReadOnlyCollection<string>> ddl,
         string tableName,
@@ -512,22 +600,32 @@ public sealed class SecurityTermsProjectionRegistryTests
     /// </summary>
     private static IReadOnlyDictionary<string, IReadOnlyCollection<string>> ReadShippedMigrationDdl()
     {
-        var directory = Path.Combine(AppContext.BaseDirectory, "SecurityMaster", "Migrations");
-        Directory.Exists(directory).Should().BeTrue($"migration scripts must ship to '{directory}'");
-
         var tables = new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var path in Directory.GetFiles(directory, "*.sql"))
+        foreach (Match table in CreateTablePattern.Matches(ReadShippedMigrationSql()))
         {
-            var sql = StripLineComments(File.ReadAllText(path));
-            foreach (Match table in CreateTablePattern.Matches(sql))
-            {
-                tables[table.Groups["table"].Value] = ParseColumnNames(table.Groups["body"].Value);
-            }
+            tables[table.Groups["table"].Value] = ParseColumnNames(table.Groups["body"].Value);
         }
 
         return tables;
     }
+
+    /// <summary>Every shipped Security Master migration script, comments stripped, concatenated.</summary>
+    private static string ReadShippedMigrationSql()
+    {
+        var directory = Path.Combine(AppContext.BaseDirectory, "SecurityMaster", "Migrations");
+        Directory.Exists(directory).Should().BeTrue($"migration scripts must ship to '{directory}'");
+
+        return string.Join(
+            '\n',
+            Directory.GetFiles(directory, "*.sql").Select(path => StripLineComments(File.ReadAllText(path))));
+    }
+
+    /// <summary>Matches a child table's cascading <c>security_id</c> foreign key to its parent.</summary>
+    private static Regex CascadingForeignKey(string childTable, string parentTable)
+        => new(
+            $@"create\s+table[^;]*?__SCHEMA__\.{Regex.Escape(childTable)}\s*\([^;]*?security_id[^,]*?references\s+__SCHEMA__\.{Regex.Escape(parentTable)}\s*\(\s*security_id\s*\)\s+on\s+delete\s+cascade",
+            RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
     /// <summary>Drops <c>--</c> comments so their prose cannot be mistaken for a column definition.</summary>
     private static string StripLineComments(string sql)

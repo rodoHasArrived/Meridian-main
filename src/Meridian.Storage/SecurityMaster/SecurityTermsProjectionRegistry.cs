@@ -50,11 +50,20 @@ internal sealed record SecurityTermsProjectionColumn(
 /// schedule: a half-projected principal or factor schedule reads as a complete one and would
 /// misstate amortization, whereas an absent projection reads as "not projected".
 /// </param>
+/// <param name="MustBePositive">
+/// Whether a row whose value here is zero or negative is skipped rather than projected. Mirrors
+/// <c>StructuredCashFlowTermsResolver.ReadPrincipalSchedule</c>, which discards instalments with a
+/// non-positive amount: projecting one would have the relational read model report a contractual
+/// payment the canonical cash-flow path does not recognise. Unlike a malformed element, this is a
+/// value the domain defines as "not a payment", so it is dropped rather than suppressing the
+/// projection.
+/// </param>
 internal sealed record SecurityTermsProjectionChildColumn(
     string ColumnName,
     string ElementKey,
     SecurityAssetTermFieldType Type,
-    bool Required = false);
+    bool Required = false,
+    bool MustBePositive = false);
 
 /// <summary>
 /// A child projection table fanned out from one declared array term (a covenant list, a principal
@@ -68,10 +77,18 @@ internal sealed record SecurityTermsProjectionChildColumn(
 /// <see cref="SecurityAssetTermsSchema"/> as <see cref="SecurityAssetTermFieldType.Array"/>.
 /// </param>
 /// <param name="Columns">The element columns, in insert order after the <c>(security_id, ordinal)</c> key.</param>
+/// <param name="CascadesFromParent">
+/// Whether the table's <c>security_id</c> foreign key declares <c>on delete cascade</c> from the
+/// parent projection. The writer relies on this to clear a projection with a single parent delete
+/// instead of one delete per child table, which matters because every registered writer runs for
+/// every persisted record. The migration-DDL guard checks the claim against the shipped SQL, so it
+/// cannot drift into a silent orphan-row leak.
+/// </param>
 internal sealed record SecurityTermsProjectionChildTable(
     string TableName,
     string TermKey,
-    IReadOnlyList<SecurityTermsProjectionChildColumn> Columns);
+    IReadOnlyList<SecurityTermsProjectionChildColumn> Columns,
+    bool CascadesFromParent = true);
 
 /// <summary>
 /// The declarative relational projection for one asset class: a <c>security_id</c>-keyed parent
@@ -175,7 +192,7 @@ internal static partial class SecurityTermsProjectionRegistry
                     Columns:
                     [
                         new("payment_date", "paymentDate", SecurityAssetTermFieldType.Date, Required: true),
-                        new("amount", "amount", SecurityAssetTermFieldType.Decimal, Required: true)
+                        new("amount", "amount", SecurityAssetTermFieldType.Decimal, Required: true, MustBePositive: true)
                     ])
             ]),
         new(
@@ -283,8 +300,12 @@ internal static partial class SecurityTermsProjectionRegistry
                 issues.Add($"{target} declares {column.Type}, which has no scalar projection reader.");
             }
 
+            // Ordinal, not case-insensitive: the decode side reads the term with
+            // JsonElement.TryGetProperty, which is case-SENSITIVE. Accepting "Borrower" here would
+            // approve a descriptor whose gating column can never resolve, silently suppressing every
+            // projection of the class while ValidationIssues stayed empty.
             var declared = declaredFields.FirstOrDefault(field =>
-                string.Equals(field.Key, column.TermKey, StringComparison.OrdinalIgnoreCase));
+                string.Equals(field.Key, column.TermKey, StringComparison.Ordinal));
 
             if (declared is null)
             {
@@ -317,8 +338,10 @@ internal static partial class SecurityTermsProjectionRegistry
         {
             ValidateTableName(child.TableName, descriptor.AssetClass, seenTables, issues);
 
+            // Ordinal for the same reason as the scalar columns above: an approved descriptor whose
+            // array key differs only in case would publish an empty schedule, not a missing one.
             var declared = declaredFields.FirstOrDefault(field =>
-                string.Equals(field.Key, child.TermKey, StringComparison.OrdinalIgnoreCase));
+                string.Equals(field.Key, child.TermKey, StringComparison.Ordinal));
 
             if (declared is null)
             {

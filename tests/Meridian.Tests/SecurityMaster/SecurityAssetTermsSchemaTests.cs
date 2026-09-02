@@ -49,6 +49,19 @@ public sealed class SecurityAssetTermsSchemaTests
         "CommitmentGuarantee"
     ];
 
+    // The ops-capable classes that were unprojected when the backlog guard was written. The backlog
+    // may only ever be a SUBSET of this: an entry can leave it by gaining a projection, and nothing
+    // can join it. Without this frozen ceiling the "shrink-only" guards below are satisfied by
+    // deleting a descriptor and adding the class back to the backlog, which is the regression the
+    // ratchet exists to prevent.
+    private static readonly string[] OpsCapableProjectionBacklogCeiling =
+    [
+        "PrivateFundInterest",
+        "PrivateCompanyEquity",
+        "RealEstateHolding",
+        "CommitmentGuarantee"
+    ];
+
     [Fact]
     public void Schema_DeclaresEveryCatalogAssetClass()
     {
@@ -163,5 +176,10 @@ public sealed class SecurityAssetTermsSchemaTests
         OpsCapableProjectionBacklog.Should().NotIntersectWith(
             PostgresSecurityMasterStore.ProjectedAssetClasses,
             "a class that gained a projection must leave the backlog, or the coverage guard above silently stops covering it");
+
+        OpsCapableProjectionBacklog.Should().BeSubsetOf(
+            OpsCapableProjectionBacklogCeiling,
+            "the backlog is a ratchet: a class may leave it by gaining a projection, but a projected "
+            + "class may never be dropped back onto it to satisfy the coverage guard");
     }
 }
